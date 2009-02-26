@@ -9,11 +9,12 @@
 #include <strings.h>
 
 
-namespace icuda {
+namespace gmac {
 
 MemManager *getManager(const char *managerName)
 {
 	if(managerName == NULL) return new BatchManager();
+	TRACE("Using %s Manager", managerName);
 	if(strcasecmp(managerName, "None") == 0)
 		return NULL;
 	else if(strcasecmp(managerName, "Lazy") == 0)

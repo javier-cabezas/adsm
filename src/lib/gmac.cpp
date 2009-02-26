@@ -1,32 +1,40 @@
-#ifdef NATIVE
-#undef NATIVE
-#endif
-
-#include "shcuda.h"
+#define NATIVE
+#include "gmac.h"
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <dlfcn.h>
+
 #include <common/config.h>
 #include <common/debug.h>
 #include <common/MemManager.h>
 
 #include <cuda_runtime.h>
 
-static icuda::MemManager *memManager = NULL;
+static gmac::MemManager *memManager = NULL;
 static size_t pageSize = 0;
 
-static void __attribute__((constructor)) shCudaInit(void)
+cudaError_t (*_cudaLaunch)(const char *) = NULL;
+cudaError_t (*_cudaThreadSynchronize)(void) = NULL;
+
+
+static void __attribute__((constructor)) gmacInit(void)
 {
+	if((_cudaLaunch = (cudaError_t (*)(const char *))dlsym(RTLD_NEXT, "cudaLaunch")) == NULL)
+		FATAL("cudaLaunch not found");
+	if((_cudaThreadSynchronize = (cudaError_t (*)(void))dlsym(RTLD_NEXT, "cudaThreadSynchronize")) == NULL)
+		FATAL("cudaThreadSynchronize not found");
+
 	pageSize = getpagesize();
-	memManager = icuda::getManager(getenv(memManagerVar));
+	memManager = gmac::getManager(getenv(memManagerVar));
 }
 
-static void __attribute__((destructor)) shCudaFini(void)
+static void __attribute__((destructor)) gmacFini(void)
 {
 	if(memManager) delete memManager;
 }
 
-cudaError_t shCudaMalloc(void **devPtr, size_t count)
+cudaError_t gmacMalloc(void **devPtr, size_t count)
 {
 	cudaError_t ret = cudaSuccess;
 	count = (count < pageSize) ? pageSize : count;
@@ -40,14 +48,14 @@ cudaError_t shCudaMalloc(void **devPtr, size_t count)
 	return cudaSuccess;
 }
 
-cudaError_t shCudaFree(void *devPtr)
+cudaError_t gmacFree(void *devPtr)
 {
 	cudaFree(devPtr);
 	if(memManager) memManager->release(devPtr);
 	return cudaSuccess;
 }
 
-cudaError_t shCudaMallocPitch(void **devPtr, size_t *pitch,
+cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 		size_t widthInBytes, size_t height)
 {
 	void *cpuAddr = NULL;
@@ -73,15 +81,15 @@ cudaError_t shCudaMallocPitch(void **devPtr, size_t *pitch,
 	return cudaSuccess;
 }
 
-cudaError_t shCudaLaunch(const char *symbol)
+cudaError_t gmacLaunch(const char *symbol)
 {
 	if(memManager) memManager->execute();
-	return cudaLaunch(symbol);
+	return _cudaLaunch(symbol);
 }
 
-cudaError_t shCudaThreadSynchronize()
+cudaError_t gmacThreadSynchronize()
 {
-	cudaError_t ret = cudaThreadSynchronize();
+	cudaError_t ret = _cudaThreadSynchronize();
 	if(memManager) memManager->sync();
 	return ret;
 }

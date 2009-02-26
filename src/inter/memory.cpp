@@ -20,8 +20,7 @@ static cudaError_t (*_cudaMallocPitch)(void **, size_t *, size_t, size_t) = NULL
 static cudaError_t (*_cudaLaunch)(const char *) = NULL;
 cudaError_t (*_cudaThreadSynchronize)(void) = NULL;
 
-static HASH_MAP<void *, size_t> memMap;
-static icuda::MemManager *memManager = NULL;
+static gmac::MemManager *memManager = NULL;
 
 static struct timeval start, end;
 
@@ -39,7 +38,7 @@ static void __attribute__((constructor)) iCudaInit(void)
 	if((_cudaThreadSynchronize = (cudaError_t (*)(void))dlsym(RTLD_NEXT, "cudaThreadSynchronize")) == NULL)
 		FATAL("cudaThreadSynchronize not found");
 
-	memManager = icuda::getManager(getenv(memManagerVar));
+	memManager = gmac::getManager(getenv(memManagerVar));
 }
 
 static void __attribute__((destructor)) iCudaFini(void)

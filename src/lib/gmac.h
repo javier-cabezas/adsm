@@ -2,11 +2,11 @@
 #define __SHCUDA_H_
 
 #ifndef NATIVE
-#define cudaMalloc(...) shCudaMalloc(__VA_ARGS__)
-#define cudaFree(...) shCudaFree(__VA_ARGS__)
-#define cudaMallocPitch(...) shCudaMallocPitch(__VA_ARGS__)
-#define cudaLaunch(...) shCudaLaunch(__VA_ARGS__)
-#define cudaThreadSynchronize(...) shCudaThreadSynchronize(__VA_ARGS__)
+#define cudaMalloc(...) gmacMalloc(__VA_ARGS__)
+#define cudaFree(...) gmacFree(__VA_ARGS__)
+#define cudaMallocPitch(...) gmacMallocPitch(__VA_ARGS__)
+#define cudaLaunch(...) gmacLaunch(__VA_ARGS__)
+#define cudaThreadSynchronize(...) gmacThreadSynchronize(__VA_ARGS__)
 #else
 #define cudaMalloc(...) cudaMalloc(__VA_ARGS__)
 #define cudaFree(...) cudaFree(__VA_ARGS__)
@@ -21,10 +21,10 @@
 extern "C" {
 #endif
 
-cudaError_t shCudaMalloc(void **, size_t);
-cudaError_t shCudaFree(void *);
-cudaError_t shCudaLaunch(const char *);
-cudaError_t shCudaThreadSynchronize(void);
+cudaError_t gmacMalloc(void **, size_t);
+cudaError_t gmacFree(void *);
+cudaError_t gmacLaunch(const char *);
+cudaError_t gmacThreadSynchronize(void);
 
 
 #ifdef __cplusplus

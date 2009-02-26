@@ -1,12 +1,12 @@
 MAINTAINERCLEANFILES=Makefile.in
 
-bin_PROGRAMS = vecAdd shVecAdd
+bin_PROGRAMS = vecAdd gmacVecAdd
 
 vecAdd_SOURCES = vecAdd.cu
 
-shVecAdd_SOURCES = shVecAdd.cu
-shVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
-shVecAdd_LDADD = -lshcuda
+gmacVecAdd_SOURCES = gmacVecAdd.cu
+gmacVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
+gmacVecAdd_LDADD = ../src/lib/.libs/libgmac.a
 
 export LDFLAGS = -L../src/lib/.libs
 LINK = $(NVCC) -o $@ $(LDFLAGS) $(LDADD)

@@ -1,1 +1,1 @@
-const char *memManagerVar = "ICUDA_MANGER";
+const char *memManagerVar = "GMAC_MANAGER";

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <shcuda.h>
+#include <gmac.h>
 
 #include "debug.h"
 

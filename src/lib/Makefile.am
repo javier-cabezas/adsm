@@ -1,6 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 
-lib_LTLIBRARIES = libshcuda.la
-libshcuda_la_SOURCES = shcuda.h shcuda.cpp
-libshcuda_la_LIBADD = ../common/libcommon.la
+lib_LTLIBRARIES = libgmac.la
+libgmac_la_SOURCES = gmac.h gmac.cpp\
+						cuda.h cuda.cpp
+libgmac_la_LIBADD = ../common/libcommon.la
