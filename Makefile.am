@@ -1,0 +1,3 @@
+MAINTAINERCLEANFILES = aclocal.m4 config.guess config.sub configure COPYING\
+depcomp INSTALL install-sh ltmain.sh Makefile.in missing
+SUBDIRS = src tests
