@@ -4,7 +4,7 @@
 
 #include <cuda_runtime.h>
 
-namespace icuda {
+namespace gmac {
 
 bool LazyManager::alloc(void *addr, size_t count)
 {

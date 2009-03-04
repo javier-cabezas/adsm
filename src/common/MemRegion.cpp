@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace icuda {
+namespace gmac {
 struct sigaction ProtRegion::defaultAction;
 std::list<ProtRegion *> ProtRegion::regionList;
 

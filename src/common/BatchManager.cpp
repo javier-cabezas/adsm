@@ -4,7 +4,7 @@
 
 #include <cuda_runtime.h>
 
-namespace icuda {
+namespace gmac {
 void BatchManager::execute(void)
 {
 	HASH_MAP<void *, size_t>::const_iterator i;

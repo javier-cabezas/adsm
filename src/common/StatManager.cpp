@@ -1,7 +1,7 @@
 #include "StatManager.h"
 
 
-namespace icuda {
+namespace gmac {
 
 std::ostream &operator<<(std::ostream &os, const Event::Type &t)
 {

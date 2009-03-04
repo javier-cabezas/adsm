@@ -8,7 +8,7 @@
 
 extern cudaError_t (*_cudaThreadSynchronize)(void);
 
-namespace icuda {
+namespace gmac {
 
 CacheRegion::CacheRegion(MemHandler &memHandler, void *addr, size_t size,
 		size_t cacheLine) :
