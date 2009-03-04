@@ -32,15 +32,15 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 
 	// Alloc & init input data
-	if(cudaMalloc((void **)&a, vecSize * sizeof(float)) != CUDA_SUCCESS)
+	if(cudaMalloc((void **)&a, vecSize * sizeof(float)) != cudaSuccess)
 		CUFATAL();
 	randInit(a, vecSize);
-	if(cudaMalloc((void **)&b, vecSize * sizeof(float)) != CUDA_SUCCESS)
+	if(cudaMalloc((void **)&b, vecSize * sizeof(float)) != cudaSuccess)
 		CUFATAL();
 	randInit(b, vecSize);
 
 	// Alloc output data
-	if(cudaMalloc((void **)&c, vecSize * sizeof(float)) != CUDA_SUCCESS)
+	if(cudaMalloc((void **)&c, vecSize * sizeof(float)) != cudaSuccess)
 		CUFATAL();
 
 	// Call the kernel
