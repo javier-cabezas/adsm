@@ -34,17 +34,20 @@ WITH THE SOFTWARE.  */
 #ifndef __CUDA_H_
 #define __CUDA_H_
 
-#include <driver_types.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-cudaError_t cudaLaunch(const char *);
-cudaError_t cudaThreadSynchronize(void);
-
-#ifdef __cplusplus
-};
+#ifndef NATIVE
+#define cudaMalloc(...) gmacMalloc(__VA_ARGS__)
+#define cudaFree(...) gmacFree(__VA_ARGS__)
+#define cudaMallocPitch(...) gmacMallocPitch(__VA_ARGS__)
+#define cudaLaunch(...) gmacLaunch(__VA_ARGS__)
+#define cudaSetupArgument(...) gmacSetupArgument(__VA_ARGS__)
+#define cudaThreadSynchronize(...) gmacThreadSynchronize(__VA_ARGS__)
+#else
+#define cudaMalloc(...) cudaMalloc(__VA_ARGS__)
+#define cudaFree(...) cudaFree(__VA_ARGS__)
+#define cudaMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
+#define cudaLaunch(...) cudaLaunch(__VA_ARGS__)
+#define cudaSetupArgument(...) cudaSetupArgument(__VA_ARGS__)
+#define cudaThreadSynchronize(...) cudaThreadSynchronize(__VA_ARGS__)
 #endif
 
 #endif

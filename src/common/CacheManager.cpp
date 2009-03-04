@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-extern cudaError_t (*_cudaThreadSynchronize)(void);
-
 namespace gmac {
 
 CacheRegion::CacheRegion(MemHandler &memHandler, void *addr, size_t size,
@@ -34,7 +32,7 @@ void CacheManager::writeBack()
 {
 	TRACE("Write Back");
 	if(writeBuffer) {
-		_cudaThreadSynchronize();
+		cudaThreadSynchronize();
 		munlock(writeBuffer->getAddress(), writeBuffer->getSize());
 	}
 	ProtRegion *r = lru.front();

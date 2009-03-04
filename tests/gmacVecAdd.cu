@@ -3,6 +3,7 @@
 #include <time.h>
 
 #include <gmac.h>
+#include <cuda.h>
 
 #include "debug.h"
 

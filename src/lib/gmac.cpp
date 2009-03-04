@@ -14,17 +14,9 @@
 static gmac::MemManager *memManager = NULL;
 static size_t pageSize = 0;
 
-cudaError_t (*_cudaLaunch)(const char *) = NULL;
-cudaError_t (*_cudaThreadSynchronize)(void) = NULL;
-
 
 static void __attribute__((constructor)) gmacInit(void)
 {
-	if((_cudaLaunch = (cudaError_t (*)(const char *))dlsym(RTLD_NEXT, "cudaLaunch")) == NULL)
-		FATAL("cudaLaunch not found");
-	if((_cudaThreadSynchronize = (cudaError_t (*)(void))dlsym(RTLD_NEXT, "cudaThreadSynchronize")) == NULL)
-		FATAL("cudaThreadSynchronize not found");
-
 	pageSize = getpagesize();
 	memManager = gmac::getManager(getenv(memManagerVar));
 }
@@ -83,13 +75,21 @@ cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 
 cudaError_t gmacLaunch(const char *symbol)
 {
+	TRACE("gmacLaunch");
 	if(memManager) memManager->execute();
-	return _cudaLaunch(symbol);
+	return cudaLaunch(symbol);
 }
 
 cudaError_t gmacThreadSynchronize()
 {
-	cudaError_t ret = _cudaThreadSynchronize();
+	TRACE("gmacThreadSynchronize");
+	cudaError_t ret = cudaThreadSynchronize();
 	if(memManager) memManager->sync();
 	return ret;
+}
+
+cudaError_t gmacSetupArgument(void *arg, size_t size, size_t offset)
+{
+	TRACE("gmacSetupArgument");
+	return cudaSetupArgument(arg, size, offset);
 }
