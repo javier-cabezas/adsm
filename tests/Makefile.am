@@ -3,13 +3,13 @@ MAINTAINERCLEANFILES=Makefile.in
 bin_PROGRAMS = vecAdd gmacVecAdd
 
 vecAdd_SOURCES = vecAdd.cu
+vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
-gmacVecAdd_CPPFLAGS = -include $(top_srcdir)/src/lib/cuda.h -I$(top_srcdir)/src/lib
-gmacVecAdd_LDADD = ../src/lib/.libs/libgmac.a
+gmacVecAdd_CPPFLAGS = -include $(top_srcdir)/src/lib/gmac/cuda.h -I$(top_srcdir)/src/lib
+gmacVecAdd_LDADD = ../src/lib/libgmac.la 
 
-export LDFLAGS = -L../src/lib/.libs
-LINK = $(NVCC) -o $@ $(LDFLAGS) $(LDADD)
+LINK = $(LIBTOOL) --mode=link $(CC) -static -o $@ 
 
 .cu.o:
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS)
