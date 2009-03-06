@@ -1,4 +1,4 @@
-AC_INIT(iCUDA, 2.0, igelado@ac.upc.edu, libicuda)
+AC_INIT(GMAC, 2.0, igelado@ac.upc.edu, gmac)
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_GNU_SOURCE
 
