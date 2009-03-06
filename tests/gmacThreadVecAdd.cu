@@ -3,10 +3,9 @@
 #include <time.h>
 
 #include <pthread.h>
-#include <semaphore.h>
 
 #include <gmac.h>
-#include <cuda.h>
+#include <gmac/cuda.h>
 
 #include "debug.h"
 

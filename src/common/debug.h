@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __DEBUG_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/syscall.h>

@@ -6,11 +6,11 @@ vecAdd_SOURCES = vecAdd.cu
 vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
-gmacVecAdd_CPPFLAGS = -include $(top_srcdir)/src/lib/gmac/cuda.h -I$(top_srcdir)/src/lib
+gmacVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
 gmacVecAdd_LDADD = ../src/lib/libgmac.la 
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
-gmacThreadVecAdd_CPPFLAGS = -include $(top_srcdir)/src/lib/gmac/cuda.h -I$(top_srcdir)/src/lib
+gmacThreadVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
 gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la -lpthread
 
 

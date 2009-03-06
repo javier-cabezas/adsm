@@ -17,6 +17,7 @@ static size_t pageSize = 0;
 
 static void __attribute__((constructor)) gmacInit(void)
 {
+
 	pageSize = getpagesize();
 	memManager = gmac::getManager(getenv(memManagerVar));
 }
@@ -74,11 +75,12 @@ cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 	return cudaSuccess;
 }
 
+extern cudaError_t (*_cudaLaunch)(const char *);
 cudaError_t gmacLaunch(const char *symbol)
 {
 	TRACE("gmacLaunch");
 	if(memManager) memManager->execute();
-	return cudaLaunch(symbol);
+	return _cudaLaunch(symbol);
 }
 
 cudaError_t gmacThreadSynchronize()
