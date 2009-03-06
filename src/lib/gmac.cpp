@@ -30,8 +30,9 @@ cudaError_t gmacMalloc(void **devPtr, size_t count)
 {
 	cudaError_t ret = cudaSuccess;
 	count = (count < pageSize) ? pageSize : count;
-	if((ret = cudaMalloc(devPtr, count)) != cudaSuccess)
+	if((ret = cudaMalloc(devPtr, count)) != cudaSuccess) {
 		return ret;
+	}
 	if(!memManager) return ret;
 	if(!memManager->alloc(*devPtr, count)) {
 		cudaFree(*devPtr);

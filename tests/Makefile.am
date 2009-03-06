@@ -14,11 +14,11 @@ gmacThreadVecAdd_CPPFLAGS = -include $(top_srcdir)/src/lib/gmac/cuda.h -I$(top_s
 gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la -lpthread
 
 
-LINK = $(LIBTOOL) --mode=link $(CC) -static -o $@ 
+LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS)
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(CFLAGS)
 
 .cu.lo:
-	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS)
+	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(CFLAGS)
 

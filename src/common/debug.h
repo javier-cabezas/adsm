@@ -36,7 +36,10 @@ WITH THE SOFTWARE.  */
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include <errno.h>
+
 
 #define FATAL(fmt, ...)	\
 	do {	\
@@ -47,7 +50,7 @@ WITH THE SOFTWARE.  */
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
-		fprintf(stderr,"TRACE [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
+		fprintf(stderr,"TRACE (%d)[%s:%d] " fmt "\n", syscall(SYS_gettid), __FILE__, __LINE__, ##__VA_ARGS__);	\
 	} while(0)
 #else
 #define TRACE(fmt, ...)
