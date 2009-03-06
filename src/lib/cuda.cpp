@@ -2,6 +2,7 @@
 
 #include <dlfcn.h>
 #include <cuda_runtime.h>
+#include <cuda.h>
 
 #include <common/debug.h>
 
@@ -17,3 +18,4 @@ cudaError_t cudaLaunch(const char *symbol)
 {
 	return gmacLaunch(symbol);
 }
+

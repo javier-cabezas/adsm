@@ -70,6 +70,7 @@ protected:
 public:
 	CacheManager();
 	virtual bool alloc(void *addr, size_t size);
+	virtual void *safeAlloc(void *addr, size_t size);
 	virtual void release(void *addr);
 	virtual void execute(void);
 	virtual void sync(void);

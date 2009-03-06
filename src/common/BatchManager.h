@@ -52,6 +52,11 @@ public:
 		memMap[addr] = count;
 		return true;
 	}
+	inline void *safeAlloc(void *addr, size_t count) {
+		void *cpuAddr = safeMap(addr, count);
+		if(cpuAddr != NULL) memMap[cpuAddr] = count;
+		return cpuAddr;
+	}
 	inline void release(void *addr) {
 		if(memMap.find(addr) == memMap.end()) return;
 		unmap(addr, memMap[addr]);

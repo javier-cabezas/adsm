@@ -37,7 +37,7 @@ void CacheManager::writeBack()
 	}
 	ProtRegion *r = lru.front();
 	mlock(r->getAddress(), r->getSize());
-	cudaMemcpyAsync(r->getAddress(), r->getAddress(), r->getSize(),
+	cudaMemcpyAsync(safe(r->getAddress()), r->getAddress(), r->getSize(),
 			cudaMemcpyHostToDevice, 0);
 	r->noAccess();
 	lru.pop_front();
@@ -51,7 +51,7 @@ void CacheManager::dmaToDevice(std::vector<ProtRegion *> &cache)
 		if((*i)->isDirty()) {
 			TRACE("DMA to Device from %p (%d bytes)", (*i)->getAddress(),
 					(*i)->getSize());
-			cudaMemcpy((*i)->getAddress(), (*i)->getAddress(), (*i)->getSize(),
+			cudaMemcpy(safe((*i)->getAddress()), (*i)->getAddress(), (*i)->getSize(),
 					cudaMemcpyHostToDevice);
 		}
 		(*i)->clear();
@@ -60,6 +60,7 @@ void CacheManager::dmaToDevice(std::vector<ProtRegion *> &cache)
 }
 
 CacheManager::CacheManager() :
+	MemManager(),
 	pageSize(getpagesize()),
 	writeBuffer(NULL)
 {
@@ -72,9 +73,18 @@ bool CacheManager::alloc(void *addr, size_t size)
 	return true;
 }
 
+void *CacheManager::safeAlloc(void *addr, size_t size)
+{
+	void *cpuAddr = NULL;
+	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
+	memMap[cpuAddr] = new CacheRegion(*this, cpuAddr, size, lineSize * pageSize);
+	return cpuAddr;
+}
+
 void CacheManager::release(void *addr)
 {
-	if(memMap.find(addr) == memMap.end()) return;
+	void *cpuAddr = safe(addr);
+	if(memMap.find(cpuAddr) == memMap.end()) return;
 	delete memMap[addr];
 }
 
@@ -97,7 +107,7 @@ void CacheManager::read(ProtRegion *region, void *addr)
 	TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 			region->getSize());
 	region->readWrite();
-	cudaMemcpy(region->getAddress(), region->getAddress(), region->getSize(),
+	cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(),
 			cudaMemcpyDeviceToHost);
 	region->readOnly();
 }

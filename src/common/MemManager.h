@@ -35,8 +35,10 @@ WITH THE SOFTWARE.  */
 #define __MEMMANAGER_H_
 
 #include <common/config.h>
+#include <common/threads.h>
 
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/mman.h>
 
 namespace gmac {
@@ -45,6 +47,13 @@ namespace gmac {
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the GPU memory.
 class MemManager {
+private:
+	MUTEX(virtMutex);
+	HASH_MAP<void *, void *> virtTable;
+	size_t pageSize;
+
+	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
+
 protected:
 	//! This method maps a GPU address into the CPU address space
 	//! \param addr GPU address
@@ -52,14 +61,27 @@ protected:
 	//! \param prot Protection flags for the mapping
 	void *map(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
+	//! This gets memory from the CPU address space
+	//! \param addr GPU address
+	//! \param count Size (in bytes) of the mapping
+	//! \param prot Protection flags for the mapping
+	inline void *safeMap(void *addr, size_t count,
+			int prot = PROT_READ | PROT_WRITE) {
+		void *cpuAddr = mmap(NULL, count, prot, MAP_ANON | MAP_PRIVATE, 0, 0);
+		if(cpuAddr == MAP_FAILED) return NULL;
+		insertVirtual(cpuAddr, addr, count);
+		return cpuAddr;
+	}
+
 	//! This method upmaps a GPU address from the CPU address space
 	//! \param addr GPU address
 	//! \param count Size (in bytes) to unmap
 	void unmap(void *addr, size_t count);
 
 public:
+	MemManager() : pageSize(getpagesize()) { MUTEX_INIT(virtMutex); }
 	//! Virtual Destructor. It does nothing
-	virtual ~MemManager() {}
+	virtual ~MemManager() { MUTEX_DESTROY(virtMutex); }
 
 	//! This method is called whenever the user
 	//! requests memory to be used by the GPU
@@ -67,6 +89,15 @@ public:
 	//! is the same for both, the CPU and the GPU.
 	//! \param count Size in bytes of the allocated memory
 	virtual bool alloc(void *addr, size_t count) = 0;
+
+	//! This method is called whenever the user
+	//! requests memory to be used by the GPU that
+	//! might use different memory addresses for the CPU
+	//! and the GPU.
+	//! \param devPtr Allocated memory address. This address
+	//! is the same for both, the CPU and the GPU.
+	//! \param count Size in bytes of the allocated memory
+	virtual void *safeAlloc(void *addr, size_t count) = 0;
 
 	//! This method is called whenever the user
 	//! releases GPU memory
@@ -80,6 +111,18 @@ public:
 	//! This method is called just after the user requests
 	//! waiting for the GPU to finish
 	virtual void sync(void) = 0;
+
+	//! This method is called when a CPU to GPU translation is
+	//! requiered
+	//! \param addr Memory address at the CPU
+	virtual inline void *safe(void *addr) {
+		HASH_MAP<void *, void *>::const_iterator e;
+		void *baseAddr = (void *)((unsigned long)addr & ~(pageSize -1));
+		if((e = virtTable.find(baseAddr)) == virtTable.end())
+			return NULL;
+		size_t off = (unsigned long)addr & (pageSize - 1);
+		return (void *)((uint8_t *)e->second + off);
+	}
 };
 
 

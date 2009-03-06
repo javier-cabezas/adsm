@@ -15,6 +15,16 @@ bool LazyManager::alloc(void *addr, size_t count)
 	return true;
 }
 
+void *LazyManager::safeAlloc(void *addr, size_t count)
+{
+	void *cpuAddr = NULL;
+	if((cpuAddr = safeMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
+	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, count);
+	ProtRegion *region = new ProtRegion(*this, cpuAddr, count);
+	memMap[cpuAddr] = region;
+	return cpuAddr;
+}
+
 void LazyManager::release(void *addr)
 {
 	HASH_MAP<void *, ProtRegion *>::const_iterator i;
@@ -34,7 +44,7 @@ void LazyManager::execute()
 		if(i->second->isDirty()) {
 			TRACE("DMA to Device from %p (%d bytes)", i->first,
 				i->second->getSize());
-			cudaMemcpy(i->first, i->first, i->second->getSize(),
+			cudaMemcpy(safe(i->first), i->first, i->second->getSize(),
 				cudaMemcpyHostToDevice);
 		}
 		i->second->clear();
@@ -52,7 +62,7 @@ void LazyManager::read(ProtRegion *region, void *addr)
 	TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 			region->getSize());
 	region->readWrite();
-	cudaMemcpy(region->getAddress(), region->getAddress(), region->getSize(),
+	cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(),
 			cudaMemcpyDeviceToHost);
 	region->readOnly();
 }

@@ -42,6 +42,29 @@ cudaError_t gmacMalloc(void **devPtr, size_t count)
 	return cudaSuccess;
 }
 
+cudaError_t gmacSafeMalloc(void **cpuPtr, size_t count)
+{
+	cudaError_t ret = cudaSuccess;
+	void *devPtr;
+	count = (count < pageSize) ? pageSize : count;
+	if((ret = cudaMalloc(&devPtr, count)) != cudaSuccess) {
+		return ret;
+	}
+	if(!memManager) return ret;
+	if((*cpuPtr = memManager->safeAlloc(devPtr, count)) == NULL) {
+		cudaFree(devPtr);
+		return cudaErrorMemoryAllocation;
+	}
+	return cudaSuccess;
+
+}
+
+void *gmacSafePointer(void *devPtr)
+{
+	if(!memManager) return devPtr;
+	return memManager->safe(devPtr);
+}
+
 cudaError_t gmacFree(void *devPtr)
 {
 	cudaFree(devPtr);

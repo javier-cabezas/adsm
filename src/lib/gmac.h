@@ -37,11 +37,33 @@ WITH THE SOFTWARE.  */
 #include <stdio.h>
 #include <driver_types.h>
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-cudaError_t gmacMalloc(void **, size_t);
+/*
+	\brief Allocates memory at the GPU
+	
+	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
+	use the same addresses for this memory.
+	\param devPtr memory address to store the address for the allocated memory
+	\param count bytes to be allocated
+*/
+cudaError_t gmacMalloc(void **devPtr, size_t count);
+/*
+	\brief Allocates memory at the GPU
+
+	Allocates a range of memory at the GPU and the CPU. The address used by
+	the GPU is different from the address used by the CPU. When passing the
+	address returned by the function to the GPU it must be first translated
+	using gmacSafe().
+	\param devPtr memory address to store the CPU address for the allocated
+	memory
+	\param count bytes to be allocated
+*/
+cudaError_t gmacSafeMalloc(void **devPtr, size_t count);
+void *gmacSafePointer(void *devPtr);
 cudaError_t gmacFree(void *);
 cudaError_t gmacLaunch(const char *);
 cudaError_t gmacThreadSynchronize(void);
@@ -50,5 +72,10 @@ cudaError_t gmacSetupArgument(void *, size_t, size_t);
 #ifdef __cplusplus
 };
 #endif
+
+template<typename T> inline T *gmacSafe(T *devPtr) {
+	return (T *)gmacSafePointer((void *)devPtr);
+}
+
 
 #endif

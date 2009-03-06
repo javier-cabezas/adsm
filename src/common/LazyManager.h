@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include "MemManager.h"
 #include "MemRegion.h"
 
+#include "threads.h"
+
 namespace gmac {
 
 //! Manager that Moves Memory Regions Lazily
@@ -44,7 +46,9 @@ class LazyManager : public MemManager, public MemHandler {
 protected:
 	HASH_MAP<void *, ProtRegion *> memMap;
 public:
+	LazyManager() : MemManager() {};
 	virtual bool alloc(void *addr, size_t count);
+	virtual void *safeAlloc(void *addr, size_t count);
 	virtual void release(void *addr);
 	virtual void execute(void);
 	virtual void sync(void);

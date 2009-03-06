@@ -21,8 +21,8 @@ MemManager *getManager(const char *managerName)
 		return new LazyManager();
 	else if(strcasecmp(managerName, "Cache") == 0)
 		return new CacheManager();
-	else if(strcasecmp(managerName, "Stat") == 0)
-		return new StatManager();
+//	else if(strcasecmp(managerName, "Stat") == 0)
+//		return new StatManager();
 	return new BatchManager();
 }
 
@@ -47,12 +47,26 @@ void *MemManager::map(void *addr, size_t count, int prot)
 			Please ask %s for a fix", addr, PACKAGE_BUGREPORT);
 	}
 
+	insertVirtual(cpuAddr, addr, count);
 	return cpuAddr;
 }
+
 
 void MemManager::unmap(void *addr, size_t count)
 {
 	munmap(addr, count);
+}
+
+
+void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
+{
+	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
+	uint8_t *devAddr = (uint8_t *)devPtr;
+	count += ((unsigned long)cpuPtr & (pageSize -1));
+	MUTEX_LOCK(virtMutex);
+	for(size_t off = 0; off < count; off += pageSize)
+		virtTable[cpuAddr + off] = devAddr + off;
+	MUTEX_UNLOCK(virtMutex);
 }
 
 };

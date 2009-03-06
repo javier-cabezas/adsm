@@ -33,15 +33,15 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 
 	// Alloc & init input data
-	if(cudaMalloc((void **)&a, vecSize * sizeof(float)) != cudaSuccess)
+	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 	randInit(a, vecSize);
-	if(cudaMalloc((void **)&b, vecSize * sizeof(float)) != cudaSuccess)
+	if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 	randInit(b, vecSize);
 
 	// Alloc output data
-	if(cudaMalloc((void **)&c, vecSize * sizeof(float)) != cudaSuccess)
+	if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 
 	// Call the kernel
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Db.x++;
 	vecAdd<<<Dg, Db>>>(c, a, b);
-	if(cudaThreadSynchronize() != cudaSuccess) CUFATAL();
+	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	}
 	fprintf(stdout, "Error: %.02f\n", error);
 
-	cudaFree(a);
-	cudaFree(b);
-	cudaFree(c);
+	gmacFree(a);
+	gmacFree(b);
+	gmacFree(c);
 }

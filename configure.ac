@@ -12,6 +12,9 @@ AM_PROG_LIBTOOL
 # Check for a hash table implementation
 AC_CXX_HEADER_TR1_UNORDERED_MAP
 
+# Check for pthread library
+AC_CHECK_LIB([pthread], [pthread_create])
+
 # Get the NVIDIA CUDA compiler
 AC_PATH_PROG([NVCC], [nvcc])
 if test -z "$NVCC"; then
@@ -49,7 +52,6 @@ else
 	LDGLAGS=""
 	AC_MSG_RESULT(no)
 fi
-
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
