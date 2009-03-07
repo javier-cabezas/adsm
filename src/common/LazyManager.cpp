@@ -11,7 +11,9 @@ bool LazyManager::alloc(void *addr, size_t count)
 	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, count);
 	ProtRegion *region = new ProtRegion(*this, addr, count);
+	MUTEX_LOCK(memMutex);
 	memMap[addr] = region;
+	MUTEX_UNLOCK(memMutex);
 	return true;
 }
 
@@ -21,25 +23,30 @@ void *LazyManager::safeAlloc(void *addr, size_t count)
 	if((cpuAddr = safeMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, count);
 	ProtRegion *region = new ProtRegion(*this, cpuAddr, count);
+	MUTEX_LOCK(memMutex);
 	memMap[cpuAddr] = region;
+	MUTEX_UNLOCK(memMutex);
 	return cpuAddr;
 }
 
 void LazyManager::release(void *addr)
 {
 	HASH_MAP<void *, ProtRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
 	i = memMap.find(addr);
 	if(i != memMap.end()) {
 		unmap(addr, i->second->getSize());
 		delete i->second;
 		memMap.erase(addr);
 	}
+	MUTEX_UNLOCK(memMutex);
 }
 
 void LazyManager::execute()
 {
 	TRACE("Kernel execution scheduled");
 	HASH_MAP<void *, ProtRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isDirty()) {
 			TRACE("DMA to Device from %p (%d bytes)", i->first,
@@ -50,6 +57,7 @@ void LazyManager::execute()
 		i->second->clear();
 		i->second->noAccess();
 	}
+	MUTEX_UNLOCK(memMutex);
 }
 
 void LazyManager::sync()

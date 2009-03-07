@@ -4,27 +4,45 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <assert.h>
 
 #include <common/config.h>
+#include <common/threads.h>
 #include <common/debug.h>
 #include <common/MemManager.h>
 
 #include <cuda_runtime.h>
 
-static gmac::MemManager *memManager = NULL;
+static HASH_MAP<pid_t, gmac::MemManager *> *gmacMemManagers = NULL;
 static size_t pageSize = 0;
 
+#define memManager (*gmacMemManagers)[gettid()]
+
+void gmacRemoveManager(void)
+{
+	if(gmacMemManagers->find(gettid()) != gmacMemManagers->end()) {
+		delete memManager;
+		gmacMemManagers->erase(gettid());
+	}
+}
+
+void gmacCreateManager(void)
+{
+	memManager = gmac::getManager(getenv(memManagerVar));
+}
 
 static void __attribute__((constructor)) gmacInit(void)
 {
-
 	pageSize = getpagesize();
-	memManager = gmac::getManager(getenv(memManagerVar));
+	gmacMemManagers = new HASH_MAP<pid_t, gmac::MemManager *>();
+	gmacCreateManager();
 }
 
 static void __attribute__((destructor)) gmacFini(void)
 {
-	if(memManager) delete memManager;
+	gmacRemoveManager();
+	assert(gmacMemManagers->empty());
+	delete gmacMemManagers;
 }
 
 cudaError_t gmacMalloc(void **devPtr, size_t count)

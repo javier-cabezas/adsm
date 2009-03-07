@@ -44,9 +44,10 @@ namespace gmac {
 //! Manager that Moves Memory Regions Lazily
 class LazyManager : public MemManager, public MemHandler {
 protected:
+	MUTEX(memMutex);
 	HASH_MAP<void *, ProtRegion *> memMap;
 public:
-	LazyManager() : MemManager() {};
+	LazyManager() : MemManager() { MUTEX_INIT(memMutex); }
 	virtual bool alloc(void *addr, size_t count);
 	virtual void *safeAlloc(void *addr, size_t count);
 	virtual void release(void *addr);

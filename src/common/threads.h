@@ -1,6 +1,18 @@
 #ifndef __THREADS_H_
 #define __THREADS_H_
 
+#ifdef linux
+#include <unistd.h>
+#include <sys/syscall.h>
+
+#define gettid() syscall(SYS_gettid)
+#else
+
+#define gettid() 0
+
+#endif
+
+
 #ifdef HAVE_LIBPTHREAD
 
 #include <pthread.h>

@@ -13,7 +13,10 @@ AM_PROG_LIBTOOL
 AC_CXX_HEADER_TR1_UNORDERED_MAP
 
 # Check for pthread library
-AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([pthread], [pthread_create],
+	[AC_DEFINE([HAVE_LIBPTHREAD], [1])
+	LIBS="-lpthread $LIBS"; thread_dir="pthread"]
+)
 
 # Get the NVIDIA CUDA compiler
 AC_PATH_PROG([NVCC], [nvcc])
@@ -45,16 +48,19 @@ AC_ARG_ENABLE(debug,
 		, , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
 	CXXFLAGS="$CXXFLAGS -O0 -fno-inline"
+	CFLAGS="-g -O0"
 	CPPFLAGS="$CPPFLAGS -DDEBUG=1"
 	AC_MSG_RESULT(yes)
 else
 	CXXFLAGS="-O3 -fomit-frame-pointer"
+	CFLAGS="-O2"
 	LDGLAGS=""
 	AC_MSG_RESULT(no)
 fi
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
+AC_SUBST(THREAD_DIR, $thread_dir)
 
 AC_OUTPUT(
 	Makefile
@@ -62,6 +68,7 @@ AC_OUTPUT(
 	src/common/Makefile
 	src/common/config.h
 	src/lib/Makefile
+	src/lib/pthread/Makefile
 	src/inter/Makefile
 	tests/Makefile
 )

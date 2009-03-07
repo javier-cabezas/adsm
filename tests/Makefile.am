@@ -17,7 +17,7 @@ gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la -lpthread
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(CFLAGS)
+	$(NVCC) --host-compilation C -c $< -o $@ $($(basename $@)_CPPFLAGS) $(CFLAGS)
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(CFLAGS)

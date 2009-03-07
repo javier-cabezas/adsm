@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <stdio.h>
 #include <driver_types.h>
 
+void gmacCreateManager(void);
+void gmacRemoveManager(void);
 
 #ifdef __cplusplus
 extern "C" {

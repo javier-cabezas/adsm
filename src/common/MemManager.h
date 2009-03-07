@@ -118,10 +118,13 @@ public:
 	virtual inline void *safe(void *addr) {
 		HASH_MAP<void *, void *>::const_iterator e;
 		void *baseAddr = (void *)((unsigned long)addr & ~(pageSize -1));
-		if((e = virtTable.find(baseAddr)) == virtTable.end())
-			return NULL;
 		size_t off = (unsigned long)addr & (pageSize - 1);
-		return (void *)((uint8_t *)e->second + off);
+		void *devAddr = NULL;
+		MUTEX_LOCK(virtMutex);
+		if((e = virtTable.find(baseAddr)) != virtTable.end())
+			devAddr = (void *)((uint8_t *)e->second + off);
+		MUTEX_UNLOCK(virtMutex);
+		return devAddr;
 	}
 };
 

@@ -36,9 +36,13 @@ WITH THE SOFTWARE.  */
 
 #include <common/config.h>
 
+#include <unistd.h>
 #include <stdint.h>
 #include <signal.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
+
+#include <assert.h>
 
 #include <list>
 
@@ -51,11 +55,17 @@ protected:
 	void *addr;
 	//! Size in bytes of the region
 	size_t size;
+	//! Owner
+	pid_t owner;
 public:
 	//! Constructor
 	//! \param addr Start memory address
 	//! \param size Size in bytes
-	MemRegion(void *addr, size_t size) : addr(addr), size(size) {}
+	MemRegion(void *addr, size_t size) :
+		addr(addr),
+		size(size),
+		owner(syscall(SYS_gettid))
+	{}
 
 	//! Comparision operator
 	bool operator==(const void *p) const {
@@ -130,14 +140,17 @@ public:
 	inline void write(void *addr) { memHandler.write(this, addr); }
 
 	inline void noAccess(void) {
+		assert(syscall(SYS_gettid) == owner);
 		mprotect(addr, size, PROT_NONE);
 		permission = None;
 	}
 	inline void readOnly(void) {
+		assert(syscall(SYS_gettid) == owner);
 		mprotect(addr, size, PROT_READ);
 		permission = Read;
 	}
 	inline void readWrite(void) {
+		assert(syscall(SYS_gettid) == owner);
 		mprotect(addr, size, PROT_READ | PROT_WRITE);
 		permission = ReadWrite;
 	}
