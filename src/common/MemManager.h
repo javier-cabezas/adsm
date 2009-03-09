@@ -41,6 +41,8 @@ WITH THE SOFTWARE.  */
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include <cuda.h>
+
 namespace gmac {
 //! Memory Manager Interface
 
@@ -51,6 +53,7 @@ private:
 	MUTEX(virtMutex);
 	HASH_MAP<void *, void *> virtTable;
 	size_t pageSize;
+	CUcontext ctx;
 
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 
@@ -65,13 +68,7 @@ protected:
 	//! \param addr GPU address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
-	inline void *safeMap(void *addr, size_t count,
-			int prot = PROT_READ | PROT_WRITE) {
-		void *cpuAddr = mmap(NULL, count, prot, MAP_ANON | MAP_PRIVATE, 0, 0);
-		if(cpuAddr == MAP_FAILED) return NULL;
-		insertVirtual(cpuAddr, addr, count);
-		return cpuAddr;
-	}
+	void *safeMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
 	//! This method upmaps a GPU address from the CPU address space
 	//! \param addr GPU address
@@ -79,9 +76,14 @@ protected:
 	void unmap(void *addr, size_t count);
 
 public:
-	MemManager() : pageSize(getpagesize()) { MUTEX_INIT(virtMutex); }
+	MemManager();
 	//! Virtual Destructor. It does nothing
 	virtual ~MemManager() { MUTEX_DESTROY(virtMutex); }
+
+	//! This methods attaches a manager to an execution thread
+	virtual inline bool attach(void) {
+		cuCtxAttach(&ctx, 0);
+	}
 
 	//! This method is called whenever the user
 	//! requests memory to be used by the GPU

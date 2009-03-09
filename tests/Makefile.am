@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES=Makefile.in
 
-bin_PROGRAMS = vecAdd gmacVecAdd gmacThreadVecAdd
+bin_PROGRAMS = vecAdd gmacVecAdd gmacThreadVecAdd gmacSharedThread
 
 vecAdd_SOURCES = vecAdd.cu
 vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
@@ -12,6 +12,11 @@ gmacVecAdd_LDADD = ../src/lib/libgmac.la
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
 gmacThreadVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
 gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la -lpthread
+
+gmacSharedThread_SOURCES = gmacThreadVecAdd.cu
+gmacSharedThread_CPPFLAGS = -I$(top_srcdir)/src/lib
+gmacSharedThread_LDADD = ../src/lib/libgmac.la -lpthread
+
 
 
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 

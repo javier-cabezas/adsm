@@ -6,6 +6,9 @@
 
 namespace gmac {
 
+MUTEX(LazyManager::memMutex);
+HASH_MAP<void *, ProtRegion *> LazyManager::memMap;
+
 bool LazyManager::alloc(void *addr, size_t count)
 {
 	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;

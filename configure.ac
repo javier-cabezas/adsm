@@ -67,6 +67,7 @@ AC_OUTPUT(
 	src/Makefile
 	src/common/Makefile
 	src/common/config.h
+	src/common/unix/Makefile
 	src/lib/Makefile
 	src/lib/pthread/Makefile
 	src/inter/Makefile

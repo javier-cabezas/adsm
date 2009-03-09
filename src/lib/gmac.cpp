@@ -13,36 +13,42 @@
 
 #include <cuda_runtime.h>
 
-static HASH_MAP<pid_t, gmac::MemManager *> *gmacMemManagers = NULL;
+MUTEX(gmacMutex);
+static gmac::MemManager *memManager = NULL;
+static unsigned memManagerCount = 0;
 static size_t pageSize = 0;
-
-#define memManager (*gmacMemManagers)[gettid()]
 
 void gmacRemoveManager(void)
 {
-	if(gmacMemManagers->find(gettid()) != gmacMemManagers->end()) {
+	MUTEX_LOCK(gmacMutex);
+	memManagerCount--;
+	if(memManagerCount <= 0) {
 		delete memManager;
-		gmacMemManagers->erase(gettid());
+		memManager = NULL;
 	}
+	MUTEX_UNLOCK(gmacMutex);
 }
 
 void gmacCreateManager(void)
 {
-	memManager = gmac::getManager(getenv(memManagerVar));
+	MUTEX_LOCK(gmacMutex);
+	if(memManager == NULL)
+		memManager = gmac::getManager(getenv(memManagerVar));
+	memManagerCount++;
+	MUTEX_UNLOCK(gmacMutex);
+	memManager->attach();
 }
 
 static void __attribute__((constructor)) gmacInit(void)
 {
 	pageSize = getpagesize();
-	gmacMemManagers = new HASH_MAP<pid_t, gmac::MemManager *>();
+	MUTEX_INIT(gmacMutex);
 	gmacCreateManager();
 }
 
 static void __attribute__((destructor)) gmacFini(void)
 {
 	gmacRemoveManager();
-	assert(gmacMemManagers->empty());
-	delete gmacMemManagers;
 }
 
 cudaError_t gmacMalloc(void **devPtr, size_t count)
