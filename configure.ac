@@ -27,7 +27,7 @@ CUDA_DIR="`dirname $NVCC`/.."
 
 # Check for profiling mode
 AC_MSG_CHECKING(whether to enable profiling mode)
-profil_default="no"
+profile_default="no"
 AC_ARG_ENABLE(profile,
 	AC_HELP_STRING([--enable-profile], [turn on profile mode [[default=no]]])
 		, , enable_profile=$profile_default)
