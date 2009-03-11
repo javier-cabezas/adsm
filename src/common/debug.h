@@ -45,7 +45,7 @@ WITH THE SOFTWARE.  */
 #define FATAL(fmt, ...)	\
 	do {	\
 		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		exit(-1);	\
+		abort();	\
 	} while(0)
 
 #ifdef DEBUG

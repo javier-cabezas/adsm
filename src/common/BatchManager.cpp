@@ -7,17 +7,27 @@
 namespace gmac {
 void BatchManager::execute(void)
 {
-	HASH_MAP<void *, size_t>::const_iterator i;
+	HASH_MAP<void *, MemRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		cudaMemcpy(safe(i->first), i->first, i->second, cudaMemcpyHostToDevice);
+		if(i->second->isOwner() == false) continue;
+		TRACE("DMA To Device");
+		cudaMemcpy(safe(i->first), i->first, i->second->getSize(),
+				cudaMemcpyHostToDevice);
 	}
+	MUTEX_UNLOCK(memMutex);
 }
 
 void BatchManager::sync(void)
 {
-	HASH_MAP<void *, size_t>::const_iterator i;
+	HASH_MAP<void *, MemRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		cudaMemcpy(i->first, safe(i->first), i->second, cudaMemcpyDeviceToHost);
+		if(i->second->isOwner() == false) continue;
+		TRACE("DMA From Device");
+		cudaMemcpy(i->first, safe(i->first), i->second->getSize(),
+				cudaMemcpyDeviceToHost);
 	}
+	MUTEX_UNLOCK(memMutex);
 }
 };

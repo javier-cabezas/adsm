@@ -35,4 +35,25 @@
 
 #endif
 
+#ifdef unix
+
+#include <semaphore.h>
+
+#define SEM(sem) sem_t sem;
+#define SEM_INIT(sem, n) sem_init(&sem, 0, n)
+#define SEM_DESTROY(sem) sem_destroy(&sem)
+#define SEM_WAIT(sem) sem_wait(&sem)
+#define SEM_POST(sem) sem_post(&sem)
+
+#else
+#warning "Thread-safe support not implemented"
+
+#define SEM(sem) 
+#define SEM_INIT(sem, n) 
+#define SEM_DESTROY(sem)
+#define SEM_WAIT(sem)
+#define SEM_POST(sem)
+
+#endif
+
 #endif

@@ -32,29 +32,33 @@ void ProtRegion::restoreHandler()
 
 void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 {
+	bool isRegion = false;
 	std::list<ProtRegion *>::iterator i;
-	TRACE("SIGSEGV for %p", info->si_addr);
+
+	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
+	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
+
+	if(!writeAccess) TRACE("Read SIGSEGV for %p", info->si_addr);
+	else TRACE("Write SIGSEGV for %p", info->si_addr);
+
+	MUTEX_LOCK(regionMutex);
 	i = std::find_if(regionList.begin(), regionList.end(),
 		FindMem(info->si_addr));
-	if(i == regionList.end()) {
-		// The signal was not caused by us
+	if(i != regionList.end()) isRegion = true;
+	MUTEX_UNLOCK(regionMutex);
+
+	if((*i)->isOwner() == false) isRegion = false;
+	if(isRegion == false) {
+		abort();
 		// TODO: set the signal mask and other stuff
 		if(defaultAction.sa_flags & SA_SIGINFO)
 			return defaultAction.sa_sigaction(s, info, ctx);
 		return defaultAction.sa_handler(s);
 	}
-	// Mark the region as accessed
-	(*i)->access++;
-	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
-	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
-	if(!writeAccess) {
-		TRACE("Read fault");
-		(*i)->read(info->si_addr);
-	}
-	else {
-		TRACE("Write fault");
-		(*i)->write(info->si_addr);
-	}
+
+	if(!writeAccess) (*i)->read(info->si_addr);
+	else (*i)->write(info->si_addr);
+
 	TRACE("SIGSEGV done");
 }
 

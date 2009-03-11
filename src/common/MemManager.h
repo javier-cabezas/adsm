@@ -41,7 +41,9 @@ WITH THE SOFTWARE.  */
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include <cuda.h>
+#include <cuda_runtime.h>
+
+#include <iostream>
 
 namespace gmac {
 //! Memory Manager Interface
@@ -53,7 +55,6 @@ private:
 	MUTEX(virtMutex);
 	HASH_MAP<void *, void *> virtTable;
 	size_t pageSize;
-	CUcontext ctx;
 
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 
@@ -78,11 +79,8 @@ protected:
 public:
 	MemManager();
 	//! Virtual Destructor. It does nothing
-	virtual ~MemManager() { MUTEX_DESTROY(virtMutex); }
-
-	//! This methods attaches a manager to an execution thread
-	virtual inline bool attach(void) {
-		cuCtxAttach(&ctx, 0);
+	virtual ~MemManager() {
+		MUTEX_DESTROY(virtMutex);
 	}
 
 	//! This method is called whenever the user

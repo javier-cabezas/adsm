@@ -6,9 +6,6 @@
 
 namespace gmac {
 
-MUTEX(LazyManager::memMutex);
-HASH_MAP<void *, ProtRegion *> LazyManager::memMap;
-
 bool LazyManager::alloc(void *addr, size_t count)
 {
 	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;
@@ -47,10 +44,11 @@ void LazyManager::release(void *addr)
 
 void LazyManager::execute()
 {
+	Map::const_iterator i;
 	TRACE("Kernel execution scheduled");
-	HASH_MAP<void *, ProtRegion *>::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
+		if(i->second->isOwner() == false) continue;
 		if(i->second->isDirty()) {
 			TRACE("DMA to Device from %p (%d bytes)", i->first,
 				i->second->getSize());
@@ -69,18 +67,15 @@ void LazyManager::sync()
 
 void LazyManager::read(ProtRegion *region, void *addr)
 {
-	region->incAccess();
 	TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 			region->getSize());
 	region->readWrite();
-	cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(),
-			cudaMemcpyDeviceToHost);
+	cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), cudaMemcpyDeviceToHost);
 	region->readOnly();
 }
 
 void LazyManager::write(ProtRegion *region, void *addr)
 {
-	region->incAccess();
 	region->setDirty();
 	region->readWrite();
 }

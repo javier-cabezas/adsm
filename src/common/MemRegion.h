@@ -56,13 +56,16 @@ protected:
 	void *addr;
 	//! Size in bytes of the region
 	size_t size;
+	//! CPU thread owning the region
+	pthread_t owner;
 public:
 	//! Constructor
 	//! \param addr Start memory address
 	//! \param size Size in bytes
 	MemRegion(void *addr, size_t size) :
 		addr(addr),
-		size(size)
+		size(size),
+		owner(gettid())
 	{}
 
 	//! Comparision operator
@@ -76,13 +79,15 @@ public:
 	}
 
 	//! Returns the size (in bytes) of the Region
-	size_t getSize() const { return size; }
+	inline size_t getSize() const { return size; }
 	//! Sets the size (in bytes) of the Region
-	void setSize(size_t size) { this->size = size; }
+	inline void setSize(size_t size) { this->size = size; }
 	//! Returns the address of the Region
-	void *getAddress() const { return addr; }
+	inline void *getAddress() const { return addr; }
 	//! Sets the address of the Region
-	void setAddress(void *addr) { this->addr = addr; }
+	inline void setAddress(void *addr) { this->addr = addr; }
+	//! Checks if the current thread is the owner for the region
+	inline bool isOwner() const { return owner == gettid(); }
 };
 
 
@@ -121,11 +126,10 @@ public:
 class ProtRegion : public MemRegion {
 protected:
 	MemHandler &memHandler;
-	size_t access;
 	bool dirty;
-	enum { None, Read, ReadWrite } permission;
 
 	static struct sigaction defaultAction;
+	static MUTEX(regionMutex);
 	static std::list<ProtRegion *> regionList;
 	static void setHandler(void);
 	static void restoreHandler(void);
@@ -139,20 +143,15 @@ public:
 
 	inline void noAccess(void) {
 		mprotect(addr, size, PROT_NONE);
-		permission = None;
 	}
 	inline void readOnly(void) {
 		mprotect(addr, size, PROT_READ);
-		permission = Read;
 	}
 	inline void readWrite(void) {
 		mprotect(addr, size, PROT_READ | PROT_WRITE);
-		permission = ReadWrite;
 	}
 
-	inline void clear() { access = 0; dirty = false; }
-	inline void incAccess() { access++; }
-	inline size_t getAccess() const { return access; }
+	inline void clear() { dirty = false; }
 	inline void setDirty() { dirty = true; }
 	inline bool isDirty() const { return dirty; }
 };

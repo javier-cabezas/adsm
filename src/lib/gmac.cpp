@@ -14,7 +14,7 @@
 #include <cuda_runtime.h>
 
 MUTEX(gmacMutex);
-static gmac::MemManager *memManager = NULL;
+gmac::MemManager *memManager = NULL;
 static unsigned memManagerCount = 0;
 static size_t pageSize = 0;
 
@@ -36,7 +36,6 @@ void gmacCreateManager(void)
 		memManager = gmac::getManager(getenv(memManagerVar));
 	memManagerCount++;
 	MUTEX_UNLOCK(gmacMutex);
-	memManager->attach();
 }
 
 static void __attribute__((constructor)) gmacInit(void)
@@ -55,7 +54,8 @@ cudaError_t gmacMalloc(void **devPtr, size_t count)
 {
 	cudaError_t ret = cudaSuccess;
 	count = (count < pageSize) ? pageSize : count;
-	if((ret = cudaMalloc(devPtr, count)) != cudaSuccess) {
+	ret = cudaMalloc(devPtr, count);
+	if(ret != cudaSuccess) {
 		return ret;
 	}
 	if(!memManager) return ret;
@@ -71,7 +71,8 @@ cudaError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 	cudaError_t ret = cudaSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
-	if((ret = cudaMalloc(&devPtr, count)) != cudaSuccess) {
+	ret = cudaMalloc(&devPtr, count);
+	if(ret != cudaSuccess) {
 		return ret;
 	}
 	if(!memManager) return ret;
@@ -92,7 +93,9 @@ void *gmacSafePointer(void *devPtr)
 cudaError_t gmacFree(void *devPtr)
 {
 	cudaFree(devPtr);
-	if(memManager) memManager->release(devPtr);
+	if(memManager) {
+		memManager->release(devPtr);
+	}
 	return cudaSuccess;
 }
 
@@ -108,9 +111,8 @@ cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 		if(pageSize % widthInBytes) height++;
 	}
 
-	if((ret = cudaMallocPitch(devPtr, pitch, widthInBytes,
-			height)) != cudaSuccess)
-		return ret;
+	ret = cudaMallocPitch(devPtr, pitch, widthInBytes, height);
+	if(ret != cudaSuccess) return ret;
 
 	if(!memManager) return ret;
 
@@ -125,21 +127,29 @@ cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 extern cudaError_t (*_cudaLaunch)(const char *);
 cudaError_t gmacLaunch(const char *symbol)
 {
+	cudaError_t ret = cudaSuccess;
 	TRACE("gmacLaunch");
-	if(memManager) memManager->execute();
-	return _cudaLaunch(symbol);
+	if(memManager) {
+		memManager->execute();
+	}
+	ret = _cudaLaunch(symbol);
+	return ret;
 }
 
 cudaError_t gmacThreadSynchronize()
 {
 	TRACE("gmacThreadSynchronize");
 	cudaError_t ret = cudaThreadSynchronize();
-	if(memManager) memManager->sync();
+	if(memManager) {
+		memManager->sync();
+	}
 	return ret;
 }
 
 cudaError_t gmacSetupArgument(void *arg, size_t size, size_t offset)
 {
+	cudaError_t ret;
 	TRACE("gmacSetupArgument");
-	return cudaSetupArgument(arg, size, offset);
+	ret = cudaSetupArgument(arg, size, offset);
+	return ret;
 }

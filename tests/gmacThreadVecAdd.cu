@@ -11,7 +11,7 @@
 
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
-const unsigned nIter = 4;
+const unsigned nIter = 8;
 
 __global__ void vecAdd(float *c, float *a, float *b)
 {
@@ -24,8 +24,9 @@ __global__ void vecAdd(float *c, float *a, float *b)
 
 void randInit(float *a, size_t vecSize)
 {
-	for(int i = 0; i < vecSize; i++)
+	for(int i = 0; i < vecSize; i++) {
 		a[i] = rand() / (float)RAND_MAX;
+	}
 }
 
 void *addVector(void *ptr)
@@ -72,9 +73,11 @@ int main(int argc, char *argv[])
 
 	srand(time(NULL));
 
-	for(n = 0; n < nIter; n++)
+	for(n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, addVector, NULL);
+	}
 
 	for(n = 0; n < nIter; n++)
 		pthread_join(nThread[n], NULL);
+
 }

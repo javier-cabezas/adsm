@@ -37,13 +37,11 @@ void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
 	MUTEX_UNLOCK(virtMutex);
 }
 
+
 MemManager::MemManager() :
 	pageSize(getpagesize())
 {
 	MUTEX_INIT(virtMutex);
-
-	// TODO: make this code ACC independent
-	cuCtxCreate(&ctx, 0, 0);
 }
 
 };

@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __BATCHMANAGER_H_
 
 #include "MemManager.h"
+#include "MemRegion.h"
 
 #include <stdint.h>
 
@@ -45,22 +46,34 @@ namespace gmac {
 //! after a kernel call
 class BatchManager : public MemManager {
 protected:
-	HASH_MAP<void *, size_t> memMap;
+	MUTEX(memMutex);
+	HASH_MAP<void *, MemRegion *> memMap;
 public:
+	BatchManager() : MemManager() { MUTEX_INIT(memMutex); }
 	inline bool alloc(void *addr, size_t count) {
 		if(map(addr, count) == MAP_FAILED) return false;
-		memMap[addr] = count;
+		MUTEX_LOCK(memMutex);
+		memMap[addr] = new MemRegion(addr, count);
+		MUTEX_UNLOCK(memMutex);
 		return true;
 	}
 	inline void *safeAlloc(void *addr, size_t count) {
 		void *cpuAddr = safeMap(addr, count);
-		if(cpuAddr != NULL) memMap[cpuAddr] = count;
+		MUTEX_LOCK(memMutex);
+		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(addr, count);
+		MUTEX_UNLOCK(memMutex);
 		return cpuAddr;
 	}
 	inline void release(void *addr) {
-		if(memMap.find(addr) == memMap.end()) return;
-		unmap(addr, memMap[addr]);
-		memMap.erase(addr);
+		HASH_MAP<void *, MemRegion *>:: iterator i;
+		size_t size = 0;
+		MUTEX_LOCK(memMutex);
+		i = memMap.find(addr);
+		if(i != memMap.end()) {
+			unmap(addr, i->second->getSize());
+			memMap.erase(addr);
+		}
+		MUTEX_UNLOCK(memMutex);
 	}
 	void execute(void);
 	void sync(void);

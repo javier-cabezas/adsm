@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "MemManager.h"
 #include "MemRegion.h"
+#include "threads.h"
 
 #include <vector>
 
@@ -44,14 +45,15 @@ namespace gmac {
 class CacheRegion : public MemRegion {
 protected:
 	MemHandler &memHandler;
-	std::vector<ProtRegion *> cache;
+	typedef std::vector<ProtRegion *> Set;
+	Set set;
 
 	size_t cacheLine;
 public:
 	CacheRegion(MemHandler &, void *, size_t, size_t);
 	~CacheRegion();
 
-	std::vector<ProtRegion *> &getCache() { return cache; }
+	void invalidate();
 };
 
 class CacheManager : public MemManager, public MemHandler {
@@ -60,12 +62,15 @@ protected:
 	static const size_t lruSize = 2;
 	size_t pageSize;
 
-	HASH_MAP<void *, CacheRegion *> memMap;
-	std::list<ProtRegion *> lru;
-	ProtRegion *writeBuffer;
+	typedef HASH_MAP<void *, CacheRegion *> Map;
+	MUTEX(memMutex);
+	Map memMap;
 
-	void writeBack();
-	void dmaToDevice(std::vector<ProtRegion *> &);
+	typedef std::list<ProtRegion *> Cache;
+	HASH_MAP<pthread_t, Cache> cache;
+
+	void writeBack(pthread_t tid);
+	void flushToDevice(pthread_t tid);
 	
 public:
 	CacheManager();
