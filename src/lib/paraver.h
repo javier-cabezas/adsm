@@ -31,56 +31,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __BATCHMANAGER_H_
-#define __BATCHMANAGER_H_
+#ifndef __PARAVER_H
+#define __PARAVER_H
 
-#include "MemManager.h"
-#include "MemRegion.h"
+#ifdef PARAVER
 
-#include <stdint.h>
+#include <paraver/Trace.h>
 
-namespace gmac {
-//! Batch Memory Manager
+#include <cuda_runtime.h>
 
-//! The Batch Memory Manager moves all data just before and
-//! after a kernel call
-class BatchManager : public MemManager {
-protected:
-	typedef HASH_MAP<void *, MemRegion *> Map;
-	MUTEX(memMutex);
-	Map memMap;
-public:
-	BatchManager() : MemManager() {
-		MUTEX_INIT(memMutex);
+extern paraver::Trace *trace;
+
+#define _cudaMalloc_ 0x20
+#define _cudaFree_	0x21
+#define _cudaLaunch_	0x22
+#define _cudaThreadSynchronize_	0x23
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+	inline cudaError_t __cudaMalloc(void **devPtr, size_t count) {
+		trace->pushState(_cudaMalloc_);
+		cudaError_t ret = cudaMalloc(devPtr, count);
+		trace->popState();
+		return ret;
 	}
-	~BatchManager();
-	inline bool alloc(void *addr, size_t count) {
-		if(map(addr, count) == MAP_FAILED) return false;
-		MUTEX_LOCK(memMutex);
-		memMap[addr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return true;
+
+	inline cudaError_t __cudaFree(void *devPtr) {
+		trace->pushState(_cudaFree_);
+		cudaError_t ret = cudaFree(devPtr);
+		trace->popState();
+		return ret;
 	}
-	inline void *safeAlloc(void *addr, size_t count) {
-		void *cpuAddr = safeMap(addr, count);
-		MUTEX_LOCK(memMutex);
-		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return cpuAddr;
+
+	inline cudaError_t __cudaLaunch(const char *kernel) {
+		trace->pushState(_cudaLaunch_);
+		cudaError_t ret = cudaLaunch(kernel);
+		trace->popState();
+		return ret;
 	}
-	inline void release(void *addr) {
-		Map::iterator i;
-		size_t size = 0;
-		MUTEX_LOCK(memMutex);
-		i = memMap.find(addr);
-		if(i != memMap.end()) {
-			unmap(addr, i->second->getSize());
-			memMap.erase(addr);
-		}
-		MUTEX_UNLOCK(memMutex);
+
+	inline cudaError_t __cudaThreadSynchronize(void) {
+		trace->pushState(_cudaThreadSynchronize_);
+		cudaError_t ret = cudaThreadSynchronize();
+		trace->popState();
+		return ret;
 	}
-	void execute(void);
-	void sync(void);
+#ifdef __cplusplus
 };
-};
+#endif
+
+#define cudaMalloc(...) __cudaMalloc(__VA_ARGS__)
+#define cudaFree(...) __cudaFree(__VA_ARGS__)
+#define cudaLaunch(...) __cudaLaunch(__VA_ARGS__)
+#define cudaThreadSynchronize(...) __cudaThreadSynchronize(__VA_ARGS__)
+
+#endif
+
 #endif

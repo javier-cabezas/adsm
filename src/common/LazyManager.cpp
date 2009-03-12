@@ -31,7 +31,7 @@ void *LazyManager::safeAlloc(void *addr, size_t count)
 
 void LazyManager::release(void *addr)
 {
-	HASH_MAP<void *, ProtRegion *>::const_iterator i;
+	Map::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	i = memMap.find(addr);
 	if(i != memMap.end()) {

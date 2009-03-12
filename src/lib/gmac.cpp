@@ -11,6 +11,10 @@
 #include <common/debug.h>
 #include <common/MemManager.h>
 
+#ifdef PARAVER
+#include "paraver.h"
+#endif
+
 #include <cuda_runtime.h>
 
 MUTEX(gmacMutex);

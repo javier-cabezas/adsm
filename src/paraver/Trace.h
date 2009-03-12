@@ -31,56 +31,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __BATCHMANAGER_H_
-#define __BATCHMANAGER_H_
+#ifndef __TRACE_H
+#define __TRACE_H
 
-#include "MemManager.h"
-#include "MemRegion.h"
+#include "Element.h"
+#include "Record.h"
 
-#include <stdint.h>
+#include <common/config.h>
 
-namespace gmac {
-//! Batch Memory Manager
+#include <sys/time.h>
 
-//! The Batch Memory Manager moves all data just before and
-//! after a kernel call
-class BatchManager : public MemManager {
+#include <assert.h>
+
+#include <vector>
+#include <list>
+#include <string>
+#include <iostream>
+#include <fstream>
+
+namespace paraver {
+
+class Trace {
 protected:
-	typedef HASH_MAP<void *, MemRegion *> Map;
-	MUTEX(memMutex);
-	Map memMap;
+	std::vector<Node *> nodes;
+	std::list<Application *> apps;
+
+	inline static Time_t getTime() {
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		Time_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
+		return tm;
+	}
+
+	Time_t endTime;
+	Time_t pendingTime;
+
+	void setEnd(Time_t t) { endTime = (endTime > t) ? endTime : t; }
+	void setPending(Time_t t) {
+		pendingTime = (pendingTime > t) ? pendingTime : t;
+	}
+
+	void buildNode(std::ifstream &in);
+	void buildApp(std::ifstream &in);
+
+	std::ofstream of;
+	std::list<Record *> records;
+
 public:
-	BatchManager() : MemManager() {
-		MUTEX_INIT(memMutex);
-	}
-	~BatchManager();
-	inline bool alloc(void *addr, size_t count) {
-		if(map(addr, count) == MAP_FAILED) return false;
-		MUTEX_LOCK(memMutex);
-		memMap[addr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return true;
-	}
-	inline void *safeAlloc(void *addr, size_t count) {
-		void *cpuAddr = safeMap(addr, count);
-		MUTEX_LOCK(memMutex);
-		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return cpuAddr;
-	}
-	inline void release(void *addr) {
-		Map::iterator i;
-		size_t size = 0;
-		MUTEX_LOCK(memMutex);
-		i = memMap.find(addr);
-		if(i != memMap.end()) {
-			unmap(addr, i->second->getSize());
-			memMap.erase(addr);
-		}
-		MUTEX_UNLOCK(memMutex);
-	}
-	void execute(void);
-	void sync(void);
+	Trace(const char *fileName);
+
+	void pushState(unsigned value);
+	void popState();
+	void event(unsigned type, unsigned value);
+
+	void read(const char *filename);
+	void write();
+	friend std::ofstream &operator<<(std::ofstream &os, const Trace &trace);
 };
+
 };
 #endif

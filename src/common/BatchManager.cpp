@@ -5,9 +5,18 @@
 #include <cuda_runtime.h>
 
 namespace gmac {
+BatchManager::~BatchManager()
+{
+	Map::const_iterator i;
+	MUTEX_LOCK(memMutex);
+	for(i = memMap.begin(); i != memMap.end(); i++)
+		delete i->second;
+	memMap.clear();
+	MUTEX_UNLOCK(memMutex);
+}
 void BatchManager::execute(void)
 {
-	HASH_MAP<void *, MemRegion *>::const_iterator i;
+	Map::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
@@ -20,7 +29,7 @@ void BatchManager::execute(void)
 
 void BatchManager::sync(void)
 {
-	HASH_MAP<void *, MemRegion *>::const_iterator i;
+	Map::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;

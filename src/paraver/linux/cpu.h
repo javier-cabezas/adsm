@@ -31,56 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __BATCHMANAGER_H_
-#define __BATCHMANAGER_H_
+#ifndef __LINUX_PARAVER_H_
+#define __LINUX_PARAVER_H_
 
-#include "MemManager.h"
-#include "MemRegion.h"
+#include <unistd.h>
+#include <utmpx.h>
 
-#include <stdint.h>
-
-namespace gmac {
-//! Batch Memory Manager
-
-//! The Batch Memory Manager moves all data just before and
-//! after a kernel call
-class BatchManager : public MemManager {
-protected:
-	typedef HASH_MAP<void *, MemRegion *> Map;
-	MUTEX(memMutex);
-	Map memMap;
-public:
-	BatchManager() : MemManager() {
-		MUTEX_INIT(memMutex);
-	}
-	~BatchManager();
-	inline bool alloc(void *addr, size_t count) {
-		if(map(addr, count) == MAP_FAILED) return false;
-		MUTEX_LOCK(memMutex);
-		memMap[addr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return true;
-	}
-	inline void *safeAlloc(void *addr, size_t count) {
-		void *cpuAddr = safeMap(addr, count);
-		MUTEX_LOCK(memMutex);
-		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
-		return cpuAddr;
-	}
-	inline void release(void *addr) {
-		Map::iterator i;
-		size_t size = 0;
-		MUTEX_LOCK(memMutex);
-		i = memMap.find(addr);
-		if(i != memMap.end()) {
-			unmap(addr, i->second->getSize());
-			memMap.erase(addr);
-		}
-		MUTEX_UNLOCK(memMutex);
-	}
-	void execute(void);
-	void sync(void);
-};
-};
 #endif

@@ -56,6 +56,7 @@ private:
 	HASH_MAP<void *, void *> virtTable;
 	size_t pageSize;
 
+
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 
 protected:

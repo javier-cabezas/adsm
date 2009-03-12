@@ -10,4 +10,4 @@ libcommon_la_SOURCES = config.cpp\
 			LazyManager.h LazyManager.cpp\
 			CacheManager.h CacheManager.cpp\
 			StatManager.h StatManager.cpp
-libcommon_la_LIBADD = unix/libcommon-unix.la
+libcommon_la_LIBADD = unix/libcommon.la $(PARAVER_LIB)
