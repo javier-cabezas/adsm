@@ -4,14 +4,17 @@
 
 #include <common/debug.h>
 
+#ifdef PARAVER
+#include "paraver.h"
+#endif
+
 typedef int (*pthread_create_t)(pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 static pthread_create_t _pthread_create = NULL;
 
 static void __attribute__((constructor)) gmacPthreadInit(void)
 {
-	if((_pthread_create = (pthread_create_t)dlsym(RTLD_NEXT, "pthread_create")) == NULL)
-		FATAL("pthread_create() not found");
+	_pthread_create = (pthread_create_t)dlsym(RTLD_NEXT, "pthread_create");
 }
 
 typedef struct {
@@ -24,6 +27,9 @@ static void *gmac_pthread(void *arg)
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	gmacCreateManager();
+#ifdef PARAVER
+	trace->addTask();
+#endif
 	void *ret = gthread->__start_routine(gthread->__arg);
 	gmacRemoveManager();
 	return ret;
