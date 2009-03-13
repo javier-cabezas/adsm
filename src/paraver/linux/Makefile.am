@@ -1,4 +1,4 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-noinst_LTLIBRARIES = libparaver.la
-libparaver_la_SOURCES = Trace.cpp
+noinst_LTLIBRARIES = libparaver-os.la
+libparaver_os_la_SOURCES = Trace.cpp

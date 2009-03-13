@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include "Record.h"
 
 #include <common/config.h>
+#include <common/debug.h>
+
 #include <sys/time.h>
 
 #include <assert.h>
@@ -61,6 +63,8 @@ public:
 		stream << name << id;
 		return stream.str();
 	}
+
+	virtual inline void end(std::ofstream &of, Time_t t) = 0;
 };
 
 template<typename P, typename S>
@@ -87,7 +91,12 @@ public:
 			if(i->second) delete i->second;
 	}
 	inline size_t size() const { return sons.size(); }
-	inline void write(std::ofstream &os) const {
+	inline virtual void end(std::ofstream &os, Time_t t) {
+		typename HASH_MAP<int32_t, S *>::const_iterator i;
+		for(i = sons.begin(); i != sons.end(); i++)
+			i->second->end(os, t);
+	}
+	inline virtual void write(std::ofstream &os) const {
 		os.write((char *)&id, sizeof(id));
 		uint32_t s = size();
 		os.write((char *)&s, sizeof(s));
@@ -107,63 +116,29 @@ public:
 		Abstract(id, name), parent(parent) { };
 	virtual ~Element() { }
 	inline size_t size() const { return 0; }
-	inline void write(std::ofstream &os) const {
-		os.write((char *)&id, sizeof(id));
+	inline void write(std::ofstream &of) const {
+		of.write((char *)&id, sizeof(id));
 		uint32_t s = size();
-		os.write((char *)&s, sizeof(s));
+		of.write((char *)&s, sizeof(s));
 	}
-};
-
-class Node;
-class Cpu : public Element<Node, void> {
-public:
-	Cpu(Node *node, int32_t id) :
-		Element<Node, void>(node, id, "CPU") {};
-};
-
-class Node : public Element<void, Cpu> {
-public:
-	Node(int32_t id, std::string name) :
-		Element<void, Cpu>(NULL, id, name) {};
-	void addCpu(int32_t id) { addSon(id, new Cpu(this, id)); }
-	Cpu *getCpu(int32_t id) const { return getSon(id); }
-
 };
 
 class Application;
 class Task;
 class Thread : public Element<Task, void> {
 protected:
-	Cpu *cpu;
 	std::vector<State> states;
 public:
-	Thread(Task *task, Cpu *cpu, int32_t id) :
-		Element<Task, void>(task, id, "Thread"),
-		cpu(cpu)
+	Thread(Task *task, int32_t id) :
+		Element<Task, void>(task, id, "Thread")
 	{
 		states.push_back(State(this));
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		Time_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
-		states.back().start(tm);
-	}
-	inline State &start(unsigned s, Time_t t) { 
-		State &state = states.back();
-		state.end(t);
-
-		states.push_back(State(this));
-		states.back().start(s, t);
-		return state;
-	}
-	inline State &end(Time_t t) {
-		State &state = states.back();
-		state.end(t);
-		states.pop_back();
-		states.back().start(t);
-		return state;
+		states.back().start(State::None, 0);
 	}
 
-	inline int32_t getCpu() const { return cpu->getId(); }
+	void start(std::ofstream &of, unsigned s, Time_t t);
+	void end(std::ofstream &of, Time_t t);
+
 	inline int32_t getTask() const;
 	inline int32_t getApp() const;
 
@@ -173,25 +148,36 @@ public:
 
 class Task : public Element<Application, Thread> {
 protected:
-	Node *node;
+	int32_t threads;
 public:
-	Task(Application *app, Node *node, int32_t id);
-	inline Thread *getThread(int32_t id) const { return getSon(id); }
-	inline Node *getNode() const { return node; }
+	Task(Application *app, int32_t id) :
+		Element<Application, Thread>(app, id, "Task"), threads(1)
+	{};
 
+	inline Thread *addThread(int32_t id) {
+		Thread *thread = new Thread(this, threads++);
+		addSon(id, thread);
+		return thread;
+	}
+	inline Thread *getThread(int32_t id) const { return getSon(id); }
 	inline int32_t getApp() const;
-	void write(std::ofstream &os) const;
+
 };
 
 
 class Application : public Element<void, Task> {
+protected:
+	int32_t tasks;
 public:
 	Application(uint32_t id, std::string name)
-		: Element<void, Task>(NULL, id, name) {};
+		: Element<void, Task>(NULL, id, name), tasks(1)
+	{};
 
 	inline Task *getTask(int32_t id) const { return getSon(id); }
-	inline void addTask(Node *node, int32_t id) {
-		addSon(id, new Task(this, node, id));
+	inline Task *addTask(int32_t id) {
+		Task *task = new Task(this, tasks++);
+		addSon(id, task);
+		return task;
 	}
 
 	friend std::ostream &operator<<(std::ostream &os, const Application &app);
@@ -199,14 +185,6 @@ public:
 
 inline int32_t Thread::getTask() const { return parent->getId(); }
 inline int32_t Thread::getApp() const { return parent->getApp(); }
-
-inline Task::Task(Application *app, Node *node, int32_t id) : 
-		Element<Application, Thread>(app, id, "Task"),
-		node(node)
-{ 
-	for(int i = 0; i < node->size(); i++)
-		addSon(i, new Thread(this, node->getCpu(i), i));
-}
 inline int32_t Task::getApp() const { return parent->getId(); }
 
 

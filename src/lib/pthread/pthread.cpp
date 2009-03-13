@@ -28,9 +28,13 @@ static void *gmac_pthread(void *arg)
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	gmacCreateManager();
 #ifdef PARAVER
-	trace->addTask();
+	trace->addThread();
+	trace->pushState(paraver::State::Running);
 #endif
 	void *ret = gthread->__start_routine(gthread->__arg);
+#ifdef PARAVER
+	trace->popState();
+#endif
 	gmacRemoveManager();
 	return ret;
 }

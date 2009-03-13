@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __RECORD_H
 #define __RECORD_H
 
-#include <common/config.h>
+#include "Time.h"
 
-#include <sys/time.h>
+#include <common/config.h>
 
 #include <assert.h>
 
@@ -47,7 +47,6 @@ WITH THE SOFTWARE.  */
 
 namespace paraver {
 
-typedef unsigned long long Time_t;
 class Thread;
 
 class Record {
@@ -60,6 +59,7 @@ protected:
 	} Type;
 public:
 	virtual Time_t getTime() const = 0;
+	virtual Time_t getEndTime() const = 0;
 	virtual int getType() const = 0;
 	virtual void write(std::ofstream &of) const = 0;
 
@@ -68,6 +68,7 @@ public:
 		of.write((char *)&type, sizeof(type));
 	}
 	static Record *read(std::ifstream &in);
+	friend std::ostream & operator<<(std::ostream &os, const Record &record);
 };
 
 class RecordPredicate {
@@ -83,31 +84,33 @@ public:
 
 class RecordId {
 protected:
-	int32_t cpu, task, app, thread;
+	int32_t task, app, thread;
 public:
-	RecordId(int32_t cpu, int32_t task, int32_t app, int32_t thread) :
-		cpu(cpu), task(task), app(app), thread(thread) {};
+	RecordId(int32_t task, int32_t app, int32_t thread) :
+		task(task), app(app), thread(thread) {};
+
 	RecordId(std::ifstream &in) {
-		in.read((char *)&cpu, sizeof(cpu));
 		in.read((char *)&task, sizeof(task));
 		in.read((char *)&app, sizeof(app));
 		in.read((char *)&thread, sizeof(thread));
 	}
 	
 	void write(std::ofstream &of) const {
-		of.write((char *)&cpu, sizeof(cpu));
 		of.write((char *)&task, sizeof(task));
 		of.write((char *)&app, sizeof(app));
 		of.write((char *)&thread, sizeof(thread));
 	}
 
 	friend std::ostream & operator<<(std::ostream &os, const RecordId &id) {
-		os << id.cpu << ":" << id.task << ":" << id.app << ":" << id.thread;
+		os << 0 << ":" << id.task << ":" << id.app << ":" << id.thread;
 		return os;
 	}
 };
 
 class State : public Record {
+public:
+	static const uint32_t None = 0;
+	static const uint32_t Running = 1;
 private:
 	RecordId id;
 	Time_t _start;
@@ -122,15 +125,18 @@ public:
 	}
 
 	inline int getType() const { return STATE; }
-	inline Time_t getTime() const { return _end; }
+	inline Time_t getTime() const { return _start; }
+	inline Time_t getEndTime() const { return _end; }
 
-	inline void start(Time_t start) { _start = start; }
 	inline void start(uint32_t state, Time_t start) { 
 		_state = state;
 		_start = start;
 	}
+	inline void restart(Time_t start) { _start = start; }
 	inline void end(Time_t end) { _end = end; }
+
 	void write(std::ofstream &of) const {
+		assert(_start < _end);
 		Type type = STATE;
 		of.write((char *)&type, sizeof(type));
 		id.write(of);
@@ -161,6 +167,7 @@ public:
 
 	inline int getType() const { return EVENT; }
 	inline Time_t getTime() const { return _when; }
+	inline Time_t getEndTime() const { return _when; }
 
 	void write(std::ofstream &of) const {
 		Type type = EVENT;

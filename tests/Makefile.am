@@ -7,11 +7,11 @@ vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
 gmacVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
-gmacVecAdd_LDADD = ../src/lib/libgmac.la 
+gmacVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
 gmacThreadVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
-gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la -lpthread
+gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
 
 
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 

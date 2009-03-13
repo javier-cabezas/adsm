@@ -31,10 +31,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __LINUX_PARAVER_H_
-#define __LINUX_PARAVER_H_
+#ifndef __TIME_H_
+#define __TIME_H_
 
-#include <unistd.h>
-#include <utmpx.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+namespace paraver {
+
+typedef unsigned long long Time_t;
+
+inline Time_t getTime() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	Time_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
+	return tm;
+}
+
+};
 
 #endif

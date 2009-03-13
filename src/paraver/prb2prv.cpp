@@ -31,72 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __TRACE_H
-#define __TRACE_H
+#include "Trace.h"
 
-#include "Time.h"
-#include "Element.h"
-#include "Record.h"
-
-#include <common/config.h>
-#include <common/threads.h>
-
-#include <sys/time.h>
-
-#include <assert.h>
-
-#include <vector>
-#include <list>
-#include <string>
 #include <iostream>
-#include <fstream>
 
-namespace paraver {
+int main(int argc, char *argv[])
+{
+	paraver::Trace trace;
 
-class Trace {
-protected:
-	std::list<Application *> apps;
-
-	Time_t startTime;
-	Time_t endTime;
-	Time_t pendingTime;
-
-	inline Time_t getTimeStamp() {
-		Time_t tm = getTime() - startTime;
-		endTime = (endTime > tm) ? endTime : tm;
-		return tm;
-	}
-
-	void setPending(Time_t t) {
-		pendingTime = (pendingTime > t) ? pendingTime : t;
-	}
-
-	void buildApp(std::ifstream &in);
-
-	std::ofstream of;
-	MUTEX(ofMutex);
-	std::list<Record *> records;
-
-public:
-	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
-	Trace(const char *fileName);
-
-	inline void addThread(void) {
-		Task *task = apps.back()->getTask(getpid());
-		task->addThread(gettid());
-	}
-	inline void addTask(void) {
-		apps.back()->addTask(getpid());
-	}
-
-	void pushState(unsigned value);
-	void popState();
-	void event(unsigned type, unsigned value);
-
-	void read(const char *filename);
-	void write();
-	friend std::ostream &operator<<(std::ostream &os, const Trace &trace);
-};
-
-};
-#endif
+	trace.read(argv[1]);
+	std::cout << trace;
+}
