@@ -93,6 +93,15 @@ inline cudaError_t _gmacThreadSynchronize(void) {
 #define gmacLaunch(...) _gmacLaunch(__VA_ARGS__)
 #define gmacThreadSynchronize(...) _gmacThreadSynchronize(__VA_ARGS__)
 
+#define PARAVER_STATE(state, value) paraver::StateName(#state, value)
+#define PARAVER_EVENT(event, value) paraver::EventName(#event, value)
+
+#else
+
+#define PARAVER_STATE(state, value)
+#define PARAVER_EVENT(event, value)
+
 #endif
+
 
 #endif

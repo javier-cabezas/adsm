@@ -6,10 +6,10 @@ vecAdd_SOURCES = vecAdd.cu
 vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
-gmacVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
+gmacVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
-gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
+gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/lib -I$(top_srcdir)/src -I$(top_builddir)/src
 
