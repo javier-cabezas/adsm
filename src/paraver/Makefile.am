@@ -4,9 +4,12 @@ DIST_SUBDIRS = linux
 SUBDIRS = linux
 
 noinst_LTLIBRARIES = libparaver.la
-libparaver_la_SOURCES = Trace.cpp Record.cpp Element.cpp paraver.cpp
+libparaver_la_SOURCES = Trace.cpp Record.cpp Element.cpp Types.cpp paraver.cpp
 libparaver_la_LIBADD = linux/libparaver-os.la
 
-bin_PROGRAMS = prb2prv
+bin_PROGRAMS = prb2prv makepcf
 prb2prv_SOURCES = prb2prv.cpp
 prb2prv_LDADD = libparaver.la
+
+makepcf_SOURCES = makepcf.cpp
+makepcf_LDADD = libparaver.la

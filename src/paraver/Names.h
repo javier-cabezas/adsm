@@ -31,61 +31,58 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_H
-#define __PARAVER_H
+#ifndef __PARAVER_STATENAME_H_
+#define __PARAVER_STATENAME_H_
 
-#ifdef PARAVER
-
-#include <paraver/Trace.h>
-
-#include <cuda_runtime.h>
-
-extern paraver::Trace *trace;
-
-#define _cudaMalloc_ 0x20
-#define _cudaFree_	0x21
-#define _cudaLaunch_	0x22
-#define _cudaThreadSynchronize_	0x23
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef GENERATE_PARAVER_STRING
+	#define STATE(name, val) extern StateName name
+	#define EVENT(name, val) extern EventName name
+#else
+	#define STATE(name, val) StateName name(#name, val)
+	#define EVENT(name, val) EventName name(#name, val)
 #endif
-	inline cudaError_t __cudaMalloc(void **devPtr, size_t count) {
-		trace->pushState(_cudaMalloc_);
-		cudaError_t ret = cudaMalloc(devPtr, count);
-		trace->popState();
-		return ret;
-	}
 
-	inline cudaError_t __cudaFree(void *devPtr) {
-		trace->pushState(_cudaFree_);
-		cudaError_t ret = cudaFree(devPtr);
-		trace->popState();
-		return ret;
-	}
+#include <string>
+#include <vector>
 
-	inline cudaError_t __cudaLaunch(const char *kernel) {
-		trace->pushState(_cudaLaunch_);
-		cudaError_t ret = cudaLaunch(kernel);
-		trace->popState();
-		return ret;
-	}
-
-	inline cudaError_t __cudaThreadSynchronize(void) {
-		trace->pushState(_cudaThreadSynchronize_);
-		cudaError_t ret = cudaThreadSynchronize();
-		trace->popState();
-		return ret;
-	}
-#ifdef __cplusplus
+namespace paraver {
+class Name {
+private:
+	std::string name;
+	int32_t value;
+public:
+	Name(const char *name, int32_t value) :
+		name(std::string(name)),
+		value(value)
+	{};
+	inline std::string getName() const { return name; }
+	inline int32_t getValue() const { return value; }
 };
-#endif
 
-#define cudaMalloc(...) __cudaMalloc(__VA_ARGS__)
-#define cudaFree(...) __cudaFree(__VA_ARGS__)
-#define cudaLaunch(...) __cudaLaunch(__VA_ARGS__)
-#define cudaThreadSynchronize(...) __cudaThreadSynchronize(__VA_ARGS__)
-
-#endif
+class StateName : public Name {
+public:
+	typedef std::vector<const StateName *> List;
+protected:
+	static List *states;
+public:
+	StateName(const char *name, int32_t value) : Name(name, value) {
+		if(states == NULL) states = new List();
+		states->push_back(this);
+	}
+	static const std::vector<const StateName *> &get() { return *states; }
+};
+class EventName : public Name {
+public:
+	typedef std::vector<const EventName *> List;
+protected:
+	static List *events;
+public:
+	EventName(const char *name, int32_t value) : Name(name, value) {
+		if(events == NULL) events = new List();
+		events->push_back(this);
+	}
+	static const std::vector<const EventName *> &get() { return *events; }
+};
+};
 
 #endif

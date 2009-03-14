@@ -31,73 +31,72 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TRACE_H
-#define __PARAVER_TRACE_H
+#ifndef __PARAVER_H
+#define __PARAVER_H
 
-#include "Time.h"
-#include "Element.h"
-#include "Record.h"
-#include "Names.h"
+#ifdef PARAVER
 
-#include <common/config.h>
-#include <common/threads.h>
+#include <paraver/Trace.h>
+#include <paraver/Types.h>
 
-#include <sys/time.h>
+#include <cuda_runtime.h>
 
-#include <assert.h>
+extern paraver::Trace *trace;
 
-#include <vector>
-#include <list>
-#include <string>
-#include <iostream>
-#include <fstream>
+/* Macros to issue traces in paraver mode */
+#define pushState(s)	trace->pushState(paraver::s)
+#define popState()	trace->popState()
+#define pushEvent(e)	trace->pushEvent(paraver::e)
 
-namespace paraver {
 
-class Trace {
-protected:
-	std::list<Application *> apps;
-
-	Time_t startTime;
-	Time_t endTime;
-	Time_t pendingTime;
-
-	inline Time_t getTimeStamp() {
-		Time_t tm = getTime() - startTime;
-		endTime = (endTime > tm) ? endTime : tm;
-		return tm;
+#ifdef __cplusplus
+extern "C" {
+#endif
+	inline cudaError_t __cudaMalloc(void **devPtr, size_t count) {
+		pushState(_cudaMalloc_);
+		cudaError_t ret = cudaMalloc(devPtr, count);
+		popState();
+		return ret;
 	}
 
-	void setPending(Time_t t) {
-		pendingTime = (pendingTime > t) ? pendingTime : t;
+	inline cudaError_t __cudaFree(void *devPtr) {
+		pushState(_cudaFree_);
+		cudaError_t ret = cudaFree(devPtr);
+		popState();
+		return ret;
 	}
 
-	void buildApp(std::ifstream &in);
-
-	std::ofstream of;
-	MUTEX(ofMutex);
-	std::list<Record *> records;
-
-public:
-	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
-	Trace(const char *fileName);
-
-	inline void addThread(void) {
-		Task *task = apps.back()->getTask(getpid());
-		task->addThread(gettid());
-	}
-	inline void addTask(void) {
-		apps.back()->addTask(getpid());
+	inline cudaError_t __cudaLaunch(const char *kernel) {
+		pushState(_cudaLaunch_);
+		cudaError_t ret = cudaLaunch(kernel);
+		popState();
+		return ret;
 	}
 
-	void pushState(const StateName &state);
-	void popState();
-	void event(unsigned type, unsigned value);
-
-	void read(const char *filename);
-	void write();
-	friend std::ostream &operator<<(std::ostream &os, const Trace &trace);
+	inline cudaError_t __cudaThreadSynchronize(void) {
+		pushState(_cudaSync_);
+		cudaError_t ret = cudaThreadSynchronize();
+		popState();
+		return ret;
+	}
+#ifdef __cplusplus
 };
+#endif
 
-};
+#define cudaMalloc(...) __cudaMalloc(__VA_ARGS__)
+#define cudaFree(...) __cudaFree(__VA_ARGS__)
+#define cudaLaunch(...) __cudaLaunch(__VA_ARGS__)
+#define cudaThreadSynchronize(...) __cudaThreadSynchronize(__VA_ARGS__)
+
+
+
+#else
+
+#define pushState(s)
+#define popState()
+#define pushEvent(e)
+
+#endif
+
+
 #endif

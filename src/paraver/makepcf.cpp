@@ -31,73 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TRACE_H
-#define __PARAVER_TRACE_H
-
-#include "Time.h"
-#include "Element.h"
-#include "Record.h"
-#include "Names.h"
-
-#include <common/config.h>
-#include <common/threads.h>
-
-#include <sys/time.h>
-
-#include <assert.h>
+#include "Types.h"
 
 #include <vector>
-#include <list>
-#include <string>
 #include <iostream>
-#include <fstream>
 
-namespace paraver {
+int main(int argc, char *argv[])
+{
+	std::cout << "DEFAULT_OPTIONS" << std::endl;
+	std::cout << std::endl;
 
-class Trace {
-protected:
-	std::list<Application *> apps;
+	std::cout << "DEFAULT_SEMANTIC" << std::endl;
+	std::cout << std::endl;
 
-	Time_t startTime;
-	Time_t endTime;
-	Time_t pendingTime;
+	std::cout << "THREAD_FUNC State As Is" << std::endl;
+	std::cout << std::endl;
 
-	inline Time_t getTimeStamp() {
-		Time_t tm = getTime() - startTime;
-		endTime = (endTime > tm) ? endTime : tm;
-		return tm;
-	}
+	std::cout << "STATES" << std::endl;
+	paraver::StateName::List::const_iterator s;
+	for(s = paraver::StateName::get().begin(); s != paraver::StateName::get().end(); s++)
+		std::cout << (*s)->getValue() << " " << (*s)->getName() << std::endl;
+	std::cout << std::endl;
 
-	void setPending(Time_t t) {
-		pendingTime = (pendingTime > t) ? pendingTime : t;
-	}
-
-	void buildApp(std::ifstream &in);
-
-	std::ofstream of;
-	MUTEX(ofMutex);
-	std::list<Record *> records;
-
-public:
-	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
-	Trace(const char *fileName);
-
-	inline void addThread(void) {
-		Task *task = apps.back()->getTask(getpid());
-		task->addThread(gettid());
-	}
-	inline void addTask(void) {
-		apps.back()->addTask(getpid());
-	}
-
-	void pushState(const StateName &state);
-	void popState();
-	void event(unsigned type, unsigned value);
-
-	void read(const char *filename);
-	void write();
-	friend std::ostream &operator<<(std::ostream &os, const Trace &trace);
-};
-
-};
-#endif
+	std::cout << std::endl;
+	std::cout << "EVENT_TYPE" << std::endl;
+	paraver::EventName::List::const_iterator e;
+	for(e = paraver::EventName::get().begin(); e != paraver::EventName::get().end(); e++)
+		std::cout << "0 " << (*e)->getValue() << " " << (*e)->getName() << std::endl;
+	std::cout << std::endl;
+}

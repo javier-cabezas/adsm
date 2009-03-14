@@ -31,73 +31,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TRACE_H
-#define __PARAVER_TRACE_H
+#ifndef __PARAVER_TYPES_H_
+#define __PARAVER_TYPES_H_
 
-#include "Time.h"
-#include "Element.h"
-#include "Record.h"
 #include "Names.h"
-
-#include <common/config.h>
-#include <common/threads.h>
-
-#include <sys/time.h>
-
-#include <assert.h>
-
-#include <vector>
-#include <list>
-#include <string>
-#include <iostream>
-#include <fstream>
 
 namespace paraver {
 
-class Trace {
-protected:
-	std::list<Application *> apps;
+STATE(_None_, 0x00);
+STATE(_Running_, 0x01);
+STATE(_Waiting_, 0x02);
 
-	Time_t startTime;
-	Time_t endTime;
-	Time_t pendingTime;
+EVENT(_Alarm_, 0x00);
 
-	inline Time_t getTimeStamp() {
-		Time_t tm = getTime() - startTime;
-		endTime = (endTime > tm) ? endTime : tm;
-		return tm;
-	}
+STATE(_cudaMalloc_, 0x20);
+STATE(_cudaFree_, 0x21);
+STATE(_cudaLaunch_, 0x22);
+STATE(_cudaSync_, 0x23);
 
-	void setPending(Time_t t) {
-		pendingTime = (pendingTime > t) ? pendingTime : t;
-	}
-
-	void buildApp(std::ifstream &in);
-
-	std::ofstream of;
-	MUTEX(ofMutex);
-	std::list<Record *> records;
-
-public:
-	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
-	Trace(const char *fileName);
-
-	inline void addThread(void) {
-		Task *task = apps.back()->getTask(getpid());
-		task->addThread(gettid());
-	}
-	inline void addTask(void) {
-		apps.back()->addTask(getpid());
-	}
-
-	void pushState(const StateName &state);
-	void popState();
-	void event(unsigned type, unsigned value);
-
-	void read(const char *filename);
-	void write();
-	friend std::ostream &operator<<(std::ostream &os, const Trace &trace);
-};
+STATE(_gmacSignal_, 0x30);
 
 };
+
+
 #endif

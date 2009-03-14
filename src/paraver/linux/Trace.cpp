@@ -1,5 +1,6 @@
 #include <paraver/Trace.h>
 #include <paraver/Element.h>
+#include <paraver/Types.h>
 
 #include <common/threads.h>
 #include <common/debug.h>
@@ -22,17 +23,17 @@ Trace::Trace(const char *fileName) :
 	apps.push_back(new Application(1, "app"));
 	Task *task = apps.back()->addTask(getpid());
 	task->addThread(gettid());
-	pushState(State::Running);
+	pushState(_Running_);
 }
 
-void Trace::pushState(unsigned state)
+void Trace::pushState(const StateName &state)
 {
 	Task *task = apps.back()->getTask(getpid());
 	Thread *thread = task->getThread(gettid());
 	Time_t timeStamp = getTimeStamp();
 
 	MUTEX_LOCK(ofMutex);
-	thread->start(of, state, timeStamp);
+	thread->start(of, state.getValue(), timeStamp);
 	MUTEX_UNLOCK(ofMutex);
 }
 

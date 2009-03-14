@@ -1,5 +1,6 @@
 #include <common/MemRegion.h>
 #include <common/debug.h>
+#include <common/paraver.h>
 
 #include <string.h>
 
@@ -32,6 +33,7 @@ void ProtRegion::restoreHandler()
 
 void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 {
+	pushState(_gmacSignal_);
 	bool isRegion = false;
 	std::list<ProtRegion *>::iterator i;
 
@@ -60,6 +62,7 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 	else (*i)->write(info->si_addr);
 
 	TRACE("SIGSEGV done");
+	popState();
 }
 
 };

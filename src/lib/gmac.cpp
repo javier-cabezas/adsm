@@ -12,7 +12,7 @@
 #include <common/MemManager.h>
 
 #ifdef PARAVER
-#include "paraver.h"
+#include <common/paraver.h>
 #endif
 
 #include <cuda_runtime.h>
