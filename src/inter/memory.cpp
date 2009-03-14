@@ -6,6 +6,8 @@
 
 #include <driver_types.h>
 
+#define PARAVER_NO_CUDA_OVERRIDE
+
 #include <common/config.h>
 #include <common/debug.h>
 #include <common/MemManager.h>
@@ -24,7 +26,7 @@ static gmac::MemManager *memManager = NULL;
 
 static struct timeval start, end;
 
-static void __attribute__((constructor)) iCudaInit(void)
+static void __attribute__((constructor)) gmacInit(void)
 {
 	gettimeofday(&start, NULL);
 	if((_cudaMalloc = (cudaError_t (*)(void **, size_t))dlsym(RTLD_NEXT, "cudaMalloc")) == NULL)
@@ -41,7 +43,7 @@ static void __attribute__((constructor)) iCudaInit(void)
 	memManager = gmac::getManager(getenv(memManagerVar));
 }
 
-static void __attribute__((destructor)) iCudaFini(void)
+static void __attribute__((destructor)) gmacFini(void)
 {
 	gettimeofday(&end, NULL);
 	double sec = end.tv_sec - start.tv_sec;

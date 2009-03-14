@@ -4,6 +4,8 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
+#define PARAVER_NO_CUDA_OVERRIDE
+
 #include <common/MemManager.h>
 #include <common/debug.h>
 

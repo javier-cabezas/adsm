@@ -36,52 +36,53 @@ WITH THE SOFTWARE.  */
 
 #ifdef PARAVER
 
-#include <paraver/Trace.h>
-
-extern paraver::Trace *trace;
-
-#define _gmacMalloc_ 0x10
-#define _gmacFree_	0x11
-#define _gmacLaunch_	0x12
-#define _gmacThreadSynchronize_	0x13
+#include <gmac.h>
+#include <paraver/Types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-	inline cudaError_t _gmacMalloc(void **devPtr, size_t count) {
-		trace->pushState(_gmacMalloc_);
-		cudaError_t ret = gmacMalloc(devPtr, count);
-		trace->popState();
-		return ret;
-	}
 
-	inline cudaError_t _gmacSafeMalloc(void **devPtr, size_t count) {
-		trace->pushState(_gmacMalloc_);
-		cudaError_t ret = gmacSafeMalloc(devPtr, count);
-		trace->popState();
-		return ret;
-	}
+void addThread(void);
+void pushState(paraver::StateName &s);
+void popState(void);
+void pushEvent(paraver::EventName &s);
 
-	inline cudaError_t _gmacFree(void *devPtr) {
-		trace->pushState(_gmacFree_);
-		cudaError_t ret = gmacFree(devPtr);
-		trace->popState();
-		return ret;
-	}
+inline cudaError_t _gmacMalloc(void **devPtr, size_t count) {
+	pushState(paraver::_gmacMalloc_);
+	cudaError_t ret = gmacMalloc(devPtr, count);
+	popState();
+	return ret;
+}
 
-	inline cudaError_t _gmacLaunch(const char *kernel) {
-		trace->pushState(_gmacLaunch_);
-		cudaError_t ret = gmacLaunch(kernel);
-		trace->popState();
-		return ret;
-	}
+inline cudaError_t _gmacSafeMalloc(void **devPtr, size_t count) {
+	pushState(paraver::_gmacMalloc_);
+	cudaError_t ret = gmacSafeMalloc(devPtr, count);
+	popState();
+	return ret;
+}
 
-	inline cudaError_t _gmacThreadSyncrhonize(void) {
-		trace->pushState(_gmacThreadSynchronize_);
-		cudaError_t ret = gmacThreadSynchronize();
-		trace->popState();
-		return ret;
-	}
+inline cudaError_t _gmacFree(void *devPtr) {
+	pushState(paraver::_gmacFree_);
+	cudaError_t ret = gmacFree(devPtr);
+	popState();
+	return ret;
+}
+
+inline cudaError_t _gmacLaunch(const char *kernel) {
+	pushState(paraver::_gmacLaunch_);
+	cudaError_t ret = gmacLaunch(kernel);
+	popState();
+	return ret;
+}
+
+inline cudaError_t _gmacThreadSynchronize(void) {
+	pushState(paraver::_gmacSync_);
+	cudaError_t ret = gmacThreadSynchronize();
+	popState();
+	return ret;
+}
+
 #ifdef __cplusplus
 };
 #endif

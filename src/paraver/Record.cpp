@@ -1,8 +1,6 @@
 #include "Record.h"
 #include "Element.h"
 
-#include <common/debug.h>
-
 namespace paraver {
 
 Record *Record::read(std::ifstream &in)

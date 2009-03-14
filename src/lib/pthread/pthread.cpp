@@ -5,7 +5,7 @@
 #include <common/debug.h>
 
 #ifdef PARAVER
-#include <common/paraver.h>
+#include <gmac/paraver.h>
 #endif
 
 typedef int (*pthread_create_t)(pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
@@ -26,16 +26,16 @@ static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg) 
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-	gmacCreateManager();
 #ifdef PARAVER
-	trace->addThread();
-	pushState(_Running_);
+	addThread();
+	pushState(paraver::_Running_);
 #endif
+	gmacCreateManager();
 	void *ret = gthread->__start_routine(gthread->__arg);
+	gmacRemoveManager();
 #ifdef PARAVER
 	popState();
 #endif
-	gmacRemoveManager();
 	return ret;
 }
 

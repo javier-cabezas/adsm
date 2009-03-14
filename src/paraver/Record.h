@@ -34,9 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __RECORD_H
 #define __RECORD_H
 
-#include "Time.h"
-
-#include <common/config.h>
+#include <paraver/config.h>
+#include <paraver/Time.h>
 
 #include <assert.h>
 
@@ -136,6 +135,7 @@ public:
 	inline void end(Time_t end) { _end = end; }
 
 	void write(std::ofstream &of) const {
+		if(_start == _end) return;
 		assert(_start < _end);
 		Type type = STATE;
 		of.write((char *)&type, sizeof(type));

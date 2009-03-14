@@ -11,7 +11,7 @@
 #include <common/debug.h>
 #include <common/MemManager.h>
 
-#ifdef PARAVER
+#ifdef PARAVER_GMAC
 #include <common/paraver.h>
 #endif
 
@@ -24,22 +24,22 @@ static size_t pageSize = 0;
 
 void gmacRemoveManager(void)
 {
-	MUTEX_LOCK(gmacMutex);
+	__MUTEX_LOCK(gmacMutex);
 	memManagerCount--;
 	if(memManagerCount <= 0) {
 		delete memManager;
 		memManager = NULL;
 	}
-	MUTEX_UNLOCK(gmacMutex);
+	__MUTEX_UNLOCK(gmacMutex);
 }
 
 void gmacCreateManager(void)
 {
-	MUTEX_LOCK(gmacMutex);
+	__MUTEX_LOCK(gmacMutex);
 	if(memManager == NULL)
 		memManager = gmac::getManager(getenv(memManagerVar));
 	memManagerCount++;
-	MUTEX_UNLOCK(gmacMutex);
+	__MUTEX_UNLOCK(gmacMutex);
 }
 
 static void __attribute__((constructor)) gmacInit(void)

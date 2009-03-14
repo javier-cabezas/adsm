@@ -6,19 +6,18 @@ vecAdd_SOURCES = vecAdd.cu
 vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
-gmacVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
 gmacVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
-gmacThreadVecAdd_CPPFLAGS = -I$(top_srcdir)/src/lib
 gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la ../src/paraver/libparaver.la
 
+AM_CPPFLAGS = -I$(top_srcdir)/src/lib -I$(top_srcdir)/src -I$(top_builddir)/src
 
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) --host-compilation C -c $< -o $@ $($(basename $@)_CPPFLAGS) $(CFLAGS)
+	$(NVCC) --host-compilation C++ --compiler-bindir=/usr/bin/gcc-4.1 -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
 
 .cu.lo:
-	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(CFLAGS)
+	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
 

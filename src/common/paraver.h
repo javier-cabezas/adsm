@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_H
 #define __PARAVER_H
 
-#ifdef PARAVER
+#ifdef PARAVER_GMAC
 
 #include <paraver/Trace.h>
 #include <paraver/Types.h>
@@ -48,6 +48,7 @@ extern paraver::Trace *trace;
 #define popState()	trace->popState()
 #define pushEvent(e)	trace->pushEvent(paraver::e)
 
+#ifndef PARAVER_NO_CUDA_OVERRIDE
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,7 +67,15 @@ extern "C" {
 		return ret;
 	}
 
+	inline cudaError_t __cudaMemcpy(void *dstPtr, void *srcPtr, size_t count, enum cudaMemcpyKind kind) {
+		pushState(_cudaMemcpy_);
+		cudaError_t ret = cudaMemcpy(dstPtr, srcPtr, count, kind);
+		popState();
+		return ret;
+	}
+
 	inline cudaError_t __cudaLaunch(const char *kernel) {
+		pushEvent(_gpuLaunch_);
 		pushState(_cudaLaunch_);
 		cudaError_t ret = cudaLaunch(kernel);
 		popState();
@@ -85,10 +94,11 @@ extern "C" {
 
 #define cudaMalloc(...) __cudaMalloc(__VA_ARGS__)
 #define cudaFree(...) __cudaFree(__VA_ARGS__)
+#define cudaMemcpy(...) __cudaMemcpy(__VA_ARGS__)
 #define cudaLaunch(...) __cudaLaunch(__VA_ARGS__)
 #define cudaThreadSynchronize(...) __cudaThreadSynchronize(__VA_ARGS__)
 
-
+#endif
 
 #else
 

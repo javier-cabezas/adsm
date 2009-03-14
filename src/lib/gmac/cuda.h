@@ -39,11 +39,6 @@ WITH THE SOFTWARE.  */
 #define gmacFree(...) cudaFree(__VA_ARGS__)
 #define gmacMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
 #define gmacThreadSynchronize(...) cudaThreadSynchronize(__VA_ARGS__)
-#else
-#define gmacMalloc(...) gmacMalloc(__VA_ARGS__)
-#define gmacFree(...) gmacFree(__VA_ARGS__)
-#define gmacMallocPitch(...) gmacMallocPitch(__VA_ARGS__)
-#define gmacThreadSynchronize(...) gmacThreadSynchronize(__VA_ARGS__)
 #endif
 
 

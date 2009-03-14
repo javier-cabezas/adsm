@@ -13,3 +13,5 @@ prb2prv_LDADD = libparaver.la
 
 makepcf_SOURCES = makepcf.cpp
 makepcf_LDADD = libparaver.la
+
+AM_CPPFLAGS = -D__LIBPARAVER

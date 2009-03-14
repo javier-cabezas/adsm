@@ -1,5 +1,7 @@
 #include "Trace.h"
 
+#include <common/debug.h>
+
 paraver::Trace *trace;
 
 static void __attribute__((constructor)) paraverInit(void)

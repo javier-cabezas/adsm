@@ -1,8 +1,8 @@
+#include <paraver/threads.h>
 #include <paraver/Trace.h>
 #include <paraver/Element.h>
 #include <paraver/Types.h>
 
-#include <common/threads.h>
 #include <common/debug.h>
 
 #include <strings.h>
@@ -17,7 +17,7 @@ Trace::Trace(const char *fileName) :
 {
 	// Init the output file and the communication counter
 	of.open(fileName, std::ios::out);
-	MUTEX_INIT(ofMutex);
+	PARAVER_MUTEX_INIT(ofMutex);
 
 	// Create the root application and add the current task
 	apps.push_back(new Application(1, "app"));
@@ -32,9 +32,9 @@ void Trace::pushState(const StateName &state)
 	Thread *thread = task->getThread(gettid());
 	Time_t timeStamp = getTimeStamp();
 
-	MUTEX_LOCK(ofMutex);
+	PARAVER_MUTEX_LOCK(ofMutex);
 	thread->start(of, state.getValue(), timeStamp);
-	MUTEX_UNLOCK(ofMutex);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
 }
 
 void Trace::popState()
@@ -43,21 +43,21 @@ void Trace::popState()
 	Thread *thread = task->getThread(gettid());
 	Time_t timeStamp = getTimeStamp();
 
-	MUTEX_LOCK(ofMutex);
+	PARAVER_MUTEX_LOCK(ofMutex);
 	thread->end(of, timeStamp);
-	MUTEX_UNLOCK(ofMutex);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
 }
 
-void Trace::event(unsigned type, unsigned value)
+void Trace::pushEvent(const EventName &ev, int value)
 {
-	Task *task = apps.back()->getTask(gettid());
+	Task *task = apps.back()->getTask(getpid());
 	Time_t timeStamp = getTimeStamp();
 
-	Event event(task->getThread(gettid()), timeStamp, type, value);
+	Event event(task->getThread(gettid()), timeStamp, ev.getValue(), value);
 
-	MUTEX_LOCK(ofMutex);
+	PARAVER_MUTEX_LOCK(ofMutex);
 	event.write(of);
-	MUTEX_UNLOCK(ofMutex);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
 }
 
 };

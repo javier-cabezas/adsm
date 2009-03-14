@@ -34,10 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __ELEMENT_H
 #define __ELEMENT_H
 
-#include "Record.h"
-
-#include <common/config.h>
-#include <common/debug.h>
+#include <paraver/config.h>
+#include <paraver/Record.h>
 
 #include <sys/time.h>
 

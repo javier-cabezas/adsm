@@ -59,9 +59,25 @@ else
 fi
 
 
+# Check for paraver tracing on library
+paraver_default="no"
+paraver_gmac_default="no"
+
+AC_MSG_CHECKING(whether to enable paraver tracing of library)
+AC_ARG_ENABLE(paraver-gmac,
+	AC_HELP_STRING([--enable-paraver-gmac], [turn no paraver tracing on library [[defalult=no]]])
+		, , enable_paraver_gmac=$paraver_gmac_default)
+if test "$enable_paraver_gmac" = "yes"; then
+	paraver_default="yes"
+	AC_DEFINE(PARAVER_GMAC)
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
+
 # Check for paraver tracing
 AC_MSG_CHECKING(whether to enable paraver tracing)
-paraver_default="no"
 AC_ARG_ENABLE(paraver,
 	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
@@ -75,6 +91,8 @@ else
 	paraver_dir=""
 	AC_MSG_RESULT(no)
 fi
+
+
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
@@ -90,6 +108,7 @@ AC_OUTPUT(
 	src/common/config.h
 	src/common/unix/Makefile
 	src/paraver/Makefile
+	src/paraver/config.h
 	src/paraver/linux/Makefile
 	src/lib/Makefile
 	src/lib/pthread/Makefile
