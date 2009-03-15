@@ -14,6 +14,7 @@ static pthread_create_t _pthread_create = NULL;
 
 static void __attribute__((constructor)) gmacPthreadInit(void)
 {
+	TRACE("Thread Redirection");
 	_pthread_create = (pthread_create_t)dlsym(RTLD_NEXT, "pthread_create");
 }
 

@@ -13,8 +13,9 @@ typedef ssize_t (*write_t)(int, const void *, size_t);
 static read_t _read = NULL;
 static write_t _write = NULL;
 
-static void __attribute__((constructor)) gmacPthreadInit(void)
+static void __attribute__((constructor)) gmacIOInit(void)
 {
+	TRACE("I/O Redirection");
 	if((_read = (read_t)dlsym(RTLD_NEXT, "read")) == NULL)
 		FATAL("Could not find read()");
 	if((_write = (write_t)dlsym(RTLD_NEXT, "write")) == NULL)
