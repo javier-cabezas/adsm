@@ -78,7 +78,6 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_fwrite(ptr + (n * size), size, nmemb - n, stream);
-		fprintf(stderr,"ACHTUNG: %d written (%s)\n", n, strerror(errno));
 		if(ferror(stream) && errno == EFAULT) clearerr(stream);
 	} while(n < nmemb && ferror(stream) == 0);
 	popState();
