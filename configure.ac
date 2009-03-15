@@ -111,6 +111,7 @@ AC_OUTPUT(
 	src/paraver/config.h
 	src/paraver/linux/Makefile
 	src/lib/Makefile
+	src/lib/unix/Makefile
 	src/lib/pthread/Makefile
 	src/inter/Makefile
 	tests/Makefile
