@@ -1,6 +1,9 @@
 MAINTAINERCLEANFILES=Makefile.in
 
-bin_PROGRAMS = vecAdd gmacVecAdd gmacThreadVecAdd
+bin_PROGRAMS = bandwidth vecAdd gmacVecAdd gmacThreadVecAdd
+
+bandwidth_SOURCES = bandwidth.cu
+bandwidth_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 vecAdd_SOURCES = vecAdd.cu
 vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
