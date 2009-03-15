@@ -78,7 +78,7 @@ protected:
 	void unmap(void *addr, size_t count);
 
 public:
-	MemManager();
+	MemManager() : pageSize(getpagesize()) { MUTEX_INIT(virtMutex); }
 	//! Virtual Destructor. It does nothing
 	virtual ~MemManager() {
 		MUTEX_DESTROY(virtMutex);
@@ -127,6 +127,7 @@ public:
 		MUTEX_UNLOCK(virtMutex);
 		return devAddr;
 	}
+
 };
 
 

@@ -44,6 +44,7 @@ WITH THE SOFTWARE.  */
 extern paraver::Trace *trace;
 
 /* Macros to issue traces in paraver mode */
+#define addThread()	trace->addThread()
 #define pushState(s)	trace->pushState(paraver::s)
 #define popState()	trace->popState()
 #define pushEvent(e)	trace->pushEvent(paraver::e)
@@ -102,6 +103,7 @@ extern "C" {
 
 #else
 
+#define addThread()
 #define pushState(s)
 #define popState()
 #define pushEvent(e)

@@ -3,10 +3,7 @@
 #include <pthread.h>
 
 #include <common/debug.h>
-
-#ifdef PARAVER
-#include <gmac/paraver.h>
-#endif
+#include <common/paraver.h>
 
 typedef int (*pthread_create_t)(pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
@@ -27,16 +24,12 @@ static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg) 
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-#ifdef PARAVER
 	addThread();
-	pushState(paraver::_Running_);
-#endif
+	pushState(_Running_);
 	gmacCreateManager();
 	void *ret = gthread->__start_routine(gthread->__arg);
 	gmacRemoveManager();
-#ifdef PARAVER
 	popState();
-#endif
 	return ret;
 }
 
@@ -45,8 +38,12 @@ int pthread_create(pthread_t *__restrict __newthread,
 		void *(*__start_routine)(void *),
 		void *__restrict __arg) 
 {
+	int ret = 0;
+	pushState(_Create_);
 	TRACE("pthread_create");
 	gthread.__start_routine = __start_routine;
 	gthread.__arg = __arg;
-	return _pthread_create(__newthread, __attr, gmac_pthread, (void *)&gthread);
+	ret = _pthread_create(__newthread, __attr, gmac_pthread, (void *)&gthread);
+	popState();
+	return ret;
 }

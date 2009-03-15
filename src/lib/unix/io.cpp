@@ -1,35 +1,88 @@
+#include <loader.h>
 #include <common/debug.h>
 
+#include <unistd.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <dlfcn.h>
+
+#include <errno.h>
+
 #ifdef PARAVER
-#include <gmac/paraver.h>
+#include <common/paraver.h>
 #endif
 
-#include <dlfcn.h>
-#include <unistd.h>
+SYM(ssize_t, __libc_read, int, void *, size_t);
+SYM(ssize_t, __libc_write, int, const void *, size_t);
+SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
+SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
-typedef ssize_t (*read_t)(int, void *, size_t);
-typedef ssize_t (*write_t)(int, const void *, size_t);
-
-static read_t _read = NULL;
-static write_t _write = NULL;
-
-static void __attribute__((constructor)) gmacIOInit(void)
+static void __attribute__((constructor)) ioInit(void)
 {
-	TRACE("I/O Redirection");
-	if((_read = (read_t)dlsym(RTLD_NEXT, "read")) == NULL)
-		FATAL("Could not find read()");
-	if((_write = (write_t)dlsym(RTLD_NEXT, "write")) == NULL)
-		FATAL("Could not find write()");
+	LOAD_SYM(__libc_read, read);
+	LOAD_SYM(__libc_write, write);
+	LOAD_SYM(__libc_fread, fread);
+	LOAD_SYM(__libc_fwrite, fwrite);
 }
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* System call wrappers */
 
 ssize_t read(int fd, void *buf, size_t count)
 {
 	TRACE("read");
-	return _read(fd, buf, count);
+	ssize_t n = 0;
+	uint8_t *ptr = (uint8_t *)buf;
+	do {
+		n += __libc_read(fd, ptr + n, count - n);
+	} while(n < count && errno == EINTR);
+	return n;
 }
+
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
 	TRACE("write");
-	return _write(fd, buf, count);
+	ssize_t n = 0;
+	uint8_t *ptr = (uint8_t *)buf;
+	do {
+		n += __libc_write(fd, ptr + n, count - n);
+	} while(n < count && errno == EINTR);
+	return n;
 }
+
+/* Standard C library wrappers */
+
+size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
+{
+	TRACE("fread");
+	ssize_t n = 0;
+	uint8_t *ptr = (uint8_t *)buf;
+	do {
+		n += __libc_fread(ptr + (n * size), size, nmemb - n, stream);
+	} while(n < nmemb && errno == EINTR);
+	return n;
+}
+
+
+
+size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
+{
+	TRACE("fwrite");
+	ssize_t n = 0;
+	uint8_t *ptr = (uint8_t *)buf;
+	do {
+		n += __libc_fwrite(ptr + (n * size), size, nmemb - n, stream);
+	} while(n < nmemb && errno == EINTR);
+
+	return n;
+}
+
+
+#ifdef __cplusplus
+}
+#endif

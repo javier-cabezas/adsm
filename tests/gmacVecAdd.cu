@@ -10,6 +10,8 @@
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
 
+const char *msg = "Done!";
+
 __global__ void vecAdd(float *c, float *a, float *b)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -56,6 +58,8 @@ int main(int argc, char *argv[])
 		error += c[i] - (a[i] + b[i]);
 	}
 	fprintf(stdout, "Error: %.02f\n", error);
+
+	fwrite(msg, strlen(msg), 1, stdout);
 
 	gmacFree(a);
 	gmacFree(b);

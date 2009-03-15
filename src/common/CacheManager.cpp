@@ -10,13 +10,13 @@ namespace gmac {
 CacheRegion::CacheRegion(MemHandler &memHandler, void *addr, size_t size,
 		size_t cacheLine) :
 	MemRegion(addr, size),
-	memHandler(memHandler),
 	cacheLine(cacheLine)
 {
 	for(size_t s = 0; s < size; s += cacheLine) {
 		void *p = (void *)((uint8_t *)addr + s);
-		set.push_back(new ProtRegion(memHandler, p, cacheLine));
+		set.push_back(new ProtSubRegion(this, memHandler, p, cacheLine));
 	}
+	present = set;
 }
 
 CacheRegion::~CacheRegion()
@@ -30,35 +30,34 @@ CacheRegion::~CacheRegion()
 void CacheRegion::invalidate()
 {
 	Set::const_iterator i;
-	for(i = set.begin(); i != set.end(); i++) {
-		(*i)->clear();
-		(*i)->noAccess();
+	for(i = present.begin(); i != present.end();) {
+		Set::const_iterator current = i;
+		i++;
+		(*current)->noAccess();
 	}
 }
 
 void CacheManager::writeBack(pthread_t tid)
 {
 	TRACE("Write Back");
-	ProtRegion *r = cache[tid].front();
-	cache[tid].pop_front();
+	ProtRegion *r = regionCache[tid].front();
+	regionCache[tid].pop_front();
 	cudaMemcpy(safe(r->getAddress()), r->getAddress(), r->getSize(),
 			cudaMemcpyHostToDevice);
-	r->clear();
-	r->noAccess();
+	r->readOnly();
 }
 
 void CacheManager::flushToDevice(pthread_t tid) 
 {
 	Cache::iterator i;
-	for(i = cache[tid].begin(); i != cache[tid].end(); i++) {
+	for(i = regionCache[tid].begin(); i != regionCache[tid].end(); i++) {
 		TRACE("DMA to Device from %p (%d bytes)", (*i)->getAddress(),
 				(*i)->getSize());
 		cudaMemcpy(safe((*i)->getAddress()), (*i)->getAddress(),
 			(*i)->getSize(), cudaMemcpyHostToDevice);
-		(*i)->clear();
-		(*i)->noAccess();
+		(*i)->readOnly();
 	}
-	cache[tid].clear();
+	regionCache[tid].clear();
 }
 
 CacheManager::CacheManager() :
@@ -127,10 +126,10 @@ void CacheManager::read(ProtRegion *region, void *addr)
 void CacheManager::write(ProtRegion *region, void *addr)
 {
 	pthread_t tid = gettid();
-	if(cache[tid].size() == lruSize) writeBack(tid);
-	region->setDirty();
+	if(regionCache[tid].size() == lruSize) writeBack(tid);
 	region->readWrite();
-	cache[tid].push_back(region);
+	regionCache[tid].push_back(dynamic_cast<ProtSubRegion *>(region));
 }
+
 
 };

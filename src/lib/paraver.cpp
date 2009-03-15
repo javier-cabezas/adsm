@@ -6,8 +6,6 @@
 
 extern paraver::Trace *trace;
 
-void addThread(void) { trace->addThread(); }
-
 void pushState(paraver::StateName &s) { trace->pushState(s); }
 void popState(void) { trace->popState(); }
 void pushEvent(paraver::EventName &e, int v) { trace->pushEvent(e, v); }

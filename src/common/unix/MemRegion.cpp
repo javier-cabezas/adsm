@@ -49,7 +49,7 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 	if(i != regionList.end()) isRegion = true;
 	MUTEX_UNLOCK(regionMutex);
 
-	if((*i)->isOwner() == false) isRegion = false;
+	if(isRegion && (*i)->isOwner() == false) isRegion = false;
 	if(isRegion == false) {
 		abort();
 		// TODO: set the signal mask and other stuff

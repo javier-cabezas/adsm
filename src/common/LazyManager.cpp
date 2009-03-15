@@ -55,7 +55,6 @@ void LazyManager::execute()
 			cudaMemcpy(safe(i->first), i->first, i->second->getSize(),
 				cudaMemcpyHostToDevice);
 		}
-		i->second->clear();
 		i->second->noAccess();
 	}
 	MUTEX_UNLOCK(memMutex);
@@ -76,8 +75,13 @@ void LazyManager::read(ProtRegion *region, void *addr)
 
 void LazyManager::write(ProtRegion *region, void *addr)
 {
-	region->setDirty();
+	bool present = region->isPresent();
 	region->readWrite();
+	if(present == false) {
+		TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
+				region->getSize());
+		cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), cudaMemcpyDeviceToHost);
+	}
 }
 
 }

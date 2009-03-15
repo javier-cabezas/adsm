@@ -12,7 +12,8 @@ MUTEX(ProtRegion::regionMutex);
 ProtRegion::ProtRegion(MemHandler &memHandler, void *addr, size_t size) :
 	MemRegion(addr, size),
 	memHandler(memHandler),
-	dirty(false)
+	dirty(false),
+	present(true)
 {
 	if(regionList.empty()) {
 		MUTEX_INIT(regionMutex);
@@ -28,8 +29,7 @@ ProtRegion::~ProtRegion()
 {
 	std::list<ProtRegion *>::iterator i;
 	MUTEX_LOCK(regionMutex);
-	i = std::find(regionList.begin(), regionList.end(), this);
-	if(i != regionList.end()) regionList.erase(i);
+	regionList.remove(this);
 	if(regionList.empty()) restoreHandler();
 	MUTEX_UNLOCK(regionMutex);
 }

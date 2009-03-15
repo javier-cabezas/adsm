@@ -127,6 +127,7 @@ class ProtRegion : public MemRegion {
 protected:
 	MemHandler &memHandler;
 	bool dirty;
+	bool present;
 
 	static struct sigaction defaultAction;
 	static MUTEX(regionMutex);
@@ -136,24 +137,27 @@ protected:
 	static void segvHandler(int, siginfo_t *, void *);
 public:
 	ProtRegion(MemHandler &memHandler, void *addr, size_t size);
-	~ProtRegion();
+	virtual ~ProtRegion();
 
 	inline void read(void *addr) { memHandler.read(this, addr); }
 	inline void write(void *addr) { memHandler.write(this, addr); }
 
-	inline void noAccess(void) {
+	inline virtual void noAccess(void) {
+		present = dirty = false;
 		mprotect(addr, size, PROT_NONE);
 	}
-	inline void readOnly(void) {
+	inline virtual void readOnly(void) {
+		present = true;
+		dirty = false;
 		mprotect(addr, size, PROT_READ);
 	}
-	inline void readWrite(void) {
+	inline virtual void readWrite(void) {
+		present = dirty = true;
 		mprotect(addr, size, PROT_READ | PROT_WRITE);
 	}
 
-	inline void clear() { dirty = false; }
-	inline void setDirty() { dirty = true; }
 	inline bool isDirty() const { return dirty; }
+	inline bool isPresent() const { return present; }
 };
 };
 
