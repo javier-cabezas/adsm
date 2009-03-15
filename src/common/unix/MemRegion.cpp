@@ -14,7 +14,7 @@ void ProtRegion::setHandler()
 	struct sigaction segvAction;
 	memset(&segvAction, 0, sizeof(segvAction));
 	segvAction.sa_sigaction = segvHandler;
-	segvAction.sa_flags = SA_SIGINFO;
+	segvAction.sa_flags = SA_SIGINFO | SA_RESTART;
 	sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(SIGSEGV, &segvAction, &defaultAction) < 0)
