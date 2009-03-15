@@ -1,5 +1,4 @@
-#define NATIVE
-#include "gmac.h"
+#include <gmac.h>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,11 +8,8 @@
 #include <common/config.h>
 #include <common/threads.h>
 #include <common/debug.h>
-#include <common/MemManager.h>
-
-#ifdef PARAVER_GMAC
 #include <common/paraver.h>
-#endif
+#include <common/MemManager.h>
 
 #include <cuda_runtime.h>
 
@@ -56,36 +52,41 @@ static void __attribute__((destructor)) gmacFini(void)
 
 cudaError_t gmacMalloc(void **devPtr, size_t count)
 {
+	pushState(_gmacMalloc_);
 	cudaError_t ret = cudaSuccess;
 	count = (count < pageSize) ? pageSize : count;
 	ret = cudaMalloc(devPtr, count);
-	if(ret != cudaSuccess) {
+	if(ret != cudaSuccess || !memManager) {
+		popState();
 		return ret;
 	}
-	if(!memManager) return ret;
 	if(!memManager->alloc(*devPtr, count)) {
 		cudaFree(*devPtr);
+		popState();
 		return cudaErrorMemoryAllocation;
 	}
+	popState();
 	return cudaSuccess;
 }
 
 cudaError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 {
+	pushState(_gmacMalloc_);
 	cudaError_t ret = cudaSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
 	ret = cudaMalloc(&devPtr, count);
-	if(ret != cudaSuccess) {
+	if(ret != cudaSuccess || !memManager) {
+		popState();
 		return ret;
 	}
-	if(!memManager) return ret;
 	if((*cpuPtr = memManager->safeAlloc(devPtr, count)) == NULL) {
 		cudaFree(devPtr);
+		popState();
 		return cudaErrorMemoryAllocation;
 	}
+	popState();
 	return cudaSuccess;
-
 }
 
 void *gmacSafePointer(void *devPtr)
@@ -96,16 +97,19 @@ void *gmacSafePointer(void *devPtr)
 
 cudaError_t gmacFree(void *devPtr)
 {
+	pushState(_gmacFree_);
 	cudaFree(devPtr);
 	if(memManager) {
 		memManager->release(devPtr);
 	}
+	popState();
 	return cudaSuccess;
 }
 
 cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 		size_t widthInBytes, size_t height)
 {
+	pushState(_gmacMalloc_);
 	void *cpuAddr = NULL;
 	cudaError_t ret = cudaSuccess;
 	size_t count = widthInBytes * height;
@@ -116,44 +120,41 @@ cudaError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 	}
 
 	ret = cudaMallocPitch(devPtr, pitch, widthInBytes, height);
-	if(ret != cudaSuccess) return ret;
-
-	if(!memManager) return ret;
+	if(ret != cudaSuccess && !memManager) {
+		popState();
+		return ret;
+	}
 
 	if(!memManager->alloc(*devPtr, *pitch)) {
 		cudaFree(*devPtr);
+		popState();
 		return cudaErrorMemoryAllocation;
 	}
 
+	popState();
 	return cudaSuccess;
 }
 
 extern cudaError_t (*_cudaLaunch)(const char *);
 cudaError_t gmacLaunch(const char *symbol)
 {
+	pushState(_gmacLaunch_);
 	cudaError_t ret = cudaSuccess;
-	TRACE("gmacLaunch");
 	if(memManager) {
 		memManager->execute();
 	}
 	ret = _cudaLaunch(symbol);
+	popState();
 	return ret;
 }
 
 cudaError_t gmacThreadSynchronize()
 {
-	TRACE("gmacThreadSynchronize");
+	pushState(_gmacSync_);
 	cudaError_t ret = cudaThreadSynchronize();
 	if(memManager) {
 		memManager->sync();
 	}
-	return ret;
-}
-
-cudaError_t gmacSetupArgument(void *arg, size_t size, size_t offset)
-{
-	cudaError_t ret;
-	TRACE("gmacSetupArgument");
-	ret = cudaSetupArgument(arg, size, offset);
+	popState();
 	return ret;
 }
