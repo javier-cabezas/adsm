@@ -42,6 +42,8 @@ STATE(_None_, 0x00);
 STATE(_Running_, 0x01);
 STATE(_Waiting_, 0x02);
 STATE(_Create_, 0x03);
+STATE(_IORead_, 0x04);
+STATE(_IOWrite_, 0x05);
 
 EVENT(_Alarm_, 0x00);
 EVENT(_Unlock_, 0x01);

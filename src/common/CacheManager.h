@@ -80,7 +80,7 @@ public:
 
 class CacheManager : public MemManager, public MemHandler {
 protected:
-	static const size_t lineSize = 64;
+	static const size_t lineSize = 1024;
 	static const size_t lruSize = 2;
 	size_t pageSize;
 

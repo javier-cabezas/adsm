@@ -1,5 +1,6 @@
 #include <loader.h>
 #include <common/debug.h>
+#include <common/paraver.h>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -7,10 +8,6 @@
 #include <dlfcn.h>
 
 #include <errno.h>
-
-#ifdef PARAVER
-#include <common/paraver.h>
-#endif
 
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
@@ -34,24 +31,26 @@ extern "C" {
 
 ssize_t read(int fd, void *buf, size_t count)
 {
-	TRACE("read");
+	pushState(_IORead_);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_read(fd, ptr + n, count - n);
 	} while(n < count && errno == EINTR);
+	popState();
 	return n;
 }
 
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	TRACE("write");
+	pushState(_IOWrite_);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_write(fd, ptr + n, count - n);
 	} while(n < count && errno == EINTR);
+	popState();
 	return n;
 }
 
@@ -59,26 +58,28 @@ ssize_t write(int fd, const void *buf, size_t count)
 
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	TRACE("fread");
+	pushState(_IORead_);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_fread(ptr + (n * size), size, nmemb - n, stream);
-	} while(n < nmemb && errno == EINTR);
+		if(ferror(stream) && errno == EINTR) clearerr(stream);
+	} while(ferror(stream) == 0);
+	popState();
 	return n;
 }
 
 
-
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	TRACE("fwrite");
+	pushState(_IOWrite_);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_fwrite(ptr + (n * size), size, nmemb - n, stream);
-	} while(n < nmemb && errno == EINTR);
-
+		if(ferror(stream) && errno == EINTR) clearerr(stream);
+	} while(ferror(stream) == 0);
+	popState();
 	return n;
 }
 
