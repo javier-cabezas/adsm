@@ -64,7 +64,7 @@ public:
 	inline void *safeAlloc(void *addr, size_t count) {
 		void *cpuAddr = safeMap(addr, count);
 		MUTEX_LOCK(memMutex);
-		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(addr, count);
+		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(cpuAddr, count);
 		MUTEX_UNLOCK(memMutex);
 		return cpuAddr;
 	}
