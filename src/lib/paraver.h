@@ -34,12 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_H_
 #define __PARAVER_H_
 
-#ifdef PARAVER
+#if defined(PARAVER) && !defined(PARAVER_GMAC)
 #define PARAVER_GMAC
 #endif
 
 #include <common/paraver.h>
-#undef PARAVER_GMAC
 
 
 #endif
