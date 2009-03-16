@@ -1,9 +1,10 @@
 #include <gmac.h>
+#include <paraver.h>
+
 #include <dlfcn.h>
 #include <pthread.h>
 
 #include <common/debug.h>
-#include <common/paraver.h>
 
 typedef int (*pthread_create_t)(pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 

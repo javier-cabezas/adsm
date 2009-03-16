@@ -1,6 +1,6 @@
 #include <loader.h>
+#include <paraver.h>
 #include <common/debug.h>
-#include <common/paraver.h>
 
 #include <unistd.h>
 #include <stdio.h>

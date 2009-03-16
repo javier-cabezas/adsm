@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <values.h>
 #include <sys/time.h>
 
 #include <cuda.h>
 
 #include "debug.h"
+
+#define MAX(a, b) ((a) > (b)) ? (a) : (b)
+#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+#define BANDWIDTH(s, t) ((s) * 8.0 / 1000.0 / (t))
 
 const size_t buff_size = 512 * 1024 * 1024;
 const size_t step_size = 4 * 1024;
@@ -16,8 +21,8 @@ static uint8_t *cpu, *dev;
 
 typedef unsigned long long usec_t;
 typedef struct {
-	double in;
-	double out;
+	double in, max_in, min_in;
+	double out, max_out, min_out;
 } stamp_t;
 
 __global__ void null(uint8_t *p)
@@ -51,12 +56,16 @@ void transfer(stamp_t *stamp, int s)
 	int i;
 
 	stamp->in = stamp->out = 0;
+	stamp->max_in = stamp->max_out = MINDOUBLE;
+	stamp->min_in = stamp->min_out = MAXDOUBLE;
 	for(i = 0; i < iters; i++) {
 		start = get_time();
 		if(cudaMemcpy(dev, cpu, s, cudaMemcpyHostToDevice) != cudaSuccess)
 			CUFATAL();
 		end = get_time();
 		stamp->in += end - start;
+		stamp->min_in = MIN(stamp->min_in, (end - start));
+		stamp->max_in = MAX(stamp->max_in, (end - start));
 		kernel(s);
 
 		start = get_time();
@@ -64,6 +73,8 @@ void transfer(stamp_t *stamp, int s)
 			CUFATAL();
 		end = get_time();
 		stamp->out += end - start;
+		stamp->min_out = MIN(stamp->min_out, (end - start));
+		stamp->max_out = MAX(stamp->max_out, (end - start));
 	}
 	stamp->in = stamp->in / iters;
 	stamp->out = stamp->out /iters;
@@ -82,12 +93,18 @@ int main(int argc, char *argv[])
 		CUFATAL();
 
 	// Transfer data
-	fprintf(stdout, "Bytes\tIn Time\tIn Bandwidth\tOut Time\tOut Bandwidth\n");
+	fprintf(stdout, "#Bytes\tIn Time\tOut Time\t");
+	fprintf(stdout, "In Bandwidth\tOut Bandwidth\t");
+	fprintf(stdout, "Min In Bandwidth\tMin Out Bandwidth\t");
+	fprintf(stdout, "Max In Bandwidth\tMax Out Bandwidth\n");
 	for(i = step_size; i < buff_size; i += i) {
 		transfer(&stamp, i);
-		fprintf(stdout, "%d\t%f\t%f\t%f\t%f\n", i,
-			stamp.in, i * 8.0 / stamp.in / 1000.0,
-			stamp.out, i * 8.0 / stamp.out / 1000.0);
+		if(i > 1024 * 1024) fprintf(stdout, "%.0fMB\t", 1.0 * i / 1024 / 1024);
+		else if(i > 1024) fprintf(stdout, "%.0fKB\t", 1.0 * i / 1024);
+		fprintf(stdout, "%f\t%f\t", stamp.in, stamp.out);
+		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.in), BANDWIDTH(i, stamp.out));
+		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.min_in), BANDWIDTH(i, stamp.min_out));
+		fprintf(stdout, "%f\t%f\n", BANDWIDTH(i, stamp.max_in), BANDWIDTH(i, stamp.max_out));
 	}
 
 	// Release memory

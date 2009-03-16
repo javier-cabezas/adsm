@@ -1,4 +1,5 @@
 #include <gmac.h>
+#include <paraver.h>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,7 +9,6 @@
 #include <common/config.h>
 #include <common/threads.h>
 #include <common/debug.h>
-#include <common/paraver.h>
 #include <common/MemManager.h>
 
 #include <cuda_runtime.h>
