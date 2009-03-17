@@ -2,15 +2,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <values.h>
-#include <sys/time.h>
 
 #include <cuda.h>
 
+#include "time.h"
 #include "debug.h"
 
-#define MAX(a, b) ((a) > (b)) ? (a) : (b)
-#define MIN(a, b) ((a) < (b)) ? (a) : (b)
 #define BANDWIDTH(s, t) ((s) * 8.0 / 1000.0 / (t))
+typedef struct {
+	double in, max_in, min_in;
+	double out, max_out, min_out;
+} stamp_t;
 
 const size_t buff_size = 512 * 1024 * 1024;
 const size_t step_size = 4 * 1024;
@@ -19,25 +21,11 @@ const size_t block_size = 512;
 
 static uint8_t *cpu, *dev;
 
-typedef unsigned long long usec_t;
-typedef struct {
-	double in, max_in, min_in;
-	double out, max_out, min_out;
-} stamp_t;
-
 __global__ void null(uint8_t *p)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if(i > buff_size) return;
 	p[i] = 0;
-}
-
-static inline usec_t get_time()
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	usec_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
-	return tm;
 }
 
 static void kernel(int s)
