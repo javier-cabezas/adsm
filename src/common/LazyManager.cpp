@@ -10,7 +10,7 @@ bool LazyManager::alloc(void *addr, size_t count)
 {
 	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, count);
-	ProtRegion *region = new ProtRegion(*this, addr, count);
+	ProtRegion *region = new ProtRegion(addr, count);
 	MUTEX_LOCK(memMutex);
 	memMap[addr] = region;
 	MUTEX_UNLOCK(memMutex);
@@ -22,7 +22,7 @@ void *LazyManager::safeAlloc(void *addr, size_t count)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, count);
-	ProtRegion *region = new ProtRegion(*this, cpuAddr, count);
+	ProtRegion *region = new ProtRegion(cpuAddr, count);
 	MUTEX_LOCK(memMutex);
 	memMap[cpuAddr] = region;
 	MUTEX_UNLOCK(memMutex);
@@ -62,6 +62,20 @@ void LazyManager::execute()
 
 void LazyManager::sync()
 {
+}
+
+ProtRegion *LazyManager::find(const void *addr)
+{
+	HASH_MAP<void *, ProtRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
+	for(i = memMap.begin(); i != memMap.end(); i++) {
+		if(*(i->second) == addr) {
+			MUTEX_UNLOCK(memMutex);
+			return i->second;
+		}
+	}
+	MUTEX_UNLOCK(memMutex);
+	return NULL;
 }
 
 void LazyManager::read(ProtRegion *region, void *addr)

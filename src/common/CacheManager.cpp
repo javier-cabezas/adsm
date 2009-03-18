@@ -7,35 +7,6 @@
 #include <algorithm>
 
 namespace gmac {
-CacheRegion::CacheRegion(MemHandler &memHandler, void *addr, size_t size,
-		size_t cacheLine) :
-	MemRegion(addr, size),
-	cacheLine(cacheLine)
-{
-	for(size_t s = 0; s < size; s += cacheLine) {
-		void *p = (void *)((uint8_t *)addr + s);
-		set.push_back(new ProtSubRegion(this, memHandler, p, cacheLine));
-	}
-	present = set;
-}
-
-CacheRegion::~CacheRegion()
-{
-	Set::const_iterator i;
-	for(i = set.begin(); i != set.end(); i++)
-		delete (*i);
-	set.clear();
-}
-
-void CacheRegion::invalidate()
-{
-	Set::const_iterator i;
-	for(i = present.begin(); i != present.end();) {
-		Set::const_iterator current = i;
-		i++;
-		(*current)->noAccess();
-	}
-}
 
 void CacheManager::writeBack(pthread_t tid)
 {
@@ -71,7 +42,7 @@ bool CacheManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	MUTEX_LOCK(memMutex);
-	memMap[addr] = new CacheRegion(*this, addr, size, lineSize * pageSize);
+	memMap[addr] = new CacheRegion(addr, size, lineSize * pageSize);
 	MUTEX_UNLOCK(memMutex);
 	return true;
 }
@@ -81,7 +52,7 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	MUTEX_LOCK(memMutex);
-	memMap[cpuAddr] = new CacheRegion(*this, cpuAddr, size, lineSize * pageSize);
+	memMap[cpuAddr] = new CacheRegion(cpuAddr, size, lineSize * pageSize);
 	MUTEX_UNLOCK(memMutex);
 	return cpuAddr;
 }
@@ -113,6 +84,21 @@ void CacheManager::execute()
 
 void CacheManager::sync()
 {
+}
+
+
+ProtRegion *CacheManager::find(const void *addr)
+{
+	HASH_MAP<void *, CacheRegion *>::const_iterator i;
+	MUTEX_LOCK(memMutex);
+	for(i = memMap.begin(); i != memMap.end(); i++) {
+		if(*(i->second) == addr) {
+			MUTEX_UNLOCK(memMutex);
+			return i->second->find(addr);
+		}
+	}
+	MUTEX_UNLOCK(memMutex);
+	return NULL;
 }
 
 void CacheManager::read(ProtRegion *region, void *addr)

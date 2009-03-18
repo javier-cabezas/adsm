@@ -55,6 +55,7 @@ public:
 	virtual void execute(void);
 	virtual void sync(void);
 
+	virtual ProtRegion *find(const void *addr);
 	virtual void read(ProtRegion *region, void *addr);
 	virtual void write(ProtRegion *region, void *addr);
 

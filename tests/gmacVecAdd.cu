@@ -59,8 +59,6 @@ int main(int argc, char *argv[])
 	}
 	fprintf(stdout, "Error: %.02f\n", error);
 
-	fwrite(msg, strlen(msg), 1, stdout);
-
 	gmacFree(a);
 	gmacFree(b);
 	gmacFree(c);

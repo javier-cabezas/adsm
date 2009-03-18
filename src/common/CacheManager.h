@@ -42,42 +42,6 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class ProtSubRegion;
-class CacheRegion : public MemRegion {
-protected:
-	typedef std::list<ProtSubRegion *> Set;
-	Set set;
-	Set present;
-	size_t cacheLine;
-
-	void deleteSet(Set &set);
-
-public:
-	CacheRegion(MemHandler &, void *, size_t, size_t);
-	~CacheRegion();
-
-	void invalidate();
-
-	inline void invalid(ProtSubRegion *region) { present.remove(region); }
-};
-
-class ProtSubRegion : public ProtRegion {
-protected:
-	CacheRegion *parent;
-public:
-	ProtSubRegion(CacheRegion *parent, MemHandler &memHandler,
-			void *addr, size_t size) :
-		ProtRegion(memHandler, addr, size),
-		parent(parent)
-	{ }
-
-	virtual inline void noAccess() { 
-		parent->invalid(this);
-		ProtRegion::noAccess();
-	}
-};
-
-
 class CacheManager : public MemManager, public MemHandler {
 protected:
 	static const size_t lineSize = 1024;
@@ -102,6 +66,7 @@ public:
 	virtual void execute(void);
 	virtual void sync(void);
 
+	virtual ProtRegion *find(const void *addr);
 	virtual void read(ProtRegion *region, void *addr);
 	virtual void write(ProtRegion *region, void *addr);
 };
