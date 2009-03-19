@@ -31,13 +31,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __ELEMENT_H
-#define __ELEMENT_H
+#ifndef __PARAVER_ELEMENT_H_
+#define __PARAVER_ELEMENT_H_
 
 #include <paraver/config.h>
+#include <paraver/Time.h>
 #include <paraver/Record.h>
-
-#include <sys/time.h>
 
 #include <assert.h>
 

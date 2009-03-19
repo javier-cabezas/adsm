@@ -3,13 +3,14 @@ MAINTAINERCLEANFILES=Makefile.in
 noinst_PROGRAMS = bandwidth signal vecAdd gmacVecAdd gmacThreadVecAdd
 
 bandwidth_SOURCES = bandwidth.cu
-bandwidth_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 signal_SOURCES = signal.cpp
 signal_CPPFLAGS = -I$(CUDA_DIR)/include -I$(top_srcdir)/src -I$(top_builddir)/src
+signal_LDADD = $(PARAVER_LIB)
 
 vecAdd_SOURCES = vecAdd.cu
-vecAdd_LDADD = -L$(CUDA_DIR)/lib -lcuda -lcudart
+vecAdd_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu
 gmacVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
