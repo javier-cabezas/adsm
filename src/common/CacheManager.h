@@ -45,7 +45,7 @@ namespace gmac {
 class CacheManager : public MemManager, public MemHandler {
 protected:
 	static const size_t lineSize = 1024;
-	static const size_t lruSize = 2;
+	size_t lruSize;
 	size_t pageSize;
 
 	typedef HASH_MAP<void *, CacheRegion *> Map;

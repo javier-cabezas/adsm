@@ -32,7 +32,8 @@ CacheRegion::CacheRegion(void *addr, size_t size, size_t cacheLine) :
 {
 	for(size_t s = 0; s < size; s += cacheLine) {
 		void *p = (void *)((uint8_t *)addr + s);
-		size_t regionSize = ((s - size) > cacheLine) ? cacheLine : (s - size);
+		size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
+		TRACE("New SubRegion %p (%d bytes)", addr, regionSize);
 		set[p] = new ProtSubRegion(this, p, regionSize);
 	}
 	present = set;

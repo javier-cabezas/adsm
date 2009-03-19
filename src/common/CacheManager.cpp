@@ -33,6 +33,7 @@ void CacheManager::flushToDevice(pthread_t tid)
 
 CacheManager::CacheManager() :
 	MemManager(),
+	lruSize(0),
 	pageSize(getpagesize())
 {
 	MUTEX_INIT(memMutex);
@@ -41,6 +42,7 @@ CacheManager::CacheManager() :
 bool CacheManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
+	lruSize++;
 	MUTEX_LOCK(memMutex);
 	memMap[addr] = new CacheRegion(addr, size, lineSize * pageSize);
 	MUTEX_UNLOCK(memMutex);
@@ -51,6 +53,7 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
+	lruSize++;
 	MUTEX_LOCK(memMutex);
 	memMap[cpuAddr] = new CacheRegion(cpuAddr, size, lineSize * pageSize);
 	MUTEX_UNLOCK(memMutex);
@@ -64,6 +67,7 @@ void CacheManager::release(void *addr)
 	if(memMap.find(cpuAddr) != memMap.end())
 		delete memMap[addr];
 	MUTEX_UNLOCK(memMutex);
+	lruSize++;
 }
 
 void CacheManager::execute()
