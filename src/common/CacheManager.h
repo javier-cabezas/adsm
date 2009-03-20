@@ -55,6 +55,8 @@ protected:
 	typedef std::list<ProtSubRegion *> Cache;
 	HASH_MAP<pthread_t, Cache> regionCache;
 
+	void *writeBuffer;
+	size_t writeBufferSize;
 	void writeBack(pthread_t tid);
 	void flushToDevice(pthread_t tid);
 	

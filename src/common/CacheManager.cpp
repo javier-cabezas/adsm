@@ -13,14 +13,30 @@ void CacheManager::writeBack(pthread_t tid)
 	TRACE("Write Back");
 	ProtRegion *r = regionCache[tid].front();
 	regionCache[tid].pop_front();
-	cudaMemcpy(safe(r->getAddress()), r->getAddress(), r->getSize(),
-			cudaMemcpyHostToDevice);
+	// If the write buffer was in use, make sure that the previous
+	// transfer has already finished
+	if(writeBuffer) {
+		cudaThreadSynchronize();
+		munlock(writeBuffer, writeBufferSize);
+	}
+	// Set-up the new write buffer and send an asynchronous copy
+	writeBuffer = r->getAddress();
+	writeBufferSize = r->getSize();
+	mlock(writeBuffer, writeBufferSize);
+	cudaMemcpyAsync(safe(r->getAddress()), r->getAddress(), r->getSize(),
+			cudaMemcpyHostToDevice, 0);
 	r->readOnly();
 }
 
 void CacheManager::flushToDevice(pthread_t tid) 
 {
 	Cache::iterator i;
+	// Wait for the write buffer
+	if(writeBuffer) {
+		cudaThreadSynchronize();
+		munlock(writeBuffer, writeBufferSize);
+		writeBuffer = NULL;
+	}
 	for(i = regionCache[tid].begin(); i != regionCache[tid].end(); i++) {
 		TRACE("DMA to Device from %p (%d bytes)", (*i)->getAddress(),
 				(*i)->getSize());
@@ -34,7 +50,9 @@ void CacheManager::flushToDevice(pthread_t tid)
 CacheManager::CacheManager() :
 	MemManager(),
 	lruSize(0),
-	pageSize(getpagesize())
+	pageSize(getpagesize()),
+	writeBuffer(NULL),
+	writeBufferSize(0)
 {
 	MUTEX_INIT(memMutex);
 }
