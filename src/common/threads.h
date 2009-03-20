@@ -34,7 +34,6 @@
 #define __MUTEX_UNLOCK(mutex) pthread_mutex_unlock(&mutex)
 #define MUTEX_UNLOCK(mutex) \
 	do {\
-		pushEvent(_Unlock_);	\
 		pthread_mutex_unlock(&mutex);	\
 	} while(0)
 #else

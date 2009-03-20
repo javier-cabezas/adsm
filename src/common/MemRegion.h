@@ -31,10 +31,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __REGION_H_
-#define __REGION_H_
+#ifndef __COMMON_MEMREGION_H_
+#define __COMMON_MEMREGION_H_
 
 #include <common/config.h>
+#include <common/paraver.h>
 #include <common/threads.h>
 
 #include <stdio.h>

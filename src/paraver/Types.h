@@ -46,7 +46,6 @@ STATE(_IORead_, 0x04);
 STATE(_IOWrite_, 0x05);
 
 EVENT(_Alarm_, 0x00);
-EVENT(_Unlock_, 0x01);
 
 STATE(_gmacMalloc_, 0x10);
 STATE(_gmacFree_, 0x11);
@@ -59,7 +58,8 @@ STATE(_cudaMemcpy_, 0x22);
 STATE(_cudaLaunch_, 0x23);
 STATE(_cudaSync_, 0x24);
 
-EVENT(_gpuLaunch_, 0x20);
+EVENT(_gpuMemcpy_, 0x20);
+EVENT(_gpuLaunch_, 0x21);
 
 STATE(_gmacSignal_, 0x30);
 

@@ -31,11 +31,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __BATCHMANAGER_H_
-#define __BATCHMANAGER_H_
+#ifndef __COMMON_BATCHMANAGER_H_
+#define __COMMON_BATCHMANAGER_H_
 
-#include "MemManager.h"
-#include "MemRegion.h"
+#include <common/MemManager.h>
+#include <common/MemRegion.h>
 
 #include <stdint.h>
 

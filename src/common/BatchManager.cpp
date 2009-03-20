@@ -1,5 +1,5 @@
 #include "BatchManager.h"
-
+#include "paraver.h"
 #include "debug.h"
 
 #include <cuda_runtime.h>

@@ -47,7 +47,7 @@ extern paraver::Trace *trace;
 #define addThread()	trace->addThread()
 #define pushState(s)	trace->pushState(paraver::s)
 #define popState()	trace->popState()
-#define pushEvent(e)	trace->pushEvent(paraver::e)
+#define pushEvent(e, ...)	trace->pushEvent(paraver::e, ##__VA_ARGS__)
 
 #ifndef PARAVER_NO_CUDA_OVERRIDE
 
@@ -69,8 +69,17 @@ extern "C" {
 	}
 
 	inline cudaError_t __cudaMemcpy(void *dstPtr, void *srcPtr, size_t count, enum cudaMemcpyKind kind) {
+		pushEvent(_gpuMemcpy_, count);
 		pushState(_cudaMemcpy_);
 		cudaError_t ret = cudaMemcpy(dstPtr, srcPtr, count, kind);
+		popState();
+		return ret;
+	}
+
+	inline cudaError_t __cudaMemcpyAsync(void *dstPtr, void *srcPtr, size_t count, enum cudaMemcpyKind kind, cudaStream_t stream) {
+		pushEvent(_gpuMemcpy_, count);
+		pushState(_cudaMemcpy_);
+		cudaError_t ret = cudaMemcpyAsync(dstPtr, srcPtr, count, kind, stream);
 		popState();
 		return ret;
 	}
@@ -96,6 +105,7 @@ extern "C" {
 #define cudaMalloc(...) __cudaMalloc(__VA_ARGS__)
 #define cudaFree(...) __cudaFree(__VA_ARGS__)
 #define cudaMemcpy(...) __cudaMemcpy(__VA_ARGS__)
+#define cudaMemcpyAsync(...) __cudaMemcpyAsync(__VA_ARGS__)
 #define cudaLaunch(...) __cudaLaunch(__VA_ARGS__)
 #define cudaThreadSynchronize(...) __cudaThreadSynchronize(__VA_ARGS__)
 
