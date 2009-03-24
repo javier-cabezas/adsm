@@ -4,6 +4,8 @@ DIST_SUBDIRS = linux
 SUBDIRS = linux
 
 noinst_LTLIBRARIES = libparaver.la
+libparaver_la_includedir = $(includedir)/paraver
+libparaver_la_include_HEADERS = Types.h Names.h
 libparaver_la_SOURCES = Trace.cpp Record.cpp Element.cpp Types.cpp paraver.cpp
 libparaver_la_LIBADD = linux/libparaver-os.la
 
