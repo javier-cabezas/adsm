@@ -8,7 +8,7 @@
 
 namespace gmac {
 
-void CacheManager::writeBack(pthread_t tid)
+void CacheManager::writeBack(thread_t tid)
 {
 	TRACE("Write Back");
 	ProtRegion *r = regionCache[tid].front();
@@ -28,7 +28,7 @@ void CacheManager::writeBack(pthread_t tid)
 	r->readOnly();
 }
 
-void CacheManager::flushToDevice(pthread_t tid) 
+void CacheManager::flushToDevice(thread_t tid) 
 {
 	Cache::iterator i;
 	// Wait for the write buffer
@@ -98,7 +98,7 @@ void CacheManager::execute()
 
 	TRACE("Kernel execution scheduled");
 
-	flushToDevice(gettid());
+	flushToDevice(Process::gettid());
 
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
@@ -137,7 +137,7 @@ void CacheManager::read(ProtRegion *region, void *addr)
 
 void CacheManager::write(ProtRegion *region, void *addr)
 {
-	pthread_t tid = gettid();
+	thread_t tid = Process::gettid();
 	if(regionCache[tid].size() == lruSize) writeBack(tid);
 	region->readWrite();
 	regionCache[tid].push_back(dynamic_cast<ProtSubRegion *>(region));

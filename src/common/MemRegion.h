@@ -38,12 +38,13 @@ WITH THE SOFTWARE.  */
 #include <common/paraver.h>
 #include <common/threads.h>
 
+#include <common/os/Process.h>
+#include <common/os/Memory.h>
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <signal.h>
-#include <sys/mman.h>
-#include <sys/syscall.h>
 
 #include <assert.h>
 
@@ -60,7 +61,7 @@ protected:
 	//! Size in bytes of the region
 	size_t size;
 	//! CPU thread owning the region
-	pthread_t owner;
+	thread_t owner;
 public:
 	//! Constructor
 	//! \param addr Start memory address
@@ -68,7 +69,7 @@ public:
 	MemRegion(void *addr, size_t size) :
 		addr(addr),
 		size(size),
-		owner(gettid())
+		owner(Process::gettid())
 	{}
 
 	//! Comparision operator
@@ -90,7 +91,7 @@ public:
 	//! Sets the address of the Region
 	inline void setAddress(void *addr) { this->addr = addr; }
 	//! Checks if the current thread is the owner for the region
-	inline bool isOwner() const { return owner == gettid(); }
+	inline bool isOwner() const { return owner == Process::gettid(); }
 
 	inline void print() const { std::cerr << addr << "(" << size << " bytes)" << std::endl; }
 };
@@ -154,16 +155,16 @@ public:
 
 	inline virtual void noAccess(void) {
 		present = dirty = false;
-		mprotect(addr, size, PROT_NONE);
+		Memory::protect(addr, size, PROT_NONE);
 	}
 	inline virtual void readOnly(void) {
 		present = true;
 		dirty = false;
-		mprotect(addr, size, PROT_READ);
+		Memory::protect(addr, size, PROT_READ);
 	}
 	inline virtual void readWrite(void) {
 		present = dirty = true;
-		mprotect(addr, size, PROT_READ | PROT_WRITE);
+		Memory::protect(addr, size, PROT_READ | PROT_WRITE);
 	}
 
 	inline bool isDirty() const { return dirty; }

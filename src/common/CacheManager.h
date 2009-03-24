@@ -39,6 +39,8 @@ WITH THE SOFTWARE.  */
 #include <common/threads.h>
 #include <common/paraver.h>
 
+#include <common/os/Process.h>
+
 #include <vector>
 
 namespace gmac {
@@ -54,12 +56,12 @@ protected:
 	Map memMap;
 
 	typedef std::list<ProtSubRegion *> Cache;
-	HASH_MAP<pthread_t, Cache> regionCache;
+	HASH_MAP<thread_t, Cache> regionCache;
 
 	void *writeBuffer;
 	size_t writeBufferSize;
-	void writeBack(pthread_t tid);
-	void flushToDevice(pthread_t tid);
+	void writeBack(thread_t tid);
+	void flushToDevice(thread_t tid);
 	
 public:
 	CacheManager();

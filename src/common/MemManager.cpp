@@ -2,7 +2,6 @@
 #include "BatchManager.h"
 #include "LazyManager.h"
 #include "CacheManager.h"
-#include "StatManager.h"
 
 #include "debug.h"
 
@@ -13,7 +12,7 @@ namespace gmac {
 
 MemManager *getManager(const char *managerName)
 {
-	if(managerName == NULL) return new BatchManager();
+	if(managerName == NULL) return new CacheManager();
 	TRACE("Using %s Manager", managerName);
 	if(strcasecmp(managerName, "None") == 0)
 		return NULL;

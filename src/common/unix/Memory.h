@@ -31,29 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __DEBUG_H_
-#define __DEBUG_H_
+#ifndef __COMMON_UNIX_MEMORY_H_
+#define __COMMON_UNIX_MEMORY_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <sys/mman.h>
 
+namespace gmac {
 
-#define FATAL(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		abort();	\
-	} while(0)
-
-#ifdef DEBUG
-#define TRACE(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"TRACE [%s:%d] " fmt "\n",  __FILE__, __LINE__, ##__VA_ARGS__);	\
-	} while(0)
-#else
-#define TRACE(fmt, ...)
-#endif
-
-
+class Memory {
+public:
+	static inline int protect(void *addr, size_t count, int prot) {
+		return mprotect(addr, count, prot);
+	}
+};
+};
 #endif

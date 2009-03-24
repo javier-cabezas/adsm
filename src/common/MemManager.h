@@ -38,9 +38,9 @@ WITH THE SOFTWARE.  */
 #include <common/paraver.h>
 #include <common/threads.h>
 
+#include <common/os/Memory.h>
+
 #include <stdint.h>
-#include <unistd.h>
-#include <sys/mman.h>
 
 #include <cuda_runtime.h>
 

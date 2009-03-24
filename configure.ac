@@ -12,6 +12,18 @@ AM_PROG_LIBTOOL
 # Check for a hash table implementation
 AC_CXX_HEADER_TR1_UNORDERED_MAP
 
+# Check for the operating system
+case "$host" in
+*linux* | *Linux*)
+AC_MSG_RESULT([Linux])
+OS_DIR="unix"
+;;
+*)
+AC_MSG_RESULT([Unknown])
+AC_MSG_ERROR([Your operating system is not supported])
+;;
+esac
+
 # Check for pthread library
 AC_CHECK_LIB([pthread], [pthread_create],
 	[AC_DEFINE([HAVE_LIBPTHREAD], [1])
@@ -96,6 +108,7 @@ fi
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
+AC_SUBST(OS_DIR)
 AC_SUBST(THREAD_DIR, $thread_dir)
 
 AC_SUBST(PARAVER_DIR, $paraver_dir)
