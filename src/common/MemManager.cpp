@@ -19,11 +19,9 @@ MemManager *getManager(const char *managerName)
 		return NULL;
 	else if(strcasecmp(managerName, "Lazy") == 0)
 		return new LazyManager();
-	else if(strcasecmp(managerName, "Cache") == 0)
-		return new CacheManager();
-//	else if(strcasecmp(managerName, "Stat") == 0)
-//		return new StatManager();
-	return new BatchManager();
+	else if(strcasecmp(managerName, "Batch") == 0)
+		return new BatchManager();
+	return new CacheManager();
 }
 
 void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
