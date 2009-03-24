@@ -1,5 +1,5 @@
 #include <gmac.h>
-#include <loader.h>
+#include <os/loader.h>
 
 #include <dlfcn.h>
 #include <cuda_runtime.h>

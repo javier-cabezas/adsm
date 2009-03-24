@@ -2,8 +2,6 @@
 #include <paraver.h>
 
 #include <stdlib.h>
-#include <unistd.h>
-#include <dlfcn.h>
 #include <assert.h>
 
 #include <common/config.h>
