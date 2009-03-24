@@ -80,9 +80,8 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 
 void CacheManager::release(void *addr)
 {
-	void *cpuAddr = safe(addr);
 	MUTEX_LOCK(memMutex);
-	if(memMap.find(cpuAddr) != memMap.end())
+	if(memMap.find(addr) != memMap.end())
 		delete memMap[addr];
 	MUTEX_UNLOCK(memMutex);
 	lruSize++;
@@ -99,7 +98,7 @@ void CacheManager::execute()
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
-		i->second->invalidate();
+//		i->second->invalidate();
 	}
 	MUTEX_UNLOCK(memMutex);
 }
@@ -114,7 +113,7 @@ ProtRegion *CacheManager::find(const void *addr)
 	HASH_MAP<void *, CacheRegion *>::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(*(i->second) == addr) {
+		if(i->second->getAddress() == addr) {
 			MUTEX_UNLOCK(memMutex);
 			return i->second->find(addr);
 		}
@@ -125,6 +124,7 @@ ProtRegion *CacheManager::find(const void *addr)
 
 void CacheManager::read(ProtRegion *region, void *addr)
 {
+	TRACE("DMA from Device %p (%d bytes)", region->getAddress(), region->getSize());
 	region->readWrite();
 	cudaMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), cudaMemcpyDeviceToHost);
 	region->readOnly();

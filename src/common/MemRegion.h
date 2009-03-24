@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 
 #include <assert.h>
 
+#include <iostream>
 #include <list>
 
 namespace gmac {
@@ -90,6 +91,8 @@ public:
 	inline void setAddress(void *addr) { this->addr = addr; }
 	//! Checks if the current thread is the owner for the region
 	inline bool isOwner() const { return owner == gettid(); }
+
+	inline void print() const { std::cerr << addr << "(" << size << " bytes)" << std::endl; }
 };
 
 

@@ -98,7 +98,7 @@ void *gmacSafePointer(void *devPtr)
 cudaError_t gmacFree(void *devPtr)
 {
 	pushState(_gmacFree_);
-	cudaFree(devPtr);
+	cudaFree(gmacSafePointer(devPtr));
 	if(memManager) {
 		memManager->release(devPtr);
 	}
