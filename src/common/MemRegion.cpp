@@ -30,13 +30,15 @@ CacheRegion::CacheRegion(void *addr, size_t size, size_t cacheLine) :
 	cacheLine(cacheLine),
 	offset((unsigned long)addr & (cacheLine -1))
 {
+	TRACE("CacheRegion Starts");
 	for(size_t s = 0; s < size; s += cacheLine) {
 		void *p = (void *)((uint8_t *)addr + s);
 		size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
-		TRACE("New SubRegion %p (%d bytes)", addr, regionSize);
+		TRACE("New SubRegion(0x%x) %p (%d bytes)", s, addr, regionSize);
 		set[p] = new ProtSubRegion(this, p, regionSize);
 	}
 	present = set;
+	TRACE("CacheRegion Ends");
 }
 
 CacheRegion::~CacheRegion()

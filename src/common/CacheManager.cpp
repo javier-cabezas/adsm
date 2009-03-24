@@ -80,11 +80,16 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 
 void CacheManager::release(void *addr)
 {
+	Map::iterator i;
 	MUTEX_LOCK(memMutex);
-	if(memMap.find(addr) != memMap.end())
-		delete memMap[addr];
+	if((i = memMap.find(addr)) != memMap.end()) {
+		if(i->second == NULL) FATAL("Double-free for %p\n", addr);
+		delete i->second;
+		i->second = NULL;
+	}
 	MUTEX_UNLOCK(memMutex);
-	lruSize++;
+	lruSize--;
+	TRACE("Released %p", addr);
 }
 
 void CacheManager::execute()
@@ -107,13 +112,12 @@ void CacheManager::sync()
 {
 }
 
-
 ProtRegion *CacheManager::find(const void *addr)
 {
 	HASH_MAP<void *, CacheRegion *>::const_iterator i;
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(i->second->getAddress() == addr) {
+		if(*(i->second) == addr) {
 			MUTEX_UNLOCK(memMutex);
 			return i->second->find(addr);
 		}
