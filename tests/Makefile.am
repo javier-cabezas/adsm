@@ -20,11 +20,10 @@ gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/lib -I$(top_srcdir)/src -I$(top_builddir)/src
 
-NVDEFS = $(subst \",,$(DEFS))
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) --keep --host-compilation C++ --compiler-bindir=/opt/cuda/bin/gcc -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(NVDEFS) $(CFLAGS)
+	$(NVCC) --keep --host-compilation C++ --compiler-bindir=/usr/bin/gcc-4.1 -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
