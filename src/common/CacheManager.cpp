@@ -103,7 +103,7 @@ void CacheManager::execute()
 	MUTEX_LOCK(memMutex);
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
-//		i->second->invalidate();
+		i->second->invalidate();
 	}
 	MUTEX_UNLOCK(memMutex);
 }
