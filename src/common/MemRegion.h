@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <common/config.h>
 #include <common/paraver.h>
 #include <common/threads.h>
+#include <common/debug.h>
 
 #include <common/os/Process.h>
 #include <common/os/Memory.h>
@@ -211,6 +212,7 @@ public:
 		ProtRegion(addr, size),
 		parent(parent)
 	{ }
+	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
 
 	virtual inline void noAccess() { 
 		parent->invalid(this);

@@ -85,7 +85,7 @@ void CacheManager::release(void *addr)
 	if((i = memMap.find(addr)) != memMap.end()) {
 		if(i->second == NULL) FATAL("Double-free for %p\n", addr);
 		delete i->second;
-		i->second = NULL;
+		memMap.erase(addr);
 	}
 	MUTEX_UNLOCK(memMutex);
 	lruSize--;
