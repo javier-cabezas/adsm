@@ -13,4 +13,4 @@ BUILT_SOURCES = os
 export INCLUDES += -I$(abs_srcdir) -I$(abs_buildir)
 
 os: $(OS_DIR)
-	$(LN_S) $(srcdir)/$(OS_DIR) os
+	$(LN_S) -Tf $(srcdir)/$(OS_DIR) os

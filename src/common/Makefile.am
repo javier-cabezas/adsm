@@ -14,4 +14,4 @@ libcommon_la_LIBADD = $(OS_DIR)/libcommon.la $(PARAVER_LIB)
 BUILT_SOURCES = os
 
 os: $(OS_DIR)
-	$(LN_S) $(srcdir)/$(OS_DIR) os
+	$(LN_S) -Tf $(srcdir)/$(OS_DIR) os
