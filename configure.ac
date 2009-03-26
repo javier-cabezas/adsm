@@ -16,7 +16,7 @@ AC_CXX_HEADER_TR1_UNORDERED_MAP
 case "$host" in
 *linux* | *Linux*)
 AC_MSG_RESULT([Linux])
-OS_DIR="unix"
+OS_DIR="posix"
 ;;
 *)
 AC_MSG_RESULT([Unknown])
@@ -36,6 +36,8 @@ if test -z "$NVCC"; then
 	AC_MSG_ERROR([CUDA compiler not found])
 fi
 CUDA_DIR="`dirname $NVCC`/.."
+ACC_DIR="cuda"
+AC_DEFINE([HAVE_CUDA], [1])
 
 # Check for debug mode - MUST BE THE FIRST CHECK
 AC_MSG_CHECKING(whether to enable debug mode)
@@ -108,6 +110,7 @@ fi
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
+AC_SUBST(ACC_DIR)
 AC_SUBST(OS_DIR)
 AC_SUBST(THREAD_DIR, $thread_dir)
 
@@ -117,15 +120,15 @@ AC_SUBST(PARAVER_LIB, $paraver_lib)
 AC_OUTPUT(
 	Makefile
 	src/Makefile
-	src/common/Makefile
-	src/common/config.h
-	src/common/unix/Makefile
+	src/config/config.h
+	src/cuda/Makefile
+	src/memory/Makefile
+	src/memory/posix/Makefile
 	src/paraver/Makefile
-	src/paraver/config.h
-	src/paraver/linux/Makefile
-	src/lib/Makefile
-	src/lib/unix/Makefile
-	src/lib/pthread/Makefile
-	src/inter/Makefile
+	src/paraver/posix/Makefile
+	src/gmac/Makefile
+	src/gmac/stdc/Makefile
+	src/gmac/posix/Makefile
+	src/gmac/pthread/Makefile
 	tests/Makefile
 )
