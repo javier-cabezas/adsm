@@ -1,7 +1,8 @@
 #include "time.h"
-#include "debug.h"
-#include <common/config.h>
-#include <common/threads.h>
+
+#include <config/config.h>
+#include <config/threads.h>
+#include <config/debug.h>
 
 #include <unistd.h>
 #include <string.h>
