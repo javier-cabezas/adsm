@@ -26,7 +26,7 @@ void Trace::buildApp(std::ifstream &in)
 			uint32_t dummy;
 			in.read((char *)&id, sizeof(id));
 			in.read((char *)&dummy, sizeof(dummy));
-			task->addThread(id);
+			task->__addThread(id);
 		}
 	}
 }

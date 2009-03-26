@@ -1,6 +1,6 @@
 #include "Trace.h"
 
-#include <common/debug.h>
+#include <config/debug.h>
 
 paraver::Trace *trace;
 

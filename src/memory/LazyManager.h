@@ -31,39 +31,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TYPES_H_
-#define __PARAVER_TYPES_H_
+#ifndef __MEMORY_LAZYMANAGER_H_
+#define __MEMORY_LAZYMANAGER_H_
 
-#include <paraver/Names.h>
+#include "MemManager.h"
+#include "MemRegion.h"
 
-namespace paraver {
+#include <config/threads.h>
 
-STATE(_None_, 0x00);
-STATE(_Running_, 0x01);
-STATE(_Waiting_, 0x02);
-STATE(_Create_, 0x03);
-STATE(_IORead_, 0x04);
-STATE(_IOWrite_, 0x05);
+namespace gmac {
 
-EVENT(_Alarm_, 0x00);
+//! Manager that Moves Memory Regions Lazily
+class LazyManager : public MemManager, public MemHandler {
+protected:
+	typedef HASH_MAP<void *, ProtRegion *> Map;
+	MUTEX(memMutex);
+	Map memMap;
+public:
+	LazyManager() : MemManager() { MUTEX_INIT(memMutex); }
+	virtual bool alloc(void *addr, size_t count);
+	virtual void *safeAlloc(void *addr, size_t count);
+	virtual void release(void *addr);
+	virtual void flush(void);
+	virtual void sync(void);
 
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
-
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
-
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
-
-STATE(_gmacSignal_, 0x30);
-
+	virtual ProtRegion *find(const void *addr);
+	virtual void read(ProtRegion *region, void *addr);
+	virtual void write(ProtRegion *region, void *addr);
 };
 
+};
 
 #endif

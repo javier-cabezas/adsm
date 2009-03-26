@@ -31,39 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TYPES_H_
-#define __PARAVER_TYPES_H_
+#ifndef __CUDA_API_H_
+#define __CUDA_API_H_
 
-#include <paraver/Names.h>
+#include <os/loader.h>
 
-namespace paraver {
+#include <cuda_runtime.h>
+#include <driver_types.h>
 
-STATE(_None_, 0x00);
-STATE(_Running_, 0x01);
-STATE(_Waiting_, 0x02);
-STATE(_Create_, 0x03);
-STATE(_IORead_, 0x04);
-STATE(_IOWrite_, 0x05);
+typedef cudaError_t gmacError_t;
+typedef enum cudaMemcpyKind gmacMemcpyKind;
+typedef cudaStream_t gmacStream_t;
 
-EVENT(_Alarm_, 0x00);
+SYM(gmacError_t, __gmacLaunch, const char *);
 
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
+#define __gmacMalloc(...) cudaMalloc(__VA_ARGS__)
+#define __gmacMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
+#define __gmacFree(...) cudaFree(__VA_ARGS__)
+#define __gmacMemcpy(...) cudaMemcpy(__VA_ARGS__)
+#define __gmacMemcpyAsync(...) cudaMemcpyAsync(__VA_ARGS__)
+#define __gmacThreadSynchronize() cudaThreadSynchronize()
 
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
 
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
+#define gmacSuccess cudaSuccess
+#define gmacErrorMemoryAllocation cudaErrorMemoryAllocation
 
-STATE(_gmacSignal_, 0x30);
-
-};
-
+#define gmacMemcpyDeviceToHost cudaMemcpyDeviceToHost
+#define gmacMemcpyHostToDevice cudaMemcpyHostToDevice
 
 #endif

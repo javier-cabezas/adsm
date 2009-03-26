@@ -31,39 +31,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TYPES_H_
-#define __PARAVER_TYPES_H_
+#ifndef __MEMORY_BATCHMANAGER_H_
+#define __MEMORY_BATCHMANAGER_H_
 
-#include <paraver/Names.h>
+#include <memory/MemManager.h>
+#include <memory/MemRegion.h>
 
-namespace paraver {
+#include <stdint.h>
 
-STATE(_None_, 0x00);
-STATE(_Running_, 0x01);
-STATE(_Waiting_, 0x02);
-STATE(_Create_, 0x03);
-STATE(_IORead_, 0x04);
-STATE(_IOWrite_, 0x05);
+namespace gmac {
+//! Batch Memory Manager
 
-EVENT(_Alarm_, 0x00);
-
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
-
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
-
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
-
-STATE(_gmacSignal_, 0x30);
-
+//! The Batch Memory Manager moves all data just before and
+//! after a kernel call
+class BatchManager : public MemManager {
+protected:
+	typedef HASH_MAP<void *, MemRegion *> Map;
+	MUTEX(memMutex);
+	Map memMap;
+public:
+	BatchManager() : MemManager() {
+		MUTEX_INIT(memMutex);
+	}
+	~BatchManager();
+	inline bool alloc(void *addr, size_t count) {
+		if(map(addr, count) == MAP_FAILED) return false;
+		MUTEX_LOCK(memMutex);
+		memMap[addr] = new MemRegion(addr, count);
+		MUTEX_UNLOCK(memMutex);
+		return true;
+	}
+	inline void *safeAlloc(void *addr, size_t count) {
+		void *cpuAddr = safeMap(addr, count);
+		MUTEX_LOCK(memMutex);
+		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(cpuAddr, count);
+		MUTEX_UNLOCK(memMutex);
+		return cpuAddr;
+	}
+	inline void release(void *addr) {
+		Map::iterator i;
+		size_t size = 0;
+		MUTEX_LOCK(memMutex);
+		i = memMap.find(addr);
+		if(i != memMap.end()) {
+			unmap(addr, i->second->getSize());
+			memMap.erase(addr);
+		}
+		MUTEX_UNLOCK(memMutex);
+	}
+	void flush(void);
+	void sync(void);
 };
-
-
+};
 #endif

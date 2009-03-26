@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_TRACE_H
 #define __PARAVER_TRACE_H
 
-#include <paraver/config.h>
+#include <config/config.h>
 #include <paraver/threads.h>
 #include <paraver/Time.h>
 #include <paraver/Element.h>
@@ -81,17 +81,17 @@ public:
 	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
 	Trace(const char *fileName);
 
-	inline void addThread(void) {
+	inline void __addThread(void) {
 		Task *task = apps.back()->getTask(getpid());
-		task->addThread(gettid());
+		task->__addThread(paraver_gettid());
 	}
-	inline void addTask(void) {
+	inline void __addTask(void) {
 		apps.back()->addTask(getpid());
 	}
 
-	void pushState(const StateName &state);
-	void popState();
-	void pushEvent(const EventName &event, int value = 0);
+	void __pushState(const StateName &state);
+	void __popState();
+	void __pushEvent(const EventName &event, int value = 0);
 
 	void read(const char *filename);
 	void write();

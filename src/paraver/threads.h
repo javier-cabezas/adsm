@@ -5,11 +5,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-#define gettid() syscall(SYS_gettid)
-
-#else
-
-#define gettid() 0
+#define paraver_gettid() syscall(SYS_gettid)
 
 #endif
 

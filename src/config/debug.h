@@ -31,39 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TYPES_H_
-#define __PARAVER_TYPES_H_
+#ifndef __CONFIG_DEBUG_H
+#define __CONFIG_DEBUG_H
 
-#include <paraver/Names.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
-namespace paraver {
 
-STATE(_None_, 0x00);
-STATE(_Running_, 0x01);
-STATE(_Waiting_, 0x02);
-STATE(_Create_, 0x03);
-STATE(_IORead_, 0x04);
-STATE(_IOWrite_, 0x05);
+#define FATAL(fmt, ...)	\
+	do {	\
+		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
+		abort();	\
+	} while(0)
 
-EVENT(_Alarm_, 0x00);
-
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
-
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
-
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
-
-STATE(_gmacSignal_, 0x30);
-
-};
+#ifdef DEBUG
+#define TRACE(fmt, ...)	\
+	do {	\
+		fprintf(stderr,"TRACE [%s:%d] " fmt "\n",  __FILE__, __LINE__, ##__VA_ARGS__);	\
+	} while(0)
+#else
+#define TRACE(fmt, ...)
+#endif
 
 
 #endif

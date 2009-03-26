@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_ELEMENT_H_
 #define __PARAVER_ELEMENT_H_
 
-#include <paraver/config.h>
+#include <config/config.h>
 #include <paraver/Time.h>
 #include <paraver/Record.h>
 
@@ -151,7 +151,7 @@ public:
 		Element<Application, Thread>(app, id, "Task"), threads(1)
 	{};
 
-	inline Thread *addThread(int32_t id) {
+	inline Thread *__addThread(int32_t id) {
 		Thread *thread = new Thread(this, threads++);
 		addSon(id, thread);
 		return thread;

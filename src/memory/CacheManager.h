@@ -31,39 +31,50 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TYPES_H_
-#define __PARAVER_TYPES_H_
+#ifndef __MEMOMRY_CACHEMANAGER_H_
+#define __MEMOMRY_CACHEMANAGER_H_
 
-#include <paraver/Names.h>
+#include "MemManager.h"
+#include "MemRegion.h"
+#include "os/Process.h"
 
-namespace paraver {
+#include <config/threads.h>
 
-STATE(_None_, 0x00);
-STATE(_Running_, 0x01);
-STATE(_Waiting_, 0x02);
-STATE(_Create_, 0x03);
-STATE(_IORead_, 0x04);
-STATE(_IOWrite_, 0x05);
+#include <vector>
 
-EVENT(_Alarm_, 0x00);
+namespace gmac {
 
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
+class CacheManager : public MemManager, public MemHandler {
+protected:
+	static const size_t lineSize = 1024;
+	size_t lruSize;
+	size_t pageSize;
 
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
+	typedef HASH_MAP<void *, CacheRegion *> Map;
+	MUTEX(memMutex);
+	Map memMap;
 
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
+	typedef std::list<ProtSubRegion *> Cache;
+	HASH_MAP<thread_t, Cache> regionCache;
 
-STATE(_gmacSignal_, 0x30);
+	void *writeBuffer;
+	size_t writeBufferSize;
+	void writeBack(thread_t tid);
+	void flushToDevice(thread_t tid);
+	
+public:
+	CacheManager();
+	virtual bool alloc(void *addr, size_t size);
+	virtual void *safeAlloc(void *addr, size_t size);
+	virtual void release(void *addr);
+	virtual void flush(void);
+	virtual void sync(void);
 
+	virtual ProtRegion *find(const void *addr);
+	virtual void read(ProtRegion *region, void *addr);
+	virtual void write(ProtRegion *region, void *addr);
 };
 
+};
 
 #endif
