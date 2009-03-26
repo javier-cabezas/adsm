@@ -39,4 +39,5 @@ void BatchManager::sync(void)
 	}
 	MUTEX_UNLOCK(memMutex);
 }
+
 };

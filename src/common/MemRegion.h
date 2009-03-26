@@ -79,6 +79,11 @@ public:
 				(uint8_t *)p < ((uint8_t *)addr + size);
 	}
 
+	bool operator!=(const void *p) const {
+		return (uint8_t *)p < (uint8_t *)addr ||
+				(uint8_t *)p >= ((uint8_t *)addr + size);
+	}
+
 	bool operator==(const MemRegion &m) const {
 		return addr == m.addr;
 	}

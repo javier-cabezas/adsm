@@ -65,11 +65,33 @@ cudaError_t gmacMalloc(void **devPtr, size_t count);
 	\param count bytes to be allocated
 */
 cudaError_t gmacSafeMalloc(void **devPtr, size_t count);
-void *gmacSafePointer(void *devPtr);
+/*
+	\brief Returns the GPU address assigned to a CPU address
+	\param cpuPtr memory address in the CPU
+*/
+void *gmacSafePointer(void *cpuPtr);
+/*
+	\brief Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
+	\param cpuAddr Memory address to free. This address must have been returned
+	by a previous call to gmacMalloc() or gmacSafeMalloc()
+*/
 cudaError_t gmacFree(void *);
-cudaError_t gmacLaunch(const char *);
+/*
+	\brief Launches a kernel execution
+	\param name Name of the kernel to be executed at the GPU
+*/
+cudaError_t gmacLaunch(const char *name);
+/*
+	\brief Waits until all previous GPU requests have finished
+*/
 cudaError_t gmacThreadSynchronize(void);
-cudaError_t gmacSetupArgument(void *, size_t, size_t);
+/*
+	\brief Sets up an argument to be used by the following call to gmacLaunch()
+	\param addr Memory address where the param is stored
+	\param size Size, in bytes, of the argument
+	\param offset Offset, in bytes, of the argument in the argument list
+*/
+cudaError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
 
 #ifdef __cplusplus
 };

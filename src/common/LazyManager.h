@@ -58,7 +58,6 @@ public:
 	virtual ProtRegion *find(const void *addr);
 	virtual void read(ProtRegion *region, void *addr);
 	virtual void write(ProtRegion *region, void *addr);
-
 };
 
 };
