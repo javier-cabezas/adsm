@@ -42,6 +42,9 @@ WITH THE SOFTWARE.  */
 #define HASH_MAP __gnu_cxx::hash_map
 #endif
 
-extern const char *memManagerVar;
+#ifdef HAVE_CUDA
+#define ACC_LAUNCH_ARGS const char *symbol
+#define ACC_USE_LAUNCH_ARGS symbol
+#endif
 
 #endif
