@@ -107,6 +107,19 @@ else
 fi
 
 
+# Check for driver mode
+cuda_driver_default="no"
+AC_MSG_CHECKING(whether to user CUDA Driver API)
+AC_ARG_ENABLE(cuda-driver,
+	AC_HELP_STRING([--enable-cuda-driver], [turn on using the CUDA driver API [[default=no]]])
+		, , enable_cuda_driver=$cuda_driver_default)
+if test "$enable_cuda_driver" = "yes"; then
+	ACC_DIR="cudadrv"
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
 
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
@@ -117,11 +130,14 @@ AC_SUBST(THREAD_DIR, $thread_dir)
 AC_SUBST(PARAVER_DIR, $paraver_dir)
 AC_SUBST(PARAVER_LIB, $paraver_lib)
 
+AC_CONFIG_LINKS(src/gmac/gmac/acc.h:src/$ACC_DIR/api.h)
+
 AC_OUTPUT(
 	Makefile
 	src/Makefile
 	src/config/config.h
 	src/cuda/Makefile
+	src/cudadrv/Makefile
 	src/memory/Makefile
 	src/memory/posix/Makefile
 	src/paraver/Makefile
