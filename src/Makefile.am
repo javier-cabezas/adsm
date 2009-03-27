@@ -1,7 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = $(ACC_DIR) $(PARAVER_DIR) memory gmac
-DIST_SUBDIRS = config memory paraver gmac
+DIST_SUBDIRS = config cuda cudadrv memory paraver gmac
 
 BUILT_SOURCES = os acc
 
