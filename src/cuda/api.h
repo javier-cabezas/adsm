@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __CUDA_API_H_
 #define __CUDA_API_H_
 
-#include <os/loader.h>
-
 #include <cuda_runtime.h>
 #include <driver_types.h>
 
@@ -43,13 +41,17 @@ typedef cudaError_t gmacError_t;
 typedef enum cudaMemcpyKind gmacMemcpyKind;
 typedef cudaStream_t gmacStream_t;
 
-SYM(gmacError_t, __gmacLaunch, const char *);
+void gmacCreateManager(void);
+void gmacRemoveManager(void);
+
+extern gmacError_t (*__gmacLaunch)(const char *);
 
 #define __gmacMalloc(...) cudaMalloc(__VA_ARGS__)
 #define __gmacMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
 #define __gmacFree(...) cudaFree(__VA_ARGS__)
-#define __gmacMemcpy(...) cudaMemcpy(__VA_ARGS__)
-#define __gmacMemcpyAsync(...) cudaMemcpyAsync(__VA_ARGS__)
+#define __gmacMemcpyToDevice(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyHostToDevice)
+#define __gmacMemcpyToHost(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyDeviceToHost)
+#define __gmacMemcpyToDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyHostToDevice, 0)
 #define __gmacThreadSynchronize() cudaThreadSynchronize()
 
 

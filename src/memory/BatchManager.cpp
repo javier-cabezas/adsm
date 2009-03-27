@@ -21,8 +21,7 @@ void BatchManager::flush(void)
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
 		TRACE("DMA To Device");
-		__gmacMemcpy(safe(i->first), i->first, i->second->getSize(),
-				gmacMemcpyHostToDevice);
+		__gmacMemcpyToDevice(safe(i->first), i->first, i->second->getSize());
 	}
 	MUTEX_UNLOCK(memMutex);
 }
@@ -34,8 +33,7 @@ void BatchManager::sync(void)
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
 		TRACE("DMA From Device");
-		__gmacMemcpy(i->first, safe(i->first), i->second->getSize(),
-				gmacMemcpyDeviceToHost);
+		__gmacMemcpyToHost(i->first, safe(i->first), i->second->getSize());
 	}
 	MUTEX_UNLOCK(memMutex);
 }

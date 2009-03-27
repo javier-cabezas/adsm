@@ -1,4 +1,4 @@
-#include <gmac.h>
+#include <acc/api.h>
 #include <os/loader.h>
 
 #include <config/paraver.h>

@@ -21,8 +21,7 @@ void CacheManager::writeBack(thread_t tid)
 	writeBuffer = r->getAddress();
 	writeBufferSize = r->getSize();
 	mlock(writeBuffer, writeBufferSize);
-	__gmacMemcpyAsync(safe(r->getAddress()), r->getAddress(), r->getSize(),
-			gmacMemcpyHostToDevice, 0);
+	__gmacMemcpyToDeviceAsync(safe(r->getAddress()), r->getAddress(), r->getSize());
 	r->readOnly();
 }
 
@@ -38,8 +37,7 @@ void CacheManager::flushToDevice(thread_t tid)
 	for(i = regionCache[tid].begin(); i != regionCache[tid].end(); i++) {
 		TRACE("DMA to Device from %p (%d bytes)", (*i)->getAddress(),
 				(*i)->getSize());
-		__gmacMemcpy(safe((*i)->getAddress()), (*i)->getAddress(),
-			(*i)->getSize(), gmacMemcpyHostToDevice);
+		__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(), (*i)->getSize());
 		(*i)->readOnly();
 	}
 	regionCache[tid].clear();
@@ -126,7 +124,7 @@ void CacheManager::read(ProtRegion *region, void *addr)
 {
 	TRACE("DMA from Device %p (%d bytes)", region->getAddress(), region->getSize());
 	region->readWrite();
-	__gmacMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), gmacMemcpyDeviceToHost);
+	__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()), region->getSize());
 	region->readOnly();
 }
 

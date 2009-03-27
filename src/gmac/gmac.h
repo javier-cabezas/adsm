@@ -34,13 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
-#include <stdio.h>
-#include <driver_types.h>
+#include <gmac/acc.h>
 
-typedef cudaError_t gmacError_t;
-
-void gmacCreateManager(void);
-void gmacRemoveManager(void);
 
 #ifdef __cplusplus
 extern "C" {

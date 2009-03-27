@@ -50,8 +50,7 @@ void LazyManager::flush()
 		if(i->second->isDirty()) {
 			TRACE("DMA to Device from %p (%d bytes)", i->first,
 				i->second->getSize());
-			__gmacMemcpy(safe(i->first), i->first, i->second->getSize(),
-				gmacMemcpyHostToDevice);
+			__gmacMemcpyToDevice(safe(i->first), i->first, i->second->getSize());
 		}
 		i->second->noAccess();
 	}
@@ -81,7 +80,7 @@ void LazyManager::read(ProtRegion *region, void *addr)
 	TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 			region->getSize());
 	region->readWrite();
-	__gmacMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), gmacMemcpyDeviceToHost);
+	__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()), region->getSize());
 	region->readOnly();
 }
 
@@ -92,7 +91,7 @@ void LazyManager::write(ProtRegion *region, void *addr)
 	if(present == false) {
 		TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 				region->getSize());
-		__gmacMemcpy(region->getAddress(), safe(region->getAddress()), region->getSize(), gmacMemcpyDeviceToHost);
+		__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()), region->getSize());
 	}
 }
 
