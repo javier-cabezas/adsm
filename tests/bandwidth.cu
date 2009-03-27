@@ -6,6 +6,7 @@
 #include <cuda.h>
 
 #include "time.h"
+#define USE_CUDA
 #include "debug.h"
 
 #define BANDWIDTH(s, t) ((s) * 8.0 / 1000.0 / (t))

@@ -5,7 +5,14 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef USE_CUDA
 #include <cuda.h>
+#define gmacGetErrorString cudaGetErrorString
+#define gmacGetLastError cudaGetLastError
+#else
+#include <gmac.h>
+#endif
+
 
 #define FATAL()	\
 	do {	\
@@ -17,7 +24,7 @@
 #define CUFATAL()	\
 	do {	\
 		fprintf(stderr,"[%s:%d] : %s\n", __FILE__, __LINE__, \
-			cudaGetErrorString(cudaGetLastError()));	\
+			gmacGetErrorString(gmacGetLastError()));	\
 		exit(-1);	\
 	} while(0)
 
