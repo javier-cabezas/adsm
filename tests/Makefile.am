@@ -18,7 +18,7 @@ gmacVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
 gmacThreadVecAdd_LDADD = ../src/lib/libgmac.la $(PARAVER_LIB)
 
-AM_CPPFLAGS = -I$(top_srcdir)/src/lib -I$(top_srcdir)/src -I$(top_builddir)/src
+AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac
 
 LINK = $(LIBTOOL) --mode=link $(CC) -static $(CFLAGS) -o $@ 
 
