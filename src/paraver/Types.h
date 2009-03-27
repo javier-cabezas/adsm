@@ -58,10 +58,12 @@ STATE(_accMemcpy_, 0x22);
 STATE(_accLaunch_, 0x23);
 STATE(_accSync_, 0x24);
 
-EVENT(_gpuMemcpy_, 0x20);
-EVENT(_gpuLaunch_, 0x21);
+EVENT(_gpuMemcpyToDevice_, 0x20);
+EVENT(_gpuMemcpyToHost_, 0x21);
 
-STATE(_gmacSignal_, 0x30);
+EVENT(_gpuLaunch_, 0x30);
+
+STATE(_gmacSignal_, 0x40);
 
 };
 

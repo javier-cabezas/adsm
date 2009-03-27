@@ -60,18 +60,26 @@ extern "C" {
 		return ret;
 	}
 
-	inline gmacError_t __paraver__gmacMemcpy(void *dstPtr, void *srcPtr, size_t count, gmacMemcpyKind kind) {
-		pushEvent(_gpuMemcpy_, count);
+	inline gmacError_t __paraver__gmacMemcpyToDevice(void *dstPtr, void *srcPtr, size_t count) {
+		pushEvent(_gpuMemcpyToDevice_, count);
 		pushState(_accMemcpy_);
-		gmacError_t ret = __gmacMemcpy(dstPtr, srcPtr, count, kind);
+		gmacError_t ret = __gmacMemcpyToDevice(dstPtr, srcPtr, count);
 		popState();
 		return ret;
 	}
 
-	inline gmacError_t __paraver__gmacMemcpyAsync(void *dstPtr, void *srcPtr, size_t count, gmacMemcpyKind kind, gmacStream_t stream) {
-		pushEvent(_gpuMemcpy_, count);
+	inline gmacError_t __paraver__gmacMemcpyToHost(void *dstPtr, void *srcPtr, size_t count) {
+		pushEvent(_gpuMemcpyToHost_, count);
 		pushState(_accMemcpy_);
-		gmacError_t ret = __gmacMemcpyAsync(dstPtr, srcPtr, count, kind, stream);
+		gmacError_t ret = __gmacMemcpyToHost(dstPtr, srcPtr, count);
+		popState();
+		return ret;
+	}
+
+	inline gmacError_t __paraver__gmacMemcpyToDeviceAsync(void *dstPtr, void *srcPtr, size_t count) {
+		pushEvent(_gpuMemcpyToDevice_, count);
+		pushState(_accMemcpy_);
+		gmacError_t ret = __gmacMemcpyToDeviceAsync(dstPtr, srcPtr, count);
 		popState();
 		return ret;
 	}
@@ -98,10 +106,12 @@ extern "C" {
 #define __gmacMalloc(...) __paraver__gmacMalloc(__VA_ARGS__)
 #undef __gmacFree
 #define __gmacFree(...) __paraver__gmacFree(__VA_ARGS__)
-#undef __gmacMemcpy
-#define __gmacMemcpy(...) __paraver__gmacMemcpy(__VA_ARGS__)
-#undef __gmacMemcpyAsync
-#define __gmacMemcpyAsync(...) __paraver__gmacMemcpyAsync(__VA_ARGS__)
+#undef __gmacMemcpyToDevice
+#define __gmacMemcpyToDevice(...) __paraver__gmacMemcpyToDevice(__VA_ARGS__)
+#undef __gmacMemcpyToHost
+#define __gmacMemcpyToHost(...) __paraver__gmacMemcpyToHost(__VA_ARGS__)
+#undef __gmacMemcpyToDeviceAsync
+#define __gmacMemcpyToDeviceAsync(...) __paraver__gmacMemcpyToDeviceAsync(__VA_ARGS__)
 #undef __gmacLaunch
 #define __gmacLaunch(...) __paraver__gmacLaunch(__VA_ARGS__)
 #undef __gmacThreadSynchronize
