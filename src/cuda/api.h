@@ -54,6 +54,8 @@ extern gmacError_t (*__gmacLaunch)(const char *);
 #define __gmacMemcpyToDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyHostToDevice, 0)
 #define __gmacThreadSynchronize() cudaThreadSynchronize()
 
+#define gmacGetErrorString cudaGetErrorString
+#define gmacGetLastError cudaGetLastError
 
 #define gmacSuccess cudaSuccess
 #define gmacErrorMemoryAllocation cudaErrorMemoryAllocation
