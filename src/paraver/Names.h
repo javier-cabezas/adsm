@@ -42,9 +42,9 @@ WITH THE SOFTWARE.  */
 	#define EVENT(name, val) EventName name(#name, val)
 #endif
 
-#include <config/config.h>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace paraver {
 class Name {
@@ -76,7 +76,7 @@ public:
 class EventName : public Name {
 public:
 	typedef std::vector<const EventName *> List;
-	typedef HASH_MAP<uint32_t, std::string> TypeTable;
+	typedef std::map<uint32_t, std::string> TypeTable;
 protected:
 	static List *events;
 	TypeTable types;
