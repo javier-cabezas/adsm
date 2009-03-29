@@ -155,10 +155,10 @@ class Event : public Record {
 private:
 	RecordId id;
 	Time_t _when;
-	uint32_t _event;
-	uint32_t _value;
+	uint64_t _event;
+	int64_t _value;
 public:
-	Event(Thread *thread, Time_t when, uint32_t event, uint32_t value);
+	Event(Thread *thread, Time_t when, uint64_t event, int64_t value);
 	Event(std::ifstream &in) : id(in) {
 		in.read((char *)&_when, sizeof(_when));
 		in.read((char *)&_event, sizeof(_event));

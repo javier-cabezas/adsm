@@ -31,47 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#include "Types.h"
-#include <values.h>
-
-#include <vector>
-#include <iostream>
+#include "Pcf.h"
 
 int main(int argc, char *argv[])
 {
-	paraver::StateName::List::const_iterator s;
-	int max = MININT, min = MAXINT;
-	for(s = paraver::StateName::get().begin(); s != paraver::StateName::get().end(); s++) {
-		max = (max > (*s)->getValue()) ? max : (*s)->getValue();
-		min = (min < (*s)->getValue()) ? min : (*s)->getValue();
-	}
-
-	std::cout << "DEFAULT_OPTIONS" << std::endl;
-	std::cout << "YMAX_SCALE " << max << std::endl;
-	std::cout << "YMIN_SCALE " << min << std::endl;
-	std::cout << std::endl;
-
-	std::cout << "DEFAULT_SEMANTIC" << std::endl;
-	std::cout << std::endl;
-
-	std::cout << "THREAD_FUNC State As Is" << std::endl;
-	std::cout << std::endl;
-
-	std::cout << "STATES" << std::endl;
-	for(s = paraver::StateName::get().begin(); s != paraver::StateName::get().end(); s++)
-		std::cout << (*s)->getValue() << " " << (*s)->getName() << std::endl;
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-	std::cout << "GRADIENT_COLOR" << std::endl;
-	for(int i = 0; i < 20; i++)
-		std::cout << i << " {" << 63 + (i * 192 / 19) << ", 0, 0}" << std:: endl;
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-	std::cout << "EVENT_TYPE" << std::endl;
-	paraver::EventName::List::const_iterator e;
-	for(e = paraver::EventName::get().begin(); e != paraver::EventName::get().end(); e++)
-		std::cout << "19 " << (*e)->getValue() << " " << (*e)->getName() << std::endl;
-	std::cout << std::endl;
+	paraver::pcf(std::cout);
 }
+

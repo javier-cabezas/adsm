@@ -38,7 +38,7 @@ State::State(Thread *thread) :
 { }
 
 
-Event::Event(Thread *thread, Time_t when, uint32_t event, uint32_t value) :
+Event::Event(Thread *thread, Time_t when, uint64_t event, int64_t value) :
 	id(thread->getTask(), thread->getApp(), thread->getId()),
 	_when(when),
 	_event(event),

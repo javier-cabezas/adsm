@@ -31,87 +31,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_TRACE_H
-#define __PARAVER_TRACE_H
+#ifndef __PARAVER_PCF_H
+#define __PARAVER_PCF_H
 
-#include <config/config.h>
-#include <paraver/threads.h>
-#include <paraver/Time.h>
-#include <paraver/Element.h>
-#include <paraver/Record.h>
-#include <paraver/Names.h>
+#include <paraver/Types.h>
 
-#include <sys/time.h>
-
-#include <assert.h>
-
-#include <vector>
-#include <list>
-#include <string>
 #include <iostream>
-#include <fstream>
 
 namespace paraver {
 
-class Trace {
-protected:
-	std::list<Application *> apps;
-
-	Time_t startTime;
-	Time_t endTime;
-	Time_t pendingTime;
-
-	inline Time_t getTimeStamp() {
-		Time_t tm = getTime() - startTime;
-		endTime = (endTime > tm) ? endTime : tm;
-		return tm;
-	}
-
-	void setPending(Time_t t) {
-		pendingTime = (pendingTime > t) ? pendingTime : t;
-	}
-
-	void buildApp(std::ifstream &in);
-
-	std::ofstream of;
-	PARAVER_MUTEX(ofMutex);
-	std::list<Record *> records;
-
-public:
-	Trace() : startTime(getTime()), endTime(0), pendingTime(0) {};
-	Trace(const char *fileName, uint32_t pid, uint32_t tid);
-	Trace(const char *fileName);
-
-	inline void __addThread(uint32_t pid, uint32_t tid) {
-		Task *task = apps.back()->getTask(pid);
-		task->__addThread(tid);
-	}
-	void __addThread(void);
-
-	inline void __addTask(uint32_t pid) {
-		apps.back()->addTask(pid);
-	}
-	void __addTask(void);
-
-	void __pushState(Time_t t, int32_t pid, int32_t tid,
-			const StateName &state);
-	void __pushState(const StateName &state);
-	void __popState(Time_t t, int32_t pid, int32_t tid);
-	void __popState();
-
-	void __pushEvent(Time_t t, int32_t pid, int32_t tid,
-			uint64_t ev, int64_t value);
-	inline void __pushEvent(Time_t t, int32_t pid, int32_t tid,
-			const EventName &event, int64_t value = 0) {
-		__pushEvent(t, pid, tid, event.getValue(), value);
-	}
-	void __pushEvent(const EventName &event, int64_t value = 0);
-
-	void read(const char *filename);
-	void write(Time_t t);
-	void write() { return write(getTimeStamp()); }
-	friend std::ostream &operator<<(std::ostream &os, const Trace &trace);
-};
+std::ostream &pcf(std::ostream &os);
 
 };
 #endif

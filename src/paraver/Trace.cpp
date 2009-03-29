@@ -31,6 +31,56 @@ void Trace::buildApp(std::ifstream &in)
 	}
 }
 
+Trace::Trace(const char *fileName, uint32_t pid, uint32_t tid) :
+	startTime(0),
+	endTime(0),
+	pendingTime(0)
+{
+	// Init the output file and the communication counter
+	of.open(fileName, std::ios::out);
+	PARAVER_MUTEX_INIT(ofMutex);
+
+	// Create the root application and add the current task
+	apps.push_back(new Application(1, "app"));
+	Task *task = apps.back()->addTask(pid);
+	task->__addThread(tid);
+}
+
+
+void Trace::__pushState(Time_t t, int32_t pid, int32_t tid,
+		const StateName &state)
+{
+	Task *task = apps.back()->getTask(pid);
+	Thread *thread = task->getThread(tid);
+
+	PARAVER_MUTEX_LOCK(ofMutex);
+	thread->start(of, state.getValue(), t);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
+}
+
+void Trace::__popState(Time_t t, int32_t pid, int32_t tid)
+{
+	Task *task = apps.back()->getTask(pid);
+	Thread *thread = task->getThread(tid);
+
+	PARAVER_MUTEX_LOCK(ofMutex);
+	thread->end(of, t);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
+}
+
+void Trace::__pushEvent(Time_t t, int32_t pid, int32_t tid,
+		uint64_t ev, int64_t value)
+{
+	Task *task = apps.back()->getTask(pid);
+
+	Event event(task->getThread(tid), t, ev, value);
+
+	PARAVER_MUTEX_LOCK(ofMutex);
+	event.write(of);
+	PARAVER_MUTEX_UNLOCK(ofMutex);
+}
+
+
 void Trace::read(const char *fileName)
 {
 	std::ifstream in;
@@ -51,11 +101,11 @@ void Trace::read(const char *fileName)
 	for(uint32_t i = 0; i < nApps; i++) buildApp(in);
 }
 
-void Trace::write()
+void Trace::write(Time_t t)
 {
 	std::list<Application *>::iterator app;
 	for(app = apps.begin(); app != apps.end(); app++) {
-		(*app)->end(of, getTimeStamp());
+		(*app)->end(of, t);
 	}
 
 	Record::end(of);

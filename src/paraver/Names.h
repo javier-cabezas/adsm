@@ -42,6 +42,7 @@ WITH THE SOFTWARE.  */
 	#define EVENT(name, val) EventName name(#name, val)
 #endif
 
+#include <config/config.h>
 #include <string>
 #include <vector>
 
@@ -70,18 +71,26 @@ public:
 		states->push_back(this);
 	}
 	static const std::vector<const StateName *> &get() { return *states; }
+	static void clear() { states->clear(); }
 };
 class EventName : public Name {
 public:
 	typedef std::vector<const EventName *> List;
+	typedef HASH_MAP<uint32_t, std::string> TypeTable;
 protected:
 	static List *events;
+	TypeTable types;
 public:
 	EventName(const char *name, int32_t value) : Name(name, value) {
 		if(events == NULL) events = new List();
 		events->push_back(this);
 	}
-	static const std::vector<const EventName *> &get() { return *events; }
+	static const List &get() { return *events; }
+	static void clear() { events->clear(); }
+	void registerType(uint32_t value, std::string type) {
+		types.insert(TypeTable::value_type(value, type));
+	}
+	const TypeTable &getTypes() const { return types; }
 };
 };
 

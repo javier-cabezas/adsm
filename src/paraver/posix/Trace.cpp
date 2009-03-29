@@ -26,38 +26,29 @@ Trace::Trace(const char *fileName) :
 	__pushState(_Running_);
 }
 
+void Trace::__addThread(void)
+{
+	return __addThread(getpid(), paraver_gettid());
+}
+
+void Trace::__addTask(void)
+{
+	return __addTask(getpid());
+}
+
 void Trace::__pushState(const StateName &state)
 {
-	Task *task = apps.back()->getTask(getpid());
-	Thread *thread = task->getThread(paraver_gettid());
-	Time_t timeStamp = getTimeStamp();
-
-	PARAVER_MUTEX_LOCK(ofMutex);
-	thread->start(of, state.getValue(), timeStamp);
-	PARAVER_MUTEX_UNLOCK(ofMutex);
+	return __pushState(getTimeStamp(), getpid(), paraver_gettid(), state);
 }
 
 void Trace::__popState()
 {
-	Task *task = apps.back()->getTask(getpid());
-	Thread *thread = task->getThread(paraver_gettid());
-	Time_t timeStamp = getTimeStamp();
-
-	PARAVER_MUTEX_LOCK(ofMutex);
-	thread->end(of, timeStamp);
-	PARAVER_MUTEX_UNLOCK(ofMutex);
+	return __popState(getTimeStamp(), getpid(), paraver_gettid());
 }
 
-void Trace::__pushEvent(const EventName &ev, int value)
+void Trace::__pushEvent(const EventName &ev, int64_t value)
 {
-	Task *task = apps.back()->getTask(getpid());
-	Time_t timeStamp = getTimeStamp();
-
-	Event event(task->getThread(paraver_gettid()), timeStamp, ev.getValue(), value);
-
-	PARAVER_MUTEX_LOCK(ofMutex);
-	event.write(of);
-	PARAVER_MUTEX_UNLOCK(ofMutex);
+	return __pushEvent(getTimeStamp(), getpid(), paraver_gettid(), ev, value);
 }
 
 };

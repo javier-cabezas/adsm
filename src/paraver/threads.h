@@ -24,6 +24,7 @@
 #else
 #warning "Thread-safe support not implemented"
 
+#define PARAVER_MUTEX(mutex) 
 #define PARAVER_MUTEX_INIT(mutex)
 #define PARAVER_MUTEX_DESTROY(mutex)
 #define PARAVER_MUTEX_LOCK(mutex)
