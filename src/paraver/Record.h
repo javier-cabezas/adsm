@@ -60,6 +60,7 @@ public:
 	virtual Time_t getTime() const = 0;
 	virtual Time_t getEndTime() const = 0;
 	virtual int getType() const = 0;
+	virtual uint32_t getId() const = 0;
 	virtual void write(std::ofstream &of) const = 0;
 
 	static void end(std::ofstream &of) {
@@ -75,7 +76,8 @@ public:
 	inline bool operator()(const Record *a, const Record *b) {
 		if(a->getTime() < b->getTime()) return true;
 		if(a->getTime() == b->getTime()) {
-			a->getType() > b->getType();	
+			if(a->getType() > b->getType()) return true;
+			return a->getId() < b->getId();
 		}
 		return false;
 	}
@@ -126,6 +128,7 @@ public:
 	inline int getType() const { return STATE; }
 	inline Time_t getTime() const { return _start; }
 	inline Time_t getEndTime() const { return _end; }
+	inline uint32_t getId() const { return _state; }
 
 	inline void start(uint32_t state, Time_t start) { 
 		_state = state;
@@ -157,6 +160,7 @@ private:
 	Time_t _when;
 	uint64_t _event;
 	int64_t _value;
+
 public:
 	Event(Thread *thread, Time_t when, uint64_t event, int64_t value);
 	Event(std::ifstream &in) : id(in) {
@@ -168,6 +172,7 @@ public:
 	inline int getType() const { return EVENT; }
 	inline Time_t getTime() const { return _when; }
 	inline Time_t getEndTime() const { return _when; }
+	inline uint32_t getId() const { return _event; }
 
 	void write(std::ofstream &of) const {
 		Type type = EVENT;

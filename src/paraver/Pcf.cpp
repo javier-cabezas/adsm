@@ -8,11 +8,12 @@ namespace paraver {
 std::ostream &pcf(std::ostream &os)
 {
 	StateName::List::const_iterator s;
-	int max = MININT, min = MAXINT;
+	int long long max = MININT, min = MAXINT;
 	for(s = StateName::get().begin(); s != StateName::get().end(); s++) {
 		max = (max > (*s)->getValue()) ? max : (*s)->getValue();
 		min = (min < (*s)->getValue()) ? min : (*s)->getValue();
 	}
+	if(max <= min) max = min + 1;
 
 	os << "DEFAULT_OPTIONS" << std::endl;
 	os << "YMAX_SCALE " << max << std::endl;
