@@ -35,8 +35,13 @@ std::ostream &pcf(std::ostream &os)
 
 	os << std::endl;
 	os << "GRADIENT_COLOR" << std::endl;
-	for(int i = 0; i < 20; i++)
-		os << i << " {" << 63 + (i * 192 / 19) << ", 0, 0}" << std:: endl;
+	os << "0 {0, 0, 0}" << std:: endl;
+	for(int i = 1; i < 20; i++) {
+		int r = 54 - (3 * i);
+		int g = 40 * i - (2 * i * i) - 38;
+		int b = 255 * i / 19;
+		os << i << " {" << r << ", " << g << ", " << b << "}" << std:: endl;
+	}
 	os << std::endl;
 
 	if(EventName::get().empty() == false) {
