@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
+#include "MemRegion.h"
 #include "paraver.h"
 #include "os/Memory.h"
 
@@ -48,7 +49,7 @@ namespace gmac {
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
-//! the CPU memory to/from the GPU memory.
+//! the CPU memory to/from the accelerator memory.
 class MemManager {
 private:
 	MUTEX(virtMutex);
@@ -59,20 +60,20 @@ private:
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 
 protected:
-	//! This method maps a GPU address into the CPU address space
-	//! \param addr GPU address
+	//! This method maps a accelerator address into the CPU address space
+	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
 	void *map(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
 	//! This gets memory from the CPU address space
-	//! \param addr GPU address
+	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
 	void *safeMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
-	//! This method upmaps a GPU address from the CPU address space
-	//! \param addr GPU address
+	//! This method upmaps a accelerator address from the CPU address space
+	//! \param addr accelerator address
 	//! \param count Size (in bytes) to unmap
 	void unmap(void *addr, size_t count);
 
@@ -84,35 +85,35 @@ public:
 	}
 
 	//! This method is called whenever the user
-	//! requests memory to be used by the GPU
+	//! requests memory to be used by the accelerator
 	//! \param devPtr Allocated memory address. This address
-	//! is the same for both, the CPU and the GPU.
+	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
 	virtual bool alloc(void *addr, size_t count) = 0;
 
 	//! This method is called whenever the user
-	//! requests memory to be used by the GPU that
+	//! requests memory to be used by the accelerator that
 	//! might use different memory addresses for the CPU
-	//! and the GPU.
+	//! and the accelerator.
 	//! \param devPtr Allocated memory address. This address
-	//! is the same for both, the CPU and the GPU.
+	//! is the same for both, the CPU and the accelerator.
 	//! \param count Size in bytes of the allocated memory
 	virtual void *safeAlloc(void *addr, size_t count) = 0;
 
 	//! This method is called whenever the user
-	//! releases GPU memory
+	//! releases accelerator memory
 	//! \param devPtr Memory address that has been released
 	virtual void release(void *addr) = 0;
 
 	//! This method is called whenever the user invokes
-	//! a kernel to be executed at the GPU
+	//! a kernel to be executed at the accelerator
 	virtual void flush(void) = 0;
 
 	//! This method is called just after the user requests
-	//! waiting for the GPU to finish
+	//! waiting for the accelerator to finish
 	virtual void sync(void) = 0;
 
-	//! This method is called when a CPU to GPU translation is
+	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
 	virtual inline void *safe(void *addr) {
@@ -127,6 +128,12 @@ public:
 		return devAddr;
 	}
 
+	//! This method is called to request a explicit invalidation
+	//! of accelerator data
+	//! \param addr Memory address at the CPU
+	//! \param size Size (in bytes) to be transferred
+	virtual void invalidate(void *addr, size_t size, RegionList &cpu,
+			RegionList &acc) = 0;
 };
 
 

@@ -34,8 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_BATCHMANAGER_H_
 #define __MEMORY_BATCHMANAGER_H_
 
-#include <memory/MemManager.h>
-#include <memory/MemRegion.h>
+#include "MemManager.h"
+#include "MemMap.h"
+#include "MemRegion.h"
 
 #include <stdint.h>
 
@@ -46,41 +47,26 @@ namespace gmac {
 //! after a kernel call
 class BatchManager : public MemManager {
 protected:
-	typedef HASH_MAP<void *, MemRegion *> Map;
-	MUTEX(memMutex);
-	Map memMap;
+	MemMap<MemRegion> memMap;
 public:
-	BatchManager() : MemManager() {
-		MUTEX_INIT(memMutex);
-	}
-	~BatchManager();
+	BatchManager() : MemManager() { }
 	inline bool alloc(void *addr, size_t count) {
 		if(map(addr, count) == MAP_FAILED) return false;
-		MUTEX_LOCK(memMutex);
-		memMap[addr] = new MemRegion(addr, count);
-		MUTEX_UNLOCK(memMutex);
+		memMap.insert(new MemRegion(addr, count));
 		return true;
 	}
 	inline void *safeAlloc(void *addr, size_t count) {
 		void *cpuAddr = safeMap(addr, count);
-		MUTEX_LOCK(memMutex);
-		if(cpuAddr != NULL) memMap[cpuAddr] = new MemRegion(cpuAddr, count);
-		MUTEX_UNLOCK(memMutex);
+		memMap.insert(new MemRegion(cpuAddr, count));
 		return cpuAddr;
 	}
-	inline void release(void *addr) {
-		Map::iterator i;
-		size_t size = 0;
-		MUTEX_LOCK(memMutex);
-		i = memMap.find(addr);
-		if(i != memMap.end()) {
-			unmap(addr, i->second->getSize());
-			memMap.erase(addr);
-		}
-		MUTEX_UNLOCK(memMutex);
+	void release(void *addr);
+	void flush();
+	void sync();
+	void invalidate(void *addr, size_t size, RegionList &cpu,
+			RegionList &acc) {
+		cpu.push_back(MemRegion(addr, size));
 	}
-	void flush(void);
-	void sync(void);
 };
 };
 #endif

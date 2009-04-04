@@ -1,4 +1,5 @@
-#include <MemRegion.h>
+#include <ProtRegion.h>
+
 #include <config/debug.h>
 #include <config/paraver.h>
 

@@ -5,37 +5,34 @@
 #include <acc/api.h>
 
 namespace gmac {
-BatchManager::~BatchManager()
+void BatchManager::release(void *addr)
 {
-	Map::const_iterator i;
-	MUTEX_LOCK(memMutex);
-	for(i = memMap.begin(); i != memMap.end(); i++)
-		delete i->second;
-	memMap.clear();
-	MUTEX_UNLOCK(memMutex);
+	MemRegion *reg = memMap.remove(addr);
+	unmap(reg->getAddress(), reg->getSize());
+	delete reg;
 }
 void BatchManager::flush(void)
 {
-	Map::const_iterator i;
-	MUTEX_LOCK(memMutex);
+	MemMap<MemRegion>::const_iterator i;
+	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(i->second->isOwner() == false) continue;
-		TRACE("DMA To Device");
-		__gmacMemcpyToDevice(safe(i->first), i->first, i->second->getSize());
+		if(i->second->isOwner() == false) continue;	
+		__gmacMemcpyToDevice(safe(i->second->getAddress()),
+				i->second->getAddress(), i->second->getSize());
 	}
-	MUTEX_UNLOCK(memMutex);
+	memMap.unlock();
 }
 
 void BatchManager::sync(void)
 {
-	Map::const_iterator i;
-	MUTEX_LOCK(memMutex);
+	MemMap<MemRegion>::const_iterator i;
+	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(i->second->isOwner() == false) continue;
-		TRACE("DMA From Device");
-		__gmacMemcpyToHost(i->first, safe(i->first), i->second->getSize());
+		if(i->second->isOwner() == false) continue;	
+		__gmacMemcpyToHost(i->second->getAddress(),
+				safe(i->second->getAddress()), i->second->getSize());
 	}
-	MUTEX_UNLOCK(memMutex);
+	memMap.unlock();
 }
 
 };

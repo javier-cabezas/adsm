@@ -35,12 +35,15 @@ WITH THE SOFTWARE.  */
 #define __MEMOMRY_CACHEMANAGER_H_
 
 #include "MemManager.h"
-#include "MemRegion.h"
+#include "MemHandler.h"
+#include "MemMap.h"
+#include "CacheRegion.h"
 #include "os/Process.h"
 
 #include <config/threads.h>
 
-#include <vector>
+#include <map>
+#include <list>
 
 namespace gmac {
 
@@ -50,29 +53,36 @@ protected:
 	size_t lruSize;
 	size_t pageSize;
 
-	typedef HASH_MAP<void *, CacheRegion *> Map;
-	MUTEX(memMutex);
-	Map memMap;
+	MemMap<CacheRegion> memMap;
 
 	typedef std::list<ProtSubRegion *> Cache;
 	HASH_MAP<thread_t, Cache> regionCache;
 
+	MUTEX(writeMutex);
 	void *writeBuffer;
 	size_t writeBufferSize;
+	void waitForWrite(void *addr = NULL, size_t size = 0);
 	void writeBack(thread_t tid);
 	void flushToDevice(thread_t tid);
-	
+
+	// Methods used by ProtSubRegion to request flushing and invalidating
+	friend class CacheRegion;
+	void invalidate(ProtSubRegion *region) {
+		regionCache[Process::gettid()].remove(region);
+	}
+
 public:
 	CacheManager();
-	virtual bool alloc(void *addr, size_t size);
-	virtual void *safeAlloc(void *addr, size_t size);
-	virtual void release(void *addr);
-	virtual void flush(void);
-	virtual void sync(void);
+	bool alloc(void *addr, size_t size);
+	void *safeAlloc(void *addr, size_t size);
+	void release(void *addr);
+	void flush(void);
+	void sync(void) {};
+	void invalidate(void *addr, size_t size, RegionList &cpu, RegionList &acc);
 
-	virtual ProtRegion *find(const void *addr);
-	virtual void read(ProtRegion *region, void *addr);
-	virtual void write(ProtRegion *region, void *addr);
+	ProtRegion *find(void *addr);
+	void read(ProtRegion *region, void *addr);
+	void write(ProtRegion *region, void *addr);
 };
 
 };

@@ -31,39 +31,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __MEMORY_MEMHANDLER_H_
+#define __MEMORY_MEMHANDLER_H_
 
-#include "MemManager.h"
-#include "MemHandler.h"
-#include "MemMap.h"
-#include "ProtRegion.h"
-
-#include <config/threads.h>
-#include <config/debug.h>
-
-#include <map>
+#include <stdlib.h>
 
 namespace gmac {
 
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public MemManager, public MemHandler {
+class ProtRegion;
+
+//! Handler for Read/Write faults
+class MemHandler {
 protected:
-	MemMap<ProtRegion> memMap;
+	static MemHandler *handler;
 public:
-	LazyManager() : MemManager(), MemHandler() { }
-	bool alloc(void *addr, size_t count);
-	void *safeAlloc(void *addr, size_t count);
-	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
-	void invalidate(void *addr, size_t size, RegionList &cpu, RegionList &acc);
+	MemHandler() { handler = this; }
+	virtual ~MemHandler() { handler = NULL; }
+	static inline MemHandler *get() { return handler; }
 
-	ProtRegion *find(void *addr) { return memMap.find(addr); }
-	void read(ProtRegion *region, void *addr);
-	void write(ProtRegion *region, void *addr);
+	virtual ProtRegion *find(void *) = 0;
+	virtual void read(ProtRegion *, void *) = 0;
+	virtual void write(ProtRegion *, void *) = 0;
 };
-
-};
-
+}
 #endif

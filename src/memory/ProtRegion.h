@@ -31,39 +31,55 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __MEMORY_PROTREGION_H_
+#define __MEMORY_PROTREGION_H_
 
-#include "MemManager.h"
-#include "MemHandler.h"
-#include "MemMap.h"
-#include "ProtRegion.h"
+#include <memory/MemRegion.h>
+#include <memory/MemHandler.h>
+#include <memory/os/Memory.h>
 
-#include <config/threads.h>
-#include <config/debug.h>
-
-#include <map>
+#include <signal.h>
 
 namespace gmac {
-
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public MemManager, public MemHandler {
+//! Protected Memory Region
+class ProtRegion : public MemRegion {
 protected:
-	MemMap<ProtRegion> memMap;
+	bool dirty;
+	bool present;
+
+	static unsigned count;
+	static struct sigaction defaultAction;
+	static void setHandler(void);
+	static void restoreHandler(void);
+	static void segvHandler(int, siginfo_t *, void *);
 public:
-	LazyManager() : MemManager(), MemHandler() { }
-	bool alloc(void *addr, size_t count);
-	void *safeAlloc(void *addr, size_t count);
-	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
-	void invalidate(void *addr, size_t size, RegionList &cpu, RegionList &acc);
+	ProtRegion(void *addr, size_t size);
+	virtual ~ProtRegion();
 
-	ProtRegion *find(void *addr) { return memMap.find(addr); }
-	void read(ProtRegion *region, void *addr);
-	void write(ProtRegion *region, void *addr);
+	inline virtual void read(void *addr) {
+		MemHandler::get()->read(this, addr);
+	}
+	inline virtual void write(void *addr) {
+		MemHandler::get()->write(this, addr);
+	}
+
+	inline virtual void invalidate(void) {
+		present = dirty = false;
+		Memory::protect(__void(addr), size, PROT_NONE);
+	}
+	inline virtual void readOnly(void) {
+		present = true;
+		dirty = false;
+		Memory::protect(__void(addr), size, PROT_READ);
+	}
+	inline virtual void readWrite(void) {
+		present = dirty = true;
+		Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE);
+	}
+
+	virtual bool isDirty() const { return dirty; }
+	virtual bool isPresent() const { return present; }
 };
-
 };
 
 #endif

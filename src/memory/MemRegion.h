@@ -53,176 +53,90 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
+typedef unsigned long addr_t;
+
 //! Generic Memory Region Descriptor
 class MemRegion {
 protected:
 	//! Starting memory address for the region
-	void *addr;
+	addr_t addr;
 	//! Size in bytes of the region
 	size_t size;
 	//! CPU thread owning the region
 	thread_t owner;
+
+	inline addr_t __addr(void *addr) const { return (addr_t)addr; }
+	inline addr_t __addr(const void *addr) const { return (addr_t)addr; }
+	inline void * __void(addr_t addr) const { return (void *)addr; }
+
+	inline addr_t max(addr_t a, addr_t b) const {
+		return (a > b) ? a : b;
+	}
+	inline addr_t min(addr_t a, addr_t b) const {
+		return (a < b) ? a : b;
+	}
+
 public:
 	//! Constructor
 	//! \param addr Start memory address
 	//! \param size Size in bytes
 	MemRegion(void *addr, size_t size) :
-		addr(addr),
+		addr(__addr(addr)),
 		size(size),
 		owner(Process::gettid())
 	{}
-
-	//! Comparision operator
-	bool operator==(const void *p) const {
-		return (uint8_t *)p >= (uint8_t *)addr &&
-				(uint8_t *)p < ((uint8_t *)addr + size);
-	}
-
-	bool operator!=(const void *p) const {
-		return (uint8_t *)p < (uint8_t *)addr ||
-				(uint8_t *)p >= ((uint8_t *)addr + size);
-	}
-
-	bool operator==(const MemRegion &m) const {
-		return addr == m.addr;
-	}
 
 	//! Returns the size (in bytes) of the Region
 	inline size_t getSize() const { return size; }
 	//! Sets the size (in bytes) of the Region
 	inline void setSize(size_t size) { this->size = size; }
 	//! Returns the address of the Region
-	inline void *getAddress() const { return addr; }
+	inline void *getAddress() const { return __void(addr); }
 	//! Sets the address of the Region
-	inline void setAddress(void *addr) { this->addr = addr; }
+	inline void setAddress(void *addr) { this->addr = __addr(addr); }
 	//! Checks if the current thread is the owner for the region
 	inline bool isOwner() const { return owner == Process::gettid(); }
 
-	inline void print() const { std::cerr << addr << "(" << size << " bytes)" << std::endl; }
-};
+	//! Comparision operators
+	bool operator==(const void *p) const {
+		addr_t __p = __addr(p);
+		return __p >= addr && __p < (addr + size);
+	}
+	bool operator!=(const void *p) const {
+		addr_t __p = __addr(p);
+		return __p < addr || __p >= (addr + size);
+	}
+	bool operator==(const MemRegion &m) const {
+		return addr == m.addr && size == m.size;
+	}
+	bool operator!=(const MemRegion &m) const {
+		return addr != m.addr || size != m.size;
+	}
 
-
-//! Functor to locate MemRegions inside pointer lists
-class FindMem {
-protected:
-	void *addr;
-public:
-	FindMem(void *addr) : addr(addr) {};
-	bool operator()(const MemRegion *r) const {
-		return (*r) == addr;
+	//! Checks if a given memory range is equal to the region
+	inline bool equals(void *p, size_t n) const {
+		return __addr(p) == addr && n == size;
+	}
+	inline bool equals(const MemRegion &r) const {
+		return r == *this;
+	}
+	//! Checks if a given memory range is within the region
+	inline bool contains(void *p, size_t n) const {
+		return (min(__addr(p) + n, addr + size) - max(__addr(p), addr)) > 0;
+	}
+	inline bool contains(const MemRegion &r) const {
+		return (min(r.addr + r.size, addr + size) - max(r.addr, addr)) > 0;
+	}
+	//! Checks if a given memory range is included within the region
+	inline bool includes(void *p, size_t n) const {
+		return __addr(p) >= addr && (__addr(p) + n) <=(addr + size);
+	}
+	inline bool includes(const MemRegion &r) const {
+		return r.addr >= addr && (r.addr + r.size) <= (addr + size);
 	}
 };
 
-
-//! Functor to order MemRegions inside pointer multisets
-class LessMem {
-public:
-	bool operator()(const MemRegion *a, const MemRegion *b) const {
-		return a->getAddress() < b->getAddress();
-	}
-};
-
-
-class ProtRegion;
-
-//! Handler for Read/Write faults
-class MemHandler {
-protected:
-	static MemHandler *handler;
-public:
-	MemHandler() { handler = this; }
-	virtual ~MemHandler() { handler = NULL; }
-	static inline MemHandler *get() { return handler; }
-
-	virtual ProtRegion *find(const void *) = 0;
-	virtual void read(ProtRegion *, void *) = 0;
-	virtual void write(ProtRegion *, void *) = 0;
-};
-
-
-//! Protected Memory Region
-class ProtRegion : public MemRegion {
-protected:
-	bool dirty;
-	bool present;
-
-	static unsigned count;
-	static struct sigaction defaultAction;
-	static void setHandler(void);
-	static void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
-public:
-	ProtRegion(void *addr, size_t size);
-	virtual ~ProtRegion();
-
-	inline virtual void read(void *addr) { MemHandler::get()->read(this, addr); }
-	inline virtual void write(void *addr) { MemHandler::get()->write(this, addr); }
-
-	inline virtual void noAccess(void) {
-		present = dirty = false;
-		Memory::protect(addr, size, PROT_NONE);
-	}
-	inline virtual void readOnly(void) {
-		present = true;
-		dirty = false;
-		Memory::protect(addr, size, PROT_READ);
-	}
-	inline virtual void readWrite(void) {
-		present = dirty = true;
-		Memory::protect(addr, size, PROT_READ | PROT_WRITE);
-	}
-
-	inline bool isDirty() const { return dirty; }
-	inline bool isPresent() const { return present; }
-};
-
-class ProtSubRegion;
-class CacheRegion : public ProtRegion {
-protected:
-	typedef HASH_MAP<void *, ProtSubRegion *> Set;
-	Set set;
-	Set present;
-	size_t cacheLine;
-	size_t offset;
-
-	template<typename T>
-	inline T powerOfTwo(T k) {
-		if(k == 0) return 1;
-		for(int i = 1; i < sizeof(T) * 8; i <<= 1)
-			k = k | k >> i;
-		return k + 1;
-	}
-
-public:
-	CacheRegion(void *, size_t, size_t);
-	~CacheRegion();
-
-	inline ProtSubRegion *find(const void *addr) {
-		void *base = (void *)(((unsigned long)addr & ~(cacheLine - 1)) + offset);
-		Set::const_iterator i = set.find(base);
-		if(i == set.end()) return NULL;
-		return i->second;
-	}
-	void invalidate();
-
-	inline void invalid(ProtSubRegion *region) { present.erase(region); }
-};
-
-class ProtSubRegion : public ProtRegion {
-protected:
-	CacheRegion *parent;
-public:
-	ProtSubRegion(CacheRegion *parent, void *addr, size_t size) :
-		ProtRegion(addr, size),
-		parent(parent)
-	{ }
-	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
-
-	virtual inline void noAccess() { 
-		parent->invalid(this);
-		ProtRegion::noAccess();
-	}
-};
+typedef std::list<MemRegion> RegionList;
 
 };
 

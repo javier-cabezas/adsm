@@ -31,37 +31,88 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __MEMORY_CACHEREGION_H_
+#define __MEMORY_CACHEREGION_H_
 
-#include "MemManager.h"
-#include "MemHandler.h"
-#include "MemMap.h"
+#include "MemRegion.h"
 #include "ProtRegion.h"
 
-#include <config/threads.h>
+#include <config/config.h>
 #include <config/debug.h>
 
-#include <map>
+#include <stdlib.h>
+#include <list>
 
 namespace gmac {
-
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public MemManager, public MemHandler {
+class CacheManager;
+class ProtSubRegion;
+class CacheRegion : public ProtRegion {
 protected:
-	MemMap<ProtRegion> memMap;
-public:
-	LazyManager() : MemManager(), MemHandler() { }
-	bool alloc(void *addr, size_t count);
-	void *safeAlloc(void *addr, size_t count);
-	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
-	void invalidate(void *addr, size_t size, RegionList &cpu, RegionList &acc);
+	CacheManager &manager;
 
-	ProtRegion *find(void *addr) { return memMap.find(addr); }
-	void read(ProtRegion *region, void *addr);
-	void write(ProtRegion *region, void *addr);
+	// Set of all sub-regions forming the region
+	typedef HASH_MAP<void *, ProtSubRegion *> Set;
+	Set set;
+
+	// List of sub-regions that are present in memory
+	typedef std::list<ProtSubRegion *> List;
+	List memory;
+
+	size_t cacheLine;
+	size_t offset;
+
+	template<typename T>
+	inline T powerOfTwo(T k) {
+		if(k == 0) return 1;
+		for(int i = 1; i < sizeof(T) * 8; i <<= 1)
+			k = k | k >> i;
+		return k + 1;
+	}
+
+	friend class ProtSubRegion;
+	inline void present(ProtSubRegion *region) { memory.push_back(region); }
+
+public:
+	CacheRegion(CacheManager &manager, void *, size_t, size_t);
+	~CacheRegion();
+
+	inline ProtSubRegion *find(const void *addr) {
+		void *base = (void *)(((unsigned long)addr & ~(cacheLine - 1)) + offset);
+		Set::const_iterator i = set.find(base);
+		if(i == set.end()) return NULL;
+		return i->second;
+	}
+
+	void invalidate();
+};
+
+class ProtSubRegion : public ProtRegion {
+protected:
+	CacheRegion *parent;
+	friend class CacheRegion;
+	void silentInvalidate() { present = dirty = false; }
+public:
+	ProtSubRegion(CacheRegion *parent, void *addr, size_t size) :
+		ProtRegion(addr, size),
+		parent(parent)
+	{ }
+	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
+
+	virtual void invalidate() {
+		FATAL("Invalidation on a SubRegion %p", addr);
+	}
+
+	// Override this methods to insert the regions in the list
+	// of sub-regions present in memory
+	virtual void readOnly() {
+		parent->present(this);
+		ProtRegion::readOnly();
+	}
+
+	virtual void readWrite() {
+		parent->present(this);
+		ProtRegion::readWrite();
+	}
 };
 
 };
