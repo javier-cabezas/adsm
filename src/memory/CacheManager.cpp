@@ -99,31 +99,22 @@ void CacheManager::flush()
 	memMap.unlock();
 }
 
-void CacheManager::invalidate(void *addr, size_t size, RegionList &cpu,
-		RegionList &acc)
+void CacheManager::flush(MemRegion *region)
 {
-	if(memMap.split(addr, size, cpu, acc)) {
-		RegionList::const_iterator i;
-		for(i = acc.begin(); i != acc.end(); i++) {
-			// Flush to disk those regions that are partialy invalidated
-			Cache::iterator r;
-			thread_t tid = Process::gettid();
-			for(r = regionCache[tid].begin(); r != regionCache[tid].end();) {
-				if(i->contains((*r)->getAddress(), (*r)->getSize())) {
-					waitForWrite();
-					__gmacMemcpyToDevice(safe((*r)->getAddress()),
-							(*r)->getAddress(), (*r)->getSize());
-					(*r)->invalidate();
-					r = regionCache[tid].erase(r);
-				}
-				else r++;
-			}
-			// Invalidate the region
-			memMap.find(i->getAddress())->invalidate();
+	CacheRegion *r = dynamic_cast<CacheRegion *>(region);
+	thread_t tid = Process::gettid();
+	Cache::iterator i;
+	for(i = regionCache[tid].begin(); i != regionCache[tid].end();) {
+		if((*i)->belongs(r)) {
+			__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(),
+					(*i)->getSize());
+			(*i)->readOnly();
+			i = regionCache[tid].erase(i);
 		}
+		else i++;
 	}
+	r->invalidate();
 }
-
 
 // MemHandler Interface
 

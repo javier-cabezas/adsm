@@ -57,7 +57,13 @@ public:
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};
-	void invalidate(void *addr, size_t size, RegionList &cpu, RegionList &acc);
+	size_t filter(const void *addr, size_t size, MemRegion *&region) {
+		return memMap.filter(addr, size, region);
+	}
+	void invalidate(MemRegion *region) {
+		dynamic_cast<ProtRegion *>(region)->invalidate();
+	}
+	void flush(MemRegion *region);
 
 	ProtRegion *find(void *addr) { return memMap.find(addr); }
 	void read(ProtRegion *region, void *addr);

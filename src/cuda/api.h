@@ -51,8 +51,13 @@ extern gmacError_t (*__gmacLaunch)(const char *);
 #define __gmacFree(...) cudaFree(__VA_ARGS__)
 #define __gmacMemcpyToDevice(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyHostToDevice)
 #define __gmacMemcpyToHost(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyDeviceToHost)
+#define __gmacMemcpyDevice(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyDeviceToDevice)
 #define __gmacMemcpyToDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyHostToDevice, 0)
+#define __gmacMemcpyToHostAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyDeviceToHost, 0);
+#define __gmacMemcpyDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyDeviceToDevice, 0);
 #define __gmacThreadSynchronize() cudaThreadSynchronize()
+
+#define __gmacMemset(...) cudaMemset(__VA_ARGS__)
 
 #define gmacGetErrorString cudaGetErrorString
 #define gmacGetLastError cudaGetLastError

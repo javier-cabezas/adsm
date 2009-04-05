@@ -6,7 +6,6 @@
 
 
 SYM(gmacError_t, __gmacLaunch, const char *);
-DECL_SYM(__gmacLaunch);
 
 static void __attribute__((constructor)) gmacCudaInit(void)
 {

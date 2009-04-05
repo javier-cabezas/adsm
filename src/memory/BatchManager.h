@@ -63,10 +63,12 @@ public:
 	void release(void *addr);
 	void flush();
 	void sync();
-	void invalidate(void *addr, size_t size, RegionList &cpu,
-			RegionList &acc) {
-		cpu.push_back(MemRegion(addr, size));
+	size_t filter(const void *addr, size_t size, MemRegion *&region) {
+		region = NULL;
+		return size;
 	}
+	void invalidate(MemRegion *region) { };
+	void flush(MemRegion *region) { };
 };
 };
 #endif

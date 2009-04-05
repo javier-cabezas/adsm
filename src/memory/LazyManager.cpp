@@ -50,25 +50,14 @@ void LazyManager::flush()
 	memMap.unlock();
 }
 
-
-void LazyManager::invalidate(void *addr, size_t size, RegionList &cpu,
-		RegionList &acc)
+void LazyManager::flush(MemRegion *region)
 {
-	if(memMap.split(addr, size, cpu, acc)) {
-		// There is partial invalidation
-		RegionList::const_iterator i;
-		for(i = acc.begin(); i != acc.end(); i++) {
-			ProtRegion *reg = memMap.find(i->getAddress());
-			assert(reg != NULL);
-			if(reg->isOwner() == false) continue;
-			// Flush to disk those regions that are partialy invalidated
-			if(reg->isDirty()) {
-				__gmacMemcpyToDevice(safe(reg->getAddress()), reg->getAddress(),
-						reg->getSize());
-			}
-			reg->invalidate();
-		}
+	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
+	if(r->isDirty()) {
+		__gmacMemcpyToDevice(safe(r->getAddress()), r->getAddress(),
+				r->getSize());
 	}
+	r->invalidate();
 }
 
 // MemHandler Interface

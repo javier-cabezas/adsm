@@ -8,7 +8,6 @@
 
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
-DECL_SYM(__pthread_create);
 
 static void __attribute__((constructor)) gmacPthreadInit(void)
 {

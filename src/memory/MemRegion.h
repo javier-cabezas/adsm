@@ -85,6 +85,7 @@ public:
 		size(size),
 		owner(Process::gettid())
 	{}
+	virtual ~MemRegion() {};
 
 	//! Returns the size (in bytes) of the Region
 	inline size_t getSize() const { return size; }
@@ -113,26 +114,9 @@ public:
 		return addr != m.addr || size != m.size;
 	}
 
-	//! Checks if a given memory range is equal to the region
-	inline bool equals(void *p, size_t n) const {
-		return __addr(p) == addr && n == size;
-	}
-	inline bool equals(const MemRegion &r) const {
-		return r == *this;
-	}
 	//! Checks if a given memory range is within the region
-	inline bool contains(void *p, size_t n) const {
-		return (min(__addr(p) + n, addr + size) - max(__addr(p), addr)) > 0;
-	}
-	inline bool contains(const MemRegion &r) const {
-		return (min(r.addr + r.size, addr + size) - max(r.addr, addr)) > 0;
-	}
-	//! Checks if a given memory range is included within the region
-	inline bool includes(void *p, size_t n) const {
-		return __addr(p) >= addr && (__addr(p) + n) <=(addr + size);
-	}
-	inline bool includes(const MemRegion &r) const {
-		return r.addr >= addr && (r.addr + r.size) <= (addr + size);
+	inline bool contains(const void *p, size_t n) const {
+		return min(__addr(p) + n, addr + size) > max(__addr(p), addr);
 	}
 };
 

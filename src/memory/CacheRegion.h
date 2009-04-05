@@ -98,6 +98,8 @@ public:
 	{ }
 	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
 
+	bool belongs(CacheRegion *r) const { parent == r; }
+
 	virtual void invalidate() {
 		FATAL("Invalidation on a SubRegion %p", addr);
 	}

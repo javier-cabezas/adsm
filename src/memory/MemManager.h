@@ -46,6 +46,8 @@ WITH THE SOFTWARE.  */
 #include <iostream>
 
 namespace gmac {
+class MemRegion;
+
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
@@ -56,9 +58,7 @@ private:
 	HASH_MAP<void *, void *> virtTable;
 	size_t pageSize;
 
-
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
-
 protected:
 	//! This method maps a accelerator address into the CPU address space
 	//! \param addr accelerator address
@@ -128,12 +128,26 @@ public:
 		return devAddr;
 	}
 
+	//! This method is called when a CPU to accelerator translation is
+	//! requiered
+	//! \param addr Memory address at the CPU
+	virtual inline const void *safe(const void *addr) {
+		return safe((void *)addr);
+	}
+
 	//! This method is called to request a explicit invalidation
 	//! of accelerator data
 	//! \param addr Memory address at the CPU
 	//! \param size Size (in bytes) to be transferred
-	virtual void invalidate(void *addr, size_t size, RegionList &cpu,
-			RegionList &acc) = 0;
+	virtual size_t filter(const void *addr, size_t size, MemRegion *&region) = 0;
+
+	//! Invalidates a memory region returned by filter
+	//! \param region Memory region to invalidate
+	virtual void invalidate(MemRegion *region) = 0;
+
+	//! Flushes a memory region returned by filter
+	//! \param region Memory region to flush
+	virtual void flush(MemRegion *region) = 0;
 };
 
 

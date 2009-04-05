@@ -13,9 +13,6 @@
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
-DECL_SYM(__libc_fread);
-DECL_SYM(__libc_fwrite);
-
 static void __attribute__((constructor)) stdcInit(void)
 {
 	LOAD_SYM(__libc_fread, fread);

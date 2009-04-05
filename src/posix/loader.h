@@ -40,9 +40,6 @@ WITH THE SOFTWARE.  */
 
 #define SYM(ret, symbol, ...)	\
 	typedef ret (*symbol##_t)(__VA_ARGS__);	\
-	extern symbol##_t symbol
-
-#define DECL_SYM(symbol) \
 	symbol##_t symbol = NULL
 
 #define LOAD_SYM(symbol, name)	\

@@ -44,7 +44,7 @@ namespace gmac {
 template<typename T>
 class MemMap {
 protected:
-	typedef std::map<void *, T *> Map;
+	typedef std::map<const void *, T *> Map;
 	Map __map;
 	MUTEX(__mutex);
 public:
@@ -96,49 +96,31 @@ public:
 		return i->second;
 	}
 
-	bool split(void *addr, size_t size, RegionList &cpu,
-			RegionList &acc)
-	{
+	// Gets the first memory region (CPU or accelerator) that
+	// includes the memory range.
+	// \param addr Starting address of the memory range
+	// \param size Size (in bytes) of the memory range
+	// \param Memory region where the range starts or NULL if
+	// the range starts at CPU memory
+	size_t filter(const void *addr, size_t size, MemRegion *&reg) {
+		size_t ret = 0;
 		typename Map::iterator i;
-		bool ret = false;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
-		// There is no region containing this memory interval
+		// All the range owns to the CPU
 		if(i == __map.end() || i->second->contains(addr, size) == false) {
-			cpu.push_back(MemRegion(addr, size));
+			ret = size;
+			reg = NULL;
 		}
-		// Check for a region having a perfect match (common case)
-		else if(i->second->equals(addr, size)) {
-			acc.push_back(MemRegion(addr, size));
-			i->second->invalidate();
+		// The range starts at the accelerator 
+		else if((addr_t)addr >= (addr_t)i->second->getAddress()) {
+			reg = i->second;
+			ret = reg->getSize() - ((addr_t)addr - (addr_t)reg->getAddress());;
 		}
-		// The invalidation might affect one or more regions and
-		// require partial invalidation
+		// The range starts at the CPU but includes accelerator memory
 		else {
-			ret = true;
-			addr_t _addr = (addr_t) addr;
-			size_t _size = size;
-			while(i->second->contains(addr, size)) {
-				addr_t _region = (addr_t) i->second->getAddress();
-				// Check for a CPU range at the begining
-				if(_addr < _region) {
-					cpu.push_back(MemRegion((void *)_addr, _region - _addr));
-					_size -= (_region - _addr);
-					_addr = _region;
-				}
-				// Get the size of the acc region 
-				size_t __size = (_size < i->second->getSize()) ?
-						_size : i->second->getSize();
-				// If the acc region is affected, invalidate it
-				assert(__size > 0);
-				acc.push_back(MemRegion((void *)_addr, __size));
-				// Update the memory interval we are processing
-				_addr += __size;
-				_size -= __size;
-				// Check for the next region
-				i++;
-			}
-			if(_size) cpu.push_back(MemRegion((void *)_addr, _size));
+			ret = (addr_t)i->second->getAddress() - (addr_t)addr;
+			reg = NULL;
 		}
 		MUTEX_UNLOCK(__mutex);
 		return ret;
