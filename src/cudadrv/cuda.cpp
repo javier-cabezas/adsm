@@ -99,10 +99,42 @@ gmacError_t __gmacMemcpyToHost(void *cpuPtr, const void *devPtr, size_t n)
 	return __gmacError(ret);
 }
 
+gmacError_t __gmacMemcpyDevice(void *dstPtr, const void *srcPtr, size_t n)
+{
+	CUresult ret = cuMemcpyDtoD(voidToDev(dstPtr), voidToDev(srcPtr), n);
+	return __gmacError(ret);
+}
+
 gmacError_t __gmacMemcpyToDeviceAsync(void *devPtr, const void *cpuPtr,
 		size_t n)
 {
 	CUresult ret = cuMemcpyHtoDAsync(voidToDev(devPtr), cpuPtr, n, 0);
+	return __gmacError(ret);
+}
+
+gmacError_t __gmacMemcpyToHostAsync(void *cpuPtr, const void *devPtr,
+		size_t n)
+{
+	CUresult ret = cuMemcpyDtoHAsync(cpuPtr, voidToDev(devPtr), n, 0);
+	return __gmacError(ret);
+}
+
+gmacError_t __gmacMemset(void *devPtr, int i, size_t n)
+{
+	CUresult ret = CUDA_SUCCESS;
+	unsigned char c = i & 0xff;
+	if((n % 4) == 0) {
+		unsigned m = c | (c << 8);
+		m |= (m << 16);
+		ret = cuMemsetD32(voidToDev(devPtr), m, n / 4);
+	}
+	else if((n % 2) == 0) {
+		unsigned short s = c | (c << 8);
+		ret = cuMemsetD16(voidToDev(devPtr), s, n / 2);
+	}
+	else {
+		ret = cuMemsetD8(voidToDev(devPtr), c, n);
+	}
 	return __gmacError(ret);
 }
 

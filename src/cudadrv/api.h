@@ -53,7 +53,11 @@ gmacError_t __gmacFree(void *);
 
 gmacError_t __gmacMemcpyToDevice(void *, const void *, size_t);
 gmacError_t __gmacMemcpyToHost(void *, const void *, size_t);
+gmacError_t __gmacMemcpyDevice(void *, const void *, size_t);
 gmacError_t __gmacMemcpyToDeviceAsync(void *, const void *, size_t);
+gmacError_t __gmacMemcpyToHostAsync(void *, const void *, size_t);
+
+gmacError_t __gmacMemset(void *, int, size_t);
 
 gmacError_t __gmacLaunch(const char *);
 gmacError_t __gmacThreadSynchronize(void);
