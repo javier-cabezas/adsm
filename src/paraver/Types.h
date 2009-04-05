@@ -60,6 +60,7 @@ STATE(_accSync_, 0x24);
 
 EVENT(_gpuMemcpyToDevice_, 0x20);
 EVENT(_gpuMemcpyToHost_, 0x21);
+EVENT(_gpuMemcpyDevice_, 0x22);
 
 EVENT(_gpuLaunch_, 0x30);
 

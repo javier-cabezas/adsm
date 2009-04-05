@@ -68,7 +68,7 @@ extern "C" {
 		return ret;
 	}
 
-	inline gmacError_t __paraver__gmacMemcpyToHost(void *dstPtr, void *srcPtr, size_t count) {
+	inline gmacError_t __paraver__gmacMemcpyToHost(void *dstPtr, const void *srcPtr, size_t count) {
 		pushEvent(_gpuMemcpyToHost_, count);
 		pushState(_accMemcpy_);
 		gmacError_t ret = __gmacMemcpyToHost(dstPtr, srcPtr, count);
@@ -76,10 +76,26 @@ extern "C" {
 		return ret;
 	}
 
-	inline gmacError_t __paraver__gmacMemcpyToDeviceAsync(void *dstPtr, void *srcPtr, size_t count) {
+	inline gmacError_t __paraver__gmacMemcpyDevice(void *dstPtr, const void *srcPtr, size_t count) {
+		pushEvent(_gpuMemcpyDevice_, count);
+		pushState(_accMemcpy_);
+		gmacError_t ret = __gmacMemcpyDevice(dstPtr, srcPtr, count);
+		popState();
+		return ret;
+	}
+
+	inline gmacError_t __paraver__gmacMemcpyToDeviceAsync(void *dstPtr, const void *srcPtr, size_t count) {
 		pushEvent(_gpuMemcpyToDevice_, count);
 		pushState(_accMemcpy_);
 		gmacError_t ret = __gmacMemcpyToDeviceAsync(dstPtr, srcPtr, count);
+		popState();
+		return ret;
+	}
+
+	inline gmacError_t __paraver__gmacMemcpyToHostAsync(void *dstPtr, const void *srcPtr, size_t count) {
+		pushEvent(_gpuMemcpyToHost_, count);
+		pushState(_accMemcpy_);
+		gmacError_t ret = __gmacMemcpyToHostAsync(dstPtr, srcPtr, count);
 		popState();
 		return ret;
 	}
@@ -110,8 +126,12 @@ extern "C" {
 #define __gmacMemcpyToDevice(...) __paraver__gmacMemcpyToDevice(__VA_ARGS__)
 #undef __gmacMemcpyToHost
 #define __gmacMemcpyToHost(...) __paraver__gmacMemcpyToHost(__VA_ARGS__)
+#undef __gmacMemcpyDevice
+#define __gmacMemcpyDevice(...) __paraver__gmacMemcpyDevice(__VA_ARGS__)
 #undef __gmacMemcpyToDeviceAsync
 #define __gmacMemcpyToDeviceAsync(...) __paraver__gmacMemcpyToDeviceAsync(__VA_ARGS__)
+#undef __gmacMemcpyToHostAsync
+#define __gmacMemcpyToHostAsync(...) __paraver__gmacMemcpyToHostAsync(__VA_ARGS__)
 #undef __gmacLaunch
 #define __gmacLaunch(...) __paraver__gmacLaunch(__VA_ARGS__)
 #undef __gmacThreadSynchronize
