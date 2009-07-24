@@ -60,6 +60,18 @@ void LazyManager::flush(MemRegion *region)
 	r->invalidate();
 }
 
+void LazyManager::dirty(MemRegion *region) 
+{
+	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
+	r->readWrite();
+}
+
+bool LazyManager::present(MemRegion *region) const
+{
+	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
+	return r->isPresent();
+}
+
 // MemHandler Interface
 
 void LazyManager::read(ProtRegion *region, void *addr)

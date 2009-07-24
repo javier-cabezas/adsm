@@ -9,7 +9,7 @@
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
-static void __attribute__((constructor)) gmacPthreadInit(void)
+static void __attribute__((constructor(101))) gmacPthreadInit(void)
 {
 	LOAD_SYM(__pthread_create, pthread_create);
 }

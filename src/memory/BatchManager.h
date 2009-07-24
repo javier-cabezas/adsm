@@ -69,6 +69,8 @@ public:
 	}
 	void invalidate(MemRegion *region) { };
 	void flush(MemRegion *region) { };
+	void dirty(MemRegion *region) { };
+	bool present(MemRegion *region) const { return true; }
 };
 };
 #endif

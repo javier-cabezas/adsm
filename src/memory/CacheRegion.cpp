@@ -48,5 +48,17 @@ void CacheRegion::invalidate()
 	memory.clear();
 }
 
+void CacheRegion::dirty()
+{
+	// Check if the region is already invalid
+	if(memory.empty()) return;
+
+	// Invalidate those sub-regions that are present in memory
+	List::iterator i;
+	for(i = memory.begin(); i != memory.end(); i++) {
+		TRACE("Dirty call forces write");
+		manager.write(*i, (*i)->getAddress());
+	}
+}
 
 };

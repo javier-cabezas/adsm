@@ -13,7 +13,8 @@ namespace paraver {
 Trace::Trace(const char *fileName) :
 	startTime(getTime()),
 	endTime(0),
-	pendingTime(0)
+	pendingTime(0),
+	inTrace(false)
 {
 	// Init the output file and the communication counter
 	of.open(fileName, std::ios::out);

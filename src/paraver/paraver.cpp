@@ -2,9 +2,9 @@
 
 #include <config/debug.h>
 
-paraver::Trace *trace;
+paraver::Trace *trace = NULL;
 
-static void __attribute__((constructor)) paraverInit(void)
+static void __attribute__((constructor(199))) paraverInit(void)
 {
 	TRACE("Paraver Tracing");
 	trace = new paraver::Trace("paraver.prb");

@@ -75,6 +75,7 @@ protected:
 
 	std::ofstream of;
 	PARAVER_MUTEX(ofMutex);
+	bool inTrace;
 	std::list<Record *> records;
 
 public:

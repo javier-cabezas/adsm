@@ -85,6 +85,8 @@ public:
 		dynamic_cast<CacheRegion *>(region)->invalidate();
 	}
 	void flush(MemRegion *region);
+	void dirty(MemRegion *region);
+	bool present(MemRegion *region) const;
 
 	ProtRegion *find(void *addr);
 	void read(ProtRegion *region, void *addr);

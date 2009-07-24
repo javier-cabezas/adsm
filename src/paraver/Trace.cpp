@@ -34,7 +34,8 @@ void Trace::buildApp(std::ifstream &in)
 Trace::Trace(const char *fileName, uint32_t pid, uint32_t tid) :
 	startTime(0),
 	endTime(0),
-	pendingTime(0)
+	pendingTime(0),
+	inTrace(false)
 {
 	// Init the output file and the communication counter
 	of.open(fileName, std::ios::out);
@@ -50,27 +51,36 @@ Trace::Trace(const char *fileName, uint32_t pid, uint32_t tid) :
 void Trace::__pushState(Time_t t, int32_t pid, int32_t tid,
 		const StateName &state)
 {
+	if(inTrace) return;
+	inTrace = true;
 	Task *task = apps.back()->getTask(pid);
 	Thread *thread = task->getThread(tid);
 
 	PARAVER_MUTEX_LOCK(ofMutex);
 	thread->start(of, state.getValue(), t);
 	PARAVER_MUTEX_UNLOCK(ofMutex);
+	inTrace = false;
 }
 
 void Trace::__popState(Time_t t, int32_t pid, int32_t tid)
 {
+	if(inTrace) return;
+	inTrace = true;
 	Task *task = apps.back()->getTask(pid);
 	Thread *thread = task->getThread(tid);
 
 	PARAVER_MUTEX_LOCK(ofMutex);
 	thread->end(of, t);
 	PARAVER_MUTEX_UNLOCK(ofMutex);
+	inTrace = false;
 }
 
 void Trace::__pushEvent(Time_t t, int32_t pid, int32_t tid,
 		uint64_t ev, int64_t value)
 {
+	if(inTrace) return;
+	inTrace = true;
+
 	Task *task = apps.back()->getTask(pid);
 
 	Event event(task->getThread(tid), t, ev, value);
@@ -78,6 +88,7 @@ void Trace::__pushEvent(Time_t t, int32_t pid, int32_t tid,
 	PARAVER_MUTEX_LOCK(ofMutex);
 	event.write(of);
 	PARAVER_MUTEX_UNLOCK(ofMutex);
+	inTrace = false;
 }
 
 

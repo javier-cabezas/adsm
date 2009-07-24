@@ -11,18 +11,11 @@
 #define MUTEX_INIT(mutex) pthread_mutex_init(&mutex, NULL)
 #define MUTEX_DESTROY(mutex) pthread_mutex_destroy(&mutex)
 #define __MUTEX_LOCK(mutex) pthread_mutex_lock(&mutex);
-#define MUTEX_LOCK(mutex) \
-	do {\
-		pushState(_Waiting_);	\
-		pthread_mutex_lock(&mutex);	\
-		popState();	\
-	} while(0)
+#define MUTEX_LOCK(mutex) pthread_mutex_lock(&mutex);
 #define MUTEX_TRYLOCK(mutex) pthread_mutex_try_lock(&mutex)
 #define __MUTEX_UNLOCK(mutex) pthread_mutex_unlock(&mutex)
-#define MUTEX_UNLOCK(mutex) \
-	do {\
-		pthread_mutex_unlock(&mutex);	\
-	} while(0)
+#define MUTEX_UNLOCK(mutex) pthread_mutex_unlock(&mutex);
+
 #else
 #warning "Thread-safe support not implemented"
 

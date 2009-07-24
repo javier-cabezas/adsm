@@ -84,6 +84,7 @@ public:
 	}
 
 	void invalidate();
+	void dirty();
 };
 
 class ProtSubRegion : public ProtRegion {

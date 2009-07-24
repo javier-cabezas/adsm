@@ -148,6 +148,14 @@ public:
 	//! Flushes a memory region returned by filter
 	//! \param region Memory region to flush
 	virtual void flush(MemRegion *region) = 0;
+
+	//! Sets as dirty a memory region returned by filter
+	//! \param region Memory region to set as dirty
+	virtual void dirty(MemRegion *region) = 0;
+
+	//! Checks if a memory region returned by filter is present
+	//! \param region Memroy region to check if it is present
+	virtual bool present(MemRegion *region) const = 0;
 };
 
 

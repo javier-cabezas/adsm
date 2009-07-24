@@ -141,7 +141,9 @@ gmacError_t gmacLaunch(const char *symbol)
 	gmacError_t ret = gmacSuccess;
 	if(memManager) {
 		memManager->flush();
+		TRACE("Memory Flush");
 	}
+	TRACE("Kernel Launch");
 	ret = __gmacLaunch(symbol);
 	popState();
 	return ret;

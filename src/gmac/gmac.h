@@ -94,9 +94,10 @@ gmacError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
 };
 #endif
 
+#ifdef __cplusplus
 template<typename T> inline T *gmacSafe(T *devPtr) {
 	return (T *)gmacSafePointer((void *)devPtr);
 }
-
+#endif
 
 #endif

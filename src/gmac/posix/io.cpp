@@ -13,7 +13,7 @@
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
-static void __attribute__((constructor)) posixIoInit(void)
+static void __attribute__((constructor(101))) posixIoInit(void)
 {
 	LOAD_SYM(__libc_read, read);
 	LOAD_SYM(__libc_write, write);

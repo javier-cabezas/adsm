@@ -7,7 +7,7 @@
 
 #include <string>
 
-static void __attribute__((constructor)) gmacCudaInit(void)
+static void __attribute__((constructor(101))) gmacCudaInit(void)
 {
 	if(cuInit(0) != CUDA_SUCCESS)
 		FATAL("Unable to init CUDA");

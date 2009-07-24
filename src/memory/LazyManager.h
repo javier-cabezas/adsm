@@ -64,6 +64,8 @@ public:
 		dynamic_cast<ProtRegion *>(region)->invalidate();
 	}
 	void flush(MemRegion *region);
+	void dirty(MemRegion *region);
+	bool present(MemRegion *region) const;
 
 	ProtRegion *find(void *addr) { return memMap.find(addr); }
 	void read(ProtRegion *region, void *addr);
