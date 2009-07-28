@@ -7,7 +7,7 @@
 
 SYM(gmacError_t, __gmacLaunch, const char *);
 
-static void __attribute__((constructor(101))) gmacCudaInit(void)
+static void __attribute__((constructor(102))) gmacCudaInit(void)
 {
 	LOAD_SYM(__gmacLaunch, cudaLaunch);
 }

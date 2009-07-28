@@ -71,9 +71,12 @@ const char *gmacGetErrorString(gmacError_t);
 }
 #endif
 
+gmacError_t __gmacError(CUresult);
+
 #define gmacSuccess cudaSuccess
 #define gmacErrorMemoryAllocation cudaErrorMemoryAllocation
 #define gmacErrorInvalidDeviceFunction cudaErrorInvalidDeviceFunction
+#define gmacErrorLaunchFailure cudaErrorLaunchFailure
 #define gmacErrorUnknown cudaErrorUnknown
 
 #endif

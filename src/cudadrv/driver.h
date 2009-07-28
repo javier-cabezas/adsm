@@ -50,8 +50,13 @@ typedef struct {
 	size_t stack;
 } gmacCall_t;
 
+struct __deviceVariable {
+	CUdeviceptr ptr;
+	size_t size;
+};
 
 extern HASH_MAP<std::string, CUfunction> funMap;
+extern HASH_MAP<const char *, struct __deviceVariable> varMap;
 const size_t gmacStackSize = 4096;
 extern std::vector<gmacCall_t> gmacCallStack;
 extern size_t gmacStackPtr;
@@ -63,6 +68,18 @@ gmacError_t __gmacError(CUresult);
 inline gmacError_t __gmacReturn(gmacError_t error) {
 	gmacLastError = error;
 	return error;
+}
+
+inline CUdeviceptr voidToDev(void *v)
+{
+	unsigned long u = (unsigned long)v;
+	return (CUdeviceptr)(u & 0xffffffff);
+}
+
+inline CUdeviceptr voidToDev(const void *v)
+{
+	unsigned long u = (unsigned long)v;
+	return (CUdeviceptr)(u & 0xffffffff);
 }
 
 

@@ -6,8 +6,9 @@
 #include <cuda.h>
 
 #include <string>
+#include <list>
 
-static void __attribute__((constructor(101))) gmacCudaInit(void)
+static void __attribute__((constructor(102))) gmacCudaInit(void)
 {
 	if(cuInit(0) != CUDA_SUCCESS)
 		FATAL("Unable to init CUDA");
@@ -36,6 +37,8 @@ const char *gmacGetErrorString(gmacError_t error)
 			return "Failure during CUDA initialization";
 		case cudaErrorApiFailureBase:
 			return "Failure during CUDA API call";
+		case cudaErrorLaunchFailure:
+			return "Failure during CUDA kernel launch";
 		default: return NULL;
 	}
 }
@@ -50,20 +53,10 @@ gmacError_t __gmacError(CUresult ret)
 		case CUDA_SUCCESS: return __gmacReturn(gmacSuccess);
 		case CUDA_ERROR_OUT_OF_MEMORY:
 			return __gmacReturn(gmacErrorMemoryAllocation);
+		case CUDA_ERROR_LAUNCH_FAILED:
+			return __gmacReturn(gmacErrorLaunchFailure);
 		default: return __gmacReturn(gmacErrorUnknown);
 	}
-}
-
-static inline CUdeviceptr voidToDev(void *v)
-{
-	unsigned long u = (unsigned long)v;
-	return (CUdeviceptr)(u & 0xffffffff);
-}
-
-static inline CUdeviceptr voidToDev(const void *v)
-{
-	unsigned long u = (unsigned long)v;
-	return (CUdeviceptr)(u & 0xffffffff);
 }
 
 gmacError_t __gmacMalloc(void **devPtr, size_t count)
@@ -138,6 +131,7 @@ gmacError_t __gmacMemset(void *devPtr, int i, size_t n)
 	return __gmacError(ret);
 }
 
+extern std::list<CUtexref *> __textures;
 gmacError_t __gmacLaunch(const char *symbol)
 {
 	gmacCall_t gmacCall = gmacCallStack.back();
@@ -155,25 +149,33 @@ gmacError_t __gmacLaunch(const char *symbol)
 	if(ret != CUDA_SUCCESS) return __gmacError(ret);
 	if((ret = cuParamSetSize(fun, count)) != CUDA_SUCCESS)
 		return __gmacError(ret);
+	// Set-up textures (if any)
+	std::list<CUtexref *>::const_iterator t;
+	for(t = __textures.begin(); t != __textures.end(); t++) {
+		cuParamSetTexRef(fun, CU_PARAM_TR_DEFAULT, *(*t));
+	}
+	// Set shared size
+	TRACE("Dynamic Shared %d", gmacCall.shared);
+	if((ret = cuFuncSetSharedSize(fun, gmacCall.shared)) != CUDA_SUCCESS)
+		return __gmacError(ret);
 	// Set block shape
-	TRACE("Block: (%d, %d, %d)",
-			gmacCall.block.x, gmacCall.block.y, gmacCall.block.z);
+	TRACE("Block Size %d, %d, %d", gmacCall.block.x, gmacCall.block.y,
+			gmacCall.block.z);
 	if((ret = cuFuncSetBlockShape(fun,
 			gmacCall.block.x, gmacCall.block.y, gmacCall.block.z)
 		) != CUDA_SUCCESS) return __gmacError(ret);
-	// Set shared size
-	if(gmacCall.shared &&
-			((ret = cuFuncSetSharedSize(fun, gmacCall.shared)) != CUDA_SUCCESS))
-		return __gmacError(ret);
 	// Call the kernel
-	TRACE("Grid: (%d, %d)", gmacCall.grid.x, gmacCall.grid.y);
+	TRACE("Grid Size %d, %d, %d", gmacCall.grid.x, gmacCall.grid.y);
 	if((ret = cuLaunchGrid(fun,
 			gmacCall.grid.x, gmacCall.grid.y)) != CUDA_SUCCESS)
 		return __gmacError(ret);
+	TRACE("Kernel launched");
+	return __gmacError(ret);
 }
 
 gmacError_t __gmacThreadSynchronize()
 {
+	TRACE("Kernel Synchronize");
 	CUresult ret = cuCtxSynchronize();
 	return __gmacError(ret);
 }

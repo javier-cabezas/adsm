@@ -2,6 +2,7 @@
 #include "driver.h"
 
 #include <config/config.h>
+#include <config/debug.h>
 
 #include <cuda.h>
 #include <string.h>
@@ -13,9 +14,11 @@
 gmacError_t gmacLastError = gmacSuccess;
 
 HASH_MAP<std::string, CUfunction> funMap;
+HASH_MAP<const char *, struct __deviceVariable> varMap;
 std::vector<gmacCall_t> gmacCallStack;
 size_t gmacStackPtr = 0;
 uint8_t gmacStack[gmacStackSize];
+size_t gmacGlobalShared = 0;
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +55,42 @@ void __cudaRegisterFunction(
 	__gmacError(ret);
 	if(ret != CUDA_SUCCESS) return;
 	funMap[hostFun] = fun;
+}
+
+void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
+		char *deviceAddress, const char *deviceName, int ext, int size,
+		int constant, int global)
+{
+	CUmodule *mod = (CUmodule *)fatCubinHandle;
+	assert(mod != NULL);
+	CUdeviceptr ptr;
+	unsigned int deviceSize;
+	CUresult ret = cuModuleGetGlobal(&ptr, &deviceSize, *mod, deviceName);
+	__gmacError(ret);
+	if(ret != CUDA_SUCCESS) return;
+	varMap[hostVar].ptr = ptr;
+	varMap[hostVar].size = deviceSize;
+	TRACE("CUDA Variable %s @ 0x%x (%d bytes)", deviceName, ptr, deviceSize);
+}
+
+
+void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr)
+{
+	CUmodule *mod = (CUmodule *)fatCubinHandle;
+	assert(mod != NULL);
+	TRACE("RegisterVar %p", devicePtr);
+}
+
+void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
+		size_t size, size_t alignment, int storage)
+{
+	CUmodule *mod = (CUmodule *)fatCubinHandle;
+	assert(mod != NULL);
+	TRACE("RegisterSharedVar %p (%d bytes) aligned to %d in %d",
+			devicePtr, size, alignment, storage);
+//	int rem = gmacGlobalShared % alignment;
+//	if(rem != 0) gmacGlobalShared += (alignment - rem);
+//	gmacGlobalShared += size;
 }
 
 cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
