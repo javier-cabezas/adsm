@@ -53,10 +53,14 @@ typedef struct {
 struct __deviceVariable {
 	CUdeviceptr ptr;
 	size_t size;
+	bool constant;
 };
 
-extern HASH_MAP<std::string, CUfunction> funMap;
-extern HASH_MAP<const char *, struct __deviceVariable> varMap;
+
+typedef HASH_MAP<const char *, CUfunction> FunctionMap;
+extern FunctionMap funMap;
+typedef HASH_MAP<const char *, struct __deviceVariable> VariableMap;
+extern VariableMap varMap;
 const size_t gmacStackSize = 4096;
 extern std::vector<gmacCall_t> gmacCallStack;
 extern size_t gmacStackPtr;

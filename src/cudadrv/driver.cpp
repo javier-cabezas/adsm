@@ -13,8 +13,8 @@
 
 gmacError_t gmacLastError = gmacSuccess;
 
-HASH_MAP<std::string, CUfunction> funMap;
-HASH_MAP<const char *, struct __deviceVariable> varMap;
+FunctionMap funMap;
+VariableMap varMap;
 std::vector<gmacCall_t> gmacCallStack;
 size_t gmacStackPtr = 0;
 uint8_t gmacStack[gmacStackSize];
@@ -54,7 +54,7 @@ void __cudaRegisterFunction(
 	CUresult ret = cuModuleGetFunction(&fun, *mod, devName);
 	__gmacError(ret);
 	if(ret != CUDA_SUCCESS) return;
-	funMap[hostFun] = fun;
+	funMap.insert(FunctionMap::value_type(hostFun, fun));
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
@@ -68,8 +68,11 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 	CUresult ret = cuModuleGetGlobal(&ptr, &deviceSize, *mod, deviceName);
 	__gmacError(ret);
 	if(ret != CUDA_SUCCESS) return;
-	varMap[hostVar].ptr = ptr;
-	varMap[hostVar].size = deviceSize;
+	struct __deviceVariable variable;
+	variable.ptr = ptr;
+	variable.size = deviceSize;
+	variable.constant = (constant != 0) ? true : false;
+	varMap.insert(VariableMap::value_type(hostVar, variable));
 	TRACE("CUDA Variable %s @ 0x%x (%d bytes)", deviceName, ptr, deviceSize);
 }
 
@@ -108,6 +111,7 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
+	TRACE("cudaSetupArgument @ %d (%d bytes)", offset, count);
 	memcpy(&gmacStack[offset], arg, count);
 	size_t top = offset + count;
 	gmacStackPtr = (gmacStackPtr > top) ? gmacStackPtr : top;

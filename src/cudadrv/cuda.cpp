@@ -140,7 +140,7 @@ gmacError_t __gmacLaunch(const char *symbol)
 	gmacStackPtr = gmacCall.stack;
 
 	// Get the device function
-	HASH_MAP<std::string, CUfunction>::const_iterator i;
+	FunctionMap::const_iterator i;
 	if((i = funMap.find(symbol)) == funMap.end())
 		return __gmacReturn(gmacErrorInvalidDeviceFunction);
 	CUfunction fun = i->second;
