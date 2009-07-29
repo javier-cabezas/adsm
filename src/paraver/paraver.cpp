@@ -3,11 +3,15 @@
 #include <config/debug.h>
 
 paraver::Trace *trace = NULL;
+static const char *paraverVar = "PARAVER_OUTPUT";
+static const char *defaultOut = "paraver.prb";
 
 static void __attribute__((constructor(199))) paraverInit(void)
 {
 	TRACE("Paraver Tracing");
-	trace = new paraver::Trace("paraver.prb");
+	const char *file = getenv(paraverVar);
+	if(file == NULL) file = defaultOut;
+	trace = new paraver::Trace(file);
 }
 
 static void __attribute__((destructor)) paraverFini(void)
