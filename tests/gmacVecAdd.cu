@@ -5,9 +5,11 @@
 #include <gmac.h>
 #include <gmac/cuda.h>
 
+#include <sys/time.h>
+
 #include "debug.h"
 
-const size_t vecSize = 1024 * 1024;
+const size_t vecSize = 32 * 1024 * 1024;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";
@@ -31,8 +33,11 @@ void randInit(float *a, size_t vecSize)
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
+	struct timeval start, end;
+	double s, e;
 
 	srand(time(NULL));
+	gettimeofday(&start, NULL);
 
 	// Alloc & init input data
 	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
@@ -57,9 +62,13 @@ int main(int argc, char *argv[])
 	for(int i = 0; i < vecSize; i++) {
 		error += c[i] - (a[i] + b[i]);
 	}
-	fprintf(stdout, "Error: %.02f\n", error);
 
 	gmacFree(a);
 	gmacFree(b);
 	gmacFree(c);
+
+	gettimeofday(&end, NULL);
+	s = 1e6 * start.tv_sec + (start.tv_usec);
+	e = 1e6 * end.tv_sec + (end.tv_usec);
+	fprintf(stdout,"%f\n", (e - s) / 1e6);
 }

@@ -37,9 +37,9 @@ Trace::Trace(const char *fileName, uint32_t pid, uint32_t tid) :
 	pendingTime(0),
 	inTrace(false)
 {
+	PARAVER_MUTEX_INIT(ofMutex);
 	// Init the output file and the communication counter
 	of.open(fileName, std::ios::out);
-	PARAVER_MUTEX_INIT(ofMutex);
 
 	// Create the root application and add the current task
 	apps.push_back(new Application(1, "app"));

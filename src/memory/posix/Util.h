@@ -31,47 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_BATCHMANAGER_H_
-#define __MEMORY_BATCHMANAGER_H_
+#ifndef __MEMORY_POSIX_UTIL_H_
+#define __MEMORY_POSIX_UTIL_H_
 
-#include "MemManager.h"
-#include "MemMap.h"
-#include "MemRegion.h"
-
-#include <stdint.h>
+#include <stdlib.h>
 
 namespace gmac {
-//! Batch Memory Manager
 
-//! The Batch Memory Manager moves all data just before and
-//! after a kernel call
-class BatchManager : public MemManager {
-protected:
-	MemMap<MemRegion> memMap;
+class Util {
 public:
-	BatchManager() : MemManager() { }
-	inline bool alloc(void *addr, size_t count) {
-		if(map(addr, count) == MAP_FAILED) return false;
-		TRACE("New Memory Region @ %p (%d bytes)", addr, count);
-		memMap.insert(new MemRegion(addr, count));
-		return true;
+	static inline const char *getenv(const char *var) {
+		return ::getenv(var);
 	}
-	inline void *safeAlloc(void *addr, size_t count) {
-		void *cpuAddr = safeMap(addr, count);
-		memMap.insert(new MemRegion(cpuAddr, count));
-		return cpuAddr;
-	}
-	void release(void *addr);
-	void flush();
-	void sync();
-	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		region = NULL;
-		return size;
-	}
-	void invalidate(MemRegion *region) { };
-	void flush(MemRegion *region) { };
-	void dirty(MemRegion *region) { };
-	bool present(MemRegion *region) const { return true; }
 };
 };
 #endif

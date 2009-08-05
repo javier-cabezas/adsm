@@ -49,7 +49,10 @@ namespace gmac {
 
 class CacheManager : public MemManager, public MemHandler {
 protected:
-	static const size_t lineSize = 1024;
+	static const char *lineSizeVar;
+	static const char *lruDeltaVar;
+	size_t lineSize;
+	size_t lruDelta;
 	size_t lruSize;
 	size_t pageSize;
 

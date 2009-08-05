@@ -77,8 +77,9 @@ public:
 	~CacheRegion();
 
 	inline ProtSubRegion *find(const void *addr) {
-		void *base = (void *)(((unsigned long)addr & ~(cacheLine - 1)) + offset);
-		Set::const_iterator i = set.find(base);
+		unsigned long base = (((unsigned long)addr & ~(cacheLine - 1)) + offset);
+		if(base > (unsigned long)addr) base -= cacheLine;
+		Set::const_iterator i = set.find((void *)base);
 		if(i == set.end()) return NULL;
 		return i->second;
 	}

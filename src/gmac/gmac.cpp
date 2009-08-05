@@ -38,7 +38,7 @@ void gmacCreateManager(void)
 	__MUTEX_UNLOCK(gmacMutex);
 }
 
-static void __attribute__((constructor)) gmacInit(void)
+static void __attribute__((constructor(199))) gmacInit(void)
 {
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
@@ -140,8 +140,8 @@ gmacError_t gmacLaunch(const char *symbol)
 	pushState(_gmacLaunch_);
 	gmacError_t ret = gmacSuccess;
 	if(memManager) {
-		memManager->flush();
 		TRACE("Memory Flush");
+		memManager->flush();
 	}
 	TRACE("Kernel Launch");
 	ret = __gmacLaunch(symbol);
@@ -154,6 +154,7 @@ gmacError_t gmacThreadSynchronize()
 	pushState(_gmacSync_);
 	gmacError_t ret = __gmacThreadSynchronize();
 	if(memManager) {
+		TRACE("Memory Sync");
 		memManager->sync();
 	}
 	popState();

@@ -1,10 +1,14 @@
 #include "CacheManager.h"
+#include "os/Util.h"
 #include <acc/api.h>
 
 #include <unistd.h>
 #include <algorithm>
 
 namespace gmac {
+
+const char *CacheManager::lineSizeVar = "GMAC_LINESIZE";
+const char *CacheManager::lruDeltaVar = "GMAC_LRUDELTA";
 
 void CacheManager::waitForWrite(void *addr, size_t size)
 {
@@ -47,11 +51,22 @@ void CacheManager::flushToDevice(thread_t tid)
 
 CacheManager::CacheManager() :
 	MemManager(),
+	lineSize(0),
+	lruDelta(0),
 	lruSize(0),
 	pageSize(getpagesize()),
 	writeBuffer(NULL),
 	writeBufferSize(0)
 {
+	const char *var = Util::getenv(lineSizeVar);
+	if(var != NULL) lineSize = atoi(var);
+	if(lineSize == 0) lineSize = 1024;
+	var = Util::getenv(lruDeltaVar);
+	if(var != NULL) lruDelta = atoi(var);
+	if(lruDelta == 0) lruDelta = 2;
+	lruSize = lruDelta;
+	TRACE("Using %d as Memory Block Size", lineSize * pageSize);
+	TRACE("Using %d as LRU Delta Size", lruDelta);
 }
 
 
@@ -61,7 +76,7 @@ bool CacheManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, size);
-	lruSize += 2;
+	//lruSize += lruDelta;
 	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
 	return true;
 }
@@ -72,7 +87,7 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
-	lruSize += 2;
+	//lruSize += lruDelta;
 	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
 	return cpuAddr;
 }
@@ -83,7 +98,7 @@ void CacheManager::release(void *addr)
 	CacheRegion *reg = memMap.remove(addr);
 	unmap(reg->getAddress(), reg->getSize());
 	delete reg;
-	lruSize -= 2;
+	//lruSize -= lruDelta;
 	TRACE("Released %p", addr);
 }
 
@@ -141,6 +156,7 @@ ProtRegion *CacheManager::find(void *addr)
 
 void CacheManager::read(ProtRegion *region, void *addr)
 {
+	assert(region->isPresent() == false);
 	region->readWrite();
 	__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()),
 			region->getSize());
@@ -150,6 +166,7 @@ void CacheManager::read(ProtRegion *region, void *addr)
 
 void CacheManager::write(ProtRegion *region, void *addr)
 {
+	assert(region->isDirty() == false);
 	thread_t tid = Process::gettid();
 	if(regionCache[tid].size() == lruSize) writeBack(tid);
 	region->readWrite();

@@ -34,7 +34,10 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 	do {
 		n += __libc_fread(ptr + (n * size), size, nmemb - n, stream);
 		if(feof(stream)) break;
-		if(ferror(stream) && errno == EFAULT) clearerr(stream);
+		if(ferror(stream) && errno == EFAULT) {
+			clearerr(stream);
+			if(n > 0) FATAL("Interrupted System Call");
+		}
 	} while(n < nmemb && ferror(stream) == 0);
 	popState();
 	return n;
@@ -48,7 +51,10 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
 		n += __libc_fwrite(ptr + (n * size), size, nmemb - n, stream);
-		if(ferror(stream) && errno == EFAULT) clearerr(stream);
+		if(ferror(stream) && errno == EFAULT) {
+			clearerr(stream);
+			if(n > 0) FATAL("Interrupted System Call");
+		}
 	} while(n < nmemb && ferror(stream) == 0);
 	popState();
 	return n;

@@ -38,16 +38,16 @@ void LazyManager::release(void *addr)
 void LazyManager::flush()
 {
 	MemMap<ProtRegion>::const_iterator i;
-	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;
 		if(i->second->isDirty()) {
 			__gmacMemcpyToDevice(safe(i->second->getAddress()),
 					i->second->getAddress(), i->second->getSize());
 		}
+		memMap.lock();
 		i->second->invalidate();
+		memMap.unlock();
 	}
-	memMap.unlock();
 }
 
 void LazyManager::flush(MemRegion *region)

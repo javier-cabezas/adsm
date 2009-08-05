@@ -70,11 +70,11 @@ public:
 	inline virtual void readOnly(void) {
 		present = true;
 		dirty = false;
-		Memory::protect(__void(addr), size, PROT_READ);
+		assert(Memory::protect(__void(addr), size, PROT_READ) == 0);
 	}
 	inline virtual void readWrite(void) {
 		present = dirty = true;
-		Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE);
+		assert(Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE) == 0);
 	}
 
 	virtual bool isDirty() const { return dirty; }

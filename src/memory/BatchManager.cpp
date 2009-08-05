@@ -17,6 +17,7 @@ void BatchManager::flush(void)
 	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;	
+		TRACE("Memory Copy to Device");
 		__gmacMemcpyToDevice(safe(i->second->getAddress()),
 				i->second->getAddress(), i->second->getSize());
 	}
@@ -29,6 +30,7 @@ void BatchManager::sync(void)
 	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner() == false) continue;	
+		TRACE("Memory Copy from Device");
 		__gmacMemcpyToHost(i->second->getAddress(),
 				safe(i->second->getAddress()), i->second->getSize());
 	}
