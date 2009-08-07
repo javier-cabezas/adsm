@@ -51,6 +51,7 @@ void transfer(stamp_t *stamp, int s)
 		start = get_time();
 		if(cudaMemcpy(dev, cpu, s, cudaMemcpyHostToDevice) != cudaSuccess)
 			CUFATAL();
+		cudaThreadSynchronize();
 		end = get_time();
 		stamp->in += end - start;
 		stamp->min_in = MIN(stamp->min_in, (end - start));
@@ -60,6 +61,7 @@ void transfer(stamp_t *stamp, int s)
 		start = get_time();
 		if(cudaMemcpy(cpu, dev, s, cudaMemcpyDeviceToHost) != cudaSuccess)
 			CUFATAL();
+		cudaThreadSynchronize();
 		end = get_time();
 		stamp->out += end - start;
 		stamp->min_out = MIN(stamp->min_out, (end - start));

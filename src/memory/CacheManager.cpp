@@ -76,7 +76,7 @@ bool CacheManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, size);
-	//lruSize += lruDelta;
+	lruSize += lruDelta;
 	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
 	return true;
 }
@@ -87,7 +87,7 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
-	//lruSize += lruDelta;
+	lruSize += lruDelta;
 	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
 	return cpuAddr;
 }
@@ -98,7 +98,7 @@ void CacheManager::release(void *addr)
 	CacheRegion *reg = memMap.remove(addr);
 	unmap(reg->getAddress(), reg->getSize());
 	delete reg;
-	//lruSize -= lruDelta;
+	lruSize -= lruDelta;
 	TRACE("Released %p", addr);
 }
 
