@@ -65,7 +65,7 @@ public:
 
 	inline virtual void invalidate(void) {
 		present = dirty = false;
-		Memory::protect(__void(addr), size, PROT_NONE);
+		assert(Memory::protect(__void(addr), size, PROT_NONE) == 0);
 	}
 	inline virtual void readOnly(void) {
 		present = true;

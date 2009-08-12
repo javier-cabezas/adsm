@@ -59,7 +59,7 @@ protected:
 	MemMap<CacheRegion> memMap;
 
 	typedef std::list<ProtSubRegion *> Cache;
-	HASH_MAP<thread_t, Cache> regionCache;
+	std::map<thread_t, Cache> regionCache;
 
 	MUTEX(writeMutex);
 	void *writeBuffer;
@@ -67,6 +67,10 @@ protected:
 	void waitForWrite(void *addr = NULL, size_t size = 0);
 	void writeBack(thread_t tid);
 	void flushToDevice(thread_t tid);
+
+#ifdef DEBUG
+	void dumpCache();
+#endif
 
 	// Methods used by ProtSubRegion to request flushing and invalidating
 	friend class CacheRegion;

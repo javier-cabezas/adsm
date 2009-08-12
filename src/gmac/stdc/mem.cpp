@@ -53,7 +53,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		// in device memory, use a internal copy
 		if(d != NULL && memManager->present(d) == true &&
 			s != NULL && memManager->present(s) == true) {
-			TRACE("memcpy %p to %d [DeviceToDevice]", src, dst);
+			TRACE("memcpy %p to %p [DeviceToDevice]", src, dst);
 			__gmacMemcpyDevice(memManager->safe(dst),
 				memManager->safe(src), size);
 			sync = true;
@@ -61,7 +61,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		// If the destination is shared memory and it is on the
 		// device, copy it to device memory
 		else if(d != NULL && memManager->present(d) == false) {
-			TRACE("memcpy %p to %d [HostToDevice]", src, dst);
+			TRACE("memcpy %p to %p [HostToDevice]", src, dst);
 			__gmacMemcpyToDeviceAsync(memManager->safe(dst), src,
 					size);
 			sync = true;
@@ -69,7 +69,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		// If the source is shared memory and it is on the device,
 		// copy it from device memory
 		else if(s != NULL && memManager->present(s) == false) {
-			TRACE("memcpy %p to %d [DeviceToHost]", src, dst);
+			TRACE("memcpy %p to %p [DeviceToHost]", src, dst);
 			__gmacMemcpyToHostAsync(dst, memManager->safe(src),
 					size);
 			sync = true;

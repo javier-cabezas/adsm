@@ -35,7 +35,6 @@ void ProtRegion::restoreHandler()
 void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	pushState(_gmacSignal_);
-	bool isRegion = false;
 
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
@@ -44,14 +43,16 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE("Write SIGSEGV for %p", info->si_addr);
 
 	ProtRegion *r = MemHandler::get()->find(info->si_addr);
-	if(r && r->isOwner()) isRegion = true;
-	if(isRegion == false) {
+	if(r == NULL || r->isOwner() == false) {
+		if(r == NULL) { TRACE("SIGSEGV for NULL Region"); }
+		else { TRACE("SIGSEGV for external Region"); }
 		abort();
 		// TODO: set the signal mask and other stuff
 		if(defaultAction.sa_flags & SA_SIGINFO)
 			return defaultAction.sa_sigaction(s, info, ctx);
 		return defaultAction.sa_handler(s);
 	}
+	TRACE("SIGSEGV for shared memory");
 
 	if(!writeAccess) r->read(info->si_addr);
 	else r->write(info->si_addr);

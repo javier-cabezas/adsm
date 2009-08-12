@@ -25,7 +25,7 @@ void CacheManager::waitForWrite(void *addr, size_t size)
 
 void CacheManager::writeBack(thread_t tid)
 {
-	ProtRegion *r = regionCache[tid].front();
+	ProtSubRegion *r = regionCache[tid].front();
 	regionCache[tid].pop_front();
 	waitForWrite(r->getAddress(), r->getSize());
 	mlock(writeBuffer, writeBufferSize);
@@ -48,6 +48,18 @@ void CacheManager::flushToDevice(thread_t tid)
 	regionCache[tid].clear();
 }
 
+#ifdef DEBUG
+void CacheManager::dumpCache()
+{
+	std::map<thread_t, Cache>::const_iterator c;
+	for(c = regionCache.begin(); c != regionCache.end(); c++) {
+		Cache::const_iterator i;
+		for(i = c->second.begin(); i != c->second.end(); i++)
+			TRACE("Thread %d: Region %p (%p - %d bytes)", c->first, *i,
+					(*i)->getAddress(), (*i)->getSize());
+	}
+}
+#endif
 
 CacheManager::CacheManager() :
 	MemManager(),
@@ -64,9 +76,11 @@ CacheManager::CacheManager() :
 	var = Util::getenv(lruDeltaVar);
 	if(var != NULL) lruDelta = atoi(var);
 	if(lruDelta == 0) lruDelta = 2;
-	lruSize = lruDelta;
 	TRACE("Using %d as Memory Block Size", lineSize * pageSize);
 	TRACE("Using %d as LRU Delta Size", lruDelta);
+#ifdef DEBUG
+	dumpCache();
+#endif
 }
 
 
@@ -88,7 +102,7 @@ void *CacheManager::safeAlloc(void *addr, size_t size)
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
 	lruSize += lruDelta;
-	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
+	memMap.insert(new CacheRegion(*this, cpuAddr, size, lineSize * pageSize));
 	return cpuAddr;
 }
 
@@ -100,11 +114,15 @@ void CacheManager::release(void *addr)
 	delete reg;
 	lruSize -= lruDelta;
 	TRACE("Released %p", addr);
+#ifdef DEBUG
+	dumpCache();
+#endif
 }
 
 
 void CacheManager::flush()
 {
+	TRACE("CacheManager Flush Starts");
 	flushToDevice(Process::gettid());
 	MemMap<CacheRegion>::iterator i;
 	memMap.lock();
@@ -113,6 +131,7 @@ void CacheManager::flush()
 			i->second->invalidate();
 	}
 	memMap.unlock();
+	TRACE("CacheManager Flush Ends");
 }
 
 void CacheManager::flush(MemRegion *region)
@@ -168,9 +187,13 @@ void CacheManager::write(ProtRegion *region, void *addr)
 {
 	assert(region->isDirty() == false);
 	thread_t tid = Process::gettid();
-	if(regionCache[tid].size() == lruSize) writeBack(tid);
+	while(regionCache[tid].size() >= lruSize) writeBack(tid);
 	region->readWrite();
 	regionCache[tid].push_back(dynamic_cast<ProtSubRegion *>(region));
+#ifdef DEBUG
+	dumpCache();
+#endif
+
 }
 
 
