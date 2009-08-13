@@ -45,6 +45,20 @@ static void __attribute__((constructor(199))) gmacInit(void)
 	gmacCreateManager();
 }
 
+static const char *functionNames[] = {
+	"accMalloc", "accFree",
+	"accHostDevice", "accDeviceHost", "accDeviceDeviceCopy",
+	"accLaunch", "accSync",
+	"gmacMalloc", "gmacFree", "gmacLaunch", "gmacSync", "gmacSignal",
+	NULL
+};
+
+static void __attribute__((constructor(199))) paraverInit(void)
+{
+	for(int i = 0; functionNames[i] != 0; i++)
+		paraver::_Function_.registerType(i, std::string(functionNames[i]));
+}
+
 static void __attribute__((destructor)) gmacFini(void)
 {
 	gmacRemoveManager();
@@ -52,40 +66,40 @@ static void __attribute__((destructor)) gmacFini(void)
 
 gmacError_t gmacMalloc(void **devPtr, size_t count)
 {
-	pushState(_gmacMalloc_);
+	enterFunction(_gmacMalloc_);
 	gmacError_t ret = gmacSuccess;
 	count = (count < pageSize) ? pageSize : count;
 	ret = __gmacMalloc(devPtr, count);
 	if(ret != gmacSuccess || !memManager) {
-		popState();
+		exitFunction();
 		return ret;
 	}
 	if(!memManager->alloc(*devPtr, count)) {
 		__gmacFree(*devPtr);
-		popState();
+		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
-	popState();
+	exitFunction();
 	return gmacSuccess;
 }
 
 gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 {
-	pushState(_gmacMalloc_);
+	enterFunction(_gmacMalloc_);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
 	ret = __gmacMalloc(&devPtr, count);
 	if(ret != gmacSuccess || !memManager) {
-		popState();
+		exitFunction();
 		return ret;
 	}
 	if((*cpuPtr = memManager->safeAlloc(devPtr, count)) == NULL) {
 		__gmacFree(devPtr);
-		popState();
+		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
-	popState();
+	exitFunction();
 	return gmacSuccess;
 }
 
@@ -97,19 +111,19 @@ void *gmacSafePointer(void *devPtr)
 
 gmacError_t gmacFree(void *devPtr)
 {
-	pushState(_gmacFree_);
+	enterFunction(_gmacFree_);
 	__gmacFree(gmacSafePointer(devPtr));
 	if(memManager) {
 		memManager->release(devPtr);
 	}
-	popState();
+	exitFunction();
 	return gmacSuccess;
 }
 
 gmacError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 		size_t widthInBytes, size_t height)
 {
-	pushState(_gmacMalloc_);
+	enterFunction(_gmacMalloc_);
 	void *cpuAddr = NULL;
 	gmacError_t ret = gmacSuccess;
 	size_t count = widthInBytes * height;
@@ -121,23 +135,22 @@ gmacError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 
 	ret = __gmacMallocPitch(devPtr, pitch, widthInBytes, height);
 	if(ret != gmacSuccess && !memManager) {
-		popState();
+		exitFunction();
 		return ret;
 	}
 
 	if(!memManager->alloc(*devPtr, *pitch)) {
 		__gmacFree(*devPtr);
-		popState();
+		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
-
-	popState();
+	exitFunction();
 	return gmacSuccess;
 }
 
 gmacError_t gmacLaunch(const char *symbol)
 {
-	pushState(_gmacLaunch_);
+	enterFunction(_gmacLaunch_);
 	gmacError_t ret = gmacSuccess;
 	if(memManager) {
 		TRACE("Memory Flush");
@@ -145,18 +158,18 @@ gmacError_t gmacLaunch(const char *symbol)
 	}
 	TRACE("Kernel Launch");
 	ret = __gmacLaunch(symbol);
-	popState();
+	exitFunction();
 	return ret;
 }
 
 gmacError_t gmacThreadSynchronize()
 {
-	pushState(_gmacSync_);
+	enterFunction(_gmacSync_);
 	gmacError_t ret = __gmacThreadSynchronize();
 	if(memManager) {
 		TRACE("Memory Sync");
 		memManager->sync();
 	}
-	popState();
+	exitFunction();
 	return ret;
 }

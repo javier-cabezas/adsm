@@ -45,27 +45,12 @@ STATE(_Create_, 0x03);
 STATE(_IORead_, 0x04);
 STATE(_IOWrite_, 0x05);
 
-EVENT(_Alarm_, 0x00);
-
-STATE(_gmacMalloc_, 0x10);
-STATE(_gmacFree_, 0x11);
-STATE(_gmacLaunch_, 0x13);
-STATE(_gmacSync_, 0x14);
-
-STATE(_accMalloc_, 0x20);
-STATE(_accFree_, 0x21);
-STATE(_accMemcpy_, 0x22);
-STATE(_accLaunch_, 0x23);
-STATE(_accSync_, 0x24);
-
-EVENT(_gpuMemcpyToDevice_, 0x20);
-EVENT(_gpuMemcpyToHost_, 0x21);
-EVENT(_gpuMemcpyDevice_, 0x22);
-
-EVENT(_gpuLaunch_, 0x30);
-
-STATE(_gmacSignal_, 0x40);
-
+EVENT(_Alarm_, 0x01);
+EVENT(_Function_, 0x02);
+EVENT(_GPUCall_, 0x03);
+EVENT(_HostDeviceCopy_, 0x04);
+EVENT(_DeviceHostCopy_, 0x05);
+EVENT(_DeviceDeviceCopy_, 0x06);
 };
 
 

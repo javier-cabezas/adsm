@@ -34,8 +34,7 @@ void ProtRegion::restoreHandler()
 
 void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 {
-	pushState(_gmacSignal_);
-
+	enterFunction(_gmacSignal_);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
 
@@ -58,7 +57,7 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 	else r->write(info->si_addr);
 
 	TRACE("SIGSEGV done");
-	popState();
+	exitFunction();
 }
 
 };

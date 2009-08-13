@@ -59,6 +59,8 @@ void pushEvent(paraver::EventName &s);
 #define pushState(s)
 #define popState()
 #define pushEvent(e)
+#define enterFunction(s)
+#define exitFunction()
 
 #define PARAVER_STATE(state, value)
 #define PARAVER_EVENT(event, value)

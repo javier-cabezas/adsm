@@ -39,11 +39,21 @@ WITH THE SOFTWARE.  */
 #include <paraver/Types.h>
 extern paraver::Trace *trace;
 
+typedef enum {
+	_accMalloc_ = 0, _accFree_,
+	_accHostDeviceCopy_, _accDeviceHostCopy_, _accDeviceDeviceCopy_,
+	_accLaunch_, _accSync_,
+	_gmacMalloc_, _gmacFree_, _gmacLaunch_, _gmacSync_, _gmacSignal_,
+} FunctionName;
+
+
 /* Macros to issue traces in paraver mode */
 #define addThread()	trace->__addThread()
 #define pushState(s)	trace->__pushState(paraver::s)
 #define popState()	trace->__popState()
 #define pushEvent(e, ...)	trace->__pushEvent(paraver::e, ##__VA_ARGS__)
+#define enterFunction(s) trace->__pushEvent(paraver::_Function_, s)
+#define exitFunction() trace->__pushEvent(paraver::_Function_, 0)
 
 #else
 
@@ -51,6 +61,8 @@ extern paraver::Trace *trace;
 #define pushState(s)
 #define popState()
 #define pushEvent(e)
+#define enterFunction(s)
+#define exitFunction()
 
 #endif
 

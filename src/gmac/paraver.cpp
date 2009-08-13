@@ -3,6 +3,7 @@
 #ifdef PARAVER
 
 #include <paraver/Trace.h>
+#include <paraver/Names.h>
 
 extern paraver::Trace *trace;
 

@@ -9,7 +9,7 @@
 
 #include "debug.h"
 
-size_t vecSize = 8 * 1024 * 1024;
+size_t vecSize = 1 * 1024 * 1024;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";

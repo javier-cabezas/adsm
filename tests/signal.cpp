@@ -14,8 +14,7 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include <list>
-#include <algorithm>
+#include <map>
 
 typedef struct {
 	double time, max, min;
@@ -25,34 +24,38 @@ static const size_t iters = 8;
 static const size_t bufferSize = 32 * 1024 * 1024;
 static const size_t maxRegions = bufferSize / 4 / 1024;
 
+class MemRegion {
+protected:
+	uint8_t *_start;
+	uint8_t *_end;
+public:
+	MemRegion(uint8_t *_start, size_t size) :
+		_start(_start), _end(_start + size) {};
+	inline uint8_t *start() const { return _start; }
+	inline uint8_t *end() const { return _end; }
+	inline bool contains(const void *addr) const {
+		return (uint8_t *)addr >= _start && (uint8_t *)addr < _end;
+	}
+};
+
 static int nRegions = 0;
 static int pageSize = 0;
-static std::list<uint8_t *> regionList;
+static std::map<uint8_t *, MemRegion *> regionList; 
 static MUTEX(regionMutex);
 static struct sigaction defaultAction;
 static unsigned nSignals = 0;
 
-class FindMem {
-protected:
-	const uint8_t *addr;
-public:
-	FindMem(const uint8_t *addr) : addr(addr) {};
-	bool operator()(const uint8_t *p) const {
-		return addr >= p && addr < (p + (bufferSize / nRegions));
-	}
-};
-
 static void memHandler(int s, siginfo_t *info, void *ctx)
 {
 	bool isRegion = false;
-	std::list<uint8_t *>::const_iterator i;
+	std::map<uint8_t *, MemRegion *>::const_iterator i;
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
 
 	MUTEX_LOCK(regionMutex);
-	i = std::find_if(regionList.begin(), regionList.end(),
-		FindMem((uint8_t *)info->si_addr));
-	if(i != regionList.end()) isRegion = true;
+	i = regionList.upper_bound((uint8_t *)info->si_addr);
+	if(i != regionList.end() &&
+		i->second->contains(info->si_addr)) isRegion = true;
 	MUTEX_UNLOCK(regionMutex);
 	if(isRegion == false) { abort(); }
 	
@@ -72,12 +75,14 @@ void access(stamp_t *stamp, uint8_t *ptr, int prot = PROT_NONE)
 		mprotect(ptr, bufferSize, prot);
 		nSignals = 0;
 		for(uint32_t i = 0; i < bufferSize; i += (bufferSize / nRegions)) {
-			regionList.push_back(&ptr[i]);
+			regionList.insert(std::map<uint8_t *, MemRegion *>::value_type(
+				&ptr[i] + bufferSize, new MemRegion(&ptr[i], bufferSize)));
 		}
 
 		uint32_t i = 0;
 		usec_t start = getTime();
-		for(; i < bufferSize; i += pageSize) {
+//		for(; i < bufferSize; i += pageSize) {
+		for(; i < bufferSize; i++) {
 			ptr[i] = 0;
 		}
 		usec_t end = getTime();

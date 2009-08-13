@@ -38,8 +38,8 @@ WITH THE SOFTWARE.  */
 	#define STATE(name, val) extern StateName name
 	#define EVENT(name, val) extern EventName name
 #else
-	#define STATE(name, val) StateName name(#name, val)
-	#define EVENT(name, val) EventName name(#name, val)
+	#define STATE(name, val) StateName __attribute__((init_priority(101))) name(#name, val)
+ 	#define EVENT(name, val) EventName __attribute__((init_priority(101))) name(#name, val) 
 #endif
 
 #include <string>
