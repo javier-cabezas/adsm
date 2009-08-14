@@ -24,7 +24,7 @@ Trace::Trace(const char *fileName) :
 	apps.push_back(new Application(1, "app"));
 	Task *task = apps.back()->addTask(getpid());
 	task->__addThread(paraver_gettid());
-	__pushState(_Running_);
+	__pushState(*_Running_);
 }
 
 void Trace::__addThread(void)

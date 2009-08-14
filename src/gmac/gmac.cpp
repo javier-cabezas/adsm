@@ -18,6 +18,10 @@ static size_t pageSize = 0;
 
 static const char *memManagerVar = "GMAC_MANAGER";
 
+#ifdef PARAVER
+extern int __init_paraver;
+#endif
+
 void gmacRemoveManager(void)
 {
 	__MUTEX_LOCK(gmacMutex);
@@ -40,24 +44,12 @@ void gmacCreateManager(void)
 
 static void __attribute__((constructor(199))) gmacInit(void)
 {
+	__init_paraver = 0;
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
 	gmacCreateManager();
 }
 
-static const char *functionNames[] = {
-	"accMalloc", "accFree",
-	"accHostDevice", "accDeviceHost", "accDeviceDeviceCopy",
-	"accLaunch", "accSync",
-	"gmacMalloc", "gmacFree", "gmacLaunch", "gmacSync", "gmacSignal",
-	NULL
-};
-
-static void __attribute__((constructor(199))) paraverInit(void)
-{
-	for(int i = 0; functionNames[i] != 0; i++)
-		paraver::_Function_.registerType(i, std::string(functionNames[i]));
-}
 
 static void __attribute__((destructor)) gmacFini(void)
 {

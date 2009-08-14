@@ -35,11 +35,15 @@ WITH THE SOFTWARE.  */
 #define __PARAVER_STATENAME_H_
 
 #ifndef GENERATE_PARAVER_STRING
-	#define STATE(name, val) extern StateName name
-	#define EVENT(name, val) extern EventName name
+	#define STATE(name, val) extern StateName *name
+	#define EVENT(name, val) extern EventName *name
 #else
-	#define STATE(name, val) StateName __attribute__((init_priority(101))) name(#name, val)
- 	#define EVENT(name, val) EventName __attribute__((init_priority(101))) name(#name, val) 
+	#define STATE(name, val) \
+		StateName *name; \
+		static StateFactory __attribute__((init_priority(101))) name##Factory(name, #name, val)
+ 	#define EVENT(name, val) \
+		EventName *name; \
+		static EventFactory __attribute__((init_priority(101))) name##Factory(name, #name, val)
 #endif
 
 #include <string>
@@ -71,8 +75,21 @@ public:
 		states->push_back(this);
 	}
 	static const std::vector<const StateName *> &get() { return *states; }
-	static void clear() { states->clear(); }
+	static void destroy() {
+		List::const_iterator i;
+		for(i = states->begin(); i != states->end(); i++)
+			delete *i;
+		delete states;
+	}
 };
+
+class StateFactory {
+public:
+	StateFactory(StateName *&s, const char *name, int32_t value) {
+		s = new StateName(name, value);
+	}
+};
+
 class EventName : public Name {
 public:
 	typedef std::vector<const EventName *> List;
@@ -86,12 +103,25 @@ public:
 		events->push_back(this);
 	}
 	static const List &get() { return *events; }
-	static void clear() { events->clear(); }
+	static void destroy() { 
+		List::const_iterator i;
+		for(i = events->begin(); i != events->end(); i++)
+			delete *i;
+		delete events;
+	}
 	void registerType(uint32_t value, std::string type) {
 		types.insert(TypeTable::value_type(value, type));
 	}
 	const TypeTable &getTypes() const { return types; }
 };
+
+class EventFactory {
+public:
+	EventFactory(EventName *&e, const char *name, int32_t value) {
+		e = new EventName(name, value);
+	}
+};
+
 };
 
 #endif

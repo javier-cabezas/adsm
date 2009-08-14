@@ -70,6 +70,7 @@ CacheManager::CacheManager() :
 	writeBuffer(NULL),
 	writeBufferSize(0)
 {
+	MUTEX_INIT(writeMutex);
 	const char *var = Util::getenv(lineSizeVar);
 	if(var != NULL) lineSize = atoi(var);
 	if(lineSize == 0) lineSize = 1024;
