@@ -7,8 +7,8 @@ BUILT_SOURCES = config/os config/api
 
 export INCLUDES := -I$(CUDA_DIR)/include -I$(abs_srcdir)/config -I$(abs_builddir)/config
 
-config/os: $(OS_DIR)
+config/os: os/$(OS_DIR)
 	$(LN_S) -Tf ../$(srcdir)/os/$(OS_DIR) config/os
 
-config/api: $(API_DIR)
+config/api: api/$(API_DIR)
 	$(LN_S) -Tf ../$(srcdir)/api/$(API_DIR) config/api
