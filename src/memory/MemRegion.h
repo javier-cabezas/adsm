@@ -34,12 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMREGION_H_
 #define __MEMORY_MEMREGION_H_
 
-#include <config/config.h>
-#include <config/threads.h>
-#include <config/debug.h>
+#include <config.h>
+#include <threads.h>
+#include <debug.h>
 
-#include <memory/os/Process.h>
-#include <memory/os/Memory.h>
+#include "os/Process.h"
+#include "os/Memory.h"
 
 #include <stdio.h>
 #include <unistd.h>

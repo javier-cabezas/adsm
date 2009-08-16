@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PARAVER_H
 #define __MEMORY_PARAVER_H
 
-#include <config/paraver.h>
+#include <paraver.h>
 
 #ifdef PARAVER_GMAC
 

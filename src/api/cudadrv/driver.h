@@ -31,20 +31,60 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __POSIX_LOADER_H_
-#define __POSIX_LOADER_H_
+#ifndef __CUDA_DRIVER_H_
+#define __CUDA_DRIVER_H_
 
-#include <config/debug.h>
+#include <config.h>
+#include <stdint.h>
 
-#include <dlfcn.h>
+#include <cuda.h>
+#include <vector_types.h>
 
-#define SYM(ret, symbol, ...)	\
-	typedef ret (*symbol##_t)(__VA_ARGS__);	\
-	symbol##_t symbol = NULL
+#include <vector>
 
-#define LOAD_SYM(symbol, name)	\
-	if((symbol = (symbol##_t)dlsym(RTLD_NEXT, #name)) == NULL)	\
-		FATAL("Unable to locate "#name);
+typedef struct {
+	dim3 grid;
+	dim3 block;
+	size_t shared;
+	size_t tokens;
+	size_t stack;
+} gmacCall_t;
+
+struct __deviceVariable {
+	CUdeviceptr ptr;
+	size_t size;
+	bool constant;
+};
+
+
+typedef HASH_MAP<const char *, CUfunction> FunctionMap;
+extern FunctionMap funMap;
+typedef HASH_MAP<const char *, struct __deviceVariable> VariableMap;
+extern VariableMap varMap;
+const size_t gmacStackSize = 4096;
+extern std::vector<gmacCall_t> gmacCallStack;
+extern size_t gmacStackPtr;
+extern uint8_t gmacStack[gmacStackSize];
+
+extern gmacError_t gmacLastError;
+
+gmacError_t __gmacError(CUresult);
+inline gmacError_t __gmacReturn(gmacError_t error) {
+	gmacLastError = error;
+	return error;
+}
+
+inline CUdeviceptr voidToDev(void *v)
+{
+	unsigned long u = (unsigned long)v;
+	return (CUdeviceptr)(u & 0xffffffff);
+}
+
+inline CUdeviceptr voidToDev(const void *v)
+{
+	unsigned long u = (unsigned long)v;
+	return (CUdeviceptr)(u & 0xffffffff);
+}
 
 
 #endif

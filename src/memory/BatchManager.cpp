@@ -1,8 +1,8 @@
 #include "BatchManager.h"
 #include "paraver.h"
 
-#include <config/debug.h>
-#include <acc/api.h>
+#include <debug.h>
+#include <api/api.h>
 
 namespace gmac {
 void BatchManager::release(void *addr)

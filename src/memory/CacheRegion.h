@@ -37,8 +37,8 @@ WITH THE SOFTWARE.  */
 #include "MemRegion.h"
 #include "ProtRegion.h"
 
-#include <config/config.h>
-#include <config/debug.h>
+#include <config.h>
+#include <debug.h>
 
 #include <stdlib.h>
 #include <list>

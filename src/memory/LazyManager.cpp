@@ -1,7 +1,7 @@
 #include "LazyManager.h"
 
-#include <config/debug.h>
-#include <acc/api.h>
+#include <debug.h>
+#include <api/api.h>
 
 #include <assert.h>
 

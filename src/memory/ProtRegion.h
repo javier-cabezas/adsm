@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTREGION_H_
 #define __MEMORY_PROTREGION_H_
 
-#include <memory/MemRegion.h>
-#include <memory/MemHandler.h>
-#include <memory/os/Memory.h>
+#include "MemRegion.h"
+#include "MemHandler.h"
+
+#include <os/Memory.h>
 
 #include <signal.h>
 

@@ -1,8 +1,6 @@
 #ifndef __CONFIG_THREADS_H_
 #define __CONFIG_THREADS_H_
 
-#include <memory/paraver.h>
-
 #ifdef HAVE_LIBPTHREAD
 
 #include <pthread.h>

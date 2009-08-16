@@ -1,6 +1,6 @@
 #include "ProtRegion.h"
 
-#include <config/debug.h>
+#include <debug.h>
 
 namespace gmac {
 unsigned ProtRegion::count = 0;

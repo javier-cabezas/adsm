@@ -38,8 +38,8 @@ WITH THE SOFTWARE.  */
 #include "paraver.h"
 #include "os/Memory.h"
 
-#include <config/config.h>
-#include <config/threads.h>
+#include <config.h>
+#include <threads.h>
 
 #include <stdint.h>
 

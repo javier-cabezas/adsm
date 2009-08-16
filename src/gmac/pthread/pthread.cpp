@@ -1,8 +1,8 @@
-#include <acc/api.h>
+#include <api/api.h>
 #include <os/loader.h>
 
-#include <config/paraver.h>
-#include <config/debug.h>
+#include <paraver.h>
+#include <debug.h>
 
 #include <pthread.h>
 

@@ -1,5 +1,5 @@
 #include <MemManager.h>
-#include <config/debug.h>
+#include <debug.h>
 
 namespace gmac {
 

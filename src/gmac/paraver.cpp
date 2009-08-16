@@ -24,7 +24,6 @@ static const char *functionNames[] = {
 
 static void __attribute__((constructor(199))) paraverInit(void)
 {
-	fprintf(stderr,"Adding paraver functions\n");
 	for(int i = 0; functionNames[i] != 0; i++)
 		paraver::_Function_->registerType(i, std::string(functionNames[i]));
 }

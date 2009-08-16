@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MAPMANAGER_H_
 #define __MEMORY_MAPMANAGER_H_
 
-#include <config/threads.h>
+#include <threads.h>
 
 #include <assert.h>
 #include <map>

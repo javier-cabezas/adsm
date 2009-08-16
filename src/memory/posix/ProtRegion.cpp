@@ -1,7 +1,7 @@
 #include <ProtRegion.h>
 
-#include <config/debug.h>
-#include <config/paraver.h>
+#include <debug.h>
+#include <paraver.h>
 
 #include <string.h>
 

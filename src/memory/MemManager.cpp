@@ -3,7 +3,7 @@
 #include "LazyManager.h"
 #include "CacheManager.h"
 
-#include <config/debug.h>
+#include <debug.h>
 
 #include <strings.h>
 

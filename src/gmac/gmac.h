@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
-#include <gmac/acc.h>
+#include <gmac/api.h>
 
 
 #ifdef __cplusplus

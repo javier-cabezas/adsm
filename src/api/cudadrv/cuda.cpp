@@ -1,7 +1,7 @@
 #include "api.h"
 #include "driver.h"
 
-#include <config/debug.h>
+#include <debug.h>
 
 #include <cuda.h>
 

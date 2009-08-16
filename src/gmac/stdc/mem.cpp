@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#include <memory/MemManager.h>
+#include <MemManager.h>
 
 SYM(void *, __libc_memset, void *, int, size_t);
 SYM(void *, __libc_memcpy, void *, const void *, size_t);

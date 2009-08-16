@@ -1,8 +1,8 @@
 #include "api.h"
 #include "driver.h"
 
-#include <config/config.h>
-#include <config/debug.h>
+#include <config.h>
+#include <debug.h>
 
 #include <assert.h>
 

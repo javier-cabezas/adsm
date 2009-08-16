@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <config/config.h>
-#include <config/threads.h>
-#include <config/paraver.h>
-#include <config/debug.h>
+#include <config.h>
+#include <threads.h>
+#include <paraver.h>
+#include <debug.h>
 
-#include <acc/api.h>
-#include <memory/MemManager.h>
+#include <api/api.h>
+#include <MemManager.h>
 
 MUTEX(gmacMutex);
 gmac::MemManager *memManager = NULL;
@@ -44,7 +44,9 @@ void gmacCreateManager(void)
 
 static void __attribute__((constructor(199))) gmacInit(void)
 {
+#ifdef PARAVER
 	__init_paraver = 0;
+#endif
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
 	gmacCreateManager();

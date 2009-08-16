@@ -39,8 +39,8 @@ WITH THE SOFTWARE.  */
 #include "MemMap.h"
 #include "ProtRegion.h"
 
-#include <config/threads.h>
-#include <config/debug.h>
+#include <threads.h>
+#include <debug.h>
 
 #include <map>
 

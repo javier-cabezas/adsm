@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "CacheRegion.h"
 #include "os/Process.h"
 
-#include <config/threads.h>
+#include <threads.h>
 
 #include <map>
 #include <list>

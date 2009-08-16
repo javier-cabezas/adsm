@@ -1,14 +1,14 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = $(ACC_DIR) $(PARAVER_DIR) memory gmac
-DIST_SUBDIRS = config cuda cudadrv memory paraver gmac
+SUBDIRS = $(PARAVER_DIR) api os memory gmac
+DIST_SUBDIRS = config paraver api os memory gmac
 
-BUILT_SOURCES = os acc
+BUILT_SOURCES = config/os config/api
 
-export INCLUDES := -I$(CUDA_DIR)/include -I$(abs_srcdir) -I$(abs_builddir)
+export INCLUDES := -I$(CUDA_DIR)/include -I$(abs_srcdir)/config -I$(abs_builddir)/config
 
-os: $(OS_DIR)
-	$(LN_S) -Tf $(srcdir)/$(OS_DIR) os
+config/os: $(OS_DIR)
+	$(LN_S) -Tf ../$(srcdir)/os/$(OS_DIR) config/os
 
-acc: $(ACC_DIR)
-	$(LN_S) -Tf $(srcdir)/$(ACC_DIR) acc
+config/api: $(API_DIR)
+	$(LN_S) -Tf ../$(srcdir)/api/$(API_DIR) config/api
