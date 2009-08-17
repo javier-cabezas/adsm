@@ -10,9 +10,9 @@ namespace paraver {
 
 extern Trace *trace;
 
-void pushState(paraver::StateName &s) { if(trace != NULL) trace->__pushState(s); }
-void popState(void) { if(trace != NULL) trace->__popState(); }
-void pushEvent(paraver::EventName &e, int v) { if(trace != NULL) trace->__pushEvent(e, v); }
+void __pushState(paraver::StateName &s) { if(trace != NULL) trace->__pushState(s); }
+void __popState(void) { if(trace != NULL) trace->__popState(); }
+void __pushEvent(paraver::EventName &e, int v) { if(trace != NULL) trace->__pushEvent(e, v); }
 
 int __init_paraver = 0;
 

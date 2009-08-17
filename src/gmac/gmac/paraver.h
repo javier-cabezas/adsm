@@ -39,13 +39,22 @@ WITH THE SOFTWARE.  */
 #include <gmac.h>
 #include <paraver/Names.h>
 
+namespace paraver {
+	EVENT(Function);
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pushState(paraver::StateName &s);
-void popState(void);
-void pushEvent(paraver::EventName &s);
+#define pushState(s) __pushState(*paraver:s)
+void __pushState(paraver::StateName &s);
+#define popState() __popState();
+void __popState(void);
+#define pushEvent(e) __pushEvent(*paraver::e)
+void __pushEvent(paraver::EventName &s);
+#define enterFunction(f) __pushEvent(*paraver::Function, f)
+#define exitFunction() __pushEvent(*paraver::Function, 0)
 
 #ifdef __cplusplus
 };

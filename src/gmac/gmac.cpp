@@ -8,8 +8,9 @@
 #include <debug.h>
 
 #include <api/api.h>
-#include <Paraver.h>
 #include <MemManager.h>
+
+#include <paraver/paraver.h>
 
 MUTEX(gmacMutex);
 gmac::MemManager *memManager = NULL;
@@ -40,6 +41,7 @@ void gmacCreateManager(void)
 
 static void __attribute__((constructor(199))) gmacInit(void)
 {
+	paraver::init = 1;
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
 	gmacCreateManager();
