@@ -1,7 +1,7 @@
 #include "MemManager.h"
 #include "BatchManager.h"
 #include "LazyManager.h"
-#include "CacheManager.h"
+#include "RollingManager.h"
 
 #include <debug.h>
 
@@ -12,7 +12,7 @@ namespace gmac {
 
 MemManager *getManager(const char *managerName)
 {
-	if(managerName == NULL) return new CacheManager();
+	if(managerName == NULL) return new RollingManager();
 	TRACE("Using %s Manager", managerName);
 	if(strcasecmp(managerName, "None") == 0)
 		return NULL;
@@ -20,7 +20,7 @@ MemManager *getManager(const char *managerName)
 		return new LazyManager();
 	else if(strcasecmp(managerName, "Batch") == 0)
 		return new BatchManager();
-	return new CacheManager();
+	return new RollingManager();
 }
 
 void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)

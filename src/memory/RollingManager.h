@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "MemManager.h"
 #include "MemHandler.h"
 #include "MemMap.h"
-#include "CacheRegion.h"
+#include "RollingRegion.h"
 #include "os/Process.h"
 
 #include <threads.h>
@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class CacheManager : public MemManager, public MemHandler {
+class RollingManager : public MemManager, public MemHandler {
 protected:
 	static const char *lineSizeVar;
 	static const char *lruDeltaVar;
@@ -56,10 +56,10 @@ protected:
 	size_t lruSize;
 	size_t pageSize;
 
-	MemMap<CacheRegion> memMap;
+	MemMap<RollingRegion> memMap;
 
-	typedef std::list<ProtSubRegion *> Cache;
-	std::map<thread_t, Cache> regionCache;
+	typedef std::list<ProtSubRegion *> Rolling;
+	std::map<thread_t, Rolling> regionRolling;
 
 	MUTEX(writeMutex);
 	void *writeBuffer;
@@ -69,17 +69,17 @@ protected:
 	void flushToDevice(thread_t tid);
 
 #ifdef DEBUG
-	void dumpCache();
+	void dumpRolling();
 #endif
 
 	// Methods used by ProtSubRegion to request flushing and invalidating
-	friend class CacheRegion;
+	friend class RollingRegion;
 	void invalidate(ProtSubRegion *region) {
-		regionCache[Process::gettid()].remove(region);
+		regionRolling[Process::gettid()].remove(region);
 	}
 
 public:
-	CacheManager();
+	RollingManager();
 	bool alloc(void *addr, size_t size);
 	void *safeAlloc(void *addr, size_t size);
 	void release(void *addr);
@@ -89,7 +89,7 @@ public:
 		return memMap.filter(addr, size, region);
 	}
 	void invalidate(MemRegion *region) {
-		dynamic_cast<CacheRegion *>(region)->invalidate();
+		dynamic_cast<RollingRegion *>(region)->invalidate();
 	}
 	void flush(MemRegion *region);
 	void dirty(MemRegion *region);

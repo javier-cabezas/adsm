@@ -10,8 +10,8 @@ libmemory_la_SOURCES = \
 			LazyManager.h LazyManager.cpp\
 			MemHandler.h MemHandler.cpp\
 			ProtRegion.h ProtRegion.cpp\
-			CacheManager.h CacheManager.cpp\
-			CacheRegion.h CacheRegion.cpp
+			RollingManager.h RollingManager.cpp\
+			RollingRegion.h RollingRegion.cpp
 libmemory_la_LIBADD = $(OS_DIR)/libmemory-os.la $(PARAVER_LIB)
 
 BUILT_SOURCES = os

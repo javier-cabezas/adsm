@@ -1,19 +1,19 @@
-#include "CacheRegion.h"
-#include "CacheManager.h"
+#include "RollingRegion.h"
+#include "RollingManager.h"
 
 #include "os/Memory.h"
 
 #include <algorithm>
 
 namespace gmac {
-CacheRegion::CacheRegion(CacheManager &manager, void *addr, size_t size,
+RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
 	ProtRegion(addr, size),
 	manager(manager),
 	cacheLine(cacheLine),
 	offset((unsigned long)addr & (cacheLine -1))
 {
-	TRACE("CacheRegion Starts");
+	TRACE("RollingRegion Starts");
 	for(size_t s = 0; s < size; s += cacheLine) {
 		void *p = (void *)((uint8_t *)addr + s);
 		size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
@@ -22,10 +22,10 @@ CacheRegion::CacheRegion(CacheManager &manager, void *addr, size_t size,
 		set[p] = region;
 		memory.push_back(region);
 	}
-	TRACE("CacheRegion Ends");
+	TRACE("RollingRegion Ends");
 }
 
-CacheRegion::~CacheRegion()
+RollingRegion::~RollingRegion()
 {
 	Set::const_iterator i;
 	for(i = set.begin(); i != set.end(); i++) {
@@ -36,9 +36,9 @@ CacheRegion::~CacheRegion()
 }
 
 
-void CacheRegion::invalidate()
+void RollingRegion::invalidate()
 {
-	TRACE("CacheRegion Invalidate %p (%d bytes)", addr, size);
+	TRACE("RollingRegion Invalidate %p (%d bytes)", addr, size);
 	// Check if the region is already invalid
 	if(memory.empty()) return;
 
@@ -54,7 +54,7 @@ void CacheRegion::invalidate()
 	memory.clear();
 }
 
-void CacheRegion::dirty()
+void RollingRegion::dirty()
 {
 	// Check if the region is already invalid
 	if(memory.empty()) return;

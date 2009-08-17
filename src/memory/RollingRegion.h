@@ -44,11 +44,11 @@ WITH THE SOFTWARE.  */
 #include <list>
 
 namespace gmac {
-class CacheManager;
+class RollingManager;
 class ProtSubRegion;
-class CacheRegion : public ProtRegion {
+class RollingRegion : public ProtRegion {
 protected:
-	CacheManager &manager;
+	RollingManager &manager;
 
 	// Set of all sub-regions forming the region
 	typedef HASH_MAP<void *, ProtSubRegion *> Set;
@@ -73,8 +73,8 @@ protected:
 	inline void present(ProtSubRegion *region) { memory.push_back(region); }
 
 public:
-	CacheRegion(CacheManager &manager, void *, size_t, size_t);
-	~CacheRegion();
+	RollingRegion(RollingManager &manager, void *, size_t, size_t);
+	~RollingRegion();
 
 	inline ProtSubRegion *find(const void *addr) {
 		unsigned long base = (((unsigned long)addr & ~(cacheLine - 1)) + offset);
@@ -90,17 +90,17 @@ public:
 
 class ProtSubRegion : public ProtRegion {
 protected:
-	CacheRegion *parent;
-	friend class CacheRegion;
+	RollingRegion *parent;
+	friend class RollingRegion;
 	void silentInvalidate() { present = dirty = false; }
 public:
-	ProtSubRegion(CacheRegion *parent, void *addr, size_t size) :
+	ProtSubRegion(RollingRegion *parent, void *addr, size_t size) :
 		ProtRegion(addr, size),
 		parent(parent)
 	{ }
 	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
 
-	bool belongs(CacheRegion *r) const { parent == r; }
+	bool belongs(RollingRegion *r) const { parent == r; }
 
 	virtual void invalidate() {
 		FATAL("Invalidation on a SubRegion %p", addr);

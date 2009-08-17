@@ -1,4 +1,4 @@
-#include "CacheManager.h"
+#include "RollingManager.h"
 #include "os/Util.h"
 #include <api/api.h>
 
@@ -7,10 +7,10 @@
 
 namespace gmac {
 
-const char *CacheManager::lineSizeVar = "GMAC_LINESIZE";
-const char *CacheManager::lruDeltaVar = "GMAC_LRUDELTA";
+const char *RollingManager::lineSizeVar = "GMAC_LINESIZE";
+const char *RollingManager::lruDeltaVar = "GMAC_LRUDELTA";
 
-void CacheManager::waitForWrite(void *addr, size_t size)
+void RollingManager::waitForWrite(void *addr, size_t size)
 {
 	MUTEX_LOCK(writeMutex);
 	if(writeBuffer) {
@@ -23,10 +23,10 @@ void CacheManager::waitForWrite(void *addr, size_t size)
 }
 
 
-void CacheManager::writeBack(thread_t tid)
+void RollingManager::writeBack(thread_t tid)
 {
-	ProtSubRegion *r = regionCache[tid].front();
-	regionCache[tid].pop_front();
+	ProtSubRegion *r = regionRolling[tid].front();
+	regionRolling[tid].pop_front();
 	waitForWrite(r->getAddress(), r->getSize());
 	mlock(writeBuffer, writeBufferSize);
 	__gmacMemcpyToDeviceAsync(safe(r->getAddress()), r->getAddress(),
@@ -35,25 +35,25 @@ void CacheManager::writeBack(thread_t tid)
 }
 
 
-void CacheManager::flushToDevice(thread_t tid) 
+void RollingManager::flushToDevice(thread_t tid) 
 {
 	waitForWrite();
-	Cache::iterator i;
-	for(i = regionCache[tid].begin(); i != regionCache[tid].end(); i++) {
+	Rolling::iterator i;
+	for(i = regionRolling[tid].begin(); i != regionRolling[tid].end(); i++) {
 		__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(),
 				(*i)->getSize());
 		(*i)->readOnly();
 		TRACE("Flush to Device %p", (*i)->getAddress()); 
 	}
-	regionCache[tid].clear();
+	regionRolling[tid].clear();
 }
 
 #ifdef DEBUG
-void CacheManager::dumpCache()
+void RollingManager::dumpRolling()
 {
-	std::map<thread_t, Cache>::const_iterator c;
-	for(c = regionCache.begin(); c != regionCache.end(); c++) {
-		Cache::const_iterator i;
+	std::map<thread_t, Rolling>::const_iterator c;
+	for(c = regionRolling.begin(); c != regionRolling.end(); c++) {
+		Rolling::const_iterator i;
 		for(i = c->second.begin(); i != c->second.end(); i++)
 			TRACE("Thread %d: Region %p (%p - %d bytes)", c->first, *i,
 					(*i)->getAddress(), (*i)->getSize());
@@ -61,7 +61,7 @@ void CacheManager::dumpCache()
 }
 #endif
 
-CacheManager::CacheManager() :
+RollingManager::RollingManager() :
 	MemManager(),
 	lineSize(0),
 	lruDelta(0),
@@ -80,101 +80,101 @@ CacheManager::CacheManager() :
 	TRACE("Using %d as Memory Block Size", lineSize * pageSize);
 	TRACE("Using %d as LRU Delta Size", lruDelta);
 #ifdef DEBUG
-	dumpCache();
+	dumpRolling();
 #endif
 }
 
 
 // MemManager Interface
 
-bool CacheManager::alloc(void *addr, size_t size)
+bool RollingManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, size);
 	lruSize += lruDelta;
-	memMap.insert(new CacheRegion(*this, addr, size, lineSize * pageSize));
+	memMap.insert(new RollingRegion(*this, addr, size, lineSize * pageSize));
 	return true;
 }
 
 
-void *CacheManager::safeAlloc(void *addr, size_t size)
+void *RollingManager::safeAlloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
 	lruSize += lruDelta;
-	memMap.insert(new CacheRegion(*this, cpuAddr, size, lineSize * pageSize));
+	memMap.insert(new RollingRegion(*this, cpuAddr, size, lineSize * pageSize));
 	return cpuAddr;
 }
 
 
-void CacheManager::release(void *addr)
+void RollingManager::release(void *addr)
 {
-	CacheRegion *reg = memMap.remove(addr);
+	RollingRegion *reg = memMap.remove(addr);
 	unmap(reg->getAddress(), reg->getSize());
 	delete reg;
 	lruSize -= lruDelta;
 	TRACE("Released %p", addr);
 #ifdef DEBUG
-	dumpCache();
+	dumpRolling();
 #endif
 }
 
 
-void CacheManager::flush()
+void RollingManager::flush()
 {
-	TRACE("CacheManager Flush Starts");
+	TRACE("RollingManager Flush Starts");
 	flushToDevice(Process::gettid());
-	MemMap<CacheRegion>::iterator i;
+	MemMap<RollingRegion>::iterator i;
 	memMap.lock();
 	for(i = memMap.begin(); i != memMap.end(); i++) {
 		if(i->second->isOwner()) 
 			i->second->invalidate();
 	}
 	memMap.unlock();
-	TRACE("CacheManager Flush Ends");
+	TRACE("RollingManager Flush Ends");
 }
 
-void CacheManager::flush(MemRegion *region)
+void RollingManager::flush(MemRegion *region)
 {
-	CacheRegion *r = dynamic_cast<CacheRegion *>(region);
+	RollingRegion *r = dynamic_cast<RollingRegion *>(region);
 	thread_t tid = Process::gettid();
-	Cache::iterator i;
-	for(i = regionCache[tid].begin(); i != regionCache[tid].end();) {
+	Rolling::iterator i;
+	for(i = regionRolling[tid].begin(); i != regionRolling[tid].end();) {
 		if((*i)->belongs(r)) {
 			__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(),
 					(*i)->getSize());
 			(*i)->readOnly();
-			i = regionCache[tid].erase(i);
+			i = regionRolling[tid].erase(i);
 		}
 		else i++;
 	}
 	r->invalidate();
 }
 
-void CacheManager::dirty(MemRegion *region)
+void RollingManager::dirty(MemRegion *region)
 {
-	CacheRegion *r = dynamic_cast<CacheRegion *>(region);
+	RollingRegion *r = dynamic_cast<RollingRegion *>(region);
 	r->dirty();
 }
 
-bool CacheManager::present(MemRegion *region) const
+bool RollingManager::present(MemRegion *region) const
 {
-	CacheRegion *r = dynamic_cast<CacheRegion *>(region);
+	RollingRegion *r = dynamic_cast<RollingRegion *>(region);
 	return r->isPresent();
 }
 
 // MemHandler Interface
 
-ProtRegion *CacheManager::find(void *addr)
+ProtRegion *RollingManager::find(void *addr)
 {
-	CacheRegion *r = memMap.find(addr);
+	RollingRegion *r = memMap.find(addr);
 	if(r) return r->find(addr);
 	return NULL;
 }
 
 
-void CacheManager::read(ProtRegion *region, void *addr)
+void RollingManager::read(ProtRegion *region, void *addr)
 {
 	assert(region->isPresent() == false);
 	region->readWrite();
@@ -184,15 +184,15 @@ void CacheManager::read(ProtRegion *region, void *addr)
 }
 
 
-void CacheManager::write(ProtRegion *region, void *addr)
+void RollingManager::write(ProtRegion *region, void *addr)
 {
 	assert(region->isDirty() == false);
 	thread_t tid = Process::gettid();
-	while(regionCache[tid].size() >= lruSize) writeBack(tid);
+	while(regionRolling[tid].size() >= lruSize) writeBack(tid);
 	region->readWrite();
-	regionCache[tid].push_back(dynamic_cast<ProtSubRegion *>(region));
+	regionRolling[tid].push_back(dynamic_cast<ProtSubRegion *>(region));
 #ifdef DEBUG
-	dumpCache();
+	dumpRolling();
 #endif
 
 }
