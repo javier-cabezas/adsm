@@ -1,9 +1,9 @@
-#include <paraver/threads.h>
-#include <paraver/Trace.h>
-#include <paraver/Element.h>
-#include <paraver/Types.h>
+#include "../threads.h"
+#include "../Trace.h"
+#include "../Element.h"
+#include "../Types.h"
 
-#include <config/debug.h>
+#include <debug.h>
 
 #include <strings.h>
 #include <assert.h>
