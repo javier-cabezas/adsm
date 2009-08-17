@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include <gmac.h>
 #include <paraver/Types.h>
+#include <paraver/Trace.h>
 
 #ifdef __cplusplus
 extern "C" {
