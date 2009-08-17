@@ -34,7 +34,7 @@ void ProtRegion::restoreHandler()
 
 void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 {
-	enterFunction(_gmacSignal_);
+	enterFunction(gmacSignal);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
 

@@ -18,10 +18,6 @@ static size_t pageSize = 0;
 
 static const char *memManagerVar = "GMAC_MANAGER";
 
-#ifdef PARAVER
-extern int __init_paraver;
-#endif
-
 void gmacRemoveManager(void)
 {
 	__MUTEX_LOCK(gmacMutex);
@@ -44,9 +40,6 @@ void gmacCreateManager(void)
 
 static void __attribute__((constructor(199))) gmacInit(void)
 {
-#ifdef PARAVER
-	__init_paraver = 0;
-#endif
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
 	gmacCreateManager();
@@ -60,7 +53,7 @@ static void __attribute__((destructor)) gmacFini(void)
 
 gmacError_t gmacMalloc(void **devPtr, size_t count)
 {
-	enterFunction(_gmacMalloc_);
+	enterFunction(gmacMalloc);
 	gmacError_t ret = gmacSuccess;
 	count = (count < pageSize) ? pageSize : count;
 	ret = __gmacMalloc(devPtr, count);
@@ -79,7 +72,7 @@ gmacError_t gmacMalloc(void **devPtr, size_t count)
 
 gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 {
-	enterFunction(_gmacMalloc_);
+	enterFunction(gmacMalloc);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
@@ -105,7 +98,7 @@ void *gmacSafePointer(void *devPtr)
 
 gmacError_t gmacFree(void *devPtr)
 {
-	enterFunction(_gmacFree_);
+	enterFunction(gmacFree);
 	__gmacFree(gmacSafePointer(devPtr));
 	if(memManager) {
 		memManager->release(devPtr);
@@ -117,7 +110,7 @@ gmacError_t gmacFree(void *devPtr)
 gmacError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 		size_t widthInBytes, size_t height)
 {
-	enterFunction(_gmacMalloc_);
+	enterFunction(gmacMalloc);
 	void *cpuAddr = NULL;
 	gmacError_t ret = gmacSuccess;
 	size_t count = widthInBytes * height;
@@ -144,7 +137,7 @@ gmacError_t gmacMallocPitch(void **devPtr, size_t *pitch,
 
 gmacError_t gmacLaunch(const char *symbol)
 {
-	enterFunction(_gmacLaunch_);
+	enterFunction(gmacLaunch);
 	gmacError_t ret = gmacSuccess;
 	if(memManager) {
 		TRACE("Memory Flush");
@@ -158,7 +151,7 @@ gmacError_t gmacLaunch(const char *symbol)
 
 gmacError_t gmacThreadSynchronize()
 {
-	enterFunction(_gmacSync_);
+	enterFunction(gmacSync);
 	gmacError_t ret = __gmacThreadSynchronize();
 	if(memManager) {
 		TRACE("Memory Sync");

@@ -26,6 +26,7 @@ gmacConstant_SOURCES = gmacConstant.cu
 gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu
+gmacThreadVecAdd_CPPFLAGS = $(PARAVER_INCLUDE)
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/

@@ -36,25 +36,42 @@ WITH THE SOFTWARE.  */
 
 #ifdef PARAVER_GMAC
 #include <paraver/Trace.h>
-#include <paraver/Types.h>
-extern paraver::Trace *trace;
+#include <paraver/Names.h>
+
+namespace paraver {
+
+extern Trace *trace;
+
+EVENT(Function);
+EVENT(HostDeviceCopy);
+EVENT(DeviceHostCopy);
+EVENT(DeviceDeviceCopy);
+EVENT(GPUCall);
+
+STATE(ThreadCreate);
+STATE(IORead);
+STATE(IOWrite);
 
 typedef enum {
-	_None_ = 0,
-	_accMalloc_, _accFree_,
-	_accHostDeviceCopy_, _accDeviceHostCopy_, _accDeviceDeviceCopy_,
-	_accLaunch_, _accSync_,
-	_gmacMalloc_, _gmacFree_, _gmacLaunch_, _gmacSync_, _gmacSignal_,
+	None = 0,
+	accMalloc, accFree,
+	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
+	accLaunch, accSync,
+	gmacMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
 } FunctionName;
 
+};
 
 /* Macros to issue traces in paraver mode */
-#define addThread()	trace->__addThread()
-#define pushState(s)	trace->__pushState(*paraver::s)
-#define popState()	trace->__popState()
-#define pushEvent(e, ...)	trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
-#define enterFunction(s) trace->__pushEvent(*paraver::_Function_, s)
-#define exitFunction() trace->__pushEvent(*paraver::_Function_, 0)
+#define addThread()	paraver::trace->__addThread()
+#define pushState(s)	paraver::trace->__pushState(*paraver::s)
+#define popState()	paraver::trace->__popState()
+#define pushEvent(e, ...)\
+	paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
+#define enterFunction(s) \
+	paraver::trace->__pushEvent(*paraver::Function, paraver::s)
+#define exitFunction() \
+	paraver::trace->__pushEvent(*paraver::Function, 0)
 
 #else
 

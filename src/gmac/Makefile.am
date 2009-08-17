@@ -7,7 +7,8 @@ nobase_include_HEADERS = gmac.h gmac/api.h gmac/paraver.h
 libgmac_la_SOURCES = gmac/acc.h gmac/paraver.h gmac.h gmac.cpp paraver.cpp
 libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/libgmac-thread.la\
 		../memory/libmemory.la\
-		../api/$(API_DIR)/libacc.la
+		../api/$(API_DIR)/libacc.la\
+		$(PARAVER_LIB)
 libgmac_la_LDFLAGS = -L$(CUDA_DIR)/lib
 
 BUILT_SOURCES = os

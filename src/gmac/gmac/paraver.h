@@ -37,8 +37,7 @@ WITH THE SOFTWARE.  */
 #ifdef PARAVER
 
 #include <gmac.h>
-#include <paraver/Types.h>
-#include <paraver/Trace.h>
+#include <paraver/Names.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,9 +51,6 @@ void pushEvent(paraver::EventName &s);
 };
 #endif
 
-#define PARAVER_STATE(state, value) paraver::StateName(#state, value)
-#define PARAVER_EVENT(event, value) paraver::EventName(#event, value)
-
 #else
 
 #define pushState(s)
@@ -62,9 +58,6 @@ void pushEvent(paraver::EventName &s);
 #define pushEvent(e)
 #define enterFunction(s)
 #define exitFunction()
-
-#define PARAVER_STATE(state, value)
-#define PARAVER_EVENT(event, value)
 
 #endif
 

@@ -41,75 +41,75 @@ WITH THE SOFTWARE.  */
 #include <api/api.h>
 
 #include <paraver/Trace.h>
-#include <paraver/Types.h>
+#include <paraver/Names.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 	inline gmacError_t __paraver__gmacMalloc(void **devPtr, size_t count) {
-		enterFunction(_accMalloc_);
+		enterFunction(accMalloc);
 		gmacError_t ret = __gmacMalloc(devPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacFree(void *devPtr) {
-		enterFunction(_accFree_);
+		enterFunction(accFree);
 		gmacError_t ret = __gmacFree(devPtr);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacMemcpyToDevice(void *dstPtr, void *srcPtr, size_t count) {
-		pushEvent(_HostDeviceCopy_, count);
-		enterFunction(_accHostDeviceCopy_);
+		pushEvent(HostDeviceCopy, count);
+		enterFunction(accHostDeviceCopy);
 		gmacError_t ret = __gmacMemcpyToDevice(dstPtr, srcPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacMemcpyToHost(void *dstPtr, const void *srcPtr, size_t count) {
-		pushEvent(_DeviceHostCopy_, count);
-		enterFunction(_accDeviceHostCopy_);
+		pushEvent(DeviceHostCopy, count);
+		enterFunction(accDeviceHostCopy);
 		gmacError_t ret = __gmacMemcpyToHost(dstPtr, srcPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacMemcpyDevice(void *dstPtr, const void *srcPtr, size_t count) {
-		pushEvent(_DeviceDeviceCopy_, count);
-		enterFunction(_accDeviceDeviceCopy_);
+		pushEvent(DeviceDeviceCopy, count);
+		enterFunction(accDeviceDeviceCopy);
 		gmacError_t ret = __gmacMemcpyDevice(dstPtr, srcPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacMemcpyToDeviceAsync(void *dstPtr, const void *srcPtr, size_t count) {
-		pushEvent(_HostDeviceCopy_, count);
-		enterFunction(_accHostDeviceCopy_);
+		pushEvent(HostDeviceCopy, count);
+		enterFunction(accHostDeviceCopy);
 		gmacError_t ret = __gmacMemcpyToDeviceAsync(dstPtr, srcPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacMemcpyToHostAsync(void *dstPtr, const void *srcPtr, size_t count) {
-		pushEvent(_DeviceHostCopy_, count);
-		enterFunction(_accDeviceHostCopy_);
+		pushEvent(DeviceHostCopy, count);
+		enterFunction(accDeviceHostCopy);
 		gmacError_t ret = __gmacMemcpyToHostAsync(dstPtr, srcPtr, count);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacLaunch(const char *kernel) {
-		pushEvent(_GPUCall_);
-		enterFunction(_accLaunch_);
+		pushEvent(GPUCall);
+		enterFunction(accLaunch);
 		gmacError_t ret = __gmacLaunch(kernel);
 		exitFunction();
 		return ret;
 	}
 
 	inline gmacError_t __paraver__gmacThreadSynchronize(void) {
-		enterFunction(_accSync_);
+		enterFunction(accSync);
 		gmacError_t ret = __gmacThreadSynchronize();
 		exitFunction();
 		return ret;

@@ -24,7 +24,7 @@ static void *gmac_pthread(void *arg)
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
-	pushState(_Running_);
+	pushState(Running);
 	gmacCreateManager();
 	void *ret = gthread->__start_routine(gthread->__arg);
 	gmacRemoveManager();
@@ -38,7 +38,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 		void *__restrict __arg) 
 {
 	int ret = 0;
-	pushState(_Create_);
+	pushState(ThreadCreate);
 	TRACE("pthread_create");
 	gthread.__start_routine = __start_routine;
 	gthread.__arg = __arg;

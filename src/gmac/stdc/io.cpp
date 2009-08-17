@@ -28,7 +28,7 @@ extern "C" {
 
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	pushState(_IORead_);
+	pushState(IORead);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
@@ -46,7 +46,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	pushState(_IOWrite_);
+	pushState(IOWrite);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {

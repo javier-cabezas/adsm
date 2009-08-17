@@ -97,8 +97,8 @@ AC_ARG_ENABLE(paraver,
 	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
-	paraver_dir="paraver"
-	paraver_lib="\$(top_builddir)/src/paraver/libparaver.la"
+	paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"
+	paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"
 	AC_DEFINE(PARAVER)
 	AC_MSG_RESULT(yes)
 else
@@ -127,19 +127,19 @@ AC_SUBST(API_DIR)
 AC_SUBST(OS_DIR)
 AC_SUBST(THREAD_DIR, $thread_dir)
 
-AC_SUBST(PARAVER_DIR, $paraver_dir)
+AC_SUBST(PARAVER_INCLUDE, $paraver_include)
 AC_SUBST(PARAVER_LIB, $paraver_lib)
 
 AC_CONFIG_LINKS(src/gmac/gmac/api.h:src/api/$API_DIR/api.h)
+AC_CONFIG_SUBDIRS([lib/libparaver])
 
 AC_OUTPUT(
 	Makefile
+	lib/Makefile
 	src/Makefile
 	src/config/config.h
 	src/memory/Makefile
 	src/memory/posix/Makefile
-	src/paraver/Makefile
-	src/paraver/posix/Makefile
 	src/gmac/Makefile
 	src/gmac/stdc/Makefile
 	src/gmac/posix/Makefile

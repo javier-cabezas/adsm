@@ -28,7 +28,7 @@ extern "C" {
 
 ssize_t read(int fd, void *buf, size_t count)
 {
-	pushState(_IORead_);
+	pushState(IORead);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
@@ -41,7 +41,7 @@ ssize_t read(int fd, void *buf, size_t count)
 
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	pushState(_IOWrite_);
+	pushState(IOWrite);
 	ssize_t n = 0;
 	uint8_t *ptr = (uint8_t *)buf;
 	do {
