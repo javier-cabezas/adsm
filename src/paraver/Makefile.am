@@ -5,7 +5,8 @@ SUBDIRS = $(OS_DIR)
 
 noinst_LTLIBRARIES = libparaver.la
 libparaver_la_includedir = $(includedir)/paraver
-libparaver_la_include_HEADERS = Types.h Names.h
+libparaver_la_include_HEADERS = Types.h Names.h Trace.h Time.h Element.h\
+		Record.h threads.h
 libparaver_la_SOURCES = Trace.cpp Record.cpp Element.cpp Types.cpp Pcf.cpp paraver.cpp
 libparaver_la_LIBADD = $(OS_DIR)/libparaver-os.la
 
