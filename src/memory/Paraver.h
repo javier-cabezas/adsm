@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #ifdef PARAVER_GMAC
 
-#include <acc/api.h>
+#include <api/api.h>
 
 #include <paraver/Trace.h>
 #include <paraver/Types.h>

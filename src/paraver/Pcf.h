@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_PCF_H
 #define __PARAVER_PCF_H
 
-#include <paraver/Types.h>
-
 #include <iostream>
 
 namespace paraver {

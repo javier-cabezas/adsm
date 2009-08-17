@@ -1,5 +1,4 @@
 #include "BatchManager.h"
-#include "paraver.h"
 
 #include <debug.h>
 #include <api/api.h>

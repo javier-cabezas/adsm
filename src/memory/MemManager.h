@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MEMMANAGER_H_
 
 #include "MemRegion.h"
-#include "paraver.h"
+#include "Paraver.h"
 #include "os/Memory.h"
 
 #include <config.h>

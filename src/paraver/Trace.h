@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_TRACE_H
 #define __PARAVER_TRACE_H
 
-#include <config/config.h>
+#include <config.h>
 #include <paraver/threads.h>
 #include <paraver/Time.h>
 #include <paraver/Element.h>

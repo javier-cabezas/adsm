@@ -1,7 +1,7 @@
 #include "Trace.h"
 #include "Pcf.h"
 
-#include <config/debug.h>
+#include <debug.h>
 
 paraver::Trace *trace = NULL;
 static const char *paraverVar = "PARAVER_OUTPUT";

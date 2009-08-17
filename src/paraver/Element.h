@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_ELEMENT_H_
 #define __PARAVER_ELEMENT_H_
 
-#include <config/config.h>
+#include <config.h>
 #include <paraver/Time.h>
 #include <paraver/Record.h>
 

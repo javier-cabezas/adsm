@@ -5,10 +5,10 @@
 
 #include <config.h>
 #include <threads.h>
-#include <paraver.h>
 #include <debug.h>
 
 #include <api/api.h>
+#include <Paraver.h>
 #include <MemManager.h>
 
 MUTEX(gmacMutex);

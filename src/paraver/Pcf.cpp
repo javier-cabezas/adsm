@@ -1,4 +1,5 @@
 #include "Pcf.h"
+#include <paraver/Types.h>
 #include <values.h>
 
 #include <vector>

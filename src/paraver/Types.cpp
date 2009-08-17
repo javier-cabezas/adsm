@@ -1,5 +1,5 @@
 #define GENERATE_PARAVER_STRING
-#include "Types.h"
+#include <paraver/Types.h>
 
 namespace paraver {
 StateName::List *StateName::states = NULL;

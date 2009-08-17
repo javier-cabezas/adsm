@@ -1,7 +1,7 @@
-#include "../threads.h"
-#include "../Trace.h"
-#include "../Element.h"
-#include "../Types.h"
+#include <../threads.h>
+#include <../Trace.h>
+#include <../Element.h>
+#include <paraver/Types.h>
 
 #include <debug.h>
 
