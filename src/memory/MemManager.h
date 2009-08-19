@@ -34,12 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
-#include "MemRegion.h"
-#include "Paraver.h"
+#include "MemMap.h"
 #include "os/Memory.h"
 
 #include <config.h>
 #include <threads.h>
+
+#include <kernel/Context.h>
 
 #include <stdint.h>
 
@@ -60,6 +61,18 @@ private:
 
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 protected:
+	MemMap mem;
+
+	inline void insert(MemRegion *r) {
+		mem.insert(r);
+		current->mm().insert(r);
+	}
+
+	inline MemRegion *remove(void *addr) {
+		current->mm().remove(addr);
+		return mem.remove(addr);
+	}
+
 	//! This method maps a accelerator address into the CPU address space
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
@@ -83,6 +96,8 @@ public:
 	virtual ~MemManager() {
 		MUTEX_DESTROY(virtMutex);
 	}
+	
+	const MemMap &mm() { return mem; }
 
 	//! This method is called whenever the user
 	//! requests memory to be used by the accelerator

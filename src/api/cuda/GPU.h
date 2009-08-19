@@ -31,17 +31,74 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __GMAC_CUDA_H_
-#define __GMAC_CUDA_H_
+#ifndef __API_CUDA_GPU_H_
+#define __API_CUDA_GPU_H_
 
-#ifdef NATIVE
-#define gmacMalloc(...) cudaMalloc(__VA_ARGS__)
-#define gmacFree(...) cudaFree(__VA_ARGS__)
-#define gmacMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
-#define gmacThreadSynchronize(...) cudaThreadSynchronize(__VA_ARGS__)
-#endif
+#include <kernel/Accelerator.h>
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <vector_types.h>
 
-#define gmacSuccess cudaSuccess
+namespace gmac {
+
+class GPU : public Accelerator {
+protected:
+	unsigned id;
+
+public:
+	GPU(int n) : id(n) {};
+
+	unsigned device() const { return id; }
+
+	inline gmacError_t malloc(void **addr, size_t size) {
+		*addr = NULL;
+		cudaError_t ret = cudaMalloc(addr, size);
+		return error(ret);
+	}
+
+	inline gmacError_t free(void *addr) {
+		cudaError_t ret = cudaFree(addr);
+		return error(ret);
+	}
+		
+	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
+		cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
+		return error(ret);
+	}
+	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
+		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
+		return error(ret);
+	}
+	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
+		cudaError_t ret = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice);
+		return error(ret);
+	}
+	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
+			size_t size) {
+		cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
+		return error(ret);
+	}
+	inline gmacError_t copyToHostAsync(void *host, const void *dev,
+			size_t size) {
+		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
+		return error(ret);
+	}
+
+	inline gmacError_t memset(void *dev, int value, size_t size) {
+		cudaError_t ret = cudaMemset(dev, value, size);
+		return error(ret);
+	}
+
+	inline gmacError_t sync() {
+		cudaError_t ret = cudaThreadSynchronize();
+		return error(ret);
+	}
+
+	gmacError_t error(cudaError_t r);
+
+};
+
+}
 
 #endif

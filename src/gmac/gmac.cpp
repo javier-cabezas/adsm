@@ -1,56 +1,57 @@
 #include <gmac.h>
+#include <init.h>
 
-#include <stdlib.h>
-#include <assert.h>
-
+#include <order.h>
 #include <config.h>
 #include <threads.h>
 #include <debug.h>
 
-#include <api/api.h>
-#include <MemManager.h>
+#include <kernel/System.h>
+#include <kernel/Context.h>
+#include <memory/MemManager.h>
 
-#include <paraver/paraver.h>
+#include <paraver.h>
+
+#include <stdlib.h>
+#include <assert.h>
 
 MUTEX(gmacMutex);
+gmac::System *sys = NULL;
 gmac::MemManager *memManager = NULL;
 static unsigned memManagerCount = 0;
 static size_t pageSize = 0;
 
 static const char *memManagerVar = "GMAC_MANAGER";
 
-void gmacRemoveManager(void)
-{
-	__MUTEX_LOCK(gmacMutex);
-	memManagerCount--;
-	if(memManagerCount <= 0) {
-		delete memManager;
-		memManager = NULL;
-	}
-	__MUTEX_UNLOCK(gmacMutex);
+#ifdef PARAVER
+namespace paraver {
+extern int init;
 }
+#endif
 
-void gmacCreateManager(void)
+static void __attribute__((constructor(CORE))) gmacInit(void)
 {
-	__MUTEX_LOCK(gmacMutex);
-	if(memManager == NULL)
-		memManager = gmac::getManager(getenv(memManagerVar));
-	memManagerCount++;
-	__MUTEX_UNLOCK(gmacMutex);
-}
-
-static void __attribute__((constructor(199))) gmacInit(void)
-{
+	TRACE("Initialiazing GMAC");
+#ifdef PARAVER
 	paraver::init = 1;
+#endif
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
-	gmacCreateManager();
+	sys = new gmac::System();
+
+	// Initialize subsystems
+	gmac::apiInit();
+	gmac::memoryInit();
+
+	// Create initial memory manager and context
+	gmac::createManager(getenv(memManagerVar));
+	gmac::createContext();
 }
 
 
 static void __attribute__((destructor)) gmacFini(void)
 {
-	gmacRemoveManager();
+	gmac::destroyManager();
 }
 
 gmacError_t gmacMalloc(void **devPtr, size_t count)
@@ -58,13 +59,13 @@ gmacError_t gmacMalloc(void **devPtr, size_t count)
 	enterFunction(gmacMalloc);
 	gmacError_t ret = gmacSuccess;
 	count = (count < pageSize) ? pageSize : count;
-	ret = __gmacMalloc(devPtr, count);
+	ret = current->malloc(devPtr, count);
 	if(ret != gmacSuccess || !memManager) {
 		exitFunction();
 		return ret;
 	}
 	if(!memManager->alloc(*devPtr, count)) {
-		__gmacFree(*devPtr);
+		current->free(*devPtr);
 		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
@@ -78,13 +79,13 @@ gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
-	ret = __gmacMalloc(&devPtr, count);
+	ret = current->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !memManager) {
 		exitFunction();
 		return ret;
 	}
 	if((*cpuPtr = memManager->safeAlloc(devPtr, count)) == NULL) {
-		__gmacFree(devPtr);
+		current->free(devPtr);
 		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
@@ -101,7 +102,7 @@ void *gmacSafePointer(void *devPtr)
 gmacError_t gmacFree(void *devPtr)
 {
 	enterFunction(gmacFree);
-	__gmacFree(gmacSafePointer(devPtr));
+	current->free(gmacSafePointer(devPtr));
 	if(memManager) {
 		memManager->release(devPtr);
 	}
@@ -109,33 +110,6 @@ gmacError_t gmacFree(void *devPtr)
 	return gmacSuccess;
 }
 
-gmacError_t gmacMallocPitch(void **devPtr, size_t *pitch,
-		size_t widthInBytes, size_t height)
-{
-	enterFunction(gmacMalloc);
-	void *cpuAddr = NULL;
-	gmacError_t ret = gmacSuccess;
-	size_t count = widthInBytes * height;
-
-	if(count < pageSize) {
-		height = pageSize / widthInBytes;
-		if(pageSize % widthInBytes) height++;
-	}
-
-	ret = __gmacMallocPitch(devPtr, pitch, widthInBytes, height);
-	if(ret != gmacSuccess && !memManager) {
-		exitFunction();
-		return ret;
-	}
-
-	if(!memManager->alloc(*devPtr, *pitch)) {
-		__gmacFree(*devPtr);
-		exitFunction();
-		return gmacErrorMemoryAllocation;
-	}
-	exitFunction();
-	return gmacSuccess;
-}
 
 gmacError_t gmacLaunch(const char *symbol)
 {
@@ -146,7 +120,7 @@ gmacError_t gmacLaunch(const char *symbol)
 		memManager->flush();
 	}
 	TRACE("Kernel Launch");
-	ret = __gmacLaunch(symbol);
+	ret = current->launch(symbol);
 	exitFunction();
 	return ret;
 }
@@ -154,11 +128,21 @@ gmacError_t gmacLaunch(const char *symbol)
 gmacError_t gmacThreadSynchronize()
 {
 	enterFunction(gmacSync);
-	gmacError_t ret = __gmacThreadSynchronize();
+	gmacError_t ret = current->sync();
 	if(memManager) {
 		TRACE("Memory Sync");
 		memManager->sync();
 	}
 	exitFunction();
 	return ret;
+}
+
+gmacError_t gmacGetLastError()
+{
+	return current->error();
+}
+
+const char *gmacGetErrorString(gmacError_t error)
+{
+	return NULL;
 }

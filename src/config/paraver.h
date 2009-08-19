@@ -51,6 +51,7 @@ EVENT(GPUCall);
 STATE(ThreadCreate);
 STATE(IORead);
 STATE(IOWrite);
+STATE(Lock);
 
 typedef enum {
 	None = 0,

@@ -31,41 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CUDA_API_H_
-#define __CUDA_API_H_
+#ifndef __KERNEL_SYSTEM_H_
+#define __KERNEL_SYSTEM_H_
 
-#include <cuda_runtime.h>
-#include <driver_types.h>
+#include <assert.h>
 
-typedef cudaError_t gmacError_t;
-typedef enum cudaMemcpyKind gmacMemcpyKind;
-typedef cudaStream_t gmacStream_t;
+#include <vector>
 
-void gmacCreateManager(void);
-void gmacRemoveManager(void);
+namespace gmac {
 
-extern gmacError_t (*__gmacLaunch)(const char *);
+class Accelerator;
+class System {
+protected:
+	std::vector<Accelerator *> accelerators;
+public:
+	void addAccelerator(Accelerator *acc) {
+		accelerators.push_back(acc);
+	}
 
-#define __gmacMalloc(...) cudaMalloc(__VA_ARGS__)
-#define __gmacMallocPitch(...) cudaMallocPitch(__VA_ARGS__)
-#define __gmacFree(...) cudaFree(__VA_ARGS__)
-#define __gmacMemcpyToDevice(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyHostToDevice)
-#define __gmacMemcpyToHost(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyDeviceToHost)
-#define __gmacMemcpyDevice(...) cudaMemcpy(__VA_ARGS__, cudaMemcpyDeviceToDevice)
-#define __gmacMemcpyToDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyHostToDevice, 0)
-#define __gmacMemcpyToHostAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyDeviceToHost, 0);
-#define __gmacMemcpyDeviceAsync(...) cudaMemcpyAsync(__VA_ARGS__, cudaMemcpyDeviceToDevice, 0);
-#define __gmacThreadSynchronize() cudaThreadSynchronize()
+	size_t getNumberOfAccelerators() const {
+		return accelerators.size();
+	}
 
-#define __gmacMemset(...) cudaMemset(__VA_ARGS__)
+	Accelerator *accelerator(int n) {
+		assert(n < accelerators.size());
+		return accelerators[n];
+	}
+};
 
-#define gmacGetErrorString cudaGetErrorString
-#define gmacGetLastError cudaGetLastError
-
-#define gmacSuccess cudaSuccess
-#define gmacErrorMemoryAllocation cudaErrorMemoryAllocation
-
-#define gmacMemcpyDeviceToHost cudaMemcpyDeviceToHost
-#define gmacMemcpyHostToDevice cudaMemcpyHostToDevice
+}
 
 #endif

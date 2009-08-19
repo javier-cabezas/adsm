@@ -34,14 +34,20 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
-#include <gmac/api.h>
-
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
+typedef enum {
+	gmacSuccess = 0,
+	gmacErrorMemoryAllocation = 2,	
+	gmacErrorLaunchFailure = 4,
+	gmacErrorUnknown = 30
+} gmacError_t;
+
+/*!
 	\brief Allocates memory at the GPU
 	
 	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
@@ -50,7 +56,7 @@ extern "C" {
 	\param count bytes to be allocated
 */
 gmacError_t gmacMalloc(void **devPtr, size_t count);
-/*
+/*!
 	\brief Allocates memory at the GPU
 
 	Allocates a range of memory at the GPU and the CPU. The address used by
@@ -62,33 +68,36 @@ gmacError_t gmacMalloc(void **devPtr, size_t count);
 	\param count bytes to be allocated
 */
 gmacError_t gmacSafeMalloc(void **devPtr, size_t count);
-/*
+/*!
 	\brief Returns the GPU address assigned to a CPU address
 	\param cpuPtr memory address in the CPU
 */
 void *gmacSafePointer(void *cpuPtr);
-/*
+/*!
 	\brief Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
 	\param cpuAddr Memory address to free. This address must have been returned
 	by a previous call to gmacMalloc() or gmacSafeMalloc()
 */
 gmacError_t gmacFree(void *);
-/*
+/*!
 	\brief Launches a kernel execution
 	\param name Name of the kernel to be executed at the GPU
 */
 gmacError_t gmacLaunch(const char *name);
-/*
+/*!
 	\brief Waits until all previous GPU requests have finished
 */
 gmacError_t gmacThreadSynchronize(void);
-/*
+/*!
 	\brief Sets up an argument to be used by the following call to gmacLaunch()
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
 	\param offset Offset, in bytes, of the argument in the argument list
 */
 gmacError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
+
+gmacError_t gmacGetLastError(void);
+const char *gmacGetErrorString(gmacError_t);
 
 #ifdef __cplusplus
 };

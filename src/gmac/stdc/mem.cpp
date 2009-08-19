@@ -1,17 +1,21 @@
-#include <gmac.h>
 #include <os/loader.h>
+#include <order.h>
+#include <gmac.h>
 
 #include <string.h>
 
-#include <MemManager.h>
+#include <memory/MemManager.h>
+#include <kernel/Context.h>
+
 
 SYM(void *, __libc_memset, void *, int, size_t);
 SYM(void *, __libc_memcpy, void *, const void *, size_t);
 
 extern gmac::MemManager *memManager;
 
-static void __attribute__((constructor(101))) stdcMemInit(void)
+static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
 {
+	TRACE("Overloading Memory STDC functions");
 	LOAD_SYM(__libc_memset, memset);
 	LOAD_SYM(__libc_memcpy, memcpy);
 }
@@ -26,7 +30,7 @@ void *memset(void *s, int c, size_t n)
 		size_t size = memManager->filter(s, n, r);
 		if(r) {
 			if(size != r->getSize()) memManager->flush(r);
-			__gmacMemset(memManager->safe(s), c, size);
+			r->context()->memset(memManager->safe(s), c, size);
 			memManager->invalidate(r);
 			TRACE("memset %p [device]", r->getAddress());
 		}
@@ -42,7 +46,6 @@ void *memcpy(void *dst, const void *src, size_t n)
 	void *ret = dst;
 	gmac::MemRegion *d = NULL, *s = NULL;
 	size_t ds = 0, ss = 0;
-	bool sync = false;
 
 	if(memManager == NULL) return __libc_memcpy(dst, src, n);
 	while(n) {
@@ -54,25 +57,23 @@ void *memcpy(void *dst, const void *src, size_t n)
 		if(d != NULL && memManager->present(d) == true &&
 			s != NULL && memManager->present(s) == true) {
 			TRACE("memcpy %p to %p [DeviceToDevice]", src, dst);
-			__gmacMemcpyDevice(memManager->safe(dst),
+			assert(d->context() == s->context());
+			d->context()->copyDevice(memManager->safe(dst),
 				memManager->safe(src), size);
-			sync = true;
 		}
 		// If the destination is shared memory and it is on the
 		// device, copy it to device memory
 		else if(d != NULL && memManager->present(d) == false) {
 			TRACE("memcpy %p to %p [HostToDevice]", src, dst);
-			__gmacMemcpyToDeviceAsync(memManager->safe(dst), src,
-					size);
-			sync = true;
+			d->context()->copyToDeviceAsync(memManager->safe(dst),
+					src, size);
 		}
 		// If the source is shared memory and it is on the device,
 		// copy it from device memory
 		else if(s != NULL && memManager->present(s) == false) {
 			TRACE("memcpy %p to %p [DeviceToHost]", src, dst);
-			__gmacMemcpyToHostAsync(dst, memManager->safe(src),
+			s->context()->copyToHost(dst, memManager->safe(src),
 					size);
-			sync = true;
 		}
 		// Both (src and dst) are not shared or they are present
 		// in system memory
@@ -84,8 +85,6 @@ void *memcpy(void *dst, const void *src, size_t n)
 		dst = (void *)((unsigned long)dst + size);
 		src = (void *)((unsigned long)src + size);
 	}
-
-	if(sync) __gmacThreadSynchronize();
 
 	return ret;
 }

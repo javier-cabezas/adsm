@@ -36,25 +36,26 @@ WITH THE SOFTWARE.  */
 
 #include <threads.h>
 
+#include "MemRegion.h"
+
 #include <assert.h>
 #include <map>
 
 namespace gmac {
 
-template<typename T>
 class MemMap {
 protected:
-	typedef std::map<const void *, T *> Map;
+	typedef std::map<const void *, MemRegion *> Map;
 	Map __map;
 	MUTEX(__mutex);
 public:
-	typedef typename Map::iterator iterator;
-	typedef typename Map::const_iterator const_iterator;
+	typedef Map::iterator iterator;
+	typedef Map::const_iterator const_iterator;
 
 	MemMap() { MUTEX_INIT(__mutex); }
 
 	virtual ~MemMap() { 
-		typename Map::iterator i;
+		Map::iterator i;
 		MUTEX_LOCK(__mutex);
 		for(i = __map.begin(); i != __map.end(); i++) {
 			delete i->second;
@@ -65,35 +66,36 @@ public:
 
 	inline void lock() { MUTEX_LOCK(__mutex); }
 	inline void unlock() { MUTEX_UNLOCK(__mutex); }
-	inline typename Map::iterator begin() { return __map.begin(); }
-	inline typename Map::iterator end() { return __map.end(); }
+	inline Map::iterator begin() { return __map.begin(); }
+	inline Map::iterator end() { return __map.end(); }
 
-	inline void insert(T *i) {
+	inline void insert(MemRegion *i) {
 		void *key = (void *)((addr_t)i->getAddress() + i->getSize());
 		MUTEX_LOCK(__mutex);
-		__map.insert(typename Map::value_type(key, i));
+		__map.insert(Map::value_type(key, i));
 		MUTEX_UNLOCK(__mutex);
 	}
 
-	inline T *remove(void *addr) {
-		typename Map::iterator i;
+	inline MemRegion *remove(void *addr) {
+		Map::iterator i;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
 		if(i == __map.end() || i->second->getAddress() != addr)
 			FATAL("Bad free for %p", addr);
-		T *ret = i->second;
+		MemRegion *ret = i->second;
 		__map.erase(i);
 		MUTEX_UNLOCK(__mutex);
 		return ret;
 	}
 
-	virtual T *find(void *addr) {
-		typename Map::const_iterator i;
+	template<typename T>
+	inline T *find(void *addr) {
+		Map::const_iterator i;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
 		MUTEX_UNLOCK(__mutex);
 		if(i == __map.end() || *(i->second) != addr) return NULL;
-		return i->second;
+		return dynamic_cast<T *>(i->second);
 	}
 
 	// Gets the first memory region (CPU or accelerator) that
@@ -104,7 +106,7 @@ public:
 	// the range starts at CPU memory
 	size_t filter(const void *addr, size_t size, MemRegion *&reg) {
 		size_t ret = 0;
-		typename Map::iterator i;
+		Map::iterator i;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
 		// All the range owns to the CPU

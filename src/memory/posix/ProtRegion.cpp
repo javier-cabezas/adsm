@@ -1,4 +1,5 @@
-#include <ProtRegion.h>
+#include <memory/ProtRegion.h>
+#include <kernel/Context.h>
 
 #include <debug.h>
 #include <paraver.h>
@@ -41,10 +42,13 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 	if(!writeAccess) TRACE("Read SIGSEGV for %p", info->si_addr);
 	else TRACE("Write SIGSEGV for %p", info->si_addr);
 
-	ProtRegion *r = MemHandler::get()->find(info->si_addr);
-	if(r == NULL || r->isOwner() == false) {
-		if(r == NULL) { TRACE("SIGSEGV for NULL Region"); }
-		else { TRACE("SIGSEGV for external Region"); }
+//	ProtRegion *r = MemHandler::get()->find(info->si_addr);
+	ProtRegion *r = NULL;
+	ProtRegion *root = current->mm().find<ProtRegion>(info->si_addr);
+	if(root == NULL) root = MemHandler::get()->find(info->si_addr);
+	if(root != NULL) r = root->get(info->si_addr);
+	if(r == NULL ) {
+		TRACE("SIGSEGV for NULL Region");
 		abort();
 		// TODO: set the signal mask and other stuff
 		if(defaultAction.sa_flags & SA_SIGINFO)

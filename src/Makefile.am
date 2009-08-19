@@ -1,11 +1,13 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = api os memory gmac
-DIST_SUBDIRS = config api os memory gmac
+SUBDIRS = memory kernel os api gmac
+DIST_SUBDIRS = config api os memory kernel gmac
 
 BUILT_SOURCES = config/os config/api
 
-export INCLUDES += -I$(CUDA_DIR)/include -I$(abs_srcdir)/config -I$(abs_builddir)/config\
+export INCLUDES += -I$(CUDA_DIR)/include\
+	-I$(abs_srcdir) -I$(abs_builddir)\
+	-I$(abs_srcdir)/config -I$(abs_builddir)/config\
 	$(PARAVER_INCLUDE)
 
 config/os: os/$(OS_DIR)

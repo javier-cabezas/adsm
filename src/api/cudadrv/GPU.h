@@ -31,58 +31,84 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_PROTREGION_H_
-#define __MEMORY_PROTREGION_H_
+#ifndef __API_CUDADRV_GPU_H_
+#define __API_CUDADRV_GPU_H_
 
-#include "MemRegion.h"
-#include "MemHandler.h"
+#include <kernel/Accelerator.h>
 
-#include <memory/os/Memory.h>
-
-#include <signal.h>
+#include <cuda.h>
+#include <vector_types.h>
 
 namespace gmac {
-//! Protected Memory Region
-class ProtRegion : public MemRegion {
+
+class GPU : public Accelerator {
 protected:
-	bool _dirty;
-	bool _present;
+	inline CUdeviceptr gpuAddr(void *addr) const {
+		unsigned long a = (unsigned long)addr;
+		return (CUdeviceptr)(a & 0xffffffff);
+	}
 
-	static unsigned count;
-	static struct sigaction defaultAction;
-	static void setHandler(void);
-	static void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
+	inline CUdeviceptr gpuAddr(const void *addr) const {
+		unsigned long a = (unsigned long)addr;
+		return (CUdeviceptr)(a & 0xffffffff);
+	}
+
+	unsigned id;
+	CUdevice _device;
+
 public:
-	ProtRegion(void *addr, size_t size);
-	virtual ~ProtRegion();
+	GPU(int n, CUdevice device) : id(n), _device(device) {};
 
-	inline virtual void read(void *addr) {
-		MemHandler::get()->read(this, addr);
-	}
-	inline virtual void write(void *addr) {
-		MemHandler::get()->write(this, addr);
+	inline CUdevice device() const {
+		return _device;
 	}
 
-	inline virtual void invalidate(void) {
-		_present = _dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_NONE) == 0);
-	}
-	inline virtual void readOnly(void) {
-		_present = true;
-		_dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_READ) == 0);
-	}
-	inline virtual void readWrite(void) {
-		_present = _dirty = true;
-		assert(Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE) == 0);
+	inline gmacError_t malloc(void **addr, size_t size) {
+		*addr = NULL;
+		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
+		return error(ret);
 	}
 
-	inline virtual ProtRegion *get(const void *addr) { return this; }
+	inline gmacError_t free(void *addr) {
+		CUresult ret = cuMemFree(gpuAddr(addr));
+		return error(ret);
+	}
+		
+	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
+		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+		return error(ret);
+	}
+	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
+		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+		return error(ret);
+	}
+	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
+		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+		return error(ret);
+	}
+	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
+			size_t size) {
+		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
+		return error(ret);
+	}
+	inline gmacError_t copyToHostAsync(void *host, const void *dev,
+			size_t size) {
+		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
+		return error(ret);
+	}
 
-	inline virtual bool dirty() const { return _dirty; }
-	inline virtual bool present() const { return _present; }
+	gmacError_t memset(void *dev, int value, size_t size);
+
+	gmacError_t launch(dim3, dim3, CUfunction);
+	inline gmacError_t sync() {
+		CUresult ret = cuCtxSynchronize();
+		return error(ret);
+	}
+
+	gmacError_t error(CUresult r);
+
 };
-};
+
+}
 
 #endif

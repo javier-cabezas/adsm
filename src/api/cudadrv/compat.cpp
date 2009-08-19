@@ -1,8 +1,7 @@
-#include "api.h"
-#include "driver.h"
-
-#include <config.h>
+#include <threads.h>
 #include <debug.h>
+
+#include "GPUContext.h"
 
 #include <assert.h>
 
@@ -12,6 +11,9 @@
 
 #include <string>
 #include <list>
+
+#define context \
+	static_cast<gmac::GPUContext *>(PRIVATE_GET(gmac::Context::key))
 
 static inline size_t __getChannelSize(CUarray_format format)
 {
@@ -92,7 +94,6 @@ static inline cudaChannelFormatKind __getCUDAChannelFormatKind(CUarray_format fo
 
 static inline cudaError_t __getCUDAError(CUresult r)
 {
-	__gmacError(r);
 	switch(r) {
 		case CUDA_SUCCESS:
 			return cudaSuccess;
@@ -246,12 +247,10 @@ extern "C" {
 cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
 		size_t offset, enum cudaMemcpyKind kind)
 {
-	VariableMap::const_iterator variable = varMap.find(symbol);
-	assert(variable != varMap.end());
-	assert(variable->second.constant == true);
+	const gmac::GPUContext::Variable *variable = context->constant(symbol);
 	CUresult r = CUDA_SUCCESS;
-	assert(variable->second.size >= (count + offset));
-	CUdeviceptr ptr = variable->second.ptr + offset;
+	assert(variable->size >= (count + offset));
+	CUdeviceptr ptr = variable->ptr + offset;
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
 			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%d bytes)", src, ptr, count);

@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "MemManager.h"
 #include "MemHandler.h"
-#include "MemMap.h"
 #include "ProtRegion.h"
 
 #include <threads.h>
@@ -48,17 +47,15 @@ namespace gmac {
 
 //! Manager that Moves Memory Regions Lazily
 class LazyManager : public MemManager, public MemHandler {
-protected:
-	MemMap<ProtRegion> memMap;
 public:
-	LazyManager() : MemManager(), MemHandler() { }
+	LazyManager() : MemManager(), MemHandler(mem) { }
 	bool alloc(void *addr, size_t count);
 	void *safeAlloc(void *addr, size_t count);
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};
 	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		return memMap.filter(addr, size, region);
+		return mem.filter(addr, size, region);
 	}
 	void invalidate(MemRegion *region) {
 		dynamic_cast<ProtRegion *>(region)->invalidate();
@@ -67,7 +64,6 @@ public:
 	void dirty(MemRegion *region);
 	bool present(MemRegion *region) const;
 
-	ProtRegion *find(void *addr) { return memMap.find(addr); }
 	void read(ProtRegion *region, void *addr);
 	void write(ProtRegion *region, void *addr);
 };

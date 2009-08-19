@@ -31,60 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CUDA_DRIVER_H_
-#define __CUDA_DRIVER_H_
+#ifndef __CONFIG_ORDER_H_
+#define __CONFIG_ORDER_H_
 
-#include <config.h>
-#include <stdint.h>
+#define INTERPOSE 101
+#define CORE 102
+#define API 103
 
-#include <cuda.h>
-#include <vector_types.h>
-
-#include <vector>
-
-typedef struct {
-	dim3 grid;
-	dim3 block;
-	size_t shared;
-	size_t tokens;
-	size_t stack;
-} gmacCall_t;
-
-struct __deviceVariable {
-	CUdeviceptr ptr;
-	size_t size;
-	bool constant;
-};
-
-
-typedef HASH_MAP<const char *, CUfunction> FunctionMap;
-extern FunctionMap funMap;
-typedef HASH_MAP<const char *, struct __deviceVariable> VariableMap;
-extern VariableMap varMap;
-const size_t gmacStackSize = 4096;
-extern std::vector<gmacCall_t> gmacCallStack;
-extern size_t gmacStackPtr;
-extern uint8_t gmacStack[gmacStackSize];
-
-extern gmacError_t gmacLastError;
-
-gmacError_t __gmacError(CUresult);
-inline gmacError_t __gmacReturn(gmacError_t error) {
-	gmacLastError = error;
-	return error;
-}
-
-inline CUdeviceptr voidToDev(void *v)
-{
-	unsigned long u = (unsigned long)v;
-	return (CUdeviceptr)(u & 0xffffffff);
-}
-
-inline CUdeviceptr voidToDev(const void *v)
-{
-	unsigned long u = (unsigned long)v;
-	return (CUdeviceptr)(u & 0xffffffff);
-}
+#define DEFAULT 199
 
 
 #endif

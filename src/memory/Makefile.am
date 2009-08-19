@@ -3,9 +3,9 @@ DIST_SUBDIRS = posix
 SUBDIRS = $(OS_DIR) 
 
 noinst_LTLIBRARIES = libmemory.la
-libmemory_la_SOURCES = \
+libmemory_la_SOURCES = memory.cpp\
 			MemManager.h MemManager.cpp\
-			MemRegion.h\
+			MemRegion.h MemRegion.cpp\
 			BatchManager.h BatchManager.cpp\
 			LazyManager.h LazyManager.cpp\
 			MemHandler.h MemHandler.cpp\

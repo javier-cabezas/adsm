@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_BATCHMANAGER_H_
 
 #include "MemManager.h"
-#include "MemMap.h"
 #include "MemRegion.h"
 
 #include <stdint.h>
@@ -46,19 +45,17 @@ namespace gmac {
 //! The Batch Memory Manager moves all data just before and
 //! after a kernel call
 class BatchManager : public MemManager {
-protected:
-	MemMap<MemRegion> memMap;
 public:
 	BatchManager() : MemManager() { }
 	inline bool alloc(void *addr, size_t count) {
 		if(map(addr, count) == MAP_FAILED) return false;
 		TRACE("New Memory Region @ %p (%d bytes)", addr, count);
-		memMap.insert(new MemRegion(addr, count));
+		insert(new MemRegion(addr, count));
 		return true;
 	}
 	inline void *safeAlloc(void *addr, size_t count) {
 		void *cpuAddr = safeMap(addr, count);
-		memMap.insert(new MemRegion(cpuAddr, count));
+		insert(new MemRegion(cpuAddr, count));
 		return cpuAddr;
 	}
 	void release(void *addr);

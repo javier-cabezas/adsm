@@ -31,58 +31,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_PROTREGION_H_
-#define __MEMORY_PROTREGION_H_
+#ifndef __KERNEL_CONTEXT_H_
+#define __KERNEL_CONTEXT_H_
 
-#include "MemRegion.h"
-#include "MemHandler.h"
+#include <threads.h>
+#include <kernel/IAccelerator.h>
+#include <memory/MemMap.h>
 
-#include <memory/os/Memory.h>
-
-#include <signal.h>
+#define current static_cast<gmac::Context *>(PRIVATE_GET(gmac::Context::key))
 
 namespace gmac {
-//! Protected Memory Region
-class ProtRegion : public MemRegion {
+
+/*!
+	\brief Generic Context Class
+*/
+class Context : public IAccelerator {
 protected:
-	bool _dirty;
-	bool _present;
+	/*!
+		\brief Last error on context
+	*/
+	gmacError_t _error;
 
-	static unsigned count;
-	static struct sigaction defaultAction;
-	static void setHandler(void);
-	static void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
+
+	/*!
+		\brief Memory map for the context
+	*/
+	MemMap _mm;
+
 public:
-	ProtRegion(void *addr, size_t size);
-	virtual ~ProtRegion();
+	virtual ~Context() {};
 
-	inline virtual void read(void *addr) {
-		MemHandler::get()->read(this, addr);
-	}
-	inline virtual void write(void *addr) {
-		MemHandler::get()->write(this, addr);
+	/*!
+		\brief Per-thread key to store context
+	*/
+	static PRIVATE(key);
+
+	/*!
+		\brief Returns a reference to the context memory map
+	*/
+	MemMap &mm() { return _mm; }
+
+	/*!
+		\brief Returns a constant reference to the context memory map
+	*/
+	const MemMap &mm() const { return _mm; }
+
+	/*!
+		\brief Launches the execution of a kernel
+		\param kernel Kernel to be launched
+	*/
+	virtual gmacError_t launch(const char *kernel) = 0;
+
+	/*!
+		\brief Records and error from a call
+		\param e Error to record
+	*/
+	inline gmacError_t error(gmacError_t e) {
+		_error = e;
+		return e;
 	}
 
-	inline virtual void invalidate(void) {
-		_present = _dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_NONE) == 0);
-	}
-	inline virtual void readOnly(void) {
-		_present = true;
-		_dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_READ) == 0);
-	}
-	inline virtual void readWrite(void) {
-		_present = _dirty = true;
-		assert(Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE) == 0);
-	}
-
-	inline virtual ProtRegion *get(const void *addr) { return this; }
-
-	inline virtual bool dirty() const { return _dirty; }
-	inline virtual bool present() const { return _present; }
+	/*!
+		\brief Returns last error
+	*/
+	inline gmacError_t error() const { return _error; }
 };
+
 };
+
 
 #endif

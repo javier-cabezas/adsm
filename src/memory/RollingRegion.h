@@ -69,13 +69,6 @@ protected:
 		return k + 1;
 	}
 
-	friend class ProtSubRegion;
-	inline void present(ProtSubRegion *region) { memory.push_back(region); }
-
-public:
-	RollingRegion(RollingManager &manager, void *, size_t, size_t);
-	~RollingRegion();
-
 	inline ProtSubRegion *find(const void *addr) {
 		unsigned long base = (((unsigned long)addr & ~(cacheLine - 1)) + offset);
 		if(base > (unsigned long)addr) base -= cacheLine;
@@ -84,23 +77,29 @@ public:
 		return i->second;
 	}
 
-	void invalidate();
-	void dirty();
+	friend class ProtSubRegion;
+	inline void push(ProtSubRegion *region) { memory.push_back(region); }
+
+public:
+	RollingRegion(RollingManager &manager, void *, size_t, size_t);
+	~RollingRegion();
+
+	inline virtual ProtRegion *get(const void *);
+	virtual void invalidate();
+	virtual void dirty();
 };
 
 class ProtSubRegion : public ProtRegion {
 protected:
 	RollingRegion *parent;
 	friend class RollingRegion;
-	void silentInvalidate() { present = dirty = false; }
+	void silentInvalidate() { _present = _dirty = false; }
 public:
 	ProtSubRegion(RollingRegion *parent, void *addr, size_t size) :
 		ProtRegion(addr, size),
 		parent(parent)
 	{ }
 	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
-
-	bool belongs(RollingRegion *r) const { parent == r; }
 
 	virtual void invalidate() {
 		FATAL("Invalidation on a SubRegion %p", addr);
@@ -109,15 +108,20 @@ public:
 	// Override this methods to insert the regions in the list
 	// of sub-regions present in memory
 	virtual void readOnly() {
-		parent->present(this);
+		if(present() == false) parent->push(this);
 		ProtRegion::readOnly();
 	}
 
 	virtual void readWrite() {
-		parent->present(this);
+		if(present() == false) parent->push(this);
 		ProtRegion::readWrite();
 	}
 };
+
+
+inline ProtRegion *RollingRegion::get(const void *addr) {
+	return find(addr);
+}
 
 };
 

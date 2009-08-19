@@ -1,6 +1,7 @@
-#include <api/api.h>
 #include <os/loader.h>
+#include <gmac/init.h>
 
+#include <order.h>
 #include <paraver.h>
 #include <debug.h>
 
@@ -9,7 +10,7 @@
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
-static void __attribute__((constructor(101))) gmacPthreadInit(void)
+static void __attribute__((constructor(INTERPOSE))) gmacPthreadInit(void)
 {
 	LOAD_SYM(__pthread_create, pthread_create);
 }
@@ -19,15 +20,16 @@ typedef struct {
 	void *__arg;
 } gmac_thread_t;
 
+
 static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg) 
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
 	pushState(Running);
-	gmacCreateManager();
+	gmac::createManager();
 	void *ret = gthread->__start_routine(gthread->__arg);
-	gmacRemoveManager();
+	gmac::destroyManager();
 	popState();
 	return ret;
 }

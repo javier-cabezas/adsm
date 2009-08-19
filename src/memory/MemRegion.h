@@ -38,8 +38,7 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <debug.h>
 
-#include "os/Process.h"
-#include "os/Memory.h"
+#include <memory/os/Memory.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -56,14 +55,15 @@ namespace gmac {
 typedef unsigned long addr_t;
 
 //! Generic Memory Region Descriptor
+class Context;
 class MemRegion {
+private:
+	Context *_context;
 protected:
 	//! Starting memory address for the region
 	addr_t addr;
 	//! Size in bytes of the region
 	size_t size;
-	//! CPU thread owning the region
-	thread_t owner;
 
 	inline addr_t __addr(void *addr) const { return (addr_t)addr; }
 	inline addr_t __addr(const void *addr) const { return (addr_t)addr; }
@@ -80,12 +80,11 @@ public:
 	//! Constructor
 	//! \param addr Start memory address
 	//! \param size Size in bytes
-	MemRegion(void *addr, size_t size) :
-		addr(__addr(addr)),
-		size(size),
-		owner(Process::gettid())
-	{}
+	MemRegion(void *addr, size_t size);
+
 	virtual ~MemRegion() {};
+
+	inline Context *context() { return _context; }
 
 	//! Returns the size (in bytes) of the Region
 	inline size_t getSize() const { return size; }
@@ -95,8 +94,6 @@ public:
 	inline void *getAddress() const { return __void(addr); }
 	//! Sets the address of the Region
 	inline void setAddress(void *addr) { this->addr = __addr(addr); }
-	//! Checks if the current thread is the owner for the region
-	inline bool isOwner() const { return owner == Process::gettid(); }
 
 	//! Comparision operators
 	bool operator==(const void *p) const {

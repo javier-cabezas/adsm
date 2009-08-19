@@ -36,9 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include "MemManager.h"
 #include "MemHandler.h"
-#include "MemMap.h"
 #include "RollingRegion.h"
-#include "os/Process.h"
+
+#include <kernel/Context.h>
 
 #include <threads.h>
 
@@ -56,17 +56,15 @@ protected:
 	size_t lruSize;
 	size_t pageSize;
 
-	MemMap<RollingRegion> memMap;
-
 	typedef std::list<ProtSubRegion *> Rolling;
-	std::map<thread_t, Rolling> regionRolling;
+	std::map<Context *, Rolling> regionRolling;
 
 	MUTEX(writeMutex);
 	void *writeBuffer;
 	size_t writeBufferSize;
 	void waitForWrite(void *addr = NULL, size_t size = 0);
-	void writeBack(thread_t tid);
-	void flushToDevice(thread_t tid);
+	void writeBack();
+	void flushToDevice();
 
 #ifdef DEBUG
 	void dumpRolling();
@@ -75,7 +73,7 @@ protected:
 	// Methods used by ProtSubRegion to request flushing and invalidating
 	friend class RollingRegion;
 	void invalidate(ProtSubRegion *region) {
-		regionRolling[Process::gettid()].remove(region);
+		regionRolling[current].remove(region);
 	}
 
 public:
@@ -86,7 +84,7 @@ public:
 	void flush(void);
 	void sync(void) {};
 	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		return memMap.filter(addr, size, region);
+		return mem.filter(addr, size, region);
 	}
 	void invalidate(MemRegion *region) {
 		dynamic_cast<RollingRegion *>(region)->invalidate();

@@ -1,7 +1,7 @@
 #include "LazyManager.h"
 
 #include <debug.h>
-#include <api/api.h>
+#include <kernel/Context.h>
 
 #include <assert.h>
 
@@ -13,7 +13,7 @@ bool LazyManager::alloc(void *addr, size_t count)
 {
 	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, count);
-	memMap.insert(new ProtRegion(addr, count));
+	insert(new ProtRegion(addr, count));
 	return true;
 }
 
@@ -23,13 +23,13 @@ void *LazyManager::safeAlloc(void *addr, size_t count)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, count);
-	memMap.insert(new ProtRegion(cpuAddr, count));
+	insert(new ProtRegion(cpuAddr, count));
 	return cpuAddr;
 }
 
 void LazyManager::release(void *addr)
 {
-	ProtRegion *reg = memMap.remove(addr);
+	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(addr));
 	assert(reg != NULL);
 	unmap(reg->getAddress(), reg->getSize());
 	delete reg;
@@ -37,24 +37,25 @@ void LazyManager::release(void *addr)
 
 void LazyManager::flush()
 {
-	MemMap<ProtRegion>::const_iterator i;
-	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(i->second->isOwner() == false) continue;
-		if(i->second->isDirty()) {
-			__gmacMemcpyToDevice(safe(i->second->getAddress()),
+	MemMap::const_iterator i;
+	MemMap &mm = current->mm();
+	mm.lock();
+	for(i = mm.begin(); i != mm.end(); i++) {
+		ProtRegion *reg = dynamic_cast<ProtRegion *>(i->second);
+		if(reg->dirty()) {
+			current->copyToDevice(safe(i->second->getAddress()),
 					i->second->getAddress(), i->second->getSize());
 		}
-		memMap.lock();
-		i->second->invalidate();
-		memMap.unlock();
+		reg->invalidate();
 	}
+	mm.unlock();
 }
 
 void LazyManager::flush(MemRegion *region)
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
-	if(r->isDirty()) {
-		__gmacMemcpyToDevice(safe(r->getAddress()), r->getAddress(),
+	if(r->dirty()) {
+		current->copyToDevice(safe(r->getAddress()), r->getAddress(),
 				r->getSize());
 	}
 	r->invalidate();
@@ -69,7 +70,7 @@ void LazyManager::dirty(MemRegion *region)
 bool LazyManager::present(MemRegion *region) const
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
-	return r->isPresent();
+	return r->present();
 }
 
 // MemHandler Interface
@@ -79,20 +80,20 @@ void LazyManager::read(ProtRegion *region, void *addr)
 	TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 			region->getSize());
 	region->readWrite();
-	__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()),
-			region->getSize());
+	region->context()->copyToHost(region->getAddress(),
+			safe(region->getAddress()), region->getSize());
 	region->readOnly();
 }
 
 void LazyManager::write(ProtRegion *region, void *addr)
 {
-	bool present = region->isPresent();
+	bool present = region->present();
 	region->readWrite();
 	if(present == false) {
 		TRACE("DMA from Device from %p (%d bytes)", region->getAddress(),
 				region->getSize());
-		__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()),
-				region->getSize());
+		region->context()->copyToHost(region->getAddress(),
+				safe(region->getAddress()), region->getSize());
 	}
 }
 

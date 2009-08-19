@@ -1,6 +1,7 @@
 #include "RollingManager.h"
 #include "os/Util.h"
-#include <api/api.h>
+
+#include <kernel/Context.h>
 
 #include <unistd.h>
 #include <algorithm>
@@ -14,7 +15,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 {
 	MUTEX_LOCK(writeMutex);
 	if(writeBuffer) {
-		__gmacThreadSynchronize();
+		current->sync();
 		munlock(writeBuffer, writeBufferSize);
 	}
 	writeBuffer = addr;
@@ -23,39 +24,40 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 }
 
 
-void RollingManager::writeBack(thread_t tid)
+void RollingManager::writeBack()
 {
-	ProtSubRegion *r = regionRolling[tid].front();
-	regionRolling[tid].pop_front();
+	ProtSubRegion *r = regionRolling[current].front();
+	regionRolling[current].pop_front();
 	waitForWrite(r->getAddress(), r->getSize());
 	mlock(writeBuffer, writeBufferSize);
-	__gmacMemcpyToDeviceAsync(safe(r->getAddress()), r->getAddress(),
+	r->context()->copyToDeviceAsync(safe(r->getAddress()), r->getAddress(),
 		r->getSize());
 	r->readOnly();
 }
 
 
-void RollingManager::flushToDevice(thread_t tid) 
+void RollingManager::flushToDevice() 
 {
 	waitForWrite();
 	Rolling::iterator i;
-	for(i = regionRolling[tid].begin(); i != regionRolling[tid].end(); i++) {
-		__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(),
-				(*i)->getSize());
+	for(i = regionRolling[current].begin(); i != regionRolling[current].end();
+			i++) {
+		(*i)->context()->copyToDevice(safe((*i)->getAddress()),
+				(*i)->getAddress(), (*i)->getSize());
 		(*i)->readOnly();
 		TRACE("Flush to Device %p", (*i)->getAddress()); 
 	}
-	regionRolling[tid].clear();
+	regionRolling[current].clear();
 }
 
 #ifdef DEBUG
 void RollingManager::dumpRolling()
 {
-	std::map<thread_t, Rolling>::const_iterator c;
+	std::map<Context *, Rolling>::const_iterator c;
 	for(c = regionRolling.begin(); c != regionRolling.end(); c++) {
 		Rolling::const_iterator i;
 		for(i = c->second.begin(); i != c->second.end(); i++)
-			TRACE("Thread %d: Region %p (%p - %d bytes)", c->first, *i,
+			TRACE("Context %p: Region %p (%p - %d bytes)", c->first, *i,
 					(*i)->getAddress(), (*i)->getSize());
 	}
 }
@@ -63,6 +65,7 @@ void RollingManager::dumpRolling()
 
 RollingManager::RollingManager() :
 	MemManager(),
+	MemHandler(mem),
 	lineSize(0),
 	lruDelta(0),
 	lruSize(0),
@@ -92,7 +95,7 @@ bool RollingManager::alloc(void *addr, size_t size)
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, size);
 	lruSize += lruDelta;
-	memMap.insert(new RollingRegion(*this, addr, size, lineSize * pageSize));
+	insert(new RollingRegion(*this, addr, size, lineSize * pageSize));
 	return true;
 }
 
@@ -103,14 +106,14 @@ void *RollingManager::safeAlloc(void *addr, size_t size)
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
 	lruSize += lruDelta;
-	memMap.insert(new RollingRegion(*this, cpuAddr, size, lineSize * pageSize));
+	insert(new RollingRegion(*this, cpuAddr, size, lineSize * pageSize));
 	return cpuAddr;
 }
 
 
 void RollingManager::release(void *addr)
 {
-	RollingRegion *reg = memMap.remove(addr);
+	RollingRegion *reg = dynamic_cast<RollingRegion *>(remove(addr));
 	unmap(reg->getAddress(), reg->getSize());
 	delete reg;
 	lruSize -= lruDelta;
@@ -124,30 +127,28 @@ void RollingManager::release(void *addr)
 void RollingManager::flush()
 {
 	TRACE("RollingManager Flush Starts");
-	flushToDevice(Process::gettid());
-	MemMap<RollingRegion>::iterator i;
-	memMap.lock();
-	for(i = memMap.begin(); i != memMap.end(); i++) {
-		if(i->second->isOwner()) 
-			i->second->invalidate();
+	flushToDevice();
+	MemMap::iterator i;
+	MemMap &mm = current->mm();
+	mm.lock();
+	for(i = mm.begin(); i != mm.end(); i++) {
+		RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
+		r->invalidate();
 	}
-	memMap.unlock();
+	mm.unlock();
 	TRACE("RollingManager Flush Ends");
 }
 
 void RollingManager::flush(MemRegion *region)
 {
 	RollingRegion *r = dynamic_cast<RollingRegion *>(region);
-	thread_t tid = Process::gettid();
 	Rolling::iterator i;
-	for(i = regionRolling[tid].begin(); i != regionRolling[tid].end();) {
-		if((*i)->belongs(r)) {
-			__gmacMemcpyToDevice(safe((*i)->getAddress()), (*i)->getAddress(),
-					(*i)->getSize());
-			(*i)->readOnly();
-			i = regionRolling[tid].erase(i);
-		}
-		else i++;
+	for(i = regionRolling[current].begin();
+			i != regionRolling[current].end();) {
+		(*i)->context()->copyToDevice(safe((*i)->getAddress()),
+				(*i)->getAddress(), (*i)->getSize());
+		(*i)->readOnly();
+		i = regionRolling[current].erase(i);
 	}
 	r->invalidate();
 }
@@ -161,36 +162,27 @@ void RollingManager::dirty(MemRegion *region)
 bool RollingManager::present(MemRegion *region) const
 {
 	RollingRegion *r = dynamic_cast<RollingRegion *>(region);
-	return r->isPresent();
+	return r->present();
 }
 
 // MemHandler Interface
 
-ProtRegion *RollingManager::find(void *addr)
-{
-	RollingRegion *r = memMap.find(addr);
-	if(r) return r->find(addr);
-	return NULL;
-}
-
-
 void RollingManager::read(ProtRegion *region, void *addr)
 {
-	assert(region->isPresent() == false);
+	assert(region->present() == false);
 	region->readWrite();
-	__gmacMemcpyToHost(region->getAddress(), safe(region->getAddress()),
-			region->getSize());
+	region->context()->copyToHost(region->getAddress(),
+			safe(region->getAddress()), region->getSize());
 	region->readOnly();
 }
 
 
 void RollingManager::write(ProtRegion *region, void *addr)
 {
-	assert(region->isDirty() == false);
-	thread_t tid = Process::gettid();
-	while(regionRolling[tid].size() >= lruSize) writeBack(tid);
+	assert(region->dirty() == false);
+	while(regionRolling[current].size() >= lruSize) writeBack();
 	region->readWrite();
-	regionRolling[tid].push_back(dynamic_cast<ProtSubRegion *>(region));
+	regionRolling[current].push_back(dynamic_cast<ProtSubRegion *>(region));
 #ifdef DEBUG
 	dumpRolling();
 #endif

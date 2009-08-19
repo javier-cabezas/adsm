@@ -1,6 +1,8 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-noinst_LTLIBRARIES = libacc.la
-libacc_la_SOURCES = cuda.cpp driver.cpp compat.cpp
-libacc_la_LIBADD = -lcuda
-libacc_la_LDFLAGS = -L$(CUDA_DIR)/lib
+noinst_LTLIBRARIES = libapi.la
+libapi_la_SOURCES = cuda.cpp driver.cpp compat.cpp\
+	GPU.h GPU.cpp\
+	GPUContext.h GPUContext.cpp
+libapi_la_LIBADD = -lcuda
+libapi_la_LDFLAGS = -L$(CUDA_DIR)/lib

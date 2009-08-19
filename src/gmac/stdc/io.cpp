@@ -1,5 +1,6 @@
 #include <os/loader.h>
 
+#include <order.h>
 #include <debug.h>
 #include <paraver.h>
 
@@ -13,8 +14,9 @@
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
-static void __attribute__((constructor(101))) stdcInit(void)
+static void __attribute__((constructor(INTERPOSE))) stdcInit(void)
 {
+	TRACE("Overloading I/O STDC functions");
 	LOAD_SYM(__libc_fread, fread);
 	LOAD_SYM(__libc_fwrite, fwrite);
 }

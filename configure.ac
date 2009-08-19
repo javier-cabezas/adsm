@@ -28,7 +28,7 @@ esac
 # Check for pthread library
 AC_CHECK_LIB([pthread], [pthread_create],
 	[AC_DEFINE([HAVE_LIBPTHREAD], [1])
-	LIBS="-lpthread $LIBS"; thread_dir="pthread"]
+	LIBS="-lpthread $LIBS"; thread_name="pthreads"]
 )
 
 # Get the NVIDIA CUDA compiler
@@ -92,18 +92,17 @@ fi
 
 
 # Check for paraver tracing
+paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"
 AC_MSG_CHECKING(whether to enable paraver tracing)
 AC_ARG_ENABLE(paraver,
 	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
-	paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"
 	paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"
 	AC_DEFINE(PARAVER)
 	AC_MSG_RESULT(yes)
 else
-	paraver_dir=""
-	paraver_dir=""
+	paraver_lib=""
 	AC_MSG_RESULT(no)
 fi
 
@@ -125,12 +124,12 @@ AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(API_DIR)
 AC_SUBST(OS_DIR)
-AC_SUBST(THREAD_DIR, $thread_dir)
+AC_SUBST(THREAD_DIR, $thread_name)
 
 AC_SUBST(PARAVER_INCLUDE, $paraver_include)
 AC_SUBST(PARAVER_LIB, $paraver_lib)
 
-AC_CONFIG_LINKS(src/gmac/gmac/api.h:src/api/$API_DIR/api.h)
+AC_CONFIG_LINKS(src/config/threads.h:src/config/$thread_name.h)
 AC_CONFIG_SUBDIRS([lib/libparaver])
 
 AC_OUTPUT(
@@ -138,12 +137,13 @@ AC_OUTPUT(
 	lib/Makefile
 	src/Makefile
 	src/config/config.h
+	src/kernel/Makefile
 	src/memory/Makefile
 	src/memory/posix/Makefile
 	src/gmac/Makefile
 	src/gmac/stdc/Makefile
 	src/gmac/posix/Makefile
-	src/gmac/pthread/Makefile
+	src/gmac/pthreads/Makefile
 	src/api/Makefile
 	src/api/cuda/Makefile
 	src/api/cudadrv/Makefile

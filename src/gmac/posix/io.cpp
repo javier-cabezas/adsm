@@ -1,5 +1,6 @@
 #include <os/loader.h>
 
+#include <order.h>
 #include <paraver.h>
 #include <debug.h>
 
@@ -13,8 +14,9 @@
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
-static void __attribute__((constructor(101))) posixIoInit(void)
+static void __attribute__((constructor(INTERPOSE))) posixIoInit(void)
 {
+	TRACE("Overloading I/O POSIX functions");
 	LOAD_SYM(__libc_read, read);
 	LOAD_SYM(__libc_write, write);
 }

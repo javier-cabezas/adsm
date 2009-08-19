@@ -31,52 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CUDA_API_H_
-#define __CUDA_API_H_
-
-#include <cuda.h>
-#include <driver_types.h>
-
-typedef cudaError_t gmacError_t;
-typedef enum {
-	gmacMemcpyDeviceToHost,
-	gmacMemcpyHostToDevice
-} gmacMemcpyKind;
+#ifndef __INIT_H_
+#define __INIT_H_
 
 
-void gmacCreateManager(void);
-void gmacRemoveManager(void);
+namespace gmac {
 
-gmacError_t __gmacMalloc(void **, size_t);
-gmacError_t __gmacMallocPitch(void **, size_t *, size_t, size_t);
-gmacError_t __gmacFree(void *);
+void apiInit(void);
+void memoryInit(void);
+void contextInit(void);
 
-gmacError_t __gmacMemcpyToDevice(void *, const void *, size_t);
-gmacError_t __gmacMemcpyToHost(void *, const void *, size_t);
-gmacError_t __gmacMemcpyDevice(void *, const void *, size_t);
-gmacError_t __gmacMemcpyToDeviceAsync(void *, const void *, size_t);
-gmacError_t __gmacMemcpyToHostAsync(void *, const void *, size_t);
+class System;
+class MemManager;
+class Context;
 
-gmacError_t __gmacMemset(void *, int, size_t);
-
-gmacError_t __gmacLaunch(const char *);
-gmacError_t __gmacThreadSynchronize(void);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-gmacError_t gmacGetLastError(void);
-const char *gmacGetErrorString(gmacError_t);
-#ifdef __cplusplus
+MemManager *createManager(const char * = NULL);
+void destroyManager();
+Context *createContext(void);
 }
-#endif
 
-gmacError_t __gmacError(CUresult);
-
-#define gmacSuccess cudaSuccess
-#define gmacErrorMemoryAllocation cudaErrorMemoryAllocation
-#define gmacErrorInvalidDeviceFunction cudaErrorInvalidDeviceFunction
-#define gmacErrorLaunchFailure cudaErrorLaunchFailure
-#define gmacErrorUnknown cudaErrorUnknown
+extern gmac::System *sys;
 
 #endif

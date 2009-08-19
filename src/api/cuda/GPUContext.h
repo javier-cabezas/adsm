@@ -31,22 +31,99 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_POSIX_PROCESS_H_
-#define __MEMORY_POSIX_PROCESS_H_
+#ifndef __API_CUDA_GPUCONTEXT_H_
+#define __API_CUDA_GPUCONTEXT_H_
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
+#include <config.h>
+#include <debug.h>
+#include <threads.h>
+#include <paraver.h>
+
+#include "GPU.h"
+
+#include <kernel/Context.h>
+
+#include <stdint.h>
+#include <cuda.h>
+#include <vector_types.h>
+
+#include <vector>
+#include <list>
 
 namespace gmac {
 
-typedef pid_t thread_t;
+class GPUContext : public Context {
+protected:
+	GPU &gpu;
 
-class Process {
+	inline void check() { assert(current == this); }
+
 public:
-	static inline thread_t gettid() {
-		return syscall(SYS_gettid);
+	GPUContext(GPU &gpu) : gpu(gpu) {
+		PRIVATE_SET(key, this);
+		cudaSetDevice(gpu.device());
+	}
+
+	// Standard Accelerator Interface
+	inline gmacError_t malloc(void **addr, size_t size) {
+		check();
+		gmacError_t ret = gpu.malloc(addr, size);
+		return error(ret);
+	}
+
+	inline gmacError_t free(void *addr) {
+		check();
+		gmacError_t ret = gpu.free(addr);
+		return error(ret);
+	}
+
+	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
+		check();
+		gmacError_t ret = gpu.copyToDevice(dev, host, size);
+		return error(ret);
+	}
+
+	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
+		check();
+		gmacError_t ret = gpu.copyToHost(host, dev, size);
+		return error(ret);
+	}
+
+	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
+		check();
+		gmacError_t ret = gpu.copyDevice(dst, src, size);
+		return error(ret);
+	}
+
+	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
+			size_t size) {
+		check();
+		gmacError_t ret = gpu.copyToDeviceAsync(dev, host, size);
+		return error(ret);
+	}
+
+	inline gmacError_t copyToHostAsync(void *host, const void *dev,
+			size_t size) {
+		check();
+		gmacError_t ret = gpu.copyToHostAsync(host, dev, size);
+		return error(ret);
+	}
+
+	inline gmacError_t memset(void *dev, int c, size_t size) {
+		check();
+		gmacError_t ret = gpu.memset(dev, c, size);
+		return error(ret);
+	}
+
+	gmacError_t launch(const char *kernel) {};
+	
+	inline gmacError_t sync() {
+		check();
+		gmacError_t ret = gpu.sync();
+		return error(ret);
 	}
 };
-};
+
+}
+
 #endif
