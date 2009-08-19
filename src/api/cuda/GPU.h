@@ -41,6 +41,8 @@ WITH THE SOFTWARE.  */
 #include <cuda_runtime.h>
 #include <vector_types.h>
 
+IMPORT_SYM(cudaError_t, __cudaLaunch, const char*);
+
 namespace gmac {
 
 class GPU : public Accelerator {
@@ -71,6 +73,7 @@ public:
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		TRACE("Transfer Device to Host [%p]", host);
 		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
+		cudaThreadSynchronize();
 		return error(ret);
 	}
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
@@ -90,6 +93,11 @@ public:
 
 	inline gmacError_t memset(void *dev, int value, size_t size) {
 		cudaError_t ret = cudaMemset(dev, value, size);
+		return error(ret);
+	}
+
+	inline gmacError_t launch(const char *kernel) {
+		cudaError_t ret = __cudaLaunch(kernel);
 		return error(ret);
 	}
 

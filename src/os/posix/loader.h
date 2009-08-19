@@ -42,6 +42,10 @@ WITH THE SOFTWARE.  */
 	typedef ret (*symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 
+#define IMPORT_SYM(ret, symbol, ...) \
+	typedef ret (*symbol##_t)(__VA_ARGS__);	\
+	extern symbol##_t symbol
+
 #define LOAD_SYM(symbol, name)	\
 	if((symbol = (symbol##_t)dlsym(RTLD_NEXT, #name)) == NULL)	\
 		FATAL("Unable to locate "#name);

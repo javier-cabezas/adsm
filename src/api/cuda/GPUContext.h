@@ -115,7 +115,11 @@ public:
 		return error(ret);
 	}
 
-	gmacError_t launch(const char *kernel) {};
+	gmacError_t launch(const char *kernel) {
+		check();
+		gmacError_t ret = gpu.launch(kernel);
+		return error(ret);
+	};
 	
 	inline gmacError_t sync() {
 		check();

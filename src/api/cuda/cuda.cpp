@@ -13,11 +13,11 @@
 #include <cuda.h>
 
 
-SYM(gmacError_t, __gmacLaunch, const char *);
+SYM(cudaError_t, __cudaLaunch, const char *);
 
 static void __attribute__((constructor(INTERPOSE))) gmacCudaInit(void)
 {
-	LOAD_SYM(__gmacLaunch, cudaLaunch);
+	LOAD_SYM(__cudaLaunch, cudaLaunch);
 }
 
 static unsigned nextGPU = 0;
