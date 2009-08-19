@@ -5,7 +5,6 @@
 #include <pthread.h>
 
 #include <gmac.h>
-#include <gmac/cuda.h>
 #include <gmac/paraver.h>
 
 #include "debug.h"

@@ -3,7 +3,6 @@
 #include <time.h>
 
 #include <gmac.h>
-#include <gmac/cuda.h>
 
 #include <sys/time.h>
 
