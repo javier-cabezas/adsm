@@ -1,5 +1,5 @@
 MAINTAINERCLEANFILES = Makefile.in
-DIST_SUBDIRS = stdc posix pthread 
+DIST_SUBDIRS = stdc posix pthreads
 SUBDIRS = stdc $(OS_DIR) $(THREAD_DIR)
 
 lib_LTLIBRARIES = libgmac.la
