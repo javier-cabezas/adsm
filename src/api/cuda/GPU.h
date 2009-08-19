@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __API_CUDA_GPU_H_
 
 #include <debug.h>
+#include <os/loader.h>
 #include <kernel/Accelerator.h>
 
 #include <cuda.h>
