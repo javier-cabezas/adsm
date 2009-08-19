@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDA_GPU_H_
 #define __API_CUDA_GPU_H_
 
+#include <debug.h>
 #include <kernel/Accelerator.h>
 
 #include <cuda.h>
@@ -63,10 +64,12 @@ public:
 	}
 		
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
+		TRACE("Transfer Host to Device [%p]", host);
 		cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
 		return error(ret);
 	}
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
+		TRACE("Transfer Device to Host [%p]", host);
 		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
 		return error(ret);
 	}
