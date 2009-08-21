@@ -1,5 +1,6 @@
 #include <os/loader.h>
-#include <gmac/init.h>
+#include <kernel/Process.h>
+#include <kernel/Context.h>
 
 #include <order.h>
 #include <paraver.h>
@@ -27,9 +28,9 @@ static void *gmac_pthread(void *arg)
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
 	pushState(Running);
-	gmac::createManager();
+	proc->create();
 	void *ret = gthread->__start_routine(gthread->__arg);
-	gmac::destroyManager();
+	delete gmac::Context::current();
 	popState();
 	return ret;
 }

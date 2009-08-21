@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
+#include <assert.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -42,10 +43,29 @@ extern "C" {
 
 typedef enum {
 	gmacSuccess = 0,
-	gmacErrorMemoryAllocation = 2,	
-	gmacErrorLaunchFailure = 4,
-	gmacErrorUnknown = 30
+	gmacErrorMemoryAllocation,
+	gmacErrorLaunchFailure,
+	gmacErrorNotReady,
+	gmacErrorNoDevice,
+	gmacErrorInvalidValue,
+	gmacErrorInvalidDevice,
+	gmacErrorDeviceFunction,
+	gmacErrorApiFailureBase,
+	gmacErrorUnknown
 } gmacError_t;
+
+static const char *error[] = {
+	"No error",
+	"Memory allocation",
+	"Launch failure",
+	"Device is not ready",
+	"Device is not present",
+	"Invalid value",
+	"Invalid device",
+	"Invalid device function",
+	"GMAC general failure",
+	"Uknown error"
+};
 
 /*!
 	\brief Allocates memory at the GPU
@@ -97,7 +117,11 @@ gmacError_t gmacThreadSynchronize(void);
 gmacError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
 
 gmacError_t gmacGetLastError(void);
-const char *gmacGetErrorString(gmacError_t);
+
+inline const char *gmacGetErrorString(gmacError_t err) {
+	assert(err <= gmacErrorUnknown);
+	return error[err];
+}
 
 #ifdef __cplusplus
 };

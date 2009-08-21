@@ -44,7 +44,7 @@ void ProtRegion::segvHandler(int s, siginfo_t *info, void *ctx)
 
 //	ProtRegion *r = MemHandler::get()->find(info->si_addr);
 	ProtRegion *r = NULL;
-	ProtRegion *root = current->mm().find<ProtRegion>(info->si_addr);
+	ProtRegion *root = Context::current()->mm().find<ProtRegion>(info->si_addr);
 	if(root == NULL) root = MemHandler::get()->find(info->si_addr);
 	if(root != NULL) r = root->get(info->si_addr);
 	if(r == NULL ) {

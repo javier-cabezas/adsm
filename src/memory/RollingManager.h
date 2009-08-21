@@ -73,7 +73,7 @@ protected:
 	// Methods used by ProtSubRegion to request flushing and invalidating
 	friend class RollingRegion;
 	void invalidate(ProtSubRegion *region) {
-		regionRolling[current].remove(region);
+		regionRolling[Context::current()].remove(region);
 	}
 
 public:

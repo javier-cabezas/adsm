@@ -39,74 +39,28 @@ WITH THE SOFTWARE.  */
 #include <cuda.h>
 #include <vector_types.h>
 
+#include <set>
+
 namespace gmac {
+
+namespace gpu {
+class Context;
+}
 
 class GPU : public Accelerator {
 protected:
-	inline CUdeviceptr gpuAddr(void *addr) const {
-		unsigned long a = (unsigned long)addr;
-		return (CUdeviceptr)(a & 0xffffffff);
-	}
-
-	inline CUdeviceptr gpuAddr(const void *addr) const {
-		unsigned long a = (unsigned long)addr;
-		return (CUdeviceptr)(a & 0xffffffff);
-	}
-
 	unsigned id;
 	CUdevice _device;
 
+	std::set<gpu::Context *> runQueue;
+
 public:
 	GPU(int n, CUdevice device) : id(n), _device(device) {};
+	~GPU();
+	CUdevice device() const { return _device; }
 
-	inline CUdevice device() const {
-		return _device;
-	}
-
-	inline gmacError_t malloc(void **addr, size_t size) {
-		*addr = NULL;
-		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
-		return error(ret);
-	}
-
-	inline gmacError_t free(void *addr) {
-		CUresult ret = cuMemFree(gpuAddr(addr));
-		return error(ret);
-	}
-		
-	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
-		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
-		return error(ret);
-	}
-	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
-		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
-		return error(ret);
-	}
-	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
-		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
-		return error(ret);
-	}
-	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
-			size_t size) {
-		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
-		return error(ret);
-	}
-	inline gmacError_t copyToHostAsync(void *host, const void *dev,
-			size_t size) {
-		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
-		return error(ret);
-	}
-
-	gmacError_t memset(void *dev, int value, size_t size);
-
-	gmacError_t launch(dim3, dim3, CUfunction);
-	inline gmacError_t sync() {
-		CUresult ret = cuCtxSynchronize();
-		return error(ret);
-	}
-
-	gmacError_t error(CUresult r);
-
+	Context *create();
+	void destroy(Context *);
 };
 
 }

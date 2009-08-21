@@ -34,8 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
-#include "MemMap.h"
-#include "os/Memory.h"
+#include <memory/MemMap.h>
+#include <memory/os/Memory.h>
 
 #include <config.h>
 #include <threads.h>
@@ -65,11 +65,11 @@ protected:
 
 	inline void insert(MemRegion *r) {
 		mem.insert(r);
-		current->mm().insert(r);
+		Context::current()->mm().insert(r);
 	}
 
 	inline MemRegion *remove(void *addr) {
-		current->mm().remove(addr);
+		Context::current()->mm().remove(addr);
 		return mem.remove(addr);
 	}
 
@@ -91,13 +91,19 @@ protected:
 	void unmap(void *addr, size_t count);
 
 public:
-	MemManager() : pageSize(getpagesize()) { MUTEX_INIT(virtMutex); }
+	MemManager() : pageSize(getpagesize()) {
+		MUTEX_INIT(virtMutex);
+		TRACE("Memory manager starts");
+	}
 	//! Virtual Destructor. It does nothing
 	virtual ~MemManager() {
+		TRACE("Memory manager finishes");
 		MUTEX_DESTROY(virtMutex);
 	}
 	
 	const MemMap &mm() { return mem; }
+	
+	inline void clean() { mem.clean(); }
 
 	//! This method is called whenever the user
 	//! requests memory to be used by the accelerator

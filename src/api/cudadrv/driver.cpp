@@ -2,7 +2,7 @@
 #include <threads.h>
 #include <debug.h>
 
-#include "GPUContext.h"
+#include "Context.h"
 
 #include <string.h>
 #include <assert.h>
@@ -14,32 +14,22 @@
 #include <string>
 #include <vector>
 
-#define context \
-	static_cast<gmac::GPUContext *>(PRIVATE_GET(gmac::Context::key))
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+using gmac::gpu::Context;
+using gmac::gpu::Module;
+
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-	CUmodule *mod = new CUmodule;
-	context->lock();
-	CUresult ret = cuModuleLoadFatBinary(mod, fatCubin);
-	context->release();
-	assert(ret == CUDA_SUCCESS);
-	return (void **)mod;
+	return (void **)Context::current()->cubin(fatCubin);
 }
 
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
-	CUmodule *mod = (CUmodule *)fatCubinHandle;
-	assert(mod != NULL);
-	context->lock();
-	CUresult ret = cuModuleUnload(*mod);
-	context->release();
-	if(ret != CUDA_SUCCESS) return;
-	delete mod;
+	Module *mod = (Module *)fatCubinHandle;
+	Context::current()->destroy(mod);
 }
 
 void __cudaRegisterFunction(
@@ -47,55 +37,44 @@ void __cudaRegisterFunction(
 		const char *devName, int threadLimit, uint3 *tid, uint3 *bid,
 		dim3 *bDim, dim3 *gDim)
 {
-	CUmodule *mod = (CUmodule *)fatCubinHandle;
+	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
-	CUfunction fun;
-	context->lock();
-	CUresult ret = cuModuleGetFunction(&fun, *mod, devName);
-	context->release();
-	if(ret != CUDA_SUCCESS) return;
-	context->function(hostFun, fun);
+	Context::current()->lock();
+	mod->function(hostFun, devName);
+	Context::current()->release();
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char *deviceAddress, const char *deviceName, int ext, int size,
 		int constant, int global)
 {
-	CUmodule *mod = (CUmodule *)fatCubinHandle;
+	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
-	CUdeviceptr ptr;
-	unsigned int deviceSize;
-	context->lock();
-	CUresult ret = cuModuleGetGlobal(&ptr, &deviceSize, *mod, deviceName);
-	context->release();
-	if(ret != CUDA_SUCCESS) return;
-	context->variable(hostVar, ptr, deviceSize);
+	Context::current()->lock();
+	mod->variable(hostVar, deviceName);
+	Context::current()->release();
 }
 
 
 void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr)
 {
-	CUmodule *mod = (CUmodule *)fatCubinHandle;
-	assert(mod != NULL);
 }
 
 void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
 		size_t size, size_t alignment, int storage)
 {
-	CUmodule *mod = (CUmodule *)fatCubinHandle;
-	assert(mod != NULL);
 }
 
 cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, int tokens)
 {
-	context->call(gridDim, blockDim, sharedMem, tokens);
+	Context::current()->call(gridDim, blockDim, sharedMem, tokens);
 	return cudaSuccess;
 }
 
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
-	context->argument(arg, count, offset);
+	Context::current()->argument(arg, count, offset);
 	return cudaSuccess;
 }
 

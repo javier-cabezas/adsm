@@ -2,10 +2,9 @@
 #include <order.h>
 
 #include "GPU.h"
-#include "GPUContext.h"
+#include "Context.h"
 
-#include <gmac/init.h>
-#include <kernel/System.h>
+#include <kernel/Process.h>
 
 #include <cuda.h>
 
@@ -16,20 +15,16 @@ static unsigned nextGPU = 0;
 
 namespace gmac {
 
-gmac::Context *createContext()
-{
-	assert(sys != NULL);
-	nextGPU = nextGPU % sys->getNumberOfAccelerators();
-	gmac::GPU *gpu = dynamic_cast<gmac::GPU *>(sys->accelerator(nextGPU));
-	return new gmac::GPUContext(*gpu);
-}
-
 void apiInit(void)
 {
+	assert(proc != NULL);
 	TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
 		FATAL("Unable to init CUDA");
+}
 
+void apiInitDevices(void)
+{
 	int devCount = 0;
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS || devCount == 0)
 		FATAL("No CUDA-enable devices found");
@@ -39,10 +34,16 @@ void apiInit(void)
 		CUdevice cuDev;
 		if(cuDeviceGet(&cuDev, 0) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
-		sys->addAccelerator(new gmac::GPU(i, cuDev));
+		proc->addAccelerator(new gmac::GPU(i, cuDev));
 	}
-
-	contextInit();
 }
+
+#if 0
+Context *contextCreate(Accelerator *acc)
+{
+	GPU *gpu = dynamic_cast<GPU *>(acc);
+	return new gpu::Context(*gpu);
+}
+#endif
 
 }

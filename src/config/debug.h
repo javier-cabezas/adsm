@@ -39,6 +39,8 @@ WITH THE SOFTWARE.  */
 #include <string.h>
 #include <errno.h>
 
+#include <sys/types.h>
+#include <unistd.h>
 
 #define FATAL(fmt, ...)	\
 	do {	\
@@ -49,7 +51,7 @@ WITH THE SOFTWARE.  */
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
-		fprintf(stderr,"TRACE [%s:%d] " fmt "\n",  __FILE__, __LINE__, ##__VA_ARGS__);	\
+		fprintf(stderr,"TRACE [%s:%d](%d) " fmt "\n",  __FILE__, __LINE__, getpid(), ##__VA_ARGS__);	\
 	} while(0)
 #else
 #define TRACE(fmt, ...)

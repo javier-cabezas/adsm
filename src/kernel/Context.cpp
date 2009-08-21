@@ -5,15 +5,9 @@
 
 namespace gmac {
 
-static void destroyContext(void *c)
-{
-	gmac::Context *context = static_cast<gmac::Context *>(c);
-	delete context;
-}
-
 void contextInit()
 {
-	PRIVATE_INIT(gmac::Context::key, destroyContext);
+	PRIVATE_INIT(gmac::Context::key, NULL);
 }
 
 

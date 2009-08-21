@@ -34,18 +34,21 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ACCELERATOR_H_
 #define __KERNEL_ACCELERATOR_H_
 
-#include <kernel/IAccelerator.h>
-
 namespace gmac {
+
+class Context;
 
 /*!
 	\brief Generic Accelerator Class
 	Defines the standard interface all accelerators MUST
 	implement
 */
-class Accelerator : public IAccelerator {
+class Accelerator {
 public:
 	virtual ~Accelerator() {};
+	
+	virtual Context *create() = 0;
+	virtual void destroy(Context *ctx) = 0;
 };
 
 };

@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include "GPU.h"
+#include "Module.h"
 
 #include <kernel/Context.h>
 
@@ -50,9 +51,12 @@ WITH THE SOFTWARE.  */
 #include <vector>
 #include <list>
 
-namespace gmac {
+namespace gmac { namespace gpu {
 
-class GPUContext : public Context {
+typedef HASH_MAP<Module *, const void *> ModuleMap;
+extern ModuleMap modules;
+
+class Context : public gmac::Context {
 protected:
 	typedef struct Call {
 		Call(dim3 grid, dim3 block, size_t shared, size_t tokens,
@@ -67,25 +71,13 @@ protected:
 		size_t tokens;
 		size_t stack;
 	} Call;
-public:
-	typedef struct Variable {
-		Variable(CUdeviceptr ptr, size_t size) : ptr(ptr), size(size) {};
-		CUdeviceptr ptr;
-		size_t size;
-	} Variable;
+
 protected:
 	typedef std::vector<Call> CallStack;
-	typedef HASH_MAP<const void *, CUfunction> FunctionMap;
-	typedef HASH_MAP<const void *, Variable> VariableMap;
-	typedef std::list<CUtexref *> Textures;
 
 	GPU &gpu;
 
 	CallStack _calls;
-	FunctionMap _functions;
-	VariableMap _variables;
-	VariableMap _constants;
-	Textures _textures;
 
 	static const unsigned StackSize = 4096;
 	uint8_t _stack[StackSize];
@@ -94,18 +86,47 @@ protected:
 	CUcontext ctx;
 	MUTEX(mutex);
 
-
-public:
-	GPUContext(GPU &gpu) : gpu(gpu), _sp(0) {
-		CUcontext tmp;
-		MUTEX_INIT(mutex);
-		if((cuCtxCreate(&ctx, 0, gpu.device()) != CUDA_SUCCESS))
-			FATAL("Unable to create CUDA context");
-		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
-		PRIVATE_SET(key, this);
+	inline CUdeviceptr gpuAddr(void *addr) const {
+		unsigned long a = (unsigned long)addr;
+		return (CUdeviceptr)(a & 0xffffffff);
 	}
 
-	~GPUContext() { MUTEX_DESTROY(mutex); }
+	inline CUdeviceptr gpuAddr(const void *addr) const {
+		unsigned long a = (unsigned long)addr;
+		return (CUdeviceptr)(a & 0xffffffff);
+	}
+
+	gmacError_t error(CUresult);
+
+public:
+	Context(GPU &gpu) : gpu(gpu), _sp(0) {
+		MUTEX_INIT(mutex);
+		CUcontext tmp;
+		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
+		if(ret != CUDA_SUCCESS)
+			FATAL("Unable to create CUDA context %d", ret);
+		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+
+		enable();
+		TRACE("New GPU context [%p]", this);
+	}
+
+	~Context() {
+		TRACE("Remove GPU context [%p]", this);
+		MUTEX_DESTROY(mutex);
+	}
+
+	inline static Context *current() {
+		return static_cast<Context *>(PRIVATE_GET(key));
+	}
+
+	inline void clone() {
+		ModuleMap::iterator m;
+		lock();
+		for(m = modules.begin(); m != modules.end(); m++)
+			m->first->reload(m->second);
+		release();
+	}
 
 	inline void lock() {
 		pushState(Lock);
@@ -123,35 +144,40 @@ public:
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {
 		lock();
-		gmacError_t ret = gpu.malloc(addr, size);
+		unsigned int bytes = 0;
+		cuDeviceTotalMem(&bytes, gpu.device());
+		assert(bytes > size);
+		bytes = size;
+		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, bytes);
+		assert(ret == CUDA_SUCCESS);
 		release();
 		return error(ret);
 	}
 
 	inline gmacError_t free(void *addr) {
 		lock();
-		gmacError_t ret = gpu.free(addr);
+		CUresult ret = cuMemFree(gpuAddr(addr));
 		release();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();
-		gmacError_t ret = gpu.copyToDevice(dev, host, size);
+		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
 		release();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		lock();
-		gmacError_t ret = gpu.copyToHost(host, dev, size);
+		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
 		release();
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		lock();
-		gmacError_t ret = gpu.copyDevice(dst, src, size);
+		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
 		release();
 		return error(ret);
 	}
@@ -159,7 +185,7 @@ public:
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
 		lock();
-		gmacError_t ret = gpu.copyToDeviceAsync(dev, host, size);
+		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
 		release();
 		return error(ret);
 	}
@@ -167,62 +193,55 @@ public:
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
 		lock();
-		gmacError_t ret = gpu.copyToHostAsync(host, dev, size);
+		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
 		release();
 		return error(ret);
 	}
 
-	inline gmacError_t memset(void *dev, int c, size_t size) {
-		lock();
-		gmacError_t ret = gpu.memset(dev, c, size);
-		release();
-		return error(ret);
-	}
-
+	gmacError_t memset(void *dev, int c, size_t size);
 	gmacError_t launch(const char *kernel);
 	
 	inline gmacError_t sync() {
 		lock();
-		gmacError_t ret = gpu.sync();
+		CUresult ret = cuCtxSynchronize();
 		release();
 		return error(ret);
 	}
 
 	// CUDA-related methods
-	inline void function(const char *host, CUfunction dev) {
-		_functions.insert(FunctionMap::value_type(host, dev));
-	}
-	inline const CUfunction *function(const char *host) const {
-		FunctionMap::const_iterator f;
-		if((f = _functions.find(host)) == _functions.end()) return NULL;
-		return &f->second;
-	}
-
-	inline void variable(const char *host, CUdeviceptr ptr, size_t size) {
-		Variable variable(ptr, size);
-		_variables.insert(VariableMap::value_type(host, variable));
-	}
-	inline const Variable *variable(const char *host) const {
-		VariableMap::const_iterator v;
-		if((v = _variables.find(host)) == _variables.end()) return NULL;
-		return &v->second;
+	inline Module *cubin(void *fatBin) {
+		lock();
+		Module *mod = new Module(fatBin);
+		modules.insert(ModuleMap::value_type(mod, fatBin));
+		release();
+		return mod;
 	}
 
-	inline void constant(const char *host, CUdeviceptr ptr, size_t size) {
-		Variable constant(ptr, size);
-		_constants.insert(VariableMap::value_type(host, constant));
-	}
-	inline const Variable *constant(const char *host) const {
-		VariableMap::const_iterator c;
-		if((c = _constants.find(host)) == _constants.end()) return NULL;
-		return &c->second;
+	inline void destroy(Module *mod) {
+		ModuleMap::iterator m = modules.find(mod);
+		assert(m != modules.end());
+		lock();
+		delete m->first;
+		modules.erase(m);
+		release();
 	}
 
-	inline void bind(CUtexref *tex) {
-		_textures.push_back(tex);
+	inline const Function *function(const char *name) const {
+		ModuleMap::const_iterator m;	
+		for(m = modules.begin(); m != modules.end(); m++) {
+			const Function *func = m->first->function(name);
+			if(func != NULL) return func;
+		}
+		return NULL;
 	}
-	inline void unbind(CUtexref *tex) {
-		_textures.remove(tex);
+
+	inline const Variable *constant(const char *name) const {
+		ModuleMap::const_iterator m;
+		for(m = modules.begin(); m != modules.end(); m++) {
+			const Variable *var = m->first->variable(name);
+			if(var != NULL) return var;
+		}
+		return NULL;
 	}
 
 	inline void call(dim3 Dg, dim3 Db, size_t shared, int tokens) {
@@ -236,6 +255,6 @@ public:
 };
 
 
-}
+}}
 
 #endif

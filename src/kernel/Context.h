@@ -35,36 +35,42 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_CONTEXT_H_
 
 #include <threads.h>
-#include <kernel/IAccelerator.h>
-#include <memory/MemMap.h>
+#include <debug.h>
 
-#define current static_cast<gmac::Context *>(PRIVATE_GET(gmac::Context::key))
+#include <gmac/gmac.h>
+#include <memory/MemMap.h>
 
 namespace gmac {
 
 /*!
 	\brief Generic Context Class
 */
-class Context : public IAccelerator {
+class Context {
 protected:
 	/*!
 		\brief Last error on context
 	*/
 	gmacError_t _error;
 
+	/*!
+		\brief Per-thread key to store context
+	*/
+	friend void contextInit(void);
+	static PRIVATE(key);
 
 	/*!
 		\brief Memory map for the context
 	*/
 	MemMap _mm;
 
+	inline void enable() { PRIVATE_SET(key, this); }
+
 public:
 	virtual ~Context() {};
 
-	/*!
-		\brief Per-thread key to store context
-	*/
-	static PRIVATE(key);
+	static Context *current() {
+		return static_cast<Context *>(PRIVATE_GET(key));
+	}
 
 	/*!
 		\brief Returns a reference to the context memory map
@@ -77,19 +83,102 @@ public:
 	const MemMap &mm() const { return _mm; }
 
 	/*!
+		\brief Clones the current context
+	*/
+	virtual void clone() { _mm.clean(); }
+
+
+	/*!
+		\brief Locks the context
+	*/
+	virtual void lock() = 0;
+	
+	/*!
+		\brief Releases the context
+	*/
+	virtual void release() = 0;
+
+	/*!
+		\brief Allocates memory on the accelerator memory 
+		\param addr Pointer to memory address to store the accelerator memory
+		\param size Size, in bytes, to be allocated
+	*/
+	virtual gmacError_t malloc(void **addr, size_t size) = 0;
+
+	/*!
+		\brief Releases memory previously allocated by Malloc
+		\param addr Starting memory address to be released
+	*/
+	virtual gmacError_t free(void *addr) = 0;
+	
+	/*!
+		\brief Copies data from system memory to accelerator memory
+		\param dev Destination accelerator memory address
+		\param host Source system memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyToDevice(void *dev, const void *host,
+			size_t size) = 0;
+
+	/*!
+		\brief Copies data from accelerator memory to system memory
+		\param host Destination system memory address
+		\param dev Source accelerator memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyToHost(void *host, const void *dev,
+			size_t size) = 0;
+
+	/*!
+		\brief Copies data from accelerator memory to accelerator memory
+		\param src Source accelerator memory address
+		\param dst Destination accelerator memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyDevice(void *dst, const void *src,
+			size_t size) = 0;
+
+	/*!
+		\brief Copies data from system memory to accelerator memory
+				asynchronously
+		\param dev Destination accelerator memory address
+		\param host Source system memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyToDeviceAsync(void *dev, const void *host,
+			size_t size) = 0;
+
+
+	/*!
+		\brief Copies data from accelerator memory to system memory
+				asynchronously
+		\param host Destination host memory address
+		\param dev Source host memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyToHostAsync(void *host, const void *dev,
+			size_t size) = 0;
+
+	/*!
+		\brief Initializes accelerator memory
+		\param addr Accelerator memory address
+		\param value Value used to initialize memory
+		\param size Size, in bytes, to be initialized
+	*/
+	virtual gmacError_t memset(void *dev, int value, size_t size) = 0;
+
+
+	/*!
 		\brief Launches the execution of a kernel
 		\param kernel Kernel to be launched
 	*/
 	virtual gmacError_t launch(const char *kernel) = 0;
 
 	/*!
-		\brief Records and error from a call
-		\param e Error to record
+		\brief Waits for pending actions
 	*/
-	inline gmacError_t error(gmacError_t e) {
-		_error = e;
-		return e;
-	}
+	virtual gmacError_t sync() = 0;
+	
 
 	/*!
 		\brief Returns last error

@@ -37,19 +37,13 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-void apiInit(void);
-void memoryInit(void);
-void contextInit(void);
-
-class System;
+class Process;
 class MemManager;
 class Context;
 
-MemManager *createManager(const char * = NULL);
-void destroyManager();
-Context *createContext(void);
 }
 
-extern gmac::System *sys;
+extern gmac::Process *proc;
+extern gmac::MemManager *manager;
 
 #endif

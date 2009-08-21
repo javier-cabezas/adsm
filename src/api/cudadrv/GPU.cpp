@@ -1,52 +1,33 @@
 #include "GPU.h"
+#include "Context.h"
 
 #include <debug.h>
 
+
 namespace gmac {
 
-gmacError_t GPU::error(CUresult ret)
+GPU::~GPU()
 {
-	gmacError_t _error;
-	switch(ret) {
-		case CUDA_SUCCESS: _error = gmacSuccess; break;
-		case CUDA_ERROR_OUT_OF_MEMORY:
-			_error = gmacErrorMemoryAllocation; break;
-		case CUDA_ERROR_LAUNCH_FAILED:
-			_error = gmacErrorLaunchFailure; break;
-		default: _error = gmacErrorUnknown; break;
-	}
-	return _error;
+	std::set<gpu::Context *>::const_iterator i;
+	for(i = runQueue.begin(); i != runQueue.end(); i++)
+		delete *i;
+	runQueue.clear();
 }
 
-gmacError_t GPU::memset(void *addr, int i, size_t n)
+Context *GPU::create()
 {
-	CUresult ret = CUDA_SUCCESS;
-	unsigned char c = i & 0xff;
-	if((n % 4) == 0) {
-		unsigned m = c | (c << 8);
-		m |= (m << 16);
-		ret = cuMemsetD32(gpuAddr(addr), m, n / 4);
-	}
-	else if((n % 2) == 0) {
-		unsigned short s = c | (c << 8);
-		ret = cuMemsetD16(gpuAddr(addr), s, n / 2);
-	}
-	else {
-		ret = cuMemsetD8(gpuAddr(addr), c, n);
-	}
-	return error(ret);
+	gpu::Context *ctx = new gpu::Context(*this);
+	runQueue.insert(ctx);
+	return ctx;
 }
 
-gmacError_t GPU::launch(dim3 Dg, dim3 Db, CUfunction f)
+void GPU::destroy(Context *context)
 {
-	CUresult ret = CUDA_SUCCESS;
-	if((ret = cuFuncSetBlockShape(f, Db.x, Db.y, Db.z)) != CUDA_SUCCESS)
-		return error(ret);
-
-	if((ret = cuLaunchGrid(f, Dg.x, Dg.y)) != CUDA_SUCCESS)
-		return error(ret);
-
-	return error(ret);
+	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
+	std::set<gpu::Context *>::iterator c = runQueue.find(ctx);
+	assert(c != runQueue.end());
+	runQueue.erase(c);
+	delete ctx;
 }
 
 };

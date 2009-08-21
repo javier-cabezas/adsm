@@ -38,15 +38,15 @@ void LazyManager::release(void *addr)
 void LazyManager::flush()
 {
 	MemMap::const_iterator i;
-	MemMap &mm = current->mm();
+	MemMap &mm = Context::current()->mm();
 	mm.lock();
 	for(i = mm.begin(); i != mm.end(); i++) {
-		ProtRegion *reg = dynamic_cast<ProtRegion *>(i->second);
-		if(reg->dirty()) {
-			current->copyToDevice(safe(i->second->getAddress()),
-					i->second->getAddress(), i->second->getSize());
+		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
+		if(r->dirty()) {
+			r->context()->copyToDevice(safe(r->getAddress()),
+					r->getAddress(), r->getSize());
 		}
-		reg->invalidate();
+		r->invalidate();
 	}
 	mm.unlock();
 }
@@ -55,7 +55,7 @@ void LazyManager::flush(MemRegion *region)
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
 	if(r->dirty()) {
-		current->copyToDevice(safe(r->getAddress()), r->getAddress(),
+		r->context()->copyToDevice(safe(r->getAddress()), r->getAddress(),
 				r->getSize());
 	}
 	r->invalidate();

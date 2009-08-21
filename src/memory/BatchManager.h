@@ -47,6 +47,7 @@ namespace gmac {
 class BatchManager : public MemManager {
 public:
 	BatchManager() : MemManager() { }
+
 	inline bool alloc(void *addr, size_t count) {
 		if(map(addr, count) == MAP_FAILED) return false;
 		TRACE("New Memory Region @ %p (%d bytes)", addr, count);

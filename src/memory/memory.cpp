@@ -2,38 +2,40 @@
 
 #include <debug.h>
 
-extern gmac::MemManager *memManager;
+gmac::MemManager *manager= NULL;
 
 namespace gmac {
 
 static MUTEX(mutex);
-static unsigned count;
 
-void memoryInit(void)
+static void destroyManager(void)
+{
+	MUTEX_LOCK(mutex);
+	delete manager;
+	manager = NULL;
+	MUTEX_UNLOCK(mutex);
+}
+
+static void createManager(const char *name)
+{
+	MUTEX_LOCK(mutex);
+	if(manager == NULL)
+		manager = gmac::getManager(name);
+	MUTEX_UNLOCK(mutex);
+}
+
+void memoryInit(const char *manager)
 {
 	TRACE("Initializing Memory Subsystem");
 	MUTEX_INIT(mutex);
-	count = 0;
+	createManager(manager);
 }
 
-void destroyManager(void)
+void memoryFini(void)
 {
-	MUTEX_LOCK(mutex);
-	count--;
-	if(count <= 0) {
-		delete memManager;
-		memManager = NULL;
-	}
-	MUTEX_UNLOCK(mutex);
+	TRACE("Cleaning Memory Subsystem");
+	destroyManager();
 }
 
-void createManager(const char *manager)
-{
-	MUTEX_LOCK(mutex);
-	if(memManager == NULL)
-		memManager = gmac::getManager(manager);
-	count++;
-	MUTEX_UNLOCK(mutex);
-}
 
 }

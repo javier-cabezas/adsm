@@ -14,11 +14,11 @@ void BatchManager::release(void *addr)
 void BatchManager::flush(void)
 {
 	MemMap::const_iterator i;
-	MemMap &mm = current->mm();
+	MemMap &mm = Context::current()->mm();
 	mm.lock();
 	for(i = mm.begin(); i != mm.end(); i++) {
 		TRACE("Memory Copy to Device");
-		current->copyToDevice(safe(i->second->getAddress()),
+		Context::current()->copyToDevice(safe(i->second->getAddress()),
 				i->second->getAddress(), i->second->getSize());
 	}
 	mm.unlock();
@@ -27,11 +27,11 @@ void BatchManager::flush(void)
 void BatchManager::sync(void)
 {
 	MemMap::const_iterator i;
-	MemMap &mm = current->mm();
+	MemMap &mm = Context::current()->mm();
 	mm.lock();
 	for(i = mm.begin(); i != mm.end(); i++) {
 		TRACE("Memory Copy from Device");
-		current->copyToHost(i->second->getAddress(),
+		Context::current()->copyToHost(i->second->getAddress(),
 				safe(i->second->getAddress()), i->second->getSize());
 	}
 	mm.unlock();

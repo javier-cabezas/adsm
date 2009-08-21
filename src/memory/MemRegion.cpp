@@ -8,7 +8,7 @@ MemRegion::MemRegion(void *addr, size_t size) :
 	addr(__addr(addr)),
 	size(size)
 {
-	_context = current;
+	_context = Context::current();
 }
 
 }

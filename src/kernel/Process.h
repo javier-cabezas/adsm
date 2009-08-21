@@ -31,32 +31,67 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_SYSTEM_H_
-#define __KERNEL_SYSTEM_H_
+#ifndef __KERNEL_PROCESS_H_
+#define __KERNEL_PROCESS_H_
+
+#include <debug.h>
 
 #include <assert.h>
 
 #include <vector>
+#include <list>
+
+namespace gmac {
+class Accelerator;
+class Context;
+class Process;
+
+void apiInit(void);
+void apiInitDevices(void);
+void contextInit(void);
+void memoryInit(const char *name = NULL);
+void memoryFini(void);
+
+Context *contextCreate(Accelerator *);
+}
+
+extern gmac::Process *proc;
 
 namespace gmac {
 
-class Accelerator;
-class System {
+class Process {
 protected:
-	std::vector<Accelerator *> accelerators;
+	std::vector<Accelerator *> accs;
+
+	unsigned current;
+
+	Process() : current(0) { };
+
+	void cleanAccelerators();
+
 public:
+
+	virtual ~Process();
+
+	static void init(const char *name) {
+		proc = new Process();
+		apiInit();
+		apiInitDevices();
+		contextInit();
+		memoryInit(name);
+	}
+
+	void create();
+	void clone();
+
 	void addAccelerator(Accelerator *acc) {
-		accelerators.push_back(acc);
+		accs.push_back(acc);
 	}
 
 	size_t getNumberOfAccelerators() const {
-		return accelerators.size();
+		return accs.size();
 	}
 
-	Accelerator *accelerator(int n) {
-		assert(n < accelerators.size());
-		return accelerators[n];
-	}
 };
 
 }

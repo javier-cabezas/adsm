@@ -54,15 +54,7 @@ public:
 
 	MemMap() { MUTEX_INIT(__mutex); }
 
-	virtual ~MemMap() { 
-		Map::iterator i;
-		MUTEX_LOCK(__mutex);
-		for(i = __map.begin(); i != __map.end(); i++) {
-			delete i->second;
-		}
-		__map.clear();
-		MUTEX_UNLOCK(__mutex);
-	}
+	virtual ~MemMap() { clean(); }
 
 	inline void lock() { MUTEX_LOCK(__mutex); }
 	inline void unlock() { MUTEX_UNLOCK(__mutex); }
@@ -86,6 +78,17 @@ public:
 		__map.erase(i);
 		MUTEX_UNLOCK(__mutex);
 		return ret;
+	}
+
+	inline void clean() {
+		MUTEX_LOCK(__mutex);
+		Map::iterator i;
+		for(i = __map.begin(); i != __map.end(); i++) {
+			TRACE("Cleaning MemRegion %p", i->second);
+			delete i->second;
+		}
+		__map.clear();
+		MUTEX_UNLOCK(__mutex);
 	}
 
 	template<typename T>
