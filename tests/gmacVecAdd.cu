@@ -41,7 +41,7 @@ static inline void printTime(struct timeval *start, struct timeval *end, const c
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
+	float *a = NULL, *b = NULL, *c = NULL;
 	struct timeval s, t;
 
 	const char *vecStr = getenv("VECTORSIZE");

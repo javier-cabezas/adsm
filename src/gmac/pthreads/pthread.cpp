@@ -28,7 +28,7 @@ static void *gmac_pthread(void *arg)
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
 	pushState(Running);
-	proc->create();
+	proc->context();
 	void *ret = gthread->__start_routine(gthread->__arg);
 	delete gmac::Context::current();
 	popState();

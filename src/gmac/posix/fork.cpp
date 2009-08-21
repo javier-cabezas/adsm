@@ -28,10 +28,7 @@ extern "C" {
 
 pid_t fork()
 {
-	TRACE("fork");
-	pid_t pid = __libc_fork();
-	if(pid == 0) proc->clone();
-	return pid;
+	FATAL("fork() not supported by GMAC");
 }
 
 int clone(int (*fn)(void *), void *, int, void *, ...)

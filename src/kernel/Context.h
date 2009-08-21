@@ -83,12 +83,6 @@ public:
 	const MemMap &mm() const { return _mm; }
 
 	/*!
-		\brief Clones the current context
-	*/
-	virtual void clone() { _mm.clean(); }
-
-
-	/*!
 		\brief Locks the context
 	*/
 	virtual void lock() = 0;

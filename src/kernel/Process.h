@@ -47,7 +47,6 @@ class Context;
 class Process;
 
 void apiInit(void);
-void apiInitDevices(void);
 void contextInit(void);
 void memoryInit(const char *name = NULL);
 void memoryFini(void);
@@ -67,31 +66,23 @@ protected:
 
 	Process() : current(0) { };
 
-	void cleanAccelerators();
-
 public:
 
 	virtual ~Process();
 
 	static void init(const char *name) {
+		if(proc != NULL) return;
 		proc = new Process();
 		apiInit();
-		apiInitDevices();
 		contextInit();
 		memoryInit(name);
 	}
 
-	void create();
-	void clone();
+	void context();
 
-	void addAccelerator(Accelerator *acc) {
+	void accelerator(Accelerator *acc) {
 		accs.push_back(acc);
 	}
-
-	size_t getNumberOfAccelerators() const {
-		return accs.size();
-	}
-
 };
 
 }

@@ -9,39 +9,22 @@
 gmac::Process *proc = NULL;
 
 namespace gmac {
-void Process::cleanAccelerators()
-{
-	TRACE("Cleaning accelerators");
-	std::vector<Accelerator *>::iterator a;
-	for(a = accs.begin(); a != accs.end(); a++)
-		delete *a;
-	accs.clear();
-}
 
 Process::~Process()
 {
 	TRACE("Cleaning process");
-	cleanAccelerators();
+	std::vector<Accelerator *>::iterator a;
+	for(a = accs.begin(); a != accs.end(); a++)
+		delete *a;
+	accs.clear();
 	memoryFini();
 }
 
-void Process::create()
+void Process::context()
 {
 	TRACE("Creating new context");
 	accs[current]->create();
 	current = ++current % accs.size();
 }
 
-void Process::clone()
-{
-	TRACE("Cleaning process");
-	cleanAccelerators();
-	manager->clean();
-
-	TRACE("Restarting process");
-	apiInit();
-	apiInitDevices();
-	create();
-	gmac::Context::current()->clone();
-}
 }

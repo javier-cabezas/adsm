@@ -35,7 +35,7 @@ static void __attribute__((constructor(CORE))) gmacInit(void)
 	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
 	gmac::Process::init(getenv(managerVar));
-	proc->create();
+	proc->context();
 }
 
 

@@ -98,7 +98,8 @@ protected:
 
 	gmacError_t error(CUresult);
 
-public:
+	friend class gmac::GPU;
+
 	Context(GPU &gpu) : gpu(gpu), _sp(0) {
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
@@ -107,6 +108,8 @@ public:
 			FATAL("Unable to create CUDA context %d", ret);
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 
+		cuCtxPopCurrent(&tmp);
+
 		enable();
 		TRACE("New GPU context [%p]", this);
 	}
@@ -114,18 +117,14 @@ public:
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
 		MUTEX_DESTROY(mutex);
+		cuCtxDestroy(ctx); 
 	}
+
+public:
+
 
 	inline static Context *current() {
 		return static_cast<Context *>(PRIVATE_GET(key));
-	}
-
-	inline void clone() {
-		ModuleMap::iterator m;
-		lock();
-		for(m = modules.begin(); m != modules.end(); m++)
-			m->first->reload(m->second);
-		release();
 	}
 
 	inline void lock() {
@@ -144,11 +143,7 @@ public:
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {
 		lock();
-		unsigned int bytes = 0;
-		cuDeviceTotalMem(&bytes, gpu.device());
-		assert(bytes > size);
-		bytes = size;
-		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, bytes);
+		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
 		assert(ret == CUDA_SUCCESS);
 		release();
 		return error(ret);
