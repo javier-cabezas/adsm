@@ -19,7 +19,7 @@ gmacError_t Context::error(CUresult r)
 		ERROR(CUDA_ERROR_INVALID_CONTEXT, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_ALREADY_MAPPED, gmacErrorMemoryAllocation);
-		ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorDeviceFunction);	
+		ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidDeviceFunction);	
 		ERROR(CUDA_ERROR_ALREADY_ACQUIRED, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_FILE_NOT_FOUND, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_INVALID_HANDLE, gmacErrorApiFailureBase);
