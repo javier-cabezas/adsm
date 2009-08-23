@@ -2,7 +2,7 @@ MAINTAINERCLEANFILES=Makefile.in
 
 noinst_PROGRAMS = bandwidth signal gmacVecAdd\
 		gmacTexture gmacConstant\
-		gmacMemset\
+		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd\
 		vmVecAdd
 
@@ -21,6 +21,10 @@ vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacMemset_SOURCES = gmacMemset.cu
 gmacMemset_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+
+gmacMemcpy_SOURCES = gmacMemcpy.cu
+gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu
 gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart

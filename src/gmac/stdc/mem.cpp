@@ -69,13 +69,14 @@ void *memcpy(void *dst, const void *src, size_t n)
 	// Fast path - both regions are in the CPU
 	if(dstCtx == NULL && srcCtx == NULL) return __libc_memcpy(dst, src, n);
 
-	if(srcCtx == NULL) { // Copy to Host
+	TRACE("GMAC Memcpy");
+	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
-		dstCtx->copyToHost(dst, manager->safe(src), n);
+		srcCtx->copyToHost(dst, manager->safe(src), n);
 	}
-	else if(dstCtx == NULL) { // Copy to Device
+	else if(srcCtx == NULL) { // Copy to Device
 		manager->invalidate(dst, n);
-		srcCtx->copyToDevice(manager->safe(dst), src, n);
+		dstCtx->copyToDevice(manager->safe(dst), src, n);
 	}
 	else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);

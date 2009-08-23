@@ -96,6 +96,11 @@ protected:
 		return (CUdeviceptr)(a & 0xffffffff);
 	}
 
+	inline void zero(void **addr) const {
+		addr_t *ptr = (addr_t *)addr;
+		*ptr = 0;
+	}
+
 	gmacError_t error(CUresult);
 
 	friend class gmac::GPU;
@@ -143,6 +148,7 @@ public:
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {
 		lock();
+		zero(addr);
 		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
 		release();
 		return error(ret);
