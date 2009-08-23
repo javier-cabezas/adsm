@@ -21,25 +21,6 @@ static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
 	LOAD_SYM(__libc_memcpy, memcpy);
 }
 
-
-#if 0
-static void copyDevice(gmac::MemRegion *r, gmac::MemRegion *s,
-		void *dst, const void *src, size_t size)
-{
-	if(manager->present(r)) manager->flush(r);
-	if(manager->present(s)) manager->flush(s);
-	if(r->context() == s->context())
-		r->context()->copyDevice(manager->safe(dst),
-				manager->safe(src), size);
-	else {
-		void *temp = malloc(size);
-		s->context()->copyToHost(temp, manager->safe(src), size);
-		r->context()->copyToDevice(manager->safe(dst), temp, size);
-		free(temp);
-	}
-}
-#endif
-
 void *memset(void *s, int c, size_t n)
 {
 	if(manager == NULL) return __libc_memset(s, c, n);
@@ -85,7 +66,12 @@ void *memcpy(void *dst, const void *src, size_t n)
 				manager->safe(src), n);
 	}
 	else {
-		__libc_memcpy(dst, src, n);
+		void *tmp = malloc(n);
+		manager->flush(src, n);
+		srcCtx->copyToHost(tmp, manager->safe(src), n);
+		manager->invalidate(dst, n);
+		dstCtx->copyToDevice(manager->safe(dst), tmp, n);
+		free(tmp);
 	}
 
 	return ret;
