@@ -129,12 +129,12 @@ void RollingManager::flush()
 	TRACE("RollingManager Flush Starts");
 	flushToDevice();
 	MemMap::iterator i;
-	current().lock();
-	for(i = current().begin(); i != current().end(); i++) {
+	current()->lock();
+	for(i = current()->begin(); i != current()->end(); i++) {
 		RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
 		r->invalidate();
 	}
-	current().unlock();
+	current()->unlock();
 	TRACE("RollingManager Flush Ends");
 }
 

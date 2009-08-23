@@ -51,7 +51,8 @@ protected:
 	bool write(void *addr);
 
 	inline ProtRegion *get(const void *addr) {
-		ProtRegion *reg = current().find<ProtRegion>(addr);
+		ProtRegion *reg = NULL;
+		if(current()) current()->find<ProtRegion>(addr);
 		if(reg == NULL) reg = mem.find<ProtRegion>(addr);
 		return reg;
 	}

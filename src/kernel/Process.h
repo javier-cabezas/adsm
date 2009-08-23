@@ -72,9 +72,9 @@ public:
 
 	static void init(const char *name) {
 		if(proc != NULL) return;
+		contextInit();
 		proc = new Process();
 		apiInit();
-		contextInit();
 		memoryInit(name);
 	}
 

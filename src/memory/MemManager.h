@@ -73,7 +73,10 @@ protected:
 		return mem.remove(addr);
 	}
 
-	inline MemMap &current() { return Context::current()->mm(); }
+	inline MemMap *current() {
+		if(Context::current() == NULL) return NULL;
+		return &Context::current()->mm();
+	}
 
 	//! This method maps a accelerator address into the CPU address space
 	//! \param addr accelerator address

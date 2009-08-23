@@ -59,7 +59,8 @@ protected:
 	std::map<Context *, Rolling> regionRolling;
 
 	inline RollingRegion *get(const void *addr) {
-		RollingRegion *reg = current().find<RollingRegion>(addr);
+		RollingRegion *reg = NULL;
+		if(current()) current()->find<RollingRegion>(addr);
 		if(reg == NULL) reg = mem.find<RollingRegion>(addr);
 		return reg;
 	}

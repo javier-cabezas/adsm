@@ -8,6 +8,7 @@ namespace gmac {
 void contextInit()
 {
 	PRIVATE_INIT(gmac::Context::key, NULL);
+	PRIVATE_SET(gmac::Context::key, NULL);
 }
 
 
