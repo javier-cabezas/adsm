@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 class RollingManager;
 class ProtSubRegion;
-class RollingRegion : public ProtRegion {
+class RollingRegion : public MemRegion {
 public:
 	typedef std::set<ProtSubRegion *> List;
 protected:

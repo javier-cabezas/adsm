@@ -9,7 +9,7 @@ namespace gmac {
 
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
-	ProtRegion(addr, size),
+	MemRegion(addr, size),
 	manager(manager),
 	cacheLine(cacheLine),
 	offset((unsigned long)addr & (cacheLine -1))
@@ -65,9 +65,10 @@ void RollingRegion::invalidate()
 
 void RollingRegion::invalidate(const void *addr, size_t size)
 {
+	void *end = (void *)((addr_t)addr + size);
 	Map::iterator i = map.lower_bound(addr);
 	assert(i != map.end());
-	for(; i != map.end() && i->second->start() < addr; i++) {
+	for(; i != map.end() && i->second->start() < end; i++) {
 		// If the region is not present, just ignore it
 		if(i->second->present() == false) continue;
 

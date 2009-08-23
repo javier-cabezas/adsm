@@ -43,10 +43,11 @@ static void copyDevice(gmac::MemRegion *r, gmac::MemRegion *s,
 void *memset(void *s, int c, size_t n)
 {
 	if(manager == NULL) return __libc_memset(s, c, n);
-
+	
 	gmac::Context *ctx = manager->owner(s);
 	if(ctx == NULL) __libc_memset(s, c, n);
 	else {
+		TRACE("GMAC Memset");
 		manager->invalidate(s, n);
 		ctx->memset(manager->safe(s), c, n);
 	}

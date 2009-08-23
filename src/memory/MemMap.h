@@ -96,7 +96,7 @@ public:
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
 		MUTEX_UNLOCK(__mutex);
-		if(i == __map.end() || i->second->start() != addr) return NULL;
+		if(i == __map.end() || i->second->start() > addr) return NULL;
 		return dynamic_cast<T *>(i->second);
 	}
 };
