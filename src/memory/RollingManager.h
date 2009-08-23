@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMOMRY_CACHEMANAGER_H_
 #define __MEMOMRY_CACHEMANAGER_H_
 
-#include "MemManager.h"
 #include "MemHandler.h"
 #include "RollingRegion.h"
 
@@ -47,7 +46,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class RollingManager : public MemManager, public MemHandler {
+class RollingManager : public MemHandler {
 protected:
 	static const char *lineSizeVar;
 	static const char *lruDeltaVar;
@@ -59,12 +58,21 @@ protected:
 	typedef std::list<ProtSubRegion *> Rolling;
 	std::map<Context *, Rolling> regionRolling;
 
+	inline RollingRegion *get(const void *addr) {
+		RollingRegion *reg = current().find<RollingRegion>(addr);
+		if(reg == NULL) reg = mem.find<RollingRegion>(addr);
+		return reg;
+	}
+
 	MUTEX(writeMutex);
 	void *writeBuffer;
 	size_t writeBufferSize;
 	void waitForWrite(void *addr = NULL, size_t size = 0);
 	void writeBack();
 	void flushToDevice();
+
+	virtual bool read(void *);
+	virtual bool write(void *);
 
 #ifdef DEBUG
 	void dumpRolling();
@@ -75,6 +83,11 @@ protected:
 	void invalidate(ProtSubRegion *region) {
 		regionRolling[Context::current()].remove(region);
 	}
+	void flush(ProtSubRegion *region) {
+		regionRolling[Context::current()].remove(region);
+		assert(region->context()->copyToDevice(safe(region->start()),
+				region->start(), region->size()));
+	}
 
 public:
 	RollingManager();
@@ -83,19 +96,10 @@ public:
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};
-	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		return mem.filter(addr, size, region);
-	}
-	void invalidate(MemRegion *region) {
-		dynamic_cast<RollingRegion *>(region)->invalidate();
-	}
-	void flush(MemRegion *region);
-	void dirty(MemRegion *region);
-	bool present(MemRegion *region) const;
 
-	ProtRegion *find(void *addr);
-	void read(ProtRegion *region, void *addr);
-	void write(ProtRegion *region, void *addr);
+	Context *owner(const void *addr);
+	void invalidate(const void *addr, size_t size);
+	void flush(const void *addr, size_t size);
 };
 
 };

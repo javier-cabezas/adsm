@@ -41,52 +41,40 @@ WITH THE SOFTWARE.  */
 #include <debug.h>
 
 #include <stdlib.h>
-#include <list>
+
+#include <map>
+#include <set>
 
 namespace gmac {
 class RollingManager;
 class ProtSubRegion;
 class RollingRegion : public ProtRegion {
+public:
+	typedef std::set<ProtSubRegion *> List;
 protected:
 	RollingManager &manager;
 
 	// Set of all sub-regions forming the region
-	typedef HASH_MAP<void *, ProtSubRegion *> Set;
-	Set set;
+	typedef std::map<const void *, ProtSubRegion *> Map;
+	Map map;
 
 	// List of sub-regions that are present in memory
-	typedef std::list<ProtSubRegion *> List;
 	List memory;
 
 	size_t cacheLine;
 	size_t offset;
 
-	template<typename T>
-	inline T powerOfTwo(T k) {
-		if(k == 0) return 1;
-		for(int i = 1; i < sizeof(T) * 8; i <<= 1)
-			k = k | k >> i;
-		return k + 1;
-	}
-
-	inline ProtSubRegion *find(const void *addr) {
-		unsigned long base = (((unsigned long)addr & ~(cacheLine - 1)) + offset);
-		if(base > (unsigned long)addr) base -= cacheLine;
-		Set::const_iterator i = set.find((void *)base);
-		if(i == set.end()) return NULL;
-		return i->second;
-	}
-
 	friend class ProtSubRegion;
-	inline void push(ProtSubRegion *region) { memory.push_back(region); }
+	inline void push(ProtSubRegion *region) { memory.insert(region); }
 
 public:
 	RollingRegion(RollingManager &manager, void *, size_t, size_t);
 	~RollingRegion();
 
-	inline virtual ProtRegion *get(const void *);
+	ProtSubRegion *find(const void *);
 	virtual void invalidate();
-	virtual void dirty();
+	void invalidate(const void *, size_t);
+	void flush(const void *, size_t);
 };
 
 class ProtSubRegion : public ProtRegion {
@@ -99,11 +87,7 @@ public:
 		ProtRegion(addr, size),
 		parent(parent)
 	{ }
-	~ProtSubRegion() { TRACE("SubRegion %p released", addr); }
-
-	virtual void invalidate() {
-		FATAL("Invalidation on a SubRegion %p", addr);
-	}
+	~ProtSubRegion() { TRACE("SubRegion %p released", _addr); }
 
 	// Override this methods to insert the regions in the list
 	// of sub-regions present in memory
@@ -117,11 +101,6 @@ public:
 		ProtRegion::readWrite();
 	}
 };
-
-
-inline ProtRegion *RollingRegion::get(const void *addr) {
-	return find(addr);
-}
 
 };
 

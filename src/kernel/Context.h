@@ -56,21 +56,13 @@ protected:
 		\brief Per-thread key to store context
 	*/
 	friend void contextInit(void);
+	friend class MemManager;
 	static PRIVATE(key);
 
 	/*!
 		\brief Memory map for the context
 	*/
 	MemMap _mm;
-
-	inline void enable() { PRIVATE_SET(key, this); }
-
-public:
-	virtual ~Context() {};
-
-	static Context *current() {
-		return static_cast<Context *>(PRIVATE_GET(key));
-	}
 
 	/*!
 		\brief Returns a reference to the context memory map
@@ -81,6 +73,16 @@ public:
 		\brief Returns a constant reference to the context memory map
 	*/
 	const MemMap &mm() const { return _mm; }
+
+	inline void enable() { PRIVATE_SET(key, this); }
+
+public:
+	virtual ~Context() {};
+
+	static Context *current() {
+		return static_cast<Context *>(PRIVATE_GET(key));
+	}
+
 
 	/*!
 		\brief Locks the context

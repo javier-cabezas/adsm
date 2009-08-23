@@ -62,9 +62,8 @@ public:
 	inline Map::iterator end() { return __map.end(); }
 
 	inline void insert(MemRegion *i) {
-		void *key = (void *)((addr_t)i->getAddress() + i->getSize());
 		MUTEX_LOCK(__mutex);
-		__map.insert(Map::value_type(key, i));
+		__map.insert(Map::value_type(i->end(), i));
 		MUTEX_UNLOCK(__mutex);
 	}
 
@@ -72,7 +71,7 @@ public:
 		Map::iterator i;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
-		if(i == __map.end() || i->second->getAddress() != addr)
+		if(i == __map.end() || i->second->start() != addr)
 			FATAL("Bad free for %p", addr);
 		MemRegion *ret = i->second;
 		__map.erase(i);
@@ -92,45 +91,14 @@ public:
 	}
 
 	template<typename T>
-	inline T *find(void *addr) {
+	inline T *find(const void *addr) {
 		Map::const_iterator i;
 		MUTEX_LOCK(__mutex);
 		i = __map.upper_bound(addr);
 		MUTEX_UNLOCK(__mutex);
-		if(i == __map.end() || *(i->second) != addr) return NULL;
+		if(i == __map.end() || i->second->start() != addr) return NULL;
 		return dynamic_cast<T *>(i->second);
 	}
-
-	// Gets the first memory region (CPU or accelerator) that
-	// includes the memory range.
-	// \param addr Starting address of the memory range
-	// \param size Size (in bytes) of the memory range
-	// \param Memory region where the range starts or NULL if
-	// the range starts at CPU memory
-	size_t filter(const void *addr, size_t size, MemRegion *&reg) {
-		size_t ret = 0;
-		Map::iterator i;
-		MUTEX_LOCK(__mutex);
-		i = __map.upper_bound(addr);
-		// All the range owns to the CPU
-		if(i == __map.end() || i->second->contains(addr, size) == false) {
-			ret = size;
-			reg = NULL;
-		}
-		// The range starts at the accelerator 
-		else if((addr_t)addr >= (addr_t)i->second->getAddress()) {
-			reg = i->second;
-			ret = reg->getSize() - ((addr_t)addr - (addr_t)reg->getAddress());;
-		}
-		// The range starts at the CPU but includes accelerator memory
-		else {
-			ret = (addr_t)i->second->getAddress() - (addr_t)addr;
-			reg = NULL;
-		}
-		MUTEX_UNLOCK(__mutex);
-		return ret;
-	}
-
 };
 
 };

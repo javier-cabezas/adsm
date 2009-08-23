@@ -6,6 +6,7 @@
 #include <algorithm>
 
 namespace gmac {
+
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
 	ProtRegion(addr, size),
@@ -18,53 +19,80 @@ RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		void *p = (void *)((uint8_t *)addr + s);
 		size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
 		ProtSubRegion *region = new ProtSubRegion(this, p, regionSize);
-		TRACE("New SubRegion(0x%x) %p (%d bytes) [%p]", s, addr, regionSize, region);
-		set[p] = region;
-		memory.push_back(region);
+		void *key = (void *)((uint8_t *)p + cacheLine);
+		map.insert(Map::value_type(key, region));
+		memory.insert(region);
 	}
 	TRACE("RollingRegion Ends");
 }
 
 RollingRegion::~RollingRegion()
 {
-	Set::const_iterator i;
-	for(i = set.begin(); i != set.end(); i++) {
+	Map::const_iterator i;
+	for(i = map.begin(); i != map.end(); i++) {
 		manager.invalidate(i->second);
 		delete i->second;
 	}
-	set.clear();
+	map.clear();
+}
+
+ProtSubRegion *RollingRegion::find(const void *addr)
+{
+	Map::const_iterator i = map.upper_bound(addr);
+	if(i == map.end()) return NULL;
+	if((addr_t)addr < (addr_t)i->second->start()) return NULL;
+	return i->second;
 }
 
 
 void RollingRegion::invalidate()
 {
-	TRACE("RollingRegion Invalidate %p (%d bytes)", addr, size);
+	TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
 	// Check if the region is already invalid
 	if(memory.empty()) return;
 
 	// Protect the region
-	Memory::protect(__void(addr), size, PROT_NONE);
+	Memory::protect(__void(_addr), _size, PROT_NONE);
 	// Invalidate those sub-regions that are present in memory
 	List::iterator i;
 	for(i = memory.begin(); i != memory.end(); i++) {
-		TRACE("Invalidate SubRegion %p (%d bytes)", (*i)->getAddress(),
-				(*i)->getSize());
+		TRACE("Invalidate SubRegion %p (%d bytes)", (*i)->start(),
+				(*i)->size());
 		(*i)->silentInvalidate();
 	}
 	memory.clear();
 }
 
-void RollingRegion::dirty()
+void RollingRegion::invalidate(const void *addr, size_t size)
 {
-	// Check if the region is already invalid
-	if(memory.empty()) return;
+	Map::iterator i = map.lower_bound(addr);
+	assert(i != map.end());
+	for(; i != map.end() && i->second->start() < addr; i++) {
+		// If the region is not present, just ignore it
+		if(i->second->present() == false) continue;
 
-	// Invalidate those sub-regions that are present in memory
-	List::iterator i;
-	for(i = memory.begin(); i != memory.end(); i++) {
-		TRACE("Dirty call forces write");
-		manager.write(*i, (*i)->getAddress());
+		if(i->second->dirty()) { 	// We might need to update the device
+			// Check if there is memory that will not be invalidated
+			if(i->second->start() < addr ||
+					i->second->end() > __void(__addr(addr) + size))
+				manager.flush(i->second);
+		}
+		memory.erase(i->second);
+		i->second->invalidate();
 	}
 }
+
+void RollingRegion::flush(const void *addr, size_t size)
+{
+	Map::iterator i = map.lower_bound(addr);
+	assert(i != map.end());
+	for(; i != map.end() && i->second->start() < addr; i++) {
+		// If the region is not present, just ignore it
+		if(i->second->dirty() == false) continue;
+		manager.flush(i->second);
+		i->second->readOnly();
+	}
+}
+
 
 };

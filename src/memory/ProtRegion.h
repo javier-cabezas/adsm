@@ -48,37 +48,24 @@ protected:
 	bool _dirty;
 	bool _present;
 
-	static unsigned count;
-	static struct sigaction defaultAction;
-	static void setHandler(void);
-	static void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
 public:
-	ProtRegion(void *addr, size_t size);
-	virtual ~ProtRegion();
-
-	inline virtual void read(void *addr) {
-		MemHandler::get()->read(this, addr);
-	}
-	inline virtual void write(void *addr) {
-		MemHandler::get()->write(this, addr);
-	}
+	ProtRegion(void *addr, size_t size) :
+		MemRegion(addr, size), _dirty(false), _present(true) {};
+	virtual ~ProtRegion() {};
 
 	inline virtual void invalidate(void) {
 		_present = _dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_NONE) == 0);
+		assert(Memory::protect(__void(_addr), _size, PROT_NONE) == 0);
 	}
 	inline virtual void readOnly(void) {
 		_present = true;
 		_dirty = false;
-		assert(Memory::protect(__void(addr), size, PROT_READ) == 0);
+		assert(Memory::protect(__void(_addr), _size, PROT_READ) == 0);
 	}
 	inline virtual void readWrite(void) {
 		_present = _dirty = true;
-		assert(Memory::protect(__void(addr), size, PROT_READ | PROT_WRITE) == 0);
+		assert(Memory::protect(__void(_addr), _size, PROT_READ | PROT_WRITE) == 0);
 	}
-
-	inline virtual ProtRegion *get(const void *addr) { return this; }
 
 	inline virtual bool dirty() const { return _dirty; }
 	inline virtual bool present() const { return _present; }

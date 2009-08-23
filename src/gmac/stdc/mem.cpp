@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <memory/MemManager.h>
+#include <memory/MemRegion.h>
 #include <kernel/Context.h>
 
 
@@ -21,70 +22,70 @@ static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
 }
 
 
+#if 0
+static void copyDevice(gmac::MemRegion *r, gmac::MemRegion *s,
+		void *dst, const void *src, size_t size)
+{
+	if(manager->present(r)) manager->flush(r);
+	if(manager->present(s)) manager->flush(s);
+	if(r->context() == s->context())
+		r->context()->copyDevice(manager->safe(dst),
+				manager->safe(src), size);
+	else {
+		void *temp = malloc(size);
+		s->context()->copyToHost(temp, manager->safe(src), size);
+		r->context()->copyToDevice(manager->safe(dst), temp, size);
+		free(temp);
+	}
+}
+#endif
+
 void *memset(void *s, int c, size_t n)
 {
-	gmac::MemRegion *r = NULL;
-
 	if(manager == NULL) return __libc_memset(s, c, n);
-	while(n) {
-		size_t size = manager->filter(s, n, r);
-		if(r) {
-			if(size != r->getSize()) manager->flush(r);
-			r->context()->memset(manager->safe(s), c, size);
-			manager->invalidate(r);
-			TRACE("memset %p [device]", r->getAddress());
-		}
-		else __libc_memset(s, c, size);
-		// Update size and address
-		n -= size;
-		s = (void *)((unsigned long)s + size);
+
+	gmac::Context *ctx = manager->owner(s);
+	if(ctx == NULL) __libc_memset(s, c, n);
+	else {
+		manager->invalidate(s, n);
+		ctx->memset(manager->safe(s), c, n);
 	}
 }
 
 void *memcpy(void *dst, const void *src, size_t n)
 {
 	void *ret = dst;
-	gmac::MemRegion *d = NULL, *s = NULL;
 	size_t ds = 0, ss = 0;
 
 	if(manager == NULL) return __libc_memcpy(dst, src, n);
-	while(n) {
-		if(ds == 0) ds = manager->filter(dst, n, d);
-		if(ss == 0) ss = manager->filter(src, n, s);
-		size_t size = (ds > ss) ? ss : ds;
-		// If both memories are shared and both of them are
-		// in device memory, use a internal copy
-		if(d != NULL && manager->present(d) == true &&
-			s != NULL && manager->present(s) == true) {
-			TRACE("memcpy %p to %p [DeviceToDevice]", src, dst);
-			assert(d->context() == s->context());
-			d->context()->copyDevice(manager->safe(dst),
-				manager->safe(src), size);
-		}
-		// If the destination is shared memory and it is on the
-		// device, copy it to device memory
-		else if(d != NULL && manager->present(d) == false) {
-			TRACE("memcpy %p to %p [HostToDevice]", src, dst);
-			d->context()->copyToDeviceAsync(manager->safe(dst),
-					src, size);
-		}
-		// If the source is shared memory and it is on the device,
-		// copy it from device memory
-		else if(s != NULL && manager->present(s) == false) {
-			TRACE("memcpy %p to %p [DeviceToHost]", src, dst);
-			s->context()->copyToHost(dst, manager->safe(src),
-					size);
-		}
-		// Both (src and dst) are not shared or they are present
-		// in system memory
-		else {
-			__libc_memcpy(dst, src, size);
-		}
-		// Update sizes and addresses
-		n -= size; ds -= size; ss -= size;
-		dst = (void *)((unsigned long)dst + size);
-		src = (void *)((unsigned long)src + size);
+
+	// TODO: handle copies involving partial memory regions
+
+	// Locate memory regions (if any)
+	gmac::Context *dstCtx = manager->owner(dst);
+	gmac::Context *srcCtx = manager->owner(src);
+
+	// Fast path - both regions are in the CPU
+	if(dstCtx == NULL && srcCtx == NULL) return __libc_memcpy(dst, src, n);
+
+	if(srcCtx == NULL) { // Copy to Host
+		manager->flush(src, n);
+		dstCtx->copyToHost(dst, manager->safe(src), n);
+	}
+	else if(dstCtx == NULL) { // Copy to Device
+		manager->invalidate(dst, n);
+		srcCtx->copyToDevice(manager->safe(dst), src, n);
+	}
+	else if(dstCtx == srcCtx) {	// Same device copy
+		manager->flush(src, n);
+		manager->invalidate(dst, n);
+		dstCtx->copyDevice(manager->safe(dst),
+				manager->safe(src), n);
+	}
+	else {
+		__libc_memcpy(dst, src, n);
 	}
 
 	return ret;
 }
+

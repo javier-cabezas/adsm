@@ -62,14 +62,10 @@ public:
 	void release(void *addr);
 	void flush();
 	void sync();
-	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		region = NULL;
-		return size;
-	}
-	void invalidate(MemRegion *region) { };
-	void flush(MemRegion *region) { };
-	void dirty(MemRegion *region) { };
-	bool present(MemRegion *region) const { return true; }
+
+	Context *owner(const void *) { return NULL; }
+	void invalidate(const void *, size_t) { assert(0); }
+	void flush(const void *, size_t) { assert(0); }
 };
 };
 #endif

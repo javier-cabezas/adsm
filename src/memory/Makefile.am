@@ -6,17 +6,15 @@ noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
 			MemManager.h MemManager.cpp\
 			MemRegion.h MemRegion.cpp\
+			MemHandler.h MemHandler.cpp\
 			BatchManager.h BatchManager.cpp\
 			LazyManager.h LazyManager.cpp\
-			MemHandler.h MemHandler.cpp\
-			ProtRegion.h ProtRegion.cpp\
+			ProtRegion.h\
 			RollingManager.h RollingManager.cpp\
 			RollingRegion.h RollingRegion.cpp
 libmemory_la_LIBADD = $(OS_DIR)/libmemory-os.la $(PARAVER_LIB)
 
 BUILT_SOURCES = os
-
-export INCLUDES += -I$(abs_srcdir) -I$(abs_builddir)
 
 os: $(OS_DIR)
 	$(LN_S) -Tf $(srcdir)/$(OS_DIR) os

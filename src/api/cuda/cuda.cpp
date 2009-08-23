@@ -2,12 +2,9 @@
 #include <order.h>
 
 #include "GPU.h"
-#include "GPUContext.h"
+#include "Context.h"
 
-#include <gmac/gmac.h>
-#include <gmac/init.h>
-
-#include <kernel/System.h>
+#include <kernel/Process.h>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -23,13 +20,6 @@ static void __attribute__((constructor(INTERPOSE))) gmacCudaInit(void)
 static unsigned nextGPU = 0;
 
 namespace gmac {
-Context *createContext()
-{
-	assert(sys != NULL);
-	nextGPU = nextGPU % sys->getNumberOfAccelerators();
-	GPU *gpu = dynamic_cast<gmac::GPU *>(sys->accelerator(nextGPU));
-	return new gmac::GPUContext(*gpu);
-}
 
 void apiInit(void) 
 {
@@ -41,10 +31,8 @@ void apiInit(void)
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
-		sys->addAccelerator(new gmac::GPU(i));
+		proc->accelerator(new gmac::GPU(i));
 	}
-
-	contextInit();
 }
 }
 

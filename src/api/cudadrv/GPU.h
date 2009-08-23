@@ -52,7 +52,7 @@ protected:
 	unsigned id;
 	CUdevice _device;
 
-	std::set<gpu::Context *> runQueue;
+	std::set<gpu::Context *> queue;
 
 public:
 	GPU(int n, CUdevice device) : id(n), _device(device) {};

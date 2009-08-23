@@ -61,20 +61,13 @@ private:
 	Context *_context;
 protected:
 	//! Starting memory address for the region
-	addr_t addr;
+	addr_t _addr;
 	//! Size in bytes of the region
-	size_t size;
+	size_t _size;
 
 	inline addr_t __addr(void *addr) const { return (addr_t)addr; }
 	inline addr_t __addr(const void *addr) const { return (addr_t)addr; }
 	inline void * __void(addr_t addr) const { return (void *)addr; }
-
-	inline addr_t max(addr_t a, addr_t b) const {
-		return (a > b) ? a : b;
-	}
-	inline addr_t min(addr_t a, addr_t b) const {
-		return (a < b) ? a : b;
-	}
 
 public:
 	//! Constructor
@@ -87,34 +80,15 @@ public:
 	inline Context *context() { return _context; }
 
 	//! Returns the size (in bytes) of the Region
-	inline size_t getSize() const { return size; }
+	inline size_t size() const { return _size; }
 	//! Sets the size (in bytes) of the Region
-	inline void setSize(size_t size) { this->size = size; }
+	inline void size(size_t size) { _size = size; }
 	//! Returns the address of the Region
-	inline void *getAddress() const { return __void(addr); }
+	inline void *start() const { return __void(_addr); }
+	//! Returns the end address of the region
+	inline void *end() const { return __void(_addr + _size); }
 	//! Sets the address of the Region
-	inline void setAddress(void *addr) { this->addr = __addr(addr); }
-
-	//! Comparision operators
-	bool operator==(const void *p) const {
-		addr_t __p = __addr(p);
-		return __p >= addr && __p < (addr + size);
-	}
-	bool operator!=(const void *p) const {
-		addr_t __p = __addr(p);
-		return __p < addr || __p >= (addr + size);
-	}
-	bool operator==(const MemRegion &m) const {
-		return addr == m.addr && size == m.size;
-	}
-	bool operator!=(const MemRegion &m) const {
-		return addr != m.addr || size != m.size;
-	}
-
-	//! Checks if a given memory range is within the region
-	inline bool contains(const void *p, size_t n) const {
-		return min(__addr(p) + n, addr + size) > max(__addr(p), addr);
-	}
+	inline void start(void *addr) { _addr = __addr(addr); }
 };
 
 typedef std::list<MemRegion> RegionList;

@@ -36,26 +36,36 @@ WITH THE SOFTWARE.  */
 
 #include <stdlib.h>
 
-#include <memory/MemMap.h>
+#include <memory/MemManager.h>
 
 namespace gmac {
 
 class ProtRegion;
 
 //! Handler for Read/Write faults
-class MemHandler {
+class MemHandler : public MemManager {
 private:
-	MemMap &mm;
-protected:
-	static MemHandler *handler;
-public:
-	MemHandler(MemMap &mm) : mm(mm) { handler = this; }
-	virtual ~MemHandler() { handler = NULL; }
-	static inline MemHandler *get() { return handler; }
+	static struct sigaction defaultAction;
+	void setHandler(void);
+	void restoreHandler(void);
+	static void segvHandler(int, siginfo_t *, void *);
 
-	ProtRegion *find(void *addr);
-	virtual void read(ProtRegion *, void *) = 0;
-	virtual void write(ProtRegion *, void *) = 0;
+	static unsigned count;
+	static MemHandler *handler;
+
+protected:
+	virtual bool read(void *) = 0;
+	virtual bool write(void *) = 0;
+	
+public:
+	MemHandler() {
+		if(count == 0) setHandler();
+		count++;
+	}
+	virtual ~MemHandler() { 
+		if(--count == 0) restoreHandler();
+	}
+
 };
 
 }

@@ -55,7 +55,7 @@ class MemRegion;
 //! the CPU memory to/from the accelerator memory.
 class MemManager {
 private:
-	MUTEX(virtMutex);
+	MUTEX(mutex);
 	HASH_MAP<void *, void *> virtTable;
 	size_t pageSize;
 
@@ -72,6 +72,8 @@ protected:
 		Context::current()->mm().remove(addr);
 		return mem.remove(addr);
 	}
+
+	inline MemMap &current() { return Context::current()->mm(); }
 
 	//! This method maps a accelerator address into the CPU address space
 	//! \param addr accelerator address
@@ -92,16 +94,16 @@ protected:
 
 public:
 	MemManager() : pageSize(getpagesize()) {
-		MUTEX_INIT(virtMutex);
+		MUTEX_INIT(mutex);
 		TRACE("Memory manager starts");
 	}
 	//! Virtual Destructor. It does nothing
 	virtual ~MemManager() {
 		TRACE("Memory manager finishes");
-		MUTEX_DESTROY(virtMutex);
+		MUTEX_DESTROY(mutex);
 	}
 	
-	const MemMap &mm() { return mem; }
+	MemMap &mm() { return mem; }
 	
 	inline void clean() { mem.clean(); }
 
@@ -142,10 +144,10 @@ public:
 		void *baseAddr = (void *)((unsigned long)addr & ~(pageSize -1));
 		size_t off = (unsigned long)addr & (pageSize - 1);
 		void *devAddr = NULL;
-		MUTEX_LOCK(virtMutex);
+		MUTEX_LOCK(mutex);
 		if((e = virtTable.find(baseAddr)) != virtTable.end())
 			devAddr = (void *)((uint8_t *)e->second + off);
-		MUTEX_UNLOCK(virtMutex);
+		MUTEX_UNLOCK(mutex);
 		return devAddr;
 	}
 
@@ -156,11 +158,19 @@ public:
 		return safe((void *)addr);
 	}
 
-	//! This method is called to request a explicit invalidation
-	//! of accelerator data
-	//! \param addr Memory address at the CPU
-	//! \param size Size (in bytes) to be transferred
-	virtual size_t filter(const void *addr, size_t size, MemRegion *&region) = 0;
+
+	virtual Context *owner(const void *addr) = 0;
+	virtual void invalidate(const void *addr, size_t) = 0;
+	virtual void flush(const void *addr, size_t) = 0;
+
+#if 0
+	//! Finds a memory region for a given address
+	//! \param addr Memory address to locate the region
+	inline MemRegion *find(const void *addr) {
+		MemRegion *r = Context::current()->mm().find<MemRegion>(addr);
+		if(r == NULL) mem.find<MemRegion>(addr);
+		return r;
+	}
 
 	//! Invalidates a memory region returned by filter
 	//! \param region Memory region to invalidate
@@ -177,6 +187,7 @@ public:
 	//! Checks if a memory region returned by filter is present
 	//! \param region Memroy region to check if it is present
 	virtual bool present(MemRegion *region) const = 0;
+#endif
 };
 
 

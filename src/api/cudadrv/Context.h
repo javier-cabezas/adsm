@@ -144,7 +144,6 @@ public:
 	inline gmacError_t malloc(void **addr, size_t size) {
 		lock();
 		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
-		assert(ret == CUDA_SUCCESS);
 		release();
 		return error(ret);
 	}

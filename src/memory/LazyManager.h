@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_LAZYMANAGER_H_
 #define __MEMORY_LAZYMANAGER_H_
 
-#include "MemManager.h"
 #include "MemHandler.h"
 #include "ProtRegion.h"
 
@@ -46,26 +45,27 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 //! Manager that Moves Memory Regions Lazily
-class LazyManager : public MemManager, public MemHandler {
+class LazyManager : public MemHandler {
+protected:
+	bool read(void *addr);
+	bool write(void *addr);
+
+	inline ProtRegion *get(const void *addr) {
+		ProtRegion *reg = current().find<ProtRegion>(addr);
+		if(reg == NULL) reg = mem.find<ProtRegion>(addr);
+		return reg;
+	}
 public:
-	LazyManager() : MemManager(), MemHandler(mem) { }
+	LazyManager() { }
 	bool alloc(void *addr, size_t count);
 	void *safeAlloc(void *addr, size_t count);
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};
-	size_t filter(const void *addr, size_t size, MemRegion *&region) {
-		return mem.filter(addr, size, region);
-	}
-	void invalidate(MemRegion *region) {
-		dynamic_cast<ProtRegion *>(region)->invalidate();
-	}
-	void flush(MemRegion *region);
-	void dirty(MemRegion *region);
-	bool present(MemRegion *region) const;
 
-	void read(ProtRegion *region, void *addr);
-	void write(ProtRegion *region, void *addr);
+	Context *owner(const void *);
+	void invalidate(const void *, size_t); 
+	void flush(const void *, size_t);
 };
 
 };

@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 
 #include "GPU.h"
 
+#include <os/loader.h>
 #include <kernel/Context.h>
 
 #include <stdint.h>
@@ -50,84 +51,102 @@ WITH THE SOFTWARE.  */
 #include <vector>
 #include <list>
 
-namespace gmac {
 
-class GPUContext : public Context {
+IMPORT_SYM(cudaError_t, __cudaLaunch, const char*);
+
+namespace gmac { namespace gpu {
+
+class Context : public gmac::Context {
 protected:
 	GPU &gpu;
 
-	inline void check() { assert(current == this); }
+	inline void check() { assert(current() == this); }
 
-public:
-	GPUContext(GPU &gpu) : gpu(gpu) {
+	gmacError_t error(cudaError_t);
+
+	friend class gmac::GPU;
+
+	Context(GPU &gpu) : gpu(gpu) {
 		PRIVATE_SET(key, this);
 		cudaSetDevice(gpu.device());
+		TRACE("New GPU context [%p]", this);
 	}
+
+	~Context() {
+		TRACE("Remove GPU context [%p]", this);
+	}
+	
+public:
+
+	inline void lock() {};
+	inline void release() {};
 
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {
 		check();
-		gmacError_t ret = gpu.malloc(addr, size);
+		cudaError_t ret = cudaMalloc(addr, size);
 		return error(ret);
 	}
 
 	inline gmacError_t free(void *addr) {
 		check();
-		gmacError_t ret = gpu.free(addr);
+		cudaError_t ret = cudaFree(addr);
 		return error(ret);
 	}
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		check();
-		gmacError_t ret = gpu.copyToDevice(dev, host, size);
+		cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		check();
-		gmacError_t ret = gpu.copyToHost(host, dev, size);
+		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		check();
-		gmacError_t ret = gpu.copyDevice(dst, src, size);
+		cudaError_t ret = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice);
 		return error(ret);
 	}
 
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
 		check();
-		gmacError_t ret = gpu.copyToDeviceAsync(dev, host, size);
+		cudaError_t ret = cudaMemcpyAsync(dev, host, size,
+			cudaMemcpyHostToDevice, 0);
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
 		check();
-		gmacError_t ret = gpu.copyToHostAsync(host, dev, size);
+		cudaError_t ret = cudaMemcpyAsync(host, dev, size,
+				cudaMemcpyDeviceToHost, 0);
 		return error(ret);
 	}
 
 	inline gmacError_t memset(void *dev, int c, size_t size) {
 		check();
-		gmacError_t ret = gpu.memset(dev, c, size);
+		cudaError_t ret = cudaMemset(dev, c, size);
 		return error(ret);
 	}
 
 	gmacError_t launch(const char *kernel) {
 		check();
-		gmacError_t ret = gpu.launch(kernel);
+		cudaError_t ret = __cudaLaunch(kernel);
 		return error(ret);
 	};
 	
 	inline gmacError_t sync() {
 		check();
-		gmacError_t ret = gpu.sync();
+		cudaError_t ret = cudaThreadSynchronize();
 		return error(ret);
 	}
 };
 
-}
+}}
 
 #endif

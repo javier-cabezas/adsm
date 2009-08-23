@@ -49,7 +49,7 @@ typedef enum {
 	gmacErrorNoDevice,
 	gmacErrorInvalidValue,
 	gmacErrorInvalidDevice,
-	gmacErrorDeviceFunction,
+	gmacErrorInvalidDeviceFunction,
 	gmacErrorApiFailureBase,
 	gmacErrorUnknown
 } gmacError_t;
