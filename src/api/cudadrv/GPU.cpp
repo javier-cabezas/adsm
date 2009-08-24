@@ -14,11 +14,17 @@ GPU::~GPU()
 	queue.clear();
 }
 
-Context *GPU::create()
+void GPU::create()
 {
 	gpu::Context *ctx = new gpu::Context(*this);
 	queue.insert(ctx);
-	return ctx;
+}
+
+void GPU::clone(const gmac::Context &root)
+{
+	const gpu::Context &_root = dynamic_cast<const gpu::Context &>(root);
+	gpu::Context *ctx = new gpu::Context(_root);
+	queue.insert(ctx);
 }
 
 void GPU::destroy(Context *context)

@@ -4,7 +4,18 @@
 
 namespace gmac { namespace gpu {
 
-ModuleMap modules;
+Context::Context(const Context &root) :
+	gpu(root.gpu), _sp(0)
+{
+	init();
+	ModuleMap::const_iterator m;
+	for(m = root.modules.begin(); m != root.modules.end(); m++) {
+		Module *module = new Module(*m->first);
+		modules.insert(ModuleMap::value_type(module, m->second));
+	}
+	TRACE("Cloned GPU context [%p]", this);
+}
+
 
 gmacError_t Context::memset(void *addr, int i, size_t n)
 {

@@ -59,7 +59,8 @@ public:
 	~GPU();
 	CUdevice device() const { return _device; }
 
-	Context *create();
+	void create();
+	void clone(const gmac::Context &);
 	void destroy(Context *);
 };
 

@@ -23,13 +23,13 @@ using gmac::gpu::Module;
 
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-	return (void **)Context::current()->cubin(fatCubin);
+	return (void **)Context::current()->load(fatCubin);
 }
 
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
 	Module *mod = (Module *)fatCubinHandle;
-	Context::current()->destroy(mod);
+	Context::current()->unload(mod);
 }
 
 void __cudaRegisterFunction(

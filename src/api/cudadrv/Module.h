@@ -99,7 +99,7 @@ public:
 class Module {
 protected:
 	CUmodule mod;
-	void *fatBin;
+	const void *fatBin;
 
 	typedef HASH_MAP<const char *, Function> FunctionMap;
 	typedef HASH_MAP<const char *, Variable> VariableMap;
@@ -110,16 +110,8 @@ protected:
 	VariableMap constants;
 	TextureList textures;
 
-public:
-	Module(const void *fatBin) {
-		assert(cuModuleLoadFatBinary(&mod, fatBin) == CUDA_SUCCESS);
-	}
-
-	~Module() {
- 		assert(cuModuleUnload(mod) == CUDA_SUCCESS);
-	}
-
 	inline void reload() {
+		TRACE("Module image: %p", fatBin);
 		CUresult r = cuModuleLoadFatBinary(&mod, fatBin);
 		assert(r == CUDA_SUCCESS);
 		FunctionMap::iterator f;
@@ -129,6 +121,26 @@ public:
 		for(t = textures.begin(); t != textures.end(); t++)
 			t->load(mod);
 	}
+
+
+public:
+	Module(const void *fatBin) : fatBin(fatBin) {
+		TRACE("Module image: %p", fatBin);
+		assert(cuModuleLoadFatBinary(&mod, fatBin) == CUDA_SUCCESS);
+	}
+
+	Module(const Module &root) :
+		fatBin(root.fatBin), functions(root.functions),
+		variables(root.variables), constants(root.constants),
+		textures(root.textures)
+	{
+		reload();
+	}
+
+	~Module() {
+ 		assert(cuModuleUnload(mod) == CUDA_SUCCESS);
+	}
+
 
 	inline void function(const char *host, const char *dev) {
 		functions.insert(FunctionMap::value_type(host, Function(mod, dev)));

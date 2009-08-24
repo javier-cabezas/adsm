@@ -47,7 +47,8 @@ class Accelerator {
 public:
 	virtual ~Accelerator() {};
 	
-	virtual Context *create() = 0;
+	virtual void create() = 0;
+	virtual void clone(const Context &) = 0;
 	virtual void destroy(Context *ctx) = 0;
 };
 

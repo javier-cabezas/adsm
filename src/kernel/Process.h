@@ -76,7 +76,8 @@ public:
 		memoryInit(name);
 	}
 
-	void context();
+	void create();
+	void clone(const Context *ctx);
 	void destroy();
 
 	void accelerator(Accelerator *acc) {

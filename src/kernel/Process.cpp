@@ -20,10 +20,17 @@ Process::~Process()
 	memoryFini();
 }
 
-void Process::context()
+void Process::create()
 {
 	TRACE("Creating new context");
 	accs[current]->create();
+	current = ++current % accs.size();
+}
+
+void Process::clone(const gmac::Context *ctx)
+{
+	TRACE("Cloning context");
+	accs[current]->clone(*ctx);
 	current = ++current % accs.size();
 }
 

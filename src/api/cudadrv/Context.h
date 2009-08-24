@@ -53,8 +53,6 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-typedef HASH_MAP<Module *, const void *> ModuleMap;
-extern ModuleMap modules;
 
 class Context : public gmac::Context {
 protected:
@@ -74,8 +72,11 @@ protected:
 
 protected:
 	typedef std::vector<Call> CallStack;
+	typedef HASH_MAP<Module *, const void *> ModuleMap;
+
 
 	GPU &gpu;
+	ModuleMap modules;
 
 	CallStack _calls;
 
@@ -105,7 +106,7 @@ protected:
 
 	friend class gmac::GPU;
 
-	Context(GPU &gpu) : gpu(gpu), _sp(0) {
+	inline void init() {
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
 		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
@@ -116,8 +117,14 @@ protected:
 		//cuCtxPopCurrent(&tmp);
 
 		enable();
+	}
+
+	Context(GPU &gpu) : gpu(gpu), _sp(0) {
+		init();
 		TRACE("New GPU context [%p]", this);
 	}
+
+	Context(const Context &root);
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
@@ -211,15 +218,15 @@ public:
 	}
 
 	// CUDA-related methods
-	inline Module *cubin(void *fatBin) {
+	inline Module *load(void *fatBin) {
 		lock();
-		Module *mod = new Module(fatBin);
-		modules.insert(ModuleMap::value_type(mod, fatBin));
+		Module *module = new Module(fatBin);
+		modules.insert(ModuleMap::value_type(module, fatBin));
 		release();
-		return mod;
+		return module;
 	}
 
-	inline void destroy(Module *mod) {
+	inline void unload(Module *mod) {
 		ModuleMap::iterator m = modules.find(mod);
 		assert(m != modules.end());
 		lock();
