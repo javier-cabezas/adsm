@@ -114,8 +114,6 @@ protected:
 			FATAL("Unable to create CUDA context %d", ret);
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 
-		//cuCtxPopCurrent(&tmp);
-
 		enable();
 	}
 

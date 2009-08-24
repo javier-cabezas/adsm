@@ -11,7 +11,7 @@
 
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
-const unsigned nIter = 1;
+const unsigned nIter = 2;
 
 __global__ void vecAdd(float *c, float *a, float *b)
 {
@@ -33,18 +33,19 @@ void randInit(float *a, size_t vecSize)
 void *addVector(void *ptr)
 {
 	float *a, *b, *c;
+	gmacError_t ret = gmacSuccess;
 
 	// Alloc & init input data
-	if(gmacSafeMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
-		CUFATAL();
+	ret = gmacSafeMalloc((void **)&a, vecSize * sizeof(float));
+	assert(ret == gmacSuccess);
 	randInit(a, vecSize);
-	if(gmacSafeMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
-		CUFATAL();
+	ret = gmacSafeMalloc((void **)&b, vecSize * sizeof(float));
+	assert(ret == gmacSuccess);
 	randInit(b, vecSize);
 
 	// Alloc output data
-	if(gmacSafeMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
-		CUFATAL();
+	ret = gmacSafeMalloc((void **)&c, vecSize * sizeof(float));
+	assert(ret == gmacSuccess);
 
 	// Call the kernel
 	dim3 Db(blockSize);
@@ -55,8 +56,8 @@ void *addVector(void *ptr)
 
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
-		//error += c[i] - (a[i] + b[i]);
-		error += (a[i] - b[i]);
+		error += c[i] - (a[i] + b[i]);
+		//error += (a[i] - b[i]);
 	}
 	fprintf(stdout, "Error: %.02f\n", error);
 
@@ -79,7 +80,8 @@ int main(int argc, char *argv[])
 		pthread_create(&nThread[n], NULL, addVector, NULL);
 	}
 
-	for(n = 0; n < nIter; n++)
+	for(n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
+	}
 
 }
