@@ -8,11 +8,13 @@ Context::Context(const Context &root) :
 	gpu(root.gpu), _sp(0)
 {
 	init();
+	lock();
 	ModuleMap::const_iterator m;
 	for(m = root.modules.begin(); m != root.modules.end(); m++) {
 		Module *module = new Module(*m->first);
 		modules.insert(ModuleMap::value_type(module, m->second));
 	}
+	release();
 	TRACE("Cloned GPU context [%p]", this);
 }
 

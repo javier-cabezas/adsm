@@ -112,7 +112,7 @@ protected:
 		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
 		if(ret != CUDA_SUCCESS)
 			FATAL("Unable to create CUDA context %d", ret);
-		//assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 
 		//cuCtxPopCurrent(&tmp);
 
@@ -142,12 +142,12 @@ public:
 	inline void lock() {
 		pushState(Lock);
 		MUTEX_LOCK(mutex);
-		//assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
+		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
 		popState();
 	}
 	inline void release() {
 		CUcontext tmp;
-		//assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 		MUTEX_UNLOCK(mutex);
 	}
 
