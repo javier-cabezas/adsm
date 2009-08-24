@@ -74,7 +74,6 @@ protected:
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
-		gpu.destroy(this);
 	}
 	
 public:

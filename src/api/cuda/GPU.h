@@ -60,7 +60,8 @@ public:
 
 	unsigned device() const { return id; }
 
-	Context *create();
+	void create();
+	void clone(const Context &);
 	void destroy(Context *);
 };
 
