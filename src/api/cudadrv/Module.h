@@ -119,7 +119,7 @@ public:
  		assert(cuModuleUnload(mod) == CUDA_SUCCESS);
 	}
 
-	inline void reload(const void *fatBin) {
+	inline void reload() {
 		CUresult r = cuModuleLoadFatBinary(&mod, fatBin);
 		assert(r == CUDA_SUCCESS);
 		FunctionMap::iterator f;

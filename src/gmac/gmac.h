@@ -128,6 +128,7 @@ inline const char *gmacGetErrorString(gmacError_t err) {
 #endif
 
 #ifdef __cplusplus
+#include <stdio.h>
 template<typename T> inline T *gmacSafe(T *devPtr) {
 	return (T *)gmacSafePointer((void *)devPtr);
 }

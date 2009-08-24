@@ -76,8 +76,9 @@ protected:
 
 	inline void enable() { PRIVATE_SET(key, this); }
 
-public:
 	virtual ~Context() {};
+
+public:
 
 	static Context *current() {
 		return static_cast<Context *>(PRIVATE_GET(key));

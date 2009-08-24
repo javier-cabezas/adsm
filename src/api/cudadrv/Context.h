@@ -111,9 +111,9 @@ protected:
 		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
 		if(ret != CUDA_SUCCESS)
 			FATAL("Unable to create CUDA context %d", ret);
-		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+		//assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 
-		cuCtxPopCurrent(&tmp);
+		//cuCtxPopCurrent(&tmp);
 
 		enable();
 		TRACE("New GPU context [%p]", this);
@@ -135,12 +135,12 @@ public:
 	inline void lock() {
 		pushState(Lock);
 		MUTEX_LOCK(mutex);
-		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
+		//assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
 		popState();
 	}
 	inline void release() {
 		CUcontext tmp;
-		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+		//assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 		MUTEX_UNLOCK(mutex);
 	}
 
@@ -163,6 +163,7 @@ public:
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();
+		TRACE("Copy %p to device %p", host, dev);
 		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
 		release();
 		return error(ret);
@@ -170,6 +171,7 @@ public:
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		lock();
+		TRACE("Copy %p to host %p", dev, host);
 		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
 		release();
 		return error(ret);

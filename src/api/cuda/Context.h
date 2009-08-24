@@ -67,13 +67,14 @@ protected:
 	friend class gmac::GPU;
 
 	Context(GPU &gpu) : gpu(gpu) {
-		PRIVATE_SET(key, this);
+		enable();
 		cudaSetDevice(gpu.device());
 		TRACE("New GPU context [%p]", this);
 	}
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
+		gpu.destroy(this);
 	}
 	
 public:

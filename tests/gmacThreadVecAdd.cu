@@ -11,7 +11,7 @@
 
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
-const unsigned nIter = 8;
+const unsigned nIter = 1;
 
 __global__ void vecAdd(float *c, float *a, float *b)
 {
@@ -25,7 +25,8 @@ __global__ void vecAdd(float *c, float *a, float *b)
 void randInit(float *a, size_t vecSize)
 {
 	for(int i = 0; i < vecSize; i++) {
-		a[i] = rand() / (float)RAND_MAX;
+//		a[i] = rand() / (float)RAND_MAX;
+		a[i] = 1.0;
 	}
 }
 
@@ -54,7 +55,8 @@ void *addVector(void *ptr)
 
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
-		error += c[i] - (a[i] + b[i]);
+		//error += c[i] - (a[i] + b[i]);
+		error += (a[i] - b[i]);
 	}
 	fprintf(stdout, "Error: %.02f\n", error);
 

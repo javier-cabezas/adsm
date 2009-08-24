@@ -50,8 +50,6 @@ void apiInit(void);
 void contextInit(void);
 void memoryInit(const char *name = NULL);
 void memoryFini(void);
-
-Context *contextCreate(Accelerator *);
 }
 
 extern gmac::Process *proc;
@@ -79,6 +77,7 @@ public:
 	}
 
 	void context();
+	void destroy();
 
 	void accelerator(Accelerator *acc) {
 		accs.push_back(acc);

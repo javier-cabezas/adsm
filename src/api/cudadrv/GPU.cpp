@@ -27,7 +27,7 @@ void GPU::destroy(Context *context)
 	std::set<gpu::Context *>::iterator c = queue.find(ctx);
 	assert(c != queue.end());
 	queue.erase(c);
-	delete ctx;
+	delete *c;
 }
 
 };

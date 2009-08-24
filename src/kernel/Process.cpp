@@ -27,4 +27,9 @@ void Process::context()
 	current = ++current % accs.size();
 }
 
+void Process::destroy()
+{
+	accs[current]->destroy(Context::current());
+}
+
 }
