@@ -52,7 +52,6 @@ RollingManager::RollingManager() :
 	MemHandler(),
 	lineSize(0),
 	lruDelta(0),
-	lruSize(0),
 	pageSize(getpagesize()),
 	writeBuffer(NULL),
 	writeBufferSize(0)
@@ -75,7 +74,7 @@ bool RollingManager::alloc(void *addr, size_t size)
 {
 	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
 	TRACE("Alloc %p (%d bytes)", addr, size);
-	lruSize += lruDelta;
+	regionRolling[Context::current()].inc(lruDelta);
 	insert(new RollingRegion(*this, addr, size, lineSize * pageSize));
 	return true;
 }
@@ -86,7 +85,7 @@ void *RollingManager::safeAlloc(void *addr, size_t size)
 	void *cpuAddr = NULL;
 	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
-	lruSize += lruDelta;
+	regionRolling[Context::current()].inc(lruDelta);
 	insert(new RollingRegion(*this, cpuAddr, size, lineSize * pageSize));
 	return cpuAddr;
 }
@@ -97,7 +96,7 @@ void RollingManager::release(void *addr)
 	RollingRegion *reg = dynamic_cast<RollingRegion *>(remove(addr));
 	unmap(reg->start(), reg->size());
 	delete reg;
-	lruSize -= lruDelta;
+	regionRolling[Context::current()].dec(lruDelta);
 	TRACE("Released %p", addr);
 }
 
@@ -163,7 +162,7 @@ bool RollingManager::write(void *addr)
 	ProtRegion *region = root->find(addr);
 	assert(region != NULL);
 	assert(region->dirty() == false);
-	while(regionRolling[Context::current()].size() >= lruSize) writeBack();
+	while(regionRolling[Context::current()].overflows()) writeBack();
 	region->readWrite();
 	regionRolling[Context::current()].push(
 			dynamic_cast<ProtSubRegion *>(region));

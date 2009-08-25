@@ -50,6 +50,7 @@ class RollingBuffer {
 private:
 	std::list<ProtSubRegion *> buffer;
 	MUTEX(mutex);
+	size_t _max;
 	
 	inline void lock() {
 		enterLock(rolling);
@@ -60,11 +61,13 @@ private:
 	inline void unlock() { MUTEX_UNLOCK(mutex); }
 
 public:
-	RollingBuffer() {
+	RollingBuffer() : _max(0) {
 		MUTEX_INIT(mutex);
 	}
 
-	inline size_t size() const { return buffer.size(); }
+	inline bool overflows() const { return buffer.size() >= _max; }
+	inline size_t inc(size_t n) { _max += n; }
+	inline size_t dec(size_t n) { _max -= n; }
 	inline bool empty() const { return buffer.empty(); }
 
 	inline void push(ProtSubRegion *region) {
@@ -97,7 +100,6 @@ protected:
 	static const char *lruDeltaVar;
 	size_t lineSize;
 	size_t lruDelta;
-	size_t lruSize;
 	size_t pageSize;
 
 	std::map<Context *, RollingBuffer> regionRolling;
