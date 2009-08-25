@@ -27,8 +27,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 
 void RollingManager::writeBack()
 {
-	ProtSubRegion *r = regionRolling[Context::current()].front();
-	regionRolling[Context::current()].pop_front();
+	ProtSubRegion *r = regionRolling[Context::current()].pop();
 	waitForWrite(r->start(), r->size());
 	mlock(writeBuffer, writeBufferSize);
 	assert(r->context()->copyToDeviceAsync(safe(r->start()), r->start(),
@@ -40,29 +39,14 @@ void RollingManager::writeBack()
 void RollingManager::flushToDevice() 
 {
 	waitForWrite();
-	Rolling::iterator i;
-	for(i = regionRolling[Context::current()].begin();
-			i != regionRolling[Context::current()].end(); i++) {
-		assert((*i)->context()->copyToDevice(safe((*i)->start()),
-				(*i)->start(), (*i)->size()) == gmacSuccess);
-		(*i)->readOnly();
-		TRACE("Flush to Device %p", (*i)->start()); 
-	}
-	regionRolling[Context::current()].clear();
-}
-
-#ifdef DEBUG
-void RollingManager::dumpRolling()
-{
-	std::map<Context *, Rolling>::const_iterator c;
-	for(c = regionRolling.begin(); c != regionRolling.end(); c++) {
-		Rolling::const_iterator i;
-		for(i = c->second.begin(); i != c->second.end(); i++)
-			TRACE("Context %p: Region %p (%p - %d bytes)", c->first, *i,
-					(*i)->start(), (*i)->size());
+	while(regionRolling[Context::current()].empty() == false) {
+		ProtSubRegion *r = regionRolling[Context::current()].pop();
+		assert(r->context()->copyToDevice(safe(r->start()),
+				r->start(), r->size()) == gmacSuccess);
+		r->readOnly();
+		TRACE("Flush to Device %p", r->start()); 
 	}
 }
-#endif
 
 RollingManager::RollingManager() :
 	MemHandler(),
@@ -82,9 +66,6 @@ RollingManager::RollingManager() :
 	if(lruDelta == 0) lruDelta = 2;
 	TRACE("Using %d as Memory Block Size", lineSize * pageSize);
 	TRACE("Using %d as LRU Delta Size", lruDelta);
-#ifdef DEBUG
-	dumpRolling();
-#endif
 }
 
 
@@ -118,9 +99,6 @@ void RollingManager::release(void *addr)
 	delete reg;
 	lruSize -= lruDelta;
 	TRACE("Released %p", addr);
-#ifdef DEBUG
-	dumpRolling();
-#endif
 }
 
 
@@ -187,10 +165,8 @@ bool RollingManager::write(void *addr)
 	assert(region->dirty() == false);
 	while(regionRolling[Context::current()].size() >= lruSize) writeBack();
 	region->readWrite();
-	regionRolling[Context::current()].push_back(dynamic_cast<ProtSubRegion *>(region));
-#ifdef DEBUG
-	dumpRolling();
-#endif
+	regionRolling[Context::current()].push(
+			dynamic_cast<ProtSubRegion *>(region));
 	return true;
 }
 

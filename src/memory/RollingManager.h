@@ -46,6 +46,51 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
+class RollingBuffer {
+private:
+	std::list<ProtSubRegion *> buffer;
+	MUTEX(mutex);
+	
+	inline void lock() {
+		enterLock(rolling);
+		MUTEX_LOCK(mutex);
+		exitLock();
+	}
+
+	inline void unlock() { MUTEX_UNLOCK(mutex); }
+
+public:
+	RollingBuffer() {
+		MUTEX_INIT(mutex);
+	}
+
+	inline size_t size() const { return buffer.size(); }
+	inline bool empty() const { return buffer.empty(); }
+
+	inline void push(ProtSubRegion *region) {
+		lock();
+		buffer.push_back(region);
+		unlock();
+	}
+
+	inline ProtSubRegion *pop() {
+		assert(buffer.empty() == false);
+		lock();
+		ProtSubRegion *ret = buffer.front();
+		buffer.pop_front();
+		unlock();
+		return ret;
+	}
+
+	inline ProtSubRegion *front() { return buffer.front(); }
+
+	inline void remove(ProtSubRegion *region) {
+		lock();
+		buffer.remove(region);
+		unlock();
+	}
+};
+
 class RollingManager : public MemHandler {
 protected:
 	static const char *lineSizeVar;
@@ -55,8 +100,7 @@ protected:
 	size_t lruSize;
 	size_t pageSize;
 
-	typedef std::list<ProtSubRegion *> Rolling;
-	std::map<Context *, Rolling> regionRolling;
+	std::map<Context *, RollingBuffer> regionRolling;
 
 	inline RollingRegion *get(const void *addr) {
 		RollingRegion *reg = NULL;

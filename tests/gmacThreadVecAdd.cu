@@ -11,7 +11,7 @@
 
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
-const unsigned nIter = 8;
+const unsigned nIter = 16;
 
 static float *s[nIter];
 

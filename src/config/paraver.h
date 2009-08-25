@@ -64,6 +64,7 @@ typedef enum {
 
 typedef enum {
 	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, process,
+	rolling,
 } LockName;
 
 };

@@ -42,16 +42,16 @@ int main(int argc, char *argv[])
 	if(size % blockSize) Db.x++;
 
 	fprintf(stderr,"Test full memcpy: ");
-	memcpy(ptr, host, size * sizeof(long));
+	gmacMemcpy(ptr, host, size * sizeof(long));
 	reset<<<Dg, Db>>>(ptr, 1);
 	fprintf(stderr, "%d\n", check(ptr, 2 * size));
 
 	fprintf(stderr,"Test partial memcpy: ");
-	memcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
+	gmacMemcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
 	fprintf(stderr, "%d\n", check(ptr, 5 * size / 4));
 
 	fprintf(stderr,"Test reverse full: ");
-	memcpy(host, ptr, size * sizeof(long));
+	gmacMemcpy(host, ptr, size * sizeof(long));
 	fprintf(stderr, "%d\n", check(host, 5 * size / 4));
 	
 
