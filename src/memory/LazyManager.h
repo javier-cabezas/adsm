@@ -53,7 +53,6 @@ protected:
 	inline ProtRegion *get(const void *addr) {
 		ProtRegion *reg = NULL;
 		if(current()) current()->find<ProtRegion>(addr);
-		if(reg == NULL) reg = mem.find<ProtRegion>(addr);
 		return reg;
 	}
 public:

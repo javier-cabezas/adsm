@@ -23,7 +23,7 @@ typedef struct {
 } gmac_thread_t;
 
 
-static gmac_thread_t gthread;
+//static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg) 
 {
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
@@ -31,8 +31,9 @@ static void *gmac_pthread(void *arg)
 	pushState(Running);
 	proc->clone(gthread->__current);
 	void *ret = gthread->__start_routine(gthread->__arg);
-	proc->destroy();
 	popState();
+	gmac::Context::current()->destroy();
+	free(gthread);
 	return ret;
 }
 
@@ -44,10 +45,11 @@ int pthread_create(pthread_t *__restrict __newthread,
 	int ret = 0;
 	pushState(ThreadCreate);
 	TRACE("pthread_create");
-	gthread.__current = gmac::Context::current();
-	gthread.__start_routine = __start_routine;
-	gthread.__arg = __arg;
-	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)&gthread);
+	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
+	gthread->__current = gmac::Context::current();
+	gthread->__start_routine = __start_routine;
+	gthread->__arg = __arg;
+	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
 	popState();
 	return ret;
 }

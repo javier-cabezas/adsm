@@ -4,6 +4,7 @@ SUBDIRS = $(OS_DIR)
 
 noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
+			MemMap.h MemMap.cpp\
 			MemManager.h MemManager.cpp\
 			MemRegion.h MemRegion.cpp\
 			MemHandler.h MemHandler.cpp\

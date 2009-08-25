@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <debug.h>
 
+#include <kernel/Accelerator.h>
+
 #include <gmac/gmac.h>
 #include <memory/MemMap.h>
 
@@ -74,7 +76,14 @@ protected:
 	*/
 	const MemMap &mm() const { return _mm; }
 
+	/*!
+		\brief Accelerator where the context is attached
+	*/
+	Accelerator &acc;
+
 	inline void enable() { PRIVATE_SET(key, this); }
+
+	Context(Accelerator &acc) : acc(acc) { PRIVATE_SET(key, NULL); }
 
 	virtual ~Context() {};
 
@@ -84,6 +93,10 @@ public:
 		return static_cast<Context *>(PRIVATE_GET(key));
 	}
 
+	void destroy() {
+		acc.destroy(this);
+	}
+	
 
 	/*!
 		\brief Locks the context

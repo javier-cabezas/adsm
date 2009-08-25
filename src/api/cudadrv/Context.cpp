@@ -4,8 +4,9 @@
 
 namespace gmac { namespace gpu {
 
-Context::Context(const Context &root) :
-	gpu(root.gpu), _sp(0)
+Context::Context(const Context &root, GPU &gpu) :
+	gmac::Context(gpu),
+	gpu(gpu), _sp(0)
 {
 	init();
 	lock();

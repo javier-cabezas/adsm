@@ -28,6 +28,7 @@ void memoryInit(const char *manager)
 {
 	TRACE("Initializing Memory Subsystem");
 	MUTEX_INIT(mutex);
+	gmac::MemMap::init();
 	createManager(manager);
 }
 

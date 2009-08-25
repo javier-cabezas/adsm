@@ -61,16 +61,13 @@ private:
 
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 protected:
-	MemMap mem;
-
 	inline void insert(MemRegion *r) {
-		mem.insert(r);
 		Context::current()->mm().insert(r);
 	}
 
 	inline MemRegion *remove(void *addr) {
-		Context::current()->mm().remove(addr);
-		return mem.remove(addr);
+		MemRegion *ret = Context::current()->mm().remove(addr);
+		return ret;
 	}
 
 	inline MemMap *current() {
@@ -106,10 +103,6 @@ public:
 		MUTEX_DESTROY(mutex);
 	}
 	
-	MemMap &mm() { return mem; }
-	
-	inline void clean() { mem.clean(); }
-
 	//! This method is called whenever the user
 	//! requests memory to be used by the accelerator
 	//! \param devPtr Allocated memory address. This address
@@ -166,31 +159,6 @@ public:
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
 
-#if 0
-	//! Finds a memory region for a given address
-	//! \param addr Memory address to locate the region
-	inline MemRegion *find(const void *addr) {
-		MemRegion *r = Context::current()->mm().find<MemRegion>(addr);
-		if(r == NULL) mem.find<MemRegion>(addr);
-		return r;
-	}
-
-	//! Invalidates a memory region returned by filter
-	//! \param region Memory region to invalidate
-	virtual void invalidate(MemRegion *region) = 0;
-
-	//! Flushes a memory region returned by filter
-	//! \param region Memory region to flush
-	virtual void flush(MemRegion *region) = 0;
-
-	//! Sets as dirty a memory region returned by filter
-	//! \param region Memory region to set as dirty
-	virtual void dirty(MemRegion *region) = 0;
-
-	//! Checks if a memory region returned by filter is present
-	//! \param region Memroy region to check if it is present
-	virtual bool present(MemRegion *region) const = 0;
-#endif
 };
 
 

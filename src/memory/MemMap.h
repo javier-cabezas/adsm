@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MAPMANAGER_H_
 
 #include <threads.h>
+#include <paraver.h>
 
 #include "MemRegion.h"
 
@@ -47,57 +48,99 @@ class MemMap {
 protected:
 	typedef std::map<const void *, MemRegion *> Map;
 	Map __map;
-	MUTEX(__mutex);
+	MUTEX(local);
+
+	static Map __global;
+	static MUTEX(global);
+
+	static void globalLock() { MUTEX_LOCK(global); }
+	static void globalUnlock() { MUTEX_UNLOCK(global); }
+
+	MemRegion *localFind(const void *addr) {
+		Map::const_iterator i;
+		MemRegion *ret = NULL;
+		i = __map.upper_bound(addr);
+		if(i != __map.end() && i->second->start() <= addr) {
+			ret = i->second;
+		}
+		return ret;
+	}
+
+	MemRegion *globalFind(const void *addr) {
+		Map::const_iterator i;
+		MemRegion *ret = NULL;
+		i = __global.upper_bound(addr);
+		if(i != __global.end() && i->second->start() <= addr)
+			ret = i->second;
+		return ret;
+	}
+
 public:
 	typedef Map::iterator iterator;
 	typedef Map::const_iterator const_iterator;
 
-	MemMap() { MUTEX_INIT(__mutex); }
+	MemMap() { MUTEX_INIT(local); }
 
 	virtual ~MemMap() { clean(); }
 
-	inline void lock() { MUTEX_LOCK(__mutex); }
-	inline void unlock() { MUTEX_UNLOCK(__mutex); }
-	inline Map::iterator begin() { return __map.begin(); }
-	inline Map::iterator end() { return __map.end(); }
+	static void init() { MUTEX_INIT(global); }
+	inline void lock() { 
+		pushState(Exclusive);
+		MUTEX_LOCK(local);
+	}
+	inline void unlock() {
+		MUTEX_UNLOCK(local);
+		popState();
+	}
+	inline iterator begin() { return __map.begin(); }
+	inline iterator end() { return __map.end(); }
+
 
 	inline void insert(MemRegion *i) {
-		MUTEX_LOCK(__mutex);
+		globalLock();
 		__map.insert(Map::value_type(i->end(), i));
-		MUTEX_UNLOCK(__mutex);
+		__global.insert(Map::value_type(i->end(), i));
+		globalUnlock();
 	}
 
 	inline MemRegion *remove(void *addr) {
 		Map::iterator i;
-		MUTEX_LOCK(__mutex);
+		globalLock();
 		i = __map.upper_bound(addr);
-		if(i == __map.end() || i->second->start() != addr)
-			FATAL("Bad free for %p", addr);
+		assert(i != __map.end() && i->second->start() == addr);
 		MemRegion *ret = i->second;
 		__map.erase(i);
-		MUTEX_UNLOCK(__mutex);
+		i = __global.upper_bound(addr);
+		assert(i != __global.end() && i->second->start() == addr);
+		__global.erase(i);
+		globalUnlock();
 		return ret;
 	}
 
 	inline void clean() {
-		MUTEX_LOCK(__mutex);
+		globalLock();
 		Map::iterator i;
 		for(i = __map.begin(); i != __map.end(); i++) {
 			TRACE("Cleaning MemRegion %p", i->second);
+			__global.erase(i->first);
 			delete i->second;
 		}
 		__map.clear();
-		MUTEX_UNLOCK(__mutex);
+		globalUnlock();
 	}
 
 	template<typename T>
 	inline T *find(const void *addr) {
-		Map::const_iterator i;
-		MUTEX_LOCK(__mutex);
-		i = __map.upper_bound(addr);
-		MUTEX_UNLOCK(__mutex);
-		if(i == __map.end() || i->second->start() > addr) return NULL;
-		return dynamic_cast<T *>(i->second);
+		MemRegion *ret = NULL;
+		lock();
+		ret = localFind(addr);
+		if(ret == NULL) {
+			globalLock();
+			ret = globalFind(addr);
+			globalUnlock();
+		}
+		unlock();
+		return dynamic_cast<T *>(ret);
 	}
 };
 

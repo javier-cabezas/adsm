@@ -23,17 +23,18 @@ void GPU::create()
 void GPU::clone(const gmac::Context &root)
 {
 	const gpu::Context &_root = dynamic_cast<const gpu::Context &>(root);
-	gpu::Context *ctx = new gpu::Context(_root);
+	gpu::Context *ctx = new gpu::Context(_root, *this);
 	queue.insert(ctx);
 }
 
 void GPU::destroy(Context *context)
 {
+	if(context == NULL) return;
 	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
 	std::set<gpu::Context *>::iterator c = queue.find(ctx);
 	assert(c != queue.end());
-	queue.erase(c);
 	delete *c;
+	queue.erase(c);
 }
 
 };

@@ -66,7 +66,7 @@ protected:
 
 	friend class gmac::GPU;
 
-	Context(GPU &gpu) : gpu(gpu) {
+	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu) {
 		enable();
 		cudaSetDevice(gpu.device());
 		TRACE("New GPU context [%p]", this);

@@ -25,7 +25,7 @@ EVENT_IMPL(GPUCall, 5);
 STATE_IMPL(ThreadCreate, 2);
 STATE_IMPL(IORead, 3);
 STATE_IMPL(IOWrite, 4);
-STATE_IMPL(Lock, 5);
+STATE_IMPL(Exclusive, 5);
 
 };
 

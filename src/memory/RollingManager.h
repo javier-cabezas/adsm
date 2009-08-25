@@ -60,8 +60,7 @@ protected:
 
 	inline RollingRegion *get(const void *addr) {
 		RollingRegion *reg = NULL;
-		if(current()) current()->find<RollingRegion>(addr);
-		if(reg == NULL) reg = mem.find<RollingRegion>(addr);
+		if(current()) reg = current()->find<RollingRegion>(addr);
 		return reg;
 	}
 

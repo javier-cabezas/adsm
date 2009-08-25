@@ -74,7 +74,6 @@ protected:
 	typedef std::vector<Call> CallStack;
 	typedef HASH_MAP<Module *, const void *> ModuleMap;
 
-
 	GPU &gpu;
 	ModuleMap modules;
 
@@ -117,12 +116,12 @@ protected:
 		enable();
 	}
 
-	Context(GPU &gpu) : gpu(gpu), _sp(0) {
+	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu), _sp(0) {
 		init();
 		TRACE("New GPU context [%p]", this);
 	}
 
-	Context(const Context &root);
+	Context(const Context &root, GPU &gpu);
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
@@ -138,15 +137,15 @@ public:
 	}
 
 	inline void lock() {
-		pushState(Lock);
+		pushState(Exclusive);
 		MUTEX_LOCK(mutex);
 		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
-		popState();
 	}
 	inline void release() {
 		CUcontext tmp;
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 		MUTEX_UNLOCK(mutex);
+		popState();
 	}
 
 

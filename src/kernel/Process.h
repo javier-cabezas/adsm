@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_PROCESS_H_
 #define __KERNEL_PROCESS_H_
 
+#include <threads.h>
 #include <debug.h>
 
 #include <assert.h>
@@ -60,9 +61,10 @@ class Process {
 protected:
 	std::vector<Accelerator *> accs;
 
+	MUTEX(mutex);
 	unsigned current;
 
-	Process() : current(0) { };
+	Process() : current(0) { MUTEX_INIT(mutex); };
 
 public:
 
@@ -78,7 +80,6 @@ public:
 
 	void create();
 	void clone(const Context *ctx);
-	void destroy();
 
 	void accelerator(Accelerator *acc) {
 		accs.push_back(acc);

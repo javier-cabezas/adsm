@@ -51,7 +51,7 @@ EVENT(GPUCall);
 STATE(ThreadCreate);
 STATE(IORead);
 STATE(IOWrite);
-STATE(Lock);
+STATE(Exclusive);
 
 typedef enum {
 	None = 0,
@@ -64,15 +64,15 @@ typedef enum {
 };
 
 /* Macros to issue traces in paraver mode */
-#define addThread()	paraver::trace->__addThread()
-#define pushState(s)	paraver::trace->__pushState(*paraver::s)
-#define popState()	paraver::trace->__popState()
+#define addThread()	if(paraver::trace != NULL) paraver::trace->__addThread()
+#define pushState(s)	if(paraver::trace != NULL) paraver::trace->__pushState(*paraver::s)
+#define popState()	if(paraver::trace != NULL) paraver::trace->__popState()
 #define pushEvent(e, ...)\
-	paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
+	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
 #define enterFunction(s) \
-	paraver::trace->__pushEvent(*paraver::Function, paraver::s)
+	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, paraver::s)
 #define exitFunction() \
-	paraver::trace->__pushEvent(*paraver::Function, 0)
+	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, 0)
 
 #else
 
