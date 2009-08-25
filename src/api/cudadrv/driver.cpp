@@ -41,7 +41,7 @@ void __cudaRegisterFunction(
 	assert(mod != NULL);
 	Context::current()->lock();
 	mod->function(hostFun, devName);
-	Context::current()->release();
+	Context::current()->unlock();
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
@@ -52,7 +52,7 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 	assert(mod != NULL);
 	Context::current()->lock();
 	mod->variable(hostVar, deviceName);
-	Context::current()->release();
+	Context::current()->unlock();
 }
 
 

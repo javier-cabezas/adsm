@@ -20,6 +20,8 @@ void apiInit(void)
 {
 	if(initialized)
 		FATAL("GMAC double initialization not allowed");
+
+	gmac::gpu::Context::init();
 	assert(proc != NULL);
 	TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)

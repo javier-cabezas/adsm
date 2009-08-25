@@ -42,7 +42,7 @@ static const char *functionNames[] = {
 
 static const char *lockNames[] = {
 	"Unlock",
-	"mmLocal", "mmGlobal", "pageTable", "context", "process",
+	"mmLocal", "mmGlobal", "pageTable", "ctxLocal", "ctxGlobal", "process",
 	NULL
 };
 

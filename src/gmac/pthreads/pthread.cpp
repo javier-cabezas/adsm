@@ -34,7 +34,7 @@ static void *gmac_pthread(void *arg)
 	pushState(Running);
 	void *ret = gthread->__start_routine(gthread->__arg);
 	popState();
-	gmac::Context::current()->destroy();
+	//gmac::Context::current()->destroy();
 	free(gthread);
 	return ret;
 }

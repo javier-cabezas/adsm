@@ -85,6 +85,17 @@ protected:
 
 	CUcontext ctx;
 	MUTEX(mutex);
+	static MUTEX(global);
+
+	static void globalLock() {
+		enterLock(ctxGlobal);
+		MUTEX_LOCK(global);
+		exitLock();
+	}
+
+	static void globalUnlock() {
+		MUTEX_UNLOCK(global);
+	}
 
 	inline CUdeviceptr gpuAddr(void *addr) const {
 		unsigned long a = (unsigned long)addr;
@@ -105,10 +116,12 @@ protected:
 
 	friend class gmac::GPU;
 
-	inline void init() {
+	inline void setup() {
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
+		//globalLock();
 		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
+		//globalUnlock();
 		if(ret != CUDA_SUCCESS)
 			FATAL("Unable to create CUDA context %d", ret);
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
@@ -117,7 +130,7 @@ protected:
 	}
 
 	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu), _sp(0) {
-		init();
+		setup();
 		TRACE("New GPU context [%p]", this);
 	}
 
@@ -131,18 +144,21 @@ protected:
 
 public:
 
+	inline static void init() {
+		MUTEX_INIT(global);
+	}
 
 	inline static Context *current() {
 		return static_cast<Context *>(PRIVATE_GET(key));
 	}
 
 	inline void lock() {
-		enterLock(context);
+		enterLock(ctxLocal);
 		MUTEX_LOCK(mutex);
 		exitLock();
 		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
 	}
-	inline void release() {
+	inline void unlock() {
 		CUcontext tmp;
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 		MUTEX_UNLOCK(mutex);
@@ -154,14 +170,14 @@ public:
 		lock();
 		zero(addr);
 		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
-		release();
+		unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t free(void *addr) {
 		lock();
 		CUresult ret = cuMemFree(gpuAddr(addr));
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -169,7 +185,7 @@ public:
 		lock();
 		TRACE("Copy %p to device %p", host, dev);
 		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -177,14 +193,14 @@ public:
 		lock();
 		TRACE("Copy %p to host %p", dev, host);
 		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
-		release();
+		unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		lock();
 		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -192,7 +208,7 @@ public:
 			size_t size) {
 		lock();
 		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -200,7 +216,7 @@ public:
 			size_t size) {
 		lock();
 		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -210,7 +226,7 @@ public:
 	inline gmacError_t sync() {
 		lock();
 		CUresult ret = cuCtxSynchronize();
-		release();
+		unlock();
 		return error(ret);
 	}
 
@@ -219,7 +235,7 @@ public:
 		lock();
 		Module *module = new Module(fatBin);
 		modules.insert(ModuleMap::value_type(module, fatBin));
-		release();
+		unlock();
 		return module;
 	}
 
@@ -229,7 +245,7 @@ public:
 		lock();
 		delete m->first;
 		modules.erase(m);
-		release();
+		unlock();
 	}
 
 	inline const Function *function(const char *name) const {

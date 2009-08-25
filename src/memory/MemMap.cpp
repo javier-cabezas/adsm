@@ -2,6 +2,8 @@
 
 namespace gmac {
 
+
+MemMap::Map *MemMap::__global = NULL;
+unsigned MemMap::count = 0;
 MUTEX(MemMap::global);
-MemMap::Map MemMap::__global;
 }

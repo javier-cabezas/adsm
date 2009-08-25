@@ -79,7 +79,7 @@ protected:
 public:
 
 	inline void lock() {};
-	inline void release() {};
+	inline void unlock() {};
 
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {

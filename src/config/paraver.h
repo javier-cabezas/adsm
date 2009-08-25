@@ -63,7 +63,7 @@ typedef enum {
 } FunctionName;
 
 typedef enum {
-	mmLocal = 1, mmGlobal, pageTable, context, process,
+	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, process,
 } LockName;
 
 };

@@ -137,7 +137,7 @@ cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 	if(r != CUDA_SUCCESS) return __getCUDAError(r);
 	size_t offset = hOffset * desc.Width + wOffset;
 	r = cuMemcpyHtoA(array, offset, src, count);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	return __getCUDAError(r);
 }
 
@@ -162,7 +162,7 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 
 	gmac::Context::current()->lock();
 	CUresult r = cuMemcpy2D(&cuCopy);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	assert(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
@@ -189,7 +189,7 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 	CUDA_ARRAY_DESCRIPTOR cuDesc;
 	gmac::Context::current()->lock();
 	CUresult r = cuArrayGetDescriptor(&cuDesc, (CUarray)array);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	if(r != CUDA_SUCCESS) return __getCUDAError(r);
 	desc->f = __getCUDAChannelFormatKind(cuDesc.Format);
 	__setNumberOfChannels(desc, cuDesc.NumChannels, __getChannelSize(cuDesc.Format));
@@ -212,7 +212,7 @@ cudaError_t cudaMallocArray(struct cudaArray **array,
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	gmac::Context::current()->lock();
 	CUresult r = cuArrayCreate((CUarray *)array, &cuDesc);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	return __getCUDAError(r);
 }
 
@@ -220,7 +220,7 @@ cudaError_t cudaFreeArray(struct cudaArray *array)
 {
 	gmac::Context::current()->lock();
 	CUresult r = cuArrayDestroy((CUarray)array);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	return __getCUDAError(r);
 }
 
@@ -269,7 +269,7 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%d bytes)", src, ptr, count);
 			gmac::Context::current()->lock();
 			r = cuMemcpyHtoD(ptr, src, count);
-			gmac::Context::current()->release();
+			gmac::Context::current()->unlock();
 			return __getCUDAError(r);
 		default:
 			abort();
@@ -316,7 +316,7 @@ void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference 
 	assert(ref != NULL);
 	gmac::Context::current()->lock();
 	mod->texture(ref, deviceName);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 }
 
 
@@ -329,30 +329,30 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 	for(int i = 0; i < 3; i++) {
 		r = cuTexRefSetAddressMode(ref->__texref, i, __getAddressMode(ref->addressMode[i]));
 		if(r != CUDA_SUCCESS) {
-			gmac::Context::current()->release();
+			gmac::Context::current()->unlock();
 			return __getCUDAError(r);
 		}
 	}
 	r = cuTexRefSetFlags(ref->__texref, CU_TRSF_READ_AS_INTEGER);
 	if(r != CUDA_SUCCESS) {
-		gmac::Context::current()->release();
+		gmac::Context::current()->unlock();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetFilterMode(ref->__texref, __getFilterMode(ref->filterMode));
 	if(r != CUDA_SUCCESS) {
-		gmac::Context::current()->release();
+		gmac::Context::current()->unlock();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetFormat(ref->__texref,
 			__getChannelFormatKind(&ref->channelDesc),
 			__getNumberOfChannels(&ref->channelDesc));
 	if(r != CUDA_SUCCESS) {
-		gmac::Context::current()->release();
+		gmac::Context::current()->unlock();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetArray(ref->__texref, (CUarray)array, CU_TRSA_OVERRIDE_FORMAT);
 
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	return __getCUDAError(r);
 }
 
@@ -361,7 +361,7 @@ cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 	struct __textureReference *ref = (struct __textureReference *)texref;
 	gmac::Context::current()->lock();
 	CUresult r = cuTexRefDestroy(ref->__texref);
-	gmac::Context::current()->release();
+	gmac::Context::current()->unlock();
 	return __getCUDAError(r);
 }
 

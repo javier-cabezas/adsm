@@ -97,7 +97,6 @@ public:
 		acc.destroy(this);
 	}
 	
-
 	/*!
 		\brief Locks the context
 	*/
@@ -106,7 +105,7 @@ public:
 	/*!
 		\brief Releases the context
 	*/
-	virtual void release() = 0;
+	virtual void unlock() = 0;
 
 	/*!
 		\brief Allocates memory on the accelerator memory 

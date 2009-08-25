@@ -50,7 +50,8 @@ protected:
 	Map __map;
 	MUTEX(local);
 
-	static Map __global;
+	static Map *__global;
+	static unsigned count;
 	static MUTEX(global);
 
 	static void globalLock() {
@@ -73,19 +74,42 @@ protected:
 	MemRegion *globalFind(const void *addr) {
 		Map::const_iterator i;
 		MemRegion *ret = NULL;
-		i = __global.upper_bound(addr);
-		if(i != __global.end() && i->second->start() <= addr)
+		i = __global->upper_bound(addr);
+		if(i != __global->end() && i->second->start() <= addr)
 			ret = i->second;
 		return ret;
 	}
+
+	inline void clean() {
+		Map::iterator i;
+		for(i = __map.begin(); i != __map.end(); i++) {
+			TRACE("Cleaning MemRegion %p", i->second);
+			__global->erase(i->first);
+			delete i->second;
+		}
+		__map.clear();
+	}
+
 
 public:
 	typedef Map::iterator iterator;
 	typedef Map::const_iterator const_iterator;
 
-	MemMap() { MUTEX_INIT(local); }
+	MemMap() {
+		MUTEX_INIT(local);
+		globalLock();
+		if(__global == NULL) __global = new Map();
+		count++;
+		globalUnlock();
+	}
 
-	virtual ~MemMap() { clean(); }
+	virtual ~MemMap() {
+		globalLock();
+		clean();
+		count--;
+		if(count == 0) delete __global;
+		globalUnlock();
+	}
 
 	static void init() { MUTEX_INIT(global); }
 	inline void lock() { 
@@ -103,7 +127,7 @@ public:
 	inline void insert(MemRegion *i) {
 		globalLock();
 		__map.insert(Map::value_type(i->end(), i));
-		__global.insert(Map::value_type(i->end(), i));
+		__global->insert(Map::value_type(i->end(), i));
 		globalUnlock();
 	}
 
@@ -114,24 +138,13 @@ public:
 		assert(i != __map.end() && i->second->start() == addr);
 		MemRegion *ret = i->second;
 		__map.erase(i);
-		i = __global.upper_bound(addr);
-		assert(i != __global.end() && i->second->start() == addr);
-		__global.erase(i);
+		i = __global->upper_bound(addr);
+		assert(i != __global->end() && i->second->start() == addr);
+		__global->erase(i);
 		globalUnlock();
 		return ret;
 	}
 
-	inline void clean() {
-		globalLock();
-		Map::iterator i;
-		for(i = __map.begin(); i != __map.end(); i++) {
-			TRACE("Cleaning MemRegion %p", i->second);
-			__global.erase(i->first);
-			delete i->second;
-		}
-		__map.clear();
-		globalUnlock();
-	}
 
 	template<typename T>
 	inline T *find(const void *addr) {
