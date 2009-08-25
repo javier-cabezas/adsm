@@ -140,7 +140,9 @@ public:
 		void *baseAddr = (void *)((unsigned long)addr & ~(pageSize -1));
 		size_t off = (unsigned long)addr & (pageSize - 1);
 		void *devAddr = NULL;
+		enterLock(pageTable);
 		MUTEX_LOCK(mutex);
+		exitLock();
 		if((e = virtTable.find(baseAddr)) != virtTable.end())
 			devAddr = (void *)((uint8_t *)e->second + off);
 		MUTEX_UNLOCK(mutex);

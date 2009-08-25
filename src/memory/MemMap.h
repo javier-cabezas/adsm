@@ -53,7 +53,11 @@ protected:
 	static Map __global;
 	static MUTEX(global);
 
-	static void globalLock() { MUTEX_LOCK(global); }
+	static void globalLock() {
+		enterLock(mmGlobal);
+		MUTEX_LOCK(global);
+		exitLock();
+	}
 	static void globalUnlock() { MUTEX_UNLOCK(global); }
 
 	MemRegion *localFind(const void *addr) {
@@ -85,12 +89,12 @@ public:
 
 	static void init() { MUTEX_INIT(global); }
 	inline void lock() { 
-		pushState(Exclusive);
+		enterLock(mmLocal);
 		MUTEX_LOCK(local);
+		exitLock();
 	}
 	inline void unlock() {
 		MUTEX_UNLOCK(local);
-		popState();
 	}
 	inline iterator begin() { return __map.begin(); }
 	inline iterator end() { return __map.end(); }

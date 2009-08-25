@@ -134,3 +134,53 @@ gmacError_t gmacGetLastError()
 	return gmac::Context::current()->error();
 }
 
+void gmacMemset(void *s, int c, size_t n)
+{
+	assert(manager != NULL);
+	
+	gmac::Context *ctx = manager->owner(s);
+	assert(ctx != NULL);
+	manager->invalidate(s, n);
+	ctx->memset(manager->safe(s), c, n);
+}
+
+void *gmacMemcpy(void *dst, const void *src, size_t n)
+{
+	void *ret = dst;
+	size_t ds = 0, ss = 0;
+
+	assert(manager != NULL);
+
+	// Locate memory regions (if any)
+	gmac::Context *dstCtx = manager->owner(dst);
+	gmac::Context *srcCtx = manager->owner(src);
+
+	assert(dstCtx != NULL || srcCtx != NULL);
+
+	TRACE("GMAC Memcpy");
+	if(dstCtx == NULL) { // Copy to Host
+		manager->flush(src, n);
+		srcCtx->copyToHost(dst, manager->safe(src), n);
+	}
+	else if(srcCtx == NULL) { // Copy to Device
+		manager->invalidate(dst, n);
+		dstCtx->copyToDevice(manager->safe(dst), src, n);
+	}
+	else if(dstCtx == srcCtx) {	// Same device copy
+		manager->flush(src, n);
+		manager->invalidate(dst, n);
+		dstCtx->copyDevice(manager->safe(dst),
+				manager->safe(src), n);
+	}
+	else {
+		void *tmp = malloc(n);
+		manager->flush(src, n);
+		srcCtx->copyToHost(tmp, manager->safe(src), n);
+		manager->invalidate(dst, n);
+		dstCtx->copyToDevice(manager->safe(dst), tmp, n);
+		free(tmp);
+	}
+
+	return ret;
+
+}

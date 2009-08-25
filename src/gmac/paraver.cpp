@@ -21,6 +21,7 @@ EVENT_IMPL(HostDeviceCopy, 2);
 EVENT_IMPL(DeviceHostCopy, 3);
 EVENT_IMPL(DeviceDeviceCopy, 4);
 EVENT_IMPL(GPUCall, 5);
+EVENT_IMPL(Lock, 6);
 
 STATE_IMPL(ThreadCreate, 2);
 STATE_IMPL(IORead, 3);
@@ -39,10 +40,19 @@ static const char *functionNames[] = {
 	NULL
 };
 
+static const char *lockNames[] = {
+	"Unlock",
+	"mmLocal", "mmGlobal", "pageTable", "context", "process",
+	NULL
+};
+
+
 static void __attribute__((constructor(199))) paraverInit(void)
 {
 	for(int i = 0; functionNames[i] != 0; i++)
 		paraver::Function->registerType(i, std::string(functionNames[i]));
+	for(int i = 0; lockNames[i] != NULL; i++)
+		paraver::Lock->registerType(i, std::string(lockNames[i]));
 }
 
 

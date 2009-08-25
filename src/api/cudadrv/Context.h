@@ -137,15 +137,15 @@ public:
 	}
 
 	inline void lock() {
-		pushState(Exclusive);
+		enterLock(context);
 		MUTEX_LOCK(mutex);
+		exitLock();
 		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
 	}
 	inline void release() {
 		CUcontext tmp;
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 		MUTEX_UNLOCK(mutex);
-		popState();
 	}
 
 

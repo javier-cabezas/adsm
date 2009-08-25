@@ -47,6 +47,7 @@ EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
 EVENT(GPUCall);
+EVENT(Lock);
 
 STATE(ThreadCreate);
 STATE(IORead);
@@ -55,12 +56,15 @@ STATE(Exclusive);
 STATE(Init);
 
 typedef enum {
-	None = 0,
-	accMalloc, accFree,
+	accMalloc = 1, accFree,
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
 	gmacMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
 } FunctionName;
+
+typedef enum {
+	mmLocal = 1, mmGlobal, pageTable, context, process,
+} LockName;
 
 };
 
@@ -70,10 +74,22 @@ typedef enum {
 #define popState()	if(paraver::trace != NULL) paraver::trace->__popState()
 #define pushEvent(e, ...)\
 	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
+
 #define enterFunction(s) \
 	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, paraver::s)
 #define exitFunction() \
 	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, 0)
+
+#define enterLock(s) \
+	if(paraver::trace != NULL) {\
+		paraver::trace->__pushEvent(*paraver::Lock, paraver::s);\
+		paraver::trace->__pushState(*paraver::Exclusive);\
+	}
+#define exitLock() \
+	if(paraver::trace != NULL) {\
+		paraver::trace->__pushEvent(*paraver::Lock, 0);\
+		paraver::trace->__popState();\
+	}
 
 #else
 
@@ -81,8 +97,12 @@ typedef enum {
 #define pushState(s)
 #define popState()
 #define pushEvent(e)
+
 #define enterFunction(s)
 #define exitFunction()
+
+#define enterLock(s)
+#define exitLock()
 
 #endif
 

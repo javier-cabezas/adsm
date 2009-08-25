@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_PROCESS_H_
 
 #include <threads.h>
+#include <paraver.h>
 #include <debug.h>
 
 #include <assert.h>
@@ -65,6 +66,16 @@ protected:
 	unsigned current;
 
 	Process() : current(0) { MUTEX_INIT(mutex); };
+
+	inline void lock() {
+		enterLock(process);
+		MUTEX_LOCK(mutex);
+		exitLock();
+	}
+
+	inline void unlock() {
+		MUTEX_UNLOCK(mutex);
+	}
 
 public:
 
