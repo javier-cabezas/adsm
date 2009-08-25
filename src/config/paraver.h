@@ -52,6 +52,7 @@ STATE(ThreadCreate);
 STATE(IORead);
 STATE(IOWrite);
 STATE(Exclusive);
+STATE(Init);
 
 typedef enum {
 	None = 0,
