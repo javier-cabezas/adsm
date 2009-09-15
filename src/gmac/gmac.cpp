@@ -134,14 +134,17 @@ gmacError_t gmacGetLastError()
 	return gmac::Context::current()->error();
 }
 
-void gmacMemset(void *s, int c, size_t n)
+void *gmacMemset(void *s, int c, size_t n)
 {
+    void *ret = s;
 	assert(manager != NULL);
 	
 	gmac::Context *ctx = manager->owner(s);
 	assert(ctx != NULL);
 	manager->invalidate(s, n);
 	ctx->memset(manager->safe(s), c, n);
+
+    return ret;
 }
 
 void *gmacMemcpy(void *dst, const void *src, size_t n)

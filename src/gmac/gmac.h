@@ -118,7 +118,7 @@ gmacError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
 
 gmacError_t gmacGetLastError(void);
 
-void gmacMemset(void *, int, size_t);
+void *gmacMemset(void *, int, size_t);
 void *gmacMemcpy(void *, const void *, size_t);
 
 inline const char *gmacGetErrorString(gmacError_t err) {
