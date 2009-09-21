@@ -34,7 +34,7 @@ void apiInit(void)
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
-		if(cuDeviceGet(&cuDev, 0) != CUDA_SUCCESS)
+		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
 		proc->accelerator(new gmac::GPU(i, cuDev));
 	}

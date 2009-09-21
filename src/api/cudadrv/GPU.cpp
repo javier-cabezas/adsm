@@ -22,6 +22,7 @@ void GPU::create()
 
 void GPU::clone(const gmac::Context &root)
 {
+	TRACE("GPU %p: new cloned context");
 	const gpu::Context &_root = dynamic_cast<const gpu::Context &>(root);
 	gpu::Context *ctx = new gpu::Context(_root, *this);
 	queue.insert(ctx);

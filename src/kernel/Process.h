@@ -93,6 +93,7 @@ public:
 	void clone(const Context *ctx);
 
 	void accelerator(Accelerator *acc) {
+		TRACE("Adding accelerator");
 		accs.push_back(acc);
 	}
 };

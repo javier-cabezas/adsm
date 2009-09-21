@@ -40,6 +40,7 @@ void Process::clone(const gmac::Context *ctx)
 	current = ++current % accs.size();
 	unlock();
 	accs[n]->clone(*ctx);
+	TRACE("Cloned context on Acc#%d", n);
 }
 
 }
