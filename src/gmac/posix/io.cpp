@@ -4,6 +4,10 @@
 #include <paraver.h>
 #include <debug.h>
 
+#include <init.h>
+#include <memory/MemManager.h>
+#include <kernel/Context.h>
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -22,37 +26,52 @@ static void __attribute__((constructor(INTERPOSE))) posixIoInit(void)
 }
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* System call wrappers */
 
+#ifdef __cplusplus
+extern "C"
+#endif
 ssize_t read(int fd, void *buf, size_t count)
 {
+    gmac::Context *ctx = manager->owner(buf);
+
+    if(ctx == NULL) return __libc_read(fd, buf, count);
+
 	pushState(IORead);
-	ssize_t n = 0;
-	uint8_t *ptr = (uint8_t *)buf;
-	do {
-		n += __libc_read(fd, ptr + n, count - n);
-	} while(n < count && errno == EFAULT);
-	popState();
-	return n;
-}
 
+    manager->invalidate(buf, count);
+    void *tmp = malloc(count);
 
-ssize_t write(int fd, const void *buf, size_t count)
-{
-	pushState(IOWrite);
-	ssize_t n = 0;
-	uint8_t *ptr = (uint8_t *)buf;
-	do {
-		n += __libc_write(fd, ptr + n, count - n);
-	} while(n < count && errno == EFAULT);
-	popState();
-	return n;
+    size_t ret = __libc_read(fd, tmp, count);
+    ctx->copyToDevice(manager->safe(buf), tmp, count);
+    free(tmp);
+
+    popState();
+
+    return ret;
 }
 
 #ifdef __cplusplus
-}
+extern "C"
 #endif
+ssize_t write(int fd, const void *buf, size_t count)
+{
+    gmac::Context *ctx = manager->owner(buf);
+
+    if(ctx == NULL) return __libc_write(fd, buf, count);
+
+    pushState(IOWrite);
+
+    void *tmp = malloc(count);
+
+    manager->flush(buf, count);
+    ctx->copyToHost(tmp, manager->safe(buf), count);
+
+    size_t ret =  __libc_write(fd, tmp, count);
+    free(tmp);
+	
+    popState();
+
+    return ret;
+}

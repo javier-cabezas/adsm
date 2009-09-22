@@ -33,8 +33,6 @@ extern "C"
 #endif
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	ssize_t n = 0;
-	uint8_t *ptr = (uint8_t *)buf;
     gmac::Context *ctx = manager->owner(buf);
 
     if(ctx == NULL) return __libc_fread(buf, size, nmemb, stream);
@@ -47,9 +45,10 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t ret = __libc_fread(tmp, size, nmemb, stream);
     ctx->copyToDevice(manager->safe(buf), tmp, size * nmemb);
     free(tmp);
+
     popState();
 
-	return ret;
+    return ret;
 }
 
 
@@ -58,13 +57,11 @@ extern "C"
 #endif
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	ssize_t n = 0;
-	uint8_t *ptr = (uint8_t *)buf;
     gmac::Context *ctx = manager->owner(buf);
 
     if(ctx == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
-	pushState(IOWrite);
+    pushState(IOWrite);
 
     void *tmp = malloc(size * nmemb);
 
