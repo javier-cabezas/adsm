@@ -61,9 +61,12 @@ namespace gmac {
 class Process {
 protected:
 	std::vector<Accelerator *> accs;
+	std::list<Context *> contexts;
 
 	MUTEX(mutex);
 	unsigned current;
+
+	static size_t _totalMemory;
 
 	Process() : current(0) { MUTEX_INIT(mutex); };
 
@@ -90,12 +93,17 @@ public:
 	}
 
 	void create();
-	void clone(const Context *ctx);
+	void clone(Context *ctx);
+	void remove(Context *ctx);
 
-	void accelerator(Accelerator *acc) {
-		TRACE("Adding accelerator");
-		accs.push_back(acc);
+	void accelerator(Accelerator *acc);
+
+	void *translate(void *);
+	inline const void *translate(const void *addr) {
+		return (const void *)translate((void *)addr);
 	}
+
+	static size_t totalMemory() { return _totalMemory; }
 };
 
 }

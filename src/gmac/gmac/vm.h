@@ -35,26 +35,46 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_VM_H_
 #define __GMAC_VM_H_
 
-#include <stdint.h>
 
-#define PAGE_TABLE_SIZE	1024
-#define PAGE_SIZE 4 * 1024 * 1024
-#define PAGE_SHIFT 22
+#define PRESENT 0x1
+#define DIRTY 0x2
+#define MASK 0x3
 
-__constant__ uint64_t __pageTable[PAGE_TABLE_SIZE];
+#define ENTRIES 512
+#define ROOT_SHIFT 39
+#define DIR_SHIFT 30
 
-__device__ inline void *__pg_lookup(void *addr)
+#define __entry(addr, shift, size) \
+	((unsigned long)addr >> shift) & (size - 1)
+#define __value(tbl, n) ((unsigned long)tbl[n] & ~MASK)
+
+__constant__ struct {
+	unsigned long **ptr;
+	size_t shift;
+	size_t size;
+	size_t page;
+} __pageTable;
+
+__device__ inline void *__pg_lookup(void *addr, bool write)
 {
-	uint64_t offset = (uint64_t)addr & (PAGE_SIZE - 1);
-	uint64_t base = __pageTable[((uint64_t)addr & ~(PAGE_SIZE - 1)) >> PAGE_SHIFT];
+	unsigned long offset = (unsigned long)addr & (__pageTable.page - 1);
+	unsigned long *dir = (unsigned long *)__value(__pageTable.ptr,
+		__entry(addr, ROOT_SHIFT, ENTRIES));
+	unsigned long *table = (unsigned long *)__value((unsigned long **)dir,
+		__entry(addr, DIR_SHIFT, ENTRIES));
+	unsigned long base = __value((unsigned long **)table, __entry(addr,
+		__pageTable.shift, __pageTable.size));
+	if(write)
+		table[__entry(addr, __pageTable.shift, __pageTable.size)] |= DIRTY;
+	base += offset;
 
-	return (void *)((base & ~(PAGE_SIZE -1)) | offset);
+	return (void *)base;
 }
 
 template<typename T>
-__device__ inline T __globalLd(T *addr) { return *(T *)__pg_lookup(addr); }
+__device__ inline T __globalLd(T *addr) { return *(T *)__pg_lookup(addr, false); }
 template<typename T>
-__device__ inline void __globalSt(T *addr, T v) { *(T *)__pg_lookup(addr) = v; }
+__device__ inline void __globalSt(T *addr, T v) { *(T *)__pg_lookup(addr, true) = v; }
 
 
 #endif

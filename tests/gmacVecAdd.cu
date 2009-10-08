@@ -8,25 +8,27 @@
 
 #include "debug.h"
 
-size_t vecSize = 1 * 1024 * 1024;
+
+#define SIZE 1
+
+const size_t vecSize = 4 * 1024 * 1024;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";
 
-__global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
+__global__ void vecAdd(float *c, float *a, float *b, size_t size)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i >= vecSize) return;
+	if(i >= size) return;
 
 	c[i] = a[i] + b[i];
 }
 
 
-void randInit(float *a, size_t vecSize)
+void randInit(float *a, size_t size)
 {
-	for(int i = 0; i < vecSize; i++) {
-		a[i] = 1.0 * i;
-		//a[i] = rand() / (float)RAND_MAX;
+	for(int i = 0; i < size; i++) {
+		a[i] = 1.0 * rand();
 	}
 }
 
@@ -43,38 +45,43 @@ int main(int argc, char *argv[])
 {
 	float *a = NULL, *b = NULL, *c = NULL;
 	struct timeval s, t;
+	size_t size = 0;
 
-	const char *vecStr = getenv("VECTORSIZE");
-	if(vecStr != NULL) vecSize = atoi(vecStr) * 1024 * 1024;
-	fprintf(stderr,"Vector %dMB\n", vecSize);
+	if(argv[SIZE] != NULL) size = atoi(argv[SIZE]);
+	if(size == 0) size = vecSize;
+
+	fprintf(stderr,"Vector %dMB\n", size);
 	srand(time(NULL));
 	// Alloc & init input data
-	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+	if(gmacMalloc((void **)&a, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
-	if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+	if(gmacMalloc((void **)&b, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 	// Alloc output data
-	if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+	if(gmacMalloc((void **)&c, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 
 	gettimeofday(&s, NULL);
-	randInit(a, vecSize);
-	randInit(b, vecSize);
+	randInit(a, size);
+	randInit(b, size);
 
 	// Call the kernel
 	dim3 Db(blockSize);
-	dim3 Dg(vecSize / blockSize);
-	if(vecSize % blockSize) Db.x++;
-	vecAdd<<<Dg, Db>>>(c, a, b, vecSize);
+	dim3 Dg(size / blockSize);
+	if(size % blockSize) Db.x++;
+	vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), size);
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, " ");
 
+	gettimeofday(&s, NULL);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, " ");
 
 
 	gettimeofday(&s, NULL);
 	float error = 0;
-	for(int i = 0; i < vecSize; i++) {
+	for(int i = 0; i < size; i++) {
 		error += c[i] - (a[i] + b[i]);
 	}
 	gettimeofday(&t, NULL);

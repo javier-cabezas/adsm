@@ -17,7 +17,7 @@ static void __attribute__((constructor(INTERPOSE))) gmacPthreadInit(void)
 }
 
 typedef struct {
-	const gmac::Context *__current;
+	gmac::Context *__current;
 	void *(*__start_routine)(void *);
 	void *__arg;
 } gmac_thread_t;

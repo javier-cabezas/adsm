@@ -31,51 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDA_GPU_H_
-#define __API_CUDA_GPU_H_
+#ifndef __UTIL_POSIX_UTIL_H_
+#define __UTIL_POSIX_UTIL_H_
 
-#include <debug.h>
-#include <kernel/Accelerator.h>
-
-#include <cassert>
-#include <set>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector_types.h>
-
+#include <stdlib.h>
 
 namespace gmac {
 
-namespace gpu {
-class Context;
-}
-
-class GPU : public Accelerator {
-protected:
-	unsigned id;
-	std::set<gpu::Context *> queue;
-	size_t _memory;
+class Util {
 public:
-	GPU(int n) : id(n) {
-		struct cudaDeviceProp prop;
-		int flags = 0;
-		assert(cudaGetDeviceProperties(&prop, n) == cudaSuccess);
-		_memory = prop.totalGlobalMem;	
-		if(prop.major > 0 && prop.minor >0) flags |= cudaDeviceMapHost;
-		assert(cudaSetDeviceFlags(flags) == cudaSuccess);
+	static inline const char *getenv(const char *var) {
+		return ::getenv(var);
 	}
-	~GPU();
-
-	unsigned device() const { return id; }
-
-	Context *create();
-	Context *clone(const Context &);
-	void destroy(Context *);
-
-	size_t memory() const { return _memory; }
 };
-
-}
-
+};
 #endif

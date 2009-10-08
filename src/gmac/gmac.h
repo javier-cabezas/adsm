@@ -87,12 +87,7 @@ gmacError_t gmacMalloc(void **devPtr, size_t count);
 	memory
 	\param count bytes to be allocated
 */
-gmacError_t gmacSafeMalloc(void **devPtr, size_t count);
-/*!
-	\brief Returns the GPU address assigned to a CPU address
-	\param cpuPtr memory address in the CPU
-*/
-void *gmacSafePointer(void *cpuPtr);
+void *gmacPtr(void *cpuPtr);
 /*!
 	\brief Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
 	\param cpuAddr Memory address to free. This address must have been returned
@@ -132,8 +127,8 @@ inline const char *gmacGetErrorString(gmacError_t err) {
 
 #ifdef __cplusplus
 #include <stdio.h>
-template<typename T> inline T *gmacSafe(T *devPtr) {
-	return (T *)gmacSafePointer((void *)devPtr);
+template<typename T> inline T *gmacPtr(T *devPtr) {
+	return (T *)gmacPtr((void *)devPtr);
 }
 #endif
 

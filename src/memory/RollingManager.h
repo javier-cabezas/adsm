@@ -137,8 +137,7 @@ protected:
 
 public:
 	RollingManager();
-	bool alloc(void *addr, size_t size);
-	void *safeAlloc(void *addr, size_t size);
+	void *alloc(void *addr, size_t size);
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};

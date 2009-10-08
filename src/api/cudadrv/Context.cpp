@@ -4,11 +4,17 @@
 
 namespace gmac { namespace gpu {
 
+#ifdef USE_VM
+const char *Context::pageTableSymbol = "__pageTable";
+#endif
 MUTEX(Context::global);
 
 Context::Context(const Context &root, GPU &gpu) :
 	gmac::Context(gpu),
 	gpu(gpu), _sp(0)
+#ifdef USE_VM
+	,pageTable(NULL)
+#endif
 {
 	setup();
 	lock();
@@ -91,5 +97,42 @@ gmacError_t Context::launch(const char *kernel)
 	unlock();
 	return error(ret);
 }
+
+void Context::flush()
+{
+#ifdef USE_VM
+	ModuleMap::const_iterator m;
+	for(m = modules.begin(); pageTable == NULL && m != modules.end(); m++) {
+		pageTable = m->first->pageTable();
+	}
+	assert(pageTable != NULL);
+	if(pageTable == NULL) return;
+
+	devicePageTable.ptr = mm().pageTable().flush();
+	devicePageTable.shift = mm().pageTable().getTableShift();
+	devicePageTable.size = mm().pageTable().getTableSize();
+	devicePageTable.page = mm().pageTable().getPageSize();
+	
+	lock();
+	assert(cuMemcpyHtoD(pageTable->ptr, &devicePageTable,
+		sizeof(devicePageTable)) == CUDA_SUCCESS);
+	unlock();
+#endif
+}
+
+void Context::invalidate()
+{
+#ifdef USE_VM
+	ModuleMap::const_iterator m;
+	for(m = modules.begin(); pageTable == NULL && m != modules.end(); m++) {
+		pageTable = m->first->pageTable();
+	}
+	assert(pageTable != NULL);
+	if(pageTable == NULL) return;
+
+	mm().pageTable().invalidate();
+#endif
+}
+
 
 }}

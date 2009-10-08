@@ -34,13 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
-#include <memory/MemMap.h>
+#include <memory/Map.h>
+#include <memory/PageTable.h>
 #include <memory/os/Memory.h>
 
 #include <config.h>
 #include <threads.h>
 
 #include <kernel/Context.h>
+#include <kernel/Process.h>
 
 #include <stdint.h>
 
@@ -56,11 +58,10 @@ class MemRegion;
 class MemManager {
 private:
 	MUTEX(mutex);
-	HASH_MAP<void *, void *> virtTable;
-	size_t pageSize;
 
-	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 protected:
+//	memory::PageTable pageTable;
+
 	inline void insert(MemRegion *r) {
 		Context::current()->mm().insert(r);
 	}
@@ -70,22 +71,30 @@ protected:
 		return ret;
 	}
 
-	inline MemMap *current() {
+	inline memory::Map *current() {
 		if(Context::current() == NULL) return NULL;
 		return &Context::current()->mm();
 	}
 
-	//! This method maps a accelerator address into the CPU address space
-	//! \param addr accelerator address
-	//! \param count Size (in bytes) of the mapping
-	//! \param prot Protection flags for the mapping
-	void *map(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
+	inline unsigned long align(void *addr) const {
+		unsigned long a = (unsigned long)addr;
+		unsigned n = 0x1;
+		while((a & n) == 0) { n = n << 1; }
+		TRACE("Align 0x%x", n);
+		return n;
+	}
+
+	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
+
+	inline const memory::PageTable &pageTable() const {
+		return Context::current()->mm().pageTable();
+	}
 
 	//! This gets memory from the CPU address space
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
-	void *safeMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
+	void *map(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
 	//! This method upmaps a accelerator address from the CPU address space
 	//! \param addr accelerator address
@@ -93,7 +102,7 @@ protected:
 	void unmap(void *addr, size_t count);
 
 public:
-	MemManager() : pageSize(getpagesize()) {
+	MemManager() {
 		MUTEX_INIT(mutex);
 		TRACE("Memory manager starts");
 	}
@@ -108,16 +117,7 @@ public:
 	//! \param devPtr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	virtual bool alloc(void *addr, size_t count) = 0;
-
-	//! This method is called whenever the user
-	//! requests memory to be used by the accelerator that
-	//! might use different memory addresses for the CPU
-	//! and the accelerator.
-	//! \param devPtr Allocated memory address. This address
-	//! is the same for both, the CPU and the accelerator.
-	//! \param count Size in bytes of the allocated memory
-	virtual void *safeAlloc(void *addr, size_t count) = 0;
+	virtual void *alloc(void *addr, size_t count) = 0;
 
 	//! This method is called whenever the user
 	//! releases accelerator memory
@@ -135,27 +135,21 @@ public:
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
-	virtual inline void *safe(void *addr) {
-		HASH_MAP<void *, void *>::const_iterator e;
-		void *baseAddr = (void *)((unsigned long)addr & ~(pageSize -1));
-		size_t off = (unsigned long)addr & (pageSize - 1);
-		void *devAddr = NULL;
-		enterLock(pageTable);
-		MUTEX_LOCK(mutex);
-		exitLock();
-		if((e = virtTable.find(baseAddr)) != virtTable.end())
-			devAddr = (void *)((uint8_t *)e->second + off);
-		MUTEX_UNLOCK(mutex);
-		return devAddr;
-	}
-
-	//! This method is called when a CPU to accelerator translation is
-	//! requiered
-	//! \param addr Memory address at the CPU
 	virtual inline const void *safe(const void *addr) {
-		return safe((void *)addr);
+		memory::PageTable &pageTable =
+			gmac::Context::current()->mm().pageTable();
+		const void *ret = (const void *)pageTable.translate(addr);
+		if(ret == NULL) ret = proc->translate(addr);
+		return ret;
 	}
 
+	virtual inline void *safe(void *addr) {
+		memory::PageTable &pageTable =
+			gmac::Context::current()->mm().pageTable();
+		void *ret = (void *)pageTable.translate(addr);
+		if(ret == NULL) ret = proc->translate(addr);
+		return ret;
+	}
 
 	virtual Context *owner(const void *addr) = 0;
 	virtual void invalidate(const void *addr, size_t) = 0;

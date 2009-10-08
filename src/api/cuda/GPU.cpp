@@ -9,16 +9,18 @@ GPU::~GPU()
 	queue.clear();
 }
 
-void GPU::create()
+Context *GPU::create()
 {
 	gpu::Context *ctx = new gpu::Context(*this);
 	queue.insert(ctx);
+	return ctx;
 }
 
-void GPU::clone(const Context &root)
+Context *GPU::clone(const Context &root)
 {
 	gpu::Context *ctx = new gpu::Context(*this);
 	queue.insert(ctx);
+	return ctx;
 }
 
 void GPU::destroy(Context *context)

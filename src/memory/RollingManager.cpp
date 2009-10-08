@@ -1,10 +1,11 @@
 #include "RollingManager.h"
-#include "os/Util.h"
+#include "os/Memory.h"
 
 #include <kernel/Context.h>
+#include <util/Util.h>
 
 #include <unistd.h>
-#include <algorithm>
+#include <malloc.h>
 
 namespace gmac {
 
@@ -63,30 +64,21 @@ RollingManager::RollingManager() :
 	var = Util::getenv(lruDeltaVar);
 	if(var != NULL) lruDelta = atoi(var);
 	if(lruDelta == 0) lruDelta = 2;
-	TRACE("Using %d as Memory Block Size", lineSize * pageSize);
 	TRACE("Using %d as LRU Delta Size", lruDelta);
 }
 
-
-// MemManager Interface
-
-bool RollingManager::alloc(void *addr, size_t size)
-{
-	if(map(addr, size, PROT_NONE) == MAP_FAILED) return false;
-	TRACE("Alloc %p (%d bytes)", addr, size);
-	regionRolling[Context::current()].inc(lruDelta);
-	insert(new RollingRegion(*this, addr, size, lineSize * pageSize));
-	return true;
-}
-
-
-void *RollingManager::safeAlloc(void *addr, size_t size)
+void *RollingManager::alloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
-	if((cpuAddr = safeMap(addr, size, PROT_NONE)) == MAP_FAILED) return NULL;
-	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, size);
+	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), size) != 0)
+		return NULL;
+//	if((cpuAddr = memalign(pageTable().getPageSize(), size)) == NULL)
+//		return NULL;
+	Memory::protect(cpuAddr, size, PROT_NONE);
+	TRACE("Alloc %p (%d bytes)", cpuAddr, size);
+	insertVirtual(cpuAddr, addr, size);
 	regionRolling[Context::current()].inc(lruDelta);
-	insert(new RollingRegion(*this, cpuAddr, size, lineSize * pageSize));
+	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
 	return cpuAddr;
 }
 
@@ -94,7 +86,7 @@ void *RollingManager::safeAlloc(void *addr, size_t size)
 void RollingManager::release(void *addr)
 {
 	RollingRegion *reg = dynamic_cast<RollingRegion *>(remove(addr));
-	unmap(reg->start(), reg->size());
+	free(addr);
 	delete reg;
 	regionRolling[Context::current()].dec(lruDelta);
 	TRACE("Released %p", addr);
@@ -105,13 +97,15 @@ void RollingManager::flush()
 {
 	TRACE("RollingManager Flush Starts");
 	flushToDevice();
-	MemMap::iterator i;
+	memory::Map::iterator i;
 	current()->lock();
 	for(i = current()->begin(); i != current()->end(); i++) {
 		RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
 		r->invalidate();
 	}
 	current()->unlock();
+	gmac::Context::current()->flush();
+	gmac::Context::current()->invalidate();
 	TRACE("RollingManager Flush Ends");
 }
 
@@ -148,8 +142,11 @@ bool RollingManager::read(void *addr)
 	assert(region != NULL);
 	assert(region->present() == false);
 	region->readWrite();
-	assert(region->context()->copyToHost(region->start(),
+	if(current()->pageTable().dirty(addr)) {
+		assert(region->context()->copyToHost(region->start(),
 			safe(region->start()), region->size()) == gmacSuccess);
+		current()->pageTable().clear(addr);
+	}
 	region->readOnly();
 	return true;
 }
@@ -164,6 +161,11 @@ bool RollingManager::write(void *addr)
 	assert(region->dirty() == false);
 	while(regionRolling[Context::current()].overflows()) writeBack();
 	region->readWrite();
+	if(region->present() == false && current()->pageTable().dirty(addr)) {
+		assert(region->context()->copyToHost(region->start(),
+			safe(region->start()), region->size()) == gmacSuccess);
+		current()->pageTable().clear(addr);
+	}
 	regionRolling[Context::current()].push(
 			dynamic_cast<ProtSubRegion *>(region));
 	return true;

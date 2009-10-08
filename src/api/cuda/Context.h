@@ -60,6 +60,16 @@ class Context : public gmac::Context {
 protected:
 	GPU &gpu;
 
+#ifdef USE_VM
+	static const char *pageTableSymbol;
+	struct {
+		void *ptr;
+		size_t shift;
+		size_t size;
+		size_t page;
+	} devicePageTable;
+#endif
+
 	inline void check() { assert(current() == this); }
 
 	gmacError_t error(cudaError_t);
@@ -88,9 +98,24 @@ public:
 		return error(ret);
 	}
 
+	inline gmacError_t halloc(void **host, void **dev, size_t size) {
+		check();
+		*dev = NULL;
+		cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped);
+		if(ret == cudaSuccess)
+			assert(cudaHostGetDevicePointer(dev, *host, 0) == cudaSuccess);
+		return error(ret);
+	}
+
 	inline gmacError_t free(void *addr) {
 		check();
 		cudaError_t ret = cudaFree(addr);
+		return error(ret);
+	}
+
+	inline gmacError_t hfree(void *addr) {
+		check();
+		cudaError_t ret = cudaFreeHost(addr);
 		return error(ret);
 	}
 
@@ -144,6 +169,22 @@ public:
 		check();
 		cudaError_t ret = cudaThreadSynchronize();
 		return error(ret);
+	}
+	inline void flush() {
+#ifdef USE_VM
+		devicePageTable.ptr = mm().pageTable().flush();
+		devicePageTable.shift = mm().pageTable().getTableShift();
+		devicePageTable.size = mm().pageTable().getTableSize();
+		devicePageTable.page = mm().pageTable().getPageSize();
+	
+		assert(cudaMemcpyToSymbol(pageTableSymbol, &devicePageTable,
+			sizeof(devicePageTable), 0, cudaMemcpyHostToDevice) == cudaSuccess);
+#endif
+	}
+	inline void invalidate() {
+#ifdef USE_VM
+		mm().pageTable().invalidate();
+#endif
 	}
 };
 

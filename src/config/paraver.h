@@ -60,6 +60,7 @@ typedef enum {
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
 	gmacMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
+	vmAlloc, vmFree, vmFlush, vmSync,
 } FunctionName;
 
 typedef enum {

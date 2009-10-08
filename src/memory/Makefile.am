@@ -4,7 +4,9 @@ SUBDIRS = $(OS_DIR)
 
 noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
-			MemMap.h MemMap.cpp\
+			VM.h VM.cpp\
+			Map.h Map.cpp\
+			PageTable.h PageTable.cpp\
 			MemManager.h MemManager.cpp\
 			MemRegion.h MemRegion.cpp\
 			MemHandler.h MemHandler.cpp\
@@ -13,7 +15,7 @@ libmemory_la_SOURCES = memory.cpp\
 			ProtRegion.h\
 			RollingManager.h RollingManager.cpp\
 			RollingRegion.h RollingRegion.cpp
-libmemory_la_LIBADD = $(OS_DIR)/libmemory-os.la $(PARAVER_LIB)
+libmemory_la_LIBADD = $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 
 BUILT_SOURCES = os
 

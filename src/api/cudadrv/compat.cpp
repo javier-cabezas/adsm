@@ -261,6 +261,7 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 		size_t offset, enum cudaMemcpyKind kind)
 {
 	const Variable *variable = Context::current()->constant(symbol);
+	assert(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
 	assert(variable->size >= (count + offset));
 	CUdeviceptr ptr = variable->ptr + offset;

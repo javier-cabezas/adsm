@@ -57,8 +57,7 @@ protected:
 	}
 public:
 	LazyManager() { }
-	bool alloc(void *addr, size_t count);
-	void *safeAlloc(void *addr, size_t count);
+	void *alloc(void *addr, size_t count);
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};

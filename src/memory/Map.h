@@ -37,20 +37,21 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <paraver.h>
 
-#include "MemRegion.h"
+#include <memory/PageTable.h>
+#include <memory/MemRegion.h>
 
 #include <assert.h>
 #include <map>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-class MemMap {
+class Map {
 protected:
-	typedef std::map<const void *, MemRegion *> Map;
-	Map __map;
+	typedef std::map<const void *, MemRegion *> __Map;
+	__Map __map;
 	MUTEX(local);
 
-	static Map *__global;
+	static __Map *__global;
 	static unsigned count;
 	static MUTEX(global);
 
@@ -62,7 +63,7 @@ protected:
 	static void globalUnlock() { MUTEX_UNLOCK(global); }
 
 	MemRegion *localFind(const void *addr) {
-		Map::const_iterator i;
+		__Map::const_iterator i;
 		MemRegion *ret = NULL;
 		i = __map.upper_bound(addr);
 		if(i != __map.end() && i->second->start() <= addr) {
@@ -72,7 +73,7 @@ protected:
 	}
 
 	MemRegion *globalFind(const void *addr) {
-		Map::const_iterator i;
+		__Map::const_iterator i;
 		MemRegion *ret = NULL;
 		i = __global->upper_bound(addr);
 		if(i != __global->end() && i->second->start() <= addr)
@@ -81,7 +82,7 @@ protected:
 	}
 
 	inline void clean() {
-		Map::iterator i;
+		__Map::iterator i;
 		for(i = __map.begin(); i != __map.end(); i++) {
 			TRACE("Cleaning MemRegion %p", i->second);
 			__global->erase(i->first);
@@ -91,19 +92,22 @@ protected:
 	}
 
 
-public:
-	typedef Map::iterator iterator;
-	typedef Map::const_iterator const_iterator;
+	PageTable __pageTable;
 
-	MemMap() {
+public:
+	typedef __Map::iterator iterator;
+	typedef __Map::const_iterator const_iterator;
+
+	Map() {
 		MUTEX_INIT(local);
 		globalLock();
-		if(__global == NULL) __global = new Map();
+		if(__global == NULL) __global = new __Map();
 		count++;
 		globalUnlock();
 	}
 
-	virtual ~MemMap() {
+	virtual ~Map() {
+		TRACE("Cleaning Memory Map");
 		globalLock();
 		clean();
 		count--;
@@ -112,6 +116,9 @@ public:
 	}
 
 	static void init() { MUTEX_INIT(global); }
+
+	inline void realloc() { __pageTable.realloc(); }
+
 	inline void lock() { 
 		enterLock(mmLocal);
 		MUTEX_LOCK(local);
@@ -126,25 +133,15 @@ public:
 
 	inline void insert(MemRegion *i) {
 		globalLock();
-		__map.insert(Map::value_type(i->end(), i));
-		__global->insert(Map::value_type(i->end(), i));
+		__map.insert(__Map::value_type(i->end(), i));
+		__global->insert(__Map::value_type(i->end(), i));
 		globalUnlock();
 	}
 
-	inline MemRegion *remove(void *addr) {
-		Map::iterator i;
-		globalLock();
-		i = __map.upper_bound(addr);
-		assert(i != __map.end() && i->second->start() == addr);
-		MemRegion *ret = i->second;
-		__map.erase(i);
-		i = __global->upper_bound(addr);
-		assert(i != __global->end() && i->second->start() == addr);
-		__global->erase(i);
-		globalUnlock();
-		return ret;
-	}
+	MemRegion *remove(void *addr);
 
+	inline PageTable &pageTable() { return __pageTable; }
+	inline const PageTable &pageTable() const { return __pageTable; }
 
 	template<typename T>
 	inline T *find(const void *addr) {
@@ -161,6 +158,6 @@ public:
 	}
 };
 
-};
+}}
 
 #endif

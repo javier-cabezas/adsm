@@ -9,27 +9,18 @@ namespace gmac {
 
 // MemManager Interface
 
-bool LazyManager::alloc(void *addr, size_t count)
-{
-	if(map(addr, count, PROT_NONE) == MAP_FAILED) return false;
-	TRACE("Alloc %p (%d bytes)", addr, count);
-	insert(new ProtRegion(addr, count));
-	return true;
-}
-
-
-void *LazyManager::safeAlloc(void *addr, size_t count)
+void *LazyManager::alloc(void *addr, size_t count)
 {
 	void *cpuAddr = NULL;
-	if((cpuAddr = safeMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
-	TRACE("SafeAlloc %p (%d bytes)", cpuAddr, count);
+	if((cpuAddr = map(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
+	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
 	insert(new ProtRegion(cpuAddr, count));
 	return cpuAddr;
 }
 
 void LazyManager::release(void *addr)
 {
-	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(addr));
+	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(safe(addr)));
 	assert(reg != NULL);
 	unmap(reg->start(), reg->size());
 	delete reg;
@@ -37,7 +28,7 @@ void LazyManager::release(void *addr)
 
 void LazyManager::flush()
 {
-	MemMap::const_iterator i;
+	memory::Map::const_iterator i;
 	for(i = current()->begin(); i != current()->end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		if(r->dirty()) {
@@ -46,6 +37,8 @@ void LazyManager::flush()
 		}
 		r->invalidate();
 	}
+	gmac::Context::current()->flush();
+	gmac::Context::current()->invalidate();
 }
 
 Context *LazyManager::owner(const void *addr)

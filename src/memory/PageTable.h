@@ -31,51 +31,100 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDA_GPU_H_
-#define __API_CUDA_GPU_H_
+#ifndef __MEMORY_PAGETABLE_H_
+#define __MEMORY_PAGETABLE_H_
 
+#include <config.h>
+#include <threads.h>
 #include <debug.h>
-#include <kernel/Accelerator.h>
+#include <paraver.h>
+
+#include <memory/VM.h>
+
+#include <stdint.h>
+#include <math.h>
 
 #include <cassert>
-#include <set>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector_types.h>
 
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-namespace gpu {
-class Context;
-}
+//! Page Table 
 
-class GPU : public Accelerator {
+//! Software Virtual Memory Table to keep translation from
+// CPU to accelerator memory addresses
+class PageTable {
 protected:
-	unsigned id;
-	std::set<gpu::Context *> queue;
-	size_t _memory;
-public:
-	GPU(int n) : id(n) {
-		struct cudaDeviceProp prop;
-		int flags = 0;
-		assert(cudaGetDeviceProperties(&prop, n) == cudaSuccess);
-		_memory = prop.totalGlobalMem;	
-		if(prop.major > 0 && prop.minor >0) flags |= cudaDeviceMapHost;
-		assert(cudaSetDeviceFlags(flags) == cudaSuccess);
+
+private:
+	static const char *pageSizeVar;
+	static const size_t defaultPageSize = 2 * 1024 * 1024;
+
+	static const unsigned long dirShift = 30;
+	static const unsigned long rootShift = 39;
+
+	MUTEX(mutex);
+	inline void lock() { 
+		enterLock(pageTable);
+		MUTEX_LOCK(mutex);
+		exitLock();
 	}
-	~GPU();
+	inline void unlock() { MUTEX_UNLOCK(mutex); }
 
-	unsigned device() const { return id; }
+	static size_t pageSize;
+	static size_t tableShift;
 
-	Context *create();
-	Context *clone(const Context &);
-	void destroy(Context *);
+	bool _clean;
+	bool _valid;
 
-	size_t memory() const { return _memory; }
+	size_t pages;
+	size_t devicePages;
+	vm::addr_t *device;
+
+	typedef vm::Table<vm::addr_t> Table;
+	typedef vm::Table<Table> Directory;
+	vm::Table<Directory> rootTable;
+
+	inline int entry(const void *addr, unsigned long shift,
+			size_t size) const {
+		unsigned long n = (unsigned long)(addr);
+		return (n >> shift) & (size - 1);
+	}
+
+	inline int offset(const void *addr) const {
+		unsigned long n = (unsigned long)(addr);
+		return n & ((1 << tableShift) - 1);
+	}
+
+	void update();
+
+	void deleteDirectory(Directory *dir);
+
+	void flushDirectory(Directory &dir);
+	void syncDirectory(Directory &dir);
+	void sync();
+	
+public:
+	PageTable();
+	virtual ~PageTable();
+
+	inline void realloc() { rootTable.realloc(); }
+
+	void insert(void *host, void *dev);
+	const void *translate(const void *host) {
+		return translate((void *)host);
+	}
+	void *translate(void *host);
+
+	size_t getPageSize() const { return pageSize; }
+	size_t getTableShift() const { return tableShift; }
+	size_t getTableSize() const { return (1 << dirShift) / pageSize; }
+
+	void *flush();
+	void invalidate() { _valid = false; }
+	bool dirty(void *);
+	void clear(void *);
 };
 
-}
-
+}};
 #endif

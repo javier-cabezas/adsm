@@ -48,14 +48,8 @@ class BatchManager : public MemManager {
 public:
 	BatchManager() : MemManager() { }
 
-	inline bool alloc(void *addr, size_t count) {
-		if(map(addr, count) == MAP_FAILED) return false;
-		TRACE("New Memory Region @ %p (%d bytes)", addr, count);
-		insert(new MemRegion(addr, count));
-		return true;
-	}
-	inline void *safeAlloc(void *addr, size_t count) {
-		void *cpuAddr = safeMap(addr, count);
+	inline void *alloc(void *addr, size_t count) {
+		void *cpuAddr = map(addr, count);
 		insert(new MemRegion(cpuAddr, count));
 		return cpuAddr;
 	}

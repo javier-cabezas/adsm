@@ -37,10 +37,12 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <debug.h>
 
+#include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 
 #include <gmac/gmac.h>
-#include <memory/MemMap.h>
+#include <memory/Map.h>
+#include <memory/PageTable.h>
 
 namespace gmac {
 
@@ -59,33 +61,41 @@ protected:
 	*/
 	friend void contextInit(void);
 	friend class MemManager;
+	friend class Process;
 	static PRIVATE(key);
 
 	/*!
 		\brief Memory map for the context
 	*/
-	MemMap _mm;
+	memory::Map _mm;
 
 	/*!
 		\brief Returns a reference to the context memory map
 	*/
-	MemMap &mm() { return _mm; }
+	memory::Map &mm() { return _mm; }
 
 	/*!
 		\brief Returns a constant reference to the context memory map
 	*/
-	const MemMap &mm() const { return _mm; }
+	const memory::Map &mm() const { return _mm; }
 
 	/*!
 		\brief Accelerator where the context is attached
 	*/
 	Accelerator &acc;
 
-	inline void enable() { PRIVATE_SET(key, this); }
+	inline void enable() {
+		PRIVATE_SET(key, this);
+		_mm.realloc();
+	}
 
-	Context(Accelerator &acc) : acc(acc) { PRIVATE_SET(key, NULL); }
+	Context(Accelerator &acc) : acc(acc) {
+		PRIVATE_SET(key, NULL);
+	}
 
-	virtual ~Context() {};
+	virtual ~Context() {
+		PRIVATE_SET(key, NULL);
+	}
 
 public:
 
@@ -115,10 +125,23 @@ public:
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
 
 	/*!
+		\brief Allocates system memory accesible from the accelerator
+		\param addr Pointer to memory address to store the accelerator memory
+		\param size Size, in bytes, to be allocated
+	*/
+	virtual gmacError_t halloc(void **host, void **device, size_t size) = 0;
+
+	/*!
 		\brief Releases memory previously allocated by Malloc
 		\param addr Starting memory address to be released
 	*/
 	virtual gmacError_t free(void *addr) = 0;
+
+	/*!
+		\bried Releases system memory accesible from the accelerator
+		\param addr Starting memory address to be released
+	*/
+	virtual gmacError_t hfree(void *addr) = 0;
 	
 	/*!
 		\brief Copies data from system memory to accelerator memory
@@ -193,6 +216,9 @@ public:
 		\brief Returns last error
 	*/
 	inline gmacError_t error() const { return _error; }
+
+	virtual void flush() = 0;
+	virtual void invalidate() = 0;
 };
 
 };

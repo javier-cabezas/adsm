@@ -83,9 +83,23 @@ protected:
 	uint8_t _stack[StackSize];
 	size_t _sp;
 
+#ifdef USE_VM
+	static const char *pageTableSymbol;
+	const Variable *pageTable;
+	struct {
+		void *ptr;
+		size_t shift;
+		size_t size;
+		size_t page;
+	} devicePageTable;
+#endif
+
 	CUcontext ctx;
 	MUTEX(mutex);
 	static MUTEX(global);
+
+	int major;
+	int minor;
 
 	static void globalLock() {
 		enterLock(ctxGlobal);
@@ -120,7 +134,11 @@ protected:
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
 		//globalLock();
-		CUresult ret = cuCtxCreate(&ctx, 0, gpu.device());
+		assert(cuDeviceComputeCapability(&major, &minor, gpu.device()) ==
+			CUDA_SUCCESS);
+		unsigned int flags = 0;
+		if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
+		CUresult ret = cuCtxCreate(&ctx, flags, gpu.device());
 		//globalUnlock();
 		if(ret != CUDA_SUCCESS)
 			FATAL("Unable to create CUDA context %d", ret);
@@ -129,7 +147,12 @@ protected:
 		enable();
 	}
 
-	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu), _sp(0) {
+	Context(GPU &gpu) :
+		gmac::Context(gpu), gpu(gpu), _sp(0)
+#ifdef USE_VM
+		, pageTable(NULL)
+#endif
+	{
 		setup();
 		TRACE("New GPU context [%p]", this);
 	}
@@ -174,9 +197,27 @@ public:
 		return error(ret);
 	}
 
+	inline gmacError_t halloc(void **host, void **device, size_t size) {
+		lock();
+		zero(host); zero(device);
+		CUresult ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP);
+		if(ret == CUDA_SUCCESS)
+			assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0)
+				== CUDA_SUCCESS);
+		unlock();
+		return error(ret);
+	}
+
 	inline gmacError_t free(void *addr) {
 		lock();
 		CUresult ret = cuMemFree(gpuAddr(addr));
+		unlock();
+		return error(ret);
+	}
+
+	inline gmacError_t hfree(void *addr) {
+		lock();
+		CUresult ret = cuMemFreeHost(addr);
 		unlock();
 		return error(ret);
 	}
@@ -260,7 +301,7 @@ public:
 	inline const Variable *constant(const char *name) const {
 		ModuleMap::const_iterator m;
 		for(m = modules.begin(); m != modules.end(); m++) {
-			const Variable *var = m->first->variable(name);
+			const Variable *var = m->first->constant(name);
 			if(var != NULL) return var;
 		}
 		return NULL;
@@ -274,6 +315,9 @@ public:
 		memcpy(&_stack[offset], arg, size);
 		_sp = (_sp > (offset + size)) ? _sp : offset + size;
 	}
+
+	void flush();
+	void invalidate();
 };
 
 

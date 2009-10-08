@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __API_CUDADRV_GPUMODULE_H_
 
 #include <config.h>
+#include <debug.h>
 
 #include <assert.h>
 
@@ -110,6 +111,9 @@ protected:
 	VariableMap constants;
 	TextureList textures;
 
+	static const char *pageTableSymbol;
+	Variable *_pageTable;
+
 	inline void reload() {
 		TRACE("Module image: %p", fatBin);
 		CUresult r = cuModuleLoadFatBinary(&mod, fatBin);
@@ -124,7 +128,7 @@ protected:
 
 
 public:
-	Module(const void *fatBin) : fatBin(fatBin) {
+	Module(const void *fatBin) : fatBin(fatBin), _pageTable(NULL) {
 		TRACE("Module image: %p", fatBin);
 		assert(cuModuleLoadFatBinary(&mod, fatBin) == CUDA_SUCCESS);
 	}
@@ -170,9 +174,22 @@ public:
 	inline void constant(const char *host, const char *dev) {
 		CUdeviceptr ptr; 
 		unsigned int size;
+		std::pair<VariableMap::iterator, bool> var;
 		CUresult ret = cuModuleGetGlobal(&ptr, &size, mod, dev);
-		constants.insert(VariableMap::value_type(host, Variable(dev, ptr, size)));
+		var = constants.insert(VariableMap::value_type(host,
+				Variable(dev, ptr, size)));
+		if(strncmp(dev, pageTableSymbol, strlen(pageTableSymbol)) == 0)
+			_pageTable = &var.first->second;
 	}
+
+	inline const Variable *constant(const char *name) const {
+		VariableMap::const_iterator v;
+		v = constants.find(name);
+		if(v == constants.end()) return NULL;
+		return &v->second;
+	}
+
+	inline Variable *pageTable() const { return _pageTable; }
 
 	inline void texture(struct __textureReference *ref, const char *name) {
 		textures.push_back(Texture(mod, ref, name));

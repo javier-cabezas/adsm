@@ -7,13 +7,13 @@
 namespace gmac {
 void BatchManager::release(void *addr)
 {
-	MemRegion *reg = remove(addr);
+	MemRegion *reg = remove(safe(addr));
 	unmap(reg->start(), reg->size());
 	delete reg;
 }
 void BatchManager::flush(void)
 {
-	MemMap::const_iterator i;
+	memory::Map::const_iterator i;
 	current()->lock();
 	for(i = current()->begin(); i != current()->end(); i++) {
 		TRACE("Memory Copy to Device");
@@ -21,11 +21,13 @@ void BatchManager::flush(void)
 				i->second->start(), i->second->size());
 	}
 	current()->unlock();
+	gmac::Context::current()->flush();
+	gmac::Context::current()->sync();
 }
 
 void BatchManager::sync(void)
 {
-	MemMap::const_iterator i;
+	memory::Map::const_iterator i;
 	current()->lock();
 	for(i = current()->begin(); i != current()->end(); i++) {
 		TRACE("Memory Copy from Device");

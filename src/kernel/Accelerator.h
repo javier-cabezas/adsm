@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ACCELERATOR_H_
 #define __KERNEL_ACCELERATOR_H_
 
+#include <stddef.h>
+
 namespace gmac {
 
 class Context;
@@ -44,12 +46,16 @@ class Context;
 	implement
 */
 class Accelerator {
+protected:
+	friend class Context;
+	virtual void destroy(Context *ctx) = 0;
 public:
 	virtual ~Accelerator() {};
 	
-	virtual void create() = 0;
-	virtual void clone(const Context &) = 0;
-	virtual void destroy(Context *ctx) = 0;
+	virtual Context *create() = 0;
+	virtual Context *clone(const Context &) = 0;
+
+	virtual size_t memory() const = 0;
 };
 
 };

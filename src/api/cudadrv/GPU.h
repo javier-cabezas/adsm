@@ -51,17 +51,20 @@ class GPU : public Accelerator {
 protected:
 	unsigned id;
 	CUdevice _device;
+	size_t _memory;
 
 	std::set<gpu::Context *> queue;
 
 public:
-	GPU(int n, CUdevice device) : id(n), _device(device) {};
-	~GPU();
+	GPU(int n, CUdevice device);
+	~GPU() {};
 	CUdevice device() const { return _device; }
 
-	void create();
-	void clone(const gmac::Context &);
+	Context *create();
+	Context *clone(const gmac::Context &);
 	void destroy(Context *);
+
+	size_t memory() const { return _memory; }
 };
 
 }

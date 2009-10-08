@@ -45,26 +45,7 @@ static void __attribute__((destructor)) gmacFini(void)
 	delete proc;
 }
 
-gmacError_t gmacMalloc(void **devPtr, size_t count)
-{
-	enterFunction(gmacMalloc);
-	gmacError_t ret = gmacSuccess;
-	count = (count < pageSize) ? pageSize : count;
-	ret = gmac::Context::current()->malloc(devPtr, count);
-	if(ret != gmacSuccess || !manager) {
-		exitFunction();
-		return ret;
-	}
-	if(!manager->alloc(*devPtr, count)) {
-		gmac::Context::current()->free(*devPtr);
-		exitFunction();
-		return gmacErrorMemoryAllocation;
-	}
-	exitFunction();
-	return gmacSuccess;
-}
-
-gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
+gmacError_t gmacMalloc(void **cpuPtr, size_t count)
 {
 	enterFunction(gmacMalloc);
 	gmacError_t ret = gmacSuccess;
@@ -75,7 +56,7 @@ gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 		exitFunction();
 		return ret;
 	}
-	if((*cpuPtr = manager->safeAlloc(devPtr, count)) == NULL) {
+	if((*cpuPtr = manager->alloc(devPtr, count)) == NULL) {
 		gmac::Context::current()->free(devPtr);
 		exitFunction();
 		return gmacErrorMemoryAllocation;
@@ -84,16 +65,10 @@ gmacError_t gmacSafeMalloc(void **cpuPtr, size_t count)
 	return gmacSuccess;
 }
 
-void *gmacSafePointer(void *devPtr)
-{
-	if(!manager) return devPtr;
-	return manager->safe(devPtr);
-}
-
 gmacError_t gmacFree(void *devPtr)
 {
 	enterFunction(gmacFree);
-	gmac::Context::current()->free(gmacSafePointer(devPtr));
+	gmac::Context::current()->free(devPtr);
 	if(manager) {
 		manager->release(devPtr);
 	}
@@ -101,6 +76,11 @@ gmacError_t gmacFree(void *devPtr)
 	return gmacSuccess;
 }
 
+void *gmacPtr(void *ptr)
+{
+	if(manager == NULL) return ptr;
+	return manager->safe(ptr);
+}
 
 gmacError_t gmacLaunch(const char *symbol)
 {

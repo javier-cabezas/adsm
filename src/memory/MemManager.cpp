@@ -23,17 +23,17 @@ MemManager *getManager(const char *managerName)
 	return new RollingManager();
 }
 
+
 void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
 {
+	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
 	uint8_t *devAddr = (uint8_t *)devPtr;
-	count += ((unsigned long)cpuPtr & (pageSize -1));
-	enterLock(pageTable);
-	MUTEX_LOCK(mutex);
-	exitLock();
-	for(size_t off = 0; off < count; off += pageSize)
-		virtTable[cpuAddr + off] = devAddr + off;
-	MUTEX_UNLOCK(mutex);
+	gmac::memory::PageTable &pageTable =
+			gmac::Context::current()->mm().pageTable();
+	count += ((unsigned long)cpuPtr & (pageTable.getPageSize() -1));
+	for(size_t off = 0; off < count; off += pageTable.getPageSize())
+		pageTable.insert(cpuAddr + off, devAddr + off);
 }
 
 };
