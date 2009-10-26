@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include <pthread.h>
 
@@ -8,13 +9,19 @@
 
 #include "debug.h"
 
-const size_t vecSize = 1024 * 1024;
+const char *nIterStr = "GMAC_NITER";
+const char *vecSizeStr = "GMAC_VECSIZE";
+
+const unsigned nIterDefault = 2;
+const size_t vecSizeDefault = 1024 * 1024;
+
+unsigned nIter = 0;
+size_t vecSize = 0;
 const size_t blockSize = 512;
-const unsigned nIter = 4;
 
-static float *s[nIter];
+static float **s;
 
-__global__ void vecAdd(float *c, float *a, float *b)
+__global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if(i >= vecSize) return;
@@ -30,12 +37,22 @@ void randInit(float *a, size_t vecSize)
 	}
 }
 
+static inline void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
+{
+	double s, e;
+	s = 1e6 * start->tv_sec + (start->tv_usec);
+	e = 1e6 * end->tv_sec + (end->tv_usec);
+	fprintf(stderr,"%s%f%s", pre, (e - s) / 1e6, post);
+}
+
 void *addVector(void *ptr)
 {
 	float *a, *b;
 	float **c = (float **)ptr;
+	struct timeval s, t;
 	gmacError_t ret = gmacSuccess;
 
+	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
@@ -47,19 +64,27 @@ void *addVector(void *ptr)
 	// Alloc output data
 	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Db.x++;
-	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b));
+	gettimeofday(&s, NULL);
+	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Run: ", "\n");
 
+	gettimeofday(&s, NULL);
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
 		error += (*c)[i] - (a[i] + b[i]);
 		//error += (a[i] - b[i]);
 	}
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
 	gmacFree(a);
@@ -68,11 +93,24 @@ void *addVector(void *ptr)
 	return NULL;
 }
 
+template<typename T>
+void setParam(T *param, const char *str, const T def)
+{
+	const char *value = getenv(str);
+	if(value != NULL) *param = atoi(value);
+	if(*param == 0) *param = def;
+}
 
 int main(int argc, char *argv[])
 {
-	pthread_t nThread[nIter];
+	pthread_t *nThread;
 	unsigned n = 0;
+
+	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
+	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+
+	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
+	s = (float **)malloc(nIter * sizeof(float **));
 
 	srand(time(NULL));
 
@@ -92,5 +130,7 @@ int main(int argc, char *argv[])
 	}
 	fprintf(stdout, "Total: %.02f\n", error);
 
+	free(s);
+	free(nThread);
 
 }
