@@ -11,7 +11,10 @@
 
 #define SIZE 1
 
-const size_t vecSize = 4 * 1024 * 1024;
+const char *vecSizeStr = "GMAC_VECSIZE";
+const size_t vecSizeDefault = 1024 * 1024;
+
+size_t vecSize = 0;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";
@@ -31,62 +34,67 @@ void randInit(float *a, size_t size)
 	}
 }
 
-
-static inline void printTime(struct timeval *start, struct timeval *end, const char *str)
+static inline void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
 {
 	double s, e;
 	s = 1e6 * start->tv_sec + (start->tv_usec);
 	e = 1e6 * end->tv_sec + (end->tv_usec);
-	fprintf(stdout,"%f%s", (e - s) / 1e6, str);
+	fprintf(stderr,"%s%f%s", pre, (e - s) / 1e6, post);
 }
+
+
+template<typename T>
+void setParam(T *param, const char *str, const T def)
+{
+	const char *value = getenv(str);
+	if(value != NULL) *param = atoi(value);
+	if(*param == 0) *param = def;
+}
+
 
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
 	struct timeval s, t;
-	size_t size = 0;
 
-	if(argv[SIZE] != NULL) size = atoi(argv[SIZE]);
-	if(size == 0) size = vecSize;
+	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
-	fprintf(stderr,"Vector %dMB\n", size);
 	srand(time(NULL));
-	// Alloc & init input data
-	if(gmacMalloc((void **)&a, size * sizeof(float)) != gmacSuccess)
-		CUFATAL();
-	if(gmacMalloc((void **)&b, size * sizeof(float)) != gmacSuccess)
-		CUFATAL();
-	// Alloc output data
-	if(gmacMalloc((void **)&c, size * sizeof(float)) != gmacSuccess)
-		CUFATAL();
 
 	gettimeofday(&s, NULL);
-	randInit(a, size);
-	randInit(b, size);
+	// Alloc & init input data
+	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+		CUFATAL();
+	randInit(a, vecSize);
+	if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+		CUFATAL();
+	randInit(b, vecSize);
+	// Alloc output data
+	if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+		CUFATAL();
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
-	dim3 Db(blockSize);
-	dim3 Dg(size / blockSize);
-	if(size % blockSize) Db.x++;
-	vecAdd<<<Dg, Db>>>(c, a, b, size);
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, " ");
-
 	gettimeofday(&s, NULL);
+	dim3 Db(blockSize);
+	dim3 Dg(vecSize / blockSize);
+	if(vecSize % blockSize) Db.x++;
+	vecAdd<<<Dg, Db>>>(c, a, b, vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, " ");
+	printTime(&s, &t, "Run: ", "\n");
 
 
 	gettimeofday(&s, NULL);
 	float error = 0;
-	for(int i = 0; i < size; i++) {
+	for(int i = 0; i < vecSize; i++) {
 		error += c[i] - (a[i] + b[i]);
 	}
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, "\n");
+	printTime(&s, &t, "Check: ", "\n");
 
-	fprintf(stderr,"Error: %f\n", error);
+	fprintf(stdout,"Error: %f\n", error);
 
 	gmacFree(a);
 	gmacFree(b);

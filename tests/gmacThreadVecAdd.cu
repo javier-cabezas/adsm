@@ -7,6 +7,7 @@
 
 #include <gmac.h>
 
+#include "utils.h"
 #include "debug.h"
 
 const char *nIterStr = "GMAC_NITER";
@@ -37,14 +38,6 @@ void randInit(float *a, size_t vecSize)
 	}
 }
 
-static inline void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
-{
-	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
-	fprintf(stderr,"%s%f%s", pre, (e - s) / 1e6, post);
-}
-
 void *addVector(void *ptr)
 {
 	float *a, *b;
@@ -70,7 +63,7 @@ void *addVector(void *ptr)
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
-	if(vecSize % blockSize) Db.x++;
+	if(vecSize % blockSize) Dg.x++;
 	gettimeofday(&s, NULL);
 	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
@@ -93,13 +86,6 @@ void *addVector(void *ptr)
 	return NULL;
 }
 
-template<typename T>
-void setParam(T *param, const char *str, const T def)
-{
-	const char *value = getenv(str);
-	if(value != NULL) *param = atoi(value);
-	if(*param == 0) *param = def;
-}
 
 int main(int argc, char *argv[])
 {
@@ -108,6 +94,8 @@ int main(int argc, char *argv[])
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+
+	vecSize = vecSize / nIter;
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	s = (float **)malloc(nIter * sizeof(float **));

@@ -2,14 +2,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <values.h>
+#include <sys/time.h>
 
 #include <cuda.h>
-
-#include "time.h"
 #define USE_CUDA
 #include "debug.h"
 
+#define MAX(a, b) ((a) > (b)) ? (a) : (b)
+#define MIN(a, b) ((a) < (b)) ? (a) : (b)
 #define BANDWIDTH(s, t) ((s) * 8.0 / 1000.0 / (t))
+
+typedef unsigned long long usec_t;
 typedef struct {
 	double in, max_in, min_in;
 	double out, max_out, min_out;
@@ -21,6 +24,15 @@ const int iters = 64;
 const size_t block_size = 512;
 
 static uint8_t *cpu, *dev;
+
+
+inline usec_t get_time()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	usec_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
+	return tm;
+}
 
 __global__ void null(uint8_t *p)
 {

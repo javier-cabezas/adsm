@@ -4,8 +4,7 @@
 
 #include <gmac.h>
 
-#include <sys/time.h>
-
+#include "utils.h"
 #include "debug.h"
 
 
@@ -32,15 +31,6 @@ void randInit(float *a, size_t size)
 	}
 }
 
-
-static inline void printTime(struct timeval *start, struct timeval *end, const char *str)
-{
-	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
-	fprintf(stdout,"%f%s", (e - s) / 1e6, str);
-}
-
 int main(int argc, char *argv[])
 {
 	float *a = NULL, *b = NULL, *c = NULL;
@@ -50,34 +40,31 @@ int main(int argc, char *argv[])
 	if(argv[SIZE] != NULL) size = atoi(argv[SIZE]);
 	if(size == 0) size = vecSize;
 
-	fprintf(stderr,"Vector %dMB\n", size);
 	srand(time(NULL));
+
+	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	if(gmacMalloc((void **)&a, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
+	randInit(a, size);
 	if(gmacMalloc((void **)&b, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
+	randInit(b, size);
 	// Alloc output data
 	if(gmacMalloc((void **)&c, size * sizeof(float)) != gmacSuccess)
 		CUFATAL();
-
-	gettimeofday(&s, NULL);
-	randInit(a, size);
-	randInit(b, size);
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(size / blockSize);
-	if(size % blockSize) Db.x++;
-	vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), size);
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, " ");
-
+	if(size % blockSize) Dg.x++;
 	gettimeofday(&s, NULL);
+	vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), size);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, " ");
-
+	printTime(&s, &t, "Run: ", "\n");
 
 	gettimeofday(&s, NULL);
 	float error = 0;
@@ -85,7 +72,7 @@ int main(int argc, char *argv[])
 		error += c[i] - (a[i] + b[i]);
 	}
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, "\n");
+	printTime(&s, &t, "Check: ", "\n");
 
 	fprintf(stderr,"Error: %f\n", error);
 

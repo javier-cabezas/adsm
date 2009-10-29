@@ -1,9 +1,3 @@
-#include "time.h"
-
-#include <config/config.h>
-#include <config/threads.h>
-#include <config/debug.h>
-
 #include <unistd.h>
 #include <string.h>
 #include <stdint.h>
@@ -14,11 +8,10 @@
 #include <sys/time.h>
 #include <errno.h>
 
+#include "utils.h"
+
 #include <map>
 
-typedef struct {
-	double time, max, min;
-} stamp_t;
 
 static const size_t iters = 8;
 static const size_t bufferSize = 32 * 1024 * 1024;

@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
 	fprintf(stderr,"Test full memset: ");
 	gmacMemset(ptr, 0, size * sizeof(long));
-	reset<<<Dg, Db>>>(ptr, 1);
+	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
