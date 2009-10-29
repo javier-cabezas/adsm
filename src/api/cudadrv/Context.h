@@ -225,7 +225,9 @@ public:
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();
 		TRACE("Copy %p to device %p", host, dev);
+		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+		exitFunction();
 		unlock();
 		return error(ret);
 	}
@@ -233,14 +235,18 @@ public:
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		lock();
 		TRACE("Copy %p to host %p", dev, host);
+		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+		exitFunction();
 		unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		lock();
+		enterFunction(accDeviceDeviceCopy);
 		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+		exitFunction();
 		unlock();
 		return error(ret);
 	}
@@ -248,7 +254,9 @@ public:
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
 		lock();
+		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
+		exitFunction();
 		unlock();
 		return error(ret);
 	}
@@ -256,7 +264,9 @@ public:
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
 		lock();
+		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
+		exitFunction();
 		unlock();
 		return error(ret);
 	}
