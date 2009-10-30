@@ -4,6 +4,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd\
+		gmacStencil\
 		vmVecAdd vmNull
 
 bandwidth_SOURCES = bandwidth.cu
@@ -32,6 +33,9 @@ gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.c
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacStencil_SOURCES = gmacStencil.cu utils.c
+gmacStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 
