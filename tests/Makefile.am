@@ -3,13 +3,13 @@ MAINTAINERCLEANFILES=Makefile.in
 noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
-		gmacThreadVecAdd\
+		gmacThreadVecAdd gmacSteady\
 		gmacStencil\
 		gmacThreadStencil\
 		vmVecAdd vmNull
 
 bandwidth_SOURCES = bandwidth.cu
-bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu utils.c
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -27,13 +27,16 @@ gmacMemcpy_SOURCES = gmacMemcpy.cu
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu
-gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
+gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcudart
 
 gmacConstant_SOURCES = gmacConstant.cu
 gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.c
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacSteady_SOURCES = gmacSteady.cu utils.c
+gmacSteady_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacStencil_DEPENDENCIES = gmacStencilCommon.cu
 gmacStencil_SOURCES = gmacStencil.cu utils.c
@@ -48,7 +51,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir
 LINK = $(LIBTOOL) --mode=link $(CXX) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) --host-compilation C++ --keep --compiler-bindir=/usr/bin/gcc-4.1 -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)

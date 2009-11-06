@@ -10,6 +10,8 @@ extern "C" {
 #endif
 void printTime(struct timeval *, struct timeval *, const char *, const char *);
 
+void printAvgTime(struct timeval *, struct timeval *, const char *, const char *, unsigned);
+
 #ifdef __cplusplus
 }
 #endif

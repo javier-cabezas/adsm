@@ -31,7 +31,7 @@ void RollingManager::writeBack()
 	ProtSubRegion *r = regionRolling[Context::current()].pop();
 	waitForWrite(r->start(), r->size());
 	mlock(writeBuffer, writeBufferSize);
-	assert(r->context()->copyToDeviceAsync(safe(r->start()), r->start(),
+	assert(r->context()->copyToDevice(safe(r->start()), r->start(),
 		r->size()) == gmacSuccess);
 	r->readOnly();
 }

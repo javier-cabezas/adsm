@@ -366,6 +366,21 @@ cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 	return __getCUDAError(r);
 }
 
+void CUDARTAPI __cudaTextureFetch(const void *tex, void *index, int integer, void *val)
+{
+	assert(0);
+}
+
+int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
+{
+	assert(0);
+}
+
+void CUDARTAPI __cudaMutexOperation(int lock)
+{
+	assert(0);
+}
+
 #ifdef __cplusplus
 }
 #endif

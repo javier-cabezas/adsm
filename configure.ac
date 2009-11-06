@@ -147,6 +147,19 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+
+io_lock_default="no"
+AC_MSG_CHECKING(whether to use a global I/O lock)
+AC_ARG_ENABLE(io-lock,
+	AC_HELP_STRING([--enable-io-lock], [turn on global I/O lock [[default=no]]])
+		, , enable_io_lock=$io_lock_default)
+if test "$enable_io_lock" = "yes"; then
+	AC_DEFINE([USE_IO_LOCK])
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(API_DIR)

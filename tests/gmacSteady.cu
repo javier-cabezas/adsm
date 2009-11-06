@@ -10,11 +10,13 @@
 #include "utils.h"
 #include "debug.h"
 
+const unsigned rounds = 64;
+
 const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
-const unsigned nIterDefault = 2;
-const size_t vecSizeDefault = 1024 * 1024;
+const unsigned nIterDefault = 1;
+const size_t vecSizeDefault = 64 * 1024 * 1024;
 
 unsigned nIter = 0;
 size_t vecSize = 0;
@@ -45,20 +47,24 @@ void *addVector(void *ptr)
 	struct timeval s, t;
 	gmacError_t ret = gmacSuccess;
 
-	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(a, vecSize);
 	ret = gmacMalloc((void **)&b, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(b, vecSize);
 
+	gettimeofday(&s, NULL);
+	for(int i = 0; i < rounds; i++) {
+		randInit(a, vecSize);
+		randInit(b, vecSize);
+	}
+	gettimeofday(&t, NULL);
+	printAvgTime(&s, &t, "Alloc: ", "\n", rounds);
+
+#if 0
 	// Alloc output data
 	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
 	dim3 Db(blockSize);
@@ -79,6 +85,7 @@ void *addVector(void *ptr)
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
+#endif
 
 	gmacFree(a);
 	gmacFree(b);
@@ -96,7 +103,6 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
 	vecSize = vecSize / nIter;
-	if(vecSize % nIter) vecSize++;
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
@@ -121,4 +127,5 @@ int main(int argc, char *argv[])
 
 	free(s);
 	free(nThread);
+
 }

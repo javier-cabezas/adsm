@@ -7,7 +7,10 @@ namespace gmac { namespace gpu {
 #ifdef USE_VM
 const char *Context::pageTableSymbol = "__pageTable";
 #endif
-MUTEX(Context::global);
+#ifdef USE_IO_LOCK
+MUTEX(Context::ioHostMutex);
+MUTEX(Context::ioDeviceMutex);
+#endif
 
 Context::Context(const Context &root, GPU &gpu) :
 	gmac::Context(gpu),

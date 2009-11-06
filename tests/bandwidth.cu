@@ -18,9 +18,9 @@ typedef struct {
 	double out, max_out, min_out;
 } stamp_t;
 
-const size_t buff_size = 512 * 1024 * 1024;
-const size_t step_size = 4 * 1024;
-const int iters = 64;
+const size_t buff_size = 4 * 1024 * 1024;
+const size_t step_size = 2 * 1024 * 1024;
+const int iters = 1024;
 const size_t block_size = 512;
 
 static uint8_t *cpu, *dev;

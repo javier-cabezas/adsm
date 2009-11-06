@@ -121,35 +121,45 @@ public:
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		check();
+		enterFunction(accHostDeviceCopy);
 		cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
+		exitFunction();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		check();
+		enterFunction(accDeviceHostCopy);
 		cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
+		exitFunction();
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		check();
+		enterFunction(accDeviceDeviceCopy);
 		cudaError_t ret = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice);
+		exitFunction();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
 		check();
+		enterFunction(accHostDeviceCopy);
 		cudaError_t ret = cudaMemcpyAsync(dev, host, size,
 			cudaMemcpyHostToDevice, 0);
+		exitFunction();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
 		check();
+		enterFunction(accDeviceHostCopy);
 		cudaError_t ret = cudaMemcpyAsync(host, dev, size,
 				cudaMemcpyDeviceToHost, 0);
+		exitFunction();
 		return error(ret);
 	}
 

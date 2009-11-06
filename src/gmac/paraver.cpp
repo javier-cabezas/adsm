@@ -43,8 +43,9 @@ static const char *functionNames[] = {
 
 static const char *lockNames[] = {
 	"Unlock",
-	"mmLocal", "mmGlobal", "pageTable", "ctxLocal", "ctxGlobal", "process",
-	"rolling",
+	"mmLocal", "mmGlobal", "pageTable", "ctxLocal", "ctxGlobal",
+	"ioHostLock", "ioDeviceLock",
+	"process", "rolling", 
 	NULL
 };
 

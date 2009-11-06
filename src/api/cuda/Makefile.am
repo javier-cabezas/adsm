@@ -7,4 +7,4 @@ libapi_la_SOURCES = cuda.cpp \
 	Error.cpp
 
 libapi_la_LIBADD = -lcudart -lcuda
-libapi_la_LDFLAGS = -L$(CUDA_DIR)/lib
+libapi_la_LDFLAGS = -L$(CUDA_DIR)/lib64

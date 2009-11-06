@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	// Call the kernel
 	dim3 Db(width, height);
 	dim3 Dg(1);
-	vecAdd<<<Dg, Db>>>(c, width, height);
+	vecAdd<<<Dg, Db>>>(gmacPtr(c), width, height);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
 	for(int i = 0; i < width * height; i++) {

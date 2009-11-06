@@ -96,20 +96,36 @@ protected:
 
 	CUcontext ctx;
 	MUTEX(mutex);
-	static MUTEX(global);
 
 	int major;
 	int minor;
 
-	static void globalLock() {
-		enterLock(ctxGlobal);
-		MUTEX_LOCK(global);
+#ifdef USE_IO_LOCK
+	static MUTEX(ioHostMutex);
+	static MUTEX(ioDeviceMutex);
+
+	static void ioHostLock() {
+		enterLock(ioHostLock);
+		MUTEX_LOCK(ioHostMutex);
 		exitLock();
 	}
 
-	static void globalUnlock() {
-		MUTEX_UNLOCK(global);
+	static void ioHostUnlock() {
+		MUTEX_UNLOCK(ioHostMutex);
 	}
+
+
+	static void ioDeviceLock() {
+		enterLock(ioDeviceLock);
+		MUTEX_LOCK(ioDeviceMutex);
+		exitLock();
+	}
+
+	static void ioDeviceUnlock() {
+		MUTEX_UNLOCK(ioDeviceMutex);
+	}
+#endif
+
 
 	inline CUdeviceptr gpuAddr(void *addr) const {
 		unsigned long a = (unsigned long)addr;
@@ -133,13 +149,11 @@ protected:
 	inline void setup() {
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
-		//globalLock();
 		assert(cuDeviceComputeCapability(&major, &minor, gpu.device()) ==
 			CUDA_SUCCESS);
 		unsigned int flags = 0;
 		if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
 		CUresult ret = cuCtxCreate(&ctx, flags, gpu.device());
-		//globalUnlock();
 		if(ret != CUDA_SUCCESS)
 			FATAL("Unable to create CUDA context %d", ret);
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
@@ -168,7 +182,10 @@ protected:
 public:
 
 	inline static void init() {
-		MUTEX_INIT(global);
+#ifdef USE_IO_LOCK
+		MUTEX_INIT(ioHostMutex);
+		MUTEX_INIT(ioDeviceMutex);
+#endif
 	}
 
 	inline static Context *current() {
@@ -223,22 +240,34 @@ public:
 	}
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
+#ifdef USE_IO_LOCK
+		ioHostLock();
+#endif
 		lock();
 		TRACE("Copy %p to device %p", host, dev);
 		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
 		exitFunction();
 		unlock();
+#ifdef USE_IO_LOCK
+		ioHostUnlock();
+#endif
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
+#ifdef USE_IO_LOCK
+		ioDeviceLock();
+#endif
 		lock();
 		TRACE("Copy %p to host %p", dev, host);
 		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
 		exitFunction();
 		unlock();
+#ifdef USE_IO_LOCK
+		ioDeviceUnlock();
+#endif
 		return error(ret);
 	}
 
@@ -253,21 +282,33 @@ public:
 
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
+#ifdef USE_IO_LOCK
+		ioHostLock();
+#endif
 		lock();
 		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
 		exitFunction();
 		unlock();
+#ifdef USE_IO_LOCK
+		ioHostUnlock();
+#endif
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
+#ifdef USE_IO_LOCK
+		ioDeviceLock();
+#endif
 		lock();
 		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
 		exitFunction();
 		unlock();
+#ifdef USE_IO_LOCK
+		ioDeviceUnlock();
+#endif
 		return error(ret);
 	}
 
