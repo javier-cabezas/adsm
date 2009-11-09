@@ -131,8 +131,7 @@ protected:
 	}
 	void flush(ProtSubRegion *region) {
 		regionRolling[Context::current()].remove(region);
-		assert(region->context()->copyToDevice(ptr(region->start()),
-				region->start(), region->size()));
+		assert(region->copyToDevice() == gmacSuccess);
 	}
 
 public:

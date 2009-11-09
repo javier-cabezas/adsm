@@ -135,7 +135,7 @@ public:
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
-	virtual inline const void *ptr(const void *addr) {
+	static inline const void *ptr(const void *addr) {
 		memory::PageTable &pageTable =
 			gmac::Context::current()->mm().pageTable();
 		const void *ret = (const void *)pageTable.translate(addr);
@@ -143,7 +143,7 @@ public:
 		return ret;
 	}
 
-	virtual inline void *ptr(void *addr) {
+	static inline void *ptr(void *addr) {
 		memory::PageTable &pageTable =
 			gmac::Context::current()->mm().pageTable();
 		void *ret = (void *)pageTable.translate(addr);

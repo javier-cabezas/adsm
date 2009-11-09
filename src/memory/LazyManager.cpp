@@ -32,8 +32,7 @@ void LazyManager::flush()
 	for(i = current()->begin(); i != current()->end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		if(r->dirty()) {
-			r->context()->copyToDevice(ptr(r->start()),
-					r->start(), r->size());
+			r->copyToDevice();
 		}
 		r->invalidate();
 	}
@@ -56,8 +55,7 @@ void LazyManager::invalidate(const void *addr, size_t size)
 	if(region->dirty()) {
 		if(region->start() < addr ||
 				region->end() > (void *)((addr_t)addr + size))
-			region->context()->copyToDevice(ptr(region->start()),
-					region->start(), region->size());
+			region->copyToDevice();
 	}
 	region->invalidate();
 }
@@ -68,8 +66,7 @@ void LazyManager::flush(const void *addr, size_t size)
 	assert(region != NULL);
 	assert(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
-		region->context()->copyToDevice(ptr(region->start()),
-				region->start(), region->size());
+		region->copyToDevice();
 	}
 	region->readOnly();
 }
@@ -79,8 +76,7 @@ void LazyManager::flush(Region *region)
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
 	if(r->dirty()) {
-		r->context()->copyToDevice(ptr(r->start()), r->start(),
-				r->size());
+		r->copyToDevice();
 	}
 	r->invalidate();
 }
@@ -106,8 +102,7 @@ bool LazyManager::read(void *addr)
 	if(region == NULL) return false;
 
 	region->readWrite();
-	region->context()->copyToHost(region->start(),
-			ptr(region->start()), region->size());
+	region->copyToHost();
 	region->readOnly();
 
 	return true;
@@ -123,8 +118,7 @@ bool LazyManager::write(void *addr)
 	if(present == false) {
 		TRACE("DMA from Device from %p (%d bytes)", region->start(),
 				region->size());
-		region->context()->copyToHost(region->start(),
-				ptr(region->start()), region->size());
+		region->copyToHost();
 	}
 
 	return true;

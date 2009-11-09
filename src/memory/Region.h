@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <debug.h>
 
+#include <gmac/gmac.h>
 #include <memory/os/Memory.h>
 
 #include <stdio.h>
@@ -62,6 +63,7 @@ typedef unsigned long addr_t;
 class Region {
 private:
 	Context *_context;
+	std::list<Context *> _friends;
 protected:
 	//! Starting memory address for the region
 	addr_t _addr;
@@ -81,6 +83,9 @@ public:
 	virtual ~Region() {};
 
 	inline Context *context() { return _context; }
+	gmacError_t copyToDevice();
+	gmacError_t copyToHost();
+	void sync();
 
 	//! Returns the size (in bytes) of the Region
 	inline size_t size() const { return _size; }

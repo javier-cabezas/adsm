@@ -17,7 +17,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 	MUTEX_LOCK(writeMutex);
 	if(writeBuffer) {
 		ProtSubRegion *r = regionRolling[Context::current()].front();
-		r->context()->sync();
+		r->sync();
 		munlock(writeBuffer, writeBufferSize);
 	}
 	writeBuffer = addr;
@@ -31,8 +31,7 @@ void RollingManager::writeBack()
 	ProtSubRegion *r = regionRolling[Context::current()].pop();
 	waitForWrite(r->start(), r->size());
 	mlock(writeBuffer, writeBufferSize);
-	assert(r->context()->copyToDevice(ptr(r->start()), r->start(),
-		r->size()) == gmacSuccess);
+	assert(r->copyToDevice() == gmacSuccess);
 	r->readOnly();
 }
 
@@ -42,8 +41,7 @@ void RollingManager::flushToDevice()
 	waitForWrite();
 	while(regionRolling[Context::current()].empty() == false) {
 		ProtSubRegion *r = regionRolling[Context::current()].pop();
-		assert(r->context()->copyToDevice(ptr(r->start()),
-				r->start(), r->size()) == gmacSuccess);
+		assert(r->copyToDevice() == gmacSuccess);
 		r->readOnly();
 		TRACE("Flush to Device %p", r->start()); 
 	}
@@ -113,7 +111,8 @@ Context *RollingManager::owner(const void *addr)
 {
 	RollingRegion *reg= get(addr);
 	if(reg == NULL) return NULL;
-	return reg->context();
+	//return reg->context();
+	return NULL;
 }
 
 void RollingManager::invalidate(const void *addr, size_t size)
@@ -143,8 +142,7 @@ bool RollingManager::read(void *addr)
 	assert(region->present() == false);
 	region->readWrite();
 	if(current()->pageTable().dirty(addr)) {
-		assert(region->context()->copyToHost(region->start(),
-			ptr(region->start()), region->size()) == gmacSuccess);
+		assert(region->copyToHost() == gmacSuccess);
 		current()->pageTable().clear(addr);
 	}
 	region->readOnly();
@@ -162,8 +160,7 @@ bool RollingManager::write(void *addr)
 	while(regionRolling[Context::current()].overflows()) writeBack();
 	region->readWrite();
 	if(region->present() == false && current()->pageTable().dirty(addr)) {
-		assert(region->context()->copyToHost(region->start(),
-			ptr(region->start()), region->size()) == gmacSuccess);
+		assert(region->copyToHost() == gmacSuccess);
 		current()->pageTable().clear(addr);
 	}
 	regionRolling[Context::current()].push(
