@@ -2,4 +2,4 @@ MAINTAINERCLEANFILES = Makefile.in
 
 noinst_LTLIBRARIES = libmemory-os.la
 libmemory_os_la_SOURCES = Memory.h Util.h\
-	 MemManager.cpp MemHandler.cpp
+	 Manager.cpp Handler.cpp

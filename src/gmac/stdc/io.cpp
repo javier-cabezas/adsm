@@ -5,7 +5,7 @@
 #include <paraver.h>
 
 #include <init.h>
-#include <memory/MemManager.h>
+#include <memory/Manager.h>
 #include <kernel/Context.h>
 
 #include <unistd.h>
@@ -43,7 +43,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     void *tmp = malloc(size * nmemb);
 
     size_t ret = __libc_fread(tmp, size, nmemb, stream);
-    ctx->copyToDevice(manager->safe(buf), tmp, size * nmemb);
+    ctx->copyToDevice(manager->ptr(buf), tmp, size * nmemb);
     free(tmp);
 
     popState();
@@ -66,7 +66,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     void *tmp = malloc(size * nmemb);
 
     manager->flush(buf, size * nmemb);
-    ctx->copyToHost(tmp, manager->safe(buf), size * nmemb);
+    ctx->copyToHost(tmp, manager->ptr(buf), size * nmemb);
 
     size_t ret =  __libc_fwrite(tmp, size, nmemb, stream);
     free(tmp);

@@ -5,9 +5,9 @@
 
 #include <assert.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-// MemManager Interface
+// Manager Interface
 
 void *LazyManager::alloc(void *addr, size_t count)
 {
@@ -20,7 +20,7 @@ void *LazyManager::alloc(void *addr, size_t count)
 
 void LazyManager::release(void *addr)
 {
-	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(safe(addr)));
+	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(ptr(addr)));
 	assert(reg != NULL);
 	unmap(reg->start(), reg->size());
 	delete reg;
@@ -32,7 +32,7 @@ void LazyManager::flush()
 	for(i = current()->begin(); i != current()->end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		if(r->dirty()) {
-			r->context()->copyToDevice(safe(r->start()),
+			r->context()->copyToDevice(ptr(r->start()),
 					r->start(), r->size());
 		}
 		r->invalidate();
@@ -56,7 +56,7 @@ void LazyManager::invalidate(const void *addr, size_t size)
 	if(region->dirty()) {
 		if(region->start() < addr ||
 				region->end() > (void *)((addr_t)addr + size))
-			region->context()->copyToDevice(safe(region->start()),
+			region->context()->copyToDevice(ptr(region->start()),
 					region->start(), region->size());
 	}
 	region->invalidate();
@@ -68,37 +68,37 @@ void LazyManager::flush(const void *addr, size_t size)
 	assert(region != NULL);
 	assert(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
-		region->context()->copyToDevice(safe(region->start()),
+		region->context()->copyToDevice(ptr(region->start()),
 				region->start(), region->size());
 	}
 	region->readOnly();
 }
 
 #if 0
-void LazyManager::flush(MemRegion *region)
+void LazyManager::flush(Region *region)
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
 	if(r->dirty()) {
-		r->context()->copyToDevice(safe(r->start()), r->start(),
+		r->context()->copyToDevice(ptr(r->start()), r->start(),
 				r->size());
 	}
 	r->invalidate();
 }
 
-void LazyManager::dirty(MemRegion *region) 
+void LazyManager::dirty(Region *region) 
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
 	r->readWrite();
 }
 
-bool LazyManager::present(MemRegion *region) const
+bool LazyManager::present(Region *region) const
 {
 	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
 	return r->present();
 }
 #endif
 
-// MemHandler Interface
+// Handler Interface
 
 bool LazyManager::read(void *addr)
 {
@@ -107,7 +107,7 @@ bool LazyManager::read(void *addr)
 
 	region->readWrite();
 	region->context()->copyToHost(region->start(),
-			safe(region->start()), region->size());
+			ptr(region->start()), region->size());
 	region->readOnly();
 
 	return true;
@@ -124,10 +124,10 @@ bool LazyManager::write(void *addr)
 		TRACE("DMA from Device from %p (%d bytes)", region->start(),
 				region->size());
 		region->context()->copyToHost(region->start(),
-				safe(region->start()), region->size());
+				ptr(region->start()), region->size());
 	}
 
 	return true;
 }
 
-}
+} }

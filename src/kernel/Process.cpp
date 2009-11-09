@@ -4,7 +4,7 @@
 
 #include <debug.h>
 #include <gmac/init.h>
-#include <memory/MemManager.h>
+#include <memory/Manager.h>
 
 gmac::Process *proc = NULL;
 

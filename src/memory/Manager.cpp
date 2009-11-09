@@ -1,4 +1,4 @@
-#include "MemManager.h"
+#include "Manager.h"
 #include "BatchManager.h"
 #include "LazyManager.h"
 #include "RollingManager.h"
@@ -8,9 +8,9 @@
 #include <strings.h>
 
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-MemManager *getManager(const char *managerName)
+Manager *getManager(const char *managerName)
 {
 	if(managerName == NULL) return new RollingManager();
 	TRACE("Using %s Manager", managerName);
@@ -24,7 +24,7 @@ MemManager *getManager(const char *managerName)
 }
 
 
-void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
+void Manager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
 {
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
@@ -36,4 +36,4 @@ void MemManager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
 		pageTable.insert(cpuAddr + off, devAddr + off);
 }
 
-};
+} };

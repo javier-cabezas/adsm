@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_CACHEREGION_H_
 #define __MEMORY_CACHEREGION_H_
 
-#include "MemRegion.h"
+#include "Region.h"
 #include "ProtRegion.h"
 
 #include <config.h>
@@ -45,10 +45,10 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <set>
 
-namespace gmac {
+namespace gmac { namespace memory {
 class RollingManager;
 class ProtSubRegion;
-class RollingRegion : public MemRegion {
+class RollingRegion : public Region {
 public:
 	typedef std::set<ProtSubRegion *> List;
 protected:
@@ -102,6 +102,6 @@ public:
 	}
 };
 
-};
+} };
 
 #endif

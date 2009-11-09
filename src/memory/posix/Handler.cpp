@@ -1,16 +1,16 @@
-#include <memory/MemHandler.h>
+#include <memory/Handler.h>
 #include <memory/ProtRegion.h>
 
 #include <debug.h>
 #include <paraver.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-struct sigaction MemHandler::defaultAction;
-MemHandler *handler = NULL;
-unsigned MemHandler::count = 0;
+struct sigaction Handler::defaultAction;
+Handler *handler = NULL;
+unsigned Handler::count = 0;
 
-void MemHandler::setHandler() 
+void Handler::setHandler() 
 {
 	struct sigaction segvAction;
 	memset(&segvAction, 0, sizeof(segvAction));
@@ -25,7 +25,7 @@ void MemHandler::setHandler()
 	TRACE("New SIGSEGV handler programmed");
 }
 
-void MemHandler::restoreHandler()
+void Handler::restoreHandler()
 {
 	if(sigaction(SIGSEGV, &defaultAction, NULL) < 0)
 		FATAL("sigaction: %s", strerror(errno));
@@ -34,7 +34,7 @@ void MemHandler::restoreHandler()
 	TRACE("Old SIGSEGV handler restored");
 }
 
-void MemHandler::segvHandler(int s, siginfo_t *info, void *ctx)
+void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	enterFunction(gmacSignal);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
@@ -60,4 +60,4 @@ void MemHandler::segvHandler(int s, siginfo_t *info, void *ctx)
 	exitFunction();
 }
 
-}
+} }

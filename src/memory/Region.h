@@ -31,42 +31,71 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MEMHANDLER_H_
-#define __MEMORY_MEMHANDLER_H_
+#ifndef __MEMORY_MEMREGION_H_
+#define __MEMORY_MEMREGION_H_
 
-#include <stdlib.h>
+#include <config.h>
+#include <threads.h>
+#include <debug.h>
 
-#include <memory/MemManager.h>
+#include <memory/os/Memory.h>
 
-namespace gmac {
+#include <stdio.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <signal.h>
 
-class ProtRegion;
+#include <assert.h>
 
-//! Handler for Read/Write faults
-class MemHandler : public MemManager {
+#include <iostream>
+#include <list>
+
+namespace gmac { 
+
+class Context;
+
+namespace memory {
+
+typedef unsigned long addr_t;
+
+//! Generic Memory Region Descriptor
+class Region {
 private:
-	static struct sigaction defaultAction;
-	void setHandler(void);
-	void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
-
-	static unsigned count;
-	static MemHandler *handler;
-
+	Context *_context;
 protected:
-	virtual bool read(void *) = 0;
-	virtual bool write(void *) = 0;
-	
-public:
-	MemHandler() {
-		if(count == 0) setHandler();
-		count++;
-	}
-	virtual ~MemHandler() { 
-		if(--count == 0) restoreHandler();
-	}
+	//! Starting memory address for the region
+	addr_t _addr;
+	//! Size in bytes of the region
+	size_t _size;
 
+	inline addr_t __addr(void *addr) const { return (addr_t)addr; }
+	inline addr_t __addr(const void *addr) const { return (addr_t)addr; }
+	inline void * __void(addr_t addr) const { return (void *)addr; }
+
+public:
+	//! Constructor
+	//! \param addr Start memory address
+	//! \param size Size in bytes
+	Region(void *addr, size_t size);
+
+	virtual ~Region() {};
+
+	inline Context *context() { return _context; }
+
+	//! Returns the size (in bytes) of the Region
+	inline size_t size() const { return _size; }
+	//! Sets the size (in bytes) of the Region
+	inline void size(size_t size) { _size = size; }
+	//! Returns the address of the Region
+	inline void *start() const { return __void(_addr); }
+	//! Returns the end address of the region
+	inline void *end() const { return __void(_addr + _size); }
+	//! Sets the address of the Region
+	inline void start(void *addr) { _addr = __addr(addr); }
 };
 
-}
+typedef std::list<Region> RegionList;
+
+} };
+
 #endif

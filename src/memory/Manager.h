@@ -48,32 +48,32 @@ WITH THE SOFTWARE.  */
 
 #include <iostream>
 
-namespace gmac {
-class MemRegion;
+
+namespace gmac { namespace memory {
 
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class MemManager {
+class Manager {
 private:
 	MUTEX(mutex);
 
 protected:
 //	memory::PageTable pageTable;
 
-	inline void insert(MemRegion *r) {
-		Context::current()->mm().insert(r);
+	inline void insert(Region *r) {
+		gmac::Context::current()->mm().insert(r);
 	}
 
-	inline MemRegion *remove(void *addr) {
-		MemRegion *ret = Context::current()->mm().remove(addr);
+	inline Region *remove(void *addr) {
+		Region *ret = gmac::Context::current()->mm().remove(addr);
 		return ret;
 	}
 
 	inline memory::Map *current() {
-		if(Context::current() == NULL) return NULL;
-		return &Context::current()->mm();
+		if(gmac::Context::current() == NULL) return NULL;
+		return &gmac::Context::current()->mm();
 	}
 
 	inline unsigned long align(void *addr) const {
@@ -87,7 +87,7 @@ protected:
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
 
 	inline const memory::PageTable &pageTable() const {
-		return Context::current()->mm().pageTable();
+		return gmac::Context::current()->mm().pageTable();
 	}
 
 	//! This gets memory from the CPU address space
@@ -102,12 +102,12 @@ protected:
 	void unmap(void *addr, size_t count);
 
 public:
-	MemManager() {
+	Manager() {
 		MUTEX_INIT(mutex);
 		TRACE("Memory manager starts");
 	}
 	//! Virtual Destructor. It does nothing
-	virtual ~MemManager() {
+	virtual ~Manager() {
 		TRACE("Memory manager finishes");
 		MUTEX_DESTROY(mutex);
 	}
@@ -135,7 +135,7 @@ public:
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
-	virtual inline const void *safe(const void *addr) {
+	virtual inline const void *ptr(const void *addr) {
 		memory::PageTable &pageTable =
 			gmac::Context::current()->mm().pageTable();
 		const void *ret = (const void *)pageTable.translate(addr);
@@ -143,7 +143,7 @@ public:
 		return ret;
 	}
 
-	virtual inline void *safe(void *addr) {
+	virtual inline void *ptr(void *addr) {
 		memory::PageTable &pageTable =
 			gmac::Context::current()->mm().pageTable();
 		void *ret = (void *)pageTable.translate(addr);
@@ -151,7 +151,7 @@ public:
 		return ret;
 	}
 
-	virtual Context *owner(const void *addr) = 0;
+	virtual gmac::Context *owner(const void *addr) = 0;
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
 
@@ -160,7 +160,7 @@ public:
 
 //! Gets a Memory Manager based on a string name
 //! \param managerName Name of the memory manager
-MemManager *getManager(const char *managerName);
+Manager *getManager(const char *managerName);
 
-};
+} };
 #endif

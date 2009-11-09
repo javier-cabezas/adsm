@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <malloc.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
 const char *RollingManager::lineSizeVar = "GMAC_LINESIZE";
 const char *RollingManager::lruDeltaVar = "GMAC_LRUDELTA";
@@ -31,7 +31,7 @@ void RollingManager::writeBack()
 	ProtSubRegion *r = regionRolling[Context::current()].pop();
 	waitForWrite(r->start(), r->size());
 	mlock(writeBuffer, writeBufferSize);
-	assert(r->context()->copyToDevice(safe(r->start()), r->start(),
+	assert(r->context()->copyToDevice(ptr(r->start()), r->start(),
 		r->size()) == gmacSuccess);
 	r->readOnly();
 }
@@ -42,7 +42,7 @@ void RollingManager::flushToDevice()
 	waitForWrite();
 	while(regionRolling[Context::current()].empty() == false) {
 		ProtSubRegion *r = regionRolling[Context::current()].pop();
-		assert(r->context()->copyToDevice(safe(r->start()),
+		assert(r->context()->copyToDevice(ptr(r->start()),
 				r->start(), r->size()) == gmacSuccess);
 		r->readOnly();
 		TRACE("Flush to Device %p", r->start()); 
@@ -50,7 +50,7 @@ void RollingManager::flushToDevice()
 }
 
 RollingManager::RollingManager() :
-	MemHandler(),
+	Handler(),
 	lineSize(0),
 	lruDelta(0),
 	pageSize(getpagesize()),
@@ -132,7 +132,7 @@ void RollingManager::flush(const void *addr, size_t size)
 	reg->flush(addr, size);
 }
 
-// MemHandler Interface
+// Handler Interface
 
 bool RollingManager::read(void *addr)
 {
@@ -144,7 +144,7 @@ bool RollingManager::read(void *addr)
 	region->readWrite();
 	if(current()->pageTable().dirty(addr)) {
 		assert(region->context()->copyToHost(region->start(),
-			safe(region->start()), region->size()) == gmacSuccess);
+			ptr(region->start()), region->size()) == gmacSuccess);
 		current()->pageTable().clear(addr);
 	}
 	region->readOnly();
@@ -163,7 +163,7 @@ bool RollingManager::write(void *addr)
 	region->readWrite();
 	if(region->present() == false && current()->pageTable().dirty(addr)) {
 		assert(region->context()->copyToHost(region->start(),
-			safe(region->start()), region->size()) == gmacSuccess);
+			ptr(region->start()), region->size()) == gmacSuccess);
 		current()->pageTable().clear(addr);
 	}
 	regionRolling[Context::current()].push(
@@ -172,4 +172,4 @@ bool RollingManager::write(void *addr)
 }
 
 
-};
+} };

@@ -137,6 +137,7 @@ void PageTable::syncDirectory(Directory &dir)
 #ifdef USE_VM
 	for(int i = 0; i < dir.size(); i++) {
 		if(dir.present(i) == false) continue;
+		TRACE("Sync Directory Entry %d", i);
 		dir.get(i).sync();
 	}
 	dir.sync();

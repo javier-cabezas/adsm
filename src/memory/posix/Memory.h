@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <sys/mman.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
 class Memory {
 public:
@@ -44,5 +44,5 @@ public:
 		return mprotect(addr, count, prot);
 	}
 };
-};
+} };
 #endif

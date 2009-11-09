@@ -34,23 +34,23 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_BATCHMANAGER_H_
 #define __MEMORY_BATCHMANAGER_H_
 
-#include "MemManager.h"
-#include "MemRegion.h"
+#include "Manager.h"
+#include "Region.h"
 
 #include <stdint.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 //! Batch Memory Manager
 
 //! The Batch Memory Manager moves all data just before and
 //! after a kernel call
-class BatchManager : public MemManager {
+class BatchManager : public Manager {
 public:
-	BatchManager() : MemManager() { }
+	BatchManager() : Manager() { }
 
 	inline void *alloc(void *addr, size_t count) {
 		void *cpuAddr = map(addr, count);
-		insert(new MemRegion(cpuAddr, count));
+		insert(new Region(cpuAddr, count));
 		return cpuAddr;
 	}
 	void release(void *addr);
@@ -61,5 +61,5 @@ public:
 	void invalidate(const void *, size_t) { assert(0); }
 	void flush(const void *, size_t) { assert(0); }
 };
-};
+} };
 #endif

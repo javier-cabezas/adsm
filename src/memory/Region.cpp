@@ -1,14 +1,14 @@
-#include "MemRegion.h"
+#include "Region.h"
 
 #include <kernel/Context.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-MemRegion::MemRegion(void *addr, size_t size) :
+Region::Region(void *addr, size_t size) :
 	_addr(__addr(addr)),
 	_size(size)
 {
 	_context = Context::current();
 }
 
-}
+} }

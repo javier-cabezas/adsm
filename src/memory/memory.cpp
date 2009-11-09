@@ -1,8 +1,8 @@
-#include "MemManager.h"
+#include "Manager.h"
 
 #include <debug.h>
 
-gmac::MemManager *manager= NULL;
+gmac::memory::Manager *manager= NULL;
 
 namespace gmac {
 
@@ -20,7 +20,7 @@ static void createManager(const char *name)
 {
 	MUTEX_LOCK(mutex);
 	if(manager == NULL)
-		manager = gmac::getManager(name);
+		manager = gmac::memory::getManager(name);
 	MUTEX_UNLOCK(mutex);
 }
 

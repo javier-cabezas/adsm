@@ -4,15 +4,15 @@
 
 #include <string.h>
 
-#include <memory/MemManager.h>
-#include <memory/MemRegion.h>
+#include <memory/Manager.h>
+#include <memory/Region.h>
 #include <kernel/Context.h>
 
 
 SYM(void *, __libc_memset, void *, int, size_t);
 SYM(void *, __libc_memcpy, void *, const void *, size_t);
 
-extern gmac::MemManager *manager;
+extern gmac::memory::Manager *manager;
 
 static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
 {
@@ -30,7 +30,7 @@ void *memset(void *s, int c, size_t n)
 	else {
 		TRACE("GMAC Memset");
 		manager->invalidate(s, n);
-		ctx->memset(manager->safe(s), c, n);
+		ctx->memset(manager->ptr(s), c, n);
 	}
 }
 
@@ -53,24 +53,24 @@ void *memcpy(void *dst, const void *src, size_t n)
 	TRACE("GMAC Memcpy");
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
-		srcCtx->copyToHost(dst, manager->safe(src), n);
+		srcCtx->copyToHost(dst, manager->ptr(src), n);
 	}
 	else if(srcCtx == NULL) { // Copy to Device
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->safe(dst), src, n);
+		dstCtx->copyToDevice(manager->ptr(dst), src, n);
 	}
 	else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
-		dstCtx->copyDevice(manager->safe(dst),
-				manager->safe(src), n);
+		dstCtx->copyDevice(manager->ptr(dst),
+				manager->ptr(src), n);
 	}
 	else {
 		void *tmp = malloc(n);
 		manager->flush(src, n);
-		srcCtx->copyToHost(tmp, manager->safe(src), n);
+		srcCtx->copyToHost(tmp, manager->ptr(src), n);
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->safe(dst), tmp, n);
+		dstCtx->copyToDevice(manager->ptr(dst), tmp, n);
 		free(tmp);
 	}
 

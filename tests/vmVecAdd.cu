@@ -8,6 +8,7 @@
 #include <sys/time.h>
 
 #include "debug.h"
+#include "utils.h"
 
 #define SIZE 1
 
@@ -34,30 +35,13 @@ void randInit(float *a, size_t size)
 	}
 }
 
-static inline void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
-{
-	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
-	fprintf(stderr,"%s%f%s", pre, (e - s) / 1e6, post);
-}
-
-
-template<typename T>
-void setParam(T *param, const char *str, const T def)
-{
-	const char *value = getenv(str);
-	if(value != NULL) *param = atoi(value);
-	if(*param == 0) *param = def;
-}
-
-
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
 	struct timeval s, t;
 
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
 	srand(time(NULL));
 

@@ -38,12 +38,15 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 class Process;
-class MemManager;
 class Context;
+
+namespace memory {
+class Manager;
+}
 
 }
 
 extern gmac::Process *proc;
-extern gmac::MemManager *manager;
+extern gmac::memory::Manager *manager;
 
 #endif

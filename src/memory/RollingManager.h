@@ -31,10 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMOMRY_CACHEMANAGER_H_
-#define __MEMOMRY_CACHEMANAGER_H_
+#ifndef __MEMOMRY_ROLLINGMANAGER_H_
+#define __MEMOMRY_ROLLINGMANAGER_H_
 
-#include "MemHandler.h"
+#include "Handler.h"
 #include "RollingRegion.h"
 
 #include <kernel/Context.h>
@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <list>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
 class RollingBuffer {
 private:
@@ -94,7 +94,7 @@ public:
 	}
 };
 
-class RollingManager : public MemHandler {
+class RollingManager : public Handler {
 protected:
 	static const char *lineSizeVar;
 	static const char *lruDeltaVar;
@@ -131,7 +131,7 @@ protected:
 	}
 	void flush(ProtSubRegion *region) {
 		regionRolling[Context::current()].remove(region);
-		assert(region->context()->copyToDevice(safe(region->start()),
+		assert(region->context()->copyToDevice(ptr(region->start()),
 				region->start(), region->size()));
 	}
 
@@ -147,6 +147,6 @@ public:
 	void flush(const void *addr, size_t size);
 };
 
-};
+} };
 
 #endif

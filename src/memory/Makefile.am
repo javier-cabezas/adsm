@@ -7,9 +7,9 @@ libmemory_la_SOURCES = memory.cpp\
 			VM.h VM.cpp\
 			Map.h Map.cpp\
 			PageTable.h PageTable.cpp\
-			MemManager.h MemManager.cpp\
-			MemRegion.h MemRegion.cpp\
-			MemHandler.h MemHandler.cpp\
+			Manager.h Manager.cpp\
+			Region.h Region.cpp\
+			Handler.h Handler.cpp\
 			BatchManager.h BatchManager.cpp\
 			LazyManager.h LazyManager.cpp\
 			ProtRegion.h\

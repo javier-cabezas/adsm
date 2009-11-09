@@ -8,7 +8,7 @@
 
 #include <kernel/Process.h>
 #include <kernel/Context.h>
-#include <memory/MemManager.h>
+#include <memory/Manager.h>
 
 #include <paraver.h>
 
@@ -79,7 +79,7 @@ gmacError_t gmacFree(void *devPtr)
 void *gmacPtr(void *ptr)
 {
 	if(manager == NULL) return ptr;
-	return manager->safe(ptr);
+	return manager->ptr(ptr);
 }
 
 gmacError_t gmacLaunch(const char *symbol)
@@ -122,7 +122,7 @@ void *gmacMemset(void *s, int c, size_t n)
 	gmac::Context *ctx = manager->owner(s);
 	assert(ctx != NULL);
 	manager->invalidate(s, n);
-	ctx->memset(manager->safe(s), c, n);
+	ctx->memset(manager->ptr(s), c, n);
 
     return ret;
 }
@@ -143,24 +143,24 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 	TRACE("GMAC Memcpy");
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
-		srcCtx->copyToHost(dst, manager->safe(src), n);
+		srcCtx->copyToHost(dst, manager->ptr(src), n);
 	}
 	else if(srcCtx == NULL) { // Copy to Device
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->safe(dst), src, n);
+		dstCtx->copyToDevice(manager->ptr(dst), src, n);
 	}
 	else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
-		dstCtx->copyDevice(manager->safe(dst),
-				manager->safe(src), n);
+		dstCtx->copyDevice(manager->ptr(dst),
+				manager->ptr(src), n);
 	}
 	else {
 		void *tmp = malloc(n);
 		manager->flush(src, n);
-		srcCtx->copyToHost(tmp, manager->safe(src), n);
+		srcCtx->copyToHost(tmp, manager->ptr(src), n);
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->safe(dst), tmp, n);
+		dstCtx->copyToDevice(manager->ptr(dst), tmp, n);
 		free(tmp);
 	}
 

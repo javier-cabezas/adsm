@@ -34,23 +34,23 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTREGION_H_
 #define __MEMORY_PROTREGION_H_
 
-#include "MemRegion.h"
-#include "MemHandler.h"
+#include "Region.h"
+#include "Handler.h"
 
 #include <memory/os/Memory.h>
 
 #include <signal.h>
 
-namespace gmac {
+namespace gmac { namespace memory {
 //! Protected Memory Region
-class ProtRegion : public MemRegion {
+class ProtRegion : public Region {
 protected:
 	bool _dirty;
 	bool _present;
 
 public:
 	ProtRegion(void *addr, size_t size) :
-		MemRegion(addr, size), _dirty(false), _present(true) {};
+		Region(addr, size), _dirty(false), _present(true) {};
 	virtual ~ProtRegion() {};
 
 	inline virtual void invalidate(void) {
@@ -70,6 +70,6 @@ public:
 	inline virtual bool dirty() const { return _dirty; }
 	inline virtual bool present() const { return _present; }
 };
-};
+} };
 
 #endif

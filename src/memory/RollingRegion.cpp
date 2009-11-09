@@ -5,11 +5,11 @@
 
 #include <algorithm>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
-	MemRegion(addr, size),
+	Region(addr, size),
 	manager(manager),
 	cacheLine(cacheLine),
 	offset((unsigned long)addr & (cacheLine -1))
@@ -96,4 +96,4 @@ void RollingRegion::flush(const void *addr, size_t size)
 }
 
 
-};
+} };

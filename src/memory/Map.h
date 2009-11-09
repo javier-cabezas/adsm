@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include <memory/PageTable.h>
-#include <memory/MemRegion.h>
+#include <memory/Region.h>
 
 #include <assert.h>
 #include <map>
@@ -47,7 +47,7 @@ namespace gmac { namespace memory {
 
 class Map {
 protected:
-	typedef std::map<const void *, MemRegion *> __Map;
+	typedef std::map<const void *, Region *> __Map;
 	__Map __map;
 	MUTEX(local);
 
@@ -62,9 +62,9 @@ protected:
 	}
 	static void globalUnlock() { MUTEX_UNLOCK(global); }
 
-	MemRegion *localFind(const void *addr) {
+	Region *localFind(const void *addr) {
 		__Map::const_iterator i;
-		MemRegion *ret = NULL;
+		Region *ret = NULL;
 		i = __map.upper_bound(addr);
 		if(i != __map.end() && i->second->start() <= addr) {
 			ret = i->second;
@@ -72,9 +72,9 @@ protected:
 		return ret;
 	}
 
-	MemRegion *globalFind(const void *addr) {
+	Region *globalFind(const void *addr) {
 		__Map::const_iterator i;
-		MemRegion *ret = NULL;
+		Region *ret = NULL;
 		i = __global->upper_bound(addr);
 		if(i != __global->end() && i->second->start() <= addr)
 			ret = i->second;
@@ -84,7 +84,7 @@ protected:
 	inline void clean() {
 		__Map::iterator i;
 		for(i = __map.begin(); i != __map.end(); i++) {
-			TRACE("Cleaning MemRegion %p", i->second);
+			TRACE("Cleaning Region %p", i->second);
 			__global->erase(i->first);
 			delete i->second;
 		}
@@ -131,21 +131,21 @@ public:
 	inline iterator end() { return __map.end(); }
 
 
-	inline void insert(MemRegion *i) {
+	inline void insert(Region *i) {
 		globalLock();
 		__map.insert(__Map::value_type(i->end(), i));
 		__global->insert(__Map::value_type(i->end(), i));
 		globalUnlock();
 	}
 
-	MemRegion *remove(void *addr);
+	Region *remove(void *addr);
 
 	inline PageTable &pageTable() { return __pageTable; }
 	inline const PageTable &pageTable() const { return __pageTable; }
 
 	template<typename T>
 	inline T *find(const void *addr) {
-		MemRegion *ret = NULL;
+		Region *ret = NULL;
 		lock();
 		ret = localFind(addr);
 		if(ret == NULL) {

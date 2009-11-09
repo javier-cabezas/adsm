@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_LAZYMANAGER_H_
 #define __MEMORY_LAZYMANAGER_H_
 
-#include "MemHandler.h"
+#include "Handler.h"
 #include "ProtRegion.h"
 
 #include <threads.h>
@@ -42,10 +42,10 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
 //! Manager that Moves Memory Regions Lazily
-class LazyManager : public MemHandler {
+class LazyManager : public Handler {
 protected:
 	bool read(void *addr);
 	bool write(void *addr);
@@ -67,6 +67,6 @@ public:
 	void flush(const void *, size_t);
 };
 
-};
+} };
 
 #endif

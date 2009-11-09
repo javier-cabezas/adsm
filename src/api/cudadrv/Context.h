@@ -138,7 +138,7 @@ protected:
 	}
 
 	inline void zero(void **addr) const {
-		addr_t *ptr = (addr_t *)addr;
+		memory::addr_t *ptr = (memory::addr_t *)addr;
 		*ptr = 0;
 	}
 

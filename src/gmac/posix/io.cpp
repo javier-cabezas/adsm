@@ -5,7 +5,7 @@
 #include <debug.h>
 
 #include <init.h>
-#include <memory/MemManager.h>
+#include <memory/Manager.h>
 #include <kernel/Context.h>
 
 #include <unistd.h>
@@ -44,7 +44,7 @@ ssize_t read(int fd, void *buf, size_t count)
     void *tmp = malloc(count);
 
     size_t ret = __libc_read(fd, tmp, count);
-    ctx->copyToDevice(manager->safe(buf), tmp, count);
+    ctx->copyToDevice(manager->ptr(buf), tmp, count);
     free(tmp);
 
     popState();
@@ -66,7 +66,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     void *tmp = malloc(count);
 
     manager->flush(buf, count);
-    ctx->copyToHost(tmp, manager->safe(buf), count);
+    ctx->copyToHost(tmp, manager->ptr(buf), count);
 
     size_t ret =  __libc_write(fd, tmp, count);
     free(tmp);

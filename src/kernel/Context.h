@@ -46,6 +46,8 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
+namespace memory { class Manager; }
+
 /*!
 	\brief Generic Context Class
 */
@@ -60,7 +62,7 @@ protected:
 		\brief Per-thread key to store context
 	*/
 	friend void contextInit(void);
-	friend class MemManager;
+	friend class memory::Manager;
 	friend class Process;
 	static PRIVATE(key);
 
