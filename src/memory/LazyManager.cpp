@@ -12,7 +12,7 @@ namespace gmac { namespace memory {
 void *LazyManager::alloc(void *addr, size_t count)
 {
 	void *cpuAddr = NULL;
-	if((cpuAddr = map(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
+	if((cpuAddr = hostMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
 	insert(new ProtRegion(cpuAddr, count));
 	return cpuAddr;
@@ -22,7 +22,8 @@ void LazyManager::release(void *addr)
 {
 	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(ptr(addr)));
 	assert(reg != NULL);
-	unmap(reg->start(), reg->size());
+	hostUnmap(reg->start(), reg->size());
+	removeVirtual(reg->start(), reg->size());
 	delete reg;
 }
 

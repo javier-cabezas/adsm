@@ -49,7 +49,7 @@ public:
 	BatchManager() : Manager() { }
 
 	inline void *alloc(void *addr, size_t count) {
-		void *cpuAddr = map(addr, count);
+		void *cpuAddr = hostMap(addr, count);
 		insert(new Region(cpuAddr, count));
 		return cpuAddr;
 	}

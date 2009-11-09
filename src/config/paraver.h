@@ -59,7 +59,7 @@ typedef enum {
 	accMalloc = 1, accFree,
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
-	gmacMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
+	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
 	vmAlloc, vmFree, vmFlush, vmSync,
 } FunctionName;
 

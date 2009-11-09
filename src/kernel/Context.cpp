@@ -13,4 +13,6 @@ void contextInit()
 
 
 PRIVATE(Context::key);
+
+std::list<Context *> *Context::list = NULL;
 }

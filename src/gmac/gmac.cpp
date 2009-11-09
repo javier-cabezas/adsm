@@ -65,12 +65,39 @@ gmacError_t gmacMalloc(void **cpuPtr, size_t count)
 	return gmacSuccess;
 }
 
-gmacError_t gmacFree(void *devPtr)
+gmacError_t gmacGlobalAlloc(void **cpuPtr, size_t count)
+{
+	enterFunction(gmacGlobalMalloc);
+	// Allocate memory in the current context
+	gmacError_t ret = gmacMalloc(cpuPtr, count);
+	if(ret != gmacSuccess) return ret;
+	void *devPtr;
+	count = (count < pageSize) ? pageSize : count;
+	gmac::Context::iterator i;
+	for(i = gmac::Context::list->begin(); i != gmac::Context::list->end(); i++) {
+		if(*i == gmac::Context::current()) continue;
+		ret = (*i)->malloc(&devPtr, count);
+		if(ret != gmacSuccess) goto cleanup;
+		manager->map(*i, cpuPtr, devPtr, count);
+	}
+	return ret;
+
+cleanup:
+	gmac::Context *last = *i;
+	for(i = gmac::Context::list->begin(); *i != last; i++) {
+		(*i)->free(manager->ptr(*i, cpuPtr));
+		manager->unmap(*i, cpuPtr);
+	}
+	gmacFree(devPtr);
+	return ret;
+}
+
+gmacError_t gmacFree(void *cpuPtr)
 {
 	enterFunction(gmacFree);
-	gmac::Context::current()->free(devPtr);
+	gmac::Context::current()->free(cpuPtr);
 	if(manager) {
-		manager->release(devPtr);
+		manager->release(cpuPtr);
 	}
 	exitFunction();
 	return gmacSuccess;

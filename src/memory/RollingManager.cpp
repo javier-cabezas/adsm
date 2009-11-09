@@ -85,6 +85,7 @@ void RollingManager::release(void *addr)
 {
 	RollingRegion *reg = dynamic_cast<RollingRegion *>(remove(addr));
 	free(addr);
+	removeVirtual(reg->start(), reg->size());
 	delete reg;
 	regionRolling[Context::current()].dec(lruDelta);
 	TRACE("Released %p", addr);

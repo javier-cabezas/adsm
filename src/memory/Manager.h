@@ -84,7 +84,14 @@ protected:
 		return n;
 	}
 
-	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
+	void insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count);
+	void removeVirtual(Context *ctx, void *cpuPtr, size_t count);
+	inline void insertVirtual(void *cpuPtr, void *devPtr, size_t count) {
+		insertVirtual(gmac::Context::current(), cpuPtr, devPtr, count);
+	}
+	inline void removeVirtual(void *cpuPtr, size_t count) {
+		removeVirtual(gmac::Context::current(), cpuPtr, count);
+	}
 
 	inline const memory::PageTable &pageTable() const {
 		return gmac::Context::current()->mm().pageTable();
@@ -94,12 +101,12 @@ protected:
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
-	void *map(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
+	void *hostMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
 	//! This method upmaps a accelerator address from the CPU address space
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) to unmap
-	void unmap(void *addr, size_t count);
+	void hostUnmap(void *addr, size_t count);
 
 public:
 	Manager() {
@@ -135,21 +142,24 @@ public:
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
-	static inline const void *ptr(const void *addr) {
-		memory::PageTable &pageTable =
-			gmac::Context::current()->mm().pageTable();
+	static inline const void *ptr(Context *ctx, const void *addr) {
+		memory::PageTable &pageTable = ctx->mm().pageTable();
 		const void *ret = (const void *)pageTable.translate(addr);
 		if(ret == NULL) ret = proc->translate(addr);
 		return ret;
 	}
+	static inline const void *ptr(const void *addr) { return ptr(gmac::Context::current(), addr); }
 
-	static inline void *ptr(void *addr) {
-		memory::PageTable &pageTable =
-			gmac::Context::current()->mm().pageTable();
+	static inline void *ptr(Context *ctx, void *addr) {
+		memory::PageTable &pageTable = ctx->mm().pageTable();
 		void *ret = (void *)pageTable.translate(addr);
 		if(ret == NULL) ret = proc->translate(addr);
 		return ret;
 	}
+	static inline void *ptr(void *addr) { return ptr(gmac::Context::current(), addr); }
+
+	void map(Context *, void *, void *, size_t);
+	void unmap(Context *, void *);
 
 	virtual gmac::Context *owner(const void *addr) = 0;
 	virtual void invalidate(const void *addr, size_t) = 0;

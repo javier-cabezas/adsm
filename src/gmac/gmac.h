@@ -76,16 +76,16 @@ static const char *error[] = {
 	\param count bytes to be allocated
 */
 gmacError_t gmacMalloc(void **devPtr, size_t count);
-/*!
-	\brief Allocates memory at the GPU
 
-	Allocates a range of memory at the GPU and the CPU. The address used by
-	the GPU is different from the address used by the CPU. When passing the
-	address returned by the function to the GPU it must be first translated
-	using gmacSafe().
-	\param devPtr memory address to store the CPU address for the allocated
-	memory
-	\param count bytes to be allocated
+/*
+	\brief Allocates global memory at all GPUS
+*/
+gmacError_t gmacGlobalMalloc(void **devPtr, size_t count);
+
+/*!
+	\brief Gets a GPU address
+
+	\param cpuPtr memory address at the CPU
 */
 void *gmacPtr(void *cpuPtr);
 /*!

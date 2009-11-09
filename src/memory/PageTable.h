@@ -111,6 +111,7 @@ public:
 	inline void realloc() { rootTable.realloc(); }
 
 	void insert(void *host, void *dev);
+	void remove(void *host);
 	const void *translate(const void *host) {
 		return translate((void *)host);
 	}

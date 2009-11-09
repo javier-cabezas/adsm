@@ -48,7 +48,7 @@ void PageTable::insert(void *host, void *dev)
 {
 	sync();
 
-	enterFunction(vmFlush);
+	enterFunction(vmAlloc);
 	lock();
 	_clean = false;
 	// Get the root table entry
@@ -66,6 +66,28 @@ void PageTable::insert(void *host, void *dev)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
 	table.insert(entry(host, tableShift, table.size()), dev);
+	unlock();
+	exitFunction();
+}
+
+void PageTable::remove(void *host)
+{
+	sync();
+	enterFunction(vmFree);
+	lock();
+	_clean = false;
+
+	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
+		exitFunction();
+		return;
+	}
+	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
+	if(dir.present(entry(host, dirShift, dir.size())) == false) {
+		exitFunction();
+		return;
+	}
+	Table &table = dir.get(entry(host, dirShift, dir.size()));
+	table.remove(entry(host, tableShift, table.size()));
 	unlock();
 	exitFunction();
 }

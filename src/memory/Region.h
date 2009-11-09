@@ -63,7 +63,7 @@ typedef unsigned long addr_t;
 class Region {
 private:
 	Context *_context;
-	std::list<Context *> _friends;
+	std::list<Context *> _relatives;
 protected:
 	//! Starting memory address for the region
 	addr_t _addr;
@@ -97,6 +97,9 @@ public:
 	inline void *end() const { return __void(_addr + _size); }
 	//! Sets the address of the Region
 	inline void start(void *addr) { _addr = __addr(addr); }
+
+	inline void relate(Context *ctx) { _relatives.push_back(ctx); }
+	inline void unrelate(Context *ctx) { _relatives.remove(ctx); }
 };
 
 typedef std::list<Region> RegionList;

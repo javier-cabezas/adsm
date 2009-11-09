@@ -170,6 +170,14 @@ public:
 		__shadow[n] = (T *)((addr_t)addr | Present);
 #endif
 	}
+	void remove(size_t n) {
+		assert(n < nEntries);
+		table[n] = (T *)0;
+#ifdef USE_VM
+		__shadow[n] = (T *)0;
+#endif
+
+	}
 	inline T &get(size_t n) const { return *entry(n); }
 	inline T *value(size_t n) const { return entry(n); }
 
