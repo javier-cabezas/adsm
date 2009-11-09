@@ -111,8 +111,7 @@ Context *RollingManager::owner(const void *addr)
 {
 	RollingRegion *reg= get(addr);
 	if(reg == NULL) return NULL;
-	//return reg->context();
-	return NULL;
+	return reg->owner();
 }
 
 void RollingManager::invalidate(const void *addr, size_t size)

@@ -44,7 +44,7 @@ Context *LazyManager::owner(const void *addr)
 {
 	ProtRegion *region = get(addr);
 	if(region == NULL) return NULL;
-	return region->context();
+	return region->owner();
 }
 
 void LazyManager::invalidate(const void *addr, size_t size)

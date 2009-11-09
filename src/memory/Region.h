@@ -82,7 +82,7 @@ public:
 
 	virtual ~Region() {};
 
-	inline Context *context() { return _context; }
+	inline Context *owner() { return _context; }
 	gmacError_t copyToDevice();
 	gmacError_t copyToHost();
 	void sync();
