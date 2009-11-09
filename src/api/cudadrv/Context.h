@@ -100,33 +100,6 @@ protected:
 	int major;
 	int minor;
 
-#ifdef USE_IO_LOCK
-	static MUTEX(ioHostMutex);
-	static MUTEX(ioDeviceMutex);
-
-	static void ioHostLock() {
-		enterLock(ioHostLock);
-		MUTEX_LOCK(ioHostMutex);
-		exitLock();
-	}
-
-	static void ioHostUnlock() {
-		MUTEX_UNLOCK(ioHostMutex);
-	}
-
-
-	static void ioDeviceLock() {
-		enterLock(ioDeviceLock);
-		MUTEX_LOCK(ioDeviceMutex);
-		exitLock();
-	}
-
-	static void ioDeviceUnlock() {
-		MUTEX_UNLOCK(ioDeviceMutex);
-	}
-#endif
-
-
 	inline CUdeviceptr gpuAddr(void *addr) const {
 		unsigned long a = (unsigned long)addr;
 		return (CUdeviceptr)(a & 0xffffffff);
@@ -181,13 +154,6 @@ protected:
 
 public:
 
-	inline static void init() {
-#ifdef USE_IO_LOCK
-		MUTEX_INIT(ioHostMutex);
-		MUTEX_INIT(ioDeviceMutex);
-#endif
-	}
-
 	inline static Context *current() {
 		return static_cast<Context *>(PRIVATE_GET(key));
 	}
@@ -240,34 +206,22 @@ public:
 	}
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
-#ifdef USE_IO_LOCK
-		ioHostLock();
-#endif
 		lock();
 		TRACE("Copy %p to device %p", host, dev);
 		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
 		exitFunction();
 		unlock();
-#ifdef USE_IO_LOCK
-		ioHostUnlock();
-#endif
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
-#ifdef USE_IO_LOCK
-		ioDeviceLock();
-#endif
 		lock();
 		TRACE("Copy %p to host %p", dev, host);
 		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
 		exitFunction();
 		unlock();
-#ifdef USE_IO_LOCK
-		ioDeviceUnlock();
-#endif
 		return error(ret);
 	}
 
@@ -282,33 +236,21 @@ public:
 
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
-#ifdef USE_IO_LOCK
-		ioHostLock();
-#endif
 		lock();
 		enterFunction(accHostDeviceCopy);
 		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
 		exitFunction();
 		unlock();
-#ifdef USE_IO_LOCK
-		ioHostUnlock();
-#endif
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) {
-#ifdef USE_IO_LOCK
-		ioDeviceLock();
-#endif
 		lock();
 		enterFunction(accDeviceHostCopy);
 		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
 		exitFunction();
 		unlock();
-#ifdef USE_IO_LOCK
-		ioDeviceUnlock();
-#endif
 		return error(ret);
 	}
 

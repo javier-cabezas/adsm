@@ -65,7 +65,7 @@ RollingManager::RollingManager() :
 	TRACE("Using %d as LRU Delta Size", lruDelta);
 }
 
-void *RollingManager::alloc(void *addr, size_t size)
+void *RollingManager::alloc(void *addr, size_t size, bool shared)
 {
 	void *cpuAddr = NULL;
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), size) != 0)
@@ -76,7 +76,7 @@ void *RollingManager::alloc(void *addr, size_t size)
 	TRACE("Alloc %p (%d bytes)", cpuAddr, size);
 	insertVirtual(cpuAddr, addr, size);
 	regionRolling[Context::current()].inc(lruDelta);
-	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
+	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()), shared);
 	return cpuAddr;
 }
 

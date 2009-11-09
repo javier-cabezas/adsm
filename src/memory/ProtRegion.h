@@ -53,6 +53,11 @@ public:
 		Region(addr, size), _dirty(false), _present(true) {};
 	virtual ~ProtRegion() {};
 
+	inline virtual void relate(Context *ctx) {
+		assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
+		_relatives.push_back(ctx);
+	}
+
 	inline virtual void invalidate(void) {
 		_present = _dirty = false;
 		assert(Memory::protect(__void(_addr), _size, PROT_NONE) == 0);

@@ -45,32 +45,40 @@ static void __attribute__((destructor)) gmacFini(void)
 	delete proc;
 }
 
-gmacError_t gmacMalloc(void **cpuPtr, size_t count)
+static gmacError_t __gmacMalloc(void **cpuPtr, size_t count, bool shared)
 {
-	enterFunction(gmacMalloc);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
 	ret = gmac::Context::current()->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !manager) {
-		exitFunction();
 		return ret;
 	}
-	if((*cpuPtr = manager->alloc(devPtr, count)) == NULL) {
+	if((*cpuPtr = manager->alloc(devPtr, count, shared)) == NULL) {
 		gmac::Context::current()->free(devPtr);
-		exitFunction();
 		return gmacErrorMemoryAllocation;
 	}
-	exitFunction();
 	return gmacSuccess;
 }
 
-gmacError_t gmacGlobalAlloc(void **cpuPtr, size_t count)
+gmacError_t gmacMalloc(void **cpuPtr, size_t count)
+{
+	enterFunction(gmacMalloc);
+	gmacError_t ret = __gmacMalloc(cpuPtr, count, false);
+	exitFunction();
+	return ret;
+}
+
+gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
 	enterFunction(gmacGlobalMalloc);
 	// Allocate memory in the current context
-	gmacError_t ret = gmacMalloc(cpuPtr, count);
-	if(ret != gmacSuccess) return ret;
+	gmacError_t ret = __gmacMalloc(cpuPtr, count, true);
+	if(ret != gmacSuccess) {
+		exitFunction();
+		return ret;
+	}
+	// Comment this out if we opt for a hierarchy-based memory sharing
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
 	gmac::Context::iterator i;
@@ -80,6 +88,7 @@ gmacError_t gmacGlobalAlloc(void **cpuPtr, size_t count)
 		if(ret != gmacSuccess) goto cleanup;
 		manager->map(*i, cpuPtr, devPtr, count);
 	}
+	exitFunction();
 	return ret;
 
 cleanup:
@@ -89,6 +98,7 @@ cleanup:
 		manager->unmap(*i, cpuPtr);
 	}
 	gmacFree(devPtr);
+	exitFunction();
 	return ret;
 }
 

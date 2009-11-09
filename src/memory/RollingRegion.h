@@ -71,6 +71,11 @@ public:
 	RollingRegion(RollingManager &manager, void *, size_t, size_t);
 	~RollingRegion();
 
+	inline virtual void relate(Context *ctx) {
+		assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
+		_relatives.push_back(ctx);
+	}
+
 	ProtSubRegion *find(const void *);
 	virtual void invalidate();
 	void invalidate(const void *, size_t);

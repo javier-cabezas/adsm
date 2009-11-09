@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MAPMANAGER_H_
-#define __MEMORY_MAPMANAGER_H_
+#ifndef __MEMORY_MAP_H_
+#define __MEMORY_MAP_H_
 
 #include <threads.h>
 #include <paraver.h>
@@ -40,16 +40,21 @@ WITH THE SOFTWARE.  */
 #include <memory/PageTable.h>
 #include <memory/Region.h>
 
-#include <assert.h>
+#include <cassert>
+#include <set>
 #include <map>
 
 namespace gmac { namespace memory {
 
 class Map {
+public:
+	typedef std::set<Region *> SharedList;
 protected:
 	typedef std::map<const void *, Region *> __Map;
 	__Map __map;
 	MUTEX(local);
+
+	static SharedList *__shared;
 
 	static __Map *__global;
 	static unsigned count;
@@ -100,6 +105,7 @@ public:
 
 	Map() {
 		MUTEX_INIT(local);
+		if(__shared == NULL) __shared = new std::set<Region *>();
 		globalLock();
 		if(__global == NULL) __global = new __Map();
 		count++;
@@ -111,11 +117,17 @@ public:
 		globalLock();
 		clean();
 		count--;
-		if(count == 0) delete __global;
+		if(count == 0) {
+			delete __global;
+			__global = NULL;
+			delete __shared;
+			__shared = NULL;
+		}
 		globalUnlock();
 	}
 
 	static void init() { MUTEX_INIT(global); }
+	static SharedList &shared() { return *__shared; }
 
 	inline void realloc() { __pageTable.realloc(); }
 

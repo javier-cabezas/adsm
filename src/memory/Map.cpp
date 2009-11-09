@@ -2,6 +2,7 @@
 
 namespace gmac { namespace memory {
 
+Map::SharedList *Map::__shared = NULL;
 Map::__Map *Map::__global = NULL;
 unsigned Map::count = 0;
 MUTEX(Map::global);

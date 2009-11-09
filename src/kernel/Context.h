@@ -98,11 +98,7 @@ protected:
 		_mm.realloc();
 	}
 
-	Context(Accelerator &acc) : acc(acc) {
-		PRIVATE_SET(key, NULL);
-		if(list == NULL) list = new std::list<Context *>();
-		list->push_back(this);
-	}
+	Context(Accelerator &acc);
 
 	virtual ~Context() {
 		PRIVATE_SET(key, NULL);
@@ -113,11 +109,14 @@ protected:
 		}
 	}
 
+
 public:
 
 	static Context *current() {
 		return static_cast<Context *>(PRIVATE_GET(key));
 	}
+
+	void init();
 
 	void destroy() {
 		acc.destroy(this);

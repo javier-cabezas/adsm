@@ -62,12 +62,14 @@ private:
 protected:
 //	memory::PageTable pageTable;
 
-	inline void insert(Region *r) {
+	inline void insert(Region *r, bool shared) {
 		gmac::Context::current()->mm().insert(r);
+		if(shared) { TRACE("Inserting shared Region"); Map::shared().insert(r); }
 	}
 
 	inline Region *remove(void *addr) {
 		Region *ret = gmac::Context::current()->mm().remove(addr);
+		Map::shared().erase(ret);
 		return ret;
 	}
 
@@ -124,7 +126,7 @@ public:
 	//! \param devPtr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	virtual void *alloc(void *addr, size_t count) = 0;
+	virtual void *alloc(void *addr, size_t count, bool shared) = 0;
 
 	//! This method is called whenever the user
 	//! releases accelerator memory
