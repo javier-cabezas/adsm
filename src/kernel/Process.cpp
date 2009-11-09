@@ -34,9 +34,9 @@ void Process::create()
 	lock();
 	unsigned n = current;
 	current = ++current % accs.size();
-	unlock();
 	contexts.push_back(accs[n]->create());
 	contexts.back()->init();
+	unlock();
 }
 
 void Process::clone(gmac::Context *ctx)
@@ -45,9 +45,9 @@ void Process::clone(gmac::Context *ctx)
 	lock();
 	unsigned n = current;
 	current = ++current % accs.size();
-	unlock();
 	contexts.push_back(accs[n]->clone(*ctx));
 	contexts.back()->init();
+	unlock();
 	TRACE("Cloned context on Acc#%d", n);
 }
 
