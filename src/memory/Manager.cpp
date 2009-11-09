@@ -47,8 +47,8 @@ void Manager::map(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	Region *region = gmac::Context::current()->mm().find<Region>(cpuPtr);
 	assert(region != NULL); assert(region->size() == count);
-	region->relate(ctx);
 	insertVirtual(ctx, cpuPtr, devPtr, count);
+	region->relate(ctx);
 }
 
 void Manager::unmap(Context *ctx, void *cpuPtr)

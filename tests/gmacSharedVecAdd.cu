@@ -58,7 +58,7 @@ void *addVector(void *ptr)
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
 	gettimeofday(&s, NULL);
-	vecAdd<<<Dg, Db>>>(gmacPtr((param->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
+	vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
@@ -66,7 +66,7 @@ void *addVector(void *ptr)
 	gettimeofday(&s, NULL);
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
-		error += param->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
+		error += p->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
 		//error += (a[i] - b[i]);
 	}
 	gettimeofday(&t, NULL);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 
 	for(n = 0; n < nIter; n++) {
 		param[n].i = n;
-		pthread_create(&nThread[n], NULL, addVector, &param[n]);
+		pthread_create(&nThread[n], NULL, addVector, &(param[n]));
 	}
 
 	for(n = 0; n < nIter; n++) {
