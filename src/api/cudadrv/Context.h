@@ -173,20 +173,28 @@ public:
 
 	// Standard Accelerator Interface
 	inline gmacError_t malloc(void **addr, size_t size) {
-		lock();
 		zero(addr);
+		lock();
 		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
 		unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t halloc(void **host, void **device, size_t size) {
-		lock();
 		zero(host); zero(device);
+		lock();
 		CUresult ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP);
 		if(ret == CUDA_SUCCESS)
 			assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0)
 				== CUDA_SUCCESS);
+		unlock();
+		return error(ret);
+	}
+
+	inline gmacError_t hmap(void *host, void **device) {
+		zero(device);
+		lock();
+		CUresult ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, host, 0);
 		unlock();
 		return error(ret);
 	}

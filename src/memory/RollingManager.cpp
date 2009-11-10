@@ -70,8 +70,6 @@ void *RollingManager::alloc(void *addr, size_t size, bool shared)
 	void *cpuAddr = NULL;
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), size) != 0)
 		return NULL;
-//	if((cpuAddr = memalign(pageTable().getPageSize(), size)) == NULL)
-//		return NULL;
 	Memory::protect(cpuAddr, size, PROT_NONE);
 	TRACE("Alloc %p (%d bytes)", cpuAddr, size);
 	insertVirtual(cpuAddr, addr, size);

@@ -148,13 +148,13 @@ else
 fi
 
 
-io_lock_default="no"
-AC_MSG_CHECKING(whether to use a global I/O lock)
+shared_host_default="no"
+AC_MSG_CHECKING(whether to use a host memory for shared allocations)
 AC_ARG_ENABLE(io-lock,
-	AC_HELP_STRING([--enable-io-lock], [turn on global I/O lock [[default=no]]])
-		, , enable_io_lock=$io_lock_default)
-if test "$enable_io_lock" = "yes"; then
-	AC_DEFINE([USE_IO_LOCK])
+	AC_HELP_STRING([--enable-shared-host], [turn on host memory for shared allocations [[default=no]]])
+		, , enable_shared_host=$shared_host_default)
+if test "$enable_shared_host" = "yes"; then
+	AC_DEFINE([USE_SHARED_HOST])
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
