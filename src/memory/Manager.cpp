@@ -23,6 +23,21 @@ Manager *getManager(const char *managerName)
 	return new RollingManager();
 }
 
+Region *Manager::remove(void *addr)
+{
+	Region *ret = gmac::Context::current()->mm().remove(addr);
+	if(ret->owner() == gmac::Context::current()) {
+		if(ret->relatives().empty()) Map::shared().erase(ret);
+		else {
+			// Change ownership
+			ret->transfer();
+			ret->owner()->mm().insert(ret);
+		}
+	}
+	else ret->unrelate(gmac::Context::current());
+	return ret;
+}
+
 void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);

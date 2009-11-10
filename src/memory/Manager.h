@@ -66,11 +66,7 @@ protected:
 		if(shared) { TRACE("Inserting shared Region"); Map::shared().insert(r); }
 	}
 
-	inline Region *remove(void *addr) {
-		Region *ret = gmac::Context::current()->mm().remove(addr);
-		Map::shared().erase(ret);
-		return ret;
-	}
+	Region *remove(void *addr);
 
 	inline memory::Map *current() {
 		if(gmac::Context::current() == NULL) return NULL;

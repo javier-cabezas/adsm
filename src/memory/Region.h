@@ -100,6 +100,11 @@ public:
 
 	inline virtual void relate(Context *ctx) { _relatives.push_back(ctx); }
 	inline virtual void unrelate(Context *ctx) { _relatives.remove(ctx); }
+	inline virtual void transfer() {
+		assert(_relatives.empty() == false);
+		_context = _relatives.front();
+		_relatives.pop_front();
+	}
 	inline virtual std::list<Context *> &relatives() { return _relatives; }
 };
 

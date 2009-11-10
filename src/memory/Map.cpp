@@ -28,11 +28,13 @@ Region *Map::remove(void *addr)
 	globalLock();
 	i = __global->upper_bound(addr);
 	assert(i != __global->end() && i->second->start() == addr);
-	assert(i->second->owner() == gmac::Context::current());
-	__global->erase(i);
+	if(i->second->owner() == gmac::Context::current()) __global->erase(i);
 	globalUnlock();
-	TRACE("Removing Region %p", i->second->start());
+	// If the region is global (not owned by the context) return
+	if(i->second->owner() != gmac::Context::current()) 
+		return i->second;
 
+	TRACE("Removing Region %p", i->second->start());
 	i = __map.upper_bound(addr);
 	assert(i != __map.end() && i->second->start() == addr);
 	Region *ret = i->second;

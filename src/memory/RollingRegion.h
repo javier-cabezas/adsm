@@ -73,6 +73,7 @@ public:
 
 	virtual void relate(Context *ctx);
 	virtual void unrelate(Context *ctx);
+	virtual void transfer();
 
 	ProtSubRegion *find(const void *);
 	virtual void invalidate();

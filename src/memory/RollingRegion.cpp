@@ -56,6 +56,13 @@ void RollingRegion::unrelate(Context *ctx)
 	_relatives.remove(ctx);
 }
 
+void RollingRegion::transfer()
+{
+	Map::iterator i;
+	for(i = map.begin(); i != map.end(); i++) i->second->transfer();
+	Region::transfer();
+}
+
 ProtSubRegion *RollingRegion::find(const void *addr)
 {
 	Map::const_iterator i = map.upper_bound(addr);

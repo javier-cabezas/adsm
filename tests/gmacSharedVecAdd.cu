@@ -114,6 +114,9 @@ int main(int argc, char *argv[])
 		pthread_create(&nThread[n], NULL, addVector, &(param[n]));
 	}
 
+	gmacFree(a);
+	gmacFree(b);
+
 	for(n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
 	}
@@ -126,8 +129,6 @@ int main(int argc, char *argv[])
 	}
 	fprintf(stdout, "Total: %.02f\n", error);
 
-	gmacFree(a);
-	gmacFree(b);
 
 	free(param);
 	free(nThread);
