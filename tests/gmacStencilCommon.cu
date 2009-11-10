@@ -34,8 +34,7 @@ float devY4;
 template <uint32_t STENCIL_TILE_XSIZE, uint32_t STENCIL_TILE_YSIZE>
 __global__
 void
-kernelStencil(const float * u1,
-              const float * u2,
+kernelStencil(const float * u2,
               float * u3,
               const float * v,
               const float dt2,
@@ -117,10 +116,10 @@ kernelStencil(const float * u1,
         s_data[SH(tx, ty)] = current;
         __syncthreads();
         float tmp  = v[realIndex];
-        float tmp1 = u1[index];
+        float tmp1 = u3[index];
 
         float div  =
-            devX4 * (s_data[SH_Y(-4)] + s_data[SH_Y(4)]);
+              devX4 * (s_data[SH_Y(-4)] + s_data[SH_Y(4)]);
         div += devC00 * current;
         div += devX3 * (s_data[SH_Y(-3)] + s_data[SH_Y(3)]);
         div += devX2 * (s_data[SH_Y(-2)] + s_data[SH_Y(2)]);
@@ -144,10 +143,18 @@ kernelStencil(const float * u1,
 
 #define VELOCITY 2000
 
+pthread_barrier_t barrier;
+
 struct JobDescriptor {
     const static int DEFAULT_DIM = 256;
     int gpus;
     int gpuId;
+
+    struct JobDescriptor * prev;
+    struct JobDescriptor * next;
+
+    float * u3;
+    float * u2;
 
     size_t dimRealElems;
     size_t dimElems;
@@ -165,12 +172,12 @@ struct JobDescriptor {
 
     size_t elems()
     {
-        return dimElems * dimElems * dimElems;
+        return dimElems * dimElems * (slices + 2 * STENCIL);
     }
 
     size_t realElems()
     {
-        return dimRealElems * dimRealElems * dimRealElems;
+        return dimRealElems * dimRealElems * slices;
     }
 
     size_t size()
@@ -186,28 +193,27 @@ struct JobDescriptor {
 
 };
 
+#include <pthread.h>
+
 void *
 do_stencil(void * ptr)
 {
     JobDescriptor * descr = (JobDescriptor *) ptr;
 
-	float * u1 = NULL, * u2 = NULL, * u3 = NULL, * v = NULL;
+	float * v = NULL;
 	struct timeval s, t;
 
 	gettimeofday(&s, NULL);
 
 	// Alloc 3 volumes for 2-degree time integration
-	if(gmacMalloc((void **)&u1, descr->size()) != gmacSuccess)
+	if(gmacMalloc((void **)&descr->u2, descr->size()) != gmacSuccess)
 		CUFATAL();
-    gmacMemset(u1, 0, descr->size());	
-	if(gmacMalloc((void **)&u2, descr->size()) != gmacSuccess)
+	gmacMemset(descr->u2, 0, descr->size());
+	if(gmacMalloc((void **)&descr->u3, descr->size()) != gmacSuccess)
 		CUFATAL();
-	gmacMemset(u2, 0, descr->size());
-	if(gmacMalloc((void **)&u3, descr->size()) != gmacSuccess)
-		CUFATAL();
-    gmacMemset(u3, 0, descr->size());
+    gmacMemset(descr->u3, 0, descr->size());
 
-    if(gmacMalloc((void **)&v, descr->realSize()) != gmacSuccess)
+    if(gmacMalloc((void **) &v, descr->realSize()) != gmacSuccess)
 		CUFATAL();
 
     for (int k = 0; k < descr->slices; k++) {        
@@ -227,30 +233,48 @@ do_stencil(void * ptr)
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
 	gettimeofday(&s, NULL);
     for (uint32_t i = 0; i < ITERATIONS; i++) {
-        printf("ITERATION %d\n", i);
         float * tmp;
 
-        kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(u1 + descr->dimElems * STENCIL + STENCIL),
-                                         gmacPtr(u2 + descr->dimElems * STENCIL + STENCIL),
-                                         gmacPtr(u3 + descr->dimElems * STENCIL + STENCIL),
+        kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
+                                         gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),
                                          0.08,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
         if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
-        tmp = u3;
-        u3 = u1;
-        u1 = u2;
-        u2 = tmp;
+        if(descr->gpus > 1) {
+            pthread_barrier_wait(&barrier);
+
+            // Send data
+            if (descr->prev != NULL) {
+                gmacMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
+                          descr->u3 + STENCIL * descr->sliceElems(),
+                          descr->sliceElems() * STENCIL * sizeof(float));                
+            }
+            if (descr->next != NULL) {
+                gmacMemcpy(descr->next->u3,
+                          descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
+                          descr->sliceElems() * STENCIL * sizeof(float));                
+            }
+
+            pthread_barrier_wait(&barrier);
+        }
+
+        tmp = descr->u3;
+        descr->u3 = descr->u2;
+        descr->u2 = tmp;
+    }
+
+    if(descr->gpus > 1) {
+        pthread_barrier_wait(&barrier);
     }
 
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
 
-	gmacFree(u1);
-	gmacFree(u2);
-	gmacFree(u3);
+	gmacFree(descr->u2);
+	gmacFree(descr->u3);
 
 	gmacFree(v);
 
@@ -258,7 +282,7 @@ do_stencil(void * ptr)
 }
 
 const char * dimRealElemsStr = "GMAC_DIM_REAL_ELEMS";
-const size_t dimRealElemsDefault = 256;
+const size_t dimRealElemsDefault = 352;
 
 static size_t dimElems     = 0;
 static size_t dimRealElems = 0;

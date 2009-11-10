@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
     descriptor->gpus  = 1;
     descriptor->gpuId = 1;
 
+    descriptor->prev = NULL;
+    descriptor->next = NULL;
+
     descriptor->dimRealElems = dimRealElems;
     descriptor->dimElems     = dimElems;
     descriptor->slices       = dimRealElems;

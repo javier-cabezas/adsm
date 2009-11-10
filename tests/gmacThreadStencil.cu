@@ -22,12 +22,11 @@ static size_t nIter = 0;
 
 int main(int argc, char *argv[])
 {
-
 	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<size_t>(&nIter, nIterStr, nIterDefault);
 
-    if (nIter < 2) {
-        fprintf(stderr, "Error: nIter should be greater than %d\n", nIter);
+    if (nIter == 0) {
+        fprintf(stderr, "Error: nIter should be greater than 0\n");
         abort();
     }
 
@@ -41,11 +40,28 @@ int main(int argc, char *argv[])
     JobDescriptor * descriptors = new JobDescriptor[nIter];
     pthread_t * nThread = new pthread_t[nIter];
 
+    if (nIter > 1) {
+        pthread_barrier_init(&barrier, NULL, nIter);
+    }
+
     for(int n = 0; n < nIter; n++) {
         descriptors[n] = JobDescriptor();
         descriptors[n].gpus  = nIter;
         descriptors[n].gpuId = n;
 
+        if (n > 0) {
+            descriptors[n].prev = &descriptors[n - 1];
+        } else {
+            descriptors[n].prev = NULL;
+        }
+
+        if (n < nIter - 1) {
+            descriptors[n].next = &descriptors[n + 1];
+        } else {
+            descriptors[n].next = NULL;
+        }
+
+        descriptors[n].gpuId = n;
         descriptors[n].dimRealElems = dimRealElems;
         descriptors[n].dimElems     = dimElems;
         descriptors[n].slices       = dimElems / nIter;
@@ -61,7 +77,11 @@ int main(int argc, char *argv[])
 		pthread_join(nThread[n], NULL);
 	}
 
+    if (nIter > 1) {
+        pthread_barrier_destroy(&barrier);
+    }
+
+
     delete descriptors;
     delete nThread;
-
 }
