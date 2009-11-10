@@ -79,6 +79,8 @@ protected:
 
 	CallStack _calls;
 
+	static const unsigned USleepLaunch = 1000;
+
 	static const unsigned StackSize = 4096;
 	uint8_t _stack[StackSize];
 	size_t _sp;
@@ -100,6 +102,8 @@ protected:
 	int major;
 	int minor;
 
+    CUstream streamLaunch;
+
 	inline CUdeviceptr gpuAddr(void *addr) const {
 		unsigned long a = (unsigned long)addr;
 		return (CUdeviceptr)(a & 0xffffffff);
@@ -119,6 +123,14 @@ protected:
 
 	friend class gmac::GPU;
 
+    inline void setupStreams() {
+        CUresult ret;
+        ret = cuStreamCreate(&streamLaunch, 0);
+        if(ret != CUDA_SUCCESS)
+            FATAL("Unable to create CUDA stream %d", ret);
+
+        TRACE("Created launch stream: %p", streamLaunch);
+    }
 	inline void setup() {
 		MUTEX_INIT(mutex);
 		CUcontext tmp;
@@ -131,7 +143,7 @@ protected:
 			FATAL("Unable to create CUDA context %d", ret);
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
 
-		enable();
+        enable();
 	}
 
 	Context(GPU &gpu) :
@@ -141,6 +153,11 @@ protected:
 #endif
 	{
 		setup();
+
+        lock();
+        setupStreams();
+        unlock();
+
 		TRACE("New GPU context [%p]", this);
 	}
 
@@ -149,6 +166,7 @@ protected:
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
 		MUTEX_DESTROY(mutex);
+        cuStreamDestroy(streamLaunch);
 		cuCtxDestroy(ctx); 
 	}
 
@@ -184,9 +202,10 @@ public:
 		zero(host); zero(device);
 		lock();
 		CUresult ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP);
-		if(ret == CUDA_SUCCESS)
-			assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0)
-				== CUDA_SUCCESS);
+		if(ret == CUDA_SUCCESS) {
+            ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0);
+			assert(ret == CUDA_SUCCESS);
+        }
 		unlock();
 		return error(ret);
 	}
@@ -215,19 +234,23 @@ public:
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();
-		TRACE("Copy %p to device %p", host, dev);
 		enterFunction(accHostDeviceCopy);
-		CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+
+        CUresult ret;
+        ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+
 		exitFunction();
-		unlock();
+        unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
 		lock();
-		TRACE("Copy %p to host %p", dev, host);
 		enterFunction(accDeviceHostCopy);
-		CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+
+        CUresult ret;
+		ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+
 		exitFunction();
 		unlock();
 		return error(ret);
@@ -236,7 +259,10 @@ public:
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
 		lock();
 		enterFunction(accDeviceDeviceCopy);
-		CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+		
+        CUresult ret;
+        ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+
 		exitFunction();
 		unlock();
 		return error(ret);
@@ -266,9 +292,14 @@ public:
 	gmacError_t launch(const char *kernel);
 	
 	inline gmacError_t sync() {
-		lock();
-		CUresult ret = cuCtxSynchronize();
-		unlock();
+        CUresult ret;
+        lock();
+        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
+            unlock();
+            usleep(Context::USleepLaunch);
+            lock();
+        }
+        unlock();
 		return error(ret);
 	}
 
