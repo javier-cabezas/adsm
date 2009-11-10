@@ -177,27 +177,33 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 
 	assert(dstCtx != NULL || srcCtx != NULL);
 
+    gmacError_t err;
 	TRACE("GMAC Memcpy");
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
-		srcCtx->copyToHost(dst, manager->ptr(src), n);
+		err = srcCtx->copyToHost(dst, manager->ptr(src), n);
+        assert(err == gmacSuccess);
 	}
 	else if(srcCtx == NULL) { // Copy to Device
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->ptr(dst), src, n);
+		err = dstCtx->copyToDevice(manager->ptr(dst), src, n);
+        assert(err == gmacSuccess);
 	}
 	else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
-		dstCtx->copyDevice(manager->ptr(dst),
-				manager->ptr(src), n);
+		err = dstCtx->copyDevice(manager->ptr(dst),
+			                     manager->ptr(src), n);
+        assert(err == gmacSuccess);
 	}
 	else {
 		void *tmp = malloc(n);
 		manager->flush(src, n);
-		srcCtx->copyToHost(tmp, manager->ptr(src), n);
+		err = srcCtx->copyToHost(tmp, manager->ptr(src), n);
+        assert(err == gmacSuccess);
 		manager->invalidate(dst, n);
-		dstCtx->copyToDevice(manager->ptr(dst), tmp, n);
+		err = dstCtx->copyToDevice(manager->ptr(dst), tmp, n);
+        assert(err == gmacSuccess);
 		free(tmp);
 	}
 
