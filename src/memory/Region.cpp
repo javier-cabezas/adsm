@@ -12,6 +12,10 @@ Region::Region(void *addr, size_t size) :
 	_context = Context::current();
 }
 
+Region::~Region()
+{
+}
+
 gmacError_t Region::copyToDevice()
 {
 	gmacError_t ret = gmacSuccess;
@@ -30,13 +34,7 @@ gmacError_t Region::copyToHost()
 	gmacError_t ret = gmacSuccess;
 	if((ret = _context->copyToHost(start(), Manager::ptr(start()), size())) != gmacSuccess)
 		return ret;
-	std::list<Context *>::iterator i;
-	for(i = _relatives.begin(); i != _relatives.end(); i++) {
-		if((ret = (*i)->copyToHost(start(), Manager::ptr(start()), size())) != gmacSuccess)
-			return ret;
-	}
 	return ret;	
-
 }
 
 void Region::sync()

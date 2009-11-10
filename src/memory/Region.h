@@ -80,7 +80,7 @@ public:
 	//! \param size Size in bytes
 	Region(void *addr, size_t size);
 
-	virtual ~Region() {};
+	virtual ~Region();
 
 	inline Context *owner() { return _context; }
 	gmacError_t copyToDevice();
@@ -100,6 +100,7 @@ public:
 
 	inline virtual void relate(Context *ctx) { _relatives.push_back(ctx); }
 	inline virtual void unrelate(Context *ctx) { _relatives.remove(ctx); }
+	inline virtual std::list<Context *> &relatives() { return _relatives; }
 };
 
 typedef std::list<Region> RegionList;

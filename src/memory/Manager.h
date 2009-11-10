@@ -60,7 +60,6 @@ private:
 	MUTEX(mutex);
 
 protected:
-//	memory::PageTable pageTable;
 
 	inline void insert(Region *r, bool shared) {
 		gmac::Context::current()->mm().insert(r);

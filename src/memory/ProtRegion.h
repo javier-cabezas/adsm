@@ -54,7 +54,6 @@ public:
 	virtual ~ProtRegion() {};
 
 	inline virtual void relate(Context *ctx) {
-		assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
 		_relatives.push_back(ctx);
 	}
 

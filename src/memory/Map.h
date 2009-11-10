@@ -86,16 +86,7 @@ protected:
 		return ret;
 	}
 
-	inline void clean() {
-		__Map::iterator i;
-		for(i = __map.begin(); i != __map.end(); i++) {
-			TRACE("Cleaning Region %p", i->second);
-			__global->erase(i->first);
-			delete i->second;
-		}
-		__map.clear();
-	}
-
+	void clean();
 
 	PageTable __pageTable;
 
@@ -114,8 +105,8 @@ public:
 
 	virtual ~Map() {
 		TRACE("Cleaning Memory Map");
-		globalLock();
 		clean();
+		globalLock();
 		count--;
 		if(count == 0) {
 			delete __global;

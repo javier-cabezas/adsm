@@ -36,6 +36,26 @@ RollingRegion::~RollingRegion()
 	map.clear();
 }
 
+void RollingRegion::relate(Context *ctx)
+{
+	Map::const_iterator i;
+	// Push dirty regions in the rolling buffer
+	// and copy to device clean regions
+	for(i = map.begin(); i != map.end(); i++) {
+		if(i->second->dirty()) manager.regionRolling[ctx].push(i->second);
+		else assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
+		i->second->relate(ctx);
+	}
+	_relatives.push_back(ctx);
+}
+
+void RollingRegion::unrelate(Context *ctx)
+{
+	Map::iterator i;
+	for(i = map.begin(); i != map.end(); i++) i->second->unrelate(ctx);
+	_relatives.remove(ctx);
+}
+
 ProtSubRegion *RollingRegion::find(const void *addr)
 {
 	Map::const_iterator i = map.upper_bound(addr);
