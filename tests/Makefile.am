@@ -6,7 +6,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacThreadVecAdd gmacSharedVecAdd\
 	 	gmacPingPong\
 		gmacStencil gmacThreadStencil\
-		vmVecAdd vmNull
+		vmVecAdd vmNull vmStencil
 
 bandwidth_SOURCES = bandwidth.cu
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcuda -lcudart
@@ -48,6 +48,11 @@ gmacStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacThreadStencil_DEPENDENCIES = gmacStencilCommon.cu
 gmacThreadStencil_SOURCES = gmacThreadStencil.cu utils.c
 gmacThreadStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+vmStencil_DEPENDENCIES = vmStencilCommon.cu
+vmStencil_SOURCES = vmStencil.cu utils.c
+vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 

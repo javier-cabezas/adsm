@@ -13,7 +13,7 @@ size_t PageTable::tableShift;
 
 PageTable::PageTable() :
 	_clean(false), _valid(true),
-	pages(1), devicePages(0)
+	pages(1)
 {
 	MUTEX_INIT(mutex);
 	const char *var = Util::getenv(pageSizeVar);
@@ -191,7 +191,7 @@ void *PageTable::flush()
 {
 #ifdef USE_VM
 	// If there haven't been modifications, just return
-	if(_clean == true) return device;
+	if(_clean == true) return rootTable.device();
 
 	TRACE("PT Flush");
 

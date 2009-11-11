@@ -183,10 +183,11 @@ void Context::flush()
 	devicePageTable.shift = mm().pageTable().getTableShift();
 	devicePageTable.size = mm().pageTable().getTableSize();
 	devicePageTable.page = mm().pageTable().getPageSize();
+	assert(devicePageTable.ptr != NULL);
 	
 	lock();
-	assert(cuMemcpyHtoD(pageTable->ptr, &devicePageTable,
-		sizeof(devicePageTable)) == CUDA_SUCCESS);
+	CUresult ret = cuMemcpyHtoD(pageTable->ptr, &devicePageTable, sizeof(devicePageTable));
+	assert(ret == CUDA_SUCCESS);
 	unlock();
 #endif
 }

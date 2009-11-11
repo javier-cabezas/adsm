@@ -64,7 +64,6 @@ void *chain(void *ptr)
 	for(int i = 0; i < rounds; i++) {
 		int current = *id - i;
 		if(current < 0) current += nIter;
-		//fprintf(stderr,"Thread %d(-> %d) +%d on %d\n", *id, next, *id, current);
 		// Call the kernel
 		inc<<<Dg, Db>>>(gmacPtr(a[current]), *id, vecSize);
 		if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();

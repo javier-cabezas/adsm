@@ -198,7 +198,7 @@ public:
 	}
 
 	inline void flush() const {
-#ifdef USE_VM_DEVICE
+#ifdef USE_VM
 		assert(__device != NULL);
 		Dumper::flush(__device, __shadow, nEntries * sizeof(T *));
 #endif
@@ -208,11 +208,7 @@ public:
 #ifdef USE_VM
 		assert(__device != NULL);
 		if(__shared == false) return;
-#ifdef USE_VM_DEVICE
 		Dumper::sync(table, __device, nEntries * sizeof(T *));
-#else
-		memcpy(table, __shadow, nEntries * sizeof(T *));
-#endif
 #endif
 	}
 };

@@ -78,8 +78,6 @@ private:
 	bool _valid;
 
 	size_t pages;
-	size_t devicePages;
-	vm::addr_t *device;
 
 	typedef vm::Table<vm::addr_t> Table;
 	typedef vm::Table<Table> Directory;

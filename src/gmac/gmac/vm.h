@@ -55,7 +55,7 @@ __constant__ struct {
 	size_t page;
 } __pageTable;
 
-__device__ inline void *__pg_lookup(void *addr, bool write)
+__device__ inline void *__pg_lookup(const void *addr, bool write)
 {
 	unsigned long offset = (unsigned long)addr & (__pageTable.page - 1);
 	unsigned long *dir = (unsigned long *)__value(__pageTable.ptr,
@@ -73,6 +73,9 @@ __device__ inline void *__pg_lookup(void *addr, bool write)
 
 template<typename T>
 __device__ inline T __globalLd(T *addr) { return *(T *)__pg_lookup(addr, false); }
+template<typename T>
+__device__ inline T __globalLd(const T *addr) { return *(const T *)__pg_lookup(addr, false); }
+
 template<typename T>
 __device__ inline void __globalSt(T *addr, T v) { *(T *)__pg_lookup(addr, true) = v; }
 
