@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 #include <debug.h>
 
+#include <kernel/Queue.h>
 #include <memory/Map.h>
 
 #include <cassert>
@@ -86,8 +87,8 @@ protected:
 	std::vector<Accelerator *> accs;
 	ContextList _contexts;
 	
-	typedef std::map<THREAD_ID, Context *> ContextMap;
-	ContextMap _map;
+	typedef std::map<THREAD_ID, kernel::Queue> QueueMap;
+	QueueMap _queues;
 
 	MUTEX(mutex);
 	unsigned current;
@@ -123,15 +124,6 @@ public:
 	void create();
 	void clone(Context *ctx);
 	void remove(Context *ctx);
-	inline Context *context(THREAD_ID id) {
-		ContextMap::const_iterator i;
-		Context *ret = NULL;
-		lock();
-		i = _map.find(id);
-		if(i != _map.end()) ret = i->second;
-		unlock();
-		return ret;
-	}
 	const ContextList &contexts() const { return _contexts; }
 
 	void accelerator(Accelerator *acc);
@@ -140,6 +132,8 @@ public:
 	inline const void *translate(const void *addr) {
 		return (const void *)translate((void *)addr);
 	}
+
+	void sendReceive(THREAD_ID id);
 
 	inline SharedMap &sharedMem() { return _sharedMem; };
 	inline void addShared(void *addr, size_t size) {

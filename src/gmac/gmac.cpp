@@ -243,9 +243,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 
 }
 
-void gmacSendReceive(THREAD_ID id)
+void gmacSendReceive(unsigned long id)
 {
-	gmac::Context *dst = proc->context(id);
-	assert(dst != NULL);
-	gmac::Context::current()->sendReceive(dst);
+	proc->sendReceive(id);
 }

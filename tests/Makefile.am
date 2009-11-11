@@ -3,9 +3,9 @@ MAINTAINERCLEANFILES=Makefile.in
 noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
-		gmacThreadVecAdd gmacSharedVecAdd gmacSteady\
-		gmacStencil\
-		gmacThreadStencil\
+		gmacThreadVecAdd gmacSharedVecAdd\
+	 	gmacPingPong\
+		gmacStencil gmacThreadStencil\
 		vmVecAdd vmNull
 
 bandwidth_SOURCES = bandwidth.cu
@@ -38,8 +38,8 @@ gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacSharedVecAdd_SOURCES = gmacSharedVecAdd.cu utils.c
 gmacSharedVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-gmacSteady_SOURCES = gmacSteady.cu utils.c
-gmacSteady_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+gmacPingPong_SOURCES = gmacPingPong.cu utils.c
+gmacPingPong_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacStencil_DEPENDENCIES = gmacStencilCommon.cu
 gmacStencil_SOURCES = gmacStencil.cu utils.c

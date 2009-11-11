@@ -37,7 +37,7 @@ void Process::create()
 	Context *ctx = accs[n]->create();
 	ctx->init();
 	_contexts.push_back(ctx);
-	_map.insert(ContextMap::value_type(SELF(), ctx));
+	_queues.insert(QueueMap::value_type(SELF(), kernel::Queue()));
 	unlock();
 }
 
@@ -50,7 +50,7 @@ void Process::clone(gmac::Context *ctx)
 	Context *clon = accs[n]->clone(*ctx);
 	clon->init();
 	_contexts.push_back(clon);
-	_map.insert(ContextMap::value_type(SELF(), clon));
+	_queues.insert(QueueMap::value_type(SELF(), kernel::Queue()));
 	unlock();
 	TRACE("Cloned context on Acc#%d", n);
 }
@@ -59,6 +59,7 @@ void Process::remove(Context *ctx)
 {
 	lock();
 	_contexts.remove(ctx);
+	_queues.erase(SELF());
 	unlock();
 	ctx->destroy();
 }
@@ -78,6 +79,17 @@ void *Process::translate(void *addr)
 		if(ret != NULL) return ret;
 	}
 	return ret;
+}
+
+void Process::sendReceive(THREAD_ID id)
+{
+	QueueMap::iterator q = _queues.find(id);
+	assert(q != _queues.end());
+	q->second.push(gmac::Context::current());
+	PRIVATE_SET(Context::key, NULL);
+	q = _queues.find(SELF());
+	assert(q != _queues.end());
+	PRIVATE_SET(Context::key, q->second.pop());
 }
 
 

@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
-#include <kernel/Queue.h>
 
 #include <gmac/gmac.h>
 #include <memory/Map.h>
@@ -91,8 +90,6 @@ protected:
 		PRIVATE_SET(key, this);
 		_mm.realloc();
 	}
-
-	kernel::Queue inBuffer;
 
 	Context(Accelerator &acc);
 
@@ -230,16 +227,6 @@ public:
 
 	virtual void flush() = 0;
 	virtual void invalidate() = 0;
-
-
-	inline void sendReceive(Context *ctx) {
-		lock();
-		PRIVATE_SET(key, NULL);
-		ctx->inBuffer.push(this);
-		Context *in = inBuffer.pop();
-		PRIVATE_SET(key, in);
-		unlock();
-	}
 };
 
 };

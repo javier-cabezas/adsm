@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #include <debug.h>
 
+#include <cassert>
+#include <list>
 
 namespace gmac {
 
@@ -75,6 +77,7 @@ public:
 	inline Context *pop() {
 		SEM_WAIT(_sem);
 		lock();
+		assert(_queue.empty() == false);
 		Context *ret = _queue.front();
 		_queue.pop_front();
 		unlock();

@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
-#include <threads.h>
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -118,7 +116,7 @@ gmacError_t gmacGetLastError(void);
 void *gmacMemset(void *, int, size_t);
 void *gmacMemcpy(void *, const void *, size_t);
 
-void gmacSendReceive(THREAD_ID);
+void gmacSendReceive(unsigned long);
 
 inline const char *gmacGetErrorString(gmacError_t err) {
 	assert(err <= gmacErrorUnknown);
