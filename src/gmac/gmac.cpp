@@ -69,6 +69,22 @@ gmacError_t gmacMalloc(void **cpuPtr, size_t count)
 	return ret;
 }
 
+#ifdef USE_GLOBAL_HOST
+gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
+{
+	enterFunction(gmacGlobalMalloc);
+	gmacError_t ret = gmacSuccess;
+	void *devPtr;
+	count = (count < pageSize) ? pageSize : count;
+	ret = gmac::Context::current()->host_aligned(cpuPtr, &devPtr, count);
+	if(ret != gmacSuccess || !manager) {
+		return ret;
+	}
+	manager->map(*cpuPtr, devPtr, count);
+	exitFunction();
+	return gmacSuccess;
+}
+#else
 gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
 	enterFunction(gmacGlobalMalloc);
@@ -86,7 +102,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 		if(*i == gmac::Context::current()) continue;
 		ret = (*i)->malloc(&devPtr, count);
 		if(ret != gmacSuccess) goto cleanup;
-		manager->map(*i, cpuPtr, devPtr, count);
+		manager->remap(*i, cpuPtr, devPtr, count);
 	}
 	exitFunction();
 	return ret;
@@ -101,6 +117,7 @@ cleanup:
 	exitFunction();
 	return ret;
 }
+#endif
 
 gmacError_t gmacFree(void *cpuPtr)
 {

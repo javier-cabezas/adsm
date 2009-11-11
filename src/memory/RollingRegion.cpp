@@ -47,6 +47,7 @@ void RollingRegion::relate(Context *ctx)
 		i->second->relate(ctx);
 	}
 	_relatives.push_back(ctx);
+	manager.regionRolling[ctx].inc(manager.lruDelta);
 }
 
 void RollingRegion::unrelate(Context *ctx)

@@ -41,10 +41,11 @@ Region *Manager::remove(void *addr)
 void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
-	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
-	uint8_t *devAddr = (uint8_t *)devPtr;
 	gmac::memory::PageTable &pageTable = ctx->mm().pageTable();
-	count += ((unsigned long)cpuPtr & (pageTable.getPageSize() -1));
+	assert(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
+	uint8_t *devAddr = (uint8_t *)devPtr;
+	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
+	TRACE("Page Table Request %p -> %p", cpuAddr, devAddr);
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.insert(cpuAddr + off, devAddr + off);
 }
@@ -58,7 +59,13 @@ void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 		pageTable.remove(cpuAddr + off);
 }
 
-void Manager::map(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+void Manager::map(void *host, void *dev, size_t count)
+{
+	insert(new Region(host, count), true);
+	insertVirtual(gmac::Context::current(), host, dev, count);
+}
+
+void Manager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	Region *region = gmac::Context::current()->mm().find<Region>(cpuPtr);
 	assert(region != NULL); assert(region->size() == count);

@@ -139,13 +139,7 @@ public:
 	*/
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
 
-	/*!
-		\brief Allocates system memory accesible from the accelerator
-		\param addr Pointer to memory address to store the accelerator memory
-		\param size Size, in bytes, to be allocated
-	*/
-	virtual gmacError_t halloc(void **host, void **device, size_t size) = 0;
-
+	
 	/*!
 		\brief Releases memory previously allocated by Malloc
 		\param addr Starting memory address to be released
@@ -153,10 +147,21 @@ public:
 	virtual gmacError_t free(void *addr) = 0;
 
 	/*!
+		\brief Allocates system memory accesible from the accelerator
+		\param addr Pointer to memory address to store the accelerator memory
+		\param size Size, in bytes, to be allocated
+	*/
+	virtual gmacError_t host_alloc(void **host, void **device, size_t size) = 0;
+
+	virtual gmacError_t host_aligned(void **host, void **device, size_t size) = 0;
+
+	virtual gmacError_t host_map(void *host, void **device, size_t size) = 0;
+
+	/*!
 		\bried Releases system memory accesible from the accelerator
 		\param addr Starting memory address to be released
 	*/
-	virtual gmacError_t hfree(void *addr) = 0;
+	virtual gmacError_t host_free(void *addr) = 0;
 	
 	/*!
 		\brief Copies data from system memory to accelerator memory

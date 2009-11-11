@@ -81,7 +81,7 @@ void *RollingManager::alloc(void *addr, size_t size, bool shared)
 
 void RollingManager::release(void *addr)
 {
-	RollingRegion *reg = dynamic_cast<RollingRegion *>(remove(addr));
+	Region *reg = dynamic_cast<Region *>(remove(addr));
 	removeVirtual(reg->start(), reg->size());
 	if(reg->owner() == Context::current()) {
 		free(addr);

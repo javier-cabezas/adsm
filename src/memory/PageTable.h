@@ -93,7 +93,7 @@ private:
 
 	inline int offset(const void *addr) const {
 		unsigned long n = (unsigned long)(addr);
-		return n & ((1 << tableShift) - 1);
+		return n & (pageSize - 1);
 	}
 
 	void update();

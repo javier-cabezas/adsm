@@ -49,7 +49,7 @@ WITH THE SOFTWARE.  */
 #include <vector_types.h>
 
 #include <vector>
-#include <list>
+#include <map>
 
 namespace gmac { namespace gpu {
 
@@ -70,7 +70,6 @@ protected:
 		size_t stack;
 	} Call;
 
-protected:
 	typedef std::vector<Call> CallStack;
 	typedef HASH_MAP<Module *, const void *> ModuleMap;
 
@@ -84,6 +83,9 @@ protected:
 	static const unsigned StackSize = 4096;
 	uint8_t _stack[StackSize];
 	size_t _sp;
+
+	typedef std::map<void *, void *> AddressMap;
+	AddressMap hostMap;
 
 #ifdef USE_VM
 	static const char *pageTableSymbol;
@@ -198,39 +200,24 @@ public:
 		return error(ret);
 	}
 
-	inline gmacError_t halloc(void **host, void **device, size_t size) {
-		zero(host); zero(device);
-		lock();
-		CUresult ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP);
-		if(ret == CUDA_SUCCESS) {
-            ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0);
-			assert(ret == CUDA_SUCCESS);
-        }
-		unlock();
-		return error(ret);
-	}
-
-	inline gmacError_t hmap(void *host, void **device) {
-		zero(device);
-		lock();
-		CUresult ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, host, 0);
-		unlock();
-		return error(ret);
-	}
-
 	inline gmacError_t free(void *addr) {
 		lock();
+		AddressMap::iterator i = hostMap.find(addr);
+		if(i != hostMap.end()) {
+			// TODO: keep track of host mappings
+			unlock();
+			return error(CUDA_SUCCESS);
+		}
 		CUresult ret = cuMemFree(gpuAddr(addr));
 		unlock();
 		return error(ret);
 	}
 
-	inline gmacError_t hfree(void *addr) {
-		lock();
-		CUresult ret = cuMemFreeHost(addr);
-		unlock();
-		return error(ret);
-	}
+	gmacError_t host_alloc(void **host, void **device, size_t size);
+	gmacError_t host_aligned(void **host, void **device, size_t size);
+	gmacError_t host_map(void *host, void **device, size_t size);
+	gmacError_t host_free(void *addr);
+	gmacError_t hfree(void *addr);
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();

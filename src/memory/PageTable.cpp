@@ -65,7 +65,11 @@ void PageTable::insert(void *host, void *dev)
 	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
+	unsigned e = entry(host, tableShift, table.size());
+	assert(table.present(e) == false || (uint8_t *)table.value(e) == dev);
+
 	table.insert(entry(host, tableShift, table.size()), dev);
+	TRACE("PT inserts: %p -> %p", entry(host, tableShift, table.size()), dev);
 	unlock();
 	exitFunction();
 }
@@ -103,6 +107,7 @@ void *PageTable::translate(void *host)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 	uint8_t *addr =
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
+	TRACE("PT pre-translate: %p -> %p", host, addr);
 	addr += offset(host);
 	TRACE("PT translate: %p -> %p", host, addr);
 	return (void *)addr;

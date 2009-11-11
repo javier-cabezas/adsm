@@ -123,6 +123,13 @@ public:
 	//! \param count Size in bytes of the allocated memory
 	virtual void *alloc(void *addr, size_t count, bool shared) = 0;
 
+	//! This methid is called to map accelerator memory to
+	//! system memory. Coherence is not maintained for these mappings
+	//! \param cpuAddr
+	//! \param devPtr
+	//! \param count
+	virtual void map(void *host, void *dev, size_t count);
+
 	//! This method is called whenever the user
 	//! releases accelerator memory
 	//! \param devPtr Memory address that has been released
@@ -155,7 +162,7 @@ public:
 	}
 	static inline void *ptr(void *addr) { return ptr(gmac::Context::current(), addr); }
 
-	void map(Context *, void *, void *, size_t);
+	void remap(Context *, void *, void *, size_t);
 	void unmap(Context *, void *);
 
 	virtual gmac::Context *owner(const void *addr) = 0;

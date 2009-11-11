@@ -98,7 +98,14 @@ public:
 		return error(ret);
 	}
 
-	inline gmacError_t halloc(void **host, void **dev, size_t size) {
+
+	inline gmacError_t free(void *addr) {
+		check();
+		cudaError_t ret = cudaFree(addr);
+		return error(ret);
+	}
+
+	inline gmacError_t host_alloc(void **host, void **dev, size_t size) {
 		check();
 		*dev = NULL;
 		cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped);
@@ -107,13 +114,15 @@ public:
 		return error(ret);
 	}
 
-	inline gmacError_t free(void *addr) {
-		check();
-		cudaError_t ret = cudaFree(addr);
-		return error(ret);
+	inline gmacError_t host_aligned(void **host, void **dev, size_t size) {
+		FATAL("Not implemented");
 	}
 
-	inline gmacError_t hfree(void *addr) {
+	inline gmacError_t host_map(void *host, void **dev, size_t size) {
+		FATAL("Not implemented");
+	}
+
+	inline gmacError_t host_free(void *addr) {
 		check();
 		cudaError_t ret = cudaFreeHost(addr);
 		return error(ret);

@@ -33,9 +33,14 @@ void Context::init()
 	for(i = memory::Map::shared().begin(); i != memory::Map::shared().end(); i++) {
 		TRACE("Mapping Shared Region %p (%d bytes)", (*i)->start(), (*i)->size());
 		void *devPtr;
+#ifdef USE_GLOBAL_HOST
+		TRACE("Using Host Translation");
+		gmacError_t ret = host_map((*i)->start(), &devPtr, (*i)->size());
+#else
 		gmacError_t ret = malloc(&devPtr, (*i)->size());
+#endif
 		assert(ret == gmacSuccess);
-		manager->map(this, (*i)->start(), devPtr, (*i)->size());
+		manager->remap(this, (*i)->start(), devPtr, (*i)->size());
 	}
 }
 }

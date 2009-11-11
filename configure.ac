@@ -148,13 +148,13 @@ else
 fi
 
 
-shared_host_default="no"
-AC_MSG_CHECKING(whether to use a host memory for shared allocations)
-AC_ARG_ENABLE(io-lock,
-	AC_HELP_STRING([--enable-shared-host], [turn on host memory for shared allocations [[default=no]]])
-		, , enable_shared_host=$shared_host_default)
-if test "$enable_shared_host" = "yes"; then
-	AC_DEFINE([USE_SHARED_HOST])
+global_host_default="no"
+AC_MSG_CHECKING(whether to use a host memory for global allocations)
+AC_ARG_ENABLE(global-host,
+	AC_HELP_STRING([--enable-global-host], [turn on host memory for global allocations [[default=no]]])
+		, , enable_global_host=$global_host_default)
+if test "$enable_global_host" = "yes"; then
+	AC_DEFINE([USE_GLOBAL_HOST])
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
