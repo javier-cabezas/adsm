@@ -85,6 +85,9 @@ public:
 protected:
 	std::vector<Accelerator *> accs;
 	ContextList _contexts;
+	
+	typedef std::map<THREAD_ID, Context *> ContextMap;
+	ContextMap _map;
 
 	MUTEX(mutex);
 	unsigned current;
@@ -120,6 +123,15 @@ public:
 	void create();
 	void clone(Context *ctx);
 	void remove(Context *ctx);
+	inline Context *context(THREAD_ID id) {
+		ContextMap::const_iterator i;
+		Context *ret = NULL;
+		lock();
+		i = _map.find(id);
+		if(i != _map.end()) ret = i->second;
+		unlock();
+		return ret;
+	}
 	const ContextList &contexts() const { return _contexts; }
 
 	void accelerator(Accelerator *acc);

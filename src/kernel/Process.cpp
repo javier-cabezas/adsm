@@ -34,9 +34,11 @@ void Process::create()
 	lock();
 	unsigned n = current;
 	current = ++current % accs.size();
+	Context *ctx = accs[n]->create();
+	ctx->init();
+	_contexts.push_back(ctx);
+	_map.insert(ContextMap::value_type(SELF(), ctx));
 	unlock();
-	_contexts.push_back(accs[n]->create());
-	_contexts.back()->init();
 }
 
 void Process::clone(gmac::Context *ctx)
@@ -45,15 +47,19 @@ void Process::clone(gmac::Context *ctx)
 	lock();
 	unsigned n = current;
 	current = ++current % accs.size();
+	Context *clon = accs[n]->clone(*ctx);
+	clon->init();
+	_contexts.push_back(clon);
+	_map.insert(ContextMap::value_type(SELF(), clon));
 	unlock();
-	_contexts.push_back(accs[n]->clone(*ctx));
-	_contexts.back()->init();
 	TRACE("Cloned context on Acc#%d", n);
 }
 
 void Process::remove(Context *ctx)
 {
+	lock();
 	_contexts.remove(ctx);
+	unlock();
 	ctx->destroy();
 }
 
