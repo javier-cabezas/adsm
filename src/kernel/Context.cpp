@@ -35,7 +35,7 @@ void Context::init()
 		void *devPtr;
 #ifdef USE_GLOBAL_HOST
 		TRACE("Using Host Translation");
-		gmacError_t ret = host_map((*i)->start(), &devPtr, (*i)->size());
+		gmacError_t ret = hostMap((*i)->start(), &devPtr, (*i)->size());
 #else
 		gmacError_t ret = malloc(&devPtr, (*i)->size());
 #endif

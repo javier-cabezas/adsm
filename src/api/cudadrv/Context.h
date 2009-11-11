@@ -85,7 +85,7 @@ protected:
 	size_t _sp;
 
 	typedef std::map<void *, void *> AddressMap;
-	AddressMap hostMap;
+	AddressMap hostMem;
 
 #ifdef USE_VM
 	static const char *pageTableSymbol;
@@ -202,8 +202,8 @@ public:
 
 	inline gmacError_t free(void *addr) {
 		lock();
-		AddressMap::iterator i = hostMap.find(addr);
-		if(i != hostMap.end()) {
+		AddressMap::iterator i = hostMem.find(addr);
+		if(i != hostMem.end()) {
 			// TODO: keep track of host mappings
 			unlock();
 			return error(CUDA_SUCCESS);
@@ -213,11 +213,10 @@ public:
 		return error(ret);
 	}
 
-	gmacError_t host_alloc(void **host, void **device, size_t size);
-	gmacError_t host_aligned(void **host, void **device, size_t size);
-	gmacError_t host_map(void *host, void **device, size_t size);
-	gmacError_t host_free(void *addr);
-	gmacError_t hfree(void *addr);
+	gmacError_t hostAlloc(void **host, void **device, size_t size);
+	gmacError_t hostMemAlign(void **host, void **device, size_t size);
+	gmacError_t hostMap(void *host, void **device, size_t size);
+	gmacError_t hostFree(void *addr);
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
 		lock();

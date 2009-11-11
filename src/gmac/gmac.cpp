@@ -76,7 +76,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
-	ret = gmac::Context::current()->host_aligned(cpuPtr, &devPtr, count);
+	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		return ret;
 	}

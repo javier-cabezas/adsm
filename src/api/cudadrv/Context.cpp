@@ -22,13 +22,13 @@ Context::Context(const Context &root, GPU &gpu) :
 		Module *module = new Module(*m->first);
 		modules.insert(ModuleMap::value_type(module, m->second));
 	}
-	hostMap = root.hostMap;
+	hostMem = root.hostMem;
 	unlock();
 	TRACE("Cloned GPU context [%p]", this);
 }
 
 
-gmacError_t Context::host_alloc(void **host, void **device, size_t size)
+gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
 {
 	zero(host); zero(device);
 	CUresult ret = CUDA_SUCCESS;
@@ -37,13 +37,13 @@ gmacError_t Context::host_alloc(void **host, void **device, size_t size)
 	if(ret == CUDA_SUCCESS) {
 		assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0) == CUDA_SUCCESS);
 	}
-	hostMap.insert(AddressMap::value_type(*host, *host));
+	hostMem.insert(AddressMap::value_type(*host, *host));
 	unlock();
 	return error(ret);
 }
 
 
-gmacError_t Context::host_aligned(void **host, void **device, size_t size)
+gmacError_t Context::hostMemAlign(void **host, void **device, size_t size)
 {
 	zero(host); zero(device);
 	void *ptr = NULL;
@@ -64,14 +64,14 @@ gmacError_t Context::host_aligned(void **host, void **device, size_t size)
 		assert(cuMemHostGetDevicePointer((CUdeviceptr *)&dev, ptr, 0) == CUDA_SUCCESS);
 	}
 	*host = (void *)((uint8_t *)ptr + offset);
-	hostMap.insert(AddressMap::value_type(*host, ptr));
+	hostMem.insert(AddressMap::value_type(*host, ptr));
 	unlock();
 	*device = (void *)(dev + offset);
 	return error(ret);
 }
 
 
-gmacError_t Context::host_map(void *host, void **device, size_t size)
+gmacError_t Context::hostMap(void *host, void **device, size_t size)
 {
 	zero(device);
 	void *ptr = NULL;
@@ -79,8 +79,8 @@ gmacError_t Context::host_map(void *host, void **device, size_t size)
 	size_t pageSize = mm().pageTable().getPageSize();
 	assert(((unsigned long)host & (pageSize - 1)) == 0);
 	lock();
-	AddressMap::const_iterator i = hostMap.find(host);
-	assert(i != hostMap.end());
+	AddressMap::const_iterator i = hostMem.find(host);
+	assert(i != hostMem.end());
 	CUresult ret = cuMemHostGetDevicePointer((CUdeviceptr *)&dev, i->second, 0);
 	size_t offset = (uint8_t *)i->first - (uint8_t *)i->second;
 	unlock();
@@ -88,13 +88,13 @@ gmacError_t Context::host_map(void *host, void **device, size_t size)
 	return error(ret);
 }
 
-gmacError_t Context::host_free(void *addr)
+gmacError_t Context::hostFree(void *addr)
 {
 	lock();
-	AddressMap::iterator i = hostMap.find(addr);
-	assert(i != hostMap.end());
+	AddressMap::iterator i = hostMem.find(addr);
+	assert(i != hostMem.end());
 	CUresult ret = cuMemFreeHost(i->second);
-	hostMap.erase(i);
+	hostMem.erase(i);
 	unlock();
 	return error(ret);
 }

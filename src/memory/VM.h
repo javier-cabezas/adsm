@@ -62,10 +62,10 @@ typedef unsigned long addr_t;
 class Dumper {
 protected:
 	void *alloc(size_t) const;
-	void *host_alloc(void **, size_t) const;
+	void *hostAlloc(void **, size_t) const;
 
 	void free(void *) const;
-	void host_free(void *) const;
+	void hostFree(void *) const;
 
 	void flush(void *, const void *, size_t) const;
 	void sync(void *, const void *, size_t) const;
@@ -112,7 +112,7 @@ public:
 			nEntries * sizeof(T *)) == 0);
 		__device = Dumper::alloc(nEntries * sizeof(T *));
 #else
-		__device = Dumper::host_alloc((void **)&__shadow, nEntries * sizeof(T *));
+		__device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
 #endif
 		if(__shadow != NULL) memset(__shadow, 0, nEntries * sizeof(T *));
 #endif
@@ -128,7 +128,7 @@ public:
 		free(__shadow);
 		if(__device != NULL) Dumper::free(__device);
 #else
-		if(__shadow != NULL) Dumper::host_free(__shadow);
+		if(__shadow != NULL) Dumper::hostFree(__shadow);
 #endif
 		exitFunction();
 #endif
@@ -189,8 +189,8 @@ public:
 		if(__device != NULL) Dumper::free(__device);
 		__device = Dumper::alloc(nEntries * sizeof(T *));
 #else
-		if(__device != NULL) Dumper::host_free(__shadow);
-		__device = Dumper::host_alloc((void **)&__shadow, nEntries * sizeof(T *));
+		if(__device != NULL) Dumper::hostFree(__shadow);
+		__device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
 		memset(__shadow, 0, nEntries * sizeof(T *));
 #endif
 		assert(__device != NULL);

@@ -151,17 +151,17 @@ public:
 		\param addr Pointer to memory address to store the accelerator memory
 		\param size Size, in bytes, to be allocated
 	*/
-	virtual gmacError_t host_alloc(void **host, void **device, size_t size) = 0;
+	virtual gmacError_t hostAlloc(void **host, void **device, size_t size) = 0;
 
-	virtual gmacError_t host_aligned(void **host, void **device, size_t size) = 0;
+	virtual gmacError_t hostMemAlign(void **host, void **device, size_t size) = 0;
 
-	virtual gmacError_t host_map(void *host, void **device, size_t size) = 0;
+	virtual gmacError_t hostMap(void *host, void **device, size_t size) = 0;
 
 	/*!
 		\bried Releases system memory accesible from the accelerator
 		\param addr Starting memory address to be released
 	*/
-	virtual gmacError_t host_free(void *addr) = 0;
+	virtual gmacError_t hostFree(void *addr) = 0;
 	
 	/*!
 		\brief Copies data from system memory to accelerator memory

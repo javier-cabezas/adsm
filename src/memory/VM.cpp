@@ -15,13 +15,13 @@ void *Dumper::alloc(size_t size) const
 	return device;
 }
 
-void *Dumper::host_alloc(void **host, size_t size) const
+void *Dumper::hostAlloc(void **host, size_t size) const
 {
 	void *device = NULL;
 	*host = NULL;
 #ifdef USE_VM
 	if(gmac::Context::current() == NULL) return NULL;
-	assert(gmac::Context::current()->hostost__alloc(host, (void **)&device,
+	assert(gmac::Context::current()->hostAlloc(host, (void **)&device,
 		size) == gmacSuccess);
 	return device;
 #endif
@@ -35,11 +35,11 @@ void Dumper::free(void *addr) const
 #endif
 }
 
-void Dumper::host_free(void *addr) const
+void Dumper::hostFree(void *addr) const
 {
 #ifdef USE_VM
 	if(gmac::Context::current() == NULL) return;
-	assert(gmac::Context::current()->host_free(addr) == gmacSuccess);
+	assert(gmac::Context::current()->hostFree(addr) == gmacSuccess);
 #endif
 }
 
