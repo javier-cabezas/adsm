@@ -48,9 +48,9 @@ class BatchManager : public Manager {
 public:
 	BatchManager() : Manager() { }
 
-	inline void *alloc(void *addr, size_t count, bool shared) {
+	inline void *alloc(void *addr, size_t count) {
 		void *cpuAddr = hostMap(addr, count);
-		insert(new Region(cpuAddr, count), shared);
+		insert(new Region(cpuAddr, count));
 		return cpuAddr;
 	}
 	void release(void *addr);

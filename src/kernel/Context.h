@@ -52,13 +52,6 @@ namespace memory { class Manager; }
 	\brief Generic Context Class
 */
 class Context {
-public:
-	/*!
-		\brief List of active contexts in the system
-	*/
-	static std::list<Context *> *list;
-	typedef std::list<Context *>::iterator iterator;
-
 protected:
 	/*!
 		\brief Last error on context
@@ -102,11 +95,6 @@ protected:
 
 	virtual ~Context() {
 		PRIVATE_SET(key, NULL);
-		list->remove(this);
-		if(list->empty()) {
-			delete list;
-			list = NULL;
-		}
 	}
 
 

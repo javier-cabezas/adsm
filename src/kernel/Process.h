@@ -38,8 +38,9 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 #include <debug.h>
 
-#include <assert.h>
+#include <memory/Map.h>
 
+#include <cassert>
 #include <vector>
 #include <list>
 
@@ -58,13 +59,37 @@ extern gmac::Process *proc;
 
 namespace gmac {
 
+class SharedMemory {
+protected:
+	void *_addr;
+	size_t _size;
+	size_t _count;
+public:
+	SharedMemory(void *_addr, size_t _size, size_t _count = 1) :
+		_addr(_addr),
+		_size(_size),
+		_count(_count)
+	{};
+
+	inline void *start() { return _addr; }
+	inline size_t size() { return _size; }
+
+	inline void inc() { _count++; }
+	inline size_t dec() { return --_count; }
+};
+
 class Process {
+public:
+	typedef std::list<Context *> ContextList;
+	typedef std::map<void *, SharedMemory> SharedMap;
 protected:
 	std::vector<Accelerator *> accs;
-	std::list<Context *> contexts;
+	ContextList _contexts;
 
 	MUTEX(mutex);
 	unsigned current;
+
+	SharedMap _sharedMem;
 
 	static size_t _totalMemory;
 
@@ -95,6 +120,7 @@ public:
 	void create();
 	void clone(Context *ctx);
 	void remove(Context *ctx);
+	const ContextList &contexts() const { return _contexts; }
 
 	void accelerator(Accelerator *acc);
 
@@ -102,6 +128,25 @@ public:
 	inline const void *translate(const void *addr) {
 		return (const void *)translate((void *)addr);
 	}
+
+	inline SharedMap &sharedMem() { return _sharedMem; };
+	inline void addShared(void *addr, size_t size) {
+		std::pair<SharedMap::iterator, bool> ret =
+			 _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));
+		if(ret.second == false) ret.first->second.inc();
+	
+	}
+	inline bool removeShared(void *addr) {
+		SharedMap::iterator i;
+		i = _sharedMem.find(addr);
+		assert(i != _sharedMem.end());
+		if(i->second.dec() == 0) {
+			_sharedMem.erase(i);
+			return true;
+		}
+		return false;
+	}
+	inline bool isShared(void *addr) const { return _sharedMem.find(addr) != _sharedMem.end(); }
 
 	static size_t totalMemory() { return _totalMemory; }
 };

@@ -4,7 +4,7 @@
 
 namespace gmac { namespace memory {
 
-Map::SharedList *Map::__shared = NULL;
+//Map::SharedList *Map::__shared = NULL;
 Map::__Map *Map::__global = NULL;
 unsigned Map::count = 0;
 MUTEX(Map::global);
@@ -13,7 +13,7 @@ void Map::clean()
 {
 	__Map::iterator i;
 	for(i = __map.begin(); i != __map.end(); i++) {
-		TRACE("Cleaning Region %p", i->second);
+		TRACE("Cleaning Region %p", i->second->start());
 		globalLock();
 		__global->erase(i->first);
 		globalUnlock();

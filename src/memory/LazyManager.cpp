@@ -9,12 +9,12 @@ namespace gmac { namespace memory {
 
 // Manager Interface
 
-void *LazyManager::alloc(void *addr, size_t count, bool shared)
+void *LazyManager::alloc(void *addr, size_t count)
 {
 	void *cpuAddr = NULL;
 	if((cpuAddr = hostMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
-	insert(new ProtRegion(cpuAddr, count), shared);
+	insert(new ProtRegion(cpuAddr, count));
 	return cpuAddr;
 }
 

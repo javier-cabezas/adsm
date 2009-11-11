@@ -48,13 +48,13 @@ namespace gmac { namespace memory {
 
 class Map {
 public:
-	typedef std::set<Region *> SharedList;
+	//typedef std::set<Region *> SharedList;
 protected:
 	typedef std::map<const void *, Region *> __Map;
 	__Map __map;
 	MUTEX(local);
 
-	static SharedList *__shared;
+	//static SharedList *__shared;
 
 	static __Map *__global;
 	static unsigned count;
@@ -96,7 +96,7 @@ public:
 
 	Map() {
 		MUTEX_INIT(local);
-		if(__shared == NULL) __shared = new std::set<Region *>();
+		//if(__shared == NULL) __shared = new std::set<Region *>();
 		globalLock();
 		if(__global == NULL) __global = new __Map();
 		count++;
@@ -111,14 +111,14 @@ public:
 		if(count == 0) {
 			delete __global;
 			__global = NULL;
-			delete __shared;
-			__shared = NULL;
+			//delete __shared;
+			//__shared = NULL;
 		}
 		globalUnlock();
 	}
 
 	static void init() { MUTEX_INIT(global); }
-	static SharedList &shared() { return *__shared; }
+	//static SharedList &shared() { return *__shared; }
 
 	inline void realloc() { __pageTable.realloc(); }
 

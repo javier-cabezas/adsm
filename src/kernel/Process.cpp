@@ -18,7 +18,7 @@ Process::~Process()
 	std::vector<Accelerator *>::iterator a;
 	std::list<Context *>::iterator c;
 	lock();
-	for(c = contexts.begin(); c != contexts.end(); c++) {
+	for(c = _contexts.begin(); c != _contexts.end(); c++) {
 		(*c)->destroy();
 	}
 	for(a = accs.begin(); a != accs.end(); a++)
@@ -35,8 +35,8 @@ void Process::create()
 	unsigned n = current;
 	current = ++current % accs.size();
 	unlock();
-	contexts.push_back(accs[n]->create());
-	contexts.back()->init();
+	_contexts.push_back(accs[n]->create());
+	_contexts.back()->init();
 }
 
 void Process::clone(gmac::Context *ctx)
@@ -46,14 +46,14 @@ void Process::clone(gmac::Context *ctx)
 	unsigned n = current;
 	current = ++current % accs.size();
 	unlock();
-	contexts.push_back(accs[n]->clone(*ctx));
-	contexts.back()->init();
+	_contexts.push_back(accs[n]->clone(*ctx));
+	_contexts.back()->init();
 	TRACE("Cloned context on Acc#%d", n);
 }
 
 void Process::remove(Context *ctx)
 {
-	contexts.remove(ctx);
+	_contexts.remove(ctx);
 	ctx->destroy();
 }
 
@@ -67,7 +67,7 @@ void *Process::translate(void *addr)
 {
 	void *ret = NULL;
 	std::list<Context *>::const_iterator i;
-	for(i = contexts.begin(); i != contexts.end(); i++) {
+	for(i = _contexts.begin(); i != _contexts.end(); i++) {
 		ret = (*i)->mm().pageTable().translate(addr);
 		if(ret != NULL) return ret;
 	}

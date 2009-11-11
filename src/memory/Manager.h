@@ -61,9 +61,8 @@ private:
 
 protected:
 
-	inline void insert(Region *r, bool shared) {
+	inline void insert(Region *r) {
 		gmac::Context::current()->mm().insert(r);
-		if(shared) { TRACE("Inserting shared Region"); Map::shared().insert(r); }
 	}
 
 	Region *remove(void *addr);
@@ -121,7 +120,7 @@ public:
 	//! \param devPtr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	virtual void *alloc(void *addr, size_t count, bool shared) = 0;
+	virtual void *alloc(void *addr, size_t count) = 0;
 
 	//! This methid is called to map accelerator memory to
 	//! system memory. Coherence is not maintained for these mappings

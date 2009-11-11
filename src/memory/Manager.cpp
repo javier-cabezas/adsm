@@ -27,9 +27,7 @@ Region *Manager::remove(void *addr)
 {
 	Region *ret = gmac::Context::current()->mm().remove(addr);
 	if(ret->owner() == gmac::Context::current()) {
-		if(ret->relatives().empty()) Map::shared().erase(ret);
-		else {
-			// Change ownership
+		if(ret->relatives().empty() == false) { // Change ownership
 			ret->transfer();
 			ret->owner()->mm().insert(ret);
 		}
@@ -61,7 +59,7 @@ void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 
 void Manager::map(void *host, void *dev, size_t count)
 {
-	insert(new Region(host, count), true);
+	insert(new Region(host, count));
 	insertVirtual(gmac::Context::current(), host, dev, count);
 }
 
