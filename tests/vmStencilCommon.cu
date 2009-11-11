@@ -36,10 +36,10 @@ float devY4;
 template <uint32_t STENCIL_TILE_XSIZE, uint32_t STENCIL_TILE_YSIZE>
 __global__
 void
-kernelStencil(const float * u2,
+kernelStencil(float * u2,
               float * u3,
-              const float * v,
-              const float dt2,
+              float * v,
+              float dt2,
               const uint32_t dimZ,
               const uint32_t dimRealZ,
               const uint32_t dimZX,
