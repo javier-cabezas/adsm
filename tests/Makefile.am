@@ -4,7 +4,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd gmacSharedVecAdd\
-		gmacPingPong\
+	 	gmacPingPong gmacCompress\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
 		vmVecAdd vmNull vmStencil
@@ -41,6 +41,9 @@ gmacSharedVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacPingPong_SOURCES = gmacPingPong.cu utils.cpp
 gmacPingPong_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacCompress_SOURCES = gmacCompress.cu utils.cpp
+gmacCompress_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacStencil_DEPENDENCIES = gmacStencilCommon.cu
 gmacStencil_SOURCES = gmacStencil.cu utils.cpp
