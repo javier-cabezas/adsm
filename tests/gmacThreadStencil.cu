@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 
     if (nIter > 1) {
         pthread_barrier_init(&barrier, NULL, nIter);
+        pthread_mutex_init(&mutex, NULL);
     }
 
     for(int n = 0; n < nIter; n++) {
@@ -66,8 +67,6 @@ int main(int argc, char *argv[])
         descriptors[n].dimElems     = dimElems;
         descriptors[n].slices       = dimElems / nIter;
 	}
-
-	srand(time(NULL));
 
 	for(int n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, do_stencil, (void *) &descriptors[n]);

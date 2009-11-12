@@ -27,13 +27,6 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 }
 
 
-void randInit(float *a, size_t size)
-{
-	for(int i = 0; i < size; i++) {
-		a[i] = 1.0 * rand();
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	float *a = NULL, *b = NULL, *c = NULL;
@@ -42,7 +35,6 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-	srand(time(NULL));
 
 	gettimeofday(&s, NULL);
 	// Alloc & init input data

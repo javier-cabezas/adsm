@@ -17,3 +17,24 @@ void printAvgTime(struct timeval *start, struct timeval *end, const char *pre, c
 	fprintf(stderr,"%s%f%s", pre, (e - s) / 1e6 / rounds, post);
 }
 
+void randInit(float *a, size_t size)
+{
+	for(int i = 0; i < size; i++) {
+		a[i] = 1.0 * rand();
+	}
+}
+
+void valueInit(float *a, float v, size_t size)
+{
+	for(int i = 0; i < size; i++) {
+		a[i] = v;
+	}
+}
+
+void utils_init() __attribute__ ((constructor));
+
+#include <ctime>
+void utils_init()
+{
+    srand(time(NULL));
+}

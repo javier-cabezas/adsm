@@ -221,6 +221,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), src, n);
         assert(err == gmacSuccess);
 	}
+    // TODO - copyDevice can be always asynchronous
 	else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
@@ -228,6 +229,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 			                     manager->ptr(dstCtx, src), n);
         assert(err == gmacSuccess);
 	}
+    // TODO - add asynchronous calls to copyToHostAsync and copyToDeviceAsync
 	else {
 		void *tmp = malloc(n);
 		manager->flush(src, n);

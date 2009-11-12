@@ -35,9 +35,6 @@ int main(int argc, char *argv[])
     descriptor->dimElems     = dimElems;
     descriptor->slices       = dimRealElems;
 
-	srand(time(NULL));
-
-
     do_stencil((void *) descriptor);
 
     delete descriptor;

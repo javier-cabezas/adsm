@@ -279,12 +279,20 @@ public:
 	
 	inline gmacError_t sync() {
         CUresult ret;
+#if 0
         lock();
         while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
             unlock();
             usleep(Context::USleepLaunch);
             lock();
         }
+        if (ret == CUDA_SUCCESS) {
+            ret = cuStreamSynchronize(streamLaunch);
+        }
+        unlock();
+#endif
+        lock();
+        ret = cuCtxSynchronize();
         unlock();
 		return error(ret);
 	}

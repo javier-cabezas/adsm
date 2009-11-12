@@ -37,14 +37,6 @@ __global__ void inc(float *a, float f, size_t size)
 	a[i] += f;
 }
 
-
-void randInit(float *a, float f, size_t size)
-{
-	for(int i = 0; i < vecSize; i++) {
-		a[i] = f;
-	}
-}
-
 void *chain(void *ptr)
 {
 	int *id = (int *)ptr;
@@ -53,7 +45,7 @@ void *chain(void *ptr)
 
 	ret = gmacMalloc((void **)&a[*id], vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(a[*id], *id, vecSize);
+	valueInit(a[*id], *id, vecSize);
 	int next = (*id == nIter - 1) ? 0 : *id + 1;
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);

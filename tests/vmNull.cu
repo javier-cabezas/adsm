@@ -8,6 +8,7 @@
 #include <sys/time.h>
 
 #include "debug.h"
+#include "utils.h"
 
 size_t vecSize = 1 * 1024 * 1024;
 const size_t blockSize = 512;
@@ -19,23 +20,6 @@ __global__ void null()
 	return;
 }
 
-
-void randInit(float *a, size_t vecSize)
-{
-	for(int i = 0; i < vecSize; i++) {
-		a[i] = 1.0 * i;
-	}
-}
-
-
-static inline void printTime(struct timeval *start, struct timeval *end, const char *str)
-{
-	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
-	fprintf(stdout,"%f%s", (e - s) / 1e6, str);
-}
-
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
@@ -44,7 +28,6 @@ int main(int argc, char *argv[])
 	const char *vecStr = getenv("VECTORSIZE");
 	if(vecStr != NULL) vecSize = atoi(vecStr) * 1024 * 1024;
 	fprintf(stderr,"Vector %dMB\n", vecSize);
-	srand(time(NULL));
 	// Alloc & init input data
 	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
@@ -64,7 +47,7 @@ int main(int argc, char *argv[])
 	if(vecSize % blockSize) Db.x++;
 	null<<<Dg, Db>>>();
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, " ");
+	printTime(&s, &t, "", " ");
 
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
@@ -74,7 +57,7 @@ int main(int argc, char *argv[])
 		error += (a[i] - b[i]);
 	}
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, "\n");
+	printTime(&s, &t, "", "\n");
 
 	fprintf(stderr,"Error: %f\n", error);
 

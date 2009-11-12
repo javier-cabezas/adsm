@@ -144,6 +144,7 @@ kernelStencil(const float * u2,
 #define VELOCITY 2000
 
 pthread_barrier_t barrier;
+pthread_mutex_t mutex;
 
 struct JobDescriptor {
     const static int DEFAULT_DIM = 256;
@@ -246,17 +247,19 @@ do_stencil(void * ptr)
         if(descr->gpus > 1) {
             pthread_barrier_wait(&barrier);
 
+            pthread_mutex_lock(&mutex);
             // Send data
             if (descr->prev != NULL) {
-                gmacMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
-                          descr->u3 + STENCIL * descr->sliceElems(),
-                          descr->sliceElems() * STENCIL * sizeof(float));                
+                gmacMemcpy((void *) (descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems()),
+                           (void *) (descr->u3 + STENCIL * descr->sliceElems()),
+                           descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                gmacMemcpy(descr->next->u3,
-                          descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
-                          descr->sliceElems() * STENCIL * sizeof(float));                
+                gmacMemcpy((void *) (descr->next->u3),
+                           (void *) (descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems()),
+                           descr->sliceElems() * STENCIL * sizeof(float));                
             }
+            pthread_mutex_unlock(&mutex);
 
             pthread_barrier_wait(&barrier);
         }

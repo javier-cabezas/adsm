@@ -4,20 +4,21 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd gmacSharedVecAdd\
-	 	gmacPingPong\
+		gmacPingPong\
 		gmacStencil gmacThreadStencil\
+		gmacMatrixMul\
 		vmVecAdd vmNull vmStencil
 
 bandwidth_SOURCES = bandwidth.cu
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcuda -lcudart
 
-gmacVecAdd_SOURCES = gmacVecAdd.cu utils.c
+gmacVecAdd_SOURCES = gmacVecAdd.cu utils.cpp
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmVecAdd_SOURCES = vmVecAdd.cu utils.c
+vmVecAdd_SOURCES = vmVecAdd.cu utils.cpp
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmNull_SOURCES = vmNull.cu
+vmNull_SOURCES = vmNull.cu utils.cpp
 vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacMemset_SOURCES = gmacMemset.cu
@@ -32,27 +33,30 @@ gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -l
 gmacConstant_SOURCES = gmacConstant.cu
 gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
 
-gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.c
+gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.cpp
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-gmacSharedVecAdd_SOURCES = gmacSharedVecAdd.cu utils.c
+gmacSharedVecAdd_SOURCES = gmacSharedVecAdd.cu utils.cpp
 gmacSharedVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-gmacPingPong_SOURCES = gmacPingPong.cu utils.c
+gmacPingPong_SOURCES = gmacPingPong.cu utils.cpp
 gmacPingPong_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacStencil_DEPENDENCIES = gmacStencilCommon.cu
-gmacStencil_SOURCES = gmacStencil.cu utils.c
+gmacStencil_SOURCES = gmacStencil.cu utils.cpp
 gmacStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacThreadStencil_DEPENDENCIES = gmacStencilCommon.cu
-gmacThreadStencil_SOURCES = gmacThreadStencil.cu utils.c
+gmacThreadStencil_SOURCES = gmacThreadStencil.cu utils.cpp
 gmacThreadStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmStencil_DEPENDENCIES = vmStencilCommon.cu
-vmStencil_SOURCES = vmStencil.cu utils.c
+vmStencil_SOURCES = vmStencil.cu utils.cpp
 vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
+gmacMatrixMul_DEPENDENCIES = gmacMatrixMulKernel.cu
+gmacMatrixMul_SOURCES = gmacMatrixMul.cu utils.cpp
+gmacMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 

@@ -31,13 +31,6 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 }
 
 
-void randInit(float *a, size_t vecSize)
-{
-	for(int i = 0; i < vecSize; i++) {
-		a[i] = 1.0;
-	}
-}
-
 void *addVector(void *ptr)
 {
 	float *a, *b;
@@ -100,8 +93,6 @@ int main(int argc, char *argv[])
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
-
-	srand(time(NULL));
 
 	for(n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, addVector, &s[n]);

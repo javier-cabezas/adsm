@@ -36,14 +36,6 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 	c[i] = a[i] + b[i];
 }
 
-
-void randInit(float *a, size_t vecSize)
-{
-	for(int i = 0; i < vecSize; i++) {
-		a[i] = 1.0;
-	}
-}
-
 void *addVector(void *ptr)
 {
 	struct timeval s, t;
@@ -93,8 +85,6 @@ int main(int argc, char *argv[])
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	param = (struct param *)malloc(nIter * sizeof(struct param));
-
-	srand(time(NULL));
 
 	gettimeofday(&s, NULL);
 	// Alloc & init input data
