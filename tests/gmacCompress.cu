@@ -11,126 +11,27 @@
 #include "utils.h"
 #include "debug.h"
 
-#define PI 3.14159265358979
+#include "gmacCompress.h"
 
 const char *widthStr = "GMAC_WIDTH";
 const char *heightStr = "GMAC_HEIGHT";
+const char *framesStr = "GMAC_FRAMES";
 
-const size_t widthDefault = 512;
-const size_t heightDefault = 512;
+const size_t widthDefault = 128;
+const size_t heightDefault = 128;
+const size_t framesDefault = 32;
 
 size_t width = 0;
 size_t height = 0;
+size_t frames = 0;
 const size_t blockSize = 16;
 
-static pthread_t *nThread;
-static int *ids;
-//static float *intput, *temp, *output;
-static sem_t init;
+static float *quant_in, *idct_in;
 
-__shared__ float tile[blockSize][blockSize];
+static pthread_t dct_id, quant_id, idct_id;
+static sem_t quant_data, idct_data;
+static sem_t quant_free, idct_free;
 
-__global__ void dct(float *out, float *in, size_t width, size_t height)
-
-{
-	int l = threadIdx.y + blockIdx.y * blockDim.y;
-	int k = threadIdx.x + blockIdx.x * blockDim.x;
-
-	/* Pre-compute some values */
-	float alpha, beta;
-	if(k == 0) alpha = sqrtf(1.0 / width);
-	else alpha = sqrtf(2.0 / width);
-	if(l == 0) beta = sqrtf(1.0 / height);
-	else beta = sqrtf(2.0 / height);
-
-	float a = (PI / width) * k;
-	float b = (PI / height) * l;
-
-	float o = 0;
-	for(int j = 0; j < height; j += blockDim.y) {
-		for(int i = 0; i < width; i+= blockDim.x) {
-			/* Calculate n and m values */
-			int y = j + threadIdx.y;
-			int x = i + threadIdx.x;
-
-			/* Prefetch data in shared memory */
-			if(x < width && y < height)
-				tile[threadIdx.x][threadIdx.y] = in[y * width + x];
-			__syncthreads();
-
-			/* Compute the partial DCT */
-			for(int m = 0; m < blockDim.y; m++) {
-				for(int n = 0; n < blockDim.x; n++) {
-					o += tile[m][n] * cosf(a * (n + i + 0.5)) * cosf(b * (m + j + 0.5));
-				}
-			}
-			
-			/* Done computing the DCT for the sub-block */
-		}
-	}
-
-	if(k < width && l < height) {
-		out[(l * width) + k] = alpha * beta * o;
-	}
-}
-
-__global__ void idct(float *out, float *in, size_t width, size_t height)
-{
-	int y = threadIdx.y + blockIdx.y * blockDim.y;
-	int x = threadIdx.x + blockIdx.x * blockDim.x;
-
-	/* Pre-compute some values */
-	float alpha, beta;
-
-	float a = (PI / width) * (x + 0.5);
-	float b = (PI / height) * (y + 0.5);
-
-	float o = 0;
-				
-	for(int j = 0; j < height; j += blockDim.y) {
-		for(int i = 0; i < width; i+= blockDim.x) {
-			/* Calculate n and m values */
-			int l = j + threadIdx.y;
-			int k = i + threadIdx.x;
-
-			/* Prefetch data in shared memory */
-			if(i + threadIdx.x < width && j + threadIdx.y < height)
-				tile[threadIdx.x][threadIdx.y] = in[l * width + k];
-			__syncthreads();
-
-			/* Compute the partial IDCT */
-			for(int m = 0; m < blockDim.y; m++) {
-				for(int n = 0; n < blockDim.x; n++) {
-					/* Pre-compute some values */
-					if((n + i) == 0) alpha = sqrtf(1.0 / width);
-					else alpha = sqrtf(2.0 / width);
-					if((m + j) == 0) beta = sqrtf(1.0 / height);
-					else beta = sqrtf(2.0 / height);
-					o += alpha * beta * tile[m][n] * cosf(a * (n + i)) * cosf(b * (m + j));
-				}
-			}
-			
-			/* Done computing the DCT for the sub-block */
-		}
-	}
-
-	if(x < width && y < height) {
-		out[(y * width) + x] = o;
-	}
-
-}
-
-__global__ void quant(float *out, float *in, size_t width, size_t height, float k)
-{
-	int y = threadIdx.y + blockIdx.y * blockDim.y;
-	int x = threadIdx.x + blockIdx.x * blockDim.x;
-
-	if(x < width && y < height) {
-		float f = fabsf(in[y * width + x]);
-		if(f > k) out[(y * width) + x] = f;
-		else out[(y * width) + x] = 0.0;
-	}
-}
 
 void __randInit(float *a, size_t size)
 {
@@ -139,56 +40,104 @@ void __randInit(float *a, size_t size)
 	}
 }
 
-void *chain(void *ptr)
+void *dct_thread(void *args)
 {
-	//int *id = (int *)ptr;
-	float *a, *b, *c, *d;
-	gmacError_t ret = gmacSuccess;
+	float *in, *out;
+	gmacError_t ret;
 
-	ret = gmacMalloc((void **)&a, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&b, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&c, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&d, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
-
-	__randInit(a, width * height);
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
+	for(int i = 0; i < frames; i++) {
+		fprintf(stderr,"Frame %d starts\n", i);
+		__randInit(in, width * height);
+		dct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
+		ret = gmacThreadSynchronize();
+		assert(ret == gmacSuccess);
 
-	sem_wait(&init);
+		sem_wait(&quant_free); /* Wait for quant to use its data */
+		gmacMemcpy(quant_in, out, width * height * sizeof(float));
+		sem_post(&quant_data); /* Notify to Quant that data is ready */
+	}
 
+	gmacFree(in);
+	gmacFree(out);
 
-	fprintf(stderr, "DCT\n");
-	dct<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), width, height);
-	ret = gmacThreadSynchronize();
+	return NULL;
+}
+
+void *quant_thread(void *args)
+{
+	float *out;
+	gmacError_t ret;
+
+	ret = gmacMalloc((void **)&quant_in, width * height * sizeof(float));
+	assert(ret == gmacSuccess);
+	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
-	fprintf(stderr,"Quant\n");
-	quant<<<Dg, Db>>>(gmacPtr(c), gmacPtr(b), width, height, 1e-6);
-	ret = gmacThreadSynchronize();
+	dim3 Db(blockSize, blockSize);
+	dim3 Dg(width / blockSize, height / blockSize);
+	if(width % blockSize) Dg.x++;
+	if(height % blockSize) Dg.y++;
+
+	sem_post(&quant_free);
+
+	for(int i = 0; i < frames; i++) {
+		sem_wait(&quant_data);	/* Wait for data to be processed */
+		quant<<<Dg, Db>>>(gmacPtr(quant_in), gmacPtr(out), width, height, 1e-6);
+		ret = gmacThreadSynchronize();
+		assert(ret == gmacSuccess);
+		
+		sem_wait(&idct_free); /* Wait for IDCT to use its data */
+		gmacMemcpy(idct_in, out, width * height * sizeof(float));
+		sem_post(&quant_free); /* Notify to DCT that Quant is waiting for data */
+		sem_post(&idct_data); /* Nodify to IDCT that data is ready */
+	}
+
+	gmacFree(quant_in);
+	gmacFree(out);
+
+	return NULL;
+}
+
+void *idct_thread(void *args)
+{
+	float *out;
+	gmacError_t ret;
+
+	ret = gmacMalloc((void **)&idct_in, width * height * sizeof(float));
+	assert(ret == gmacSuccess);
+	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
-	fprintf(stderr, "IDCT\n");
-	idct<<<Dg, Db>>>(gmacPtr(d), gmacPtr(c), width, height);
-	ret = gmacThreadSynchronize();
-	assert(ret == gmacSuccess);
+	dim3 Db(blockSize, blockSize);
+	dim3 Dg(width / blockSize, height / blockSize);
+	if(width % blockSize) Dg.x++;
+	if(height % blockSize) Dg.y++;
 
-	float error = 0;
-	for(int i = 0; i < width * height; i++)
-		error += a[i] - d[i];
-	fprintf(stderr,"Error %f\n", error);
+	sem_post(&idct_free);
 
-	gmacFree(a);
-	gmacFree(b);
-	gmacFree(c);
-	gmacFree(d);
+	for(int i = 0; i < frames; i++) {
+		sem_wait(&idct_data);
+		idct<<<Dg, Db>>>(gmacPtr(idct_in), gmacPtr(out), width, height);
+		ret = gmacThreadSynchronize();
+		assert(ret == gmacSuccess);
+
+		fprintf(stderr,"Frame %d done!\n", i);
+
+		sem_post(&idct_free);
+	}
+
+	gmacFree(idct_in);
+	gmacFree(out);
 
 	return NULL;
 }
@@ -196,29 +145,23 @@ void *chain(void *ptr)
 
 int main(int argc, char *argv[])
 {
-	unsigned n = 0;
-
 	setParam<size_t>(&width, widthStr, widthDefault);
 	setParam<size_t>(&height, heightStr, heightDefault);
-	int nIter = 1;
-	sem_init(&init, 0, 0);
+	setParam<size_t>(&frames, framesStr, framesDefault);
+
+	sem_init(&quant_data, 0, 0); /* There is no data for Quant */
+	sem_init(&quant_free, 0, 0); /* The Quant input buffer is not being used */
+	sem_init(&idct_data, 0, 0); /* There is no data for IDCT */
+	sem_init(&idct_free, 0, 0); /* The IDCT input buffer is not being used */
 
 	srand(time(NULL));
 
-	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
-	ids = (int *)malloc(nIter * sizeof(int));
 
-	for(n = 0; n < nIter; n++) {
-		ids[n] = n;
-		pthread_create(&nThread[n], NULL, chain, &ids[n]);
-	}
+	pthread_create(&dct_id, NULL, dct_thread, NULL);
+	pthread_create(&quant_id, NULL, quant_thread, NULL);
+	pthread_create(&idct_id, NULL, idct_thread, NULL);
 
-	for(n = 0; n < nIter; n++) sem_post(&init);
-	
-	for(n = 0; n < nIter; n++) {
-		pthread_join(nThread[n], NULL);
-	}
-
-	free(ids);
-	free(nThread);
+	pthread_join(dct_id, NULL);
+	pthread_join(quant_id, NULL);
+	pthread_join(idct_id, NULL);
 }
