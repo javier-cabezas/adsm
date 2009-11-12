@@ -164,6 +164,15 @@ main(int argc, char** argv)
         abort();
     }
 
+    if ((HA/BLOCK_SIZE) % nIter != 0) {
+        fprintf(stderr, "Error: wrong HA size. HA/%d \% nIter must be 0\n", BLOCK_SIZE);
+        abort();
+    }
+
+    if (HB != WA) {
+        fprintf(stderr, "Error: WA and HB must be equal\n");
+        abort();
+    }
 
     struct timeval s, t;
 
