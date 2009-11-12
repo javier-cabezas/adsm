@@ -26,11 +26,17 @@ size_t height = 0;
 size_t frames = 0;
 const size_t blockSize = 16;
 
-static float *dct_in, *quant_in, *idct_in = NULL;
-static float *dct_out, *quant_out, *idct_out = NULL;
 
-static pthread_t dct_id, quant_id, idct_id;
-static sem_t init;
+typedef struct stage {
+	pthread_t id;
+	sem_t free;
+	float *in;
+	float *out;
+	float *next_in;
+	float *next_out;
+} stage_t;
+
+stage_t s_dct, s_quant, s_idct;
 
 
 void __randInit(float *a, size_t size)
@@ -40,14 +46,24 @@ void __randInit(float *a, size_t size)
 	}
 }
 
+void nextStage(stage_t *current, stage_t *next)
+{
+	sem_wait(&next->free);
+	next->next_in = current->out;
+	next->next_out = current->in;
+	gmacSendReceive(next->id);
+	current->in = current->next_in;
+	current->out = current->next_out;
+	sem_post(&current->free);
+}
+
 void *dct_thread(void *args)
 {
-	float *in, *out;
 	gmacError_t ret;
 
-	ret = gmacMalloc((void **)&in, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_dct.in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
 	dim3 Db(blockSize, blockSize);
@@ -55,40 +71,33 @@ void *dct_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	sem_wait(&init);
+	sem_post(&s_dct.free);
 
 	for(int i = 0; i < frames; i++) {
-		fprintf(stderr,"Frame %d starts\n", i);
-		__randInit(in, width * height);
-		dct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
+		__randInit(s_dct.in, width * height);
+		dct<<<Dg, Db>>>(gmacPtr(s_dct.out), gmacPtr(s_dct.in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
 
-		quant_in = out;
-		quant_out = in;
-		gmacSendReceive(quant_id);
-		in = dct_in;
-		out = dct_out;
+		nextStage(&s_dct, &s_quant);	
 	}
 
-	// Move two stages the pipeline
-	gmacSendReceive(quant_id);
-	gmacSendReceive(quant_id);
+	nextStage(&s_dct, &s_quant);
+	nextStage(&s_dct, &s_quant);
 
-	gmacFree(in);
-	gmacFree(out);
+	gmacFree(s_dct.in);
+	gmacFree(s_dct.out);
 
 	return NULL;
 }
 
 void *quant_thread(void *args)
 {
-	float *in, *out;
 	gmacError_t ret;
 
-	ret = gmacMalloc((void **)&in, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_quant.in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_quant.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
 	dim3 Db(blockSize, blockSize);
@@ -96,41 +105,33 @@ void *quant_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	sem_wait(&init);
-
-	gmacSendReceive(idct_id);
-	in = quant_in;
-	out = quant_out;
+	sem_post(&s_quant.free);
+	nextStage(&s_quant, &s_idct);
 
 	for(int i = 0; i < frames; i++) {
-		quant<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height, 1e-6);
+		quant<<<Dg, Db>>>(gmacPtr(s_quant.out), gmacPtr(s_quant.in), width, height, 1e-6);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
 		
-		idct_in = out;
-		idct_out = in;
-		gmacSendReceive(idct_id);
-		in = quant_in;
-		out = quant_out;
+		nextStage(&s_quant, &s_idct);
 	}
 
 	// Move one stage the pipeline stages the pipeline
-	gmacSendReceive(idct_id);
+	nextStage(&s_quant, &s_idct);
 
-	gmacFree(in);
-	gmacFree(out);
+	gmacFree(s_quant.in);
+	gmacFree(s_quant.out);
 
 	return NULL;
 }
 
 void *idct_thread(void *args)
 {
-	float *in, *out;
 	gmacError_t ret;
 
-	ret = gmacMalloc((void **)&in, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_idct.in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = gmacMalloc((void **)&s_idct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 
 	dim3 Db(blockSize, blockSize);
@@ -138,33 +139,20 @@ void *idct_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	sem_wait(&init);
-
-	while(idct_in == NULL) {
-		dct_in = out;
-		dct_out = in;
-		gmacSendReceive(dct_id);
-	}
-
-	in = idct_in;
-	out = idct_out;
-
+	sem_post(&s_idct.free);
+	nextStage(&s_idct, &s_dct);
+	nextStage(&s_idct, &s_dct);
 
 	for(int i = 0; i < frames; i++) {
-		idct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
+		idct<<<Dg, Db>>>(gmacPtr(s_idct.out), gmacPtr(s_idct.in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
 
-		fprintf(stderr,"Frame %d done!\n", i);
-		dct_in = out;
-		dct_out = in;
-		gmacSendReceive(dct_id);
-		in = idct_in;
-		out = idct_out;
+		nextStage(&s_idct, &s_dct);
 	}
 
-	gmacFree(in);
-	gmacFree(out);
+	gmacFree(s_idct.in);
+	gmacFree(s_idct.out);
 
 	return NULL;
 }
@@ -172,22 +160,28 @@ void *idct_thread(void *args)
 
 int main(int argc, char *argv[])
 {
+	struct timeval s,t;
 	setParam<size_t>(&width, widthStr, widthDefault);
 	setParam<size_t>(&height, heightStr, heightDefault);
 	setParam<size_t>(&frames, framesStr, framesDefault);
 
-	sem_init(&init, 0, 0);
+	sem_init(&s_dct.free, 0, 0);
+	sem_init(&s_quant.free, 0, 0);
+	sem_init(&s_idct.free, 0, 0);
 
 	srand(time(NULL));
 
+	gettimeofday(&s, NULL);
 
-	pthread_create(&dct_id, NULL, dct_thread, NULL);
-	pthread_create(&quant_id, NULL, quant_thread, NULL);
-	pthread_create(&idct_id, NULL, idct_thread, NULL);
+	pthread_create(&s_dct.id, NULL, dct_thread, NULL);
+	pthread_create(&s_quant.id, NULL, quant_thread, NULL);
+	pthread_create(&s_idct.id, NULL, idct_thread, NULL);
 
-	for(int i = 0; i < 3; i++) sem_post(&init);
+	pthread_join(s_dct.id, NULL);
+	pthread_join(s_quant.id, NULL);
+	pthread_join(s_idct.id, NULL);
 
-	pthread_join(dct_id, NULL);
-	pthread_join(quant_id, NULL);
-	pthread_join(idct_id, NULL);
+	gettimeofday(&t, NULL);
+
+	printTime(&s, &t, "Total: ", "\n");
 }

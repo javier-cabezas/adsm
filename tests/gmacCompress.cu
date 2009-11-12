@@ -56,7 +56,6 @@ void *dct_thread(void *args)
 	if(height % blockSize) Dg.y++;
 
 	for(int i = 0; i < frames; i++) {
-		fprintf(stderr,"Frame %d starts\n", i);
 		__randInit(in, width * height);
 		dct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
 		ret = gmacThreadSynchronize();
@@ -131,10 +130,9 @@ void *idct_thread(void *args)
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
 
-		fprintf(stderr,"Frame %d done!\n", i);
-
 		sem_post(&idct_free);
 	}
+
 
 	gmacFree(idct_in);
 	gmacFree(out);
@@ -145,17 +143,19 @@ void *idct_thread(void *args)
 
 int main(int argc, char *argv[])
 {
+	struct timeval s,t;
 	setParam<size_t>(&width, widthStr, widthDefault);
 	setParam<size_t>(&height, heightStr, heightDefault);
 	setParam<size_t>(&frames, framesStr, framesDefault);
 
-	sem_init(&quant_data, 0, 0); /* There is no data for Quant */
-	sem_init(&quant_free, 0, 0); /* The Quant input buffer is not being used */
-	sem_init(&idct_data, 0, 0); /* There is no data for IDCT */
-	sem_init(&idct_free, 0, 0); /* The IDCT input buffer is not being used */
+	sem_init(&quant_data, 0, 0); 
+	sem_init(&quant_free, 0, 0); 
+	sem_init(&idct_data, 0, 0); 
+	sem_init(&idct_free, 0, 0); 
 
 	srand(time(NULL));
 
+	gettimeofday(&s, NULL);
 
 	pthread_create(&dct_id, NULL, dct_thread, NULL);
 	pthread_create(&quant_id, NULL, quant_thread, NULL);
@@ -164,4 +164,9 @@ int main(int argc, char *argv[])
 	pthread_join(dct_id, NULL);
 	pthread_join(quant_id, NULL);
 	pthread_join(idct_id, NULL);
+
+	gettimeofday(&t, NULL);
+
+	printTime(&s, &t, "Total: ", "\n");
+
 }
