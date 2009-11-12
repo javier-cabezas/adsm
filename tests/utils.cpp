@@ -1,6 +1,5 @@
 #include "utils.h"
 
-
 void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
 {
 	double s, e;
@@ -21,6 +20,13 @@ void randInit(float *a, size_t size)
 {
 	for(int i = 0; i < size; i++) {
 		a[i] = 1.0 * rand();
+	}
+}
+
+void randInitMax(float *a, float maxVal, size_t size)
+{
+	for(int i = 0; i < size; i++) {
+		a[i] = 1.f * (rand() % int(maxVal));
 	}
 }
 

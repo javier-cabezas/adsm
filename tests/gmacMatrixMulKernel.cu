@@ -40,8 +40,6 @@
 #ifndef _MATRIXMUL_KERNEL_H_
 #define _MATRIXMUL_KERNEL_H_
 
-#include <cstdio>
-
 // Thread block size
 #define BLOCK_SIZE 16
 
@@ -59,18 +57,19 @@
 //! wA is A's width and wB is B's width
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-matrixMul( float* C, float* A, float* B, int wA, int wB)
+matrixMul( float* C, float* A, float* B, int wA, int wB, int offset)
 {
     // Block index
     int bx = blockIdx.x;
     int by = blockIdx.y;
+    int gby = blockIdx.y + offset;
 
     // Thread index
     int tx = threadIdx.x;
     int ty = threadIdx.y;
 
     // Index of the first sub-matrix of A processed by the block
-    int aBegin = wA * BLOCK_SIZE * by;
+    int aBegin = wA * BLOCK_SIZE * gby;
 
     // Index of the last sub-matrix of A processed by the block
     int aEnd   = aBegin + wA - 1;

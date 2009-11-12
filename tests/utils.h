@@ -14,6 +14,8 @@ void printAvgTime(struct timeval *, struct timeval *, const char *, const char *
 
 void randInit(float *a, size_t size);
 
+void randInitMax(float *a, float maxVal, size_t size);
+
 void valueInit(float *a, float f, size_t size);
 
 #ifdef __cplusplus

@@ -119,7 +119,6 @@ int main(int argc, char *argv[])
 	}
 	fprintf(stdout, "Total: %.02f\n", error);
 
-
 	free(param);
 	free(nThread);
 }

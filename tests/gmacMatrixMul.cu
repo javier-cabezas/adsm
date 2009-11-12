@@ -51,6 +51,10 @@
 #include <cstring>
 #include <cmath>
 
+extern "C" {
+#include <pthread.h>
+}
+
 // includes, project
 #include <gmac.h>
 
@@ -60,6 +64,20 @@
 
 // includes, kernels
 #include "gmacMatrixMulKernel.cu"
+
+const char * nIterStr = "GMAC_NITER";
+const size_t nIterDefault        = 4;
+
+static size_t nIter = 0;
+
+static float * A, * B;
+struct param {
+	int i;
+	float * ptr;
+};
+
+unsigned elemsC;
+unsigned sizeC;
 
 ////////////////////////////////////////////////////////////////////////////////
 //! Compute reference data set
@@ -86,73 +104,31 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// declaration, forward
-void runTest(int argc, char** argv);
-
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
-int
-main(int argc, char** argv)
-{
-    runTest(argc, argv);
-
-    return 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 //! Run a simple test for CUDA
 ////////////////////////////////////////////////////////////////////////////////
-void
-runTest(int argc, char** argv)
+void *
+matrixMulThread(void * ptr)
 {
-    // allocate host memory for matrices A and B
-    unsigned int elemsA = WA * HA;
-    unsigned int sizeA = sizeof(float) * elemsA;
-    unsigned int elemsB = WB * HB;
-    unsigned int sizeB = sizeof(float) * elemsB;
+	struct param *p = (struct param *) ptr;
 
-    // create and start timer
+    // timers
     struct timeval s, t;
-    gettimeofday(&s, NULL);
 
-    // allocate device memory
-    float* A;
-    if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
-        fprintf(stderr, "Error allocating A");
+    if (gmacMalloc((void**) &p->ptr, sizeC) != gmacSuccess) {
+        fprintf(stderr, "Error allocating C");
         abort();
     }
-    float* B;
-    if (gmacMalloc((void**) &B, sizeB) != gmacSuccess) {
-        fprintf(stderr, "Error allocating B");
-        abort();
-    }
-
-    // initialize host memory
-    randInit(A, elemsA);
-    randInit(B, elemsB);
-
-    // allocate device memory for result
-    unsigned int elemsC = WC * HC;
-    unsigned int sizeC = sizeof(float) * elemsC;
-    float* C;
-    if (gmacMalloc((void**) &C, sizeC) != gmacSuccess) {
-        fprintf(stderr, "Error allocating A");
-        abort();
-    }
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Alloc: ", "\n");
 
     // Call the kernel
 	gettimeofday(&s, NULL);
     dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 grid(WC / threads.x, HC / threads.y);
-    matrixMul<<< grid, threads >>>(C, A, B, WA, WB);
+    dim3 grid(WC / threads.x, (HC / nIter) / threads.y);
+    matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * HC/nIter);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
 
-
+#if 0
     // compute reference solution
 	gettimeofday(&s, NULL);
     float* reference = (float *) malloc(sizeC);
@@ -160,17 +136,78 @@ runTest(int argc, char** argv)
 
     // check result
     float err;
-    //err = checkError(reference, C, elemsC);
+    err = checkError(reference, C, elemsC);
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Check: ", "\n");
 
     fprintf(stderr, "Error: %f\n", err);
-
     // clean up memory
-    gmacFree(A);
-    gmacFree(B);
     gmacFree(C);
     free(reference);
+#endif
 
-    return;
+    return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Program main
+////////////////////////////////////////////////////////////////////////////////
+int
+main(int argc, char** argv)
+{
+	setParam<size_t>(&nIter, nIterStr, nIterDefault);
+
+    if (nIter == 0) {
+        fprintf(stderr, "Error: nIter should be greater than 0\n");
+        abort();
+    }
+
+    struct timeval s, t;
+
+    pthread_t * threads = new pthread_t[nIter];
+	param * params = new param[nIter];
+
+    unsigned elemsA = WA * HA;
+    unsigned elemsB = WB * HB;
+             elemsC = WC * HC / nIter;
+    unsigned sizeA = sizeof(float) * elemsA;
+    unsigned sizeB = sizeof(float) * elemsB;
+             sizeC = sizeof(float) * elemsC;
+
+
+    // allocate memory for matrices A and B
+	gettimeofday(&s, NULL);
+    if (gmacGlobalMalloc((void**) &A, sizeA) != gmacSuccess) {
+        fprintf(stderr, "Error allocating A");
+        abort();
+    }
+    if (gmacGlobalMalloc((void**) &B, sizeB) != gmacSuccess) {
+        fprintf(stderr, "Error allocating B");
+        abort();
+    }
+
+    // initialize matricesmatrices
+    randInitMax(A, 100.f, elemsA);
+    randInitMax(B, 100.f, elemsB);
+
+	// Alloc output data
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Alloc: ", "\n");
+
+    for (unsigned n = 0; n < nIter; n++) {
+		params[n].i = n;
+		pthread_create(&threads[n], NULL, matrixMulThread, &(params[n]));
+	}
+
+	gmacFree(A);
+	gmacFree(B);
+
+	for (unsigned n = 0; n < nIter; n++) {
+		pthread_join(threads[n], NULL);
+	}
+
+    delete [] params;
+    delete [] threads;
+
+    return 0;
 }
