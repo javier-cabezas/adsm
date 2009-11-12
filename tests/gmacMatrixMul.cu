@@ -72,10 +72,10 @@ const char * WBStr = "GMAC_WB";
 const char * HBStr = "GMAC_HB";
 
 const size_t nIterDefault = 4;
-const size_t WADefault = (100 * BLOCK_SIZE); // Matrix A width
-const size_t HADefault = (100 * BLOCK_SIZE); // Matrix A height
-const size_t WBDefault = (100 * BLOCK_SIZE); // Matrix B width
-const size_t HBDefault = (100 * BLOCK_SIZE); // Matrix B height
+const size_t WADefault = (40 * BLOCK_SIZE); // Matrix A width
+const size_t HADefault = (40 * BLOCK_SIZE); // Matrix A height
+const size_t WBDefault = (40 * BLOCK_SIZE); // Matrix B width
+const size_t HBDefault = (40 * BLOCK_SIZE); // Matrix B height
 
 static size_t nIter = 0;
 static size_t WA = 0; // Matrix A width
