@@ -66,9 +66,25 @@ extern "C" {
 #include "gmacMatrixMulKernel.cu"
 
 const char * nIterStr = "GMAC_NITER";
-const size_t nIterDefault        = 4;
+const char * WAStr = "GMAC_WA";
+const char * HAStr = "GMAC_HA";
+const char * WBStr = "GMAC_WB";
+const char * HBStr = "GMAC_HB";
+
+const size_t nIterDefault = 4;
+const size_t WADefault = (100 * BLOCK_SIZE); // Matrix A width
+const size_t HADefault = (100 * BLOCK_SIZE); // Matrix A height
+const size_t WBDefault = (100 * BLOCK_SIZE); // Matrix B width
+const size_t HBDefault = (100 * BLOCK_SIZE); // Matrix B height
 
 static size_t nIter = 0;
+static size_t WA = 0; // Matrix A width
+static size_t HA = 0; // Matrix A height
+static size_t WB = 0; // Matrix B width
+static size_t HB = 0; // Matrix B height
+
+#define WC WB  // Matrix C width 
+#define HC HA  // Matrix C height
 
 static float * A, * B;
 struct param {
@@ -123,7 +139,7 @@ matrixMulThread(void * ptr)
 	gettimeofday(&s, NULL);
     dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid(WC / threads.x, (HC / nIter) / threads.y);
-    matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * HC/nIter);
+    matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * elemsC);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
@@ -156,6 +172,10 @@ int
 main(int argc, char** argv)
 {
 	setParam<size_t>(&nIter, nIterStr, nIterDefault);
+	setParam<size_t>(&WA, WAStr, WADefault);
+	setParam<size_t>(&HA, HAStr, HADefault);
+	setParam<size_t>(&WB, WBStr, WBDefault);
+	setParam<size_t>(&HB, HBStr, HBDefault);
 
     if (nIter == 0) {
         fprintf(stderr, "Error: nIter should be greater than 0\n");
@@ -173,6 +193,11 @@ main(int argc, char** argv)
     unsigned sizeA = sizeof(float) * elemsA;
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
+
+
+    printf("Elems: %d\n", elemsA);
+    printf("Elems: %d\n", elemsB);
+    printf("Elems: %d\n", elemsC);
 
 
     // allocate memory for matrices A and B

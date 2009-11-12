@@ -43,15 +43,6 @@
 // Thread block size
 #define BLOCK_SIZE 16
 
-// Matrix dimensions
-// (chosen as multiples of the thread block size for simplicity)
-#define WA (3 * BLOCK_SIZE) // Matrix A width
-#define HA (5 * BLOCK_SIZE) // Matrix A height
-#define WB (8 * BLOCK_SIZE) // Matrix B width
-#define HB WA  // Matrix B height
-#define WC WB  // Matrix C width 
-#define HC HA  // Matrix C height
-
 ////////////////////////////////////////////////////////////////////////////////
 //! Matrix multiplication on the device: C = A * B
 //! wA is A's width and wB is B's width
@@ -62,14 +53,13 @@ matrixMul( float* C, float* A, float* B, int wA, int wB, int offset)
     // Block index
     int bx = blockIdx.x;
     int by = blockIdx.y;
-    int gby = blockIdx.y + offset;
 
     // Thread index
     int tx = threadIdx.x;
     int ty = threadIdx.y;
 
     // Index of the first sub-matrix of A processed by the block
-    int aBegin = wA * BLOCK_SIZE * gby;
+    int aBegin = wA * BLOCK_SIZE * by + offset;
 
     // Index of the last sub-matrix of A processed by the block
     int aEnd   = aBegin + wA - 1;
