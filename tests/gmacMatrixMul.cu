@@ -144,24 +144,6 @@ matrixMulThread(void * ptr)
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
 
-#if 0
-    // compute reference solution
-	gettimeofday(&s, NULL);
-    float* reference = (float *) malloc(sizeC);
-    computeGold(reference, A, B, HA, WA, WB);
-
-    // check result
-    float err;
-    err = checkError(reference, C, elemsC);
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Check: ", "\n");
-
-    fprintf(stderr, "Error: %f\n", err);
-    // clean up memory
-    gmacFree(C);
-    free(reference);
-#endif
-
     return NULL;
 }
 
@@ -182,6 +164,7 @@ main(int argc, char** argv)
         abort();
     }
 
+
     struct timeval s, t;
 
     pthread_t * threads = new pthread_t[nIter];
@@ -193,7 +176,6 @@ main(int argc, char** argv)
     unsigned sizeA = sizeof(float) * elemsA;
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
-
 
     printf("Elems: %d\n", elemsA);
     printf("Elems: %d\n", elemsB);
@@ -230,6 +212,24 @@ main(int argc, char** argv)
 	for (unsigned n = 0; n < nIter; n++) {
 		pthread_join(threads[n], NULL);
 	}
+
+    // compute reference solution
+	gettimeofday(&s, NULL);
+    // check result
+    float err;
+    printf("Computing host matrix mul. Please wait...\n");
+    float* reference = (float *) malloc(sizeC * nIter);
+    computeGold(reference, A, B, HA, WA, WB);
+
+    for (unsigned n = 0; n < nIter; n++) {
+        err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
+	}
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Check: ", "\n");
+
+    fprintf(stderr, "Error: %f\n", err);
+    // clean up memory
+    free(reference);
 
     delete [] params;
     delete [] threads;
