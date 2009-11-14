@@ -7,7 +7,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
 	 	gmacPingPong gmacCompress gmacCompressSend\
-		vmVecAdd vmNull vmStencil
+		vmVecAdd vmNull vmStencil vmMatrixMul
 
 bandwidth_SOURCES = bandwidth.cu
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcuda -lcudart
@@ -65,7 +65,9 @@ vmStencil_DEPENDENCIES = vmStencilCommon.cu
 vmStencil_SOURCES = vmStencil.cu utils.cpp
 vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-
+vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
+vmMatrixMul_SOURCES = vmMatrixMul.cu utils.cpp
+vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 

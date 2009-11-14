@@ -147,6 +147,21 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+# Check for using map to request host memory
+mmap_default="no"
+AC_MSG_CHECKING(whether to use mmap() to allocate system memory)
+AC_ARG_ENABLE(mmap,
+	AC_HELP_STRING([--enable-mmap], [turn on using mmap() to request system memory [[default=no]]])
+		, , enable_mmap=$mmap_default)
+if test "$enable_mmap" = "yes"; then
+	if test "$enable_vm" = "yes"; then
+		AC_MSG_ERROR("mmap() cannot be used when using software virtual memory")
+	fi
+	AC_DEFINE([USE_MMAP])
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
 
 global_host_default="no"
 AC_MSG_CHECKING(whether to use a host memory for global allocations)

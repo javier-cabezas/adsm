@@ -21,18 +21,22 @@ PageTable::PageTable() :
 	if(pageSize == 0) pageSize = defaultPageSize;
 	tableShift = log2(pageSize);
 	TRACE("Page Size: %d bytes", pageSize);
+#ifndef USE_MMAP
 	TRACE("Table Shift: %d bits", tableShift);
 	TRACE("Table Size: %d entries", (1 << dirShift) / pageSize);
+#endif
 }
 
 
 PageTable::~PageTable()
 { 
+#ifndef USE_MMAP
 	TRACE("Cleaning Page Table");
 	for(int i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		deleteDirectory(rootTable.value(i));
 	}
+#endif
 }
 
 void PageTable::deleteDirectory(Directory *dir)
@@ -46,6 +50,7 @@ void PageTable::deleteDirectory(Directory *dir)
 
 void PageTable::insert(void *host, void *dev)
 {
+#ifndef USE_MMAP
 	sync();
 
 	enterFunction(vmAlloc);
@@ -72,10 +77,12 @@ void PageTable::insert(void *host, void *dev)
 	TRACE("PT inserts: %p -> %p", entry(host, tableShift, table.size()), dev);
 	unlock();
 	exitFunction();
+#endif
 }
 
 void PageTable::remove(void *host)
 {
+#ifndef USE_MMAP
 	sync();
 	enterFunction(vmFree);
 	lock();
@@ -94,10 +101,14 @@ void PageTable::remove(void *host)
 	table.remove(entry(host, tableShift, table.size()));
 	unlock();
 	exitFunction();
+#endif
 }
 
 void *PageTable::translate(void *host) 
 {
+#ifdef USE_MMAP
+	return host;
+#else
 	sync();
 
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false)
@@ -111,6 +122,7 @@ void *PageTable::translate(void *host)
 	addr += offset(host);
 	TRACE("PT translate: %p -> %p", host, addr);
 	return (void *)addr;
+#endif
 }
 
 bool PageTable::dirty(void *host)

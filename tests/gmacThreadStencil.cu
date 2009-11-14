@@ -22,6 +22,7 @@ static size_t nIter = 0;
 
 int main(int argc, char *argv[])
 {
+	struct timeval s, t;
 	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<size_t>(&nIter, nIterStr, nIterDefault);
 
@@ -68,6 +69,7 @@ int main(int argc, char *argv[])
         descriptors[n].slices       = dimElems / nIter;
 	}
 
+	gettimeofday(&t, NULL);
 	for(int n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, do_stencil, (void *) &descriptors[n]);
     }
@@ -75,6 +77,8 @@ int main(int argc, char *argv[])
 	for(int n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
 	}
+	gettimeofday(&s, NULL);
+	printTime(&t, &s, "Total: ", "\n");
 
     if (nIter > 1) {
         pthread_barrier_destroy(&barrier);

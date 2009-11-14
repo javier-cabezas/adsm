@@ -78,6 +78,7 @@ gmacError_t Context::hostMap(void *host, void **device, size_t size)
 	CUdeviceptr dev = 0;
 	size_t pageSize = mm().pageTable().getPageSize();
 	assert(((unsigned long)host & (pageSize - 1)) == 0);
+	proc->addShared(host, size);
 	lock();
 	AddressMap::const_iterator i = hostMem.find(host);
 	assert(i != hostMem.end());

@@ -135,8 +135,9 @@ gmacError_t gmacFree(void *cpuPtr)
 	}
 
 	if(proc->isShared(cpuPtr)) {
-		if(proc->removeShared(cpuPtr) == true)
+		if(proc->removeShared(cpuPtr) == true) {
 			gmac::Context::current()->hostFree(cpuPtr);
+		}
 	}
 	else {
 		gmac::Context::current()->free(cpuPtr);

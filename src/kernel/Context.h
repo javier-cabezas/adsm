@@ -65,7 +65,10 @@ protected:
 	friend class memory::Manager;
 	friend class Process;
 	static PRIVATE(key);
+	static unsigned _next;
 
+	unsigned _id;
+	
 	/*!
 		\brief Memory map for the context
 	*/
@@ -227,6 +230,8 @@ public:
 
 	virtual void flush() = 0;
 	virtual void invalidate() = 0;
+
+	inline unsigned id() const { return _id; }
 };
 
 };

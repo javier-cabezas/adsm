@@ -16,21 +16,19 @@ void contextInit()
 
 
 PRIVATE(Context::key);
-
-//std::list<Context *> *Context::list = NULL;
+unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) : acc(acc)
 {
 	PRIVATE_SET(key, NULL);
+	_id = ++_next;
 }
 
 void Context::init()
 {
 	TRACE("Initializing cloned context");
-	//memory::Map::SharedList::const_iterator i;
 	Process::SharedMap::iterator i;
 	Process::SharedMap &sharedMem = proc->sharedMem();
-	//for(i = memory::Map::shared().begin(); i != memory::Map::shared().end(); i++) {
 	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
 		TRACE("Mapping Shared Region %p (%d bytes)", i->second.start(), i->second.size());
 		void *devPtr;

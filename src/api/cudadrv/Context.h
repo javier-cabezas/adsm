@@ -96,7 +96,10 @@ protected:
 		size_t size;
 		size_t page;
 	} devicePageTable;
+#elif USE_MMAP
+	static const char *baseRegisterSymbol;
 #endif
+
 
 	CUcontext ctx;
 	MUTEX(mutex);
@@ -202,12 +205,6 @@ public:
 
 	inline gmacError_t free(void *addr) {
 		lock();
-		AddressMap::iterator i = hostMem.find(addr);
-		if(i != hostMem.end()) {
-			// TODO: keep track of host mappings
-			unlock();
-			return error(CUDA_SUCCESS);
-		}
 		CUresult ret = cuMemFree(gpuAddr(addr));
 		unlock();
 		return error(ret);

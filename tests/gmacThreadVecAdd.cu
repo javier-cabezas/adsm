@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 {
 	pthread_t *nThread;
 	unsigned n = 0;
+	struct timeval st, en;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
 
+	gettimeofday(&st, NULL);
 	for(n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, addVector, &s[n]);
 	}
@@ -102,13 +104,8 @@ int main(int argc, char *argv[])
 		pthread_join(nThread[n], NULL);
 	}
 
-	float error = 0;
-	for(n = 0; n < nIter; n++) {
-		for(int i = 0; i < vecSize; i++) {
-			error += s[n][i] - 2;
-		}
-	}
-	fprintf(stdout, "Total: %.02f\n", error);
+	gettimeofday(&en, NULL);
+	printTime(&st, &en, "Total: ", "\n");
 
 	free(s);
 	free(nThread);

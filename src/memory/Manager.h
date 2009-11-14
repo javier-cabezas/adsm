@@ -61,6 +61,10 @@ private:
 
 protected:
 
+#ifdef USE_MMAP
+	static const size_t mmSize = 0x100000000;
+#endif
+
 	inline void insert(Region *r) {
 		gmac::Context::current()->mm().insert(r);
 	}
@@ -70,14 +74,6 @@ protected:
 	inline memory::Map *current() {
 		if(gmac::Context::current() == NULL) return NULL;
 		return &gmac::Context::current()->mm();
-	}
-
-	inline unsigned long align(void *addr) const {
-		unsigned long a = (unsigned long)addr;
-		unsigned n = 0x1;
-		while((a & n) == 0) { n = n << 1; }
-		TRACE("Align 0x%x", n);
-		return n;
 	}
 
 	void insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count);

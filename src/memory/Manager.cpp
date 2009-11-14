@@ -38,6 +38,7 @@ Region *Manager::remove(void *addr)
 
 void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
+#ifndef USE_MMAP
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
 	gmac::memory::PageTable &pageTable = ctx->mm().pageTable();
 	assert(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
@@ -46,15 +47,18 @@ void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t cou
 	TRACE("Page Table Request %p -> %p", cpuAddr, devAddr);
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.insert(cpuAddr + off, devAddr + off);
+#endif
 }
 
 void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 {
+#ifndef USE_MMAP
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
 	gmac::memory::PageTable &pageTable = ctx->mm().pageTable();
 	count += ((unsigned long)cpuPtr & (pageTable.getPageSize() -1));
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.remove(cpuAddr + off);
+#endif
 }
 
 void Manager::map(void *host, void *dev, size_t count)

@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <malloc.h>
 
+#include <typeinfo>
+
 namespace gmac { namespace memory {
 
 const char *RollingManager::lineSizeVar = "GMAC_LINESIZE";
@@ -68,9 +70,15 @@ RollingManager::RollingManager() :
 void *RollingManager::alloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
+#ifndef USE_MMAP
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), size) != 0)
 		return NULL;
 	Memory::protect(cpuAddr, size, PROT_NONE);
+#else
+	cpuAddr = (void *)((uint8_t *)addr + gmac::Context::current()->id() * mmSize);
+	TRACE("Mapping address %p to %p", addr, cpuAddr);
+	assert(mmap(cpuAddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == cpuAddr);
+#endif
 	TRACE("Alloc %p (%d bytes)", cpuAddr, size);
 	insertVirtual(cpuAddr, addr, size);
 	regionRolling[Context::current()].inc(lruDelta);
@@ -81,12 +89,17 @@ void *RollingManager::alloc(void *addr, size_t size)
 
 void RollingManager::release(void *addr)
 {
-	Region *reg = dynamic_cast<Region *>(remove(addr));
+	Region *reg = remove(addr);
 	removeVirtual(reg->start(), reg->size());
 	if(reg->owner() == Context::current()) {
 #ifndef USE_GLOBAL_HOST
+#ifdef USE_MMAP
+		munmap(addr, reg->size());
+#else
 		free(addr);
 #endif
+#endif
+		TRACE("Deleting Region %p\n", addr);
 		delete reg;
 	}
 	regionRolling[Context::current()].dec(lruDelta);
@@ -101,8 +114,9 @@ void RollingManager::flush()
 	memory::Map::iterator i;
 	current()->lock();
 	for(i = current()->begin(); i != current()->end(); i++) {
-		RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
-		r->invalidate();
+		Region *r = i->second;
+		if(typeid(*r) != typeid(RollingRegion)) continue;
+		dynamic_cast<RollingRegion *>(r)->invalidate();
 	}
 	current()->unlock();
 	gmac::Context::current()->flush();
