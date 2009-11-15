@@ -203,8 +203,8 @@ main(int argc, char** argv)
     }
 
     // initialize matricesmatrices
-    randInitMax(A, 100.f, elemsA);
-    randInitMax(B, 100.f, elemsB);
+    valueInit(A, 100.f, elemsA);
+    valueInit(B, 100.f, elemsB);
 
 	// Alloc output data
 	gettimeofday(&t, NULL);

@@ -90,10 +90,10 @@ int main(int argc, char *argv[])
 	// Alloc & init input data
 	ret = gmacGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(a, nIter * vecSize);
+	valueInit(a, 1.0, nIter * vecSize);
 	ret = gmacGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(b, nIter * vecSize);
+	valueInit(b, 1.0, nIter * vecSize);
 
 	// Alloc output data
 	gettimeofday(&t, NULL);

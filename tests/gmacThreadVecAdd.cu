@@ -42,10 +42,10 @@ void *addVector(void *ptr)
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(a, vecSize);
+	valueInit(a, 1.0, vecSize);
 	ret = gmacMalloc((void **)&b, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	randInit(b, vecSize);
+	valueInit(b, 1.0, vecSize);
 
 	// Alloc output data
 	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
