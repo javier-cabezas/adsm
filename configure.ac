@@ -175,6 +175,18 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+async_launch_default="no"
+AC_MSG_CHECKING(whether to perform asynchronous kernel launches using streams)
+AC_ARG_ENABLE(async-launch,
+    AC_HELP_STRING([--enable-async-launch], [turn on asynchronous kernel launches [[default=no]]])
+        , , enable_async_launch=$async_launch_default)
+if test "$enable_async_launch" = "yes"; then
+    AC_DEFINE([USE_ASYNC_LAUNCH])
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(API_DIR)

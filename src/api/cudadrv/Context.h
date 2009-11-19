@@ -274,9 +274,9 @@ public:
 	gmacError_t memset(void *dev, int c, size_t size);
 	gmacError_t launch(const char *kernel);
 	
-	inline gmacError_t sync() {
+    inline gmacError_t sync() {
         CUresult ret;
-#if 0
+#ifdef USE_ASYNC_LAUNCH
         lock();
         while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
             unlock();
@@ -284,15 +284,19 @@ public:
             lock();
         }
         if (ret == CUDA_SUCCESS) {
+            TRACE("Sync: success");
             ret = cuStreamSynchronize(streamLaunch);
+        } else {
+            TRACE("Sync: error: %d", ret);
         }
         unlock();
-#endif
+#else  
         lock();
         ret = cuCtxSynchronize();
         unlock();
-		return error(ret);
-	}
+#endif 
+        return error(ret);
+    }
 
 	// CUDA-related methods
 	inline Module *load(void *fatBin) {
