@@ -134,6 +134,8 @@ gmacError_t gmacFree(void *cpuPtr)
 		manager->release(cpuPtr);
 	}
 
+	// If it is a shared global structure and nobody is accessing
+	// it anymore, release the host memory
 	if(proc->isShared(cpuPtr)) {
 		if(proc->removeShared(cpuPtr) == true) {
 			gmac::Context::current()->hostFree(cpuPtr);

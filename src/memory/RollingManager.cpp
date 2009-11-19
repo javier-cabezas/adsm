@@ -70,16 +70,9 @@ RollingManager::RollingManager() :
 void *RollingManager::alloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
-#ifndef USE_MMAP
-	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), size) != 0)
+	if((cpuAddr = hostMap(addr, size, PROT_NONE)) == NULL)
 		return NULL;
-	Memory::protect(cpuAddr, size, PROT_NONE);
-#else
-	cpuAddr = (void *)((uint8_t *)addr + gmac::Context::current()->id() * mmSize);
-	TRACE("Mapping address %p to %p", addr, cpuAddr);
-	assert(mmap(cpuAddr, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == cpuAddr);
-#endif
-	TRACE("Alloc %p (%d bytes)", cpuAddr, size);
+	
 	insertVirtual(cpuAddr, addr, size);
 	regionRolling[Context::current()].inc(lruDelta);
 	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
@@ -92,13 +85,7 @@ void RollingManager::release(void *addr)
 	Region *reg = remove(addr);
 	removeVirtual(reg->start(), reg->size());
 	if(reg->owner() == Context::current()) {
-#ifndef USE_GLOBAL_HOST
-#ifdef USE_MMAP
-		munmap(addr, reg->size());
-#else
-		free(addr);
-#endif
-#endif
+		hostUnmap(addr, reg->size());	// Global mappings do not have a shadow copy in system memory
 		TRACE("Deleting Region %p\n", addr);
 		delete reg;
 	}
