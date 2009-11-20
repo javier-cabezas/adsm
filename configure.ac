@@ -82,14 +82,15 @@ AC_ARG_ENABLE(paraver,
 	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
+	 AC_MSG_RESULT(yes)
     AC_CHECK_LIB([paraver], [paraver_lib_present],
                  [LIBS="-lparaver $LIBS"] [paraver_lib=""],
                  [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
                  [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
+					  [paraver_src="libparaver"]
                  )
 
 	AC_DEFINE(PARAVER)
-	AC_MSG_RESULT(yes)
 else
 	paraver_lib=""
 	AC_MSG_RESULT(no)
@@ -184,9 +185,10 @@ AC_SUBST(THREAD_DIR, $thread_name)
 
 AC_SUBST(PARAVER_INCLUDE, $paraver_include)
 AC_SUBST(PARAVER_LIB, $paraver_lib)
+AC_SUBST(PARAVER_SRC, $paraver_src)
 
 AC_CONFIG_LINKS(src/config/threads.h:src/config/$thread_name.h)
-# AC_CONFIG_SUBDIRS([lib/libparaver])
+AC_CONFIG_SUBDIRS([lib/libparaver])
 
 AC_OUTPUT(
 	Makefile
