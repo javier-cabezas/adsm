@@ -74,31 +74,20 @@ else
 fi
 
 
-# Check for paraver tracing on library
-paraver_default="no"
-paraver_gmac_default="no"
-
-AC_MSG_CHECKING(whether to enable paraver tracing of library)
-AC_ARG_ENABLE(paraver-gmac,
-	AC_HELP_STRING([--enable-paraver-gmac], [turn no paraver tracing on library [[defalult=no]]])
-		, , enable_paraver_gmac=$paraver_gmac_default)
-if test "$enable_paraver_gmac" = "yes"; then
-	paraver_default="yes"
-	AC_DEFINE(PARAVER_GMAC)
-	AC_MSG_RESULT(yes)
-else
-	AC_MSG_RESULT(no)
-fi
-
-
 # Check for paraver tracing
-paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"
+#"
 AC_MSG_CHECKING(whether to enable paraver tracing)
+paraver_default="no"
 AC_ARG_ENABLE(paraver,
 	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
-	paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"
+    AC_CHECK_LIB([paraver], [paraver_lib_present],
+                 [LIBS="-lparaver $LIBS"] [paraver_lib=""],
+                 [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
+                 [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
+                 )
+
 	AC_DEFINE(PARAVER)
 	AC_MSG_RESULT(yes)
 else
@@ -197,7 +186,7 @@ AC_SUBST(PARAVER_INCLUDE, $paraver_include)
 AC_SUBST(PARAVER_LIB, $paraver_lib)
 
 AC_CONFIG_LINKS(src/config/threads.h:src/config/$thread_name.h)
-AC_CONFIG_SUBDIRS([lib/libparaver])
+# AC_CONFIG_SUBDIRS([lib/libparaver])
 
 AC_OUTPUT(
 	Makefile
