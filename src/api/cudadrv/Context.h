@@ -198,7 +198,14 @@ public:
 	inline gmacError_t malloc(void **addr, size_t size) {
 		zero(addr);
 		lock();
-		CUresult ret = cuMemAlloc((CUdeviceptr *)addr, size);
+		size += mm().pageTable().getPageSize();
+		CUdeviceptr ptr = 0;
+		CUresult ret = cuMemAlloc(&ptr, size);
+		if(ptr % mm().pageTable().getPageSize()) {
+			ptr += mm().pageTable().getPageSize() -
+				(ptr % mm().pageTable().getPageSize());
+		}
+		*addr = (void *)ptr;
 		unlock();
 		return error(ret);
 	}
