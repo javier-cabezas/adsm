@@ -28,6 +28,17 @@ Context::Context(const Context &root, GPU &gpu) :
 }
 
 
+gmacError_t Context::hostLockAlloc(void **addr, size_t size)
+{
+	zero(addr);
+	CUresult ret = CUDA_SUCCESS;
+	lock();
+	ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE);
+	unlock();
+	return error(ret);
+}
+
+
 gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
 {
 	zero(host); zero(device);

@@ -130,6 +130,12 @@ public:
 	*/
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
 
+	/*!
+		\brief Allocates page-locked memory on the host memory 
+		\param addr Pointer to memory address to store the host memory
+		\param size Size, in bytes, to be allocated
+	*/
+	virtual gmacError_t hostLockAlloc(void **addr, size_t size) = 0;
 	
 	/*!
 		\brief Releases memory previously allocated by Malloc

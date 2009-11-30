@@ -105,6 +105,8 @@ public:
 		return error(ret);
 	}
 
+    gmacError_t hostLockAlloc(void **addr, size_t size);
+
 	inline gmacError_t hostAlloc(void **host, void **dev, size_t size) {
 		check();
 		*dev = NULL;

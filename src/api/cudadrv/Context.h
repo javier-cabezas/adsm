@@ -217,6 +217,7 @@ public:
 		return error(ret);
 	}
 
+    gmacError_t hostLockAlloc(void **addr, size_t size);
 	gmacError_t hostAlloc(void **host, void **device, size_t size);
 	gmacError_t hostMemAlign(void **host, void **device, size_t size);
 	gmacError_t hostMap(void *host, void **device, size_t size);
