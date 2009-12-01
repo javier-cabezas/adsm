@@ -195,6 +195,7 @@ AC_OUTPUT(
 	lib/Makefile
 	src/Makefile
 	src/config/config.h
+	src/config/Makefile
 	src/kernel/Makefile
 	src/memory/Makefile
 	src/memory/posix/Makefile
@@ -206,6 +207,5 @@ AC_OUTPUT(
 	src/api/cuda/Makefile
 	src/api/cudadrv/Makefile
 	src/os/Makefile
-	src/util/Makefile
 	tests/Makefile
 )

@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define __PARAMS_H_
 
 #include <cstdlib>
-#include <vector>
+#include <map>
 
 #include "order.h"
 
@@ -45,14 +45,28 @@ enum ParamFlags {
     PARAM_NONZERO = 0x1
 };
 
-#define PARAM_REGISTER(v,t,d,...)        \
-    t v;                                 \
-                                         \
-    static void                          \
-    __attribute__((constructor(CONFIG))) \
-    __param_register_##v(void)           \
-    {                                    \
-        paramCheckAndSet<t>(&v, d, ##__VA_ARGS__); \
+#define PARAM_REGISTER(v,t,d,...)                      \
+    t v;                                               \
+    t __default_##v;                                   \
+                                                       \
+    static void                                        \
+    __print_##v()                                      \
+    {                                                  \
+        std::cout << v;                                \
+    }                                                  \
+                                                       \
+    static void                                        \
+    __print_default_##v()                              \
+    {                                                  \
+        std::cout << __default_##v;                    \
+    }                                                  \
+                                                       \
+    static void                                        \
+    __attribute__((constructor(CONFIG)))               \
+    __param_register_##v(void)                         \
+    {                                                  \
+        __default_##v = d;                             \
+        paramCheckAndSet<t>(&v, d, #v, __print_##v, __print_default_##v, ##__VA_ARGS__); \
     }
 
 #include "params.ipp"
