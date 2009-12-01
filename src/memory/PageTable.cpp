@@ -1,13 +1,21 @@
 #include "PageTable.h"
 
-#include <util/Util.h>
+#include "config/params.h"
+
 #include <kernel/Context.h>
 
 #include <malloc.h>
 
 namespace gmac { namespace memory {
 
-const char *PageTable::pageSizeVar = "GMAC_PAGE";
+static const size_t defaultPageSize = 2 * 1024 * 1024;
+
+PARAM_REGISTER(paramPageSize,
+               size_t,
+               defaultPageSize,
+               "GMAC_PAGE",
+               PARAM_NONZERO);
+
 size_t PageTable::pageSize;
 size_t PageTable::tableShift;
 
@@ -16,9 +24,7 @@ PageTable::PageTable() :
 	pages(1)
 {
 	MUTEX_INIT(mutex);
-	const char *var = Util::getenv(pageSizeVar);
-	if(var != NULL) pageSize = atoi(var);
-	if(pageSize == 0) pageSize = defaultPageSize;
+    pageSize = paramPageSize;
 	tableShift = log2(pageSize);
 	TRACE("Page Size: %d bytes", pageSize);
 #ifndef USE_MMAP

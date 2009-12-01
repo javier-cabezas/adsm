@@ -6,19 +6,17 @@
 #include <threads.h>
 #include <debug.h>
 
+#include <config/params.h>
 #include <kernel/Process.h>
 #include <kernel/Context.h>
 #include <memory/Manager.h>
 
 #include <paraver.h>
 
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 MUTEX(gmacMutex);
-static size_t pageSize = 0;
-
-static const char *managerVar = "GMAC_MANAGER";
 
 #ifdef PARAVER
 namespace paraver {
@@ -26,15 +24,36 @@ extern int init;
 }
 #endif
 
+PARAM_REGISTER(paramMemManager,
+                char *,
+                "Rolling",
+                "GMAC_MANAGER");
+
+PARAM_REGISTER(paramBufferPageLocked,
+               bool,
+               "Rolling",
+               "GMAC_BUFFER_PAGE_LOCKED");
+
+PARAM_REGISTER(paramBufferPageLockedThreshold,
+               size_t,
+               4 * 1024 * 1024,
+               "GMAC_BUFFER_PAGE_LOCKED",
+               PARAM_NONZERO);
+
+PARAM_REGISTER(paramPageSize,
+               size_t,
+               getpagesize(),
+               NULL,
+               PARAM_NONZERO);
+
 static void __attribute__((constructor(CORE))) gmacInit(void)
 {
 	TRACE("Initialiazing GMAC");
 #ifdef PARAVER
 	paraver::init = 1;
 #endif
-	pageSize = getpagesize();
 	MUTEX_INIT(gmacMutex);
-	gmac::Process::init(getenv(managerVar));
+	gmac::Process::init(paramMemManager);
 	proc->create();
 }
 
@@ -49,7 +68,7 @@ static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 {
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	ret = gmac::Context::current()->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		return ret;
@@ -75,7 +94,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 	enterFunction(gmacGlobalMalloc);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		return ret;
@@ -103,7 +122,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 	}
 	// Comment this out if we opt for a hierarchy-based memory sharing
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	proc->addShared(*cpuPtr, count);
 	gmac::Process::ContextList::const_iterator i;
 	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {

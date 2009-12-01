@@ -1,7 +1,7 @@
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS = util memory kernel os api gmac
-DIST_SUBDIRS = config util api os memory kernel gmac
+SUBDIRS = memory kernel os api gmac
+DIST_SUBDIRS = config api os memory kernel gmac
 
 BUILT_SOURCES = config/os config/api
 
