@@ -1,7 +1,9 @@
 libgmac (0.0.2.1) unstable; urgency=low
 
-  * Added PARAM_REGISTER macro to configure and set up parameters that might
-    be passed as environment variables
+  * Added PARAM_REGISTER macro to configure and set up parameters that can
+    be modified by environment variables
+  * Parameters can be printed by setting GMAC_PRINT_PARAMS=1 before program
+    execution
 
  -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 12 Nov 2009 11:25:00 +0100
 
