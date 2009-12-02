@@ -4,8 +4,12 @@ libgmac (0.0.2.1) unstable; urgency=low
     be modified by environment variables
   * Parameters can be printed by setting GMAC_PRINT_PARAMS=1 before program
     execution
+  * Support for page-locked buffers. Currently used in device<->device and
+    device<->disk memory transfers. There is one buffer per Context:
+    - GMAC_BUFFER_PAGE_LOCKED=1 enables the feature
+    - GMAC_BUFFER_PAGE_LOCKED_SIZE configures the size in bytes of the buffer
 
- -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 12 Nov 2009 11:25:00 +0100
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 2 Dec 2009 16:25:00 +0100
 
 libgmac (0.0.2-1) unstable; urgency=low
 
