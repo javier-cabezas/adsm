@@ -53,7 +53,6 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-
 class Context : public gmac::Context {
 protected:
 	typedef struct Call {
@@ -135,6 +134,14 @@ protected:
             FATAL("Unable to create CUDA stream %d", ret);
 
         TRACE("Created launch stream: %p", streamLaunch);
+        if (paramBufferPageLocked) {
+            printf("Using page locked memory\n");
+            assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
+            _bufferPageLockedSize = paramBufferPageLockedSize;
+        } else {
+            _bufferPageLocked     = NULL;
+            _bufferPageLockedSize = 0;
+        }
     }
 	inline void setup() {
 		MUTEX_INIT(mutex);
@@ -217,7 +224,6 @@ public:
 		return error(ret);
 	}
 
-    gmacError_t hostLockAlloc(void **addr, size_t size);
 	gmacError_t hostAlloc(void **host, void **device, size_t size);
 	gmacError_t hostMemAlign(void **host, void **device, size_t size);
 	gmacError_t hostMap(void *host, void **device, size_t size);

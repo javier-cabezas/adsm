@@ -29,17 +29,6 @@ PARAM_REGISTER(paramMemManager,
                 "Rolling",
                 "GMAC_MANAGER");
 
-PARAM_REGISTER(paramBufferPageLocked,
-               bool,
-               "Rolling",
-               "GMAC_BUFFER_PAGE_LOCKED");
-
-PARAM_REGISTER(paramBufferPageLockedThreshold,
-               size_t,
-               4 * 1024 * 1024,
-               "GMAC_BUFFER_PAGE_LOCKED",
-               PARAM_NONZERO);
-
 PARAM_REGISTER(paramPageSize,
                size_t,
                getpagesize(),
@@ -232,7 +221,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 	assert(dstCtx != NULL || srcCtx != NULL);
 
     gmacError_t err;
-	TRACE("GMAC Memcpy");
+	TRACE("GMAC Memcpy: %d", n);
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst, manager->ptr(srcCtx, src), n);
@@ -253,14 +242,38 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 	}
     // TODO - add asynchronous calls to copyToHostAsync and copyToDeviceAsync
 	else {
-		void *tmp = malloc(n);
-		manager->flush(src, n);
-		err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
-        assert(err == gmacSuccess);
-		manager->invalidate(dst, n);
-		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
-        assert(err == gmacSuccess);
-		free(tmp);
+		void *tmp;
+        bool pageLocked = false;
+
+        manager->flush(src, n);
+        manager->invalidate(dst, n);
+
+        if (srcCtx->bufferPageLockedSize() > 0) {
+            size_t bufferSize = srcCtx->bufferPageLockedSize();
+            void * tmp = srcCtx->bufferPageLocked();
+
+            size_t left = n;
+            off_t  off  = 0;
+            while (left != 0) {
+                size_t size = left < bufferSize? left: bufferSize;
+                err = srcCtx->copyToHost((char *) tmp, manager->ptr(srcCtx, ((char *) src) + off), size);
+                assert(err == gmacSuccess);
+                err = dstCtx->copyToDevice(manager->ptr(dstCtx, ((char *) dst) + off), tmp, size);
+                assert(err == gmacSuccess);
+
+                left -= size;
+                off  += size;
+                printf("Copying %zd %zd\n", size, bufferSize);
+            }
+        } else {
+            TRACE("Allocated on-locked memory: %zd\n", n);
+            tmp = malloc(n);
+            err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
+            assert(err == gmacSuccess);
+            err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
+            assert(err == gmacSuccess);
+            free(tmp);
+        }
 	}
 
 	return ret;

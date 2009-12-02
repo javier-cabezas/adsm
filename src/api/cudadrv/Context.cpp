@@ -23,31 +23,26 @@ Context::Context(const Context &root, GPU &gpu) :
 		modules.insert(ModuleMap::value_type(module, m->second));
 	}
 	hostMem = root.hostMem;
-	unlock();
+    setupStreams();
+    unlock();
 	TRACE("Cloned GPU context [%p]", this);
-}
-
-
-gmacError_t Context::hostLockAlloc(void **addr, size_t size)
-{
-	zero(addr);
-	CUresult ret = CUDA_SUCCESS;
-	lock();
-	ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE);
-	unlock();
-	return error(ret);
 }
 
 
 gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
 {
-	zero(host); zero(device);
+	zero(host);
 	CUresult ret = CUDA_SUCCESS;
 	lock();
-	ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
-	if(ret == CUDA_SUCCESS) {
-		assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0) == CUDA_SUCCESS);
-	}
+    if (device != NULL) {
+        zero(device);
+        ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
+        if(ret == CUDA_SUCCESS) {
+            assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0) == CUDA_SUCCESS);
+        }
+    } else {
+        ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_PORTABLE);
+    }
 	hostMem.insert(AddressMap::value_type(*host, *host));
 	unlock();
 	return error(ret);
