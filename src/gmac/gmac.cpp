@@ -172,7 +172,7 @@ gmacError_t gmacLaunch(const char *symbol)
 	}
 	TRACE("Kernel Launch");
 	ret = gmac::Context::current()->launch(symbol);
-	ret = gmac::Context::current()->sync();
+	//ret = gmac::Context::current()->sync();
 	exitFunction();
 	return ret;
 }
@@ -248,26 +248,31 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
         manager->flush(src, n);
         manager->invalidate(dst, n);
 
-        if (srcCtx->bufferPageLockedSize() > 0) {
-            size_t bufferSize = srcCtx->bufferPageLockedSize();
-            void * tmp = srcCtx->bufferPageLocked();
+        gmac::Context *ctx = gmac::Context::current();
+        if (ctx->bufferPageLockedSize() > 0) {
+            size_t bufferSize = ctx->bufferPageLockedSize();
+            void * tmp        = ctx->bufferPageLocked();
+            //void * tmp = malloc(srcCtx->bufferPageLockedSize());
+            printf("Address %p\n", tmp);
 
             size_t left = n;
             off_t  off  = 0;
             while (left != 0) {
-                size_t size = left < bufferSize? left: bufferSize;
-                err = srcCtx->copyToHost((char *) tmp, manager->ptr(srcCtx, ((char *) src) + off), size);
+                size_t bytes = left < bufferSize? left: bufferSize;
+                err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
                 assert(err == gmacSuccess);
-                err = dstCtx->copyToDevice(manager->ptr(dstCtx, ((char *) dst) + off), tmp, size);
+                err = dstCtx->copyToDevice(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
                 assert(err == gmacSuccess);
 
-                left -= size;
-                off  += size;
-                printf("Copying %zd %zd\n", size, bufferSize);
+                left -= bytes;
+                off  += bytes;
+                TRACE("Copying %zd %zd\n", bytes, bufferSize);
             }
+            //free(tmp);
         } else {
-            TRACE("Allocated on-locked memory: %zd\n", n);
+            TRACE("Allocated non-locked memory: %zd\n", n);
             tmp = malloc(n);
+
             err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
             assert(err == gmacSuccess);
             err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
