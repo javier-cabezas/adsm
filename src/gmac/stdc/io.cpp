@@ -100,7 +100,6 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         if (ctx->bufferPageLockedSize() > 0) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             tmp               = ctx->bufferPageLocked();
-            printf("IO Address %p\n", tmp);
 
             size_t left = n;
             off_t  off  = 0;

@@ -252,8 +252,6 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
         if (ctx->bufferPageLockedSize() > 0) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             void * tmp        = ctx->bufferPageLocked();
-            //void * tmp = malloc(srcCtx->bufferPageLockedSize());
-            printf("Address %p\n", tmp);
 
             size_t left = n;
             off_t  off  = 0;
@@ -268,7 +266,6 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
                 off  += bytes;
                 TRACE("Copying %zd %zd\n", bytes, bufferSize);
             }
-            //free(tmp);
         } else {
             TRACE("Allocated non-locked memory: %zd\n", n);
             tmp = malloc(n);
