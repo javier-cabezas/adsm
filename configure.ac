@@ -193,6 +193,8 @@ AC_CONFIG_LINKS(src/config/threads.h:src/config/$thread_name.h)
 AC_OUTPUT(
 	Makefile
 	lib/Makefile
+    doc/Doxyfile
+    doc/Makefile
 	src/Makefile
 	src/config/config.h
 	src/config/Makefile
