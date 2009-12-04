@@ -15,10 +15,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
-MUTEX(gmacMutex);
+PRIVATE(__in_gmac);
+const char __gmac_code = 1;
+const char __user_code = 0;
 static size_t pageSize = 0;
 
 static const char *managerVar = "GMAC_MANAGER";
+
 
 #ifdef PARAVER
 namespace paraver {
@@ -33,7 +36,7 @@ static void __attribute__((constructor(CORE))) gmacInit(void)
 	paraver::init = 1;
 #endif
 	pageSize = getpagesize();
-	MUTEX_INIT(gmacMutex);
+	PRIVATE_INIT(__in_gmac, NULL);
 	gmac::Process::init(getenv(managerVar));
 	proc->create();
 }
@@ -63,21 +66,26 @@ static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 
 gmacError_t gmacMalloc(void **cpuPtr, size_t count)
 {
+	__enterGmac();
 	enterFunction(gmacMalloc);
 	gmacError_t ret = __gmacMalloc(cpuPtr, count);
 	exitFunction();
+	__exitGmac();
 	return ret;
 }
 
 #ifdef USE_GLOBAL_HOST
 gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
+	__enterGmac();
 	enterFunction(gmacGlobalMalloc);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < pageSize) ? pageSize : count;
 	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
 	if(ret != gmacSuccess || !manager) {
+		exitFunction();
+		__exitGmac();
 		return ret;
 	}
 	proc->addShared(*cpuPtr, count);
@@ -89,16 +97,19 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 		manager->remap(*i, *cpuPtr, devPtr, count);
 	}
 	exitFunction();
+	__exitGmac();
 	return gmacSuccess;
 }
 #else
 gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
+	__enterGmac();
 	enterFunction(gmacGlobalMalloc);
 	// Allocate memory in the current context
 	gmacError_t ret = __gmacMalloc(cpuPtr, count);
 	if(ret != gmacSuccess) {
 		exitFunction();
+		__exitGmac();
 		return ret;
 	}
 	// Comment this out if we opt for a hierarchy-based memory sharing
@@ -113,6 +124,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 		manager->remap(*i, *cpuPtr, devPtr, count);
 	}
 	exitFunction();
+	__exitGmac();
 	return ret;
 
 cleanup:
@@ -123,12 +135,14 @@ cleanup:
 	}
 	gmacFree(devPtr);
 	exitFunction();
+	__exitGmac();
 	return ret;
 }
 #endif
 
 gmacError_t gmacFree(void *cpuPtr)
 {
+	__enterGmac();
 	enterFunction(gmacFree);
 	if(manager) {
 		manager->release(cpuPtr);
@@ -145,17 +159,22 @@ gmacError_t gmacFree(void *cpuPtr)
 		gmac::Context::current()->free(cpuPtr);
 	}
 	exitFunction();
+	__exitGmac();
 	return gmacSuccess;
 }
 
 void *gmacPtr(void *ptr)
 {
-	if(manager == NULL) return ptr;
-	return manager->ptr(ptr);
+	void *ret = NULL;
+	__enterGmac();
+	if(manager != NULL) ret = manager->ptr(ptr);
+	__exitGmac();
+	return ret;
 }
 
 gmacError_t gmacLaunch(const char *symbol)
 {
+	__enterGmac();
 	enterFunction(gmacLaunch);
 	gmacError_t ret = gmacSuccess;
 	if(manager) {
@@ -166,11 +185,13 @@ gmacError_t gmacLaunch(const char *symbol)
 	ret = gmac::Context::current()->launch(symbol);
 	ret = gmac::Context::current()->sync();
 	exitFunction();
+	__exitGmac();
 	return ret;
 }
 
 gmacError_t gmacThreadSynchronize()
 {
+	__enterGmac();
 	enterFunction(gmacSync);
 	gmacError_t ret = gmac::Context::current()->sync();
 	if(manager) {
@@ -178,29 +199,35 @@ gmacError_t gmacThreadSynchronize()
 		manager->sync();
 	}
 	exitFunction();
+	__exitGmac();
 	return ret;
 }
 
 gmacError_t gmacGetLastError()
 {
-	return gmac::Context::current()->error();
+	__enterGmac();
+	gmacError_t ret = gmac::Context::current()->error();
+	__exitGmac();
+	return ret;
 }
 
 void *gmacMemset(void *s, int c, size_t n)
 {
-    void *ret = s;
+	__enterGmac();
+   void *ret = s;
 	assert(manager != NULL);
 	
 	gmac::Context *ctx = manager->owner(s);
 	assert(ctx != NULL);
 	manager->invalidate(s, n);
 	ctx->memset(manager->ptr(s), c, n);
-
-    return ret;
+	__exitGmac();
+   return ret;
 }
 
 void *gmacMemcpy(void *dst, const void *src, size_t n)
 {
+	__enterGmac();
 	void *ret = dst;
 	size_t ds = 0, ss = 0;
 
@@ -243,12 +270,14 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
         assert(err == gmacSuccess);
 		free(tmp);
 	}
-
+	__exitGmac();
 	return ret;
 
 }
 
 void gmacSendReceive(unsigned long id)
 {
+	__enterGmac();
 	proc->sendReceive(id);
+	__exitGmac();
 }

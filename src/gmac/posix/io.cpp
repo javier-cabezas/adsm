@@ -34,12 +34,14 @@ extern "C"
 #endif
 ssize_t read(int fd, void *buf, size_t count)
 {
-	if(manager == NULL) return __libc_read(fd, buf, count);
+	if(__libc_read == NULL) posixIoInit();
+	if(__inGmac() == 1 || manager == NULL) return __libc_read(fd, buf, count);
 
-    gmac::Context *ctx = manager->owner(buf);
+   gmac::Context *ctx = manager->owner(buf);
 
-    if(ctx == NULL) return __libc_read(fd, buf, count);
+   if(ctx == NULL) return __libc_read(fd, buf, count);
 
+   __enterGmac();
 	pushState(IORead);
 
     manager->invalidate(buf, count);
@@ -50,6 +52,7 @@ ssize_t read(int fd, void *buf, size_t count)
     free(tmp);
 
     popState();
+	__exitGmac();
 
     return ret;
 }
@@ -59,12 +62,14 @@ extern "C"
 #endif
 ssize_t write(int fd, const void *buf, size_t count)
 {
-	if(manager == NULL) return __libc_write(fd, buf, count);
+	if(__libc_read == NULL) posixIoInit();
+	if(__inGmac() == 1 || manager == NULL) return __libc_write(fd, buf, count);
 
     gmac::Context *ctx = manager->owner(buf);
 
     if(ctx == NULL) return __libc_write(fd, buf, count);
 
+	__enterGmac();
     pushState(IOWrite);
 
     void *tmp = malloc(count);
@@ -76,6 +81,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     free(tmp);
 	
     popState();
+	__exitGmac();
 
     return ret;
 }

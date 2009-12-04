@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __INIT_H_
 #define __INIT_H_
 
+#include <threads.h>
 
 namespace gmac {
 
@@ -48,5 +49,16 @@ class Manager;
 
 extern gmac::Process *proc;
 extern gmac::memory::Manager *manager;
+
+extern PRIVATE(__in_gmac);
+extern const char __gmac_code;
+extern const char __user_code;
+inline void __enterGmac() { PRIVATE_SET(__in_gmac, &__gmac_code); }
+inline void __exitGmac() { PRIVATE_SET(__in_gmac, &__user_code); }
+inline char __inGmac() {
+	char *ret = (char *)PRIVATE_GET(__in_gmac);
+	if(ret == NULL) return 0;
+	return *ret;
+}
 
 #endif

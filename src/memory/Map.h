@@ -50,18 +50,29 @@ class Map {
 protected:
 	typedef std::map<const void *, Region *> __Map;
 	__Map __map;
-	MUTEX(local);
+	LOCK(local);
 
 	static __Map *__global;
 	static unsigned count;
-	static MUTEX(global);
+	static LOCK(global);
 
-	static void globalLock() {
+	static void globalReadLock() {
 		enterLock(mmGlobal);
-		MUTEX_LOCK(global);
+		LOCK_READ(global);
 		exitLock();
 	}
-	static void globalUnlock() { MUTEX_UNLOCK(global); }
+	static void globalWriteLock() {
+		enterLock(mmGlobal);
+		LOCK_WRITE(global);
+		exitLock();
+	}
+	static void globalUnlock() { LOCK_RELEASE(global); }
+
+	inline void writeLock() { 
+		enterLock(mmLocal);
+		LOCK_WRITE(local);
+		exitLock();
+	}
 
 	Region *localFind(const void *addr) {
 		__Map::const_iterator i;
@@ -91,8 +102,8 @@ public:
 	typedef __Map::const_iterator const_iterator;
 
 	Map() {
-		MUTEX_INIT(local);
-		globalLock();
+		LOCK_INIT(local);
+		globalWriteLock();
 		if(__global == NULL) __global = new __Map();
 		count++;
 		globalUnlock();
@@ -101,7 +112,7 @@ public:
 	virtual ~Map() {
 		TRACE("Cleaning Memory Map");
 		clean();
-		globalLock();
+		globalWriteLock();
 		count--;
 		if(count == 0) {
 			delete __global;
@@ -110,25 +121,29 @@ public:
 		globalUnlock();
 	}
 
-	static void init() { MUTEX_INIT(global); }
+	static void init() { LOCK_INIT(global); }
 
 	inline void realloc() { __pageTable.realloc(); }
 
 	inline void lock() { 
 		enterLock(mmLocal);
-		MUTEX_LOCK(local);
+		LOCK_READ(local);
 		exitLock();
 	}
+
 	inline void unlock() {
-		MUTEX_UNLOCK(local);
+		LOCK_RELEASE(local);
 	}
 	inline iterator begin() { return __map.begin(); }
 	inline iterator end() { return __map.end(); }
 
 
 	inline void insert(Region *i) {
-		globalLock();
+		writeLock();
 		__map.insert(__Map::value_type(i->end(), i));
+		unlock();
+
+		globalWriteLock();
 		__global->insert(__Map::value_type(i->end(), i));
 		globalUnlock();
 	}
@@ -144,7 +159,7 @@ public:
 		lock();
 		ret = localFind(addr);
 		if(ret == NULL) {
-			globalLock();
+			globalReadLock();
 			ret = globalFind(addr);
 			globalUnlock();
 		}

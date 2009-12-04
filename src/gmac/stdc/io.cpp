@@ -35,8 +35,9 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
     gmac::Context *ctx = manager->owner(buf);
 
-    if(ctx == NULL) return __libc_fread(buf, size, nmemb, stream);
+    if(__inGmac() == 1 || ctx == NULL) return __libc_fread(buf, size, nmemb, stream);
 
+	__enterGmac();
 	pushState(IORead);
 
     manager->invalidate(buf, size * nmemb);
@@ -47,6 +48,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     free(tmp);
 
     popState();
+	__exitGmac();
 
     return ret;
 }
@@ -59,8 +61,9 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
     gmac::Context *ctx = manager->owner(buf);
 
-    if(ctx == NULL) return __libc_fwrite(buf, size, nmemb, stream);
+    if(__inGmac() == 1 || ctx == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
+	__enterGmac();
     pushState(IOWrite);
 
     void *tmp = malloc(size * nmemb);
@@ -72,6 +75,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     free(tmp);
 	
     popState();
+	__exitGmac();
 
     return ret;
 }

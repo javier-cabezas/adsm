@@ -1,3 +1,5 @@
+#include <gmac/init.h>
+
 #include <memory/Handler.h>
 #include <memory/ProtRegion.h>
 
@@ -36,6 +38,7 @@ void Handler::restoreHandler()
 
 void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 {
+	__enterGmac();
 	enterFunction(gmacSignal);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
@@ -51,13 +54,14 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 		TRACE("SIGSEGV for NULL Region");
 		abort();
 		// TODO: set the signal mask and other stuff
-		if(defaultAction.sa_flags & SA_SIGINFO)
+		if(defaultAction.sa_flags & SA_SIGINFO) 
 			return defaultAction.sa_sigaction(s, info, ctx);
 		return defaultAction.sa_handler(s);
 	}
 
 	TRACE("SIGSEGV done");
 	exitFunction();
+	__exitGmac();
 }
 
 } }

@@ -14,6 +14,13 @@
 #define MUTEX_TRYLOCK(mutex) pthread_mutex_try_lock(&mutex)
 #define MUTEX_UNLOCK(mutex) pthread_mutex_unlock(&mutex)
 
+#define LOCK(lock) pthread_rwlock_t lock
+#define LOCK_INIT(lock) pthread_rwlock_init(&lock, NULL)
+#define LOCK_DESTROY(lock) pthread_rwlock_destroy(&lock)
+#define LOCK_READ(lock) pthread_rwlock_rdlock(&lock)
+#define LOCK_WRITE(lock) pthread_rwlock_wrlock(&lock)
+#define LOCK_RELEASE(lock) pthread_rwlock_unlock(&lock)
+
 #define PRIVATE(name) pthread_key_t name
 #define PRIVATE_INIT(name, dtor) pthread_key_create(&name, dtor)
 #define PRIVATE_SET(name, var) pthread_setspecific(name, var)

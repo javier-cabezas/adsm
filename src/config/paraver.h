@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_PARAVER_H
 #define __CONFIG_PARAVER_H
 
-#ifdef PARAVER_GMAC
+#ifdef PARAVER
 #include <paraver/Trace.h>
 #include <paraver/Names.h>
 
