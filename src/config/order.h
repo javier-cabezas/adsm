@@ -41,6 +41,6 @@ WITH THE SOFTWARE.  */
 
 #define DEFAULT         199
 
-#define LAST            65535
+#define LAST_LOAD       65535
 
 #endif
