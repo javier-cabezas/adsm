@@ -62,9 +62,10 @@ void paramCheckAndSet(T * v, T defaultValue, const char * name, void (*print)(),
     char * __tmp;
     if (env && 
         (__tmp = getenv(env)) != NULL) {
+        printf("Hola: %s\n", __tmp);
         T val = convert<T>(__tmp);
 
-        if (flags | PARAM_NONZERO &&
+        if (flags & PARAM_NONZERO &&
             val == 0) {
             *v = defaultValue;
         } else {
