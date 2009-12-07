@@ -57,9 +57,6 @@ class PageTable {
 protected:
 
 private:
-	static const char *pageSizeVar;
-	static const size_t defaultPageSize = 2 * 1024 * 1024;
-
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;
 

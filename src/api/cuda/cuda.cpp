@@ -26,13 +26,24 @@ void apiInit(void)
 	TRACE("Initializing CUDA Run-time API");
 
 	int devCount = 0;
+	int devRealCount = 0;
+
 	if(cudaGetDeviceCount(&devCount) != cudaSuccess || devCount == 0)
 		FATAL("No CUDA-enable devices found");
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
-		proc->accelerator(new gmac::GPU(i));
+        cudaDeviceProp prop;
+        if (cudaGetDeviceProperties(&prop, i) != cudaSuccess)
+			FATAL("Unable to access CUDA device");
+        if (prop.computeMode != cudaComputeModeProhibited) {
+            proc->accelerator(new gmac::GPU(i));
+            devRealCount++;
+        }
 	}
+
+	if(devRealCount == 0)
+		FATAL("No CUDA-enable devices found");
 }
 }
 

@@ -1,8 +1,9 @@
 #include "RollingManager.h"
 #include "os/Memory.h"
 
+#include "config/params.h"
+
 #include <kernel/Context.h>
-#include <util/Util.h>
 
 #include <unistd.h>
 #include <malloc.h>
@@ -10,9 +11,6 @@
 #include <typeinfo>
 
 namespace gmac { namespace memory {
-
-const char *RollingManager::lineSizeVar = "GMAC_LINESIZE";
-const char *RollingManager::lruDeltaVar = "GMAC_LRUDELTA";
 
 void RollingManager::waitForWrite(void *addr, size_t size)
 {
@@ -49,21 +47,29 @@ void RollingManager::flushToDevice()
 	}
 }
 
+PARAM_REGISTER(paramLineSize,
+               size_t,
+               1024,
+               "GMAC_LINESIZE",
+               PARAM_NONZERO);
+
+PARAM_REGISTER(paramLruDelta,
+               size_t,
+               2,
+               "GMAC_LRUDELTA",
+               PARAM_NONZERO);
+
 RollingManager::RollingManager() :
 	Handler(),
 	lineSize(0),
 	lruDelta(0),
-	pageSize(getpagesize()),
 	writeBuffer(NULL),
 	writeBufferSize(0)
 {
 	MUTEX_INIT(writeMutex);
-	const char *var = Util::getenv(lineSizeVar);
-	if(var != NULL) lineSize = atoi(var);
-	if(lineSize == 0) lineSize = 1024;
-	var = Util::getenv(lruDeltaVar);
-	if(var != NULL) lruDelta = atoi(var);
-	if(lruDelta == 0) lruDelta = 2;
+	lineSize = paramLineSize;
+	lruDelta = paramLruDelta;
+	TRACE("Using %d as Line Size", lineSize);
 	TRACE("Using %d as LRU Delta Size", lruDelta);
 }
 

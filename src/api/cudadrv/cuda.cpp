@@ -27,16 +27,27 @@ void apiInit(void)
 		FATAL("Unable to init CUDA");
 
 	int devCount = 0;
-	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS || devCount == 0)
-		FATAL("No CUDA-enable devices found");
+	int devRealCount = 0;
+
+	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
+		FATAL("Error getting CUDA-enabled devices");
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
+		int attr;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
-		proc->accelerator(new gmac::GPU(i, cuDev));
+		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
+			FATAL("Unable to access CUDA device");
+		if(attr != CU_COMPUTEMODE_PROHIBITED) {
+			proc->accelerator(new gmac::GPU(i, cuDev));
+			devRealCount++;
+		}
 	}
+
+	if(devRealCount == 0)
+		FATAL("No CUDA-enabled devices found");
 
 	initialized = true;
 }

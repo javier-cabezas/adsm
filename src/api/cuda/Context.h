@@ -79,8 +79,15 @@ protected:
 	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu) {
 		enable();
 		cudaSetDevice(gpu.device());
-		TRACE("New GPU context [%p]", this);
-	}
+        if (paramBufferPageLocked) {
+            assert(cudaHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, cudaHostAllocPortable) == cudaSuccess);
+            _bufferPageLockedSize = paramBufferPageLockedSize;
+        } else {
+            _bufferPageLocked     = NULL;
+            _bufferPageLockedSize = 0;
+        }
+        TRACE("New GPU context [%p]", this);
+    }
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
@@ -107,10 +114,14 @@ public:
 
 	inline gmacError_t hostAlloc(void **host, void **dev, size_t size) {
 		check();
-		*dev = NULL;
-		cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped);
-		if(ret == cudaSuccess)
-			assert(cudaHostGetDevicePointer(dev, *host, 0) == cudaSuccess);
+        if (dev != NULL) {
+            *dev = NULL;
+            cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped | cudaHostAllocPortable);
+            if(ret == cudaSuccess)
+                assert(cudaHostGetDevicePointer(dev, *host, 0) == cudaSuccess);
+        } else {
+            cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocPortable);
+        }
 		return error(ret);
 	}
 

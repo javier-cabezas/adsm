@@ -34,11 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_ORDER_H_
 #define __CONFIG_ORDER_H_
 
-#define INTERPOSE 101
-#define CORE 102
-#define API 103
+#define INTERPOSE       101
+#define CONFIG          102
+#define CORE            103
+#define API             104
 
-#define DEFAULT 199
+#define DEFAULT         199
 
+#define LAST            65535
 
 #endif

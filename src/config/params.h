@@ -31,10 +31,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_UTIL_H_
-#define __UTIL_UTIL_H_
+#ifndef __PARAMS_H_
+#define __PARAMS_H_
 
-#include <util/os/Util.h>
+#include <cstdlib>
+#include <map>
+
+#include "order.h"
+
+#include <iostream>
+
+enum ParamFlags {
+    PARAM_NONZERO = 0x1
+};
+
+#define PARAM_REGISTER(v,t,d,...)        \
+    t v;                                 \
+    t __default_##v;                     \
+                                         \
+    static void                          \
+    __print_##v()                        \
+    {                                    \
+        std::cout << v;                  \
+    }                                    \
+                                         \
+    static void                          \
+    __print_default_##v()                \
+    {                                    \
+        std::cout << __default_##v;      \
+    }                                    \
+                                         \
+    static void                          \
+    __attribute__((constructor(CONFIG))) \
+    __param_register_##v(void)           \
+    {                                    \
+        __default_##v = d;               \
+        paramCheckAndSet<t>(&v, d, #v, __print_##v, __print_default_##v, ##__VA_ARGS__); \
+    }
+
+#include "params.ipp"
 
 #endif
-

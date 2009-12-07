@@ -12,15 +12,12 @@
 
 #include <paraver.h>
 
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 PRIVATE(__in_gmac);
 const char __gmac_code = 1;
 const char __user_code = 0;
-static size_t pageSize = 0;
-
-static const char *managerVar = "GMAC_MANAGER";
 
 
 #ifdef PARAVER
@@ -35,9 +32,8 @@ static void __attribute__((constructor(CORE))) gmacInit(void)
 #ifdef PARAVER
 	paraver::init = 1;
 #endif
-	pageSize = getpagesize();
 	PRIVATE_INIT(__in_gmac, NULL);
-	gmac::Process::init(getenv(managerVar));
+	gmac::Process::init(paramMemManager);
 	proc->create();
 }
 
@@ -52,7 +48,7 @@ static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 {
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	ret = gmac::Context::current()->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		return ret;
@@ -81,7 +77,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 	enterFunction(gmacGlobalMalloc);
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		exitFunction();
@@ -114,7 +110,7 @@ gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
 	}
 	// Comment this out if we opt for a hierarchy-based memory sharing
 	void *devPtr;
-	count = (count < pageSize) ? pageSize : count;
+	count = (count < paramPageSize) ? paramPageSize : count;
 	proc->addShared(*cpuPtr, count);
 	gmac::Process::ContextList::const_iterator i;
 	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
@@ -183,7 +179,6 @@ gmacError_t gmacLaunch(const char *symbol)
 	}
 	TRACE("Kernel Launch");
 	ret = gmac::Context::current()->launch(symbol);
-	ret = gmac::Context::current()->sync();
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -261,14 +256,40 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 	}
     // TODO - add asynchronous calls to copyToHostAsync and copyToDeviceAsync
 	else {
-		void *tmp = malloc(n);
-		manager->flush(src, n);
-		err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
-        assert(err == gmacSuccess);
-		manager->invalidate(dst, n);
-		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
-        assert(err == gmacSuccess);
-		free(tmp);
+		void *tmp;
+        bool pageLocked = false;
+
+        manager->flush(src, n);
+        manager->invalidate(dst, n);
+
+        gmac::Context *ctx = gmac::Context::current();
+        if (ctx->bufferPageLockedSize() > 0) {
+            size_t bufferSize = ctx->bufferPageLockedSize();
+            void * tmp        = ctx->bufferPageLocked();
+
+            size_t left = n;
+            off_t  off  = 0;
+            while (left != 0) {
+                size_t bytes = left < bufferSize? left: bufferSize;
+                err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
+                assert(err == gmacSuccess);
+                err = dstCtx->copyToDevice(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
+                assert(err == gmacSuccess);
+
+                left -= bytes;
+                off  += bytes;
+                TRACE("Copying %zd %zd\n", bytes, bufferSize);
+            }
+        } else {
+            TRACE("Allocated non-locked memory: %zd\n", n);
+            tmp = malloc(n);
+
+            err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
+            assert(err == gmacSuccess);
+            err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
+            assert(err == gmacSuccess);
+            free(tmp);
+        }
 	}
 	__exitGmac();
 	return ret;

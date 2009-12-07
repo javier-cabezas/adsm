@@ -96,11 +96,8 @@ public:
 
 class RollingManager : public Handler {
 protected:
-	static const char *lineSizeVar;
-	static const char *lruDeltaVar;
 	size_t lineSize;
 	size_t lruDelta;
-	size_t pageSize;
 
 	std::map<Context *, RollingBuffer> regionRolling;
 

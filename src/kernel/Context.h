@@ -44,7 +44,11 @@ WITH THE SOFTWARE.  */
 #include <memory/Map.h>
 #include <memory/PageTable.h>
 
+
 namespace gmac {
+
+extern bool paramBufferPageLocked;
+extern size_t paramBufferPageLockedSize;
 
 namespace memory { class Manager; }
 
@@ -89,6 +93,9 @@ protected:
 	*/
 	Accelerator &acc;
 
+    void * _bufferPageLocked;
+    size_t _bufferPageLockedSize;
+
 	inline void enable() {
 		PRIVATE_SET(key, this);
 		_mm.realloc();
@@ -130,7 +137,6 @@ public:
 	*/
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
 
-	
 	/*!
 		\brief Releases memory previously allocated by Malloc
 		\param addr Starting memory address to be released
@@ -138,8 +144,9 @@ public:
 	virtual gmacError_t free(void *addr) = 0;
 
 	/*!
-		\brief Allocates system memory accesible from the accelerator
-		\param addr Pointer to memory address to store the accelerator memory
+		\brief Allocates page locked host memory and makes it accesible from the accelerator
+		\param host   Pointer to memory address to store the memory
+		\param device Pointer to memory address from the accelerator. If device is NULL, no mapping is performed
 		\param size Size, in bytes, to be allocated
 	*/
 	virtual gmacError_t hostAlloc(void **host, void **device, size_t size) = 0;
@@ -232,6 +239,9 @@ public:
 	virtual void invalidate() = 0;
 
 	inline unsigned id() const { return _id; }
+
+    inline void * bufferPageLocked() const     { return _bufferPageLocked; }
+    inline size_t bufferPageLockedSize() const { return _bufferPageLockedSize; }
 };
 
 };
