@@ -6,6 +6,7 @@
 #include <threads.h>
 #include <debug.h>
 
+#include <config/params.h>
 #include <kernel/Process.h>
 #include <kernel/Context.h>
 #include <memory/Manager.h>
@@ -25,6 +26,19 @@ namespace paraver {
 extern int init;
 }
 #endif
+
+PARAM_REGISTER(paramMemManager,
+	char *,
+	"Rolling",
+	"GMAC_MANAGER");
+   
+PARAM_REGISTER(paramPageSize,
+	size_t,
+	getpagesize(),
+	NULL,
+	PARAM_NONZERO);
+
+
 
 static void __attribute__((constructor(CORE))) gmacInit(void)
 {
