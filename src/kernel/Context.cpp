@@ -1,12 +1,26 @@
 #include "Context.h"
 
+#include "params.h"
+
 #include <memory/Manager.h>
 
 #include <threads.h>
 
+
 extern gmac::memory::Manager *manager;
 
 namespace gmac {
+
+PARAM_REGISTER(paramBufferPageLocked,
+               bool,
+               false,
+               "GMAC_BUFFER_PAGE_LOCKED");
+
+PARAM_REGISTER(paramBufferPageLockedSize,
+               size_t,
+               4 * 1024 * 1024,
+               "GMAC_BUFFER_PAGE_LOCKED_SIZE",
+               PARAM_NONZERO);
 
 void contextInit()
 {

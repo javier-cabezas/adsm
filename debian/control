@@ -6,6 +6,8 @@ Uploaders: Javier Cabezas <jcabezas@ac.upc.edu>
 Standards-Version: 3.8.2
 Build-depends: debhelper,
                texinfo,
+               libparaver [i386 amd64],
+               libparaver-dev [i386 amd64],
                gcc-multilib [i386 amd64] | gcc-4.1 [i386 amd64] | gcc-4.2 [i386 amd64] | gcc-4.3 [i386 amd64] | gcc-4.4 [i386 amd64]
 Homepage: http://code.google.com/p/adsm
 Vcs-Hg: https://adsm.googlecode.com/hg
