@@ -33,6 +33,8 @@ extern "C"
 #endif
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
+	if(__libc_fread == NULL) stdcInit();
+	if(__inGmac() == 1 || manager == NULL) return __libc_fread(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
     gmac::Context *srcCtx = manager->owner(buf);
@@ -85,6 +87,8 @@ extern "C"
 #endif
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
+	if(__libc_fwrite == NULL) stdcInit();
+	if(__inGmac() == 1 || manager == NULL) return fwrite(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
     gmac::Context *dstCtx = manager->owner(buf);
