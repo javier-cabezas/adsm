@@ -28,6 +28,7 @@ typedef struct {
 //static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg) 
 {
+	__enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
 	pushState(Init);
@@ -37,8 +38,11 @@ static void *gmac_pthread(void *arg)
 	pushState(Running);
 	void *ret = gthread->__start_routine(gthread->__arg);
 	popState();
+	// IG: commented out because it was producing segmentation
+	// faults. I have no idea why this faults are being triggered
 	//gmac::Context::current()->destroy();
 	free(gthread);
+	__exitGmac();
 	return ret;
 }
 
@@ -48,6 +52,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 		void *__restrict __arg) 
 {
 	int ret = 0;
+	__enterGmac();
 	pushState(ThreadCreate);
 	TRACE("pthread_create");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
@@ -59,5 +64,6 @@ int pthread_create(pthread_t *__restrict __newthread,
 	pthread_mutex_lock(&create_mutex);
 	pthread_mutex_unlock(&create_mutex);
 	popState();
+	__exitGmac();
 	return ret;
 }
