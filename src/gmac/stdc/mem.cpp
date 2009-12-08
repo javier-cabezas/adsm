@@ -23,8 +23,10 @@ static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
 
 void *memset(void *s, int c, size_t n)
 {
-	if(manager == NULL) return __libc_memset(s, c, n);
+	if(__libc_memset == NULL) stdcMemInit();
+	if(__inGmac() == 1 || manager == NULL) return __libc_memset(s, c, n);
 	
+	__enterGmac();
 	gmac::Context *ctx = manager->owner(s);
 	if(ctx == NULL) __libc_memset(s, c, n);
 	else {
@@ -32,15 +34,18 @@ void *memset(void *s, int c, size_t n)
 		manager->invalidate(s, n);
 		ctx->memset(manager->ptr(s), c, n);
 	}
+	__exitGmac();
 }
 
 void *memcpy(void *dst, const void *src, size_t n)
 {
+	if(__libc_memcpy == NULL) stdcMemInit();
 	void *ret = dst;
 	size_t ds = 0, ss = 0;
 
-	if(manager == NULL) return __libc_memcpy(dst, src, n);
+	if(__inGmac() == 1 || manager == NULL) return __libc_memcpy(dst, src, n);
 
+	__enterGmac();
 	// TODO: handle copies involving partial memory regions
 
 	// Locate memory regions (if any)
@@ -48,7 +53,10 @@ void *memcpy(void *dst, const void *src, size_t n)
 	gmac::Context *srcCtx = manager->owner(src);
 
 	// Fast path - both regions are in the CPU
-	if(dstCtx == NULL && srcCtx == NULL) return __libc_memcpy(dst, src, n);
+	if(dstCtx == NULL && srcCtx == NULL) {
+		__exitGmac();
+		return __libc_memcpy(dst, src, n);
+	}
 
 	TRACE("GMAC Memcpy");
 	if(dstCtx == NULL) { // Copy to Host
@@ -63,7 +71,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		dstCtx->copyDevice(manager->ptr(dst),
-				manager->ptr(src), n);
+		manager->ptr(src), n);
 	}
 	else {
 		void *tmp = malloc(n);
@@ -73,7 +81,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		dstCtx->copyToDevice(manager->ptr(dst), tmp, n);
 		free(tmp);
 	}
-
+	__exitGmac();
 	return ret;
 }
 
