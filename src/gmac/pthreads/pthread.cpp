@@ -1,3 +1,4 @@
+#include <init.h>
 #include <os/loader.h>
 #include <kernel/Process.h>
 #include <kernel/Context.h>
