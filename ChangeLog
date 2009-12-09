@@ -1,3 +1,9 @@
+libgmac (0.0.2.2-2) unstable; urgency=low
+
+  * Fixed inifinite recursion in fwrite overload
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Wed, 9 Dec 2009 20:10 +0100
+
 libgmac (0.0.2.2) unstable; urgency=low
 
   * New locking infrastructure and code clean-up
