@@ -77,7 +77,7 @@ protected:
 
 	CallStack _calls;
 
-	static const unsigned USleepLaunch = 1000;
+	static const unsigned USleepLaunch = 100;
 
 	static const unsigned StackSize = 4096;
 	uint8_t _stack[StackSize];
@@ -107,6 +107,9 @@ protected:
 	int minor;
 
     CUstream streamLaunch;
+    CUstream streamToDevice;
+    CUstream streamToHost;
+    CUstream streamDevice;
 
 	inline CUdeviceptr gpuAddr(void *addr) const {
 		unsigned long a = (unsigned long)addr;
@@ -128,14 +131,24 @@ protected:
 	friend class gmac::GPU;
 
     inline void setupStreams() {
-        CUresult ret;
-        ret = cuStreamCreate(&streamLaunch, 0);
-        if(ret != CUDA_SUCCESS)
-            FATAL("Unable to create CUDA stream %d", ret);
+        if (gpu.async()) {
+            CUresult ret;
+            ret = cuStreamCreate(&streamLaunch, 0);
+            if(ret != CUDA_SUCCESS)
+                FATAL("Unable to create CUDA stream %d", ret);
+            ret = cuStreamCreate(&streamToDevice, 0);
+            if(ret != CUDA_SUCCESS)
+                FATAL("Unable to create CUDA stream %d", ret);
+            ret = cuStreamCreate(&streamToHost, 0);
+            if(ret != CUDA_SUCCESS)
+                FATAL("Unable to create CUDA stream %d", ret);
+            ret = cuStreamCreate(&streamDevice, 0);
+            if(ret != CUDA_SUCCESS)
+                FATAL("Unable to create CUDA stream %d", ret);
+        }
 
-        TRACE("Created launch stream: %p", streamLaunch);
         if (paramBufferPageLocked) {
-            printf("Using page locked memory\n");
+            TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
             assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
             _bufferPageLockedSize = paramBufferPageLockedSize;
         } else {
@@ -178,7 +191,12 @@ protected:
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
 		delete mutex;
-		cuStreamDestroy(streamLaunch);
+        if (gpu.async()) {
+            cuStreamDestroy(streamLaunch);
+            cuStreamDestroy(streamToDevice);
+            cuStreamDestroy(streamToHost);
+            cuStreamDestroy(streamDevice);
+        }
 		cuCtxDestroy(ctx); 
 	}
 
@@ -228,38 +246,84 @@ public:
 	gmacError_t hostFree(void *addr);
 
 	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
-		lock();
 		enterFunction(accHostDeviceCopy);
+        gmac::Context *ctx = gmac::Context::current();
 
         CUresult ret;
-        ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+        if (gpu.async() && ctx->bufferPageLockedSize() > 0) {
+            size_t bufferSize = ctx->bufferPageLockedSize();
+            void * tmp        = ctx->bufferPageLocked();
 
+            size_t left = size;
+            off_t  off  = 0;
+            while (left != 0) {
+                size_t bytes = left < bufferSize? left: bufferSize;
+                memcpy(tmp, ((char *) host) + off, bytes);
+                lock();
+                ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
+                if (ret != CUDA_SUCCESS) { unlock(); goto done; }
+                ret = cuStreamSynchronize(streamToDevice);
+                unlock();
+                if (ret != CUDA_SUCCESS) goto done;
+
+                left -= bytes;
+                off  += bytes;
+            }           
+        } else {
+            lock();
+            ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+            unlock();
+        }
+
+done:
 		exitFunction();
-        unlock();
 		return error(ret);
 	}
 
 	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
-		lock();
-		enterFunction(accDeviceHostCopy);
+        enterFunction(accDeviceHostCopy);
+        gmac::Context *ctx = gmac::Context::current();
 
         CUresult ret;
-		ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+        if (gpu.async() && ctx->bufferPageLockedSize() > 0) {
+            size_t bufferSize = ctx->bufferPageLockedSize();
+            void * tmp        = ctx->bufferPageLocked();
 
-		exitFunction();
-		unlock();
+            size_t left = size;
+            off_t  off  = 0;
+            while (left != 0) {
+                size_t bytes = left < bufferSize? left: bufferSize;
+                lock();
+                ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
+                if (ret != CUDA_SUCCESS) { unlock(); goto done; }
+                ret = cuStreamSynchronize(streamToHost);
+                unlock();
+                if (ret != CUDA_SUCCESS) goto done;
+                memcpy(((char *) host) + off, tmp, bytes);
+
+                left -= bytes;
+                off  += bytes;
+            }           
+        } else {
+            lock();
+            ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+            unlock();
+        }
+
+done:
+        exitFunction();
 		return error(ret);
 	}
 
 	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
-		lock();
 		enterFunction(accDeviceDeviceCopy);
+		lock();
 		
         CUresult ret;
         ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
 
-		exitFunction();
 		unlock();
+		exitFunction();
 		return error(ret);
 	}
 
@@ -267,7 +331,7 @@ public:
 			size_t size) {
 		lock();
 		enterFunction(accHostDeviceCopy);
-		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, 0);
+		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
 		exitFunction();
 		unlock();
 		return error(ret);
@@ -277,18 +341,29 @@ public:
 			size_t size) {
 		lock();
 		enterFunction(accDeviceHostCopy);
-		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, 0);
+		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
 		exitFunction();
 		unlock();
 		return error(ret);
 	}
+   
+#if 0
+    inline gmacError_t copyDeviceAsync(void *src, const void *dest,
+			size_t size) {
+		lock();
+		enterFunction(accDeviceCopy);
+		CUresult ret = cuMemcpyDtoDAsync(gpuAddr(dest), gpuAddr(src), size, streamDevice);
+		exitFunction();
+		unlock();
+		return error(ret);
+	}
+#endif
 
 	gmacError_t memset(void *dev, int c, size_t size);
 	gmacError_t launch(const char *kernel);
 	
     inline gmacError_t sync() {
         CUresult ret;
-#ifdef USE_ASYNC_LAUNCH
         lock();
         while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
             unlock();
@@ -302,14 +377,45 @@ public:
             TRACE("Sync: error: %d", ret);
         }
         unlock();
-#else  
-        lock();
-        ret = cuCtxSynchronize();
-        unlock();
-#endif 
+
         return error(ret);
     }
 
+    inline gmacError_t syncToHost() {
+        CUresult ret;
+        lock();
+        if (gpu.async()) {
+            ret = cuStreamSynchronize(streamToHost);
+        } else {
+            ret = cuCtxSynchronize();
+        }
+        unlock();
+        return error(ret);
+    }
+
+    inline gmacError_t syncToDevice() {
+        CUresult ret;
+        lock();
+        if (gpu.async()) {
+            ret = cuStreamSynchronize(streamToDevice);
+        } else {
+            ret = cuCtxSynchronize();
+        }
+        unlock();
+        return error(ret);
+    }
+
+    inline gmacError_t syncDevice() {
+        CUresult ret;
+        lock();
+        if (gpu.async()) {
+            ret = cuStreamSynchronize(streamDevice);
+        } else {
+            ret = cuCtxSynchronize();
+        }
+        unlock();
+        return error(ret);
+    }
 	// CUDA-related methods
 	inline Module *load(void *fatBin) {
 		lock();
@@ -354,6 +460,11 @@ public:
 		memcpy(&_stack[offset], arg, size);
 		_sp = (_sp > (offset + size)) ? _sp : offset + size;
 	}
+
+    inline bool async() const
+    {
+        return gpu.async();
+    }
 
 	void flush();
 	void invalidate();

@@ -208,6 +208,19 @@ public:
 	virtual gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) = 0;
 
+    /// \todo Enable this
+#if 0
+    /*!
+		\brief Copies data from accelerator memory to accelerator memory
+		\param src Source accelerator memory address
+		\param dst Destination accelerator memory address
+		\param size Size, in bytes, to be copied
+	*/
+	virtual gmacError_t copyDeviceAsync(void *dst, const void *src,
+			size_t size) = 0;
+#endif
+
+
 	/*!
 		\brief Initializes accelerator memory
 		\param addr Accelerator memory address
@@ -227,7 +240,12 @@ public:
 		\brief Waits for pending actions
 	*/
 	virtual gmacError_t sync() = 0;
-	
+
+	virtual bool async() const = 0;
+
+	virtual gmacError_t syncToHost()   = 0;
+	virtual gmacError_t syncToDevice() = 0;
+	virtual gmacError_t syncDevice()   = 0;
 
 	/*!
 		\brief Returns last error

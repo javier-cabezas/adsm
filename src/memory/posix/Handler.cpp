@@ -46,6 +46,10 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 	if(!writeAccess) TRACE("Read SIGSEGV for %p", info->si_addr);
 	else TRACE("Write SIGSEGV for %p", info->si_addr);
 
+#if 0
+	manager->owner(info->si_addr)->sync();
+#endif
+
 	bool resolved = false;
 	if(!writeAccess) resolved = handler->read(info->si_addr);
 	else resolved = handler->write(info->si_addr);

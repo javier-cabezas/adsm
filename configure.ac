@@ -52,8 +52,8 @@ if test "$enable_debug" = "yes"; then
 	AC_DEFINE(DEBUG)
 	AC_MSG_RESULT(yes)
 else
-	CXXFLAGS="-O3 -fomit-frame-pointer"
-	CFLAGS="-O3"
+	CXXFLAGS="-g -O3 -fomit-frame-pointer"
+	CFLAGS="-g -O3"
 	AC_MSG_RESULT(no)
 fi
 

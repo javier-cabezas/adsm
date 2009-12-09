@@ -38,8 +38,8 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
 
 	__enterGmac();
-	gmac::Context *srcCtx = manager->owner(buf);
-	gmacError_t err;
+    gmac::Context *srcCtx = manager->owner(buf);
+    gmacError_t err;
 
 	pushState(IORead);
     size_t ret = 0;
@@ -50,7 +50,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         void * tmp;
 
         gmac::Context *ctx = gmac::Context::current();
-        if (ctx->bufferPageLockedSize() > 0) {
+        if (ctx->async() && ctx->bufferPageLockedSize() > 0) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             tmp = ctx->bufferPageLocked();
 
@@ -92,8 +92,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
 
 	__enterGmac();
-   pushState(IOWrite);
-
+    pushState(IOWrite);
     gmac::Context *dstCtx = manager->owner(buf);
     gmacError_t err;
 

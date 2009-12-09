@@ -171,7 +171,7 @@ gmacError_t Context::launch(const char *kernel)
 		return error(ret);
 	}
 
-	ret = cuLaunchGrid(f->fun, c.grid.x, c.grid.y);
+	ret = cuLaunchGridAsync(f->fun, c.grid.x, c.grid.y, streamLaunch);
 	unlock();
 	return error(ret);
 }
