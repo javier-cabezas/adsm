@@ -39,8 +39,6 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Context.h>
 
-#include <threads.h>
-
 #include <map>
 #include <list>
 

@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 #include <debug.h>
-#include <threads.h>
 #include <paraver.h>
 
 #include "GPU.h"

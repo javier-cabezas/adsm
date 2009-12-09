@@ -4,9 +4,6 @@
 
 #include <memory/Manager.h>
 
-#include <threads.h>
-
-
 extern gmac::memory::Manager *manager;
 
 namespace gmac {
