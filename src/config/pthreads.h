@@ -4,6 +4,11 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#ifndef __THREAD_CANARY
+#error "Please use GMAC locking infrastructure"
+#endif
+#undef __THREAD_CANARY
+
 #define THREAD_ID pthread_t
 #define SELF() pthread_self()
 

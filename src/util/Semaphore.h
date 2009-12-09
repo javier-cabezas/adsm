@@ -35,11 +35,12 @@ WITH THE SOFTWARE.  */
 #define __UTIL_SEMAPHORE_H_
 
 #include <config.h>
-#include <threads.h>
 #include <paraver.h>
 
-#include <iostream>
+#define __THREAD_CANARY
+#include <threads.h>
 
+#include <iostream>
 
 namespace gmac { namespace util {
 

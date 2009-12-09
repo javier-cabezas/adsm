@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_VM_H_
 
 #include <config.h>
-#include <threads.h>
 #include <paraver.h>
 #include <debug.h>
 

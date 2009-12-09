@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MEMREGION_H_
 
 #include <config.h>
-#include <threads.h>
 #include <debug.h>
 
 #include <gmac/gmac.h>

@@ -34,12 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MAP_H_
 #define __MEMORY_MAP_H_
 
-#include <threads.h>
-#include <paraver.h>
-
 #include <memory/PageTable.h>
 #include <memory/Region.h>
 
+#include <paraver.h>
 #include <util/Lock.h>
 
 #include <cassert>

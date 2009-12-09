@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 #include <memory/os/Memory.h>
 
 #include <config.h>
-#include <threads.h>
 
 #include <kernel/Context.h>
 #include <kernel/Process.h>
@@ -56,9 +55,6 @@ namespace gmac { namespace memory {
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class Manager {
-private:
-	MUTEX(mutex);
-
 protected:
 
 #ifdef USE_MMAP
@@ -102,13 +98,11 @@ protected:
 
 public:
 	Manager() {
-		MUTEX_INIT(mutex);
 		TRACE("Memory manager starts");
 	}
 	//! Virtual Destructor. It does nothing
 	virtual ~Manager() {
 		TRACE("Memory manager finishes");
-		MUTEX_DESTROY(mutex);
 	}
 	
 	//! This method is called whenever the user
