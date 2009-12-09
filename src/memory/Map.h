@@ -40,6 +40,8 @@ WITH THE SOFTWARE.  */
 #include <memory/PageTable.h>
 #include <memory/Region.h>
 
+#include <util/Lock.h>
+
 #include <cassert>
 #include <set>
 #include <map>
@@ -54,6 +56,8 @@ protected:
 
 	static __Map *__global;
 	static unsigned count;
+	static gmac::util::RWLock global;
+#if 0
 	static LOCK(global);
 
 	static void globalReadLock() {
@@ -67,9 +71,10 @@ protected:
 		exitLock();
 	}
 	static void globalUnlock() { LOCK_RELEASE(global); }
+#endif
 
 	inline void writeLock() { 
-		enterLock(mmLocal);
+		enterLock(paraver::mmLocal);
 		LOCK_WRITE(local);
 		exitLock();
 	}
@@ -103,30 +108,30 @@ public:
 
 	Map() {
 		LOCK_INIT(local);
-		globalWriteLock();
+		global.write();
 		if(__global == NULL) __global = new __Map();
 		count++;
-		globalUnlock();
+		global.unlock();
 	}
 
 	virtual ~Map() {
 		TRACE("Cleaning Memory Map");
 		clean();
-		globalWriteLock();
+		global.write();
 		count--;
 		if(count == 0) {
 			delete __global;
 			__global = NULL;
 		}
-		globalUnlock();
+		global.unlock();
 	}
 
-	static void init() { LOCK_INIT(global); }
+	static void init() { }
 
 	inline void realloc() { __pageTable.realloc(); }
 
 	inline void lock() { 
-		enterLock(mmLocal);
+		enterLock(paraver::mmLocal);
 		LOCK_READ(local);
 		exitLock();
 	}
@@ -143,9 +148,9 @@ public:
 		__map.insert(__Map::value_type(i->end(), i));
 		unlock();
 
-		globalWriteLock();
+		global.write();
 		__global->insert(__Map::value_type(i->end(), i));
-		globalUnlock();
+		global.unlock();
 	}
 
 	Region *remove(void *addr);
@@ -159,9 +164,9 @@ public:
 		lock();
 		ret = localFind(addr);
 		if(ret == NULL) {
-			globalReadLock();
+			global.read();
 			ret = globalFind(addr);
-			globalUnlock();
+			global.unlock();
 		}
 		unlock();
 		return dynamic_cast<T *>(ret);

@@ -46,9 +46,9 @@ namespace gmac { namespace util {
 class Lock {
 protected:
 	MUTEX(__mutex);
-	LockName __name;
+	paraver::LockName __name;
 public:
-	Lock(LockName __name) : __name(__name) {
+	Lock(paraver::LockName __name) : __name(__name) {
 		MUTEX_INIT(__mutex);
 	}
 
@@ -70,13 +70,13 @@ public:
 class RWLock {
 protected:
 	LOCK(__lock);
-	LockName __name;
+	paraver::LockName __name;
 public:
-	RWLock(LockName __name) : __name(__name) {
+	RWLock(paraver::LockName __name) : __name(__name) {
 		LOCK_INIT(__lock);
 	}
 
-	~RWLock {
+	~RWLock() {
 		LOCK_DESTROY(__lock);
 	}
 
@@ -93,7 +93,7 @@ public:
 	}
 
 	inline void unlock() {
-		LOCK_UNLOCK(__lock);
+		LOCK_RELEASE(__lock);
 	}
 };
 

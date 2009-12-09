@@ -85,7 +85,7 @@ typedef enum {
 
 #define enterLock(s) \
 	if(paraver::trace != NULL) {\
-		paraver::trace->__pushEvent(*paraver::Lock, paraver::s);\
+		paraver::trace->__pushEvent(*paraver::Lock, s);\
 		paraver::trace->__pushState(*paraver::Exclusive);\
 	}
 #define exitLock() \
