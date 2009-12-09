@@ -1,3 +1,9 @@
+libgmac (0.0.2.2) unstable; urgency=low
+
+  * New locking infrastructure and code clean-up
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Wed, 9 Dec 2009 12:00:00 +0100
+
 libgmac (0.0.2.1) unstable; urgency=low
 
   * Added PARAM_REGISTER macro to configure and set up parameters that can
