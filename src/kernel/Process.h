@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_PROCESS_H_
 #define __KERNEL_PROCESS_H_
 
-#include <threads.h>
 #include <paraver.h>
 #include <debug.h>
 

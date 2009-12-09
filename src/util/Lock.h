@@ -35,8 +35,10 @@ WITH THE SOFTWARE.  */
 #define __UTIL_LOCK_H_
 
 #include <config.h>
-#include <threads.h>
 #include <paraver.h>
+
+#define __THREAD_CANARY
+#include <threads.h>
 
 #include <iostream>
 

@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_CONTEXT_H_
 #define __KERNEL_CONTEXT_H_
 
-#include <threads.h>
 #include <debug.h>
 
 #include <kernel/Process.h>

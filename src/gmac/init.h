@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __INIT_H_
 #define __INIT_H_
 
+#define __THREAD_CANARY
 #include <threads.h>
 
 namespace gmac {

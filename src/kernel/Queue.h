@@ -60,11 +60,6 @@ protected:
 	Fifo _queue;
 	util::Semaphore sem;
 
-#if 0
-	inline void lock() { MUTEX_LOCK(_lock); }
-	inline void unlock() { MUTEX_UNLOCK(_lock); }
-#endif
-
 public:
 	Queue() : mutex(paraver::queueLock), sem(0) { };
 
