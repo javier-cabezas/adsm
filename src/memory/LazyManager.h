@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include "Handler.h"
 #include "ProtRegion.h"
 
-#include <threads.h>
 #include <debug.h>
 
 #include <map>
