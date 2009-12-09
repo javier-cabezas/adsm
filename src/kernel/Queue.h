@@ -34,8 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_QUEUE_H_
 #define __KERNEL_QUEUE_H_
 
-#include <threads.h>
 #include <debug.h>
+
+#include <util/Lock.h>
+#include <util/Semaphore.h>
 
 #include <cassert>
 #include <list>
@@ -54,33 +56,32 @@ class Queue {
 protected:
 	typedef std::list<Context *> Fifo;
 
-	MUTEX(_lock);
+	util::Lock mutex;
 	Fifo _queue;
-	SEM(_sem);
+	util::Semaphore sem;
 
+#if 0
 	inline void lock() { MUTEX_LOCK(_lock); }
 	inline void unlock() { MUTEX_UNLOCK(_lock); }
+#endif
 
 public:
-	Queue() {
-		MUTEX_INIT(_lock);
-		SEM_INIT(_sem, 0);
-	}
+	Queue() : mutex(paraver::queueLock), sem(0) { };
 
 	inline void push(Context *ctx) {
-		lock();
+		mutex.lock();
 		_queue.push_back(ctx);
-		unlock();
-		SEM_POST(_sem);
+		mutex.unlock();
+		sem.post();
 	}
 
 	inline Context *pop() {
-		SEM_WAIT(_sem);
-		lock();
+		sem.wait();
+		mutex.lock();
 		assert(_queue.empty() == false);
 		Context *ret = _queue.front();
 		_queue.pop_front();
-		unlock();
+		mutex.unlock();
 		return ret;
 	}
 

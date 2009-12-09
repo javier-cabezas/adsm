@@ -44,6 +44,7 @@ static const char *functionNames[] = {
 static const char *lockNames[] = {
 	"Unlock",
 	"mmLocal", "mmGlobal", "pageTable", "ctxLocal", "ctxGlobal",
+	"queueLock",
 	"ioHostLock", "ioDeviceLock",
 	"process", "writeMutex", "rollingBuffer", "manager",
 	NULL

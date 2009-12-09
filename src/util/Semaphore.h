@@ -31,87 +31,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CONFIG_PARAVER_H
-#define __CONFIG_PARAVER_H
+#ifndef __UTIL_SEMAPHORE_H_
+#define __UTIL_SEMAPHORE_H_
 
-namespace paraver {
-typedef enum {
-	accMalloc = 1, accFree,
-	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
-	accLaunch, accSync,
-	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
-	vmAlloc, vmFree, vmFlush, vmSync,
-} FunctionName;
+#include <config.h>
+#include <threads.h>
+#include <paraver.h>
 
-typedef enum {
-	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal,
-	queueLock,
-	ioHostLock, ioDeviceLock,
-	process, writeMutex, rollingBuffer, manager
-} LockName;
-};
-
-#ifdef PARAVER
-#include <paraver/Trace.h>
-#include <paraver/Names.h>
-
-namespace paraver {
-
-extern Trace *trace;
-
-EVENT(Function);
-EVENT(HostDeviceCopy);
-EVENT(DeviceHostCopy);
-EVENT(DeviceDeviceCopy);
-EVENT(GPUCall);
-EVENT(Lock);
-
-STATE(ThreadCreate);
-STATE(IORead);
-STATE(IOWrite);
-STATE(Exclusive);
-STATE(Init);
+#include <iostream>
 
 
-};
+namespace gmac { namespace util {
 
-/* Macros to issue traces in paraver mode */
-#define addThread()	if(paraver::trace != NULL) paraver::trace->__addThread()
-#define pushState(s)	if(paraver::trace != NULL) paraver::trace->__pushState(*paraver::s)
-#define popState()	if(paraver::trace != NULL) paraver::trace->__popState()
-#define pushEvent(e, ...)\
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
-
-#define enterFunction(s) \
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, paraver::s)
-#define exitFunction() \
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, 0)
-
-#define enterLock(s) \
-	if(paraver::trace != NULL) {\
-		paraver::trace->__pushEvent(*paraver::Lock, s);\
-		paraver::trace->__pushState(*paraver::Exclusive);\
-	}
-#define exitLock() \
-	if(paraver::trace != NULL) {\
-		paraver::trace->__pushEvent(*paraver::Lock, 0);\
-		paraver::trace->__popState();\
+class Semaphore {
+protected:
+	SEM(__sem);
+public:
+	Semaphore(unsigned v) {
+		SEM_INIT(__sem, v);
 	}
 
-#else
+	~Semaphore() {
+		SEM_DESTROY(__sem);
+	}
 
-#define addThread()
-#define pushState(s)
-#define popState()
-#define pushEvent(e)
+	inline void post() {
+		SEM_POST(__sem);
+	}
 
-#define enterFunction(s)
-#define exitFunction()
-
-#define enterLock(s)
-#define exitLock()
-
-#endif
+	inline void wait() {
+		SEM_WAIT(__sem);
+	}
+};
 
 
+} };
 #endif
