@@ -1,16 +1,20 @@
+libgmac (0.0.3) unstable; urgency=low
+
+  * Updated to upstream version
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 10 Dec 2009 00:55:00 +0100
+
 libgmac (0.0.2.2-1) unstable; urgency=low
 
   * Updated to upstream version
 
- -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 12 Nov 2009 11:25:00 +0100
-
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 9 Dec 2009 11:25:00 +0100
 
 libgmac (0.0.2.1-1) unstable; urgency=low
 
   * Updated to upstream version
 
  -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 12 Nov 2009 11:25:00 +0100
-
 
 libgmac (0.0.2-1) unstable; urgency=low
 
