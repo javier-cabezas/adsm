@@ -52,32 +52,10 @@ class Map {
 protected:
 	typedef std::map<const void *, Region *> __Map;
 	__Map __map;
-	LOCK(local);
-
+	util::RWLock local;
 	static __Map *__global;
 	static unsigned count;
 	static gmac::util::RWLock global;
-#if 0
-	static LOCK(global);
-
-	static void globalReadLock() {
-		enterLock(mmGlobal);
-		LOCK_READ(global);
-		exitLock();
-	}
-	static void globalWriteLock() {
-		enterLock(mmGlobal);
-		LOCK_WRITE(global);
-		exitLock();
-	}
-	static void globalUnlock() { LOCK_RELEASE(global); }
-#endif
-
-	inline void writeLock() { 
-		enterLock(paraver::mmLocal);
-		LOCK_WRITE(local);
-		exitLock();
-	}
 
 	Region *localFind(const void *addr) {
 		__Map::const_iterator i;
@@ -106,8 +84,7 @@ public:
 	typedef __Map::iterator iterator;
 	typedef __Map::const_iterator const_iterator;
 
-	Map() {
-		LOCK_INIT(local);
+	Map() : local(paraver::mmLocal) {
 		global.write();
 		if(__global == NULL) __global = new __Map();
 		count++;
@@ -130,23 +107,17 @@ public:
 
 	inline void realloc() { __pageTable.realloc(); }
 
-	inline void lock() { 
-		enterLock(paraver::mmLocal);
-		LOCK_READ(local);
-		exitLock();
-	}
+	inline void lock() { local.read(); }
+	inline void unlock() { local.unlock(); }
 
-	inline void unlock() {
-		LOCK_RELEASE(local);
-	}
 	inline iterator begin() { return __map.begin(); }
 	inline iterator end() { return __map.end(); }
 
 
 	inline void insert(Region *i) {
-		writeLock();
+		local.write();
 		__map.insert(__Map::value_type(i->end(), i));
-		unlock();
+		local.unlock();
 
 		global.write();
 		__global->insert(__Map::value_type(i->end(), i));
@@ -161,14 +132,14 @@ public:
 	template<typename T>
 	inline T *find(const void *addr) {
 		Region *ret = NULL;
-		lock();
+		local.read();
 		ret = localFind(addr);
 		if(ret == NULL) {
 			global.read();
 			ret = globalFind(addr);
 			global.unlock();
 		}
-		unlock();
+		local.unlock();
 		return dynamic_cast<T *>(ret);
 	}
 };

@@ -20,10 +20,10 @@ size_t PageTable::pageSize;
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
+	lock(paraver::pageTable),
 	_clean(false), _valid(true),
 	pages(1)
 {
-	MUTEX_INIT(mutex);
     pageSize = paramPageSize;
 	tableShift = log2(pageSize);
 	TRACE("Page Size: %d bytes", pageSize);
@@ -60,7 +60,7 @@ void PageTable::insert(void *host, void *dev)
 	sync();
 
 	enterFunction(vmAlloc);
-	lock();
+	lock.write();
 	_clean = false;
 	// Get the root table entry
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
@@ -81,7 +81,7 @@ void PageTable::insert(void *host, void *dev)
 
 	table.insert(entry(host, tableShift, table.size()), dev);
 	TRACE("PT inserts: %p -> %p", entry(host, tableShift, table.size()), dev);
-	unlock();
+	lock.unlock();
 	exitFunction();
 #endif
 }
@@ -91,7 +91,7 @@ void PageTable::remove(void *host)
 #ifndef USE_MMAP
 	sync();
 	enterFunction(vmFree);
-	lock();
+	lock.write();
 	_clean = false;
 
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
@@ -105,7 +105,7 @@ void PageTable::remove(void *host)
 	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 	table.remove(entry(host, tableShift, table.size()));
-	unlock();
+	lock.unlock();
 	exitFunction();
 #endif
 }
@@ -117,13 +117,20 @@ void *PageTable::translate(void *host)
 #else
 	sync();
 
-	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false)
+	lock.read();
+	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
+		lock.unlock();
 		return NULL;
+	}
 	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
-	if(dir.present(entry(host, dirShift, dir.size())) == false) return NULL;
+	if(dir.present(entry(host, dirShift, dir.size())) == false) {
+		lock.unlock();
+		return NULL;
+	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 	uint8_t *addr =
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
+	lock.unlock();
 	TRACE("PT pre-translate: %p -> %p", host, addr);
 	addr += offset(host);
 	TRACE("PT translate: %p -> %p", host, addr);
@@ -192,15 +199,17 @@ void PageTable::syncDirectory(Directory &dir)
 void PageTable::sync()
 {
 #ifdef USE_VM
-		if(_valid == true) return;
-		enterFunction(vmSync);
-		for(int i = 0; i < rootTable.size(); i++) {
-			if(rootTable.present(i) == false) continue;
-			syncDirectory(rootTable.get(i));
-		}
-		rootTable.sync();
-		_valid = true;
-		exitFunction();
+	if(_valid == true) return;
+	lock.read();
+	enterFunction(vmSync);
+	for(int i = 0; i < rootTable.size(); i++) {
+		if(rootTable.present(i) == false) continue;
+		syncDirectory(rootTable.get(i));
+	}
+	rootTable.sync();
+	lock.unlock();
+	_valid = true;
+	exitFunction();
 #endif
 }
 
@@ -212,7 +221,7 @@ void *PageTable::flush()
 	if(_clean == true) return rootTable.device();
 
 	TRACE("PT Flush");
-
+	lock.read();
 	for(int i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		TRACE("Flusing entry %d", i);
@@ -220,6 +229,7 @@ void *PageTable::flush()
 	}
 
 	rootTable.flush();
+	lock.unlock();
 	_clean = true;
 	return rootTable.device();
 #else

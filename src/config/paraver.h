@@ -34,6 +34,22 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_PARAVER_H
 #define __CONFIG_PARAVER_H
 
+namespace paraver {
+typedef enum {
+	accMalloc = 1, accFree,
+	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
+	accLaunch, accSync,
+	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
+	vmAlloc, vmFree, vmFlush, vmSync,
+} FunctionName;
+
+typedef enum {
+	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal,
+	ioHostLock, ioDeviceLock,
+	process, writeMutex, rollingBuffer, manager
+} LockName;
+};
+
 #ifdef PARAVER
 #include <paraver/Trace.h>
 #include <paraver/Names.h>
@@ -55,19 +71,6 @@ STATE(IOWrite);
 STATE(Exclusive);
 STATE(Init);
 
-typedef enum {
-	accMalloc = 1, accFree,
-	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
-	accLaunch, accSync,
-	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
-	vmAlloc, vmFree, vmFlush, vmSync,
-} FunctionName;
-
-typedef enum {
-	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal,
-	ioHostLock, ioDeviceLock,
-	process, rolling
-} LockName;
 
 };
 

@@ -6,13 +6,12 @@ namespace gmac { namespace memory {
 
 Map::__Map *Map::__global = NULL;
 unsigned Map::count = 0;
-//LOCK(Map::global);
-gmac::util::RWLock global(paraver::mmGlobal);
+gmac::util::RWLock Map::global(paraver::mmGlobal);
 
 void Map::clean()
 {
 	__Map::iterator i;
-	writeLock();
+	local.write();
 	for(i = __map.begin(); i != __map.end(); i++) {
 		TRACE("Cleaning Region %p", i->second->start());
 		global.write();
@@ -21,7 +20,7 @@ void Map::clean()
 		delete i->second;
 	}
 	__map.clear();
-	unlock();
+	local.unlock();
 }
 
 Region *Map::remove(void *addr)
@@ -37,12 +36,12 @@ Region *Map::remove(void *addr)
 		return i->second;
 
 	TRACE("Removing Region %p", i->second->start());
-	writeLock();
+	local.write();
 	i = __map.upper_bound(addr);
 	assert(i != __map.end() && i->second->start() == addr);
 	Region *ret = i->second;
 	__map.erase(i);
-	unlock();
+	local.unlock();
 	return ret;
 }
 
