@@ -1,33 +1,34 @@
 #include "Manager.h"
 
+#include <util/Lock.h>
 #include <debug.h>
 
 gmac::memory::Manager *manager= NULL;
 
 namespace gmac {
 
-static MUTEX(mutex);
+static util::Lock *mutex = NULL;
 
 static void destroyManager(void)
 {
-	MUTEX_LOCK(mutex);
+	mutex->lock();
 	delete manager;
 	manager = NULL;
-	MUTEX_UNLOCK(mutex);
+	mutex->unlock();
 }
 
 static void createManager(const char *name)
 {
-	MUTEX_LOCK(mutex);
+	mutex->lock();
 	if(manager == NULL)
 		manager = gmac::memory::getManager(name);
-	MUTEX_UNLOCK(mutex);
+	mutex->unlock();
 }
 
 void memoryInit(const char *manager)
 {
 	TRACE("Initializing Memory Subsystem");
-	MUTEX_INIT(mutex);
+	mutex = new util::Lock(paraver::manager);
 	gmac::memory::Map::init();
 	createManager(manager);
 }
@@ -36,6 +37,7 @@ void memoryFini(void)
 {
 	TRACE("Cleaning Memory Subsystem");
 	destroyManager();
+	delete mutex;
 }
 
 

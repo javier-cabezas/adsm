@@ -49,21 +49,11 @@ namespace gmac { namespace memory {
 class RollingBuffer {
 private:
 	std::list<ProtSubRegion *> buffer;
-	MUTEX(mutex);
+	util::RWLock lock;
 	size_t _max;
-	
-	inline void lock() {
-		enterLock(rolling);
-		MUTEX_LOCK(mutex);
-		exitLock();
-	}
-
-	inline void unlock() { MUTEX_UNLOCK(mutex); }
 
 public:
-	RollingBuffer() : _max(0) {
-		MUTEX_INIT(mutex);
-	}
+	RollingBuffer() : lock(paraver::rollingBuffer), _max(0) { }
 
 	inline bool overflows() const { return buffer.size() >= _max; }
 	inline size_t inc(size_t n) { _max += n; }
@@ -71,26 +61,31 @@ public:
 	inline bool empty() const { return buffer.empty(); }
 
 	inline void push(ProtSubRegion *region) {
-		lock();
+		lock.write();
 		buffer.push_back(region);
-		unlock();
+		lock.unlock();
 	}
 
 	inline ProtSubRegion *pop() {
+		lock.write();
 		assert(buffer.empty() == false);
-		lock();
 		ProtSubRegion *ret = buffer.front();
 		buffer.pop_front();
-		unlock();
+		lock.unlock();
 		return ret;
 	}
 
-	inline ProtSubRegion *front() { return buffer.front(); }
+	inline ProtSubRegion *front() {
+		lock.read();
+		ProtSubRegion *ret = buffer.front();
+		lock.unlock();
+		return ret;
+	}
 
 	inline void remove(ProtSubRegion *region) {
-		lock();
+		lock.write();
 		buffer.remove(region);
-		unlock();
+		lock.unlock();
 	}
 };
 
@@ -107,7 +102,7 @@ protected:
 		return reg;
 	}
 
-	MUTEX(writeMutex);
+	util::Lock writeMutex;
 	void *writeBuffer;
 	size_t writeBufferSize;
 	void waitForWrite(void *addr = NULL, size_t size = 0);

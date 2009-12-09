@@ -39,10 +39,11 @@ WITH THE SOFTWARE.  */
 #include <debug.h>
 #include <paraver.h>
 
+#include <util/Lock.h>
 #include <memory/VM.h>
 
 #include <stdint.h>
-#include <math.h>
+//#include <math.h>
 
 #include <cassert>
 
@@ -60,13 +61,7 @@ private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;
 
-	MUTEX(mutex);
-	inline void lock() { 
-		enterLock(paraver::pageTable);
-		MUTEX_LOCK(mutex);
-		exitLock();
-	}
-	inline void unlock() { MUTEX_UNLOCK(mutex); }
+	gmac::util::RWLock lock;
 
 	static size_t pageSize;
 	static size_t tableShift;

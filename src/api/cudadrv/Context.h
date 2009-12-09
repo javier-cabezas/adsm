@@ -42,6 +42,7 @@ WITH THE SOFTWARE.  */
 #include "GPU.h"
 #include "Module.h"
 
+#include <util/Lock.h>
 #include <kernel/Context.h>
 
 #include <stdint.h>
@@ -101,7 +102,7 @@ protected:
 
 
 	CUcontext ctx;
-	MUTEX(mutex);
+	util::Lock *mutex;
 
 	int major;
 	int minor;
@@ -144,7 +145,7 @@ protected:
         }
     }
 	inline void setup() {
-		MUTEX_INIT(mutex);
+		mutex = new util::Lock(paraver::ctxLocal);
 		CUcontext tmp;
 		assert(cuDeviceComputeCapability(&major, &minor, gpu.device()) ==
 			CUDA_SUCCESS);
@@ -177,8 +178,8 @@ protected:
 
 	~Context() {
 		TRACE("Remove GPU context [%p]", this);
-		MUTEX_DESTROY(mutex);
-        cuStreamDestroy(streamLaunch);
+		delete mutex;
+		cuStreamDestroy(streamLaunch);
 		cuCtxDestroy(ctx); 
 	}
 
@@ -189,15 +190,13 @@ public:
 	}
 
 	inline void lock() {
-		enterLock(ctxLocal);
-		MUTEX_LOCK(mutex);
-		exitLock();
+		mutex->lock();
 		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
 	}
 	inline void unlock() {
 		CUcontext tmp;
 		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
-		MUTEX_UNLOCK(mutex);
+		mutex->unlock();
 	}
 
 

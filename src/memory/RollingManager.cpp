@@ -14,7 +14,7 @@ namespace gmac { namespace memory {
 
 void RollingManager::waitForWrite(void *addr, size_t size)
 {
-	MUTEX_LOCK(writeMutex);
+	writeMutex.lock();
 	if(writeBuffer) {
 		ProtSubRegion *r = regionRolling[Context::current()].front();
 		r->sync();
@@ -22,7 +22,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 	}
 	writeBuffer = addr;
 	writeBufferSize = size;
-	MUTEX_UNLOCK(writeMutex);
+	writeMutex.unlock();
 }
 
 
@@ -63,10 +63,10 @@ RollingManager::RollingManager() :
 	Handler(),
 	lineSize(0),
 	lruDelta(0),
+	writeMutex(paraver::writeMutex),
 	writeBuffer(NULL),
 	writeBufferSize(0)
 {
-	MUTEX_INIT(writeMutex);
 	lineSize = paramLineSize;
 	lruDelta = paramLruDelta;
 	TRACE("Using %d as Line Size", lineSize);
