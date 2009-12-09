@@ -37,10 +37,10 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__inGmac() == 1 || manager == NULL) return __libc_fread(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
-    gmac::Context *srcCtx = manager->owner(buf);
-    gmacError_t err;
-
 	__enterGmac();
+	gmac::Context *srcCtx = manager->owner(buf);
+	gmacError_t err;
+
 	pushState(IORead);
     size_t ret = 0;
     if(srcCtx == NULL) {
@@ -91,11 +91,12 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__inGmac() == 1 || manager == NULL) return __libc_fwrite(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
+	__enterGmac();
+   pushState(IOWrite);
+
     gmac::Context *dstCtx = manager->owner(buf);
     gmacError_t err;
 
-	__enterGmac();
-    pushState(IOWrite);
     size_t ret = 0;
     if(dstCtx == NULL) {
         ret = __libc_fwrite(buf, size, nmemb, stream);
