@@ -90,7 +90,6 @@ protected:
 	typedef std::map<THREAD_ID, kernel::Queue> QueueMap;
 	QueueMap _queues;
 
-	//MUTEX(mutex);
 	util::Lock mutex;
 	unsigned current;
 
@@ -99,18 +98,6 @@ protected:
 	static size_t _totalMemory;
 
 	Process() : mutex(paraver::process), current(0) {};
-
-#if 0
-	inline void lock() {
-		enterLock(paraver::process);
-		MUTEX_LOCK(mutex);
-		exitLock();
-	}
-
-	inline void unlock() {
-		MUTEX_UNLOCK(mutex);
-	}
-#endif
 
 public:
 	virtual ~Process();
