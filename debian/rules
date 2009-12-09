@@ -7,11 +7,12 @@ export DH_VERBOSE=1
 CFLAGS=-g -O2 -Wall
 CXXFLAGS= -g -O2 -Wall
 
-CONFARGS = --enable-paraver --enable-cuda-driver --enable-mmap
+CONFARGS = --enable-paraver --enable-cuda-driver --enable-mmap --enable-debug
 
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
+	./setup.sh
 	mkdir -p build
 	(cd build && ../configure \
 		--prefix=/usr         \

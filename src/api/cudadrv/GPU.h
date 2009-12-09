@@ -52,6 +52,7 @@ protected:
 	unsigned id;
 	CUdevice _device;
 	size_t _memory;
+	bool _async;
 
 	std::set<gpu::Context *> queue;
 
@@ -65,6 +66,7 @@ public:
 	void destroy(Context *);
 
 	size_t memory() const { return _memory; }
+    bool   async()  const { return _async;  }
 };
 
 }

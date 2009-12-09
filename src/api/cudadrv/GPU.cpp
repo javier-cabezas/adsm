@@ -11,9 +11,12 @@ namespace gmac {
 GPU::GPU(int n, CUdevice device) :
 	id(n), _device(device)
 {
-	unsigned int size = 0;
+    unsigned int size = 0;
 	assert(cuDeviceTotalMem(&size, _device) == CUDA_SUCCESS);
-	_memory = size;
+    _memory = size;
+    int async = 0;
+	assert(cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device) == CUDA_SUCCESS);
+    _async = bool(async);
 }
 
 Context *GPU::create()

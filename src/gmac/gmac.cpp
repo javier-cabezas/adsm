@@ -16,10 +16,7 @@
 #include <cstdlib>
 #include <cassert>
 
-PRIVATE(__in_gmac);
-const char __gmac_code = 1;
-const char __user_code = 0;
-
+MUTEX(gmacMutex);
 
 #ifdef PARAVER
 namespace paraver {
@@ -28,17 +25,25 @@ extern int init;
 #endif
 
 PARAM_REGISTER(paramMemManager,
-	char *,
-	"Rolling",
-	"GMAC_MANAGER");
-   
+                char *,
+                "Rolling",
+                "GMAC_MANAGER");
+
 PARAM_REGISTER(paramPageSize,
-	size_t,
-	getpagesize(),
-	NULL,
-	PARAM_NONZERO);
+               size_t,
+               getpagesize(),
+               NULL,
+               PARAM_NONZERO);
 
+PARAM_REGISTER(paramAutoSync,
+               bool,
+               true,
+               "GMAC_AUTO_SYNC");
 
+PRIVATE(__in_gmac);
+
+const char __gmac_code = 1;
+const char __user_code = 0;
 
 static void __attribute__((constructor(CORE))) gmacInit(void)
 {
@@ -175,7 +180,7 @@ gmacError_t gmacFree(void *cpuPtr)
 
 void *gmacPtr(void *ptr)
 {
-	void *ret = NULL;
+    void *ret = NULL;
 	__enterGmac();
 	if(manager != NULL) ret = manager->ptr(ptr);
 	__exitGmac();
@@ -193,6 +198,9 @@ gmacError_t gmacLaunch(const char *symbol)
 	}
 	TRACE("Kernel Launch");
 	ret = gmac::Context::current()->launch(symbol);
+    if (paramAutoSync) {
+	    ret = gmac::Context::current()->sync();
+    }
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -222,16 +230,16 @@ gmacError_t gmacGetLastError()
 
 void *gmacMemset(void *s, int c, size_t n)
 {
-	__enterGmac();
-   void *ret = s;
-	assert(manager != NULL);
-	
-	gmac::Context *ctx = manager->owner(s);
-	assert(ctx != NULL);
-	manager->invalidate(s, n);
-	ctx->memset(manager->ptr(s), c, n);
+    __enterGmac();
+    void *ret = s;
+    assert(manager != NULL);
+
+    gmac::Context *ctx = manager->owner(s);
+    assert(ctx != NULL);
+    manager->invalidate(s, n);
+    ctx->memset(manager->ptr(s), c, n);
 	__exitGmac();
-   return ret;
+    return ret;
 }
 
 void *gmacMemcpy(void *dst, const void *src, size_t n)
@@ -242,14 +250,21 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 
 	assert(manager != NULL);
 
+    gmacError_t err;
+#if 0
+    err = gmacThreadSynchronize();
+    if (err != gmacSuccess) return NULL;
+#endif
+
+    gmac::Context *ctx = gmac::Context::current();
+
 	// Locate memory regions (if any)
 	gmac::Context *dstCtx = manager->owner(dst);
 	gmac::Context *srcCtx = manager->owner(src);
 
 	assert(dstCtx != NULL || srcCtx != NULL);
 
-    gmacError_t err;
-	TRACE("GMAC Memcpy");
+	TRACE("GMAC Memcpy: %d", n);
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst, manager->ptr(srcCtx, src), n);
@@ -268,7 +283,6 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 			                     manager->ptr(dstCtx, src), n);
         assert(err == gmacSuccess);
 	}
-    // TODO - add asynchronous calls to copyToHostAsync and copyToDeviceAsync
 	else {
 		void *tmp;
         bool pageLocked = false;
@@ -276,8 +290,8 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
         manager->flush(src, n);
         manager->invalidate(dst, n);
 
-        gmac::Context *ctx = gmac::Context::current();
-        if (ctx->bufferPageLockedSize() > 0) {
+        if (srcCtx->async() && dstCtx->async() &&
+            ctx->bufferPageLockedSize() > 0) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             void * tmp        = ctx->bufferPageLocked();
 
@@ -285,9 +299,13 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
             off_t  off  = 0;
             while (left != 0) {
                 size_t bytes = left < bufferSize? left: bufferSize;
-                err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
+                err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
                 assert(err == gmacSuccess);
-                err = dstCtx->copyToDevice(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
+                srcCtx->syncToHost();
+                assert(err == gmacSuccess);
+                err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
+                assert(err == gmacSuccess);
+                srcCtx->syncToDevice();
                 assert(err == gmacSuccess);
 
                 left -= bytes;
