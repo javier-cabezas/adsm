@@ -100,7 +100,7 @@ protected:
 	Process() : current(0) { MUTEX_INIT(mutex); };
 
 	inline void lock() {
-		enterLock(process);
+		enterLock(paraver::process);
 		MUTEX_LOCK(mutex);
 		exitLock();
 	}

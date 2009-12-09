@@ -62,7 +62,7 @@ private:
 
 	MUTEX(mutex);
 	inline void lock() { 
-		enterLock(pageTable);
+		enterLock(paraver::pageTable);
 		MUTEX_LOCK(mutex);
 		exitLock();
 	}
