@@ -27,6 +27,7 @@
 #define PRIVATE_GET(name) pthread_getspecific(name)
 
 #define SEM(sem) sem_t sem
+#define SEM_DESTROY(sem) sem_destroy(&sem)
 #define SEM_INIT(sem, v) sem_init(&sem, 0, v)
 #define SEM_POST(sem)	sem_post(&sem)
 #define SEM_WAIT(sem)	sem_wait(&sem)
