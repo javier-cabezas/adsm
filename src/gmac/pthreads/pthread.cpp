@@ -37,7 +37,9 @@ static void *gmac_pthread(void *arg)
 	pthread_mutex_unlock(&create_mutex);
 	popState();
 	pushState(Running);
+	__exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
+	__enterGmac();
 	popState();
 	// IG: commented out because it was producing segmentation
 	// faults. I have no idea why this faults are being triggered
