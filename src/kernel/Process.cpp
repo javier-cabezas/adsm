@@ -17,50 +17,50 @@ Process::~Process()
 	TRACE("Cleaning process");
 	std::vector<Accelerator *>::iterator a;
 	std::list<Context *>::iterator c;
-	lock();
+	mutex.lock();
 	for(c = _contexts.begin(); c != _contexts.end(); c++) {
 		(*c)->destroy();
 	}
 	for(a = accs.begin(); a != accs.end(); a++)
 		delete *a;
 	accs.clear();
-	unlock();
+	mutex.unlock();
 	memoryFini();
 }
 
 void Process::create()
 {
 	TRACE("Creating new context");
-	lock();
+	mutex.lock();
 	unsigned n = current;
 	current = ++current % accs.size();
 	Context *ctx = accs[n]->create();
 	ctx->init();
 	_contexts.push_back(ctx);
 	_queues.insert(QueueMap::value_type(SELF(), kernel::Queue()));
-	unlock();
+	mutex.unlock();
 }
 
 void Process::clone(gmac::Context *ctx)
 {
 	TRACE("Cloning context");
-	lock();
+	mutex.lock();
 	unsigned n = current;
 	current = ++current % accs.size();
 	Context *clon = accs[n]->clone(*ctx);
 	clon->init();
 	_contexts.push_back(clon);
 	_queues.insert(QueueMap::value_type(SELF(), kernel::Queue()));
-	unlock();
+	mutex.unlock();
 	TRACE("Cloned context on Acc#%d", n);
 }
 
 void Process::remove(Context *ctx)
 {
-	lock();
+	mutex.lock();
 	_contexts.remove(ctx);
 	_queues.erase(SELF());
-	unlock();
+	mutex.unlock();
 	ctx->destroy();
 }
 

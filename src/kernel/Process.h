@@ -90,15 +90,17 @@ protected:
 	typedef std::map<THREAD_ID, kernel::Queue> QueueMap;
 	QueueMap _queues;
 
-	MUTEX(mutex);
+	//MUTEX(mutex);
+	util::Lock mutex;
 	unsigned current;
 
 	SharedMap _sharedMem;
 
 	static size_t _totalMemory;
 
-	Process() : current(0) { MUTEX_INIT(mutex); };
+	Process() : mutex(paraver::process), current(0) {};
 
+#if 0
 	inline void lock() {
 		enterLock(paraver::process);
 		MUTEX_LOCK(mutex);
@@ -108,9 +110,9 @@ protected:
 	inline void unlock() {
 		MUTEX_UNLOCK(mutex);
 	}
+#endif
 
 public:
-
 	virtual ~Process();
 
 	static void init(const char *name) {
