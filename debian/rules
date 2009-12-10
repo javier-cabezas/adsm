@@ -1,0 +1,75 @@
+#!/usr/bin/make -f
+#   Debian rules file for libparaver, requires the debhelper package.
+
+# Comment this to turn off debhelper verbose mode.
+export DH_VERBOSE=1
+
+CFLAGS=-g -O2 -Wall
+CXXFLAGS= -g -O2 -Wall
+
+CONFARGS = --enable-paraver --enable-cuda-driver --enable-mmap
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	./setup.sh
+	mkdir -p build
+	(cd build && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS))
+	touch configure-stamp
+
+build: build-stamp
+build-stamp: configure-stamp
+	dh_testdir
+	$(MAKE) -C build
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	-rm -f build-stamp configure-stamp
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+	$(MAKE) -C build DESTDIR=$(CURDIR)/debian/tmp install
+
+binary-arch:    build install
+	dh_testdir -s
+	dh_testroot -s
+	dh_installchangelogs -s
+	dh_installdocs -s
+	dh_installexamples -s
+	dh_install -s
+#	dh_installmenu
+#	dh_installdebconf
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman -s
+	dh_link -s
+	dh_strip -s
+	dh_compress -s
+	dh_fixperms -s
+#	dh_perl
+#	dh_python
+	dh_makeshlibs
+	dh_installdeb -s
+	dh_shlibdeps -s -v
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+
+
+binary: binary-arch
+.PHONY: build clean binary install configure
+
