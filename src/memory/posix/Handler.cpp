@@ -55,7 +55,7 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 	else resolved = handler->write(info->si_addr);
 
 	if(resolved == false) {
-		TRACE("SIGSEGV for NULL Region");
+		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", info->si_addr);
 		abort();
 		// TODO: set the signal mask and other stuff
 		if(defaultAction.sa_flags & SA_SIGINFO) 
