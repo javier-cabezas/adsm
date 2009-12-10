@@ -1,3 +1,9 @@
+libgmac (0.0.3-4) unstable; urgency=medium
+
+  * Fixed gmac header files to avoid multiple references to gmacGetLastError when using C compiler
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 23:35:00 +0100
+
 libgmac (0.0.3-3) unstable; urgency=high
 
   * Fixed CUDA Driver code to implement dead-lock canary
