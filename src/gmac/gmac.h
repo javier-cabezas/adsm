@@ -118,7 +118,7 @@ void *gmacMemcpy(void *, const void *, size_t);
 
 void gmacSendReceive(unsigned long);
 
-inline const char *gmacGetErrorString(gmacError_t err) {
+static inline const char *gmacGetErrorString(gmacError_t err) {
 	assert(err <= gmacErrorUnknown);
 	return error[err];
 }
