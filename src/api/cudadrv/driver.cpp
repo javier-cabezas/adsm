@@ -1,6 +1,8 @@
 #include <config.h>
 #include <debug.h>
 
+#include <gmac/init.h>
+
 #include "Context.h"
 
 #include <string.h>
@@ -22,13 +24,18 @@ using gmac::gpu::Module;
 
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-	return (void **)Context::current()->load(fatCubin);
+	__enterGmac();
+	void **ret = (void **)Context::current()->load(fatCubin);
+	__exitGmac();
+	return ret;
 }
 
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
+	__enterGmac();
 	Module *mod = (Module *)fatCubinHandle;
 	Context::current()->unload(mod);
+	__exitGmac();
 }
 
 void __cudaRegisterFunction(
@@ -38,9 +45,11 @@ void __cudaRegisterFunction(
 {
 	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
+	__enterGmac();
 	Context::current()->lock();
 	mod->function(hostFun, devName);
 	Context::current()->unlock();
+	__exitGmac();
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
@@ -49,11 +58,13 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 {
 	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
+	__enterGmac();
 	Context::current()->lock();
 	if(constant == 0) mod->variable(hostVar, deviceName);
 	else mod->constant(hostVar, deviceName);
 	mod->variable(hostVar, deviceName);
 	Context::current()->unlock();
+	__exitGmac();
 }
 
 
@@ -69,13 +80,17 @@ void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
 cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, int tokens)
 {
+	__enterGmac();
 	Context::current()->call(gridDim, blockDim, sharedMem, tokens);
+	__exitGmac();
 	return cudaSuccess;
 }
 
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
+	__enterGmac();
 	Context::current()->argument(arg, count, offset);
+	__exitGmac();
 	return cudaSuccess;
 }
 
