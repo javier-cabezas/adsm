@@ -78,7 +78,7 @@ protected:
 	Context(GPU &gpu) : gmac::Context(gpu), gpu(gpu) {
 		enable();
 		cudaSetDevice(gpu.device());
-        if (paramBufferPageLocked) {
+        if (gpu.async()) {
             assert(cudaHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, cudaHostAllocPortable) == cudaSuccess);
             _bufferPageLockedSize = paramBufferPageLockedSize;
         } else {

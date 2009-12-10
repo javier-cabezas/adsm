@@ -290,8 +290,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
         manager->flush(src, n);
         manager->invalidate(dst, n);
 
-        if (srcCtx->async() && dstCtx->async() &&
-            ctx->bufferPageLockedSize() > 0) {
+        if (srcCtx->async() && dstCtx->async()) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             void * tmp        = ctx->bufferPageLocked();
 
