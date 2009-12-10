@@ -147,7 +147,7 @@ protected:
                 FATAL("Unable to create CUDA stream %d", ret);
         }
 
-        if (paramBufferPageLocked) {
+        if (gpu.async()) {
             TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
             assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
             _bufferPageLockedSize = paramBufferPageLockedSize;
@@ -250,7 +250,7 @@ public:
         gmac::Context *ctx = gmac::Context::current();
 
         CUresult ret;
-        if (gpu.async() && ctx->bufferPageLockedSize() > 0) {
+        if (gpu.async()) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             void * tmp        = ctx->bufferPageLocked();
 
@@ -285,7 +285,7 @@ done:
         gmac::Context *ctx = gmac::Context::current();
 
         CUresult ret;
-        if (gpu.async() && ctx->bufferPageLockedSize() > 0) {
+        if (gpu.async()) {
             size_t bufferSize = ctx->bufferPageLockedSize();
             void * tmp        = ctx->bufferPageLocked();
 
