@@ -52,8 +52,10 @@ static void __attribute__((constructor(CORE))) gmacInit(void)
 	paraver::init = 1;
 #endif
 	PRIVATE_INIT(__in_gmac, NULL);
+	__enterGmac();
 	gmac::Process::init(paramMemManager);
 	proc->create();
+	__exitGmac();
 }
 
 
