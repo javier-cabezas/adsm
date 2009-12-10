@@ -1,3 +1,9 @@
+libgmac (0.0.3-2) unstable; urgency=low
+
+  * Added missing dead-lock canary to CUDA Driver compatibility code
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 18:40:00 +0100
+
 libgmac (0.0.3-1) unstable; urgency=low
 
   * Fixed bad handling of user and GMAC execution state
