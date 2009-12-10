@@ -1,3 +1,10 @@
+libgmac (0.0.3-1) unstable; urgency=low
+
+  * Fixed bad handling of user and GMAC execution state
+  * Added useful message for unhandled segmentation faults
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 10:20:00 +0100
+
 libgmac (0.0.3) unstable; urgency=low
 
   * Implemented stream support for concurrent memcpy and execution and
