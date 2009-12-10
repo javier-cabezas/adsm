@@ -8,11 +8,6 @@ extern gmac::memory::Manager *manager;
 
 namespace gmac {
 
-PARAM_REGISTER(paramBufferPageLocked,
-               bool,
-               false,
-               "GMAC_BUFFER_PAGE_LOCKED");
-
 PARAM_REGISTER(paramBufferPageLockedSize,
                size_t,
                4 * 1024 * 1024,
