@@ -2,7 +2,7 @@
 #include <order.h>
 #include <gmac.h>
 
-#include <string.h>
+#include <cstring>
 
 #include <memory/Manager.h>
 #include <memory/Region.h>

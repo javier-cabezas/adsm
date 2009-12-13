@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include <memory/VM.h>
 
 #include <stdint.h>
-//#include <math.h>
+//#include <cmath>
 
 #include <cassert>
 

@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include <memory/os/Memory.h>
 
-#include <signal.h>
+#include <csignal>
 
 namespace gmac { namespace memory {
 //! Protected Memory Region

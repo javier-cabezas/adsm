@@ -9,7 +9,7 @@
 #include <kernel/Context.h>
 
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <stdint.h>
 #include <dlfcn.h>
 

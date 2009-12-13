@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_HANDLER_H_
 #define __MEMORY_HANDLER_H_
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <memory/Manager.h>
 

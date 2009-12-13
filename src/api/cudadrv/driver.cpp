@@ -5,8 +5,8 @@
 
 #include "Context.h"
 
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
 
 #include <cuda.h>
 #include <vector_types.h>
