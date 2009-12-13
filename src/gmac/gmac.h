@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
-#include <assert.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -118,6 +117,11 @@ void *gmacMemcpy(void *, const void *, size_t);
 
 void gmacSendReceive(unsigned long);
 
+#ifdef __cplusplus
+#include <cassert>
+#else
+#include <assert.h>
+#endif
 static inline const char *gmacGetErrorString(gmacError_t err) {
 	assert(err <= gmacErrorUnknown);
 	return error[err];
@@ -128,7 +132,6 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
 #endif
 
 #ifdef __cplusplus
-#include <stdio.h>
 template<typename T> inline T *gmacPtr(T *devPtr) {
 	return (T *)gmacPtr((void *)devPtr);
 }

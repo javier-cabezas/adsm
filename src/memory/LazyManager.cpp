@@ -3,7 +3,7 @@
 #include <debug.h>
 #include <kernel/Context.h>
 
-#include <assert.h>
+#include <cassert>
 
 namespace gmac { namespace memory {
 

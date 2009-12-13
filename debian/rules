@@ -7,7 +7,7 @@ export DH_VERBOSE=1
 CFLAGS=-g -O2 -Wall
 CXXFLAGS= -g -O2 -Wall
 
-CONFARGS = --enable-paraver --enable-cuda-driver --enable-mmap
+CONFARGS = --enable-cuda-driver --enable-mmap --enable-paraver
 
 configure: configure-stamp
 configure-stamp:

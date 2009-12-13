@@ -40,12 +40,11 @@ WITH THE SOFTWARE.  */
 #include <gmac/gmac.h>
 #include <memory/os/Memory.h>
 
-#include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <signal.h>
+#include <csignal>
 
-#include <assert.h>
+#include <cassert>
 
 #include <iostream>
 #include <list>

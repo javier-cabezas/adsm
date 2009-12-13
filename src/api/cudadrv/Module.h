@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <debug.h>
 
-#include <assert.h>
+#include <cassert>
 
 #include <list>
 

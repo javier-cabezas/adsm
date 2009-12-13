@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include <stdint.h>
 #include <malloc.h>
-#include <math.h>
+#include <cmath>
 
 #include <cassert>
 

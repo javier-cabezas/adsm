@@ -7,7 +7,7 @@
 #include <debug.h>
 #include <paraver.h>
 
-#include <string.h>
+#include <cstring>
 
 #include <algorithm>
 

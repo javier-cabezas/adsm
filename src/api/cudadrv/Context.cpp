@@ -1,6 +1,6 @@
 #include "Context.h"
 
-#include <assert.h>
+#include <cassert>
 
 namespace gmac { namespace gpu {
 

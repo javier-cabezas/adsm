@@ -5,7 +5,7 @@
 #include "Context.h"
 #include "Module.h"
 
-#include <assert.h>
+#include <cassert>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
