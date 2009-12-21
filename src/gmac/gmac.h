@@ -67,14 +67,21 @@ static const char *error[] = {
 };
 
 /*!
+	\brief Returns the number of available accelerators
+
+    This number can be used to perform a manual context distribution among accelerators
+*/
+size_t gmacAccs();
+
+
+/*!
 	\brief Sets the affinity of a thread to a concrete accelerator
 
-    Sets the affinity of a thread to a concrete accelerator. Currently only works
-    if this is the first gmac call in the thread.
+    Sets the affinity of a thread to a concrete accelerator. Valid values are 0 ... gmacAccs() - 1.
+    Currently only works if this is the first gmac call in the thread.
 	\param acc index of the preferred accelerator
 */
 gmacError_t gmacSetAfinnity(int acc);
-
 
 
 /*!
@@ -87,7 +94,7 @@ gmacError_t gmacSetAfinnity(int acc);
 */
 gmacError_t gmacMalloc(void **devPtr, size_t count);
 
-/*
+/*!
 	\brief Allocates global memory at all GPUS
 */
 gmacError_t gmacGlobalMalloc(void **devPtr, size_t count);
