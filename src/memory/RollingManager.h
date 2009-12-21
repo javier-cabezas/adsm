@@ -92,7 +92,7 @@ protected:
 	size_t lineSize;
 	size_t lruDelta;
 
-	std::map<Context *, RollingBuffer> regionRolling;
+	std::map<Context *, RollingBuffer *> regionRolling;
 
 	inline RollingRegion *get(const void *addr) {
 		RollingRegion *reg = NULL;
@@ -117,15 +117,16 @@ protected:
 	// Methods used by ProtSubRegion to request flushing and invalidating
 	friend class RollingRegion;
 	void invalidate(ProtSubRegion *region) {
-		regionRolling[Context::current()].remove(region);
+		regionRolling[Context::current()]->remove(region);
 	}
 	void flush(ProtSubRegion *region) {
-		regionRolling[Context::current()].remove(region);
+		regionRolling[Context::current()]->remove(region);
 		assert(region->copyToDevice() == gmacSuccess);
 	}
 
 public:
 	RollingManager();
+	virtual ~RollingManager();
 	void *alloc(void *addr, size_t size);
 	void release(void *addr);
 	void flush(void);

@@ -44,7 +44,7 @@ typedef enum {
 } FunctionName;
 
 typedef enum {
-	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal,
+	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, ctxCreate,
 	queueLock,
 	ioHostLock, ioDeviceLock,
 	process, writeMutex, rollingBuffer, manager

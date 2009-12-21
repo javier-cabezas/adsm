@@ -16,7 +16,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 {
 	writeMutex.lock();
 	if(writeBuffer) {
-		ProtSubRegion *r = regionRolling[Context::current()].front();
+		ProtSubRegion *r = regionRolling[Context::current()]->front();
 		r->sync();
 		munlock(writeBuffer, writeBufferSize);
 	}
@@ -28,7 +28,7 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 
 void RollingManager::writeBack()
 {
-	ProtSubRegion *r = regionRolling[Context::current()].pop();
+	ProtSubRegion *r = regionRolling[Context::current()]->pop();
 	waitForWrite(r->start(), r->size());
 	mlock(writeBuffer, writeBufferSize);
 	assert(r->copyToDevice() == gmacSuccess);
@@ -39,8 +39,8 @@ void RollingManager::writeBack()
 void RollingManager::flushToDevice() 
 {
 	waitForWrite();
-	while(regionRolling[Context::current()].empty() == false) {
-		ProtSubRegion *r = regionRolling[Context::current()].pop();
+	while(regionRolling[Context::current()]->empty() == false) {
+		ProtSubRegion *r = regionRolling[Context::current()]->pop();
 		assert(r->copyToDevice() == gmacSuccess);
 		r->readOnly();
 		TRACE("Flush to Device %p", r->start()); 
@@ -73,6 +73,14 @@ RollingManager::RollingManager() :
 	TRACE("Using %d as LRU Delta Size", lruDelta);
 }
 
+RollingManager::~RollingManager()
+{
+    std::map<Context *, RollingBuffer *>::iterator r;
+    for (r = regionRolling.begin(); r != regionRolling.end(); r++) {
+        delete r->second;
+    }
+}
+
 void *RollingManager::alloc(void *addr, size_t size)
 {
 	void *cpuAddr = NULL;
@@ -80,7 +88,10 @@ void *RollingManager::alloc(void *addr, size_t size)
 		return NULL;
 	
 	insertVirtual(cpuAddr, addr, size);
-	regionRolling[Context::current()].inc(lruDelta);
+    if (!regionRolling[Context::current()]) {
+        regionRolling[Context::current()] = new RollingBuffer();
+    }
+	regionRolling[Context::current()]->inc(lruDelta);
 	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
 	return cpuAddr;
 }
@@ -95,7 +106,7 @@ void RollingManager::release(void *addr)
 		TRACE("Deleting Region %p\n", addr);
 		delete reg;
 	}
-	regionRolling[Context::current()].dec(lruDelta);
+	regionRolling[Context::current()]->dec(lruDelta);
 	TRACE("Released %p", addr);
 }
 
@@ -166,13 +177,16 @@ bool RollingManager::write(void *addr)
 	ProtRegion *region = root->find(addr);
 	assert(region != NULL);
 	assert(region->dirty() == false);
-	while(regionRolling[Context::current()].overflows()) writeBack();
+    if (!regionRolling[Context::current()]) {
+        regionRolling[Context::current()] = new RollingBuffer();
+    }
+	while(regionRolling[Context::current()]->overflows()) writeBack();
 	region->readWrite();
 	if(region->present() == false && current()->pageTable().dirty(addr)) {
 		assert(region->copyToHost() == gmacSuccess);
 		current()->pageTable().clear(addr);
 	}
-	regionRolling[Context::current()].push(
+	regionRolling[Context::current()]->push(
 			dynamic_cast<ProtSubRegion *>(region));
 	return true;
 }

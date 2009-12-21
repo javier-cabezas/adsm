@@ -86,7 +86,7 @@ protected:
 	std::vector<Accelerator *> accs;
 	ContextList _contexts;
 	
-	typedef std::map<THREAD_ID, kernel::Queue> QueueMap;
+	typedef std::map<THREAD_ID, kernel::Queue *> QueueMap;
 	QueueMap _queues;
 
 	util::Lock mutex;

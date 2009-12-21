@@ -16,7 +16,6 @@ PARAM_REGISTER(paramPageSize,
                "GMAC_PAGE",
                PARAM_NONZERO);
 
-size_t PageTable::pageSize;
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
@@ -24,12 +23,11 @@ PageTable::PageTable() :
 	_clean(false), _valid(true),
 	pages(1)
 {
-    pageSize = paramPageSize;
-	tableShift = log2(pageSize);
-	TRACE("Page Size: %d bytes", pageSize);
+	tableShift = log2(paramPageSize);
+	TRACE("Page Size: %d bytes", paramPageSize);
 #ifndef USE_MMAP
 	TRACE("Table Shift: %d bits", tableShift);
-	TRACE("Table Size: %d entries", (1 << dirShift) / pageSize);
+	TRACE("Table Size: %d entries", (1 << dirShift) / paramPageSize);
 #endif
 }
 
@@ -71,7 +69,7 @@ void PageTable::insert(void *host, void *dev)
 
 	if(dir.present(entry(host, dirShift, dir.size())) == false) {
 		dir.create(entry(host, dirShift, dir.size()),
-			(1 << dirShift) / pageSize);
+			(1 << dirShift) / paramPageSize);
 		pages++;
 	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
