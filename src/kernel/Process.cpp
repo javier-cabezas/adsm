@@ -22,11 +22,11 @@ Process::~Process()
 	for(c = _contexts.begin(); c != _contexts.end(); c++) {
 		(*c)->destroy();
 	}
-	for(a = accs.begin(); a != accs.end(); a++)
+	for(a = _accs.begin(); a != _accs.end(); a++)
 		delete *a;
     for(q = _queues.begin(); q != _queues.end(); q++)
         delete q->second;
-	accs.clear();
+	_accs.clear();
 	mutex.unlock();
 	memoryFini();
 }
@@ -36,27 +36,46 @@ void Process::create()
 	TRACE("Creating new context");
 	mutex.lock();
 	unsigned n = current;
-	current = ++current % accs.size();
-	Context *ctx = accs[n]->create();
+	current = ++current % _accs.size();
+	Context *ctx = _accs[n]->create();
 	ctx->init();
 	_contexts.push_back(ctx);
 	_queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
 	mutex.unlock();
 }
 
-void Process::clone(gmac::Context *ctx)
+void Process::clone(gmac::Context *ctx, int acc)
 {
 	TRACE("Cloning context");
 	mutex.lock();
 	unsigned n = current;
-	current = ++current % accs.size();
-	Context *clon = accs[n]->clone(*ctx);
+	current = ++current % _accs.size();
+	Context *clon = _accs[n]->clone(*ctx);
 	clon->init();
 	_contexts.push_back(clon);
 	_queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
 	mutex.unlock();
 	TRACE("Cloned context on Acc#%d", n);
 }
+
+gmacError_t Process::migrate(int acc)
+{
+	mutex.lock();
+    if (acc >= _accs.size()) return gmacErrorInvalidValue;
+    gmacError_t ret = gmacSuccess;
+	TRACE("Migrating context");
+    if (Context::hasCurrent()) {
+        // Really migrate data
+        abort();
+    } else {
+        // Create the context in the requested accelerator
+        Context::create(acc);
+    }
+	TRACE("Migrated context");
+	mutex.unlock();
+    return ret;
+}
+
 
 void Process::remove(Context *ctx)
 {
@@ -70,7 +89,7 @@ void Process::remove(Context *ctx)
 
 void Process::accelerator(Accelerator *acc) 
 {
-	accs.push_back(acc);
+	_accs.push_back(acc);
 	_totalMemory += acc->memory();
 }
 

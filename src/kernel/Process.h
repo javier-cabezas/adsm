@@ -83,7 +83,7 @@ public:
 	typedef std::list<Context *> ContextList;
 	typedef std::map<void *, SharedMemory> SharedMap;
 protected:
-	std::vector<Accelerator *> accs;
+	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 	
 	typedef std::map<THREAD_ID, kernel::Queue *> QueueMap;
@@ -102,6 +102,7 @@ public:
 	virtual ~Process();
 
 	static void init(const char *name) {
+        // Process is a singleton class. The only allowed instance is proc
 		if(proc != NULL) return;
 		contextInit();
 		proc = new Process();
@@ -110,8 +111,9 @@ public:
 	}
 
 	void create();
-	void clone(Context *ctx);
+	void clone(Context *ctx, int acc = -1);
 	void remove(Context *ctx);
+	gmacError_t migrate(int acc);
 	const ContextList &contexts() const { return _contexts; }
 
 	void accelerator(Accelerator *acc);
@@ -143,6 +145,7 @@ public:
 	inline bool isShared(void *addr) const { return _sharedMem.find(addr) != _sharedMem.end(); }
 
 	static size_t totalMemory() { return _totalMemory; }
+	size_t accs() const { return _accs.size(); }
 };
 
 }

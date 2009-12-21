@@ -108,29 +108,37 @@ protected:
 
 
 public:
+    static Context *create(int acc = -1) {
+        lockCreate.lock();
+        pushState(Init);
+        proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)), acc);
+        popState();
+        lockCreate.unlock();
+        return static_cast<Context *>(PRIVATE_GET(key));
+    }
 
 	static Context *current() {
         Context *ctx;
         ctx = static_cast<Context *>(PRIVATE_GET(key));
         if (ctx == NULL) {
-            lockCreate.lock();
-            pushState(Init);
-            proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)));
-            popState();
-            lockCreate.unlock();
-            ctx = static_cast<Context *>(PRIVATE_GET(key));
+            ctx = Context::create(acc);
         }
 		return ctx;
 	}
 
+    static bool hasCurrent() {
+        return PRIVATE_GET(key) != NULL;
+	}
+
     static void initPrivate(Context *parent) {
+        PRIVATE_SET(key, NULL);
         PRIVATE_SET(keyParent, parent);
     }
 
 	void init();
 
 	void destroy() {
-        // Set the current context for each Context destruction (since it is sequential)
+        // Set the current context before each Context destruction (since it is sequential)
 		PRIVATE_SET(key, this);
 		acc.destroy(this);
 		PRIVATE_SET(key, NULL);

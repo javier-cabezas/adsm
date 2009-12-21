@@ -65,6 +65,28 @@ static void __attribute__((destructor)) gmacFini(void)
 	delete proc;
 }
 
+size_t gmacAccs()
+{
+    size_t ret;
+	__enterGmac();
+	enterFunction(gmacAccs);
+    ret = proc->accs();
+	exitFunction();
+	__exitGmac();
+	return ret;
+}
+
+gmacError_t gmacSetAffinity(int acc)
+{
+	gmacError_t ret;
+	__enterGmac();
+	enterFunction(gmacSetAffinity);
+    ret = proc->migrate(acc);
+	exitFunction();
+	__exitGmac();
+	return ret;
+}
+
 static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 {
 	gmacError_t ret = gmacSuccess;
