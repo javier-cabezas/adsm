@@ -67,6 +67,17 @@ static const char *error[] = {
 };
 
 /*!
+	\brief Sets the affinity of a thread to a concrete accelerator
+
+    Sets the affinity of a thread to a concrete accelerator. Currently only works
+    if this is the first gmac call in the thread.
+	\param acc index of the preferred accelerator
+*/
+gmacError_t gmacSetAfinnity(int acc);
+
+
+
+/*!
 	\brief Allocates memory at the GPU
 	
 	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,

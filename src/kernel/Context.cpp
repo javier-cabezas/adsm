@@ -31,7 +31,6 @@ unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) : acc(acc)
 {
-	PRIVATE_SET(key, NULL);
 	_id = ++_next;
 }
 
