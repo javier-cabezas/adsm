@@ -8,6 +8,8 @@ extern gmac::memory::Manager *manager;
 
 namespace gmac {
 
+util::Lock Context::lockCreate(paraver::ctxCreate);
+
 PARAM_REGISTER(paramBufferPageLockedSize,
                size_t,
                4 * 1024 * 1024,
@@ -17,11 +19,14 @@ PARAM_REGISTER(paramBufferPageLockedSize,
 void contextInit()
 {
 	PRIVATE_INIT(gmac::Context::key, NULL);
+	PRIVATE_INIT(gmac::Context::keyParent, NULL);
 	PRIVATE_SET(gmac::Context::key, NULL);
+	PRIVATE_SET(gmac::Context::keyParent, NULL);
 }
 
 
 PRIVATE(Context::key);
+PRIVATE(Context::keyParent);
 unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) : acc(acc)

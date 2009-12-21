@@ -12,7 +12,9 @@
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
+#if 0
 static pthread_mutex_t create_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 static void __attribute__((constructor(INTERPOSE))) gmacPthreadInit(void)
 {
@@ -32,10 +34,13 @@ static void *gmac_pthread(void *arg)
 	__enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
 	addThread();
+    gmac::Context::initPrivate(gthread->__current);
+#if 0
 	pushState(Init);
 	proc->clone(gthread->__current);
 	pthread_mutex_unlock(&create_mutex);
 	popState();
+#endif
 	pushState(Running);
 	__exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
@@ -62,10 +67,14 @@ int pthread_create(pthread_t *__restrict __newthread,
 	gthread->__current = gmac::Context::current();
 	gthread->__start_routine = __start_routine;
 	gthread->__arg = __arg;
+#if 0
 	pthread_mutex_lock(&create_mutex);
+#endif
 	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
+#if 0
 	pthread_mutex_lock(&create_mutex);
 	pthread_mutex_unlock(&create_mutex);
+#endif
 	popState();
 	__exitGmac();
 	return ret;

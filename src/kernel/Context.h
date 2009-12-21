@@ -67,7 +67,9 @@ protected:
 	friend class memory::Manager;
 	friend class Process;
 	static PRIVATE(key);
+	static PRIVATE(keyParent);
 	static unsigned _next;
+    static util::Lock lockCreate;
 
 	unsigned _id;
 	
@@ -102,20 +104,36 @@ protected:
 	Context(Accelerator &acc);
 
 	virtual ~Context() {
-		PRIVATE_SET(key, NULL);
 	}
 
 
 public:
 
 	static Context *current() {
-		return static_cast<Context *>(PRIVATE_GET(key));
+        Context *ctx;
+        ctx = static_cast<Context *>(PRIVATE_GET(key));
+        if (ctx == NULL) {
+            lockCreate.lock();
+            pushState(Init);
+            proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)));
+            popState();
+            lockCreate.unlock();
+            ctx = static_cast<Context *>(PRIVATE_GET(key));
+        }
+		return ctx;
 	}
+
+    static void initPrivate(Context *parent) {
+        PRIVATE_SET(keyParent, parent);
+    }
 
 	void init();
 
 	void destroy() {
+        // Set the current context for each Context destruction (since it is sequential)
+		PRIVATE_SET(key, this);
 		acc.destroy(this);
+		PRIVATE_SET(key, NULL);
 	}
 	
 	/*!

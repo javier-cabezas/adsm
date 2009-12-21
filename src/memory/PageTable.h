@@ -49,6 +49,8 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
+extern size_t paramPageSize;
+
 //! Page Table 
 
 //! Software Virtual Memory Table to keep translation from
@@ -62,7 +64,6 @@ private:
 
 	gmac::util::RWLock lock;
 
-	static size_t pageSize;
 	static size_t tableShift;
 
 	bool _clean;
@@ -82,7 +83,7 @@ private:
 
 	inline int offset(const void *addr) const {
 		unsigned long n = (unsigned long)(addr);
-		return n & (pageSize - 1);
+		return n & (paramPageSize - 1);
 	}
 
 	void update();
@@ -106,9 +107,9 @@ public:
 	}
 	void *translate(void *host);
 
-	size_t getPageSize() const { return pageSize; }
+	size_t getPageSize() const { return paramPageSize; }
 	size_t getTableShift() const { return tableShift; }
-	size_t getTableSize() const { return (1 << dirShift) / pageSize; }
+	size_t getTableSize() const { return (1 << dirShift) / paramPageSize; }
 
 	void *flush();
 	void invalidate() { _valid = false; }
