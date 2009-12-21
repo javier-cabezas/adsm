@@ -117,6 +117,10 @@ public:
         return static_cast<Context *>(PRIVATE_GET(key));
     }
 
+    /*! Gets the Context associated to the calling thread.
+     *
+     * If it does not have an associated Context, one new Context is created
+     */
 	static Context *current() {
         Context *ctx;
         ctx = static_cast<Context *>(PRIVATE_GET(key));
@@ -126,11 +130,18 @@ public:
 		return ctx;
 	}
 
+    /*! Checks whether the calling thread has an associated Context
+     */
     static bool hasCurrent() {
         return PRIVATE_GET(key) != NULL;
 	}
 
-    static void initPrivate(Context *parent) {
+    /*! Initializes the per-thread private variables of the calling thread.
+     *
+     * This method must be called as soon as a new thread has been created
+	 * \param parent Pointer to the parent thread. Used during Context cloning
+    */
+    static void initThread(Context *parent) {
         PRIVATE_SET(key, NULL);
         PRIVATE_SET(keyParent, parent);
     }
