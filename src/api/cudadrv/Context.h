@@ -55,19 +55,14 @@ namespace gmac { namespace gpu {
 
 class Context : public gmac::Context {
 protected:
-	typedef struct Call {
-		Call(dim3 grid, dim3 block, size_t shared, size_t tokens,
-				size_t stack) : grid(grid),
-			block(block),
-			shared(shared),
-			tokens(tokens),
-			stack(stack) {};
+	struct Call {
+		Call(dim3 grid, dim3 block, size_t shared, size_t tokens, size_t stack);
 		dim3 grid;
 		dim3 block;
 		size_t shared;
 		size_t tokens;
 		size_t stack;
-	} Call;
+	};
 
 	typedef std::vector<Call> CallStack;
 	typedef HASH_MAP<Module *, const void *> ModuleMap;
@@ -130,76 +125,15 @@ protected:
 
 	friend class gmac::GPU;
 
-    inline void setupStreams() {
-        if (gpu.async()) {
-            CUresult ret;
-            ret = cuStreamCreate(&streamLaunch, 0);
-            if(ret != CUDA_SUCCESS)
-                FATAL("Unable to create CUDA stream %d", ret);
-            ret = cuStreamCreate(&streamToDevice, 0);
-            if(ret != CUDA_SUCCESS)
-                FATAL("Unable to create CUDA stream %d", ret);
-            ret = cuStreamCreate(&streamToHost, 0);
-            if(ret != CUDA_SUCCESS)
-                FATAL("Unable to create CUDA stream %d", ret);
-            ret = cuStreamCreate(&streamDevice, 0);
-            if(ret != CUDA_SUCCESS)
-                FATAL("Unable to create CUDA stream %d", ret);
-        }
+    /*! Auxiliary functions used during Context creation
+     */
+	void setup();
+    void setupStreams();
 
-        if (gpu.async()) {
-            TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
-            assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
-            _bufferPageLockedSize = paramBufferPageLockedSize;
-        } else {
-            _bufferPageLocked     = NULL;
-            _bufferPageLockedSize = 0;
-        }
-    }
-	inline void setup() {
-		mutex = new util::Lock(paraver::ctxLocal);
-		CUcontext tmp;
-		assert(cuDeviceComputeCapability(&major, &minor, gpu.device()) ==
-			CUDA_SUCCESS);
-		unsigned int flags = 0;
-		if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
-		CUresult ret = cuCtxCreate(&ctx, flags, gpu.device());
-		if(ret != CUDA_SUCCESS)
-			FATAL("Unable to create CUDA context %d", ret);
-		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
-
-        enable();
-	}
-
-	Context(GPU &gpu) :
-		gmac::Context(gpu), gpu(gpu), _sp(0)
-#ifdef USE_VM
-		, pageTable(NULL)
-#endif
-	{
-		setup();
-
-        lock();
-        setupStreams();
-        unlock();
-
-		TRACE("New GPU context [%p]", this);
-	}
-
+	Context(GPU &gpu);
 	Context(const Context &root, GPU &gpu);
 
-	~Context() {
-		TRACE("Remove GPU context [%p]", this);
-		delete mutex;
-        if (gpu.async()) {
-            cuStreamDestroy(streamLaunch);
-            cuStreamDestroy(streamToDevice);
-            cuStreamDestroy(streamToHost);
-            cuStreamDestroy(streamDevice);
-        }
-		cuCtxDestroy(ctx); 
-	}
-
+	~Context();
 public:
 
 	inline static Context *current() {
@@ -245,87 +179,9 @@ public:
 	gmacError_t hostMap(void *host, void **device, size_t size);
 	gmacError_t hostFree(void *addr);
 
-	inline gmacError_t copyToDevice(void *dev, const void *host, size_t size) {
-		enterFunction(accHostDeviceCopy);
-        gmac::Context *ctx = gmac::Context::current();
-
-        CUresult ret;
-        if (gpu.async()) {
-            size_t bufferSize = ctx->bufferPageLockedSize();
-            void * tmp        = ctx->bufferPageLocked();
-
-            size_t left = size;
-            off_t  off  = 0;
-            while (left != 0) {
-                size_t bytes = left < bufferSize? left: bufferSize;
-                memcpy(tmp, ((char *) host) + off, bytes);
-                lock();
-                ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
-                if (ret != CUDA_SUCCESS) { unlock(); goto done; }
-                ret = cuStreamSynchronize(streamToDevice);
-                unlock();
-                if (ret != CUDA_SUCCESS) goto done;
-
-                left -= bytes;
-                off  += bytes;
-            }           
-        } else {
-            lock();
-            ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
-            unlock();
-        }
-
-done:
-		exitFunction();
-		return error(ret);
-	}
-
-	inline gmacError_t copyToHost(void *host, const void *dev, size_t size) {
-        enterFunction(accDeviceHostCopy);
-        gmac::Context *ctx = gmac::Context::current();
-
-        CUresult ret;
-        if (gpu.async()) {
-            size_t bufferSize = ctx->bufferPageLockedSize();
-            void * tmp        = ctx->bufferPageLocked();
-
-            size_t left = size;
-            off_t  off  = 0;
-            while (left != 0) {
-                size_t bytes = left < bufferSize? left: bufferSize;
-                lock();
-                ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
-                if (ret != CUDA_SUCCESS) { unlock(); goto done; }
-                ret = cuStreamSynchronize(streamToHost);
-                unlock();
-                if (ret != CUDA_SUCCESS) goto done;
-                memcpy(((char *) host) + off, tmp, bytes);
-
-                left -= bytes;
-                off  += bytes;
-            }           
-        } else {
-            lock();
-            ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
-            unlock();
-        }
-
-done:
-        exitFunction();
-		return error(ret);
-	}
-
-	inline gmacError_t copyDevice(void *dst, const void *src, size_t size) {
-		enterFunction(accDeviceDeviceCopy);
-		lock();
-		
-        CUresult ret;
-        ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
-
-		unlock();
-		exitFunction();
-		return error(ret);
-	}
+	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
 	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
 			size_t size) {
@@ -417,40 +273,11 @@ done:
         return error(ret);
     }
 	// CUDA-related methods
-	inline Module *load(void *fatBin) {
-		lock();
-		Module *module = new Module(fatBin);
-		modules.insert(ModuleMap::value_type(module, fatBin));
-		unlock();
-		return module;
-	}
+	Module *load(void *fatBin);
+	void unload(Module *mod);
 
-	inline void unload(Module *mod) {
-		ModuleMap::iterator m = modules.find(mod);
-		assert(m != modules.end());
-		lock();
-		delete m->first;
-		modules.erase(m);
-		unlock();
-	}
-
-	inline const Function *function(const char *name) const {
-		ModuleMap::const_iterator m;	
-		for(m = modules.begin(); m != modules.end(); m++) {
-			const Function *func = m->first->function(name);
-			if(func != NULL) return func;
-		}
-		return NULL;
-	}
-
-	inline const Variable *constant(const char *name) const {
-		ModuleMap::const_iterator m;
-		for(m = modules.begin(); m != modules.end(); m++) {
-			const Variable *var = m->first->constant(name);
-			if(var != NULL) return var;
-		}
-		return NULL;
-	}
+	const Function *function(const char *name) const;
+	const Variable *constant(const char *name) const;
 
 	inline void call(dim3 Dg, dim3 Db, size_t shared, int tokens) {
 		Call c(Dg, Db, shared, tokens, _sp);

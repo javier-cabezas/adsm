@@ -10,7 +10,18 @@ gmac::Process *proc = NULL;
 
 namespace gmac {
 
+SharedMemory::SharedMemory(void *_addr, size_t _size, size_t _count) :
+    _addr(_addr),
+    _size(_size),
+    _count(_count)
+{}
+
 size_t Process::_totalMemory = 0;
+
+
+Process::Process() :
+    mutex(paraver::process), current(0)
+{}
 
 Process::~Process()
 {
@@ -29,6 +40,17 @@ Process::~Process()
 	_accs.clear();
 	mutex.unlock();
 	memoryFini();
+}
+
+void
+Process::init(const char *name)
+{
+    // Process is a singleton class. The only allowed instance is proc
+    if(proc != NULL) return;
+    contextInit();
+    proc = new Process();
+    apiInit();
+    memoryInit(name);
 }
 
 void Process::create()

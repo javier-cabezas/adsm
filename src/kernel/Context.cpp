@@ -34,7 +34,19 @@ Context::Context(Accelerator &acc) : acc(acc)
 	_id = ++_next;
 }
 
-void Context::init()
+Context *
+Context::create(int acc)
+{
+    lockCreate.lock();
+    pushState(Init);
+    proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)), acc);
+    popState();
+    lockCreate.unlock();
+    return static_cast<Context *>(PRIVATE_GET(key));
+}
+
+void
+Context::init()
 {
 	TRACE("Initializing cloned context");
 	Process::SharedMap::iterator i;
@@ -52,5 +64,14 @@ void Context::init()
 		manager->remap(this, i->second.start(), devPtr, i->second.size());
 		i->second.inc();
 	}
+}
+
+void
+Context::destroy()
+{
+    // Set the current context before each Context destruction (since it is sequential)
+    PRIVATE_SET(key, this);
+    acc.destroy(this);
+    PRIVATE_SET(key, NULL);
 }
 }

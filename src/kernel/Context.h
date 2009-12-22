@@ -108,14 +108,7 @@ protected:
 
 
 public:
-    static Context *create(int acc = -1) {
-        lockCreate.lock();
-        pushState(Init);
-        proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)), acc);
-        popState();
-        lockCreate.unlock();
-        return static_cast<Context *>(PRIVATE_GET(key));
-    }
+    static Context *create(int acc = -1);
 
     /*! Gets the Context associated to the calling thread.
      *
@@ -124,9 +117,7 @@ public:
 	static Context *current() {
         Context *ctx;
         ctx = static_cast<Context *>(PRIVATE_GET(key));
-        if (ctx == NULL) {
-            ctx = Context::create(acc);
-        }
+        if (ctx == NULL) ctx = Context::create();
 		return ctx;
 	}
 
@@ -148,12 +139,7 @@ public:
 
 	void init();
 
-	void destroy() {
-        // Set the current context before each Context destruction (since it is sequential)
-		PRIVATE_SET(key, this);
-		acc.destroy(this);
-		PRIVATE_SET(key, NULL);
-	}
+	void destroy();
 	
 	/*!
 		\brief Locks the context
