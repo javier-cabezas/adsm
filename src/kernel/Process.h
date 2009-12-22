@@ -65,16 +65,12 @@ protected:
 	size_t _size;
 	size_t _count;
 public:
-	SharedMemory(void *_addr, size_t _size, size_t _count = 1) :
-		_addr(_addr),
-		_size(_size),
-		_count(_count)
-	{};
+	SharedMemory(void *_addr, size_t _size, size_t _count = 1);
 
-	inline void *start() { return _addr; }
-	inline size_t size() { return _size; }
+	inline void *start() const { return _addr; }
+	inline size_t size() const { return _size; }
 
-	inline void inc() { _count++; }
+	inline void inc()   { _count++; }
 	inline size_t dec() { return --_count; }
 };
 
@@ -96,19 +92,12 @@ protected:
 
 	static size_t _totalMemory;
 
-	Process() : mutex(paraver::process), current(0) {};
+	Process();
 
 public:
 	virtual ~Process();
 
-	static void init(const char *name) {
-        // Process is a singleton class. The only allowed instance is proc
-		if(proc != NULL) return;
-		contextInit();
-		proc = new Process();
-		apiInit();
-		memoryInit(name);
-	}
+	static void init(const char *name);
 
 	void create();
 	void clone(Context *ctx, int acc = -1);
@@ -125,7 +114,7 @@ public:
 
 	void sendReceive(THREAD_ID id);
 
-	inline SharedMap &sharedMem() { return _sharedMem; };
+	inline SharedMap &sharedMem() { return _sharedMem; }
 	inline void addShared(void *addr, size_t size) {
 		std::pair<SharedMap::iterator, bool> ret =
 			 _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));

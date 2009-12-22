@@ -40,7 +40,11 @@ WITH THE SOFTWARE.  */
 extern "C" {
 #endif
 
+#ifdef __cplusplus
+enum gmacError_t {
+#else
 typedef enum {
+#endif
 	gmacSuccess = 0,
 	gmacErrorMemoryAllocation,
 	gmacErrorLaunchFailure,
@@ -51,7 +55,11 @@ typedef enum {
 	gmacErrorInvalidDeviceFunction,
 	gmacErrorApiFailureBase,
 	gmacErrorUnknown
+#ifdef __cplusplus
+};
+#else
 } gmacError_t;
+#endif
 
 static const char *error[] = {
 	"No error",

@@ -35,20 +35,20 @@ WITH THE SOFTWARE.  */
 #define __CONFIG_PARAVER_H
 
 namespace paraver {
-typedef enum {
+enum FunctionName {
 	accMalloc = 1, accFree,
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
 	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
 	vmAlloc, vmFree, vmFlush, vmSync,
-} FunctionName;
+};
 
-typedef enum {
+enum LockName {
 	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, ctxCreate,
 	queueLock,
 	ioHostLock, ioDeviceLock,
 	process, writeMutex, rollingBuffer, manager
-} LockName;
+};
 };
 
 #ifdef PARAVER

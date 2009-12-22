@@ -61,7 +61,7 @@ protected:
 	util::Semaphore sem;
 
 public:
-	Queue() : mutex(paraver::queueLock), sem(0) { };
+	Queue();
 
 	inline void push(Context *ctx) {
 		mutex.lock();
