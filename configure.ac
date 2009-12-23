@@ -209,5 +209,6 @@ AC_OUTPUT(
 	src/api/cuda/Makefile
 	src/api/cudadrv/Makefile
 	src/os/Makefile
+	src/util/Makefile
 	tests/Makefile
 )
