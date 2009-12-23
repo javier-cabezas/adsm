@@ -12,7 +12,7 @@ libmemory_la_SOURCES = memory.cpp\
 			Handler.h Handler.cpp\
 			BatchManager.h BatchManager.cpp\
 			LazyManager.h LazyManager.cpp\
-			ProtRegion.h\
+			ProtRegion.h ProtRegion.cpp\
 			RollingManager.h RollingManager.cpp\
 			RollingRegion.h RollingRegion.cpp
 libmemory_la_LIBADD = $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm

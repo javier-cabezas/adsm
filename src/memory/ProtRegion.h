@@ -49,31 +49,20 @@ protected:
 	bool _present;
 
 public:
-	ProtRegion(void *addr, size_t size) :
-		Region(addr, size), _dirty(false), _present(true) {};
-	virtual ~ProtRegion() {};
+	ProtRegion(void *addr, size_t size);
+	virtual ~ProtRegion();
 
-	inline virtual void relate(Context *ctx) {
-		_relatives.push_back(ctx);
-	}
+	virtual void relate(Context *ctx);
+	virtual void invalidate();
+	virtual void readOnly();
+	virtual void readWrite();
 
-	inline virtual void invalidate(void) {
-		_present = _dirty = false;
-		assert(Memory::protect(__void(_addr), _size, PROT_NONE) == 0);
-	}
-	inline virtual void readOnly(void) {
-		_present = true;
-		_dirty = false;
-		assert(Memory::protect(__void(_addr), _size, PROT_READ) == 0);
-	}
-	inline virtual void readWrite(void) {
-		_present = _dirty = true;
-		assert(Memory::protect(__void(_addr), _size, PROT_READ | PROT_WRITE) == 0);
-	}
-
-	inline virtual bool dirty() const { return _dirty; }
-	inline virtual bool present() const { return _present; }
+	virtual bool dirty() const;
+	virtual bool present() const;
 };
-} };
+
+#include "ProtRegion.ipp"
+
+}}
 
 #endif

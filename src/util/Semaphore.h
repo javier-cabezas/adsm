@@ -48,23 +48,14 @@ class Semaphore {
 protected:
 	SEM(__sem);
 public:
-	Semaphore(unsigned v) {
-		SEM_INIT(__sem, v);
-	}
+	Semaphore(unsigned v);
+	~Semaphore();
 
-	~Semaphore() {
-		SEM_DESTROY(__sem);
-	}
-
-	inline void post() {
-		SEM_POST(__sem);
-	}
-
-	inline void wait() {
-		SEM_WAIT(__sem);
-	}
+	void post();
+	void wait();
 };
 
+#include "Semaphore.ipp"
 
-} };
+}}
 #endif

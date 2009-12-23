@@ -9,6 +9,7 @@ libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/l
 		../kernel/libkernel.la\
 		../memory/libmemory.la\
 		../config/libconfig.la\
+		../util/libutil.la\
 		../api/$(API_DIR)/libapi.la\
 		$(PARAVER_LIB)
 
