@@ -2,6 +2,7 @@
 #define __PARAMS_IPP_
 
 #include <cstdio>
+#include <stdint.h>
 
 template <typename T>
 static

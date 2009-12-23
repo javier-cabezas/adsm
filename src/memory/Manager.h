@@ -61,29 +61,18 @@ protected:
 	static const size_t mmSize = 0x100000000;
 #endif
 
-	inline void insert(Region *r) {
-		gmac::Context::current()->mm().insert(r);
-	}
+	void insert(Region *r);
 
 	Region *remove(void *addr);
 
-	inline memory::Map *current() {
-		if(gmac::Context::current() == NULL) return NULL;
-		return &gmac::Context::current()->mm();
-	}
+	memory::Map *current();
 
 	void insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count);
 	void removeVirtual(Context *ctx, void *cpuPtr, size_t count);
-	inline void insertVirtual(void *cpuPtr, void *devPtr, size_t count) {
-		insertVirtual(gmac::Context::current(), cpuPtr, devPtr, count);
-	}
-	inline void removeVirtual(void *cpuPtr, size_t count) {
-		removeVirtual(gmac::Context::current(), cpuPtr, count);
-	}
+	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
+    void removeVirtual(void *cpuPtr, size_t count);
 
-	inline const memory::PageTable &pageTable() const {
-		return gmac::Context::current()->mm().pageTable();
-	}
+	const memory::PageTable &pageTable() const;
 
 	//! This gets memory from the CPU address space
 	//! \param addr accelerator address
@@ -97,13 +86,9 @@ protected:
 	void hostUnmap(void *addr, size_t count);
 
 public:
-	Manager() {
-		TRACE("Memory manager starts");
-	}
+	Manager();
 	//! Virtual Destructor. It does nothing
-	virtual ~Manager() {
-		TRACE("Memory manager finishes");
-	}
+	virtual ~Manager();
 	
 	//! This method is called whenever the user
 	//! requests memory to be used by the accelerator
@@ -135,21 +120,10 @@ public:
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
 	//! \param addr Memory address at the CPU
-	static inline const void *ptr(Context *ctx, const void *addr) {
-		memory::PageTable &pageTable = ctx->mm().pageTable();
-		const void *ret = (const void *)pageTable.translate(addr);
-		if(ret == NULL) ret = proc->translate(addr);
-		return ret;
-	}
-	static inline const void *ptr(const void *addr) { return ptr(gmac::Context::current(), addr); }
-
-	static inline void *ptr(Context *ctx, void *addr) {
-		memory::PageTable &pageTable = ctx->mm().pageTable();
-		void *ret = (void *)pageTable.translate(addr);
-		if(ret == NULL) ret = proc->translate(addr);
-		return ret;
-	}
-	static inline void *ptr(void *addr) { return ptr(gmac::Context::current(), addr); }
+	static const void *ptr(Context *ctx, const void *addr);
+	static const void *ptr(const void *addr);
+	static void *ptr(Context *ctx, void *addr);
+	static void *ptr(void *addr);
 
 	void remap(Context *, void *, void *, size_t);
 	void unmap(Context *, void *);
@@ -164,6 +138,8 @@ public:
 //! Gets a Memory Manager based on a string name
 //! \param managerName Name of the memory manager
 Manager *getManager(const char *managerName);
+
+#include "Manager.ipp"
 
 } };
 #endif

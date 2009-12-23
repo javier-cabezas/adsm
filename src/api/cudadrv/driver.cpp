@@ -4,6 +4,7 @@
 #include <gmac/init.h>
 
 #include "Context.h"
+#include "Module.h"
 
 #include <cstring>
 #include <cassert>

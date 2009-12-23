@@ -82,10 +82,7 @@ protected:
 
 	T **table;
 
-	T *entry(size_t n) const {
-		assert(n < nEntries);
-		return (T *)((addr_t)table[n] & Mask);
-	}
+	T *entry(size_t n) const;
 
 #ifdef USE_VM
 	bool __shared;
@@ -94,125 +91,33 @@ protected:
 #endif
 
 public:
-	Table(size_t nEntries = defaultSize) :
-		nEntries(nEntries)
-#ifdef USE_VM
-		, __shared(true)
-#endif
-	{
-		TRACE("Creating Table with %d entries (%p)", nEntries, this);
+	Table(size_t nEntries = defaultSize);
+	virtual ~Table();
 
-		assert(posix_memalign((void **)&table, 0x1000,
-			nEntries * sizeof(T *)) == 0);
-		memset(table, 0, nEntries * sizeof(T *));
-#ifdef USE_VM
-#ifdef USE_VM_DEVICE
-		assert(posix_memalign((void **)&__shadow, 0x1000,
-			nEntries * sizeof(T *)) == 0);
-		__device = Dumper::alloc(nEntries * sizeof(T *));
-#else
-		__device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
-#endif
-		if(__shadow != NULL) memset(__shadow, 0, nEntries * sizeof(T *));
-#endif
-	}
-
-	virtual ~Table()
-	{
-		TRACE("Cleaning Table with %d entries (%p)", nEntries, this);
-		free(table);
-#ifdef USE_VM
-		enterFunction(vmFree);
-#ifdef USE_VM_DEVICE
-		free(__shadow);
-		if(__device != NULL) Dumper::free(__device);
-#else
-		if(__shadow != NULL) Dumper::hostFree(__shadow);
-#endif
-		exitFunction();
-#endif
-	}
-
-	inline bool present(size_t n) const {
-		assert(n < nEntries);
-		return (addr_t)table[n] & Present;
-	}
-
-	inline bool dirty(size_t n) const {
-		assert(n < nEntries);
-		return (addr_t)table[n] & Dirty;
-	}
-
-	inline void clean(size_t n) {
-		assert(n < nEntries);
-		table[n] = (addr_t *)((addr_t)table[n] & ~Dirty);
-	}
+	bool present(size_t n) const;
+	bool dirty(size_t n) const;
+	void clean(size_t n);
 
 #ifdef USE_VM
-	void *device() { return __device; }
+	void *device();
 #endif
 
-	void create(size_t n, size_t size = defaultSize) {
-		enterFunction(vmAlloc);
-		assert(n < nEntries);
-		table[n] = (T *)((addr_t)new T(size) | Present);
-#ifdef USE_VM
-		__shared = false;
-		__shadow[n] = (T *)((addr_t)entry(n)->device() | Present);
-#endif
-		exitFunction();
-	}
-	void insert(size_t n, void *addr) {
-		assert(n < nEntries);
-		table[n] = (T *)((addr_t)addr | Present);
-#ifdef USE_VM
-		__shadow[n] = (T *)((addr_t)addr | Present);
-#endif
-	}
-	void remove(size_t n) {
-		assert(n < nEntries);
-		table[n] = (T *)0;
-#ifdef USE_VM
-		__shadow[n] = (T *)0;
-#endif
+	void create(size_t n, size_t size = defaultSize);
+	void insert(size_t n, void *addr);
+	void remove(size_t n);
 
-	}
-	inline T &get(size_t n) const { return *entry(n); }
-	inline T *value(size_t n) const { return entry(n); }
+	T &get(size_t n) const;
+	T *value(size_t n) const;
 
-	inline size_t size() const { return nEntries; }
+	size_t size() const;
 
-	inline void realloc() {
-#ifdef USE_VM
-#ifdef USE_VM_DEVICE
-		if(__device != NULL) Dumper::free(__device);
-		__device = Dumper::alloc(nEntries * sizeof(T *));
-#else
-		if(__device != NULL) Dumper::hostFree(__shadow);
-		__device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
-		memset(__shadow, 0, nEntries * sizeof(T *));
-#endif
-		assert(__device != NULL);
-#endif
-	}
+	void realloc();
 
-	inline void flush() const {
-#ifdef USE_VM
-		assert(__device != NULL);
-		Dumper::flush(__device, __shadow, nEntries * sizeof(T *));
-#endif
-	}
-
-	inline void sync() {
-#ifdef USE_VM
-		assert(__device != NULL);
-		if(__shared == false) return;
-		Dumper::sync(table, __device, nEntries * sizeof(T *));
-#endif
-	}
+	void flush() const;
+	void sync() const;
 };
 
-
+#include "VM.ipp"
 
 }}};
 

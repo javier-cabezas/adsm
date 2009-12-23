@@ -63,26 +63,13 @@ protected:
 public:
 	Queue();
 
-	inline void push(Context *ctx) {
-		mutex.lock();
-		_queue.push_back(ctx);
-		mutex.unlock();
-		sem.post();
-	}
-
-	inline Context *pop() {
-		sem.wait();
-		mutex.lock();
-		assert(_queue.empty() == false);
-		Context *ret = _queue.front();
-		_queue.pop_front();
-		mutex.unlock();
-		return ret;
-	}
-
+	void push(Context *ctx);
+	Context *pop();
 };
 
-} };
+#include "Queue.ipp"
+
+}}
 
 
 #endif

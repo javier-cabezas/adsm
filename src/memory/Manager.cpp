@@ -23,6 +23,16 @@ Manager *getManager(const char *managerName)
 	return new RollingManager();
 }
 
+Manager::Manager()
+{
+    TRACE("Memory manager starts");
+}
+
+Manager::~Manager()
+{
+    TRACE("Memory manager finishes");
+}
+
 Region *Manager::remove(void *addr)
 {
 	Region *ret = gmac::Context::current()->mm().remove(addr);

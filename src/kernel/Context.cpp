@@ -34,6 +34,10 @@ Context::Context(Accelerator &acc) : acc(acc)
 	_id = ++_next;
 }
 
+Context::~Context()
+{
+}
+
 Context *
 Context::create(int acc)
 {
@@ -43,6 +47,13 @@ Context::create(int acc)
     popState();
     lockCreate.unlock();
     return static_cast<Context *>(PRIVATE_GET(key));
+}
+
+void
+Context::initThread(Context *parent)
+{
+    PRIVATE_SET(key, NULL);
+    PRIVATE_SET(keyParent, parent);
 }
 
 void

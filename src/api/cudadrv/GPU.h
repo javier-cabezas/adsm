@@ -58,16 +58,18 @@ protected:
 
 public:
 	GPU(int n, CUdevice device);
-	~GPU() {};
-	CUdevice device() const { return _device; }
+	~GPU();
+	CUdevice device() const;
 
 	Context *create();
 	Context *clone(const gmac::Context &);
 	void destroy(Context *);
 
-	size_t memory() const { return _memory; }
-    bool   async()  const { return _async;  }
+	size_t memory() const;
+    bool async() const;
 };
+
+#include "GPU.ipp"
 
 }
 

@@ -67,11 +67,11 @@ protected:
 public:
 	SharedMemory(void *_addr, size_t _size, size_t _count = 1);
 
-	inline void *start() const { return _addr; }
-	inline size_t size() const { return _size; }
+	void *start() const;
+	size_t size() const;
 
-	inline void inc()   { _count++; }
-	inline size_t dec() { return --_count; }
+	void inc();
+	size_t dec();
 };
 
 class Process {
@@ -103,39 +103,24 @@ public:
 	void clone(Context *ctx, int acc = -1);
 	void remove(Context *ctx);
 	gmacError_t migrate(int acc);
-	const ContextList &contexts() const { return _contexts; }
+	const ContextList &contexts() const;
 
 	void accelerator(Accelerator *acc);
 
 	void *translate(void *);
-	inline const void *translate(const void *addr) {
-		return (const void *)translate((void *)addr);
-	}
-
+	const void *translate(const void *addr);
 	void sendReceive(THREAD_ID id);
 
-	inline SharedMap &sharedMem() { return _sharedMem; }
-	inline void addShared(void *addr, size_t size) {
-		std::pair<SharedMap::iterator, bool> ret =
-			 _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));
-		if(ret.second == false) ret.first->second.inc();
-	
-	}
-	inline bool removeShared(void *addr) {
-		SharedMap::iterator i;
-		i = _sharedMem.find(addr);
-		assert(i != _sharedMem.end());
-		if(i->second.dec() == 0) {
-			_sharedMem.erase(i);
-			return true;
-		}
-		return false;
-	}
-	inline bool isShared(void *addr) const { return _sharedMem.find(addr) != _sharedMem.end(); }
+	SharedMap &sharedMem();
+	void addShared(void *addr, size_t size);
+	bool removeShared(void *addr);
+	bool isShared(void *addr) const;
 
-	static size_t totalMemory() { return _totalMemory; }
-	size_t accs() const { return _accs.size(); }
+	static size_t totalMemory();
+	size_t accs() const;
 };
+
+#include "Process.ipp"
 
 }
 
