@@ -51,40 +51,17 @@ private:
 	size_t _max;
 
 public:
-	RollingBuffer() : lock(paraver::rollingBuffer), _max(0) { }
+	RollingBuffer();
 
-	inline bool overflows() const { return buffer.size() >= _max; }
-	inline size_t inc(size_t n) { _max += n; }
-	inline size_t dec(size_t n) { _max -= n; }
-	inline bool empty() const { return buffer.empty(); }
+	bool overflows() const;
+	size_t inc(size_t n);
+	size_t dec(size_t n);
+	bool empty() const;
 
-	inline void push(ProtSubRegion *region) {
-		lock.write();
-		buffer.push_back(region);
-		lock.unlock();
-	}
-
-	inline ProtSubRegion *pop() {
-		lock.write();
-		assert(buffer.empty() == false);
-		ProtSubRegion *ret = buffer.front();
-		buffer.pop_front();
-		lock.unlock();
-		return ret;
-	}
-
-	inline ProtSubRegion *front() {
-		lock.read();
-		ProtSubRegion *ret = buffer.front();
-		lock.unlock();
-		return ret;
-	}
-
-	inline void remove(ProtSubRegion *region) {
-		lock.write();
-		buffer.remove(region);
-		lock.unlock();
-	}
+	void push(ProtSubRegion *region);
+	ProtSubRegion *pop();
+	ProtSubRegion *front();
+	void remove(ProtSubRegion *region);
 };
 
 class RollingManager : public Handler {
@@ -94,11 +71,7 @@ protected:
 
 	std::map<Context *, RollingBuffer *> regionRolling;
 
-	inline RollingRegion *get(const void *addr) {
-		RollingRegion *reg = NULL;
-		if(current()) reg = current()->find<RollingRegion>(addr);
-		return reg;
-	}
+	RollingRegion *get(const void *addr);
 
 	util::Lock writeMutex;
 	void *writeBuffer;
@@ -116,13 +89,8 @@ protected:
 
 	// Methods used by ProtSubRegion to request flushing and invalidating
 	friend class RollingRegion;
-	void invalidate(ProtSubRegion *region) {
-		regionRolling[Context::current()]->remove(region);
-	}
-	void flush(ProtSubRegion *region) {
-		regionRolling[Context::current()]->remove(region);
-		assert(region->copyToDevice() == gmacSuccess);
-	}
+	void invalidate(ProtSubRegion *region);
+	void flush(ProtSubRegion *region);
 
 public:
 	RollingManager();
@@ -137,6 +105,8 @@ public:
 	void flush(const void *addr, size_t size);
 };
 
-} };
+#include "RollingManager.ipp"
+
+}}
 
 #endif

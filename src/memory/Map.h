@@ -55,24 +55,8 @@ protected:
 	static unsigned count;
 	static gmac::util::RWLock global;
 
-	Region *localFind(const void *addr) {
-		__Map::const_iterator i;
-		Region *ret = NULL;
-		i = __map.upper_bound(addr);
-		if(i != __map.end() && i->second->start() <= addr) {
-			ret = i->second;
-		}
-		return ret;
-	}
-
-	Region *globalFind(const void *addr) {
-		__Map::const_iterator i;
-		Region *ret = NULL;
-		i = __global->upper_bound(addr);
-		if(i != __global->end() && i->second->start() <= addr)
-			ret = i->second;
-		return ret;
-	}
+	Region *localFind(const void *addr);
+	Region *globalFind(const void *addr);
 
 	void clean();
 
@@ -82,65 +66,31 @@ public:
 	typedef __Map::iterator iterator;
 	typedef __Map::const_iterator const_iterator;
 
-	Map() : local(paraver::mmLocal) {
-		global.write();
-		if(__global == NULL) __global = new __Map();
-		count++;
-		global.unlock();
-	}
+	Map();
+	virtual ~Map();
 
-	virtual ~Map() {
-		TRACE("Cleaning Memory Map");
-		clean();
-		global.write();
-		count--;
-		if(count == 0) {
-			delete __global;
-			__global = NULL;
-		}
-		global.unlock();
-	}
+	static void init();
 
-	static void init() { }
+	void realloc();
 
-	inline void realloc() { __pageTable.realloc(); }
+	void lock();
+	void unlock();
 
-	inline void lock() { local.read(); }
-	inline void unlock() { local.unlock(); }
+	iterator begin();
+	iterator end();
 
-	inline iterator begin() { return __map.begin(); }
-	inline iterator end() { return __map.end(); }
-
-
-	inline void insert(Region *i) {
-		local.write();
-		__map.insert(__Map::value_type(i->end(), i));
-		local.unlock();
-
-		global.write();
-		__global->insert(__Map::value_type(i->end(), i));
-		global.unlock();
-	}
+	void insert(Region *i);
 
 	Region *remove(void *addr);
 
-	inline PageTable &pageTable() { return __pageTable; }
-	inline const PageTable &pageTable() const { return __pageTable; }
+	PageTable &pageTable();
+	const PageTable &pageTable() const;
 
 	template<typename T>
-	inline T *find(const void *addr) {
-		Region *ret = NULL;
-		local.read();
-		ret = localFind(addr);
-		if(ret == NULL) {
-			global.read();
-			ret = globalFind(addr);
-			global.unlock();
-		}
-		local.unlock();
-		return dynamic_cast<T *>(ret);
-	}
+	T *find(const void *addr);
 };
+
+#include "Map.ipp"
 
 }}
 

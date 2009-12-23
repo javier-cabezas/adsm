@@ -48,18 +48,17 @@ class BatchManager : public Manager {
 public:
 	BatchManager() : Manager() { }
 
-	inline void *alloc(void *addr, size_t count) {
-		void *cpuAddr = hostMap(addr, count);
-		insert(new Region(cpuAddr, count));
-		return cpuAddr;
-	}
-	void release(void *addr);
+	void *alloc(void *addr, size_t count);
+    void release(void *addr);
 	void flush();
 	void sync();
 
-	Context *owner(const void *) { return NULL; }
-	void invalidate(const void *, size_t) { assert(0); }
-	void flush(const void *, size_t) { assert(0); }
+	Context *owner(const void *);
+	void invalidate(const void *, size_t);
+	void flush(const void *, size_t);
 };
-} };
+
+#include "BatchManager.ipp"
+
+}}
 #endif

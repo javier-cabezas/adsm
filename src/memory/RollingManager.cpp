@@ -12,6 +12,11 @@
 
 namespace gmac { namespace memory {
 
+RollingBuffer::RollingBuffer() :
+    lock(paraver::rollingBuffer),
+    _max(0)
+{}
+
 void RollingManager::waitForWrite(void *addr, size_t size)
 {
 	writeMutex.lock();

@@ -7,6 +7,8 @@
 
 namespace gmac { namespace memory {
 
+
+
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
 	Region(addr, size),
@@ -127,5 +129,29 @@ void RollingRegion::flush(const void *addr, size_t size)
 	}
 }
 
+ProtSubRegion::ProtSubRegion(RollingRegion *parent, void *addr, size_t size) :
+		ProtRegion(addr, size),
+		parent(parent)
+{ }
+
+
+ProtSubRegion::~ProtSubRegion()
+{
+    TRACE("SubRegion %p released", _addr);
+}
+
+void
+ProtSubRegion::readOnly()
+{
+    if(present() == false) parent->push(this);
+    ProtRegion::readOnly();
+}
+
+void
+ProtSubRegion::readWrite()
+{
+    if(present() == false) parent->push(this);
+    ProtRegion::readWrite();
+}
 
 } };

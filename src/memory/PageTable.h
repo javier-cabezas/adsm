@@ -75,16 +75,8 @@ private:
 	typedef vm::Table<Table> Directory;
 	vm::Table<Directory> rootTable;
 
-	inline int entry(const void *addr, unsigned long shift,
-			size_t size) const {
-		unsigned long n = (unsigned long)(addr);
-		return (n >> shift) & (size - 1);
-	}
-
-	inline int offset(const void *addr) const {
-		unsigned long n = (unsigned long)(addr);
-		return n & (paramPageSize - 1);
-	}
+	int entry(const void *addr, unsigned long shift, size_t size) const;
+	int offset(const void *addr) const;
 
 	void update();
 
@@ -98,24 +90,24 @@ public:
 	PageTable();
 	virtual ~PageTable();
 
-	inline void realloc() { rootTable.realloc(); }
+	void realloc();
 
 	void insert(void *host, void *dev);
 	void remove(void *host);
-	const void *translate(const void *host) {
-		return translate((void *)host);
-	}
+	const void *translate(const void *host);
 	void *translate(void *host);
 
-	size_t getPageSize() const { return paramPageSize; }
-	size_t getTableShift() const { return tableShift; }
-	size_t getTableSize() const { return (1 << dirShift) / paramPageSize; }
+	size_t getPageSize() const;
+	size_t getTableShift() const;
+	size_t getTableSize() const;
 
 	void *flush();
-	void invalidate() { _valid = false; }
+	void invalidate();
 	bool dirty(void *);
 	void clear(void *);
 };
 
-}};
+#include "PageTable.ipp"
+
+}}
 #endif

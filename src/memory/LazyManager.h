@@ -49,13 +49,9 @@ protected:
 	bool read(void *addr);
 	bool write(void *addr);
 
-	inline ProtRegion *get(const void *addr) {
-		ProtRegion *reg = NULL;
-		if(current()) current()->find<ProtRegion>(addr);
-		return reg;
-	}
+	ProtRegion *get(const void *addr);
 public:
-	LazyManager() { }
+	LazyManager();
 	void *alloc(void *addr, size_t count);
 	void release(void *addr);
 	void flush(void);
@@ -66,6 +62,8 @@ public:
 	void flush(const void *, size_t);
 };
 
-} };
+#include "LazyManager.ipp"
+
+}}
 
 #endif

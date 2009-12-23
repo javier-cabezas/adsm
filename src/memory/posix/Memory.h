@@ -40,9 +40,10 @@ namespace gmac { namespace memory {
 
 class Memory {
 public:
-	static inline int protect(void *addr, size_t count, int prot) {
-		return mprotect(addr, count, prot);
-	}
+	static int protect(void *addr, size_t count, int prot);
 };
-} };
+
+#include "Memory.ipp"
+
+}}
 #endif
