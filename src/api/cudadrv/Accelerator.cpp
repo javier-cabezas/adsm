@@ -1,4 +1,4 @@
-#include "GPU.h"
+#include "Accelerator.h"
 #include "Context.h"
 
 #include <kernel/Process.h>
@@ -7,8 +7,9 @@
 
 
 namespace gmac {
+namespace gpu {
 
-GPU::GPU(int n, CUdevice device) :
+Accelerator::Accelerator(int n, CUdevice device) :
 	id(n), _device(device)
 {
     unsigned int size = 0;
@@ -19,27 +20,27 @@ GPU::GPU(int n, CUdevice device) :
     _async = bool(async);
 }
 
-GPU::~GPU()
+Accelerator::~Accelerator()
 {}
 
-Context *GPU::create()
+gmac::Context *Accelerator::create()
 {
-	TRACE("Attaching context to GPU");
+	TRACE("Attaching context to Accelerator");
 	gpu::Context *ctx = new gpu::Context(*this);
 	queue.insert(ctx);
 	return ctx;
 }
 
-Context *GPU::clone(const gmac::Context &root)
+gmac::Context *Accelerator::clone(const gmac::Context &root)
 {
-	TRACE("GPU %p: new cloned context");
+	TRACE("Accelerator %p: new cloned context");
 	const gpu::Context &_root = dynamic_cast<const gpu::Context &>(root);
 	gpu::Context *ctx = new gpu::Context(_root, *this);
 	queue.insert(ctx);
 	return ctx;
 }
 
-void GPU::destroy(Context *context)
+void Accelerator::destroy(gmac::Context *context)
 {
 	TRACE("Destroying Context");
 	if(context == NULL) return;
@@ -50,4 +51,4 @@ void GPU::destroy(Context *context)
 	queue.erase(c);
 }
 
-};
+}}

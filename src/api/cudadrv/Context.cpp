@@ -62,7 +62,7 @@ Context::setupStreams()
     }
 }
 
-Context::Context(GPU &gpu) :
+Context::Context(Accelerator &gpu) :
     gmac::Context(gpu), gpu(gpu), _sp(0)
 #ifdef USE_VM
     , pageTable(NULL)
@@ -74,10 +74,10 @@ Context::Context(GPU &gpu) :
     setupStreams();
     unlock();
 
-    TRACE("New GPU context [%p]", this);
+    TRACE("New Accelerator context [%p]", this);
 }
 
-Context::Context(const Context &root, GPU &gpu) :
+Context::Context(const Context &root, Accelerator &gpu) :
 	gmac::Context(gpu),
 	gpu(gpu), _sp(0)
 #ifdef USE_VM
@@ -94,12 +94,12 @@ Context::Context(const Context &root, GPU &gpu) :
 	hostMem = root.hostMem;
     setupStreams();
     unlock();
-	TRACE("Cloned GPU context [%p]", this);
+	TRACE("Cloned Accelerator context [%p]", this);
 }
 
 Context::~Context()
 {
-    TRACE("Remove GPU context [%p]", this);
+    TRACE("Remove Accelerator context [%p]", this);
     delete mutex;
     if (gpu.async()) {
         cuStreamDestroy(streamLaunch);

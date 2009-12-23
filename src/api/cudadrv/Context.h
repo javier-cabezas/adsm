@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include <debug.h>
 #include <paraver.h>
 
-#include "GPU.h"
+#include "Accelerator.h"
 #include "Module.h"
 
 #include <util/Lock.h>
@@ -67,7 +67,7 @@ protected:
 	typedef std::vector<Call> CallStack;
 	typedef HASH_MAP<Module *, const void *> ModuleMap;
 
-	GPU &gpu;
+	Accelerator &gpu;
 	ModuleMap modules;
 
 	CallStack _calls;
@@ -111,15 +111,15 @@ protected:
 
 	gmacError_t error(CUresult);
 
-	friend class gmac::GPU;
+	friend class Accelerator;
 
     /*! Auxiliary functions used during Context creation
      */
 	void setup();
     void setupStreams();
 
-	Context(GPU &gpu);
-	Context(const Context &root, GPU &gpu);
+	Context(Accelerator &gpu);
+	Context(const Context &root, Accelerator &gpu);
 
 	~Context();
 public:
