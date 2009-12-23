@@ -63,14 +63,9 @@ public:
 	const char *dev;
 	const char *name;
 
-	Function(CUmodule mod, const char *name) :
-			dev(dev), name(name) {
-		load(mod);
-	}
+	Function(CUmodule mod, const char *name);
 
-	inline void load(CUmodule mod) {
-		assert(cuModuleGetFunction(&fun, mod, name) == CUDA_SUCCESS);
-	} 
+	void load(CUmodule mod);
 };
 
 class Variable {
@@ -79,22 +74,16 @@ public:
 	CUdeviceptr ptr;
 	size_t size;
 
-	Variable(const char *dev, CUdeviceptr ptr, size_t size) :
-		dev(dev), ptr(ptr), size(size) {};
+	Variable(const char *dev, CUdeviceptr ptr, size_t size);
 };
 
 class Texture {
 public:
 	const char *name;
 	struct __textureReference *ref;
-	Texture(CUmodule mod, struct __textureReference *ref,
-			const char *name) : name(name), ref(ref) {
-		load(mod);
-	}
+	Texture(CUmodule mod, struct __textureReference *ref, const char *name);
 
-	inline void load(CUmodule mod) {
-		assert(cuModuleGetTexRef(&ref->__texref, mod, name) == CUDA_SUCCESS);
-	}
+	void load(CUmodule mod);
 };
 
 class Module {
@@ -114,87 +103,28 @@ protected:
 	static const char *pageTableSymbol;
 	Variable *_pageTable;
 
-	inline void reload() {
-		TRACE("Module image: %p", fatBin);
-		CUresult r = cuModuleLoadFatBinary(&mod, fatBin);
-		assert(r == CUDA_SUCCESS);
-		FunctionMap::iterator f;
-		for(f = functions.begin(); f != functions.end(); f++)
-			f->second.load(mod);
-		TextureList::iterator t;
-		for(t = textures.begin(); t != textures.end(); t++)
-			t->load(mod);
-	}
-
+	void reload();
 
 public:
-	Module(const void *fatBin) : fatBin(fatBin), _pageTable(NULL) {
-		TRACE("Module image: %p", fatBin);
-		assert(cuModuleLoadFatBinary(&mod, fatBin) == CUDA_SUCCESS);
-	}
+	Module(const void *fatBin);
+	Module(const Module &root);
+	~Module();
 
-	Module(const Module &root) :
-		fatBin(root.fatBin), functions(root.functions),
-		variables(root.variables), constants(root.constants),
-		textures(root.textures)
-	{
-		reload();
-	}
+	void function(const char *host, const char *dev);
+	const Function *function(const char *name) const;
 
-	~Module() {
- 		assert(cuModuleUnload(mod) == CUDA_SUCCESS);
-	}
+	void variable(const char *host, const char *dev);
+	const Variable *variable(const char *name) const;
 
+	void constant(const char *host, const char *dev);
+	const Variable *constant(const char *name) const;
 
-	inline void function(const char *host, const char *dev) {
-		functions.insert(FunctionMap::value_type(host, Function(mod, dev)));
-	}
+	Variable *pageTable() const;
 
-	inline const Function *function(const char *name) const {
-		FunctionMap::const_iterator f;
-		f = functions.find(name);
-		if(f == functions.end()) return NULL;
-		return &f->second;
-	}
-
-	inline void variable(const char *host, const char *dev) {
-		CUdeviceptr ptr; 
-		unsigned int size;
-		CUresult ret = cuModuleGetGlobal(&ptr, &size, mod, dev);
-		variables.insert(VariableMap::value_type(host, Variable(dev, ptr, size)));
-	}
-
-	inline const Variable *variable(const char *name) const {
-		VariableMap::const_iterator v;
-		v = variables.find(name);
-		if(v == variables.end()) return NULL;
-		return &v->second;
-	}
-
-	inline void constant(const char *host, const char *dev) {
-		CUdeviceptr ptr; 
-		unsigned int size;
-		std::pair<VariableMap::iterator, bool> var;
-		CUresult ret = cuModuleGetGlobal(&ptr, &size, mod, dev);
-		var = constants.insert(VariableMap::value_type(host,
-				Variable(dev, ptr, size)));
-		if(strncmp(dev, pageTableSymbol, strlen(pageTableSymbol)) == 0)
-			_pageTable = &var.first->second;
-	}
-
-	inline const Variable *constant(const char *name) const {
-		VariableMap::const_iterator v;
-		v = constants.find(name);
-		if(v == constants.end()) return NULL;
-		return &v->second;
-	}
-
-	inline Variable *pageTable() const { return _pageTable; }
-
-	inline void texture(struct __textureReference *ref, const char *name) {
-		textures.push_back(Texture(mod, ref, name));
-	}
+	void texture(struct __textureReference *ref, const char *name);
 };
+
+#include "Module.ipp"
 
 }}
 

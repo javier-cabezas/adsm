@@ -110,6 +110,31 @@ Context::~Context()
     cuCtxDestroy(ctx); 
 }
 
+gmacError_t
+Context::malloc(void **addr, size_t size) {
+    zero(addr);
+    lock();
+    size += mm().pageTable().getPageSize();
+    CUdeviceptr ptr = 0;
+    CUresult ret = cuMemAlloc(&ptr, size);
+    if(ptr % mm().pageTable().getPageSize()) {
+        ptr += mm().pageTable().getPageSize() -
+            (ptr % mm().pageTable().getPageSize());
+    }
+    *addr = (void *)ptr;
+    unlock();
+    return error(ret);
+}
+
+gmacError_t
+Context::free(void *addr)
+{
+    lock();
+    CUresult ret = cuMemFree(gpuAddr(addr));
+    unlock();
+    return error(ret);
+}
+
 gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
 {
 	zero(host);

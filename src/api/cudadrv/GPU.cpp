@@ -19,6 +19,9 @@ GPU::GPU(int n, CUdevice device) :
     _async = bool(async);
 }
 
+GPU::~GPU()
+{}
+
 Context *GPU::create()
 {
 	TRACE("Attaching context to GPU");

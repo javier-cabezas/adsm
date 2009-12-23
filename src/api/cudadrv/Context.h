@@ -94,7 +94,6 @@ protected:
 	static const char *baseRegisterSymbol;
 #endif
 
-
 	CUcontext ctx;
 	util::Lock *mutex;
 
@@ -106,20 +105,9 @@ protected:
     CUstream streamToHost;
     CUstream streamDevice;
 
-	inline CUdeviceptr gpuAddr(void *addr) const {
-		unsigned long a = (unsigned long)addr;
-		return (CUdeviceptr)(a & 0xffffffff);
-	}
-
-	inline CUdeviceptr gpuAddr(const void *addr) const {
-		unsigned long a = (unsigned long)addr;
-		return (CUdeviceptr)(a & 0xffffffff);
-	}
-
-	inline void zero(void **addr) const {
-		memory::addr_t *ptr = (memory::addr_t *)addr;
-		*ptr = 0;
-	}
+	CUdeviceptr gpuAddr(void *addr) const;
+	CUdeviceptr gpuAddr(const void *addr) const;
+	void zero(void **addr) const;
 
 	gmacError_t error(CUresult);
 
@@ -135,44 +123,16 @@ protected:
 
 	~Context();
 public:
+	static Context *current();
 
-	inline static Context *current() {
-		return static_cast<Context *>(PRIVATE_GET(key));
-	}
+	void lock();
+    void unlock();
 
-	inline void lock() {
-		mutex->lock();
-		assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
-	}
-	inline void unlock() {
-		CUcontext tmp;
-		assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
-		mutex->unlock();
-	}
-
-
+    //
 	// Standard Accelerator Interface
-	inline gmacError_t malloc(void **addr, size_t size) {
-		zero(addr);
-		lock();
-		size += mm().pageTable().getPageSize();
-		CUdeviceptr ptr = 0;
-		CUresult ret = cuMemAlloc(&ptr, size);
-		if(ptr % mm().pageTable().getPageSize()) {
-			ptr += mm().pageTable().getPageSize() -
-				(ptr % mm().pageTable().getPageSize());
-		}
-		*addr = (void *)ptr;
-		unlock();
-		return error(ret);
-	}
-
-	inline gmacError_t free(void *addr) {
-		lock();
-		CUresult ret = cuMemFree(gpuAddr(addr));
-		unlock();
-		return error(ret);
-	}
+    //
+	gmacError_t malloc(void **addr, size_t size);
+	gmacError_t free(void *addr);
 
 	gmacError_t hostAlloc(void **host, void **device, size_t size);
 	gmacError_t hostMemAlign(void **host, void **device, size_t size);
@@ -183,120 +143,40 @@ public:
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
-	inline gmacError_t copyToDeviceAsync(void *dev, const void *host,
-			size_t size) {
-		lock();
-		enterFunction(accHostDeviceCopy);
-		CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
-		exitFunction();
-		unlock();
-		return error(ret);
-	}
-
-	inline gmacError_t copyToHostAsync(void *host, const void *dev,
-			size_t size) {
-		lock();
-		enterFunction(accDeviceHostCopy);
-		CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
-		exitFunction();
-		unlock();
-		return error(ret);
-	}
+	gmacError_t copyToDeviceAsync(void *dev, const void *host, size_t size);
+	gmacError_t copyToHostAsync(void *host, const void *dev, size_t size);
    
 #if 0
-    inline gmacError_t copyDeviceAsync(void *src, const void *dest,
-			size_t size) {
-		lock();
-		enterFunction(accDeviceCopy);
-		CUresult ret = cuMemcpyDtoDAsync(gpuAddr(dest), gpuAddr(src), size, streamDevice);
-		exitFunction();
-		unlock();
-		return error(ret);
-	}
+    gmacError_t copyDeviceAsync(void *src, const void *dest, size_t size);
 #endif
 
 	gmacError_t memset(void *dev, int c, size_t size);
 	gmacError_t launch(const char *kernel);
 	
-    inline gmacError_t sync() {
-        CUresult ret;
-        lock();
-        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-            unlock();
-            usleep(Context::USleepLaunch);
-            lock();
-        }
-        if (ret == CUDA_SUCCESS) {
-            TRACE("Sync: success");
-            ret = cuStreamSynchronize(streamLaunch);
-        } else {
-            TRACE("Sync: error: %d", ret);
-        }
-        unlock();
+    gmacError_t sync();
+    gmacError_t syncToHost();
+    gmacError_t syncToDevice();
+    gmacError_t syncDevice();
 
-        return error(ret);
-    }
-
-    inline gmacError_t syncToHost() {
-        CUresult ret;
-        lock();
-        if (gpu.async()) {
-            ret = cuStreamSynchronize(streamToHost);
-        } else {
-            ret = cuCtxSynchronize();
-        }
-        unlock();
-        return error(ret);
-    }
-
-    inline gmacError_t syncToDevice() {
-        CUresult ret;
-        lock();
-        if (gpu.async()) {
-            ret = cuStreamSynchronize(streamToDevice);
-        } else {
-            ret = cuCtxSynchronize();
-        }
-        unlock();
-        return error(ret);
-    }
-
-    inline gmacError_t syncDevice() {
-        CUresult ret;
-        lock();
-        if (gpu.async()) {
-            ret = cuStreamSynchronize(streamDevice);
-        } else {
-            ret = cuCtxSynchronize();
-        }
-        unlock();
-        return error(ret);
-    }
+    //
 	// CUDA-related methods
-	Module *load(void *fatBin);
+	//
+    Module *load(void *fatBin);
 	void unload(Module *mod);
 
 	const Function *function(const char *name) const;
 	const Variable *constant(const char *name) const;
 
-	inline void call(dim3 Dg, dim3 Db, size_t shared, int tokens) {
-		Call c(Dg, Db, shared, tokens, _sp);
-		_calls.push_back(c);
-	}
-	inline void argument(const void *arg, size_t size, off_t offset) {
-		memcpy(&_stack[offset], arg, size);
-		_sp = (_sp > (offset + size)) ? _sp : offset + size;
-	}
+	void call(dim3 Dg, dim3 Db, size_t shared, int tokens);
+	void argument(const void *arg, size_t size, off_t offset);
 
-    inline bool async() const
-    {
-        return gpu.async();
-    }
+    bool async() const;
 
 	void flush();
 	void invalidate();
 };
 
+#include "Context.ipp"
 
 }}
 

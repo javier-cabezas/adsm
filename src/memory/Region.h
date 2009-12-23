@@ -68,9 +68,9 @@ protected:
 	//! Size in bytes of the region
 	size_t _size;
 
-	inline addr_t __addr(void *addr) const { return (addr_t)addr; }
-	inline addr_t __addr(const void *addr) const { return (addr_t)addr; }
-	inline void * __void(addr_t addr) const { return (void *)addr; }
+	addr_t __addr(void *addr) const;
+	addr_t __addr(const void *addr) const;
+	void * __void(addr_t addr) const;
 
 public:
 	//! Constructor
@@ -80,33 +80,31 @@ public:
 
 	virtual ~Region();
 
-	inline Context *owner() { return _context; }
+	Context *owner();
 	gmacError_t copyToDevice();
 	gmacError_t copyToHost();
 	void sync();
 
 	//! Returns the size (in bytes) of the Region
-	inline size_t size() const { return _size; }
+	size_t size() const;
 	//! Sets the size (in bytes) of the Region
-	inline void size(size_t size) { _size = size; }
+	void size(size_t size);
 	//! Returns the address of the Region
-	inline void *start() const { return __void(_addr); }
+	void *start() const;
 	//! Returns the end address of the region
-	inline void *end() const { return __void(_addr + _size); }
+	void *end() const;
 	//! Sets the address of the Region
-	inline void start(void *addr) { _addr = __addr(addr); }
+	void start(void *addr);
 
-	inline virtual void relate(Context *ctx) { _relatives.push_back(ctx); }
-	inline virtual void unrelate(Context *ctx) { _relatives.remove(ctx); }
-	inline virtual void transfer() {
-		assert(_relatives.empty() == false);
-		_context = _relatives.front();
-		_relatives.pop_front();
-	}
-	inline virtual std::list<Context *> &relatives() { return _relatives; }
+	virtual void relate(Context *ctx);
+	virtual void unrelate(Context *ctx);
+	virtual void transfer();
+	virtual std::list<Context *> &relatives();
 };
 
 typedef std::list<Region> RegionList;
+
+#include "Region.ipp"
 
 } };
 

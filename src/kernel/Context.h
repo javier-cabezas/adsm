@@ -96,15 +96,11 @@ protected:
     void * _bufferPageLocked;
     size_t _bufferPageLockedSize;
 
-	inline void enable() {
-		PRIVATE_SET(key, this);
-		_mm.realloc();
-	}
+	void enable();
 
 	Context(Accelerator &acc);
 
-	virtual ~Context() {
-	}
+	virtual ~Context();
 
 
 public:
@@ -114,28 +110,18 @@ public:
      *
      * If it does not have an associated Context, one new Context is created
      */
-	static Context *current() {
-        Context *ctx;
-        ctx = static_cast<Context *>(PRIVATE_GET(key));
-        if (ctx == NULL) ctx = Context::create();
-		return ctx;
-	}
+	static Context *current();
 
     /*! Checks whether the calling thread has an associated Context
      */
-    static bool hasCurrent() {
-        return PRIVATE_GET(key) != NULL;
-	}
+    static bool hasCurrent();
 
     /*! Initializes the per-thread private variables of the calling thread.
      *
      * This method must be called as soon as a new thread has been created
 	 * \param parent Pointer to the parent thread. Used during Context cloning
     */
-    static void initThread(Context *parent) {
-        PRIVATE_SET(key, NULL);
-        PRIVATE_SET(keyParent, parent);
-    }
+    static void initThread(Context *parent);
 
 	void init();
 
@@ -272,18 +258,20 @@ public:
 	/*!
 		\brief Returns last error
 	*/
-	inline gmacError_t error() const { return _error; }
+	gmacError_t error() const;
 
 	virtual void flush() = 0;
 	virtual void invalidate() = 0;
 
-	inline unsigned id() const { return _id; }
+	unsigned id() const;
 
-    inline void * bufferPageLocked() const     { return _bufferPageLocked; }
-    inline size_t bufferPageLockedSize() const { return _bufferPageLockedSize; }
+    void * bufferPageLocked() const;
+    size_t bufferPageLockedSize() const;
 };
 
-};
+#include "Context.ipp"
+
+}
 
 
 #endif
