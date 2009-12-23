@@ -38,4 +38,22 @@ void BatchManager::sync(void)
 	current()->unlock();
 }
 
-} };
+Context *
+BatchManager::owner(const void *)
+{
+    return NULL;
+}
+
+void
+BatchManager::invalidate(const void *, size_t)
+{
+    assert(0);
+}
+
+void
+BatchManager::flush(const void *, size_t)
+{
+    assert(0);
+}
+
+}}

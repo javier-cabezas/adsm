@@ -8,7 +8,31 @@ Map::__Map *Map::__global = NULL;
 unsigned Map::count = 0;
 gmac::util::RWLock Map::global(paraver::mmGlobal);
 
-void Map::clean()
+Region *
+Map::localFind(const void *addr)
+{
+    __Map::const_iterator i;
+    Region *ret = NULL;
+    i = __map.upper_bound(addr);
+    if(i != __map.end() && i->second->start() <= addr) {
+        ret = i->second;
+    }
+    return ret;
+}
+
+Region *
+Map::globalFind(const void *addr)
+{
+    __Map::const_iterator i;
+    Region *ret = NULL;
+    i = __global->upper_bound(addr);
+    if(i != __global->end() && i->second->start() <= addr)
+        ret = i->second;
+    return ret;
+}
+
+void
+Map::clean()
 {
 	__Map::iterator i;
 	local.write();
@@ -22,6 +46,32 @@ void Map::clean()
 	__map.clear();
 	local.unlock();
 }
+
+Map::Map() :
+    local(paraver::mmLocal)
+{
+    global.write();
+    if(__global == NULL) __global = new __Map();
+    count++;
+    global.unlock();
+}
+
+Map::~Map()
+{
+    TRACE("Cleaning Memory Map");
+    clean();
+    global.write();
+    count--;
+    if(count == 0) {
+        delete __global;
+        __global = NULL;
+    }
+    global.unlock();
+}
+
+void
+Map::init()
+{}
 
 Region *Map::remove(void *addr)
 {

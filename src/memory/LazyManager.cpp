@@ -8,6 +8,8 @@
 namespace gmac { namespace memory {
 
 // Manager Interface
+LazyManager::LazyManager()
+{}
 
 void *LazyManager::alloc(void *addr, size_t count)
 {

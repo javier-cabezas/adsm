@@ -65,7 +65,7 @@ protected:
 	size_t offset;
 
 	friend class ProtSubRegion;
-	inline void push(ProtSubRegion *region) { memory.insert(region); }
+	void push(ProtSubRegion *region);
 
 public:
 	RollingRegion(RollingManager &manager, void *, size_t, size_t);
@@ -85,27 +85,19 @@ class ProtSubRegion : public ProtRegion {
 protected:
 	RollingRegion *parent;
 	friend class RollingRegion;
-	void silentInvalidate() { _present = _dirty = false; }
+	void silentInvalidate();
 public:
-	ProtSubRegion(RollingRegion *parent, void *addr, size_t size) :
-		ProtRegion(addr, size),
-		parent(parent)
-	{ }
-	~ProtSubRegion() { TRACE("SubRegion %p released", _addr); }
+	ProtSubRegion(RollingRegion *parent, void *addr, size_t size);
+	~ProtSubRegion();
 
 	// Override this methods to insert the regions in the list
 	// of sub-regions present in memory
-	virtual void readOnly() {
-		if(present() == false) parent->push(this);
-		ProtRegion::readOnly();
-	}
-
-	virtual void readWrite() {
-		if(present() == false) parent->push(this);
-		ProtRegion::readWrite();
-	}
+	virtual void readOnly();
+    virtual void readWrite();
 };
 
-} };
+#include "RollingRegion.ipp"
+
+}}
 
 #endif

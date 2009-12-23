@@ -50,23 +50,11 @@ protected:
 	MUTEX(__mutex);
 	paraver::LockName __name;
 public:
-	Lock(paraver::LockName __name) : __name(__name) {
-		MUTEX_INIT(__mutex);
-	}
+	Lock(paraver::LockName __name);
+	~Lock();
 
-	~Lock() {
-		MUTEX_DESTROY(__mutex);
-	}
-
-	inline void lock() {
-		enterLock(__name);
-		MUTEX_LOCK(__mutex);
-		exitLock();
-	}
-
-	inline void unlock() {
-		MUTEX_UNLOCK(__mutex);
-	}
+	void lock();
+	void unlock();
 };
 
 class RWLock {
@@ -74,30 +62,15 @@ protected:
 	LOCK(__lock);
 	paraver::LockName __name;
 public:
-	RWLock(paraver::LockName __name) : __name(__name) {
-		LOCK_INIT(__lock);
-	}
+	RWLock(paraver::LockName __name);
+	~RWLock();
 
-	~RWLock() {
-		LOCK_DESTROY(__lock);
-	}
-
-	inline void read() {
-		enterLock(__name);
-		LOCK_READ(__lock);
-		exitLock();
-	}
-
-	inline void write() {
-		enterLock(__name);
-		LOCK_WRITE(__lock);
-		exitLock();
-	}
-
-	inline void unlock() {
-		LOCK_RELEASE(__lock);
-	}
+	void read();
+	void write();
+	void unlock();
 };
 
-} };
+#include "Lock.ipp"
+
+}}
 #endif
