@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_GPU_H_
-#define __API_CUDADRV_GPU_H_
+#ifndef __API_CUDADRV_ACCELERATOR_H_
+#define __API_CUDADRV_ACCELERATOR_H_
 
 #include <kernel/Accelerator.h>
 
@@ -45,9 +45,8 @@ namespace gmac {
 
 namespace gpu {
 class Context;
-}
 
-class GPU : public Accelerator {
+class Accelerator : public gmac::Accelerator {
 protected:
 	unsigned id;
 	CUdevice _device;
@@ -57,20 +56,20 @@ protected:
 	std::set<gpu::Context *> queue;
 
 public:
-	GPU(int n, CUdevice device);
-	~GPU();
+	Accelerator(int n, CUdevice device);
+	~Accelerator();
 	CUdevice device() const;
 
-	Context *create();
-	Context *clone(const gmac::Context &);
-	void destroy(Context *);
+	gmac::Context *create();
+	gmac::Context *clone(const gmac::Context &);
+	void destroy(gmac::Context *);
 
 	size_t memory() const;
     bool async() const;
 };
 
-#include "GPU.ipp"
+#include "Accelerator.ipp"
 
-}
+}}
 
 #endif
