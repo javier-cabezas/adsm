@@ -4,7 +4,8 @@
 
 #include <kernel/Context.h>
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace manager {
+
 void BatchManager::release(void *addr)
 {
 	Region *reg = remove(ptr(addr));
@@ -56,4 +57,4 @@ BatchManager::flush(const void *, size_t)
     assert(0);
 }
 
-}}
+}}}

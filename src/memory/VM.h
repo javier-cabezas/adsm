@@ -77,8 +77,8 @@ protected:
 	size_t nEntries;
 
 	static const addr_t Present = 0x01;
-	static const addr_t Dirty = 0x02;
-	static const addr_t Mask = ~0x03;
+	static const addr_t Dirty   = 0x02;
+	static const addr_t Mask    = ~0x03;
 
 	T **table;
 

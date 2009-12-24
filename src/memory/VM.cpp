@@ -4,7 +4,8 @@
 
 namespace gmac { namespace memory  { namespace vm {
 
-void *Dumper::alloc(size_t size) const
+void *
+Dumper::alloc(size_t size) const
 {
 	void *device = NULL;
 #ifdef USE_VM
@@ -15,7 +16,8 @@ void *Dumper::alloc(size_t size) const
 	return device;
 }
 
-void *Dumper::hostAlloc(void **host, size_t size) const
+void *
+Dumper::hostAlloc(void **host, size_t size) const
 {
 	void *device = NULL;
 	*host = NULL;
@@ -27,7 +29,8 @@ void *Dumper::hostAlloc(void **host, size_t size) const
 #endif
 }
 
-void Dumper::free(void *addr) const
+void
+Dumper::free(void *addr) const
 {
 #ifdef USE_VM
 	if(gmac::Context::current() == NULL) return;
@@ -35,7 +38,8 @@ void Dumper::free(void *addr) const
 #endif
 }
 
-void Dumper::hostFree(void *addr) const
+void
+Dumper::hostFree(void *addr) const
 {
 #ifdef USE_VM
 	if(gmac::Context::current() == NULL) return;
@@ -43,14 +47,16 @@ void Dumper::hostFree(void *addr) const
 #endif
 }
 
-void Dumper::flush(void *dst, const void *src, size_t s) const
+void
+Dumper::flush(void *dst, const void *src, size_t s) const
 {
 #ifdef USE_VM
 	assert(gmac::Context::current()->copyToDevice(dst, src, s) == gmacSuccess);
 #endif
 }
 
-void Dumper::sync(void *dst, const void *src, size_t s) const
+void
+Dumper::sync(void *dst, const void *src, size_t s) const
 {
 #ifdef USE_VM
 	assert(gmac::Context::current()->copyToHost(dst, src, s) == gmacSuccess);

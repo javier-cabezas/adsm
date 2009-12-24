@@ -31,73 +31,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_CACHEREGION_H_
-#define __MEMORY_CACHEREGION_H_
+#ifndef __MEMORY_LAZYMANAGER_H_
+#define __MEMORY_LAZYMANAGER_H_
 
-#include "Region.h"
+#include "Handler.h"
 #include "ProtRegion.h"
 
-#include <config.h>
 #include <debug.h>
 
-#include <stdlib.h>
-
 #include <map>
-#include <set>
 
-namespace gmac { namespace memory {
-class RollingManager;
-class ProtSubRegion;
-class RollingRegion : public Region {
-public:
-	typedef std::set<ProtSubRegion *> List;
+namespace gmac { namespace memory { namespace manager {
+
+//! Manager that Moves Memory Regions Lazily
+class LazyManager : public Handler {
 protected:
-	RollingManager &manager;
+	bool read(void *addr);
+	bool write(void *addr);
 
-	// Set of all sub-regions forming the region
-	typedef std::map<const void *, ProtSubRegion *> Map;
-	Map map;
-
-	// List of sub-regions that are present in memory
-	List memory;
-
-	size_t cacheLine;
-	size_t offset;
-
-	friend class ProtSubRegion;
-	void push(ProtSubRegion *region);
-
+	ProtRegion *get(const void *addr);
 public:
-	RollingRegion(RollingManager &manager, void *, size_t, size_t);
-	~RollingRegion();
+	LazyManager();
+	void *alloc(void *addr, size_t count);
+	void release(void *addr);
+	void flush(void);
+	void sync(void) {};
 
-	virtual void relate(Context *ctx);
-	virtual void unrelate(Context *ctx);
-	virtual void transfer();
-
-	ProtSubRegion *find(const void *);
-	virtual void invalidate();
-	void invalidate(const void *, size_t);
+	Context *owner(const void *);
+	void invalidate(const void *, size_t); 
 	void flush(const void *, size_t);
 };
 
-class ProtSubRegion : public ProtRegion {
-protected:
-	RollingRegion *parent;
-	friend class RollingRegion;
-	void silentInvalidate();
-public:
-	ProtSubRegion(RollingRegion *parent, void *addr, size_t size);
-	~ProtSubRegion();
+#include "LazyManager.ipp"
 
-	// Override this methods to insert the regions in the list
-	// of sub-regions present in memory
-	virtual void readOnly();
-    virtual void readWrite();
-};
-
-#include "RollingRegion.ipp"
-
-}}
+}}}
 
 #endif

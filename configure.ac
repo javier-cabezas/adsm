@@ -200,6 +200,7 @@ AC_OUTPUT(
 	src/config/Makefile
 	src/kernel/Makefile
 	src/memory/Makefile
+	src/memory/manager/Makefile
 	src/memory/posix/Makefile
 	src/gmac/Makefile
 	src/gmac/stdc/Makefile
