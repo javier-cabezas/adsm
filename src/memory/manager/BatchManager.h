@@ -31,82 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMOMRY_ROLLINGMANAGER_H_
-#define __MEMOMRY_ROLLINGMANAGER_H_
+#ifndef __MEMORY_BATCHMANAGER_H_
+#define __MEMORY_BATCHMANAGER_H_
 
-#include "Handler.h"
-#include "RollingRegion.h"
+#include "Manager.h"
+#include "Region.h"
 
-#include <kernel/Context.h>
+#include <stdint.h>
 
-#include <map>
-#include <list>
+namespace gmac { namespace memory { namespace manager {
+//! Batch Memory Manager
 
-namespace gmac { namespace memory {
-
-class RollingBuffer {
-private:
-	std::list<ProtSubRegion *> buffer;
-	util::RWLock lock;
-	size_t _max;
-
+//! The Batch Memory Manager moves all data just before and
+//! after a kernel call
+class BatchManager : public Manager {
 public:
-	RollingBuffer();
+	BatchManager() : Manager() { }
 
-	bool overflows() const;
-	size_t inc(size_t n);
-	size_t dec(size_t n);
-	bool empty() const;
+	void *alloc(void *addr, size_t count);
+    void release(void *addr);
+	void flush();
+	void sync();
 
-	void push(ProtSubRegion *region);
-	ProtSubRegion *pop();
-	ProtSubRegion *front();
-	void remove(ProtSubRegion *region);
+	Context *owner(const void *);
+	void invalidate(const void *, size_t);
+	void flush(const void *, size_t);
 };
 
-class RollingManager : public Handler {
-protected:
-	size_t lineSize;
-	size_t lruDelta;
+#include "BatchManager.ipp"
 
-	std::map<Context *, RollingBuffer *> regionRolling;
-
-	RollingRegion *get(const void *addr);
-
-	util::Lock writeMutex;
-	void *writeBuffer;
-	size_t writeBufferSize;
-	void waitForWrite(void *addr = NULL, size_t size = 0);
-	void writeBack();
-	void flushToDevice();
-
-	virtual bool read(void *);
-	virtual bool write(void *);
-
-#ifdef DEBUG
-	void dumpRolling();
-#endif
-
-	// Methods used by ProtSubRegion to request flushing and invalidating
-	friend class RollingRegion;
-	void invalidate(ProtSubRegion *region);
-	void flush(ProtSubRegion *region);
-
-public:
-	RollingManager();
-	virtual ~RollingManager();
-	void *alloc(void *addr, size_t size);
-	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
-
-	Context *owner(const void *addr);
-	void invalidate(const void *addr, size_t size);
-	void flush(const void *addr, size_t size);
-};
-
-#include "RollingManager.ipp"
-
-}}
-
+}}}
 #endif

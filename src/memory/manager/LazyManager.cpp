@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace manager {
 
 // Manager Interface
 LazyManager::LazyManager()
@@ -127,4 +127,4 @@ bool LazyManager::write(void *addr)
 	return true;
 }
 
-} }
+}}}

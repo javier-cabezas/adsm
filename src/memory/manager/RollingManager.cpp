@@ -10,7 +10,7 @@
 
 #include <typeinfo>
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace manager {
 
 RollingBuffer::RollingBuffer() :
     lock(paraver::rollingBuffer),
@@ -197,4 +197,4 @@ bool RollingManager::write(void *addr)
 }
 
 
-} };
+}}}

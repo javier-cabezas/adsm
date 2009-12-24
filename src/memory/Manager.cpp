@@ -1,7 +1,7 @@
 #include "Manager.h"
-#include "BatchManager.h"
-#include "LazyManager.h"
-#include "RollingManager.h"
+#include "manager/BatchManager.h"
+#include "manager/LazyManager.h"
+#include "manager/RollingManager.h"
 
 #include <debug.h>
 
@@ -12,15 +12,15 @@ namespace gmac { namespace memory {
 
 Manager *getManager(const char *managerName)
 {
-	if(managerName == NULL) return new RollingManager();
+	if(managerName == NULL) return new manager::RollingManager();
 	TRACE("Using %s Manager", managerName);
 	if(strcasecmp(managerName, "None") == 0)
 		return NULL;
 	else if(strcasecmp(managerName, "Lazy") == 0)
-		return new LazyManager();
+		return new manager::LazyManager();
 	else if(strcasecmp(managerName, "Batch") == 0)
-		return new BatchManager();
-	return new RollingManager();
+		return new manager::BatchManager();
+	return new manager::RollingManager();
 }
 
 Manager::Manager()

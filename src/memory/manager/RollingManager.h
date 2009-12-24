@@ -31,39 +31,82 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __MEMOMRY_ROLLINGMANAGER_H_
+#define __MEMOMRY_ROLLINGMANAGER_H_
 
 #include "Handler.h"
-#include "ProtRegion.h"
+#include "RollingRegion.h"
 
-#include <debug.h>
+#include <kernel/Context.h>
 
 #include <map>
+#include <list>
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace manager {
 
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public Handler {
-protected:
-	bool read(void *addr);
-	bool write(void *addr);
+class RollingBuffer {
+private:
+	std::list<ProtSubRegion *> buffer;
+	util::RWLock lock;
+	size_t _max;
 
-	ProtRegion *get(const void *addr);
 public:
-	LazyManager();
-	void *alloc(void *addr, size_t count);
+	RollingBuffer();
+
+	bool overflows() const;
+	size_t inc(size_t n);
+	size_t dec(size_t n);
+	bool empty() const;
+
+	void push(ProtSubRegion *region);
+	ProtSubRegion *pop();
+	ProtSubRegion *front();
+	void remove(ProtSubRegion *region);
+};
+
+class RollingManager : public Handler {
+protected:
+	size_t lineSize;
+	size_t lruDelta;
+
+	std::map<Context *, RollingBuffer *> regionRolling;
+
+	RollingRegion *get(const void *addr);
+
+	util::Lock writeMutex;
+	void *writeBuffer;
+	size_t writeBufferSize;
+	void waitForWrite(void *addr = NULL, size_t size = 0);
+	void writeBack();
+	void flushToDevice();
+
+	virtual bool read(void *);
+	virtual bool write(void *);
+
+#ifdef DEBUG
+	void dumpRolling();
+#endif
+
+	// Methods used by ProtSubRegion to request flushing and invalidating
+	friend class RollingRegion;
+	void invalidate(ProtSubRegion *region);
+	void flush(ProtSubRegion *region);
+
+public:
+	RollingManager();
+	virtual ~RollingManager();
+	void *alloc(void *addr, size_t size);
 	void release(void *addr);
 	void flush(void);
 	void sync(void) {};
 
-	Context *owner(const void *);
-	void invalidate(const void *, size_t); 
-	void flush(const void *, size_t);
+	Context *owner(const void *addr);
+	void invalidate(const void *addr, size_t size);
+	void flush(const void *addr, size_t size);
 };
 
-#include "LazyManager.ipp"
+#include "RollingManager.ipp"
 
-}}
+}}}
 
 #endif

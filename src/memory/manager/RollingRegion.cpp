@@ -5,9 +5,7 @@
 
 #include <algorithm>
 
-namespace gmac { namespace memory {
-
-
+namespace gmac { namespace memory { namespace manager {
 
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
 		size_t cacheLine) :
@@ -154,4 +152,4 @@ ProtSubRegion::readWrite()
     ProtRegion::readWrite();
 }
 
-} };
+}}}
