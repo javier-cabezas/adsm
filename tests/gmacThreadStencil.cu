@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
 
     if (nIter > 1) {
         pthread_barrier_init(&barrier, NULL, nIter);
-        pthread_mutex_init(&mutex, NULL);
     }
 
     for(int n = 0; n < nIter; n++) {
@@ -83,7 +82,6 @@ int main(int argc, char *argv[])
     if (nIter > 1) {
         pthread_barrier_destroy(&barrier);
     }
-
 
     delete descriptors;
     delete nThread;
