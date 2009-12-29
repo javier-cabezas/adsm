@@ -90,7 +90,6 @@ Context::sync()
     }
     if (ret == CUDA_SUCCESS) {
         TRACE("Sync: success");
-        ret = cuStreamSynchronize(streamLaunch);
     } else {
         TRACE("Sync: error: %d", ret);
     }
