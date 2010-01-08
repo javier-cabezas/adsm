@@ -10,7 +10,7 @@ namespace gmac {
 namespace gpu {
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	id(n), _device(device)
+	gmac::Accelerator(), id(n), _device(device)
 {
     unsigned int size = 0;
 	assert(cuDeviceTotalMem(&size, _device) == CUDA_SUCCESS);

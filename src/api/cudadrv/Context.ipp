@@ -1,5 +1,5 @@
-#ifndef __GPU_CONTEXT_IPP_
-#define __GPU_CONTEXT_IPP_
+#ifndef __API_CUDADRV_CONTEXT_IPP_
+#define __API_CUDADRV_CONTEXT_IPP_
 
 inline CUdeviceptr
 Context::gpuAddr(void *addr) const

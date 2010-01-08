@@ -1,5 +1,5 @@
-#ifndef __QUEUE_IPP_
-#define __QUEUE_IPP_
+#ifndef __KERNEL_QUEUE_IPP_
+#define __KERNEL_QUEUE_IPP_
 
 inline void
 Queue::push(Context *ctx)

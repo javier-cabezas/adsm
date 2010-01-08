@@ -1,5 +1,5 @@
-#ifndef __GPU_MODULE_IPP_
-#define __GPU_MODULE_IPP_
+#ifndef __API_CUDADRV_MODULE_IPP_
+#define __API_CUDADRV_MODULE_IPP_
 
 inline void
 Function::load(CUmodule mod)
