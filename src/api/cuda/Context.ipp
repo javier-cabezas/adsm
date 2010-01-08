@@ -1,5 +1,5 @@
-#ifndef __API_CUDA_GPUCONTEXT_IPP_
-#define __API_CUDA_GPUCONTEXT_IPP_
+#ifndef __API_CUDA_CONTEXT_IPP_
+#define __API_CUDA_CONTEXT_IPP_
 
 inline void
 Context::check()

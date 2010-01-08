@@ -1,5 +1,5 @@
-#ifndef __CONTEXT_IPP_
-#define __CONTEXT_IPP_
+#ifndef __KERNEL_CONTEXT_IPP_
+#define __KERNEL_CONTEXT_IPP_
 
 inline void
 Context::enable()

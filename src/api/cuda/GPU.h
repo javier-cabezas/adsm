@@ -55,9 +55,8 @@ class GPU : public Accelerator {
 protected:
 	unsigned id;
 	std::set<gpu::Context *> queue;
-	size_t _memory;
 public:
-	GPU(int n) : id(n) {
+	GPU(int n) : Accelerator(), id(n) {
 		struct cudaDeviceProp prop;
 		int flags = 0;
 		assert(cudaGetDeviceProperties(&prop, n) == cudaSuccess);
@@ -73,7 +72,6 @@ public:
 	Context *clone(const Context &);
 	void destroy(Context *);
 
-	size_t memory() const { return _memory; }
 	size_t nContexts() const { return queue.size(); }
 };
 

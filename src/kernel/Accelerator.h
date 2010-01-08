@@ -49,16 +49,20 @@ class Accelerator {
 protected:
 	friend class Context;
 	virtual void destroy(Context *ctx) = 0;
+    size_t _memory;
 public:
-	virtual ~Accelerator() {};
+	Accelerator();
+	virtual ~Accelerator();
 	
 	virtual Context *create() = 0;
 	virtual Context *clone(const Context &) = 0;
 
-	virtual size_t memory() const = 0;
+	size_t memory() const;
 	virtual size_t nContexts() const = 0;
 };
 
-};
+}
+
+#include "Accelerator.ipp"
 
 #endif

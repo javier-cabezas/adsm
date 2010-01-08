@@ -50,7 +50,6 @@ class Accelerator : public gmac::Accelerator {
 protected:
 	unsigned id;
 	CUdevice _device;
-	size_t _memory;
 	bool _async;
 
 	std::set<gpu::Context *> queue;
@@ -64,14 +63,13 @@ public:
 	gmac::Context *clone(const gmac::Context &);
 	void destroy(gmac::Context *);
 
-	size_t memory() const;
 	size_t nContexts() const;
 
     bool async() const;
 };
 
-#include "Accelerator.ipp"
-
 }}
+
+#include "api/Accelerator.ipp"
 
 #endif
