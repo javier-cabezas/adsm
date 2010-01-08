@@ -31,6 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+/*! \mainpage Global Memory for ACcelerators (GMAC)
+ *
+ * \section intro_sec Code layout
+ * 
+ * GMAC is organized in modules. There is an abstract front-end which
+ * implements the public API offered to the programmers. These functions
+ * use abstract classes that define the Backend API (kernel) and the Memory
+ * Management API (memory). Finally, the available backends and memory managers
+ * implement the functionality defined in their respective APIs. Currently,
+ * the code is organized as follows:
+ * \verbatim
+ * src/                - GMAC root directory 
+ * src/gmac/           - Frontend directory
+ * src/kernel/         - Backend API base classes
+ * src/api/            - Backend root directory
+ * src/api/cuda        - CUDA run-time backend (no threading support)
+ * src/api/cudadrv     - CUDA driver backend (full-featured)
+ * src/memory/         - Memory API base classes
+ * src/memory/manager  - Memory Managers
+ * tests/              - Tests used to validate GMAC
+ * \endverbatim
+ */
+
+
 #ifndef __GMAC_H_
 #define __GMAC_H_
 
