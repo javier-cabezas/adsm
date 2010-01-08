@@ -216,7 +216,8 @@ public:
 	virtual gmacError_t copyToHostAsync(void *host, const void *dev,
 			size_t size) = 0;
 
-    /// \todo Enable this
+    /// \todo How-to enable features only supported in some CUDA SDK versions
+    ///       like the following:
 #if 0
     /*!
 		\brief Copies data from accelerator memory to accelerator memory
@@ -245,15 +246,26 @@ public:
 	virtual gmacError_t launch(const char *kernel) = 0;
 
 	/*!
-		\brief Waits for pending actions
+		\brief Waits for kernel execution
 	*/
 	virtual gmacError_t sync() = 0;
 
 	virtual bool async() const = 0;
 
+	/*!
+		\brief Waits for a memory transfer to host
+	*/
 	virtual gmacError_t syncToHost()   = 0;
+	/*!
+		\brief Waits for a memory transfer to device
+	*/
 	virtual gmacError_t syncToDevice() = 0;
+#if 0
+	/*!
+		\brief Waits for kernel execution
+	*/
 	virtual gmacError_t syncDevice()   = 0;
+#endif
 
 	/*!
 		\brief Returns last error
@@ -264,8 +276,13 @@ public:
 	virtual void invalidate() = 0;
 
 	unsigned id() const;
-
+    /*!
+		\brief Gets the page-locked buffer associated to the Context (if supported)
+	*/
     void * bufferPageLocked() const;
+    /*!
+		\brief Gets the size in bytes of the page-locked buffer associated to the Context (or 0 if not supported)
+	*/
     size_t bufferPageLockedSize() const;
 };
 
