@@ -53,10 +53,9 @@ class Context;
 
 class GPU : public Accelerator {
 protected:
-	unsigned id;
 	std::set<gpu::Context *> queue;
 public:
-	GPU(int n) : Accelerator(), id(n) {
+	GPU(int n) : Accelerator(n) {
 		struct cudaDeviceProp prop;
 		int flags = 0;
 		assert(cudaGetDeviceProperties(&prop, n) == cudaSuccess);

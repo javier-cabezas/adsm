@@ -50,8 +50,9 @@ protected:
 	friend class Context;
 	virtual void destroy(Context *ctx) = 0;
     size_t _memory;
+    unsigned id;
 public:
-	Accelerator();
+	Accelerator(int n);
 	virtual ~Accelerator();
 	
 	virtual Context *create() = 0;
