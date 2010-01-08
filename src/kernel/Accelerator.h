@@ -56,6 +56,7 @@ public:
 	virtual Context *clone(const Context &) = 0;
 
 	virtual size_t memory() const = 0;
+	virtual size_t nContexts() const = 0;
 };
 
 };

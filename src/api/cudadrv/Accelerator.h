@@ -65,6 +65,8 @@ public:
 	void destroy(gmac::Context *);
 
 	size_t memory() const;
+	size_t nContexts() const;
+
     bool async() const;
 };
 

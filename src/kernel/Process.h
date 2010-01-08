@@ -100,7 +100,8 @@ public:
 	static void init(const char *name);
 
 	void create();
-	void clone(Context *ctx, int acc = -1);
+#define ACC_AUTO_BIND -1
+	void clone(Context *ctx, int acc = ACC_AUTO_BIND);
 	void remove(Context *ctx);
 	gmacError_t migrate(int acc);
 	const ContextList &contexts() const;
