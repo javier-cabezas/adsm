@@ -74,6 +74,7 @@ public:
 	void destroy(Context *);
 
 	size_t memory() const { return _memory; }
+	size_t nContexts() const { return queue.size(); }
 };
 
 }

@@ -70,12 +70,24 @@ void Process::clone(gmac::Context *ctx, int acc)
 {
 	TRACE("Cloning context");
 	mutex.lock();
-	unsigned n = current;
-	current = ++current % _accs.size();
-	Context *clon = _accs[n]->clone(*ctx);
-	clon->init();
-	_contexts.push_back(clon);
-	_queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
+    Context * clon;
+    if (acc != ACC_AUTO_BIND) {
+        assert(acc < _accs.size());
+        clon = _accs[acc]->clone(*ctx);
+    } else {
+        // Bind the new Context to the accelerator with less contexts
+        // attached to it
+        int min = _accs[0]->nContexts();
+        for (int i = 1; i < _accs.size(); i++) {
+            if (_accs[i]->nContexts() < _accs[min]->nContexts())
+                min = i;
+        }
+
+        clon = _accs[min]->clone(*ctx);
+        clon->init();
+        _contexts.push_back(clon);
+        _queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
+    }
 	mutex.unlock();
 	TRACE("Cloned context on Acc#%d", n);
 }
