@@ -48,7 +48,6 @@ class Context;
 
 class Accelerator : public gmac::Accelerator {
 protected:
-	unsigned id;
 	CUdevice _device;
 	bool _async;
 

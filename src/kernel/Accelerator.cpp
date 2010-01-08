@@ -2,8 +2,8 @@
 
 namespace gmac {
 
-Accelerator::Accelerator() :
-    _memory(0)
+Accelerator::Accelerator(int n) :
+    _memory(0), id(n)
 {
 }
 
