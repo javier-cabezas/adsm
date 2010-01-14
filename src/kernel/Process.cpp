@@ -71,25 +71,29 @@ void Process::clone(gmac::Context *ctx, int acc)
 	TRACE("Cloning context");
 	mutex.lock();
     Context * clon;
+    int usedAcc;
+
     if (acc != ACC_AUTO_BIND) {
         assert(acc < _accs.size());
+        usedAcc = acc;
         clon = _accs[acc]->clone(*ctx);
     } else {
         // Bind the new Context to the accelerator with less contexts
         // attached to it
-        int min = _accs[0]->nContexts();
+        usedAcc = 0;
         for (int i = 1; i < _accs.size(); i++) {
-            if (_accs[i]->nContexts() < _accs[min]->nContexts())
-                min = i;
+            if (_accs[i]->nContexts() < _accs[usedAcc]->nContexts()) {
+                usedAcc = i;
+            }
         }
 
-        clon = _accs[min]->clone(*ctx);
+        clon = _accs[usedAcc]->clone(*ctx);
         clon->init();
         _contexts.push_back(clon);
         _queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
     }
 	mutex.unlock();
-	TRACE("Cloned context on Acc#%d", n);
+	TRACE("Cloned context on Acc#%d", usedAcc);
 }
 
 gmacError_t Process::migrate(int acc)
