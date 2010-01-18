@@ -39,7 +39,7 @@ enum FunctionName {
 	accMalloc = 1, accFree,
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
-	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal,
+	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal, gmacAccs, gmacSetAffinity,
 	vmAlloc, vmFree, vmFlush, vmSync,
 };
 

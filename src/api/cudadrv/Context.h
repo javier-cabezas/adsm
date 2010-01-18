@@ -56,12 +56,11 @@ namespace gmac { namespace gpu {
 class Context : public gmac::Context {
 protected:
 	struct Call {
-		Call(dim3 grid, dim3 block, size_t shared, size_t tokens, size_t stack);
+		Call(dim3 grid, dim3 block, size_t shared, size_t tokens);
 		dim3 grid;
 		dim3 block;
 		size_t shared;
 		size_t tokens;
-		size_t stack;
 	};
 
 	typedef std::vector<Call> CallStack;
