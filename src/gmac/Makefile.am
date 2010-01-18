@@ -13,7 +13,7 @@ libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/l
 		../api/$(API_DIR)/libapi.la\
 		$(PARAVER_LIB)
 
-libgmac_la_LDFLAGS = -L$(CUDA_DIR)/lib64 
+libgmac_la_LDFLAGS = -L$(CUDA_DIR)/lib64 -ldl
 
 BUILT_SOURCES = os
 

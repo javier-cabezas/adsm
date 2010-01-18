@@ -143,7 +143,7 @@ Context::syncDevice()
 inline void
 Context::call(dim3 Dg, dim3 Db, size_t shared, int tokens)
 {
-    Call c(Dg, Db, shared, tokens, _sp);
+    Call c(Dg, Db, shared, tokens);
     _calls.push_back(c);
 }
 

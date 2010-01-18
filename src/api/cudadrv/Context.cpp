@@ -8,12 +8,11 @@ namespace gmac { namespace gpu {
 const char *Context::pageTableSymbol = "__pageTable";
 #endif
 
-Context::Call::Call(dim3 grid, dim3 block, size_t shared, size_t tokens, size_t stack) :
+Context::Call::Call(dim3 grid, dim3 block, size_t shared, size_t tokens) :
     grid(grid),
     block(block),
     shared(shared),
-    tokens(tokens),
-    stack(stack)
+    tokens(tokens)
 {}
 
 void
@@ -327,15 +326,15 @@ gmacError_t Context::launch(const char *kernel)
 	assert(_calls.empty() == false);
 	Call c = _calls.back();
 	_calls.pop_back();
-	size_t count = _sp - c.stack;
-	_sp = c.stack;
+	size_t count = _sp;
+	_sp = 0;
 
 	const Function *f = function(kernel);
 	assert(f != NULL);
 
 	lock();
 	// Set-up parameters
-	CUresult ret = cuParamSetv(f->fun, 0, &_stack[c.stack], count);
+	CUresult ret = cuParamSetv(f->fun, 0, _stack, count);
 	if(ret != CUDA_SUCCESS) {
 		unlock();
 		return error(ret);
