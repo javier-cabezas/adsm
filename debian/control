@@ -18,9 +18,17 @@ Package: libgmac
 Priority: important
 Section: libs
 Architecture: i386 amd64
-Depends: libparaver, libcuda1 [i386 amd64] | nvidia-glx [i386 amd64]
+Depends: libc6 [i386 amd64] | nvidia-glx [i386 amd64], libcuda1 [i386 amd64] | nvidia-glx [i386 amd64]
+Conflicts: libgmac-paraver
 Description: 
 
+Package: libgmac-paraver
+Priority: important
+Section: libs
+Architecture: i386 amd64
+Depends: libparaver, libc6 [i386 amd64] | nvidia-glx [i386 amd64], libcuda1 [i386 amd64] | nvidia-glx [i386 amd64]
+Conflicts: libgmac
+Description: 
 
 Package: libgmac-dev
 Priority: important

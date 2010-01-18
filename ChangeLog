@@ -1,3 +1,11 @@
+libgmac (0.0.4) unstable; urgency=medium
+
+  * Added lazy context creation
+  * Added gmacSetAffinity and gmacAccs functions to the public API
+  * Misc fixes
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu> Thu, 18 Jan 17:04:00 +0100
+
 libgmac (0.0.3-4) unstable; urgency=medium
 
   * Fixed gmac header files to avoid multiple references to gmacGetLastError when using C compiler
