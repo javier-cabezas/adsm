@@ -7,39 +7,66 @@ export DH_VERBOSE=1
 CFLAGS=-g -O2 -Wall
 CXXFLAGS= -g -O2 -Wall
 
-CONFARGS = --enable-cuda-driver --enable-mmap --enable-paraver
+CONFARGS = --enable-cuda-driver --enable-mmap
+CONFARGS_PARAVER = $(CONFARGS) --enable-paraver
 
-configure: configure-stamp
-configure-stamp:
+setup-stamp:
 	dh_testdir
 	./setup.sh
+	touch setup-stamp
+
+configure-libgmac: configure-stamp-libgmac
+configure-stamp-libgmac: setup-stamp
 	mkdir -p build
 	(cd build && ../configure \
 		--prefix=/usr         \
 		$(CONFARGS))
-	touch configure-stamp
+	touch configure-stamp-libgmac
 
-build: build-stamp
-build-stamp: configure-stamp
+configure-libgmac-paraver: configure-stamp-libgmac-paraver
+configure-stamp-libgmac-paraver: setup-stamp
+	mkdir -p build-paraver
+	(cd build-paraver && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS_PARAVER))
+	touch configure-stamp-libgmac-paraver
+
+
+build-libgmac: build-stamp-libgmac
+build-stamp-libgmac: configure-stamp-libgmac
 	dh_testdir
 	$(MAKE) -C build
-	touch build-stamp
+	touch build-stamp-libgmac
+
+build-libgmac-paraver: build-stamp-libgmac-paraver
+build-stamp-libgmac-paraver: configure-stamp-libgmac-paraver
+	dh_testdir
+	$(MAKE) -C build-paraver
+	touch build-stamp-libgmac-paraver
+
 
 clean:
 	dh_testdir
 	dh_testroot
-	-rm -f build-stamp configure-stamp
+	-rm -f build-stamp-* configure-stamp-* setup-stamp
 	dh_clean
 
-install: build
+install: install-libgmac install-libgmac-paraver
+install-libgmac: build-libgmac
 	dh_testdir
 	dh_testroot
 	dh_prep
 	dh_installdirs
+	$(MAKE) -C build DESTDIR=$(CURDIR)/debian/tmp-libgmac install
 
-	$(MAKE) -C build DESTDIR=$(CURDIR)/debian/tmp install
+install-libgmac-paraver: build-libgmac-paraver
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) -C build-paraver DESTDIR=$(CURDIR)/debian/tmp-libgmac-paraver install
 
-binary-arch:    build install
+binary-arch: install
 	dh_testdir -s
 	dh_testroot -s
 	dh_installchangelogs -s
@@ -69,7 +96,4 @@ binary-arch:    build install
 	dh_md5sums -s
 	dh_builddeb -s
 
-
 binary: binary-arch
-.PHONY: build clean binary install configure
-

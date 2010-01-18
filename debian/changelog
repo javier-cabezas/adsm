@@ -1,3 +1,11 @@
+libgmac (0.0.4) unstable; urgency=low
+
+  * New upstream version
+  * Provide a new package with paraver support (libgmac-paraver) which
+    conflicts with libgmac
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 10 Dec 2009 00:55:00 +0100
+
 libgmac (0.0.3) unstable; urgency=low
 
   * Updated to upstream version
