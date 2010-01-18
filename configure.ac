@@ -183,9 +183,8 @@ AC_MSG_CHECKING(whether to build tests)
 AC_ARG_ENABLE(tests,
     AC_HELP_STRING([--enable-tests], [turn on tests [[default=no]]])
         , , enable_tests=$tests_default)
-if test "$enable_async_launch" = "yes"; then
+if test "$enable_tests" = "yes"; then
     AC_MSG_RESULT(yes)
-    AC_DEFINE([USE_ASYNC_LAUNCH])
     BUILD_TESTS="tests"
 else
     BUILD_TESTS=""
