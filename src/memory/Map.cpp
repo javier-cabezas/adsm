@@ -4,14 +4,14 @@
 
 namespace gmac { namespace memory {
 
-Map::__Map *Map::__global = NULL;
+Map::RegionMap *Map::__global = NULL;
 unsigned Map::count = 0;
 gmac::util::RWLock Map::global(paraver::mmGlobal);
 
 Region *
 Map::localFind(const void *addr)
 {
-    __Map::const_iterator i;
+    RegionMap::const_iterator i;
     Region *ret = NULL;
     i = __map.upper_bound(addr);
     if(i != __map.end() && i->second->start() <= addr) {
@@ -23,18 +23,20 @@ Map::localFind(const void *addr)
 Region *
 Map::globalFind(const void *addr)
 {
-    __Map::const_iterator i;
+    RegionMap::const_iterator i;
     Region *ret = NULL;
+    global.read();
     i = __global->upper_bound(addr);
     if(i != __global->end() && i->second->start() <= addr)
         ret = i->second;
+    global.unlock();
     return ret;
 }
 
 void
 Map::clean()
 {
-	__Map::iterator i;
+	RegionMap::iterator i;
 	local.write();
 	for(i = __map.begin(); i != __map.end(); i++) {
 		TRACE("Cleaning Region %p", i->second->start());
@@ -51,7 +53,7 @@ Map::Map() :
     local(paraver::mmLocal)
 {
     global.write();
-    if(__global == NULL) __global = new __Map();
+    if(__global == NULL) __global = new RegionMap();
     count++;
     global.unlock();
 }
@@ -75,7 +77,7 @@ Map::init()
 
 Region *Map::remove(void *addr)
 {
-	__Map::iterator i;
+	RegionMap::iterator i;
 	global.write();
 	i = __global->upper_bound(addr);
 	assert(i != __global->end() && i->second->start() == addr);

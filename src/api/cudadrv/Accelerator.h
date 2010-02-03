@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -41,10 +41,9 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-namespace gmac {
-
-namespace gpu {
+namespace gmac { namespace gpu {
 class Context;
+class ModuleDescriptor;
 
 class Accelerator : public gmac::Accelerator {
 protected:
@@ -53,16 +52,22 @@ protected:
 
 	std::set<gpu::Context *> queue;
 
+    int major;
+    int minor;
+
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
 	CUdevice device() const;
 
 	gmac::Context *create();
+#if 0
 	gmac::Context *clone(const gmac::Context &);
+#endif
 	void destroy(gmac::Context *);
-
 	size_t nContexts() const;
+
+    CUcontext createCUDAContext();
 
     bool async() const;
 };

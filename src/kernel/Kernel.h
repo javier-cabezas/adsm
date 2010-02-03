@@ -31,41 +31,72 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_ACCELERATOR_H_
-#define __KERNEL_ACCELERATOR_H_
+#ifndef __KERNEL_KERNEL_H
+#define __KERNEL_KERNEL_H
 
+#include "Descriptor.h"
 
-#include <stddef.h>
+#include "memory/Region.h"
+
+#include <vector>
 
 namespace gmac {
 
-class Context;
-
-/*!
-	\brief Generic Accelerator Class
-	Defines the standard interface all accelerators MUST
-	implement
-*/
-class Accelerator {
-protected:
-	friend class Context;
-	virtual void destroy(Context *ctx) = 0;
-    size_t _memory;
-    unsigned id;
+class Argument {
 public:
-	Accelerator(int n);
-	virtual ~Accelerator();
+    void * _ptr;
+    size_t _size;
+    Argument(void * ptr, size_t size);
+private:
+    friend class Kernel;
+};
 
-	virtual Context *create() = 0;
-#if 0
-	virtual Context *clone(const Context &) = 0;
-#endif
-	size_t memory() const;
-	virtual size_t nContexts() const = 0;
+typedef std::vector<Argument> ArgVector;
+
+/// \todo create a pool of objects to avoid mallocs/frees
+class KernelConfig : public ArgVector{
+protected:
+	static const unsigned StackSize = 4096;
+
+    char _stack[StackSize];
+    off_t _argsSize;
+
+    KernelConfig(const KernelConfig & c);
+public:
+    /// \todo create a pool of objects to avoid mallocs/frees
+    KernelConfig();
+    virtual ~KernelConfig();
+
+    void pushArgument(const void * arg, size_t size, off_t offset);
+    off_t argsSize() const;
+
+    char * argsArray();
+};
+
+typedef std::vector<memory::Region *> RegionVector;
+typedef Descriptor<gmacKernel_t> KernelDescriptor;
+
+class KernelLaunch;
+
+class Kernel : public RegionVector, public KernelDescriptor
+{
+public:
+    Kernel(const KernelDescriptor & k);
+
+    virtual KernelLaunch * launch(KernelConfig & c) = 0;
+    gmacError_t bind(void * addr);
+    gmacError_t unbind(void * addr);
+};
+
+class KernelLaunch {
+public:
+    virtual gmacError_t execute() = 0;
 };
 
 }
 
-#include "Accelerator.ipp"
+#include "Kernel.ipp"
 
-#endif
+#endif /* KERNEL_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

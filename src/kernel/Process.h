@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -37,12 +37,15 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 #include <debug.h>
 
-#include <kernel/Queue.h>
-#include <memory/Map.h>
+#include "kernel/Queue.h"
+#include "memory/Map.h"
+
+#include "gmac/gmac.h"
 
 #include <cassert>
 #include <vector>
 #include <list>
+#include <map>
 
 namespace gmac {
 class Accelerator;
@@ -81,7 +84,7 @@ public:
 protected:
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
-	
+
 	typedef std::map<THREAD_ID, kernel::Queue *> QueueMap;
 	QueueMap _queues;
 
@@ -99,9 +102,8 @@ public:
 
 	static void init(const char *name);
 
-	void create();
 #define ACC_AUTO_BIND -1
-	void clone(Context *ctx, int acc = ACC_AUTO_BIND);
+    Context * create(int acc = ACC_AUTO_BIND);
 	void remove(Context *ctx);
 	gmacError_t migrate(int acc);
 	const ContextList &contexts() const;
@@ -121,8 +123,8 @@ public:
 	size_t accs() const;
 };
 
-#include "Process.ipp"
-
 }
+
+#include "Process.ipp"
 
 #endif

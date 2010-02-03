@@ -31,41 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_ACCELERATOR_H_
-#define __KERNEL_ACCELERATOR_H_
-
-
-#include <stddef.h>
+#ifndef __DESCRIPTOR_KERNEL_H_
+#define __DESCRIPTOR_KERNEL_H_
 
 namespace gmac {
 
-class Context;
-
-/*!
-	\brief Generic Accelerator Class
-	Defines the standard interface all accelerators MUST
-	implement
-*/
-class Accelerator {
+template <typename K>
+class Descriptor {
 protected:
-	friend class Context;
-	virtual void destroy(Context *ctx) = 0;
-    size_t _memory;
-    unsigned id;
-public:
-	Accelerator(int n);
-	virtual ~Accelerator();
+    K _key;
+    const char * _name;
 
-	virtual Context *create() = 0;
-#if 0
-	virtual Context *clone(const Context &) = 0;
-#endif
-	size_t memory() const;
-	virtual size_t nContexts() const = 0;
+public:
+    Descriptor(const char * name, K key);
+    const char * name() const;
+    K key() const;
 };
 
 }
 
-#include "Accelerator.ipp"
+#include "Descriptor.ipp"
 
 #endif

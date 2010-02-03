@@ -1,97 +1,91 @@
 #ifndef __API_CUDADRV_MODULE_IPP_
 #define __API_CUDADRV_MODULE_IPP_
 
-inline void
-Function::load(CUmodule mod)
+namespace gmac { namespace gpu {
+
+inline bool
+VariableDescriptor::constant() const
 {
-    assert(cuModuleGetFunction(&fun, mod, name) == CUDA_SUCCESS);
+    return _constant;
 }
 
-inline void
-Texture::load(CUmodule mod)
+inline size_t
+Variable::size() const
 {
-    assert(cuModuleGetTexRef(&ref->__texref, mod, name) == CUDA_SUCCESS);
+    return _size;
 }
 
-inline void
-Module::reload()
+inline CUdeviceptr
+Variable::devPtr() const
 {
-    TRACE("Module image: %p", fatBin);
-    CUresult r = cuModuleLoadFatBinary(&mod, fatBin);
-    assert(r == CUDA_SUCCESS);
-    FunctionMap::iterator f;
-    for(f = functions.begin(); f != functions.end(); f++)
-        f->second.load(mod);
-    TextureList::iterator t;
-    for(t = textures.begin(); t != textures.end(); t++)
-        t->load(mod);
+    return _ptr;
 }
 
-inline void
-Module::function(const char *host, const char *dev)
+inline CUtexref
+Texture::texRef() const
 {
-    functions.insert(FunctionMap::value_type(host, Function(mod, dev)));
+    return _texRef;
 }
 
-inline const Function *
-Module::function(const char *name) const
+inline
+const VariableDescriptor &
+ModuleDescriptor::pageTable() const
 {
-    FunctionMap::const_iterator f;
-    f = functions.find(name);
-    if(f == functions.end()) return NULL;
-    return &f->second;
+    return *_pageTable;
 }
 
-inline void
-Module::variable(const char *host, const char *dev)
+inline
+void
+ModuleDescriptor::add(gmac::KernelDescriptor & k)
 {
-    CUdeviceptr ptr; 
-    unsigned int size;
-    CUresult ret = cuModuleGetGlobal(&ptr, &size, mod, dev);
-    variables.insert(VariableMap::value_type(host, Variable(dev, ptr, size)));
+    _kernels.push_back(k);
 }
 
-inline const Variable *
-Module::variable(const char *name) const
+inline
+void
+ModuleDescriptor::add(VariableDescriptor & v)
 {
-    VariableMap::const_iterator v;
-    v = variables.find(name);
-    if(v == variables.end()) return NULL;
-    return &v->second;
+    if (v.constant()) {
+        _constants.push_back(v);
+    } else {
+        _variables.push_back(v);
+    }
 }
 
-inline void
-Module::constant(const char *host, const char *dev)
+inline
+void
+ModuleDescriptor::add(TextureDescriptor & t)
 {
-	CUdeviceptr ptr; 
-	unsigned int size;
-	std::pair<VariableMap::iterator, bool> var;
-	CUresult ret = cuModuleGetGlobal(&ptr, &size, mod, dev);
-	var = constants.insert(VariableMap::value_type(host,
-			Variable(dev, ptr, size)));
-    if(strncmp(dev, pageTableSymbol, strlen(pageTableSymbol)) == 0)
-        _pageTable = &var.first->second;
+    _textures.push_back(t);
 }
 
 inline const Variable *
-Module::constant(const char *name) const
+Module::constant(gmacVariable_t key) const
 {
     VariableMap::const_iterator v;
-    v = constants.find(name);
-    if(v == constants.end()) return NULL;
+    v = _constants.find(key);
+    if(v == _constants.end()) return NULL;
     return &v->second;
 }
 
-inline Variable *
-Module::pageTable() const 
+inline const Variable *
+Module::variable(gmacVariable_t key) const
 {
-    return _pageTable;
+    VariableMap::const_iterator v;
+    v = _variables.find(key);
+    if(v == _variables.end()) return NULL;
+    return &v->second;
 }
 
-inline void
-Module::texture(struct __textureReference *ref, const char *name)
+inline const Texture *
+Module::texture(gmacTexture_t key) const
 {
-    textures.push_back(Texture(mod, ref, name));
+    TextureMap::const_iterator t;
+    t = _textures.find(key);
+    if(t == _textures.end()) return NULL;
+    return &t->second;
 }
+
+}}
 
 #endif

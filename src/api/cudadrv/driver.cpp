@@ -1,8 +1,11 @@
 #include <config.h>
 #include <debug.h>
 
-#include <gmac/init.h>
+#include "gmac/init.h"
 
+#include "kernel/Kernel.h"
+
+#include "Accelerator.h"
 #include "Context.h"
 #include "Module.h"
 
@@ -20,13 +23,23 @@
 extern "C" {
 #endif
 
+using gmac::gpu::Accelerator;
 using gmac::gpu::Context;
-using gmac::gpu::Module;
+using gmac::KernelDescriptor;
+using gmac::gpu::ModuleDescriptor;
+using gmac::gpu::TextureDescriptor;
+using gmac::gpu::VariableDescriptor;
 
+/*!
+ * @returns Module **
+ */
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-	__enterGmac();
-	void **ret = (void **)Context::current()->load(fatCubin);
+    TRACE("CUDA Fat binary: %p", fatCubin);
+    assert(proc->accs() > 0);
+    __enterGmac();
+    // Use the first GPU to load the fat binary
+    void **ret = (void **) new ModuleDescriptor(fatCubin);
 	__exitGmac();
 	return ret;
 }
@@ -34,8 +47,7 @@ void **__cudaRegisterFatBinary(void *fatCubin)
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
 	__enterGmac();
-	Module *mod = (Module *)fatCubinHandle;
-	Context::current()->unload(mod);
+    ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	__exitGmac();
 }
 
@@ -44,12 +56,13 @@ void __cudaRegisterFunction(
 		const char *devName, int threadLimit, uint3 *tid, uint3 *bid,
 		dim3 *bDim, dim3 *gDim)
 {
-	Module *mod = (Module *)fatCubinHandle;
+    TRACE("CUDA Function");
+	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	assert(mod != NULL);
 	__enterGmac();
-	Context::current()->lock();
-	mod->function(hostFun, devName);
-	Context::current()->unlock();
+    //current->kernel((gmacKernel_t) hostFun, k);
+    KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
+    mod->add(k);
 	__exitGmac();
 }
 
@@ -57,17 +70,26 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char *deviceAddress, const char *deviceName, int ext, int size,
 		int constant, int global)
 {
-	Module *mod = (Module *)fatCubinHandle;
+    TRACE("CUDA Variable");
+	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	assert(mod != NULL);
 	__enterGmac();
-	Context::current()->lock();
-	if(constant == 0) mod->variable(hostVar, deviceName);
-	else mod->constant(hostVar, deviceName);
-	mod->variable(hostVar, deviceName);
-	Context::current()->unlock();
+    VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant));
+    mod->add(v);
 	__exitGmac();
 }
 
+void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
+		const void **deviceAddress, const char *deviceName, int dim, int norm, int ext)
+{
+    TRACE("CUDA Texture");
+	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
+	assert(mod != NULL);
+	__enterGmac();
+    TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
+	mod->add(t);
+	__exitGmac();
+}
 
 void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr)
 {
@@ -95,10 +117,10 @@ cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 	return cudaSuccess;
 }
 
-extern gmacError_t gmacLaunch(const char *);
-cudaError_t cudaLaunch(const char *symbol)
+extern gmacError_t gmacLaunch(gmacKernel_t k);
+cudaError_t cudaLaunch(gmacKernel_t k)
 {
-	gmacLaunch(symbol);
+	gmacLaunch(k);
 	return cudaSuccess;
 }
 

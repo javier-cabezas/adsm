@@ -1,6 +1,8 @@
 #ifndef __VM_IPP_
 #define __VM_IPP_
 
+namespace gmac { namespace memory  { namespace vm {
+
 template<typename T>
 T *
 Table<T>::entry(size_t n) const
@@ -176,5 +178,7 @@ Table<T>::sync() const
     Dumper::sync(table, __device, nEntries * sizeof(T *));
 #endif
 }
+
+}}}
 
 #endif
