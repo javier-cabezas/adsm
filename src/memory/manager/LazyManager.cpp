@@ -17,6 +17,7 @@ void *LazyManager::alloc(void *addr, size_t count)
 	if((cpuAddr = hostMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
 	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
 	insert(new ProtRegion(cpuAddr, count));
+
 	return cpuAddr;
 }
 
@@ -39,7 +40,7 @@ void LazyManager::flush()
 		}
 		r->invalidate();
 	}
-	gmac::Context::current()->flush();
+	//gmac::Context::current()->flush();
 	gmac::Context::current()->invalidate();
 }
 

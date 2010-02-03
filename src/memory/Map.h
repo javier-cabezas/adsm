@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MAP_H_
 
 #include <memory/PageTable.h>
-#include <memory/Region.h>
 
 #include <paraver.h>
 #include <util/Lock.h>
@@ -46,25 +45,24 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
+class Region;
+
 class Map {
 protected:
-	typedef std::map<const void *, Region *> __Map;
-	__Map __map;
+	typedef std::map<const void *, Region *> RegionMap;
+	RegionMap __map;
 	util::RWLock local;
-	static __Map *__global;
+	static RegionMap *__global;
 	static unsigned count;
 	static gmac::util::RWLock global;
-
-	Region *localFind(const void *addr);
-	Region *globalFind(const void *addr);
 
 	void clean();
 
 	PageTable __pageTable;
 
 public:
-	typedef __Map::iterator iterator;
-	typedef __Map::const_iterator const_iterator;
+	typedef RegionMap::iterator iterator;
+	typedef RegionMap::const_iterator const_iterator;
 
 	Map();
 	virtual ~Map();
@@ -79,6 +77,9 @@ public:
 	iterator begin();
 	iterator end();
 
+    Region *localFind(const void *addr);
+    static Region *globalFind(const void *addr);
+
 	void insert(Region *i);
 
 	Region *remove(void *addr);
@@ -90,8 +91,8 @@ public:
 	T *find(const void *addr);
 };
 
-#include "Map.ipp"
-
 }}
+
+#include "Map.ipp"
 
 #endif

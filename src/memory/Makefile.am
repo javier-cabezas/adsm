@@ -4,13 +4,13 @@ SUBDIRS = manager $(OS_DIR)
 
 noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
-			VM.h VM.cpp\
-			Map.h Map.cpp\
-			PageTable.h PageTable.cpp\
-			Manager.h Manager.cpp\
-			Region.h Region.cpp\
+			VM.h VM.ipp VM.cpp\
+			Map.h Map.ipp Map.cpp\
+			PageTable.h PageTable.ipp PageTable.cpp\
+			Manager.h Manager.ipp Manager.cpp\
+			Region.h Region.ipp Region.cpp\
 			Handler.h Handler.cpp\
-			ProtRegion.h ProtRegion.cpp
+			ProtRegion.h ProtRegion.ipp ProtRegion.cpp
 
 libmemory_la_LIBADD = manager/libmemory-manager.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 

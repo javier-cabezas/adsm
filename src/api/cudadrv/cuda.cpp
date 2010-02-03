@@ -4,7 +4,7 @@
 #include "Accelerator.h"
 #include "Context.h"
 
-#include <kernel/Process.h>
+#include "kernel/Process.h"
 
 #include <cuda.h>
 

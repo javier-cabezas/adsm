@@ -4,38 +4,24 @@
 
 namespace gmac { namespace gpu {
 
+Context::AddressMap Context::hostMem;
+void * Context::FatBin;
 #ifdef USE_VM
 const char *Context::pageTableSymbol = "__pageTable";
 #endif
-
-Context::Call::Call(dim3 grid, dim3 block, size_t shared, size_t tokens) :
-    grid(grid),
-    block(block),
-    shared(shared),
-    tokens(tokens)
-{}
 
 void
 Context::setup()
 {
     mutex = new util::Lock(paraver::ctxLocal);
-    CUcontext tmp;
-    assert(cuDeviceComputeCapability(&major, &minor, gpu.device()) ==
-            CUDA_SUCCESS);
-    unsigned int flags = 0;
-    if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
-    CUresult ret = cuCtxCreate(&ctx, flags, gpu.device());
-    if(ret != CUDA_SUCCESS)
-        FATAL("Unable to create CUDA context %d", ret);
-    assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
-
+    _ctx = _gpu.createCUDAContext();
     enable();
 }
 
 void
 Context::setupStreams()
 {
-    if (gpu.async()) {
+    if (_gpu.async()) {
         CUresult ret;
         ret = cuStreamCreate(&streamLaunch, 0);
         if(ret != CUDA_SUCCESS)
@@ -51,7 +37,7 @@ Context::setupStreams()
             FATAL("Unable to create CUDA stream %d", ret);
     }
 
-    if (gpu.async()) {
+    if (_gpu.async()) {
         TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
         assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
         _bufferPageLockedSize = paramBufferPageLockedSize;
@@ -62,7 +48,9 @@ Context::setupStreams()
 }
 
 Context::Context(Accelerator &gpu) :
-    gmac::Context(gpu), gpu(gpu), _sp(0)
+    gmac::Context(gpu),
+    _gpu(gpu),
+    _call(dim3(0), dim3(0), 0, 0)
 #ifdef USE_VM
     , pageTable(NULL)
 #endif
@@ -71,42 +59,24 @@ Context::Context(Accelerator &gpu) :
 
     lock();
     setupStreams();
+    TRACE("Let's create modules");
+    _modules = ModuleDescriptor::createModules();
     unlock();
 
     TRACE("New Accelerator context [%p]", this);
-}
-
-Context::Context(const Context &root, Accelerator &gpu) :
-	gmac::Context(gpu),
-	gpu(gpu), _sp(0)
-#ifdef USE_VM
-	,pageTable(NULL)
-#endif
-{
-	setup();
-	lock();
-	ModuleMap::const_iterator m;
-	for(m = root.modules.begin(); m != root.modules.end(); m++) {
-		Module *module = new Module(*m->first);
-		modules.insert(ModuleMap::value_type(module, m->second));
-	}
-	hostMem = root.hostMem;
-    setupStreams();
-    unlock();
-	TRACE("Cloned Accelerator context [%p]", this);
 }
 
 Context::~Context()
 {
     TRACE("Remove Accelerator context [%p]", this);
     delete mutex;
-    if (gpu.async()) {
+    if (_gpu.async()) {
         cuStreamDestroy(streamLaunch);
         cuStreamDestroy(streamToDevice);
         cuStreamDestroy(streamToHost);
         cuStreamDestroy(streamDevice);
     }
-    cuCtxDestroy(ctx); 
+    cuCtxDestroy(_ctx);
 }
 
 gmacError_t
@@ -134,7 +104,8 @@ Context::free(void *addr)
     return error(ret);
 }
 
-gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
+gmacError_t
+Context::hostAlloc(void **host, void **device, size_t size)
 {
 	zero(host);
 	CUresult ret = CUDA_SUCCESS;
@@ -154,7 +125,8 @@ gmacError_t Context::hostAlloc(void **host, void **device, size_t size)
 }
 
 
-gmacError_t Context::hostMemAlign(void **host, void **device, size_t size)
+gmacError_t
+Context::hostMemAlign(void **host, void **device, size_t size)
 {
 	zero(host); zero(device);
 	void *ptr = NULL;
@@ -182,7 +154,8 @@ gmacError_t Context::hostMemAlign(void **host, void **device, size_t size)
 }
 
 
-gmacError_t Context::hostMap(void *host, void **device, size_t size)
+gmacError_t
+Context::hostMap(void *host, void **device, size_t size)
 {
 	zero(device);
 	void *ptr = NULL;
@@ -219,7 +192,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     gmac::Context *ctx = gmac::Context::current();
 
     CUresult ret;
-    if (gpu.async()) {
+    if (_gpu.async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
 
@@ -237,7 +210,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 
             left -= bytes;
             off  += bytes;
-        }           
+        }
     } else {
         lock();
         ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
@@ -256,7 +229,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
     gmac::Context *ctx = gmac::Context::current();
 
     CUresult ret;
-    if (gpu.async()) {
+    if (_gpu.async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
 
@@ -274,7 +247,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
 
             left -= bytes;
             off  += bytes;
-        }           
+        }
     } else {
         lock();
         ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
@@ -299,7 +272,8 @@ Context::copyDevice(void *dst, const void *src, size_t size) {
     return error(ret);
 }
 
-gmacError_t Context::memset(void *addr, int i, size_t n)
+gmacError_t
+Context::memset(void *addr, int i, size_t n)
 {
 	CUresult ret = CUDA_SUCCESS;
 	unsigned char c = i & 0xff;
@@ -320,105 +294,57 @@ gmacError_t Context::memset(void *addr, int i, size_t n)
 	return error(ret);
 }
 
-
-gmacError_t Context::launch(const char *kernel)
+gmac::KernelLaunch *
+Context::launch(gmacKernel_t addr)
 {
-	assert(_calls.empty() == false);
-	Call c = _calls.back();
-	_calls.pop_back();
-	size_t count = _sp;
-	_sp = 0;
-
-	const Function *f = function(kernel);
-	assert(f != NULL);
-
-	lock();
-	// Set-up parameters
-	CUresult ret = cuParamSetv(f->fun, 0, _stack, count);
-	if(ret != CUDA_SUCCESS) {
-		unlock();
-		return error(ret);
-	}
-	if((ret = cuParamSetSize(f->fun, count)) != CUDA_SUCCESS) {
-		unlock();
-		return error(ret);
-	}
-
-#if 0
-	// Set-up textures
-	Textures::const_iterator t;
-	for(t = _textures.begin(); t != _textures.end(); t++) {
-		cuParamSetTexRef(f->fun, CU_PARAM_TR_DEFAULT, *(*t));
-	}
-#endif
-
-	// Set-up shared size
-	if((ret = cuFuncSetSharedSize(f->fun, c.shared)) != CUDA_SUCCESS) {
-		unlock();
-		return error(ret);
-	}
-
-	if((ret = cuFuncSetBlockShape(f->fun, c.block.x, c.block.y, c.block.z))
-			!= CUDA_SUCCESS) {
-		unlock();
-		return error(ret);
-	}
-
-	ret = cuLaunchGridAsync(f->fun, c.grid.x, c.grid.y, streamLaunch);
-	unlock();
-	return error(ret);
-}
-
-Module *
-Context::load(void *fatBin)
-{
-    lock();
-    Module *module = new Module(fatBin);
-    modules.insert(ModuleMap::value_type(module, fatBin));
-    unlock();
-    return module;
-}
-
-void
-Context::unload(Module *mod)
-{
-    ModuleMap::iterator m = modules.find(mod);
-    assert(m != modules.end());
-    lock();
-    delete m->first;
-    modules.erase(m);
-    unlock();
-}
-
-const Function *
-Context::function(const char *name) const
-{
-    ModuleMap::const_iterator m;	
-    for(m = modules.begin(); m != modules.end(); m++) {
-        const Function *func = m->first->function(name);
-        if(func != NULL) return func;
-    }
-    return NULL;
+    gmac::Kernel * k = kernel(addr);
+    assert(k != NULL);
+    _call._stream = streamLaunch;
+    gmac::KernelLaunch * l = k->launch(_call);
+    return l;
 }
 
 const Variable *
-Context::constant(const char *name) const
+Context::constant(gmacVariable_t key) const
 {
-    ModuleMap::const_iterator m;
-    for(m = modules.begin(); m != modules.end(); m++) {
-        const Variable *var = m->first->constant(name);
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        const Variable *var = (*m)->constant(key);
         if(var != NULL) return var;
     }
     return NULL;
 }
 
+const Variable *
+Context::variable(gmacVariable_t key) const
+{
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        const Variable *var = (*m)->variable(key);
+        if(var != NULL) return var;
+    }
+    return NULL;
+}
+
+const Texture *
+Context::texture(gmacTexture_t key) const
+{
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        const Texture *tex = (*m)->texture(key);
+        if(tex != NULL) return tex;
+    }
+    return NULL;
+}
+
 
 void
-Context::flush()
+Context::flush(const char * kernel)
 {
+    //
 #ifdef USE_VM
-	ModuleMap::const_iterator m;
-	for(m = modules.begin(); pageTable == NULL && m != modules.end(); m++) {
+	ModuleVector::const_iterator m;
+	for(m = _modules.begin(); pageTable == NULL && m != modules.end(); m++) {
 		pageTable = m->first->pageTable();
 	}
 	assert(pageTable != NULL);
@@ -429,7 +355,7 @@ Context::flush()
 	devicePageTable.size = mm().pageTable().getTableSize();
 	devicePageTable.page = mm().pageTable().getPageSize();
 	assert(devicePageTable.ptr != NULL);
-	
+
 	lock();
 	CUresult ret = cuMemcpyHtoD(pageTable->ptr, &devicePageTable, sizeof(devicePageTable));
 	assert(ret == CUDA_SUCCESS);
@@ -437,11 +363,12 @@ Context::flush()
 #endif
 }
 
-void Context::invalidate()
+void
+Context::invalidate()
 {
 #ifdef USE_VM
-	ModuleMap::const_iterator m;
-	for(m = modules.begin(); pageTable == NULL && m != modules.end(); m++) {
+	ModuleVector::const_iterator m;
+	for(m = _modules.begin(); pageTable == NULL && m != _modules.end(); m++) {
 		pageTable = m->first->pageTable();
 	}
 	assert(pageTable != NULL);
@@ -450,6 +377,5 @@ void Context::invalidate()
 	mm().pageTable().invalidate();
 #endif
 }
-
 
 }}

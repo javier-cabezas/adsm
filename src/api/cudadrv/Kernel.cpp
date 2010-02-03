@@ -1,0 +1,88 @@
+#include "Context.h"
+#include "Kernel.h"
+#include "Module.h"
+
+namespace gmac { namespace gpu {
+
+Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
+    gmac::Kernel(k)
+{
+    CUresult ret = cuModuleGetFunction(&_f, mod, _name);
+    assert(ret == CUDA_SUCCESS);
+}
+
+gmac::KernelLaunch *
+Kernel::launch(gmac::KernelConfig & _c)
+{
+    KernelConfig & c = static_cast<KernelConfig &>(_c);
+
+    KernelLaunch * l = new KernelLaunch(*this, c);
+    return l;
+}
+
+KernelConfig::KernelConfig(const KernelConfig & c) :
+    gmac::KernelConfig(c),
+    _grid(c._grid),
+    _block(c._block),
+    _shared(c._shared),
+    _tokens(c._tokens),
+    _stream(c._stream)
+{
+}
+
+KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, size_t tokens) :
+    gmac::KernelConfig(),
+    _grid(grid),
+    _block(block),
+    _shared(shared),
+    _tokens(tokens)
+{
+}
+
+KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
+    gmac::RegionVector(k),
+    KernelConfig(c),
+    _ctx(*Context::current()),
+    _kernel(k),
+    _f(k._f)
+{
+}
+
+gmacError_t
+KernelLaunch::execute()
+{
+    _ctx.lock();
+	// Set-up parameters
+    CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
+    if(ret != CUDA_SUCCESS) goto exit;
+
+	if((ret = cuParamSetSize(_f, argsSize())) != CUDA_SUCCESS) {
+        goto exit;
+	}
+
+#if 0
+	// Set-up textures
+	Textures::const_iterator t;
+	for(t = _textures.begin(); t != _textures.end(); t++) {
+		cuParamSetTexRef(_f, CU_PARAM_TR_DEFAULT, *(*t));
+	}
+#endif
+
+	// Set-up shared size
+	if((ret = cuFuncSetSharedSize(_f, shared())) != CUDA_SUCCESS) {
+        goto exit;
+	}
+
+	if((ret = cuFuncSetBlockShape(_f, block().x, block().y, block().z))
+			!= CUDA_SUCCESS) {
+        goto exit;
+	}
+
+	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
+
+exit:
+    _ctx.unlock();
+    return Context::error(ret);
+}
+
+}}

@@ -41,14 +41,14 @@ void RollingManager::writeBack()
 }
 
 
-void RollingManager::flushToDevice() 
+void RollingManager::flushToDevice()
 {
 	waitForWrite();
 	while(regionRolling[Context::current()]->empty() == false) {
 		ProtSubRegion *r = regionRolling[Context::current()]->pop();
 		assert(r->copyToDevice() == gmacSuccess);
 		r->readOnly();
-		TRACE("Flush to Device %p", r->start()); 
+		TRACE("Flush to Device %p", r->start());
 	}
 }
 
@@ -98,6 +98,7 @@ void *RollingManager::alloc(void *addr, size_t size)
     }
 	regionRolling[Context::current()]->inc(lruDelta);
 	insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
+
 	return cpuAddr;
 }
 
@@ -128,7 +129,7 @@ void RollingManager::flush()
 		dynamic_cast<RollingRegion *>(r)->invalidate();
 	}
 	current()->unlock();
-	gmac::Context::current()->flush();
+	//gmac::Context::current()->flush();
 	gmac::Context::current()->invalidate();
 	TRACE("RollingManager Flush Ends");
 }

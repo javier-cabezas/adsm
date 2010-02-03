@@ -48,8 +48,8 @@ class BatchManager : public Manager {
 public:
 	BatchManager() : Manager() { }
 
-	void *alloc(void *addr, size_t count);
-    void release(void *addr);
+	void * alloc(void * addr, size_t count);
+    void release(void * addr);
 	void flush();
 	void sync();
 

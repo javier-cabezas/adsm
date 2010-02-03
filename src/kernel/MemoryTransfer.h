@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,41 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_ACCELERATOR_H_
-#define __KERNEL_ACCELERATOR_H_
+#ifndef __KERNEL_MEMORY_TRANSFER_H_
+#define __KERNEL_MEMORY_TRANSFER_H_
 
-
-#include <stddef.h>
+#include <debug.h>
 
 namespace gmac {
 
-class Context;
-
 /*!
-	\brief Generic Accelerator Class
-	Defines the standard interface all accelerators MUST
-	implement
+	\brief Memory transfer descriptor
 */
-class Accelerator {
+class MemoryTransfer {
 protected:
-	friend class Context;
-	virtual void destroy(Context *ctx) = 0;
-    size_t _memory;
-    unsigned id;
-public:
-	Accelerator(int n);
-	virtual ~Accelerator();
+    const void * _src;
+    void * _dst;
 
-	virtual Context *create() = 0;
-#if 0
-	virtual Context *clone(const Context &) = 0;
-#endif
-	size_t memory() const;
-	virtual size_t nContexts() const = 0;
+    Context * _ctxSrc;
+    Context * _ctxDst;
+
+public:
+    MemoryTransfer(void *dst, const void *src, size_t n);
+
+    const void * src() const;
+    void * dst() const;
+
+    Context * ctxSrc() const;
+    Context * ctxDst() const;
 };
+
+#include "Context.ipp"
 
 }
 
-#include "Accelerator.ipp"
 
 #endif

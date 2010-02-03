@@ -13,7 +13,7 @@ void BatchManager::release(void *addr)
 	removeVirtual(reg->start(), reg->size());
 	delete reg;
 }
-void BatchManager::flush(void)
+void BatchManager::flush()
 {
 	memory::Map::const_iterator i;
 	current()->lock();
@@ -23,11 +23,14 @@ void BatchManager::flush(void)
 				i->second->start(), i->second->size());
 	}
 	current()->unlock();
-	gmac::Context::current()->flush();
+    /*!
+      \todo Fix vm
+     */
+	//gmac::Context::current()->flush();
 	gmac::Context::current()->sync();
 }
 
-void BatchManager::sync(void)
+void BatchManager::sync()
 {
 	memory::Map::const_iterator i;
 	current()->lock();

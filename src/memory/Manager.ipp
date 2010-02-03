@@ -4,7 +4,9 @@
 inline void
 Manager::insert(Region *r)
 {
-    gmac::Context::current()->mm().insert(r);
+    Map * m = current();
+    assert(m != NULL);
+    current()->insert(r);
 }
 
 inline memory::Map *
@@ -39,6 +41,24 @@ Manager::ptr(Context *ctx, const void *addr)
     const void *ret = (const void *)pageTable.translate(addr);
     if(ret == NULL) ret = proc->translate(addr);
     return ret;
+}
+
+inline void
+Manager::registerAlloc(void *addr, size_t count)
+{
+    AllocMap::iterator it;
+    it = _allocs.find(addr);
+    assert(it == _allocs.end());
+    _allocs[addr] = count;
+}
+
+inline void
+Manager::unregisterAlloc(void *addr)
+{
+    AllocMap::iterator it;
+    it = _allocs.find(addr);
+    assert(it != _allocs.end());
+    _allocs.erase(it);
 }
 
 inline const void *

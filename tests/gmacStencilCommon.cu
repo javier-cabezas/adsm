@@ -234,7 +234,6 @@ do_stencil(void * ptr)
 	gettimeofday(&s, NULL);
     for (uint32_t i = 0; i < ITERATIONS; i++) {
         float * tmp;
-
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),
