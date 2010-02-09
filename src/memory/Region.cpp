@@ -26,7 +26,7 @@ gmacError_t Region::copyToDevice()
 		if((ret = (*i)->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess)
 			return ret;
 	}
-	return ret;	
+	return ret;
 }
 
 gmacError_t Region::copyToHost()
@@ -34,7 +34,7 @@ gmacError_t Region::copyToHost()
 	gmacError_t ret = gmacSuccess;
 	if((ret = _context->copyToHost(start(), Manager::ptr(start()), size())) != gmacSuccess)
 		return ret;
-	return ret;	
+	return ret;
 }
 
 void Region::sync()

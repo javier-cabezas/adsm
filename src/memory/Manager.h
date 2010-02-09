@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,6 +46,7 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 
 #include <iostream>
+#include <iterator>
 #include <map>
 
 
@@ -117,7 +118,13 @@ public:
 
 	//! This method is called whenever the user invokes
 	//! a kernel to be executed at the accelerator
-	virtual void flush(void) = 0;
+	virtual void flush() = 0;
+    virtual void flush(const RegionVector & regions) = 0;
+
+    //! This method is called after the user invokes
+	//! a kernel to be executed at the accelerator
+	virtual void invalidate() = 0;
+    virtual void invalidate(const RegionVector & regions) = 0;
 
 	//! This method is called just after the user requests
 	//! waiting for the accelerator to finish

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -37,8 +37,8 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <debug.h>
 
-#include <gmac/gmac.h>
-#include <memory/os/Memory.h>
+#include "gmac/gmac.h"
+#include "memory/os/Memory.h"
 
 #include <unistd.h>
 #include <stdint.h>
@@ -48,8 +48,9 @@ WITH THE SOFTWARE.  */
 
 #include <iostream>
 #include <list>
+#include <vector>
 
-namespace gmac { 
+namespace gmac {
 
 class Context;
 
@@ -103,6 +104,8 @@ public:
 };
 
 typedef std::list<Region> RegionList;
+typedef std::vector<Region *> RegionVector;
+
 
 #include "Region.ipp"
 

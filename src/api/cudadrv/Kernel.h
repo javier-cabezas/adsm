@@ -43,7 +43,7 @@ public:
     size_t tokens() const;
 };
 
-class KernelLaunch : public gmac::RegionVector, public KernelConfig, public gmac::KernelLaunch {
+class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
 protected:
     Context & _ctx;
     // \todo Is this really necessary?

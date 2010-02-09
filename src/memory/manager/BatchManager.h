@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -50,7 +50,11 @@ public:
 
 	void * alloc(void * addr, size_t count);
     void release(void * addr);
-	void flush();
+    void invalidate();
+    void invalidate(const RegionVector & regions);
+    void flush();
+    void flush(const RegionVector & regions);
+
 	void sync();
 
 	Context *owner(const void *);

@@ -46,24 +46,23 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Region;
+typedef std::map<const void *, Region *> RegionMap;
 
-class Map {
+class Map : public RegionMap {
 protected:
-	typedef std::map<const void *, Region *> RegionMap;
-	RegionMap __map;
 	util::RWLock local;
 	static RegionMap *__global;
 	static unsigned count;
 	static gmac::util::RWLock global;
+
+    Region *localFind(const void *addr);
+    static Region *globalFind(const void *addr);
 
 	void clean();
 
 	PageTable __pageTable;
 
 public:
-	typedef RegionMap::iterator iterator;
-	typedef RegionMap::const_iterator const_iterator;
-
 	Map();
 	virtual ~Map();
 
@@ -73,12 +72,6 @@ public:
 
 	void lock();
 	void unlock();
-
-	iterator begin();
-	iterator end();
-
-    Region *localFind(const void *addr);
-    static Region *globalFind(const void *addr);
 
 	void insert(Region *i);
 

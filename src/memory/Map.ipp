@@ -23,27 +23,15 @@ Map::unlock()
     local.unlock();
 }
 
-inline Map::iterator
-Map::begin()
-{
-    return __map.begin();
-}
-
-inline Map::iterator
-Map::end()
-{
-    return __map.end();
-}
-
 inline void
 Map::insert(Region *i)
 {
     local.write();
-    __map.insert(RegionMap::value_type(i->end(), i));
+    RegionMap::insert(value_type(i->end(), i));
     local.unlock();
 
     global.write();
-    __global->insert(RegionMap::value_type(i->end(), i));
+    RegionMap::insert(value_type(i->end(), i));
     global.unlock();
 }
 

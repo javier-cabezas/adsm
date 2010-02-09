@@ -6,10 +6,10 @@
 #include <threads.h>
 #include <debug.h>
 
-#include <config/params.h>
-#include <kernel/Process.h>
-#include <kernel/Context.h>
-#include <memory/Manager.h>
+#include "config/params.h"
+#include "kernel/Process.h"
+#include "kernel/Context.h"
+#include "memory/Manager.h"
 
 #include <paraver.h>
 
@@ -48,21 +48,21 @@ const char __user_code = 0;
 static void __attribute__((constructor(CORE)))
 gmacInit(void)
 {
-	TRACE("Initialiazing GMAC");
+    TRACE("Initialiazing GMAC");
 #ifdef PARAVER
-	paraver::init = 1;
+    paraver::init = 1;
 #endif
-	PRIVATE_INIT(__in_gmac, NULL);
-	__enterGmac();
-	gmac::Process::init(paramMemManager);
-	__exitGmac();
+    PRIVATE_INIT(__in_gmac, NULL);
+    __enterGmac();
+    gmac::Process::init(paramMemManager);
+    __exitGmac();
 }
 
 static void __attribute__((destructor))
 gmacFini(void)
 {
-	TRACE("Cleaning GMAC");
-	delete proc;
+    TRACE("Cleaning GMAC");
+    delete proc;
 }
 
 gmacError_t
@@ -77,8 +77,8 @@ gmacClear(gmacKernel_t k)
         return gmacErrorInvalidValue;
     }
     kernel->clear();
-	exitFunction();
-	__exitGmac();
+    exitFunction();
+    __exitGmac();
     return gmacSuccess;
 }
 
@@ -86,7 +86,7 @@ gmacError_t
 gmacBind(void * obj, gmacKernel_t k)
 {
     __enterGmac();
-	enterFunction(gmacBind);
+    enterFunction(gmacBind);
     gmac::Context * ctx = gmac::Context::current();
     gmac::Kernel  * kernel = ctx->kernel(k);
 
@@ -95,8 +95,8 @@ gmacBind(void * obj, gmacKernel_t k)
     }
     gmacError_t ret;
     ret = kernel->bind(obj);
-	exitFunction();
-	__exitGmac();
+    exitFunction();
+    __exitGmac();
     return ret;
 }
 
@@ -104,7 +104,7 @@ gmacError_t
 gmacUnbind(void * obj, gmacKernel_t k)
 {
     __enterGmac();
-	enterFunction(gmacUnbind);
+    enterFunction(gmacUnbind);
     gmac::Context * ctx = gmac::Context::current();
     gmac::Kernel  * kernel = ctx->kernel(k);
 
@@ -266,10 +266,10 @@ void *
 gmacPtr(void *ptr)
 {
     void *ret = NULL;
-	__enterGmac();
-	if(manager != NULL) ret = manager->ptr(ptr);
-	__exitGmac();
-	return ret;
+    __enterGmac();
+    if(manager != NULL) ret = manager->ptr(ptr);
+    __exitGmac();
+    return ret;
 }
 
 gmacError_t
@@ -278,22 +278,28 @@ gmacLaunch(gmacKernel_t k)
     gmac::Context * ctx = gmac::Context::current();
     gmac::KernelLaunch * launch = ctx->launch(k);
 
-	__enterGmac();
-	enterFunction(gmacLaunch);
-	gmacError_t ret = gmacSuccess;
-	if(manager) {
-		TRACE("Flush the memory used in the kernel");
-        //gmac::Context::current()->flush(symbol);
-        manager->flush();
-	}
-	TRACE("Kernel Launch");
+    __enterGmac();
+    enterFunction(gmacLaunch);
+    gmacError_t ret = gmacSuccess;
+    if(manager) {
+        TRACE("Flush the memory used in the kernel");
+        //manager->flush();
+        manager->flush(*launch);
+    }
+    TRACE("Kernel Launch");
     ret = launch->execute();
 
     if (paramAutoSync) ret = ctx->sync();
-	exitFunction();
-	__exitGmac();
 
-	return ret;
+    if(manager) {
+        TRACE("Invalidate the memory used in the kernel");
+        manager->invalidate(*launch);
+    }
+
+    exitFunction();
+    __exitGmac();
+
+    return ret;
 }
 
 gmacError_t
