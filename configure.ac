@@ -13,6 +13,24 @@ AM_PROG_LIBTOOL
 # Check for a hash table implementation
 AC_CXX_HEADER_TR1_UNORDERED_MAP
 
+# Check for processor
+AC_MSG_CHECKING(processor architecture)
+case "$host" in
+*x86_64*)
+AC_MSG_RESULT([amd64])
+ARCH="64"
+;;
+*i686*)
+AC_MSG_RESULT([ia32])
+ARCH="32"
+;;
+*)
+AC_MSG_RESULT([Unknown: "$host"])
+AC_MSG_ERROR([Your processor is not supported])
+;;
+esac
+
+
 # Check for the operating system
 case "$host" in
 *linux* | *Linux*)
@@ -191,6 +209,7 @@ else
     AC_MSG_RESULT(no)
 fi
 
+AC_SUBST(ARCH)
 AC_SUBST(BUILD_TESTS)
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
