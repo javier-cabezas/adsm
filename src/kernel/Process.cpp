@@ -70,24 +70,24 @@ Process::initThread()
 
 void Process::create()
 {
+    ThreadQueue q;
+    q.queue = new Queue();
 	TRACE("Creating new context");
 	mutex.lock();
 	Context *ctx = _accs[0]->create();
 	ctx->init();
 	_contexts.push_back(ctx);
-    ThreadQueue q;
-    q.queue = new Queue();
 	_queues.insert(QueueMap::value_type(SELF(), q));
 	mutex.unlock();
 }
 
 void Process::clone(gmac::Context *ctx, int acc)
 {
+	mutex.lock();
     QueueMap::iterator q = _queues.find(SELF());
 	assert(q != _queues.end());
 
 	TRACE("Cloning context");
-	mutex.lock();
     Context * clon;
     int usedAcc;
 
@@ -167,7 +167,9 @@ void *Process::translate(void *addr)
 void Process::sendReceive(THREAD_ID id)
 {
     Context * ctx = Context::current();
+    mutex.lock();
 	QueueMap::iterator q = _queues.find(id);
+    mutex.unlock();
 	assert(q != _queues.end());
     q->second.hasContext.lock();
     q->second.hasContext.unlock();
