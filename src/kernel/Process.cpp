@@ -16,6 +16,10 @@ SharedMemory::SharedMemory(void *_addr, size_t _size, size_t _count) :
     _count(_count)
 {}
 
+ThreadQueue::ThreadQueue() :
+    hasContext(paraver::queue)
+{}
+
 size_t Process::_totalMemory = 0;
 
 
@@ -36,7 +40,7 @@ Process::~Process()
 	for(a = _accs.begin(); a != _accs.end(); a++)
 		delete *a;
     for(q = _queues.begin(); q != _queues.end(); q++)
-        delete q->second;
+        delete q->second.queue;
 	_accs.clear();
 	mutex.unlock();
 	memoryFini();
@@ -53,21 +57,35 @@ Process::init(const char *name)
     memoryInit(name);
 }
 
+void
+Process::initThread()
+{
+    ThreadQueue q;
+    q.hasContext.lock();
+    q.queue = NULL;
+	mutex.lock();
+	_queues.insert(QueueMap::value_type(SELF(), q));
+    mutex.unlock();
+}
+
 void Process::create()
 {
 	TRACE("Creating new context");
 	mutex.lock();
-	unsigned n = current;
-	current = ++current % _accs.size();
-	Context *ctx = _accs[n]->create();
+	Context *ctx = _accs[0]->create();
 	ctx->init();
 	_contexts.push_back(ctx);
-	_queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
+    ThreadQueue q;
+    q.queue = new Queue();
+	_queues.insert(QueueMap::value_type(SELF(), q));
 	mutex.unlock();
 }
 
 void Process::clone(gmac::Context *ctx, int acc)
 {
+    QueueMap::iterator q = _queues.find(SELF());
+	assert(q != _queues.end());
+
 	TRACE("Cloning context");
 	mutex.lock();
     Context * clon;
@@ -90,8 +108,9 @@ void Process::clone(gmac::Context *ctx, int acc)
         clon = _accs[usedAcc]->clone(*ctx);
         clon->init();
         _contexts.push_back(clon);
-        _queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
     }
+    q->second.queue = new Queue();
+    q->second.hasContext.unlock();
 	mutex.unlock();
 	TRACE("Cloned context on Acc#%d", usedAcc);
 }
@@ -119,7 +138,10 @@ void Process::remove(Context *ctx)
 {
 	mutex.lock();
 	_contexts.remove(ctx);
-    delete _queues[SELF()];
+    ThreadQueue q = _queues[SELF()];
+    if (q.queue != NULL) {
+        delete q.queue;
+    }
 	_queues.erase(SELF());
 	mutex.unlock();
 	ctx->destroy();
@@ -144,14 +166,16 @@ void *Process::translate(void *addr)
 
 void Process::sendReceive(THREAD_ID id)
 {
+    Context * ctx = Context::current();
 	QueueMap::iterator q = _queues.find(id);
 	assert(q != _queues.end());
-	q->second->push(gmac::Context::current());
+    q->second.hasContext.lock();
+    q->second.hasContext.unlock();
+	q->second.queue->push(ctx);
 	PRIVATE_SET(Context::key, NULL);
 	q = _queues.find(SELF());
 	assert(q != _queues.end());
-	PRIVATE_SET(Context::key, q->second->pop());
+	PRIVATE_SET(Context::key, q->second.queue->pop());
 }
-
 
 }

@@ -74,6 +74,13 @@ public:
 	size_t dec();
 };
 
+class ThreadQueue {
+public:
+    ThreadQueue();
+    util::Lock hasContext;
+    Queue * queue;
+};
+
 class Process {
 public:
 	typedef std::list<Context *> ContextList;
@@ -82,7 +89,7 @@ protected:
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 	
-	typedef std::map<THREAD_ID, kernel::Queue *> QueueMap;
+	typedef std::map<THREAD_ID, ThreadQueue> QueueMap;
 	QueueMap _queues;
 
 	util::Lock mutex;
@@ -99,6 +106,7 @@ public:
 
 	static void init(const char *name);
 
+	void initThread();
 	void create();
 #define ACC_AUTO_BIND -1
 	void clone(Context *ctx, int acc = ACC_AUTO_BIND);

@@ -52,9 +52,9 @@ Context::setupStreams()
     }
 
     if (gpu.async()) {
-        TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
         assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
         _bufferPageLockedSize = paramBufferPageLockedSize;
+        TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
     } else {
         _bufferPageLocked     = NULL;
         _bufferPageLockedSize = 0;
