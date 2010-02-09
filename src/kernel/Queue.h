@@ -47,8 +47,6 @@ namespace gmac {
 
 class Context;
 
-namespace kernel {
-
 /*!
 	\brief Communication Queue
 */
@@ -69,7 +67,7 @@ public:
 
 #include "Queue.ipp"
 
-}}
+}
 
 
 #endif
