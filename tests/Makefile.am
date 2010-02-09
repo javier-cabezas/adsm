@@ -10,7 +10,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		vmVecAdd vmNull vmStencil vmMatrixMul
 
 bandwidth_SOURCES = bandwidth.cu
-bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu utils.cpp
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -23,10 +23,10 @@ gmacMemcpy_SOURCES = gmacMemcpy.cu
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu
-gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib64 -lcudart
+gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
 
 gmacConstant_SOURCES = gmacConstant.cu
-gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -lcudart
+gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.cpp
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
