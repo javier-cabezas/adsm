@@ -40,7 +40,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, size_t tokens) 
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    gmac::RegionVector(k),
+    gmac::KernelLaunch(),
     KernelConfig(c),
     _ctx(*Context::current()),
     _kernel(k),

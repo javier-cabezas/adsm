@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -35,11 +35,11 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_PROTREGION_H_
 
 #include "Region.h"
-#include "Handler.h"
 
-#include <memory/os/Memory.h>
+#include "memory/os/Memory.h"
 
 #include <csignal>
+#include <vector>
 
 namespace gmac { namespace memory {
 //! Protected Memory Region

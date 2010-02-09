@@ -274,7 +274,6 @@ public:
 	*/
 	gmacError_t error() const;
 
-	virtual void flush(const char * kernel) = 0;
 	virtual void invalidate() = 0;
 
 	unsigned id() const;

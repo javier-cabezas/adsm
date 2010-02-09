@@ -54,9 +54,9 @@ private:
 typedef std::vector<Argument> ArgVector;
 
 /// \todo create a pool of objects to avoid mallocs/frees
-class KernelConfig : public ArgVector{
+class KernelConfig : public ArgVector {
 protected:
-	static const unsigned StackSize = 4096;
+    static const unsigned StackSize = 4096;
 
     char _stack[StackSize];
     off_t _argsSize;
@@ -73,12 +73,11 @@ public:
     char * argsArray();
 };
 
-typedef std::vector<memory::Region *> RegionVector;
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class Kernel : public RegionVector, public KernelDescriptor
+class Kernel : public memory::RegionVector, public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
@@ -88,7 +87,7 @@ public:
     gmacError_t unbind(void * addr);
 };
 
-class KernelLaunch {
+class KernelLaunch : public memory::RegionVector {
 public:
     virtual gmacError_t execute() = 0;
 };

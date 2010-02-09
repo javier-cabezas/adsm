@@ -20,10 +20,10 @@ Kernel::bind(void * addr)
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
     Context * ctx = Context::current();
-    memory::Region * region = ctx->mm().localFind(addr);
+    memory::Region * region = ctx->mm().find<memory::Region>(addr);
 
     if (region != NULL) {
-        RegionVector::const_iterator j;
+        const_iterator j;
 
         j = std::find(begin(), end(), region);
 
@@ -45,10 +45,10 @@ Kernel::unbind(void * addr)
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
     Context * ctx = Context::current();
-    memory::Region * region = ctx->mm().localFind(addr);
+    memory::Region * region = ctx->mm().find<memory::Region>(addr);
 
     if (region != NULL) {
-        RegionVector::iterator j;
+        iterator j;
 
         j = std::find(begin(), end(), region);
 

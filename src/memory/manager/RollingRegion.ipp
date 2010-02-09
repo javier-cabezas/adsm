@@ -2,16 +2,22 @@
 #define __MEMORY_CACHEREGION_IPP_
 
 inline void
-RollingRegion::push(ProtSubRegion *region)
+RollingRegion::push(RollingBlock *region)
 {
     memory.insert(region);
 }
 
 
 inline void
-ProtSubRegion::silentInvalidate()
+RollingBlock::silentInvalidate()
 {
     _present = _dirty = false;
+}
+
+inline RollingRegion &
+RollingBlock::getParent()
+{
+    return _parent;
 }
 
 #endif
