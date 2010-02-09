@@ -28,6 +28,7 @@ static void *gmac_pthread(void *arg)
 {
 	__enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
+    proc->initThread();
 	addThread();
     gmac::Context::initThread();
 	pushState(Running);
@@ -53,7 +54,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 	int ret = 0;
 	__enterGmac();
 	pushState(ThreadCreate);
-	TRACE("pthread_create");
+    TRACE("pthread_create");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
 	gthread->__arg = __arg;
