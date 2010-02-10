@@ -60,7 +60,6 @@ void __cudaRegisterFunction(
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	assert(mod != NULL);
 	__enterGmac();
-    //current->kernel((gmacKernel_t) hostFun, k);
     KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
 	__exitGmac();
@@ -104,7 +103,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, int tokens)
 {
 	__enterGmac();
-	Context::current()->call(gridDim, blockDim, sharedMem, tokens);
+    Context * ctx = Context::current();
+	ctx->call(gridDim, blockDim, sharedMem, tokens);
 	__exitGmac();
 	return cudaSuccess;
 }
@@ -112,7 +112,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	__enterGmac();
-	Context::current()->argument(arg, count, offset);
+    Context * ctx = Context::current();
+	ctx->argument(arg, count, offset);
 	__exitGmac();
 	return cudaSuccess;
 }

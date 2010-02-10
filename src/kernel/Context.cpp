@@ -14,10 +14,11 @@ PARAM_REGISTER(paramBufferPageLockedSize,
                "GMAC_BUFFER_PAGE_LOCKED_SIZE",
                PARAM_NONZERO);
 
-void contextInit()
+void
+Context::Init()
 {
-	PRIVATE_INIT(gmac::Context::key, NULL);
-	PRIVATE_SET(gmac::Context::key, NULL);
+	PRIVATE_INIT(Context::key, NULL);
+	PRIVATE_SET(Context::key, NULL);
 }
 
 
@@ -27,6 +28,7 @@ unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) : acc(acc)
 {
+    PRIVATE_SET(Context::key, this);
 	_id = ++_next;
 }
 
@@ -37,6 +39,15 @@ Context::~Context()
     for (it = _kernels.begin(); it != _kernels.end(); it++) {
         delete it->second;
     }
+}
+
+Context *
+Context::current()
+{
+    Context * ctx;
+    ctx = static_cast<Context *>(PRIVATE_GET(Context::key));
+    if (ctx == NULL) ctx = proc->create();
+    return ctx;
 }
 
 void

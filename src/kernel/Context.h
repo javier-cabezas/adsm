@@ -64,7 +64,6 @@ protected:
 	/*!
 		\brief Per-thread key to store context
 	*/
-	friend void contextInit(void);
 	friend class memory::Manager;
 	friend class Process;
 	static PRIVATE(key);
@@ -93,13 +92,14 @@ protected:
 
 	virtual ~Context();
 
+    static void Init();
 
 public:
     /*! Gets the Context associated to the calling thread.
      *
      * If it does not have an associated Context, one new Context is created
      */
-	static Context *current();
+	static Context * current();
 
     /*! Checks whether the calling thread has an associated Context
      */

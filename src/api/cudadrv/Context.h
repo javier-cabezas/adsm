@@ -104,8 +104,8 @@ protected:
 	~Context();
 public:
     static gmacError_t error(CUresult);
-	static Context *current();
 
+    static Context * current();
 	void lock();
     void unlock();
 
@@ -142,7 +142,6 @@ public:
     //
 	// CUDA-related methods
 	//
-
 	const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t key) const;

@@ -174,67 +174,67 @@ gmacMalloc(void **cpuPtr, size_t count)
 gmacError_t
 gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
-	__enterGmac();
-	enterFunction(gmacGlobalMalloc);
-	gmacError_t ret = gmacSuccess;
-	void *devPtr;
-	count = (count < paramPageSize) ? paramPageSize : count;
-	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
-	if(ret != gmacSuccess || !manager) {
-		exitFunction();
-		__exitGmac();
-		return ret;
-	}
-	proc->addShared(*cpuPtr, count);
-	manager->map(*cpuPtr, devPtr, count);
-	gmac::Process::ContextList::const_iterator i;
-	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-		if(*i == gmac::Context::current()) continue;
-		(*i)->hostMap(*cpuPtr, &devPtr, count);
-		manager->remap(*i, *cpuPtr, devPtr, count);
-	}
-	exitFunction();
-	__exitGmac();
-	return gmacSuccess;
+    __enterGmac();
+    enterFunction(gmacGlobalMalloc);
+    gmacError_t ret = gmacSuccess;
+    void *devPtr;
+    count = (count < paramPageSize) ? paramPageSize : count;
+    ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
+    if(ret != gmacSuccess || !manager) {
+        exitFunction();
+        __exitGmac();
+        return ret;
+    }
+    proc->addShared(*cpuPtr, count);
+    manager->map(*cpuPtr, devPtr, count);
+    gmac::Process::ContextList::const_iterator i;
+    for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
+        if(*i == gmac::Context::current()) continue;
+        (*i)->hostMap(*cpuPtr, &devPtr, count);
+        manager->remap(*i, *cpuPtr, devPtr, count);
+    }
+    exitFunction();
+    __exitGmac();
+    return gmacSuccess;
 }
 #else
 gmacError_t
 gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
-	__enterGmac();
-	enterFunction(gmacGlobalMalloc);
-	// Allocate memory in the current context
-	gmacError_t ret = __gmacMalloc(cpuPtr, count);
-	if(ret != gmacSuccess) {
-		exitFunction();
-		__exitGmac();
-		return ret;
-	}
-	// Comment this out if we opt for a hierarchy-based memory sharing
-	void *devPtr;
-	count = (count < paramPageSize) ? paramPageSize : count;
-	proc->addShared(*cpuPtr, count);
-	gmac::Process::ContextList::const_iterator i;
-	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-		if(*i == gmac::Context::current()) continue;
-		ret = (*i)->malloc(&devPtr, count);
-		if(ret != gmacSuccess) goto cleanup;
-		manager->remap(*i, *cpuPtr, devPtr, count);
-	}
-	exitFunction();
-	__exitGmac();
-	return ret;
+    __enterGmac();
+    enterFunction(gmacGlobalMalloc);
+    // Allocate memory in the current context
+    gmacError_t ret = __gmacMalloc(cpuPtr, count);
+    if(ret != gmacSuccess) {
+        exitFunction();
+        __exitGmac();
+        return ret;
+    }
+    // Comment this out if we opt for a hierarchy-based memory sharing
+    void *devPtr;
+    count = (count < paramPageSize) ? paramPageSize : count;
+    proc->addShared(*cpuPtr, count);
+    gmac::Process::ContextList::const_iterator i;
+    for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
+        if(*i == gmac::Context::current()) continue;
+        ret = (*i)->malloc(&devPtr, count);
+        if(ret != gmacSuccess) goto cleanup;
+        manager->remap(*i, *cpuPtr, devPtr, count);
+    }
+    exitFunction();
+    __exitGmac();
+    return ret;
 
 cleanup:
-	gmac::Context *last = *i;
-	for(i = proc->contexts().begin(); *i != last; i++) {
-		(*i)->free(manager->ptr(*i, cpuPtr));
-		manager->unmap(*i, *cpuPtr);
-	}
-	gmacFree(devPtr);
-	exitFunction();
-	__exitGmac();
-	return ret;
+    gmac::Context *last = *i;
+    for(i = proc->contexts().begin(); *i != last; i++) {
+        (*i)->free(manager->ptr(*i, cpuPtr));
+        manager->unmap(*i, *cpuPtr);
+    }
+    gmacFree(devPtr);
+    exitFunction();
+    __exitGmac();
+    return ret;
 }
 #endif
 

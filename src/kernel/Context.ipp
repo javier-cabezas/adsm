@@ -22,18 +22,7 @@ Context::mm() const
 inline void
 Context::enable()
 {
-    PRIVATE_SET(key, this);
     _mm.realloc();
-}
-
-inline
-Context *
-Context::current()
-{
-    Context *ctx;
-    ctx = static_cast<Context *>(PRIVATE_GET(key));
-    if (ctx == NULL) ctx = proc->create();
-    return ctx;
 }
 
 inline

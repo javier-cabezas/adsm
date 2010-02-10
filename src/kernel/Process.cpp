@@ -33,21 +33,21 @@ Process::Process() :
 
 Process::~Process()
 {
-	TRACE("Cleaning process");
-	std::vector<Accelerator *>::iterator a;
-	std::list<Context *>::iterator c;
-	QueueMap::iterator q;
-	mutex.lock();
-	for(c = _contexts.begin(); c != _contexts.end(); c++) {
-		(*c)->destroy();
-	}
-	for(a = _accs.begin(); a != _accs.end(); a++)
-		delete *a;
+    TRACE("Cleaning process");
+    std::vector<Accelerator *>::iterator a;
+    std::list<Context *>::iterator c;
+    QueueMap::iterator q;
+    mutex.lock();
+    for(c = _contexts.begin(); c != _contexts.end(); c++) {
+        (*c)->destroy();
+    }
+    for(a = _accs.begin(); a != _accs.end(); a++)
+        delete *a;
     for(q = _queues.begin(); q != _queues.end(); q++)
         delete q->second.queue;
-	_accs.clear();
-	mutex.unlock();
-	memoryFini();
+    _accs.clear();
+    mutex.unlock();
+    memoryFini();
 }
 
 void
@@ -56,10 +56,13 @@ Process::init(const char *name)
     // Process is a singleton class. The only allowed instance is proc
     TRACE("Initializing process");
     assert(proc == NULL);
-    contextInit();
+    Context::Init();
     proc = new Process();
     apiInit();
     memoryInit(name);
+    // Register first, implicit, thread
+    proc->initThread();
+    gmac::Context::initThread();
 }
 
 void
@@ -68,20 +71,21 @@ Process::initThread()
     ThreadQueue q;
     q.hasContext.lock();
     q.queue = NULL;
-	mutex.lock();
-	_queues.insert(QueueMap::value_type(SELF(), q));
+    mutex.lock();
+    TRACE("Inserting %p", SELF());
+    _queues.insert(QueueMap::value_type(SELF(), q));
     mutex.unlock();
 }
 
 Context *
 Process::create(int acc)
 {
-    QueueMap::iterator q = _queues.find(SELF());
-	assert(q != _queues.end());
-
     pushState(Init);
-	TRACE("Creating new context");
-	mutex.lock();
+    TRACE("Creating new context");
+    mutex.lock();
+    TRACE("Looking for %p", SELF());
+    QueueMap::iterator q = _queues.find(SELF());
+    assert(q != _queues.end());
     Context * ctx;
     int usedAcc;
 
@@ -102,7 +106,6 @@ Process::create(int acc)
         ctx = _accs[usedAcc]->create();
         ctx->init();
         _contexts.push_back(ctx);
-        _queues.insert(QueueMap::value_type(SELF(), new kernel::Queue()));
     }
     q->second.queue = new Queue();
     q->second.hasContext.unlock();

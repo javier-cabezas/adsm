@@ -50,38 +50,38 @@ typedef std::map<const void *, Region *> RegionMap;
 
 class Map : public RegionMap {
 protected:
-	util::RWLock local;
-	static RegionMap *__global;
-	static unsigned count;
-	static gmac::util::RWLock global;
+    util::RWLock local;
+    static RegionMap *__global;
+    static unsigned count;
+    static gmac::util::RWLock global;
 
     Region *localFind(const void *addr);
     static Region *globalFind(const void *addr);
 
-	void clean();
+    void clean();
 
-	PageTable __pageTable;
+    PageTable __pageTable;
 
 public:
-	Map();
-	virtual ~Map();
+    Map();
+    virtual ~Map();
 
-	static void init();
+    static void init();
 
-	void realloc();
+    void realloc();
 
-	void lock();
-	void unlock();
+    void lock();
+    void unlock();
 
-	void insert(Region *i);
+    void insert(Region *i);
 
-	Region *remove(void *addr);
+    Region *remove(void *addr);
 
-	PageTable &pageTable();
-	const PageTable &pageTable() const;
+    PageTable &pageTable();
+    const PageTable &pageTable() const;
 
-	template<typename T>
-	T *find(const void *addr);
+    template<typename T>
+    T *find(const void *addr);
 };
 
 }}
