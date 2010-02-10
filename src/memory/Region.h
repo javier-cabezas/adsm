@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include <gmac/gmac.h>
 #include <memory/os/Memory.h>
+#include <util/Lock.h>
 
 #include <unistd.h>
 #include <stdint.h>
@@ -62,6 +63,7 @@ class Region {
 private:
 	Context *_context;
 protected:
+	gmac::util::RWLock _lock;
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;
