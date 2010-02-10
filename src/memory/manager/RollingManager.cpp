@@ -112,6 +112,8 @@ void RollingManager::release(void *addr)
 		delete reg;
 	}
 #ifdef USE_GLOBAL_HOST
+	// When using host-mapped memory, global regions do not
+	// increase the rolling size
 	if(proc->isShared(addr) == false)
 		regionRolling[Context::current()]->dec(lruDelta);
 #else
