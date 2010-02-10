@@ -111,7 +111,12 @@ void RollingManager::release(void *addr)
 		TRACE("Deleting Region %p\n", addr);
 		delete reg;
 	}
+#ifdef USE_GLOBAL_HOST
+	if(proc->isShared(addr) == false)
+		regionRolling[Context::current()]->dec(lruDelta);
+#else
 	regionRolling[Context::current()]->dec(lruDelta);
+#endif
 	TRACE("Released %p", addr);
 }
 
