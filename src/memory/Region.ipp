@@ -58,21 +58,27 @@ Region::start(void *addr)
 inline void
 Region::relate(Context *ctx)
 {
+    _lock.write();
     _relatives.push_back(ctx);
+    _lock.unlock();
 }
 
 inline void
 Region::unrelate(Context *ctx)
 {
+    _lock.write();
     _relatives.remove(ctx);
+    _lock.unlock();
 }
 
 inline void
 Region::transfer()
 {
     assert(_relatives.empty() == false);
+    _lock.write();
     _context = _relatives.front();
     _relatives.pop_front();
+    _lock.unlock();
 }
 
 inline std::list<Context *> &

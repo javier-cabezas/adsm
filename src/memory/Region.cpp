@@ -6,6 +6,7 @@
 namespace gmac { namespace memory {
 
 Region::Region(void *addr, size_t size) :
+   _lock(paraver::relatives),
 	_addr(__addr(addr)),
 	_size(size)
 {
@@ -22,10 +23,14 @@ gmacError_t Region::copyToDevice()
 	if((ret = _context->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess)
 		return ret;
 	std::list<Context *>::iterator i;
+   _lock.read();
 	for(i = _relatives.begin(); i != _relatives.end(); i++) {
-		if((ret = (*i)->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess)
+		if((ret = (*i)->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess) {
+         _lock.unlock();
 			return ret;
+		}
 	}
+   _lock.unlock();
 	return ret;	
 }
 
@@ -41,9 +46,11 @@ void Region::sync()
 {
 	_context->sync();
 	std::list<Context *>::iterator i;
+   _lock.read();
 	for(i = _relatives.begin(); i != _relatives.end(); i++) {
 		(*i)->sync();
 	}
+   _lock.unlock();
 }
 
 } }
