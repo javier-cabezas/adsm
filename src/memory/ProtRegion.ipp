@@ -2,12 +2,6 @@
 #define __MEMORY_PROTREGION_IPP_
 
 inline void
-ProtRegion::relate(Context *ctx)
-{
-    _relatives.push_back(ctx);
-}
-
-inline void
 ProtRegion::invalidate(void)
 {
     _present = _dirty = false;
