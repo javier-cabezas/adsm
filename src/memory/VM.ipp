@@ -21,6 +21,7 @@ Table<T>::Table(size_t nEntries) :
     assert(posix_memalign((void **)&table, 0x1000,
                 nEntries * sizeof(T *)) == 0);
     memset(table, 0, nEntries * sizeof(T *));
+    TRACE("Table memory @ %p", table);
 #ifdef USE_VM
 #ifdef USE_VM_DEVICE
     assert(posix_memalign((void **)&__shadow, 0x1000,
@@ -36,7 +37,7 @@ Table<T>::Table(size_t nEntries) :
 template<typename T>
 Table<T>::~Table()
 {
-    TRACE("Cleaning Table with %d entries (%p)", nEntries, this);
+    TRACE("Cleaning Table with %d entries (%p) @ %p", nEntries, this, table);
     free(table);
 #ifdef USE_VM
     enterFunction(vmFree);

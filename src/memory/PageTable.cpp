@@ -34,13 +34,13 @@ PageTable::PageTable() :
 
 PageTable::~PageTable()
 { 
-#ifndef USE_MMAP
+//#ifndef USE_MMAP
 	TRACE("Cleaning Page Table");
 	for(int i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		deleteDirectory(rootTable.value(i));
 	}
-#endif
+//#endif
 }
 
 void PageTable::deleteDirectory(Directory *dir)

@@ -106,7 +106,7 @@ Context::~Context()
         cuStreamDestroy(streamToHost);
         cuStreamDestroy(streamDevice);
     }
-    cuCtxDestroy(ctx); 
+    assert(cuCtxDestroy(ctx) == CUDA_SUCCESS);
 }
 
 gmacError_t
