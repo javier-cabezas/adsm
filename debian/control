@@ -1,0 +1,40 @@
+Source: libgmac
+Section: libs
+Priority: important
+Maintainer: Isaac Gelado <igelado@ac.upc.edu>
+Uploaders: Javier Cabezas <jcabezas@ac.upc.edu>
+Standards-Version: 3.8.2
+Build-depends: debhelper,
+               texinfo,
+               libparaver [i386 amd64],
+               libparaver-dev [i386 amd64],
+               gcc-multilib [i386 amd64] | gcc-4.1 [i386 amd64] | gcc-4.2 [i386 amd64] | gcc-4.3 [i386 amd64] | gcc-4.4 [i386 amd64]
+Homepage: http://code.google.com/p/adsm
+Vcs-Hg: https://adsm.googlecode.com/hg
+Vcs-Browser: http://code.google.com/p/adsm/source/browse?repo=libgmac
+
+
+Package: libgmac
+Priority: important
+Section: libs
+Architecture: i386 amd64
+Depends: libc6, libcuda1 | nvidia-glx
+Conflicts: libgmac-paraver
+Description: 
+
+Package: libgmac-paraver
+Priority: important
+Section: libs
+Architecture: i386 amd64
+Depends: libparaver, libc6, libcuda1 | nvidia-glx
+Conflicts: libgmac
+Description: 
+
+Package: libgmac-dev
+Priority: important
+Section: libdevel
+Architecture: i386 amd64
+Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}), libparaver-dev,
+         libc6-dev | libc-dev
+Description: 
+
