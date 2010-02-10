@@ -274,7 +274,8 @@ using gmac::gpu::Variable;
 cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
 		size_t offset, enum cudaMemcpyKind kind)
 {
-	const Variable *variable = Context::current()->constant(symbol);
+    Context * ctx = Context::current();
+	const Variable *variable = ctx->constant(symbol);
 	assert(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
 	assert(variable->size() >= (count + offset));
@@ -282,9 +283,9 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
 			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%d bytes)", src, ptr, count);
-			gmac::Context::current()->lock();
+			ctx->lock();
 			r = cuMemcpyHtoD(ptr, src, count);
-			gmac::Context::current()->unlock();
+			ctx->unlock();
 			return __getCUDAError(r);
 		default:
 			abort();

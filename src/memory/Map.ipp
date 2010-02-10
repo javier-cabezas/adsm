@@ -31,7 +31,7 @@ Map::insert(Region *i)
     local.unlock();
 
     global.write();
-    RegionMap::insert(value_type(i->end(), i));
+    __global->insert(value_type(i->end(), i));
     global.unlock();
 }
 

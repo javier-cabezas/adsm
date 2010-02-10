@@ -43,24 +43,6 @@ Manager::ptr(Context *ctx, const void *addr)
     return ret;
 }
 
-inline void
-Manager::registerAlloc(void *addr, size_t count)
-{
-    AllocMap::iterator it;
-    it = _allocs.find(addr);
-    assert(it == _allocs.end());
-    _allocs[addr] = count;
-}
-
-inline void
-Manager::unregisterAlloc(void *addr)
-{
-    AllocMap::iterator it;
-    it = _allocs.find(addr);
-    assert(it != _allocs.end());
-    _allocs.erase(it);
-}
-
 inline const void *
 Manager::ptr(const void *addr)
 {

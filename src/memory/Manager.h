@@ -62,8 +62,6 @@ protected:
 #ifdef USE_MMAP
 	static const size_t mmSize = 0x100000000;
 #endif
-    typedef std::map<void *, size_t> AllocMap;
-    AllocMap _allocs;
 
 	void insert(Region *r);
 
@@ -88,9 +86,6 @@ protected:
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) to unmap
 	void hostUnmap(void *addr, size_t count);
-
-    void registerAlloc(void *addr, size_t count);
-    void unregisterAlloc(void *addr);
 
 public:
 	Manager();

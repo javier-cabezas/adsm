@@ -26,12 +26,6 @@ Context::zero(void **addr) const
     *ptr = 0;
 }
 
-inline Context *
-Context::current()
-{
-    return static_cast<Context *>(PRIVATE_GET(key));
-}
-
 inline void
 Context::lock()
 {
@@ -162,6 +156,11 @@ Context::async() const
     return _gpu.async();
 }
 
+inline Context *
+Context::current()
+{
+    return static_cast<Context *>(gmac::Context::current());
+}
 
 }}
 
