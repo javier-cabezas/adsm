@@ -94,11 +94,11 @@ inline
 void
 KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 {
-    assert(_argsSize == offset);
-    assert(_argsSize + size < KernelConfig::StackSize);
+    TRACE("Pushing argument: +%d, %d/%d", size, _argsSize, offset);
+    assert(offset + size < KernelConfig::StackSize);
 
     memcpy(&_stack[offset], arg, size);
-    _argsSize += size;
+    _argsSize += offset + size;
     push_back(Argument(&_stack[offset], size));
 }
 
