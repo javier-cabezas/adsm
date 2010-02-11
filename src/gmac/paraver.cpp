@@ -46,7 +46,8 @@ static const char *lockNames[] = {
 	"mmLocal", "mmGlobal", "pageTable", "ctxLocal", "ctxGlobal",
 	"queueLock",
 	"ioHostLock", "ioDeviceLock",
-	"process", "writeMutex", "rollingBuffer", "manager",
+	"process", "writeMutex", "rollingBuffer", "manager", "queue", "relatives",
+    "pthread",
 	NULL
 };
 
