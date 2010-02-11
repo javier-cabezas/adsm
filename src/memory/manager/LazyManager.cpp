@@ -68,6 +68,7 @@ void LazyManager::flush()
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
+        r->readOnly();
 	}
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
@@ -84,6 +85,7 @@ void LazyManager::flush(const RegionVector & regions)
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
+        r->readOnly();
 	}
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
