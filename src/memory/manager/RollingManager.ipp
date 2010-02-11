@@ -67,15 +67,6 @@ RollingBuffer::size() const
     return _buffer.size();
 }
 
-inline
-RollingRegion *
-RollingManager::get(const void *addr)
-{
-    RollingRegion *reg = NULL;
-    if(current()) reg = current()->find<RollingRegion>(addr);
-    return reg;
-}
-
 inline void
 RollingManager::invalidate(RollingBlock *region)
 {

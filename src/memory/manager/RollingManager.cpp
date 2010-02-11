@@ -75,19 +75,20 @@ RollingManager::~RollingManager()
     }
 }
 
-void *RollingManager::alloc(void *addr, size_t size)
+void *RollingManager::alloc(void *addr, size_t count)
 {
     void *cpuAddr = NULL;
-    if((cpuAddr = hostMap(addr, size, PROT_NONE)) == NULL)
+    if((cpuAddr = hostMap(addr, count, PROT_NONE)) == NULL)
         return NULL;
 
-    insertVirtual(cpuAddr, addr, size);
-    if (!regionRolling[Context::current()]) {
-        regionRolling[Context::current()] = new RollingBuffer();
+    insertVirtual(cpuAddr, addr, count);
+    Context * ctx = Context::current();
+    if (!regionRolling[ctx]) {
+        regionRolling[ctx] = new RollingBuffer();
     }
-    regionRolling[Context::current()]->inc(lruDelta);
-    insert(new RollingRegion(*this, cpuAddr, size, pageTable().getPageSize()));
-
+    regionRolling[ctx]->inc(lruDelta);
+    insert(new RollingRegion(*this, cpuAddr, count, pageTable().getPageSize()));
+	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
     return cpuAddr;
 }
 
@@ -192,16 +193,9 @@ void RollingManager::invalidate(const RegionVector & regions)
     }
 }
 
-Context *RollingManager::owner(const void *addr)
-{
-    RollingRegion *reg= get(addr);
-    if(reg == NULL) return NULL;
-    return reg->owner();
-}
-
 void RollingManager::invalidate(const void *addr, size_t size)
 {
-    RollingRegion *reg = get(addr);
+	RollingRegion *reg = current()->find<RollingRegion>(addr);
     assert(reg != NULL);
     assert(reg->end() >= (void *)((addr_t)addr + size));
     reg->invalidate(addr, size);
@@ -209,7 +203,7 @@ void RollingManager::invalidate(const void *addr, size_t size)
 
 void RollingManager::flush(const void *addr, size_t size)
 {
-    RollingRegion *reg = get(addr);
+	RollingRegion *reg = current()->find<RollingRegion>(addr);
     assert(reg != NULL);
     assert(reg->end() >= (void *)((addr_t)addr + size));
     reg->flush(addr, size);
@@ -219,7 +213,7 @@ void RollingManager::flush(const void *addr, size_t size)
 
 bool RollingManager::read(void *addr)
 {
-    RollingRegion *root = get(addr);
+	RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
     ProtRegion *region = root->find(addr);
     assert(region != NULL);
@@ -236,7 +230,7 @@ bool RollingManager::read(void *addr)
 
 bool RollingManager::write(void *addr)
 {
-    RollingRegion *root = get(addr);
+	RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
     ProtRegion *region = root->find(addr);
     assert(region != NULL);

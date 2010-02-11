@@ -49,7 +49,6 @@ protected:
 	bool read(void *addr);
 	bool write(void *addr);
 
-	ProtRegion *get(const void *addr);
 public:
 	LazyManager();
 	void *alloc(void *addr, size_t count);
@@ -61,7 +60,6 @@ public:
 
     void sync() {};
 
-	Context *owner(const void *);
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 };

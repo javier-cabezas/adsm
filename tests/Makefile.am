@@ -15,7 +15,6 @@ bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 gmacVecAdd_SOURCES = gmacVecAdd.cu utils.cpp
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-
 gmacMemset_SOURCES = gmacMemset.cu
 gmacMemset_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
@@ -23,10 +22,10 @@ gmacMemcpy_SOURCES = gmacMemcpy.cu
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu
-gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
+gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacConstant_SOURCES = gmacConstant.cu
-gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
+gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.cpp
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -74,7 +73,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir
 LINK = $(LIBTOOL) --mode=link $(CXX) -static $(CFLAGS) -o $@ 
 
 .cu.o:
-	$(NVCC) --keep -v -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)

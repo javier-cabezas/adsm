@@ -277,11 +277,11 @@ gmacPtr(void *ptr)
 gmacError_t
 gmacLaunch(gmacKernel_t k)
 {
+    __enterGmac();
+    enterFunction(gmacLaunch);
     gmac::Context * ctx = gmac::Context::current();
     gmac::KernelLaunch * launch = ctx->launch(k);
 
-    __enterGmac();
-    enterFunction(gmacLaunch);
     gmacError_t ret = gmacSuccess;
     if(manager) {
         TRACE("Flush the memory used in the kernel");
@@ -291,7 +291,10 @@ gmacLaunch(gmacKernel_t k)
     TRACE("Kernel Launch");
     ret = launch->execute();
 
-    if (paramAutoSync) ret = ctx->sync();
+    if (paramAutoSync) {
+        ret = ctx->sync();
+        manager->sync();
+    }
 
     if(manager) {
         TRACE("Invalidate the memory used in the kernel");

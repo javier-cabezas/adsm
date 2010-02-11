@@ -9,10 +9,17 @@ Manager::insert(Region *r)
     current()->insert(r);
 }
 
+inline Context *
+Manager::owner(const void * addr)
+{
+	Region *region = current()->find<Region>(addr);
+	if(region == NULL) return NULL;
+	return region->owner();
+}
+
 inline memory::Map *
 Manager::current()
 {
-    if(gmac::Context::current() == NULL) return NULL;
     return &gmac::Context::current()->mm();
 }
 

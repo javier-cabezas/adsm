@@ -14,10 +14,12 @@ LazyManager::LazyManager()
 void *LazyManager::alloc(void *addr, size_t count)
 {
 	void *cpuAddr = NULL;
-	if((cpuAddr = hostMap(addr, count, PROT_NONE)) == MAP_FAILED) return NULL;
-	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
-	insert(new ProtRegion(cpuAddr, count));
+	if((cpuAddr = hostMap(addr, count, PROT_NONE)) == NULL)
+        return NULL;
 
+	insertVirtual(cpuAddr, addr, count);
+	insert(new ProtRegion(cpuAddr, count));
+	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
 	return cpuAddr;
 }
 
@@ -45,6 +47,8 @@ void LazyManager::invalidate()
 
 void LazyManager::invalidate(const RegionVector & regions)
 {
+    if (regions.size() == 0) invalidate();
+
 	RegionVector::const_iterator i;
 	for(i = regions.begin(); i != regions.end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
@@ -72,6 +76,8 @@ void LazyManager::flush()
 
 void LazyManager::flush(const RegionVector & regions)
 {
+    if (regions.size() == 0) flush();
+
 	RegionVector::const_iterator i;
 	for(i = regions.begin(); i != regions.end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
@@ -84,16 +90,9 @@ void LazyManager::flush(const RegionVector & regions)
 	Context::current()->invalidate();
 }
 
-Context *LazyManager::owner(const void *addr)
-{
-	ProtRegion *region = get(addr);
-	if(region == NULL) return NULL;
-	return region->owner();
-}
-
 void LazyManager::invalidate(const void *addr, size_t size)
 {
-	ProtRegion *region = get(addr);
+	ProtRegion *region = current()->find<ProtRegion>(addr);
 	assert(region != NULL);
 	assert(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
@@ -106,7 +105,7 @@ void LazyManager::invalidate(const void *addr, size_t size)
 
 void LazyManager::flush(const void *addr, size_t size)
 {
-	ProtRegion *region = get(addr);
+	ProtRegion *region = current()->find<ProtRegion>(addr);
 	assert(region != NULL);
 	assert(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
@@ -142,7 +141,7 @@ bool LazyManager::present(Region *region) const
 
 bool LazyManager::read(void *addr)
 {
-	ProtRegion *region = get(addr);
+	ProtRegion *region = current()->find<ProtRegion>(addr);
 	if(region == NULL) return false;
 
 	region->readWrite();
@@ -154,7 +153,7 @@ bool LazyManager::read(void *addr)
 
 bool LazyManager::write(void *addr)
 {
-	ProtRegion *region = get(addr);
+	ProtRegion *region = current()->find<ProtRegion>(addr);
 	if(region == NULL) return false;
 
 	bool present = region->present();
