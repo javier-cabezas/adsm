@@ -71,8 +71,6 @@ protected:
 
 	std::map<Context *, RollingBuffer *> regionRolling;
 
-	RollingRegion *get(const void *addr);
-
 	util::Lock writeMutex;
 	void *writeBuffer;
 	size_t writeBufferSize;
@@ -100,7 +98,6 @@ public:
 	void flush(void);
 	void sync(void) {};
 
-	Context *owner(const void *addr);
 	void invalidate(const void *addr, size_t size);
 	void flush(const void *addr, size_t size);
 };

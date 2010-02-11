@@ -128,7 +128,7 @@ public:
 	void remap(Context *, void *, void *, size_t);
 	void unmap(Context *, void *);
 
-	virtual gmac::Context *owner(const void *addr) = 0;
+	gmac::Context *owner(const void *addr);
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
 
