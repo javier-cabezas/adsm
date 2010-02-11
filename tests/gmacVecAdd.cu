@@ -48,6 +48,10 @@ int main(int argc, char *argv[])
         CUFATAL();
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Alloc: ", "\n");
+    
+    printf("a: %p\n", a);
+    printf("b: %p\n", b);
+    printf("c: %p\n", c);
 
     // Call the kernel
     gettimeofday(&s, NULL);

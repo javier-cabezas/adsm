@@ -76,8 +76,8 @@ Context::~Context()
         cuStreamDestroy(streamDevice);
     }
     // CUDA might be deinitalized before executing this code
-    mutex->lock();
-    assert(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    // mutex->lock();
+    // assert(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
     delete mutex;
 }
 

@@ -63,9 +63,10 @@ Kernel::unbind(void * addr)
 }
 
 inline
-Argument::Argument(void * ptr, size_t size) :
+Argument::Argument(void * ptr, size_t size, off_t offset) :
     _ptr(ptr),
-    _size(size)
+    _size(size),
+    _offset(offset)
 {}
 
 inline
@@ -74,7 +75,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 {
     ArgVector::const_iterator it;
     for (it = c.begin(); it != c.end(); it++) {
-        pushArgument(it->_ptr, it->_size, _argsSize);
+        pushArgument(it->_ptr, it->_size, it->_offset);
     }
 }
 
@@ -94,12 +95,12 @@ inline
 void
 KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 {
-    TRACE("Pushing argument: +%d, %d/%d", size, _argsSize, offset);
+    TRACE("Pushing argument: +%d, %d/%d: %p", size, _argsSize, offset, (void *) *(long int *) arg);
     assert(offset + size < KernelConfig::StackSize);
 
     memcpy(&_stack[offset], arg, size);
-    _argsSize += offset + size;
-    push_back(Argument(&_stack[offset], size));
+    _argsSize = offset + size;
+    push_back(Argument(&_stack[offset], size, offset));
 }
 
 inline
