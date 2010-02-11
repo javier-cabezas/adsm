@@ -25,7 +25,7 @@ Context::zero(void **addr) const
 inline Context *
 Context::current()
 {
-    return static_cast<Context *>(PRIVATE_GET(key));
+    return static_cast<Context *>(gmac::Context::current());
 }
 
 inline void
