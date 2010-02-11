@@ -20,7 +20,7 @@ Table<T>::Table(size_t nEntries) :
 
     /* assert(posix_memalign((void **)&table, 0x1000,
                 nEntries * sizeof(T *)) == 0); */
-    table = (T *)valloc(nEntries * sizeof(T *));
+    table = (T **)valloc(nEntries * sizeof(T *));
     assert(table != NULL);
     memset(table, 0, nEntries * sizeof(T *));
     TRACE("Table memory @ %p", table);
