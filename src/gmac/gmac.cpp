@@ -183,14 +183,14 @@ gmacError_t gmacFree(void *cpuPtr)
 {
 	__enterGmac();
 	enterFunction(gmacFree);
-	if(manager) {
+    if(manager) {
 		manager->release(cpuPtr);
 	}
 
 	// If it is a shared global structure and nobody is accessing
 	// it anymore, release the host memory
 	if(proc->isShared(cpuPtr)) {
-#ifdef USE_GLOBAL_HOST 
+#ifdef USE_GLOBAL_HOST
 		if(proc->removeShared(cpuPtr) == true) {
 			gmac::Context::current()->hostFree(cpuPtr);
 		}
@@ -198,6 +198,7 @@ gmacError_t gmacFree(void *cpuPtr)
 	}
 	else {
 		gmac::Context::current()->free(cpuPtr);
+
 	}
 	exitFunction();
 	__exitGmac();
@@ -216,6 +217,7 @@ void *gmacPtr(void *ptr)
 gmacError_t gmacLaunch(const char *symbol)
 {
 	__enterGmac();
+    gmac::Context * ctx = gmac::Context::current();
 	enterFunction(gmacLaunch);
 	gmacError_t ret = gmacSuccess;
 	if(manager) {
@@ -223,9 +225,10 @@ gmacError_t gmacLaunch(const char *symbol)
 		manager->flush();
 	}
 	TRACE("Kernel Launch");
-	ret = gmac::Context::current()->launch(symbol);
+	ret = ctx->launch(symbol);
     if (paramAutoSync) {
-	    ret = gmac::Context::current()->sync();
+	    ret = ctx->sync();
+        manager->sync();
     }
 	exitFunction();
 	__exitGmac();

@@ -53,7 +53,6 @@ public:
 	void flush();
 	void sync();
 
-	Context *owner(const void *);
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 };
