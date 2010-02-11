@@ -17,4 +17,4 @@ libmemory_la_LIBADD = manager/libmemory-manager.la $(OS_DIR)/libmemory-os.la $(P
 BUILT_SOURCES = os
 
 os: $(OS_DIR)
-	$(LN_S) -Tf $(srcdir)/$(OS_DIR) os
+	$(LN_S) $(LN_FLAGS) $(srcdir)/$(OS_DIR) os

@@ -20,4 +20,4 @@ BUILT_SOURCES = os
 export INCLUDES += -I$(abs_srcdir) -I$(abs_builddir) -I$(abs_srcdir)/../memory -I$(abs_builddir)/../memory
 
 os: $(OS_DIR)
-	$(LN_S) -sTf $(srcdir)/$(OS_DIR) os
+	$(LN_S) $(LN_FLAGS) $(srcdir)/$(OS_DIR) os

@@ -12,7 +12,7 @@ export INCLUDES += -I$(CUDA_DIR)/include\
 	$(PARAVER_INCLUDE)
 
 config/os: os/$(OS_DIR)
-	$(LN_S) -Tf $(abs_srcdir)/os/$(OS_DIR) config/os
+	$(LN_S) $(LN_FLAGS) $(abs_srcdir)/os/$(OS_DIR) config/os
 
 config/api: api/$(API_DIR)
-	$(LN_S) -Tf $(abs_srcdir)/api/$(API_DIR) config/api
+	$(LN_S) $(LN_FLAGS) $(abs_srcdir)/api/$(API_DIR) config/api
