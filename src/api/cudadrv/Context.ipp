@@ -63,18 +63,6 @@ Context::copyToHostAsync(void *host, const void *dev, size_t size)
     return error(ret);
 }
 
-#if 0
-inline gmacError_t
-Context::copyDeviceAsync(void *src, const void *dest, size_t size)
-{
-    lock();
-    enterFunction(accDeviceCopy);
-    CUresult ret = cuMemcpyDtoDAsync(gpuAddr(dest), gpuAddr(src), size, streamDevice);
-    exitFunction();
-    unlock();
-    return error(ret);
-}
-#endif
 
 inline gmacError_t
 Context::sync()

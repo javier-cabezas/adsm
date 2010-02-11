@@ -38,14 +38,16 @@ RollingRegion::~RollingRegion()
 
 void RollingRegion::relate(Context *ctx)
 {
+    // Create rolling buffer for the context if it does not exist
+    if (!manager.regionRolling[ctx]) {
+        manager.regionRolling[ctx] = new RollingBuffer();
+    }
+
     Map::const_iterator i;
     // Push dirty regions in the rolling buffer
     // and copy to device clean regions
     for(i = map.begin(); i != map.end(); i++) {
         if(i->second->dirty()) {
-            if (!manager.regionRolling[ctx]) {
-                manager.regionRolling[ctx] = new RollingBuffer();
-            }
             manager.regionRolling[ctx]->push(i->second);
         } else assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
         i->second->relate(ctx);

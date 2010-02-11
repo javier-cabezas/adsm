@@ -72,7 +72,6 @@ Process::initThread()
     q.hasContext.lock();
     q.queue = NULL;
     mutex.lock();
-    TRACE("Inserting %p", SELF());
     _queues.insert(QueueMap::value_type(SELF(), q));
     mutex.unlock();
 }
@@ -83,7 +82,6 @@ Process::create(int acc)
     pushState(Init);
     TRACE("Creating new context");
     mutex.lock();
-    TRACE("Looking for %p", SELF());
     QueueMap::iterator q = _queues.find(SELF());
     assert(q != _queues.end());
     Context * ctx;
@@ -167,7 +165,9 @@ void *Process::translate(void *addr)
 void Process::sendReceive(THREAD_ID id)
 {
     Context * ctx = Context::current();
+    mutex.lock();
 	QueueMap::iterator q = _queues.find(id);
+    mutex.unlock();
 	assert(q != _queues.end());
     q->second.hasContext.lock();
     q->second.hasContext.unlock();
@@ -177,6 +177,5 @@ void Process::sendReceive(THREAD_ID id)
 	assert(q != _queues.end());
 	PRIVATE_SET(Context::key, q->second.queue->pop());
 }
-
 
 }
