@@ -50,9 +50,9 @@ Process::sharedMem()
 inline void
 Process::addShared(void *addr, size_t size)
 {
-		std::pair<SharedMap::iterator, bool> ret =
-			 _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));
-		if(ret.second == false) ret.first->second.inc();
+    std::pair<SharedMap::iterator, bool> ret =
+        _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));
+    if(ret.second == false) ret.first->second.inc();
 }
 
 inline bool

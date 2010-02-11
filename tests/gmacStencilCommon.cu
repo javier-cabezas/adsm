@@ -228,12 +228,15 @@ do_stencil(void * ptr)
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-	// Call the kernel
 	dim3 Db(32, 8);
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
 	gettimeofday(&s, NULL);
-    for (uint32_t i = 0; i < ITERATIONS; i++) {
+    for (uint32_t i = 1; i <= ITERATIONS; i++) {
+        //if (i % 50 == 0)
+        printf("Iteration: %d\n", i);
+        fflush(stdout);
         float * tmp;
+        // Call the kernel
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),

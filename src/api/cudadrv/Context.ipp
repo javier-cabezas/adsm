@@ -26,6 +26,12 @@ Context::zero(void **addr) const
     *ptr = 0;
 }
 
+inline Context *
+Context::current()
+{
+    return static_cast<Context *>(gmac::Context::current());
+}
+
 inline void
 Context::lock()
 {
@@ -142,12 +148,6 @@ inline bool
 Context::async() const
 {
     return _gpu.async();
-}
-
-inline Context *
-Context::current()
-{
-    return static_cast<Context *>(gmac::Context::current());
 }
 
 }}
