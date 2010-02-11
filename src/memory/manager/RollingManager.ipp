@@ -61,15 +61,6 @@ RollingBuffer::remove(ProtSubRegion *region)
     lock.unlock();
 }
 
-inline
-RollingRegion *
-RollingManager::get(const void *addr)
-{
-    RollingRegion *reg = NULL;
-    if(current()) reg = current()->find<RollingRegion>(addr);
-    return reg;
-}
-
 inline void
 RollingManager::invalidate(ProtSubRegion *region)
 {
