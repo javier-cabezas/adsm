@@ -46,7 +46,8 @@ class Argument {
 public:
     void * _ptr;
     size_t _size;
-    Argument(void * ptr, size_t size);
+    off_t  _offset;
+    Argument(void * ptr, size_t size, off_t offset);
 private:
     friend class Kernel;
 };
