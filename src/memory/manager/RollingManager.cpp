@@ -133,27 +133,28 @@ void RollingManager::flush(const RegionVector & regions)
     // If no dependencies, a global flush is assumed
     if (regions.size() == 0) {
         flush();
-    } else {
-        TRACE("RollingManager Flush Starts");
-        waitForWrite();
-        RollingBuffer * buffer = regionRolling[Context::current()];
-        size_t blocks = buffer->size();
+        return;
+    }
 
-        for(int i = 0; i < blocks; i++) {
-            RollingBlock *r = regionRolling[Context::current()]->pop();
-            // Check if we have to flush
-            if (std::find(regions.begin(), regions.end(), &r->getParent()) == regions.end()) {
-                buffer->push(r);
-                continue;
-            }
+    TRACE("RollingManager Flush Starts");
+    waitForWrite();
+    RollingBuffer * buffer = regionRolling[Context::current()];
+    size_t blocks = buffer->size();
 
-            assert(r->copyToDevice() == gmacSuccess);
-            r->readOnly();
-            TRACE("Flush to Device %p", r->start());
+    for(int i = 0; i < blocks; i++) {
+        RollingBlock *r = regionRolling[Context::current()]->pop();
+        // Check if we have to flush
+        if (std::find(regions.begin(), regions.end(), &r->getParent()) == regions.end()) {
+            buffer->push(r);
+            continue;
         }
 
-        TRACE("RollingManager Flush Ends");
+        assert(r->copyToDevice() == gmacSuccess);
+        r->readOnly();
+        TRACE("Flush to Device %p", r->start());
     }
+
+    TRACE("RollingManager Flush Ends");
 }
 
 void RollingManager::invalidate()
@@ -177,20 +178,21 @@ void RollingManager::invalidate(const RegionVector & regions)
     // If no dependencies, a global invalidation is assumed
     if (regions.size() == 0) {
         invalidate();
-    } else {
-        TRACE("RollingManager Invalidation Starts");
-        RegionVector::const_iterator i;
-        current()->lock();
-        for(i = regions.begin(); i != regions.end(); i++) {
-            Region *r = *i;
-            assert(typeid(*r) == typeid(RollingRegion));
-            dynamic_cast<RollingRegion *>(r)->invalidate();
-        }
-        current()->unlock();
-        //gmac::Context::current()->flush();
-        gmac::Context::current()->invalidate();
-        TRACE("RollingManager Invalidation Ends");
+        return;
     }
+
+    TRACE("RollingManager Invalidation Starts");
+    RegionVector::const_iterator i;
+    current()->lock();
+    for(i = regions.begin(); i != regions.end(); i++) {
+        Region *r = *i;
+        assert(typeid(*r) == typeid(RollingRegion));
+        dynamic_cast<RollingRegion *>(r)->invalidate();
+    }
+    current()->unlock();
+    //gmac::Context::current()->flush();
+    gmac::Context::current()->invalidate();
+    TRACE("RollingManager Invalidation Ends");
 }
 
 void RollingManager::invalidate(const void *addr, size_t size)
