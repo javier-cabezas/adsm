@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,19 +36,20 @@ WITH THE SOFTWARE.  */
 
 #include <debug.h>
 
-#include <kernel/Process.h>
-#include <kernel/Accelerator.h>
+#include "kernel/Process.h"
+#include "kernel/Accelerator.h"
 
-#include <gmac/gmac.h>
-#include <memory/Map.h>
-#include <memory/PageTable.h>
-
+#include "gmac/gmac.h"
+#include "memory/Map.h"
 
 namespace gmac {
 
 extern size_t paramBufferPageLockedSize;
 
 namespace memory { class Manager; }
+
+class Kernel;
+class KernelLaunch;
 
 /*!
 	\brief Generic Context Class
@@ -63,32 +64,21 @@ protected:
 	/*!
 		\brief Per-thread key to store context
 	*/
-	friend void contextInit(void);
 	friend class memory::Manager;
 	friend class Process;
 	static PRIVATE(key);
-	static PRIVATE(keyParent);
 	static unsigned _next;
-    static util::Lock lockCreate;
 
 	unsigned _id;
-	
+    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
+    KernelMap _kernels;
+
 	/*!
 		\brief Memory map for the context
 	*/
 	memory::Map _mm;
 
-	/*!
-		\brief Returns a reference to the context memory map
-	*/
-	memory::Map &mm() { return _mm; }
-
-	/*!
-		\brief Returns a constant reference to the context memory map
-	*/
-	const memory::Map &mm() const { return _mm; }
-
-	/*!
+    /*!
 		\brief Accelerator where the context is attached
 	*/
 	Accelerator &acc;
@@ -102,15 +92,14 @@ protected:
 
 	virtual ~Context();
 
+    static void Init();
 
 public:
-    static Context *create(int acc = -1);
-
     /*! Gets the Context associated to the calling thread.
      *
      * If it does not have an associated Context, one new Context is created
      */
-	static Context *current();
+	static Context * current();
 
     /*! Checks whether the calling thread has an associated Context
      */
@@ -119,19 +108,32 @@ public:
     /*! Initializes the per-thread private variables of the calling thread.
      *
      * This method must be called as soon as a new thread has been created
-	 * \param parent Pointer to the parent thread. Used during Context cloning
     */
-    static void initThread(Context *parent);
+    static void initThread();
+
+    void kernel(gmacKernel_t k, Kernel * kernel);
+
+    Kernel * kernel(gmacKernel_t k);
 
 	void init();
 
 	void destroy();
-	
+
+    /*!
+		\brief Returns a reference to the context memory map
+	*/
+	memory::Map &mm();
+
+	/*!
+		\brief Returns a constant reference to the context memory map
+	*/
+	const memory::Map &mm() const;
+
 	/*!
 		\brief Locks the context
 	*/
 	virtual void lock() = 0;
-	
+
 	/*!
 		\brief Releases the context
 	*/
@@ -167,7 +169,7 @@ public:
 		\param addr Starting memory address to be released
 	*/
 	virtual gmacError_t hostFree(void *addr) = 0;
-	
+
 	/*!
 		\brief Copies data from system memory to accelerator memory
 		\param dev Destination accelerator memory address
@@ -243,7 +245,7 @@ public:
 		\brief Launches the execution of a kernel
 		\param kernel Kernel to be launched
 	*/
-	virtual gmacError_t launch(const char *kernel) = 0;
+	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
 
 	/*!
 		\brief Waits for kernel execution
@@ -272,7 +274,6 @@ public:
 	*/
 	gmacError_t error() const;
 
-	virtual void flush() = 0;
 	virtual void invalidate() = 0;
 
 	unsigned id() const;
@@ -286,9 +287,8 @@ public:
     size_t bufferPageLockedSize() const;
 };
 
-#include "Context.ipp"
-
 }
 
+#include "Context.ipp"
 
 #endif

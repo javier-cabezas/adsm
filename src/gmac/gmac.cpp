@@ -6,10 +6,10 @@
 #include <threads.h>
 #include <debug.h>
 
-#include <config/params.h>
-#include <kernel/Process.h>
-#include <kernel/Context.h>
-#include <memory/Manager.h>
+#include "config/params.h"
+#include "kernel/Process.h"
+#include "kernel/Context.h"
+#include "memory/Manager.h"
 
 #include <paraver.h>
 
@@ -45,27 +45,81 @@ PRIVATE(__in_gmac);
 const char __gmac_code = 1;
 const char __user_code = 0;
 
-static void __attribute__((constructor(CORE))) gmacInit(void)
+static void __attribute__((constructor(CORE)))
+gmacInit(void)
 {
-	TRACE("Initialiazing GMAC");
+    TRACE("Initialiazing GMAC");
 #ifdef PARAVER
-	paraver::init = 1;
+    paraver::init = 1;
 #endif
-	PRIVATE_INIT(__in_gmac, NULL);
-	__enterGmac();
-	gmac::Process::init(paramMemManager);
-	proc->create();
-	__exitGmac();
+    PRIVATE_INIT(__in_gmac, NULL);
+    __enterGmac();
+    gmac::Process::init(paramMemManager);
+    __exitGmac();
 }
 
-
-static void __attribute__((destructor)) gmacFini(void)
+static void __attribute__((destructor))
+gmacFini(void)
 {
-	TRACE("Cleaning GMAC");
-	delete proc;
+    TRACE("Cleaning GMAC");
+    delete proc;
 }
 
-size_t gmacAccs()
+gmacError_t
+gmacClear(gmacKernel_t k)
+{
+    __enterGmac();
+    enterFunction(gmacClear);
+    gmac::Context * ctx = gmac::Context::current();
+    gmac::Kernel  * kernel = ctx->kernel(k);
+
+    if (kernel == NULL) {
+        return gmacErrorInvalidValue;
+    }
+    kernel->clear();
+    exitFunction();
+    __exitGmac();
+    return gmacSuccess;
+}
+
+gmacError_t
+gmacBind(void * obj, gmacKernel_t k)
+{
+    __enterGmac();
+    enterFunction(gmacBind);
+    gmac::Context * ctx = gmac::Context::current();
+    gmac::Kernel  * kernel = ctx->kernel(k);
+
+    if (kernel == NULL) {
+        return gmacErrorInvalidValue;
+    }
+    gmacError_t ret;
+    ret = kernel->bind(obj);
+    exitFunction();
+    __exitGmac();
+    return ret;
+}
+
+gmacError_t
+gmacUnbind(void * obj, gmacKernel_t k)
+{
+    __enterGmac();
+    enterFunction(gmacUnbind);
+    gmac::Context * ctx = gmac::Context::current();
+    gmac::Kernel  * kernel = ctx->kernel(k);
+
+    if (kernel == NULL) {
+        return gmacErrorInvalidValue;
+    }
+    gmacError_t ret;
+    ret = kernel->unbind(obj);
+	exitFunction();
+	__exitGmac();
+    return ret;
+}
+
+size_t
+gmacAccs()
 {
     size_t ret;
 	__enterGmac();
@@ -76,7 +130,8 @@ size_t gmacAccs()
 	return ret;
 }
 
-gmacError_t gmacSetAffinity(int acc)
+gmacError_t
+gmacSetAffinity(int acc)
 {
 	gmacError_t ret;
 	__enterGmac();
@@ -87,7 +142,8 @@ gmacError_t gmacSetAffinity(int acc)
 	return ret;
 }
 
-static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
+static
+gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 {
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
@@ -103,7 +159,8 @@ static gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 	return gmacSuccess;
 }
 
-gmacError_t gmacMalloc(void **cpuPtr, size_t count)
+gmacError_t
+gmacMalloc(void **cpuPtr, size_t count)
 {
 	__enterGmac();
 	enterFunction(gmacMalloc);
@@ -114,83 +171,86 @@ gmacError_t gmacMalloc(void **cpuPtr, size_t count)
 }
 
 #ifdef USE_GLOBAL_HOST
-gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
+gmacError_t
+gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
-	__enterGmac();
-	enterFunction(gmacGlobalMalloc);
-	gmacError_t ret = gmacSuccess;
-	void *devPtr;
-	count = (count < paramPageSize) ? paramPageSize : count;
-	ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
-	if(ret != gmacSuccess || !manager) {
-		exitFunction();
-		__exitGmac();
-		return ret;
-	}
-	proc->addShared(*cpuPtr, count);
-	manager->map(*cpuPtr, devPtr, count);
-	gmac::Process::ContextList::const_iterator i;
-	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-		if(*i == gmac::Context::current()) continue;
-		(*i)->hostMap(*cpuPtr, &devPtr, count);
-		manager->remap(*i, *cpuPtr, devPtr, count);
-	}
-	exitFunction();
-	__exitGmac();
-	return gmacSuccess;
+    __enterGmac();
+    enterFunction(gmacGlobalMalloc);
+    gmacError_t ret = gmacSuccess;
+    void *devPtr;
+    count = (count < paramPageSize) ? paramPageSize : count;
+    ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
+    if(ret != gmacSuccess || !manager) {
+        exitFunction();
+        __exitGmac();
+        return ret;
+    }
+    proc->addShared(*cpuPtr, count);
+    manager->map(*cpuPtr, devPtr, count);
+    gmac::Process::ContextList::const_iterator i;
+    for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
+        if(*i == gmac::Context::current()) continue;
+        (*i)->hostMap(*cpuPtr, &devPtr, count);
+        manager->remap(*i, *cpuPtr, devPtr, count);
+    }
+    exitFunction();
+    __exitGmac();
+    return gmacSuccess;
 }
 #else
-gmacError_t gmacGlobalMalloc(void **cpuPtr, size_t count)
+gmacError_t
+gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
-	__enterGmac();
-	enterFunction(gmacGlobalMalloc);
-	// Allocate memory in the current context
-	gmacError_t ret = __gmacMalloc(cpuPtr, count);
-	if(ret != gmacSuccess) {
-		exitFunction();
-		__exitGmac();
-		return ret;
-	}
-	// Comment this out if we opt for a hierarchy-based memory sharing
-	void *devPtr;
-	count = (count < paramPageSize) ? paramPageSize : count;
-	proc->addShared(*cpuPtr, count);
-	gmac::Process::ContextList::const_iterator i;
-	for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-		if(*i == gmac::Context::current()) continue;
-		ret = (*i)->malloc(&devPtr, count);
-		if(ret != gmacSuccess) goto cleanup;
-		manager->remap(*i, *cpuPtr, devPtr, count);
-	}
-	exitFunction();
-	__exitGmac();
-	return ret;
+    __enterGmac();
+    enterFunction(gmacGlobalMalloc);
+    // Allocate memory in the current context
+    gmacError_t ret = __gmacMalloc(cpuPtr, count);
+    if(ret != gmacSuccess) {
+        exitFunction();
+        __exitGmac();
+        return ret;
+    }
+    // Comment this out if we opt for a hierarchy-based memory sharing
+    void *devPtr;
+    count = (count < paramPageSize) ? paramPageSize : count;
+    proc->addShared(*cpuPtr, count);
+    gmac::Process::ContextList::const_iterator i;
+    for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
+        if(*i == gmac::Context::current()) continue;
+        ret = (*i)->malloc(&devPtr, count);
+        if(ret != gmacSuccess) goto cleanup;
+        manager->remap(*i, *cpuPtr, devPtr, count);
+    }
+    exitFunction();
+    __exitGmac();
+    return ret;
 
 cleanup:
-	gmac::Context *last = *i;
-	for(i = proc->contexts().begin(); *i != last; i++) {
-		(*i)->free(manager->ptr(*i, cpuPtr));
-		manager->unmap(*i, *cpuPtr);
-	}
-	gmacFree(devPtr);
-	exitFunction();
-	__exitGmac();
-	return ret;
+    gmac::Context *last = *i;
+    for(i = proc->contexts().begin(); *i != last; i++) {
+        (*i)->free(manager->ptr(*i, cpuPtr));
+        manager->unmap(*i, *cpuPtr);
+    }
+    gmacFree(devPtr);
+    exitFunction();
+    __exitGmac();
+    return ret;
 }
 #endif
 
-gmacError_t gmacFree(void *cpuPtr)
+gmacError_t
+gmacFree(void *cpuPtr)
 {
 	__enterGmac();
 	enterFunction(gmacFree);
-    if(manager) {
+	if(manager) {
 		manager->release(cpuPtr);
 	}
 
 	// If it is a shared global structure and nobody is accessing
 	// it anymore, release the host memory
 	if(proc->isShared(cpuPtr)) {
-#ifdef USE_GLOBAL_HOST
+#ifdef USE_GLOBAL_HOST 
 		if(proc->removeShared(cpuPtr) == true) {
 			gmac::Context::current()->hostFree(cpuPtr);
 		}
@@ -198,44 +258,57 @@ gmacError_t gmacFree(void *cpuPtr)
 	}
 	else {
 		gmac::Context::current()->free(cpuPtr);
-
 	}
 	exitFunction();
 	__exitGmac();
 	return gmacSuccess;
 }
 
-void *gmacPtr(void *ptr)
+void *
+gmacPtr(void *ptr)
 {
     void *ret = NULL;
-	__enterGmac();
-	if(manager != NULL) ret = manager->ptr(ptr);
-	__exitGmac();
-	return ret;
+    __enterGmac();
+    if(manager != NULL) ret = manager->ptr(ptr);
+    __exitGmac();
+    return ret;
 }
 
-gmacError_t gmacLaunch(const char *symbol)
+gmacError_t
+gmacLaunch(gmacKernel_t k)
 {
-	__enterGmac();
+    __enterGmac();
+    enterFunction(gmacLaunch);
     gmac::Context * ctx = gmac::Context::current();
-	enterFunction(gmacLaunch);
-	gmacError_t ret = gmacSuccess;
-	if(manager) {
-		TRACE("Memory Flush");
-		manager->flush();
-	}
-	TRACE("Kernel Launch");
-	ret = ctx->launch(symbol);
+    gmac::KernelLaunch * launch = ctx->launch(k);
+
+    gmacError_t ret = gmacSuccess;
+    if(manager) {
+        TRACE("Flush the memory used in the kernel");
+        //manager->flush();
+        manager->flush(*launch);
+    }
+    TRACE("Kernel Launch");
+    ret = launch->execute();
+
     if (paramAutoSync) {
-	    ret = ctx->sync();
+        ret = ctx->sync();
         manager->sync();
     }
-	exitFunction();
-	__exitGmac();
-	return ret;
+
+    if(manager) {
+        TRACE("Invalidate the memory used in the kernel");
+        manager->invalidate(*launch);
+    }
+
+    exitFunction();
+    __exitGmac();
+
+    return ret;
 }
 
-gmacError_t gmacThreadSynchronize()
+gmacError_t
+gmacThreadSynchronize()
 {
 	__enterGmac();
 	enterFunction(gmacSync);
@@ -249,7 +322,8 @@ gmacError_t gmacThreadSynchronize()
 	return ret;
 }
 
-gmacError_t gmacGetLastError()
+gmacError_t
+gmacGetLastError()
 {
 	__enterGmac();
 	gmacError_t ret = gmac::Context::current()->error();
@@ -257,7 +331,8 @@ gmacError_t gmacGetLastError()
 	return ret;
 }
 
-void *gmacMemset(void *s, int c, size_t n)
+void *
+gmacMemset(void *s, int c, size_t n)
 {
     __enterGmac();
     void *ret = s;
@@ -271,7 +346,8 @@ void *gmacMemset(void *s, int c, size_t n)
     return ret;
 }
 
-void *gmacMemcpy(void *dst, const void *src, size_t n)
+void *
+gmacMemcpy(void *dst, const void *src, size_t n)
 {
 	__enterGmac();
 	void *ret = dst;
@@ -312,7 +388,7 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 			                     manager->ptr(dstCtx, src), n);
         assert(err == gmacSuccess);
 	}
-	else {
+	else { // dstCtx != srcCtx
 		void *tmp;
         bool pageLocked = false;
 
@@ -356,7 +432,8 @@ void *gmacMemcpy(void *dst, const void *src, size_t n)
 
 }
 
-void gmacSendReceive(unsigned long id)
+void
+gmacSendReceive(unsigned long id)
 {
 	__enterGmac();
 	proc->sendReceive(id);

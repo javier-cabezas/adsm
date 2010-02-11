@@ -117,8 +117,9 @@ public:
 	void sync() const;
 };
 
+}}}
+
 #include "VM.ipp"
 
-}}};
 
 #endif

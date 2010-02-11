@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #define INTERPOSE       101
 #define CONFIG          102
 #define CORE            103
-#define API             104
 
 #define DEFAULT         199
 

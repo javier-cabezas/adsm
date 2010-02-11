@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,83 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMOMRY_ROLLINGMANAGER_H_
-#define __MEMOMRY_ROLLINGMANAGER_H_
+#ifndef __KERNEL_MEMORY_TRANSFER_H_
+#define __KERNEL_MEMORY_TRANSFER_H_
 
-#include "Handler.h"
-#include "RollingRegion.h"
+#include <debug.h>
 
-#include <kernel/Context.h>
+namespace gmac {
 
-#include <map>
-#include <list>
-
-namespace gmac { namespace memory { namespace manager {
-
-class RollingBuffer {
-private:
-    std::list<RollingBlock *> _buffer;
-    util::RWLock _lock;
-    size_t _max;
-
-public:
-    RollingBuffer();
-
-    bool overflows() const;
-    size_t inc(size_t n);
-    size_t dec(size_t n);
-    bool empty() const;
-
-    void push(RollingBlock *region);
-    RollingBlock *pop();
-    RollingBlock *front();
-    void remove(RollingBlock *region);
-
-    size_t size() const;
-};
-
-class RollingManager : public Handler {
+/*!
+	\brief Memory transfer descriptor
+*/
+class MemoryTransfer {
 protected:
-    size_t lineSize;
-    size_t lruDelta;
+    const void * _src;
+    void * _dst;
 
-    std::map<Context *, RollingBuffer *> regionRolling;
-
-    util::Lock writeMutex;
-    void *writeBuffer;
-    size_t writeBufferSize;
-    void waitForWrite(void *addr = NULL, size_t size = 0);
-    void writeBack();
-
-    virtual bool read(void *);
-    virtual bool write(void *);
-
-#ifdef DEBUG
-    void dumpRolling();
-#endif
-
-    // Methods used by RollingBlock to request flushing and invalidating
-    friend class RollingRegion;
-    void invalidate(RollingBlock *region);
-    void flush(RollingBlock *region);
+    Context * _ctxSrc;
+    Context * _ctxDst;
 
 public:
-    RollingManager();
-    virtual ~RollingManager();
-    void *alloc(void *addr, size_t size);
-    void release(void *addr);
-    void invalidate();
-    void invalidate(const RegionVector & regions);
-    void flush();
-    void flush(const RegionVector & regions);
-    void sync() {};
+    MemoryTransfer(void *dst, const void *src, size_t n);
 
-    void invalidate(const void *addr, size_t size);
-    void flush(const void *addr, size_t size);
+    const void * src() const;
+    void * dst() const;
+
+    Context * ctxSrc() const;
+    Context * ctxDst() const;
 };
 
-#include "RollingManager.ipp"
+#include "Context.ipp"
 
-}}}
+}
+
 
 #endif

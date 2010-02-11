@@ -31,83 +31,72 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMOMRY_ROLLINGMANAGER_H_
-#define __MEMOMRY_ROLLINGMANAGER_H_
+#ifndef __KERNEL_KERNEL_H
+#define __KERNEL_KERNEL_H
 
-#include "Handler.h"
-#include "RollingRegion.h"
+#include "Descriptor.h"
 
-#include <kernel/Context.h>
+#include "memory/Region.h"
 
-#include <map>
-#include <list>
+#include <vector>
 
-namespace gmac { namespace memory { namespace manager {
+namespace gmac {
 
-class RollingBuffer {
+class Argument {
+public:
+    void * _ptr;
+    size_t _size;
+    off_t  _offset;
+    Argument(void * ptr, size_t size, off_t offset);
 private:
-    std::list<RollingBlock *> _buffer;
-    util::RWLock _lock;
-    size_t _max;
-
-public:
-    RollingBuffer();
-
-    bool overflows() const;
-    size_t inc(size_t n);
-    size_t dec(size_t n);
-    bool empty() const;
-
-    void push(RollingBlock *region);
-    RollingBlock *pop();
-    RollingBlock *front();
-    void remove(RollingBlock *region);
-
-    size_t size() const;
+    friend class Kernel;
 };
 
-class RollingManager : public Handler {
+typedef std::vector<Argument> ArgVector;
+
+/// \todo create a pool of objects to avoid mallocs/frees
+class KernelConfig : public ArgVector {
 protected:
-    size_t lineSize;
-    size_t lruDelta;
+    static const unsigned StackSize = 4096;
 
-    std::map<Context *, RollingBuffer *> regionRolling;
+    char _stack[StackSize];
+    off_t _argsSize;
 
-    util::Lock writeMutex;
-    void *writeBuffer;
-    size_t writeBufferSize;
-    void waitForWrite(void *addr = NULL, size_t size = 0);
-    void writeBack();
-
-    virtual bool read(void *);
-    virtual bool write(void *);
-
-#ifdef DEBUG
-    void dumpRolling();
-#endif
-
-    // Methods used by RollingBlock to request flushing and invalidating
-    friend class RollingRegion;
-    void invalidate(RollingBlock *region);
-    void flush(RollingBlock *region);
-
+    KernelConfig(const KernelConfig & c);
 public:
-    RollingManager();
-    virtual ~RollingManager();
-    void *alloc(void *addr, size_t size);
-    void release(void *addr);
-    void invalidate();
-    void invalidate(const RegionVector & regions);
-    void flush();
-    void flush(const RegionVector & regions);
-    void sync() {};
+    /// \todo create a pool of objects to avoid mallocs/frees
+    KernelConfig();
+    virtual ~KernelConfig();
 
-    void invalidate(const void *addr, size_t size);
-    void flush(const void *addr, size_t size);
+    void pushArgument(const void * arg, size_t size, off_t offset);
+    off_t argsSize() const;
+
+    char * argsArray();
 };
 
-#include "RollingManager.ipp"
+typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
-}}}
+class KernelLaunch;
 
-#endif
+class Kernel : public memory::RegionVector, public KernelDescriptor
+{
+public:
+    Kernel(const KernelDescriptor & k);
+
+    virtual KernelLaunch * launch(KernelConfig & c) = 0;
+    gmacError_t bind(void * addr);
+    gmacError_t unbind(void * addr);
+};
+
+class KernelLaunch : public memory::RegionVector {
+public:
+    virtual gmacError_t execute() = 0;
+};
+
+}
+
+#include "Kernel.ipp"
+
+#endif /* KERNEL_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

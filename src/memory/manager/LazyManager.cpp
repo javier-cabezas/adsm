@@ -32,18 +32,64 @@ void LazyManager::release(void *addr)
 	delete reg;
 }
 
+void LazyManager::invalidate()
+{
+    Map::const_iterator i;
+    Map * m = current();
+	for(i = m->begin(); i != m->end(); i++) {
+        ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
+		r->invalidate();
+	}
+	//gmac::Context::current()->flush();
+    /// \todo Change to invalidate(regions)
+	Context::current()->invalidate();
+}
+
+void LazyManager::invalidate(const RegionVector & regions)
+{
+    if (regions.size() == 0) invalidate();
+
+	RegionVector::const_iterator i;
+	for(i = regions.begin(); i != regions.end(); i++) {
+        ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
+		r->invalidate();
+	}
+	//gmac::Context::current()->flush();
+    /// \todo Change to invalidate(regions)
+	Context::current()->invalidate();
+}
+
 void LazyManager::flush()
 {
-	memory::Map::const_iterator i;
-	for(i = current()->begin(); i != current()->end(); i++) {
+    Map::const_iterator i;
+    Map * m = current();
+	for(i = m->begin(); i != m->end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
-		r->invalidate();
+        r->readOnly();
 	}
-	gmac::Context::current()->flush();
-	gmac::Context::current()->invalidate();
+	//gmac::Context::current()->flush();
+    /// \todo Change to invalidate(regions)
+	Context::current()->invalidate();
+}
+
+void LazyManager::flush(const RegionVector & regions)
+{
+    if (regions.size() == 0) flush();
+
+	RegionVector::const_iterator i;
+	for(i = regions.begin(); i != regions.end(); i++) {
+		ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
+		if(r->dirty()) {
+			r->copyToDevice();
+		}
+        r->readOnly();
+	}
+	//gmac::Context::current()->flush();
+    /// \todo Change to invalidate(regions)
+	Context::current()->invalidate();
 }
 
 void LazyManager::invalidate(const void *addr, size_t size)

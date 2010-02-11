@@ -36,7 +36,7 @@ static const char *functionNames[] = {
 	"accMalloc", "accFree",
 	"accHostDevice", "accDeviceHost", "accDeviceDeviceCopy",
 	"accLaunch", "accSync",
-	"gmacMalloc", "gmacGlobalMalloc", "gmacFree", "gmacLaunch", "gmacSync", "gmacSignal", "gmacAccs", "gmacSetAffinity",
+	"gmacMalloc", "gmacGlobalMalloc", "gmacFree", "gmacLaunch", "gmacSync", "gmacSignal", "gmacAccs", "gmacSetAffinity", "gmacClear", "gmacBind", "gmacUnbind",
 	"vmAlloc", "vmFree", "vmFlush", "vmSync",
 	NULL
 };

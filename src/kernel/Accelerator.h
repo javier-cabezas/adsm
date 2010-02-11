@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ACCELERATOR_H_
 #define __KERNEL_ACCELERATOR_H_
 
+
 #include <stddef.h>
 
 namespace gmac {
@@ -54,10 +55,11 @@ protected:
 public:
 	Accelerator(int n);
 	virtual ~Accelerator();
-	
-	virtual Context *create() = 0;
-	virtual Context *clone(const Context &) = 0;
 
+	virtual Context *create() = 0;
+#if 0
+	virtual Context *clone(const Context &) = 0;
+#endif
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;
 };

@@ -8,52 +8,52 @@ extern gmac::memory::Manager *manager;
 
 namespace gmac {
 
-util::Lock Context::lockCreate(paraver::ctxCreate);
-
 PARAM_REGISTER(paramBufferPageLockedSize,
                size_t,
                4 * 1024 * 1024,
                "GMAC_BUFFER_PAGE_LOCKED_SIZE",
                PARAM_NONZERO);
 
-void contextInit()
+void
+Context::Init()
 {
-	PRIVATE_INIT(gmac::Context::key, NULL);
-	PRIVATE_INIT(gmac::Context::keyParent, NULL);
-	PRIVATE_SET(gmac::Context::key, NULL);
-	PRIVATE_SET(gmac::Context::keyParent, NULL);
+	PRIVATE_INIT(Context::key, NULL);
+	PRIVATE_SET(Context::key, NULL);
 }
 
 
 PRIVATE(Context::key);
-PRIVATE(Context::keyParent);
+
 unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) : acc(acc)
 {
+    PRIVATE_SET(Context::key, this);
 	_id = ++_next;
 }
 
 Context::~Context()
 {
+    KernelMap::iterator it;
+
+    for (it = _kernels.begin(); it != _kernels.end(); it++) {
+        delete it->second;
+    }
 }
 
 Context *
-Context::create(int acc)
+Context::current()
 {
-    lockCreate.lock();
-    pushState(Init);
-    proc->clone(static_cast<Context *>(PRIVATE_GET(keyParent)), acc);
-    popState();
-    lockCreate.unlock();
-    return static_cast<Context *>(PRIVATE_GET(key));
+    Context * ctx;
+    ctx = static_cast<Context *>(PRIVATE_GET(Context::key));
+    if (ctx == NULL) ctx = proc->create();
+    return ctx;
 }
 
 void
-Context::initThread(Context *parent)
+Context::initThread()
 {
     PRIVATE_SET(key, NULL);
-    PRIVATE_SET(keyParent, parent);
 }
 
 void
@@ -85,4 +85,5 @@ Context::destroy()
     acc.destroy(this);
     PRIVATE_SET(key, NULL);
 }
+
 }
