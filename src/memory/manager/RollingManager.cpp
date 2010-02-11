@@ -6,7 +6,6 @@
 #include <kernel/Context.h>
 
 #include <unistd.h>
-#include <malloc.h>
 
 #include <typeinfo>
 
