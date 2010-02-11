@@ -250,9 +250,11 @@ gmacFree(void *cpuPtr)
 	// If it is a shared global structure and nobody is accessing
 	// it anymore, release the host memory
 	if(proc->isShared(cpuPtr)) {
+#ifdef USE_GLOBAL_HOST 
 		if(proc->removeShared(cpuPtr) == true) {
 			gmac::Context::current()->hostFree(cpuPtr);
 		}
+#endif
 	}
 	else {
 		gmac::Context::current()->free(cpuPtr);

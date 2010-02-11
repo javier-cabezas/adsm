@@ -178,6 +178,9 @@ AC_ARG_ENABLE(global-host,
 	AS_HELP_STRING([--enable-global-host],[turn on host memory for global allocations [[default=no]]])
 		, , enable_global_host=$global_host_default)
 if test "$enable_global_host" = "yes"; then
+    if test "$enable_mmap" = "yes"; then
+        AC_MSG_ERROR("mmap() cannot be used when host-mapped global regions are used")
+    fi
 	AC_MSG_RESULT(yes)
 	AC_DEFINE([USE_GLOBAL_HOST])
 else

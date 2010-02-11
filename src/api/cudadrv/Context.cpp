@@ -69,14 +69,16 @@ Context::Context(Accelerator &gpu) :
 Context::~Context()
 {
     TRACE("Remove Accelerator context [%p]", this);
-    delete mutex;
     if (_gpu.async()) {
         cuStreamDestroy(streamLaunch);
         cuStreamDestroy(streamToDevice);
         cuStreamDestroy(streamToHost);
         cuStreamDestroy(streamDevice);
     }
-    cuCtxDestroy(_ctx);
+    // CUDA might be deinitalized before executing this code
+    mutex->lock();
+    assert(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    delete mutex;
 }
 
 gmacError_t

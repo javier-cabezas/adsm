@@ -52,7 +52,6 @@ public:
 	ProtRegion(void *addr, size_t size);
 	virtual ~ProtRegion();
 
-	virtual void relate(Context *ctx);
 	virtual void invalidate();
 	virtual void readOnly();
 	virtual void readWrite();
