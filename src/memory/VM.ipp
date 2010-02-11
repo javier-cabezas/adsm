@@ -18,8 +18,10 @@ Table<T>::Table(size_t nEntries) :
 {
     TRACE("Creating Table with %d entries (%p)", nEntries, this);
 
-    assert(posix_memalign((void **)&table, 0x1000,
-                nEntries * sizeof(T *)) == 0);
+    /* assert(posix_memalign((void **)&table, 0x1000,
+                nEntries * sizeof(T *)) == 0); */
+    table = (T *)valloc(nEntries * sizeof(T *));
+    assert(table != NULL);
     memset(table, 0, nEntries * sizeof(T *));
     TRACE("Table memory @ %p", table);
 #ifdef USE_VM

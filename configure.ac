@@ -20,7 +20,7 @@ case "$host" in
 AC_MSG_RESULT([amd64])
 ARCH="64"
 ;;
-*i686*)
+*i386*|*i686*)
 AC_MSG_RESULT([ia32])
 ARCH="32"
 ;;
@@ -36,9 +36,15 @@ case "$host" in
 *linux* | *Linux*)
 AC_MSG_RESULT([Linux])
 OS_DIR="posix"
+LN_FLAGS=-Tf
+;;
+*apple* | *Apple*)
+AC_MSG_RESULT([MacOS])
+OS_DIR="posix"
+LN_FLAGS=-f
 ;;
 *)
-AC_MSG_RESULT([Unknown])
+AC_MSG_RESULT([Unknown: "$host"])
 AC_MSG_ERROR([Your operating system is not supported])
 ;;
 esac
@@ -218,6 +224,7 @@ AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(API_DIR)
 AC_SUBST(OS_DIR)
+AC_SUBST(LN_FLAGS)
 AC_SUBST(THREAD_DIR, $thread_name)
 
 AC_SUBST(PARAVER_INCLUDE, $paraver_include)
