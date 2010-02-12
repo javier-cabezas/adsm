@@ -80,6 +80,8 @@ protected:
 	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap _kernels;
+    memory::RegionSet _releasedRegions;
+    bool _releasedAll;
 
     Status _status;
 
@@ -157,6 +159,13 @@ public:
 		\param size Size, in bytes, to be allocated
 	*/
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
+
+	/*!
+		\brief Allocates pinned memory on the host
+		\param addr Pointer to memory address to store the pinned memory
+		\param size Size, in bytes, to be allocated
+	*/
+	virtual gmacError_t halloc(void **addr, size_t size) = 0;
 
 	/*!
 		\brief Releases memory previously allocated by Malloc
@@ -254,10 +263,15 @@ public:
 
 
 	/*!
-		\brief Launches the execution of a kernel
+		\brief Launches the execution of a kernel and registers the regions binded to de kernel
 		\param kernel Kernel to be launched
 	*/
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
+
+	/*!
+		\brief Returns the regions released to the accelerator
+	*/
+    memory::RegionSet releaseRegions();
 
 	/*!
 		\brief Waits for kernel execution

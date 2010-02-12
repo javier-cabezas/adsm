@@ -26,13 +26,13 @@ void stdcMemInit(void)
 void *memset(void *s, int c, size_t n)
 {
 	if(__libc_memset == NULL) stdcMemInit();
-	if(__inGmac() == 1 || manager == NULL) return __libc_memset(s, c, n);
+	if(__inGmac() == 1) return __libc_memset(s, c, n);
 	
 	__enterGmac();
 	gmac::Context *ctx = manager->owner(s);
 	if(ctx == NULL) __libc_memset(s, c, n);
 	else {
-        if (ctx->status() == Context::RUNNING) ctx->sync();
+        if (ctx->status() == gmac::Context::RUNNING) ctx->sync();
 		TRACE("GMAC Memset");
 		manager->invalidate(s, n);
 		ctx->memset(manager->ptr(s), c, n);
@@ -46,7 +46,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 	void *ret = dst;
 	size_t ds = 0, ss = 0;
 
-	if(__inGmac() == 1 || manager == NULL) return __libc_memcpy(dst, src, n);
+	if(__inGmac() == 1) return __libc_memcpy(dst, src, n);
 
 	__enterGmac();
 	// TODO: handle copies involving partial memory regions

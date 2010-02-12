@@ -113,6 +113,7 @@ public:
 	// Standard Accelerator Interface
     //
 	gmacError_t malloc(void **addr, size_t size);
+	gmacError_t halloc(void **addr, size_t size);
 	gmacError_t free(void *addr);
 
 	gmacError_t hostAlloc(void **host, void **device, size_t size);

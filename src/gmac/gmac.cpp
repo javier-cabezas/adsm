@@ -35,10 +35,10 @@ PARAM_REGISTER(paramPageSize,
                NULL,
                PARAM_NONZERO);
 
-PARAM_REGISTER(paramAutoSync,
+PARAM_REGISTER(paramAcquireOnRead,
                bool,
                true,
-               "GMAC_AUTO_SYNC");
+               "GMAC_ACQUIRE_ON_READ");
 
 PRIVATE(__in_gmac);
 
@@ -65,14 +65,17 @@ gmacInit(void)
     paramInit();
 
     gmac::Process::init(paramMemManager);
+    assert(manager != NULL);
     __exitGmac();
 }
 
 static void __attribute__((destructor))
 gmacFini(void)
 {
+	__enterGmac();
     TRACE("Cleaning GMAC");
     delete proc;
+    __exitGmac();
 }
 
 gmacError_t
@@ -153,7 +156,7 @@ gmacSetAffinity(int acc)
 }
 
 static
-gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
+gmacError_t __gmacMalloc(void **cpuPtr, size_t count, int attr = 0)
 {
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
@@ -162,7 +165,7 @@ gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 	if(ret != gmacSuccess || !manager) {
 		return ret;
 	}
-	if((*cpuPtr = manager->alloc(devPtr, count)) == NULL) {
+	if((*cpuPtr = manager->alloc(devPtr, count, attr)) == NULL) {
 		gmac::Context::current()->free(devPtr);
 		return gmacErrorMemoryAllocation;
 	}
@@ -170,11 +173,11 @@ gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
 }
 
 gmacError_t
-gmacMalloc(void **cpuPtr, size_t count)
+gmacMalloc(void **cpuPtr, size_t count, int attr)
 {
 	__enterGmac();
 	enterFunction(gmacMalloc);
-	gmacError_t ret = __gmacMalloc(cpuPtr, count);
+	gmacError_t ret = __gmacMalloc(cpuPtr, count, attr);
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -279,7 +282,7 @@ gmacPtr(void *ptr)
 {
     void *ret = NULL;
     __enterGmac();
-    if(manager != NULL) ret = manager->ptr(ptr);
+    ret = manager->ptr(ptr);
     __exitGmac();
     return ret;
 }
@@ -293,23 +296,21 @@ gmacLaunch(gmacKernel_t k)
     gmac::KernelLaunch * launch = ctx->launch(k);
 
     gmacError_t ret = gmacSuccess;
-    if(manager) {
-        TRACE("Flush the memory used in the kernel");
-        //manager->flush();
-        manager->flush(*launch);
-    }
+    TRACE("Flush the memory used in the kernel");
+    manager->flush(*launch);
+
     TRACE("Kernel Launch");
     ret = launch->execute();
 
 #if 0
     // Now automatically detected in the memory Handler
-    if (paramAutoSync) {
+    if (paramAcquireOnRead) {
         ret = ctx->sync();
         manager->sync();
     }
 #endif
 
-    if(manager) {
+    if(paramAcquireOnRead) {
         TRACE("Invalidate the memory used in the kernel");
         manager->invalidate(*launch);
     }
@@ -325,11 +326,13 @@ gmacThreadSynchronize()
 {
 	__enterGmac();
 	enterFunction(gmacSync);
-	gmacError_t ret = gmac::Context::current()->sync();
-	if(manager) {
-		TRACE("Memory Sync");
-		manager->sync();
-	}
+    gmac::Context * ctx = gmac::Context::current();
+	gmacError_t ret = ctx->sync();
+
+    TRACE("Memory Sync");
+    manager->sync();
+    manager->invalidate(ctx->releaseRegions());
+
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -349,8 +352,6 @@ gmacMemset(void *s, int c, size_t n)
 {
     __enterGmac();
     void *ret = s;
-    assert(manager != NULL);
-
     gmac::Context *ctx = manager->owner(s);
     assert(ctx != NULL);
     manager->invalidate(s, n);
@@ -366,35 +367,22 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	void *ret = dst;
 	size_t ds = 0, ss = 0;
 
-	assert(manager != NULL);
-
     gmacError_t err;
 #if 0
     err = gmacThreadSynchronize();
     if (err != gmacSuccess) return NULL;
 #endif
 
-    gmac::Context *ctx = gmac::Context::current();
-
 	// Locate memory regions (if any)
 	gmac::Context *dstCtx = manager->owner(dst);
 	gmac::Context *srcCtx = manager->owner(src);
 
-	assert(dstCtx != NULL || srcCtx != NULL);
+	if (dstCtx != NULL && srcCtx != NULL) return NULL;
 
-	TRACE("GMAC Memcpy: %d", n);
-	if(dstCtx == NULL) { // Copy to Host
-		manager->flush(src, n);
-		err = srcCtx->copyToHost(dst, manager->ptr(srcCtx, src), n);
-        assert(err == gmacSuccess);
-	}
-	else if(srcCtx == NULL) { // Copy to Device
-		manager->invalidate(dst, n);
-		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), src, n);
-        assert(err == gmacSuccess);
-	}
+    if (srcCtx->status() == gmac::Context::RUNNING) srcCtx->sync();
+
     // TODO - copyDevice can be always asynchronous
-	else if(dstCtx == srcCtx) {	// Same device copy
+	if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
@@ -404,6 +392,8 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	else { // dstCtx != srcCtx
 		void *tmp;
         bool pageLocked = false;
+
+        gmac::Context *ctx = gmac::Context::current();
 
         manager->flush(src, n);
         manager->invalidate(dst, n);

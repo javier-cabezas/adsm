@@ -28,6 +28,9 @@ unsigned Context::_next = 0;
 
 Context::Context(Accelerator &acc) :
     _acc(acc),
+    _kernels(),
+    _releasedRegions(),
+    _releasedAll(false),
     _status(NONE)
 {
     PRIVATE_SET(Context::key, this);

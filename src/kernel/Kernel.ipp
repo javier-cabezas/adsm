@@ -29,7 +29,7 @@ Kernel::bind(void * addr)
 
         if (j == end()) {
             ret = gmacSuccess;
-            push_back(region);
+            insert(region);
         } else {
             ret = gmacErrorAlreadyBound;
         }

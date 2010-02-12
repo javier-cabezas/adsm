@@ -7,6 +7,7 @@ Manager::insert(Region *r)
     Map * m = current();
     assert(m != NULL);
     current()->insert(r);
+    printf("\nInserting: %p (%p, %p: %d)\n", r, r->start(), r->end(), r->size());
 }
 
 inline Context *

@@ -74,14 +74,19 @@ RollingManager::~RollingManager()
     }
 }
 
-void *RollingManager::alloc(void *addr, size_t count)
+void *RollingManager::alloc(void *addr, size_t count, int attr)
 {
-    void *cpuAddr = NULL;
-    if((cpuAddr = hostMap(addr, count, PROT_NONE)) == NULL)
-        return NULL;
+    void *cpuAddr;
 
-    insertVirtual(cpuAddr, addr, count);
     Context * ctx = Context::current();
+    if (attr == GMAC_MALLOC_PINNED) {
+        void *hAddr;
+        if (ctx->halloc(&hAddr, count) != gmacSuccess) return NULL;
+        cpuAddr = hostRemap(addr, hAddr, count);
+    } else {
+        cpuAddr = hostMap(addr, count, PROT_NONE);
+    }
+    insertVirtual(cpuAddr, addr, count);
     if (!regionRolling[ctx]) {
         regionRolling[ctx] = new RollingBuffer();
     }
@@ -127,7 +132,7 @@ void RollingManager::flush()
     TRACE("RollingManager Flush Ends");
 }
 
-void RollingManager::flush(const RegionVector & regions)
+void RollingManager::flush(const RegionSet & regions)
 {
     // If no dependencies, a global flush is assumed
     if (regions.size() == 0) {
@@ -159,20 +164,21 @@ void RollingManager::flush(const RegionVector & regions)
 void RollingManager::invalidate()
 {
     TRACE("RollingManager Invalidation Starts");
-    memory::Map::iterator i;
-    current()->lock();
-    for(i = current()->begin(); i != current()->end(); i++) {
+    Map::iterator i;
+    Map * m = current();
+    m->lock();
+    for(i = m->begin(); i != m->end(); i++) {
         Region *r = i->second;
         assert(typeid(*r) == typeid(RollingRegion));
         dynamic_cast<RollingRegion *>(r)->invalidate();
     }
-    current()->unlock();
+    m->unlock();
     //gmac::Context::current()->flush();
     gmac::Context::current()->invalidate();
     TRACE("RollingManager Invalidation Ends");
 }
 
-void RollingManager::invalidate(const RegionVector & regions)
+void RollingManager::invalidate(const RegionSet & regions)
 {
     // If no dependencies, a global invalidation is assumed
     if (regions.size() == 0) {
@@ -181,14 +187,15 @@ void RollingManager::invalidate(const RegionVector & regions)
     }
 
     TRACE("RollingManager Invalidation Starts");
-    RegionVector::const_iterator i;
-    current()->lock();
+    RegionSet::const_iterator i;
+    Map * m = current();
+    m->lock();
     for(i = regions.begin(); i != regions.end(); i++) {
         Region *r = *i;
         assert(typeid(*r) == typeid(RollingRegion));
         dynamic_cast<RollingRegion *>(r)->invalidate();
     }
-    current()->unlock();
+    m->unlock();
     //gmac::Context::current()->flush();
     gmac::Context::current()->invalidate();
     TRACE("RollingManager Invalidation Ends");
