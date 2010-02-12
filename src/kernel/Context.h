@@ -48,7 +48,6 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 extern size_t paramBufferPageLockedSize;
-//extern params::Parameter<size_t> paramBufferPageLockedSize;
 
 namespace memory { class Manager; }
 
