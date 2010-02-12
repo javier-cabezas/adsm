@@ -48,11 +48,7 @@ static void *gmac_pthread(void *arg)
 	void *ret = gthread->__start_routine(gthread->__arg);
 	__enterGmac();
 	popState();
-    /*! \todo
-	   IG: commented out because it was producing segmentation
-	    faults. I have no idea why this faults are being triggered
-    */
-	//gmac::Context::current()->destroy();
+    // Context already destroyed in Process destructor
 	free(gthread);
 	__exitGmac();
 	return ret;

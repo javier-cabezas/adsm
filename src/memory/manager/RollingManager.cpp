@@ -210,12 +210,17 @@ void RollingManager::flush(const void *addr, size_t size)
     reg->flush(addr, size);
 }
 
+//
 // Handler Interface
+//
 
 bool RollingManager::read(void *addr)
 {
 	RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
+    Context * owner = root->owner();
+    if (owner->status() == Context::RUNNING) owner->sync();
+
     ProtRegion *region = root->find(addr);
     assert(region != NULL);
     assert(region->present() == false);
@@ -232,7 +237,10 @@ bool RollingManager::read(void *addr)
 bool RollingManager::write(void *addr)
 {
 	RollingRegion *root = current()->find<RollingRegion>(addr);
-    if(root == NULL) return false;
+    if (root == NULL) return false;
+    Context * owner = root->owner();
+    if (owner->status() == Context::RUNNING) owner->sync();
+
     ProtRegion *region = root->find(addr);
     assert(region != NULL);
     assert(region->dirty() == false);

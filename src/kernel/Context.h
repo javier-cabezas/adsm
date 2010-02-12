@@ -55,6 +55,12 @@ class KernelLaunch;
 	\brief Generic Context Class
 */
 class Context {
+public:
+    enum Status {
+        NONE,
+        RUNNING
+    };
+
 protected:
 	/*!
 		\brief Last error on context
@@ -73,6 +79,8 @@ protected:
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap _kernels;
 
+    Status _status;
+
 	/*!
 		\brief Memory map for the context
 	*/
@@ -81,7 +89,7 @@ protected:
     /*!
 		\brief Accelerator where the context is attached
 	*/
-	Accelerator &acc;
+	Accelerator &_acc;
 
     void * _bufferPageLocked;
     size_t _bufferPageLockedSize;
@@ -118,6 +126,8 @@ public:
 	void init();
 
 	void destroy();
+
+	Status status() const;
 
     /*!
 		\brief Returns a reference to the context memory map

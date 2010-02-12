@@ -50,7 +50,7 @@ void Accelerator::destroy(gmac::Context *context)
 	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
 	std::set<gpu::Context *>::iterator c = queue.find(ctx);
 	assert(c != queue.end());
-	delete ctx;
+	//delete ctx;
 	queue.erase(c);
 }
 

@@ -37,12 +37,13 @@ WITH THE SOFTWARE.  */
 #include "Descriptor.h"
 
 #include "memory/Region.h"
+#include "util/ReusableObject.h"
 
 #include <vector>
 
 namespace gmac {
 
-class Argument {
+class Argument : public util::ReusableObject<Argument> {
 public:
     void * _ptr;
     size_t _size;

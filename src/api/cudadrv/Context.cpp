@@ -299,6 +299,8 @@ Context::memset(void *addr, int i, size_t n)
 gmac::KernelLaunch *
 Context::launch(gmacKernel_t addr)
 {
+    _status = RUNNING;
+
     gmac::Kernel * k = kernel(addr);
     assert(k != NULL);
     _call._stream = streamLaunch;
