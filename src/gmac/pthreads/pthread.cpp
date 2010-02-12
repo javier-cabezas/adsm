@@ -14,7 +14,7 @@ static gmac::util::Lock *pLock;
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
-static void __attribute__((constructor(INTERPOSE))) gmacPthreadInit(void)
+void threadInit(void)
 {
 	pLock = new gmac::util::Lock(paraver::pthread);
 	LOAD_SYM(__pthread_create, pthread_create);

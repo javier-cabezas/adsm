@@ -1,12 +1,14 @@
 #include <os/loader.h>
-#include <order.h>
 #include <gmac.h>
 
 #include <cstring>
 
+#include <init.h>
 #include <memory/Manager.h>
 #include <memory/Region.h>
 #include <kernel/Context.h>
+
+#include "stdc.h"
 
 
 SYM(void *, __libc_memset, void *, int, size_t);
@@ -14,7 +16,7 @@ SYM(void *, __libc_memcpy, void *, const void *, size_t);
 
 extern gmac::memory::Manager *manager;
 
-static void __attribute__((constructor(INTERPOSE))) stdcMemInit(void)
+void stdcMemInit(void)
 {
 	TRACE("Overloading Memory STDC functions");
 	LOAD_SYM(__libc_memset, memset);

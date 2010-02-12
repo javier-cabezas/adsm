@@ -1,12 +1,10 @@
-#include <os/loader.h>
-
-#include <order.h>
 #include <paraver.h>
 #include <debug.h>
 
 #include <init.h>
 #include <memory/Manager.h>
 #include <kernel/Context.h>
+#include <os/loader.h>
 
 #include <unistd.h>
 #include <cstdio>
@@ -15,10 +13,12 @@
 
 #include <errno.h>
 
+#include "posix.h"
+
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
-static void __attribute__((constructor(INTERPOSE))) posixIoInit(void)
+void posixIoInit(void)
 {
 	TRACE("Overloading I/O POSIX functions");
 	LOAD_SYM(__libc_read, read);

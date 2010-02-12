@@ -34,12 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_ORDER_H_
 #define __CONFIG_ORDER_H_
 
-#define INTERPOSE       101
-#define CONFIG          102
-#define CORE            103
+/* Common constructors */
+void paraverInit(void);
+void paramInit(void);
 
-#define DEFAULT         199
+/* Interposition Constructors */
+void osInit(void);
+void threadInit(void);
+void stdcInit(void);
 
-#define LAST_LOAD       65535
 
 #endif

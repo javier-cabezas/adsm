@@ -1,6 +1,5 @@
 #include <os/loader.h>
 
-#include <order.h>
 #include <debug.h>
 #include <paraver.h>
 
@@ -15,10 +14,12 @@
 
 #include <errno.h>
 
+#include "stdc.h"
+
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
-static void __attribute__((constructor(INTERPOSE))) stdcInit(void)
+void stdcIoInit(void)
 {
 	TRACE("Overloading I/O STDC functions");
 	LOAD_SYM(__libc_fread, fread);
@@ -33,7 +34,7 @@ extern "C"
 #endif
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	if(__libc_fread == NULL) stdcInit();
+	if(__libc_fread == NULL) stdcIoInit();
 	if(__inGmac() == 1 || manager == NULL) return __libc_fread(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
@@ -87,7 +88,7 @@ extern "C"
 #endif
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	if(__libc_fwrite == NULL) stdcInit();
+	if(__libc_fwrite == NULL) stdcIoInit();
 	if(__inGmac() == 1 || manager == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
     gmac::Context *dstCtx = manager->owner(buf);

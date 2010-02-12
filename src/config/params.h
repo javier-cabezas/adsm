@@ -40,11 +40,53 @@ WITH THE SOFTWARE.  */
 #include "order.h"
 
 #include <iostream>
+#include <vector>
 
 enum ParamFlags {
     PARAM_NONZERO = 0x1
 };
 
+namespace gmac { namespace params {
+class Root {
+private:
+    static std::vector<Root *> *__params;
+protected:
+    const char *name;
+    const char *envVar;
+    uint32_t flags;
+    bool envSet;
+
+    virtual void value(std::string label, std::ostream &os) = 0;
+    virtual void def(std::string label, std::ostream &os) = 0;
+
+public:
+    Root(const char *name, const char *envVar, uint32_t flags); 
+    void print();
+
+    static std::vector<Root *> &params();
+};
+
+template<typename T>
+class Parameter : public Root {
+protected:
+    T __value;
+    T __def;
+    
+    virtual void value(std::string label, std::ostream &os);
+    virtual void def(std::string label, std::ostream &os);
+public:
+    Parameter(const char *name, T def, const char *env,
+        uint32_t flags = 0);
+    T value() const;
+};
+} }
+
+
+#define PARAM_REGISTER(v,t,d,...)  \
+    gmac::params::Parameter<t> __##v(#v, d, ##__VA_ARGS__); \
+    t v = __##v.value()
+
+#if 0
 #define PARAM_REGISTER(v,t,d,...)        \
     t v;                                 \
     t __default_##v;                     \
@@ -62,12 +104,13 @@ enum ParamFlags {
     }                                    \
                                          \
     static void                          \
-    __attribute__((constructor(CONFIG))) \
+    __attribute__((constructor)) \
     __param_register_##v(void)           \
     {                                    \
         __default_##v = d;               \
         paramCheckAndSet<t>(&v, d, #v, __print_##v, __print_default_##v, ##__VA_ARGS__); \
     }
+#endif
 
 #include "params.ipp"
 
