@@ -22,14 +22,13 @@ const size_t blockSize = 512;
 
 static float **s;
 
-__global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
+__global__ void vecAdd(float *c, const float *a, const float *b, size_t vecSize)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if(i >= vecSize) return;
 
 	c[i] = a[i] + b[i];
 }
-
 
 void *addVector(void *ptr)
 {
@@ -38,6 +37,7 @@ void *addVector(void *ptr)
 	struct timeval s, t;
 	gmacError_t ret = gmacSuccess;
 
+    gmacKernel_t kernel  = gmacKernel(vecAdd, float *, const float *, const float *, size_t);
 	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
@@ -53,6 +53,13 @@ void *addVector(void *ptr)
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
 
+    ret = gmacBind(a, kernel);
+    assert(ret == gmacSuccess);
+    ret = gmacBind(b, kernel);
+    assert(ret == gmacSuccess);
+    ret = gmacBind(*c, kernel);
+    assert(ret == gmacSuccess);
+
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
@@ -67,7 +74,6 @@ void *addVector(void *ptr)
 	float error = 0;
 	for(int i = 0; i < vecSize; i++) {
 		error += (*c)[i] - (a[i] + b[i]);
-		//error += (a[i] - b[i]);
 	}
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Check: ", "\n");
@@ -75,10 +81,10 @@ void *addVector(void *ptr)
 
 	gmacFree(a);
 	gmacFree(b);
+	gmacFree(*c);
 
 	return NULL;
 }
-
 
 int main(int argc, char *argv[])
 {

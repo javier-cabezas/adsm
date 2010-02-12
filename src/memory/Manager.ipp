@@ -4,7 +4,9 @@
 inline void
 Manager::insert(Region *r)
 {
-    gmac::Context::current()->mm().insert(r);
+    Map * m = current();
+    assert(m != NULL);
+    current()->insert(r);
 }
 
 inline Context *
