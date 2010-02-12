@@ -11,31 +11,31 @@ static
 T convert(const char * str);
 
 template <>
-bool convert<bool>(const char * str)
+inline bool convert<bool>(const char * str)
 {
     return bool(atoi(str));
 }
 
 template <>
-int convert<int>(const char * str)
+inline int convert<int>(const char * str)
 {
     return atoi(str);
 }
 
 template <>
-float  convert<float>(const char * str)
+inline float convert<float>(const char * str)
 {
     return atof(str);
 }
 
 template <>
-size_t convert<size_t>(const char * str)
+inline size_t convert<size_t>(const char * str)
 {
     return atol(str);
 }
 
 template <>
-char * convert<char *>(const char * str)
+inline char * convert<char *>(const char * str)
 {
     return (char *)str;
 }
@@ -47,19 +47,19 @@ inline std::vector<Root *> &Root::params()
 }
 
 template<typename T>
-void Parameter<T>::value(std::string label, std::ostream &os)
+inline void Parameter<T>::value(std::string label, std::ostream &os)
 {
     os << label << __value;
 }
 
 template<typename T>
-void Parameter<T>::def(std::string label, std::ostream &os)
+inline void Parameter<T>::def(std::string label, std::ostream &os)
 {
     os << label << __def;
 }
 
 template<typename T>
-Parameter<T>::Parameter(const char *name, T def, const char *env, uint32_t flags) :
+inline Parameter<T>::Parameter(const char *name, T def, const char *env, uint32_t flags) :
     Root(name, env, flags), __def(def)
 {
     const char *tmp = NULL;
@@ -81,7 +81,7 @@ Parameter<T>::Parameter(const char *name, T def, const char *env, uint32_t flags
 }
 
 template<typename T>
-T Parameter<T>::value() const {
+inline T Parameter<T>::value() const {
     return __value;
 }
 
