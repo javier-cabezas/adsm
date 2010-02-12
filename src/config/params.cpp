@@ -19,46 +19,47 @@
  * }}}
  */
 
+#include <debug.h>
+
 #include "params.h"
 
 #include <iostream>
 #include <map>
 
-std::map<const char *, ParamDescriptor> params __attribute__((init_priority(CONFIG - 1)));
+namespace gmac { namespace params {
+
+std::vector<Root *> *Root::__params = NULL;
+
+Root::Root(const char *name, const char *envVar, uint32_t flags) :
+    name(name), envVar(envVar), flags(flags), envSet(false)
+{ 
+    TRACE("Getting value for %s", name);
+    params().push_back(this);
+}
+
+void Root::print()
+{
+    std::cout << name << std::endl;
+    value(std::string("\tValue: "), std::cout); std::cout << std::endl;
+    def(std::string("\tDefault: "), std::cout); std::cout << std::endl;
+    std::cout << "\tVariable: " << envVar << std::endl;
+    std::cout << "\tFlags: " << flags << std::endl;
+    std::cout << "\tSet: " << envSet << std::endl;
+}
+} }
 
 PARAM_REGISTER(configPrintParams,
                bool,
                false,
                "GMAC_PRINT_PARAMS");
 
-static
-void __attribute__((constructor(DEFAULT))) doPrintParams()
+void paramInit()
 {
-    if (configPrintParams) {
-        std::ios_base::Init i;
-        for (std::map<const char *, ParamDescriptor>::iterator it = params.begin();
-                it != params.end();
-                it++) {
-            
-            std::cout << it->first << std::endl;
-            std::cout << "\tvalue:   ";
-            it->second.print();
-            std::cout << std::endl;
-            std::cout << "\tdefault: ";
-            it->second.print_default();
-            std::cout << std::endl;
-            if (it->second.env != NULL) {
-                std::cout << "\tenv_var: " << it->second.env   << std::endl;
-            } else {
-                std::cout << "\tenv_var: (none)" << std::endl;
-            }
-            std::cout << "\tflags:   " << it->second.flags << std::endl;
-            if (it->second.envSet) {
-                std::cout << "\tset:     true" << std::endl;
-            } else {
-                std::cout << "\tset:     false" << std::endl;
-            }
-        }
+    if(configPrintParams == true) {
+        std::vector<gmac::params::Root *>::const_iterator i;
+        for(i = gmac::params::Root::params().begin();
+                i != gmac::params::Root::params().end(); i++)
+            (*i)->print();
     }
 }
 

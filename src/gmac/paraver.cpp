@@ -52,7 +52,7 @@ static const char *lockNames[] = {
 };
 
 
-static void __attribute__((constructor(199))) paraverInit(void)
+void paraverInit(void)
 {
 	for(int i = 0; functionNames[i] != 0; i++)
 		paraver::Function->registerType(i, std::string(functionNames[i]));

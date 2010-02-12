@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 #include <debug.h>
+#include <params.h>
 #include <paraver.h>
 
 #include <util/Lock.h>
@@ -50,6 +51,7 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 extern size_t paramPageSize;
+//extern params::Parameter<size_t> paramPageSize;
 
 //! Page Table 
 

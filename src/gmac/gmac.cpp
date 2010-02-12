@@ -45,14 +45,24 @@ PRIVATE(__in_gmac);
 const char __gmac_code = 1;
 const char __user_code = 0;
 
-static void __attribute__((constructor(CORE))) gmacInit(void)
+static void __attribute__((constructor)) gmacInit(void)
 {
 	TRACE("Initialiazing GMAC");
-#ifdef PARAVER
-	paraver::init = 1;
-#endif
 	PRIVATE_INIT(__in_gmac, NULL);
 	__enterGmac();
+
+#ifdef PARAVER
+    paraver::init = 1;
+    paraverInit();
+#endif
+
+    /* Call initialization of interpose libraries */
+    osInit();
+    threadInit();
+    stdcInit();
+
+    paramInit();
+
 	gmac::Process::init(paramMemManager);
 	proc->create();
 	__exitGmac();

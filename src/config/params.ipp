@@ -4,79 +4,87 @@
 #include <cstdio>
 #include <stdint.h>
 
+namespace gmac { namespace params {
+
 template <typename T>
 static
-T convert(char * str);
+T convert(const char * str);
 
 template <>
-bool convert<bool>(char * str)
+bool convert<bool>(const char * str)
 {
     return bool(atoi(str));
 }
 
 template <>
-int convert<int>(char * str)
+int convert<int>(const char * str)
 {
     return atoi(str);
 }
 
 template <>
-float  convert<float>(char * str)
+float  convert<float>(const char * str)
 {
     return atof(str);
 }
 
 template <>
-size_t convert<size_t>(char * str)
+size_t convert<size_t>(const char * str)
 {
     return atol(str);
 }
 
 template <>
-char * convert<char *>(char * str)
+char * convert<char *>(const char * str)
 {
-    return str;
+    return (char *)str;
 }
 
-struct ParamDescriptor {
-    const char * env;
-    uint32_t flags;
-    bool envSet;
-    void (*print)();
-    void (*print_default)();
-};
-
-extern std::map<const char *, ParamDescriptor> params;
-
-template <typename T>
-static
-void paramCheckAndSet(T * v, T defaultValue, const char * name, void (*print)(), void (*print_default)(), const char * env = NULL, uint32_t flags = 0)
+inline std::vector<Root *> &Root::params()
 {
-    ParamDescriptor desc;
+    if(__params == NULL) __params = new std::vector<Root *>();
+    return *__params;
+}
 
-    desc.env    = env;
-    desc.flags  = flags;
-    desc.envSet = false;
-    desc.print  = print;
-    desc.print_default = print_default;
+template<typename T>
+void Parameter<T>::value(std::string label, std::ostream &os)
+{
+    os << label << __value;
+}
 
-    char * __tmp;
-    if (env && 
-        (__tmp = getenv(env)) != NULL) {
-        T val = convert<T>(__tmp);
+template<typename T>
+void Parameter<T>::def(std::string label, std::ostream &os)
+{
+    os << label << __def;
+}
+
+template<typename T>
+Parameter<T>::Parameter(const char *name, T def, const char *env, uint32_t flags) :
+    Root(name, env, flags), __def(def)
+{
+    const char *tmp = NULL;
+    if(env != NULL &&
+        (tmp = getenv(env)) != NULL) {
+        __value = convert<T>(tmp);
 
         if (flags & PARAM_NONZERO &&
-            val == 0) {
-            *v = defaultValue;
+            __value == 0) {
+            __value = __def;
         } else {
-            *v = val;
-            desc.envSet = true;
+            envSet = true;
         }
-    } else {
-        *v = defaultValue;
     }
-
-    params[name] = desc;
+    else {
+        __value = __def;
+    }
+    
 }
 
+template<typename T>
+T Parameter<T>::value() const {
+    return __value;
+}
+
+
+}}
 #endif
