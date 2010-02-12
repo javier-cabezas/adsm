@@ -79,7 +79,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class Kernel : public memory::RegionVector, public KernelDescriptor
+class Kernel : public memory::RegionSet, public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
@@ -89,7 +89,7 @@ public:
     gmacError_t unbind(void * addr);
 };
 
-class KernelLaunch : public memory::RegionVector {
+class KernelLaunch : public memory::RegionSet {
 public:
     virtual gmacError_t execute() = 0;
 };

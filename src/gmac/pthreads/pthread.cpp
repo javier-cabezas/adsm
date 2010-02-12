@@ -25,14 +25,10 @@ static void __attribute__((destructor())) gmacPthreadFini(void)
 	delete pLock;
 }
 
-
-
-
 struct gmac_thread_t {
 	void *(*__start_routine)(void *);
 	void *__arg;
 };
-
 
 //static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg)

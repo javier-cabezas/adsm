@@ -11,13 +11,21 @@ void *Manager::hostMap(void *addr, size_t count, int prot)
 		return NULL;
 	Memory::protect(cpuAddr, count, prot);
 #else
-	cpuAddr = (void *)((uint8_t *)addr + gmac::Context::current()->id() * mmSize);
+	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
 	if(mmap(cpuAddr, count, prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) != cpuAddr)
 		return NULL;
 #endif
 	return cpuAddr;
 }
 
+void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
+{
+	void *cpuAddr = NULL;
+	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
+	if(mremap(hAddr, count, count, MREMAP_FIXED, cpuAddr) != cpuAddr)
+		return NULL;
+	return cpuAddr;
+}
 
 void Manager::hostUnmap(void *addr, size_t count)
 {

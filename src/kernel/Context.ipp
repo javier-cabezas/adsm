@@ -76,6 +76,16 @@ Context::id() const
     return _id;
 }
 
+inline memory::RegionSet
+Context::releaseRegions()
+{
+    memory::RegionSet regions;
+    regions.swap(_releasedRegions);
+    _releasedAll = false;
+
+    return regions;
+}
+
 inline void *
 Context::bufferPageLocked() const
 {

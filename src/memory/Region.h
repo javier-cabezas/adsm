@@ -50,7 +50,7 @@ WITH THE SOFTWARE.  */
 
 #include <iostream>
 #include <list>
-#include <vector>
+#include <set>
 
 namespace gmac {
 
@@ -106,9 +106,7 @@ public:
 	virtual std::list<Context *> &relatives();
 };
 
-typedef std::list<Region> RegionList;
-typedef std::vector<Region *> RegionVector;
-
+typedef std::set<Region *> RegionSet;
 
 #include "Region.ipp"
 

@@ -92,7 +92,7 @@ protected:
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 
-	typedef std::map<THREAD_ID, ThreadQueue> QueueMap;
+	typedef std::map<THREAD_ID, ThreadQueue *> QueueMap;
 	QueueMap _queues;
 
 	util::Lock mutex;

@@ -33,14 +33,14 @@ void BatchManager::flush()
     Context::current()->sync();
 }
 
-void BatchManager::flush(const RegionVector & regions)
+void BatchManager::flush(const RegionSet & regions)
 {
     if (regions.size() == 0) {
         flush();
         return;
     }
 
-    RegionVector::const_iterator i;
+    RegionSet::const_iterator i;
     Map * m = current();
     m->lock();
     for(i = regions.begin(); i != regions.end(); i++) {
@@ -64,7 +64,7 @@ BatchManager::invalidate()
 }
 
 void
-BatchManager::invalidate(const RegionVector & regions)
+BatchManager::invalidate(const RegionSet & regions)
 {
     // Do nothing
 }

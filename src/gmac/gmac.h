@@ -131,6 +131,8 @@ size_t gmacAccs();
 gmacError_t gmacSetAfinnity(int acc);
 
 
+#define GMAC_MALLOC_PINNED 1
+
 /*!
 	\brief Allocates memory at the GPU
 
@@ -139,7 +141,7 @@ gmacError_t gmacSetAfinnity(int acc);
 	\param devPtr memory address to store the address for the allocated memory
 	\param count bytes to be allocated
 */
-gmacError_t gmacMalloc(void **devPtr, size_t count);
+gmacError_t gmacMalloc(void **devPtr, size_t count, int attr = 0);
 
 /*!
 	\brief Allocates global memory at all GPUS

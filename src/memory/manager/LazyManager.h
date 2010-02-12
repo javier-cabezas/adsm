@@ -51,12 +51,12 @@ protected:
 
 public:
 	LazyManager();
-	void *alloc(void *addr, size_t count);
+	void *alloc(void *addr, size_t count, int attr = 0);
 	void release(void *addr);
 	void invalidate();
-    void invalidate(const RegionVector & regions);
+    void invalidate(const RegionSet & regions);
     void flush();
-    void flush(const RegionVector & regions);
+    void flush(const RegionSet & regions);
 
     void sync() {};
 

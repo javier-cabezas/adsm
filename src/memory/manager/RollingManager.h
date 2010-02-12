@@ -94,12 +94,12 @@ protected:
 public:
     RollingManager();
     virtual ~RollingManager();
-    void *alloc(void *addr, size_t size);
+    void *alloc(void *addr, size_t size, int attr = 0);
     void release(void *addr);
     void invalidate();
-    void invalidate(const RegionVector & regions);
+    void invalidate(const RegionSet & regions);
     void flush();
-    void flush(const RegionVector & regions);
+    void flush(const RegionSet & regions);
     void sync() {};
 
     void invalidate(const void *addr, size_t size);

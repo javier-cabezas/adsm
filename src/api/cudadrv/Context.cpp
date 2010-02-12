@@ -98,6 +98,23 @@ Context::malloc(void **addr, size_t size) {
 }
 
 gmacError_t
+Context::halloc(void **addr, size_t size) {
+    zero(addr);
+    lock();
+    size += mm().pageTable().getPageSize();
+    uint8_t * ptr = 0;
+    CUresult ret = cuMemHostAlloc((void **) &ptr, size, CU_MEMHOSTALLOC_PORTABLE);
+    if(uint64_t(ptr) % mm().pageTable().getPageSize()) {
+        ptr += mm().pageTable().getPageSize() -
+            (uint64_t(ptr) % mm().pageTable().getPageSize());
+    }
+    *addr = (void *)ptr;
+    unlock();
+    return error(ret);
+}
+
+
+gmacError_t
 Context::free(void *addr)
 {
     lock();
@@ -305,6 +322,16 @@ Context::launch(gmacKernel_t addr)
     assert(k != NULL);
     _call._stream = streamLaunch;
     gmac::KernelLaunch * l = k->launch(_call);
+
+    if (!_releasedAll) {
+        if (static_cast<memory::RegionSet *>(l)->size() == 0) {
+            _releasedRegions.clear();
+            _releasedAll = true;
+        } else {
+            _releasedRegions.insert(l->begin(), l->end());
+        }
+    }
+
     return l;
 }
 
