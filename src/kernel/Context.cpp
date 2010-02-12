@@ -26,7 +26,9 @@ PRIVATE(Context::key);
 
 unsigned Context::_next = 0;
 
-Context::Context(Accelerator &acc) : acc(acc)
+Context::Context(Accelerator &acc) :
+    _acc(acc),
+    _status(NONE)
 {
     PRIVATE_SET(Context::key, this);
 	_id = ++_next;
@@ -82,7 +84,7 @@ Context::destroy()
 {
     // Set the current context before each Context destruction (since it is sequential)
     PRIVATE_SET(key, this);
-    acc.destroy(this);
+    _acc.destroy(this);
     PRIVATE_SET(key, NULL);
 }
 

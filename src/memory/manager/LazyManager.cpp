@@ -146,6 +146,9 @@ bool LazyManager::read(void *addr)
 	ProtRegion *region = current()->find<ProtRegion>(addr);
 	if(region == NULL) return false;
 
+    Context * owner = region->owner();
+    if (owner->status() == Context::RUNNING) owner->sync();
+
 	region->readWrite();
 	region->copyToHost();
 	region->readOnly();
@@ -157,6 +160,9 @@ bool LazyManager::write(void *addr)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
 	if(region == NULL) return false;
+
+    Context * owner = region->owner();
+    if (owner->status() == Context::RUNNING) owner->sync();
 
 	bool present = region->present();
 	region->readWrite();

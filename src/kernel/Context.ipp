@@ -6,6 +6,13 @@
 namespace gmac {
 
 inline
+Context::Status
+Context::status() const
+{
+    return _status;
+}
+
+inline
 memory::Map &
 Context::mm()
 {

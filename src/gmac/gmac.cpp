@@ -291,10 +291,13 @@ gmacLaunch(gmacKernel_t k)
     TRACE("Kernel Launch");
     ret = launch->execute();
 
+#if 0
+    // Now automatically detected in the memory Handler
     if (paramAutoSync) {
         ret = ctx->sync();
         manager->sync();
     }
+#endif
 
     if(manager) {
         TRACE("Invalidate the memory used in the kernel");

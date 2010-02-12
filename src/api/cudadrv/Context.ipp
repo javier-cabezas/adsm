@@ -85,6 +85,8 @@ Context::sync()
     } else {
         TRACE("Sync: error: %d", ret);
     }
+    _status = NONE;
+
     unlock();
 
     return error(ret);
