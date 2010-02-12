@@ -43,7 +43,6 @@ WITH THE SOFTWARE.  */
 #include <memory/VM.h>
 
 #include <stdint.h>
-//#include <cmath>
 
 #include <cassert>
 
@@ -51,7 +50,6 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 extern size_t paramPageSize;
-//extern params::Parameter<size_t> paramPageSize;
 
 //! Page Table 
 
