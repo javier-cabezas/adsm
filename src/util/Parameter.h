@@ -74,20 +74,11 @@ public:
 
 
 typedef struct {
-    void (*ctor)(void);
+    gmac::util::__Parameter *(*ctor)(void);
     gmac::util::__Parameter *param;
 } ParameterCtor;
 
 extern ParameterCtor ParamCtorList[];
-
-
-#define PARAM_REGISTER(v,t,d,...)  \
-    t v = d; \
-    gmac::util::Parameter<t> *__##v = NULL; \
-    void __init__##v() { \
-        __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
-    }
-
 
 #define PARAM(v, t, d, ...)  extern t v;
 #include "Parameter.def"
