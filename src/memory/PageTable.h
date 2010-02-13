@@ -36,9 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 #include <debug.h>
-#include <params.h>
 #include <paraver.h>
 
+#include <util/Parameter.h>
 #include <util/Lock.h>
 #include <memory/VM.h>
 
@@ -48,8 +48,6 @@ WITH THE SOFTWARE.  */
 
 
 namespace gmac { namespace memory {
-
-extern size_t paramPageSize;
 
 //! Page Table 
 

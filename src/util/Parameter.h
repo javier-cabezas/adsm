@@ -46,72 +46,53 @@ enum ParamFlags {
     PARAM_NONZERO = 0x1
 };
 
-namespace gmac { namespace params {
-class Root {
-private:
-    static std::vector<Root *> *__params;
+namespace gmac { namespace util {
+class __Parameter {
+public:
+    virtual void print() const = 0;
+};
+
+template<typename T>
+class Parameter : public __Parameter {
 protected:
+    T *value;
+    T def;
+
     const char *name;
     const char *envVar;
     uint32_t flags;
     bool envSet;
 
-    virtual void value(std::string label, std::ostream &os) = 0;
-    virtual void def(std::string label, std::ostream &os) = 0;
-
 public:
-    Root(const char *name, const char *envVar, uint32_t flags); 
-    void print();
-
-    static std::vector<Root *> &params();
-};
-
-template<typename T>
-class Parameter : public Root {
-protected:
-    T __value;
-    T __def;
-    
-    virtual void value(std::string label, std::ostream &os);
-    virtual void def(std::string label, std::ostream &os);
-public:
-    Parameter(const char *name, T def, const char *env,
+    Parameter(T *address, const char *name, T def, const char *envVar,
         uint32_t flags = 0);
-    T value() const;
+
+    void print() const;
 };
+
 } }
 
 
+typedef struct {
+    void (*ctor)(void);
+    gmac::util::__Parameter *param;
+} ParameterCtor;
+
+extern ParameterCtor ParamCtorList[];
+
+
 #define PARAM_REGISTER(v,t,d,...)  \
-    gmac::params::Parameter<t> __##v(#v, d, ##__VA_ARGS__); \
-    t v = __##v.value()
-
-#if 0
-#define PARAM_REGISTER(v,t,d,...)        \
-    t v;                                 \
-    t __default_##v;                     \
-                                         \
-    static void                          \
-    __print_##v()                        \
-    {                                    \
-        std::cout << v;                  \
-    }                                    \
-                                         \
-    static void                          \
-    __print_default_##v()                \
-    {                                    \
-        std::cout << __default_##v;      \
-    }                                    \
-                                         \
-    static void                          \
-    __attribute__((constructor)) \
-    __param_register_##v(void)           \
-    {                                    \
-        __default_##v = d;               \
-        paramCheckAndSet<t>(&v, d, #v, __print_##v, __print_default_##v, ##__VA_ARGS__); \
+    t v = d; \
+    gmac::util::Parameter<t> *__##v = NULL; \
+    void __init__##v() { \
+        __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
     }
-#endif
 
-#include "params.ipp"
+
+#define PARAM(v, t, d, ...)  extern t v;
+#include "Parameter.def"
+
+
+#include "Parameter.ipp"
 
 #endif
