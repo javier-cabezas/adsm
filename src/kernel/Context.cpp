@@ -1,7 +1,5 @@
 #include "Context.h"
 
-#include "params.h"
-
 #include <memory/Manager.h>
 
 extern gmac::memory::Manager *manager;
@@ -9,12 +7,6 @@ extern gmac::memory::Manager *manager;
 namespace gmac {
 
 util::Lock Context::lockCreate(paraver::ctxCreate);
-
-PARAM_REGISTER(paramBufferPageLockedSize,
-               size_t,
-               4 * 1024 * 1024,
-               "GMAC_BUFFER_PAGE_LOCKED_SIZE",
-               PARAM_NONZERO);
 
 void contextInit()
 {
