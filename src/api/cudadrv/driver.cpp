@@ -47,9 +47,10 @@ void __cudaRegisterFunction(
 	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
 	__enterGmac();
-	Context::current()->lock();
+    Context * ctx = Context::current();
+	ctx->lock();
 	mod->function(hostFun, devName);
-	Context::current()->unlock();
+	ctx->unlock();
 	__exitGmac();
 }
 
@@ -60,11 +61,12 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 	Module *mod = (Module *)fatCubinHandle;
 	assert(mod != NULL);
 	__enterGmac();
-	Context::current()->lock();
+    Context * ctx = Context::current();
+	ctx->lock();
 	if(constant == 0) mod->variable(hostVar, deviceName);
 	else mod->constant(hostVar, deviceName);
 	mod->variable(hostVar, deviceName);
-	Context::current()->unlock();
+	ctx->unlock();
 	__exitGmac();
 }
 

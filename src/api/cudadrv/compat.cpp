@@ -133,12 +133,13 @@ cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 		size_t hOffset, const void *src, size_t count)
 {
 	CUDA_ARRAY_DESCRIPTOR desc;
-	gmac::Context::current()->lock();
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->lock();
 	CUresult r = cuArrayGetDescriptor(&desc, array);
 	if(r != CUDA_SUCCESS) return __getCUDAError(r);
 	size_t offset = hOffset * desc.Width + wOffset;
 	r = cuMemcpyHtoA(array, offset, src, count);
-	gmac::Context::current()->unlock();
+	ctx->unlock();
 	return __getCUDAError(r);
 }
 
@@ -161,9 +162,10 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 	cuCopy.srcXInBytes = wOffset;
 	cuCopy.srcY = hOffset;
 
-	gmac::Context::current()->lock();
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->lock();
 	CUresult r = cuMemcpy2D(&cuCopy);
-	gmac::Context::current()->unlock();
+	ctx->unlock();
 	assert(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
@@ -189,9 +191,10 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 {
 	__enterGmac();
 	CUDA_ARRAY_DESCRIPTOR cuDesc;
-	gmac::Context::current()->lock();
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->lock();
 	CUresult r = cuArrayGetDescriptor(&cuDesc, (CUarray)array);
-	gmac::Context::current()->unlock();
+	ctx->unlock();
 	if(r != CUDA_SUCCESS) {
 		__exitGmac();
 		return __getCUDAError(r);
@@ -217,9 +220,10 @@ cudaError_t cudaMallocArray(struct cudaArray **array,
 	TRACE("cudaMallocArray: %d %d with format 0x%x and %d channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	__enterGmac();
-	gmac::Context::current()->lock();
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->lock();
 	CUresult r = cuArrayCreate((CUarray *)array, &cuDesc);
-	gmac::Context::current()->unlock();
+	ctx->unlock();
 	__exitGmac();
 	return __getCUDAError(r);
 }
@@ -227,9 +231,10 @@ cudaError_t cudaMallocArray(struct cudaArray **array,
 cudaError_t cudaFreeArray(struct cudaArray *array)
 {
 	__enterGmac();
-	gmac::Context::current()->lock();
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->lock();
 	CUresult r = cuArrayDestroy((CUarray)array);
-	gmac::Context::current()->unlock();
+	ctx->unlock();
 	__exitGmac();
 	return __getCUDAError(r);
 }
@@ -276,7 +281,10 @@ using gmac::gpu::Function;
 cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
 		size_t offset, enum cudaMemcpyKind kind)
 {
-	const Variable *variable = Context::current()->constant(symbol);
+	__enterGmac();
+	cudaError_t ret = cudaSuccess;
+    Context * ctx = Context::current();
+	const Variable *variable = ctx->constant(symbol);
 	assert(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
 	assert(variable->size >= (count + offset));
@@ -284,13 +292,15 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
 			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%d bytes)", src, ptr, count);
-			gmac::Context::current()->lock();
+			ctx->lock();
 			r = cuMemcpyHtoD(ptr, src, count);
-			gmac::Context::current()->unlock();
-			return __getCUDAError(r);
+			ctx->unlock();
+			ret = __getCUDAError(r);
 		default:
 			abort();
 	}
+    __exitGmac();
+    return ret;
 }
 
 #ifdef __cplusplus
