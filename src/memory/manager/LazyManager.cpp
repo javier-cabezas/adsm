@@ -32,17 +32,21 @@ void *LazyManager::alloc(void *addr, size_t count, int attr)
 
 void LazyManager::release(void *addr)
 {
-	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(ptr(addr)));
+	Region *reg = remove(addr);
 	assert(reg != NULL);
-	hostUnmap(reg->start(), reg->size());
+
+    if(reg->owner() == Context::current()) {
+        hostUnmap(reg->start(), reg->size());
+        delete reg;
+    }
 	removeVirtual(reg->start(), reg->size());
-	delete reg;
 }
 
 void LazyManager::invalidate()
 {
     TRACE("LazyManager Invalidation Starts");
     Map::const_iterator i;
+    Map * m = current();
 	for(i = m->begin(); i != m->end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		r->invalidate();
