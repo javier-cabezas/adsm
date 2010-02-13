@@ -25,11 +25,13 @@ void *LazyManager::alloc(void *addr, size_t count)
 
 void LazyManager::release(void *addr)
 {
-	ProtRegion *reg = dynamic_cast<ProtRegion *>(remove(ptr(addr)));
+	Region *reg = remove(addr);
 	assert(reg != NULL);
-	hostUnmap(reg->start(), reg->size());
 	removeVirtual(reg->start(), reg->size());
-	delete reg;
+    if(reg->owner() == Context::current()) {
+    	hostUnmap(reg->start(), reg->size());
+        delete reg;
+    }
 }
 
 void LazyManager::flush()
