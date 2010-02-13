@@ -1,0 +1,117 @@
+/* Copyright (c) 2009 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+#ifndef __PARAMS_H_
+#define __PARAMS_H_
+
+#include <cstdlib>
+#include <map>
+
+#include "order.h"
+
+#include <iostream>
+#include <vector>
+
+enum ParamFlags {
+    PARAM_NONZERO = 0x1
+};
+
+namespace gmac { namespace params {
+class Root {
+private:
+    static std::vector<Root *> *__params;
+protected:
+    const char *name;
+    const char *envVar;
+    uint32_t flags;
+    bool envSet;
+
+    virtual void value(std::string label, std::ostream &os) = 0;
+    virtual void def(std::string label, std::ostream &os) = 0;
+
+public:
+    Root(const char *name, const char *envVar, uint32_t flags); 
+    void print();
+
+    static std::vector<Root *> &params();
+};
+
+template<typename T>
+class Parameter : public Root {
+protected:
+    T __value;
+    T __def;
+    
+    virtual void value(std::string label, std::ostream &os);
+    virtual void def(std::string label, std::ostream &os);
+public:
+    Parameter(const char *name, T def, const char *env,
+        uint32_t flags = 0);
+    T value() const;
+};
+} }
+
+
+#define PARAM_REGISTER(v,t,d,...)  \
+    gmac::params::Parameter<t> __##v(#v, d, ##__VA_ARGS__); \
+    t v = __##v.value()
+
+#if 0
+#define PARAM_REGISTER(v,t,d,...)        \
+    t v;                                 \
+    t __default_##v;                     \
+                                         \
+    static void                          \
+    __print_##v()                        \
+    {                                    \
+        std::cout << v;                  \
+    }                                    \
+                                         \
+    static void                          \
+    __print_default_##v()                \
+    {                                    \
+        std::cout << __default_##v;      \
+    }                                    \
+                                         \
+    static void                          \
+    __attribute__((constructor)) \
+    __param_register_##v(void)           \
+    {                                    \
+        __default_##v = d;               \
+        paramCheckAndSet<t>(&v, d, #v, __print_##v, __print_default_##v, ##__VA_ARGS__); \
+    }
+#endif
+
+#include "params.ipp"
+
+#endif
