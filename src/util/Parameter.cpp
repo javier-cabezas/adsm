@@ -32,8 +32,9 @@
 #define PARAM(v, t, d, ...) \
     t v = d; \
     gmac::util::Parameter<t> *__##v = NULL; \
-    void __init__##v() { \
+    gmac::util::__Parameter *__init__##v() { \
         __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
+        return __##v;\
     }
 #include "Parameter.def"
 
@@ -50,7 +51,7 @@ ParameterCtor ParamCtorList[] = {
 void paramInit()
 {
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
-        ParamCtorList[i].ctor();
+        ParamCtorList[i].param = ParamCtorList[i].ctor();
 
     if(configPrintParams == true) {
         for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
