@@ -64,6 +64,7 @@ gmacInit(void)
 
     paramInit();
 
+    TRACE("Using %s memory manager", paramMemManager);
     gmac::Process::init(paramMemManager);
     assert(manager != NULL);
     __exitGmac();
