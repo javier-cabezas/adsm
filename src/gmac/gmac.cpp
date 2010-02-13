@@ -6,7 +6,7 @@
 #include <threads.h>
 #include <debug.h>
 
-#include "config/params.h"
+#include "util/Parameter.h"
 #include "kernel/Process.h"
 #include "kernel/Context.h"
 #include "memory/Manager.h"
@@ -23,22 +23,6 @@ namespace paraver {
 extern int init;
 }
 #endif
-
-PARAM_REGISTER(paramMemManager,
-                char *,
-                "Rolling",
-                "GMAC_MANAGER");
-
-PARAM_REGISTER(paramPageSize,
-               size_t,
-               getpagesize(),
-               NULL,
-               PARAM_NONZERO);
-
-PARAM_REGISTER(paramAcquireOnRead,
-               bool,
-               true,
-               "GMAC_ACQUIRE_ON_READ");
 
 PRIVATE(__in_gmac);
 
@@ -161,7 +145,7 @@ gmacError_t __gmacMalloc(void **cpuPtr, size_t count, int attr = 0)
 {
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
-	count = (count < paramPageSize) ? paramPageSize : count;
+	count = (count < getpagesize()) ? getpagesize(): count;
     gmac::Context * ctx = gmac::Context::current();
 	ret = ctx->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !manager) {
@@ -193,7 +177,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     enterFunction(gmacGlobalMalloc);
     gmacError_t ret = gmacSuccess;
     void *devPtr;
-    count = (count < paramPageSize) ? paramPageSize : count;
+    count = (count < getpagesize() ? getpagesize(): count;
     gmac::Context * ctx = gmac::Context::current();
     ret = ctx->hostMemAlign(cpuPtr, &devPtr, count);
     if(ret != gmacSuccess || !manager) {
@@ -228,7 +212,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     }
     // Comment this out if we opt for a hierarchy-based memory sharing
     void *devPtr;
-    count = (count < paramPageSize) ? paramPageSize : count;
+    count = (count < getpagesize()) ? getpagesize(): count;
     proc->addShared(*cpuPtr, count);
     gmac::Process::ContextList::const_iterator i;
     for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
@@ -313,7 +297,7 @@ gmacLaunch(gmacKernel_t k)
     }
 #endif
 
-    if(paramAcquireOnRead) {
+    if(paramAcquireOnWrite) {
         TRACE("Invalidate the memory used in the kernel");
         manager->invalidate(*launch);
     }

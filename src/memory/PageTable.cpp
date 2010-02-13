@@ -1,20 +1,10 @@
 #include "PageTable.h"
 
-#include "config/params.h"
-
 #include <kernel/Context.h>
 
 #include <malloc.h>
 
 namespace gmac { namespace memory {
-
-static const size_t defaultPageSize = 2 * 1024 * 1024;
-
-PARAM_REGISTER(paramPageSize,
-               size_t,
-               defaultPageSize,
-               "GMAC_PAGE",
-               PARAM_NONZERO);
 
 size_t PageTable::tableShift;
 
