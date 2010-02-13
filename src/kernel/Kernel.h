@@ -31,76 +31,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_CACHEREGION_H_
-#define __MEMORY_CACHEREGION_H_
+#ifndef __KERNEL_KERNEL_H
+#define __KERNEL_KERNEL_H
 
-#include "Region.h"
-#include "ProtRegion.h"
+#include "Descriptor.h"
 
-#include <config.h>
-#include <debug.h>
+#include "memory/Region.h"
+#include "util/ReusableObject.h"
 
-#include <stdlib.h>
+#include <vector>
 
-#include <map>
-#include <set>
+namespace gmac {
 
-namespace gmac { namespace memory { namespace manager {
-
-class RollingManager;
-class RollingBlock;
-class RollingRegion : public Region {
+class Argument : public util::ReusableObject<Argument> {
 public:
-    typedef std::set<RollingBlock *> List;
-protected:
-    RollingManager &manager;
-
-    // Set of all sub-regions forming the region
-    typedef std::map<const void *, RollingBlock *> Map;
-    Map map;
-
-    // List of sub-regions that are present in memory
-    List memory;
-
-    size_t cacheLine;
-    size_t offset;
-
-    friend class RollingBlock;
-    void push(RollingBlock *region);
-
-public:
-    RollingRegion(RollingManager &manager, void *, size_t, size_t);
-    ~RollingRegion();
-
-    virtual void relate(Context *ctx);
-    virtual void unrelate(Context *ctx);
-    virtual void transfer();
-
-    RollingBlock *find(const void *);
-    virtual void invalidate();
-    void invalidate(const void *, size_t);
-    void flush(const void *, size_t);
+    void * _ptr;
+    size_t _size;
+    off_t  _offset;
+    Argument(void * ptr, size_t size, off_t offset);
+private:
+    friend class Kernel;
 };
 
-class RollingBlock : public ProtRegion {
+typedef std::vector<Argument> ArgVector;
+
+/// \todo create a pool of objects to avoid mallocs/frees
+class KernelConfig : public ArgVector {
 protected:
-    RollingRegion &_parent;
-    friend class RollingRegion;
-    void silentInvalidate();
+    static const unsigned StackSize = 4096;
+
+    char _stack[StackSize];
+    off_t _argsSize;
+
+    KernelConfig(const KernelConfig & c);
 public:
-    RollingBlock(RollingRegion &parent, void *addr, size_t size);
-    ~RollingBlock();
+    /// \todo create a pool of objects to avoid mallocs/frees
+    KernelConfig();
+    virtual ~KernelConfig();
 
-    // Override this methods to insert the regions in the list
-    // of sub-regions present in memory
-    virtual void readOnly();
-    virtual void readWrite();
+    void pushArgument(const void * arg, size_t size, off_t offset);
+    off_t argsSize() const;
 
-    RollingRegion & getParent();
+    char * argsArray();
 };
 
-#include "RollingRegion.ipp"
+typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
-}}}
+class KernelLaunch;
 
-#endif
+class Kernel : public memory::RegionSet, public KernelDescriptor
+{
+public:
+    Kernel(const KernelDescriptor & k);
+
+    virtual KernelLaunch * launch(KernelConfig & c) = 0;
+    gmacError_t bind(void * addr);
+    gmacError_t unbind(void * addr);
+};
+
+class KernelLaunch : public memory::RegionSet {
+public:
+    virtual gmacError_t execute() = 0;
+};
+
+}
+
+#include "Kernel.ipp"
+
+#endif /* KERNEL_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,6 +46,8 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 
 #include <iostream>
+#include <iterator>
+#include <map>
 
 
 namespace gmac { namespace memory {
@@ -80,6 +82,12 @@ protected:
 	//! \param prot Protection flags for the mapping
 	void *hostMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
 
+    //! This remaps memory in the CPU address space
+	//! \param addr  accelerator address
+	//! \param hAddr address to remap
+	//! \param count Size (in bytes) of the mapping
+	void *hostRemap(void *addr, void *hAddr, size_t count);
+
 	//! This method upmaps a accelerator address from the CPU address space
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) to unmap
@@ -95,7 +103,8 @@ public:
 	//! \param devPtr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	virtual void *alloc(void *addr, size_t count) = 0;
+	//! \param attr  Attributes of the malloc
+	virtual void *alloc(void *addr, size_t count, int attr = 0) = 0;
 
 	//! This methid is called to map accelerator memory to
 	//! system memory. Coherence is not maintained for these mappings
@@ -111,7 +120,13 @@ public:
 
 	//! This method is called whenever the user invokes
 	//! a kernel to be executed at the accelerator
-	virtual void flush(void) = 0;
+	virtual void flush() = 0;
+    virtual void flush(const RegionSet & regions) = 0;
+
+    //! This method is called after the user invokes
+	//! a kernel to be executed at the accelerator
+	virtual void invalidate() = 0;
+    virtual void invalidate(const RegionSet & regions) = 0;
 
 	//! This method is called just after the user requests
 	//! waiting for the accelerator to finish

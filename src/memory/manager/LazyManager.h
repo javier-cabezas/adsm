@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -51,12 +51,16 @@ protected:
 
 public:
 	LazyManager();
-	void *alloc(void *addr, size_t count);
+	void *alloc(void *addr, size_t count, int attr = 0);
 	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
+	void invalidate();
+    void invalidate(const RegionSet & regions);
+    void flush();
+    void flush(const RegionSet & regions);
 
-	void invalidate(const void *, size_t); 
+    void sync() {};
+
+	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 };
 

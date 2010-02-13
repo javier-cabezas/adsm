@@ -4,7 +4,7 @@
 inline void
 Manager::insert(Region *r)
 {
-    Context::current()->mm().insert(r);
+    current()->insert(r);
 }
 
 inline Context *

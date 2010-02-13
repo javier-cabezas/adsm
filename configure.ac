@@ -1,14 +1,14 @@
-AC_INIT(GMAC, 2.0, igelado@ac.upc.edu, gmac)
+AC_INIT([GMAC],[3.0],[igelado@ac.upc.edu],[gmac])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_LD
+LT_PATH_LD
 AUTOCONF_ENV="SHELL=/bin/sh"
-AM_PROG_LIBTOOL
+LT_INIT
 
 # Check for a hash table implementation
 AC_CXX_HEADER_TR1_UNORDERED_MAP
@@ -68,7 +68,7 @@ AC_DEFINE([HAVE_CUDA], [1])
 AC_MSG_CHECKING(whether to enable debug mode)
 debug_default="no"
 AC_ARG_ENABLE(debug,
-	AC_HELP_STRING([--enable-debug], [turn on debug mode [[default=no]]])
+	AS_HELP_STRING([--enable-debug],[turn on debug mode [[default=no]]])
 		, , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -85,7 +85,7 @@ fi
 AC_MSG_CHECKING(whether to enable profiling mode)
 profile_default="no"
 AC_ARG_ENABLE(profile,
-	AC_HELP_STRING([--enable-profile], [turn on profile mode [[default=no]]])
+	AS_HELP_STRING([--enable-profile],[turn on profile mode [[default=no]]])
 		, , enable_profile=$profile_default)
 if test "$enable_profile" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -103,7 +103,7 @@ fi
 AC_MSG_CHECKING(whether to enable paraver tracing)
 paraver_default="no"
 AC_ARG_ENABLE(paraver,
-	AC_HELP_STRING([--enable-paraver], [turn on paraver tracing [[default=no]]])
+	AS_HELP_STRING([--enable-paraver],[turn on paraver tracing [[default=no]]])
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -126,7 +126,7 @@ fi
 cuda_driver_default="no"
 AC_MSG_CHECKING(whether to use CUDA Driver API)
 AC_ARG_ENABLE(cuda-driver,
-	AC_HELP_STRING([--enable-cuda-driver], [turn on using the CUDA driver API [[default=no]]])
+	AS_HELP_STRING([--enable-cuda-driver],[turn on using the CUDA driver API [[default=no]]])
 		, , enable_cuda_driver=$cuda_driver_default)
 if test "$enable_cuda_driver" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -139,7 +139,7 @@ fi
 vm_host_default="no"
 AC_MSG_CHECKING(whether to use host memory to store VM data structures)
 AC_ARG_ENABLE(vm-host,
-	AC_HELP_STRING([--enable-vm-host], [turn on using host memory to store VM data structures [[default=no]]])
+	AS_HELP_STRING([--enable-vm-host],[turn on using host memory to store VM data structures [[default=no]]])
 		, , enable_host_vm=$vm_host_default)
 if test "$enable_vm_host" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -150,7 +150,7 @@ fi
 vm_default="no"
 AC_MSG_CHECKING(whether to use software virtual memory)
 AC_ARG_ENABLE(vm,
-	AC_HELP_STRING([--enable-vm], [turn on software virtual memory on CUDA [[default=no]]])
+	AS_HELP_STRING([--enable-vm],[turn on software virtual memory on CUDA [[default=no]]])
 		, , enable_vm=$vm_default)
 if test "$enable_vm" = "yes" || test "$enable_vm_host" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -166,7 +166,7 @@ fi
 mmap_default="no"
 AC_MSG_CHECKING(whether to use mmap() to allocate system memory)
 AC_ARG_ENABLE(mmap,
-	AC_HELP_STRING([--enable-mmap], [turn on using mmap() to request system memory [[default=no]]])
+	AS_HELP_STRING([--enable-mmap],[turn on using mmap() to request system memory [[default=no]]])
 		, , enable_mmap=$mmap_default)
 if test "$enable_mmap" = "yes"; then
 	AC_MSG_RESULT(yes)
@@ -181,7 +181,7 @@ fi
 global_host_default="no"
 AC_MSG_CHECKING(whether to use a host memory for global allocations)
 AC_ARG_ENABLE(global-host,
-	AC_HELP_STRING([--enable-global-host], [turn on host memory for global allocations [[default=no]]])
+	AS_HELP_STRING([--enable-global-host],[turn on host memory for global allocations [[default=no]]])
 		, , enable_global_host=$global_host_default)
 if test "$enable_global_host" = "yes"; then
     if test "$enable_mmap" = "yes"; then
@@ -193,22 +193,10 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-async_launch_default="no"
-AC_MSG_CHECKING(whether to perform asynchronous kernel launches using streams)
-AC_ARG_ENABLE(async-launch,
-    AC_HELP_STRING([--enable-async-launch], [turn on asynchronous kernel launches [[default=no]]])
-        , , enable_async_launch=$async_launch_default)
-if test "$enable_async_launch" = "yes"; then
-    AC_MSG_RESULT(yes)
-    AC_DEFINE([USE_ASYNC_LAUNCH])
-else
-    AC_MSG_RESULT(no)
-fi
-
 tests_default="no"
 AC_MSG_CHECKING(whether to build tests)
 AC_ARG_ENABLE(tests,
-    AC_HELP_STRING([--enable-tests], [turn on tests [[default=no]]])
+    AS_HELP_STRING([--enable-tests],[turn on tests [[default=no]]])
         , , enable_tests=$tests_default)
 if test "$enable_tests" = "yes"; then
     AC_MSG_RESULT(yes)
@@ -233,8 +221,7 @@ AC_SUBST(PARAVER_SRC, $paraver_src)
 
 AC_CONFIG_LINKS(src/config/threads.h:src/config/$thread_name.h)
 
-AC_OUTPUT(
-	Makefile
+AC_CONFIG_FILES([Makefile
 	lib/Makefile
     doc/Doxyfile
     doc/Makefile
@@ -255,4 +242,5 @@ AC_OUTPUT(
 	src/os/Makefile
 	src/util/Makefile
 	tests/Makefile
-)
+])
+AC_OUTPUT

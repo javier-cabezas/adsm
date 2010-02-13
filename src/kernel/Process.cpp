@@ -2,9 +2,13 @@
 #include "Context.h"
 #include "Accelerator.h"
 
+#include "memory/Manager.h"
+
+#include "gmac/init.h"
+
 #include <debug.h>
-#include <gmac/init.h>
-#include <memory/Manager.h>
+
+
 
 gmac::Process *proc = NULL;
 
@@ -29,72 +33,68 @@ Process::Process() :
 
 Process::~Process()
 {
-	TRACE("Cleaning process");
-	std::vector<Accelerator *>::iterator a;
-	std::list<Context *>::iterator c;
-	QueueMap::iterator q;
-	mutex.lock();
-	for(c = _contexts.begin(); c != _contexts.end(); c++) {
-		(*c)->destroy();
-	}
-	for(a = _accs.begin(); a != _accs.end(); a++)
-		delete *a;
-    for(q = _queues.begin(); q != _queues.end(); q++)
-        delete q->second.queue;
-	_accs.clear();
-	mutex.unlock();
-	memoryFini();
+    TRACE("Cleaning process");
+    std::vector<Accelerator *>::iterator a;
+    std::list<Context *>::iterator c;
+    QueueMap::iterator q;
+    mutex.lock();
+    for(c = _contexts.begin(); c != _contexts.end(); c++) {
+        (*c)->destroy();
+    }
+    for(a = _accs.begin(); a != _accs.end(); a++)
+        delete *a;
+    for(q = _queues.begin(); q != _queues.end(); q++) {
+        if (q->second->queue != NULL) {
+            delete q->second->queue;
+        }
+        delete q->second;
+    }
+    _accs.clear();
+    mutex.unlock();
+    memoryFini();
 }
 
 void
 Process::init(const char *name)
 {
     // Process is a singleton class. The only allowed instance is proc
-    if(proc != NULL) return;
-    contextInit();
+    TRACE("Initializing process");
+    assert(proc == NULL);
+    Context::Init();
     proc = new Process();
     apiInit();
     memoryInit(name);
+    // Register first, implicit, thread
+    proc->initThread();
+    gmac::Context::initThread();
 }
 
 void
 Process::initThread()
 {
-    ThreadQueue q;
-    q.hasContext.lock();
-    q.queue = NULL;
-	mutex.lock();
-	_queues.insert(QueueMap::value_type(SELF(), q));
+    ThreadQueue * q = new ThreadQueue();
+    q->hasContext.lock();
+    q->queue = NULL;
+    mutex.lock();
+    _queues.insert(QueueMap::value_type(SELF(), q));
     mutex.unlock();
 }
 
-void Process::create()
+Context *
+Process::create(int acc)
 {
-    ThreadQueue q;
-    q.queue = new Queue();
-	TRACE("Creating new context");
-	mutex.lock();
-	Context *ctx = _accs[0]->create();
-	ctx->init();
-	_contexts.push_back(ctx);
-	_queues.insert(QueueMap::value_type(SELF(), q));
-	mutex.unlock();
-}
-
-void Process::clone(gmac::Context *ctx, int acc)
-{
-	mutex.lock();
+    pushState(Init);
+    TRACE("Creating new context");
+    mutex.lock();
     QueueMap::iterator q = _queues.find(SELF());
-	assert(q != _queues.end());
-
-	TRACE("Cloning context");
-    Context * clon;
+    assert(q != _queues.end());
+    Context * ctx;
     int usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
         assert(acc < _accs.size());
         usedAcc = acc;
-        clon = _accs[acc]->clone(*ctx);
+        ctx = _accs[acc]->create();
     } else {
         // Bind the new Context to the accelerator with less contexts
         // attached to it
@@ -105,14 +105,16 @@ void Process::clone(gmac::Context *ctx, int acc)
             }
         }
 
-        clon = _accs[usedAcc]->clone(*ctx);
-        clon->init();
-        _contexts.push_back(clon);
+        ctx = _accs[usedAcc]->create();
+        ctx->init();
+        _contexts.push_back(ctx);
     }
-    q->second.queue = new Queue();
-    q->second.hasContext.unlock();
+    q->second->queue = new Queue();
+    q->second->hasContext.unlock();
 	mutex.unlock();
-	TRACE("Cloned context on Acc#%d", usedAcc);
+	TRACE("Created context on Acc#%d", usedAcc);
+    popState();
+    return ctx;
 }
 
 gmacError_t Process::migrate(int acc)
@@ -126,7 +128,7 @@ gmacError_t Process::migrate(int acc)
         abort();
     } else {
         // Create the context in the requested accelerator
-        Context::create(acc);
+        _accs[acc]->create();
     }
 	TRACE("Migrated context");
 	mutex.unlock();
@@ -138,22 +140,23 @@ void Process::remove(Context *ctx)
 {
 	mutex.lock();
 	_contexts.remove(ctx);
-    ThreadQueue q = _queues[SELF()];
-    if (q.queue != NULL) {
-        delete q.queue;
+    ThreadQueue * q = _queues[SELF()];
+    if (q->queue != NULL) {
+        delete q->queue;
     }
+    delete q;
 	_queues.erase(SELF());
 	mutex.unlock();
 	ctx->destroy();
 }
 
-void Process::accelerator(Accelerator *acc) 
+void Process::accelerator(Accelerator *acc)
 {
 	_accs.push_back(acc);
 	_totalMemory += acc->memory();
 }
 
-void *Process::translate(void *addr) 
+void *Process::translate(void *addr)
 {
 	void *ret = NULL;
 	std::list<Context *>::const_iterator i;
@@ -171,13 +174,13 @@ void Process::sendReceive(THREAD_ID id)
 	QueueMap::iterator q = _queues.find(id);
     mutex.unlock();
 	assert(q != _queues.end());
-    q->second.hasContext.lock();
-    q->second.hasContext.unlock();
-	q->second.queue->push(ctx);
+    q->second->hasContext.lock();
+    q->second->hasContext.unlock();
+	q->second->queue->push(ctx);
 	PRIVATE_SET(Context::key, NULL);
 	q = _queues.find(SELF());
 	assert(q != _queues.end());
-	PRIVATE_SET(Context::key, q->second.queue->pop());
+	PRIVATE_SET(Context::key, q->second->queue->pop());
 }
 
 }

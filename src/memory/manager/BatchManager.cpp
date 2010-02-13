@@ -2,44 +2,88 @@
 
 #include <debug.h>
 
-#include <kernel/Context.h>
+#include "kernel/Context.h"
 
 namespace gmac { namespace memory { namespace manager {
 
 void BatchManager::release(void *addr)
 {
-	Region *reg = remove(addr);
+    Region *reg = remove(addr);
 	removeVirtual(reg->start(), reg->size());
     if(reg->owner() == Context::current()) {
 	    hostUnmap(reg->start(), reg->size());
         delete reg;
     }
-}
-void BatchManager::flush(void)
-{
-	Map::const_iterator i;
-	current()->lock();
-    Context * ctx = Context::current();
-	for(i = current()->begin(); i != current()->end(); i++) {
-		TRACE("Memory Copy to Device");
-		ctx->copyToDevice(ptr(i->second->start()),
-				i->second->start(), i->second->size());
-	}
-	current()->unlock();
-	ctx->flush();
-	ctx->sync();
+
 }
 
-void BatchManager::sync(void)
+void BatchManager::flush()
 {
-	Map::const_iterator i;
-	current()->lock();
-	for(i = current()->begin(); i != current()->end(); i++) {
-		TRACE("Memory Copy from Device");
-		Context::current()->copyToHost(i->second->start(),
-				ptr(i->second->start()), i->second->size());
-	}
-	current()->unlock();
+    Map::const_iterator i;
+    Map * m = current();
+    Context * ctx = Context::current();
+    m->lock();
+    for(i = m->begin(); i != m->end(); i++) {
+        TRACE("Memory Copy to Device");
+        ctx->copyToDevice(ptr(i->second->start()),
+                                         i->second->start(),
+                                         i->second->size());
+    }
+    m->unlock();
+    /*!
+      \todo Fix vm
+    */
+    //Context::current()->flush();
+    ctx->sync();
+}
+
+void BatchManager::flush(const RegionSet & regions)
+{
+    if (regions.size() == 0) {
+        flush();
+        return;
+    }
+
+    RegionSet::const_iterator i;
+    Map * m = current();
+    Context * ctx = Context::current();
+    m->lock();
+    for(i = regions.begin(); i != regions.end(); i++) {
+        TRACE("Memory Copy to Device");
+        ctx->copyToDevice(ptr((*i)->start()),
+                                         (*i)->start(),
+                                         (*i)->size());
+    }
+    m->unlock();
+    /*!
+      \todo Fix vm
+    */
+    //Context::current()->flush();
+    ctx->sync();
+}
+
+void
+BatchManager::invalidate()
+{
+    // Do nothing
+}
+
+void
+BatchManager::invalidate(const RegionSet & regions)
+{
+    // Do nothing
+}
+
+void BatchManager::sync()
+{
+    Map::const_iterator i;
+    current()->lock();
+    for(i = current()->begin(); i != current()->end(); i++) {
+        TRACE("Memory Copy from Device");
+        Context::current()->copyToHost(i->second->start(),
+                                       ptr(i->second->start()), i->second->size());
+    }
+    current()->unlock();
 }
 
 void
