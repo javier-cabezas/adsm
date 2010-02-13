@@ -8,10 +8,12 @@ namespace gmac { namespace memory { namespace manager {
 
 void BatchManager::release(void *addr)
 {
-	Region *reg = remove(ptr(addr));
-	hostUnmap(reg->start(), reg->size());
+	Region *reg = remove(addr);
 	removeVirtual(reg->start(), reg->size());
-	delete reg;
+    if(reg->owner() == Context::current()) {
+	    hostUnmap(reg->start(), reg->size());
+        delete reg;
+    }
 }
 void BatchManager::flush(void)
 {
