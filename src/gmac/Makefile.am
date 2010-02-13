@@ -8,7 +8,6 @@ libgmac_la_SOURCES = gmac/paraver.h gmac.h gmac.cpp paraver.cpp
 libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/libgmac-thread.la\
 		../kernel/libkernel.la\
 		../memory/libmemory.la\
-		../config/libconfig.la\
 		../util/libutil.la\
 		../api/$(API_DIR)/libapi.la\
 		$(PARAVER_LIB)

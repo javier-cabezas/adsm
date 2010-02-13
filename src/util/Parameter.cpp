@@ -21,46 +21,44 @@
 
 #include <debug.h>
 
-#include "params.h"
+#include "Parameter.h"
 
 #include <iostream>
 #include <map>
 
-namespace gmac { namespace params {
+// This CPP directives will generate parameter constructors and declare
+// parameters to be used
+#undef PARAM
+#define PARAM(v, t, d, ...) \
+    t v = d; \
+    gmac::util::Parameter<t> *__##v = NULL; \
+    void __init__##v() { \
+        __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
+    }
+#include "Parameter.def"
 
-std::vector<Root *> *Root::__params = NULL;
-
-Root::Root(const char *name, const char *envVar, uint32_t flags) :
-    name(name), envVar(envVar), flags(flags), envSet(false)
-{ 
-    TRACE("Getting value for %s", name);
-    params().push_back(this);
-}
-
-void Root::print()
-{
-    std::cout << name << std::endl;
-    value(std::string("\tValue: "), std::cout); std::cout << std::endl;
-    def(std::string("\tDefault: "), std::cout); std::cout << std::endl;
-    std::cout << "\tVariable: " << envVar << std::endl;
-    std::cout << "\tFlags: " << flags << std::endl;
-    std::cout << "\tSet: " << envSet << std::endl;
-}
-} }
-
-PARAM_REGISTER(configPrintParams,
-               bool,
-               false,
-               "GMAC_PRINT_PARAMS");
+// This CPP directives will create the constructor table for all
+// parameters defined by the programmer
+#undef PARAM
+#define PARAM(v, t, d, ...) \
+    { __init__##v, __##v },
+ParameterCtor ParamCtorList[] = {
+#include "Parameter.def"
+    {NULL, NULL}
+};
 
 void paramInit()
 {
+    for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
+        ParamCtorList[i].ctor();
+
     if(configPrintParams == true) {
-        std::vector<gmac::params::Root *>::const_iterator i;
-        for(i = gmac::params::Root::params().begin();
-                i != gmac::params::Root::params().end(); i++)
-            (*i)->print();
+        for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
+            ParamCtorList[i].param->print();
     }
+
+    for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
+        delete ParamCtorList[i].param;
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
