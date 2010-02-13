@@ -15,21 +15,22 @@ void BatchManager::release(void *addr)
 }
 void BatchManager::flush(void)
 {
-	memory::Map::const_iterator i;
+	Map::const_iterator i;
 	current()->lock();
+    Context * ctx = Context::current();
 	for(i = current()->begin(); i != current()->end(); i++) {
 		TRACE("Memory Copy to Device");
-		Context::current()->copyToDevice(ptr(i->second->start()),
+		ctx->copyToDevice(ptr(i->second->start()),
 				i->second->start(), i->second->size());
 	}
 	current()->unlock();
-	gmac::Context::current()->flush();
-	gmac::Context::current()->sync();
+	ctx->flush();
+	ctx->sync();
 }
 
 void BatchManager::sync(void)
 {
-	memory::Map::const_iterator i;
+	Map::const_iterator i;
 	current()->lock();
 	for(i = current()->begin(); i != current()->end(); i++) {
 		TRACE("Memory Copy from Device");

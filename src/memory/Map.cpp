@@ -6,7 +6,7 @@ namespace gmac { namespace memory {
 
 Map::__Map *Map::__global = NULL;
 unsigned Map::count = 0;
-gmac::util::RWLock Map::global(paraver::mmGlobal);
+util::RWLock Map::global(paraver::mmGlobal);
 
 Region *
 Map::localFind(const void *addr)
@@ -80,7 +80,7 @@ Region *Map::remove(void *addr)
 	i = __global->upper_bound(addr);
 	assert(i != __global->end() && i->second->start() == addr);
     Region *region = i->second;
-    bool self = (region->owner() == gmac::Context::current());
+    bool self = (region->owner() == Context::current());
     if(self == true) __global->erase(i);
 	global.unlock();
 	// If the region is global (not owned by the context) return

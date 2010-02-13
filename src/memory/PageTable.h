@@ -62,7 +62,7 @@ private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;
 
-	gmac::util::RWLock lock;
+	util::RWLock lock;
 
 	static size_t tableShift;
 

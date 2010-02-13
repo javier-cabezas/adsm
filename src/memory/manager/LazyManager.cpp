@@ -34,7 +34,8 @@ void LazyManager::release(void *addr)
 
 void LazyManager::flush()
 {
-	memory::Map::const_iterator i;
+    Context * ctx = Context::current();
+	Map::const_iterator i;
 	for(i = current()->begin(); i != current()->end(); i++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		if(r->dirty()) {
@@ -42,8 +43,8 @@ void LazyManager::flush()
 		}
 		r->invalidate();
 	}
-	gmac::Context::current()->flush();
-	gmac::Context::current()->invalidate();
+	ctx->flush();
+	ctx->invalidate();
 }
 
 void LazyManager::invalidate(const void *addr, size_t size)
