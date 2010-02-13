@@ -78,12 +78,11 @@ Map::init()
 Region *Map::remove(void *addr)
 {
     RegionMap::iterator i;
-    Context * ctx = gmac::Context::current();
-    Region * r;
     global.write();
     i = __global->upper_bound(addr);
-    r = i->second;
+    Region * r = i->second;
     assert(i != __global->end() && r->start() == addr);
+    Context * ctx = Context::current();
     if(r->owner() == ctx) __global->erase(i);
     global.unlock();
     // If the region is global (not owned by the context) return

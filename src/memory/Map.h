@@ -53,7 +53,7 @@ protected:
     util::RWLock local;
     static RegionMap *__global;
     static unsigned count;
-    static gmac::util::RWLock global;
+    static util::RWLock global;
 
     Region *localFind(const void *addr);
     static Region *globalFind(const void *addr);

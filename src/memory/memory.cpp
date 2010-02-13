@@ -21,7 +21,7 @@ static void createManager(const char *name)
 {
 	mutex->lock();
 	if(manager == NULL)
-		manager = gmac::memory::getManager(name);
+		manager = memory::getManager(name);
 	mutex->unlock();
 }
 
@@ -29,7 +29,7 @@ void memoryInit(const char *manager)
 {
 	TRACE("Initializing Memory Subsystem");
 	mutex = new util::Lock(paraver::manager);
-	gmac::memory::Map::init();
+	memory::Map::init();
 	createManager(manager);
 }
 

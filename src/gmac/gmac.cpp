@@ -192,7 +192,8 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     gmacError_t ret = gmacSuccess;
     void *devPtr;
     count = (count < paramPageSize) ? paramPageSize : count;
-    ret = gmac::Context::current()->hostMemAlign(cpuPtr, &devPtr, count);
+    gmac::Context * ctx = gmac::Context::current();
+    ret = ctx->hostMemAlign(cpuPtr, &devPtr, count);
     if(ret != gmacSuccess || !manager) {
         exitFunction();
         __exitGmac();
@@ -202,7 +203,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     manager->map(*cpuPtr, devPtr, count);
     gmac::Process::ContextList::const_iterator i;
     for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-        if(*i == gmac::Context::current()) continue;
+        if(*i == ctx) continue;
         (*i)->hostMap(*cpuPtr, &devPtr, count);
         manager->remap(*i, *cpuPtr, devPtr, count);
     }

@@ -65,7 +65,7 @@ class Region {
 private:
 	Context *_context;
 protected:
-	gmac::util::RWLock _lock;
+	util::RWLock _lock;
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;

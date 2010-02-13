@@ -101,7 +101,8 @@ void RollingManager::release(void *addr)
 {
     Region *reg = remove(addr);
     removeVirtual(reg->start(), reg->size());
-    if(reg->owner() == Context::current()) {
+    Context * ctx = Context::current();
+    if(reg->owner() == ctx) {
         hostUnmap(addr, reg->size()); // Global mappings do not have a shadow copy in system memory
         TRACE("Deleting Region %p\n", addr);
         delete reg;
@@ -110,9 +111,9 @@ void RollingManager::release(void *addr)
 	// When using host-mapped memory, global regions do not
 	// increase the rolling size
 	if(proc->isShared(addr) == false)
-        regionRolling[Context::current()]->dec(lruDelta);
+        regionRolling[ctx]->dec(lruDelta);
 #else
-	regionRolling[Context::current()]->dec(lruDelta);
+	regionRolling[ctx]->dec(lruDelta);
 #endif
     TRACE("Released %p", addr);
 }
@@ -121,9 +122,10 @@ void RollingManager::release(void *addr)
 void RollingManager::flush()
 {
     TRACE("RollingManager Flush Starts");
+    Context * ctx = Context::current();
     waitForWrite();
-    while(regionRolling[Context::current()]->empty() == false) {
-        RollingBlock *r = regionRolling[Context::current()]->pop();
+    while(regionRolling[ctx]->empty() == false) {
+        RollingBlock *r = regionRolling[ctx]->pop();
         assert(r->copyToDevice() == gmacSuccess);
         r->readOnly();
         TRACE("Flush to Device %p", r->start());
@@ -251,16 +253,17 @@ bool RollingManager::write(void *addr)
     ProtRegion *region = root->find(addr);
     assert(region != NULL);
     assert(region->dirty() == false);
-    if (!regionRolling[Context::current()]) {
-        regionRolling[Context::current()] = new RollingBuffer();
+    Context * ctx = Context::current();
+    if (!regionRolling[ctx]) {
+        regionRolling[ctx] = new RollingBuffer();
     }
-    while(regionRolling[Context::current()]->overflows()) writeBack();
+    while(regionRolling[ctx]->overflows()) writeBack();
     region->readWrite();
     if(region->present() == false && current()->pageTable().dirty(addr)) {
         assert(region->copyToHost() == gmacSuccess);
         current()->pageTable().clear(addr);
     }
-    regionRolling[Context::current()]->push(
+    regionRolling[ctx]->push(
         dynamic_cast<RollingBlock *>(region));
     return true;
 }

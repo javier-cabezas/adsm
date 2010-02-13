@@ -4,10 +4,7 @@
 inline void
 Manager::insert(Region *r)
 {
-    Map * m = current();
-    assert(m != NULL);
     current()->insert(r);
-    printf("\nInserting: %p (%p, %p: %d)\n", r, r->start(), r->end(), r->size());
 }
 
 inline Context *
@@ -18,34 +15,34 @@ Manager::owner(const void * addr)
 	return region->owner();
 }
 
-inline memory::Map *
+inline Map *
 Manager::current()
 {
-    return &gmac::Context::current()->mm();
+    return &Context::current()->mm();
 }
 
 inline void
 Manager::insertVirtual(void *cpuPtr, void *devPtr, size_t count)
 {
-	insertVirtual(gmac::Context::current(), cpuPtr, devPtr, count);
+	insertVirtual(Context::current(), cpuPtr, devPtr, count);
 }
 
 inline void
 Manager::removeVirtual(void *cpuPtr, size_t count)
 {
-	removeVirtual(gmac::Context::current(), cpuPtr, count);
+	removeVirtual(Context::current(), cpuPtr, count);
 }
 
-inline const memory::PageTable &
+inline const PageTable &
 Manager::pageTable() const
 {
-    return gmac::Context::current()->mm().pageTable();
+    return Context::current()->mm().pageTable();
 }
 
 inline const void *
 Manager::ptr(Context *ctx, const void *addr)
 {
-    memory::PageTable &pageTable = ctx->mm().pageTable();
+    PageTable &pageTable = ctx->mm().pageTable();
     const void *ret = (const void *)pageTable.translate(addr);
     if(ret == NULL) ret = proc->translate(addr);
     return ret;
@@ -54,13 +51,13 @@ Manager::ptr(Context *ctx, const void *addr)
 inline const void *
 Manager::ptr(const void *addr)
 {
-    return ptr(gmac::Context::current(), addr);
+    return ptr(Context::current(), addr);
 }
 
 inline void *
 Manager::ptr(Context *ctx, void *addr)
 {
-    memory::PageTable &pageTable = ctx->mm().pageTable();
+    PageTable &pageTable = ctx->mm().pageTable();
     void *ret = (void *)pageTable.translate(addr);
     if(ret == NULL) ret = proc->translate(addr);
     return ret;
@@ -69,7 +66,7 @@ Manager::ptr(Context *ctx, void *addr)
 inline void *
 Manager::ptr(void *addr)
 {
-    return ptr(gmac::Context::current(), addr);
+    return ptr(Context::current(), addr);
 }
 
 #endif

@@ -67,14 +67,14 @@ protected:
 
 	Region *remove(void *addr);
 
-	memory::Map *current();
+	Map *current();
 
 	void insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count);
 	void removeVirtual(Context *ctx, void *cpuPtr, size_t count);
 	void insertVirtual(void *cpuPtr, void *devPtr, size_t count);
     void removeVirtual(void *cpuPtr, size_t count);
 
-	const memory::PageTable &pageTable() const;
+	const PageTable &pageTable() const;
 
 	//! This gets memory from the CPU address space
 	//! \param addr accelerator address
@@ -143,7 +143,7 @@ public:
 	void remap(Context *, void *, void *, size_t);
 	void unmap(Context *, void *);
 
-	gmac::Context *owner(const void *addr);
+	Context *owner(const void *addr);
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
 

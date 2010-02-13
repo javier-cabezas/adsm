@@ -9,19 +9,23 @@ namespace gmac { namespace memory { namespace manager {
 void BatchManager::release(void *addr)
 {
     Region *reg = remove(addr);
-    hostUnmap(reg->start(), reg->size());
-    removeVirtual(reg->start(), reg->size());
-    delete reg;
+	removeVirtual(reg->start(), reg->size());
+    if(reg->owner() == Context::current()) {
+	    hostUnmap(reg->start(), reg->size());
+        delete reg;
+    }
+
 }
 
 void BatchManager::flush()
 {
     Map::const_iterator i;
     Map * m = current();
+    Context * ctx = Context::current();
     m->lock();
     for(i = m->begin(); i != m->end(); i++) {
         TRACE("Memory Copy to Device");
-        Context::current()->copyToDevice(ptr(i->second->start()),
+        ctx->copyToDevice(ptr(i->second->start()),
                                          i->second->start(),
                                          i->second->size());
     }
@@ -30,7 +34,7 @@ void BatchManager::flush()
       \todo Fix vm
     */
     //Context::current()->flush();
-    Context::current()->sync();
+    ctx->sync();
 }
 
 void BatchManager::flush(const RegionSet & regions)
@@ -42,10 +46,11 @@ void BatchManager::flush(const RegionSet & regions)
 
     RegionSet::const_iterator i;
     Map * m = current();
+    Context * ctx = Context::current();
     m->lock();
     for(i = regions.begin(); i != regions.end(); i++) {
         TRACE("Memory Copy to Device");
-        Context::current()->copyToDevice(ptr((*i)->start()),
+        ctx->copyToDevice(ptr((*i)->start()),
                                          (*i)->start(),
                                          (*i)->size());
     }
@@ -54,7 +59,7 @@ void BatchManager::flush(const RegionSet & regions)
       \todo Fix vm
     */
     //Context::current()->flush();
-    Context::current()->sync();
+    ctx->sync();
 }
 
 void

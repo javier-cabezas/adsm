@@ -34,12 +34,11 @@ void LazyManager::release(void *addr)
 {
 	Region *reg = remove(addr);
 	assert(reg != NULL);
-
+	removeVirtual(reg->start(), reg->size());
     if(reg->owner() == Context::current()) {
         hostUnmap(reg->start(), reg->size());
         delete reg;
     }
-	removeVirtual(reg->start(), reg->size());
 }
 
 void LazyManager::invalidate()
