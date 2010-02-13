@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,60 +46,64 @@ namespace gmac { namespace memory { namespace manager {
 
 class RollingBuffer {
 private:
-	std::list<ProtSubRegion *> buffer;
-	util::RWLock lock;
-	size_t _max;
+    std::list<RollingBlock *> _buffer;
+    util::RWLock _lock;
+    size_t _max;
 
 public:
-	RollingBuffer();
+    RollingBuffer();
 
-	bool overflows() const;
-	size_t inc(size_t n);
-	size_t dec(size_t n);
-	bool empty() const;
+    bool overflows() const;
+    size_t inc(size_t n);
+    size_t dec(size_t n);
+    bool empty() const;
 
-	void push(ProtSubRegion *region);
-	ProtSubRegion *pop();
-	ProtSubRegion *front();
-	void remove(ProtSubRegion *region);
+    void push(RollingBlock *region);
+    RollingBlock *pop();
+    RollingBlock *front();
+    void remove(RollingBlock *region);
+
+    size_t size() const;
 };
 
 class RollingManager : public Handler {
 protected:
-	size_t lineSize;
-	size_t lruDelta;
+    size_t lineSize;
+    size_t lruDelta;
 
-	std::map<Context *, RollingBuffer *> regionRolling;
+    std::map<Context *, RollingBuffer *> regionRolling;
 
-	util::Lock writeMutex;
-	void *writeBuffer;
-	size_t writeBufferSize;
-	void waitForWrite(void *addr = NULL, size_t size = 0);
-	void writeBack();
-	void flushToDevice();
+    util::Lock writeMutex;
+    void *writeBuffer;
+    size_t writeBufferSize;
+    void waitForWrite(void *addr = NULL, size_t size = 0);
+    void writeBack();
 
-	virtual bool read(void *);
-	virtual bool write(void *);
+    virtual bool read(void *);
+    virtual bool write(void *);
 
 #ifdef DEBUG
-	void dumpRolling();
+    void dumpRolling();
 #endif
 
-	// Methods used by ProtSubRegion to request flushing and invalidating
-	friend class RollingRegion;
-	void invalidate(ProtSubRegion *region);
-	void flush(ProtSubRegion *region);
+    // Methods used by RollingBlock to request flushing and invalidating
+    friend class RollingRegion;
+    void invalidate(RollingBlock *region);
+    void flush(RollingBlock *region);
 
 public:
-	RollingManager();
-	virtual ~RollingManager();
-	void *alloc(void *addr, size_t size);
-	void release(void *addr);
-	void flush(void);
-	void sync(void) {};
+    RollingManager();
+    virtual ~RollingManager();
+    void *alloc(void *addr, size_t size, int attr = 0);
+    void release(void *addr);
+    void invalidate();
+    void invalidate(const RegionSet & regions);
+    void flush();
+    void flush(const RegionSet & regions);
+    void sync() {};
 
-	void invalidate(const void *addr, size_t size);
-	void flush(const void *addr, size_t size);
+    void invalidate(const void *addr, size_t size);
+    void flush(const void *addr, size_t size);
 };
 
 #include "RollingManager.ipp"

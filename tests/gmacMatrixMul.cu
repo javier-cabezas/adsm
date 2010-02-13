@@ -134,6 +134,7 @@ matrixMulThread(void * ptr)
         fprintf(stderr, "Error allocating C");
         abort();
     }
+    printf("T Matrix: %p: %d\n", p->ptr, sizeC);
 
     // Call the kernel
 	gettimeofday(&s, NULL);
@@ -190,17 +191,18 @@ main(int argc, char** argv)
     printf("Elems: %d\n", elemsB);
     printf("Elems: %d\n", elemsC);
 
-
     // allocate memory for matrices A and B
 	gettimeofday(&s, NULL);
     if (gmacGlobalMalloc((void**) &A, sizeA) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
     }
+    printf("Matrix: %p: %d\n", A, sizeA);
     if (gmacGlobalMalloc((void**) &B, sizeB) != gmacSuccess) {
         fprintf(stderr, "Error allocating B");
         abort();
     }
+    printf("Matrix: %p: %d\n", B, sizeB);
 
     // initialize matricesmatrices
     valueInit(A, 100.f, elemsA);

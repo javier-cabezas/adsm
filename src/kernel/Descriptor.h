@@ -31,76 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_CACHEREGION_H_
-#define __MEMORY_CACHEREGION_H_
+#ifndef __DESCRIPTOR_KERNEL_H_
+#define __DESCRIPTOR_KERNEL_H_
 
-#include "Region.h"
-#include "ProtRegion.h"
+namespace gmac {
 
-#include <config.h>
-#include <debug.h>
-
-#include <stdlib.h>
-
-#include <map>
-#include <set>
-
-namespace gmac { namespace memory { namespace manager {
-
-class RollingManager;
-class RollingBlock;
-class RollingRegion : public Region {
-public:
-    typedef std::set<RollingBlock *> List;
+template <typename K>
+class Descriptor {
 protected:
-    RollingManager &manager;
-
-    // Set of all sub-regions forming the region
-    typedef std::map<const void *, RollingBlock *> Map;
-    Map map;
-
-    // List of sub-regions that are present in memory
-    List memory;
-
-    size_t cacheLine;
-    size_t offset;
-
-    friend class RollingBlock;
-    void push(RollingBlock *region);
+    K _key;
+    const char * _name;
 
 public:
-    RollingRegion(RollingManager &manager, void *, size_t, size_t);
-    ~RollingRegion();
-
-    virtual void relate(Context *ctx);
-    virtual void unrelate(Context *ctx);
-    virtual void transfer();
-
-    RollingBlock *find(const void *);
-    virtual void invalidate();
-    void invalidate(const void *, size_t);
-    void flush(const void *, size_t);
+    Descriptor(const char * name, K key);
+    const char * name() const;
+    K key() const;
 };
 
-class RollingBlock : public ProtRegion {
-protected:
-    RollingRegion &_parent;
-    friend class RollingRegion;
-    void silentInvalidate();
-public:
-    RollingBlock(RollingRegion &parent, void *addr, size_t size);
-    ~RollingBlock();
+}
 
-    // Override this methods to insert the regions in the list
-    // of sub-regions present in memory
-    virtual void readOnly();
-    virtual void readWrite();
-
-    RollingRegion & getParent();
-};
-
-#include "RollingRegion.ipp"
-
-}}}
+#include "Descriptor.ipp"
 
 #endif

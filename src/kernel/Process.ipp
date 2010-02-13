@@ -1,6 +1,10 @@
 #ifndef __KERNEL_PROCESS_IPP_
 #define __KERNEL_PROCESS_IPP_
 
+#include "Process.h"
+
+namespace gmac {
+
 inline void *
 SharedMemory::start() const
 {
@@ -74,12 +78,14 @@ inline size_t
 Process::totalMemory()
 {
     return _totalMemory;
-}	
+}
 
 inline size_t
 Process::accs() const
 {
     return _accs.size();
+}
+
 }
 
 #endif
