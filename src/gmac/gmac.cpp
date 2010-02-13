@@ -161,12 +161,13 @@ gmacError_t __gmacMalloc(void **cpuPtr, size_t count, int attr = 0)
 	gmacError_t ret = gmacSuccess;
 	void *devPtr;
 	count = (count < paramPageSize) ? paramPageSize : count;
-	ret = gmac::Context::current()->malloc(&devPtr, count);
+    gmac::Context * ctx = gmac::Context::current();
+	ret = ctx->malloc(&devPtr, count);
 	if(ret != gmacSuccess || !manager) {
 		return ret;
 	}
 	if((*cpuPtr = manager->alloc(devPtr, count, attr)) == NULL) {
-		gmac::Context::current()->free(devPtr);
+		ctx->free(devPtr);
 		return gmacErrorMemoryAllocation;
 	}
 	return gmacSuccess;
