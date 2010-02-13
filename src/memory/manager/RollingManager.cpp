@@ -1,8 +1,7 @@
 #include "RollingManager.h"
-#include "os/Memory.h"
 
-#include "config/params.h"
-
+#include <util/Parameter.h>
+#include <os/Memory.h>
 #include <kernel/Context.h>
 
 #include <unistd.h>
@@ -50,18 +49,6 @@ void RollingManager::flushToDevice()
 		TRACE("Flush to Device %p", r->start()); 
 	}
 }
-
-PARAM_REGISTER(paramLineSize,
-               size_t,
-               1024,
-               "GMAC_LINESIZE",
-               PARAM_NONZERO);
-
-PARAM_REGISTER(paramLruDelta,
-               size_t,
-               2,
-               "GMAC_LRUDELTA",
-               PARAM_NONZERO);
 
 RollingManager::RollingManager() :
 	Handler(),
