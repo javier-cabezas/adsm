@@ -1,8 +1,6 @@
 #include "RollingManager.h"
 #include "os/Memory.h"
 
-#include "config/params.h"
-
 #include <kernel/Context.h>
 
 #include <unistd.h>

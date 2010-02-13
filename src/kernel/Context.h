@@ -35,17 +35,17 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_CONTEXT_H_
 
 #include <debug.h>
-#include <params.h>
 
-#include "kernel/Process.h"
-#include "kernel/Accelerator.h"
+#include <util/Parameter.h>
+#include <kernel/Process.h>
+#include <kernel/Accelerator.h>
 
-#include "gmac/gmac.h"
-#include "memory/Map.h"
+#include <gmac/gmac.h>
+#include <memory/Map.h>
+#include <memory/PageTable.h>
+
 
 namespace gmac {
-
-extern size_t paramBufferPageLockedSize;
 
 namespace memory { class Manager; }
 
