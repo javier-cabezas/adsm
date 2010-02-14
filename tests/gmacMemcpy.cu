@@ -53,8 +53,9 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test reverse full: ");
 	gmacMemcpy(host, ptr, size * sizeof(long));
 	fprintf(stderr, "%d\n", check(host, 5 * size / 4));
-	
 
 	gmacFree(ptr);
 	free(host);
+
+    return 0;
 }

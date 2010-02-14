@@ -125,7 +125,7 @@ public:
 	static void *ptr(Context *ctx, void *addr);
 	static void *ptr(void *addr);
 
-	void remap(Context *, void *, void *, size_t);
+	virtual void remap(Context *, void *, void *, size_t) = 0;
 	void unmap(Context *, void *);
 
 	Context *owner(const void *addr);

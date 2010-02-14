@@ -10,8 +10,6 @@
 #include "utils.h"
 #include "debug.h"
 
-#define ITERATIONS 1000
-
 #include "gmacStencilCommon.cu"
 
 const char * nIterStr = "GMAC_NITER";
@@ -85,4 +83,6 @@ int main(int argc, char *argv[])
 
     delete descriptors;
     delete nThread;
+
+    return 0;
 }

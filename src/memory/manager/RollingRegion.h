@@ -80,6 +80,9 @@ public:
 	virtual void invalidate();
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
+
+    void transferNonDirty();
+    void transferDirty();
 };
 
 class ProtSubRegion : public ProtRegion {

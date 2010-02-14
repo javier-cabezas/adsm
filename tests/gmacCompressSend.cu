@@ -230,4 +230,6 @@ int main(int argc, char *argv[])
 	gettimeofday(&t, NULL);
 
 	printTime(&s, &t, "Total: ", "\n");
+
+    return 0;
 }

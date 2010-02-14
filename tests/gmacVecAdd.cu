@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-
 	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
@@ -74,4 +73,5 @@ int main(int argc, char *argv[])
 	gmacFree(b);
 	gmacFree(c);
 
+    return error != 0;
 }

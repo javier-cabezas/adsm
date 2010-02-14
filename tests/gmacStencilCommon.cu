@@ -195,6 +195,8 @@ struct JobDescriptor {
 
 #include <pthread.h>
 
+#define ITERATIONS 50
+
 void *
 do_stencil(void * ptr)
 {

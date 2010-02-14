@@ -8,8 +8,6 @@
 #include "utils.h"
 #include "debug.h"
 
-#define ITERATIONS 1000
-
 #include "gmacStencilCommon.cu"
 
 
@@ -38,4 +36,6 @@ int main(int argc, char *argv[])
     do_stencil((void *) descriptor);
 
     delete descriptor;
+
+    return 0;
 }

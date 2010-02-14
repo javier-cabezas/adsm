@@ -17,13 +17,20 @@ void BatchManager::release(void *addr)
 }
 void BatchManager::flush(void)
 {
-	Map::const_iterator i;
-	current()->lock();
+    Process::SharedMap::iterator i;
+	Map::const_iterator j;
+
     Context * ctx = Context::current();
-	for(i = current()->begin(); i != current()->end(); i++) {
+	Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
+	}
+
+	current()->lock();
+	for(j = current()->begin(); j != current()->end(); j++) {
 		TRACE("Memory Copy to Device");
-		ctx->copyToDevice(ptr(i->second->start()),
-				i->second->start(), i->second->size());
+		ctx->copyToDevice(ptr(j->second->start()),
+				j->second->start(), j->second->size());
 	}
 	current()->unlock();
 	ctx->flush();
@@ -32,12 +39,19 @@ void BatchManager::flush(void)
 
 void BatchManager::sync(void)
 {
-	Map::const_iterator i;
+    Context * ctx = Context::current();
+    Process::SharedMap::iterator i;
+	Map::const_iterator j;
+	Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ctx->copyToHost(i->second.start(),
+                        ptr(i->second.start()), i->second.size());
+	}
 	current()->lock();
-	for(i = current()->begin(); i != current()->end(); i++) {
+	for(j = current()->begin(); j != current()->end(); j++) {
 		TRACE("Memory Copy from Device");
-		Context::current()->copyToHost(i->second->start(),
-				ptr(i->second->start()), i->second->size());
+		ctx->copyToHost(j->second->start(),
+			        	  ptr(j->second->start()), j->second->size());
 	}
 	current()->unlock();
 }
@@ -53,5 +67,16 @@ BatchManager::flush(const void *, size_t)
 {
     // Do nothing
 }
+
+void
+BatchManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+{
+	Region *region = current()->find<Region>(cpuPtr);
+	assert(region != NULL); assert(region->size() == count);
+	insertVirtual(ctx, cpuPtr, devPtr, count);
+	region->relate(ctx);
+}
+
+
 
 }}}
