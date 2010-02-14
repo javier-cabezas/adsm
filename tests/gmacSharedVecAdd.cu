@@ -65,6 +65,7 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
+    assert(error == 0);
 
 	return NULL;
 }
@@ -104,12 +105,12 @@ int main(int argc, char *argv[])
 		pthread_create(&nThread[n], NULL, addVector, &(param[n]));
 	}
 
-	gmacFree(a);
-	gmacFree(b);
-
 	for(n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
 	}
+
+	gmacFree(a);
+	gmacFree(b);
 
 	float error = 0;
 	for(n = 0; n < nIter; n++) {
@@ -121,4 +122,6 @@ int main(int argc, char *argv[])
 
 	free(param);
 	free(nThread);
+
+    return error != 0;
 }

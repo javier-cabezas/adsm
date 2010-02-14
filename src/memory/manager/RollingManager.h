@@ -100,6 +100,8 @@ public:
 
 	void invalidate(const void *addr, size_t size);
 	void flush(const void *addr, size_t size);
+
+	void remap(Context *, void *, void *, size_t);
 };
 
 #include "RollingManager.ipp"

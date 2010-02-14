@@ -129,6 +129,30 @@ void RollingRegion::flush(const void *addr, size_t size)
 	}
 }
 
+void
+RollingRegion::transferNonDirty()
+{
+    List::iterator i;
+	for(i = memory.begin(); i != memory.end(); i++) {
+		if (!(*i)->dirty()) {
+            manager.flush(*i);
+        }
+	}
+}
+
+void
+RollingRegion::transferDirty()
+{
+    List::iterator i;
+	for(i = memory.begin(); i != memory.end(); i++) {
+		if ((*i)->dirty()) {
+            manager.flush(*i);
+            (*i)->invalidate();
+        }
+	}
+}
+
+
 ProtSubRegion::ProtSubRegion(RollingRegion *parent, void *addr, size_t size) :
 		ProtRegion(addr, size),
 		parent(parent)

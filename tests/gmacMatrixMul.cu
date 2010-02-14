@@ -225,7 +225,6 @@ main(int argc, char** argv)
 
 
     // compute reference solution
-#if 0
 	gettimeofday(&s, NULL);
     // check result
     float err;
@@ -243,12 +242,11 @@ main(int argc, char** argv)
     // clean up memory
     free(reference);
 
-#endif
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Total: ", "\n");
 
     delete [] params;
     delete [] threads;
 
-    return 0;
+    return fabsf(err) != 0.0f;
 }

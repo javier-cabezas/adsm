@@ -75,6 +75,8 @@ void *chain(void *ptr)
 	}
 	fprintf(stderr,"%d (Thread %d): Error %f\n", current, *id, error / 1024);
 
+    assert(int(error) % 1024 == 0);
+
 	gmacFree(a[current]);
 
 	return NULL;
@@ -105,7 +107,8 @@ int main(int argc, char *argv[])
 		pthread_join(nThread[n], NULL);
 	}
 
-
 	free(ids);
 	free(nThread);
+
+    return 0;
 }

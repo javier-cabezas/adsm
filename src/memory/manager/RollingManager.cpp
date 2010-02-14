@@ -117,10 +117,16 @@ void RollingManager::flush()
 {
 	TRACE("RollingManager Flush Starts");
 	flushToDevice();
-	memory::Map::iterator i;
+    Process::SharedMap::iterator i;
+	Map::const_iterator j;
+	Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		RollingRegion * r = current()->find<RollingRegion>(i->second.start());
+        r->transferDirty();
+	}
 	current()->lock();
-	for(i = current()->begin(); i != current()->end(); i++) {
-		Region *r = i->second;
+	for(j = current()->begin(); j != current()->end(); j++) {
+		Region *r = j->second;
 		if(typeid(*r) != typeid(RollingRegion)) continue;
 		dynamic_cast<RollingRegion *>(r)->invalidate();
 	}
@@ -189,5 +195,14 @@ bool RollingManager::write(void *addr)
 	return true;
 }
 
+void
+RollingManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+{
+	RollingRegion *region = current()->find<RollingRegion>(cpuPtr);
+	assert(region != NULL); assert(region->size() == count);
+	insertVirtual(ctx, cpuPtr, devPtr, count);
+	region->relate(ctx);
+    region->transferNonDirty();
+}
 
 }}}

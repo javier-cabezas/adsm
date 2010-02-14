@@ -19,7 +19,6 @@ int check(long *ptr, int s)
 	return a - s;
 }
 
-
 int main(int argc, char *argv[])
 {
 	long *ptr;
@@ -40,4 +39,6 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	gmacFree(ptr);
+
+    return 0;
 }
