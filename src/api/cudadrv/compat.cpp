@@ -296,6 +296,8 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 			r = cuMemcpyHtoD(ptr, src, count);
 			ctx->unlock();
 			ret = __getCUDAError(r);
+            break;
+
 		default:
 			abort();
 	}
