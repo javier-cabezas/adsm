@@ -57,7 +57,7 @@ AC_CHECK_FUNCS(posix_memalign)
 # Check for pthread library
 AC_CHECK_LIB([pthread], [pthread_create],
 	[AC_DEFINE([HAVE_LIBPTHREAD], [1])
-	LIBS="-lpthread $LIBS"; thread_name="pthreads"]
+	thread_name="pthreads"]
 )
 
 # Get the NVIDIA CUDA compiler
@@ -113,7 +113,7 @@ AC_ARG_ENABLE(paraver,
 if test "$enable_paraver" = "yes"; then
 	AC_MSG_RESULT(yes)
     AC_CHECK_LIB([paraver], [paraver_lib_present],
-                 [LIBS="-lparaver $LIBS"] [paraver_lib=""],
+                 [paraver_lib=""],
                  [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
                  [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
                  [paraver_src="libparaver"]
@@ -176,8 +176,11 @@ AC_ARG_ENABLE(mmap,
 if test "$enable_mmap" = "yes"; then
 	AC_MSG_RESULT(yes)
 	if test "$enable_vm" = "yes"; then
-		AC_MSG_ERROR("mmap() cannot be used when using software virtual memory")
+		AC_MSG_ERROR("mmap cannot be used when using software virtual memory")
 	fi
+   if test "$arch" = "32"; then
+      AC_MSG_ERROR("mmap cannot be used in 32bit architectures")
+   fi
 	AC_DEFINE([USE_MMAP])
 else
 	AC_MSG_RESULT(no)
