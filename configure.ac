@@ -36,11 +36,13 @@ case "$host" in
 *linux* | *Linux*)
 AC_MSG_RESULT([Linux])
 OS_DIR="posix"
+AC_DEFINE(LINUX)
 LN_FLAGS=-Tf
 ;;
 *apple* | *Apple*)
 AC_MSG_RESULT([MacOS])
 OS_DIR="posix"
+AC_DEFINE(DARWIN)
 LN_FLAGS=-f
 ;;
 *)

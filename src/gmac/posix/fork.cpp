@@ -13,14 +13,9 @@
 
 #include "posix.h"
 
-SYM(pid_t, __libc_fork);
-SYM(int, __libc_clone, int (*)(void *), void *, int, void *, ...);
-
 void posixForkInit(void)
 {
 	TRACE("Overloading POSIX fork");
-	LOAD_SYM(__libc_fork, fork);
-	LOAD_SYM(__libc_clone, clone);
 }
 
 

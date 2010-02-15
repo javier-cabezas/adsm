@@ -64,7 +64,7 @@ protected:
 	};
 
 	typedef std::vector<Call> CallStack;
-	typedef HASH_MAP<Module *, const void *> ModuleMap;
+	typedef std::map<Module *, const void *> ModuleMap;
 
 	Accelerator &gpu;
 	ModuleMap modules;
