@@ -3,12 +3,21 @@
 
 namespace gmac { namespace memory {
 
+#ifndef HAVE_POSIX_MEMALIGN
+static void *custom_memalign(void **addr, size_t align, size_t count)
+{
+}
+#endif
+
 void *Manager::hostMap(void *addr, size_t count, int prot)
 {
 	void *cpuAddr = NULL;
 #ifndef USE_MMAP
+#ifdef HAVE_POSIX_MEMALIGN
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
 		return NULL;
+#else
+#endif
 	Memory::protect(cpuAddr, count, prot);
 #else
 	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);

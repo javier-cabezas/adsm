@@ -49,6 +49,9 @@ AC_MSG_ERROR([Your operating system is not supported])
 ;;
 esac
 
+# Check for functions we need
+AC_CHECK_FUNCS(posix_memalign)
+
 # Check for pthread library
 AC_CHECK_LIB([pthread], [pthread_create],
 	[AC_DEFINE([HAVE_LIBPTHREAD], [1])
