@@ -4,8 +4,22 @@
 namespace gmac { namespace memory {
 
 #ifndef HAVE_POSIX_MEMALIGN
-static void *custom_memalign(void **addr, size_t align, size_t count)
+static int custom_memalign(void **addr, size_t align, size_t count)
 {
+	uint8_t *aligned_buffer = NULL;
+	uint8_t *buffer = (uint8_t *)malloc(count + align - 1 + sizeof(void **) + sizeof(int));
+	if(buffer == NULL) return ENOMEM;
+	aligned_buffer = buffer + align - 1 + sizeof(void **) + sizeof(int);
+	aligned_buffer -= (unsigned long)aligned_buffer & (align - 1);
+	*((void **)(aligned_buffer - sizeof(void **))) = buffer;
+	*((int *)(aligned_buffer - sizeof(void **) - sizeof(int))) = count;
+	*addr = (void *)aligned_buffer;
+	return 0;
+}
+
+static void custom_free(void *p)
+{
+	free(*(((void **) p) - 1)); 
 }
 #endif
 
@@ -17,6 +31,8 @@ void *Manager::hostMap(void *addr, size_t count, int prot)
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
 		return NULL;
 #else
+	if(custom_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
+		return NULL;
 #endif
 	Memory::protect(cpuAddr, count, prot);
 #else
@@ -35,7 +51,11 @@ void Manager::hostUnmap(void *addr, size_t count)
 #endif
 
 #ifndef USE_MMAP
+#ifdef HAVE_POSIX_MEMALIGN
 	free(addr);
+#else
+	custom_free(addr);
+#endif
 #else
 	munmap(addr, count);
 #endif
