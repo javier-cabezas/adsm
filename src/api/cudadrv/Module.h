@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 #include <cassert>
 
 #include <list>
+#include <map>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -91,8 +92,8 @@ protected:
 	CUmodule mod;
 	const void *fatBin;
 
-	typedef HASH_MAP<const char *, Function> FunctionMap;
-	typedef HASH_MAP<const char *, Variable> VariableMap;
+	typedef std::map<const char *, Function> FunctionMap;
+	typedef std::map<const char *, Variable> VariableMap;
 	typedef std::list<Texture> TextureList;
 
 	FunctionMap functions;

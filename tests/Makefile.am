@@ -12,7 +12,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 GMAC_TESTSOURCES=test.h test.c
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
-bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu utils.cpp $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)

@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <values.h>
+#include <float.h>
 #include <sys/time.h>
 
 #include <cuda.h>
 #define USE_CUDA
 #include "debug.h"
+
+#define MAXDOUBLE DBL_MAX
+#define MINDOUBLE DBL_MIN
 
 #define MAX(a, b) ((a) > (b)) ? (a) : (b)
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
