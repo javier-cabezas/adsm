@@ -9,6 +9,8 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 	 	gmacPingPong gmacCompress gmacCompressSend\
 		vmVecAdd vmNull vmStencil vmMatrixMul
 
+noinst_SCRIPTS = gmacTests.py
+
 GMAC_TESTSOURCES=test.h test.c
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
