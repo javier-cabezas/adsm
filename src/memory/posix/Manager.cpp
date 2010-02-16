@@ -19,7 +19,7 @@ static int custom_memalign(void **addr, size_t align, size_t count)
 
 static void custom_free(void *p)
 {
-	free(*(((void **) p) - 1)); 
+	::free(*(((void **) p) - 1)); 
 }
 #endif
 
@@ -29,9 +29,6 @@ void *Manager::hostMap(void *addr, size_t count, int prot)
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
-		return NULL;
-#else
-	if(custom_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
 		return NULL;
 #endif
 	Memory::protect(cpuAddr, count, prot);
@@ -53,8 +50,6 @@ void Manager::hostUnmap(void *addr, size_t count)
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
 	free(addr);
-#else
-	custom_free(addr);
 #endif
 #else
 	munmap(addr, count);
