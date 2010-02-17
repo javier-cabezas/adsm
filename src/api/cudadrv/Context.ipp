@@ -73,21 +73,23 @@ Context::copyToHostAsync(void *host, const void *dev, size_t size)
 inline gmacError_t
 Context::sync()
 {
-    CUresult ret;
-    lock();
-    while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-        unlock();
-        usleep(Context::USleepLaunch);
+    CUresult ret = CUDA_SUCCESS;
+    if (_status == RUNNING) {
         lock();
-    }
-    if (ret == CUDA_SUCCESS) {
-        TRACE("Sync: success");
-    } else {
-        TRACE("Sync: error: %d", ret);
-    }
-    _status = NONE;
+        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
+            unlock();
+            usleep(Context::USleepLaunch);
+            lock();
+        }
+        if (ret == CUDA_SUCCESS) {
+            TRACE("Sync: success");
+        } else {
+            TRACE("Sync: error: %d", ret);
+        }
+        _status = NONE;
 
-    unlock();
+        unlock();
+    }
 
     return error(ret);
 }

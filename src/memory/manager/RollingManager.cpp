@@ -38,18 +38,6 @@ void RollingManager::writeBack()
 }
 
 
-PARAM_REGISTER(paramLineSize,
-               size_t,
-               1024,
-               "GMAC_LINESIZE",
-               PARAM_NONZERO);
-
-PARAM_REGISTER(paramLruDelta,
-               size_t,
-               2,
-               "GMAC_LRUDELTA",
-               PARAM_NONZERO);
-
 RollingManager::RollingManager() :
     Handler(),
     lineSize(0),
