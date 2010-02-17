@@ -2,58 +2,99 @@
 
 #include <debug.h>
 
-#include <kernel/Context.h>
+#include "kernel/Context.h"
 
 namespace gmac { namespace memory { namespace manager {
 
 void BatchManager::release(void *addr)
 {
-	Region *reg = remove(addr);
+    Region *reg = remove(addr);
 	removeVirtual(reg->start(), reg->size());
     if(reg->owner() == Context::current()) {
 	    hostUnmap(reg->start(), reg->size());
         delete reg;
     }
+
 }
-void BatchManager::flush(void)
+
+void BatchManager::flush()
 {
     Process::SharedMap::iterator i;
-	Map::const_iterator j;
+    Map::const_iterator j;
 
     Context * ctx = Context::current();
 	Process::SharedMap &sharedMem = proc->sharedMem();
-	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
 		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
 	}
 
-	current()->lock();
-	for(j = current()->begin(); j != current()->end(); j++) {
-		TRACE("Memory Copy to Device");
-		ctx->copyToDevice(ptr(j->second->start()),
-				j->second->start(), j->second->size());
-	}
-	current()->unlock();
-	ctx->flush();
-	ctx->sync();
+    Map * m = current();
+    m->lock();
+    for(j = m->begin(); j != m->end(); j++) {
+        TRACE("Memory Copy to Device");
+        ctx->copyToDevice(ptr(j->second->start()),
+                                         j->second->start(),
+                                         j->second->size());
+    }
+    m->unlock();
+    /*!
+      \todo Fix vm
+    */
+    //ctx->flush();
+    ctx->sync();
 }
 
-void BatchManager::sync(void)
+void BatchManager::flush(const RegionSet & regions)
 {
-    Context * ctx = Context::current();
+    if (regions.size() == 0) {
+        flush();
+        return;
+    }
+
     Process::SharedMap::iterator i;
-	Map::const_iterator j;
-	Process::SharedMap &sharedMem = proc->sharedMem();
+    RegionSet::const_iterator j;
+    Context * ctx = Context::current();
+    Process::SharedMap &sharedMem = proc->sharedMem();
 	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-		ctx->copyToHost(i->second.start(),
-                        ptr(i->second.start()), i->second.size());
+		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
 	}
-	current()->lock();
-	for(j = current()->begin(); j != current()->end(); j++) {
-		TRACE("Memory Copy from Device");
-		ctx->copyToHost(j->second->start(),
-			        	  ptr(j->second->start()), j->second->size());
-	}
-	current()->unlock();
+    Map * m = current();
+    m->lock();
+    for(j = regions.begin(); j != regions.end(); j++) {
+        TRACE("Memory Copy to Device");
+        ctx->copyToDevice(ptr((*j)->start()),
+                                         (*j)->start(),
+                                         (*j)->size());
+    }
+    m->unlock();
+    /*!
+      \todo Fix vm
+    */
+    ctx->sync();
+}
+
+void
+BatchManager::invalidate()
+{
+    // Do nothing
+}
+
+void
+BatchManager::invalidate(const RegionSet & regions)
+{
+    // Do nothing
+}
+
+void BatchManager::sync()
+{
+    Map::const_iterator i;
+    current()->lock();
+    for(i = current()->begin(); i != current()->end(); i++) {
+        TRACE("Memory Copy from Device");
+        Context::current()->copyToHost(i->second->start(),
+                                       ptr(i->second->start()), i->second->size());
+    }
+    current()->unlock();
 }
 
 void
@@ -71,12 +112,10 @@ BatchManager::flush(const void *, size_t)
 void
 BatchManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
-	Region *region = current()->find<Region>(cpuPtr);
-	assert(region != NULL); assert(region->size() == count);
-	insertVirtual(ctx, cpuPtr, devPtr, count);
-	region->relate(ctx);
+    Region *region = current()->find<Region>(cpuPtr);
+    assert(region != NULL); assert(region->size() == count);
+    insertVirtual(ctx, cpuPtr, devPtr, count);
+    region->relate(ctx);
 }
-
-
 
 }}}

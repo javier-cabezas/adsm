@@ -4,7 +4,7 @@
 inline bool
 RollingBuffer::overflows() const
 {
-    return buffer.size() >= _max;
+    return _buffer.size() >= _max;
 }
 
 inline size_t
@@ -22,56 +22,62 @@ RollingBuffer::dec(size_t n)
 inline bool
 RollingBuffer::empty() const
 {
-    return buffer.empty();
+    return _buffer.empty();
 }
 
 inline void
-RollingBuffer::push(ProtSubRegion *region)
+RollingBuffer::push(RollingBlock *region)
 {
-    lock.write();
-    buffer.push_back(region);
-    lock.unlock();
+    _lock.write();
+    _buffer.push_back(region);
+    _lock.unlock();
 }
 
-inline ProtSubRegion *
+inline RollingBlock *
 RollingBuffer::pop()
 {
-    lock.write();
-    assert(buffer.empty() == false);
-    ProtSubRegion *ret = buffer.front();
-    buffer.pop_front();
-    lock.unlock();
+    _lock.write();
+    assert(_buffer.empty() == false);
+    RollingBlock *ret = _buffer.front();
+    _buffer.pop_front();
+    _lock.unlock();
     return ret;
 }
 
-inline ProtSubRegion *
+inline RollingBlock *
 RollingBuffer::front()
 {
-    lock.read();
-    ProtSubRegion *ret = buffer.front();
-    lock.unlock();
+    _lock.read();
+    RollingBlock *ret = _buffer.front();
+    _lock.unlock();
     return ret;
 }
 
 inline void
-RollingBuffer::remove(ProtSubRegion *region)
+RollingBuffer::remove(RollingBlock *region)
 {
-    lock.write();
-    buffer.remove(region);
-    lock.unlock();
+    _lock.write();
+    _buffer.remove(region);
+    _lock.unlock();
+}
+
+inline size_t
+RollingBuffer::size() const
+{
+    return _buffer.size();
 }
 
 inline void
-RollingManager::invalidate(ProtSubRegion *region)
+RollingManager::invalidate(RollingBlock *region)
 {
     regionRolling[Context::current()]->remove(region);
 }
 
 inline void
-RollingManager::flush(ProtSubRegion *region)
+RollingManager::flush(RollingBlock *region)
 {
-	regionRolling[Context::current()]->remove(region);
-	assert(region->copyToDevice() == gmacSuccess);
+    regionRolling[Context::current()]->remove(region);
+    assert(region->copyToDevice() == gmacSuccess);
 }
 
 #endif

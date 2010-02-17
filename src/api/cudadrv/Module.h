@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -40,93 +40,106 @@ WITH THE SOFTWARE.  */
 #include <cassert>
 
 #include <list>
-#include <map>
+#include <vector>
+
+#include "Kernel.h"
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
 
-struct __textureReference {
-	int normalized;
-	enum cudaTextureFilterMode filterMode;
-	enum cudaTextureAddressMode addressMode[3];
-	struct cudaChannelFormatDesc channelDesc;
-	CUtexref __texref;
-	int __reserved[16 - sizeof(CUtexref)];
-};
-
-
 namespace gmac { namespace gpu {
 
-class Function {
+typedef const char * gmacVariable_t;
+typedef const struct textureReference * gmacTexture_t;
+
+typedef Descriptor<gmacTexture_t> TextureDescriptor;
+
+class VariableDescriptor : public Descriptor<gmacVariable_t> {
+protected:
+    bool _constant;
+
 public:
-	CUfunction fun;
-	const char *dev;
-	const char *name;
-
-	Function(CUmodule mod, const char *name);
-
-	void load(CUmodule mod);
+    VariableDescriptor(const char *name, gmacVariable_t key, bool constant);
+    bool constant() const;
 };
 
-class Variable {
+class Variable : public VariableDescriptor {
+	CUdeviceptr _ptr;
+    size_t _size;
 public:
-	const char *dev;
-	CUdeviceptr ptr;
-	size_t size;
-
-	Variable(const char *dev, CUdeviceptr ptr, size_t size);
+	Variable(const VariableDescriptor & v, CUmodule mod);
+    size_t size() const;
+    CUdeviceptr devPtr() const;
 };
 
-class Texture {
-public:
-	const char *name;
-	struct __textureReference *ref;
-	Texture(CUmodule mod, struct __textureReference *ref, const char *name);
+class Texture : public TextureDescriptor {
+protected:
+    CUtexref _texRef;
 
-	void load(CUmodule mod);
+public:
+	Texture(const TextureDescriptor & t, CUmodule mod);
+
+    CUtexref texRef() const;
+};
+
+class Module;
+typedef std::vector<Module *> ModuleVector;
+
+class ModuleDescriptor {
+    static const char *pageTableSymbol;
+    typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
+    static ModuleDescriptorVector Modules;
+	const void * _fatBin;
+
+    typedef std::vector<gmac::KernelDescriptor> KernelVector;
+    typedef std::vector<VariableDescriptor>     VariableVector;
+	typedef std::vector<TextureDescriptor>      TextureVector;
+
+    KernelVector   _kernels;
+	VariableVector _variables;
+	VariableVector _constants;
+	TextureVector  _textures;
+
+    friend class Module;
+
+    VariableDescriptor * _pageTable;
+
+public:
+    ModuleDescriptor(const void * fatBin);
+    void add(gmac::KernelDescriptor & k);
+    void add(VariableDescriptor     & v);
+    void add(TextureDescriptor      & t);
+
+    const VariableDescriptor & pageTable() const;
+    static ModuleVector createModules();
 };
 
 class Module {
 protected:
-	CUmodule mod;
-	const void *fatBin;
+	CUmodule _mod;
+	const void *_fatBin;
 
-	typedef std::map<const char *, Function> FunctionMap;
-	typedef std::map<const char *, Variable> VariableMap;
-	typedef std::list<Texture> TextureList;
+	typedef std::map<gmacVariable_t, Variable> VariableMap;
+	typedef std::map<gmacTexture_t, Texture> TextureMap;
 
-	FunctionMap functions;
-	VariableMap variables;
-	VariableMap constants;
-	TextureList textures;
+    VariableMap _variables;
+	VariableMap _constants;
+	TextureMap  _textures;
 
-	static const char *pageTableSymbol;
 	Variable *_pageTable;
 
-	void reload();
-
 public:
-	Module(const void *fatBin);
-	Module(const Module &root);
+	Module(const ModuleDescriptor & d);
 	~Module();
 
-	void function(const char *host, const char *dev);
-	const Function *function(const char *name) const;
-
-	void variable(const char *host, const char *dev);
-	const Variable *variable(const char *name) const;
-
-	void constant(const char *host, const char *dev);
-	const Variable *constant(const char *name) const;
-
-	Variable *pageTable() const;
-
-	void texture(struct __textureReference *ref, const char *name);
+    const Variable *variable(gmacVariable_t key) const;
+	const Variable *constant(gmacVariable_t key) const;
+    const Texture  *texture(gmacTexture_t   key) const;
 };
 
-#include "Module.ipp"
-
 }}
+
+#include "Module.ipp"
 
 #endif

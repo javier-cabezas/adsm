@@ -186,11 +186,6 @@ main(int argc, char** argv)
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
 
-    printf("Elems: %d\n", elemsA);
-    printf("Elems: %d\n", elemsB);
-    printf("Elems: %d\n", elemsC);
-
-
     // allocate memory for matrices A and B
 	gettimeofday(&s, NULL);
     if (gmacGlobalMalloc((void**) &A, sizeA) != gmacSuccess) {

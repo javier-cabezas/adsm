@@ -31,49 +31,49 @@ static sem_t init;
 
 __global__ void inc(float *a, float f, size_t size)
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i >= size) return;
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if(i >= size) return;
 
-	a[i] += f;
+    a[i] += f;
 }
 
 void *chain(void *ptr)
 {
-	int *id = (int *)ptr;
-	gmacError_t ret = gmacSuccess;
-	int n = 0, m = 0;
+    int *id = (int *)ptr;
+    gmacError_t ret = gmacSuccess;
+    int n = 0, m = 0;
 
-	ret = gmacMalloc((void **)&a[*id], vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
-	valueInit(a[*id], *id, vecSize);
-	int next = (*id == nIter - 1) ? 0 : *id + 1;
-	dim3 Db(blockSize);
-	dim3 Dg(vecSize / blockSize);
-	if(vecSize % blockSize) Dg.x++;
+    ret = gmacMalloc((void **)&a[*id], vecSize * sizeof(float));
+    assert(ret == gmacSuccess);
+    valueInit(a[*id], *id, vecSize);
+    int next = (*id == nIter - 1) ? 0 : *id + 1;
+    dim3 Db(blockSize);
+    dim3 Dg(vecSize / blockSize);
+    if(vecSize % blockSize) Dg.x++;
 
-	sem_wait(&init);
+    sem_wait(&init);
 
-	for(int i = 0; i < rounds; i++) {
-		int current = *id - i;
-		if(current < 0) current += nIter;
-		// Call the kernel
-		inc<<<Dg, Db>>>(gmacPtr(a[current]), *id, vecSize);
-		if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+    for(int i = 0; i < rounds; i++) {
+        int current = *id - i;
+        if(current < 0) current += nIter;
+        // Call the kernel
+        inc<<<Dg, Db>>>(gmacPtr(a[current]), *id, vecSize);
+        if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
-		// Pass the context
-		n++;
-		gmacSendReceive(nThread[next]);
-		m++;
-	}
-	int current = *id - rounds;
-	if(current < 0) current += nIter;
+        // Pass the context
+        n++;
+        gmacSendReceive(nThread[next]);
+        m++;
+    }
+    int current = *id - rounds;
+    if(current < 0) current += nIter;
 
-	fprintf(stderr,"%d (Thread %d): %d sends\t%d receives\n", current, *id, n, m);
-	float error = 0;
-	for(int i = 0; i < vecSize; i++) {
-		error += (a[current][i]);
-	}
-	fprintf(stderr,"%d (Thread %d): Error %f\n", current, *id, error / 1024);
+    fprintf(stderr,"%d (Thread %d): %d sends\t%d receives\n", current, *id, n, m);
+    float error = 0;
+    for(int i = 0; i < vecSize; i++) {
+        error += (a[current][i]);
+    }
+    fprintf(stderr,"%d (Thread %d): Error %f\n", current, *id, error / 1024);
 
     assert(int(error) % 1024 == 0);
 

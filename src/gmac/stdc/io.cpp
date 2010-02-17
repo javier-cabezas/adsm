@@ -35,7 +35,7 @@ extern "C"
 size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fread == NULL) stdcIoInit();
-	if(__inGmac() == 1 || manager == NULL) return __libc_fread(buf, size, nmemb, stream);
+	if(__inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
     size_t n = size * nmemb;
 
     gmac::Context *srcCtx = manager->owner(buf);
@@ -44,6 +44,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 	
     __enterGmac();
 	pushState(IORead);
+    if (srcCtx->status() == gmac::Context::RUNNING) srcCtx->sync();
 
     gmacError_t err;
     size_t ret = 0;
@@ -51,6 +52,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     manager->invalidate(buf, n);
 
     gmac::Context *ctx = gmac::Context::current();
+
     if (ctx->async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp = ctx->bufferPageLocked();
@@ -87,7 +89,7 @@ extern "C"
 size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fwrite == NULL) stdcIoInit();
-	if(__inGmac() == 1 || manager == NULL) return __libc_fwrite(buf, size, nmemb, stream);
+	if(__inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
     gmac::Context *dstCtx = manager->owner(buf);
 
