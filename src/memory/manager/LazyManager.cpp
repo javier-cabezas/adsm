@@ -139,8 +139,8 @@ bool LazyManager::read(void *addr)
 bool LazyManager::write(void *addr)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	if(region == NULL) return false;
-
+	if (region == NULL) return false;
+	if (region->dirty() == true) return true;
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {

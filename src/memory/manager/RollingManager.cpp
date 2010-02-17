@@ -179,7 +179,8 @@ bool RollingManager::write(void *addr)
 	if(root == NULL) return false;
 	ProtRegion *region = root->find(addr);
 	assert(region != NULL);
-	assert(region->dirty() == false);
+    // Other thread fixed the fault?
+	if (region->dirty() == true) return true;
     Context * ctx = Context::current();
     if (!regionRolling[ctx]) {
         regionRolling[ctx] = new RollingBuffer();

@@ -48,7 +48,7 @@ enum LockName {
 	queueLock, 
 	ioHostLock, ioDeviceLock,
 	process, writeMutex, rollingBuffer, manager, queue, relatives,
-	pthread
+	pthread, segv
 };
 };
 
