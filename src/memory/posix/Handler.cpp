@@ -69,4 +69,4 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 	__exitGmac();
 }
 
-} }
+}}

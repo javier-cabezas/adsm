@@ -13,12 +13,11 @@ Homepage: http://code.google.com/p/adsm
 Vcs-Hg: https://adsm.googlecode.com/hg
 Vcs-Browser: http://code.google.com/p/adsm/source/browse?repo=libgmac
 
-
 Package: libgmac
 Priority: important
 Section: libs
 Architecture: i386 amd64
-Depends: libc6, libcuda1 | nvidia-glx
+Depends: libc6
 Conflicts: libgmac-paraver
 Description: 
 
@@ -26,7 +25,15 @@ Package: libgmac-paraver
 Priority: important
 Section: libs
 Architecture: i386 amd64
-Depends: libparaver, libc6, libcuda1 | nvidia-glx
+Depends: libparaver, libc6
+Conflicts: libgmac
+Description: 
+
+Package: libgmac-dbg
+Priority: important
+Section: libs
+Architecture: i386 amd64
+Depends: libc6
 Conflicts: libgmac
 Description: 
 
@@ -34,7 +41,7 @@ Package: libgmac-dev
 Priority: important
 Section: libdevel
 Architecture: i386 amd64
-Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}), libparaver-dev,
+Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}) | libgmac-dbg (=${binary:Version}), libparaver-dev,
          libc6-dev | libc-dev
 Description: 
 
