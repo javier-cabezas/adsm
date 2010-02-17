@@ -77,20 +77,30 @@ void LazyManager::invalidate(const RegionSet & regions)
 
 void LazyManager::flush()
 {
-    Map::const_iterator i;
+    Context * ctx = Context::current();
+    Process::SharedMap::iterator i;
+    Map::const_iterator j;
+    Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ProtRegion * r = current()->find<ProtRegion>(i->second.start());
+        if(r->dirty()) {
+			r->copyToDevice();
+		}
+        r->readOnly();
+	}
     Map * m = current();
     m->lock();
-	for(i = m->begin(); i != m->end(); i++) {
-		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
+	for(j = m->begin(); j != m->end(); j++) {
+		ProtRegion *r = dynamic_cast<ProtRegion *>(j->second);
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
         r->readOnly();
 	}
     m->unlock();
-	//gmac::Context::current()->flush();
+	//ctx->flush();
     /// \todo Change to invalidate(regions)
-	Context::current()->invalidate();
+	ctx->invalidate();
 }
 
 void LazyManager::flush(const RegionSet & regions)
@@ -100,14 +110,27 @@ void LazyManager::flush(const RegionSet & regions)
         return;
     }
 
-	RegionSet::const_iterator i;
-	for(i = regions.begin(); i != regions.end(); i++) {
-		ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
+    Process::SharedMap::iterator i;
+	RegionSet::const_iterator j;
+    Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ProtRegion * r = current()->find<ProtRegion>(i->second.start());
+        if(r->dirty()) {
+			r->copyToDevice();
+		}
+        r->readOnly();
+	}
+
+    Map * m = current();
+    m->lock();
+	for(j = regions.begin(); j != regions.end(); j++) {
+		ProtRegion *r = dynamic_cast<ProtRegion *>(*j);
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
         r->readOnly();
 	}
+    m->unlock();
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	Context::current()->invalidate();
@@ -135,6 +158,20 @@ void LazyManager::flush(const void *addr, size_t size)
 		region->copyToDevice();
 	}
 	region->readOnly();
+}
+
+void
+LazyManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+{
+	ProtRegion *region = current()->find<ProtRegion>(cpuPtr);
+	assert(region != NULL); assert(region->size() == count);
+	insertVirtual(ctx, cpuPtr, devPtr, count);
+	region->relate(ctx);
+    if (!region->dirty()) {
+        ctx->copyToDevice(ptr(region->start()),
+                          region->start(),
+                          count);
+    }
 }
 
 #if 0

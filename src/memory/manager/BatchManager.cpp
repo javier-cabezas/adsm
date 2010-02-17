@@ -19,21 +19,28 @@ void BatchManager::release(void *addr)
 
 void BatchManager::flush()
 {
-    Map::const_iterator i;
-    Map * m = current();
+    Process::SharedMap::iterator i;
+    Map::const_iterator j;
+
     Context * ctx = Context::current();
+	Process::SharedMap &sharedMem = proc->sharedMem();
+    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
+	}
+
+    Map * m = current();
     m->lock();
-    for(i = m->begin(); i != m->end(); i++) {
+    for(j = m->begin(); j != m->end(); j++) {
         TRACE("Memory Copy to Device");
-        ctx->copyToDevice(ptr(i->second->start()),
-                                         i->second->start(),
-                                         i->second->size());
+        ctx->copyToDevice(ptr(j->second->start()),
+                                         j->second->start(),
+                                         j->second->size());
     }
     m->unlock();
     /*!
       \todo Fix vm
     */
-    //Context::current()->flush();
+    //ctx->flush();
     ctx->sync();
 }
 
@@ -44,21 +51,25 @@ void BatchManager::flush(const RegionSet & regions)
         return;
     }
 
-    RegionSet::const_iterator i;
-    Map * m = current();
+    Process::SharedMap::iterator i;
+    RegionSet::const_iterator j;
     Context * ctx = Context::current();
+    Process::SharedMap &sharedMem = proc->sharedMem();
+	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
+	}
+    Map * m = current();
     m->lock();
-    for(i = regions.begin(); i != regions.end(); i++) {
+    for(j = regions.begin(); j != regions.end(); j++) {
         TRACE("Memory Copy to Device");
-        ctx->copyToDevice(ptr((*i)->start()),
-                                         (*i)->start(),
-                                         (*i)->size());
+        ctx->copyToDevice(ptr((*j)->start()),
+                                         (*j)->start(),
+                                         (*j)->size());
     }
     m->unlock();
     /*!
       \todo Fix vm
     */
-    //Context::current()->flush();
     ctx->sync();
 }
 
@@ -96,6 +107,15 @@ void
 BatchManager::flush(const void *, size_t)
 {
     // Do nothing
+}
+
+void
+BatchManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+{
+    Region *region = current()->find<Region>(cpuPtr);
+    assert(region != NULL); assert(region->size() == count);
+    insertVirtual(ctx, cpuPtr, devPtr, count);
+    region->relate(ctx);
 }
 
 }}}

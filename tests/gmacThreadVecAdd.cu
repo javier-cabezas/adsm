@@ -83,6 +83,8 @@ void *addVector(void *ptr)
 	gmacFree(b);
 	gmacFree(*c);
 
+    assert(error == 0);
+
 	return NULL;
 }
 
@@ -115,4 +117,6 @@ int main(int argc, char *argv[])
 
 	free(s);
 	free(nThread);
+
+    return 0;
 }

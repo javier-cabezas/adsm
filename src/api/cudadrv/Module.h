@@ -120,8 +120,8 @@ protected:
 	CUmodule _mod;
 	const void *_fatBin;
 
-	typedef HASH_MAP<gmacVariable_t, Variable> VariableMap;
-	typedef HASH_MAP<gmacTexture_t, Texture> TextureMap;
+	typedef std::map<gmacVariable_t, Variable> VariableMap;
+	typedef std::map<gmacTexture_t, Texture> TextureMap;
 
     VariableMap _variables;
 	VariableMap _constants;

@@ -73,4 +73,5 @@ int main(int argc, char *argv[])
     gmacFree(b);
     gmacFree(c);
 
+    return error != 0;
 }

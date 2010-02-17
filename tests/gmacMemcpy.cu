@@ -55,4 +55,6 @@ int main(int argc, char *argv[])
 
 	gmacFree(ptr);
 	free(host);
+
+    return 0;
 }

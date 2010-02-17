@@ -4,5 +4,4 @@
 void osInit(void)
 {
     posixIoInit();
-    posixForkInit();
 }

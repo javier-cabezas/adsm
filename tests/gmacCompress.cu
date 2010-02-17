@@ -169,4 +169,5 @@ int main(int argc, char *argv[])
 
 	printTime(&s, &t, "Total: ", "\n");
 
+    return 0;
 }

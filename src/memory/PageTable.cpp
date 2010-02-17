@@ -2,7 +2,6 @@
 
 #include <kernel/Context.h>
 
-#include <malloc.h>
 
 namespace gmac { namespace memory {
 

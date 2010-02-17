@@ -109,6 +109,12 @@ void RollingManager::flush()
 {
     TRACE("RollingManager Flush Starts");
     Context * ctx = Context::current();
+    Process::SharedMap::iterator i;
+	Process::SharedMap &sharedMem = proc->sharedMem();
+    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		RollingRegion * r = current()->find<RollingRegion>(i->second.start());
+        r->transferDirty();
+	}
     waitForWrite();
     while(regionRolling[ctx]->empty() == false) {
         RollingBlock *r = regionRolling[ctx]->pop();
@@ -117,6 +123,9 @@ void RollingManager::flush()
         TRACE("Flush to Device %p", r->start());
     }
 
+    /** \todo Fix vm */
+	// ctx->flush();
+	ctx->invalidate();
     TRACE("RollingManager Flush Ends");
 }
 
@@ -129,11 +138,18 @@ void RollingManager::flush(const RegionSet & regions)
     }
 
     TRACE("RollingManager Flush Starts");
+    Context * ctx = Context::current();
+    Process::SharedMap::iterator i;
+	Process::SharedMap &sharedMem = proc->sharedMem();
+    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
+		RollingRegion * r = current()->find<RollingRegion>(i->second.start());
+        r->transferDirty();
+	}
     waitForWrite();
     RollingBuffer * buffer = regionRolling[Context::current()];
     size_t blocks = buffer->size();
 
-    for(int i = 0; i < blocks; i++) {
+    for(int j = 0; j < blocks; j++) {
         RollingBlock *r = regionRolling[Context::current()]->pop();
         // Check if we have to flush
         if (std::find(regions.begin(), regions.end(), &r->getParent()) == regions.end()) {
@@ -146,6 +162,9 @@ void RollingManager::flush(const RegionSet & regions)
         TRACE("Flush to Device %p", r->start());
     }
 
+    /** \todo Fix vm */
+	// ctx->flush();
+	ctx->invalidate();
     TRACE("RollingManager Flush Ends");
 }
 
@@ -254,5 +273,14 @@ bool RollingManager::write(void *addr)
     return true;
 }
 
+void
+RollingManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+{
+	RollingRegion *region = current()->find<RollingRegion>(cpuPtr);
+	assert(region != NULL); assert(region->size() == count);
+	insertVirtual(ctx, cpuPtr, devPtr, count);
+	region->relate(ctx);
+    region->transferNonDirty();
+}
 
 }}}

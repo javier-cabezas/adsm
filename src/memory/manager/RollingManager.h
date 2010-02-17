@@ -78,6 +78,7 @@ protected:
     size_t writeBufferSize;
     void waitForWrite(void *addr = NULL, size_t size = 0);
     void writeBack();
+	void flushToDevice();
 
     virtual bool read(void *);
     virtual bool write(void *);
@@ -104,6 +105,8 @@ public:
 
     void invalidate(const void *addr, size_t size);
     void flush(const void *addr, size_t size);
+
+	void remap(Context *, void *, void *, size_t);
 };
 
 #include "RollingManager.ipp"

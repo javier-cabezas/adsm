@@ -62,6 +62,8 @@ public:
 
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
+
+	void remap(Context *, void *, void *, size_t);
 };
 
 #include "LazyManager.ipp"

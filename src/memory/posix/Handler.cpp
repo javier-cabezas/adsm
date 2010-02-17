@@ -41,14 +41,15 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 	__enterGmac();
 	enterFunction(gmacSignal);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
+
+#if defined(LINUX)
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
+#elif defined(DARWIN)
+	unsigned long writeAccess = (*mCtx)->__es.__err & 0x2;
+#endif
 
 	if(!writeAccess) TRACE("Read SIGSEGV for %p", info->si_addr);
 	else TRACE("Write SIGSEGV for %p", info->si_addr);
-
-#if 0
-	manager->owner(info->si_addr)->sync();
-#endif
 
 	bool resolved = false;
 	if(!writeAccess) resolved = handler->read(info->si_addr);

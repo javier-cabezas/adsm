@@ -426,6 +426,6 @@ void
 gmacSendReceive(unsigned long id)
 {
 	__enterGmac();
-	proc->sendReceive(id);
+	proc->sendReceive((THREAD_ID)id);
 	__exitGmac();
 }

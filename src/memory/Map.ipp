@@ -60,6 +60,7 @@ Map::find(const void *addr)
         global.unlock();
     }
     local.unlock();
+
     return dynamic_cast<T *>(ret);
 }
 
