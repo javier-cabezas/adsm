@@ -1,11 +1,11 @@
 /* Copyright (c) 2009, 2010 University of Illinois
-                   Universitat Politecnica de Catalunya
-                   All rights reserved.
+               Universitat Politecnica de Catalunya
+               All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
-              University of Illinois / Universitat Politecnica de Catalunya
-              http://impact.crhc.illinois.edu/
-              http://gso.ac.upc.edu/
+           University of Illinois / Universitat Politecnica de Catalunya
+           http://impact.crhc.illinois.edu/
+           http://gso.ac.upc.edu/
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
@@ -14,14 +14,14 @@ rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
 sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
   1. Redistributions of source code must retain the above copyright notice,
-     this list of conditions and the following disclaimers.
+    this list of conditions and the following disclaimers.
   2. Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimers in the
-     documentation and/or other materials provided with the distribution.
+    notice, this list of conditions and the following disclaimers in the
+    documentation and/or other materials provided with the distribution.
   3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
-     University of Illinois, Universitat Politecnica de Catalunya, nor the
-     names of its contributors may be used to endorse or promote products
-     derived from this Software without specific prior written permission.
+    University of Illinois, Universitat Politecnica de Catalunya, nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this Software without specific prior written permission.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -44,67 +44,80 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory { namespace manager {
 
-class RollingBuffer {
+class RollingBuffer : public gmac::util::RWLock {
 private:
-    std::list<RollingBlock *> _buffer;
-    util::RWLock _lock;
-    size_t _max;
+   std::list<RollingBlock *> _buffer;
+   size_t _max;
 
 public:
-    RollingBuffer();
+   RollingBuffer();
 
-    bool overflows() const;
-    size_t inc(size_t n);
-    size_t dec(size_t n);
-    bool empty() const;
+   bool overflows() const;
+   size_t inc(size_t n);
+   size_t dec(size_t n);
+   bool empty() const;
 
-    void push(RollingBlock *region);
-    RollingBlock *pop();
-    RollingBlock *front();
-    void remove(RollingBlock *region);
+   void push(RollingBlock *region);
+   RollingBlock *pop();
+   RollingBlock *front();
+   void remove(RollingBlock *region);
 
-    size_t size() const;
+   size_t size() const;
+};
+
+class RollingMap : protected std::map<Context *, RollingBuffer *>,
+      public gmac::util::RWLock {
+protected:
+   RollingBuffer *createBuffer(Context *);
+public:
+   RollingMap() : RWLock(paraver::rollingMap) {};
+   ~RollingMap();
+
+   RollingBuffer *currentBuffer();
+   RollingBuffer *contextBuffer(Context *ctx);
+
+   void remove(RollingBlock *block);
 };
 
 class RollingManager : public Handler {
 protected:
-    size_t lineSize;
-    size_t lruDelta;
+   size_t lineSize;
+   size_t lruDelta;
 
-    std::map<Context *, RollingBuffer *> regionRolling;
+   RollingMap rollingMap;
+   //std::map<Context *, RollingBuffer *> regionRolling;
 
-    util::Lock writeMutex;
-    void *writeBuffer;
-    size_t writeBufferSize;
-    void waitForWrite(void *addr = NULL, size_t size = 0);
-    void writeBack();
+   util::Lock writeMutex;
+   void *writeBuffer;
+   size_t writeBufferSize;
+   void writeBack();
 	void flushToDevice();
 
-    virtual bool read(void *);
-    virtual bool write(void *);
+   virtual bool read(void *);
+   virtual bool write(void *);
 
 #ifdef DEBUG
-    void dumpRolling();
+   void dumpRolling();
 #endif
 
-    // Methods used by RollingBlock to request flushing and invalidating
-    friend class RollingRegion;
-    void invalidate(RollingBlock *region);
-    void flush(RollingBlock *region);
+   // Methods used by RollingBlock to request flushing and invalidating
+   friend class RollingRegion;
+   void invalidate(RollingBlock *region);
+   void flush(RollingBlock *region);
 
 public:
-    RollingManager();
-    virtual ~RollingManager();
-    void *alloc(void *addr, size_t size, int attr = 0);
-    void release(void *addr);
-    void invalidate();
-    void invalidate(const RegionSet & regions);
-    void flush();
-    void flush(const RegionSet & regions);
-    void sync() {};
+   RollingManager();
+   virtual ~RollingManager();
+   void *alloc(void *addr, size_t size, int attr = 0);
+   void release(void *addr);
+   void invalidate();
+   void invalidate(const RegionSet & regions);
+   void flush();
+   void flush(const RegionSet & regions);
+   void sync() {};
 
-    void invalidate(const void *addr, size_t size);
-    void flush(const void *addr, size_t size);
+   void invalidate(const void *addr, size_t size);
+   void flush(const void *addr, size_t size);
 
 	void remap(Context *, void *, void *, size_t);
 };

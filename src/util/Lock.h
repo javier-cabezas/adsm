@@ -36,18 +36,33 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 #include <paraver.h>
+#include <debug.h>
 
 #define __THREAD_CANARY
 #include <threads.h>
 
 #include <iostream>
+#include <cassert>
 
+#include <map>
 
 namespace gmac { namespace util {
 
-class Lock {
+class Owned {
+protected:
+   THREAD_ID __owner;
+public:
+   Owned();
+
+   void adquire();
+   void release();
+   THREAD_ID owner();
+};
+
+class Lock : public Owned {
 protected:
 	MUTEX(__mutex);
+   PRIVATE(__owner);
 	paraver::LockName __name;
 public:
 	Lock(paraver::LockName __name);
@@ -58,9 +73,10 @@ public:
    bool tryLock();
 };
 
-class RWLock {
+class RWLock : public Owned {
 protected:
 	LOCK(__lock);
+   bool __write;
 	paraver::LockName __name;
 public:
 	RWLock(paraver::LockName __name);

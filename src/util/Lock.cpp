@@ -14,9 +14,10 @@ Lock::~Lock()
 }
 
 RWLock::RWLock(paraver::LockName __name) :
-    __name(__name)
+   __write(false),
+   __name(__name)
 {
-    LOCK_INIT(__lock);
+   LOCK_INIT(__lock);
 }
 
 RWLock::~RWLock()
