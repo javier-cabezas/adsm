@@ -15,6 +15,12 @@ Lock::unlock()
     MUTEX_UNLOCK(__mutex);
 }
 
+inline bool
+Lock::tryLock()
+{
+   return MUTEX_TRYLOCK(__mutex) == 0;
+}
+
 inline void
 RWLock::lockRead()
 {
@@ -35,6 +41,18 @@ inline void
 RWLock::unlock()
 {
     LOCK_RELEASE(__lock);
+}
+
+inline bool
+RWLock::tryRead()
+{
+   return LOCK_TRYREAD(__lock) == 0;
+}
+
+inline bool
+RWLock::tryWrite()
+{
+   return LOCK_TRYWRITE(__lock) == 0;
 }
 
 #endif

@@ -56,8 +56,8 @@ public:
 	virtual void readOnly();
 	virtual void readWrite();
 
-	virtual bool dirty() const;
-	virtual bool present() const;
+	virtual bool dirty();
+	virtual bool present();
 };
 
 #include "ProtRegion.ipp"

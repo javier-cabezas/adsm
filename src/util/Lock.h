@@ -55,6 +55,7 @@ public:
 
 	void lock();
 	void unlock();
+   bool tryLock();
 };
 
 class RWLock {
@@ -68,6 +69,8 @@ public:
 	void lockRead();
 	void lockWrite();
 	void unlock();
+   bool tryRead();
+   bool tryWrite();
 };
 
 #include "Lock.ipp"
