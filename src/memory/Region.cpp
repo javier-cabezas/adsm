@@ -23,13 +23,11 @@ gmacError_t Region::copyToDevice()
     if((ret = _context->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess)
         return ret;
     std::list<Context *>::iterator i;
-    lockRead();
     for(i = _relatives.begin(); i != _relatives.end(); i++) {
         if((ret = (*i)->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess) {
             break;
         }
     }
-    unlock();
     return ret;
 }
 
@@ -45,11 +43,9 @@ void Region::sync()
 {
     _context->sync();
     std::list<Context *>::iterator i;
-    lockRead();
     for(i = _relatives.begin(); i != _relatives.end(); i++) {
         (*i)->sync();
     }
-    unlock();
 }
 
 } }

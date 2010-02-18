@@ -29,14 +29,14 @@ ProtRegion::readWrite(void)
 inline bool
 ProtRegion::dirty()
 {
-   assert(tryRead() == false);
+   assert(tryWrite() == false);
    return _dirty;
 }
 
 inline bool
 ProtRegion::present()
 {
-   assert(tryRead() == false);
+   assert(tryWrite() == false);
    return _present;
 }
 
