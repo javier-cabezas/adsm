@@ -112,13 +112,25 @@ AC_ARG_ENABLE(paraver,
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
 	AC_MSG_RESULT(yes)
-    AC_CHECK_LIB([paraver], [paraver_lib_present],
-                 [paraver_lib=""],
-                 [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
-                 [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
-                 [paraver_src="libparaver"]
-                 [AC_CONFIG_SUBDIRS([lib/libparaver])]
-                 )
+   AC_MSG_CHECKING(whether to compile libparaver from lib directory)
+   AC_ARG_ENABLE(compile-paraver,
+      AC_HELP_STRING([--enable-compile-paraver], [force compiling libparaver from lib directory [[default=no]]]),
+      [AC_MSG_RESULT(yes)]
+      [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
+      [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
+      [paraver_src="libparaver"],
+      [AC_MSG_RESULT(no)]
+      [AC_CHECK_LIB([paraver], [paraver_lib_present],
+         [paraver_lib=""],
+         [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
+         [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
+         [paraver_src="libparaver"]
+      )]
+   )
+
+   if test "$paraver_lib" != ""; then
+      AC_CONFIG_SUBDIRS([lib/libparaver])
+   fi 
 
 	AC_DEFINE(PARAVER)
 else
