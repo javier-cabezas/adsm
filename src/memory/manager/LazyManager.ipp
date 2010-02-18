@@ -1,0 +1,4 @@
+#ifndef __MEMORY_LAZYMANAGER_IPP_
+#define __MEMORY_LAZYMANAGER_IPP_
+
+#endif
