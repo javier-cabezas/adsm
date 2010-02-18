@@ -102,7 +102,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
     size_t ret = 0;
 
-    manager->flush(buf, n);
+    //manager->flush(buf, n);
 
     gmac::Context *ctx = gmac::Context::current();
     if (ctx->async()) {

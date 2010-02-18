@@ -16,18 +16,18 @@ void __pushEvent(paraver::EventName &e, int v) { if(trace != NULL) trace->__push
 
 int __init_paraver = 0;
 
-EVENT_IMPL(Function, 1);
-EVENT_IMPL(HostDeviceCopy, 2);
-EVENT_IMPL(DeviceHostCopy, 3);
-EVENT_IMPL(DeviceDeviceCopy, 4);
-EVENT_IMPL(GPUCall, 5);
-EVENT_IMPL(Lock, 6);
+EVENT_IMPL(Function);
+EVENT_IMPL(HostDeviceCopy);
+EVENT_IMPL(DeviceHostCopy);
+EVENT_IMPL(DeviceDeviceCopy);
+EVENT_IMPL(GPUCall);
+EVENT_IMPL(Lock);
 
-STATE_IMPL(ThreadCreate, 2);
-STATE_IMPL(IORead, 3);
-STATE_IMPL(IOWrite, 4);
-STATE_IMPL(Exclusive, 5);
-STATE_IMPL(Init, 6);
+STATE_IMPL(ThreadCreate);
+STATE_IMPL(IORead);
+STATE_IMPL(IOWrite);
+STATE_IMPL(Exclusive);
+STATE_IMPL(Init);
 
 };
 
