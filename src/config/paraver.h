@@ -39,7 +39,7 @@ enum FunctionName {
 	accMalloc = 1, accFree,
 	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
 	accLaunch, accSync,
-	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal, gmacAccs, gmacSetAffinity,
+	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal, gmacAccs, gmacSetAffinity, gmacClear, gmacBind, gmacUnbind,
 	vmAlloc, vmFree, vmFlush, vmSync,
 };
 
@@ -47,7 +47,7 @@ enum LockName {
 	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, ctxCreate,
 	queueLock, 
 	ioHostLock, ioDeviceLock,
-	process, writeMutex, rollingBuffer, manager, queue, relatives,
+	process, writeMutex, rollingBuffer, manager, queue, region,
 	pthread, segv
 };
 };

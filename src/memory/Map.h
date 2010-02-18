@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MAP_H_
 
 #include <memory/PageTable.h>
-#include <memory/Region.h>
 
 #include <paraver.h>
 #include <util/Lock.h>
@@ -46,52 +45,42 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Map {
+class Region;
+typedef std::map<const void *, Region *> RegionMap;
+
+class Map : public RegionMap, public util::RWLock {
 protected:
-	typedef std::map<const void *, Region *> __Map;
-	__Map __map;
-	util::RWLock local;
-	static __Map *__global;
-	static unsigned count;
-	static util::RWLock global;
+    static RegionMap *__global;
+    static unsigned count;
+    static util::RWLock global;
 
-	Region *localFind(const void *addr);
-	Region *globalFind(const void *addr);
+    Region *localFind(const void *addr);
+    static Region *globalFind(const void *addr);
 
-	void clean();
+    void clean();
 
-	PageTable __pageTable;
+    PageTable __pageTable;
 
 public:
-	typedef __Map::iterator iterator;
-	typedef __Map::const_iterator const_iterator;
+    Map();
+    virtual ~Map();
 
-	Map();
-	virtual ~Map();
+    static void init();
 
-	static void init();
+    void realloc();
+    void insert(Region *i);
 
-	void realloc();
+    Region *remove(void *addr);
 
-	void lock();
-	void unlock();
+    PageTable &pageTable();
+    const PageTable &pageTable() const;
 
-	iterator begin();
-	iterator end();
-
-	void insert(Region *i);
-
-	Region *remove(void *addr);
-
-	PageTable &pageTable();
-	const PageTable &pageTable() const;
-
-	template<typename T>
-	T *find(const void *addr);
+    template<typename T>
+    T *find(const void *addr);
 };
 
-#include "Map.ipp"
-
 }}
+
+#include "Map.ipp"
 
 #endif

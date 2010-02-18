@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -48,56 +48,58 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory { namespace manager {
 
 class RollingManager;
-class ProtSubRegion;
+class RollingBlock;
 class RollingRegion : public Region {
 public:
-	typedef std::set<ProtSubRegion *> List;
+    typedef std::set<RollingBlock *> List;
 protected:
-	RollingManager &manager;
+    RollingManager &manager;
 
-	// Set of all sub-regions forming the region
-	typedef std::map<const void *, ProtSubRegion *> Map;
-	Map map;
+    // Set of all sub-regions forming the region
+    typedef std::map<const void *, RollingBlock *> Map;
+    Map map;
 
-	// List of sub-regions that are present in memory
-	List memory;
+    // List of sub-regions that are present in memory
+    List memory;
 
-	size_t cacheLine;
-	size_t offset;
+    size_t cacheLine;
+    size_t offset;
 
-	friend class ProtSubRegion;
-	void push(ProtSubRegion *region);
+    friend class RollingBlock;
+    void push(RollingBlock *region);
 
 public:
-	RollingRegion(RollingManager &manager, void *, size_t, size_t);
-	~RollingRegion();
+    RollingRegion(RollingManager &manager, void *, size_t, size_t);
+    ~RollingRegion();
 
-	virtual void relate(Context *ctx);
-	virtual void unrelate(Context *ctx);
-	virtual void transfer();
+    virtual void relate(Context *ctx);
+    virtual void unrelate(Context *ctx);
+    virtual void transfer();
 
-	ProtSubRegion *find(const void *);
-	virtual void invalidate();
-	void invalidate(const void *, size_t);
-	void flush(const void *, size_t);
+    RollingBlock *find(const void *);
+    virtual void invalidate();
+    void invalidate(const void *, size_t);
+    void flush(const void *, size_t);
 
     void transferNonDirty();
     void transferDirty();
 };
 
-class ProtSubRegion : public ProtRegion {
+class RollingBlock : public ProtRegion {
 protected:
-	RollingRegion *parent;
-	friend class RollingRegion;
-	void silentInvalidate();
+    RollingRegion &_parent;
+    friend class RollingRegion;
+    void silentInvalidate();
 public:
-	ProtSubRegion(RollingRegion *parent, void *addr, size_t size);
-	~ProtSubRegion();
+    RollingBlock(RollingRegion &parent, void *addr, size_t size);
+    ~RollingBlock();
 
-	// Override this methods to insert the regions in the list
-	// of sub-regions present in memory
-	virtual void readOnly();
+    // Override this methods to insert the regions in the list
+    // of sub-regions present in memory
+    virtual void readOnly();
     virtual void readWrite();
+
+    RollingRegion & getParent();
 };
 
 #include "RollingRegion.ipp"

@@ -14,7 +14,7 @@ noinst_SCRIPTS = gmacTests.py
 GMAC_TESTSOURCES=test.h test.c
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
-bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu utils.cpp $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -26,10 +26,10 @@ gmacMemcpy_SOURCES = gmacMemcpy.cu $(GMAC_TESTSOURCES)
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu $(GMAC_TESTSOURCES)
-gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
+gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacConstant_SOURCES = gmacConstant.cu $(GMAC_TESTSOURCES)
-gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -lcudart
+gmacConstant_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacThreadVecAdd_SOURCES = gmacThreadVecAdd.cu utils.cpp $(GMAC_TESTSOURCES)
 gmacThreadVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)

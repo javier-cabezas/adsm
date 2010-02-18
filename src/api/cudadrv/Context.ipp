@@ -1,6 +1,10 @@
 #ifndef __API_CUDADRV_CONTEXT_IPP_
 #define __API_CUDADRV_CONTEXT_IPP_
 
+#include "Kernel.h"
+
+namespace gmac { namespace gpu {
+
 inline CUdeviceptr
 Context::gpuAddr(void *addr) const
 {
@@ -32,7 +36,7 @@ inline void
 Context::lock()
 {
     mutex->lock();
-    assert(cuCtxPushCurrent(ctx) == CUDA_SUCCESS);
+    assert(cuCtxPushCurrent(_ctx) == CUDA_SUCCESS);
 }
 
 inline void
@@ -69,19 +73,23 @@ Context::copyToHostAsync(void *host, const void *dev, size_t size)
 inline gmacError_t
 Context::sync()
 {
-    CUresult ret;
-    lock();
-    while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-        unlock();
-        usleep(Context::USleepLaunch);
+    CUresult ret = CUDA_SUCCESS;
+    if (_status == RUNNING) {
         lock();
+        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
+            unlock();
+            usleep(Context::USleepLaunch);
+            lock();
+        }
+        if (ret == CUDA_SUCCESS) {
+            TRACE("Sync: success");
+        } else {
+            TRACE("Sync: error: %d", ret);
+        }
+        _status = NONE;
+
+        unlock();
     }
-    if (ret == CUDA_SUCCESS) {
-        TRACE("Sync: success");
-    } else {
-        TRACE("Sync: error: %d", ret);
-    }
-    unlock();
 
     return error(ret);
 }
@@ -91,7 +99,7 @@ Context::syncToHost()
 {
     CUresult ret;
     lock();
-    if (gpu.async()) {
+    if (_gpu.async()) {
         ret = cuStreamSynchronize(streamToHost);
     } else {
         ret = cuCtxSynchronize();
@@ -105,7 +113,7 @@ Context::syncToDevice()
 {
     CUresult ret;
     lock();
-    if (gpu.async()) {
+    if (_gpu.async()) {
         ret = cuStreamSynchronize(streamToDevice);
     } else {
         ret = cuCtxSynchronize();
@@ -119,7 +127,7 @@ Context::syncDevice()
 {
     CUresult ret;
     lock();
-    if (gpu.async()) {
+    if (_gpu.async()) {
         ret = cuStreamSynchronize(streamDevice);
     } else {
         ret = cuCtxSynchronize();
@@ -131,21 +139,21 @@ Context::syncDevice()
 inline void
 Context::call(dim3 Dg, dim3 Db, size_t shared, int tokens)
 {
-    Call c(Dg, Db, shared, tokens);
-    _calls.push_back(c);
+    _call = KernelConfig(Dg, Db, shared, tokens);
 }
 
 inline void
 Context::argument(const void *arg, size_t size, off_t offset)
 {
-	memcpy(&_stack[offset], arg, size);
-	_sp = (_sp > (offset + size)) ? _sp : offset + size;
+    _call.pushArgument(arg, size, offset);
 }
 
 inline bool
 Context::async() const
 {
-    return gpu.async();
+    return _gpu.async();
 }
+
+}}
 
 #endif

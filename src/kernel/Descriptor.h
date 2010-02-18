@@ -31,43 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __DESCRIPTOR_KERNEL_H_
+#define __DESCRIPTOR_KERNEL_H_
 
-#include "Handler.h"
-#include "ProtRegion.h"
+namespace gmac {
 
-#include <debug.h>
-
-#include <map>
-
-namespace gmac { namespace memory { namespace manager {
-
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public Handler {
+template <typename K>
+class Descriptor {
 protected:
-	bool read(void *addr);
-	bool write(void *addr);
+    K _key;
+    const char * _name;
 
 public:
-	LazyManager();
-	void *alloc(void *addr, size_t count, int attr = 0);
-	void release(void *addr);
-	void invalidate();
-    void invalidate(const RegionSet & regions);
-    void flush();
-    void flush(const RegionSet & regions);
-
-    void sync() {};
-
-	void invalidate(const void *, size_t);
-	void flush(const void *, size_t);
-
-	void remap(Context *, void *, void *, size_t);
+    Descriptor(const char * name, K key);
+    const char * name() const;
+    K key() const;
 };
 
-#include "LazyManager.ipp"
+}
 
-}}}
+#include "Descriptor.ipp"
 
 #endif

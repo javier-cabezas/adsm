@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -77,6 +77,7 @@ typedef enum {
 	gmacErrorInvalidValue,
 	gmacErrorInvalidDevice,
 	gmacErrorInvalidDeviceFunction,
+    gmacErrorAlreadyBound,
 	gmacErrorApiFailureBase,
 	gmacErrorUnknown
 #ifdef __cplusplus
@@ -84,6 +85,8 @@ typedef enum {
 #else
 } gmacError_t;
 #endif
+
+typedef const char * gmacKernel_t;
 
 static const char *error[] = {
 	"No error",
@@ -97,6 +100,18 @@ static const char *error[] = {
 	"GMAC general failure",
 	"Uknown error"
 };
+
+#define gmacKernel(__f,__a...)                                           ((gmacKernel_t) (void (*)(__a)) __f)
+#define gmacKernelT1(__f,__t1,__a...)                                    ((gmacKernel_t) (void (*)(__a)) __f<__t1>)
+#define gmacKernelT2(__f,__t1,__t2,__a...)                               ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2>)
+#define gmacKernelT3(__f,__t1,__t2,__t3,__a...)                          ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3>)
+#define gmacKernelT4(__f,__t1,__t2,__t3,__t4,__a...)                     ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4>)
+#define gmacKernelT5(__f,__t1,__t2,__t3,__t4,__t5,__a...)                ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5>)
+#define gmacKernelT6(__f,__t1,__t2,__t3,__t4,__t5,__t6,__a...)           ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6>)
+#define gmacKernelT7(__f,__t1,__t2,__t3,__t4,__t5,__t6,__t7,__a...)      ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6,__t7>)
+#define gmacKernelT8(__f,__t1,__t2,__t3,__t4,__t5,__t6,__t7,__t8,__a...) ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6,__t7,__t8>)
+
+gmacError_t gmacBind(void * obj, gmacKernel_t k);
 
 /*!
 	\brief Returns the number of available accelerators
@@ -116,15 +131,17 @@ size_t gmacAccs();
 gmacError_t gmacSetAfinnity(int acc);
 
 
+#define GMAC_MALLOC_PINNED 1
+
 /*!
 	\brief Allocates memory at the GPU
-	
+
 	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
 	use the same addresses for this memory.
 	\param devPtr memory address to store the address for the allocated memory
 	\param count bytes to be allocated
 */
-gmacError_t gmacMalloc(void **devPtr, size_t count);
+gmacError_t gmacMalloc(void **devPtr, size_t count, int attr = 0);
 
 /*!
 	\brief Allocates global memory at all GPUS
@@ -133,7 +150,6 @@ gmacError_t gmacGlobalMalloc(void **devPtr, size_t count);
 
 /*!
 	\brief Gets a GPU address
-
 	\param cpuPtr memory address at the CPU
 */
 void *gmacPtr(void *cpuPtr);
@@ -145,9 +161,9 @@ void *gmacPtr(void *cpuPtr);
 gmacError_t gmacFree(void *);
 /*!
 	\brief Launches a kernel execution
-	\param name Name of the kernel to be executed at the GPU
+	\param k Handler of the kernel to be executed at the GPU
 */
-gmacError_t gmacLaunch(const char *name);
+gmacError_t gmacLaunch(gmacKernel_t k);
 /*!
 	\brief Waits until all previous GPU requests have finished
 */

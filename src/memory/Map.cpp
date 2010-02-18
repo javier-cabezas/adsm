@@ -4,17 +4,17 @@
 
 namespace gmac { namespace memory {
 
-Map::__Map *Map::__global = NULL;
+RegionMap *Map::__global = NULL;
 unsigned Map::count = 0;
-util::RWLock Map::global(paraver::mmGlobal);
+gmac::util::RWLock Map::global(paraver::mmGlobal);
 
 Region *
 Map::localFind(const void *addr)
 {
-    __Map::const_iterator i;
+    RegionMap::const_iterator i;
     Region *ret = NULL;
-    i = __map.upper_bound(addr);
-    if(i != __map.end() && i->second->start() <= addr) {
+    i = upper_bound(addr);
+    if(i != end() && i->second->start() <= addr) {
         ret = i->second;
     }
     return ret;
@@ -23,35 +23,37 @@ Map::localFind(const void *addr)
 Region *
 Map::globalFind(const void *addr)
 {
-    __Map::const_iterator i;
+    RegionMap::const_iterator i;
     Region *ret = NULL;
+    global.lockRead();
     i = __global->upper_bound(addr);
     if(i != __global->end() && i->second->start() <= addr)
         ret = i->second;
+    global.unlock();
     return ret;
 }
 
 void
 Map::clean()
 {
-	__Map::iterator i;
-	local.write();
-	for(i = __map.begin(); i != __map.end(); i++) {
+	RegionMap::iterator i;
+	lockWrite();
+	for(i = begin(); i != end(); i++) {
 		TRACE("Cleaning Region %p", i->second->start());
-		global.write();
+		global.lockWrite();
 		__global->erase(i->first);
 		global.unlock();
 		delete i->second;
 	}
-	__map.clear();
-	local.unlock();
+	clear();
+	unlock();
 }
 
 Map::Map() :
-    local(paraver::mmLocal)
+    util::RWLock(paraver::mmLocal)
 {
-    global.write();
-    if(__global == NULL) __global = new __Map();
+    global.lockWrite();
+    if(__global == NULL) __global = new RegionMap();
     count++;
     global.unlock();
 }
@@ -60,7 +62,7 @@ Map::~Map()
 {
     TRACE("Cleaning Memory Map");
     clean();
-    global.write();
+    global.lockWrite();
     count--;
     if(count == 0) {
         delete __global;
@@ -75,25 +77,25 @@ Map::init()
 
 Region *Map::remove(void *addr)
 {
-	__Map::iterator i;
-	global.write();
-	i = __global->upper_bound(addr);
-	assert(i != __global->end() && i->second->start() == addr);
-    Region *region = i->second;
-    bool self = (region->owner() == Context::current());
-    if(self == true) __global->erase(i);
-	global.unlock();
-	// If the region is global (not owned by the context) return
-    if(self == false) return region;
+    RegionMap::iterator i;
+    global.lockWrite();
+    i = __global->upper_bound(addr);
+    Region * r = i->second;
+    assert(i != __global->end() && r->start() == addr);
+    Context * ctx = Context::current();
+    if(r->owner() == ctx) __global->erase(i);
+    global.unlock();
+    // If the region is global (not owned by the context) return
+    if(r->owner() != ctx)
+        return r;
 
-	TRACE("Removing Region %p", region->start());
-	local.write();
-	i = __map.upper_bound(addr);
-	assert(i != __map.end() && i->second->start() == addr);
-	Region *ret = i->second;
-	__map.erase(i);
-	local.unlock();
-	return ret;
+    TRACE("Removing Region %p", r->start());
+    lockWrite();
+    i = upper_bound(addr);
+    assert(i != end() && r->start() == addr);
+    erase(i);
+    unlock();
+    return r;
 }
 
 }}

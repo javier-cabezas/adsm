@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,43 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
-
-#include "Handler.h"
-#include "ProtRegion.h"
+#ifndef __KERNEL_MEMORY_TRANSFER_H_
+#define __KERNEL_MEMORY_TRANSFER_H_
 
 #include <debug.h>
 
-#include <map>
+namespace gmac {
 
-namespace gmac { namespace memory { namespace manager {
-
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public Handler {
+/*!
+	\brief Memory transfer descriptor
+*/
+class MemoryTransfer {
 protected:
-	bool read(void *addr);
-	bool write(void *addr);
+    const void * _src;
+    void * _dst;
+
+    Context * _ctxSrc;
+    Context * _ctxDst;
 
 public:
-	LazyManager();
-	void *alloc(void *addr, size_t count, int attr = 0);
-	void release(void *addr);
-	void invalidate();
-    void invalidate(const RegionSet & regions);
-    void flush();
-    void flush(const RegionSet & regions);
+    MemoryTransfer(void *dst, const void *src, size_t n);
 
-    void sync() {};
+    const void * src() const;
+    void * dst() const;
 
-	void invalidate(const void *, size_t);
-	void flush(const void *, size_t);
-
-	void remap(Context *, void *, void *, size_t);
+    Context * ctxSrc() const;
+    Context * ctxDst() const;
 };
 
-#include "LazyManager.ipp"
+#include "Context.ipp"
 
-}}}
+}
+
 
 #endif

@@ -31,43 +31,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_LAZYMANAGER_H_
-#define __MEMORY_LAZYMANAGER_H_
+#ifndef __KERNEL_KERNEL_H
+#define __KERNEL_KERNEL_H
 
-#include "Handler.h"
-#include "ProtRegion.h"
+#include "Descriptor.h"
 
-#include <debug.h>
+#include "memory/Region.h"
+#include "util/ReusableObject.h"
 
-#include <map>
+#include <vector>
 
-namespace gmac { namespace memory { namespace manager {
+namespace gmac {
 
-//! Manager that Moves Memory Regions Lazily
-class LazyManager : public Handler {
-protected:
-	bool read(void *addr);
-	bool write(void *addr);
-
+class Argument : public util::ReusableObject<Argument> {
 public:
-	LazyManager();
-	void *alloc(void *addr, size_t count, int attr = 0);
-	void release(void *addr);
-	void invalidate();
-    void invalidate(const RegionSet & regions);
-    void flush();
-    void flush(const RegionSet & regions);
-
-    void sync() {};
-
-	void invalidate(const void *, size_t);
-	void flush(const void *, size_t);
-
-	void remap(Context *, void *, void *, size_t);
+    void * _ptr;
+    size_t _size;
+    off_t  _offset;
+    Argument(void * ptr, size_t size, off_t offset);
+private:
+    friend class Kernel;
 };
 
-#include "LazyManager.ipp"
+typedef std::vector<Argument> ArgVector;
 
-}}}
+/// \todo create a pool of objects to avoid mallocs/frees
+class KernelConfig : public ArgVector {
+protected:
+    static const unsigned StackSize = 4096;
 
-#endif
+    char _stack[StackSize];
+    off_t _argsSize;
+
+    KernelConfig(const KernelConfig & c);
+public:
+    /// \todo create a pool of objects to avoid mallocs/frees
+    KernelConfig();
+    virtual ~KernelConfig();
+
+    void pushArgument(const void * arg, size_t size, off_t offset);
+    off_t argsSize() const;
+
+    char * argsArray();
+};
+
+typedef Descriptor<gmacKernel_t> KernelDescriptor;
+
+class KernelLaunch;
+
+class Kernel : public memory::RegionSet, public KernelDescriptor
+{
+public:
+    Kernel(const KernelDescriptor & k);
+
+    virtual KernelLaunch * launch(KernelConfig & c) = 0;
+    gmacError_t bind(void * addr);
+    gmacError_t unbind(void * addr);
+};
+
+class KernelLaunch : public memory::RegionSet {
+public:
+    virtual gmacError_t execute() = 0;
+};
+
+}
+
+#include "Kernel.ipp"
+
+#endif /* KERNEL_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

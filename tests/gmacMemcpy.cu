@@ -35,23 +35,22 @@ int main(int argc, char *argv[])
 	assert(host != NULL);
 	init(host, size, 1);
 
-
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(size / blockSize);
 	if(size % blockSize) Db.x++;
 
 	fprintf(stderr,"Test full memcpy: ");
-	gmacMemcpy(ptr, host, size * sizeof(long));
+	memcpy(ptr, host, size * sizeof(long));
 	reset<<<Dg, Db>>>(ptr, 1);
 	fprintf(stderr, "%d\n", check(ptr, 2 * size));
 
 	fprintf(stderr,"Test partial memcpy: ");
-	gmacMemcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
+	memcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
 	fprintf(stderr, "%d\n", check(ptr, 5 * size / 4));
 
 	fprintf(stderr,"Test reverse full: ");
-	gmacMemcpy(host, ptr, size * sizeof(long));
+	memcpy(host, ptr, size * sizeof(long));
 	fprintf(stderr, "%d\n", check(host, 5 * size / 4));
 
 	gmacFree(ptr);

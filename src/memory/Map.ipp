@@ -1,6 +1,10 @@
 #ifndef __MEMORY_MAP_IPP_
 #define __MEMORY_MAP_IPP_
 
+#include "memory/Region.h"
+
+namespace gmac { namespace memory {
+
 inline void
 Map::realloc()
 {
@@ -8,38 +12,14 @@ Map::realloc()
 }
 
 inline void
-Map::lock()
-{
-    local.read();
-}
-
-inline void
-Map::unlock()
-{
-    local.unlock();
-}
-
-inline Map::iterator
-Map::begin()
-{
-    return __map.begin();
-}
-
-inline Map::iterator
-Map::end()
-{
-    return __map.end();
-}
-
-inline void
 Map::insert(Region *i)
 {
-    local.write();
-    __map.insert(__Map::value_type(i->end(), i));
-    local.unlock();
+    lockWrite();
+    RegionMap::insert(value_type(i->end(), i));
+    unlock();
 
-    global.write();
-    __global->insert(__Map::value_type(i->end(), i));
+    global.lockWrite();
+    __global->insert(value_type(i->end(), i));
     global.unlock();
 }
 
@@ -60,16 +40,18 @@ inline T *
 Map::find(const void *addr)
 {
     Region *ret = NULL;
-    local.read();
+    lockRead();
     ret = localFind(addr);
     if(ret == NULL) {
-        global.read();
+        global.lockRead();
         ret = globalFind(addr);
         global.unlock();
     }
-    local.unlock();
+    unlock();
 
     return dynamic_cast<T *>(ret);
 }
+
+}}
 
 #endif

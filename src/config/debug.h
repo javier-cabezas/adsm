@@ -39,9 +39,9 @@ WITH THE SOFTWARE.  */
 #include <string.h>
 #include <errno.h>
 
-#include <sys/syscall.h>
-#include <sys/types.h>
-#include <unistd.h>
+#define __THREAD_CANARY
+#include <threads.h>
+#undef __THREAD_CANARY
 
 #define FATAL(fmt, ...)	\
 	do {	\
@@ -52,11 +52,10 @@ WITH THE SOFTWARE.  */
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
-		fprintf(stderr,"TRACE [%s:%d](%d) " fmt "\n",  __FILE__, __LINE__, (pid_t) syscall (SYS_gettid), ##__VA_ARGS__);	\
+		fprintf(stderr,"TRACE [%s:%d] (%p)" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
 	} while(0)
 #else
 #define TRACE(fmt, ...)
 #endif
-
 
 #endif

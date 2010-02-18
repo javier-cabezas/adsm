@@ -1,6 +1,8 @@
 #ifndef __API_CUDADRV_ACCELERATOR_IPP_
 #define __API_CUDADRV_ACCELERATOR_IPP_
 
+#include "Accelerator.h"
+
 namespace gmac { namespace gpu {
 
 inline CUdevice

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -37,11 +37,11 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <debug.h>
 
-#include <gmac/gmac.h>
-#include <memory/os/Memory.h>
-#include <util/Lock.h>
+#include "util/Lock.h"
 
-#include <unistd.h>
+#include "gmac/gmac.h"
+#include "memory/os/Memory.h"
+
 #include <stdint.h>
 #include <csignal>
 
@@ -49,8 +49,9 @@ WITH THE SOFTWARE.  */
 
 #include <iostream>
 #include <list>
+#include <set>
 
-namespace gmac { 
+namespace gmac {
 
 class Context;
 
@@ -59,11 +60,10 @@ namespace memory {
 typedef unsigned long addr_t;
 
 //! Generic Memory Region Descriptor
-class Region {
+class Region : public util::RWLock {
 private:
 	Context *_context;
 protected:
-	util::RWLock _lock;
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;
@@ -89,14 +89,10 @@ public:
 
 	//! Returns the size (in bytes) of the Region
 	size_t size() const;
-	//! Sets the size (in bytes) of the Region
-	void size(size_t size);
 	//! Returns the address of the Region
 	void *start() const;
 	//! Returns the end address of the region
 	void *end() const;
-	//! Sets the address of the Region
-	void start(void *addr);
 
 	virtual void relate(Context *ctx);
 	virtual void unrelate(Context *ctx);
@@ -104,7 +100,7 @@ public:
 	virtual std::list<Context *> &relatives();
 };
 
-typedef std::list<Region> RegionList;
+typedef std::set<Region *> RegionSet;
 
 #include "Region.ipp"
 

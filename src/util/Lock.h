@@ -65,8 +65,8 @@ public:
 	RWLock(paraver::LockName __name);
 	~RWLock();
 
-	void read();
-	void write();
+	void lockRead();
+	void lockWrite();
 	void unlock();
 };
 

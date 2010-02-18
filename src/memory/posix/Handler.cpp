@@ -18,7 +18,7 @@ void Handler::setHandler()
 	memset(&segvAction, 0, sizeof(segvAction));
 	segvAction.sa_sigaction = segvHandler;
 	segvAction.sa_flags = SA_SIGINFO | SA_RESTART;
-	sigemptyset(&segvAction.sa_mask);
+    sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(SIGSEGV, &segvAction, &defaultAction) < 0)
 		FATAL("sigaction: %s", strerror(errno));
@@ -47,16 +47,17 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 #elif defined(DARWIN)
 	unsigned long writeAccess = (*mCtx)->__es.__err & 0x2;
 #endif
+    void * addr = info->si_addr;
 
-	if(!writeAccess) TRACE("Read SIGSEGV for %p", info->si_addr);
-	else TRACE("Write SIGSEGV for %p", info->si_addr);
+	if(!writeAccess) TRACE("Read SIGSEGV for %p", addr);
+	else TRACE("Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-	if(!writeAccess) resolved = handler->read(info->si_addr);
-	else resolved = handler->write(info->si_addr);
+	if(!writeAccess) resolved = handler->read(addr);
+	else resolved = handler->write(addr);
 
 	if(resolved == false) {
-		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", info->si_addr);
+		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
 		abort();
 		// TODO: set the signal mask and other stuff
 		if(defaultAction.sa_flags & SA_SIGINFO) 
