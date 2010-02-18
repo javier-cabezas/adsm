@@ -48,9 +48,8 @@ namespace gmac { namespace memory {
 class Region;
 typedef std::map<const void *, Region *> RegionMap;
 
-class Map : public RegionMap {
+class Map : public RegionMap, public util::RWLock {
 protected:
-    util::RWLock local;
     static RegionMap *__global;
     static unsigned count;
     static util::RWLock global;
@@ -69,10 +68,6 @@ public:
     static void init();
 
     void realloc();
-
-    void lock();
-    void unlock();
-
     void insert(Region *i);
 
     Region *remove(void *addr);

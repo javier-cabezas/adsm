@@ -28,7 +28,7 @@ RollingBuffer::empty() const
 inline void
 RollingBuffer::push(RollingBlock *region)
 {
-    _lock.write();
+    _lock.lockWrite();
     _buffer.push_back(region);
     _lock.unlock();
 }
@@ -36,7 +36,7 @@ RollingBuffer::push(RollingBlock *region)
 inline RollingBlock *
 RollingBuffer::pop()
 {
-    _lock.write();
+    _lock.lockWrite();
     assert(_buffer.empty() == false);
     RollingBlock *ret = _buffer.front();
     _buffer.pop_front();
@@ -47,7 +47,7 @@ RollingBuffer::pop()
 inline RollingBlock *
 RollingBuffer::front()
 {
-    _lock.read();
+    _lock.lockRead();
     RollingBlock *ret = _buffer.front();
     _lock.unlock();
     return ret;
@@ -56,7 +56,7 @@ RollingBuffer::front()
 inline void
 RollingBuffer::remove(RollingBlock *region)
 {
-    _lock.write();
+    _lock.lockWrite();
     _buffer.remove(region);
     _lock.unlock();
 }

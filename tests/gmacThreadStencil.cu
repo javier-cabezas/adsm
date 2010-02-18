@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     pthread_t * nThread = new pthread_t[nIter];
 
     if (nIter > 1) {
+        pthread_mutex_init(&mutex, NULL);
         pthread_barrier_init(&barrier, NULL, nIter);
     }
 

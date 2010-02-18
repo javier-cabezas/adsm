@@ -31,12 +31,6 @@ Region::size() const
     return _size;
 }
 
-inline void
-Region::size(size_t size)
-{
-    _size = size;
-}
-
 inline void *
 Region::start() const
 {
@@ -50,35 +44,29 @@ Region::end() const
 }
 
 inline void
-Region::start(void *addr)
-{
-    _addr = __addr(addr);
-}
-
-inline void
 Region::relate(Context *ctx)
 {
-    _lock.write();
+    lockWrite();
     _relatives.push_back(ctx);
-    _lock.unlock();
+    unlock();
 }
 
 inline void
 Region::unrelate(Context *ctx)
 {
-    _lock.write();
+    lockWrite();
     _relatives.remove(ctx);
-    _lock.unlock();
+    unlock();
 }
 
 inline void
 Region::transfer()
 {
     assert(_relatives.empty() == false);
-    _lock.write();
+    lockWrite();
     _context = _relatives.front();
     _relatives.pop_front();
-    _lock.unlock();
+    unlock();
 }
 
 inline std::list<Context *> &

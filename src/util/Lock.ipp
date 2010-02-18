@@ -16,7 +16,7 @@ Lock::unlock()
 }
 
 inline void
-RWLock::read()
+RWLock::lockRead()
 {
     enterLock(__name);
     LOCK_READ(__lock);
@@ -24,7 +24,7 @@ RWLock::read()
 }
 
 inline void
-RWLock::write()
+RWLock::lockWrite()
 {
     enterLock(__name);
     LOCK_WRITE(__lock);

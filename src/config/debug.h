@@ -39,6 +39,10 @@ WITH THE SOFTWARE.  */
 #include <string.h>
 #include <errno.h>
 
+#define __THREAD_CANARY
+#include <threads.h>
+#undef __THREAD_CANARY
+
 #define FATAL(fmt, ...)	\
 	do {	\
 		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
@@ -48,11 +52,10 @@ WITH THE SOFTWARE.  */
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
-		fprintf(stderr,"TRACE [%s:%d] " fmt "\n",  __FILE__, __LINE__, ##__VA_ARGS__);	\
+		fprintf(stderr,"TRACE [%s:%d] (%p)" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
 	} while(0)
 #else
 #define TRACE(fmt, ...)
 #endif
-
 
 #endif

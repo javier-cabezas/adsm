@@ -42,7 +42,6 @@ WITH THE SOFTWARE.  */
 #include "gmac/gmac.h"
 #include "memory/os/Memory.h"
 
-#include <unistd.h>
 #include <stdint.h>
 #include <csignal>
 
@@ -61,11 +60,10 @@ namespace memory {
 typedef unsigned long addr_t;
 
 //! Generic Memory Region Descriptor
-class Region {
+class Region : public util::RWLock {
 private:
 	Context *_context;
 protected:
-	util::RWLock _lock;
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;
@@ -91,14 +89,10 @@ public:
 
 	//! Returns the size (in bytes) of the Region
 	size_t size() const;
-	//! Sets the size (in bytes) of the Region
-	void size(size_t size);
 	//! Returns the address of the Region
 	void *start() const;
 	//! Returns the end address of the region
 	void *end() const;
-	//! Sets the address of the Region
-	void start(void *addr);
 
 	virtual void relate(Context *ctx);
 	virtual void unrelate(Context *ctx);

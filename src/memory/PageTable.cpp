@@ -47,7 +47,7 @@ void PageTable::insert(void *host, void *dev)
 	sync();
 
 	enterFunction(vmAlloc);
-	lock.write();
+	lock.lockWrite();
 	_clean = false;
 	// Get the root table entry
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
@@ -78,7 +78,7 @@ void PageTable::remove(void *host)
 #ifndef USE_MMAP
 	sync();
 	enterFunction(vmFree);
-	lock.write();
+	lock.lockWrite();
 	_clean = false;
 
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
@@ -104,7 +104,7 @@ void *PageTable::translate(void *host)
 #else
 	sync();
 
-	lock.read();
+	lock.lockRead();
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		lock.unlock();
 		return NULL;

@@ -46,10 +46,12 @@ void LazyManager::invalidate()
     TRACE("LazyManager Invalidation Starts");
     Map::const_iterator i;
     Map * m = current();
+    m->lockRead();
 	for(i = m->begin(); i != m->end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
 		r->invalidate();
 	}
+    m->unlock();
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	Context::current()->invalidate();
@@ -89,7 +91,7 @@ void LazyManager::flush()
         r->readOnly();
 	}
     Map * m = current();
-    m->lock();
+    m->lockRead();
 	for(j = m->begin(); j != m->end(); j++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(j->second);
 		if(r->dirty()) {
@@ -121,8 +123,6 @@ void LazyManager::flush(const RegionSet & regions)
         r->readOnly();
 	}
 
-    Map * m = current();
-    m->lock();
 	for(j = regions.begin(); j != regions.end(); j++) {
 		ProtRegion *r = dynamic_cast<ProtRegion *>(*j);
 		if(r->dirty()) {
@@ -130,7 +130,6 @@ void LazyManager::flush(const RegionSet & regions)
 		}
         r->readOnly();
 	}
-    m->unlock();
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	Context::current()->invalidate();
@@ -204,6 +203,11 @@ bool LazyManager::read(void *addr)
 	ProtRegion *region = current()->find<ProtRegion>(addr);
 	if(region == NULL) return false;
 
+    region->lockWrite();
+	if (region->present() == true) {
+        region->unlock();
+        return true;
+    }
     Context * owner = region->owner();
     if (owner->status() == Context::RUNNING) owner->sync();
 
@@ -211,17 +215,21 @@ bool LazyManager::read(void *addr)
 	region->copyToHost();
 	region->readOnly();
 
+    region->unlock();
+
 	return true;
 }
 
 bool LazyManager::write(void *addr)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	if(region == NULL) return false;
+	if (region == NULL) return false;
 
-    Context * owner = region->owner();
-    if (owner->status() == Context::RUNNING) owner->sync();
-
+    region->lockWrite();
+	if (region->present() == true) {
+        region->unlock();
+        return true;
+    }
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {
@@ -229,6 +237,8 @@ bool LazyManager::write(void *addr)
 				region->size());
 		region->copyToHost();
 	}
+
+    region->unlock();
 
 	return true;
 }

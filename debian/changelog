@@ -1,3 +1,12 @@
+libgmac (0.0.5) unstable; urgency=low
+
+  * New upstream version
+  * All tests are working
+  * Fixed shared memory
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Mon, 16 Feb 2010 03:19:00 +0100
+
+
 libgmac (0.0.4) unstable; urgency=low
 
   * New upstream version

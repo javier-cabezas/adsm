@@ -1,6 +1,6 @@
 // GMAC global settings
 PARAM(paramMemManager, char *, "Rolling", "GMAC_MANAGER")
-PARAM(paramAcquireOnWrite, bool, true, "GMAC_ACQUIRE_ON_WRITE")
+PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
 
 // GMAC Page table settings
 PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)

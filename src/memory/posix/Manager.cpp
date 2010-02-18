@@ -43,9 +43,11 @@ void *Manager::hostMap(void *addr, size_t count, int prot)
 void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 {
 	void *cpuAddr = NULL;
+#ifdef USE_MMAP
 	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
 	if(mremap(hAddr, count, count, MREMAP_FIXED, cpuAddr) != cpuAddr)
 		return NULL;
+#endif
 	return cpuAddr;
 }
 

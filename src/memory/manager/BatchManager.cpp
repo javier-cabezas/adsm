@@ -29,12 +29,12 @@ void BatchManager::flush()
 	}
 
     Map * m = current();
-    m->lock();
+    m->lockRead();
     for(j = m->begin(); j != m->end(); j++) {
         TRACE("Memory Copy to Device");
         ctx->copyToDevice(ptr(j->second->start()),
-                                         j->second->start(),
-                                         j->second->size());
+                          j->second->start(),
+                          j->second->size());
     }
     m->unlock();
     /*!
@@ -58,15 +58,12 @@ void BatchManager::flush(const RegionSet & regions)
 	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
 		ctx->copyToDevice(ptr(i->second.start()), i->second.start(), i->second.size());
 	}
-    Map * m = current();
-    m->lock();
     for(j = regions.begin(); j != regions.end(); j++) {
         TRACE("Memory Copy to Device");
         ctx->copyToDevice(ptr((*j)->start()),
-                                         (*j)->start(),
-                                         (*j)->size());
+                          (*j)->start(),
+                          (*j)->size());
     }
-    m->unlock();
     /*!
       \todo Fix vm
     */
@@ -88,7 +85,7 @@ BatchManager::invalidate(const RegionSet & regions)
 void BatchManager::sync()
 {
     Map::const_iterator i;
-    current()->lock();
+    current()->lockRead();
     for(i = current()->begin(); i != current()->end(); i++) {
         TRACE("Memory Copy from Device");
         Context::current()->copyToHost(i->second->start(),

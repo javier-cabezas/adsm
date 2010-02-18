@@ -173,7 +173,7 @@ void RollingManager::invalidate()
     TRACE("RollingManager Invalidation Starts");
     Map::iterator i;
     Map * m = current();
-    m->lock();
+    m->lockRead();
     for(i = m->begin(); i != m->end(); i++) {
         Region *r = i->second;
         assert(typeid(*r) == typeid(RollingRegion));
@@ -195,14 +195,11 @@ void RollingManager::invalidate(const RegionSet & regions)
 
     TRACE("RollingManager Invalidation Starts");
     RegionSet::const_iterator i;
-    Map * m = current();
-    m->lock();
     for(i = regions.begin(); i != regions.end(); i++) {
         Region *r = *i;
         assert(typeid(*r) == typeid(RollingRegion));
         dynamic_cast<RollingRegion *>(r)->invalidate();
     }
-    m->unlock();
     //gmac::Context::current()->flush();
     gmac::Context::current()->invalidate();
     TRACE("RollingManager Invalidation Ends");
@@ -234,16 +231,20 @@ bool RollingManager::read(void *addr)
     if(root == NULL) return false;
     Context * owner = root->owner();
     if (owner->status() == Context::RUNNING) owner->sync();
-
     ProtRegion *region = root->find(addr);
     assert(region != NULL);
-    assert(region->present() == false);
+    region->lockWrite();
+	if (region->present() == true) {
+        region->unlock();
+        return true;
+    }
     region->readWrite();
     if(current()->pageTable().dirty(addr)) {
         assert(region->copyToHost() == gmacSuccess);
         current()->pageTable().clear(addr);
     }
     region->readOnly();
+    region->unlock();
     return true;
 }
 
@@ -252,12 +253,17 @@ bool RollingManager::write(void *addr)
 {
 	RollingRegion *root = current()->find<RollingRegion>(addr);
     if (root == NULL) return false;
+    ProtRegion *region = root->find(addr);
+    assert(region != NULL);
+    // Other thread fixed the fault?
+    region->lockWrite();
+	if (region->present() == true && region->dirty() == true) {
+        region->unlock();
+        return true;
+    }
     Context * owner = root->owner();
     if (owner->status() == Context::RUNNING) owner->sync();
 
-    ProtRegion *region = root->find(addr);
-    assert(region != NULL);
-    assert(region->dirty() == false);
     Context * ctx = Context::current();
     if (!regionRolling[ctx]) {
         regionRolling[ctx] = new RollingBuffer();
@@ -268,8 +274,8 @@ bool RollingManager::write(void *addr)
         assert(region->copyToHost() == gmacSuccess);
         current()->pageTable().clear(addr);
     }
-    regionRolling[ctx]->push(
-        dynamic_cast<RollingBlock *>(region));
+    region->unlock();
+    regionRolling[ctx]->push(dynamic_cast<RollingBlock *>(region));
     return true;
 }
 

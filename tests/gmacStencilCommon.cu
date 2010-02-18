@@ -144,6 +144,7 @@ kernelStencil(const float * u2,
 #define VELOCITY 2000
 
 pthread_barrier_t barrier;
+pthread_mutex_t mutex;
 
 struct JobDescriptor {
     const static int DEFAULT_DIM = 256;
@@ -227,6 +228,8 @@ do_stencil(void * ptr)
         }
     }
 
+    pthread_barrier_wait(&barrier);
+
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -252,14 +255,18 @@ do_stencil(void * ptr)
 
             // Send data
             if (descr->prev != NULL) {
-                gmacMemcpy((void *) (descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems()),
-                           (void *) (descr->u3 + STENCIL * descr->sliceElems()),
-                           descr->sliceElems() * STENCIL * sizeof(float));
+                printf("FROM: %p\n", descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems());
+                printf("TO:   %p\n", descr->u3 + STENCIL * descr->sliceElems());
+                memcpy((void *) (descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems()),
+                       (void *) (descr->u3 + STENCIL * descr->sliceElems()),
+                       descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                gmacMemcpy((void *) (descr->next->u3),
-                           (void *) (descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems()),
-                           descr->sliceElems() * STENCIL * sizeof(float));                
+                printf("FROM: %p\n", descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems());
+                printf("TO:   %p\n", descr->next->u3);
+                memcpy((void *) descr->next->u3,
+                       (void *) (descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems()),
+                       descr->sliceElems() * STENCIL * sizeof(float));                
             }
 
             pthread_barrier_wait(&barrier);

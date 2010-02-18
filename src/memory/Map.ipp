@@ -12,25 +12,13 @@ Map::realloc()
 }
 
 inline void
-Map::lock()
-{
-    local.read();
-}
-
-inline void
-Map::unlock()
-{
-    local.unlock();
-}
-
-inline void
 Map::insert(Region *i)
 {
-    local.write();
+    lockWrite();
     RegionMap::insert(value_type(i->end(), i));
-    local.unlock();
+    unlock();
 
-    global.write();
+    global.lockWrite();
     __global->insert(value_type(i->end(), i));
     global.unlock();
 }
@@ -52,14 +40,14 @@ inline T *
 Map::find(const void *addr)
 {
     Region *ret = NULL;
-    local.read();
+    lockRead();
     ret = localFind(addr);
     if(ret == NULL) {
-        global.read();
+        global.lockRead();
         ret = globalFind(addr);
         global.unlock();
     }
-    local.unlock();
+    unlock();
 
     return dynamic_cast<T *>(ret);
 }

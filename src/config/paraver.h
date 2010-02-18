@@ -47,8 +47,8 @@ enum LockName {
 	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, ctxCreate,
 	queueLock, 
 	ioHostLock, ioDeviceLock,
-	process, writeMutex, rollingBuffer, manager, queue, relatives,
-	pthread
+	process, writeMutex, rollingBuffer, manager, queue, region,
+	pthread, segv
 };
 };
 

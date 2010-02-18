@@ -25,7 +25,7 @@ Map::globalFind(const void *addr)
 {
     RegionMap::const_iterator i;
     Region *ret = NULL;
-    global.read();
+    global.lockRead();
     i = __global->upper_bound(addr);
     if(i != __global->end() && i->second->start() <= addr)
         ret = i->second;
@@ -37,22 +37,22 @@ void
 Map::clean()
 {
 	RegionMap::iterator i;
-	local.write();
+	lockWrite();
 	for(i = begin(); i != end(); i++) {
 		TRACE("Cleaning Region %p", i->second->start());
-		global.write();
+		global.lockWrite();
 		__global->erase(i->first);
 		global.unlock();
 		delete i->second;
 	}
 	clear();
-	local.unlock();
+	unlock();
 }
 
 Map::Map() :
-    local(paraver::mmLocal)
+    util::RWLock(paraver::mmLocal)
 {
-    global.write();
+    global.lockWrite();
     if(__global == NULL) __global = new RegionMap();
     count++;
     global.unlock();
@@ -62,7 +62,7 @@ Map::~Map()
 {
     TRACE("Cleaning Memory Map");
     clean();
-    global.write();
+    global.lockWrite();
     count--;
     if(count == 0) {
         delete __global;
@@ -78,7 +78,7 @@ Map::init()
 Region *Map::remove(void *addr)
 {
     RegionMap::iterator i;
-    global.write();
+    global.lockWrite();
     i = __global->upper_bound(addr);
     Region * r = i->second;
     assert(i != __global->end() && r->start() == addr);
@@ -90,11 +90,11 @@ Region *Map::remove(void *addr)
         return r;
 
     TRACE("Removing Region %p", r->start());
-    local.write();
+    lockWrite();
     i = upper_bound(addr);
     assert(i != end() && r->start() == addr);
     erase(i);
-    local.unlock();
+    unlock();
     return r;
 }
 
