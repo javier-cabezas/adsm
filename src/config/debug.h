@@ -58,9 +58,13 @@ WITH THE SOFTWARE.  */
 #define TRACE(fmt, ...)
 #endif
 
+#ifdef DEBUG
 #define WARNING(fmt, ...) \
    do { \
       fprintf(stderr,"WARNING [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
-   } while(0);
+   } while(0)
+#else
+#define WARNING(fmt, ...)
+#endif
 
 #endif
