@@ -31,10 +31,12 @@ void RollingManager::waitForWrite(void *addr, size_t size)
 void RollingManager::writeBack()
 {
     RollingBlock *r = regionRolling[Context::current()]->pop();
+    r->lockWrite();
     waitForWrite(r->start(), r->size());
     mlock(writeBuffer, writeBufferSize);
     assert(r->copyToDevice() == gmacSuccess);
     r->readOnly();
+    r->unlock();
 }
 
 

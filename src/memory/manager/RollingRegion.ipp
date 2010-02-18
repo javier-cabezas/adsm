@@ -11,7 +11,8 @@ RollingRegion::push(RollingBlock *region)
 inline void
 RollingBlock::silentInvalidate()
 {
-    _present = _dirty = false;
+   assert(tryWrite() == false);
+   _present = _dirty = false;
 }
 
 inline RollingRegion &
