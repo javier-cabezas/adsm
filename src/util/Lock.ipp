@@ -68,6 +68,8 @@ RWLock::lockWrite()
    enterLock(__name);
    LOCK_WRITE(__lock);
 #ifdef DEBUG
+   if(owner() == SELF())
+      WARNING("Lock %d double-locked by %p", __name, owner());
    assert(owner() == 0);
    __write = true;
    adquire();

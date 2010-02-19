@@ -2,9 +2,11 @@
 #define __MEMOMRY_ROLLINGMANAGER_IPP_
 
 inline bool
-RollingBuffer::overflows() const
+RollingBuffer::overflows() 
 {
+   lockRead();
    bool ret = _buffer.size() >= _max;
+   unlock();
 }
 
 inline size_t
@@ -20,43 +22,60 @@ RollingBuffer::dec(size_t n)
 }
 
 inline bool
-RollingBuffer::empty() const
+RollingBuffer::empty() 
 {
-   return _buffer.empty();
+   lockRead();
+   bool ret = _buffer.empty();
+   unlock();
+   return ret;
 }
 
 inline void
 RollingBuffer::push(RollingBlock *region)
 {
+   lockWrite();
+   region->lockRead();
+   assert(region->dirty() == true);
+   region->unlock();
    _buffer.push_back(region);
+   unlock();
 }
 
 inline RollingBlock *
 RollingBuffer::pop()
 {
+   lockWrite();
    assert(_buffer.empty() == false);
    RollingBlock *ret = _buffer.front();
    _buffer.pop_front();
+   unlock();
    return ret;
 }
 
 inline RollingBlock *
 RollingBuffer::front()
 {
+   lockRead();
    RollingBlock *ret = _buffer.front();
+   unlock();
    return ret;
 }
 
 inline void
 RollingBuffer::remove(RollingBlock *region)
 {
+   lockWrite();
    _buffer.remove(region);
+   unlock();
 }
 
 inline size_t
-RollingBuffer::size() const
+RollingBuffer::size()
 {
-   return _buffer.size();
+   lockRead();
+   size_t ret = _buffer.size();
+   unlock();
+   return ret;
 }
 
 inline RollingBuffer *
@@ -99,9 +118,7 @@ RollingMap::remove(RollingBlock *block)
    lockWrite();
    RollingMap::iterator i;
    for(i = this->begin(); i != this->end(); i++) {
-      i->second->lockWrite();
       i->second->remove(block);
-      i->second->unlock();
    }
    unlock();
 }
@@ -121,10 +138,9 @@ RollingManager::flush(RollingBlock *region)
 {
    rollingMap.remove(region);
    region->lockWrite();
-   if(region->dirty()) {
-      assert(region->copyToDevice() == gmacSuccess);
-      region->readOnly();
-   }
+   assert(region->dirty() == true);
+   assert(region->copyToDevice() == gmacSuccess);
+   region->readOnly();
    region->unlock();
 }
 

@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory { namespace manager {
 
-class RollingBuffer : public gmac::util::RWLock {
+class RollingBuffer : protected gmac::util::RWLock {
 private:
    std::list<RollingBlock *> _buffer;
    size_t _max;
@@ -52,21 +52,21 @@ private:
 public:
    RollingBuffer();
 
-   bool overflows() const;
+   bool overflows();
    size_t inc(size_t n);
    size_t dec(size_t n);
-   bool empty() const;
+   bool empty();
 
    void push(RollingBlock *region);
    RollingBlock *pop();
    RollingBlock *front();
    void remove(RollingBlock *region);
 
-   size_t size() const;
+   size_t size();
 };
 
 class RollingMap : protected std::map<Context *, RollingBuffer *>,
-      public gmac::util::RWLock {
+      protected gmac::util::RWLock {
 protected:
    RollingBuffer *createBuffer(Context *);
 public:
