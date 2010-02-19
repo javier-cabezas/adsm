@@ -83,22 +83,19 @@ void RollingRegion::flush()
 {
    assert(tryWrite() == false);
    TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
-   // Check if the region is already invalid
-   if(memory.empty()) return;
 
-   List::iterator i;
 
    // Flush those sub-regions that are present in memory and dirty
-   for(i = memory.begin(); i != memory.end(); i++) {
-      (*i)->lockRead();
-      bool dirty = (*i)->dirty();
-      (*i)->unlock();
+   Map::const_iterator i;
+   for(i = map.begin(); i != map.end(); i++) {
+      i->second->lockRead();
+      bool dirty = i->second->dirty();
+      i->second->unlock();
       if(dirty == false) continue;
-      TRACE("Flush SubRegion %p (%d bytes)", (*i)->start(),
-           (*i)->size());
-      manager.flush(*i);
+      TRACE("Flush SubRegion %p (%d bytes)", i->second->start(),
+           i->second->size());
+      manager.flush(i->second);
    }
-   memory.clear();
 }
 
 
