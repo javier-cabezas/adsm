@@ -69,7 +69,7 @@ Context::init()
 #else
 		gmacError_t ret = malloc(&devPtr, i->second.size());
 #endif
-		assert(ret == gmacSuccess);
+		ASSERT(ret == gmacSuccess);
 		manager->remap(this, i->second.start(), devPtr, i->second.size());
 		i->second.inc();
 	}

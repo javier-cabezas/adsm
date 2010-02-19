@@ -17,14 +17,15 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
 {
     unsigned int tmp;
     CUresult ret = cuModuleGetGlobal(&_ptr, &tmp, mod, name());
-    assert(ret == CUDA_SUCCESS);
+    ASSERT(ret == CUDA_SUCCESS);
     _size = tmp;
 }
 
 Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
     TextureDescriptor(t.name(), t.key())
 {
-    assert(cuModuleGetTexRef(&_texRef, mod, name()) == CUDA_SUCCESS);
+    CUresult ret = cuModuleGetTexRef(&_texRef, mod, name());
+    ASSERT(ret == CUDA_SUCCESS);
 }
 
 ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
@@ -55,7 +56,7 @@ Module::Module(const ModuleDescriptor & d) :
     TRACE("Module image: %p", _fatBin);
     CUresult res;
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
-    assert(res == CUDA_SUCCESS);
+    ASSERT(res == CUDA_SUCCESS);
 
     Context * ctx = Context::current();
     ModuleDescriptor::KernelVector::const_iterator k;
@@ -83,14 +84,15 @@ Module::Module(const ModuleDescriptor & d) :
         it = _variables.find(d._pageTable->key());
         if (it == _variables.end()) {
             it = _constants.find(d._pageTable->key());
-            assert(it != _constants.end());
+            ASSERT(it != _constants.end());
             _pageTable = &it->second;
         }
     }
 }
 
 Module::~Module() {
-    assert(cuModuleUnload(_mod) == CUDA_SUCCESS);
+    CUresult ret = cuModuleUnload(_mod);
+    ASSERT(ret == CUDA_SUCCESS);
 }
 
 }}

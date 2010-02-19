@@ -7,7 +7,7 @@ template<typename T>
 T *
 Table<T>::entry(size_t n) const
 {
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     return (T *)((addr_t)table[n] & Mask);
 }
 
@@ -20,16 +20,17 @@ Table<T>::Table(size_t nEntries) :
 {
     TRACE("Creating Table with %d entries (%p)", nEntries, this);
 
-    /* assert(posix_memalign((void **)&table, 0x1000,
+    /* int ret = 0;
+     * ASSERT(posix_memalign((void **)&table, 0x1000,
                 nEntries * sizeof(T *)) == 0); */
     table = (T **)valloc(nEntries * sizeof(T *));
-    assert(table != NULL);
+    ASSERT(table != NULL);
     memset(table, 0, nEntries * sizeof(T *));
     TRACE("Table memory @ %p", table);
 #ifdef USE_VM
 #ifdef USE_VM_DEVICE
-    assert(posix_memalign((void **)&__shadow, 0x1000,
-                nEntries * sizeof(T *)) == 0);
+    int ret = posix_memalign((void **)&__shadow, 0x1000, nEntries * sizeof(T *));
+    ASSERT(ret == 0);
     __device = Dumper::alloc(nEntries * sizeof(T *));
 #else
     __device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
@@ -59,7 +60,7 @@ template<typename T>
 inline bool
 Table<T>::present(size_t n) const
 {
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     return (addr_t)table[n] & Present;
 }
 
@@ -67,14 +68,14 @@ template<typename T>
 inline bool
 Table<T>::dirty(size_t n) const
 {
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     return (addr_t)table[n] & Dirty;
 }
 
 template<typename T>
 inline void
 Table<T>::clean(size_t n){
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     table[n] = (addr_t *)((addr_t)table[n] & ~Dirty);
 }
 
@@ -92,7 +93,7 @@ void
 Table<T>::create(size_t n, size_t size)
 {
     enterFunction(vmAlloc);
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     table[n] = (T *)((addr_t)new T(size) | Present);
 #ifdef USE_VM
     __shared = false;
@@ -105,7 +106,7 @@ template<typename T>
 void
 Table<T>::insert(size_t n, void *addr)
 {
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     table[n] = (T *)((addr_t)addr | Present);
 #ifdef USE_VM
     __shadow[n] = (T *)((addr_t)addr | Present);
@@ -116,7 +117,7 @@ template<typename T>
 void
 Table<T>::remove(size_t n)
 {
-    assert(n < nEntries);
+    ASSERT(n < nEntries);
     table[n] = (T *)0;
 #ifdef USE_VM
     __shadow[n] = (T *)0;
@@ -157,7 +158,7 @@ Table<T>::realloc()
     __device = Dumper::hostAlloc((void **)&__shadow, nEntries * sizeof(T *));
     memset(__shadow, 0, nEntries * sizeof(T *));
 #endif
-    assert(__device != NULL);
+    ASSERT(__device != NULL);
 #endif
 }
 
@@ -166,7 +167,7 @@ inline void
 Table<T>::flush() const
 {
 #ifdef USE_VM
-		assert(__device != NULL);
+		ASSERT(__device != NULL);
 		Dumper::flush(__device, __shadow, nEntries * sizeof(T *));
 #endif
 }
@@ -176,7 +177,7 @@ inline void
 Table<T>::sync() const
 {
 #ifdef USE_VM
-    assert(__device != NULL);
+    ASSERT(__device != NULL);
     if(__shared == false) return;
     Dumper::sync(table, __device, nEntries * sizeof(T *));
 #endif

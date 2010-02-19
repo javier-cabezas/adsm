@@ -11,8 +11,8 @@ Dumper::alloc(size_t size) const
 #ifdef USE_VM
     Context * ctx = Context::current();
 	if(ctx == NULL) return NULL;
-	assert(ctx->malloc((void **)&device,
-		size) == gmacSuccess);
+    gmacError_t ret = ctx->malloc((void **)&device, size);
+	ASSERT(ret == gmacSuccess);
 #endif
 	return device;
 }
@@ -25,8 +25,8 @@ Dumper::hostAlloc(void **host, size_t size) const
 #ifdef USE_VM
     Context * ctx = Context::current();
 	if(ctx == NULL) return NULL;
-	assert(ctx->hostAlloc(host, (void **)&device,
-		size) == gmacSuccess);
+    gmacError_t ret = ctx->hostAlloc(host, (void **)&device, size);
+	ASSERT(ret == gmacSuccess);
 	return device;
 #endif
 }
@@ -37,7 +37,8 @@ Dumper::free(void *addr) const
 #ifdef USE_VM
     Context * ctx == Context::current();
 	if(ctx == NULL) return;
-	assert(ctx->free(addr) == gmacSuccess);
+    gmacError_t ret = ctx->free(addr);
+	ASSERT(ret == gmacSuccess);
 #endif
 }
 
@@ -47,7 +48,8 @@ Dumper::hostFree(void *addr) const
 #ifdef USE_VM
     Context * ctx = Context::current();
 	if(ctx == NULL) return;
-	assert(ctx->hostFree(addr) == gmacSuccess);
+    gmacError_t ret = ctx->hostFree(addr);
+	ASSERT(ret == gmacSuccess);
 #endif
 }
 
@@ -55,7 +57,8 @@ void
 Dumper::flush(void *dst, const void *src, size_t s) const
 {
 #ifdef USE_VM
-	assert(Context::current()->copyToDevice(dst, src, s) == gmacSuccess);
+    gmacError_t ret = Context::current()->copyToDevice(dst, src, s);
+	ASSERT(ret == gmacSuccess);
 #endif
 }
 
@@ -63,7 +66,8 @@ void
 Dumper::sync(void *dst, const void *src, size_t s) const
 {
 #ifdef USE_VM
-	assert(Context::current()->copyToHost(dst, src, s) == gmacSuccess);
+    gmacError_t ret = Context::current()->copyToHost(dst, src, s);
+	ASSERT(ret == gmacSuccess);
 #endif
 }
 

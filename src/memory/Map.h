@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 #include <util/Lock.h>
 
-#include <cassert>
 #include <set>
 #include <map>
 

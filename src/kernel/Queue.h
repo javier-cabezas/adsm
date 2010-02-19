@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 #include <util/Lock.h>
 #include <util/Semaphore.h>
 
-#include <cassert>
 #include <list>
 
 namespace gmac {

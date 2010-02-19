@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include <debug.h>
 #include <kernel/Accelerator.h>
 
-#include <cassert>
 #include <set>
 
 #include <cuda.h>
@@ -58,10 +57,12 @@ public:
 	GPU(int n) : Accelerator(n) {
 		struct cudaDeviceProp prop;
 		int flags = 0;
-		assert(cudaGetDeviceProperties(&prop, n) == cudaSuccess);
+        cudaError_t ret = cudaGetDeviceProperties(&prop, n);
+		ASSERT(ret == cudaSuccess);
 		_memory = prop.totalGlobalMem;	
 		if(prop.major > 0 && prop.minor >0) flags |= cudaDeviceMapHost;
-		assert(cudaSetDeviceFlags(flags) == cudaSuccess);
+        ret = cudaSetDeviceFlags(flags);
+		ASSERT(ret == cudaSuccess);
 	}
 	~GPU();
 

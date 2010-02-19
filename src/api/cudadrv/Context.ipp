@@ -36,14 +36,16 @@ inline void
 Context::lock()
 {
     mutex->lock();
-    assert(cuCtxPushCurrent(_ctx) == CUDA_SUCCESS);
+    CUresult ret = cuCtxPushCurrent(_ctx);
+    ASSERT(ret == CUDA_SUCCESS);
 }
 
 inline void
 Context::unlock()
 {
     CUcontext tmp;
-    assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+    CUresult ret = cuCtxPopCurrent(&tmp);
+    ASSERT(ret == CUDA_SUCCESS);
     mutex->unlock();
 }
 

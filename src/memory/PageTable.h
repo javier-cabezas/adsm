@@ -44,9 +44,6 @@ WITH THE SOFTWARE.  */
 
 #include <stdint.h>
 
-#include <cassert>
-
-
 namespace gmac { namespace memory {
 
 //! Page Table 

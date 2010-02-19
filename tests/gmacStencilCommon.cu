@@ -237,9 +237,8 @@ do_stencil(void * ptr)
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
 	gettimeofday(&s, NULL);
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
-        //if (i % 50 == 0)
-        printf("Iteration: %d\n", i);
-        fflush(stdout);
+        if (i % 10 == 0)
+            printf("Iteration: %d\n", i);
         float * tmp;
         // Call the kernel
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
@@ -255,15 +254,11 @@ do_stencil(void * ptr)
 
             // Send data
             if (descr->prev != NULL) {
-                printf("FROM: %p\n", descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems());
-                printf("TO:   %p\n", descr->u3 + STENCIL * descr->sliceElems());
                 memcpy((void *) (descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems()),
                        (void *) (descr->u3 + STENCIL * descr->sliceElems()),
                        descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                printf("FROM: %p\n", descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems());
-                printf("TO:   %p\n", descr->next->u3);
                 memcpy((void *) descr->next->u3,
                        (void *) (descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems()),
                        descr->sliceElems() * STENCIL * sizeof(float));                

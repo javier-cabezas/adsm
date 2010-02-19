@@ -4,39 +4,42 @@
 inline void
 ProtRegion::invalidate(void)
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    _present = _dirty = false;
-   assert(Memory::protect(__void(_addr), _size, PROT_NONE) == 0);
+   int ret = Memory::protect(__void(_addr), _size, PROT_NONE);
+   ASSERT(ret == 0);
 }
 
 inline void
 ProtRegion::readOnly(void)
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    _present = true;
    _dirty = false;
-   assert(Memory::protect(__void(_addr), _size, PROT_READ) == 0);
+   int ret = Memory::protect(__void(_addr), _size, PROT_READ);
+   ASSERT(ret == 0);
 }
 
 inline void
 ProtRegion::readWrite(void)
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    _present = _dirty = true;
-   assert(Memory::protect(__void(_addr), _size, PROT_READ | PROT_WRITE) == 0);
+   int ret = Memory::protect(__void(_addr), _size, PROT_READ | PROT_WRITE);
+   ASSERT(ret == 0);
 }
 
 inline bool
 ProtRegion::dirty()
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    return _dirty;
 }
 
 inline bool
 ProtRegion::present()
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    return _present;
 }
 

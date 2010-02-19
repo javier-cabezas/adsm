@@ -43,6 +43,16 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #undef __THREAD_CANARY
 
+#ifdef DEBUG
+#define ASSERT(e)  \
+    if (!(e)) {    \
+		fprintf(stderr,"ASSERT ERROR at [%s:%d]\n", __FILE__, __LINE__); \
+        abort();   \
+    }
+#else
+#define ASSERT(e)
+#endif
+
 #define FATAL(fmt, ...)	\
 	do {	\
 		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\

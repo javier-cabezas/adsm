@@ -21,7 +21,7 @@ void apiInit(void)
 	if(initialized)
 		FATAL("GMAC double initialization not allowed");
 
-	assert(proc != NULL);
+	ASSERT(proc != NULL);
 	TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
 		FATAL("Unable to init CUDA");

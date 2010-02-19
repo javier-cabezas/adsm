@@ -42,8 +42,6 @@ WITH THE SOFTWARE.  */
 #include <stdlib.h>
 #include <cmath>
 
-#include <cassert>
-
 // Compiler check to ensure that defines set by configure script
 // are consistent
 #ifdef USE_VM_DEVICE

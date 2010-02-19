@@ -10,7 +10,7 @@ Owned::Owned() : __owner(0)
 inline void
 Owned::adquire()
 {
-   assert(__owner == 0);
+   ASSERT(__owner == 0);
    __owner = SELF();
 }
 
@@ -70,7 +70,7 @@ RWLock::lockWrite()
 #ifdef DEBUG
    if(owner() == SELF())
       WARNING("Lock %d double-locked by %p", __name, owner());
-   assert(owner() == 0);
+   ASSERT(owner() == 0);
    __write = true;
    adquire();
    TRACE("%p locked by %p", this, __owner);
@@ -83,7 +83,7 @@ RWLock::unlock()
 {
 #ifdef DEBUG
    if(__write == true) {
-      assert(owner() == SELF());
+      ASSERT(owner() == SELF());
       __write = false;
       TRACE("%p released by %p", this, __owner);
       release();

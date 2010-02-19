@@ -3,8 +3,6 @@
 #include <debug.h>
 #include <kernel/Context.h>
 
-#include <cassert>
-
 namespace gmac { namespace memory { namespace manager {
 
 // Manager Interface
@@ -33,7 +31,7 @@ void *LazyManager::alloc(void *addr, size_t count, int attr)
 void LazyManager::release(void *addr)
 {
 	Region *reg = remove(addr);
-	assert(reg != NULL);
+	ASSERT(reg != NULL);
 	removeVirtual(reg->start(), reg->size());
     if(reg->owner() == Context::current()) {
         hostUnmap(reg->start(), reg->size());
@@ -138,8 +136,8 @@ void LazyManager::flush(const RegionSet & regions)
 void LazyManager::invalidate(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	assert(region != NULL);
-	assert(region->end() >= (void *)((addr_t)addr + size));
+	ASSERT(region != NULL);
+	ASSERT(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		if(region->start() < addr ||
 				region->end() > (void *)((addr_t)addr + size))
@@ -151,8 +149,8 @@ void LazyManager::invalidate(const void *addr, size_t size)
 void LazyManager::flush(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	assert(region != NULL);
-	assert(region->end() >= (void *)((addr_t)addr + size));
+	ASSERT(region != NULL);
+	ASSERT(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		region->copyToDevice();
 	}
@@ -163,7 +161,7 @@ void
 LazyManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	ProtRegion *region = current()->find<ProtRegion>(cpuPtr);
-	assert(region != NULL); assert(region->size() == count);
+	ASSERT(region != NULL); ASSERT(region->size() == count);
 	insertVirtual(ctx, cpuPtr, devPtr, count);
 	region->relate(ctx);
     if (!region->dirty()) {
