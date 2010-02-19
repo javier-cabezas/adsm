@@ -8,7 +8,7 @@ Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     gmac::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, _name);
-    assert(ret == CUDA_SUCCESS);
+    ASSERT(ret == CUDA_SUCCESS);
 }
 
 gmac::KernelLaunch *

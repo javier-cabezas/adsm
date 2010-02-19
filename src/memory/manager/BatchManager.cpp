@@ -110,7 +110,7 @@ void
 BatchManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
     Region *region = current()->find<Region>(cpuPtr);
-    assert(region != NULL); assert(region->size() == count);
+    ASSERT(region != NULL); ASSERT(region->size() == count);
     insertVirtual(ctx, cpuPtr, devPtr, count);
     region->relate(ctx);
 }

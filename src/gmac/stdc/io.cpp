@@ -64,7 +64,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 
             ret += __libc_fread(tmp, size, bytes/size, stream);
             err = srcCtx->copyToDevice(manager->ptr(((char *) buf) + off), tmp, bytes);
-            assert(err == gmacSuccess);
+            ASSERT(err == gmacSuccess);
 
             left -= bytes;
             off  += bytes;
@@ -73,7 +73,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         void * tmp = malloc(n);
         ret = __libc_fread(tmp, size, nmemb, stream);
         err = srcCtx->copyToDevice(manager->ptr(buf), tmp, n);
-        assert(err == gmacSuccess);
+        ASSERT(err == gmacSuccess);
         free(tmp);
     }
     popState();
@@ -115,7 +115,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
             size_t bytes = left < bufferSize? left: bufferSize;
 
             err = dstCtx->copyToHost(tmp, manager->ptr(((char *) buf) + off), bytes);
-            assert(err == gmacSuccess);
+            ASSERT(err == gmacSuccess);
             ret += __libc_fwrite(tmp, size, bytes/size, stream);
 
             left -= bytes;
@@ -124,7 +124,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     } else {
         void * tmp = malloc(n);
         err = dstCtx->copyToHost(tmp, manager->ptr(buf), n);
-        assert(err == gmacSuccess);
+        ASSERT(err == gmacSuccess);
         ret =  __libc_fwrite(tmp, size, nmemb, stream);
         free(tmp);
     }

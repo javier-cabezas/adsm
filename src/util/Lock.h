@@ -42,7 +42,6 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 
 #include <iostream>
-#include <cassert>
 
 #include <map>
 

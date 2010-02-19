@@ -13,7 +13,8 @@ Context::Context(GPU &gpu) :
     enable();
     cudaSetDevice(gpu.device());
     if (gpu.async()) {
-        assert(cudaHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, cudaHostAllocPortable) == cudaSuccess);
+        cudaResult_t ret = cudaHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, cudaHostAllocPortable);
+        ASSERT(ret == cudaSuccess);
         _bufferPageLockedSize = paramBufferPageLockedSize;
     } else {
         _bufferPageLocked     = NULL;

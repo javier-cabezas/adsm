@@ -14,7 +14,6 @@
 #include <paraver.h>
 
 #include <cstdlib>
-#include <cassert>
 
 MUTEX(gmacMutex);
 
@@ -50,7 +49,7 @@ gmacInit(void)
 
     TRACE("Using %s memory manager", paramMemManager);
     gmac::Process::init(paramMemManager);
-    assert(manager != NULL);
+    ASSERT(manager != NULL);
     __exitGmac();
 }
 
@@ -340,7 +339,7 @@ gmacMemset(void *s, int c, size_t n)
     __enterGmac();
     void *ret = s;
     gmac::Context *ctx = manager->owner(s);
-    assert(ctx != NULL);
+    ASSERT(ctx != NULL);
     manager->invalidate(s, n);
     ctx->memset(manager->ptr(s), c, n);
 	__exitGmac();
@@ -374,7 +373,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
 			                     manager->ptr(dstCtx, src), n);
-        assert(err == gmacSuccess);
+        ASSERT(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
 		void *tmp;
@@ -394,13 +393,13 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             while (left != 0) {
                 size_t bytes = left < bufferSize? left: bufferSize;
                 err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
-                assert(err == gmacSuccess);
+                ASSERT(err == gmacSuccess);
                 srcCtx->syncToHost();
-                assert(err == gmacSuccess);
+                ASSERT(err == gmacSuccess);
                 err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
-                assert(err == gmacSuccess);
+                ASSERT(err == gmacSuccess);
                 srcCtx->syncToDevice();
-                assert(err == gmacSuccess);
+                ASSERT(err == gmacSuccess);
 
                 left -= bytes;
                 off  += bytes;
@@ -411,9 +410,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             tmp = malloc(n);
 
             err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
-            assert(err == gmacSuccess);
+            ASSERT(err == gmacSuccess);
             err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
-            assert(err == gmacSuccess);
+            ASSERT(err == gmacSuccess);
             free(tmp);
         }
 	}

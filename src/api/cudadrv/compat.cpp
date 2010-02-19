@@ -5,8 +5,6 @@
 #include "Context.h"
 #include "Module.h"
 
-#include <cassert>
-
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
@@ -58,7 +56,7 @@ static inline unsigned int __getNumberOfChannels(const struct cudaChannelFormatD
 	if(desc->y != 0) n++;
 	if(desc->z != 0) n++;
 	if(desc->w != 0) n++;
-	assert(n != 3);
+	ASSERT(n != 3);
 	return n;
 }
 
@@ -166,7 +164,7 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 	ctx->lock();
 	CUresult r = cuMemcpy2D(&cuCopy);
 	ctx->unlock();
-	assert(r == CUDA_SUCCESS);
+	ASSERT(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
 }
@@ -243,7 +241,7 @@ cudaError_t cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t count,
 		enum cudaMemcpyKind kind)
 {
-	assert(kind == cudaMemcpyHostToDevice);
+	ASSERT(kind == cudaMemcpyHostToDevice);
 	__enterGmac();
 	cudaError_t ret = __cudaMemcpyToArray((CUarray)dst, wOffset, hOffset, src, count);
 	__exitGmac();
@@ -254,7 +252,7 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t spitch, size_t width,
 		size_t height, enum cudaMemcpyKind kind)
 {
-	assert(kind == cudaMemcpyHostToDevice);
+	ASSERT(kind == cudaMemcpyHostToDevice);
 	__enterGmac();
 	cudaError_t ret = __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,
 				height);
@@ -284,9 +282,9 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 	cudaError_t ret = cudaSuccess;
     Context * ctx = Context::current();
 	const Variable *variable = ctx->constant(symbol);
-	assert(variable != NULL);
+	ASSERT(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
-	assert(variable->size() >= (count + offset));
+	ASSERT(variable->size() >= (count + offset));
 	CUdeviceptr ptr = variable->devPtr() + offset;
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
@@ -391,17 +389,17 @@ cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 
 void CUDARTAPI __cudaTextureFetch(const void *tex, void *index, int integer, void *val)
 {
-	assert(0);
+	ASSERT(0);
 }
 
 int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
 {
-	assert(0);
+	ASSERT(0);
 }
 
 void CUDARTAPI __cudaMutexOperation(int lock)
 {
-	assert(0);
+	ASSERT(0);
 }
 
 #ifdef __cplusplus

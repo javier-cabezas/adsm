@@ -37,8 +37,6 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <debug.h>
 
-#include <cassert>
-
 #include <list>
 #include <vector>
 

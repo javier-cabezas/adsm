@@ -42,7 +42,6 @@ WITH THE SOFTWARE.  */
 
 #include "gmac/gmac.h"
 
-#include <cassert>
 #include <vector>
 #include <list>
 #include <map>

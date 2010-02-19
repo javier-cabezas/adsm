@@ -60,7 +60,7 @@ Process::removeShared(void *addr)
 {
     SharedMap::iterator i;
     i = _sharedMem.find(addr);
-    assert(i != _sharedMem.end());
+    ASSERT(i != _sharedMem.end());
     if(i->second.dec() == 0) {
         _sharedMem.erase(i);
         return true;

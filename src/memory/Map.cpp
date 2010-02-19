@@ -81,7 +81,7 @@ Region *Map::remove(void *addr)
     global.lockWrite();
     i = __global->upper_bound(addr);
     Region * r = i->second;
-    assert(i != __global->end() && r->start() == addr);
+    ASSERT(i != __global->end() && r->start() == addr);
     Context * ctx = Context::current();
     if(r->owner() == ctx) __global->erase(i);
     global.unlock();
@@ -92,7 +92,7 @@ Region *Map::remove(void *addr)
     TRACE("Removing Region %p", r->start());
     lockWrite();
     i = upper_bound(addr);
-    assert(i != end() && r->start() == addr);
+    ASSERT(i != end() && r->start() == addr);
     erase(i);
     unlock();
     return r;

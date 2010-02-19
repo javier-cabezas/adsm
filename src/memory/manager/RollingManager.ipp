@@ -35,7 +35,7 @@ RollingBuffer::push(RollingBlock *region)
 {
    lockWrite();
    region->lockRead();
-   assert(region->dirty() == true);
+   ASSERT(region->dirty() == true);
    region->unlock();
    _buffer.push_back(region);
    unlock();
@@ -45,7 +45,7 @@ inline RollingBlock *
 RollingBuffer::pop()
 {
    lockWrite();
-   assert(_buffer.empty() == false);
+   ASSERT(_buffer.empty() == false);
    RollingBlock *ret = _buffer.front();
    _buffer.pop_front();
    unlock();
@@ -138,8 +138,9 @@ RollingManager::flush(RollingBlock *region)
 {
    rollingMap.remove(region);
    region->lockWrite();
-   assert(region->dirty() == true);
-   assert(region->copyToDevice() == gmacSuccess);
+   ASSERT(region->dirty() == true);
+   gmacError_t ret = region->copyToDevice();
+   ASSERT(ret == gmacSuccess);
    region->readOnly();
    region->unlock();
 }

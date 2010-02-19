@@ -45,8 +45,6 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 #include <csignal>
 
-#include <cassert>
-
 #include <iostream>
 #include <list>
 #include <set>

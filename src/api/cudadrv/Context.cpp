@@ -1,7 +1,5 @@
 #include "Context.h"
 
-#include <cassert>
-
 namespace gmac { namespace gpu {
 
 Context::AddressMap Context::hostMem;
@@ -38,7 +36,8 @@ Context::setupStreams()
     }
 
     if (_gpu.async()) {
-        assert(cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE) == CUDA_SUCCESS);
+        CUresult ret = cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
+        ASSERT(ret == CUDA_SUCCESS);
         _bufferPageLockedSize = paramBufferPageLockedSize;
         TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
     } else {
@@ -77,7 +76,7 @@ Context::~Context()
     }
     // CUDA might be deinitalized before executing this code
     // mutex->lock();
-    // assert(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    // ASSERT(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
     delete mutex;
 }
 
@@ -133,7 +132,8 @@ Context::hostAlloc(void **host, void **device, size_t size)
         zero(device);
         ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
         if(ret == CUDA_SUCCESS) {
-            assert(cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0) == CUDA_SUCCESS);
+            ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0);
+            ASSERT(ret == CUDA_SUCCESS);
         }
     } else {
         ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_PORTABLE);
@@ -163,7 +163,8 @@ Context::hostMemAlign(void **host, void **device, size_t size)
 		*host = (void *)((uint8_t *)ptr + offset);
 	}
 	if(ret == CUDA_SUCCESS) {
-		assert(cuMemHostGetDevicePointer((CUdeviceptr *)&dev, ptr, 0) == CUDA_SUCCESS);
+		ret = cuMemHostGetDevicePointer((CUdeviceptr *)&dev, ptr, 0);
+        ASSERT(ret == CUDA_SUCCESS);
 	}
 	*host = (void *)((uint8_t *)ptr + offset);
 	hostMem.insert(AddressMap::value_type(*host, ptr));
@@ -180,11 +181,11 @@ Context::hostMap(void *host, void **device, size_t size)
 	void *ptr = NULL;
 	CUdeviceptr dev = 0;
 	size_t pageSize = mm().pageTable().getPageSize();
-	assert(((unsigned long)host & (pageSize - 1)) == 0);
+	ASSERT(((unsigned long)host & (pageSize - 1)) == 0);
 	proc->addShared(host, size);
 	lock();
 	AddressMap::const_iterator i = hostMem.find(host);
-	assert(i != hostMem.end());
+	ASSERT(i != hostMem.end());
 	CUresult ret = cuMemHostGetDevicePointer((CUdeviceptr *)&dev, i->second, 0);
 	size_t offset = (uint8_t *)i->first - (uint8_t *)i->second;
 	unlock();
@@ -197,7 +198,7 @@ Context::hostFree(void *addr)
 {
 	lock();
 	AddressMap::iterator i = hostMem.find(addr);
-	assert(i != hostMem.end());
+	ASSERT(i != hostMem.end());
 	CUresult ret = cuMemFreeHost(i->second);
 	hostMem.erase(i);
 	unlock();
@@ -319,7 +320,7 @@ Context::launch(gmacKernel_t addr)
     _status = RUNNING;
 
     gmac::Kernel * k = kernel(addr);
-    assert(k != NULL);
+    ASSERT(k != NULL);
     _call._stream = streamLaunch;
     gmac::KernelLaunch * l = k->launch(_call);
 
@@ -378,18 +379,18 @@ Context::flush(const char * kernel)
 	for(m = _modules.begin(); pageTable == NULL && m != modules.end(); m++) {
 		pageTable = m->first->pageTable();
 	}
-	assert(pageTable != NULL);
+	ASSERT(pageTable != NULL);
 	if(pageTable == NULL) return;
 
 	devicePageTable.ptr = mm().pageTable().flush();
 	devicePageTable.shift = mm().pageTable().getTableShift();
 	devicePageTable.size = mm().pageTable().getTableSize();
 	devicePageTable.page = mm().pageTable().getPageSize();
-	assert(devicePageTable.ptr != NULL);
+	ASSERT(devicePageTable.ptr != NULL);
 
 	lock();
 	CUresult ret = cuMemcpyHtoD(pageTable->ptr, &devicePageTable, sizeof(devicePageTable));
-	assert(ret == CUDA_SUCCESS);
+	ASSERT(ret == CUDA_SUCCESS);
 	unlock();
 #endif
 }
@@ -402,7 +403,7 @@ Context::invalidate()
 	for(m = _modules.begin(); pageTable == NULL && m != _modules.end(); m++) {
 		pageTable = m->first->pageTable();
 	}
-	assert(pageTable != NULL);
+	ASSERT(pageTable != NULL);
 	if(pageTable == NULL) return;
 
 	mm().pageTable().invalidate();

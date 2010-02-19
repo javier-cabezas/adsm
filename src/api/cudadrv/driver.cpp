@@ -10,7 +10,6 @@
 #include "Module.h"
 
 #include <cstring>
-#include <cassert>
 
 #include <cuda.h>
 #include <vector_types.h>
@@ -36,7 +35,7 @@ using gmac::gpu::VariableDescriptor;
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
     TRACE("CUDA Fat binary: %p", fatCubin);
-    assert(proc->accs() > 0);
+    ASSERT(proc->accs() > 0);
     __enterGmac();
     // Use the first GPU to load the fat binary
     void **ret = (void **) new ModuleDescriptor(fatCubin);
@@ -58,7 +57,7 @@ void __cudaRegisterFunction(
 {
     TRACE("CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	assert(mod != NULL);
+	ASSERT(mod != NULL);
 	__enterGmac();
     KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
@@ -71,7 +70,7 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 {
     TRACE("CUDA Variable");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	assert(mod != NULL);
+	ASSERT(mod != NULL);
 	__enterGmac();
     VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant));
     mod->add(v);
@@ -83,7 +82,7 @@ void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference 
 {
     TRACE("CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	assert(mod != NULL);
+	ASSERT(mod != NULL);
 	__enterGmac();
     TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
 	mod->add(t);

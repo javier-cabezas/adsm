@@ -47,7 +47,8 @@ void RollingRegion::relate(Context *ctx)
        buffer->push(i->second);
      }
      else {
-       assert(ctx->copyToDevice(Manager::ptr(start()), start(), size()) == gmacSuccess);
+       gmacError_t ret = ctx->copyToDevice(Manager::ptr(start()), start(), size());
+       ASSERT(ret == gmacSuccess);
      }
      i->second->relate(ctx);
      i->second->unlock();
@@ -103,7 +104,7 @@ void RollingRegion::flush()
 
 void RollingRegion::invalidate()
 {
-   assert(tryWrite() == false);
+   ASSERT(tryWrite() == false);
    TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
    // Check if the region is already invalid
    if(memory.empty()) return;
@@ -128,7 +129,7 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 {
    void *end = (void *)((addr_t)addr + size);
    Map::iterator i = map.lower_bound(addr);
-   assert(i != map.end());
+   ASSERT(i != map.end());
    for(; i != map.end() && i->second->start() < end; i++) {
       i->second->lockWrite();
       // If the region is not present, just ignore it
@@ -152,7 +153,7 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 void RollingRegion::flush(const void *addr, size_t size)
 {
    Map::iterator i = map.lower_bound(addr);
-   assert(i != map.end());
+   ASSERT(i != map.end());
    for(; i != map.end() && i->second->start() < addr; i++) {
       // If the region is not present, just ignore it
       if(i->second->dirty() == false) {

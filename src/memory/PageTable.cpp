@@ -64,7 +64,7 @@ void PageTable::insert(void *host, void *dev)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
 	unsigned e = entry(host, tableShift, table.size());
-	assert(table.present(e) == false || (uint8_t *)table.value(e) == dev);
+	ASSERT(table.present(e) == false || (uint8_t *)table.value(e) == dev);
 
 	table.insert(entry(host, tableShift, table.size()), dev);
 	TRACE("PT inserts: %p -> %p", entry(host, tableShift, table.size()), dev);
@@ -130,12 +130,11 @@ bool PageTable::dirty(void *host)
 #ifdef USE_VM
 	sync();
 
-	assert(
-		rootTable.present(entry(host, rootShift, rootTable.size())) == true);
+	ASSERT(rootTable.present(entry(host, rootShift, rootTable.size())) == true);
 	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
-	assert(dir.present(entry(host, dirShift, dir.size())) == true);
+	ASSERT(dir.present(entry(host, dirShift, dir.size())) == true);
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
-	assert(table.present(entry(host, tableShift, table.size())) == true);
+	ASSERT(table.present(entry(host, tableShift, table.size())) == true);
 	return table.dirty(entry(host, tableShift, table.size()));
 #else
 	return true;
@@ -147,12 +146,11 @@ void PageTable::clear(void *host)
 #ifdef USE_VM
 	sync();
 	_clean = false;
-	assert(
-		rootTable.present(entry(host, rootShift, rootTable.size())) == true);
+	ASSERT(rootTable.present(entry(host, rootShift, rootTable.size())) == true);
 	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
-	assert(dir.present(entry(host, dirShift, dir.size())) == true);
+	ASSERT(dir.present(entry(host, dirShift, dir.size())) == true);
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
-	assert(table.present(entry(host, tableShift, table.size())) == true);
+	ASSERT(table.present(entry(host, tableShift, table.size())) == true);
 	table.clean(entry(host, tableShift, table.size()));
 #endif
 }

@@ -4,7 +4,7 @@
 inline void
 Context::check()
 {
-    assert(current() == this);
+    ASSERT(current() == this);
 }
 
 inline void
@@ -40,8 +40,10 @@ Context::hostAlloc(void **host, void **dev, size_t size)
     if (dev != NULL) {
         *dev = NULL;
         cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped | cudaHostAllocPortable);
-        if(ret == cudaSuccess)
-            assert(cudaHostGetDevicePointer(dev, *host, 0) == cudaSuccess);
+        if(ret == cudaSuccess) {
+            cudaResult_t ret = cudaHostGetDevicePointer(dev, *host, 0);
+            ASSERT(ret == cudaSuccess);
+        }
     } else {
         cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocPortable);
     }
@@ -153,8 +155,12 @@ Context::flush()
     devicePageTable.size = mm().pageTable().getTableSize();
     devicePageTable.page = mm().pageTable().getPageSize();
 
-    assert(cudaMemcpyToSymbol(pageTableSymbol, &devicePageTable,
-                sizeof(devicePageTable), 0, cudaMemcpyHostToDevice) == cudaSuccess);
+    cudaResult_t ret = cudaMemcpyToSymbol(pageTableSymbol,
+                                          &devicePageTable,
+                                          sizeof(devicePageTable),
+                                          0,
+                                          cudaMemcpyHostToDevice);
+    ASSERT(ret == cudaSuccess);
 #endif
 }
 

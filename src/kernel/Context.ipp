@@ -43,11 +43,11 @@ inline
 void
 Context::kernel(gmacKernel_t k, Kernel * kernel)
 {
-    assert(kernel != NULL);
+    ASSERT(kernel != NULL);
     TRACE("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
     KernelMap::iterator i;
     i = _kernels.find(k);
-    assert(i == _kernels.end());
+    ASSERT(i == _kernels.end());
     _kernels[k] = kernel;
 }
 

@@ -13,11 +13,14 @@ Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
 {
     unsigned int size = 0;
-	assert(cuDeviceTotalMem(&size, _device) == CUDA_SUCCESS);
-    assert(cuDeviceComputeCapability(&major, &minor, _device) == CUDA_SUCCESS);
+    CUresult ret = cuDeviceTotalMem(&size, _device);
+	ASSERT(ret == CUDA_SUCCESS);
+    ret = cuDeviceComputeCapability(&major, &minor, _device);
+    ASSERT(ret == CUDA_SUCCESS);
     _memory = size;
     int async = 0;
-	assert(cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device) == CUDA_SUCCESS);
+    ret = cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device);
+	ASSERT(ret == CUDA_SUCCESS);
     _async = bool(async);
 }
 
@@ -49,7 +52,7 @@ void Accelerator::destroy(gmac::Context *context)
 	if(context == NULL) return;
 	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
 	std::set<gpu::Context *>::iterator c = queue.find(ctx);
-	assert(c != queue.end());
+	ASSERT(c != queue.end());
 	//delete ctx;
 	queue.erase(c);
 }
@@ -63,7 +66,8 @@ Accelerator::createCUDAContext()
     CUresult ret = cuCtxCreate(&ctx, flags, _device);
     if(ret != CUDA_SUCCESS)
         FATAL("Unable to create CUDA context %d", ret);
-    assert(cuCtxPopCurrent(&tmp) == CUDA_SUCCESS);
+    ret = cuCtxPopCurrent(&tmp);
+    ASSERT(ret == CUDA_SUCCESS);
     return ctx;
 }
 

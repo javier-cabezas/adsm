@@ -8,8 +8,6 @@
 
 #include <debug.h>
 
-
-
 gmac::Process *proc = NULL;
 
 namespace gmac {
@@ -59,7 +57,7 @@ Process::init(const char *name)
 {
     // Process is a singleton class. The only allowed instance is proc
     TRACE("Initializing process");
-    assert(proc == NULL);
+    ASSERT(proc == NULL);
     Context::Init();
     proc = new Process();
     apiInit();
@@ -87,12 +85,12 @@ Process::create(int acc)
     TRACE("Creating new context");
     mutex.lock();
     QueueMap::iterator q = _queues.find(SELF());
-    assert(q != _queues.end());
+    ASSERT(q != _queues.end());
     Context * ctx;
     int usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        assert(acc < _accs.size());
+        ASSERT(acc < _accs.size());
         usedAcc = acc;
         ctx = _accs[acc]->create();
     } else {
@@ -173,13 +171,13 @@ void Process::sendReceive(THREAD_ID id)
     mutex.lock();
 	QueueMap::iterator q = _queues.find(id);
     mutex.unlock();
-	assert(q != _queues.end());
+	ASSERT(q != _queues.end());
     q->second->hasContext.lock();
     q->second->hasContext.unlock();
 	q->second->queue->push(ctx);
 	PRIVATE_SET(Context::key, NULL);
 	q = _queues.find(SELF());
-	assert(q != _queues.end());
+	ASSERT(q != _queues.end());
 	PRIVATE_SET(Context::key, q->second->queue->pop());
 }
 

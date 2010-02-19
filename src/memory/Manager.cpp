@@ -52,7 +52,7 @@ void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t cou
 #ifndef USE_MMAP
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
 	PageTable &pageTable = ctx->mm().pageTable();
-	assert(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
+	ASSERT(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
 	uint8_t *devAddr = (uint8_t *)devPtr;
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
 	TRACE("Page Table Request %p -> %p", cpuAddr, devAddr);
@@ -81,7 +81,7 @@ void Manager::map(void *host, void *dev, size_t count)
 void Manager::unmap(Context *ctx, void *cpuPtr)
 {
 	Region *region = Context::current()->mm().find<Region>(cpuPtr);
-	assert(region != NULL);
+	ASSERT(region != NULL);
 	region->unrelate(ctx);
 	removeVirtual(ctx, cpuPtr, region->size());
 }

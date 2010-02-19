@@ -202,9 +202,9 @@ void RollingManager::invalidate(const RegionSet & regions)
 void RollingManager::invalidate(const void *addr, size_t size)
 {
 	RollingRegion *reg = current()->find<RollingRegion>(addr);
-   assert(reg != NULL);
+   ASSERT(reg != NULL);
    reg->lockWrite();
-   assert(reg->end() >= (void *)((addr_t)addr + size));
+   ASSERT(reg->end() >= (void *)((addr_t)addr + size));
    reg->invalidate(addr, size);
    reg->unlock();
 }
@@ -212,9 +212,9 @@ void RollingManager::invalidate(const void *addr, size_t size)
 void RollingManager::flush(const void *addr, size_t size)
 {
 	RollingRegion *reg = current()->find<RollingRegion>(addr);
-   assert(reg != NULL);
+   ASSERT(reg != NULL);
    reg->lockWrite();
-   assert(reg->end() >= (void *)((addr_t)addr + size));
+   ASSERT(reg->end() >= (void *)((addr_t)addr + size));
    reg->flush(addr, size);
    reg->unlock();
 }
@@ -230,7 +230,7 @@ bool RollingManager::read(void *addr)
    Context * owner = root->owner();
    if (owner->status() == Context::RUNNING) owner->sync();
    ProtRegion *region = root->find(addr);
-   assert(region != NULL);
+   ASSERT(region != NULL);
    region->lockWrite();
 	if (region->present() == true) {
       region->unlock();
@@ -238,7 +238,8 @@ bool RollingManager::read(void *addr)
    }
    region->readWrite();
    if(current()->pageTable().dirty(addr)) {
-      assert(region->copyToHost() == gmacSuccess);
+       gmacError_t ret = region->copyToHost();
+      ASSERT(ret == gmacSuccess);
       current()->pageTable().clear(addr);
    }
    region->readOnly();
@@ -253,7 +254,7 @@ bool RollingManager::write(void *addr)
    if (root == NULL) return false;
    root->lockWrite();
    ProtRegion *region = root->find(addr);
-   assert(region != NULL);
+   ASSERT(region != NULL);
    // Other thread fixed the fault?
    region->lockWrite();
 	if(region->dirty() == true) {
@@ -269,7 +270,8 @@ bool RollingManager::write(void *addr)
    while(rollingMap.currentBuffer()->overflows()) writeBack();
    region->readWrite();
    if(region->present() == false && current()->pageTable().dirty(addr)) {
-     assert(region->copyToHost() == gmacSuccess);
+       gmacError_t ret = region->copyToHost();
+     ASSERT(ret == gmacSuccess);
      current()->pageTable().clear(addr);
    }
    region->unlock();
@@ -282,7 +284,7 @@ void
 RollingManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 	RollingRegion *region = current()->find<RollingRegion>(cpuPtr);
-	assert(region != NULL); assert(region->size() == count);
+	ASSERT(region != NULL); ASSERT(region->size() == count);
 	insertVirtual(ctx, cpuPtr, devPtr, count);
 	region->relate(ctx);
    region->transferNonDirty();
