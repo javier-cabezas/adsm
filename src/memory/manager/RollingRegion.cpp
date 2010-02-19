@@ -38,7 +38,6 @@ RollingRegion::~RollingRegion()
 void RollingRegion::relate(Context *ctx)
 {
    RollingBuffer *buffer = manager.rollingMap.contextBuffer(ctx);
-   buffer->lockWrite();
    Map::const_iterator i;
    // Push dirty regions in the rolling buffer
    // and copy to device clean regions
@@ -55,7 +54,6 @@ void RollingRegion::relate(Context *ctx)
    }
    _relatives.push_back(ctx);
    buffer->inc(manager.lruDelta);
-   buffer->unlock();
 }
 
 void RollingRegion::unrelate(Context *ctx)
@@ -78,6 +76,28 @@ RollingBlock *RollingRegion::find(const void *addr)
    if(i == map.end()) return NULL;
    if((addr_t)addr < (addr_t)i->second->start()) return NULL;
    return i->second;
+}
+
+void RollingRegion::flush()
+{
+   assert(tryWrite() == false);
+   TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
+   // Check if the region is already invalid
+   if(memory.empty()) return;
+
+   List::iterator i;
+
+   // Flush those sub-regions that are present in memory and dirty
+   for(i = memory.begin(); i != memory.end(); i++) {
+      (*i)->lockRead();
+      bool dirty = (*i)->dirty();
+      (*i)->unlock();
+      if(dirty == false) continue;
+      TRACE("Flush SubRegion %p (%d bytes)", (*i)->start(),
+           (*i)->size());
+      manager.flush(*i);
+   }
+   memory.clear();
 }
 
 
@@ -140,7 +160,6 @@ void RollingRegion::flush(const void *addr, size_t size)
          continue;
       }
       manager.flush(i->second);
-      i->second->readOnly();
       i->second->unlock();
    }
 }

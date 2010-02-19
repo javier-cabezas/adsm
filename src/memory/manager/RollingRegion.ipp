@@ -12,6 +12,7 @@ inline void
 RollingBlock::silentInvalidate()
 {
    assert(tryWrite() == false);
+   assert(_dirty == false);
    _present = _dirty = false;
 }
 

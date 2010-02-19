@@ -24,13 +24,8 @@ RollingMap::~RollingMap()
 void RollingManager::writeBack()
 {
    // Get the buffer for the current thread
-   RollingBuffer *buffer = rollingMap.currentBuffer();
-   RollingBlock *r = buffer->pop();
-   rollingMap.remove(r);
-   r->lockWrite();
-   assert(r->copyToDevice() == gmacSuccess);
-   r->readOnly();
-   r->unlock();
+   RollingBlock *r = rollingMap.currentBuffer()->pop();
+   flush(r);
 }
 
 
@@ -98,17 +93,26 @@ void RollingManager::flush()
 {
    TRACE("RollingManager Flush Starts");
    Context * ctx = Context::current();
-   Process::SharedMap::iterator i;
+   Process::SharedMap::iterator s;
 	Process::SharedMap &sharedMem = proc->sharedMem();
-   for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-		RollingRegion * r = current()->find<RollingRegion>(i->second.start());
+   for(s = sharedMem.begin(); s != sharedMem.end(); s++) {
+		RollingRegion *r = current()->find<RollingRegion>(s->second.start());
       r->transferDirty();
 	}
-   while(rollingMap.currentBuffer()->empty() == false) {
-      RollingBlock *r = rollingMap.currentBuffer()->pop();
-      flush(r);
-      TRACE("Flush to Device %p", r->start());
+
+   // We need to go through all regions from the context because
+   // other threads might have regions owned by this context in
+   // their flush buffer
+   Map::iterator i;
+   Map * m = current();
+   m->lockRead();
+   for(i = m->begin(); i != m->end(); i++) {
+      RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
+      r->lockWrite();
+      r->flush();
+      r->unlock();
    }
+   m->unlock();
 
    /** \todo Fix vm */
 	// ctx->flush();
