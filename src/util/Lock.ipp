@@ -31,16 +31,20 @@ Lock::lock()
 {
    enterLock(__name);
    MUTEX_LOCK(__mutex);
+#ifdef DEBUG
    adquire();
+#endif
    exitLock();
 }
 
 inline void
 Lock::unlock()
 {
+#ifdef DEBUG
    if(owner() != SELF())
       WARNING("Thread 0x%x releases lock owned by 0x%x", SELF(), owner());
    release();
+#endif
    MUTEX_UNLOCK(__mutex);
 }
 
@@ -63,22 +67,26 @@ RWLock::lockWrite()
 {
    enterLock(__name);
    LOCK_WRITE(__lock);
+#ifdef DEBUG
    assert(owner() == 0);
    __write = true;
    adquire();
    TRACE("%p locked by %p", this, __owner);
+#endif
    exitLock();
 }
 
 inline void
 RWLock::unlock()
 {
+#ifdef DEBUG
    if(__write == true) {
       assert(owner() == SELF());
       __write = false;
       TRACE("%p released by %p", this, __owner);
       release();
    }
+#endif
    LOCK_RELEASE(__lock);
 }
 
@@ -91,7 +99,9 @@ RWLock::tryRead()
 inline bool
 RWLock::tryWrite()
 {
+#ifdef DEBUG
    if(SELF() == owner()) return false;
+#endif
    return LOCK_TRYWRITE(__lock) == 0;
 }
 
