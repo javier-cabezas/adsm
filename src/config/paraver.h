@@ -44,11 +44,11 @@ enum FunctionName {
 };
 
 enum LockName {
-	mmLocal = 1, mmGlobal, pageTable, ctxLocal, ctxGlobal, ctxCreate,
+	mmLocal = 1, mmGlobal, mmShared, pageTable, ctxLocal, ctxGlobal, ctxCreate,
 	queueLock, 
 	ioHostLock, ioDeviceLock,
 	process, writeMutex, rollingMap, rollingBuffer, manager, queue, region,
-	pthread, segv
+	pthread, segv, shMap, contextList
 };
 };
 

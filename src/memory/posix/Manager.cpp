@@ -23,7 +23,7 @@ static void custom_free(void *p)
 }
 #endif
 
-void *Manager::hostMap(void *addr, size_t count, int prot)
+void *Manager::mapToHost(void *addr, size_t count, int prot)
 {
 	void *cpuAddr = NULL;
 #ifndef USE_MMAP

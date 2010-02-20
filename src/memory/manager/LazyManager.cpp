@@ -5,54 +5,54 @@
 
 namespace gmac { namespace memory { namespace manager {
 
+Region *    
+LazyManager::newRegion(void * addr, size_t count, bool shared)
+{
+    return new ProtRegion(addr, count, shared);
+}
+
 // Manager Interface
 LazyManager::LazyManager()
 {}
 
-void *LazyManager::alloc(void *addr, size_t count, int attr)
+void LazyManager::free(void *addr)
 {
-    void *cpuAddr;
-
-    if (attr == GMAC_MALLOC_PINNED) {
-        Context * ctx = Context::current();
-        void *hAddr;
-        if (ctx->halloc(&hAddr, count) != gmacSuccess) return NULL;
-        cpuAddr = hostRemap(addr, hAddr, count);
-    } else {
-        cpuAddr = hostMap(addr, count, PROT_NONE);
-    }
-    if (cpuAddr == NULL) return NULL;
-	insertVirtual(cpuAddr, addr, count);
-	insert(new ProtRegion(cpuAddr, count));
-	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
-	return cpuAddr;
-}
-
-void LazyManager::release(void *addr)
-{
-	Region *reg = remove(addr);
-	ASSERT(reg != NULL);
-	removeVirtual(reg->start(), reg->size());
+    Region *reg = remove(addr);
     if(reg->owner() == Context::current()) {
+        ASSERT(reg != NULL);
+        removeVirtual(reg->start(), reg->size());
         hostUnmap(reg->start(), reg->size());
         delete reg;
+    } else if(reg->shared() == true) {
+        ContextList::const_iterator i;
+        ContextList &contexts = proc->contexts();
+
+        contexts.lockRead();
+        for (i = contexts.begin(); i != contexts.end(); i++) {
+            
+        }
+        contexts.lockWrite();
     }
 }
 
 void LazyManager::invalidate()
 {
+	Context * ctx = Context::current();
     TRACE("LazyManager Invalidation Starts");
+
     Map::const_iterator i;
     Map * m = current();
     m->lockRead();
 	for(i = m->begin(); i != m->end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
+        r->lockWrite();
 		r->invalidate();
+        r->unlock();
 	}
     m->unlock();
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
-	Context::current()->invalidate();
+	ctx->invalidate();
     TRACE("LazyManager Invalidation Ends");
 }
 
@@ -67,7 +67,9 @@ void LazyManager::invalidate(const RegionSet & regions)
 	RegionSet::const_iterator i;
 	for(i = regions.begin(); i != regions.end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
+        r->lockWrite();
 		r->invalidate();
+        r->unlock();
 	}
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
@@ -78,24 +80,18 @@ void LazyManager::invalidate(const RegionSet & regions)
 void LazyManager::flush()
 {
     Context * ctx = Context::current();
-    Process::SharedMap::iterator i;
-    Map::const_iterator j;
-    Process::SharedMap &sharedMem = proc->sharedMem();
-	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-		ProtRegion * r = current()->find<ProtRegion>(i->second.start());
-        if(r->dirty()) {
-			r->copyToDevice();
-		}
-        r->readOnly();
-	}
+
+    Map::const_iterator i;
     Map * m = current();
     m->lockRead();
-	for(j = m->begin(); j != m->end(); j++) {
-		ProtRegion *r = dynamic_cast<ProtRegion *>(j->second);
+	for(i = m->begin(); i != m->end(); i++) {
+		ProtRegion *r = dynamic_cast<ProtRegion *>(i->second);
+        r->lockWrite();
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
         r->readOnly();
+        r->unlock();
 	}
     m->unlock();
 	//ctx->flush();
@@ -110,23 +106,17 @@ void LazyManager::flush(const RegionSet & regions)
         return;
     }
 
-    Process::SharedMap::iterator i;
-	RegionSet::const_iterator j;
-    Process::SharedMap &sharedMem = proc->sharedMem();
-	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-		ProtRegion * r = current()->find<ProtRegion>(i->second.start());
-        if(r->dirty()) {
-			r->copyToDevice();
-		}
-        r->readOnly();
-	}
+    Context * ctx = Context::current();
+	RegionSet::const_iterator i;
 
-	for(j = regions.begin(); j != regions.end(); j++) {
-		ProtRegion *r = dynamic_cast<ProtRegion *>(*j);
+	for(i = regions.begin(); i != regions.end(); i++) {
+		ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
+        r->lockWrite();
 		if(r->dirty()) {
 			r->copyToDevice();
 		}
         r->readOnly();
+        r->unlock();
 	}
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
@@ -137,6 +127,7 @@ void LazyManager::invalidate(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
 	ASSERT(region != NULL);
+    region->lockWrite();
 	ASSERT(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		if(region->start() < addr ||
@@ -144,31 +135,37 @@ void LazyManager::invalidate(const void *addr, size_t size)
 			region->copyToDevice();
 	}
 	region->invalidate();
+    region->unlock();
 }
 
 void LazyManager::flush(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
 	ASSERT(region != NULL);
+    region->lockWrite();
 	ASSERT(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		region->copyToDevice();
 	}
 	region->readOnly();
+    region->unlock();
 }
 
 void
-LazyManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+LazyManager::remap(Context *ctx, Region *r, void *devPtr)
 {
-	ProtRegion *region = current()->find<ProtRegion>(cpuPtr);
-	ASSERT(region != NULL); ASSERT(region->size() == count);
-	insertVirtual(ctx, cpuPtr, devPtr, count);
+	ProtRegion *region = dynamic_cast<ProtRegion *>(r);
+	ASSERT(region != NULL);
+    
+    region->lockWrite();
+	insertVirtual(ctx, region->start(), devPtr, region->size());
 	region->relate(ctx);
-    if (!region->dirty()) {
+    if (region->dirty() == false && region->present()) {
         ctx->copyToDevice(ptr(region->start()),
                           region->start(),
-                          count);
+                          region->size());
     }
+    region->unlock();
 }
 
 #if 0
@@ -202,10 +199,6 @@ bool LazyManager::read(void *addr)
 	if(region == NULL) return false;
 
     region->lockWrite();
-	if (region->present() == true) {
-        region->unlock();
-        return true;
-    }
     Context * owner = region->owner();
     if (owner->status() == Context::RUNNING) owner->sync();
 
@@ -224,10 +217,6 @@ bool LazyManager::write(void *addr)
 	if (region == NULL) return false;
 
     region->lockWrite();
-	if (region->present() == true) {
-        region->unlock();
-        return true;
-    }
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {

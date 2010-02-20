@@ -210,14 +210,12 @@ main(int argc, char** argv)
 		pthread_create(&threads[n], NULL, matrixMulThread, &(params[n]));
 	}
 
-	gmacFree(A);
-	gmacFree(B);
-
-
 	for (unsigned n = 0; n < nIter; n++) {
 		pthread_join(threads[n], NULL);
 	}
 
+	gmacFree(A);
+	gmacFree(B);
 
     // compute reference solution
 	gettimeofday(&s, NULL);

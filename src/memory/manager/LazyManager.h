@@ -49,25 +49,27 @@ protected:
 	bool read(void *addr);
 	bool write(void *addr);
 
+    Region * newRegion(void * addr, size_t count, bool shared);
+    int defaultProt();
+
 public:
 	LazyManager();
-	void *alloc(void *addr, size_t count, int attr = 0);
-	void release(void *addr);
+	void *malloc(void *addr, size_t count);
+	void *globalMalloc(void *addr, size_t count);
+	void free(void *addr);
 	void invalidate();
     void invalidate(const RegionSet & regions);
     void flush();
     void flush(const RegionSet & regions);
 
-    void sync() {};
-
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 
-	void remap(Context *, void *, void *, size_t);
+	void remap(Context *, Region *, void *);
 };
 
-#include "LazyManager.ipp"
-
 }}}
+
+#include "LazyManager.ipp"
 
 #endif

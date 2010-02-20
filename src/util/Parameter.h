@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <cstdlib>
 #include <map>
 
+#include <stdint.h>
+
 #include "order.h"
 
 #include <iostream>

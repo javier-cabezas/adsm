@@ -1,6 +1,14 @@
 #ifndef __MEMOMRY_ROLLINGMANAGER_IPP_
 #define __MEMOMRY_ROLLINGMANAGER_IPP_
 
+namespace gmac { namespace memory { namespace manager {
+
+inline int
+RollingManager::defaultProt()
+{
+    return PROT_NONE;
+}
+
 inline bool
 RollingBuffer::overflows() 
 {
@@ -144,5 +152,7 @@ RollingManager::flush(RollingBlock *region)
    region->readOnly();
    region->unlock();
 }
+
+}}}
 
 #endif

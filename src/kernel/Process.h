@@ -61,21 +61,6 @@ extern gmac::Process *proc;
 
 namespace gmac {
 
-class SharedMemory {
-protected:
-	void *_addr;
-	size_t _size;
-	size_t _count;
-public:
-	SharedMemory(void *_addr, size_t _size, size_t _count = 1);
-
-	void *start() const;
-	size_t size() const;
-
-	void inc();
-	size_t dec();
-};
-
 class ThreadQueue {
 public:
     ThreadQueue();
@@ -83,10 +68,13 @@ public:
     Queue * queue;
 };
 
-class Process {
+class ContextList : public std::list<Context *>, public util::RWLock
+{
 public:
-	typedef std::list<Context *> ContextList;
-	typedef std::map<void *, SharedMemory> SharedMap;
+    ContextList();
+};
+
+class Process {
 protected:
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
@@ -96,8 +84,6 @@ protected:
 
 	util::Lock mutex;
 	unsigned current;
-
-	SharedMap _sharedMem;
 
 	static size_t _totalMemory;
 
@@ -113,18 +99,13 @@ public:
     Context * create(int acc = ACC_AUTO_BIND);
 	void remove(Context *ctx);
 	gmacError_t migrate(int acc);
-	const ContextList &contexts() const;
+	ContextList & contexts();
 
 	void accelerator(Accelerator *acc);
 
 	void *translate(void *);
 	const void *translate(const void *addr);
 	void sendReceive(THREAD_ID id);
-
-	SharedMap &sharedMem();
-	void addShared(void *addr, size_t size);
-	bool removeShared(void *addr);
-	bool isShared(void *addr) const;
 
 	static size_t totalMemory();
 	size_t accs() const;

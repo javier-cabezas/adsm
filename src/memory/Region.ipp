@@ -31,6 +31,12 @@ Region::size() const
     return _size;
 }
 
+inline bool
+Region::shared()
+{
+    return _shared;
+}
+
 inline void *
 Region::start() const
 {
@@ -46,27 +52,21 @@ Region::end() const
 inline void
 Region::relate(Context *ctx)
 {
-    lockWrite();
     _relatives.push_back(ctx);
-    unlock();
 }
 
 inline void
 Region::unrelate(Context *ctx)
 {
-    lockWrite();
     _relatives.remove(ctx);
-    unlock();
 }
 
 inline void
 Region::transfer()
 {
     ASSERT(_relatives.empty() == false);
-    lockWrite();
     _context = _relatives.front();
     _relatives.pop_front();
-    unlock();
 }
 
 inline std::list<Context *> &

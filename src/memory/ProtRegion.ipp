@@ -1,6 +1,8 @@
 #ifndef __MEMORY_PROTREGION_IPP_
 #define __MEMORY_PROTREGION_IPP_
 
+namespace gmac { namespace memory {
+
 inline void
 ProtRegion::invalidate(void)
 {
@@ -42,5 +44,7 @@ ProtRegion::present()
    ASSERT(tryWrite() == false);
    return _present;
 }
+
+}}
 
 #endif

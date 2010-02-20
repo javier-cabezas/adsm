@@ -45,13 +45,15 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Region;
-typedef std::map<const void *, Region *> RegionMap;
+class RegionMap : public util::RWLock, public std::map<const void *, Region *> {
+public:
+    RegionMap(paraver::LockName);
+};
 
-class Map : public RegionMap, public util::RWLock {
+class Map : public RegionMap {
 protected:
-    static RegionMap *__global;
-    static unsigned count;
-    static util::RWLock global;
+    static RegionMap __global;
+    static RegionMap __shared;
 
     Region *localFind(const void *addr);
     static Region *globalFind(const void *addr);
@@ -67,7 +69,11 @@ public:
     static void init();
 
     void realloc();
-    void insert(Region *i);
+    void insert(Region *r);
+    static void addShared(Region *r);
+    static void removeShared(Region *r);
+    static bool isShared(const void *);
+    static RegionMap & shared();
 
     Region *remove(void *addr);
 

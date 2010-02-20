@@ -79,6 +79,7 @@ typedef enum {
 	gmacErrorInvalidDeviceFunction,
     gmacErrorAlreadyBound,
 	gmacErrorApiFailureBase,
+    gmacErrorFeatureNotSupported,
 	gmacErrorUnknown
 #ifdef __cplusplus
 };
@@ -98,6 +99,7 @@ static const char *error[] = {
 	"Invalid device",
 	"Invalid device function",
 	"GMAC general failure",
+    "Feature not supported with the current configure configuration",
 	"Uknown error"
 };
 
@@ -131,17 +133,15 @@ size_t gmacAccs();
 gmacError_t gmacSetAfinnity(int acc);
 
 
-#define GMAC_MALLOC_PINNED 1
-
 /*!
 	\brief Allocates memory at the GPU
 
 	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
 	use the same addresses for this memory.
 	\param devPtr memory address to store the address for the allocated memory
-	\param count bytes to be allocated
+	\param count  bytes to be allocated
 */
-gmacError_t gmacMalloc(void **devPtr, size_t count, int attr = 0);
+gmacError_t gmacMalloc(void **devPtr, size_t count);
 
 /*!
 	\brief Allocates global memory at all GPUS

@@ -69,4 +69,10 @@ Manager::ptr(void *addr)
     return ptr(Context::current(), addr);
 }
 
+inline int
+Manager::defaultProt()
+{
+    return PROT_READ | PROT_WRITE;
+}
+
 #endif

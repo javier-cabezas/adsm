@@ -126,8 +126,6 @@ public:
 
     Kernel * kernel(gmacKernel_t k);
 
-	void init();
-
 	void destroy();
 
 	Status status() const;

@@ -105,25 +105,28 @@ protected:
    void invalidate(RollingBlock *region);
    void flush(RollingBlock *region);
 
+   Region * newRegion(void * addr, size_t count, bool shared);
+   int defaultProt();
+
 public:
    RollingManager();
    virtual ~RollingManager();
-   void *alloc(void *addr, size_t size, int attr = 0);
-   void release(void *addr);
+   void *malloc(void *addr, size_t size);
+   void *globalMalloc(void *addr, size_t size);
+   void free(void *addr);
    void invalidate();
    void invalidate(const RegionSet & regions);
    void flush();
    void flush(const RegionSet & regions);
-   void sync() {};
 
    void invalidate(const void *addr, size_t size);
    void flush(const void *addr, size_t size);
 
-	void remap(Context *, void *, void *, size_t);
+	void remap(Context *, Region *, void *);
 };
 
-#include "RollingManager.ipp"
-
 }}}
+
+#include "RollingManager.ipp"
 
 #endif

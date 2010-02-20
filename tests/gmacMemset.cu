@@ -32,10 +32,12 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test full memset: ");
 	gmacMemset(ptr, 0, size * sizeof(long));
 	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
+    gmacThreadSynchronize();
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
 	gmacMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
+    gmacThreadSynchronize();
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	gmacFree(ptr);

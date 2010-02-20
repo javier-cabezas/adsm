@@ -40,14 +40,15 @@ int main(int argc, char *argv[])
 	dim3 Dg(size / blockSize);
 	if(size % blockSize) Db.x++;
 
-	fprintf(stderr,"Test full memcpy: ");
+	printf("Test full memcpy: ");
 	memcpy(ptr, host, size * sizeof(long));
 	reset<<<Dg, Db>>>(ptr, 1);
-	fprintf(stderr, "%d\n", check(ptr, 2 * size));
+    gmacThreadSynchronize();
+	printf("%d\n", check(ptr, 2 * size));
 
-	fprintf(stderr,"Test partial memcpy: ");
+	printf("Test partial memcpy: ");
 	memcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
-	fprintf(stderr, "%d\n", check(ptr, 5 * size / 4));
+	printf("%d\n", check(ptr, 5 * size / 4));
 
 	fprintf(stderr,"Test reverse full: ");
 	memcpy(host, ptr, size * sizeof(long));

@@ -52,6 +52,9 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
+#define GMAC_MALLOC_PINNED 1
+#define GMAC_MALLOC_GLOBAL 2
+
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
@@ -80,7 +83,7 @@ protected:
 	//! \param addr accelerator address
 	//! \param count Size (in bytes) of the mapping
 	//! \param prot Protection flags for the mapping
-	void *hostMap(void *addr, size_t count, int prot = PROT_READ | PROT_WRITE);
+	void *mapToHost(void *addr, size_t count, int prot);
 
     //! This remaps memory in the CPU address space
 	//! \param addr  accelerator address
@@ -93,30 +96,44 @@ protected:
 	//! \param count Size (in bytes) to unmap
 	void hostUnmap(void *addr, size_t count);
 
+	void mallocDevice(void **addr, size_t count);
+	void mallocHost(void *addr, size_t count);
+
+    virtual Region * newRegion(void * addr, size_t count, bool shared);
+    virtual int defaultProt();
+
 public:
 	Manager();
 	//! Virtual Destructor. It does nothing
 	virtual ~Manager();
 	
 	//! This method is called whenever the user
-	//! requests memory to be used by the accelerator
+	//! requests memory to be used by the host
+	//! \param addr Allocated memory address. This address
+	//! is the same for both, the CPU and the accelerator
+	//! \param count Size in bytes of the allocated memory
+	gmacError_t malloc(void ** addr, size_t count);
+
+    //! This method is called whenever the user
+	//! requests shared memory to be used by all the accelerators
 	//! \param devPtr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	//! \param attr  Attributes of the malloc
-	virtual void *alloc(void *addr, size_t count, int attr = 0) = 0;
+	gmacError_t globalMalloc(void ** addr, size_t count);
 
+#if 0
 	//! This methid is called to map accelerator memory to
 	//! system memory. Coherence is not maintained for these mappings
 	//! \param cpuAddr
 	//! \param devPtr
 	//! \param count
 	virtual void map(void *host, void *dev, size_t count);
+#endif
 
 	//! This method is called whenever the user
 	//! releases accelerator memory
 	//! \param devPtr Memory address that has been released
-	virtual void release(void *addr) = 0;
+	virtual void free(void *addr) = 0;
 
 	//! This method is called whenever the user invokes
 	//! a kernel to be executed at the accelerator
@@ -128,9 +145,11 @@ public:
 	virtual void invalidate() = 0;
     virtual void invalidate(const RegionSet & regions) = 0;
 
+#if 0
 	//! This method is called just after the user requests
 	//! waiting for the accelerator to finish
 	virtual void sync(void) = 0;
+#endif
 
 	//! This method is called when a CPU to accelerator translation is
 	//! requiered
@@ -140,8 +159,12 @@ public:
 	static void *ptr(Context *ctx, void *addr);
 	static void *ptr(void *addr);
 
-	virtual void remap(Context *, void *, void *, size_t) = 0;
+	virtual void remap(Context *, Region *, void *) = 0;
+#if 0
 	void unmap(Context *, void *);
+#endif
+
+    void initShared(Context *);
 
 	Context *owner(const void *addr);
 	virtual void invalidate(const void *addr, size_t) = 0;
