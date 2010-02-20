@@ -7,9 +7,9 @@
 
 namespace gmac { namespace memory { namespace manager {
 
-RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
+RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, bool shared,
                       size_t cacheLine) :
-   Region(addr, size),
+   Region(addr, size, shared),
    manager(manager),
    cacheLine(cacheLine),
    offset((unsigned long)addr & (cacheLine -1))
@@ -18,7 +18,7 @@ RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size,
    for(size_t s = 0; s < size; s += cacheLine) {
       void *p = (void *)((uint8_t *)addr + s);
       size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
-      RollingBlock *region = new RollingBlock(*this, p, regionSize);
+      RollingBlock *region = new RollingBlock(*this, p, regionSize, shared);
       void *key = (void *)((uint8_t *)p + cacheLine);
       map.insert(Map::value_type(key, region));
       memory.insert(region);
@@ -188,8 +188,8 @@ RollingRegion::transferDirty()
 }
 
 
-RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size) :
-   ProtRegion(addr, size),
+RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared) :
+   ProtRegion(addr, size, shared),
    _parent(parent)
 { }
 

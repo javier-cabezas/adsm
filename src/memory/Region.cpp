@@ -5,10 +5,11 @@
 
 namespace gmac { namespace memory {
 
-Region::Region(void *addr, size_t size) :
+Region::Region(void *addr, size_t size, bool shared) :
     util::RWLock(paraver::region),
     _addr(__addr(addr)),
-    _size(size)
+    _size(size),
+    _shared(shared)
 {
 	_context = Context::current();
 }

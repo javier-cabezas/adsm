@@ -69,7 +69,7 @@ protected:
    void push(RollingBlock *region);
 
 public:
-   RollingRegion(RollingManager &manager, void *, size_t, size_t);
+   RollingRegion(RollingManager &manager, void *addr, size_t size, bool shared, size_t chacheLine);
    ~RollingRegion();
 
    virtual void relate(Context *ctx);
@@ -92,7 +92,7 @@ protected:
    friend class RollingRegion;
    void silentInvalidate();
 public:
-   RollingBlock(RollingRegion &parent, void *addr, size_t size);
+   RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared);
    ~RollingBlock();
 
    // Override this methods to insert the regions in the list

@@ -48,22 +48,22 @@ class BatchManager : public Manager {
 public:
 	BatchManager() : Manager() { }
 
-	void * alloc(void * addr, size_t count, int attr = 0);
-    void release(void * addr);
+	gmacError_t malloc(void ** addr, size_t count);
+	gmacError_t globalMalloc(void ** addr, size_t count);
+    void free(void * addr);
     void invalidate();
     void invalidate(const RegionSet & regions);
     void flush();
     void flush(const RegionSet & regions);
 
-	void sync();
-
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 
-	void remap(Context *, void *, void *, size_t);
+	void remap(Context *, Region *, void *);
 };
+
+}}}
 
 #include "BatchManager.ipp"
 
-}}}
 #endif

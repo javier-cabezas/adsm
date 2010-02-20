@@ -12,10 +12,8 @@ gmac::Process *proc = NULL;
 
 namespace gmac {
 
-SharedMemory::SharedMemory(void *_addr, size_t _size, size_t _count) :
-    _addr(_addr),
-    _size(_size),
-    _count(_count)
+ContextList::ContextList() :
+    RWLock(paraver::contextList)
 {}
 
 ThreadQueue::ThreadQueue() :
@@ -104,7 +102,6 @@ Process::create(int acc)
         }
 
         ctx = _accs[usedAcc]->create();
-        ctx->init();
         _contexts.push_back(ctx);
     }
     q->second->queue = new Queue();

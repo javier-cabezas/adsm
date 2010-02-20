@@ -12,15 +12,55 @@ Map::realloc()
 }
 
 inline void
-Map::insert(Region *i)
+Map::insert(Region *r)
 {
     lockWrite();
-    RegionMap::insert(value_type(i->end(), i));
+    RegionMap::insert(value_type(r->end(), r));
     unlock();
 
-    global.lockWrite();
-    __global->insert(value_type(i->end(), i));
-    global.unlock();
+    __global.lockWrite();
+    __global.insert(value_type(r->end(), r));
+    __global.unlock();
+}
+
+inline void
+Map::addShared(Region * r)
+{
+    __shared.lockWrite();
+    __shared.insert(value_type(r->end(), r));
+    __shared.unlock();
+}
+
+inline void
+Map::removeShared(Region * r)
+{
+    Map::iterator i;
+    __shared.lockWrite();
+    for (i = Map::__shared.begin(); i != Map::__shared.end(); i++) {
+        if (r == i->second) {
+            __shared.erase(i);
+            delete r;
+            break;
+        }
+    }
+    __shared.unlock();
+}
+
+inline bool
+Map::isShared(const void *addr)
+{
+    bool ret;
+    __shared.lockRead();
+    ret = __shared.find(addr) != __shared.end();
+    __shared.unlock();
+
+    return ret;
+}
+
+inline RegionMap &
+Map::shared()
+{
+    return __shared;
 }
 
 inline PageTable &
@@ -43,9 +83,7 @@ Map::find(const void *addr)
     lockRead();
     ret = localFind(addr);
     if(ret == NULL) {
-        global.lockRead();
         ret = globalFind(addr);
-        global.unlock();
     }
     unlock();
 

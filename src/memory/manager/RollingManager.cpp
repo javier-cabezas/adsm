@@ -28,6 +28,12 @@ void RollingManager::writeBack()
    flush(r);
 }
 
+Region *    
+RollingManager::newRegion(void * addr, size_t count, bool shared)
+{
+    rollingMap.currentBuffer()->inc(lruDelta);
+    return new RollingRegion(*this, addr, count, shared, pageTable().getPageSize());
+}
 
 RollingManager::RollingManager() :
    Handler(),
@@ -47,27 +53,7 @@ RollingManager::~RollingManager()
 {
 }
 
-void *RollingManager::alloc(void *addr, size_t count, int attr)
-{
-   void *cpuAddr;
-
-   Context * ctx = Context::current();
-   if (attr == GMAC_MALLOC_PINNED) {
-      void *hAddr;
-      if (ctx->halloc(&hAddr, count) != gmacSuccess) return NULL;
-      cpuAddr = hostRemap(addr, hAddr, count);
-   } else {
-      cpuAddr = hostMap(addr, count, PROT_NONE);
-   }
-   insertVirtual(cpuAddr, addr, count);
-   rollingMap.currentBuffer()->inc(lruDelta);
-   insert(new RollingRegion(*this, cpuAddr, count, pageTable().getPageSize()));
-	TRACE("Alloc %p (%d bytes)", cpuAddr, count);
-   return cpuAddr;
-}
-
-
-void RollingManager::release(void *addr)
+void RollingManager::free(void *addr)
 {
    Region *reg = remove(addr);
    removeVirtual(reg->start(), reg->size());
@@ -93,12 +79,16 @@ void RollingManager::flush()
 {
    TRACE("RollingManager Flush Starts");
    Context * ctx = Context::current();
-   Process::SharedMap::iterator s;
-	Process::SharedMap &sharedMem = proc->sharedMem();
+#if 0
+   RegionMap::iterator s;
+	RegionMap &sharedMem = Map::shared();
    for(s = sharedMem.begin(); s != sharedMem.end(); s++) {
 		RollingRegion *r = current()->find<RollingRegion>(s->second.start());
-      r->transferDirty();
+        r->lockWrite();
+        r->transferDirty();
+        r->unlock();
 	}
+#endif
 
    // We need to go through all regions from the context because
    // other threads might have regions owned by this context in
@@ -130,14 +120,18 @@ void RollingManager::flush(const RegionSet & regions)
 
    TRACE("RollingManager Flush Starts");
    Context * ctx = Context::current();
-   Process::SharedMap::iterator i;
-	Process::SharedMap &sharedMem = proc->sharedMem();
+#if 0
+   SharedMap::iterator i;
+	SharedMap &sharedMem = proc->sharedMem();
+    sharedMem.lockRead();
    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
 		RollingRegion * r = current()->find<RollingRegion>(i->second.start());
       r->lockWrite();
       r->transferDirty();
       r->unlock();
 	}
+   sharedMem.unlock();
+#endif
    size_t blocks = rollingMap.currentBuffer()->size();
 
    for(int j = 0; j < blocks; j++) {
@@ -281,13 +275,15 @@ bool RollingManager::write(void *addr)
 }
 
 void
-RollingManager::remap(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
+RollingManager::remap(Context *ctx, Region *r, void *devPtr)
 {
-	RollingRegion *region = current()->find<RollingRegion>(cpuPtr);
-	ASSERT(region != NULL); ASSERT(region->size() == count);
-	insertVirtual(ctx, cpuPtr, devPtr, count);
+	RollingRegion *region = dynamic_cast<RollingRegion *>(r);
+	ASSERT(region != NULL);
+    region->lockWrite();
+	insertVirtual(ctx, r->start(), devPtr, r->size());
 	region->relate(ctx);
-   region->transferNonDirty();
+    region->transferNonDirty();
+    region->unlock();
 }
 
 }}}

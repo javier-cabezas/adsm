@@ -5,6 +5,7 @@
 
 namespace gmac {
 
+#if 0
 inline void *
 SharedMemory::start() const
 {
@@ -28,9 +29,10 @@ SharedMemory::dec()
 {
     return --_count;
 }
+#endif
 
-inline const Process::ContextList &
-Process::contexts() const
+inline ContextList &
+Process::contexts()
 {
     return _contexts;
 }
@@ -39,39 +41,6 @@ inline const void *
 Process::translate(const void *addr)
 {
     return (const void *)translate((void *)addr);
-}
-
-inline Process::SharedMap &
-Process::sharedMem()
-{
-    return _sharedMem;
-}
-
-inline void
-Process::addShared(void *addr, size_t size)
-{
-    std::pair<SharedMap::iterator, bool> ret =
-        _sharedMem.insert(SharedMap::value_type(addr, SharedMemory(addr, size, _contexts.size())));
-    if(ret.second == false) ret.first->second.inc();
-}
-
-inline bool
-Process::removeShared(void *addr)
-{
-    SharedMap::iterator i;
-    i = _sharedMem.find(addr);
-    ASSERT(i != _sharedMem.end());
-    if(i->second.dec() == 0) {
-        _sharedMem.erase(i);
-        return true;
-    }
-    return false;
-}
-
-inline bool
-Process::isShared(void *addr) const
-{
-    return _sharedMem.find(addr) != _sharedMem.end();
 }
 
 inline size_t

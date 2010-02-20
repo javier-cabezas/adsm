@@ -49,7 +49,7 @@ protected:
 	bool _present;
 
 public:
-	ProtRegion(void *addr, size_t size);
+	ProtRegion(void *addr, size_t size, bool shared);
 	virtual ~ProtRegion();
 
 	virtual void invalidate();
@@ -58,10 +58,12 @@ public:
 
 	virtual bool dirty();
 	virtual bool present();
+
+    static int defaultProt();
 };
 
-#include "ProtRegion.ipp"
-
 }}
+
+#include "ProtRegion.ipp"
 
 #endif

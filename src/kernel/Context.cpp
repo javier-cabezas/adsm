@@ -28,6 +28,7 @@ Context::Context(Accelerator &acc) :
 {
     PRIVATE_SET(Context::key, this);
 	_id = ++_next;
+    manager->initShared(this);
 }
 
 Context::~Context()
@@ -52,27 +53,6 @@ void
 Context::initThread()
 {
     PRIVATE_SET(key, NULL);
-}
-
-void
-Context::init()
-{
-	TRACE("Initializing cloned context");
-	Process::SharedMap::iterator i;
-	Process::SharedMap &sharedMem = proc->sharedMem();
-	for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-		TRACE("Mapping Shared Region %p (%d bytes)", i->second.start(), i->second.size());
-		void *devPtr;
-#ifdef USE_GLOBAL_HOST
-		TRACE("Using Host Translation");
-		gmacError_t ret = hostMap(i->second.start(), &devPtr, i->second.size());
-#else
-		gmacError_t ret = malloc(&devPtr, i->second.size());
-#endif
-		ASSERT(ret == gmacSuccess);
-		manager->remap(this, i->second.start(), devPtr, i->second.size());
-		i->second.inc();
-	}
 }
 
 void

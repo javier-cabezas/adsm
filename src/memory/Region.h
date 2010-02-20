@@ -67,6 +67,8 @@ protected:
 	addr_t _addr;
 	//! Size in bytes of the region
 	size_t _size;
+	//! Is the region shared among contexts?
+	bool _shared;
 
 	addr_t __addr(void *addr) const;
 	addr_t __addr(const void *addr) const;
@@ -74,15 +76,19 @@ protected:
 
 public:
 	//! Constructor
-	//! \param addr Start memory address
-	//! \param size Size in bytes
-	Region(void *addr, size_t size);
+	//! \param addr   Start memory address
+	//! \param size   Size in bytes
+	//! \param shared Is the region shared among contexts?
+	Region(void *addr, size_t size, bool shared);
 
 	virtual ~Region();
 
 	Context *owner();
 	gmacError_t copyToDevice();
 	gmacError_t copyToHost();
+
+    bool shared();
+
 	void sync();
 
 	//! Returns the size (in bytes) of the Region
