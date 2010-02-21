@@ -228,7 +228,9 @@ do_stencil(void * ptr)
         }
     }
 
-    pthread_barrier_wait(&barrier);
+    if (descr->gpus > 1) {
+        pthread_barrier_wait(&barrier);
+    }
 
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");

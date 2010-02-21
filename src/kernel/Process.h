@@ -74,15 +74,20 @@ public:
     ContextList();
 };
 
-class Process {
+
+class QueueMap : public std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
+{
+public:
+    QueueMap();
+};
+
+class Process : public util::RWLock{
 protected:
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 
-	typedef std::map<THREAD_ID, ThreadQueue *> QueueMap;
 	QueueMap _queues;
 
-	util::Lock mutex;
 	unsigned current;
 
 	static size_t _totalMemory;
@@ -103,7 +108,7 @@ public:
 
 	void accelerator(Accelerator *acc);
 
-	void *translate(void *);
+	void *translate(void *addr);
 	const void *translate(const void *addr);
 	void sendReceive(THREAD_ID id);
 

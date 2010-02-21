@@ -91,6 +91,7 @@ Manager::globalMalloc(void ** addr, size_t count)
 	}
     // Create a new (shared) region
     Region * r = newRegion(cpuAddr, count, true);
+    r->lockWrite();
     // Map the page-locked memory in all the contexts
     ContextList::const_iterator i;
     ContextList & contexts = proc->contexts();
@@ -99,11 +100,12 @@ Manager::globalMalloc(void ** addr, size_t count)
         Context * ctx = *i;
         //! \todo Check the return value of the function
         ctx->mapToDevice(cpuAddr, &devAddr, count);
-        remap(ctx, r, devAddr);
+        map(ctx, r, devAddr);
     }
     contexts.unlock();
     // Insert the region in the global shared map
     Map::addShared(r);
+    r->unlock();
     *addr = cpuAddr;
     TRACE("Alloc %p (%d bytes)", cpuAddr, count);
     return gmacSuccess;
@@ -123,7 +125,7 @@ Manager::globalMalloc(void ** addr, size_t count)
 
     // Create a new (shared) region
     Region * r = newRegion(cpuAddr, count, true);
-
+    r->lockWrite();
     ContextList::const_iterator i;
     ContextList & contexts = proc->contexts();
     contexts.lockRead();
@@ -133,9 +135,10 @@ Manager::globalMalloc(void ** addr, size_t count)
         // to allocate this memory
         ret = ctx->malloc(&devAddr, count);
         if(ret != gmacSuccess) goto cleanup;
-        remap(ctx, r, devAddr);
+        map(ctx, r, devAddr);
     }
     Map::addShared(r);
+    r->unlock();
     *addr = cpuAddr;
     return gmacSuccess;
 cleanup:
@@ -147,6 +150,7 @@ cleanup:
     }
 
     hostUnmap(r->start(), r->size());
+    r->unlock();
     delete r;
 
     return ret;
@@ -184,6 +188,7 @@ Manager::free(void * addr)
         Context * ctx = Context::current();
 		ret = ctx->free(ptr(ctx, addr));
         ASSERT(ret == gmacSuccess);
+        unmap(ctx, r);
 	}
     r->unlock();
     delete r;
@@ -228,6 +233,10 @@ void Manager::unmap(Context *ctx, Region *r)
 	ASSERT(r != NULL);
 	r->unrelate(ctx);
 	removeVirtual(ctx, r->start(), r->size());
+    if (r->shared() == false) {
+        Map & map = ctx->mm();
+        map.remove(r->start());
+    }
 }
 
 void
@@ -239,6 +248,7 @@ Manager::initShared(Context * ctx)
     shared.lockRead();
     for(i = shared.begin(); i != shared.end(); i++) {
         Region * r = i->second;
+        r->lockWrite();
         TRACE("Mapping Shared Region %p (%d bytes)", r->start(), r->size());
         void *devPtr;
 #ifdef USE_GLOBAL_HOST
@@ -248,7 +258,8 @@ Manager::initShared(Context * ctx)
         gmacError_t ret = ctx->malloc(&devPtr, r->size());
 #endif
         ASSERT(ret == gmacSuccess);
-        remap(ctx, r, devPtr);
+        map(ctx, r, devPtr);
+        r->unlock();
     }
     shared.unlock();
 #endif

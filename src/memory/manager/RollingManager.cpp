@@ -302,15 +302,13 @@ bool RollingManager::write(void *addr)
 }
 
     void
-RollingManager::remap(Context *ctx, Region *r, void *devPtr)
+RollingManager::map(Context *ctx, Region *r, void *devPtr)
 {
     RollingRegion *region = dynamic_cast<RollingRegion *>(r);
     ASSERT(region != NULL);
-    region->lockWrite();
     insertVirtual(ctx, r->start(), devPtr, r->size());
     region->relate(ctx);
     region->transferNonDirty();
-    region->unlock();
 }
 
 }}}

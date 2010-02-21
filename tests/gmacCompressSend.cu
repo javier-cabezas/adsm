@@ -61,9 +61,13 @@ void nextStage(stage_t *current, stage_t *next)
 	}
 }
 
+pthread_barrier_t barrierInit;
+
 void *dct_thread(void *args)
 {
 	gmacError_t ret;
+
+    pthread_barrier_wait(&barrierInit);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -128,6 +132,8 @@ void *quant_thread(void *args)
 {
 	gmacError_t ret;
 
+    pthread_barrier_wait(&barrierInit);
+
 	//ret = gmacMalloc((void **)&s_quant.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);
 	//ret = gmacMalloc((void **)&s_quant.out, width * height * sizeof(float));
@@ -163,6 +169,8 @@ void *quant_thread(void *args)
 void *idct_thread(void *args)
 {
 	gmacError_t ret;
+
+    pthread_barrier_wait(&barrierInit);
 
 	//ret = gmacMalloc((void **)&s_idct.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);
@@ -218,6 +226,8 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 
 	gettimeofday(&s, NULL);
+
+    pthread_barrier_init(&barrierInit, NULL, 3);
 
 	pthread_create(&s_dct.id, NULL, dct_thread, NULL);
 	pthread_create(&s_quant.id, NULL, quant_thread, NULL);

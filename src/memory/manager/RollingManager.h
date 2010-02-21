@@ -125,7 +125,7 @@ public:
    void invalidate(const void *addr, size_t size);
    void flush(const void *addr, size_t size);
 
-	void remap(Context *, Region *, void *);
+	void map(Context *, Region *, void *);
 };
 
 }}}

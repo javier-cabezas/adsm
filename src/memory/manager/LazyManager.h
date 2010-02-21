@@ -65,7 +65,7 @@ public:
 	void invalidate(const void *, size_t);
 	void flush(const void *, size_t);
 
-	void remap(Context *, Region *, void *);
+	void map(Context *, Region *, void *);
 };
 
 }}}

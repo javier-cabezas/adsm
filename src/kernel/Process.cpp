@@ -12,19 +12,22 @@ gmac::Process *proc = NULL;
 
 namespace gmac {
 
+ThreadQueue::ThreadQueue() :
+    hasContext(paraver::threadQueue)
+{}
+
 ContextList::ContextList() :
     RWLock(paraver::contextList)
 {}
 
-ThreadQueue::ThreadQueue() :
-    hasContext(paraver::queue)
+QueueMap::QueueMap() : 
+    util::RWLock(paraver::queueMap)
 {}
 
 size_t Process::_totalMemory = 0;
 
-
 Process::Process() :
-    mutex(paraver::process), current(0)
+    RWLock(paraver::process), current(0)
 {}
 
 Process::~Process()
@@ -33,20 +36,22 @@ Process::~Process()
     std::vector<Accelerator *>::iterator a;
     std::list<Context *>::iterator c;
     QueueMap::iterator q;
-    mutex.lock();
+    lockWrite();
     for(c = _contexts.begin(); c != _contexts.end(); c++) {
         (*c)->destroy();
     }
     for(a = _accs.begin(); a != _accs.end(); a++)
         delete *a;
+    _accs.clear();
+    _queues.lockRead();
     for(q = _queues.begin(); q != _queues.end(); q++) {
         if (q->second->queue != NULL) {
             delete q->second->queue;
         }
         delete q->second;
     }
-    _accs.clear();
-    mutex.unlock();
+    _queues.unlock();
+    unlock();
     memoryFini();
 }
 
@@ -71,9 +76,9 @@ Process::initThread()
     ThreadQueue * q = new ThreadQueue();
     q->hasContext.lock();
     q->queue = NULL;
-    mutex.lock();
+    _queues.lockWrite();
     _queues.insert(QueueMap::value_type(SELF(), q));
-    mutex.unlock();
+    _queues.unlock();
 }
 
 Context *
@@ -81,9 +86,11 @@ Process::create(int acc)
 {
     pushState(Init);
     TRACE("Creating new context");
-    mutex.lock();
+    lockWrite();
+    _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
     ASSERT(q != _queues.end());
+    _queues.unlock();
     Context * ctx;
     int usedAcc;
 
@@ -108,7 +115,7 @@ Process::create(int acc)
     }
     q->second->queue = new Queue();
     q->second->hasContext.unlock();
-	mutex.unlock();
+	unlock();
 	TRACE("Created context on Acc#%d", usedAcc);
     popState();
     return ctx;
@@ -116,7 +123,7 @@ Process::create(int acc)
 
 gmacError_t Process::migrate(int acc)
 {
-	mutex.lock();
+	lockWrite();
     if (acc >= _accs.size()) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	TRACE("Migrating context");
@@ -128,22 +135,23 @@ gmacError_t Process::migrate(int acc)
         _accs[acc]->create();
     }
 	TRACE("Migrated context");
-	mutex.unlock();
+	unlock();
     return ret;
 }
 
 
 void Process::remove(Context *ctx)
 {
-	mutex.lock();
 	_contexts.remove(ctx);
+    _queues.lockWrite();
     ThreadQueue * q = _queues[SELF()];
     if (q->queue != NULL) {
         delete q->queue;
     }
     delete q;
 	_queues.erase(SELF());
-	mutex.unlock();
+    _queues.unlock();
+
 	ctx->destroy();
 }
 
@@ -167,17 +175,19 @@ void *Process::translate(void *addr)
 void Process::sendReceive(THREAD_ID id)
 {
     Context * ctx = Context::current();
-    mutex.lock();
+    _queues.lockRead();
 	QueueMap::iterator q = _queues.find(id);
-    mutex.unlock();
 	ASSERT(q != _queues.end());
+    _queues.unlock();
     q->second->hasContext.lock();
     q->second->hasContext.unlock();
 	q->second->queue->push(ctx);
 	PRIVATE_SET(Context::key, NULL);
+    _queues.lockRead();
 	q = _queues.find(SELF());
 	ASSERT(q != _queues.end());
 	PRIVATE_SET(Context::key, q->second->queue->pop());
+    _queues.unlock();
 }
 
 }
