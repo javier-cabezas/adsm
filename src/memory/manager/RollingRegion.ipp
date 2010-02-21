@@ -4,12 +4,14 @@
 inline void
 RollingRegion::push(RollingBlock *region)
 {
+    memory.lockWrite();
     memory.insert(region);
+    memory.unlock();
 }
 
 
 inline void
-RollingBlock::silentInvalidate()
+RollingBlock::preInvalidate()
 {
    ASSERT(tryWrite() == false);
    ASSERT(_dirty == false);

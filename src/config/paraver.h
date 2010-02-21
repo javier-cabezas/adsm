@@ -48,7 +48,7 @@ enum LockName {
 	queueLock, 
 	ioHostLock, ioDeviceLock,
 	process, writeMutex, rollingMap, rollingBuffer, manager, queue, region,
-	pthread, segv, shMap, contextList
+	pthread, segv, shMap, contextList, blockList
 };
 };
 

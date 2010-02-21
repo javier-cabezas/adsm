@@ -42,9 +42,6 @@ inline void
 RollingBuffer::push(RollingBlock *region)
 {
    lockWrite();
-   region->lockRead();
-   ASSERT(region->dirty() == true);
-   region->unlock();
    _buffer.push_back(region);
    unlock();
 }
@@ -131,26 +128,30 @@ RollingMap::remove(RollingBlock *block)
    unlock();
 }
 
+#if 0
 inline void
-RollingManager::invalidate(RollingBlock *region)
+RollingManager::invalidate(RollingBlock *block)
 {
-   rollingMap.remove(region);
+   rollingMap.remove(block);
+   block->invalidate();
+}
+#endif
 
-   region->lockWrite();
-   region->invalidate();
-   region->unlock();
+inline void
+RollingManager::flush(RollingBlock *block)
+{
+   rollingMap.remove(block);
+   ASSERT(block->dirty() == true);
+   gmacError_t ret = block->copyToDevice();
+   ASSERT(ret == gmacSuccess);
+   block->readOnly();
 }
 
 inline void
-RollingManager::flush(RollingBlock *region)
+RollingManager::forceFlush(RollingBlock *block)
 {
-   rollingMap.remove(region);
-   region->lockWrite();
-   ASSERT(region->dirty() == true);
-   gmacError_t ret = region->copyToDevice();
+   gmacError_t ret = block->copyToDevice();
    ASSERT(ret == gmacSuccess);
-   region->readOnly();
-   region->unlock();
 }
 
 }}}

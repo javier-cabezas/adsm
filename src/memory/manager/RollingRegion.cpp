@@ -7,6 +7,10 @@
 
 namespace gmac { namespace memory { namespace manager {
 
+BlockList::BlockList()
+    : RWLock(paraver::blockList)
+{}
+
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, bool shared,
                       size_t cacheLine) :
    Region(addr, size, shared),
@@ -21,7 +25,9 @@ RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, b
       RollingBlock *region = new RollingBlock(*this, p, regionSize, shared);
       void *key = (void *)((uint8_t *)p + cacheLine);
       map.insert(Map::value_type(key, region));
+      memory.lockWrite();
       memory.insert(region);
+      memory.unlock();
    }
    TRACE("RollingRegion Ends");
 }
@@ -37,24 +43,25 @@ RollingRegion::~RollingRegion()
 
 void RollingRegion::relate(Context *ctx)
 {
-   RollingBuffer *buffer = manager.rollingMap.contextBuffer(ctx);
-   Map::const_iterator i;
-   // Push dirty regions in the rolling buffer
-   // and copy to device clean regions
-   for(i = map.begin(); i != map.end(); i++) {
-     i->second->lockWrite();
-     if(i->second->dirty()) {
-       buffer->push(i->second);
-     }
-     else {
-       gmacError_t ret = ctx->copyToDevice(Manager::ptr(start()), start(), size());
-       ASSERT(ret == gmacSuccess);
-     }
-     i->second->relate(ctx);
-     i->second->unlock();
-   }
-   _relatives.push_back(ctx);
-   buffer->inc(manager.lruDelta);
+    RollingBuffer *buffer = manager.rollingMap.contextBuffer(ctx);
+    Map::const_iterator i;
+    // Push dirty regions in the rolling buffer
+    // and copy to device clean regions
+    for(i = map.begin(); i != map.end(); i++) {
+        RollingBlock * block = i->second;
+        block->lockWrite();
+        if(block->dirty()) {
+            buffer->push(block);
+        }
+        else {
+            gmacError_t ret = ctx->copyToDevice(Manager::ptr(start()), start(), size());
+            ASSERT(ret == gmacSuccess);
+        }
+        block->relate(ctx);
+        block->unlock();
+    }
+    _relatives.push_back(ctx);
+    buffer->inc(manager.lruDelta);
 }
 
 void RollingRegion::unrelate(Context *ctx)
@@ -88,63 +95,72 @@ void RollingRegion::flush()
    // Flush those sub-regions that are present in memory and dirty
    Map::const_iterator i;
    for(i = map.begin(); i != map.end(); i++) {
-      i->second->lockRead();
-      bool dirty = i->second->dirty();
-      i->second->unlock();
-      if(dirty == false) continue;
-      TRACE("Flush SubRegion %p (%d bytes)", i->second->start(),
-           i->second->size());
-      manager.flush(i->second);
+      RollingBlock * block = i->second;
+      block->lockWrite();
+      if(block->dirty() == true)  {
+          TRACE("Flush RollingBlock %p (%d bytes)", block->start(), block->size());
+          manager.flush(block);
+      }
+      block->unlock();
    }
 }
 
 
 void RollingRegion::invalidate()
 {
-   ASSERT(tryWrite() == false);
-   TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
-   // Check if the region is already invalid
-   if(memory.empty()) return;
+    ASSERT(tryWrite() == false);
+    TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
+    // Check if the region is already invalid
 
-   List::iterator i;
-   for(i = memory.begin(); i != memory.end(); i++) {
-      (*i)->lockWrite();
-   }
-   // Protect the region
-   Memory::protect(__void(_addr), _size, PROT_NONE);
-   // Invalidate those sub-regions that are present in memory
-   for(i = memory.begin(); i != memory.end(); i++) {
-      TRACE("Invalidate SubRegion %p (%d bytes)", (*i)->start(),
-           (*i)->size());
-      (*i)->silentInvalidate();
-      (*i)->unlock();
-   }
-   memory.clear();
+    memory.lockWrite();
+    if(memory.empty()) { memory.unlock(); return; }
+
+    BlockList::iterator i;
+    for(i = memory.begin(); i != memory.end(); i++) {
+        RollingBlock * block = *i;
+        block->lockWrite();
+        TRACE("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
+    }
+
+    // Protect the region
+    Memory::protect(__void(_addr), _size, PROT_NONE);
+    // Invalidate those sub-regions that are present in memory
+    for(i = memory.begin(); i != memory.end(); i++) {
+        RollingBlock * block = *i;
+        TRACE("Invalidate RollingBlock %p (%d bytes)", block->start(), block->size());
+        block->preInvalidate();
+        block->unlock();
+    }
+    memory.clear();
+    memory.unlock();
 }
 
 void RollingRegion::invalidate(const void *addr, size_t size)
 {
-   void *end = (void *)((addr_t)addr + size);
-   Map::iterator i = map.lower_bound(addr);
-   ASSERT(i != map.end());
-   for(; i != map.end() && i->second->start() < end; i++) {
-      i->second->lockWrite();
-      // If the region is not present, just ignore it
-      if(i->second->present() == false) {
-         i->second->unlock();
-         continue;
-      }
+    void *end = (void *)((addr_t)addr + size);
+    Map::iterator i = map.lower_bound(addr);
+    ASSERT(i != map.end());
+    for(; i != map.end() && i->second->start() < end; i++) {
+        RollingBlock * block = block;
+        block->lockWrite();
+        // If the region is not present, just ignore it
+        if(block->present() == false) {
+            block->unlock();
+            continue;
+        }
 
-      if(i->second->dirty()) { // We might need to update the device
-         // Check if there is memory that will not be invalidated
-         if(i->second->start() < addr ||
-            i->second->end() > __void(__addr(addr) + size))
-            manager.flush(i->second);
-      }
-      memory.erase(i->second);
-      i->second->invalidate();
-      i->second->unlock();
-   }
+        if(block->dirty()) { // We might need to update the device
+            // Check if there is memory that will not be invalidated
+            if(block->start() < addr ||
+                    block->end() > __void(__addr(addr) + size))
+                manager.flush(block);
+        }
+        memory.lockWrite();
+        memory.erase(block);
+        memory.unlock();
+        block->invalidate();
+        block->unlock();
+    }
 }
 
 void RollingRegion::flush(const void *addr, size_t size)
@@ -152,39 +168,46 @@ void RollingRegion::flush(const void *addr, size_t size)
    Map::iterator i = map.lower_bound(addr);
    ASSERT(i != map.end());
    for(; i != map.end() && i->second->start() < addr; i++) {
+       RollingBlock * block = i->second;
+       block->lockWrite();
       // If the region is not present, just ignore it
-      if(i->second->dirty() == false) {
-         i->second->unlock();
-         continue;
+      if(block->dirty() == true) {
+          manager.flush(block);
       }
-      manager.flush(i->second);
-      i->second->unlock();
+      block->unlock();
    }
 }
 
 void
 RollingRegion::transferNonDirty()
 {
-   List::iterator i;
-	for(i = memory.begin(); i != memory.end(); i++) {
-		if (!(*i)->dirty()) {
-         manager.flush(*i);
-      }
-	}
+    BlockList::iterator i;
+    memory.lockRead();
+    for(i = memory.begin(); i != memory.end(); i++) {
+        RollingBlock * block = *i;
+        block->lockWrite();
+        if (!block->dirty()) {
+            manager.forceFlush(block);
+        }
+        block->unlock();
+    }
+    memory.unlock();
 }
 
 void
 RollingRegion::transferDirty()
 {
-   List::iterator i;
-	for(i = memory.begin(); i != memory.end(); i++) {
-		(*i)->lockWrite();
-		if ((*i)->dirty()) {
-         manager.flush(*i);
-         (*i)->invalidate();
-      }
-		(*i)->unlock();
-	}
+    BlockList::iterator i;
+    memory.lockRead();
+    for(i = memory.begin(); i != memory.end(); i++) {
+        RollingBlock * block = *i;
+        block->lockWrite();
+        if (block->dirty()) {
+            manager.flush(block);
+        }
+        block->unlock();
+    }
+    memory.unlock();
 }
 
 
@@ -196,21 +219,21 @@ RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size, bool 
 
 RollingBlock::~RollingBlock()
 {
-   TRACE("SubRegion %p released", _addr);
+   TRACE("RollingBlock %p released", _addr);
 }
 
 void
 RollingBlock::readOnly()
 {
-   if(present() == false) _parent.push(this);
-   ProtRegion::readOnly();
+    if(present() == false) _parent.push(this);
+    ProtRegion::readOnly();
 }
 
 void
 RollingBlock::readWrite()
 {
-   if(present() == false) _parent.push(this);
-   ProtRegion::readWrite();
+    if(present() == false) _parent.push(this);
+    ProtRegion::readWrite();
 }
 
 }}}

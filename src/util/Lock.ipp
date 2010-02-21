@@ -90,6 +90,7 @@ RWLock::unlock()
    }
 #endif
    LOCK_RELEASE(__lock);
+   ASSERT(__lock.__data.__nr_readers != -1);
 }
 
 inline bool
