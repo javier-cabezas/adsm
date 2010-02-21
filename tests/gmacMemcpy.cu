@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
 	printf("Test full memcpy: ");
 	memcpy(ptr, host, size * sizeof(long));
-	reset<<<Dg, Db>>>(ptr, 1);
+	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
     gmacThreadSynchronize();
 	printf("%d\n", check(ptr, 2 * size));
 
