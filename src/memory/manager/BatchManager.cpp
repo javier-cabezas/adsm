@@ -134,15 +134,13 @@ BatchManager::flush(const void *, size_t)
 }
 
 void
-BatchManager::remap(Context *ctx, Region *r, void *devPtr)
+BatchManager::map(Context *ctx, Region *r, void *devPtr)
 {
     ASSERT(r != NULL);
-    r->lockWrite();
     insertVirtual(ctx, r->start(), devPtr, r->size());
     if (ctx != r->owner()) {
         r->relate(ctx);
     }
-    r->unlock();
 }
 
 }}}

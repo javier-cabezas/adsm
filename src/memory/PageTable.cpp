@@ -118,9 +118,9 @@ void *PageTable::translate(void *host)
 	uint8_t *addr =
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
 	lock.unlock();
-	TRACE("PT pre-translate: %p -> %p", host, addr);
+	//TRACE("PT pre-translate: %p -> %p", host, addr);
 	addr += offset(host);
-	TRACE("PT translate: %p -> %p", host, addr);
+	//TRACE("PT translate: %p -> %p", host, addr);
 	return (void *)addr;
 #endif
 }

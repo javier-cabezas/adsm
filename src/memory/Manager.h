@@ -96,7 +96,7 @@ protected:
 	//! \param count Size (in bytes) to unmap
 	void hostUnmap(void *addr, size_t count);
 
-	virtual void remap(Context *, Region *, void *) = 0;
+	virtual void map(Context *, Region *, void *) = 0;
 	void unmap(Context *, Region *);
 
     virtual Region * newRegion(void * addr, size_t count, bool shared);

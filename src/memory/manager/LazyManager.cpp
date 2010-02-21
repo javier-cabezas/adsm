@@ -181,11 +181,10 @@ void LazyManager::flush(const void *addr, size_t size)
 }
 
 void
-LazyManager::remap(Context *ctx, Region *r, void *devPtr)
+LazyManager::map(Context *ctx, Region *r, void *devPtr)
 {
 	ProtRegion *region = dynamic_cast<ProtRegion *>(r);
 	ASSERT(region != NULL);
-    region->lockWrite();
 	insertVirtual(ctx, region->start(), devPtr, region->size());
 	region->relate(ctx);
     if (region->dirty() == false && region->present()) {
@@ -193,7 +192,6 @@ LazyManager::remap(Context *ctx, Region *r, void *devPtr)
                           region->start(),
                           region->size());
     }
-    region->unlock();
 }
 
 #if 0
