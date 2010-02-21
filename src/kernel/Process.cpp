@@ -102,6 +102,8 @@ Process::create(int acc)
         }
 
         ctx = _accs[usedAcc]->create();
+        // Initialize the global shared memory for the context
+        manager->initShared(ctx);
         _contexts.push_back(ctx);
     }
     q->second->queue = new Queue();

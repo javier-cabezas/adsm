@@ -32,7 +32,6 @@ void *memset(void *s, int c, size_t n)
 	gmac::Context *ctx = manager->owner(s);
 	if(ctx == NULL) __libc_memset(s, c, n);
 	else {
-        if (ctx->status() == gmac::Context::RUNNING) ctx->sync();
 		TRACE("GMAC Memset");
 		manager->invalidate(s, n);
 		ctx->memset(manager->ptr(s), c, n);
@@ -54,8 +53,6 @@ void *memcpy(void *dst, const void *src, size_t n)
 	// Locate memory regions (if any)
 	gmac::Context *dstCtx = manager->owner(dst);
 	gmac::Context *srcCtx = manager->owner(src);
-
-    if (srcCtx && srcCtx->status() == gmac::Context::RUNNING) srcCtx->sync();
 
 	// Fast path - both regions are in the CPU
 	if(dstCtx == NULL && srcCtx == NULL) {

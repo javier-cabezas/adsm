@@ -21,11 +21,13 @@ Region::~Region()
 gmacError_t Region::copyToDevice()
 {
     gmacError_t ret = gmacSuccess;
-    if((ret = _context->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess)
+    if((ret = _context->copyToDevice(Manager::ptr(_context, start()), start(), size())) != gmacSuccess)
         return ret;
     std::list<Context *>::iterator i;
+    TRACE("I have %d relatives", _relatives.size());
     for(i = _relatives.begin(); i != _relatives.end(); i++) {
-        if((ret = (*i)->copyToDevice(Manager::ptr(start()), start(), size())) != gmacSuccess) {
+        Context * ctx = *i;
+        if((ret = ctx->copyToDevice(Manager::ptr(ctx, start()), start(), size())) != gmacSuccess) {
             break;
         }
     }
@@ -35,7 +37,8 @@ gmacError_t Region::copyToDevice()
 gmacError_t Region::copyToHost()
 {
     gmacError_t ret = gmacSuccess;
-    if((ret = _context->copyToHost(start(), Manager::ptr(start()), size())) != gmacSuccess)
+    TRACE("I have %d relatives", _relatives.size());
+    if((ret = _context->copyToHost(start(), Manager::ptr(_context, start()), size())) != gmacSuccess)
         return ret;
     return ret;
 }

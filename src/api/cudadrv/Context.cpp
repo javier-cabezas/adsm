@@ -87,11 +87,13 @@ Context::malloc(void **addr, size_t size) {
     size += mm().pageTable().getPageSize();
     CUdeviceptr ptr = 0;
     CUresult ret = cuMemAlloc(&ptr, size);
-    if(ptr % mm().pageTable().getPageSize()) {
-        ptr += mm().pageTable().getPageSize() -
-            (ptr % mm().pageTable().getPageSize());
+    CUdeviceptr gpuPtr = ptr;
+    if(gpuPtr % mm().pageTable().getPageSize()) {
+        gpuPtr += mm().pageTable().getPageSize() -
+            (gpuPtr % mm().pageTable().getPageSize());
     }
-    *addr = (void *)ptr;
+    *addr = (void *)gpuPtr;
+    _alignMap.insert(AlignmentMap::value_type((void *) gpuPtr, (void *) ptr));
     unlock();
     return error(ret);
 }
@@ -117,7 +119,11 @@ gmacError_t
 Context::free(void *addr)
 {
     lock();
-    CUresult ret = cuMemFree(gpuAddr(addr));
+    AlignmentMap::const_iterator i;
+    i = _alignMap.find(addr);
+    if (i == _alignMap.end()) return gmacErrorInvalidValue;
+    CUdeviceptr gpuPtr = gpuAddr(i->second);
+    CUresult ret = cuMemFree(gpuPtr);
     unlock();
     return error(ret);
 }
@@ -210,6 +216,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     enterFunction(accHostDeviceCopy);
     gmac::Context *ctx = gmac::Context::current();
 
+    TRACE("Copy to device: %p to %p", host, dev);
     CUresult ret;
     if (_gpu.async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
@@ -247,6 +254,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
     enterFunction(accDeviceHostCopy);
     gmac::Context *ctx = gmac::Context::current();
 
+    TRACE("Copy to host: %p to %p", dev, host);
     CUresult ret;
     if (_gpu.async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
@@ -316,8 +324,6 @@ Context::memset(void *addr, int i, size_t n)
 gmac::KernelLaunch *
 Context::launch(gmacKernel_t addr)
 {
-    _status = RUNNING;
-
     gmac::Kernel * k = kernel(addr);
     ASSERT(k != NULL);
     _call._stream = streamLaunch;

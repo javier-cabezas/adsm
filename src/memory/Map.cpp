@@ -37,6 +37,19 @@ Map::globalFind(const void *addr)
     return ret;
 }
 
+Region *
+Map::sharedFind(const void *addr)
+{
+    RegionMap::const_iterator i;
+    Region *ret = NULL;
+    __shared.lockRead();
+    i = __shared.upper_bound(addr);
+    if(i != __shared.end() && i->second->start() <= addr)
+        ret = i->second;
+    __shared.unlock();
+    return ret;
+}
+
 void
 Map::clean()
 {

@@ -192,20 +192,7 @@ gmacFree(void *cpuPtr)
 {
 	__enterGmac();
 	enterFunction(gmacFree);
-	if(manager) {
-		manager->free(cpuPtr);
-	}
-
-	// If it is a shared global structure and nobody is accessing
-	// it anymore, release the host memory
-	if(gmac::memory::Map::isShared(cpuPtr)) {
-#ifdef USE_GLOBAL_HOST 
-        gmac::Context::current()->hostFree(cpuPtr);
-#endif
-	}
-	else {
-		gmac::Context::current()->free(cpuPtr);
-	}
+    gmacError_t ret = manager->free(cpuPtr);
 	exitFunction();
 	__exitGmac();
 	return gmacSuccess;
@@ -310,8 +297,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::Context *srcCtx = manager->owner(src);
 
 	if (dstCtx != NULL && srcCtx != NULL) return NULL;
-
-    if (srcCtx->status() == gmac::Context::RUNNING) srcCtx->sync();
 
     // TODO - copyDevice can be always asynchronous
 	if(dstCtx == srcCtx) {	// Same device copy

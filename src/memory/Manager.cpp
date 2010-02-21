@@ -112,13 +112,12 @@ Manager::globalMalloc(void ** addr, size_t count)
 gmacError_t
 Manager::globalMalloc(void ** addr, size_t count)
 {
-#ifndef USE_MMAP
     gmacError_t ret;
     void *devAddr;
     void *cpuAddr;
 
     // Allocate (or map) host memory
-    cpuAddr = mapToHost(devAddr, count, defaultProt());
+    cpuAddr = mapToHost(&devAddr, count, defaultProt());
     if (cpuAddr == NULL) // Failed!
         return gmacErrorMemoryAllocation;
 
@@ -128,14 +127,13 @@ Manager::globalMalloc(void ** addr, size_t count)
     ContextList::const_iterator i;
     ContextList & contexts = proc->contexts();
     contexts.lockRead();
-    Process::ContextList::const_iterator i;
-    for(i = proc->contexts().begin(); i != proc->contexts().end(); i++) {
-        Context * ctx = Context::current();
+    for(i = contexts.begin(); i != contexts.end(); i++) {
+        Context * ctx = *i;
         // Allocate device memory. We currently rely on the backend
         // to allocate this memory
         ret = ctx->malloc(&devAddr, count);
         if(ret != gmacSuccess) goto cleanup;
-        manager->remap(ctx, r, devAddr);
+        remap(ctx, r, devAddr);
     }
     Map::addShared(r);
     *addr = cpuAddr;
@@ -144,21 +142,54 @@ cleanup:
     Context *last = *i;
     for(i = proc->contexts().begin(); *i != last; i++) {
         Context * ctx = *i;
-        ctx->free(manager->ptr(ctx, cpuAddr));
-        manager->unmap(ctx, *cpuAddr);
+        ctx->free(ptr(ctx, cpuAddr));
+        unmap(ctx, r);
     }
 
+    hostUnmap(r->start(), r->size());
     delete r;
 
-    gmacFree(devAddr);
-    exitFunction();
-    __exitGmac();
     return ret;
-#else
-    return gmacErrorFeatureNotSupported;
-#endif
 }
 #endif
+
+gmacError_t
+Manager::free(void * addr)
+{
+    gmacError_t ret;
+    Region * r = current()->find<Region>(addr);
+    if (r == NULL) {
+        return gmacErrorInvalidValue;
+    }
+    r->lockWrite();
+	// If it is a shared global structure and nobody is accessing
+	// it anymore, release the host memory
+	if(r->shared()) {
+#ifdef USE_GLOBAL_HOST 
+        Context::current()->hostFree(cpuPtr);
+#endif
+        ContextList::const_iterator i;
+        ContextList & contexts = proc->contexts();
+        contexts.lockRead();
+        for(i = contexts.begin(); i != contexts.end(); i++) {
+            Context * ctx = *i;
+            // Free memory in the device
+            ret = ctx->free(ptr(ctx, addr));
+            ASSERT(ret == gmacSuccess);
+            unmap(ctx, r);
+        }
+        Map::removeShared(r);
+	}
+	else {
+        Context * ctx = Context::current();
+		ret = ctx->free(ptr(ctx, addr));
+        ASSERT(ret == gmacSuccess);
+	}
+    r->unlock();
+    delete r;
+
+    return gmacSuccess;
+}
 
 Region *Manager::remove(void *addr)
 {
@@ -192,19 +223,17 @@ void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 #endif
 }
 
-#if 0
-void Manager::unmap(Context *ctx, void *cpuPtr)
+void Manager::unmap(Context *ctx, Region *r)
 {
-	Region *region = Context::current()->mm().find<Region>(cpuPtr);
-	ASSERT(region != NULL);
-	region->unrelate(ctx);
-	removeVirtual(ctx, cpuPtr, region->size());
+	ASSERT(r != NULL);
+	r->unrelate(ctx);
+	removeVirtual(ctx, r->start(), r->size());
 }
-#endif
 
 void
 Manager::initShared(Context * ctx)
 {
+#ifndef USE_MMAP
     RegionMap::iterator i;
     RegionMap &shared = Map::shared();
     shared.lockRead();
@@ -222,6 +251,7 @@ Manager::initShared(Context * ctx)
         remap(ctx, r, devPtr);
     }
     shared.unlock();
+#endif
 }
 
 }}

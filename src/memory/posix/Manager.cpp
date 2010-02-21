@@ -30,6 +30,9 @@ void *Manager::mapToHost(void *addr, size_t count, int prot)
 #ifdef HAVE_POSIX_MEMALIGN
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
 		return NULL;
+#else
+	if(custom_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
+		return NULL;
 #endif
 	Memory::protect(cpuAddr, count, prot);
 #else
@@ -54,16 +57,18 @@ void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 void Manager::hostUnmap(void *addr, size_t count)
 {
 #ifdef USE_GLOBAL_HOST
-	if(proc->isShared(addr) == true) return;
+	ASSERT(Map::isShared(addr) == false);
 #endif
 
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
 	free(addr);
+#else
+    custom_free(addr);
 #endif
 #else
 	munmap(addr, count);
 #endif
 }
 
-} };
+}}

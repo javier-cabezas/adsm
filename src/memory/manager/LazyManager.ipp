@@ -6,7 +6,7 @@ namespace gmac { namespace memory { namespace manager {
 inline int
 LazyManager::defaultProt()
 {
-    return PROT_NONE;
+    return PROT_READ;
 }
 
 }}}
