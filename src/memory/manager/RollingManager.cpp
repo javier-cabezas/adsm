@@ -25,7 +25,9 @@ void RollingManager::writeBack()
 {
    // Get the buffer for the current thread
    RollingBlock *r = rollingMap.currentBuffer()->pop();
+   r->lockWrite();
    flush(r);
+   r->unlock();
 }
 
 Region *    
@@ -104,6 +106,18 @@ void RollingManager::flush()
    }
    m->unlock();
 
+   RegionMap::iterator s;
+    RegionMap &shared = Map::shared();
+    shared.lockRead();
+    for (s = shared.begin(); s != shared.end(); s++) {
+        RollingRegion * r = dynamic_cast<RollingRegion *>(s->second);
+        r->lockWrite();
+        r->transferDirty();
+        r->unlock();
+    }
+    shared.unlock();
+
+
    /** \todo Fix vm */
 	// ctx->flush();
 	ctx->invalidate();
@@ -143,8 +157,8 @@ void RollingManager::flush(const RegionSet & regions)
          r->unlock();
          continue;
       }
-      r->unlock();
       flush(r);
+      r->unlock();
       TRACE("Flush to Device %p", r->start());
    }
 
@@ -167,8 +181,23 @@ void RollingManager::invalidate()
       r->unlock();
    }
    m->unlock();
+
+	Context * ctx = Context::current();
+    RegionMap::iterator s;
+    RegionMap &shared = Map::shared();
+    shared.lockRead();
+    for (s = shared.begin(); s != shared.end(); s++) {
+        RollingRegion * r = dynamic_cast<RollingRegion *>(s->second);
+        r->lockWrite();
+        if(r->owner() == ctx) {
+            r->invalidate();
+        }
+        r->unlock();
+    }
+    shared.unlock();
+
    //gmac::Context::current()->flush();
-   gmac::Context::current()->invalidate();
+   ctx->invalidate();
    TRACE("RollingManager Invalidation Ends");
 }
 
@@ -243,33 +272,33 @@ bool RollingManager::read(void *addr)
 
 bool RollingManager::write(void *addr)
 {
-	RollingRegion *root = current()->find<RollingRegion>(addr);
-   if (root == NULL) return false;
-   root->lockWrite();
-   ProtRegion *region = root->find(addr);
-   ASSERT(region != NULL);
-   // Other thread fixed the fault?
-   region->lockWrite();
-	if(region->dirty() == true) {
-     region->unlock();
-     root->unlock();
-     return true;
-   }
-   Context *owner = root->owner();
+    RollingRegion *root = current()->find<RollingRegion>(addr);
+    if (root == NULL) return false;
+    root->lockWrite();
+    ProtRegion *region = root->find(addr);
+    ASSERT(region != NULL);
+    // Other thread fixed the fault?
+    region->lockWrite();
+    if(region->dirty() == true) {
+        region->unlock();
+        root->unlock();
+        return true;
+    }
+    Context *owner = root->owner();
 
-   Context *ctx = Context::current();
-   
-   while(rollingMap.currentBuffer()->overflows()) writeBack();
-   region->readWrite();
-   if(region->present() == false && current()->pageTable().dirty(addr)) {
-       gmacError_t ret = region->copyToHost();
-     ASSERT(ret == gmacSuccess);
-     current()->pageTable().clear(addr);
-   }
-   region->unlock();
-   root->unlock();
-   rollingMap.currentBuffer()->push(dynamic_cast<RollingBlock *>(region));
-   return true;
+    Context *ctx = Context::current();
+
+    while(rollingMap.currentBuffer()->overflows()) writeBack();
+    region->readWrite();
+    if(region->present() == false && current()->pageTable().dirty(addr)) {
+        gmacError_t ret = region->copyToHost();
+        ASSERT(ret == gmacSuccess);
+        current()->pageTable().clear(addr);
+    }
+    region->unlock();
+    root->unlock();
+    rollingMap.currentBuffer()->push(dynamic_cast<RollingBlock *>(region));
+    return true;
 }
 
 void
@@ -280,7 +309,7 @@ RollingManager::remap(Context *ctx, Region *r, void *devPtr)
     region->lockWrite();
 	insertVirtual(ctx, r->start(), devPtr, r->size());
 	region->relate(ctx);
-    region->transferNonDirty();
+    //region->transferNonDirty();
     region->unlock();
 }
 

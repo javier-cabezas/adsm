@@ -47,11 +47,17 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory { namespace manager {
 
-class RollingManager;
 class RollingBlock;
+class RollingManager;
+
+class BlockList : public std::set<RollingBlock *>, public util::RWLock
+{
+public:
+    BlockList();
+};
+
 class RollingRegion : public Region {
 public:
-   typedef std::set<RollingBlock *> List;
 protected:
    RollingManager &manager;
 
@@ -60,7 +66,7 @@ protected:
    Map map;
 
    // List of sub-regions that are present in memory
-   List memory;
+   BlockList memory;
 
    size_t cacheLine;
    size_t offset;
@@ -90,7 +96,7 @@ class RollingBlock : public ProtRegion {
 protected:
    RollingRegion &_parent;
    friend class RollingRegion;
-   void silentInvalidate();
+   void preInvalidate();
 public:
    RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared);
    ~RollingBlock();

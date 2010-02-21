@@ -102,8 +102,11 @@ protected:
 
    // Methods used by RollingBlock to request flushing and invalidating
    friend class RollingRegion;
+#if 0
    void invalidate(RollingBlock *region);
+#endif
    void flush(RollingBlock *region);
+   void forceFlush(RollingBlock *region);
 
    Region * newRegion(void * addr, size_t count, bool shared);
    int defaultProt();
