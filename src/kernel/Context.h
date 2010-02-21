@@ -82,8 +82,6 @@ protected:
     memory::RegionSet _releasedRegions;
     bool _releasedAll;
 
-    Status _status;
-
 	/*!
 		\brief Memory map for the context
 	*/
@@ -127,8 +125,6 @@ public:
     Kernel * kernel(gmacKernel_t k);
 
 	void destroy();
-
-	Status status() const;
 
     /*!
 		\brief Returns a reference to the context memory map

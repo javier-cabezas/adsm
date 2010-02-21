@@ -165,7 +165,7 @@ main(int argc, char** argv)
     }
 
     if ((HA/BLOCK_SIZE) % nIter != 0) {
-        fprintf(stderr, "Error: wrong HA size. HA/%d \% nIter must be 0\n", BLOCK_SIZE);
+        fprintf(stderr, "Error: wrong HA size. HA/%d nIter must be 0\n", BLOCK_SIZE);
         abort();
     }
 
@@ -214,9 +214,6 @@ main(int argc, char** argv)
 		pthread_join(threads[n], NULL);
 	}
 
-	gmacFree(A);
-	gmacFree(B);
-
     // compute reference solution
 	gettimeofday(&s, NULL);
     // check result
@@ -227,9 +224,9 @@ main(int argc, char** argv)
 
     for (unsigned n = 0; n < nIter; n++) {
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
-	}
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Check: ", "\n");
+    }
+    gettimeofday(&t, NULL);
+    printTime(&s, &t, "Check: ", "\n");
 
     fprintf(stderr, "Error: %f\n", err);
     // clean up memory
@@ -240,6 +237,9 @@ main(int argc, char** argv)
 
     delete [] params;
     delete [] threads;
+
+	gmacFree(A);
+	gmacFree(B);
 
     return fabsf(err) != 0.0f;
 }

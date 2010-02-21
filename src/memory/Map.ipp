@@ -39,7 +39,6 @@ Map::removeShared(Region * r)
     for (i = Map::__shared.begin(); i != Map::__shared.end(); i++) {
         if (r == i->second) {
             __shared.erase(i);
-            delete r;
             break;
         }
     }
@@ -84,6 +83,9 @@ Map::find(const void *addr)
     ret = localFind(addr);
     if(ret == NULL) {
         ret = globalFind(addr);
+    }
+    if(ret == NULL) {
+        ret = sharedFind(addr);
     }
     unlock();
 

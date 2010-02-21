@@ -76,22 +76,19 @@ inline gmacError_t
 Context::sync()
 {
     CUresult ret = CUDA_SUCCESS;
-    if (_status == RUNNING) {
-        lock();
-        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-            unlock();
-            usleep(Context::USleepLaunch);
-            lock();
-        }
-        if (ret == CUDA_SUCCESS) {
-            TRACE("Sync: success");
-        } else {
-            TRACE("Sync: error: %d", ret);
-        }
-        _status = NONE;
-
+    lock();
+    while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
         unlock();
+        usleep(Context::USleepLaunch);
+        lock();
     }
+    if (ret == CUDA_SUCCESS) {
+        TRACE("Sync: success");
+    } else {
+        TRACE("Sync: error: %d", ret);
+    }
+
+    unlock();
 
     return error(ret);
 }

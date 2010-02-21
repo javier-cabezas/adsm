@@ -54,8 +54,13 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
+class AlignmentMap : public std::map<void *, void*>
+{};
+
 class Context : public gmac::Context {
 protected:
+    AlignmentMap _alignMap;
+
 	Accelerator  &_gpu;
 	ModuleVector _modules;
 

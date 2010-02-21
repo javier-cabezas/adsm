@@ -222,7 +222,6 @@ bool RollingManager::read(void *addr)
 	RollingRegion *root = current()->find<RollingRegion>(addr);
    if(root == NULL) return false;
    Context * owner = root->owner();
-   if (owner->status() == Context::RUNNING) owner->sync();
    ProtRegion *region = root->find(addr);
    ASSERT(region != NULL);
    region->lockWrite();
@@ -257,7 +256,6 @@ bool RollingManager::write(void *addr)
      return true;
    }
    Context *owner = root->owner();
-   if(owner->status() == Context::RUNNING) owner->sync();
 
    Context *ctx = Context::current();
    

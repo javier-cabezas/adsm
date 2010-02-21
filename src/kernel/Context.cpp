@@ -23,12 +23,10 @@ Context::Context(Accelerator &acc) :
     _acc(acc),
     _kernels(),
     _releasedRegions(),
-    _releasedAll(false),
-    _status(NONE)
+    _releasedAll(false)
 {
     PRIVATE_SET(Context::key, this);
 	_id = ++_next;
-    manager->initShared(this);
 }
 
 Context::~Context()

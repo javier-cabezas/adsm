@@ -57,6 +57,7 @@ protected:
 
     Region *localFind(const void *addr);
     static Region *globalFind(const void *addr);
+    static Region *sharedFind(const void *addr);
 
     void clean();
 

@@ -32,6 +32,19 @@ void BatchManager::flush()
         r->unlock();
     }
     m->unlock();
+
+    RegionMap::iterator s;
+    RegionMap &shared = Map::shared();
+    shared.lockRead();
+    for (s = shared.begin(); s != shared.end(); s++) {
+        TRACE("Shared Memory Copy to Device");
+        Region * r = s->second;
+        r->lockRead();
+        r->copyToDevice();
+        r->unlock();
+    }
+    shared.unlock();
+
     /*!
       \todo Fix vm
     */
@@ -49,7 +62,6 @@ void BatchManager::flush(const RegionSet & regions)
     Context * ctx = Context::current();
     RegionSet::iterator i;
     for(i = regions.begin(); i != regions.end(); i++) {
-        TRACE("Memory Copy to Device");
         Region * r = *i;
         r->lockRead();
         r->copyToDevice();
@@ -67,13 +79,26 @@ BatchManager::invalidate()
     Map::const_iterator i;
     current()->lockRead();
     for(i = current()->begin(); i != current()->end(); i++) {
-        TRACE("Memory Copy from Device");
         Region * r = i->second;
         r->lockRead();
         r->copyToHost();
         r->unlock();
     }
     current()->unlock();
+
+    Context * ctx = Context::current();
+    RegionMap::iterator s;
+    RegionMap &shared = Map::shared();
+    shared.lockRead();
+    for (s = shared.begin(); s != shared.end(); s++) {
+        Region * r = s->second;
+        r->lockRead();
+        if(r->owner() == ctx) {
+            r->copyToHost();
+        }
+        r->unlock();
+    }
+    shared.unlock();
 }
 
 void
@@ -84,15 +109,16 @@ BatchManager::invalidate(const RegionSet & regions)
         return;
     }
 
+    Context * ctx = Context::current();
     RegionSet::const_iterator i;
     for(i = regions.begin(); i != regions.end(); i++) {
-        TRACE("Memory Copy from Device");
         Region * r = *i;
         r->lockRead();
-        r->copyToHost();
+        if (r->shared() == false || r->owner() == ctx) {
+            r->copyToHost();
+        }
         r->unlock();
     }
-
 }
 
 void
@@ -113,7 +139,9 @@ BatchManager::remap(Context *ctx, Region *r, void *devPtr)
     ASSERT(r != NULL);
     r->lockWrite();
     insertVirtual(ctx, r->start(), devPtr, r->size());
-    r->relate(ctx);
+    if (ctx != r->owner()) {
+        r->relate(ctx);
+    }
     r->unlock();
 }
 

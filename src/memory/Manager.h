@@ -96,8 +96,8 @@ protected:
 	//! \param count Size (in bytes) to unmap
 	void hostUnmap(void *addr, size_t count);
 
-	void mallocDevice(void **addr, size_t count);
-	void mallocHost(void *addr, size_t count);
+	virtual void remap(Context *, Region *, void *) = 0;
+	void unmap(Context *, Region *);
 
     virtual Region * newRegion(void * addr, size_t count, bool shared);
     virtual int defaultProt();
@@ -133,7 +133,7 @@ public:
 	//! This method is called whenever the user
 	//! releases accelerator memory
 	//! \param devPtr Memory address that has been released
-	virtual void free(void *addr) = 0;
+	gmacError_t free(void *addr);
 
 	//! This method is called whenever the user invokes
 	//! a kernel to be executed at the accelerator
@@ -159,17 +159,11 @@ public:
 	static void *ptr(Context *ctx, void *addr);
 	static void *ptr(void *addr);
 
-	virtual void remap(Context *, Region *, void *) = 0;
-#if 0
-	void unmap(Context *, void *);
-#endif
-
     void initShared(Context *);
 
 	Context *owner(const void *addr);
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
-
 };
 
 

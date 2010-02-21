@@ -44,7 +44,6 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 	
     __enterGmac();
 	pushState(IORead);
-    if (srcCtx->status() == gmac::Context::RUNNING) srcCtx->sync();
 
     gmacError_t err;
     size_t ret = 0;
