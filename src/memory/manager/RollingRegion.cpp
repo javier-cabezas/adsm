@@ -141,7 +141,7 @@ void RollingRegion::invalidate(const void *addr, size_t size)
     Map::iterator i = map.lower_bound(addr);
     ASSERT(i != map.end());
     for(; i != map.end() && i->second->start() < end; i++) {
-        RollingBlock * block = block;
+        RollingBlock * block = i->second;
         block->lockWrite();
         // If the region is not present, just ignore it
         if(block->present() == false) {
@@ -151,8 +151,8 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 
         if(block->dirty()) { // We might need to update the device
             // Check if there is memory that will not be invalidated
-            if(block->start() < addr ||
-                    block->end() > __void(__addr(addr) + size))
+            if(block->start() <= addr ||
+               block->end()   >= __void(__addr(addr) + size))
                 manager.flush(block);
         }
         memory.lockWrite();
