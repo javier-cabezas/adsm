@@ -1,3 +1,14 @@
+libgmac (0.1.0) unstable; urgency=low
+
+  * New upstream version
+  * Huge rewrite of the kernel and cudadrv parts of the code
+  * 
+  * Added fast path in copyToDevice transfers (truly asynchronous)
+  * Using single device context per device by default since it is faster (configurable)
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Mon, 22 Feb 2010 18:21:00 +0100
+
+
 libgmac (0.0.5) unstable; urgency=low
 
   * New upstream version
