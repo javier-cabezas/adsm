@@ -11,9 +11,10 @@ const char *Context::pageTableSymbol = "__pageTable";
 void
 Context::setup()
 {
-    mutex = new util::Lock(paraver::ctxLocal);
+#ifdef USE_MULTI_CONTEXT
     _ctx = _gpu.createCUDAContext();
     enable();
+#endif
 }
 
 void
@@ -53,6 +54,9 @@ Context::Context(Accelerator &gpu) :
 #ifdef USE_VM
     , pageTable(NULL)
 #endif
+#ifdef USE_MULTI_CONTEXT
+    , mutex(paraver::ctxLocal)
+#endif
 {
 	setup();
 
@@ -77,7 +81,6 @@ Context::~Context()
     // CUDA might be deinitalized before executing this code
     // mutex->lock();
     // ASSERT(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
-    delete mutex;
 }
 
 gmacError_t

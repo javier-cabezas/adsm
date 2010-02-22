@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __API_CUDADRV_ACCELERATOR_H_
 
 #include <kernel/Accelerator.h>
+#include "util/Lock.h"
 
 #include <cuda.h>
 #include <vector_types.h>
@@ -55,20 +56,27 @@ protected:
     int major;
     int minor;
 
+#ifndef USE_MULTI_CONTEXT
+    CUcontext _ctx;
+    util::Lock mutex;
+#endif
+
+
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
 	CUdevice device() const;
 
 	gmac::Context *create();
-#if 0
-	gmac::Context *clone(const gmac::Context &);
-#endif
 	void destroy(gmac::Context *);
 	size_t nContexts() const;
 
+#ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
-
+#else
+    void lock();
+    void unlock();
+#endif
     bool async() const;
 };
 

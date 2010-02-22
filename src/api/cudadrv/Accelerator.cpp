@@ -11,6 +11,9 @@ namespace gpu {
 
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
+#ifndef USE_MULTI_CONTEXT
+    , mutex(paraver::ctxLocal)
+#endif
 {
     unsigned int size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
@@ -22,6 +25,18 @@ Accelerator::Accelerator(int n, CUdevice device) :
     ret = cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device);
 	ASSERT(ret == CUDA_SUCCESS);
     _async = bool(async);
+
+
+#ifndef USE_MULTI_CONTEXT
+    CUcontext tmp;
+    unsigned int flags = 0;
+    if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
+    ret = cuCtxCreate(&_ctx, flags, _device);
+    if(ret != CUDA_SUCCESS)
+        FATAL("Unable to create CUDA context %d", ret);
+    ret = cuCtxPopCurrent(&tmp);
+    ASSERT(ret == CUDA_SUCCESS);
+#endif
 }
 
 Accelerator::~Accelerator()
@@ -57,6 +72,7 @@ void Accelerator::destroy(gmac::Context *context)
 	queue.erase(c);
 }
 
+#ifdef USE_MULTI_CONTEXT
 CUcontext
 Accelerator::createCUDAContext()
 {
@@ -70,5 +86,6 @@ Accelerator::createCUDAContext()
     ASSERT(ret == CUDA_SUCCESS);
     return ctx;
 }
+#endif
 
 }}

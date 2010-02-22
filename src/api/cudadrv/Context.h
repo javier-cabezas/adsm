@@ -85,8 +85,10 @@ protected:
 	static const char *baseRegisterSymbol;
 #endif
 
+#ifdef USE_MULTI_CONTEXT
 	CUcontext _ctx;
-	util::Lock *mutex;
+	util::Lock mutex;
+#endif
 
     CUstream streamLaunch;
     CUstream streamToDevice;
@@ -111,6 +113,7 @@ public:
     static gmacError_t error(CUresult);
 
     static Context * current();
+
 	void lock();
     void unlock();
 
