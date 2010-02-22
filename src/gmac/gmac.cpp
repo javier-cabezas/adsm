@@ -59,7 +59,7 @@ gmacFini(void)
 	__enterGmac();
     TRACE("Cleaning GMAC");
     delete proc;
-    __exitGmac();
+    // We do not exitGmac to allow proper stdc function handling
 }
 
 gmacError_t

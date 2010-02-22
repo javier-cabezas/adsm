@@ -15,6 +15,7 @@ RollingBuffer::overflows()
    lockRead();
    bool ret = _buffer.size() >= _max;
    unlock();
+   return ret;
 }
 
 inline size_t
