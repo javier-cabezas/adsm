@@ -213,6 +213,18 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+multi_context_default="no"
+AC_MSG_CHECKING(whether to use multiple device contexts per device)
+AC_ARG_ENABLE(multi-context,
+	AS_HELP_STRING([--enable-multi-context],[turn on multiple context per accelerator on [[default=no]]])
+		, , enable_multi_context=$multi_context_default)
+if test "$enable_multi_context" = "yes" || test "$enable_multi_context" = "yes"; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE([USE_MULTI_CONTEXT])
+else
+	AC_MSG_RESULT(no)
+fi
+
 tests_default="no"
 AC_MSG_CHECKING(whether to build tests)
 AC_ARG_ENABLE(tests,

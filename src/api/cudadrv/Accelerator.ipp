@@ -23,6 +23,25 @@ Accelerator::async() const
     return _async;
 }
 
+#ifndef USE_MULTI_CONTEXT
+inline void
+Accelerator::lock()
+{
+    mutex.lock();
+    CUresult ret = cuCtxPushCurrent(_ctx);
+    ASSERT(ret == CUDA_SUCCESS);
+}
+
+inline void
+Accelerator::unlock()
+{
+    CUcontext tmp;
+    CUresult ret = cuCtxPopCurrent(&tmp);
+    ASSERT(ret == CUDA_SUCCESS);
+    mutex.unlock();
+}
+#endif
+
 }}
 
 #endif
