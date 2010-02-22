@@ -76,13 +76,7 @@ protected:
 	static PRIVATE(key);
 	static unsigned _next;
 
-	unsigned _id;
-    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
-    KernelMap _kernels;
-    memory::RegionSet _releasedRegions;
-    bool _releasedAll;
-
-	/*!
+    /*!
 		\brief Memory map for the context
 	*/
 	memory::Map _mm;
@@ -91,6 +85,12 @@ protected:
 		\brief Accelerator where the context is attached
 	*/
 	Accelerator &_acc;
+
+	unsigned _id;
+    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
+    KernelMap _kernels;
+    memory::RegionSet _releasedRegions;
+    bool _releasedAll;
 
     void * _bufferPageLocked;
     size_t _bufferPageLockedSize;

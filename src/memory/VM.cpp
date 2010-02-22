@@ -20,15 +20,15 @@ Dumper::alloc(size_t size) const
 void *
 Dumper::hostAlloc(void **host, size_t size) const
 {
-	void *device = NULL;
 	*host = NULL;
+	void *device = NULL;
 #ifdef USE_VM
     Context * ctx = Context::current();
 	if(ctx == NULL) return NULL;
     gmacError_t ret = ctx->hostAlloc(host, (void **)&device, size);
 	ASSERT(ret == gmacSuccess);
-	return device;
 #endif
+	return device;
 }
 
 void

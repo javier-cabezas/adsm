@@ -77,13 +77,15 @@ AC_ARG_ENABLE(debug,
 		, , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
 	AC_MSG_RESULT(yes)
-	CFLAGS="-g -O0"
-	CXXFLAGS="-g -O0 -fno-inline"
+	CFLAGS="-Wall -Werror -g -O0"
+	CXXFLAGS="-Wall -Werror -g -O0 -fno-inline"
+    CUDA_CFLAGS="-g -O0"
 	AC_DEFINE(DEBUG)
 else
 	AC_MSG_RESULT(no)
-	CXXFLAGS="-g -O3 -fomit-frame-pointer"
-	CFLAGS="-g -O3"
+	CXXFLAGS="-Wall -Werror -g -O3 -fomit-frame-pointer"
+	CFLAGS="-Wall -Werror -g -O3 -fomit-frame-pointer"
+    CUDA_CFLAGS="-g -O3 -fomit-frame-pointer"
 fi
 
 # Check for profiling mode

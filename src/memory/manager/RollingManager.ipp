@@ -22,12 +22,14 @@ inline size_t
 RollingBuffer::inc(size_t n)
 {
    _max += n;
+   return _max;
 }
 
 inline size_t
 RollingBuffer::dec(size_t n)
 {
    _max -= n;
+   return _max;
 }
 
 inline bool

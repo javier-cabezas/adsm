@@ -47,8 +47,8 @@ RollingManager::RollingManager() :
 {
     lineSize = paramLineSize;
     lruDelta = paramLruDelta;
-    TRACE("Using %d as Line Size", lineSize);
-    TRACE("Using %d as LRU Delta Size", lruDelta);
+    TRACE("Using %zd as Line Size", lineSize);
+    TRACE("Using %zd as LRU Delta Size", lruDelta);
 }
 
 RollingManager::~RollingManager()
@@ -148,7 +148,7 @@ void RollingManager::flush(const RegionSet & regions)
 #endif
     size_t blocks = rollingMap.currentBuffer()->size();
 
-    for(int j = 0; j < blocks; j++) {
+    for(unsigned j = 0; j < blocks; j++) {
         RollingBlock *r = rollingMap.currentBuffer()->pop();
         r->lockWrite();
         // Check if we have to flush
@@ -250,7 +250,6 @@ bool RollingManager::read(void *addr)
 {
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
-    Context * owner = root->owner();
     ProtRegion *region = root->find(addr);
     ASSERT(region != NULL);
     region->lockWrite();
@@ -284,9 +283,6 @@ bool RollingManager::write(void *addr)
         root->unlock();
         return true;
     }
-    Context *owner = root->owner();
-
-    Context *ctx = Context::current();
 
     while(rollingMap.currentBuffer()->overflows()) writeBack();
     region->readWrite();

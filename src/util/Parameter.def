@@ -1,5 +1,5 @@
 // GMAC global settings
-PARAM(paramMemManager, char *, "Rolling", "GMAC_MANAGER")
+PARAM(paramMemManager, const char *, "Rolling", "GMAC_MANAGER")
 PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
 
 // GMAC Page table settings

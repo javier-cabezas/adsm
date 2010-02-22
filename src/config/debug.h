@@ -43,6 +43,13 @@ WITH THE SOFTWARE.  */
 #include <threads.h>
 #undef __THREAD_CANARY
 
+
+#if defined(__LP64__) 
+#define FMT_TID "0x%lx"
+#else
+#define FMT_TID "0x%llx"
+#endif
+
 #ifdef DEBUG
 #define ASSERT(e)  \
     if (!(e)) {    \
@@ -62,7 +69,7 @@ WITH THE SOFTWARE.  */
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
-		fprintf(stderr,"TRACE [%s:%d] (%p)" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
+		fprintf(stderr,"TRACE [%s:%d] ("FMT_TID")" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
 	} while(0)
 #else
 #define TRACE(fmt, ...)

@@ -46,7 +46,8 @@ void **__cudaRegisterFatBinary(void *fatCubin)
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
 	__enterGmac();
-    ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
+    //! \todo Correctly undo everything
+    //ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	__exitGmac();
 }
 

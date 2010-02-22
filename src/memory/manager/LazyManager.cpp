@@ -149,7 +149,7 @@ void LazyManager::flush(const RegionSet & regions)
 
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
-	Context::current()->invalidate();
+	ctx->invalidate();
 }
 
 void LazyManager::invalidate(const void *addr, size_t size)
@@ -225,7 +225,6 @@ bool LazyManager::read(void *addr)
 	if(region == NULL) return false;
 
     region->lockWrite();
-    Context * owner = region->owner();
 
 	region->readWrite();
 	region->copyToHost();
@@ -245,7 +244,7 @@ bool LazyManager::write(void *addr)
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {
-		TRACE("DMA from Device from %p (%d bytes)", region->start(),
+		TRACE("DMA from Device from %p (%zd bytes)", (void *) region->start(),
 				region->size());
 		region->copyToHost();
 	}

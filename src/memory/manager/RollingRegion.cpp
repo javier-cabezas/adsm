@@ -89,8 +89,7 @@ RollingBlock *RollingRegion::find(const void *addr)
 void RollingRegion::flush()
 {
    assert(tryWrite() == false);
-   TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
-
+   TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
 
    // Flush those sub-regions that are present in memory and dirty
    Map::const_iterator i;
@@ -98,7 +97,7 @@ void RollingRegion::flush()
       RollingBlock * block = i->second;
       block->lockWrite();
       if(block->dirty() == true)  {
-          TRACE("Flush RollingBlock %p (%d bytes)", block->start(), block->size());
+          TRACE("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
           manager.flush(block);
       }
       block->unlock();
@@ -109,7 +108,7 @@ void RollingRegion::flush()
 void RollingRegion::invalidate()
 {
     ASSERT(tryWrite() == false);
-    TRACE("RollingRegion Invalidate %p (%d bytes)", _addr, _size);
+    TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
     // Check if the region is already invalid
 
     memory.lockWrite();
@@ -127,7 +126,7 @@ void RollingRegion::invalidate()
     // Invalidate those sub-regions that are present in memory
     for(i = memory.begin(); i != memory.end(); i++) {
         RollingBlock * block = *i;
-        TRACE("Invalidate RollingBlock %p (%d bytes)", block->start(), block->size());
+        TRACE("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
         block->preInvalidate();
         block->unlock();
     }
@@ -219,7 +218,7 @@ RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size, bool 
 
 RollingBlock::~RollingBlock()
 {
-   TRACE("RollingBlock %p released", _addr);
+   TRACE("RollingBlock %p released", (void *) _addr);
 }
 
 void

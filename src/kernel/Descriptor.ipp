@@ -6,8 +6,8 @@ namespace gmac {
 template <typename K>
 inline
 Descriptor<K>::Descriptor(const char * name, K key) :
-    _name(name),
-    _key(key)
+    _key(key),
+    _name(name)
 {
 }
 
