@@ -93,7 +93,7 @@ Context::malloc(void **addr, size_t size) {
             (gpuPtr % mm().pageTable().getPageSize());
     }
     *addr = (void *)gpuPtr;
-    _alignMap.insert(AlignmentMap::value_type((void *) gpuPtr, (void *) ptr));
+    _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     unlock();
     return error(ret);
 }
@@ -120,10 +120,10 @@ Context::free(void *addr)
 {
     lock();
     AlignmentMap::const_iterator i;
-    i = _alignMap.find(addr);
+    CUdeviceptr gpuPtr = gpuAddr(addr);
+    i = _alignMap.find(gpuPtr);
     if (i == _alignMap.end()) return gmacErrorInvalidValue;
-    CUdeviceptr gpuPtr = gpuAddr(i->second);
-    CUresult ret = cuMemFree(gpuPtr);
+    CUresult ret = cuMemFree(i->second);
     unlock();
     return error(ret);
 }
