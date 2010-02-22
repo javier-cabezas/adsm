@@ -10,7 +10,7 @@ PARAM(paramLineSize, size_t, 1024, "GMAC_LINESIZE", PARAM_NONZERO)
 PARAM(paramLruDelta, size_t, 2, "GMAC_LRUDELTA", PARAM_NONZERO)
 
 // Context specific settings
-PARAM(paramBufferPageLockedSize, size_t, 4096 * 1024, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
+PARAM(paramBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
 
 // Miscelaneous parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")

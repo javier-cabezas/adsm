@@ -220,6 +220,8 @@ gmacLaunch(gmacKernel_t k)
     TRACE("Flush the memory used in the kernel");
     manager->flush(*launch);
 
+    // Wait for pending transfers
+    ctx->syncToDevice();
     TRACE("Kernel Launch");
     ret = launch->execute();
 
