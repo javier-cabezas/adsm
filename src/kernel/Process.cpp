@@ -92,17 +92,17 @@ Process::create(int acc)
     ASSERT(q != _queues.end());
     _queues.unlock();
     Context * ctx;
-    int usedAcc;
+    unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        ASSERT(acc < _accs.size());
+        ASSERT(acc < int(_accs.size()));
         usedAcc = acc;
         ctx = _accs[acc]->create();
     } else {
         // Bind the new Context to the accelerator with less contexts
         // attached to it
         usedAcc = 0;
-        for (int i = 1; i < _accs.size(); i++) {
+        for (unsigned i = 1; i < _accs.size(); i++) {
             if (_accs[i]->nContexts() < _accs[usedAcc]->nContexts()) {
                 usedAcc = i;
             }
@@ -124,7 +124,7 @@ Process::create(int acc)
 gmacError_t Process::migrate(int acc)
 {
 	lockWrite();
-    if (acc >= _accs.size()) return gmacErrorInvalidValue;
+    if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	TRACE("Migrating context");
     if (Context::hasCurrent()) {

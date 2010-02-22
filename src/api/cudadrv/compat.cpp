@@ -45,6 +45,8 @@ static inline CUarray_format __getChannelFormatKind(const struct cudaChannelForm
 		case cudaChannelFormatKindFloat:
 			if(size == 16) return CU_AD_FORMAT_HALF;
 			if(size == 32) return CU_AD_FORMAT_FLOAT;
+		case cudaChannelFormatKindNone:
+            break;
 	};
 	return CU_AD_FORMAT_UNSIGNED_INT32;
 }
@@ -99,6 +101,42 @@ static inline cudaError_t __getCUDAError(CUresult r)
 		case CUDA_ERROR_NOT_INITIALIZED:
 		case CUDA_ERROR_DEINITIALIZED:
 			return cudaErrorInitializationError;
+        case CUDA_ERROR_INVALID_VALUE:
+            return cudaErrorInvalidValue;
+        case CUDA_ERROR_NO_DEVICE:
+            return cudaErrorNoDevice;
+        case CUDA_ERROR_INVALID_DEVICE:
+            return cudaErrorInvalidDevice;
+        case CUDA_ERROR_MAP_FAILED:
+            return cudaErrorMapBufferObjectFailed;
+        case CUDA_ERROR_UNMAP_FAILED:
+            return cudaErrorUnmapBufferObjectFailed;
+        case CUDA_ERROR_LAUNCH_TIMEOUT:
+            return cudaErrorLaunchTimeout;
+        case CUDA_ERROR_LAUNCH_FAILED:
+        case CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING:
+            return cudaErrorLaunchFailure;
+        case CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES:
+            return cudaErrorLaunchOutOfResources;
+        case CUDA_ERROR_POINTER_IS_64BIT:
+        case CUDA_ERROR_SIZE_IS_64BIT:
+        case CUDA_ERROR_ARRAY_IS_MAPPED:
+        case CUDA_ERROR_ALREADY_MAPPED:
+        case CUDA_ERROR_INVALID_CONTEXT:
+        case CUDA_ERROR_INVALID_HANDLE:
+        case CUDA_ERROR_INVALID_IMAGE:
+        case CUDA_ERROR_INVALID_SOURCE:
+        case CUDA_ERROR_FILE_NOT_FOUND:
+        case CUDA_ERROR_CONTEXT_ALREADY_CURRENT:
+        case CUDA_ERROR_NO_BINARY_FOR_GPU:
+        case CUDA_ERROR_ALREADY_ACQUIRED:
+        case CUDA_ERROR_NOT_FOUND:
+        case CUDA_ERROR_NOT_READY:
+        case CUDA_ERROR_NOT_MAPPED:
+        case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
+        case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
+        case CUDA_ERROR_UNKNOWN:
+            break;
 	};
 	return cudaErrorUnknown;
 }
@@ -144,7 +182,7 @@ cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		const void *src, size_t spitch, size_t width, size_t height)
 {
-	TRACE("cudaMemcpy2DToArray (%d %d %d)", spitch, width, height);
+	TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -215,7 +253,7 @@ cudaError_t cudaMallocArray(struct cudaArray **array,
 	cuDesc.Width = width; cuDesc.Height = height;
 	cuDesc.Format = __getChannelFormatKind(desc);
 	cuDesc.NumChannels = __getNumberOfChannels(desc);
-	TRACE("cudaMallocArray: %d %d with format 0x%x and %d channels",
+	TRACE("cudaMallocArray: %zd %zd with format 0x%x and %u channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	__enterGmac();
     gmac::Context * ctx = gmac::Context::current();
@@ -288,7 +326,7 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 	CUdeviceptr ptr = variable->devPtr() + offset;
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
-			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%d bytes)", src, ptr, count);
+			TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
 			ctx->lock();
 			r = cuMemcpyHtoD(ptr, src, count);
 			ctx->unlock();
@@ -316,6 +354,8 @@ static inline CUfilter_mode __getFilterMode(cudaTextureFilterMode mode)
 			return CU_TR_FILTER_MODE_POINT;
 		case cudaFilterModeLinear:
 			return CU_TR_FILTER_MODE_LINEAR;
+		default:
+			return CU_TR_FILTER_MODE_LINEAR;
 	};
 }
 
@@ -326,6 +366,8 @@ static inline CUaddress_mode __getAddressMode(cudaTextureAddressMode mode)
 			return CU_TR_ADDRESS_MODE_WRAP;
 		case cudaAddressModeClamp:
 			return CU_TR_ADDRESS_MODE_CLAMP;
+        default:
+			return CU_TR_ADDRESS_MODE_WRAP;
 	};
 }
 

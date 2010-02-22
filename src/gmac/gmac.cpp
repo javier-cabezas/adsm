@@ -164,7 +164,7 @@ gmacMalloc(void **cpuPtr, size_t count)
 {
 	__enterGmac();
 	enterFunction(gmacMalloc);
-	count = (count < getpagesize()) ? getpagesize(): count;
+	count = (int(count) < getpagesize())? getpagesize(): count;
 	gmacError_t ret = manager->malloc(cpuPtr, count);
 	exitFunction();
 	__exitGmac();
@@ -195,7 +195,7 @@ gmacFree(void *cpuPtr)
     gmacError_t ret = manager->free(cpuPtr);
 	exitFunction();
 	__exitGmac();
-	return gmacSuccess;
+	return ret;
 }
 
 void *
@@ -286,7 +286,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 {
 	__enterGmac();
 	void *ret = dst;
-	size_t ds = 0, ss = 0;
 
     gmacError_t err;
 #if 0
@@ -310,8 +309,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	}
 	else { // dstCtx != srcCtx
 		void *tmp;
-        bool pageLocked = false;
-
         gmac::Context *ctx = gmac::Context::current();
 
         manager->flush(src, n);

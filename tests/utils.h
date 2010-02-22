@@ -48,42 +48,42 @@ void vecAdd(T * c, const T * a, const T * b, uint32_t elems);
 
 #include "utils.ipp"
 
-static
+inline
 float
 checkError(const float * orig, const float * calc, uint32_t elems)
 {
     return checkError<float>(orig, calc, elems, fabsf);
 }
 
-static
+inline
 double
 checkError(const double * orig, const double * calc, uint32_t elems)
 {
     return checkError<double>(orig, calc, elems, fabs);
 }
 
-static
+inline
 long double
 checkError(const long double * orig, const long double * calc, uint32_t elems)
 {
     return checkError<long double>(orig, calc, elems, fabsl);
 }
 
-static
+inline
 int
 checkError(const int * orig, const int * calc, uint32_t elems)
 {
     return checkError<int>(orig, calc, elems, abs);
 }
 
-static
+inline
 long int
 checkError(const long int * orig, const long int * calc, uint32_t elems)
 {
     return checkError<long int>(orig, calc, elems, labs);
 }
 
-static
+inline
 long long int
 checkError(const long long int * orig, const long long int * calc, uint32_t elems)
 {

@@ -18,7 +18,7 @@ Table<T>::Table(size_t nEntries) :
     , __shared(true)
 #endif
 {
-    TRACE("Creating Table with %d entries (%p)", nEntries, this);
+    TRACE("Creating Table with %zd entries (%p)", nEntries, this);
 
     /* int ret = 0;
      * ASSERT(posix_memalign((void **)&table, 0x1000,
@@ -42,7 +42,7 @@ Table<T>::Table(size_t nEntries) :
 template<typename T>
 Table<T>::~Table()
 {
-    TRACE("Cleaning Table with %d entries (%p) @ %p", nEntries, this, table);
+    TRACE("Cleaning Table with %zd entries (%p) @ %p", nEntries, this, table);
     free(table);
 #ifdef USE_VM
     enterFunction(vmFree);

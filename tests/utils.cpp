@@ -18,21 +18,21 @@ void printAvgTime(struct timeval *start, struct timeval *end, const char *pre, c
 
 void randInit(float *a, size_t size)
 {
-	for(int i = 0; i < size; i++) {
+	for(unsigned i = 0; i < size; i++) {
 		a[i] = 1.0 * rand();
 	}
 }
 
 void randInitMax(float *a, float maxVal, size_t size)
 {
-	for(int i = 0; i < size; i++) {
+	for(unsigned i = 0; i < size; i++) {
 		a[i] = 1.f * (rand() % int(maxVal));
 	}
 }
 
 void valueInit(float *a, float v, size_t size)
 {
-	for(int i = 0; i < size; i++) {
+	for(unsigned i = 0; i < size; i++) {
 		a[i] = v;
 	}
 }

@@ -42,7 +42,7 @@ Lock::unlock()
 {
 #ifdef DEBUG
    if(owner() != SELF())
-      WARNING("Thread 0x%x releases lock owned by 0x%x", SELF(), owner());
+      WARNING("Thread "FMT_TID" releases lock owned by "FMT_TID, SELF(), owner());
    release();
 #endif
    MUTEX_UNLOCK(__mutex);
@@ -69,11 +69,11 @@ RWLock::lockWrite()
    LOCK_WRITE(__lock);
 #ifdef DEBUG
    if(owner() == SELF())
-      WARNING("Lock %d double-locked by %p", __name, owner());
+      WARNING("Lock %d double-locked by "FMT_TID, __name, owner());
    ASSERT(owner() == 0);
    __write = true;
    adquire();
-   TRACE("%p locked by %p", this, __owner);
+   TRACE("%p locked by "FMT_TID, this, owner());
 #endif
    exitLock();
 }
@@ -85,12 +85,12 @@ RWLock::unlock()
    if(__write == true) {
       ASSERT(owner() == SELF());
       __write = false;
-      TRACE("%p released by %p", this, __owner);
+      TRACE("%p released by "FMT_TID, this, owner());
       release();
    }
 #endif
    LOCK_RELEASE(__lock);
-   ASSERT(__lock.__data.__nr_readers != -1);
+   //ASSERT(__lock.__data.__nr_readers != -1);
 }
 
 inline bool

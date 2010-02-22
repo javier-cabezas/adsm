@@ -66,7 +66,7 @@ Manager::malloc(void ** addr, size_t count)
     Region * r = newRegion(cpuAddr, count, false);
     // Insert the region in the local and global memory maps
     insert(r);
-    TRACE("Alloc %p (%d bytes)", cpuAddr, count);
+    TRACE("Alloc %p (%zd bytes)", cpuAddr, count);
     *addr = cpuAddr;
     return gmacSuccess;
 }

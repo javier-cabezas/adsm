@@ -187,7 +187,6 @@ gmacError_t
 Context::hostMap(void *host, void **device, size_t size)
 {
 	zero(device);
-	void *ptr = NULL;
 	CUdeviceptr dev = 0;
 	size_t pageSize = mm().pageTable().getPageSize();
 	ASSERT(((unsigned long)host & (pageSize - 1)) == 0);

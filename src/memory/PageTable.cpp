@@ -13,9 +13,9 @@ PageTable::PageTable() :
 	pages(1)
 {
 	tableShift = log2(paramPageSize);
-	TRACE("Page Size: %d bytes", paramPageSize);
+	TRACE("Page Size: %zd bytes", paramPageSize);
 #ifndef USE_MMAP
-	TRACE("Table Shift: %d bits", tableShift);
+	TRACE("Table Shift: %zd bits", tableShift);
 	TRACE("Table Size: %d entries", (1 << dirShift) / paramPageSize);
 #endif
 }
@@ -25,7 +25,7 @@ PageTable::~PageTable()
 { 
 //#ifndef USE_MMAP
 	TRACE("Cleaning Page Table");
-	for(int i = 0; i < rootTable.size(); i++) {
+	for(unsigned i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		deleteDirectory(rootTable.value(i));
 	}
@@ -34,7 +34,7 @@ PageTable::~PageTable()
 
 void PageTable::deleteDirectory(Directory *dir)
 {
-	for(int i = 0; i < dir->size(); i++) {
+	for(unsigned i = 0; i < dir->size(); i++) {
 		if(dir->present(i) == false) continue;
 		delete dir->value(i);
 	}

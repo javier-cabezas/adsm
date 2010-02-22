@@ -40,14 +40,20 @@ inline char * convert<char *>(const char * str)
     return (char *)str;
 }
 
+template <>
+inline const char * convert<const char *>(const char * str)
+{
+    return str;
+}
+
 template<typename T>
 inline Parameter<T>::Parameter(T *address, const char *name,
         T def, const char *envVar, uint32_t flags) :
     value(address),
+    def(def),
     name(name),
     envVar(envVar),
-    flags(flags),
-    def(def)
+    flags(flags)
 {
     TRACE("Getting value for %s", name);
     const char *tmp = NULL;
