@@ -47,7 +47,7 @@ static const char *lockNames[] = {
 	"queueLock",
 	"ioHostLock", "ioDeviceLock",
 	"process", "writeMutex", "rollingMap", "rollingBuffer", "manager", "threadQueue", "region",
-    "pthread", "segv", "shMap", "contextList", "blockList", "queueMap"
+    "pthread", "segv", "shMap", "contextList", "blockList", "queueMap",
 	NULL
 };
 
