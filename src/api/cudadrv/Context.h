@@ -54,7 +54,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-class AlignmentMap : public std::map<void *, void*>
+class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>
 {};
 
 class Context : public gmac::Context {
