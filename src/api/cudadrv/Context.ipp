@@ -68,7 +68,7 @@ inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
 {
     lock();
-    enterFunction(accHostDeviceCopy);
+    enterFunction(accHostDevice);
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
     exitFunction();
     unlock();
@@ -79,7 +79,7 @@ inline gmacError_t
 Context::copyToHostAsync(void *host, const void *dev, size_t size) 
 {
     lock();
-    enterFunction(accDeviceHostCopy);
+    enterFunction(accDeviceHost);
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
     exitFunction();
     unlock();

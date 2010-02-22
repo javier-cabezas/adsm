@@ -36,21 +36,55 @@ WITH THE SOFTWARE.  */
 
 namespace paraver {
 enum FunctionName {
-	accMalloc = 1, accFree,
-	accHostDeviceCopy, accDeviceHostCopy, accDeviceDeviceCopy,
-	accLaunch, accSync,
-	gmacMalloc, gmacGlobalMalloc, gmacFree, gmacLaunch, gmacSync, gmacSignal, gmacAccs, gmacSetAffinity, gmacClear, gmacBind, gmacUnbind,
-	vmAlloc, vmFree, vmFlush, vmSync,
+	accMalloc = 1,    // 1
+    accFree,          // 2
+	accHostDevice,    // 3
+    accDeviceHost,    // 4
+    accDeviceDevice,  // 5
+	accLaunch,        // 6
+    accSync,          // 7
+	gmacMalloc,       // 8
+    gmacGlobalMalloc, // 9
+    gmacFree,         // 10
+    gmacLaunch,       // 11
+    gmacSync,         // 12
+    gmacSignal,       // 13
+    gmacAccs,         // 14
+    gmacSetAffinity,  // 15
+    gmacClear,        // 16
+    gmacBind,         // 17
+    gmacUnbind,       // 18
+	vmAlloc,          // 19
+    vmFree,           // 20
+    vmFlush,          // 21
+    vmSync,           // 22
 };
 
 enum LockName {
-	mmLocal = 1, mmGlobal, mmShared, pageTable, ctxLocal, ctxGlobal, ctxCreate,
-	queueLock, 
-	ioHostLock, ioDeviceLock,
-	process, writeMutex, rollingMap, rollingBuffer, manager, threadQueue, region,
-	pthread, segv, shMap, contextList, blockList, queueMap
+	mmLocal = 1,    // 1
+    mmGlobal,       // 2
+    mmShared,       // 3
+    pageTable,      // 4
+    ctxLocal,       // 5
+    ctxGlobal,      // 6
+    ctxCreate,      // 7
+	queueLock,      // 8
+	ioHostLock,     // 9
+    ioDeviceLock,   // 10
+	process,        // 11
+    writeMutex,     // 12
+    rollingMap,     // 13
+    rollingBuffer,  // 14
+    manager,        // 15
+    threadQueue,    // 16
+    region,         // 17
+	pthread,        // 18
+    shMap,          // 19
+    contextList,    // 20
+    blockList,      // 21
+    queueMap        // 22
 };
-};
+}
 
 #ifdef PARAVER
 #include <paraver/Trace.h>
