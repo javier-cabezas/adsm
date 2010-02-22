@@ -36,9 +36,9 @@ Context::setupStreams()
     }
 
     if (_gpu.async()) {
-        CUresult ret = cuMemHostAlloc(&_bufferPageLocked, paramBufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
+        _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
+        CUresult ret = cuMemHostAlloc(&_bufferPageLocked, _bufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
         ASSERT(ret == CUDA_SUCCESS);
-        _bufferPageLockedSize = paramBufferPageLockedSize;
         TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
     } else {
         _bufferPageLocked     = NULL;
@@ -218,24 +218,38 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 
     TRACE("Copy to device: %p to %p", host, dev);
     CUresult ret;
+
     if (_gpu.async()) {
+        lock();
+        if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
+            ASSERT(ret == CUDA_ERROR_NOT_READY);
+            ret = cuStreamSynchronize(streamToDevice);
+        }
+        unlock();
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
+        if (size > _bufferPageLockedSize) {
+            size_t left = size;
+            off_t  off  = 0;
+            while (left != 0) {
+                size_t bytes = left < bufferSize? left: bufferSize;
+                memcpy(tmp, ((char *) host) + off, bytes);
+                lock();
+                ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
+                ASSERT(ret == CUDA_SUCCESS);
+                ret = cuStreamSynchronize(streamToDevice);
+                unlock();
+                ASSERT(ret == CUDA_SUCCESS);
 
-        size_t left = size;
-        off_t  off  = 0;
-        while (left != 0) {
-            size_t bytes = left < bufferSize? left: bufferSize;
-            memcpy(tmp, ((char *) host) + off, bytes);
+                left -= bytes;
+                off  += bytes;
+            }
+        } else {
+            memcpy(tmp, host, size);
             lock();
-            ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
-            if (ret != CUDA_SUCCESS) { unlock(); goto done; }
-            ret = cuStreamSynchronize(streamToDevice);
+            ret = cuMemcpyHtoDAsync(gpuAddr(dev), tmp, size, streamToDevice);
             unlock();
-            if (ret != CUDA_SUCCESS) goto done;
-
-            left -= bytes;
-            off  += bytes;
+            ASSERT(ret == CUDA_SUCCESS);
         }
     } else {
         lock();
@@ -243,7 +257,6 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
         unlock();
     }
 
-done:
     exitFunction();
     return error(ret);
 }
