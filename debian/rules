@@ -1,0 +1,152 @@
+#!/usr/bin/make -f
+#   Debian rules file for libparaver, requires the debhelper package.
+
+# Comment this to turn off debhelper verbose mode.
+export DH_VERBOSE=1
+
+CFLAGS=-g -O2 -Wall
+CXXFLAGS= -g -O2 -Wall
+
+CONFARGS = --enable-cuda-driver --enable-mmap
+CONFARGS_PARAVER = $(CONFARGS) --enable-paraver
+CONFARGS_DEBUG = $(CONFARGS) --enable-debug
+
+setup-stamp:
+	dh_testdir
+	./setup.sh
+	touch setup-stamp
+
+configure-libgmac: configure-stamp-libgmac
+configure-stamp-libgmac: setup-stamp
+	mkdir -p build
+	(cd build && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS))
+	touch configure-stamp-libgmac
+
+configure-libgmac-paraver: configure-stamp-libgmac-paraver
+configure-stamp-libgmac-paraver: setup-stamp
+	mkdir -p build-paraver
+	(cd build-paraver && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS_PARAVER))
+	touch configure-stamp-libgmac-paraver
+
+configure-libgmac-dbg: configure-stamp-libgmac-dbg
+configure-stamp-libgmac-dbg: setup-stamp
+	mkdir -p build-dbg
+	(cd build-dbg && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS_DEBUG))
+	touch configure-stamp-libgmac-dbg
+
+
+build-libgmac: build-stamp-libgmac
+build-stamp-libgmac: configure-stamp-libgmac
+	dh_testdir
+	$(MAKE) -C build
+	touch build-stamp-libgmac
+
+build-libgmac-paraver: build-stamp-libgmac-paraver
+build-stamp-libgmac-paraver: configure-stamp-libgmac-paraver
+	dh_testdir
+	$(MAKE) -C build-paraver
+	touch build-stamp-libgmac-paraver
+
+build-libgmac-dbg: build-stamp-libgmac-dbg
+build-stamp-libgmac-dbg: configure-stamp-libgmac-dbg
+	dh_testdir
+	$(MAKE) -C build-dbg
+	touch build-stamp-libgmac-dbg
+
+clean:
+	dh_testdir
+	dh_testroot
+	-rm -f build-stamp-* configure-stamp-* setup-stamp
+	dh_clean
+
+build: build-libgmac build-libgmac-paraver build-libgmac-dbg
+
+install: install-libgmac install-libgmac-paraver
+install-libgmac: build-libgmac
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) -C build DESTDIR=$(CURDIR)/debian/tmp-libgmac install
+
+install-libgmac-paraver: build-libgmac-paraver
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) -C build-paraver DESTDIR=$(CURDIR)/debian/tmp-libgmac-paraver install
+
+install-libgmac-dbg: build-libgmac-dbg
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) -C build-dbg DESTDIR=$(CURDIR)/debian/tmp-libgmac-dbg install
+
+binary-arch: install
+	dh_testdir -s
+	dh_testroot -s
+	dh_installchangelogs -s
+	dh_installdocs -s
+	dh_installexamples -s
+	dh_install -s
+#	dh_installmenu
+#	dh_installdebconf
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman -s
+	dh_link -s
+	dh_strip -s
+	dh_compress -s
+	dh_fixperms -s
+#	dh_perl
+#	dh_python
+	dh_makeshlibs
+	dh_installdeb -s
+	#dh_shlibdeps -s -v
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+
+binary-arch-gdb: install-libgmac-dbg
+	dh_testdir -s
+	dh_testroot -s
+	dh_installchangelogs -s
+	dh_installdocs -s
+	dh_installexamples -s
+	dh_install -s
+#	dh_installmenu
+#	dh_installdebconf
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman -s
+	dh_link -s
+#	dh_strip -s
+	dh_compress -s
+	dh_fixperms -s
+#	dh_perl
+#	dh_python
+	dh_makeshlibs
+	dh_installdeb -s
+	#dh_shlibdeps -s -v
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+
+binary: binary-arch binary-arch-gdb
