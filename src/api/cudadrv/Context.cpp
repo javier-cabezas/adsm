@@ -215,7 +215,7 @@ Context::hostFree(void *addr)
 gmacError_t
 Context::copyToDevice(void *dev, const void *host, size_t size)
 {
-    enterFunction(accHostDevice);
+    enterFunction(FuncAccHostDevice);
     gmac::Context *ctx = gmac::Context::current();
 
     TRACE("Copy to device: %p to %p", host, dev);
@@ -266,7 +266,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 gmacError_t
 Context::copyToHost(void *host, const void *dev, size_t size)
 {
-    enterFunction(accDeviceHost);
+    enterFunction(FuncAccDeviceHost);
     gmac::Context *ctx = gmac::Context::current();
 
     TRACE("Copy to host: %p to %p", dev, host);
@@ -303,7 +303,7 @@ done:
 
 gmacError_t
 Context::copyDevice(void *dst, const void *src, size_t size) {
-    enterFunction(accDeviceDevice);
+    enterFunction(FuncAccDeviceDevice);
     lock();
 
     CUresult ret;

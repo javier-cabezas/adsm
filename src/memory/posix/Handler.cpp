@@ -39,7 +39,7 @@ void Handler::restoreHandler()
 void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	__enterGmac();
-	enterFunction(gmacSignal);
+	enterFunction(FuncGmacSignal);
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
 #if defined(LINUX)

@@ -437,6 +437,7 @@ void CUDARTAPI __cudaTextureFetch(const void *tex, void *index, int integer, voi
 int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
 {
 	ASSERT(0);
+    return 0;
 }
 
 void CUDARTAPI __cudaMutexOperation(int lock)

@@ -8,7 +8,7 @@ namespace gmac { namespace memory {
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
-	lock(paraver::pageTable),
+	lock(LockPageTable),
 	_clean(false), _valid(true),
 	pages(1)
 {

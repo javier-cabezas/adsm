@@ -51,14 +51,13 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 gmacError_t
 KernelLaunch::execute()
 {
+    Time_t t;
     _ctx.lock();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    if(ret != CUDA_SUCCESS) goto exit;
-
-	if((ret = cuParamSetSize(_f, argsSize())) != CUDA_SUCCESS) {
-        goto exit;
-	}
+    ASSERT(ret == CUDA_SUCCESS);
+    ret = cuParamSetSize(_f, argsSize());
+	ASSERT(ret == CUDA_SUCCESS);
 
 #if 0
 	// Set-up textures
@@ -77,6 +76,9 @@ KernelLaunch::execute()
 			!= CUDA_SUCCESS) {
         goto exit;
 	}
+
+    t = pushState(Running, 0x100000000 + _ctx.id());
+    pushEventAt(t, GPUCall, 0x100000000 + _ctx.id(), 2);
 
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 

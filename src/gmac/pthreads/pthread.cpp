@@ -16,7 +16,7 @@ SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void
 
 void threadInit(void)
 {
-	pLock = new gmac::util::Lock(paraver::pthread);
+	pLock = new gmac::util::Lock(LockPthread);
 	LOAD_SYM(__pthread_create, pthread_create);
 }
 

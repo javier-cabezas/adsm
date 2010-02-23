@@ -28,7 +28,7 @@ static void createManager(const char *name)
 void memoryInit(const char *manager)
 {
 	TRACE("Initializing Memory Subsystem");
-	mutex = new util::Lock(paraver::manager);
+	mutex = new util::Lock(LockManager);
 	memory::Map::init();
 	createManager(manager);
 }

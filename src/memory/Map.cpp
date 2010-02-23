@@ -4,8 +4,8 @@
 
 namespace gmac { namespace memory {
 
-RegionMap Map::__global(paraver::mmGlobal);
-RegionMap Map::__shared(paraver::mmShared);
+RegionMap Map::__global(LockMmGlobal);
+RegionMap Map::__shared(LockMmShared);
 
 RegionMap::RegionMap(paraver::LockName name) :
     RWLock(name)
@@ -67,7 +67,7 @@ Map::clean()
 }
 
 Map::Map() :
-    RegionMap(paraver::mmLocal)
+    RegionMap(LockMmLocal)
 {
 }
 

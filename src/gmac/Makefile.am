@@ -3,8 +3,8 @@ DIST_SUBDIRS = stdc posix pthreads
 SUBDIRS = stdc $(OS_DIR) $(THREAD_DIR)
 
 lib_LTLIBRARIES = libgmac.la
-nobase_include_HEADERS = gmac.h gmac/paraver.h gmac/vm.h
-libgmac_la_SOURCES = gmac/paraver.h gmac.h gmac.cpp paraver.cpp
+nobase_include_HEADERS = gmac.h gmac/vm.h
+libgmac_la_SOURCES = gmac.h gmac.cpp paraver.cpp
 libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/libgmac-thread.la\
 		../kernel/libkernel.la\
 		../memory/libmemory.la\

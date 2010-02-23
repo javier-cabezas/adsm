@@ -1,6 +1,7 @@
 #include "Context.h"
 
 #include <memory/Manager.h>
+#include <config/paraver.h>
 
 extern gmac::memory::Manager *manager;
 
@@ -27,6 +28,8 @@ Context::Context(Accelerator &acc) :
 {
     PRIVATE_SET(Context::key, this);
 	_id = ++_next;
+    addThreadTid(0x100000000 + _id);
+    pushState(Idle, 0x100000000 + _id);
 }
 
 Context::~Context()

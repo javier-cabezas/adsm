@@ -8,7 +8,7 @@
 namespace gmac { namespace memory { namespace manager {
 
 BlockList::BlockList()
-    : RWLock(paraver::blockList)
+    : RWLock(LockBlockList)
 {}
 
 RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, bool shared,

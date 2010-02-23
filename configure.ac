@@ -77,14 +77,14 @@ AC_ARG_ENABLE(debug,
 		, , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
 	AC_MSG_RESULT(yes)
-	CFLAGS="-Wall -Werror -g -O0"
-	CXXFLAGS="-Wall -Werror -g -O0 -fno-inline"
+	CFLAGS="-Wall -Wno-unused-variable -Werror -g -O0"
+	CXXFLAGS="-Wall -Wno-unused-variable -Werror -g -O0 -fno-inline"
     CUDA_CFLAGS="-g -O0"
 	AC_DEFINE(DEBUG)
 else
 	AC_MSG_RESULT(no)
-	CXXFLAGS="-Wall -Werror -g -O3 -fomit-frame-pointer"
-	CFLAGS="-Wall -Werror -g -O3 -fomit-frame-pointer"
+	CXXFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
+	CFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
     CUDA_CFLAGS="-g -O3 -fomit-frame-pointer"
 fi
 
@@ -123,10 +123,9 @@ if test "$enable_paraver" = "yes"; then
       [paraver_src="libparaver"],
       [AC_MSG_RESULT(no)]
       [AC_CHECK_LIB([paraver], [paraver_lib_present],
-         [paraver_lib=""],
-         [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]
-         [paraver_include="-I\$(abs_top_srcdir)/lib/libparaver -I\$(abs_top_builddir)/lib/libparaver"]
-         [paraver_src="libparaver"]
+         [paraver_lib="-lparaver"],
+         [paraver_include=""]
+         [paraver_src=""]
       )]
    )
 

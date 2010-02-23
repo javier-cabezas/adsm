@@ -10,7 +10,7 @@
 namespace gmac { namespace memory { namespace manager {
 
 RollingBuffer::RollingBuffer() :
-    RWLock(paraver::rollingBuffer),
+    RWLock(LockRollingBuffer),
     _max(0)
     {}
 
@@ -41,7 +41,7 @@ RollingManager::RollingManager() :
     Handler(),
     lineSize(0),
     lruDelta(0),
-    writeMutex(paraver::writeMutex),
+    writeMutex(LockWriteMutex),
     writeBuffer(NULL),
     writeBufferSize(0)
 {

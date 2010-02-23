@@ -66,7 +66,7 @@ gmacError_t
 gmacClear(gmacKernel_t k)
 {
     __enterGmac();
-    enterFunction(gmacClear);
+    enterFunction(FuncGmacClear);
     gmac::Context * ctx = gmac::Context::current();
     gmac::Kernel  * kernel = ctx->kernel(k);
 
@@ -83,7 +83,7 @@ gmacError_t
 gmacBind(void * obj, gmacKernel_t k)
 {
     __enterGmac();
-    enterFunction(gmacBind);
+    enterFunction(FuncGmacBind);
     gmac::Context * ctx = gmac::Context::current();
     gmac::Kernel  * kernel = ctx->kernel(k);
 
@@ -101,7 +101,7 @@ gmacError_t
 gmacUnbind(void * obj, gmacKernel_t k)
 {
     __enterGmac();
-    enterFunction(gmacUnbind);
+    enterFunction(FuncGmacUnbind);
     gmac::Context * ctx = gmac::Context::current();
     gmac::Kernel  * kernel = ctx->kernel(k);
 
@@ -120,7 +120,7 @@ gmacAccs()
 {
     size_t ret;
 	__enterGmac();
-	enterFunction(gmacAccs);
+	enterFunction(FuncGmacAccs);
     ret = proc->accs();
 	exitFunction();
 	__exitGmac();
@@ -132,7 +132,7 @@ gmacSetAffinity(int acc)
 {
 	gmacError_t ret;
 	__enterGmac();
-	enterFunction(gmacSetAffinity);
+	enterFunction(FuncGmacSetAffinity);
     ret = proc->migrate(acc);
 	exitFunction();
 	__exitGmac();
@@ -163,7 +163,7 @@ gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
 {
 	__enterGmac();
-	enterFunction(gmacMalloc);
+	enterFunction(FuncGmacMalloc);
 	count = (int(count) < getpagesize())? getpagesize(): count;
 	gmacError_t ret = manager->malloc(cpuPtr, count);
 	exitFunction();
@@ -176,7 +176,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
 #ifndef USE_MMAP
     __enterGmac();
-    enterFunction(gmacGlobalMalloc);
+    enterFunction(FuncGmacGlobalMalloc);
 	count = (count < getpagesize()) ? getpagesize(): count;
 	gmacError_t ret = manager->globalMalloc(cpuPtr, count);
     exitFunction();
@@ -191,7 +191,7 @@ gmacError_t
 gmacFree(void *cpuPtr)
 {
 	__enterGmac();
-	enterFunction(gmacFree);
+	enterFunction(FuncGmacFree);
     gmacError_t ret = manager->free(cpuPtr);
 	exitFunction();
 	__exitGmac();
@@ -212,7 +212,7 @@ gmacError_t
 gmacLaunch(gmacKernel_t k)
 {
     __enterGmac();
-    enterFunction(gmacLaunch);
+    enterFunction(FuncGmacLaunch);
     gmac::Context * ctx = gmac::Context::current();
     gmac::KernelLaunch * launch = ctx->launch(k);
 
@@ -247,7 +247,7 @@ gmacError_t
 gmacThreadSynchronize()
 {
 	__enterGmac();
-	enterFunction(gmacSync);
+	enterFunction(FuncGmacSync);
     gmac::Context * ctx = gmac::Context::current();
 	gmacError_t ret = ctx->sync();
 
