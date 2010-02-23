@@ -20,8 +20,8 @@ EVENT_IMPL(Function);
 EVENT_IMPL(HostDeviceCopy);
 EVENT_IMPL(DeviceHostCopy);
 EVENT_IMPL(DeviceDeviceCopy);
-EVENT_IMPL(GPUCall);
-EVENT_IMPL(GPUCallEnd);
+EVENT_IMPL(GPURun);
+EVENT_IMPL(GPUIO);
 EVENT_IMPL(Lock);
 
 STATE_IMPL(ThreadCreate);
@@ -86,6 +86,20 @@ static const char *lockNames[] = {
 	NULL
 };
 
+static const char *gpuRunNames[] = {
+	"None",
+	"GPURunStart", // 1
+    "GPURunEnd",   // 2
+	NULL
+};
+
+static const char *gpuIONames[] = {
+	"None",
+	"GPUIOStart", // 1
+    "GPUIOEnd",   // 2
+	NULL
+};
+
 
 void paraverInit(void)
 {
@@ -93,6 +107,10 @@ void paraverInit(void)
 		paraver::Function->registerType(i, std::string(functionNames[i]));
 	for(int i = 0; lockNames[i] != NULL; i++)
 		paraver::Lock->registerType(i, std::string(lockNames[i]));
+	for(int i = 0; gpuRunNames[i] != NULL; i++)
+		paraver::GPURun->registerType(i, std::string(gpuRunNames[i]));
+	for(int i = 0; gpuIONames[i] != NULL; i++)
+		paraver::GPUIO->registerType(i, std::string(gpuIONames[i]));
 }
 
 
