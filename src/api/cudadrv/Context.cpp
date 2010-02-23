@@ -226,12 +226,10 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
         if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
             ASSERT(ret == CUDA_ERROR_NOT_READY);
             ret = cuStreamSynchronize(streamToDevice);
-            Time_t t = popState(0x10000000 + _id);
-            pushEventAt(t, GPUIO, 0x10000000 + _id, GPUIOEnd);
+            pushEventAt(popState(0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOEnd);
         } 
 
-        Time_t t = pushState(IORead, 0x10000000 + _id);
-        pushEventAt(t, GPUIO, 0x10000000 + _id, GPUIOStart);
+        pushEventAt(pushState(IORead, 0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOStart);
         unlock();
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
@@ -252,8 +250,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
                 off  += bytes;
             }
 
-            t = popState(0x10000000 + _id);
-            pushEventAt(t, GPUIO, 0x10000000 + _id, GPUIOEnd);
+            pushEventAt(popState(0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOEnd);
         } else {
             memcpy(tmp, host, size);
             lock();
