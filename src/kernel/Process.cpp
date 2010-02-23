@@ -13,21 +13,21 @@ gmac::Process *proc = NULL;
 namespace gmac {
 
 ThreadQueue::ThreadQueue() :
-    hasContext(paraver::threadQueue)
+    hasContext(LockThreadQueue)
 {}
 
 ContextList::ContextList() :
-    RWLock(paraver::contextList)
+    RWLock(LockContextList)
 {}
 
 QueueMap::QueueMap() : 
-    util::RWLock(paraver::queueMap)
+    util::RWLock(LockQueueMap)
 {}
 
 size_t Process::_totalMemory = 0;
 
 Process::Process() :
-    RWLock(paraver::process), current(0)
+    RWLock(LockProcess), current(0)
 {}
 
 Process::~Process()

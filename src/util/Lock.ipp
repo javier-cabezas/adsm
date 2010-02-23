@@ -8,7 +8,7 @@ Owned::Owned() : __owner(0)
 }
 
 inline void
-Owned::adquire()
+Owned::acquire()
 {
    ASSERT(__owner == 0);
    __owner = SELF();
@@ -32,7 +32,7 @@ Lock::lock()
    enterLock(__name);
    MUTEX_LOCK(__mutex);
 #ifdef DEBUG
-   adquire();
+   acquire();
 #endif
    exitLock();
 }
@@ -72,7 +72,7 @@ RWLock::lockWrite()
       WARNING("Lock %d double-locked by "FMT_TID, __name, owner());
    ASSERT(owner() == 0);
    __write = true;
-   adquire();
+   acquire();
    TRACE("%p locked by "FMT_TID, this, owner());
 #endif
    exitLock();

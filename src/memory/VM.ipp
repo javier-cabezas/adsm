@@ -92,7 +92,7 @@ template<typename T>
 void
 Table<T>::create(size_t n, size_t size)
 {
-    enterFunction(vmAlloc);
+    enterFunction(FuncVmAlloc);
     ASSERT(n < nEntries);
     table[n] = (T *)((addr_t)new T(size) | Present);
 #ifdef USE_VM

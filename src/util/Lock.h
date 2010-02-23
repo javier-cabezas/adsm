@@ -53,7 +53,7 @@ protected:
 public:
    Owned();
 
-   void adquire();
+   void acquire();
    void release();
    THREAD_ID owner();
 };

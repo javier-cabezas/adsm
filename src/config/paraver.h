@@ -36,53 +36,53 @@ WITH THE SOFTWARE.  */
 
 namespace paraver {
 enum FunctionName {
-	accMalloc = 1,    // 1
-    accFree,          // 2
-	accHostDevice,    // 3
-    accDeviceHost,    // 4
-    accDeviceDevice,  // 5
-	accLaunch,        // 6
-    accSync,          // 7
-	gmacMalloc,       // 8
-    gmacGlobalMalloc, // 9
-    gmacFree,         // 10
-    gmacLaunch,       // 11
-    gmacSync,         // 12
-    gmacSignal,       // 13
-    gmacAccs,         // 14
-    gmacSetAffinity,  // 15
-    gmacClear,        // 16
-    gmacBind,         // 17
-    gmacUnbind,       // 18
-	vmAlloc,          // 19
-    vmFree,           // 20
-    vmFlush,          // 21
-    vmSync,           // 22
+    FuncAccMalloc        = 1,  // 1
+    FuncAccFree          = 2,  // 2
+    FuncAccHostDevice    = 3,  // 3
+    FuncAccDeviceHost    = 4,  // 4
+    FuncAccDeviceDevice  = 5,  // 5
+    FuncAccLaunch        = 6,  // 6
+    FuncAccSync          = 7,  // 7
+    FuncGmacMalloc       = 8,  // 8
+    FuncGmacGlobalMalloc = 9,  // 9
+    FuncGmacFree         = 10, // 10
+    FuncGmacLaunch       = 11, // 11
+    FuncGmacSync         = 12, // 12
+    FuncGmacSignal       = 13, // 13
+    FuncGmacAccs         = 14, // 14
+    FuncGmacSetAffinity  = 15, // 15
+    FuncGmacClear        = 16, // 16
+    FuncGmacBind         = 17, // 17
+    FuncGmacUnbind       = 18, // 18
+    FuncVmAlloc          = 19, // 19
+    FuncVmFree           = 20, // 20
+    FuncVmFlush          = 21, // 21
+    FuncVmSync           = 22  // 22
 };
 
 enum LockName {
-	mmLocal = 1,    // 1
-    mmGlobal,       // 2
-    mmShared,       // 3
-    pageTable,      // 4
-    ctxLocal,       // 5
-    ctxGlobal,      // 6
-    ctxCreate,      // 7
-	queueLock,      // 8
-	ioHostLock,     // 9
-    ioDeviceLock,   // 10
-	process,        // 11
-    writeMutex,     // 12
-    rollingMap,     // 13
-    rollingBuffer,  // 14
-    manager,        // 15
-    threadQueue,    // 16
-    region,         // 17
-	pthread,        // 18
-    shMap,          // 19
-    contextList,    // 20
-    blockList,      // 21
-    queueMap        // 22
+    LockMmLocal      = 1,  // 1
+    LockMmGlobal     = 2,  // 2
+    LockMmShared     = 3,  // 3
+    LockPageTable    = 4,  // 4
+    LockCtxLocal     = 5,  // 5
+    LockCtxGlobal    = 6,  // 6
+    LockCtxCreate    = 7,  // 7
+    LockQueue        = 8,  // 8
+    LockIoHost       = 9,  // 9
+    LockIoDevice     = 10, // 10
+    LockProcess      = 11, // 11
+    LockWriteMutex   = 12, // 12
+    LockRollingMap   = 13, // 13
+    LockRollingBuffer= 14, // 14
+    LockManager      = 15, // 15
+    LockThreadQueue  = 16, // 16
+    LockRegion       = 17, // 17
+    LockPthread      = 18, // 18
+    LockShMap        = 19, // 19
+    LockContextList  = 20, // 20
+    LockBlockList    = 21, // 21
+    LockQueueMap     = 22  // 22
 };
 }
 
@@ -99,6 +99,7 @@ EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
 EVENT(GPUCall);
+EVENT(GPUCallEnd);
 EVENT(Lock);
 
 STATE(ThreadCreate);
@@ -107,15 +108,84 @@ STATE(IOWrite);
 STATE(Exclusive);
 STATE(Init);
 
+}
 
-};
+using namespace paraver;
 
 /* Macros to issue traces in paraver mode */
 #define addThread()	if(paraver::trace != NULL) paraver::trace->__addThread()
-#define pushState(s)	if(paraver::trace != NULL) paraver::trace->__pushState(*paraver::s)
-#define popState()	if(paraver::trace != NULL) paraver::trace->__popState()
-#define pushEvent(e, ...)\
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::e, ##__VA_ARGS__)
+#define addThreadTid(t)	if(paraver::trace != NULL) paraver::trace->__addThread(t)
+static inline
+Time_t pushState(StateName * s)
+{
+    return paraver::trace->__pushState(*s);
+}
+
+static inline
+Time_t pushState(StateName * s, uint32_t tid)
+{
+    return paraver::trace->__pushState(*s, tid);
+}
+
+static inline
+void pushStateAt(Time_t t, StateName * s)
+{
+    paraver::trace->__pushState(t, *s);
+}
+
+static inline
+void pushStateAt(Time_t t, StateName * s, uint32_t tid)
+{
+    paraver::trace->__pushState(t, *s, tid);
+}
+
+static inline
+Time_t popState()
+{
+    return paraver::trace->__popState();
+}
+
+static inline
+Time_t popState(uint32_t tid)
+{
+    return paraver::trace->__popState(tid);
+}
+
+static inline
+void popStateAt(Time_t t)
+{
+    paraver::trace->__popState(t);
+}
+
+static inline
+void popStateAt(Time_t t, uint32_t tid)
+{
+    paraver::trace->__popState(t, tid);
+}
+
+static inline
+Time_t pushEvent(EventName * e, uint64_t val)
+{
+    return paraver::trace->__pushEvent(*e, val);
+}
+
+static inline
+Time_t pushEvent(EventName * e, uint32_t tid, uint64_t val)
+{
+    return paraver::trace->__pushEvent(*e, tid, val);
+}
+
+static inline
+void pushEventAt(Time_t t, EventName * e, uint64_t val)
+{
+    paraver::trace->__pushEvent(*e, val);
+}
+
+static inline
+void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
+{
+    paraver::trace->__pushEvent(t, *e, tid, val);
+}
 
 #define enterFunction(s) \
 	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, paraver::s)
@@ -124,21 +194,22 @@ STATE(Init);
 
 #define enterLock(s) \
 	if(paraver::trace != NULL) {\
-		paraver::trace->__pushEvent(*paraver::Lock, s);\
-		paraver::trace->__pushState(*paraver::Exclusive);\
+		paraver::trace->__pushState(paraver::trace->__pushEvent(*paraver::Lock, s), *paraver::Exclusive);\
 	}
 #define exitLock() \
 	if(paraver::trace != NULL) {\
-		paraver::trace->__pushEvent(*paraver::Lock, 0);\
-		paraver::trace->__popState();\
+		paraver::trace->__popState(paraver::trace->__pushEvent(*paraver::Lock, 0));\
 	}
 
 #else
 
 #define addThread()
-#define pushState(s)
-#define popState()
-#define pushEvent(e)
+#define pushState(...)
+#define pushStateAt(...)
+#define popState(...)
+#define popStateAt(...)
+#define pushEvent(...)
+#define pushEventAt(e)
 
 #define enterFunction(s)
 #define exitFunction()

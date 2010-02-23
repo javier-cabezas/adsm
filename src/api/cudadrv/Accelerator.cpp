@@ -12,7 +12,7 @@ namespace gpu {
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
 #ifndef USE_MULTI_CONTEXT
-    , mutex(paraver::ctxLocal)
+    , mutex(paraver::LockCtxLocal)
 #endif
 {
     unsigned int size = 0;

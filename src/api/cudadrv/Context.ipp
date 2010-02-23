@@ -3,6 +3,8 @@
 
 #include "Kernel.h"
 
+#include <config/paraver.h>
+
 namespace gmac { namespace gpu {
 
 inline CUdeviceptr
@@ -68,7 +70,7 @@ inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
 {
     lock();
-    enterFunction(accHostDevice);
+    enterFunction(FuncAccHostDevice);
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
     exitFunction();
     unlock();
@@ -79,7 +81,7 @@ inline gmacError_t
 Context::copyToHostAsync(void *host, const void *dev, size_t size) 
 {
     lock();
-    enterFunction(accDeviceHost);
+    enterFunction(FuncAccDeviceHost);
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
     exitFunction();
     unlock();
@@ -97,6 +99,9 @@ Context::sync()
         usleep(Context::USleepLaunch);
         lock();
     }
+    Time_t t = popState(0x100000000 + _id);
+    pushEventAt(t, GPUCallEnd, 0x100000000 + _id, 1);
+
     if (ret == CUDA_SUCCESS) {
         TRACE("Sync: success");
     } else {

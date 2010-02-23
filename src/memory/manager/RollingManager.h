@@ -70,7 +70,7 @@ class RollingMap : protected std::map<Context *, RollingBuffer *>,
 protected:
    RollingBuffer *createBuffer(Context *);
 public:
-   RollingMap() : RWLock(paraver::rollingMap) {};
+   RollingMap() : RWLock(LockRollingMap) {};
    ~RollingMap();
 
    RollingBuffer *currentBuffer();
