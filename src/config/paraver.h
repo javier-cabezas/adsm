@@ -209,7 +209,7 @@ void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
 #define popState(...)
 #define popStateAt(...)
 #define pushEvent(...)
-#define pushEventAt(e)
+#define pushEventAt(...)
 
 #define enterFunction(s)
 #define exitFunction()
