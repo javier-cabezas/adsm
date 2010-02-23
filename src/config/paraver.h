@@ -120,7 +120,6 @@ STATE(Init);
 
 }
 
-using namespace paraver;
 
 /* Macros to issue traces in paraver mode */
 #define addThread()	if(paraver::trace != NULL) paraver::trace->__addThread()
@@ -214,6 +213,7 @@ void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
 #else
 
 #define addThread()
+#define addThreadTid(...)
 #define pushState(...)
 #define pushStateAt(...)
 #define popState(...)
@@ -229,5 +229,7 @@ void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
 
 #endif
 
+
+using namespace paraver;
 
 #endif

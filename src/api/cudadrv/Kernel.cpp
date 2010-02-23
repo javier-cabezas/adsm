@@ -51,7 +51,6 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 gmacError_t
 KernelLaunch::execute()
 {
-    Time_t t;
     _ctx.lock();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
@@ -77,8 +76,7 @@ KernelLaunch::execute()
         goto exit;
 	}
 
-    t = pushState(Running, 0x10000000 + _ctx.id());
-    pushEventAt(t, GPURun, 0x10000000 + _ctx.id(), GPURunStart);
+    pushEventAt(pushState(Running, 0x10000000 + _ctx.id()), GPURun, 0x10000000 + _ctx.id(), GPURunStart);
 
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 

@@ -99,8 +99,7 @@ Context::sync()
         usleep(Context::USleepLaunch);
         lock();
     }
-    Time_t t = popState(0x10000000 + _id);
-    pushEventAt(t, GPURun, 0x10000000 + _id, GPURunEnd);
+    pushEventAt(popState(0x1000000 + _id), GPURun, 0x10000000 + _id, GPURunEnd);
 
     if (ret == CUDA_SUCCESS) {
         TRACE("Sync: success");
