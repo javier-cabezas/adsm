@@ -36,65 +36,65 @@ WITH THE SOFTWARE.  */
 
 namespace paraver {
 enum FunctionName {
-    FuncAccMalloc        = 1,  // 1
-    FuncAccFree          = 2,  // 2
-    FuncAccHostDevice    = 3,  // 3
-    FuncAccDeviceHost    = 4,  // 4
-    FuncAccDeviceDevice  = 5,  // 5
-    FuncAccLaunch        = 6,  // 6
-    FuncAccSync          = 7,  // 7
-    FuncGmacMalloc       = 8,  // 8
-    FuncGmacGlobalMalloc = 9,  // 9
-    FuncGmacFree         = 10, // 10
-    FuncGmacLaunch       = 11, // 11
-    FuncGmacSync         = 12, // 12
-    FuncGmacSignal       = 13, // 13
-    FuncGmacAccs         = 14, // 14
-    FuncGmacSetAffinity  = 15, // 15
-    FuncGmacClear        = 16, // 16
-    FuncGmacBind         = 17, // 17
-    FuncGmacUnbind       = 18, // 18
-    FuncVmAlloc          = 19, // 19
-    FuncVmFree           = 20, // 20
-    FuncVmFlush          = 21, // 21
-    FuncVmSync           = 22  // 22
+    __FunctionNameBase   = 1000,
+    FuncAccMalloc        = 1001,  // 1
+    FuncAccFree          = 1002,  // 2
+    FuncAccHostDevice    = 1003,  // 3
+    FuncAccDeviceHost    = 1004,  // 4
+    FuncAccDeviceDevice  = 1005,  // 5
+    FuncAccLaunch        = 1006,  // 6
+    FuncAccSync          = 1007,  // 7
+    FuncGmacMalloc       = 1008,  // 8
+    FuncGmacGlobalMalloc = 1009,  // 9
+    FuncGmacFree         = 1010, // 10
+    FuncGmacLaunch       = 1011, // 11
+    FuncGmacSync         = 1012, // 12
+    FuncGmacSignal       = 1013, // 13
+    FuncGmacAccs         = 1014, // 14
+    FuncGmacSetAffinity  = 1015, // 15
+    FuncGmacClear        = 1016, // 16
+    FuncGmacBind         = 1017, // 17
+    FuncGmacUnbind       = 1018, // 18
+    FuncVmAlloc          = 1019, // 19
+    FuncVmFree           = 1020, // 20
+    FuncVmFlush          = 1021, // 21
+    FuncVmSync           = 1022  // 22
 };
 
 enum LockName {
-    LockMmLocal      = 1,  // 1
-    LockMmGlobal     = 2,  // 2
-    LockMmShared     = 3,  // 3
-    LockPageTable    = 4,  // 4
-    LockCtxLocal     = 5,  // 5
-    LockCtxGlobal    = 6,  // 6
-    LockCtxCreate    = 7,  // 7
-    LockQueue        = 8,  // 8
-    LockIoHost       = 9,  // 9
-    LockIoDevice     = 10, // 10
-    LockProcess      = 11, // 11
-    LockWriteMutex   = 12, // 12
-    LockRollingMap   = 13, // 13
-    LockRollingBuffer= 14, // 14
-    LockManager      = 15, // 15
-    LockThreadQueue  = 16, // 16
-    LockRegion       = 17, // 17
-    LockPthread      = 18, // 18
-    LockShMap        = 19, // 19
-    LockContextList  = 20, // 20
-    LockBlockList    = 21, // 21
-    LockQueueMap     = 22  // 22
+    __LockNameBase   = 2000,
+    LockMmLocal      = 2001,  // 1
+    LockMmGlobal     = 2002,  // 2
+    LockMmShared     = 2003,  // 3
+    LockPageTable    = 2004,  // 4
+    LockCtxLocal     = 2005,  // 5
+    LockCtxGlobal    = 2006,  // 6
+    LockCtxCreate    = 2007,  // 7
+    LockQueue        = 2008,  // 8
+    LockIoHost       = 2009,  // 9
+    LockIoDevice     = 2010, // 10
+    LockProcess      = 2011, // 11
+    LockWriteMutex   = 2012, // 12
+    LockRollingMap   = 2013, // 13
+    LockRollingBuffer= 2014, // 14
+    LockManager      = 2015, // 15
+    LockThreadQueue  = 2016, // 16
+    LockRegion       = 2017, // 17
+    LockPthread      = 2018, // 18
+    LockShMap        = 2019, // 19
+    LockContextList  = 2020, // 20
+    LockBlockList    = 2021, // 21
+    LockQueueMap     = 2022  // 22
 };
 
-enum GPURunName {
-    GPURunStart      = 1,
-    GPURunEnd        = 2
-};
-
-enum GPUIO {
-    GPUIOStart      = 1,
-    GPUIOEnd        = 2
+enum AcceleratorName {
+    __AcceleratorNameBase = 3000,
+    AcceleratorRun = 3001,        // 1
+    AcceleratorIO  = 3002         // 2
 };
 }
+
+using namespace paraver;
 
 #ifdef PARAVER
 #include <paraver/Trace.h>
@@ -108,8 +108,7 @@ EVENT(Function);
 EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
-EVENT(GPURun);
-EVENT(GPUIO);
+EVENT(Accelerator);
 EVENT(Lock);
 
 STATE(ThreadCreate);
@@ -119,7 +118,6 @@ STATE(Exclusive);
 STATE(Init);
 
 }
-
 
 /* Macros to issue traces in paraver mode */
 #define addThread()	if(paraver::trace != NULL) paraver::trace->__addThread()
@@ -137,18 +135,6 @@ Time_t pushState(StateName * s, uint32_t tid)
 }
 
 static inline
-void pushStateAt(Time_t t, StateName * s)
-{
-    paraver::trace->__pushState(t, *s);
-}
-
-static inline
-void pushStateAt(Time_t t, StateName * s, uint32_t tid)
-{
-    paraver::trace->__pushState(t, *s, tid);
-}
-
-static inline
 Time_t popState()
 {
     return paraver::trace->__popState();
@@ -158,18 +144,6 @@ static inline
 Time_t popState(uint32_t tid)
 {
     return paraver::trace->__popState(tid);
-}
-
-static inline
-void popStateAt(Time_t t)
-{
-    paraver::trace->__popState(t);
-}
-
-static inline
-void popStateAt(Time_t t, uint32_t tid)
-{
-    paraver::trace->__popState(t, tid);
 }
 
 static inline
@@ -185,15 +159,31 @@ Time_t pushEvent(EventName * e, uint32_t tid, uint64_t val)
 }
 
 static inline
-void pushEventAt(Time_t t, EventName * e, uint64_t val)
+void pushEventState(StateName * s, EventName * e, uint64_t val)
 {
-    paraver::trace->__pushEvent(*e, val);
+    Time_t t = paraver::trace->__pushState(*s);
+    paraver::trace->__pushEvent(t, *e, val);
 }
 
 static inline
-void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
+void pushEventState(StateName * s, EventName * e, uint32_t tid, uint64_t val)
 {
+    Time_t t = paraver::trace->__pushState(*s, tid);
     paraver::trace->__pushEvent(t, *e, tid, val);
+}
+
+static inline
+void popEventState(EventName * e)
+{
+    Time_t t = paraver::trace->__popState();
+    paraver::trace->__pushEvent(t, *e, 0);
+}
+
+static inline
+void popEventState(EventName * e, uint32_t tid)
+{
+    Time_t t = paraver::trace->__popState(tid);
+    paraver::trace->__pushEvent(t, *e, tid, 0);
 }
 
 #define enterFunction(s) \
@@ -215,11 +205,10 @@ void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
 #define addThread()
 #define addThreadTid(...)
 #define pushState(...)
-#define pushStateAt(...)
 #define popState(...)
-#define popStateAt(...)
 #define pushEvent(...)
-#define pushEventAt(...)
+#define pushEventState(...)
+#define popEventState(...)
 
 #define enterFunction(s)
 #define exitFunction()
@@ -227,9 +216,9 @@ void pushEventAt(Time_t t, EventName * e, uint32_t tid, uint64_t val)
 #define enterLock(s)
 #define exitLock()
 
+#define Time_t uint64_t
+
 #endif
 
-
-using namespace paraver;
 
 #endif

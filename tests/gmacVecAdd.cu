@@ -11,7 +11,7 @@
 #define SIZE 1
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const size_t vecSizeDefault = 1024 * 1024;
+const size_t vecSizeDefault = 16 * 1024 * 1024;
 
 size_t vecSize = 0;
 const size_t blockSize = 512;

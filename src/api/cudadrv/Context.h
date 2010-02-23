@@ -95,6 +95,9 @@ protected:
     CUstream streamToHost;
     CUstream streamDevice;
 
+    bool _pendingToDevice;
+    bool _pendingToHost;
+
     CUdeviceptr gpuAddr(void *addr) const;
 	CUdeviceptr gpuAddr(const void *addr) const;
 	void zero(void **addr) const;

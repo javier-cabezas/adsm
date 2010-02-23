@@ -57,6 +57,8 @@ Context::Context(Accelerator &gpu) :
 #ifdef USE_MULTI_CONTEXT
     , mutex(paraver::ctxLocal)
 #endif
+    , _pendingToDevice(false)
+    , _pendingToHost(false)
 {
 	setup();
 
@@ -223,14 +225,16 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 
     if (_gpu.async()) {
         lock();
-        if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
-            ASSERT(ret == CUDA_ERROR_NOT_READY);
-            ret = cuStreamSynchronize(streamToDevice);
-            pushEventAt(popState(0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOEnd);
+        if (_pendingToDevice) {
+            if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
+                ASSERT(ret == CUDA_ERROR_NOT_READY);
+                ret = cuStreamSynchronize(streamToDevice);
+            }
+            popEventState(paraver::Accelerator, 0x10000000 + _id);
         } 
-
-        pushEventAt(pushState(IORead, 0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOStart);
+        _pendingToDevice = false;
         unlock();
+
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
         if (size > _bufferPageLockedSize) {
@@ -240,21 +244,23 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
                 size_t bytes = left < bufferSize? left: bufferSize;
                 memcpy(tmp, ((char *) host) + off, bytes);
                 lock();
+                pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
                 ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
                 ASSERT(ret == CUDA_SUCCESS);
                 ret = cuStreamSynchronize(streamToDevice);
+                popEventState(paraver::Accelerator, 0x10000000 + _id);
                 unlock();
                 ASSERT(ret == CUDA_SUCCESS);
 
                 left -= bytes;
                 off  += bytes;
             }
-
-            pushEventAt(popState(0x10000000 + _id), GPUIO, 0x10000000 + _id, GPUIOEnd);
         } else {
             memcpy(tmp, host, size);
             lock();
+            pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyHtoDAsync(gpuAddr(dev), tmp, size, streamToDevice);
+            _pendingToDevice = true;
             unlock();
             ASSERT(ret == CUDA_SUCCESS);
         }
@@ -285,9 +291,11 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         while (left != 0) {
             size_t bytes = left < bufferSize? left: bufferSize;
             lock();
+            pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
             if (ret != CUDA_SUCCESS) { unlock(); goto done; }
             ret = cuStreamSynchronize(streamToHost);
+            popEventState(paraver::Accelerator, 0x10000000 + _id);
             unlock();
             if (ret != CUDA_SUCCESS) goto done;
             memcpy(((char *) host) + off, tmp, bytes);

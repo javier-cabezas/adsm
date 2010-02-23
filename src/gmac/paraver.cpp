@@ -1,4 +1,4 @@
-#include <gmac/paraver.h>
+#include <config/paraver.h>
 
 #ifdef PARAVER
 
@@ -20,8 +20,7 @@ EVENT_IMPL(Function);
 EVENT_IMPL(HostDeviceCopy);
 EVENT_IMPL(DeviceHostCopy);
 EVENT_IMPL(DeviceDeviceCopy);
-EVENT_IMPL(GPURun);
-EVENT_IMPL(GPUIO);
+EVENT_IMPL(Accelerator);
 EVENT_IMPL(Lock);
 
 STATE_IMPL(ThreadCreate);
@@ -86,17 +85,10 @@ static const char *lockNames[] = {
 	NULL
 };
 
-static const char *gpuRunNames[] = {
+static const char *AcceleratorNames[] = {
 	"None",
-	"GPURunStart", // 1
-    "GPURunEnd",   // 2
-	NULL
-};
-
-static const char *gpuIONames[] = {
-	"None",
-	"GPUIOStart", // 1
-    "GPUIOEnd",   // 2
+	"AcceleratorRun", // 1
+    "AcceleratorIO",  // 2
 	NULL
 };
 
@@ -104,13 +96,11 @@ static const char *gpuIONames[] = {
 void paraverInit(void)
 {
 	for(int i = 0; functionNames[i] != 0; i++)
-		paraver::Function->registerType(i, std::string(functionNames[i]));
+		paraver::Function->registerType(__FunctionNameBase + i, std::string(functionNames[i]));
 	for(int i = 0; lockNames[i] != NULL; i++)
-		paraver::Lock->registerType(i, std::string(lockNames[i]));
-	for(int i = 0; gpuRunNames[i] != NULL; i++)
-		paraver::GPURun->registerType(i, std::string(gpuRunNames[i]));
-	for(int i = 0; gpuIONames[i] != NULL; i++)
-		paraver::GPUIO->registerType(i, std::string(gpuIONames[i]));
+		paraver::Lock->registerType(__LockNameBase + i, std::string(lockNames[i]));
+	for(int i = 0; AcceleratorNames[i] != NULL; i++)
+		paraver::Accelerator->registerType(__AcceleratorNameBase + i, std::string(AcceleratorNames[i]));
 }
 
 
