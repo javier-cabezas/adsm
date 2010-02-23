@@ -84,6 +84,16 @@ enum LockName {
     LockBlockList    = 21, // 21
     LockQueueMap     = 22  // 22
 };
+
+enum GPURunName {
+    GPURunStart      = 1,
+    GPURunEnd        = 2
+};
+
+enum GPUIO {
+    GPUIOStart      = 1,
+    GPUIOEnd        = 2
+};
 }
 
 #ifdef PARAVER
@@ -98,8 +108,8 @@ EVENT(Function);
 EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
-EVENT(GPUCall);
-EVENT(GPUCallEnd);
+EVENT(GPURun);
+EVENT(GPUIO);
 EVENT(Lock);
 
 STATE(ThreadCreate);
