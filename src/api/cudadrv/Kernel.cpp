@@ -76,7 +76,7 @@ KernelLaunch::execute()
         goto exit;
 	}
 
-    pushEventAt(pushState(Running, 0x10000000 + _ctx.id()), GPURun, 0x10000000 + _ctx.id(), GPURunStart);
+    pushEventState(Running, paraver::Accelerator, 0x10000000 + _ctx.id(), AcceleratorRun);
 
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 

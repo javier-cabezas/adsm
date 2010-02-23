@@ -99,7 +99,7 @@ Context::sync()
         usleep(Context::USleepLaunch);
         lock();
     }
-    pushEventAt(popState(0x1000000 + _id), GPURun, 0x10000000 + _id, GPURunEnd);
+    popEventState(paraver::Accelerator, 0x10000000 + _id);
 
     if (ret == CUDA_SUCCESS) {
         TRACE("Sync: success");
@@ -136,6 +136,10 @@ Context::syncToDevice()
     } else {
         ret = cuCtxSynchronize();
     }
+    if (_pendingToDevice) {
+        popEventState(paraver::Accelerator, 0x10000000 + _id);
+    }
+
     unlock();
     return error(ret);
 }
