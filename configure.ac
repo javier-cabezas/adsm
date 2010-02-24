@@ -85,7 +85,7 @@ else
 	AC_MSG_RESULT(no)
 	CXXFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
 	CFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
-    CUDA_CFLAGS="-g -O3 -fomit-frame-pointer"
+    CUDA_CFLAGS="-O3"
 fi
 
 # Check for profiling mode
