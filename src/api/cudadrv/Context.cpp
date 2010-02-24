@@ -221,7 +221,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     gmac::Context *ctx = gmac::Context::current();
 
     TRACE("Copy to device: %p to %p", host, dev);
-    CUresult ret;
+    CUresult ret = CUDA_SUCCESS;
 
     if (_gpu.async()) {
         lock();
@@ -281,7 +281,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
     gmac::Context *ctx = gmac::Context::current();
 
     TRACE("Copy to host: %p to %p", dev, host);
-    CUresult ret;
+    CUresult ret = CUDA_SUCCESS;
     if (_gpu.async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
