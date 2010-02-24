@@ -1,4 +1,4 @@
-AC_INIT([GMAC],[3.0],[igelado@ac.upc.edu],[gmac])
+AC_INIT([GMAC],[0.0.7],[igelado@ac.upc.edu],[gmac])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
@@ -141,7 +141,7 @@ fi
 
 
 # Check for driver mode
-cuda_driver_default="no"
+cuda_driver_default="yes"
 AC_MSG_CHECKING(whether to use CUDA Driver API)
 AC_ARG_ENABLE(cuda-driver,
 	AS_HELP_STRING([--enable-cuda-driver],[turn on using the CUDA driver API [[default=no]]])
@@ -182,7 +182,7 @@ else
 fi
 
 # Check for using map to request host memory
-mmap_default="no"
+mmap_default="yes"
 AC_MSG_CHECKING(whether to use mmap() to allocate system memory)
 AC_ARG_ENABLE(mmap,
 	AS_HELP_STRING([--enable-mmap],[turn on using mmap() to request system memory [[default=no]]])
@@ -276,6 +276,7 @@ AC_CONFIG_FILES([Makefile
 	src/api/cuda/Makefile
 	src/api/cudadrv/Makefile
 	src/os/Makefile
+    src/os/posix/Makefile
 	src/util/Makefile
 	tests/Makefile
 ])
