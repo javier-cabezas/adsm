@@ -37,15 +37,16 @@ inline gmacError_t
 Context::hostAlloc(void **host, void **dev, size_t size)
 {
     check();
+    cudaError_t ret = cudaSuccess;
     if (dev != NULL) {
         *dev = NULL;
-        cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocMapped | cudaHostAllocPortable);
+        ret = cudaHostAlloc(host, size, cudaHostAllocMapped | cudaHostAllocPortable);
         if(ret == cudaSuccess) {
-            cudaResult_t ret = cudaHostGetDevicePointer(dev, *host, 0);
+            ret = cudaHostGetDevicePointer(dev, *host, 0);
             ASSERT(ret == cudaSuccess);
         }
     } else {
-        cudaError_t ret = cudaHostAlloc(host, size, cudaHostAllocPortable);
+        ret = cudaHostAlloc(host, size, cudaHostAllocPortable);
     }
     return error(ret);
 }
