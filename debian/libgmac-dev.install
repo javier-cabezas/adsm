@@ -1,0 +1,3 @@
+debian/tmp-libgmac/usr/lib/*.la usr/lib
+debian/tmp-libgmac/usr/lib/*.a usr/lib
+debian/tmp-libgmac/usr/include/* usr/include
