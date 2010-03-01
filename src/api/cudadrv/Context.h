@@ -95,6 +95,7 @@ protected:
     CUstream streamToHost;
     CUstream streamDevice;
 
+    bool _pendingKernel;
     bool _pendingToDevice;
     bool _pendingToHost;
 

@@ -93,21 +93,23 @@ inline gmacError_t
 Context::sync()
 {
     CUresult ret = CUDA_SUCCESS;
-    lock();
-    while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-        unlock();
-        usleep(Context::USleepLaunch);
+    if (_pendingKernel) {
         lock();
-    }
-    popEventState(paraver::Accelerator, 0x10000000 + _id);
+        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
+            unlock();
+            lock();
+        }
+        popEventState(paraver::Accelerator, 0x10000000 + _id);
 
-    if (ret == CUDA_SUCCESS) {
-        TRACE("Sync: success");
-    } else {
-        TRACE("Sync: error: %d", ret);
-    }
+        if (ret == CUDA_SUCCESS) {
+            TRACE("Sync: success");
+        } else {
+            TRACE("Sync: error: %d", ret);
+        }
 
-    unlock();
+        _pendingKernel = false;
+        unlock();
+    }
 
     return error(ret);
 }
@@ -137,8 +139,8 @@ Context::syncToDevice()
         ret = cuCtxSynchronize();
     }
     if (_pendingToDevice) {
-        _pendingToDevice = false;
         popEventState(paraver::Accelerator, 0x10000000 + _id);
+        _pendingToDevice = false;
     }
 
     unlock();

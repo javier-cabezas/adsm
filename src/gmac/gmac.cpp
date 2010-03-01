@@ -297,14 +297,20 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::Context *dstCtx = manager->owner(dst);
 	gmac::Context *srcCtx = manager->owner(src);
 
-	if (dstCtx != NULL || srcCtx != NULL) return NULL;
+	if (dstCtx == NULL && srcCtx == NULL) return NULL;
 
     // TODO - copyDevice can be always asynchronous
-	if(dstCtx == srcCtx) {	// Same device copy
+	if(dstCtx == NULL) {	// Same device copy
+		manager->flush(src, n);
+		err = srcCtx->copyToHost(dst,
+			                     manager->ptr(srcCtx, src), n);
+        ASSERT(err == gmacSuccess);
+	}
+    else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
-			                     manager->ptr(dstCtx, src), n);
+			                     manager->ptr(srcCtx, src), n);
         ASSERT(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
