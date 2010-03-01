@@ -1,4 +1,4 @@
-libgmac (0.1.0) unstable; urgency=low
+libgmac (0.0.7) unstable; urgency=low
 
   * New upstream version
   * Huge rewrite of the kernel and cudadrv parts of the code

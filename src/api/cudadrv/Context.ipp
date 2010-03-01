@@ -137,6 +137,7 @@ Context::syncToDevice()
         ret = cuCtxSynchronize();
     }
     if (_pendingToDevice) {
+        _pendingToDevice = false;
         popEventState(paraver::Accelerator, 0x10000000 + _id);
     }
 
