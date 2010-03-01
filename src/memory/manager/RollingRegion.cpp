@@ -164,6 +164,9 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 
 void RollingRegion::flush(const void *addr, size_t size)
 {
+   assert(tryWrite() == false);
+   TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) addr, size);
+
    Map::iterator i = map.lower_bound(addr);
    ASSERT(i != map.end());
    for(; i != map.end() && i->second->start() < addr; i++) {
@@ -171,6 +174,7 @@ void RollingRegion::flush(const void *addr, size_t size)
        block->lockWrite();
       // If the region is not present, just ignore it
       if(block->dirty() == true) {
+          TRACE("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
           manager.flush(block);
       }
       block->unlock();

@@ -57,6 +57,7 @@ Context::Context(Accelerator &gpu) :
 #ifdef USE_MULTI_CONTEXT
     , mutex(paraver::ctxLocal)
 #endif
+    , _pendingKernel(false)
     , _pendingToDevice(false)
     , _pendingToHost(false)
 {
@@ -365,6 +366,8 @@ Context::launch(gmacKernel_t addr)
             _releasedRegions.insert(l->begin(), l->end());
         }
     }
+    //! \todo Move this to Kernel.cpp
+    _pendingKernel = true;
 
     return l;
 }
