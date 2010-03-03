@@ -63,7 +63,11 @@ class Manager {
 protected:
 
 #ifdef USE_MMAP
-	static const size_t mmSize = 0x100000000;
+#ifdef ARCH_32BIT
+    static const size_t mmSize = 0;
+#else
+	static const size_t mmSize = 0x10000000000;
+#endif
 #endif
 
 	void insert(Region *r);

@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <debug.h>
 
 #include <util/Parameter.h>
+#include <util/Private.h>
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 
@@ -73,7 +74,7 @@ protected:
 	*/
 	friend class memory::Manager;
 	friend class Process;
-	static PRIVATE(key);
+	static gmac::util::Private key;
 	static unsigned _next;
 
     /*!

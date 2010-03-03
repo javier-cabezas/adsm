@@ -182,11 +182,11 @@ void Process::sendReceive(THREAD_ID id)
     q->second->hasContext.lock();
     q->second->hasContext.unlock();
 	q->second->queue->push(ctx);
-	PRIVATE_SET(Context::key, NULL);
+    Context::key.set(NULL);
     _queues.lockRead();
 	q = _queues.find(SELF());
 	ASSERT(q != _queues.end());
-	PRIVATE_SET(Context::key, q->second->queue->pop());
+    Context::key.set(q->second->queue->pop());
     _queues.unlock();
 }
 

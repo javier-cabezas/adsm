@@ -10,6 +10,7 @@
 
 #include "utils.h"
 #include "debug.h"
+#include "barrier.h"
 
 #include "gmacCompress.h"
 
@@ -61,13 +62,15 @@ void nextStage(stage_t *current, stage_t *next)
 	}
 }
 
-pthread_barrier_t barrierInit;
+//pthread_barrier_t barrierInit;
+barrier_t barrierInit;
 
 void *dct_thread(void *args)
 {
 	gmacError_t ret;
 
-    pthread_barrier_wait(&barrierInit);
+    //pthread_barrier_wait(&barrierInit);
+    barrier_wait(barrierInit);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -132,7 +135,8 @@ void *quant_thread(void *args)
 {
 	gmacError_t ret;
 
-    pthread_barrier_wait(&barrierInit);
+    //pthread_barrier_wait(&barrierInit);
+    barrier_wait(barrierInit);
 
 	//ret = gmacMalloc((void **)&s_quant.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);
@@ -170,7 +174,8 @@ void *idct_thread(void *args)
 {
 	gmacError_t ret;
 
-    pthread_barrier_wait(&barrierInit);
+    //pthread_barrier_wait(&barrierInit);
+    barrier_wait(barrierInit);
 
 	//ret = gmacMalloc((void **)&s_idct.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);
@@ -227,7 +232,8 @@ int main(int argc, char *argv[])
 
 	gettimeofday(&s, NULL);
 
-    pthread_barrier_init(&barrierInit, NULL, 3);
+    //pthread_barrier_init(&barrierInit, NULL, 3);
+    barrier_init(&barrierInit, 3);
 
 	pthread_create(&s_dct.id, NULL, dct_thread, NULL);
 	pthread_create(&s_quant.id, NULL, quant_thread, NULL);

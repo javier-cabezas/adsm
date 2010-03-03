@@ -34,61 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_LOCK_H_
 #define __UTIL_LOCK_H_
 
-#include <config.h>
-#include <paraver.h>
-#include <debug.h>
 
-#define __THREAD_CANARY
-#include <threads.h>
+#include <os/Lock.h>
 
-#include <iostream>
-
-#include <map>
-
-namespace gmac { namespace util {
-
-class Owned {
-protected:
-   THREAD_ID __owner;
-public:
-   Owned();
-
-   void acquire();
-   void release();
-   THREAD_ID owner();
-};
-
-class Lock : public Owned {
-protected:
-	MUTEX(__mutex);
-   PRIVATE(__owner);
-	paraver::LockName __name;
-public:
-	Lock(paraver::LockName __name);
-	~Lock();
-
-	void lock();
-	void unlock();
-   bool tryLock();
-};
-
-class RWLock : public Owned {
-protected:
-	LOCK(__lock);
-   bool __write;
-	paraver::LockName __name;
-public:
-	RWLock(paraver::LockName __name);
-	~RWLock();
-
-	void lockRead();
-	void lockWrite();
-	void unlock();
-   bool tryRead();
-   bool tryWrite();
-};
-
-#include "Lock.ipp"
-
-}}
 #endif

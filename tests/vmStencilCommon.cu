@@ -145,7 +145,8 @@ kernelStencil(float * u2,
 
 #define VELOCITY 2000
 
-pthread_barrier_t barrier;
+//pthread_barrier_t barrier;
+barrier_t barrier;
 
 struct JobDescriptor {
     const static int DEFAULT_DIM = 256;
@@ -246,7 +247,8 @@ do_stencil(void * ptr)
         if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
-            pthread_barrier_wait(&barrier);
+            //pthread_barrier_wait(&barrier);
+            barrier_wait(barrier);
 
             // Send data
             if (descr->prev != NULL) {
@@ -260,7 +262,8 @@ do_stencil(void * ptr)
                           descr->sliceElems() * STENCIL * sizeof(float));                
             }
 
-            pthread_barrier_wait(&barrier);
+            //pthread_barrier_wait(&barrier);
+            barrier_wait(barrier);
         }
 
         tmp = descr->u3;
@@ -269,7 +272,8 @@ do_stencil(void * ptr)
     }
 
     if(descr->gpus > 1) {
-        pthread_barrier_wait(&barrier);
+        //pthread_barrier_wait(&barrier);
+        barrier_wait(barrier);
     }
 
 	gettimeofday(&t, NULL);

@@ -4,6 +4,8 @@
 #include <sys/time.h>
 
 #include <pthread.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <semaphore.h>
 
 #include <gmac.h>
@@ -27,7 +29,7 @@ const size_t blockSize = 512;
 static pthread_t *nThread;
 static int *ids;
 static float **a;
-static sem_t init;
+static sem_t *init;
 
 __global__ void inc(float *a, float f, size_t size)
 {
@@ -51,7 +53,7 @@ void *chain(void *ptr)
     dim3 Dg(vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
 
-    sem_wait(&init);
+    sem_wait(init);
 
     for(int i = 0; i < rounds; i++) {
         int current = *id - i;
@@ -90,7 +92,8 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	setParam<unsigned>(&rounds, roundsStr, roundsDefault);
-	sem_init(&init, 0, 0);
+	init = sem_open("gmacPingPong", O_CREAT, S_IRUSR | S_IWUSR, 0);
+    assert(init != SEM_FAILED);
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	ids = (int *)malloc(nIter * sizeof(int));
@@ -101,14 +104,18 @@ int main(int argc, char *argv[])
 		pthread_create(&nThread[n], NULL, chain, &ids[n]);
 	}
 
-	for(n = 0; n < nIter; n++) sem_post(&init);
+    fprintf(stderr,"Ready... Steady\n");
+	for(n = 0; n < nIter; n++) sem_post(init);
+    fprintf(stderr,"Go!\n");
 	
 	for(n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
 	}
+    fprintf(stderr,"Done!\n");
 
 	free(ids);
 	free(nThread);
 
+    sem_unlink("gmacPingPong");
     return 0;
 }

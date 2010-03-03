@@ -58,8 +58,9 @@ void __ctor__ register_on_exit()
 
 	if(sigaction(SIGABRT, &my_sigabrt, &default_sigabrt) < 0)
         abort();
-
+#ifdef HAVE_ON_EXIT
     on_exit(check_result, NULL);
+#endif
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

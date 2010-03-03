@@ -1,4 +1,4 @@
-AC_INIT([GMAC],[0.0.7],[igelado@ac.upc.edu],[gmac])
+AC_INIT([GMAC],[0.0.8],[igelado@ac.upc.edu],[gmac])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
@@ -23,6 +23,7 @@ ARCH="64"
 *i386*|*i686*)
 AC_MSG_RESULT([ia32])
 ARCH="32"
+AC_DEFINE([ARCH_32BIT])
 ;;
 *)
 AC_MSG_RESULT([Unknown: "$host"])
@@ -32,6 +33,7 @@ esac
 
 
 # Check for the operating system
+AC_MSG_CHECKING(operating system)
 case "$host" in
 *linux* | *Linux*)
 AC_MSG_RESULT([Linux])
@@ -44,6 +46,13 @@ AC_MSG_RESULT([MacOS])
 OS_DIR="posix"
 AC_DEFINE(DARWIN)
 LN_FLAGS=-f
+if test "$ARCH" = "32"; then
+    CFLAGS="-m32"
+    CXXFLAGS="-m32"
+else
+    CFLAGS="-m64"
+    CXXFLAGS="-m64"
+fi
 ;;
 *)
 AC_MSG_RESULT([Unknown: "$host"])
@@ -53,6 +62,7 @@ esac
 
 # Check for functions we need
 AC_CHECK_FUNCS(posix_memalign)
+AC_CHECK_FUNCS(on_exit)
 
 # Check for pthread library
 AC_CHECK_LIB([pthread], [pthread_create],
@@ -77,14 +87,14 @@ AC_ARG_ENABLE(debug,
 		, , enable_debug=$debug_default)
 if test "$enable_debug" = "yes"; then
 	AC_MSG_RESULT(yes)
-	CFLAGS="-Wall -Wno-unused-variable -Werror -g -O0"
-	CXXFLAGS="-Wall -Wno-unused-variable -Werror -g -O0 -fno-inline"
+	CFLAGS="$CFLAGS -Wall -Wno-unused-variable -Werror -g -O0"
+	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -g -O0 -fno-inline"
     CUDA_CFLAGS="-g -O0 --keep"
 	AC_DEFINE(DEBUG)
 else
 	AC_MSG_RESULT(no)
-	CXXFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
-	CFLAGS="-Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
+	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
+	CFLAGS="$CFLAGS -Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
     CUDA_CFLAGS="-O3"
 fi
 
@@ -278,6 +288,7 @@ AC_CONFIG_FILES([Makefile
 	src/os/Makefile
     src/os/posix/Makefile
 	src/util/Makefile
+    src/util/posix/Makefile
 	tests/Makefile
 ])
 AC_OUTPUT

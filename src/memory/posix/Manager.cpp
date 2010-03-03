@@ -37,7 +37,7 @@ void *Manager::mapToHost(void *addr, size_t count, int prot)
 	Memory::protect(cpuAddr, count, prot);
 #else
 	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
-	if(mmap(cpuAddr, count, prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) != cpuAddr)
+	if(mmap(cpuAddr, count, prot, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
 		return NULL;
 #endif
 	return cpuAddr;
@@ -45,6 +45,7 @@ void *Manager::mapToHost(void *addr, size_t count, int prot)
 
 void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 {
+#if 0
 	void *cpuAddr = NULL;
 #ifdef USE_MMAP
 	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
@@ -52,6 +53,8 @@ void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 		return NULL;
 #endif
 	return cpuAddr;
+#endif
+    return NULL;
 }
 
 void Manager::hostUnmap(void *addr, size_t count)
