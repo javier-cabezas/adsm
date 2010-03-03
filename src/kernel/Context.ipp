@@ -29,7 +29,7 @@ inline
 bool
 Context::hasCurrent()
 {
-    return PRIVATE_GET(key) != NULL;
+    return key.get() != NULL;
 }
 
 inline

@@ -31,43 +31,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_HANDLER_H_
-#define __MEMORY_HANDLER_H_
+#ifndef __UTIL_POSIX_LOCK_H_
+#define __UTIL_POSIX_LOCK_H_
 
-#include <cstdlib>
+#include <config.h>
+#include <paraver.h>
+#include <debug.h>
 
-#include <memory/Manager.h>
+#include <pthread.h>
 
-namespace gmac { namespace memory {
+#include <iostream>
 
-class ProtRegion;
+#include <map>
 
-//! Handler for Read/Write faults
-class Handler : public Manager {
-private:
-	static struct sigaction defaultAction;
-	void setHandler(void);
-	void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
+namespace gmac { namespace util {
 
-    static int signum;
-	static unsigned count;
-	static Handler *handler;
-
+class Owned {
 protected:
-	virtual bool read(void *) = 0;
-	virtual bool write(void *) = 0;
-	
+   pthread_t __owner;
 public:
-	Handler() {
-		if(count == 0) setHandler();
-		count++;
-	}
-	virtual ~Handler() { 
-		if(--count == 0) restoreHandler();
-	}
+   Owned();
 
+   void acquire();
+   void release();
+   pthread_t owner();
 };
+
+class Lock : public Owned {
+protected:
+	pthread_mutex_t __mutex;
+    pthread_key_t __owner;
+	paraver::LockName __name;
+public:
+	Lock(paraver::LockName __name);
+	~Lock();
+
+	void lock();
+	void unlock();
+    bool tryLock();
+};
+
+class RWLock : public Owned {
+protected:
+	pthread_rwlock_t __lock;
+    bool __write;
+	paraver::LockName __name;
+public:
+	RWLock(paraver::LockName __name);
+	~RWLock();
+
+	void lockRead();
+	void lockWrite();
+	void unlock();
+    bool tryRead();
+    bool tryWrite();
+};
+
+#include "Lock.ipp"
 
 }}
 #endif

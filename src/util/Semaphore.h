@@ -34,28 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_SEMAPHORE_H_
 #define __UTIL_SEMAPHORE_H_
 
-#include <config.h>
-#include <paraver.h>
+#include <os/Semaphore.h>
 
-#define __THREAD_CANARY
-#include <threads.h>
-
-#include <iostream>
-
-namespace gmac { namespace util {
-
-class Semaphore {
-protected:
-	SEM(__sem);
-public:
-	Semaphore(unsigned v);
-	~Semaphore();
-
-	void post();
-	void wait();
-};
-
-#include "Semaphore.ipp"
-
-}}
 #endif

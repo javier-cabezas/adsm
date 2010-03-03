@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <pthread.h>
+#include "barrier.h"
 
 #include <gmac.h>
 
@@ -41,7 +42,8 @@ int main(int argc, char *argv[])
 
     if (nIter > 1) {
         pthread_mutex_init(&mutex, NULL);
-        pthread_barrier_init(&barrier, NULL, nIter);
+        //pthread_barrier_init(&barrier, NULL, nIter);
+        barrier_init(&barrier, nIter);
     }
 
     for(int n = 0; n < nIter; n++) {
@@ -79,7 +81,8 @@ int main(int argc, char *argv[])
 	printTime(&t, &s, "Total: ", "\n");
 
     if (nIter > 1) {
-        pthread_barrier_destroy(&barrier);
+        //pthread_barrier_destroy(&barrier);
+        barrier_destroy(barrier);
     }
 
     delete descriptors;

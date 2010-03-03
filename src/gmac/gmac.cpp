@@ -10,12 +10,11 @@
 #include "kernel/Process.h"
 #include "kernel/Context.h"
 #include "memory/Manager.h"
+#include "util/Private.h"
 
 #include <paraver.h>
 
 #include <cstdlib>
-
-MUTEX(gmacMutex);
 
 #ifdef PARAVER
 namespace paraver {
@@ -23,7 +22,7 @@ extern int init;
 }
 #endif
 
-PRIVATE(__in_gmac);
+gmac::util::Private __in_gmac;
 
 const char __gmac_code = 1;
 const char __user_code = 0;
@@ -32,7 +31,7 @@ static void __attribute__((constructor))
 gmacInit(void)
 {
     TRACE("Initialiazing GMAC");
-	PRIVATE_INIT(__in_gmac, NULL);
+	gmac::util::Private::init(__in_gmac);
 	__enterGmac();
 
 #ifdef PARAVER
@@ -177,7 +176,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
 #ifndef USE_MMAP
     __enterGmac();
     enterFunction(FuncGmacGlobalMalloc);
-	count = (count < getpagesize()) ? getpagesize(): count;
+	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
 	gmacError_t ret = manager->globalMalloc(cpuPtr, count);
     exitFunction();
     __exitGmac();
@@ -358,7 +357,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 }
 
 void
-gmacSendReceive(unsigned long id)
+gmacSendReceive(pthread_t id)
 {
 	__enterGmac();
 	proc->sendReceive((THREAD_ID)id);

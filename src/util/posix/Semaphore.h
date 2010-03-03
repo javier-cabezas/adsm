@@ -31,43 +31,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_HANDLER_H_
-#define __MEMORY_HANDLER_H_
+#ifndef __UTIL_POSIX_SEMAPHORE_H_
+#define __UTIL_POSIX_SEMAPHORE_H_
 
-#include <cstdlib>
+#include <config.h>
 
-#include <memory/Manager.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
 
-namespace gmac { namespace memory {
+#include <iostream>
 
-class ProtRegion;
+namespace gmac { namespace util {
 
-//! Handler for Read/Write faults
-class Handler : public Manager {
-private:
-	static struct sigaction defaultAction;
-	void setHandler(void);
-	void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
-
-    static int signum;
-	static unsigned count;
-	static Handler *handler;
-
+class Semaphore {
 protected:
-	virtual bool read(void *) = 0;
-	virtual bool write(void *) = 0;
-	
+	int __sem;
 public:
-	Handler() {
-		if(count == 0) setHandler();
-		count++;
-	}
-	virtual ~Handler() { 
-		if(--count == 0) restoreHandler();
-	}
+	Semaphore(unsigned v);
+	~Semaphore();
 
+	void post();
+	void wait();
 };
+
+#include "Semaphore.ipp"
 
 }}
 #endif

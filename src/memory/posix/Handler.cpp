@@ -12,6 +12,12 @@ struct sigaction Handler::defaultAction;
 Handler *handler = NULL;
 unsigned Handler::count = 0;
 
+#if defined(LINUX)
+int Handler::signum = SIGSEGV;
+#elif defined(DARWIN)
+int Handler::signum = SIGBUS;
+#endif
+
 void Handler::setHandler() 
 {
 	struct sigaction segvAction;
@@ -20,20 +26,20 @@ void Handler::setHandler()
 	segvAction.sa_flags = SA_SIGINFO | SA_RESTART;
     sigemptyset(&segvAction.sa_mask);
 
-	if(sigaction(SIGSEGV, &segvAction, &defaultAction) < 0)
+	if(sigaction(signum, &segvAction, &defaultAction) < 0)
 		FATAL("sigaction: %s", strerror(errno));
 
 	handler = this;
-	TRACE("New SIGSEGV handler programmed");
+	TRACE("New signal handler programmed");
 }
 
 void Handler::restoreHandler()
 {
-	if(sigaction(SIGSEGV, &defaultAction, NULL) < 0)
+	if(sigaction(signum, &defaultAction, NULL) < 0)
 		FATAL("sigaction: %s", strerror(errno));
 
 	handler = NULL;
-	TRACE("Old SIGSEGV handler restored");
+	TRACE("Old signal handler restored");
 }
 
 void Handler::segvHandler(int s, siginfo_t *info, void *ctx)

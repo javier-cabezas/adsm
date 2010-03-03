@@ -46,7 +46,6 @@ Manager::malloc(void ** addr, size_t count)
     gmacError_t ret;
     void *devAddr;
     void *cpuAddr;
-
     *addr = NULL;
 
     // Allocate device memory
@@ -56,6 +55,7 @@ Manager::malloc(void ** addr, size_t count)
 	if(ret != gmacSuccess) {
 		return ret;
 	}
+
     // Allocate (or map) host memory
     cpuAddr = mapToHost(devAddr, count, defaultProt());
     if (cpuAddr == NULL) // Failed!
@@ -249,7 +249,7 @@ Manager::initShared(Context * ctx)
     for(i = shared.begin(); i != shared.end(); i++) {
         Region * r = i->second;
         r->lockWrite();
-        TRACE("Mapping Shared Region %p (%d bytes)", r->start(), r->size());
+        TRACE("Mapping Shared Region %p (%zd bytes)", r->start(), r->size());
         void *devPtr;
 #ifdef USE_GLOBAL_HOST
         TRACE("Using Host Translation");

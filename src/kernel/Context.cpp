@@ -11,12 +11,12 @@ namespace gmac {
 void
 Context::Init()
 {
-	PRIVATE_INIT(Context::key, NULL);
-	PRIVATE_SET(Context::key, NULL);
+    gmac::util::Private::init(Context::key);
+    Context::key.set(NULL);
 }
 
 
-PRIVATE(Context::key);
+gmac::util::Private Context::key;
 
 unsigned Context::_next = 0;
 
@@ -26,7 +26,7 @@ Context::Context(Accelerator &acc) :
     _releasedRegions(),
     _releasedAll(false)
 {
-    PRIVATE_SET(Context::key, this);
+    Context::key.set(this);
 	_id = ++_next;
     addThreadTid(0x10000000 + _id);
     pushState(Idle, 0x10000000 + _id);
@@ -45,7 +45,7 @@ Context *
 Context::current()
 {
     Context * ctx;
-    ctx = static_cast<Context *>(PRIVATE_GET(Context::key));
+    ctx = static_cast<Context *>(Context::key.get());
     if (ctx == NULL) ctx = proc->create();
     return ctx;
 }
@@ -53,16 +53,16 @@ Context::current()
 void
 Context::initThread()
 {
-    PRIVATE_SET(key, NULL);
+    key.set(NULL);
 }
 
 void
 Context::destroy()
 {
     // Set the current context before each Context destruction (since it is sequential)
-    PRIVATE_SET(key, this);
+    key.set(this);
     _acc.destroy(this);
-    PRIVATE_SET(key, NULL);
+    key.set(NULL);
 }
 
 }

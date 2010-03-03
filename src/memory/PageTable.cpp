@@ -16,7 +16,7 @@ PageTable::PageTable() :
 	TRACE("Page Size: %zd bytes", paramPageSize);
 #ifndef USE_MMAP
 	TRACE("Table Shift: %zd bits", tableShift);
-	TRACE("Table Size: %d entries", (1 << dirShift) / paramPageSize);
+	TRACE("Table Size: %ld entries", (1 << dirShift) / paramPageSize);
 #endif
 }
 
@@ -67,7 +67,7 @@ void PageTable::insert(void *host, void *dev)
 	ASSERT(table.present(e) == false || (uint8_t *)table.value(e) == dev);
 
 	table.insert(entry(host, tableShift, table.size()), dev);
-	TRACE("PT inserts: %p -> %p", entry(host, tableShift, table.size()), dev);
+	TRACE("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
 	lock.unlock();
 	exitFunction();
 #endif

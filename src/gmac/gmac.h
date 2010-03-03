@@ -60,6 +60,10 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
+// TODO: add define to check for Windows
+#include <pthread.h>
+typedef pthread_t THREAD_T;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -181,7 +185,7 @@ gmacError_t gmacGetLastError(void);
 void *gmacMemset(void *, int, size_t);
 void *gmacMemcpy(void *, const void *, size_t);
 
-void gmacSendReceive(unsigned long);
+void gmacSendReceive(THREAD_T);
 
 #ifdef __cplusplus
 #include <cassert>

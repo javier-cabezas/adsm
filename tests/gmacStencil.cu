@@ -7,6 +7,7 @@
 
 #include "utils.h"
 #include "debug.h"
+#include "barrier.h"
 
 #include "gmacStencilCommon.cu"
 

@@ -31,43 +31,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_HANDLER_H_
-#define __MEMORY_HANDLER_H_
+#ifndef __UTIL_PRIVATE_H_
+#define __UTIL_PRIVATE_H_
 
-#include <cstdlib>
+#include <os/Private.h>
 
-#include <memory/Manager.h>
-
-namespace gmac { namespace memory {
-
-class ProtRegion;
-
-//! Handler for Read/Write faults
-class Handler : public Manager {
-private:
-	static struct sigaction defaultAction;
-	void setHandler(void);
-	void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
-
-    static int signum;
-	static unsigned count;
-	static Handler *handler;
-
-protected:
-	virtual bool read(void *) = 0;
-	virtual bool write(void *) = 0;
-	
-public:
-	Handler() {
-		if(count == 0) setHandler();
-		count++;
-	}
-	virtual ~Handler() { 
-		if(--count == 0) restoreHandler();
-	}
-
-};
-
-}}
 #endif
