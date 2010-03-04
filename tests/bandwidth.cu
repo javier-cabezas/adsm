@@ -6,7 +6,6 @@
 
 #include <cuda.h>
 #define USE_CUDA
-#include "debug.h"
 
 #define MAXDOUBLE DBL_MAX
 #define MINDOUBLE DBL_MIN
