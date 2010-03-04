@@ -1,9 +1,6 @@
 libgmac (0.0.8) unstable; urgency=low
   * Added support for Mac OS X (Snow Leopard 32bit)
   * Changed mmap() offset to support 40-bit NVIDIA Fermi Cards
-libgmac (0.0.6) unstable; urgency=low
-
- -- Isaac Gelado <igelado@ac.upc.edu>  Thu, 4th Mar 2010 18:10:00 +0100
 
 libgmac (0.0.7) unstable; urgency=low
 
@@ -15,6 +12,9 @@ libgmac (0.0.7) unstable; urgency=low
 
  -- Javier Cabezas <jcabezas@ac.upc.edu>  Mon, 22 Feb 2010 18:21:00 +0100
 
+libgmac (0.0.6) unstable; urgency=low
+
+ -- Isaac Gelado <igelado@ac.upc.edu>  Thu, 4th Mar 2010 18:10:00 +0100
 
 libgmac (0.0.5) unstable; urgency=low
 
