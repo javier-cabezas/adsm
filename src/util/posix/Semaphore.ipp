@@ -4,21 +4,25 @@
 inline void
 Semaphore::post()
 {
-    struct sembuf buf;
-    buf.sem_num = 0;
-    buf.sem_op = 1;
-    buf.sem_flg = 0;
-    semop(__sem, &buf, 1);
+    pthread_mutex_lock(&__mutex);
+
+    __val++;
+    if(__val >= 0)
+        pthread_cond_signal(&__cond);
+
+    pthread_mutex_unlock(&__mutex);
 }
 
 inline void
 Semaphore::wait()
 {
-    struct sembuf buf;
-    buf.sem_num = 0;
-    buf.sem_op = -1;
-    buf.sem_flg = 0;
-    semop(__sem, &buf, 1);
+    pthread_mutex_lock(&__mutex);
+
+    __val--;
+    if(__val < 0)
+        pthread_cond_wait(&__cond, &__mutex);
+
+    pthread_mutex_unlock(&__mutex);
 }
 
 #endif
