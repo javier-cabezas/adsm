@@ -25,7 +25,7 @@ Package: libgmac-paraver
 Priority: important
 Section: libs
 Architecture: i386 amd64
-Depends: libparaver, libc6
+Depends: libparaver (>= 0.0.3), libc6
 Conflicts: libgmac
 Description: 
 
@@ -41,7 +41,7 @@ Package: libgmac-dev
 Priority: important
 Section: libdevel
 Architecture: i386 amd64
-Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}) | libgmac-dbg (=${binary:Version}), libparaver-dev,
+Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}) | libgmac-dbg (=${binary:Version}), libparaver-dev (>= 0.0.3),
          libc6-dev | libc-dev
 Description: 
 
