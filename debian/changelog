@@ -1,3 +1,10 @@
+libgmac (0.0.8) unstable; urgency=low
+  * Added support for Mac OS X (Snow Leopard 32bit)
+  * Changed mmap() offset to support 40-bit NVIDIA Fermi Cards
+  * Removed POSIX coded that is not compulsory in the POSIX standard
+
+ -- Isaac Gelado <igelado@ac.upc.edu>  Thu, 4th Mar 2010 18:10:00 +0100
+
 libgmac (0.0.7) unstable; urgency=low
 
   * New upstream version
