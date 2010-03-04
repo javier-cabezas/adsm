@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <fcntl.h>
+#include <string.h>
+
+#include <assert.h>
+#include <errno.h>
+
 
 #include "barrier.h"
 
@@ -14,45 +15,32 @@
 #define SEM_A S_IWUSR
 #endif
 
+
 void barrier_init(barrier_t *barrier, int value)
 {
-    union semun un;
-
-    if((barrier->sem = semget(IPC_PRIVATE, 1, SEM_R | SEM_A)) < 0)
-        return;
-    barrier->value = -1 * value;
-    /* Init semaphore to 0 */
-    un.val = 0;
-    fprintf(stderr,"Init Semaphore = %d\n", -1 * value);
-    if(semctl(barrier->sem, 0, SETVAL, un) >= 0) return;
-    else return barrier_destroy(*barrier);
+    pthread_cond_init(&barrier->cond, NULL);
+    pthread_mutex_init(&barrier->mutex, NULL);
+    barrier->counter = barrier->value = value;
 }
 
-void barrier_wait(barrier_t barrier)
+
+void barrier_wait(barrier_t *barrier)
 {
-    struct sembuf buf;
+    pthread_mutex_lock(&barrier->mutex);
 
-    /* Check the current value */
-    int value = semctl(barrier.sem, 0, GETVAL);
-    fprintf(stderr,"Pre Semaphore = %d\n", value);
+    barrier->counter--;
+    if(barrier->counter > 0)
+        pthread_cond_wait(&barrier->cond, &barrier->mutex);
 
-    buf.sem_num = 0;
-    buf.sem_flg = 0;
-    if(value <= barrier.value) {
-        buf.sem_op = -2 * value + 1;
-        semop(barrier.sem, &buf, 0);
-    }
-    else {
-        buf.sem_op = -1;
-        semop(barrier.sem, &buf, 0);
-    }
+    barrier->counter++;
+    if(barrier->counter < barrier->value)
+        pthread_cond_signal(&barrier->cond);
 
-    value = semctl(barrier.sem, 0, GETVAL);
-    fprintf(stderr,"Post Semaphore = %d\n", value);
+    pthread_mutex_unlock(&barrier->mutex);
 }
 
-void barrier_destroy(barrier_t barrier)
+void barrier_destroy(barrier_t *barrier)
 {
-    semctl(barrier.sem, 0, IPC_RMID);
-    barrier.sem = -1;
+    pthread_mutex_destroy(&barrier->mutex);
+    pthread_cond_destroy(&barrier->cond);
 }

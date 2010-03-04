@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     if (nIter > 1) {
         //pthread_barrier_destroy(&barrier);
-        barrier_destroy(barrier);
+        barrier_destroy(&barrier);
     }
 
     delete descriptors;

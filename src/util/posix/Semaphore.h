@@ -36,9 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
+#include <pthread.h>
 
 #include <iostream>
 
@@ -46,7 +44,9 @@ namespace gmac { namespace util {
 
 class Semaphore {
 protected:
-	int __sem;
+	int __val;
+    pthread_cond_t __cond;
+    pthread_mutex_t __mutex;
 public:
 	Semaphore(unsigned v);
 	~Semaphore();

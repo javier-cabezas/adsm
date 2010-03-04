@@ -1,6 +1,9 @@
 #ifndef __KERNEL_KERNEL_IPP
 #define __KERNEL_KERNEL_IPP
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include "Context.h"
 
 #include <algorithm>
@@ -96,11 +99,11 @@ void
 KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 {
     if (size == 4) {
-        TRACE("Pushing argument: +%zd, %lld/%lld: 0x%x", size, _argsSize, offset, *(uint32_t *) arg);
+        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": 0x%x", size, _argsSize, offset, *(uint32_t *) arg);
     } else if (size == 8) {
-        TRACE("Pushing argument: +%zd, %lld/%lld: %p", size, _argsSize, offset, (void *) *(uint64_t *) arg);
+        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": %p", size, _argsSize, offset, (void *) *(uint64_t *) arg);
     } else {
-        TRACE("Pushing argument: +%zd, %lld/%lld", size, _argsSize, offset);
+        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64, size, _argsSize, offset);
     }
 
     ASSERT(offset + size < KernelConfig::StackSize);
