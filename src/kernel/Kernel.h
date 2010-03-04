@@ -61,7 +61,7 @@ protected:
     static const unsigned StackSize = 4096;
 
     char _stack[StackSize];
-    off_t _argsSize;
+    size_t _argsSize;
 
     KernelConfig(const KernelConfig & c);
 public:
