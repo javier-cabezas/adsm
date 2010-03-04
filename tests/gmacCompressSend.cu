@@ -70,7 +70,7 @@ void *dct_thread(void *args)
 	gmacError_t ret;
 
     //pthread_barrier_wait(&barrierInit);
-    barrier_wait(barrierInit);
+    barrier_wait(&barrierInit);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -136,7 +136,7 @@ void *quant_thread(void *args)
 	gmacError_t ret;
 
     //pthread_barrier_wait(&barrierInit);
-    barrier_wait(barrierInit);
+    barrier_wait(&barrierInit);
 
 	//ret = gmacMalloc((void **)&s_quant.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);
@@ -175,7 +175,7 @@ void *idct_thread(void *args)
 	gmacError_t ret;
 
     //pthread_barrier_wait(&barrierInit);
-    barrier_wait(barrierInit);
+    barrier_wait(&barrierInit);
 
 	//ret = gmacMalloc((void **)&s_idct.in, width * height * sizeof(float));
 	//assert(ret == gmacSuccess);

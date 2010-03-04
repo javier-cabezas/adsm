@@ -248,7 +248,7 @@ do_stencil(void * ptr)
 
         if(descr->gpus > 1) {
             //pthread_barrier_wait(&barrier);
-            barrier_wait(barrier);
+            barrier_wait(&barrier);
 
             // Send data
             if (descr->prev != NULL) {
@@ -263,7 +263,7 @@ do_stencil(void * ptr)
             }
 
             //pthread_barrier_wait(&barrier);
-            barrier_wait(barrier);
+            barrier_wait(&barrier);
         }
 
         tmp = descr->u3;
@@ -273,7 +273,7 @@ do_stencil(void * ptr)
 
     if(descr->gpus > 1) {
         //pthread_barrier_wait(&barrier);
-        barrier_wait(barrier);
+        barrier_wait(&barrier);
     }
 
 	gettimeofday(&t, NULL);
