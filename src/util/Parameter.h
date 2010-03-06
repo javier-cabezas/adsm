@@ -53,6 +53,7 @@ enum ParamFlags {
 namespace gmac { namespace util {
 class __Parameter {
 public:
+    virtual ~__Parameter() {};
     virtual void print() const = 0;
 };
 
