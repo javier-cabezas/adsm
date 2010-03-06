@@ -83,6 +83,7 @@ class Kernel : public memory::RegionSet, public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
+    virtual ~Kernel() {};
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
     gmacError_t bind(void * addr);
@@ -91,6 +92,7 @@ public:
 
 class KernelLaunch : public memory::RegionSet {
 public:
+    virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;
 };
 
