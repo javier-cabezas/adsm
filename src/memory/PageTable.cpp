@@ -12,7 +12,7 @@ PageTable::PageTable() :
 	_clean(false), _valid(true),
 	pages(1)
 {
-	tableShift = log2(paramPageSize);
+	tableShift = int(log2(paramPageSize));
 	TRACE("Page Size: %zd bytes", paramPageSize);
 #ifndef USE_MMAP
 	TRACE("Table Shift: %zd bits", tableShift);

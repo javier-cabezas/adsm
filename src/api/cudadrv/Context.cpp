@@ -109,13 +109,13 @@ Context::halloc(void **addr, size_t size) {
     zero(addr);
     lock();
     size += mm().pageTable().getPageSize();
-    uint8_t * ptr = 0;
-    CUresult ret = cuMemHostAlloc((void **) &ptr, size, CU_MEMHOSTALLOC_PORTABLE);
+    void * ptr = 0;
+    CUresult ret = cuMemHostAlloc(&ptr, size, CU_MEMHOSTALLOC_PORTABLE);
     if(uint64_t(ptr) % mm().pageTable().getPageSize()) {
-        ptr += mm().pageTable().getPageSize() -
+        ptr = (uint8_t *)ptr + mm().pageTable().getPageSize() -
             (uint64_t(ptr) % mm().pageTable().getPageSize());
     }
-    *addr = (void *)ptr;
+    *addr = ptr;
     unlock();
     return error(ret);
 }
