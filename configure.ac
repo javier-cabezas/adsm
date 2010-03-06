@@ -1,4 +1,4 @@
-AC_INIT([GMAC],[0.0.8],[igelado@ac.upc.edu],[gmac])
+AC_INIT([GMAC],[0.0.8-1],[igelado@ac.upc.edu],[gmac])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
