@@ -134,7 +134,7 @@ size_t gmacAccs();
     Currently only works if this is the first gmac call in the thread.
 	\param acc index of the preferred accelerator
 */
-gmacError_t gmacSetAfinnity(int acc);
+gmacError_t gmacSetAffinity(int acc);
 
 
 /*!

@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
-DIST_SUBDIRS = stdc posix pthreads
-SUBDIRS = stdc $(OS_DIR) $(THREAD_DIR)
+DIST_SUBDIRS = stdc mpi posix pthreads
+SUBDIRS = stdc $(BUILD_MPI) $(OS_DIR) $(THREAD_DIR)
 
 lib_LTLIBRARIES = libgmac.la
 nobase_include_HEADERS = gmac.h gmac/vm.h

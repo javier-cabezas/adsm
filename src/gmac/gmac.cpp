@@ -299,12 +299,18 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	if (dstCtx == NULL && srcCtx == NULL) return NULL;
 
     // TODO - copyDevice can be always asynchronous
-	if(dstCtx == NULL) {	// Same device copy
+	if(dstCtx == NULL) {	    // From device
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst,
 			                     manager->ptr(srcCtx, src), n);
         ASSERT(err == gmacSuccess);
 	}
+    else if(srcCtx == NULL) {   // To device
+		//manager->invalidate(dst, n);
+		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst),
+			                       src, n);
+        ASSERT(err == gmacSuccess);
+    }
     else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
