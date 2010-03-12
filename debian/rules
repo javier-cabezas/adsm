@@ -10,6 +10,7 @@ CXXFLAGS= -g -O2 -Wall
 CONFARGS = --enable-cuda-driver --enable-mmap
 CONFARGS_PARAVER = $(CONFARGS) --enable-paraver
 CONFARGS_DEBUG = $(CONFARGS) --enable-debug
+CONFARGS_MPI = $(CONFARGS) --enable-mpi
 
 setup-stamp:
 	dh_testdir
@@ -40,6 +41,13 @@ configure-stamp-libgmac-dbg: setup-stamp
 		$(CONFARGS_DEBUG))
 	touch configure-stamp-libgmac-dbg
 
+configure-libgmac-mpi: configure-stamp-libgmac-mpi
+configure-stamp-libgmac-mpi: setup-stamp
+	mkdir -p build-mpi
+	(cd build-mpi && ../configure \
+		--prefix=/usr         \
+		$(CONFARGS_MPI))
+	touch configure-stamp-libgmac-mpi
 
 build-libgmac: build-stamp-libgmac
 build-stamp-libgmac: configure-stamp-libgmac
@@ -59,15 +67,21 @@ build-stamp-libgmac-dbg: configure-stamp-libgmac-dbg
 	$(MAKE) -C build-dbg
 	touch build-stamp-libgmac-dbg
 
+build-libgmac-mpi: build-stamp-libgmac-mpi
+build-stamp-libgmac-mpi: configure-stamp-libgmac-mpi
+	dh_testdir
+	$(MAKE) -C build-mpi
+	touch build-stamp-libgmac-mpi
+
 clean:
 	dh_testdir
 	dh_testroot
 	-rm -f build-stamp-* configure-stamp-* setup-stamp
 	dh_clean
 
-build: build-libgmac build-libgmac-paraver build-libgmac-dbg
+build: build-libgmac build-libgmac-paraver build-libgmac-dbg build-libgmac-mpi
 
-install: install-libgmac install-libgmac-paraver
+install: install-libgmac install-libgmac-paraver install-libgmac-mpi
 install-libgmac: build-libgmac
 	dh_testdir
 	dh_testroot
@@ -88,6 +102,13 @@ install-libgmac-dbg: build-libgmac-dbg
 	dh_prep
 	dh_installdirs
 	$(MAKE) -C build-dbg DESTDIR=$(CURDIR)/debian/tmp-libgmac-dbg install
+
+install-libgmac-mpi: build-libgmac-mpi
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) -C build-mpi DESTDIR=$(CURDIR)/debian/tmp-libgmac-mpi install
 
 binary-arch: install
 	dh_testdir -s
@@ -119,7 +140,7 @@ binary-arch: install
 	dh_md5sums -s
 	dh_builddeb -s
 
-binary-arch-gdb: install-libgmac-dbg
+binary-arch-dbg: install-libgmac-dbg
 	dh_testdir -s
 	dh_testroot -s
 	dh_installchangelogs -s
@@ -149,4 +170,4 @@ binary-arch-gdb: install-libgmac-dbg
 	dh_md5sums -s
 	dh_builddeb -s
 
-binary: binary-arch binary-arch-gdb
+binary: binary-arch binary-arch-dbg

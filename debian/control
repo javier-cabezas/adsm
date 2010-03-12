@@ -19,7 +19,7 @@ Section: libs
 Architecture: i386 amd64
 Depends: libc6
 Conflicts: libgmac-paraver
-Description: 
+Description: Global Memory for ACcelerators ease the development process in GPU programs by providing a unified shared address space and transparently managing the data coherence
 
 Package: libgmac-paraver
 Priority: important
@@ -27,7 +27,7 @@ Section: libs
 Architecture: i386 amd64
 Depends: libparaver (>= 0.0.3), libc6
 Conflicts: libgmac
-Description: 
+Description: Global Memory for ACcelerators ease the development process in GPU programs by providing a unified shared address space and transparently managing the data coherence (built with paraver traces support)
 
 Package: libgmac-dbg
 Priority: important
@@ -35,7 +35,15 @@ Section: libs
 Architecture: i386 amd64
 Depends: libc6
 Conflicts: libgmac
-Description: 
+Description: Global Memory for ACcelerators ease the development process in GPU programs by providing a unified shared address space and transparently managing the data coherence (built with debug support)
+
+Package: libgmac-mpi
+Priority: important
+Section: libs
+Architecture: i386 amd64
+Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}) | libgmac-dbg (=${binary:Version}),
+         libc6-dev | libc-dev
+Description: Global Memory for ACcelerators ease the development process in GPU programs by providing a unified shared address space and transparently managing the data coherence (library that interposes MPI calls for improved performance) 
 
 Package: libgmac-dev
 Priority: important
@@ -43,5 +51,5 @@ Section: libdevel
 Architecture: i386 amd64
 Depends: libgmac (=${binary:Version}) | libgmac-paraver (=${binary:Version}) | libgmac-dbg (=${binary:Version}), libparaver-dev (>= 0.0.3),
          libc6-dev | libc-dev
-Description: 
+Description: Global Memory for ACcelerators ease the development process in GPU programs by providing a unified shared address space and transparently managing the data coherence (development files)
 

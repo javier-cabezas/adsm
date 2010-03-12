@@ -163,6 +163,21 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+# Check for opencl mode
+opencl_default="no"
+AC_MSG_CHECKING(whether to use OpenCL)
+AC_ARG_ENABLE(opencl,
+	AS_HELP_STRING([--enable-opencl],[turn on using the OpenCL API [[default=no]]])
+		, , enable_opencl=$opencl_default)
+if test "$enable_opencl" = "yes"; then
+	AC_MSG_RESULT(yes)
+	API_DIR="opencl"
+    AC_DEFINE([USE_OPENCL])
+else
+	AC_MSG_RESULT(no)
+    AC_DEFINE([USE_CUDA])
+fi
+
 
 vm_default="no"
 AC_MSG_CHECKING(whether to use software virtual memory)
@@ -250,8 +265,22 @@ else
     AC_MSG_RESULT(no)
 fi
 
+mpi_default="no"
+AC_MSG_CHECKING(whether to build mpi support)
+AC_ARG_ENABLE(mpi,
+    AS_HELP_STRING([--enable-mpi],[turn on mpi support [[default=no]]])
+        , , enable_mpi=$mpi_default)
+if test "$enable_mpi" = "yes"; then
+    AC_MSG_RESULT(yes)
+    BUILD_MPI="mpi"
+else
+    BUILD_MPI=""
+    AC_MSG_RESULT(no)
+fi
+
 AC_SUBST(ARCH)
 AC_SUBST(BUILD_TESTS)
+AC_SUBST(BUILD_MPI)
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(API_DIR)
@@ -282,9 +311,11 @@ AC_CONFIG_FILES([Makefile
 	src/gmac/stdc/Makefile
 	src/gmac/posix/Makefile
 	src/gmac/pthreads/Makefile
+	src/gmac/mpi/Makefile
 	src/api/Makefile
 	src/api/cuda/Makefile
 	src/api/cudadrv/Makefile
+	src/api/opencl/Makefile
 	src/os/Makefile
     src/os/posix/Makefile
 	src/util/Makefile
