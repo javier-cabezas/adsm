@@ -5,7 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef USE_CUDA
+#ifdef CUDA_ERRORS
 #include <cuda.h>
 #define gmacGetErrorString cudaGetErrorString
 #define gmacGetLastError cudaGetLastError
