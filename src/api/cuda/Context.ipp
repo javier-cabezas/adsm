@@ -52,18 +52,6 @@ Context::hostAlloc(void **host, void **dev, size_t size)
 }
 
 inline gmacError_t
-Context::hostMemAlign(void **host, void **dev, size_t size)
-{
-    FATAL("Not implemented");
-}
-
-inline gmacError_t
-Context::hostMap(void *host, void **dev, size_t size)
-{
-    FATAL("Not implemented");
-}
-
-inline gmacError_t
 Context::hostFree(void *addr)
 {
     check();

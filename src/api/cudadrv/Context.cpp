@@ -23,27 +23,27 @@ Context::setupStreams()
     if (_gpu.async()) {
         CUresult ret;
         ret = cuStreamCreate(&streamLaunch, 0);
-        if(ret != CUDA_SUCCESS)
-            FATAL("Unable to create CUDA stream %d", ret);
+        CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
         ret = cuStreamCreate(&streamToDevice, 0);
-        if(ret != CUDA_SUCCESS)
-            FATAL("Unable to create CUDA stream %d", ret);
+        CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
         ret = cuStreamCreate(&streamToHost, 0);
-        if(ret != CUDA_SUCCESS)
-            FATAL("Unable to create CUDA stream %d", ret);
+        CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
         ret = cuStreamCreate(&streamDevice, 0);
-        if(ret != CUDA_SUCCESS)
-            FATAL("Unable to create CUDA stream %d", ret);
+        CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
     }
 
     if (_gpu.async()) {
         _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
         CUresult ret = cuMemHostAlloc(&_bufferPageLocked, _bufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
-        ASSERT(ret == CUDA_SUCCESS);
-        TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
+        if (ret == CUDA_SUCCESS) {
+            TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
+        } else {
+            FATAL("Error %d: when allocating page-locked memory", ret);
+        }
     } else {
         _bufferPageLocked     = NULL;
         _bufferPageLockedSize = 0;
+        TRACE("Not using page locked memory\n");
     }
 }
 
@@ -88,6 +88,7 @@ Context::~Context()
 
 gmacError_t
 Context::malloc(void **addr, size_t size) {
+    ASSERT(addr);
     zero(addr);
     lock();
     size += mm().pageTable().getPageSize();
@@ -105,17 +106,13 @@ Context::malloc(void **addr, size_t size) {
 }
 
 gmacError_t
-Context::halloc(void **addr, size_t size) {
+Context::mallocPageLocked(void **addr, size_t size)
+{
+    ASSERT(addr);
     zero(addr);
+    CUresult ret = CUDA_SUCCESS;
     lock();
-    size += mm().pageTable().getPageSize();
-    void * ptr = 0;
-    CUresult ret = cuMemHostAlloc(&ptr, size, CU_MEMHOSTALLOC_PORTABLE);
-    if(uint64_t(ptr) % mm().pageTable().getPageSize()) {
-        ptr = (uint8_t *)ptr + mm().pageTable().getPageSize() -
-            (uint64_t(ptr) % mm().pageTable().getPageSize());
-    }
-    *addr = ptr;
+    ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
     unlock();
     return error(ret);
 }
@@ -124,6 +121,7 @@ Context::halloc(void **addr, size_t size) {
 gmacError_t
 Context::free(void *addr)
 {
+    ASSERT(addr);
     lock();
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
@@ -135,77 +133,25 @@ Context::free(void *addr)
 }
 
 gmacError_t
-Context::hostAlloc(void **host, void **device, size_t size)
+Context::mapToDevice(void *host, void **device, size_t size)
 {
-	zero(host);
-	CUresult ret = CUDA_SUCCESS;
-	lock();
-    if (device != NULL) {
-        zero(device);
-        ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
-        if(ret == CUDA_SUCCESS) {
-            ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, *host, 0);
-            ASSERT(ret == CUDA_SUCCESS);
-        }
-    } else {
-        ret = cuMemHostAlloc(host, size, CU_MEMHOSTALLOC_PORTABLE);
-    }
-	hostMem.insert(AddressMap::value_type(*host, *host));
-	unlock();
-	return error(ret);
+    ASSERT(host   != NULL);
+    ASSERT(device != NULL);
+    ASSERT(size   > 0);
+    zero(device);
+    CUresult ret = CUDA_SUCCESS;
+    lock();
+    ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, host, 0);
+    hostMem.insert(AddressMap::value_type(host, *device));
+    unlock();
+    return error(ret);
 }
 
-
-gmacError_t
-Context::hostMemAlign(void **host, void **device, size_t size)
-{
-	zero(host); zero(device);
-	void *ptr = NULL;
-	CUdeviceptr dev = 0;
-	size_t pageSize = mm().pageTable().getPageSize();
-	size_t offset = 0;
-	CUresult ret = CUDA_SUCCESS;
-	lock();
-	ret = cuMemHostAlloc(&ptr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
-	if((unsigned long)ptr & (pageSize - 1)) {
-		size += pageSize;
-		cuMemFreeHost(ptr);
-		ret = cuMemHostAlloc(&ptr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
-		offset = pageSize - ((unsigned long)ptr & (pageSize - 1));
-		*host = (void *)((uint8_t *)ptr + offset);
-	}
-	if(ret == CUDA_SUCCESS) {
-		ret = cuMemHostGetDevicePointer((CUdeviceptr *)&dev, ptr, 0);
-        ASSERT(ret == CUDA_SUCCESS);
-	}
-	*host = (void *)((uint8_t *)ptr + offset);
-	hostMem.insert(AddressMap::value_type(*host, ptr));
-	unlock();
-	*device = (void *)(dev + offset);
-	return error(ret);
-}
-
-
-gmacError_t
-Context::hostMap(void *host, void **device, size_t size)
-{
-	zero(device);
-	CUdeviceptr dev = 0;
-	size_t pageSize = mm().pageTable().getPageSize();
-	ASSERT(((unsigned long)host & (pageSize - 1)) == 0);
-	lock();
-	AddressMap::const_iterator i = hostMem.find(host);
-	ASSERT(i != hostMem.end());
-	CUresult ret = cuMemHostGetDevicePointer((CUdeviceptr *)&dev, i->second, 0);
-	size_t offset = (uint8_t *)i->first - (uint8_t *)i->second;
-	unlock();
-	*device = (void *)(dev + offset);
-	return error(ret);
-}
 
 gmacError_t
 Context::hostFree(void *addr)
 {
+    ASSERT(addr);
 	lock();
 	AddressMap::iterator i = hostMem.find(addr);
 	ASSERT(i != hostMem.end());
@@ -247,11 +193,11 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
                 lock();
                 pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
                 ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
-                ASSERT(ret == CUDA_SUCCESS);
+                CBREAK(ret == CUDA_SUCCESS, unlock());
                 ret = cuStreamSynchronize(streamToDevice);
                 popEventState(paraver::Accelerator, 0x10000000 + _id);
                 unlock();
-                ASSERT(ret == CUDA_SUCCESS);
+                CBREAK(ret == CUDA_SUCCESS);
 
                 left -= bytes;
                 off  += bytes;
@@ -263,7 +209,6 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
             ret = cuMemcpyHtoDAsync(gpuAddr(dev), tmp, size, streamToDevice);
             _pendingToDevice = true;
             unlock();
-            ASSERT(ret == CUDA_SUCCESS);
         }
     } else {
         lock();
@@ -294,11 +239,11 @@ Context::copyToHost(void *host, const void *dev, size_t size)
             lock();
             pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
-            if (ret != CUDA_SUCCESS) { unlock(); goto done; }
+            CBREAK(ret == CUDA_SUCCESS, unlock());
             ret = cuStreamSynchronize(streamToHost);
             popEventState(paraver::Accelerator, 0x10000000 + _id);
             unlock();
-            if (ret != CUDA_SUCCESS) goto done;
+            CBREAK(ret == CUDA_SUCCESS);
             memcpy(((char *) host) + off, tmp, bytes);
 
             left -= bytes;
@@ -310,7 +255,6 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         unlock();
     }
 
-done:
     exitFunction();
     return error(ret);
 }

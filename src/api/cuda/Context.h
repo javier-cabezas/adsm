@@ -87,8 +87,6 @@ public:
 	gmacError_t malloc(void **addr, size_t size);
 	gmacError_t free(void *addr);
 	gmacError_t hostAlloc(void **host, void **dev, size_t size);
-	gmacError_t hostMemAlign(void **host, void **dev, size_t size);
-	gmacError_t hostMap(void *host, void **dev, size_t size);
 	gmacError_t hostFree(void *addr);
 	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);

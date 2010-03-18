@@ -40,7 +40,7 @@ Context::lock()
 {
     mutex.lock();
     CUresult ret = cuCtxPushCurrent(_ctx);
-    ASSERT(ret == CUDA_SUCCESS);
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
 }
 
 inline void
@@ -48,7 +48,7 @@ Context::unlock()
 {
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
-    ASSERT(ret == CUDA_SUCCESS);
+    CFATAL(ret == CUDA_SUCCESS, "Error popping context %d", ret);
     mutex.unlock();
 }
 #else
