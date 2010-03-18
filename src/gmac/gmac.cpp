@@ -306,7 +306,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         ASSERT(err == gmacSuccess);
 	}
     else if(srcCtx == NULL) {   // To device
-		//manager->invalidate(dst, n);
+		manager->invalidate(dst, n);
 		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst),
 			                       src, n);
         ASSERT(err == gmacSuccess);
