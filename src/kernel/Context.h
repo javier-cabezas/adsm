@@ -154,12 +154,12 @@ public:
 	*/
 	virtual gmacError_t malloc(void **addr, size_t size) = 0;
 
-	/*!
-		\brief Allocates pinned memory on the host
-		\param addr Pointer to memory address to store the pinned memory
+    /*!
+		\brief Allocates page locked host memory
+		\param addr Pointer to memory address to store the memory
 		\param size Size, in bytes, to be allocated
 	*/
-	virtual gmacError_t halloc(void **addr, size_t size) = 0;
+	virtual gmacError_t mallocPageLocked(void **addr, size_t size) = 0;
 
 	/*!
 		\brief Releases memory previously allocated by Malloc
@@ -168,16 +168,12 @@ public:
 	virtual gmacError_t free(void *addr) = 0;
 
 	/*!
-		\brief Allocates page locked host memory and makes it accesible from the accelerator
-		\param host   Pointer to memory address to store the memory
-		\param device Pointer to memory address from the accelerator. If device is NULL, no mapping is performed
+		\brief Makes page-locked memory accesible from the accelerator
+		\param host   Pointer to page-locked memory
+		\param device Pointer to memory address from the accelerator.
 		\param size Size, in bytes, to be allocated
 	*/
-	virtual gmacError_t hostAlloc(void **host, void **device, size_t size) = 0;
-
-	virtual gmacError_t hostMemAlign(void **host, void **device, size_t size) = 0;
-
-	virtual gmacError_t hostMap(void *host, void **device, size_t size) = 0;
+	virtual gmacError_t mapToDevice(void *host, void **device, size_t size) = 0;
 
 	/*!
 		\bried Releases system memory accesible from the accelerator

@@ -69,6 +69,7 @@ protected:
     bool envSet;
 
 public:
+    virtual ~Parameter() {};
     Parameter(T *address, const char *name, T def, const char *envVar,
         uint32_t flags = 0);
 

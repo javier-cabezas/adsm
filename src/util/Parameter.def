@@ -14,3 +14,7 @@ PARAM(paramBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARA
 
 // Miscelaneous parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
+
+// OpenCL parameters
+PARAM(paramOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
+PARAM(paramOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")

@@ -70,6 +70,20 @@ WITH THE SOFTWARE.  */
 		abort();	\
 	} while(0)
 
+#define CFATAL(e, fmt, ...) \
+	do {	                \
+        if (!(e)) {         \
+		    fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
+		    abort();	    \
+        }                   \
+	} while(0)
+
+#define CBREAK(e, ...) \
+        if (!(e)) {      \
+            __VA_ARGS__; \
+		    break;	     \
+        }
+
 #ifdef DEBUG
 #define TRACE(fmt, ...)	\
 	do {	\
