@@ -71,6 +71,20 @@ Manager::malloc(void ** addr, size_t count)
     return gmacSuccess;
 }
 
+gmacError_t
+Manager::halloc(void ** addr, size_t count)
+{
+    gmacError_t ret;
+    *addr = NULL;
+
+    // Allocate page-locked memory. We currently rely on the backend
+    // to allocate this memory
+    Context * ctx = Context::current();
+    ret = ctx->mallocPageLocked(addr, count);
+    return ret;
+}
+
+
 #ifdef USE_GLOBAL_HOST
 gmacError_t
 Manager::globalMalloc(void ** addr, size_t count)
@@ -196,6 +210,14 @@ Manager::free(void * addr)
     return gmacSuccess;
 }
 
+gmacError_t
+Manager::hfree(void * addr)
+{
+    gmacError_t ret;
+    ret = Context::current()->hostFree(addr);
+    return ret;
+}
+
 Region *Manager::remove(void *addr)
 {
     Context * ctx = Context::current();
@@ -206,6 +228,7 @@ Region *Manager::remove(void *addr)
 void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count)
 {
 #ifndef USE_MMAP
+#ifndef USE_OPENCL
 	TRACE("Virtual Request %p -> %p", cpuPtr, devPtr);
 	PageTable &pageTable = ctx->mm().pageTable();
 	ASSERT(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
@@ -215,16 +238,19 @@ void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t cou
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.insert(cpuAddr + off, devAddr + off);
 #endif
+#endif
 }
 
 void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 {
 #ifndef USE_MMAP
+#ifndef USE_OPENCL
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
 	PageTable &pageTable = ctx->mm().pageTable();
 	count += ((unsigned long)cpuPtr & (pageTable.getPageSize() -1));
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.remove(cpuAddr + off);
+#endif
 #endif
 }
 

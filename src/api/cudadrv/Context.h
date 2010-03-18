@@ -125,12 +125,10 @@ public:
 	// Standard Accelerator Interface
     //
 	gmacError_t malloc(void **addr, size_t size);
-	gmacError_t halloc(void **addr, size_t size);
+	gmacError_t mallocPageLocked(void **addr, size_t size);
 	gmacError_t free(void *addr);
 
-	gmacError_t hostAlloc(void **host, void **device, size_t size);
-	gmacError_t hostMemAlign(void **host, void **device, size_t size);
-	gmacError_t hostMap(void *host, void **device, size_t size);
+	gmacError_t mapToDevice(void *host, void **device, size_t size);
 	gmacError_t hostFree(void *addr);
 
 	gmacError_t copyToDevice(void *dev, const void *host, size_t size);

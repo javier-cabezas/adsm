@@ -56,7 +56,6 @@ protected:
     static RegionMap __shared;
 
     Region *localFind(const void *addr);
-    static Region *globalFind(const void *addr);
     static Region *sharedFind(const void *addr);
 
     void clean();
@@ -83,6 +82,7 @@ public:
 
     template<typename T>
     T *find(const void *addr);
+    static Region *globalFind(const void *addr);
 };
 
 }}

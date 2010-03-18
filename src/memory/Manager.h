@@ -119,8 +119,14 @@ public:
 	gmacError_t malloc(void ** addr, size_t count);
 
     //! This method is called whenever the user
+	//! requests page-locked memory
+	//! \param addr Allocated memory address.
+	//! \param count Size in bytes of the allocated memory
+	gmacError_t halloc(void ** addr, size_t count);
+
+    //! This method is called whenever the user
 	//! requests shared memory to be used by all the accelerators
-	//! \param devPtr Allocated memory address. This address
+	//! \param addr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
 	gmacError_t globalMalloc(void ** addr, size_t count);
@@ -136,8 +142,14 @@ public:
 
 	//! This method is called whenever the user
 	//! releases accelerator memory
-	//! \param devPtr Memory address that has been released
+	//! \param addr Memory address that has been released
 	gmacError_t free(void *addr);
+
+    //! This method is called whenever the user
+	//! releases page-locked memory
+	//! \param addr Memory address that has been released
+	gmacError_t hfree(void *addr);
+
 
 	//! This method is called whenever the user invokes
 	//! a kernel to be executed at the accelerator

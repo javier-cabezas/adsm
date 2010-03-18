@@ -1,4 +1,4 @@
 MAINTAINERCLEANFILES = Makefile.in
 
 SUBDIRS = $(API_DIR) 
-DIST_SUBDIRS = cuda cudadrv 
+DIST_SUBDIRS = cuda cudadrv opencl

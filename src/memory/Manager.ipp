@@ -10,7 +10,8 @@ Manager::insert(Region *r)
 inline Context *
 Manager::owner(const void * addr)
 {
-	Region *region = current()->find<Region>(addr);
+	//Region *region = current()->find<Region>(addr);
+	Region *region = Map::globalFind(addr);
 	if(region == NULL) return NULL;
 	return region->owner();
 }
