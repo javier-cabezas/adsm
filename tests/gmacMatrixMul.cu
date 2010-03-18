@@ -65,6 +65,7 @@ extern "C" {
 // includes, kernels
 #include "gmacMatrixMulKernel.cu"
 
+
 const char * nIterStr = "GMAC_NITER";
 const char * WAStr = "GMAC_WA";
 const char * HAStr = "GMAC_HA";

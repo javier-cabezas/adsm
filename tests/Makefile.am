@@ -11,11 +11,11 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 
 noinst_SCRIPTS = gmacTests.py
 
-EXTRA_DIST = gmacTests.py\
+EXTRA_DIST = gmacTests.py gmacLaunch.sh\
     gmacStencilCommon.cu vmStencilCommon.cu\
     gmacMatrixMulKernel.cu vmMatrixMulKernel.cu
 
-GMAC_TESTSOURCES=test.h test.c debug.h utils.cpp utils.ipp utils.h
+GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart

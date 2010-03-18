@@ -5,7 +5,7 @@
 #include <sys/time.h>
 
 #include <cuda.h>
-#define USE_CUDA
+#define CUDA_ERRORS
 #include "debug.h"
 
 #define MAXDOUBLE DBL_MAX

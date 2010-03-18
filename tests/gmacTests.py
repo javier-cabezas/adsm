@@ -91,6 +91,7 @@ def recursive(params):
 
     return curr
 
+
 class Test:
     TESTS=[]
     def __init__(self, name, params):
@@ -107,9 +108,12 @@ class Test:
         for d in dicts:
             print d['GMAC_MANAGER'],
             d.update(os.environ)
-            p = subprocess.Popen(['./' + self.name], env=d, stdout=subprocess.PIPE, stderr=open('/dev/null', 'w'))
-            p.wait()
-            output = p.stdout.readlines()[-1][:-1]
+            p = subprocess.Popen(['./' + self.name], env=d, stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
+            ret = p.wait()
+            output = 'PASSED'
+            if ret != 0:
+                output = 'FAILED'
+
             outputs += [output]
             print output
 
