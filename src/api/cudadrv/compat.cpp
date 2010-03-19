@@ -445,6 +445,40 @@ void CUDARTAPI __cudaMutexOperation(int lock)
 	ASSERT(0);
 }
 
+
+// Events and other stuff needed by CUDA Wrapper
+cudaError_t cudaEventCreate(cudaEvent_t *event)
+{
+    CUresult ret = cuEventCreate((CUevent *)event, CU_EVENT_DEFAULT);
+    return __getCUDAError(ret);
+}
+
+cudaError_t cudaEventDestroy(cudaEvent_t event)
+{
+    CUresult ret = cuEventDestroy((CUevent) event);
+    return __getCUDAError(ret);
+}
+
+cudaError_t cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end)
+{
+    CUresult ret = cuEventElapsedTime(ms, (CUevent)start, (CUevent)end);
+    return __getCUDAError(ret);
+}
+
+cudaError_t cudaEventQuery(cudaEvent_t event)
+{
+    CUresult ret = cuEventQuery((CUevent) event);
+    return __getCUDAError(ret);
+}
+
+cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
+{
+    CUresult ret = cuEventRecord((CUevent) event, gmac::gpu::Context::stream());
+    return __getCUDAError(ret);
+}
+
+
+
 #ifdef __cplusplus
 }
 #endif

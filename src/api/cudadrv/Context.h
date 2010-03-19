@@ -117,6 +117,7 @@ public:
     static gmacError_t error(CUresult);
 
     static Context * current();
+    static CUstream stream();
 
 	void lock();
     void unlock();
