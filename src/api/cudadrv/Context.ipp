@@ -34,6 +34,13 @@ Context::current()
     return static_cast<Context *>(gmac::Context::current());
 }
 
+inline CUstream
+Context::stream()
+{
+    return current()->streamLaunch;
+}
+
+
 #ifdef USE_MULTI_CONTEXT
 inline void
 Context::lock()
@@ -65,6 +72,7 @@ Context::unlock()
 }
 
 #endif
+
 
 inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
