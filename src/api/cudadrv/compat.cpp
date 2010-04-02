@@ -135,6 +135,7 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_NOT_MAPPED:
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
         case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
+        case CUDA_ERROR_ECC_UNCORRECTABLE:
         case CUDA_ERROR_UNKNOWN:
             break;
 	};

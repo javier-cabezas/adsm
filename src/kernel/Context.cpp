@@ -57,7 +57,7 @@ Context::initThread()
 }
 
 void
-Context::destroy()
+Context::cleanup()
 {
     // Set the current context before each Context destruction (since it is sequential)
     key.set(this);

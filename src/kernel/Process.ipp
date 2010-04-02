@@ -5,31 +5,6 @@
 
 namespace gmac {
 
-#if 0
-inline void *
-SharedMemory::start() const
-{
-    return _addr;
-}
-
-inline size_t
-SharedMemory::size() const
-{
-    return _size;
-}
-
-inline void
-SharedMemory::inc()
-{
-    _count++;
-}
-
-inline size_t
-SharedMemory::dec()
-{
-    return --_count;
-}
-#endif
 
 inline ContextList &
 Process::contexts()

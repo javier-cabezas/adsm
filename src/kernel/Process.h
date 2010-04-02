@@ -61,10 +61,9 @@ extern gmac::Process *proc;
 
 namespace gmac {
 
-class ThreadQueue {
+class ThreadQueue : public util::Lock {
 public:
     ThreadQueue();
-    util::Lock hasContext;
     Queue * queue;
 };
 
@@ -110,7 +109,10 @@ public:
 
 	void *translate(void *addr);
 	const void *translate(const void *addr);
+    void send(THREAD_ID id);
+    void receive();
 	void sendReceive(THREAD_ID id);
+    void copy(THREAD_ID id);
 
 	static size_t totalMemory();
 	size_t accs() const;

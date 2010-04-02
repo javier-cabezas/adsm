@@ -13,7 +13,7 @@ gmac::Process *proc = NULL;
 namespace gmac {
 
 ThreadQueue::ThreadQueue() :
-    hasContext(LockThreadQueue)
+    util::Lock(LockThreadQueue)
 {}
 
 ContextList::ContextList() :
@@ -74,7 +74,7 @@ void
 Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
-    q->hasContext.lock();
+    q->lock();
     q->queue = NULL;
     _queues.lockWrite();
     _queues.insert(QueueMap::value_type(SELF(), q));
@@ -114,7 +114,7 @@ Process::create(int acc)
         _contexts.push_back(ctx);
     }
     q->second->queue = new Queue();
-    q->second->hasContext.unlock();
+    q->second->unlock();
 	unlock();
 	TRACE("Created context on Acc#%d", usedAcc);
     popState();
@@ -172,6 +172,32 @@ void *Process::translate(void *addr)
 	return ret;
 }
 
+void Process::send(THREAD_ID id)
+{
+    Context *ctx = Context::current();
+    _queues.lockRead();
+    QueueMap::iterator q = _queues.find(id);
+    ASSERT(q != _queues.end());
+    _queues.unlock();
+    q->second->lock();
+    q->second->queue->push(ctx);
+    q->second->unlock();
+    Context::key.set(NULL);
+}
+
+void Process::receive()
+{
+    // Get current context and destroy (if necessary)
+    Context *ctx = Context::current();
+    ctx->destroy();
+    // Get a fresh context
+    _queues.lockRead();
+    QueueMap::iterator q = _queues.find(SELF());
+    ASSERT(q != _queues.end());
+    Context::key.set(q->second->queue->pop());
+    _queues.unlock();
+}
+
 void Process::sendReceive(THREAD_ID id)
 {
     Context * ctx = Context::current();
@@ -179,15 +205,28 @@ void Process::sendReceive(THREAD_ID id)
 	QueueMap::iterator q = _queues.find(id);
 	ASSERT(q != _queues.end());
     _queues.unlock();
-    q->second->hasContext.lock();
-    q->second->hasContext.unlock();
+    q->second->lock();
 	q->second->queue->push(ctx);
+    q->second->unlock();
     Context::key.set(NULL);
     _queues.lockRead();
 	q = _queues.find(SELF());
 	ASSERT(q != _queues.end());
     Context::key.set(q->second->queue->pop());
     _queues.unlock();
+}
+
+void Process::copy(THREAD_ID id)
+{
+    Context *ctx = Context::current();
+    _queues.lockRead();
+    QueueMap::iterator q = _queues.find(id);
+    ASSERT(q != _queues.end());
+    _queues.unlock();
+    ctx->inc();
+    q->second->lock();
+    q->second->queue->push(ctx);
+    q->second->unlock();
 }
 
 }
