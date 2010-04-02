@@ -363,9 +363,31 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 }
 
 void
+gmacSend(pthread_t id)
+{
+    __enterGmac();
+    proc->send((THREAD_ID)id);
+    __exitGmac();
+}
+
+void gmacReceive()
+{
+    __enterGmac();
+    proc->receive();
+    __exitGmac();
+}
+
+void
 gmacSendReceive(pthread_t id)
 {
 	__enterGmac();
 	proc->sendReceive((THREAD_ID)id);
 	__exitGmac();
+}
+
+void gmacCopy(pthread_t id)
+{
+    __enterGmac();
+    proc->copy((THREAD_ID)id);
+    __exitGmac();
 }

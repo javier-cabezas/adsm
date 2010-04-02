@@ -251,7 +251,7 @@ do_stencil(void * ptr)
                                          0.08,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
-        if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+        //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
             //pthread_barrier_wait(&barrier);

@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include <util/Parameter.h>
 #include <util/Private.h>
+#include <util/Reference.h>
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 
@@ -56,7 +57,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context {
+class Context : public Reference {
 public:
     enum Status {
         NONE,
@@ -100,6 +101,7 @@ protected:
 
 	Context(Accelerator &acc);
 
+    virtual void cleanup();
 	virtual ~Context();
 
     static void Init();
@@ -124,8 +126,6 @@ public:
     void kernel(gmacKernel_t k, Kernel * kernel);
 
     Kernel * kernel(gmacKernel_t k);
-
-	void destroy();
 
     /*!
 		\brief Returns a reference to the context memory map
