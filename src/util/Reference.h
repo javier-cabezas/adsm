@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,96 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_PROCESS_H_
-#define __KERNEL_PROCESS_H_
+#ifndef __UTIL_REFERENCE_H_
+#define __UTIL_REFERENCE_H_
 
-#include <paraver.h>
-#include <debug.h>
+class Reference {
+private:
+    unsigned __count;
 
-#include "kernel/Queue.h"
-#include "memory/Map.h"
-
-#include "gmac/gmac.h"
-
-#include <vector>
-#include <list>
-#include <map>
-
-namespace gmac {
-class Accelerator;
-class Context;
-class Process;
-
-void apiInit(void);
-void contextInit(void);
-void memoryInit(const char *name = NULL);
-void memoryFini(void);
-}
-
-extern gmac::Process *proc;
-
-namespace gmac {
-
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue * queue;
-};
-
-class ContextList : public std::list<Context *>, public util::RWLock
-{
-public:
-    ContextList();
-};
-
-
-class QueueMap : public std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
-{
-public:
-    QueueMap();
-};
-
-class Process : public util::RWLock{
 protected:
-	std::vector<Accelerator *> _accs;
-	ContextList _contexts;
 
-	QueueMap _queues;
-
-	unsigned current;
-
-	static size_t _totalMemory;
-
-	Process();
+    virtual void cleanup() {};
+    virtual ~Reference() {};
 
 public:
-	virtual ~Process();
-
-	static void init(const char *name);
-
-	void initThread();
-#define ACC_AUTO_BIND -1
-    Context * create(int acc = ACC_AUTO_BIND);
-	void remove(Context *ctx);
-	gmacError_t migrate(int acc);
-	ContextList & contexts();
-
-	void accelerator(Accelerator *acc);
-
-	void *translate(void *addr);
-	const void *translate(const void *addr);
-    void send(THREAD_ID id);
-    void receive();
-	void sendReceive(THREAD_ID id);
-    void copy(THREAD_ID id);
-
-	static size_t totalMemory();
-	size_t accs() const;
+    Reference() : __count(1) {};
+    inline void inc() {
+        __count++;
+    }
+    inline void destroy() {
+        if(--__count != 0) return;
+        cleanup();
+        delete this;
+    }
 };
 
-}
-
-#include "Process.ipp"
 
 #endif

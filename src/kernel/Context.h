@@ -81,7 +81,7 @@ protected:
     /*!
 		\brief Memory map for the context
 	*/
-	memory::Map _mm;
+	memory::Map *_mm;
 
     /*!
 		\brief Accelerator where the context is attached
