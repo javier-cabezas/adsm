@@ -67,7 +67,6 @@ Context::cleanup()
     _acc.destroy(this);
     proc->remove(this);
     key.set(NULL);
-    fprintf(stderr,"DESTROY CONTEXT %p\n", this);
 }
 
 }

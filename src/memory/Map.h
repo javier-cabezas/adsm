@@ -52,8 +52,6 @@ public:
 
 class Map : public RegionMap {
 protected:
-    static RegionMap __global;
-    static RegionMap __shared;
 
     Region *localFind(const void *addr);
     static Region *sharedFind(const void *addr);

@@ -49,16 +49,6 @@ gmac::Context *Accelerator::create()
 	return ctx;
 }
 
-#if 0
-gmac::Context *Accelerator::clone(const gmac::Context &root)
-{
-	TRACE("Accelerator %p: new cloned context");
-	const gpu::Context &_root = dynamic_cast<const Context &>(root);
-	gpu::Context *ctx = new gpu::Context(_root, *this);
-	queue.insert(ctx);
-	return ctx;
-}
-#endif
 
 void Accelerator::destroy(gmac::Context *context)
 {

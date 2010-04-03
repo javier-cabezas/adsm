@@ -87,6 +87,8 @@ protected:
 	ContextList _contexts;
 
 	QueueMap _queues;
+    memory::RegionMap __global;
+    memory::RegionMap __shared;
 
 	unsigned current;
 
@@ -117,6 +119,11 @@ public:
 
 	static size_t totalMemory();
 	size_t accs() const;
+
+    memory::RegionMap &global();
+    const memory::RegionMap &global() const;
+    memory::RegionMap &shared();
+    const memory::RegionMap &shared() const;
 };
 
 }
