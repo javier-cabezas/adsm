@@ -30,6 +30,30 @@ Process::accs() const
     return _accs.size();
 }
 
+inline
+memory::RegionMap &Process::global()
+{
+    return __global;
+}
+
+inline
+const memory::RegionMap &Process::global() const
+{
+    return __global;
+}
+
+inline
+memory::RegionMap &Process::shared()
+{
+    return __shared;
+}
+
+inline
+const memory::RegionMap &Process::shared() const
+{
+    return __shared;
+}
+
 }
 
 #endif

@@ -1,11 +1,9 @@
 #include "Map.h"
 
+#include <kernel/Process.h>
 #include <kernel/Context.h>
 
 namespace gmac { namespace memory {
-
-RegionMap Map::__global(LockMmGlobal);
-RegionMap Map::__shared(LockMmShared);
 
 RegionMap::RegionMap(paraver::LockName name) :
     RWLock(name)
@@ -29,6 +27,7 @@ Map::globalFind(const void *addr)
 {
     RegionMap::const_iterator i;
     Region *ret = NULL;
+    RegionMap &__global = proc->global();
     __global.lockRead();
     i = __global.upper_bound(addr);
     if(i != __global.end() && i->second->start() <= addr)
@@ -42,6 +41,7 @@ Map::sharedFind(const void *addr)
 {
     RegionMap::const_iterator i;
     Region *ret = NULL;
+    RegionMap &__shared = proc->shared();
     __shared.lockRead();
     i = __shared.upper_bound(addr);
     if(i != __shared.end() && i->second->start() <= addr)
@@ -54,6 +54,7 @@ void
 Map::clean()
 {
 	RegionMap::iterator i;
+    RegionMap &__global = proc->global();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
 		TRACE("Cleaning Region %p", i->second->start());
@@ -84,6 +85,7 @@ Map::init()
 Region *Map::remove(void *addr)
 {
     RegionMap::iterator i;
+    RegionMap &__global = proc->global();
     __global.lockWrite();
     i = __global.upper_bound(addr);
     Region * r = i->second;
@@ -103,5 +105,56 @@ Region *Map::remove(void *addr)
     unlock();
     return r;
 }
+
+void Map::insert(Region *r)
+{
+    lockWrite();
+    RegionMap::insert(value_type(r->end(), r));
+    unlock();
+
+    RegionMap &__global = proc->global();
+    __global.lockWrite();
+    __global.insert(value_type(r->end(), r));
+    __global.unlock();
+}
+
+void Map::addShared(Region * r)
+{
+    RegionMap &__shared = proc->shared();
+    __shared.lockWrite();
+    __shared.insert(value_type(r->end(), r));
+    __shared.unlock();
+}
+
+void Map::removeShared(Region * r)
+{
+    Map::iterator i;
+    RegionMap &__shared = proc->shared();
+    __shared.lockWrite();
+    for (i = __shared.begin(); i != __shared.end(); i++) {
+        if (r == i->second) {
+            __shared.erase(i);
+            break;
+        }
+    }
+    __shared.unlock();
+}
+
+bool Map::isShared(const void *addr)
+{
+    bool ret;
+    RegionMap &__shared = proc->shared();
+    __shared.lockRead();
+    ret = __shared.find(addr) != __shared.end();
+    __shared.unlock();
+
+    return ret;
+}
+
+RegionMap & Map::shared()
+{
+    return proc->shared();
+}
+
 
 }}

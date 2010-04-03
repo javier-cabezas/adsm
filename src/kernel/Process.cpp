@@ -34,7 +34,10 @@ QueueMap::QueueMap() :
 size_t Process::_totalMemory = 0;
 
 Process::Process() :
-    RWLock(LockProcess), current(0)
+    RWLock(LockProcess),
+    __global(LockMmGlobal),
+    __shared(LockMmShared),
+    current(0)
 {}
 
 Process::~Process()
@@ -168,7 +171,6 @@ void Process::send(THREAD_ID id)
     QueueMap::iterator q = _queues.find(id);
     ASSERT(q != _queues.end());
     _queues.unlock();
-    fprintf(stderr,"%p Send to Q %p\n", (void *)SELF(), (void *)id);
     q->second->lock();
     q->second->queue->push(ctx);
     q->second->unlock();
@@ -186,7 +188,6 @@ void Process::receive()
     ASSERT(q != _queues.end());
     _queues.unlock();
     Context::key.set(q->second->queue->pop());
-    fprintf(stderr,"%p Receive from Q\n", (void *)SELF());
 }
 
 void Process::sendReceive(THREAD_ID id)
