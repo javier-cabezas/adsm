@@ -26,6 +26,7 @@ Context::Context(Accelerator &acc) :
     _releasedRegions(),
     _releasedAll(false)
 {
+    _mm = new  memory::Map();
     Context::key.set(this);
 	_id = ++_next;
     addThreadTid(0x10000000 + _id);
@@ -39,6 +40,8 @@ Context::~Context()
     for (it = _kernels.begin(); it != _kernels.end(); it++) {
         delete it->second;
     }
+
+    delete _mm;
 }
 
 Context *
@@ -62,7 +65,9 @@ Context::cleanup()
     // Set the current context before each Context destruction (since it is sequential)
     key.set(this);
     _acc.destroy(this);
+    proc->remove(this);
     key.set(NULL);
+    fprintf(stderr,"DESTROY CONTEXT %p\n", this);
 }
 
 }

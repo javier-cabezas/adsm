@@ -14,7 +14,14 @@ namespace gmac {
 
 ThreadQueue::ThreadQueue() :
     util::Lock(LockThreadQueue)
-{}
+{
+    queue = new Queue();
+}
+
+ThreadQueue::~ThreadQueue()
+{
+    delete queue;
+}
 
 ContextList::ContextList() :
     RWLock(LockContextList)
@@ -37,17 +44,13 @@ Process::~Process()
     std::list<Context *>::iterator c;
     QueueMap::iterator q;
     lockWrite();
-    for(c = _contexts.begin(); c != _contexts.end(); c++) {
-        (*c)->destroy();
-    }
+    while(_contexts.empty() == false)
+        _contexts.front()->destroy();
     for(a = _accs.begin(); a != _accs.end(); a++)
         delete *a;
     _accs.clear();
     _queues.lockRead();
     for(q = _queues.begin(); q != _queues.end(); q++) {
-        if (q->second->queue != NULL) {
-            delete q->second->queue;
-        }
         delete q->second;
     }
     _queues.unlock();
@@ -74,8 +77,6 @@ void
 Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
-    q->lock();
-    q->queue = NULL;
     _queues.lockWrite();
     _queues.insert(QueueMap::value_type(SELF(), q));
     _queues.unlock();
@@ -113,8 +114,6 @@ Process::create(int acc)
         manager->initShared(ctx);
         _contexts.push_back(ctx);
     }
-    q->second->queue = new Queue();
-    q->second->unlock();
 	unlock();
 	TRACE("Created context on Acc#%d", usedAcc);
     popState();
@@ -143,16 +142,6 @@ gmacError_t Process::migrate(int acc)
 void Process::remove(Context *ctx)
 {
 	_contexts.remove(ctx);
-    _queues.lockWrite();
-    ThreadQueue * q = _queues[SELF()];
-    if (q->queue != NULL) {
-        delete q->queue;
-    }
-    delete q;
-	_queues.erase(SELF());
-    _queues.unlock();
-
-	ctx->destroy();
 }
 
 void Process::accelerator(Accelerator *acc)
@@ -179,6 +168,7 @@ void Process::send(THREAD_ID id)
     QueueMap::iterator q = _queues.find(id);
     ASSERT(q != _queues.end());
     _queues.unlock();
+    fprintf(stderr,"%p Send to Q %p\n", (void *)SELF(), (void *)id);
     q->second->lock();
     q->second->queue->push(ctx);
     q->second->unlock();
@@ -188,14 +178,15 @@ void Process::send(THREAD_ID id)
 void Process::receive()
 {
     // Get current context and destroy (if necessary)
-    Context *ctx = Context::current();
-    ctx->destroy();
+    Context *ctx = static_cast<Context *>(Context::key.get());
+    if(ctx != NULL) ctx->destroy();
     // Get a fresh context
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
     ASSERT(q != _queues.end());
-    Context::key.set(q->second->queue->pop());
     _queues.unlock();
+    Context::key.set(q->second->queue->pop());
+    fprintf(stderr,"%p Receive from Q\n", (void *)SELF());
 }
 
 void Process::sendReceive(THREAD_ID id)

@@ -9,20 +9,20 @@ inline
 memory::Map &
 Context::mm()
 {
-    return _mm;
+    return *_mm;
 }
 
 inline
 const memory::Map &
 Context::mm() const
 {
-    return _mm;
+    return *_mm;
 }
 
 inline void
 Context::enable()
 {
-    _mm.realloc();
+    _mm->realloc();
 }
 
 inline

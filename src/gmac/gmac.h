@@ -185,7 +185,10 @@ gmacError_t gmacGetLastError(void);
 void *gmacMemset(void *, int, size_t);
 void *gmacMemcpy(void *, const void *, size_t);
 
+void gmacSend(THREAD_T);
+void gmacReceive(void);
 void gmacSendReceive(THREAD_T);
+void gmacCopy(THREAD_T);
 
 #ifdef __cplusplus
 #include <cassert>
