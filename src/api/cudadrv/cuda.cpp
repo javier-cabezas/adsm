@@ -11,6 +11,7 @@
 #include <string>
 #include <list>
 
+#include <cuda_runtime_api.h>
 
 namespace gmac {
 
@@ -38,12 +39,17 @@ void apiInit(void)
 		int attr;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
+#if CUDART_VERSION >= 2020
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
 			proc->accelerator(new gmac::gpu::Accelerator(i, cuDev));
 			devRealCount++;
 		}
+#else
+        proc->accelerator(new gmac::gpu::Accelerator(i, cuDev));
+        devRealCount++;
+#endif
 	}
 
 	if(devRealCount == 0)

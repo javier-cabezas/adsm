@@ -69,6 +69,12 @@ Context::id() const
     return _id;
 }
 
+inline unsigned
+Context::accId() const
+{
+    return _acc._id;
+}
+
 inline memory::RegionSet
 Context::releaseRegions()
 {

@@ -34,7 +34,11 @@ Context::setupStreams()
 
     if (_gpu.async()) {
         _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
+#if CUDART_VERSION >= 2020
         CUresult ret = cuMemHostAlloc(&_bufferPageLocked, _bufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
+#else
+        CUresult ret = cuMemAllocHost(&_bufferPageLocked, _bufferPageLockedSize);
+#endif
         if (ret == CUDA_SUCCESS) {
             TRACE("Using page locked memory: %zd\n", _bufferPageLockedSize);
         } else {
@@ -112,7 +116,11 @@ Context::mallocPageLocked(void **addr, size_t size)
     zero(addr);
     CUresult ret = CUDA_SUCCESS;
     lock();
+#if CUDART_VERSION >= 2020
     ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
+#else
+    ret = cuMemAllocHost(&_bufferPageLocked, _bufferPageLockedSize);
+#endif
     unlock();
     return error(ret);
 }
@@ -138,12 +146,19 @@ Context::mapToDevice(void *host, void **device, size_t size)
     ASSERT(host   != NULL);
     ASSERT(device != NULL);
     ASSERT(size   > 0);
+    Accelerator & acc = static_cast<Accelerator &>(_acc);
+    CFATAL(acc.major() >= 2 ||
+          (acc.major() == 1 && acc.minor() >= 1), "Map to device not supported by the HW");
     zero(device);
     CUresult ret = CUDA_SUCCESS;
+#if CUDART_VERSION >= 2020
     lock();
     ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, host, 0);
     hostMem.insert(AddressMap::value_type(host, *device));
     unlock();
+#else
+    FATAL("Map to device not supported by the CUDA version");
+#endif
     return error(ret);
 }
 

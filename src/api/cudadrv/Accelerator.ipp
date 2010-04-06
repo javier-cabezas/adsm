@@ -42,6 +42,18 @@ Accelerator::unlock()
 }
 #endif
 
+inline int
+Accelerator::major() const
+{
+    return _major;
+}
+
+inline int
+Accelerator::minor() const
+{
+    return _minor;
+}
+
 }}
 
 #endif

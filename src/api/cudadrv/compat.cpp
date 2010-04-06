@@ -120,12 +120,14 @@ static inline cudaError_t __getCUDAError(CUresult r)
 #if CUDART_VERSION >= 2020
             return cudaErrorNoDevice;
 #endif
-        case CUDA_ERROR_ECC_UNCORRECTABLE:
 #if CUDART_VERSION >= 3000
+        case CUDA_ERROR_ECC_UNCORRECTABLE:
             return cudaErrorECCUncorrectable;
-#endif
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
+        case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
+        case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
+#endif
         case CUDA_ERROR_ARRAY_IS_MAPPED:
         case CUDA_ERROR_ALREADY_MAPPED:
         case CUDA_ERROR_INVALID_CONTEXT:
@@ -139,8 +141,6 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_NOT_FOUND:
         case CUDA_ERROR_NOT_READY:
         case CUDA_ERROR_NOT_MAPPED:
-        case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
-        case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
         case CUDA_ERROR_UNKNOWN:
             break;
 	};
@@ -455,7 +455,11 @@ void CUDARTAPI __cudaMutexOperation(int lock)
 // Events and other stuff needed by CUDA Wrapper
 cudaError_t cudaEventCreate(cudaEvent_t *event)
 {
+#if CUDART_VERSION >= 2020
     CUresult ret = cuEventCreate((CUevent *)event, CU_EVENT_DEFAULT);
+#else
+    CUresult ret = cuEventCreate((CUevent *)event, 0);
+#endif
     return __getCUDAError(ret);
 }
 

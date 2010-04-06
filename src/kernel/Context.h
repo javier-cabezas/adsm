@@ -293,6 +293,8 @@ public:
 	virtual void invalidate() = 0;
 
 	unsigned id() const;
+	unsigned accId() const;
+
     /*!
 		\brief Gets the page-locked buffer associated to the Context (if supported)
 	*/

@@ -18,7 +18,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     unsigned int size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    ret = cuDeviceComputeCapability(&major, &minor, _device);
+    ret = cuDeviceComputeCapability(&_major, &_minor, _device);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     _memory = size;
     int async = 0;
@@ -30,7 +30,11 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
     unsigned int flags = 0;
-    if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
+#if CUDART_VERSION >= 2020
+    if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
+#else
+    TRACE("Host mapped memory not supported by the HW");
+#endif
     ret = cuCtxCreate(&_ctx, flags, _device);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
@@ -67,7 +71,11 @@ Accelerator::createCUDAContext()
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
-    if(major > 0 && minor > 0) flags |= CU_CTX_MAP_HOST;
+#if CUDART_VERSION >= 2020
+    if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
+#else
+    TRACE("Host mapped memory not supported by the HW");
+#endif
     CUresult ret = cuCtxCreate(&ctx, flags, _device);
     if(ret != CUDA_SUCCESS)
         FATAL("Unable to create CUDA context %d", ret);

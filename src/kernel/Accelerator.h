@@ -51,7 +51,7 @@ protected:
 	friend class Context;
 	virtual void destroy(Context *ctx) = 0;
     size_t _memory;
-    unsigned id;
+    unsigned _id;
 public:
 	Accelerator(int n);
 	virtual ~Accelerator();
@@ -62,6 +62,7 @@ public:
 #endif
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;
+    unsigned id() const;
 };
 
 }

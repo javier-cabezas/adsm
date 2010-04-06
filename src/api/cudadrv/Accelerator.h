@@ -53,8 +53,8 @@ protected:
 
 	std::set<gpu::Context *> queue;
 
-    int major;
-    int minor;
+    int _major;
+    int _minor;
 
 #ifndef USE_MULTI_CONTEXT
     CUcontext _ctx;
@@ -78,6 +78,9 @@ public:
     void unlock();
 #endif
     bool async() const;
+
+    int major() const;
+    int minor() const;
 };
 
 }}

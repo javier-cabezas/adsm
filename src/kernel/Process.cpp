@@ -130,13 +130,14 @@ gmacError_t Process::migrate(int acc)
     gmacError_t ret = gmacSuccess;
 	TRACE("Migrating context");
     if (Context::hasCurrent()) {
-        // Really migrate data
+        // Create a new context in the requested accelerator
+        
         abort();
     } else {
         // Create the context in the requested accelerator
         _accs[acc]->create();
     }
-	TRACE("Migrated context");
+	TRACE("Context migrated");
 	unlock();
     return ret;
 }
