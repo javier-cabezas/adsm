@@ -70,15 +70,6 @@ AC_CHECK_LIB([pthread], [pthread_create],
 	thread_name="pthreads"]
 )
 
-# Get the NVIDIA CUDA compiler
-AC_PATH_PROG([NVCC], [nvcc])
-if test -z "$NVCC"; then
-	AC_MSG_ERROR([CUDA compiler not found])
-fi
-CUDA_DIR="`dirname $NVCC`/.."
-API_DIR="cuda"
-AC_DEFINE([HAVE_CUDA], [1])
-
 # Check for debug mode - MUST BE THE FIRST CHECK
 AC_MSG_CHECKING(whether to enable debug mode)
 debug_default="no"
@@ -149,6 +140,32 @@ else
 	AC_MSG_RESULT(no)
 fi
 
+AC_ARG_WITH([cuda],
+            AS_HELP_STRING([--with-cuda],
+                           [Enable a specific cuda version]),
+                           [cuda_path="$with_cuda"],
+                           [cuda_path=""])
+
+if test "x$cuda_path" != "x"; then
+    # Get the NVIDIA CUDA compiler
+    AC_PATH_PROG([NVCC], [nvcc], [], ["$cuda_path/bin"])
+    if test -z "$NVCC"; then
+        AC_MSG_ERROR([CUDA compiler not found])
+    fi
+    CUDA_DIR="`dirname $NVCC`/.."
+    echo "Found CUDA in $NVCC"
+    AC_DEFINE([HAVE_CUDA], [1])
+else
+    # Get the NVIDIA CUDA compiler
+    AC_PATH_PROG([NVCC], [nvcc])
+    if test -z "$NVCC"; then
+        AC_MSG_ERROR([CUDA compiler not found])
+    fi
+    CUDA_DIR="`dirname $NVCC`/.."
+    echo "Using CUDA in $NVCC"
+    AC_DEFINE([HAVE_CUDA], [1])
+fi
+
 
 # Check for driver mode
 cuda_driver_default="yes"
@@ -161,6 +178,7 @@ if test "$enable_cuda_driver" = "yes"; then
 	API_DIR="cudadrv"
 else
 	AC_MSG_RESULT(no)
+    API_DIR="cuda"
 fi
 
 # Check for opencl mode

@@ -273,9 +273,9 @@ gmacMemset(void *s, int c, size_t n)
     __enterGmac();
     void *ret = s;
     gmac::Context *ctx = manager->owner(s);
-    ASSERT(ctx != NULL);
+    CFATAL(ctx != NULL, "No owner for %p\n", s);
     manager->invalidate(s, n);
-    ctx->memset(manager->ptr(s), c, n);
+    ctx->memset(manager->ptr(ctx, s), c, n);
 	__exitGmac();
     return ret;
 }

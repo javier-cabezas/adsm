@@ -2,12 +2,18 @@
 #include "Kernel.h"
 #include "Module.h"
 
+#include <cuda_runtime_api.h>
+
 namespace gmac { namespace gpu {
 
 Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     gmac::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, _name);
+    //! \todo Calculate this dynamically
+#if CUDART_VERSION >= 3000
+    cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
+#endif
     ASSERT(ret == CUDA_SUCCESS);
 }
 

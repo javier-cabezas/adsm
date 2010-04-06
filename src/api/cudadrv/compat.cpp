@@ -103,8 +103,6 @@ static inline cudaError_t __getCUDAError(CUresult r)
 			return cudaErrorInitializationError;
         case CUDA_ERROR_INVALID_VALUE:
             return cudaErrorInvalidValue;
-        case CUDA_ERROR_NO_DEVICE:
-            return cudaErrorNoDevice;
         case CUDA_ERROR_INVALID_DEVICE:
             return cudaErrorInvalidDevice;
         case CUDA_ERROR_MAP_FAILED:
@@ -118,6 +116,14 @@ static inline cudaError_t __getCUDAError(CUresult r)
             return cudaErrorLaunchFailure;
         case CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES:
             return cudaErrorLaunchOutOfResources;
+        case CUDA_ERROR_NO_DEVICE:
+#if CUDART_VERSION >= 2020
+            return cudaErrorNoDevice;
+#endif
+        case CUDA_ERROR_ECC_UNCORRECTABLE:
+#if CUDART_VERSION >= 3000
+            return cudaErrorECCUncorrectable;
+#endif
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
         case CUDA_ERROR_ARRAY_IS_MAPPED:
@@ -135,7 +141,6 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_NOT_MAPPED:
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
         case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
-        case CUDA_ERROR_ECC_UNCORRECTABLE:
         case CUDA_ERROR_UNKNOWN:
             break;
 	};
