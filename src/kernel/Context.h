@@ -57,7 +57,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context : public Reference {
+class Context : public util::Reference {
 public:
     enum Status {
         NONE,
