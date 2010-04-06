@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_REFERENCE_H_
 #define __UTIL_REFERENCE_H_
 
-class Reference {
+#include <util/Lock.h>
+
+namespace gmac { namespace util {
+
+class Reference : public util::Lock {
 private:
     unsigned __count;
 
@@ -44,16 +48,23 @@ protected:
     virtual ~Reference() {};
 
 public:
-    Reference() : __count(1) {};
+    Reference() : Lock(LockReference), __count(1) { };
     inline void inc() {
+        lock();
         __count++;
+        unlock();
     }
     inline void destroy() {
-        if(--__count != 0) return;
+        lock();
+        __count--;
+        bool dead = __count == 0;
+        unlock();
+        if(dead == false) return;
         cleanup();
         delete this;
     }
 };
 
+}}
 
 #endif
