@@ -56,7 +56,7 @@ Module::Module(const ModuleDescriptor & d) :
     TRACE("Module image: %p", _fatBin);
     CUresult res;
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
-    ASSERT(res == CUDA_SUCCESS);
+    CFATAL(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
     Context * ctx = Context::current();
     ModuleDescriptor::KernelVector::const_iterator k;

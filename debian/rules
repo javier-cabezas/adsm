@@ -9,7 +9,7 @@ CXXFLAGS= -g -O2 -Wall
 
 CONFARGS = --enable-cuda-driver --enable-mmap
 CONFARGS_PARAVER = $(CONFARGS) --enable-paraver
-CONFARGS_DEBUG = $(CONFARGS) --enable-debug
+CONFARGS_DEBUG = $(CONFARGS) --enable-debug --enable-tests
 CONFARGS_MPI = $(CONFARGS) --enable-mpi
 
 setup-stamp:
