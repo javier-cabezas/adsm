@@ -72,7 +72,7 @@ Context::id() const
 inline unsigned
 Context::accId() const
 {
-    return _acc._id;
+    return _acc->_id;
 }
 
 inline memory::RegionSet
@@ -96,6 +96,8 @@ Context::bufferPageLockedSize() const
 {
     return _bufferPageLockedSize;
 }
+
+
 
 }
 

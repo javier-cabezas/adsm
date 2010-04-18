@@ -91,6 +91,8 @@ public:
 
 	void sync();
 
+	virtual void syncToHost();
+
 	//! Returns the size (in bytes) of the Region
 	size_t size() const;
 	//! Returns the address of the Region

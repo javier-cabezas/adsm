@@ -52,4 +52,10 @@ void Region::sync()
     }
 }
 
+// Default implementation (only used by the Batch Memory Manager)
+void Region::syncToHost()
+{
+    copyToHost();
+}
+
 } }

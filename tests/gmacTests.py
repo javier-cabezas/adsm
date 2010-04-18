@@ -35,7 +35,7 @@ line_size = Param("GMAC_LINESIZE", [1024])
 lru_delta = Param("GMAC_LRUDELTA", [2])
 
 # First-level parameters
-manager = Param("GMAC_MANAGER", ["Batch", "Lazy", "Rolling"])
+manager = Param("GMAC_MANAGER", ["Lazy", "Rolling"])
 manager.add_sub_param("Rolling", page)
 manager.add_sub_param("Rolling", line_size)
 manager.add_sub_param("Rolling", lru_delta)
@@ -136,7 +136,7 @@ Test("gmacCompress", PARAMS)
 Test("gmacCompressSend", PARAMS)
 Test("gmacStencil", PARAMS)
 Test("gmacThreadStencil", PARAMS)
-
+#
 Test.launch()
 
 # vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab:

@@ -123,16 +123,21 @@ Process::create(int acc)
     return ctx;
 }
 
-gmacError_t Process::migrate(int acc)
+gmacError_t Process::migrate(Context * ctx, int acc)
 {
 	lockWrite();
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	TRACE("Migrating context");
     if (Context::hasCurrent()) {
-        // Create a new context in the requested accelerator
-        
-        abort();
+#ifndef USE_MMAP
+        if (int(ctx->accId()) != acc) {
+            // Create a new context in the requested accelerator
+            ret = _accs[acc]->rebind(ctx);
+        }
+#else
+        FATAL("Migration not implemented when using mmap");
+#endif
     } else {
         // Create the context in the requested accelerator
         _accs[acc]->create();

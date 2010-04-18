@@ -55,6 +55,8 @@ RollingManager::~RollingManager()
 {
 }
 
+#if 0
+
 void RollingManager::free(void *addr)
 {
     Region *reg = remove(addr);
@@ -75,6 +77,7 @@ void RollingManager::free(void *addr)
 #endif
     TRACE("Released %p", addr);
 }
+#endif
 
 
 void RollingManager::flush()
@@ -268,6 +271,34 @@ bool RollingManager::read(void *addr)
     return true;
 }
 
+bool RollingManager::touch(Region * r)
+{
+    ASSERT(r != NULL);
+    RollingRegion *root = dynamic_cast<RollingRegion *>(r);
+    const std::vector<RollingBlock *> & regions = root->subRegions();
+    ASSERT(regions.size() > 0);
+    std::vector<RollingBlock *>::const_iterator it;
+
+    for (it = regions.begin(); it != regions.end(); it++) {
+        RollingBlock * block  = *it;
+        block->lockWrite();
+        if(block->dirty() == false) {
+            block->readWrite();
+
+            if(block->present() == false && current()->pageTable().dirty(block->start())) {
+                gmacError_t ret = block->copyToHost();
+                ASSERT(ret == gmacSuccess);
+                current()->pageTable().clear(block->start());
+            }
+        }
+        block->unlock();
+
+        rollingMap.currentBuffer()->push(dynamic_cast<RollingBlock *>(block));
+    }
+
+    while(rollingMap.currentBuffer()->overflows()) writeBack();
+    return true;
+}
 
 bool RollingManager::write(void *addr)
 {

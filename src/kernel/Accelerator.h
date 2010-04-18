@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ACCELERATOR_H_
 #define __KERNEL_ACCELERATOR_H_
 
-
+#include <gmac/gmac.h>
 #include <stddef.h>
 
 namespace gmac {
@@ -60,6 +60,7 @@ public:
 #if 0
 	virtual Context *clone(const Context &) = 0;
 #endif
+    virtual gmacError_t rebind(Context * ctx) = 0;
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;
     unsigned id() const;

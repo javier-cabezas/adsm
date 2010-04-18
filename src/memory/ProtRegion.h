@@ -52,6 +52,8 @@ public:
 	ProtRegion(void *addr, size_t size, bool shared);
 	virtual ~ProtRegion();
 
+    virtual void syncToHost();
+
 	virtual void invalidate();
 	virtual void readOnly();
 	virtual void readWrite();

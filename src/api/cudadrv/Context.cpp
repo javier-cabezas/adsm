@@ -1,5 +1,8 @@
 #include "Context.h"
 
+#include <memory/Manager.h>
+#include <gmac/init.h>
+
 namespace gmac { namespace gpu {
 
 Context::AddressMap Context::hostMem;
@@ -12,7 +15,7 @@ void
 Context::setup()
 {
 #ifdef USE_MULTI_CONTEXT
-    _ctx = _gpu.createCUDAContext();
+    _ctx = _gpu->createCUDAContext();
     enable();
 #endif
 }
@@ -20,7 +23,7 @@ Context::setup()
 void
 Context::setupStreams()
 {
-    if (_gpu.async()) {
+    if (_gpu->async()) {
         CUresult ret;
         ret = cuStreamCreate(&streamLaunch, 0);
         CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
@@ -30,12 +33,10 @@ Context::setupStreams()
         CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
         ret = cuStreamCreate(&streamDevice, 0);
         CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    }
 
-    if (_gpu.async()) {
         _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
 #if CUDART_VERSION >= 2020
-        CUresult ret = cuMemHostAlloc(&_bufferPageLocked, _bufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
+        ret = cuMemHostAlloc(&_bufferPageLocked, _bufferPageLockedSize, CU_MEMHOSTALLOC_PORTABLE);
 #else
         CUresult ret = cuMemAllocHost(&_bufferPageLocked, _bufferPageLockedSize);
 #endif
@@ -51,7 +52,25 @@ Context::setupStreams()
     }
 }
 
-Context::Context(Accelerator &gpu) :
+void
+Context::finiStreams()
+{
+    CUresult ret;
+    if (_gpu->async()) {
+        ret = cuStreamDestroy(streamLaunch);
+        CFATAL(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+        ret = cuStreamDestroy(streamToDevice);
+        CFATAL(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+        ret = cuStreamDestroy(streamToHost);
+        CFATAL(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+        ret = cuStreamDestroy(streamDevice);
+        CFATAL(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+        ret = cuMemFreeHost(_bufferPageLocked);
+        CFATAL(ret == CUDA_SUCCESS, "Error freeing page-locked buffer: %d", ret);
+    }
+}
+
+Context::Context(Accelerator * gpu) :
     gmac::Context(gpu),
     _gpu(gpu),
     _call(dim3(0), dim3(0), 0, 0)
@@ -67,11 +86,11 @@ Context::Context(Accelerator &gpu) :
 {
 	setup();
 
-    lock();
+    pushLock();
     setupStreams();
     TRACE("Let's create modules");
     _modules = ModuleDescriptor::createModules();
-    unlock();
+    popUnlock();
 
     TRACE("New Accelerator context [%p]", this);
 }
@@ -79,49 +98,137 @@ Context::Context(Accelerator &gpu) :
 Context::~Context()
 {
     TRACE("Remove Accelerator context [%p]", this);
-    if (_gpu.async()) {
-        cuStreamDestroy(streamLaunch);
-        cuStreamDestroy(streamToDevice);
-        cuStreamDestroy(streamToHost);
-        cuStreamDestroy(streamDevice);
+    pushLock();
+    if (_gpu->async()) {
+        finiStreams();
     }
+#ifdef USE_MULTI_CONTEXT
+    _gpu->destroyCUDAContext(_ctx);
+#endif
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        delete (*m);
+    }
+    _modules.clear();
+    clearKernels();
+    popUnlock();
     // CUDA might be deinitalized before executing this code
-    // mutex->lock();
+    // mutex->pushLock();
     // ASSERT(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
 }
 
+
 gmacError_t
-Context::malloc(void **addr, size_t size) {
+Context::switchTo(Accelerator *gpu)
+{
+    Accelerator * oldAcc = _gpu;
+#ifdef USE_MULTI_CONTEXT
+    CUContext * oldCtx = _ctx;
+    CUContext * tmpCtx;
+#endif
+
+    // Destroy and clean up current device resources
+    // 1- Sync memory to host
+    manager->syncToHost();
+
+    // Create and setup new device resources
+    // 1- Create CUDA resources
+    _gpu = gpu;
+#ifdef USE_MULTI_CONTEXT
+    _ctx->_ctx = createCUDAContext();
+#endif
+    // 2- Free resources in the device
+    std::vector<void *> oldAddr = manager->reallocDevice();
+
+    _gpu = oldAcc;
+#ifdef USE_MULTI_CONTEXT
+    tmpCtx = _ctx->_ctx;
+    _ctx->_ctx = oldCtx;
+#endif
+    manager->freeDevice(oldAddr);
+
+    pushLock();
+    // 3- Free CUDA resources
+    if (_gpu->async()) {
+        finiStreams();
+    }
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        delete (*m);
+    }
+    _modules.clear();
+    clearKernels();
+#ifdef USE_MULTI_CONTEXT
+    oldAcc.destroyCUDAContext(oldCtx);
+#endif
+    popUnlock();
+
+    _gpu = gpu;
+#ifdef USE_MULTI_CONTEXT
+    _ctx->_ctx = tmpCtx;
+#endif
+
+    pushLock();
+    setupStreams();
+    TRACE("Let's recreate modules");
+    _modules = ModuleDescriptor::createModules();
+    popUnlock();
+
+    // 2- Recreate mappings for the new device
+    manager->initShared(this);
+
+    // 3- Invalidate host memory
+    manager->touchAll();
+
+    return gmacSuccess;
+}
+
+gmacError_t
+Context::malloc(void **addr, size_t size, unsigned align) {
     ASSERT(addr);
     zero(addr);
-    lock();
-    size += mm().pageTable().getPageSize();
+    if(align > 1) {
+        size += align;
+    }
     CUdeviceptr ptr = 0;
+    pushLock();
     CUresult ret = cuMemAlloc(&ptr, size);
     CUdeviceptr gpuPtr = ptr;
-    if(gpuPtr % mm().pageTable().getPageSize()) {
-        gpuPtr += mm().pageTable().getPageSize() -
-            (gpuPtr % mm().pageTable().getPageSize());
+    if(gpuPtr % align) {
+        gpuPtr += align - (gpuPtr % align);
     }
     *addr = (void *)gpuPtr;
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
 gmacError_t
-Context::mallocPageLocked(void **addr, size_t size)
+Context::mallocPageLocked(void **addr, size_t size, unsigned align)
 {
     ASSERT(addr);
     zero(addr);
     CUresult ret = CUDA_SUCCESS;
-    lock();
+    if(align > 1) {
+        size += align;
+    }
+    void * ptr = NULL;
+    void * origPtr = NULL;
+    pushLock();
 #if CUDART_VERSION >= 2020
-    ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
+    ret = cuMemHostAlloc(&origPtr, size, CU_MEMHOSTALLOC_DEVICEMAP | CU_MEMHOSTALLOC_PORTABLE);
 #else
-    ret = cuMemAllocHost(&_bufferPageLocked, _bufferPageLockedSize);
+    ret = cuMemAllocHost(&origPtr, size);
 #endif
-    unlock();
+    ptr = origPtr;
+    if(align > 1) {
+        if((uint64_t) ptr % align) {
+            ptr = (void *) ((uint64_t) ptr + align - ((uint64_t) ptr % align));
+        }
+    }
+    popUnlock();
+    *addr = ptr;
+
     return error(ret);
 }
 
@@ -130,13 +237,13 @@ gmacError_t
 Context::free(void *addr)
 {
     ASSERT(addr);
-    lock();
+    pushLock();
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
     i = _alignMap.find(gpuPtr);
     if (i == _alignMap.end()) return gmacErrorInvalidValue;
     CUresult ret = cuMemFree(i->second);
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
@@ -146,16 +253,16 @@ Context::mapToDevice(void *host, void **device, size_t size)
     ASSERT(host   != NULL);
     ASSERT(device != NULL);
     ASSERT(size   > 0);
-    Accelerator & acc = static_cast<Accelerator &>(_acc);
-    CFATAL(acc.major() >= 2 ||
-          (acc.major() == 1 && acc.minor() >= 1), "Map to device not supported by the HW");
+    Accelerator * acc = static_cast<Accelerator *>(_acc);
+    CFATAL(acc->major() >= 2 ||
+          (acc->major() == 1 && acc->minor() >= 1), "Map to device not supported by the HW");
     zero(device);
     CUresult ret = CUDA_SUCCESS;
 #if CUDART_VERSION >= 2020
-    lock();
+    pushLock();
     ret = cuMemHostGetDevicePointer((CUdeviceptr *)device, host, 0);
     hostMem.insert(AddressMap::value_type(host, *device));
-    unlock();
+    popUnlock();
 #else
     FATAL("Map to device not supported by the CUDA version");
 #endif
@@ -167,12 +274,12 @@ gmacError_t
 Context::hostFree(void *addr)
 {
     ASSERT(addr);
-	lock();
+	pushLock();
 	AddressMap::iterator i = hostMem.find(addr);
 	ASSERT(i != hostMem.end());
 	CUresult ret = cuMemFreeHost(i->second);
 	hostMem.erase(i);
-	unlock();
+	popUnlock();
 	return error(ret);
 }
 
@@ -185,8 +292,8 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     TRACE("Copy to device: %p to %p", host, dev);
     CUresult ret = CUDA_SUCCESS;
 
-    if (_gpu.async()) {
-        lock();
+    if (_gpu->async()) {
+        pushLock();
         if (_pendingToDevice) {
             if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
                 ASSERT(ret == CUDA_ERROR_NOT_READY);
@@ -195,7 +302,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
             popEventState(paraver::Accelerator, 0x10000000 + _id);
         } 
         _pendingToDevice = false;
-        unlock();
+        popUnlock();
 
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
@@ -205,13 +312,13 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
             while (left != 0) {
                 size_t bytes = left < bufferSize? left: bufferSize;
                 memcpy(tmp, ((char *) host) + off, bytes);
-                lock();
+                pushLock();
                 pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
                 ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
-                CBREAK(ret == CUDA_SUCCESS, unlock());
+                CBREAK(ret == CUDA_SUCCESS, popUnlock());
                 ret = cuStreamSynchronize(streamToDevice);
                 popEventState(paraver::Accelerator, 0x10000000 + _id);
-                unlock();
+                popUnlock();
                 CBREAK(ret == CUDA_SUCCESS);
 
                 left -= bytes;
@@ -219,16 +326,16 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
             }
         } else {
             memcpy(tmp, host, size);
-            lock();
+            pushLock();
             pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyHtoDAsync(gpuAddr(dev), tmp, size, streamToDevice);
             _pendingToDevice = true;
-            unlock();
+            popUnlock();
         }
     } else {
-        lock();
+        pushLock();
         ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
-        unlock();
+        popUnlock();
     }
 
     exitFunction();
@@ -243,7 +350,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
 
     TRACE("Copy to host: %p to %p", dev, host);
     CUresult ret = CUDA_SUCCESS;
-    if (_gpu.async()) {
+    if (_gpu->async()) {
         size_t bufferSize = ctx->bufferPageLockedSize();
         void * tmp        = ctx->bufferPageLocked();
 
@@ -251,13 +358,13 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         off_t  off  = 0;
         while (left != 0) {
             size_t bytes = left < bufferSize? left: bufferSize;
-            lock();
+            pushLock();
             pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
-            CBREAK(ret == CUDA_SUCCESS, unlock());
+            CBREAK(ret == CUDA_SUCCESS, popUnlock());
             ret = cuStreamSynchronize(streamToHost);
             popEventState(paraver::Accelerator, 0x10000000 + _id);
-            unlock();
+            popUnlock();
             CBREAK(ret == CUDA_SUCCESS);
             memcpy(((char *) host) + off, tmp, bytes);
 
@@ -265,9 +372,9 @@ Context::copyToHost(void *host, const void *dev, size_t size)
             off  += bytes;
         }
     } else {
-        lock();
+        pushLock();
         ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
-        unlock();
+        popUnlock();
     }
 
     exitFunction();
@@ -277,12 +384,12 @@ Context::copyToHost(void *host, const void *dev, size_t size)
 gmacError_t
 Context::copyDevice(void *dst, const void *src, size_t size) {
     enterFunction(FuncAccDeviceDevice);
-    lock();
+    pushLock();
 
     CUresult ret;
     ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
 
-    unlock();
+    popUnlock();
     exitFunction();
     return error(ret);
 }
@@ -292,7 +399,7 @@ Context::memset(void *addr, int i, size_t n)
 {
 	CUresult ret = CUDA_SUCCESS;
 	unsigned char c = i & 0xff;
-	lock();
+	pushLock();
 	if((n % 4) == 0) {
 		unsigned m = c | (c << 8);
 		m |= (m << 16);
@@ -305,7 +412,7 @@ Context::memset(void *addr, int i, size_t n)
 	else {
 		ret = cuMemsetD8(gpuAddr(addr), c, n);
 	}
-	unlock();
+	popUnlock();
 	return error(ret);
 }
 
@@ -383,10 +490,10 @@ Context::flush(const char * kernel)
 	devicePageTable.page = mm().pageTable().getPageSize();
 	ASSERT(devicePageTable.ptr != NULL);
 
-	lock();
+	pushLock();
 	CUresult ret = cuMemcpyHtoD(pageTable->ptr, &devicePageTable, sizeof(devicePageTable));
 	ASSERT(ret == CUDA_SUCCESS);
-	unlock();
+	popUnlock();
 #endif
 }
 
@@ -404,5 +511,7 @@ Context::invalidate()
 	mm().pageTable().invalidate();
 #endif
 }
+
+
 
 }}

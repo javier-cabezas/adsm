@@ -62,11 +62,12 @@ protected:
    RollingManager &manager;
 
    // Set of all sub-regions forming the region
+   std::vector<RollingBlock *> _subRegions;
    typedef std::map<const void *, RollingBlock *> Map;
-   Map map;
+   Map _map;
 
-   // List of sub-regions that are present in memory
-   BlockList memory;
+   // List of sub-regions that are present in _memory
+   BlockList _memory;
 
    size_t cacheLine;
    size_t offset;
@@ -77,19 +78,21 @@ protected:
 public:
    RollingRegion(RollingManager &manager, void *addr, size_t size, bool shared, size_t chacheLine);
    ~RollingRegion();
-
-   virtual void relate(Context *ctx);
-   virtual void unrelate(Context *ctx);
-   virtual void transfer();
+   void syncToHost();
+   void relate(Context *ctx);
+   void unrelate(Context *ctx);
+   void transfer();
 
    RollingBlock *find(const void *);
-   virtual void invalidate();
+   void invalidate();
    void invalidate(const void *, size_t);
-   virtual void flush();
+   void flush();
    void flush(const void *, size_t);
 
    void transferNonDirty();
    void transferDirty();
+
+   const std::vector<RollingBlock *> & subRegions();
 };
 
 class RollingBlock : public ProtRegion {
@@ -102,9 +105,9 @@ public:
    ~RollingBlock();
 
    // Override this methods to insert the regions in the list
-   // of sub-regions present in memory
-   virtual void readOnly();
-   virtual void readWrite();
+   // of sub-regions present in _memory
+   void readOnly();
+   void readWrite();
 
    RollingRegion & getParent();
 };

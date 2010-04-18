@@ -105,7 +105,7 @@ public:
 #define ACC_AUTO_BIND -1
     Context * create(int acc = ACC_AUTO_BIND);
 	void remove(Context *ctx);
-	gmacError_t migrate(int acc);
+	gmacError_t migrate(Context *ctx, int acc);
 	ContextList & contexts();
 
 	void accelerator(Accelerator *acc);

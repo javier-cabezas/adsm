@@ -41,16 +41,17 @@ Manager::~Manager()
 
 
 gmacError_t
-Manager::malloc(void ** addr, size_t count)
+Manager::malloc(Context * ctx, void ** addr, size_t count)
 {
     gmacError_t ret;
     void *devAddr;
     void *cpuAddr;
     *addr = NULL;
 
+	PageTable &pageTable = ctx->mm().pageTable();
+
     // Allocate device memory
-    Context * ctx = Context::current();
-    ret = ctx->malloc(&devAddr, count);
+    ret = ctx->malloc(&devAddr, count, pageTable.getPageSize());
     // Successful device memory allocation?
 	if(ret != gmacSuccess) {
 		return ret;
@@ -72,33 +73,34 @@ Manager::malloc(void ** addr, size_t count)
 }
 
 gmacError_t
-Manager::halloc(void ** addr, size_t count)
+Manager::halloc(Context * ctx, void ** addr, size_t count)
 {
     gmacError_t ret;
     *addr = NULL;
+	PageTable &pageTable = ctx->mm().pageTable();
 
     // Allocate page-locked memory. We currently rely on the backend
     // to allocate this memory
-    Context * ctx = Context::current();
-    ret = ctx->mallocPageLocked(addr, count);
+    ret = ctx->mallocPageLocked(addr, count, pageTable.getPageSize());
     return ret;
 }
 
 
 #ifdef USE_GLOBAL_HOST
 gmacError_t
-Manager::globalMalloc(void ** addr, size_t count)
+Manager::globalMalloc(Context * ctx, void ** addr, size_t count)
 {
     gmacError_t ret;
     void *devAddr;
     void *cpuAddr;
 
     *addr = NULL;
+	PageTable &pageTable = ctx->mm().pageTable();
 
     // Allocate page-locked memory. We currently rely on the backend
     // to allocate this memory
-    Context * ctx = Context::current();
-    ret = ctx->mallocPageLocked(&cpuAddr, count);
+    ret = ctx->mallocPageLocked(&cpuAddr, count, pageTable.getPageSize());
+
     // Successful device memory allocation?
 	if(ret != gmacSuccess) {
 		return ret;
@@ -111,22 +113,22 @@ Manager::globalMalloc(void ** addr, size_t count)
     ContextList & contexts = proc->contexts();
     contexts.lockRead();
     for(i = contexts.begin(); i != contexts.end(); i++) {
-        Context * ctx = *i;
+        Context * _ctx = *i;
         //! \todo Check the return value of the function
-        ctx->mapToDevice(cpuAddr, &devAddr, count);
-        map(ctx, r, devAddr);
+        ret = _ctx->mapToDevice(cpuAddr, &devAddr, count);
+        map(_ctx, r, devAddr);
     }
     contexts.unlock();
     // Insert the region in the global shared map
     Map::addShared(r);
     r->unlock();
     *addr = cpuAddr;
-    TRACE("Alloc %p (%d bytes)", cpuAddr, count);
+    TRACE("Alloc %p (%zd bytes)", cpuAddr, count);
     return gmacSuccess;
 }
 #else
 gmacError_t
-Manager::globalMalloc(void ** addr, size_t count)
+Manager::globalMalloc(Context * ctx, void ** addr, size_t count)
 {
     gmacError_t ret;
     void *devAddr;
@@ -145,9 +147,10 @@ Manager::globalMalloc(void ** addr, size_t count)
     contexts.lockRead();
     for(i = contexts.begin(); i != contexts.end(); i++) {
         Context * ctx = *i;
+        PageTable &pageTable = ctx->mm().pageTable();
         // Allocate device memory. We currently rely on the backend
         // to allocate this memory
-        ret = ctx->malloc(&devAddr, count);
+        ret = ctx->malloc(&devAddr, count, pageTable.getPageSize());
         if(ret != gmacSuccess) goto cleanup;
         map(ctx, r, devAddr);
     }
@@ -172,10 +175,10 @@ cleanup:
 #endif
 
 gmacError_t
-Manager::free(void * addr)
+Manager::free(Context * ctx, void * addr)
 {
     gmacError_t ret;
-    Region * r = current()->find<Region>(addr);
+    Region * r = ctx->mm().find<Region>(addr);
     if (r == NULL) {
         return gmacErrorInvalidValue;
     }
@@ -184,7 +187,9 @@ Manager::free(void * addr)
 	// it anymore, release the host memory
 	if(r->shared()) {
 #ifdef USE_GLOBAL_HOST 
-        Context::current()->hostFree(cpuPtr);
+        ctx->hostFree(addr);
+#else
+        hostUnmap(r->start(), r->size());
 #endif
         ContextList::const_iterator i;
         ContextList & contexts = proc->contexts();
@@ -192,14 +197,15 @@ Manager::free(void * addr)
         for(i = contexts.begin(); i != contexts.end(); i++) {
             Context * ctx = *i;
             // Free memory in the device
+#ifndef USE_GLOBAL_HOST 
             ret = ctx->free(ptr(ctx, addr));
             ASSERT(ret == gmacSuccess);
+#endif
             unmap(ctx, r);
         }
         Map::removeShared(r);
 	}
 	else {
-        Context * ctx = Context::current();
 		ret = ctx->free(ptr(ctx, addr));
         ASSERT(ret == gmacSuccess);
         unmap(ctx, r);
@@ -211,17 +217,20 @@ Manager::free(void * addr)
 }
 
 gmacError_t
-Manager::hfree(void * addr)
+Manager::hfree(Context * ctx, void * addr)
 {
     gmacError_t ret;
-    ret = Context::current()->hostFree(addr);
+    ret = ctx->hostFree(addr);
     return ret;
 }
 
 Region *Manager::remove(void *addr)
 {
     Context * ctx = Context::current();
-	Region *ret = ctx->mm().remove(addr);
+    Map & map = ctx->mm();
+    map.lockWrite();
+	Region *ret = map.remove(addr);
+    map.unlock();
 	return ret;
 }
 
@@ -269,6 +278,7 @@ void
 Manager::initShared(Context * ctx)
 {
 #ifndef USE_MMAP
+	PageTable &pageTable = ctx->mm().pageTable();
     RegionMap::iterator i;
     RegionMap &shared = Map::shared();
     shared.lockRead();
@@ -281,7 +291,7 @@ Manager::initShared(Context * ctx)
         TRACE("Using Host Translation");
         gmacError_t ret = ctx->mapToDevice(r->start(), &devPtr, r->size());
 #else
-        gmacError_t ret = ctx->malloc(&devPtr, r->size());
+        gmacError_t ret = ctx->malloc(&devPtr, r->size(), pageTable.getPageSize());
 #endif
         ASSERT(ret == gmacSuccess);
         map(ctx, r, devPtr);
@@ -289,6 +299,107 @@ Manager::initShared(Context * ctx)
     }
     shared.unlock();
 #endif
+}
+
+void
+Manager::syncToHost()
+{
+    Map::const_iterator i;
+    Map * m = current();
+    m->lockRead();
+    for(i = m->begin(); i != m->end(); i++) {
+        Region * r = i->second;
+        r->lockWrite();
+        r->syncToHost();
+        r->unlock();
+    }
+    m->unlock();
+}
+
+gmacError_t
+Manager::freeDevice(std::vector<void *> & oldAddr)
+{
+    gmacError_t ret;
+    Context * ctx = Context::current();
+    std::vector<void *>::const_iterator i;
+    for(i = oldAddr.begin(); i != oldAddr.end(); i++) {
+        ret = ctx->free(*i);
+        ASSERT(ret == gmacSuccess);
+    }
+
+    return gmacSuccess;
+}
+
+std::vector<void *>
+Manager::reallocDevice()
+{
+    std::vector<void *> oldAddr;
+
+    void *devAddr;
+    gmacError_t ret;
+    Context * ctx = Context::current();
+
+	PageTable &pageTable = ctx->mm().pageTable();
+
+    Map::const_iterator i;
+    Map * m = current();
+    m->lockRead();
+    for(i = m->begin(); i != m->end(); i++) {
+        Region * r = i->second;
+        r->lockWrite();
+        // If it is a shared global structure and nobody is accessing
+        // it anymore, release the host memory
+        if(r->shared()) {
+            // Free memory in the device
+#ifdef USE_GLOBAL_HOST
+            // Map memory in the device
+            ret = ctx->mapToDevice(r->start(), &devAddr, r->size());
+            ASSERT(ret == gmacSuccess);
+#else
+            oldAddr.push_back(ptr(ctx, r->start()));
+            // Allocate device memory
+            ret = ctx->malloc(&devAddr, r->size(), pageTable.getPageSize());
+            ASSERT(ret == gmacSuccess);
+#endif
+            unmap(ctx, r);
+            map(ctx, r, devAddr);
+        }
+        else {
+            oldAddr.push_back(ptr(ctx, r->start()));
+            // Allocate device memory
+            ret = ctx->malloc(&devAddr, r->size(), pageTable.getPageSize());
+            ASSERT(ret == gmacSuccess);
+            unmap(ctx, r);
+            // Insert mapping in the page table
+            insertVirtual(r->start(), devAddr, r->size());
+            insert(r);
+        }
+        r->unlock();
+    }
+    m->unlock();
+
+    return oldAddr;
+}
+
+gmacError_t
+Manager::touchAll()
+{
+    gmacError_t ret;
+    Context * ctx = Context::current();
+
+    Map::const_iterator i;
+    Map * m = current();
+    m->lockRead();
+    for(i = m->begin(); i != m->end(); i++) {
+        Region * r = i->second;
+        r->lockWrite();
+        bool correct = touch(r);
+        ASSERT(correct);
+        r->unlock();
+    }
+    m->unlock();
+
+    return gmacSuccess;
 }
 
 }}

@@ -68,14 +68,16 @@ public:
 	CUdevice device() const;
 
 	gmac::Context *create();
-	void destroy(gmac::Context *);
+	void destroy(gmac::Context * ctx);
 	size_t nContexts() const;
 
+    gmacError_t rebind(gmac::Context * ctx);
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
+    void destroyCUDAContext(CUcontext ctx);
 #else
-    void lock();
-    void unlock();
+    void pushLock();
+    void popUnlock();
 #endif
     bool async() const;
 

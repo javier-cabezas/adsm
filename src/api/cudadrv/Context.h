@@ -61,7 +61,7 @@ class Context : public gmac::Context {
 protected:
     AlignmentMap _alignMap;
 
-	Accelerator  &_gpu;
+	Accelerator  * _gpu;
 	ModuleVector _modules;
 
 	KernelConfig _call;
@@ -110,23 +110,26 @@ protected:
 	void setup();
     void setupStreams();
 
-	Context(Accelerator &gpu);
+    void finiStreams();
 
+	Context(Accelerator *gpu);
 	~Context();
+
+    gmacError_t switchTo(Accelerator *gpu);
 public:
     static gmacError_t error(CUresult);
 
     static Context * current();
     static CUstream stream();
 
-	void lock();
-    void unlock();
+	void pushLock();
+    void popUnlock();
 
     //
 	// Standard Accelerator Interface
     //
-	gmacError_t malloc(void **addr, size_t size);
-	gmacError_t mallocPageLocked(void **addr, size_t size);
+	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
+	gmacError_t mallocPageLocked(void **addr, size_t size, unsigned align = 1);
 	gmacError_t free(void *addr);
 
 	gmacError_t mapToDevice(void *host, void **device, size_t size);

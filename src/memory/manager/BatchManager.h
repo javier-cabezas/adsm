@@ -48,9 +48,11 @@ class BatchManager : public Manager {
 public:
 	BatchManager() : Manager() { }
 
+#if 0
 	gmacError_t malloc(void ** addr, size_t count);
 	gmacError_t globalMalloc(void ** addr, size_t count);
     void free(void * addr);
+#endif
     void invalidate();
     void invalidate(const RegionSet & regions);
     void flush();
@@ -60,6 +62,8 @@ public:
 	void flush(const void *, size_t);
 
 	void map(Context *, Region *, void *);
+
+    bool touch(Region * r) { return true; }
 };
 
 }}}

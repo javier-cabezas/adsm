@@ -20,7 +20,9 @@ gmac::util::Private Context::key;
 
 unsigned Context::_next = 0;
 
-Context::Context(Accelerator &acc) :
+Context::Context(Accelerator *acc) :
+    util::Reference(),
+    util::RWLock(LockContext),
     _acc(acc),
     _kernels(),
     _releasedRegions(),
@@ -64,9 +66,19 @@ Context::cleanup()
 {
     // Set the current context before each Context destruction (since it is sequential)
     key.set(this);
-    _acc.destroy(this);
+    _acc->destroy(this);
     proc->remove(this);
     key.set(NULL);
+}
+
+void
+Context::clearKernels()
+{
+    KernelMap::iterator i;
+    for(i = _kernels.begin(); i != _kernels.end(); i++) {
+        delete i->second;
+    }
+    _kernels.clear();
 }
 
 }

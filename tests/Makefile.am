@@ -7,6 +7,7 @@ noinst_PROGRAMS = bandwidth gmacVecAdd\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
 	 	gmacPingPong gmacCompress gmacCompressSend\
+		gmacMigration\
 		vmVecAdd vmNull vmStencil vmMatrixMul
 
 noinst_SCRIPTS = gmacTests.py
@@ -61,6 +62,9 @@ gmacCompress_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacCompressSend_SOURCES = gmacCompress.h gmacCompressSend.cu gmacCompressCommon.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 gmacCompressSend_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacMigration_SOURCES = gmacMigration.cu $(GMAC_TESTSOURCES)
+gmacMigration_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
