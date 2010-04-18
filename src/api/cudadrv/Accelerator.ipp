@@ -25,7 +25,7 @@ Accelerator::async() const
 
 #ifndef USE_MULTI_CONTEXT
 inline void
-Accelerator::lock()
+Accelerator::pushLock()
 {
     mutex.lock();
     CUresult ret = cuCtxPushCurrent(_ctx);
@@ -33,7 +33,7 @@ Accelerator::lock()
 }
 
 inline void
-Accelerator::unlock()
+Accelerator::popUnlock()
 {
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);

@@ -83,6 +83,7 @@ static const char *lockNames[] = {
     "LockBlockList",     // 21
     "LockQueueMap",      // 22
     "LockReference",     // 23
+    "LockContext",       // 24
 	NULL
 };
 

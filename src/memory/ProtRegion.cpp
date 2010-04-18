@@ -12,4 +12,13 @@ ProtRegion::ProtRegion(void *addr, size_t size, bool shared) :
 ProtRegion::~ProtRegion()
 {}
 
+void ProtRegion::syncToHost()
+{
+    if (_present == false) {
+        readWrite();
+        copyToHost();
+        readOnly();
+    }
+}
+
 }}

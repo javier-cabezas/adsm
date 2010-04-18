@@ -6,6 +6,7 @@
 
 namespace gmac { namespace memory { namespace manager {
 
+#if 0
 void BatchManager::free(void *addr)
 {
     Region *reg = remove(addr);
@@ -16,6 +17,7 @@ void BatchManager::free(void *addr)
         delete reg;
     }
 }
+#endif
 
 void BatchManager::flush()
 {

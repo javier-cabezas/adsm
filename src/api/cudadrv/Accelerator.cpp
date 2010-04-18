@@ -5,7 +5,6 @@
 
 #include <debug.h>
 
-
 namespace gmac {
 namespace gpu {
 
@@ -48,7 +47,7 @@ Accelerator::~Accelerator()
 gmac::Context *Accelerator::create()
 {
 	TRACE("Attaching context to Accelerator");
-	gpu::Context *ctx = new gpu::Context(*this);
+	gpu::Context *ctx = new gpu::Context(this);
 	queue.insert(ctx);
 	return ctx;
 }
@@ -63,6 +62,13 @@ void Accelerator::destroy(gmac::Context *context)
 	ASSERT(c != queue.end());
 	//delete ctx;
 	queue.erase(c);
+}
+
+gmacError_t
+Accelerator::rebind(gmac::Context *ctx)
+{
+    gpu::Context * _ctx = dynamic_cast<gpu::Context * >(ctx);
+    return _ctx->switchTo(this);
 }
 
 #ifdef USE_MULTI_CONTEXT
@@ -82,6 +88,12 @@ Accelerator::createCUDAContext()
     ret = cuCtxPopCurrent(&tmp);
     ASSERT(ret == CUDA_SUCCESS);
     return ctx;
+}
+
+void
+Accelerator::destroyCUDAContext(CUcontext ctx)
+{
+    CFATAL(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
 }
 #endif
 

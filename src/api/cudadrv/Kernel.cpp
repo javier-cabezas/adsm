@@ -57,10 +57,10 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 gmacError_t
 KernelLaunch::execute()
 {
-    _ctx.lock();
+    _ctx.pushLock();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    ASSERT(ret == CUDA_SUCCESS);
+    CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
 	ASSERT(ret == CUDA_SUCCESS);
 
@@ -87,7 +87,7 @@ KernelLaunch::execute()
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 
 exit:
-    _ctx.unlock();
+    _ctx.popUnlock();
     return Context::error(ret);
 }
 

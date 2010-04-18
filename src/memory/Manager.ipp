@@ -12,6 +12,7 @@ Manager::owner(const void * addr)
 {
 	//Region *region = current()->find<Region>(addr);
 	Region *region = Map::globalFind(addr);
+	if (region == NULL) region = Map::sharedFind(addr);
 	if(region == NULL) return NULL;
 	return region->owner();
 }

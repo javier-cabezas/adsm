@@ -98,19 +98,19 @@ Region *Map::remove(void *addr)
         return r;
 
     TRACE("Removing Region %p", r->start());
-    lockWrite();
+    //lockWrite();
     i = upper_bound(addr);
     ASSERT(i != end() && r->start() == addr);
     erase(i);
-    unlock();
+    //unlock();
     return r;
 }
 
 void Map::insert(Region *r)
 {
-    lockWrite();
+    //lockWrite();
     RegionMap::insert(value_type(r->end(), r));
-    unlock();
+    //unlock();
 
     RegionMap &__global = proc->global();
     __global.lockWrite();

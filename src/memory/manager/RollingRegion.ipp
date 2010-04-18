@@ -4,9 +4,9 @@
 inline void
 RollingRegion::push(RollingBlock *region)
 {
-    memory.lockWrite();
-    memory.insert(region);
-    memory.unlock();
+    _memory.lockWrite();
+    _memory.insert(region);
+    _memory.unlock();
 }
 
 

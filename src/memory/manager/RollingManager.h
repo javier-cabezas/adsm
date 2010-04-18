@@ -114,9 +114,11 @@ protected:
 public:
    RollingManager();
    virtual ~RollingManager();
+#if 0
    void *malloc(void *addr, size_t size);
    void *globalMalloc(void *addr, size_t size);
    void free(void *addr);
+#endif
    void invalidate();
    void invalidate(const RegionSet & regions);
    void flush();
@@ -126,6 +128,7 @@ public:
    void flush(const void *addr, size_t size);
 
 	void map(Context *, Region *, void *);
+    bool touch(Region * r);
 };
 
 }}}

@@ -57,7 +57,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context : public util::Reference {
+class Context : public util::Reference, public util::RWLock {
 public:
     enum Status {
         NONE,
@@ -86,7 +86,7 @@ protected:
     /*!
 		\brief Accelerator where the context is attached
 	*/
-	Accelerator &_acc;
+	Accelerator *_acc;
 
 	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
@@ -99,7 +99,7 @@ protected:
 
 	void enable();
 
-	Context(Accelerator &acc);
+	Context(Accelerator *acc);
 
     virtual void cleanup();
 	virtual ~Context();
@@ -140,26 +140,26 @@ public:
 	/*!
 		\brief Locks the context
 	*/
-	virtual void lock() = 0;
+	virtual void pushLock() = 0;
 
 	/*!
 		\brief Releases the context
 	*/
-	virtual void unlock() = 0;
+	virtual void popUnlock() = 0;
 
 	/*!
 		\brief Allocates memory on the accelerator memory 
 		\param addr Pointer to memory address to store the accelerator memory
 		\param size Size, in bytes, to be allocated
 	*/
-	virtual gmacError_t malloc(void **addr, size_t size) = 0;
+	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1) = 0;
 
     /*!
 		\brief Allocates page locked host memory
 		\param addr Pointer to memory address to store the memory
 		\param size Size, in bytes, to be allocated
 	*/
-	virtual gmacError_t mallocPageLocked(void **addr, size_t size) = 0;
+	virtual gmacError_t mallocPageLocked(void **addr, size_t size, unsigned align = 1) = 0;
 
 	/*!
 		\brief Releases memory previously allocated by Malloc
@@ -303,6 +303,8 @@ public:
 		\brief Gets the size in bytes of the page-locked buffer associated to the Context (or 0 if not supported)
 	*/
     size_t bufferPageLockedSize() const;
+
+    void clearKernels();
 };
 
 }

@@ -65,7 +65,7 @@ void Manager::hostUnmap(void *addr, size_t count)
 
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
-	free(addr);
+	::free(addr);
 #else
     custom_free(addr);
 #endif

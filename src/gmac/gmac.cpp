@@ -132,31 +132,15 @@ gmacSetAffinity(int acc)
 	gmacError_t ret;
 	__enterGmac();
 	enterFunction(FuncGmacSetAffinity);
-    ret = proc->migrate(acc);
+    gmac::Context * ctx = gmac::Context::current();
+    // We are potentially modifying the context, let's lock it
+    ctx->lockWrite();
+    ret = proc->migrate(ctx, acc);
+    ctx->unlock();
 	exitFunction();
 	__exitGmac();
 	return ret;
 }
-
-#if 0
-static
-gmacError_t __gmacMalloc(void **cpuPtr, size_t count)
-{
-	gmacError_t ret = gmacSuccess;
-	void *devPtr;
-	count = (count < getpagesize()) ? getpagesize(): count;
-    gmac::Context * ctx = gmac::Context::current();
-	ret = ctx->malloc(&devPtr, count);
-	if(ret != gmacSuccess || !manager) {
-		return ret;
-	}
-	if((*cpuPtr = manager->alloc(devPtr, count, attr)) == NULL) {
-		ctx->free(devPtr);
-		return gmacErrorMemoryAllocation;
-	}
-	return gmacSuccess;
-}
-#endif
 
 gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
@@ -164,7 +148,10 @@ gmacMalloc(void **cpuPtr, size_t count)
 	__enterGmac();
 	enterFunction(FuncGmacMalloc);
 	count = (int(count) < getpagesize())? getpagesize(): count;
-	gmacError_t ret = manager->malloc(cpuPtr, count);
+    gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
+	gmacError_t ret = manager->malloc(ctx, cpuPtr, count);
+    ctx->unlock();
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -177,7 +164,10 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     __enterGmac();
     enterFunction(FuncGmacGlobalMalloc);
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	gmacError_t ret = manager->globalMalloc(cpuPtr, count);
+    gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
+	gmacError_t ret = manager->globalMalloc(ctx, cpuPtr, count);
+    ctx->unlock();
     exitFunction();
     __exitGmac();
     return ret;
@@ -191,7 +181,10 @@ gmacFree(void *cpuPtr)
 {
 	__enterGmac();
 	enterFunction(FuncGmacFree);
-    gmacError_t ret = manager->free(cpuPtr);
+    gmac::Context * ctx = manager->owner(cpuPtr);
+    ctx->lockRead();
+    gmacError_t ret = manager->free(ctx, cpuPtr);
+    ctx->unlock();
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -202,7 +195,10 @@ gmacPtr(void *ptr)
 {
     void *ret = NULL;
     __enterGmac();
-    ret = manager->ptr(ptr);
+    gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
+    ret = manager->ptr(ctx, ptr);
+    ctx->unlock();
     __exitGmac();
     return ret;
 }
@@ -213,6 +209,7 @@ gmacLaunch(gmacKernel_t k)
     __enterGmac();
     enterFunction(FuncGmacLaunch);
     gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
     gmac::KernelLaunch * launch = ctx->launch(k);
 
     gmacError_t ret = gmacSuccess;
@@ -236,6 +233,7 @@ gmacLaunch(gmacKernel_t k)
         manager->invalidate(*launch);
     }
 
+    ctx->unlock();
     exitFunction();
     __exitGmac();
 
@@ -248,11 +246,13 @@ gmacThreadSynchronize()
 	__enterGmac();
 	enterFunction(FuncGmacSync);
     gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
 	gmacError_t ret = ctx->sync();
 
     TRACE("Memory Sync");
     manager->invalidate(ctx->releaseRegions());
 
+    ctx->unlock();
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -262,7 +262,10 @@ gmacError_t
 gmacGetLastError()
 {
 	__enterGmac();
-	gmacError_t ret = gmac::Context::current()->error();
+    gmac::Context * ctx = gmac::Context::current();
+    ctx->lockRead();
+	gmacError_t ret = ctx->error();
+    ctx->unlock();
 	__exitGmac();
 	return ret;
 }
@@ -273,9 +276,11 @@ gmacMemset(void *s, int c, size_t n)
     __enterGmac();
     void *ret = s;
     gmac::Context *ctx = manager->owner(s);
+    ctx->lockRead();
     CFATAL(ctx != NULL, "No owner for %p\n", s);
     manager->invalidate(s, n);
     ctx->memset(manager->ptr(ctx, s), c, n);
+    ctx->unlock();
 	__exitGmac();
     return ret;
 }
@@ -297,6 +302,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::Context *srcCtx = manager->owner(src);
 
 	if (dstCtx == NULL && srcCtx == NULL) return NULL;
+
+	if (srcCtx != NULL) srcCtx->lockRead();
+	if (dstCtx != NULL) dstCtx->lockRead();
 
     // TODO - copyDevice can be always asynchronous
 	if(dstCtx == NULL) {	    // From device
@@ -321,6 +329,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	else { // dstCtx != srcCtx
 		void *tmp;
         gmac::Context *ctx = gmac::Context::current();
+        ctx->lockRead();
 
         manager->flush(src, n);
         manager->invalidate(dst, n);
@@ -356,7 +365,12 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             ASSERT(err == gmacSuccess);
             free(tmp);
         }
+        ctx->unlock();
 	}
+
+	if (srcCtx != NULL) srcCtx->unlock();
+	if (dstCtx != NULL) dstCtx->unlock();
+
 	__exitGmac();
 	return ret;
 

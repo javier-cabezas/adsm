@@ -15,6 +15,7 @@ LazyManager::newRegion(void * addr, size_t count, bool shared)
 LazyManager::LazyManager()
 {}
 
+#if 0
 void LazyManager::free(void *addr)
 {
     Region *reg = remove(addr);
@@ -27,13 +28,15 @@ void LazyManager::free(void *addr)
         ContextList::const_iterator i;
         ContextList &contexts = proc->contexts();
 
+        //! \todo WTF is this?
         contexts.lockRead();
         for (i = contexts.begin(); i != contexts.end(); i++) {
             
         }
-        contexts.lockWrite();
+        contexts.unlock();
     }
 }
+#endif
 
 void LazyManager::invalidate()
 {
@@ -252,6 +255,22 @@ bool LazyManager::write(void *addr)
     region->unlock();
 
 	return true;
+}
+
+bool LazyManager::touch(Region * r)
+{
+    ASSERT(r != NULL);
+    ProtRegion *root = dynamic_cast<ProtRegion *>(r);
+    if(root->dirty() == false) {
+        root->readWrite();
+
+        if(!root->present()) {
+            gmacError_t ret = root->copyToHost();
+            ASSERT(ret == gmacSuccess);
+        }
+    }
+
+    return true;
 }
 
 }}}

@@ -105,6 +105,7 @@ class ModuleDescriptor {
 
 public:
     ModuleDescriptor(const void * fatBin);
+
     void add(gmac::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);

@@ -43,32 +43,32 @@ Context::stream()
 
 #ifdef USE_MULTI_CONTEXT
 inline void
-Context::lock()
+Context::pushLock()
 {
-    mutex.lock();
+    mutex.pushLock();
     CUresult ret = cuCtxPushCurrent(_ctx);
     CFATAL(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
 }
 
 inline void
-Context::unlock()
+Context::popUnlock()
 {
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
     CFATAL(ret == CUDA_SUCCESS, "Error popping context %d", ret);
-    mutex.unlock();
+    mutex.popUnlock();
 }
 #else
 inline void
-Context::lock()
+Context::pushLock()
 {
-    _gpu.lock();
+    _gpu->pushLock();
 }
 
 inline void
-Context::unlock()
+Context::popUnlock()
 {
-    _gpu.unlock();
+    _gpu->popUnlock();
 }
 
 #endif
@@ -77,22 +77,22 @@ Context::unlock()
 inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
 {
-    lock();
+    pushLock();
     enterFunction(FuncAccHostDevice);
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
     exitFunction();
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
 inline gmacError_t
 Context::copyToHostAsync(void *host, const void *dev, size_t size) 
 {
-    lock();
+    pushLock();
     enterFunction(FuncAccDeviceHost);
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
     exitFunction();
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
@@ -102,10 +102,10 @@ Context::sync()
 {
     CUresult ret = CUDA_SUCCESS;
     if (_pendingKernel) {
-        lock();
+        pushLock();
         while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
-            unlock();
-            lock();
+            popUnlock();
+            pushLock();
         }
         popEventState(paraver::Accelerator, 0x10000000 + _id);
 
@@ -116,7 +116,7 @@ Context::sync()
         }
 
         _pendingKernel = false;
-        unlock();
+        popUnlock();
     }
 
     return error(ret);
@@ -126,13 +126,13 @@ inline gmacError_t
 Context::syncToHost()
 {
     CUresult ret;
-    lock();
-    if (_gpu.async()) {
+    pushLock();
+    if (_gpu->async()) {
         ret = cuStreamSynchronize(streamToHost);
     } else {
         ret = cuCtxSynchronize();
     }
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
@@ -140,8 +140,8 @@ inline gmacError_t
 Context::syncToDevice()
 {
     CUresult ret;
-    lock();
-    if (_gpu.async()) {
+    pushLock();
+    if (_gpu->async()) {
         ret = cuStreamSynchronize(streamToDevice);
     } else {
         ret = cuCtxSynchronize();
@@ -151,7 +151,7 @@ Context::syncToDevice()
         _pendingToDevice = false;
     }
 
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
@@ -159,13 +159,13 @@ inline gmacError_t
 Context::syncDevice()
 {
     CUresult ret;
-    lock();
-    if (_gpu.async()) {
+    pushLock();
+    if (_gpu->async()) {
         ret = cuStreamSynchronize(streamDevice);
     } else {
         ret = cuCtxSynchronize();
     }
-    unlock();
+    popUnlock();
     return error(ret);
 }
 
@@ -184,7 +184,7 @@ Context::argument(const void *arg, size_t size, off_t offset)
 inline bool
 Context::async() const
 {
-    return _gpu.async();
+    return _gpu->async();
 }
 
 }}

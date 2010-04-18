@@ -71,9 +71,7 @@ protected:
 #endif
 
 	void insert(Region *r);
-
 	Region *remove(void *addr);
-
 	Map *current();
 
 	void insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t count);
@@ -116,20 +114,20 @@ public:
 	//! \param addr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	gmacError_t malloc(void ** addr, size_t count);
+	gmacError_t malloc(Context * ctx, void ** addr, size_t count);
 
     //! This method is called whenever the user
 	//! requests page-locked memory
 	//! \param addr Allocated memory address.
 	//! \param count Size in bytes of the allocated memory
-	gmacError_t halloc(void ** addr, size_t count);
+	gmacError_t halloc(Context * ctx, void ** addr, size_t count);
 
     //! This method is called whenever the user
 	//! requests shared memory to be used by all the accelerators
 	//! \param addr Allocated memory address. This address
 	//! is the same for both, the CPU and the accelerator
 	//! \param count Size in bytes of the allocated memory
-	gmacError_t globalMalloc(void ** addr, size_t count);
+	gmacError_t globalMalloc(Context * ctx, void ** addr, size_t count);
 
 #if 0
 	//! This methid is called to map accelerator memory to
@@ -143,12 +141,12 @@ public:
 	//! This method is called whenever the user
 	//! releases accelerator memory
 	//! \param addr Memory address that has been released
-	gmacError_t free(void *addr);
+	gmacError_t free(Context * ctx, void *addr);
 
     //! This method is called whenever the user
 	//! releases page-locked memory
 	//! \param addr Memory address that has been released
-	gmacError_t hfree(void *addr);
+	gmacError_t hfree(Context * ctx, void *addr);
 
 
 	//! This method is called whenever the user invokes
@@ -180,6 +178,13 @@ public:
 	Context *owner(const void *addr);
 	virtual void invalidate(const void *addr, size_t) = 0;
 	virtual void flush(const void *addr, size_t) = 0;
+
+    void syncToHost();
+    std::vector<void *> reallocDevice();
+    gmacError_t freeDevice(std::vector<void *> & addr);
+
+    gmacError_t touchAll();
+    virtual bool touch(Region * r) = 0;
 };
 
 

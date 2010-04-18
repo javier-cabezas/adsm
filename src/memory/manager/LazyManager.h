@@ -54,9 +54,11 @@ protected:
 
 public:
 	LazyManager();
+#if 0
 	void *malloc(void *addr, size_t count);
 	void *globalMalloc(void *addr, size_t count);
 	void free(void *addr);
+#endif
 	void invalidate();
     void invalidate(const RegionSet & regions);
     void flush();
@@ -66,6 +68,7 @@ public:
 	void flush(const void *, size_t);
 
 	void map(Context *, Region *, void *);
+    bool touch(Region * r);
 };
 
 }}}
