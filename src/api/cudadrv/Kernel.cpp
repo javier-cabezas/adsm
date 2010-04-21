@@ -11,7 +11,7 @@ Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, _name);
     //! \todo Calculate this dynamically
-#if CUDART_VERSION >= 3000
+#if CUDART_VERSION >= 3000 && LINUX
     cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
 #endif
     ASSERT(ret == CUDA_SUCCESS);
