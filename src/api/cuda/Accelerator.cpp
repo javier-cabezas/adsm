@@ -20,10 +20,10 @@ Accelerator::Accelerator(int n, CUdevice device) :
     ret = cuDeviceComputeCapability(&_major, &_minor, _device);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     _memory = size;
-    int async = 0;
-    ret = cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    _async = bool(async);
+    //int async = 0;
+    //ret = cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device);
+    //CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    //_async = bool(async);
 
 
 #ifndef USE_MULTI_CONTEXT

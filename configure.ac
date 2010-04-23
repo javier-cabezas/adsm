@@ -13,6 +13,8 @@ LT_INIT
 # Check for a hash table implementation
 AC_CXX_HEADER_TR1_UNORDERED_MAP
 
+API_DIR="cuda"
+
 # Check for processor
 AC_MSG_CHECKING(processor architecture)
 case "$host" in
@@ -167,19 +169,6 @@ else
 fi
 
 
-# Check for driver mode
-cuda_driver_default="yes"
-AC_MSG_CHECKING(whether to use CUDA Driver API)
-AC_ARG_ENABLE(cuda-driver,
-	AS_HELP_STRING([--enable-cuda-driver],[turn on using the CUDA driver API [[default=no]]])
-		, , enable_cuda_driver=$cuda_driver_default)
-if test "$enable_cuda_driver" = "yes"; then
-	AC_MSG_RESULT(yes)
-	API_DIR="cudadrv"
-else
-	AC_MSG_RESULT(no)
-    API_DIR="cuda"
-fi
 
 # Check for opencl mode
 opencl_default="no"
@@ -332,7 +321,6 @@ AC_CONFIG_FILES([Makefile
 	src/gmac/mpi/Makefile
 	src/api/Makefile
 	src/api/cuda/Makefile
-	src/api/cudadrv/Makefile
 	src/api/opencl/Makefile
 	src/os/Makefile
     src/os/posix/Makefile
