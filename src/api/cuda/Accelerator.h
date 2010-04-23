@@ -49,7 +49,7 @@ class ModuleDescriptor;
 class Accelerator : public gmac::Accelerator {
 protected:
 	CUdevice _device;
-	bool _async;
+	//bool _async;
 
 	std::set<gpu::Context *> queue;
 
@@ -79,7 +79,7 @@ public:
     void pushLock();
     void popUnlock();
 #endif
-    bool async() const;
+    //bool async() const;
 
     int major() const;
     int minor() const;
