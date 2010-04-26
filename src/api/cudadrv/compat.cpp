@@ -385,9 +385,9 @@ using gmac::gpu::Texture;
 cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 		const struct cudaArray *array, const struct cudaChannelFormatDesc *desc)
 {
+	__enterGmac();
     Context * ctx = Context::current();
 	CUresult r;
-	__enterGmac();
     const Texture * texture = ctx->texture(texref);
     ctx->pushLock();
 	for(int i = 0; i < 3; i++) {
@@ -427,8 +427,8 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 
 cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 {
-    const Texture * texture = Context::current()->texture(texref);
 	__enterGmac();
+    const Texture * texture = Context::current()->texture(texref);
     gmac::Context * ctx = gmac::Context::current();
 	ctx->pushLock();
 	CUresult r = cuTexRefDestroy(texture->texRef());
