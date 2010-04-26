@@ -327,43 +327,32 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         ASSERT(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
-		void *tmp;
+		//void *tmp;
         gmac::Context *ctx = gmac::Context::current();
         ctx->lockRead();
 
         manager->flush(src, n);
         manager->invalidate(dst, n);
 
-        if (srcCtx->async() && dstCtx->async()) {
-            size_t bufferSize = ctx->bufferPageLockedSize();
-            void * tmp        = ctx->bufferPageLocked();
+        size_t bufferSize = ctx->bufferPageLockedSize();
+        void * tmp        = ctx->bufferPageLocked();
 
-            size_t left = n;
-            off_t  off  = 0;
-            while (left != 0) {
-                size_t bytes = left < bufferSize? left: bufferSize;
-                err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
-                ASSERT(err == gmacSuccess);
-                srcCtx->syncToHost();
-                ASSERT(err == gmacSuccess);
-                err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
-                ASSERT(err == gmacSuccess);
-                srcCtx->syncToDevice();
-                ASSERT(err == gmacSuccess);
-
-                left -= bytes;
-                off  += bytes;
-                TRACE("Copying %zd %zd\n", bytes, bufferSize);
-            }
-        } else {
-            TRACE("Allocated non-locked memory: %zd\n", n);
-            tmp = malloc(n);
-
-            err = srcCtx->copyToHost(tmp, manager->ptr(srcCtx, src), n);
+        size_t left = n;
+        off_t  off  = 0;
+        while (left != 0) {
+            size_t bytes = left < bufferSize? left: bufferSize;
+            err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
             ASSERT(err == gmacSuccess);
-            err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst), tmp, n);
+            srcCtx->syncToHost();
             ASSERT(err == gmacSuccess);
-            free(tmp);
+            err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
+            ASSERT(err == gmacSuccess);
+            srcCtx->syncToDevice();
+            ASSERT(err == gmacSuccess);
+
+            left -= bytes;
+            off  += bytes;
+            TRACE("Copying %zd %zd\n", bytes, bufferSize);
         }
         ctx->unlock();
 	}

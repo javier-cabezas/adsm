@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,50 +31,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDA_GPU_H_
-#define __API_CUDA_GPU_H_
+#ifndef __API_CUDADRV_ACCELERATOR_H_
+#define __API_CUDADRV_ACCELERATOR_H_
 
-#include <debug.h>
 #include <kernel/Accelerator.h>
+#include "util/Lock.h"
+
+#include <cuda.h>
+#include <vector_types.h>
 
 #include <set>
 
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <vector_types.h>
-
-
-namespace gmac {
-
-namespace gpu {
+namespace gmac { namespace gpu {
 class Context;
-}
+class ModuleDescriptor;
 
-class GPU : public Accelerator {
+class Accelerator : public gmac::Accelerator {
 protected:
+	CUdevice _device;
+	//bool _async;
+
 	std::set<gpu::Context *> queue;
+
+    int _major;
+    int _minor;
+
+#ifndef USE_MULTI_CONTEXT
+    CUcontext _ctx;
+    util::Lock mutex;
+#endif
+
 public:
-	GPU(int n) : Accelerator(n) {
-		struct cudaDeviceProp prop;
-		int flags = 0;
-        cudaError_t ret = cudaGetDeviceProperties(&prop, n);
-		ASSERT(ret == cudaSuccess);
-		_memory = prop.totalGlobalMem;	
-		if(prop.major > 0 && prop.minor >0) flags |= cudaDeviceMapHost;
-        ret = cudaSetDeviceFlags(flags);
-		ASSERT(ret == cudaSuccess);
-	}
-	~GPU();
+	Accelerator(int n, CUdevice device);
+	~Accelerator();
+	CUdevice device() const;
 
-	unsigned device() const { return id; }
+	gmac::Context *create();
+	void destroy(gmac::Context * ctx);
+	size_t nContexts() const;
 
-	Context *create();
-	Context *clone(const Context &);
-	void destroy(Context *);
+    gmacError_t bind(gmac::Context * ctx);
+#ifdef USE_MULTI_CONTEXT
+    CUcontext createCUDAContext();
+    void destroyCUDAContext(CUcontext ctx);
+#else
+    void pushLock();
+    void popUnlock();
+#endif
+    //bool async() const;
 
-	size_t nContexts() const { return queue.size(); }
+    int major() const;
+    int minor() const;
 };
 
-}
+}}
+
+#include "api/Accelerator.ipp"
 
 #endif
