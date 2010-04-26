@@ -60,7 +60,7 @@ public:
 #if 0
 	virtual Context *clone(const Context &) = 0;
 #endif
-    virtual gmacError_t rebind(Context * ctx) = 0;
+    virtual gmacError_t bind(Context * ctx) = 0;
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;
     unsigned id() const;

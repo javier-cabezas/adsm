@@ -35,8 +35,8 @@ size_t Process::_totalMemory = 0;
 
 Process::Process() :
     RWLock(LockProcess),
-    __global(LockMmGlobal),
-    __shared(LockMmShared),
+    _global(LockMmGlobal),
+    _shared(LockMmShared),
     current(0)
 {}
 
@@ -133,7 +133,7 @@ gmacError_t Process::migrate(Context * ctx, int acc)
 #ifndef USE_MMAP
         if (int(ctx->accId()) != acc) {
             // Create a new context in the requested accelerator
-            ret = _accs[acc]->rebind(ctx);
+            ret = _accs[acc]->bind(ctx);
         }
 #else
         FATAL("Migration not implemented when using mmap");
@@ -153,13 +153,13 @@ void Process::remove(Context *ctx)
 	_contexts.remove(ctx);
 }
 
-void Process::accelerator(Accelerator *acc)
+void Process::addAccelerator(Accelerator *acc)
 {
 	_accs.push_back(acc);
 	_totalMemory += acc->memory();
 }
 
-void *Process::translate(void *addr)
+void *Process::translate(void *addr) const
 {
 	void *ret = NULL;
 	std::list<Context *>::const_iterator i;

@@ -13,7 +13,7 @@ Process::contexts()
 }
 
 inline const void *
-Process::translate(const void *addr)
+Process::translate(const void *addr) const
 {
     return (const void *)translate((void *)addr);
 }
@@ -25,7 +25,7 @@ Process::totalMemory()
 }
 
 inline size_t
-Process::accs() const
+Process::nAccelerators() const
 {
     return _accs.size();
 }
@@ -33,25 +33,25 @@ Process::accs() const
 inline
 memory::RegionMap &Process::global()
 {
-    return __global;
+    return _global;
 }
 
 inline
 const memory::RegionMap &Process::global() const
 {
-    return __global;
+    return _global;
 }
 
 inline
 memory::RegionMap &Process::shared()
 {
-    return __shared;
+    return _shared;
 }
 
 inline
 const memory::RegionMap &Process::shared() const
 {
-    return __shared;
+    return _shared;
 }
 
 }

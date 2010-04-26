@@ -52,7 +52,6 @@ gmac::Context *Accelerator::create()
 	return ctx;
 }
 
-
 void Accelerator::destroy(gmac::Context *context)
 {
 	TRACE("Destroying Context");
@@ -65,7 +64,7 @@ void Accelerator::destroy(gmac::Context *context)
 }
 
 gmacError_t
-Accelerator::rebind(gmac::Context *ctx)
+Accelerator::bind(gmac::Context *ctx)
 {
     gpu::Context * _ctx = dynamic_cast<gpu::Context * >(ctx);
     return _ctx->switchTo(this);
