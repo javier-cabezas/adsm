@@ -83,12 +83,14 @@ public:
 
 class Process : public util::RWLock{
 protected:
+    friend class Accelerator;
+
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 
 	QueueMap _queues;
-    memory::RegionMap __global;
-    memory::RegionMap __shared;
+    memory::RegionMap _global;
+    memory::RegionMap _shared;
 
 	unsigned current;
 
@@ -105,20 +107,22 @@ public:
 #define ACC_AUTO_BIND -1
     Context * create(int acc = ACC_AUTO_BIND);
 	void remove(Context *ctx);
-	gmacError_t migrate(Context *ctx, int acc);
 	ContextList & contexts();
 
-	void accelerator(Accelerator *acc);
+	void *translate(void *addr) const;
+	const void *translate(const void *addr) const;
 
-	void *translate(void *addr);
-	const void *translate(const void *addr);
+    /* Context management functions */
     void send(THREAD_ID id);
     void receive();
 	void sendReceive(THREAD_ID id);
     void copy(THREAD_ID id);
+	gmacError_t migrate(Context *ctx, int acc);
+
+	void addAccelerator(Accelerator *acc);
 
 	static size_t totalMemory();
-	size_t accs() const;
+	size_t nAccelerators() const;
 
     memory::RegionMap &global();
     const memory::RegionMap &global() const;

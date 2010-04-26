@@ -61,7 +61,6 @@ protected:
     util::Lock mutex;
 #endif
 
-
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
@@ -71,7 +70,7 @@ public:
 	void destroy(gmac::Context * ctx);
 	size_t nContexts() const;
 
-    gmacError_t rebind(gmac::Context * ctx);
+    gmacError_t bind(gmac::Context * ctx);
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
     void destroyCUDAContext(CUcontext ctx);
