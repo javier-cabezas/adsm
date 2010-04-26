@@ -32,7 +32,7 @@ void setParam(T *param, const char *str, const T def)
 {
 	const char *value = getenv(str);
 	if(value != NULL) *param = atoi(value);
-	if(*param == 0) *param = def;
+	//if(*param == 0) *param = def;
 }
 
 #include <stdint.h>

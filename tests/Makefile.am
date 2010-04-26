@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES=Makefile.in
 
-noinst_PROGRAMS = bandwidth gmacVecAdd\
+noinst_PROGRAMS = bandwidth threadBandwidth gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd gmacSharedVecAdd\
@@ -20,6 +20,9 @@ GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
+threadBandwidth_SOURCES = threadBandwidth.cu $(GMAC_TESTSOURCES)
+threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
