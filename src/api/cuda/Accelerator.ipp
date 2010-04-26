@@ -17,11 +17,11 @@ Accelerator::nContexts() const
     return queue.size();
 }
 
-inline bool
-Accelerator::async() const
-{
-    return _async;
-}
+//inline bool
+//Accelerator::async() const
+//{
+//    return _async;
+//}
 
 #ifndef USE_MULTI_CONTEXT
 inline void

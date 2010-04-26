@@ -1,164 +1,174 @@
-#ifndef __API_CUDA_CONTEXT_IPP_
-#define __API_CUDA_CONTEXT_IPP_
+#ifndef __API_CUDADRV_CONTEXT_IPP_
+#define __API_CUDADRV_CONTEXT_IPP_
 
-inline void
-Context::check()
+#include "Kernel.h"
+
+#include <config/paraver.h>
+
+namespace gmac { namespace gpu {
+
+inline CUdeviceptr
+Context::gpuAddr(void *addr) const
 {
-    ASSERT(current() == this);
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
+}
+
+inline CUdeviceptr
+Context::gpuAddr(const void *addr) const
+{
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
 }
 
 inline void
-Context::lock()
-{}
+Context::zero(void **addr) const
+{
+    memory::addr_t *ptr = (memory::addr_t *)addr;
+    *ptr = 0;
+}
+
+inline Context *
+Context::current()
+{
+    return static_cast<Context *>(gmac::Context::current());
+}
+
+inline CUstream
+Context::stream()
+{
+    return current()->streamLaunch;
+}
+
+
+#ifdef USE_MULTI_CONTEXT
+inline void
+Context::pushLock()
+{
+    mutex.lock();
+    CUresult ret = cuCtxPushCurrent(_ctx);
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
+}
 
 inline void
-Context::unlock()
-{}
-
-// Standard Accelerator Interface
-inline gmacError_t
-Context::malloc(void **addr, size_t size)
+Context::popUnlock()
 {
-    check();
-    cudaError_t ret = cudaMalloc(addr, size);
-    return error(ret);
+    CUcontext tmp;
+    CUresult ret = cuCtxPopCurrent(&tmp);
+    CFATAL(ret == CUDA_SUCCESS, "Error popping context %d", ret);
+    mutex.unlock();
+}
+#else
+inline void
+Context::pushLock()
+{
+    _gpu->pushLock();
 }
 
-
-inline gmacError_t
-Context::free(void *addr)
+inline void
+Context::popUnlock()
 {
-    check();
-    cudaError_t ret = cudaFree(addr);
-    return error(ret);
+    _gpu->popUnlock();
 }
 
-inline gmacError_t
-Context::hostAlloc(void **host, void **dev, size_t size)
-{
-    check();
-    cudaError_t ret = cudaSuccess;
-    if (dev != NULL) {
-        *dev = NULL;
-        ret = cudaHostAlloc(host, size, cudaHostAllocMapped | cudaHostAllocPortable);
-        if(ret == cudaSuccess) {
-            ret = cudaHostGetDevicePointer(dev, *host, 0);
-            ASSERT(ret == cudaSuccess);
-        }
-    } else {
-        ret = cudaHostAlloc(host, size, cudaHostAllocPortable);
-    }
-    return error(ret);
-}
-
-inline gmacError_t
-Context::hostFree(void *addr)
-{
-    check();
-    cudaError_t ret = cudaFreeHost(addr);
-    return error(ret);
-}
-
-inline gmacError_t
-Context::copyToDevice(void *dev, const void *host, size_t size)
-{
-    check();
-    enterFunction(accHostDeviceCopy);
-    cudaError_t ret = cudaMemcpy(dev, host, size, cudaMemcpyHostToDevice);
-    exitFunction();
-    return error(ret);
-}
-
-inline gmacError_t
-Context::copyToHost(void *host, const void *dev, size_t size)
-{
-    check();
-    enterFunction(accDeviceHostCopy);
-    cudaError_t ret = cudaMemcpy(host, dev, size, cudaMemcpyDeviceToHost);
-    exitFunction();
-    return error(ret);
-}
-
-inline gmacError_t
-Context::copyDevice(void *dst, const void *src, size_t size)
-{
-    check();
-    enterFunction(accDeviceDeviceCopy);
-    cudaError_t ret = cudaMemcpy(dst, src, size, cudaMemcpyDeviceToDevice);
-    exitFunction();
-    return error(ret);
-}
+#endif
 
 inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
 {
-    check();
-    enterFunction(accHostDeviceCopy);
-    cudaError_t ret = cudaMemcpyAsync(dev, host, size,
-            cudaMemcpyHostToDevice, 0);
+    pushLock();
+    enterFunction(FuncAccHostDevice);
+    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, streamToDevice);
     exitFunction();
+    popUnlock();
     return error(ret);
 }
 
 inline gmacError_t
-Context::copyToHostAsync(void *host, const void *dev, size_t size)
+Context::copyToHostAsync(void *host, const void *dev, size_t size) 
 {
-    check();
-    enterFunction(accDeviceHostCopy);
-    cudaError_t ret = cudaMemcpyAsync(host, dev, size,
-            cudaMemcpyDeviceToHost, 0);
+    pushLock();
+    enterFunction(FuncAccDeviceHost);
+    CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, streamToHost);
     exitFunction();
+    popUnlock();
     return error(ret);
 }
 
-inline gmacError_t
-Context::memset(void *dev, int c, size_t size)
-{
-    check();
-    cudaError_t ret = cudaMemset(dev, c, size);
-    return error(ret);
-}
 
-inline gmacError_t
-Context::launch(const char *kernel)
-{
-    check();
-    cudaError_t ret = __cudaLaunch(kernel);
-    return error(ret);
-}
-	
 inline gmacError_t
 Context::sync()
 {
-    check();
-    cudaError_t ret = cudaThreadSynchronize();
+    CUresult ret = CUDA_SUCCESS;
+    if (_pendingKernel) {
+        pushLock();
+        while ((ret = cuStreamQuery(streamLaunch)) == CUDA_ERROR_NOT_READY) {
+            popUnlock();
+            pushLock();
+        }
+        popEventState(paraver::Accelerator, 0x10000000 + _id);
+
+        if (ret == CUDA_SUCCESS) {
+            TRACE("Sync: success");
+        } else {
+            TRACE("Sync: error: %d", ret);
+        }
+
+        _pendingKernel = false;
+        popUnlock();
+    }
+
+    return error(ret);
+}
+
+inline gmacError_t
+Context::syncToHost()
+{
+    CUresult ret;
+    pushLock();
+    ret = cuStreamSynchronize(streamToHost);
+    popUnlock();
+    return error(ret);
+}
+
+inline gmacError_t
+Context::syncToDevice()
+{
+    CUresult ret;
+    pushLock();
+    ret = cuStreamSynchronize(streamToDevice);
+    if (_pendingToDevice) {
+        popEventState(paraver::Accelerator, 0x10000000 + _id);
+        _pendingToDevice = false;
+    }
+
+    popUnlock();
+    return error(ret);
+}
+
+inline gmacError_t
+Context::syncDevice()
+{
+    CUresult ret;
+    pushLock();
+    ret = cuStreamSynchronize(streamDevice);
+    popUnlock();
     return error(ret);
 }
 
 inline void
-Context::flush()
+Context::call(dim3 Dg, dim3 Db, size_t shared, int tokens)
 {
-#ifdef USE_VM
-    devicePageTable.ptr = mm().pageTable().flush();
-    devicePageTable.shift = mm().pageTable().getTableShift();
-    devicePageTable.size = mm().pageTable().getTableSize();
-    devicePageTable.page = mm().pageTable().getPageSize();
-
-    cudaResult_t ret = cudaMemcpyToSymbol(pageTableSymbol,
-                                          &devicePageTable,
-                                          sizeof(devicePageTable),
-                                          0,
-                                          cudaMemcpyHostToDevice);
-    ASSERT(ret == cudaSuccess);
-#endif
+    _call = KernelConfig(Dg, Db, shared, tokens);
 }
 
 inline void
-Context::invalidate()
+Context::argument(const void *arg, size_t size, off_t offset)
 {
-#ifdef USE_VM
-    mm().pageTable().invalidate();
-#endif
+    _call.pushArgument(arg, size, offset);
 }
+
+
+}}
 
 #endif

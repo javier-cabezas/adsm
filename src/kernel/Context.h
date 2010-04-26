@@ -268,8 +268,6 @@ public:
 	*/
 	virtual gmacError_t sync() = 0;
 
-	virtual bool async() const = 0;
-
 	/*!
 		\brief Waits for a memory transfer to host
 	*/

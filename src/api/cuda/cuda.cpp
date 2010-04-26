@@ -1,65 +1,61 @@
-#include <os/loader.h>
+#include <debug.h>
 #include <order.h>
 
-#include "GPU.h"
+#include "Accelerator.h"
 #include "Context.h"
 
-#include <kernel/Process.h>
+#include "kernel/Process.h"
 
-#include <cuda_runtime.h>
 #include <cuda.h>
 
+#include <string>
+#include <list>
 
-SYM(cudaError_t, __cudaLaunch, const char *);
-
-static void __attribute__((constructor(INTERPOSE))) gmacCudaInit(void)
-{
-	LOAD_SYM(__cudaLaunch, cudaLaunch);
-}
-
-static unsigned nextGPU = 0;
+#include <cuda_runtime_api.h>
 
 namespace gmac {
 
-void apiInit(void) 
+static bool initialized = false;
+
+void apiInit(void)
 {
-	TRACE("Initializing CUDA Run-time API");
+	if(initialized)
+		FATAL("GMAC double initialization not allowed");
+
+	ASSERT(proc != NULL);
+	TRACE("Initializing CUDA Driver API");
+	if(cuInit(0) != CUDA_SUCCESS)
+		FATAL("Unable to init CUDA");
 
 	int devCount = 0;
 	int devRealCount = 0;
 
-	if(cudaGetDeviceCount(&devCount) != cudaSuccess || devCount == 0)
-		FATAL("No CUDA-enable devices found");
+	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
+		FATAL("Error getting CUDA-enabled devices");
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
-        cudaDeviceProp prop;
-        if (cudaGetDeviceProperties(&prop, i) != cudaSuccess)
+		CUdevice cuDev;
+		int attr;
+		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
-        if (prop.computeMode != cudaComputeModeProhibited) {
-            proc->accelerator(new gmac::GPU(i));
-            devRealCount++;
-        }
+#if CUDART_VERSION >= 2020
+		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
+			FATAL("Unable to access CUDA device");
+		if(attr != CU_COMPUTEMODE_PROHIBITED) {
+			proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+			devRealCount++;
+		}
+#else
+        proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+        devRealCount++;
+#endif
 	}
 
 	if(devRealCount == 0)
-		FATAL("No CUDA-enable devices found");
-}
-}
+		FATAL("No CUDA-enabled devices found");
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-extern gmacError_t gmacLaunch(const char *);
-cudaError_t cudaLaunch(const char *symbol)
-{
-	return (cudaError_t)gmacLaunch(symbol);
+	initialized = true;
 }
 
-#ifdef __cplusplus
 }
-#endif
-
-

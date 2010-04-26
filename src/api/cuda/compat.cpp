@@ -121,8 +121,10 @@ static inline cudaError_t __getCUDAError(CUresult r)
             return cudaErrorNoDevice;
 #endif
 #if CUDART_VERSION >= 3000
+#if LINUX
         case CUDA_ERROR_ECC_UNCORRECTABLE:
             return cudaErrorECCUncorrectable;
+#endif
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
