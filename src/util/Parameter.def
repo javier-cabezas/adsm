@@ -1,0 +1,20 @@
+// GMAC global settings
+PARAM(paramMemManager, const char *, "Rolling", "GMAC_MANAGER")
+PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
+
+// GMAC Page table settings
+PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
+
+// Rolling Manager specific settings
+PARAM(paramLineSize, size_t, 1024, "GMAC_LINESIZE", PARAM_NONZERO)
+PARAM(paramLruDelta, size_t, 2, "GMAC_LRUDELTA", PARAM_NONZERO)
+
+// Context specific settings
+PARAM(paramBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
+
+// Miscelaneous parameters
+PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
+
+// OpenCL parameters
+PARAM(paramOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
+PARAM(paramOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
