@@ -154,9 +154,9 @@ public:
     gmacError_t syncToDevice();
     gmacError_t syncDevice();
 
-    //
+    ///////////////////////
 	// CUDA-related methods
-	//
+	///////////////////////
 	const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t key) const;

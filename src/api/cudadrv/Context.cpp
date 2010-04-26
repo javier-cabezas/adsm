@@ -70,7 +70,7 @@ Context::finiStreams()
     }
 }
 
-Context::Context(Accelerator * gpu) :
+Context::Context(Accelerator *gpu) :
     gmac::Context(gpu),
     _gpu(gpu),
     _call(dim3(0), dim3(0), 0, 0)
@@ -345,6 +345,7 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 gmacError_t
 Context::copyToHost(void *host, const void *dev, size_t size)
 {
+    ASSERT(dev != NULL);
     enterFunction(FuncAccDeviceHost);
     gmac::Context *ctx = gmac::Context::current();
 

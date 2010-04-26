@@ -45,7 +45,7 @@ Context::stream()
 inline void
 Context::pushLock()
 {
-    mutex.pushLock();
+    mutex.lock();
     CUresult ret = cuCtxPushCurrent(_ctx);
     CFATAL(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
 }
@@ -56,7 +56,7 @@ Context::popUnlock()
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
     CFATAL(ret == CUDA_SUCCESS, "Error popping context %d", ret);
-    mutex.popUnlock();
+    mutex.unlock();
 }
 #else
 inline void
@@ -72,7 +72,6 @@ Context::popUnlock()
 }
 
 #endif
-
 
 inline gmacError_t
 Context::copyToDeviceAsync(void *dev, const void *host, size_t size)
