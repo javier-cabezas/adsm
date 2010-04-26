@@ -44,9 +44,9 @@ namespace gmac { namespace util {
 
 class Semaphore {
 protected:
-	int __val;
-    pthread_cond_t __cond;
-    pthread_mutex_t __mutex;
+	int _val;
+    pthread_cond_t _cond;
+    pthread_mutex_t _mutex;
 public:
 	Semaphore(unsigned v);
 	~Semaphore();
