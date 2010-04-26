@@ -120,7 +120,7 @@ gmacAccs()
     size_t ret;
 	__enterGmac();
 	enterFunction(FuncGmacAccs);
-    ret = proc->accs();
+    ret = proc->nAccelerators();
 	exitFunction();
 	__exitGmac();
 	return ret;
