@@ -2,6 +2,8 @@
 
 #include <gmac/init.h>
 
+#include <memory/Manager.h>
+
 #include "Context.h"
 #include "Module.h"
 
@@ -215,6 +217,34 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 
 }
 
+cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
+		CUdeviceptr src, size_t spitch, size_t width, size_t height)
+{
+	TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	CUDA_MEMCPY2D cuCopy;
+	memset(&cuCopy, 0, sizeof(cuCopy));
+
+	cuCopy.srcMemoryType = CU_MEMORYTYPE_DEVICE;
+	cuCopy.dstMemoryType = CU_MEMORYTYPE_ARRAY;
+	cuCopy.srcDevice = src;
+	cuCopy.dstArray = dst;
+
+	cuCopy.srcPitch = spitch;
+	cuCopy.WidthInBytes = width;
+	cuCopy.Height= height;
+
+	cuCopy.srcXInBytes = wOffset;
+	cuCopy.srcY = hOffset;
+
+    gmac::Context * ctx = gmac::Context::current();
+	ctx->pushLock();
+	CUresult r = cuMemcpy2DUnaligned(&cuCopy);
+	ctx->popUnlock();
+	ASSERT(r == CUDA_SUCCESS);
+	return __getCUDAError(r);
+
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -300,8 +330,16 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 {
 	ASSERT(kind == cudaMemcpyHostToDevice);
 	__enterGmac();
-	cudaError_t ret = __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,
+	cudaError_t ret = cudaSuccess;
+    gmac::gpu::Context *ctx = dynamic_cast<gmac::gpu::Context *>(manager->owner(src));
+    if(ctx == NULL) {
+        __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,
 				height);
+    }
+    else {
+        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, ctx->gpuAddr(src), spitch, width,
+				height);
+    }
 	__exitGmac();
 	return ret;
 }
