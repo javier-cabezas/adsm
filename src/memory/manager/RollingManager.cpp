@@ -11,7 +11,7 @@ namespace gmac { namespace memory { namespace manager {
 
 RollingBuffer::RollingBuffer() :
     RWLock(LockRollingBuffer),
-    _max(0)
+    _max(paramLruDelta)
     {}
 
 RollingMap::~RollingMap()
@@ -30,8 +30,7 @@ void RollingManager::writeBack()
     r->unlock();
 }
 
-    Region *    
-RollingManager::newRegion(void * addr, size_t count, bool shared)
+Region *RollingManager::newRegion(void * addr, size_t count, bool shared)
 {
     rollingMap.currentBuffer()->inc(lruDelta);
     return new RollingRegion(*this, addr, count, shared, pageTable().getPageSize());
