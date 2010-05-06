@@ -1,6 +1,7 @@
 MAINTAINERCLEANFILES=Makefile.in
 
-noinst_PROGRAMS = bandwidth threadBandwidth gmacVecAdd\
+noinst_PROGRAMS = bandwidth threadBandwidth\
+				  hybridComputation gmacHybridComputation gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd gmacSharedVecAdd\
@@ -23,6 +24,9 @@ bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcu
 
 threadBandwidth_SOURCES = threadBandwidth.cu $(GMAC_TESTSOURCES)
 threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
+hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
+hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 gmacVecAdd_SOURCES = gmacVecAdd.cu $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -69,6 +73,10 @@ gmacCompressSend_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacMigration_SOURCES = gmacMigration.cu $(GMAC_TESTSOURCES)
 gmacMigration_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
+gmacHybridComputation_SOURCES = gmacHybridComputation.cu $(GMAC_TESTSOURCES)
+gmacHybridComputation_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+gmacHybridComputation_LDFLAGS = -fopenmp
+
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
@@ -86,6 +94,9 @@ vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 
 LINK = $(LIBTOOL) --mode=link $(CXX) -static $(CFLAGS) -o $@ 
+
+gmacHybridComputation.o: gmacHybridComputation.cu
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -Xcompiler -fopenmp
 
 .cu.o:
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS)
