@@ -81,7 +81,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             bufferUsed += sendbytes;
         } else {
             // Alloc buffer
-            err = manager->halloc(&tmpSend, sendbytes);
+            err = manager->halloc(ctx, &tmpSend, sendbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
             }
@@ -110,7 +110,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             tmpRecv = buffer;
         } else {
             // Alloc buffer
-            err = manager->halloc(&tmpRecv, recvbytes);
+            err = manager->halloc(ctx, &tmpRecv, recvbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
             }
@@ -134,13 +134,13 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 cleanup:
     if (allocSend) {
         // Free temporal buffer
-        err = manager->hfree(tmpSend);
+        err = manager->hfree(ctx, tmpSend);
         ASSERT(err == gmacSuccess);
     }
 
     if (allocRecv) {
         // Free temporal buffer
-        err = manager->hfree(tmpRecv);
+        err = manager->hfree(ctx, tmpRecv);
         ASSERT(err == gmacSuccess);
     }
 
@@ -195,7 +195,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
             bufferUsed += sendbytes;
         } else {
             // Alloc buffer
-            err = manager->halloc(&tmpSend, sendbytes);
+            err = manager->halloc(ctx, &tmpSend, sendbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
                 FATAL("Error in MPI_Send");
@@ -217,7 +217,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     if (allocSend) {
         // Free temporal buffer
-        err = manager->hfree(tmpSend);
+        err = manager->hfree(ctx, tmpSend);
         ASSERT(err == gmacSuccess);
     }
 
@@ -288,7 +288,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
             tmpRecv = buffer;
         } else {
             // Alloc buffer
-            err = manager->halloc(&tmpRecv, recvbytes);
+            err = manager->halloc(ctx, &tmpRecv, recvbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
                 FATAL("Error in MPI_Recv");
@@ -313,7 +313,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 cleanup:
     if (allocRecv) {
         // Free temporal buffer
-        err = manager->hfree(tmpRecv);
+        err = manager->hfree(ctx, tmpRecv);
         ASSERT(err == gmacSuccess);
     }
 

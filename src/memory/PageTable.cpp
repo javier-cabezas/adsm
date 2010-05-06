@@ -46,7 +46,7 @@ void PageTable::insert(void *host, void *dev)
 #ifndef USE_MMAP
 	sync();
 
-	enterFunction(vmAlloc);
+	enterFunction(FuncVmAlloc);
 	lock.lockWrite();
 	_clean = false;
 	// Get the root table entry
@@ -77,7 +77,7 @@ void PageTable::remove(void *host)
 {
 #ifndef USE_MMAP
 	sync();
-	enterFunction(vmFree);
+	enterFunction(FuncVmFree);
 	lock.lockWrite();
 	_clean = false;
 
@@ -186,7 +186,7 @@ void PageTable::sync()
 #ifdef USE_VM
 	if(_valid == true) return;
 	lock.read();
-	enterFunction(vmSync);
+	enterFunction(FuncVmSync);
 	for(int i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		syncDirectory(rootTable.get(i));

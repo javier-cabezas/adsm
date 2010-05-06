@@ -1,3 +1,9 @@
+libgmac (0.0.10) unstable; urgency=low
+
+  * Context delegation/copy/migration
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Tue, 04 May 2010 19:00:00 +0100
+
 libgmac (0.0.9) unstable; urgency=low
 
   * MPI interposition
