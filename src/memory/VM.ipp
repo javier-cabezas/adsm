@@ -45,7 +45,7 @@ Table<T>::~Table()
     TRACE("Cleaning Table with %zd entries (%p) @ %p", nEntries, this, table);
     free(table);
 #ifdef USE_VM
-    enterFunction(vmFree);
+    enterFunction(FuncVmFree);
 #ifdef USE_VM_DEVICE
     free(__shadow);
     if(__device != NULL) Dumper::free(__device);
