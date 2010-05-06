@@ -99,9 +99,7 @@ protected:
     bool _pendingToDevice;
     bool _pendingToHost;
 
-    CUdeviceptr gpuAddr(void *addr) const;
-	CUdeviceptr gpuAddr(const void *addr) const;
-	void zero(void **addr) const;
+    void zero(void **addr) const;
 
 	friend class Accelerator;
 
@@ -166,6 +164,10 @@ public:
 
 	void flush(const char * kernel);
 	void invalidate();
+
+    CUdeviceptr gpuAddr(void *addr) const;
+	CUdeviceptr gpuAddr(const void *addr) const;
+
 };
 
 }}
