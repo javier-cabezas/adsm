@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include <util/Parameter.h>
 #include <util/Lock.h>
-#include <memory/VM.h>
+#include <memory/Table.h>
 
 #include <stdint.h>
 

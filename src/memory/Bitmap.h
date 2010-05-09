@@ -31,60 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_VM_H_
-#define __MEMORY_VM_H_
+#ifndef __MEMORY_BITMAP_H_
+#define __MEMORY_BITMAP_H_
 
-#include <config.h>
-#include <paraver.h>
-#include <debug.h>
-
-#include <stdint.h>
-#include <stdlib.h>
-#include <cmath>
-
-// Compiler check to ensure that defines set by configure script
-// are consistent
+#include "Table.h"
 
 namespace gmac { namespace memory  { namespace vm {
 
-typedef unsigned long addr_t;
+class Bitmap {
+private:
+    uint8_t *__bitmap;
+    uint8_t *__device;
 
-
-template<typename T>
-class Table {
-protected:
-	static const size_t defaultSize = 512;
-	size_t nEntries;
-
-	static const addr_t Present = 0x01;
-	static const addr_t Dirty   = 0x02;
-	static const addr_t Mask    = ~0x03;
-
-	T **table;
-
-	T *entry(size_t n) const;
-
+    size_t __pageShift;
+    size_t __size;
 public:
-	Table(size_t nEntries = defaultSize);
-	virtual ~Table();
+    Bitmap(unsigned bits = 32);
+    ~Bitmap();
 
-	bool present(size_t n) const;
-	bool dirty(size_t n) const;
-	void clean(size_t n);
-
-	void create(size_t n, size_t size = defaultSize);
-	void insert(size_t n, void *addr);
-	void remove(size_t n);
-
-	T &get(size_t n) const;
-	T *value(size_t n) const;
-
-	size_t size() const;
+    void clear();
+    bool check(const void *);
 };
 
 }}}
 
-#include "VM.ipp"
-
+#include "Bitmap.ipp"
 
 #endif
+
+
