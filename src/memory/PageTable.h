@@ -71,15 +71,14 @@ private:
 	int offset(const void *addr) const;
 
 	void update();
-
+	void sync();
 	void deleteDirectory(Directory *dir);
 
 #ifdef USE_VM
 	bool _clean;
 	bool _valid;
-
-	void sync();
 #endif
+
 	
 public:
 	PageTable();

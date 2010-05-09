@@ -43,16 +43,16 @@ void PageTable::deleteDirectory(Directory *dir)
 	delete dir;
 }
 
-#ifdef USE_VM
 void PageTable::sync()
 {
+#ifdef USE_VM
 	if(_valid == true) return;
 	enterFunction(FuncVmSync);
     //TODO: copy dirtyBitmap back from device
 	_valid = true;
 	exitFunction();
-}
 #endif
+}
 
 
 void PageTable::insert(void *host, void *dev)
