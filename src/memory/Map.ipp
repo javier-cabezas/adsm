@@ -18,6 +18,20 @@ Map::pageTable() const
     return __pageTable;
 }
 
+#ifdef USE_VM
+inline vm::Bitmap &
+Map::dirtyBitmap()
+{
+    return __dirtyBitmap;
+}
+
+inline const vm::Bitmap &
+Map::dirtyBitmap() const
+{
+    return __dirtyBitmap;
+}
+#endif
+
 template<typename T>
 inline T *
 Map::find(const void *addr)

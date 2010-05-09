@@ -1,5 +1,5 @@
-#ifndef __VM_IPP_
-#define __VM_IPP_
+#ifndef __MEMORY_TABLE_IPP_
+#define __MEMORY_TABLE_IPP_
 
 namespace gmac { namespace memory  { namespace vm {
 

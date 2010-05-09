@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,69 +31,60 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MAP_H_
-#define __MEMORY_MAP_H_
+#ifndef __MEMORY_TABLE_H_
+#define __MEMORY_TABLE_H_
 
-#include "PageTable.h"
-#include "Bitmap.h"
-
+#include <config.h>
 #include <paraver.h>
-#include <util/Lock.h>
+#include <debug.h>
 
-#include <set>
-#include <map>
+#include <stdint.h>
+#include <stdlib.h>
+#include <cmath>
 
-namespace gmac { namespace memory {
+// Compiler check to ensure that defines set by configure script
+// are consistent
 
-class Region;
-class RegionMap : public util::RWLock, public std::map<const void *, Region *> {
-public:
-    RegionMap(paraver::LockName);
-};
+namespace gmac { namespace memory  { namespace vm {
 
-class Map : public RegionMap {
+typedef unsigned long addr_t;
+
+
+template<typename T>
+class Table {
 protected:
+	static const size_t defaultSize = 512;
+	size_t nEntries;
 
-    Region *localFind(const void *addr);
+	static const addr_t Present = 0x01;
+	static const addr_t Dirty   = 0x02;
+	static const addr_t Mask    = ~0x03;
 
-    void clean();
+	T **table;
 
-    PageTable __pageTable;
-
-#ifdef USE_VM
-    vm::Bitmap __dirtyBitmap;
-#endif
+	T *entry(size_t n) const;
 
 public:
-    Map();
-    virtual ~Map();
+	Table(size_t nEntries = defaultSize);
+	virtual ~Table();
 
-    static void init();
+	bool present(size_t n) const;
+	bool dirty(size_t n) const;
+	void clean(size_t n);
 
-    void insert(Region *r);
-    static void addShared(Region *r);
-    static void removeShared(Region *r);
-    static bool isShared(const void *);
-    static RegionMap & shared();
+	void create(size_t n, size_t size = defaultSize);
+	void insert(size_t n, void *addr);
+	void remove(size_t n);
 
-    Region *remove(void *addr);
+	T &get(size_t n) const;
+	T *value(size_t n) const;
 
-    PageTable &pageTable();
-    const PageTable &pageTable() const;
-
-#ifdef USE_VM
-    vm::Bitmap &dirtyBitmap();
-    const vm::Bitmap &dirtyBitmap() const;
-#endif
-
-    template<typename T>
-    T *find(const void *addr);
-    static Region *globalFind(const void *addr);
-    static Region *sharedFind(const void *addr);
+	size_t size() const;
 };
 
-}}
+}}}
 
-#include "Map.ipp"
+#include "Table.ipp"
+
 
 #endif
