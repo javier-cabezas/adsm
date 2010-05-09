@@ -263,7 +263,6 @@ bool RollingManager::read(void *addr)
     if(current()->pageTable().dirty(addr)) {
         gmacError_t ret = region->copyToHost();
         ASSERT(ret == gmacSuccess);
-        current()->pageTable().clear(addr);
     }
     region->readOnly();
     region->unlock();
@@ -287,7 +286,6 @@ bool RollingManager::touch(Region * r)
             if(block->present() == false && current()->pageTable().dirty(block->start())) {
                 gmacError_t ret = block->copyToHost();
                 ASSERT(ret == gmacSuccess);
-                current()->pageTable().clear(block->start());
             }
         }
         block->unlock();
@@ -319,7 +317,6 @@ bool RollingManager::write(void *addr)
     if(region->present() == false && current()->pageTable().dirty(addr)) {
         gmacError_t ret = region->copyToHost();
         ASSERT(ret == gmacSuccess);
-        current()->pageTable().clear(addr);
     }
     region->unlock();
     root->unlock();

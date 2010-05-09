@@ -97,8 +97,6 @@ protected:
     void * _bufferPageLocked;
     size_t _bufferPageLockedSize;
 
-	void enable();
-
 	Context(Accelerator *acc);
 
     virtual void cleanup();

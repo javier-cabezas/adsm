@@ -27,12 +27,14 @@ Texture::texRef() const
     return _texRef;
 }
 
+#ifdef USE_VM
 inline
 const VariableDescriptor &
-ModuleDescriptor::pageTable() const
+ModuleDescriptor::dirtyBitmap() const
 {
-    return *_pageTable;
+    return *_dirtyBitmap;
 }
+#endif
 
 inline
 void

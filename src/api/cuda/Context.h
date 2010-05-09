@@ -72,16 +72,7 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-#ifdef USE_VM
-	static const char *pageTableSymbol;
-	const Variable *pageTable;
-	struct {
-		void *ptr;
-		size_t shift;
-		size_t size;
-		size_t page;
-	} devicePageTable;
-#elif USE_MMAP
+#ifdef USE_MMAP
 	static const char *baseRegisterSymbol;
 #endif
 

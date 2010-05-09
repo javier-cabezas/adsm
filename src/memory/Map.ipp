@@ -5,12 +5,6 @@
 
 namespace gmac { namespace memory {
 
-inline void
-Map::realloc()
-{
-    __pageTable.realloc();
-}
-
 
 inline PageTable &
 Map::pageTable()

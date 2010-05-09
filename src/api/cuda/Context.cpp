@@ -7,9 +7,6 @@ namespace gmac { namespace gpu {
 
 Context::AddressMap Context::hostMem;
 void * Context::FatBin;
-#ifdef USE_VM
-const char *Context::pageTableSymbol = "__pageTable";
-#endif
 
 void
 Context::setup()
@@ -66,9 +63,6 @@ Context::Context(Accelerator *gpu) :
     gmac::Context(gpu),
     _gpu(gpu),
     _call(dim3(0), dim3(0), 0, 0)
-#ifdef USE_VM
-    , pageTable(NULL)
-#endif
 #ifdef USE_MULTI_CONTEXT
     , mutex(paraver::ctxLocal)
 #endif
@@ -453,25 +447,8 @@ Context::texture(gmacTexture_t key) const
 void
 Context::flush(const char * kernel)
 {
-    //
 #ifdef USE_VM
-	ModuleVector::const_iterator m;
-	for(m = _modules.begin(); pageTable == NULL && m != modules.end(); m++) {
-		pageTable = m->first->pageTable();
-	}
-	ASSERT(pageTable != NULL);
-	if(pageTable == NULL) return;
-
-	devicePageTable.ptr = mm().pageTable().flush();
-	devicePageTable.shift = mm().pageTable().getTableShift();
-	devicePageTable.size = mm().pageTable().getTableSize();
-	devicePageTable.page = mm().pageTable().getPageSize();
-	ASSERT(devicePageTable.ptr != NULL);
-
-	pushLock();
-	CUresult ret = cuMemcpyHtoD(pageTable->ptr, &devicePageTable, sizeof(devicePageTable));
-	ASSERT(ret == CUDA_SUCCESS);
-	popUnlock();
+	mm().pageTable().flush();
 #endif
 }
 
@@ -479,13 +456,6 @@ void
 Context::invalidate()
 {
 #ifdef USE_VM
-	ModuleVector::const_iterator m;
-	for(m = _modules.begin(); pageTable == NULL && m != _modules.end(); m++) {
-		pageTable = m->first->pageTable();
-	}
-	ASSERT(pageTable != NULL);
-	if(pageTable == NULL) return;
-
 	mm().pageTable().invalidate();
 #endif
 }

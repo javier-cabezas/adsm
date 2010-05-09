@@ -19,12 +19,6 @@ Context::mm() const
     return *_mm;
 }
 
-inline void
-Context::enable()
-{
-    _mm->realloc();
-}
-
 inline
 bool
 Context::hasCurrent()

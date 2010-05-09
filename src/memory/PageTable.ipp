@@ -15,11 +15,6 @@ PageTable::offset(const void *addr) const
     return n & (paramPageSize - 1);
 }
 
-inline void
-PageTable::realloc()
-{
-    rootTable.realloc();
-}
 
 inline const void *
 PageTable::translate(const void *host)
@@ -48,7 +43,9 @@ PageTable::getTableSize() const
 inline void
 PageTable::invalidate()
 {
+#ifdef USE_VM
     _valid = false;
+#endif
 }
 
 #endif
