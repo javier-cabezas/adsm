@@ -49,20 +49,9 @@ namespace gmac { namespace memory  { namespace vm {
 
 typedef unsigned long addr_t;
 
-//! This class is a hack to allow accessing a Context from
-//! a Table, which is a template
-class Dumper {
-protected:
-	void *alloc(size_t) const;
-
-	void free(void *) const;
-
-	void flush(void *, const void *, size_t) const;
-	void sync(void *, const void *, size_t) const;
-};
 
 template<typename T>
-class Table : public Dumper {
+class Table {
 protected:
 	static const size_t defaultSize = 512;
 	size_t nEntries;
