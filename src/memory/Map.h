@@ -65,7 +65,6 @@ public:
 
     static void init();
 
-    void realloc();
     void insert(Region *r);
     static void addShared(Region *r);
     static void removeShared(Region *r);

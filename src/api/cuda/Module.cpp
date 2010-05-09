@@ -4,7 +4,9 @@ namespace gmac { namespace gpu {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules;
 
-const char *ModuleDescriptor::pageTableSymbol = "__pageTable";
+#ifdef USE_VM
+const char *ModuleDescriptor::dirtyBitmapSymbol = "__dirtyBitmap";
+#endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
     Descriptor<gmacVariable_t>(name, key),
@@ -29,8 +31,10 @@ Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
 }
 
 ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
-    _fatBin(fatBin),
-    _pageTable(NULL)
+    _fatBin(fatBin)
+#ifdef USE_VM
+    ,_dirtyBitmap(NULL)
+#endif
 {
     TRACE("Creating module descriptor: %p", _fatBin);
     Modules.push_back(this);
@@ -79,15 +83,17 @@ Module::Module(const ModuleDescriptor & d) :
         _textures.insert(TextureMap::value_type(t->key(), Texture(*t, _mod)));
     }
 
-    if (d._pageTable != NULL) {
+#ifdef USE_VM
+    if (d._dirtyBitmap != NULL) {
         VariableMap::iterator it;
-        it = _variables.find(d._pageTable->key());
+        it = _variables.find(d._dirtyBitmap->key());
         if (it == _variables.end()) {
-            it = _constants.find(d._pageTable->key());
+            it = _constants.find(d._dirtyBitmap->key());
             ASSERT(it != _constants.end());
-            _pageTable = &it->second;
+            _dirtyBitmap = &it->second;
         }
     }
+#endif
 }
 
 Module::~Module() {

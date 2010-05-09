@@ -8,9 +8,11 @@ namespace gmac { namespace memory {
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
-	lock(LockPageTable),
-	_clean(false), _valid(true),
-	pages(1)
+	lock(LockPageTable)
+	,pages(1)
+#ifdef USE_VM
+	,_clean(false), _valid(true)
+#endif
 {
 	tableShift = int(log2(paramPageSize));
 	TRACE("Page Size: %zd bytes", paramPageSize);
@@ -41,6 +43,18 @@ void PageTable::deleteDirectory(Directory *dir)
 	delete dir;
 }
 
+#ifdef USE_VM
+void PageTable::sync()
+{
+	if(_valid == true) return;
+	enterFunction(FuncVmSync);
+    //TODO: copy dirtyBitmap back from device
+	_valid = true;
+	exitFunction();
+}
+#endif
+
+
 void PageTable::insert(void *host, void *dev)
 {
 #ifndef USE_MMAP
@@ -48,7 +62,9 @@ void PageTable::insert(void *host, void *dev)
 
 	enterFunction(FuncVmAlloc);
 	lock.lockWrite();
+#ifdef USE_VM
 	_clean = false;
+#endif
 	// Get the root table entry
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		rootTable.create(entry(host, rootShift, rootTable.size()));
@@ -79,7 +95,9 @@ void PageTable::remove(void *host)
 	sync();
 	enterFunction(FuncVmFree);
 	lock.lockWrite();
+#ifdef USE_VM
 	_clean = false;
+#endif
 
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		exitFunction();
@@ -129,96 +147,23 @@ bool PageTable::dirty(void *host)
 {
 #ifdef USE_VM
 	sync();
-
-	ASSERT(rootTable.present(entry(host, rootShift, rootTable.size())) == true);
-	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
-	ASSERT(dir.present(entry(host, dirShift, dir.size())) == true);
-	Table &table = dir.get(entry(host, dirShift, dir.size()));
-	ASSERT(table.present(entry(host, tableShift, table.size())) == true);
-	return table.dirty(entry(host, tableShift, table.size()));
+    return true;
 #else
 	return true;
 #endif
 }
 
-void PageTable::clear(void *host)
-{
-#ifdef USE_VM
-	sync();
-	_clean = false;
-	ASSERT(rootTable.present(entry(host, rootShift, rootTable.size())) == true);
-	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
-	ASSERT(dir.present(entry(host, dirShift, dir.size())) == true);
-	Table &table = dir.get(entry(host, dirShift, dir.size()));
-	ASSERT(table.present(entry(host, tableShift, table.size())) == true);
-	table.clean(entry(host, tableShift, table.size()));
-#endif
-}
 
 
-void PageTable::flushDirectory(Directory &dir)
-{
-#ifdef USE_VM
-	for(int i = 0; i < dir.size(); i++) {
-		if(dir.present(i) == false) continue;
-		TRACE("Flushing Directory entry %d", i);
-		Table &table = dir.get(i);
-		table.flush();
-	}
-	dir.flush();
-#endif
-}
 
-void PageTable::syncDirectory(Directory &dir)
-{
-#ifdef USE_VM
-	for(int i = 0; i < dir.size(); i++) {
-		if(dir.present(i) == false) continue;
-		TRACE("Sync Directory Entry %d", i);
-		dir.get(i).sync();
-	}
-	dir.sync();
-#endif
-}
-
-void PageTable::sync()
-{
-#ifdef USE_VM
-	if(_valid == true) return;
-	lock.read();
-	enterFunction(FuncVmSync);
-	for(int i = 0; i < rootTable.size(); i++) {
-		if(rootTable.present(i) == false) continue;
-		syncDirectory(rootTable.get(i));
-	}
-	rootTable.sync();
-	lock.unlock();
-	_valid = true;
-	exitFunction();
-#endif
-}
-
-
-void *PageTable::flush() 
+void PageTable::flush() 
 {
 #ifdef USE_VM
 	// If there haven't been modifications, just return
-	if(_clean == true) return rootTable.device();
+	if(_clean == true) return;
 
 	TRACE("PT Flush");
-	lock.read();
-	for(int i = 0; i < rootTable.size(); i++) {
-		if(rootTable.present(i) == false) continue;
-		TRACE("Flusing entry %d", i);
-		flushDirectory(rootTable.get(i));
-	}
-
-	rootTable.flush();
-	lock.unlock();
 	_clean = true;
-	return rootTable.device();
-#else
-	return NULL;
 #endif
 }
 

@@ -85,7 +85,6 @@ class Module;
 typedef std::vector<Module *> ModuleVector;
 
 class ModuleDescriptor {
-    static const char *pageTableSymbol;
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
     static ModuleDescriptorVector Modules;
 	const void * _fatBin;
@@ -101,7 +100,10 @@ class ModuleDescriptor {
 
     friend class Module;
 
-    VariableDescriptor * _pageTable;
+#ifdef USE_VM
+    static const char *dirtyBitmapSymbol;
+    VariableDescriptor * _dirtyBitmap;
+#endif
 
 public:
     ModuleDescriptor(const void * fatBin);
@@ -110,8 +112,12 @@ public:
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
-    const VariableDescriptor & pageTable() const;
     static ModuleVector createModules();
+
+#ifdef USE_VM
+    const VariableDescriptor &dirtyBitmap() const;
+#endif
+
 };
 
 class Module {
@@ -126,7 +132,9 @@ protected:
 	VariableMap _constants;
 	TextureMap  _textures;
 
-	Variable *_pageTable;
+#ifdef USE_VM
+	Variable *_dirtyBitmap;
+#endif
 
 public:
 	Module(const ModuleDescriptor & d);

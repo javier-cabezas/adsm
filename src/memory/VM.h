@@ -44,11 +44,6 @@ WITH THE SOFTWARE.  */
 
 // Compiler check to ensure that defines set by configure script
 // are consistent
-#ifdef USE_VM_DEVICE
-#ifndef USE_VM
-#error "Virtual memory MUST be enabled to use device VM"
-#endif
-#endif
 
 namespace gmac { namespace memory  { namespace vm {
 
@@ -59,10 +54,8 @@ typedef unsigned long addr_t;
 class Dumper {
 protected:
 	void *alloc(size_t) const;
-	void *hostAlloc(void **, size_t) const;
 
 	void free(void *) const;
-	void hostFree(void *) const;
 
 	void flush(void *, const void *, size_t) const;
 	void sync(void *, const void *, size_t) const;
@@ -82,12 +75,6 @@ protected:
 
 	T *entry(size_t n) const;
 
-#ifdef USE_VM
-	bool __shared;
-	T **__shadow;
-	void *__device;
-#endif
-
 public:
 	Table(size_t nEntries = defaultSize);
 	virtual ~Table();
@@ -95,10 +82,6 @@ public:
 	bool present(size_t n) const;
 	bool dirty(size_t n) const;
 	void clean(size_t n);
-
-#ifdef USE_VM
-	void *device();
-#endif
 
 	void create(size_t n, size_t size = defaultSize);
 	void insert(size_t n, void *addr);
@@ -108,11 +91,6 @@ public:
 	T *value(size_t n) const;
 
 	size_t size() const;
-
-	void realloc();
-
-	void flush() const;
-	void sync() const;
 };
 
 }}}

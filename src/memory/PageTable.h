@@ -61,9 +61,6 @@ private:
 
 	static size_t tableShift;
 
-	bool _clean;
-	bool _valid;
-
 	size_t pages;
 
 	typedef vm::Table<vm::addr_t> Table;
@@ -77,15 +74,16 @@ private:
 
 	void deleteDirectory(Directory *dir);
 
-	void flushDirectory(Directory &dir);
-	void syncDirectory(Directory &dir);
+#ifdef USE_VM
+	bool _clean;
+	bool _valid;
+
 	void sync();
+#endif
 	
 public:
 	PageTable();
 	virtual ~PageTable();
-
-	void realloc();
 
 	void insert(void *host, void *dev);
 	void remove(void *host);
@@ -96,10 +94,9 @@ public:
 	size_t getTableShift() const;
 	size_t getTableSize() const;
 
-	void *flush();
 	void invalidate();
+    void flush();
 	bool dirty(void *);
-	void clear(void *);
 };
 
 #include "PageTable.ipp"
