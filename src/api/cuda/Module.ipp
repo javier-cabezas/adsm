@@ -27,15 +27,6 @@ Texture::texRef() const
     return _texRef;
 }
 
-#ifdef USE_VM
-inline
-const VariableDescriptor &
-ModuleDescriptor::dirtyBitmap() const
-{
-    return *_dirtyBitmap;
-}
-#endif
-
 inline
 void
 ModuleDescriptor::add(gmac::KernelDescriptor & k)
@@ -87,6 +78,15 @@ Module::texture(gmacTexture_t key) const
     if(t == _textures.end()) return NULL;
     return &t->second;
 }
+
+#ifdef USE_VM
+inline
+const Variable *
+Module::dirtyBitmap() const
+{
+    return __dirtyBitmap;
+}
+#endif
 
 }}
 

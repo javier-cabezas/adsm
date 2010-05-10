@@ -4,6 +4,7 @@ SUBDIRS = manager $(OS_DIR)
 
 noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
+            Bitmap.h Bitmap.ipp Bitmap.cpp\
 			Table.h Table.ipp\
 			Map.h Map.ipp Map.cpp\
 			PageTable.h PageTable.ipp PageTable.cpp\

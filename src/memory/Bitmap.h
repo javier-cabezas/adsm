@@ -34,22 +34,28 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_BITMAP_H_
 #define __MEMORY_BITMAP_H_
 
-#include "Table.h"
+#include <stdint.h>
+#include <stddef.h>
 
 namespace gmac { namespace memory  { namespace vm {
 
 class Bitmap {
 private:
-    uint8_t *__bitmap;
-    uint8_t *__device;
+    uint32_t *__bitmap;
+    uint32_t *__device;
 
     size_t __pageShift;
     size_t __size;
+
+    void allocate();
 public:
     Bitmap(unsigned bits = 32);
     ~Bitmap();
 
-    void clear();
+    void *device();
+    void *host() const;
+    const size_t size() const;
+
     bool check(const void *);
 };
 

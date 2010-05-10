@@ -69,7 +69,7 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char *deviceAddress, const char *deviceName, int ext, int size,
 		int constant, int global)
 {
-    TRACE("CUDA Variable");
+    TRACE("CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERT(mod != NULL);
 	__enterGmac();

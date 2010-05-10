@@ -35,49 +35,25 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_VM_H_
 #define __GMAC_VM_H_
 
+#include <device_functions.h>
 
-#define PRESENT 0x1
-#define DIRTY 0x2
-#define MASK 0x3
+#define MASK 0xffffffff
+#define SHIFT 21
 
-#define ENTRIES 512
-#define ROOT_SHIFT 39
-#define DIR_SHIFT 30
+__constant__ unsigned int *__dirtyBitmap;
 
-#define __entry(addr, shift, size) \
-	((unsigned long)addr >> shift) & (size - 1)
-#define __value(tbl, n) ((unsigned long)tbl[n] & ~MASK)
 
-__constant__ struct {
-	unsigned long **ptr;
-	size_t shift;
-	size_t size;
-	size_t page;
-} __pageTable;
+template<typename T>
+__device__ inline T __globalLd(T *addr) { return *addr; }
+template<typename T>
+__device__ inline T __globalLd(const T *addr) { return *addr; }
 
-__device__ inline void *__pg_lookup(const void *addr, bool write)
-{
-	unsigned long offset = (unsigned long)addr & (__pageTable.page - 1);
-	unsigned long *dir = (unsigned long *)__value(__pageTable.ptr,
-		__entry(addr, ROOT_SHIFT, ENTRIES));
-	unsigned long *table = (unsigned long *)__value((unsigned long **)dir,
-		__entry(addr, DIR_SHIFT, ENTRIES));
-	unsigned long base = __value((unsigned long **)table, __entry(addr,
-		__pageTable.shift, __pageTable.size));
-	if(write)
-		table[__entry(addr, __pageTable.shift, __pageTable.size)] |= DIRTY;
-	base += offset;
-
-	return (void *)base;
+template<typename T>
+__device__ __inline__ void __globalSt(T *addr, T v) {
+    *addr = v;
+    unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
+    atomicOr(__dirtyBitmap + (entry >> 5), (1 << (entry & 0x1f)));
 }
-
-template<typename T>
-__device__ inline T __globalLd(T *addr) { return *(T *)__pg_lookup(addr, false); }
-template<typename T>
-__device__ inline T __globalLd(const T *addr) { return *(const T *)__pg_lookup(addr, false); }
-
-template<typename T>
-__device__ inline void __globalSt(T *addr, T v) { *(T *)__pg_lookup(addr, true) = v; }
 
 
 #endif

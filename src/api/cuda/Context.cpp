@@ -407,6 +407,7 @@ Context::launch(gmacKernel_t addr)
     //! \todo Move this to Kernel.cpp
     _pendingKernel = true;
 
+
     return l;
 }
 
@@ -445,10 +446,26 @@ Context::texture(gmacTexture_t key) const
 
 
 void
-Context::flush(const char * kernel)
+Context::flush()
 {
 #ifdef USE_VM
-	mm().pageTable().flush();
+    CUresult ret;
+    ModuleVector::const_iterator m;
+    for(m = _modules.begin(); m != _modules.end(); m++) {
+        if((*m)->dirtyBitmap() == NULL) continue; 
+        break;
+    }
+    if(m == _modules.end()) return;
+    TRACE("Setting dirty bitmap on device");
+    const void *__device = mm().dirtyBitmap().device();
+    pushLock();
+    ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));
+    CFATAL(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
+	ret = cuMemcpyHtoD(gpuAddr(__device), mm().dirtyBitmap().host(), mm().dirtyBitmap().size());
+    CFATAL(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
+    ret = cuCtxSynchronize();
+    CFATAL(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+    popUnlock();
 #endif
 }
 
@@ -456,7 +473,14 @@ void
 Context::invalidate()
 {
 #ifdef USE_VM
-	mm().pageTable().invalidate();
+    const void *__device = mm().dirtyBitmap().device();
+    pushLock();
+    CUresult ret;
+	ret = cuMemcpyDtoH(mm().dirtyBitmap().host(), gpuAddr(__device), mm().dirtyBitmap().size());
+    CFATAL(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
+    ret = cuCtxSynchronize();
+    CFATAL(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+    popUnlock();
 #endif
 }
 
