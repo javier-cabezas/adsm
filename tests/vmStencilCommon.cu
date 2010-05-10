@@ -238,9 +238,9 @@ do_stencil(void * ptr)
     for (uint32_t i = 0; i < ITERATIONS; i++) {
         float * tmp;
 
-        kernelStencil<32, 8><<<Dg, Db>>>(descr->u2 + descr->dimElems * STENCIL + STENCIL,
-                                         descr->u3 + descr->dimElems * STENCIL + STENCIL,
-                                         v,
+        kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
+                                         gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
+                                         gmacPtr(v),
                                          0.08,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
