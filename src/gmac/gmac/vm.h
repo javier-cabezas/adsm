@@ -35,12 +35,12 @@ WITH THE SOFTWARE.  */
 #ifndef __GMAC_VM_H_
 #define __GMAC_VM_H_
 
-#include <device_functions.h>
 
 #define MASK 0xffffffff
 #define SHIFT 21
 
-__constant__ unsigned int *__dirtyBitmap;
+#include <stdint.h>
+__constant__ uint8_t *__dirtyBitmap;
 
 
 template<typename T>
@@ -52,7 +52,7 @@ template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
     unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
-    atomicOr(__dirtyBitmap + (entry >> 5), (1 << (entry & 0x1f)));
+    __dirtyBitmap[entry] = 1;
 }
 
 

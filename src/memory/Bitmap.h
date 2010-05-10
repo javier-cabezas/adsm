@@ -41,8 +41,8 @@ namespace gmac { namespace memory  { namespace vm {
 
 class Bitmap {
 private:
-    uint32_t *__bitmap;
-    uint32_t *__device;
+    uint8_t *__bitmap;
+    uint8_t *__device;
 
     size_t __pageShift;
     size_t __size;

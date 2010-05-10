@@ -10,12 +10,10 @@ bool Bitmap::check(const void *addr)
 {
     bool ret = false;
     size_t entry = ((unsigned long)addr >> __pageShift);
-    TRACE("Bitmap check for %p -> entry %zu bit %zu (%zu)", addr, entry >> 5, (entry & 0x1f), __pageShift);
-    if((__bitmap[entry >> 5] & (1 << (entry & 0x1f))) != 0) ret = true;
-    TRACE("Bitmap entry: 0x%x using mask 0x%x will return %d (new 0x%x)", __bitmap[entry >> 5], 1 << (entry & 0x1f),
-        __bitmap[entry >> 5] & (1 << (entry & 0x1f)), ~(1 << (entry & 0x1f)));
-    // Set to null (again)
-    __bitmap[entry >> 5] &= ~(1 << (entry & 0x1f));
+    TRACE("Bitmap check for %p -> entry %zu", addr, entry);
+    TRACE("Bitmap entry: 0x%x", __bitmap[entry]);
+    if(__bitmap[entry] != 0) ret = true;
+    __bitmap[entry] = 0;
     return ret;
 }
 
@@ -35,7 +33,7 @@ void *Bitmap::host() const
 inline
 const size_t Bitmap::size() const
 {
-    return __size * sizeof(uint32_t);
+    return __size;
 }
 
 }}}
