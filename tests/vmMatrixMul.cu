@@ -171,7 +171,7 @@ main(int argc, char** argv)
 	gettimeofday(&s, NULL);
    dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
    dim3 grid(WC / threads.x, HC / threads.y);
-   matrixMul<<< grid, threads >>>(C, A, B, WA, WB, 0);
+   matrixMul<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB, 0);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
