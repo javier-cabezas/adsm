@@ -24,7 +24,7 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if(i >= size) return;
-	__globalSt<float>(&c[i], __globalLd<float>(&a[i]) + __globalLd<float>(&b[i]));
+	__globalSt<float>(c + i, a[i] + b[i]);
 }
 
 int main(int argc, char *argv[])
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Db.x++;
-	vecAdd<<<Dg, Db>>>(c, a, b, vecSize);
+	vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");

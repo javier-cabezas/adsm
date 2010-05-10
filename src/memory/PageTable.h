@@ -92,10 +92,6 @@ public:
 	size_t getPageSize() const;
 	size_t getTableShift() const;
 	size_t getTableSize() const;
-
-	void invalidate();
-    void flush();
-	bool dirty(void *);
 };
 
 #include "PageTable.ipp"

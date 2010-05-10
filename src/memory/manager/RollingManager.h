@@ -81,7 +81,6 @@ public:
 
 class RollingManager : public Handler {
 protected:
-   size_t lineSize;
    size_t lruDelta;
 
    RollingMap rollingMap;

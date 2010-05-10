@@ -38,15 +38,12 @@ Region *RollingManager::newRegion(void * addr, size_t count, bool shared)
 
 RollingManager::RollingManager() :
     Handler(),
-    lineSize(0),
     lruDelta(0),
     writeMutex(LockWriteMutex),
     writeBuffer(NULL),
     writeBufferSize(0)
 {
-    lineSize = paramLineSize;
     lruDelta = paramLruDelta;
-    TRACE("Using %zd as Line Size", lineSize);
     TRACE("Using %zd as LRU Delta Size", lruDelta);
 }
 
@@ -54,45 +51,12 @@ RollingManager::~RollingManager()
 {
 }
 
-#if 0
-
-void RollingManager::free(void *addr)
-{
-    Region *reg = remove(addr);
-    removeVirtual(reg->start(), reg->size());
-    Context * ctx = Context::current();
-    if(reg->owner() == ctx) {
-        hostUnmap(addr, reg->size()); // Global mappings do not have a shadow copy in system memory
-        TRACE("Deleting Region %p\n", addr);
-        delete reg;
-    }
-#ifdef USE_GLOBAL_HOST
-    // When using host-mapped memory, global regions do not
-    // increase the rolling size
-    if(proc->isShared(addr) == false)
-        rollingMap.currentBuffer()->dec(lruDelta);
-#else
-    rollingMap.currentBuffer()->dec(lruDelta);
-#endif
-    TRACE("Released %p", addr);
-}
-#endif
 
 
 void RollingManager::flush()
 {
     TRACE("RollingManager Flush Starts");
     Context * ctx = Context::current();
-#if 0
-    RegionMap::iterator s;
-    RegionMap &sharedMem = Map::shared();
-    for(s = sharedMem.begin(); s != sharedMem.end(); s++) {
-        RollingRegion *r = current()->find<RollingRegion>(s->second.start());
-        r->lockWrite();
-        r->transferDirty();
-        r->unlock();
-    }
-#endif
 
     // We need to go through all regions from the context because
     // other threads might have regions owned by this context in
@@ -121,8 +85,7 @@ void RollingManager::flush()
 
 
     /** \todo Fix vm */
-    // ctx->flush();
-    ctx->invalidate();
+    ctx->flush();
     TRACE("RollingManager Flush Ends");
 }
 
@@ -136,18 +99,6 @@ void RollingManager::flush(const RegionSet & regions)
 
     TRACE("RollingManager Flush Starts");
     Context * ctx = Context::current();
-#if 0
-    SharedMap::iterator i;
-    SharedMap &sharedMem = proc->sharedMem();
-    sharedMem.lockRead();
-    for(i = sharedMem.begin(); i != sharedMem.end(); i++) {
-        RollingRegion * r = current()->find<RollingRegion>(i->second.start());
-        r->lockWrite();
-        r->transferDirty();
-        r->unlock();
-    }
-    sharedMem.unlock();
-#endif
     size_t blocks = rollingMap.currentBuffer()->size();
 
     for(unsigned j = 0; j < blocks; j++) {
@@ -165,8 +116,7 @@ void RollingManager::flush(const RegionSet & regions)
     }
 
     /** \todo Fix vm */
-    // ctx->flush();
-    ctx->invalidate();
+    ctx->flush();
     TRACE("RollingManager Flush Ends");
 }
 
@@ -198,7 +148,6 @@ void RollingManager::invalidate()
     }
     shared.unlock();
 
-    //gmac::Context::current()->flush();
     ctx->invalidate();
     TRACE("RollingManager Invalidation Ends");
 }
@@ -219,7 +168,6 @@ void RollingManager::invalidate(const RegionSet & regions)
         r->invalidate();
         r->unlock();
     }
-    //gmac::Context::current()->flush();
     gmac::Context::current()->invalidate();
     TRACE("RollingManager Invalidation Ends");
 }
@@ -260,10 +208,14 @@ bool RollingManager::read(void *addr)
         return true;
     }
     region->readWrite();
-    if(current()->pageTable().dirty(addr)) {
+#ifdef USE_VM
+    if(current()->dirtyBitmap().check(ptr(addr))) {
+#endif
         gmacError_t ret = region->copyToHost();
         ASSERT(ret == gmacSuccess);
+#ifdef USE_VM
     }
+#endif
     region->readOnly();
     region->unlock();
     return true;
@@ -282,10 +234,15 @@ bool RollingManager::touch(Region * r)
         block->lockWrite();
         if(block->dirty() == false) {
             block->readWrite();
-
-            if(block->present() == false && current()->pageTable().dirty(block->start())) {
-                gmacError_t ret = block->copyToHost();
-                ASSERT(ret == gmacSuccess);
+            if(block->present() == false) {
+#ifdef USE_VM
+                if(current()->dirtyBitmap().check(ptr(block->start()))) {
+#endif
+                    gmacError_t ret = block->copyToHost();
+                    ASSERT(ret == gmacSuccess);
+#ifdef USE_VM
+                }
+#endif
             }
         }
         block->unlock();
@@ -314,9 +271,15 @@ bool RollingManager::write(void *addr)
 
     while(rollingMap.currentBuffer()->overflows()) writeBack();
     region->readWrite();
-    if(region->present() == false && current()->pageTable().dirty(addr)) {
-        gmacError_t ret = region->copyToHost();
-        ASSERT(ret == gmacSuccess);
+    if(region->present() == false) {
+#ifdef USE_VM
+        if(current()->dirtyBitmap().check(ptr(addr))) {
+#endif
+            gmacError_t ret = region->copyToHost();
+            ASSERT(ret == gmacSuccess);
+#ifdef USE_VM
+        }
+#endif
     }
     region->unlock();
     root->unlock();

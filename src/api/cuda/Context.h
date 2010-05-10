@@ -153,7 +153,7 @@ public:
 	void call(dim3 Dg, dim3 Db, size_t shared, int tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-	void flush(const char * kernel);
+	void flush();
 	void invalidate();
 
     CUdeviceptr gpuAddr(void *addr) const;

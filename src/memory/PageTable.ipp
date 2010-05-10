@@ -40,12 +40,5 @@ PageTable::getTableSize() const
     return (1 << dirShift) / paramPageSize;
 }
 
-inline void
-PageTable::invalidate()
-{
-#ifdef USE_VM
-    _valid = false;
-#endif
-}
 
 #endif

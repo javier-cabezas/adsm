@@ -287,6 +287,7 @@ public:
 	gmacError_t error() const;
 
 	virtual void invalidate() = 0;
+    virtual void flush() = 0;
 
 	unsigned id() const;
 	unsigned accId() const;

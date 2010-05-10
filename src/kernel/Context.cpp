@@ -43,7 +43,7 @@ Context::~Context()
         delete it->second;
     }
 
-    delete _mm;
+    if(_mm != NULL) delete _mm;
 }
 
 Context *
@@ -64,6 +64,9 @@ Context::initThread()
 void
 Context::cleanup()
 {
+    // Delete this memory map first 
+    delete _mm;
+    _mm = NULL;
     // Set the current context before each Context destruction (since it is sequential)
     key.set(this);
     _acc->destroy(this);

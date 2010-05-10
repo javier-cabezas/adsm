@@ -78,6 +78,7 @@ gmacHybridComputation_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacHybridComputation_LDFLAGS = -fopenmp
 
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
+vmVecAdd_CUDAFLAGS = -arch=sm_11
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
@@ -99,7 +100,7 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -Xcompiler -fopenmp
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS)
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS)
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)

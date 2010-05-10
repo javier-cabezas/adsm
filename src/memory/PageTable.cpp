@@ -143,28 +143,5 @@ void *PageTable::translate(void *host)
 #endif
 }
 
-bool PageTable::dirty(void *host)
-{
-#ifdef USE_VM
-	sync();
-    return true;
-#else
-	return true;
-#endif
-}
-
-
-
-
-void PageTable::flush() 
-{
-#ifdef USE_VM
-	// If there haven't been modifications, just return
-	if(_clean == true) return;
-
-	TRACE("PT Flush");
-	_clean = true;
-#endif
-}
 
 }}

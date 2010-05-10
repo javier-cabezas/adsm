@@ -101,8 +101,7 @@ class ModuleDescriptor {
     friend class Module;
 
 #ifdef USE_VM
-    static const char *dirtyBitmapSymbol;
-    VariableDescriptor * _dirtyBitmap;
+    VariableDescriptor * __dirtyBitmap;
 #endif
 
 public:
@@ -114,9 +113,6 @@ public:
 
     static ModuleVector createModules();
 
-#ifdef USE_VM
-    const VariableDescriptor &dirtyBitmap() const;
-#endif
 
 };
 
@@ -133,7 +129,8 @@ protected:
 	TextureMap  _textures;
 
 #ifdef USE_VM
-	Variable *_dirtyBitmap;
+    static const char *dirtyBitmapSymbol;
+	Variable *__dirtyBitmap;
 #endif
 
 public:
@@ -143,6 +140,11 @@ public:
     const Variable *variable(gmacVariable_t key) const;
 	const Variable *constant(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t   key) const;
+
+#ifdef USE_VM
+    const Variable *dirtyBitmap() const;
+#endif
+
 };
 
 }}
