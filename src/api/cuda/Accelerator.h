@@ -86,6 +86,6 @@ public:
 
 }}
 
-#include "api/Accelerator.ipp"
+#include "Accelerator.ipp"
 
 #endif

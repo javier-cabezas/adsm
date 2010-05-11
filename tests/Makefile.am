@@ -22,7 +22,7 @@ GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
-threadBandwidth_SOURCES = threadBandwidth.cu $(GMAC_TESTSOURCES)
+threadBandwidth_SOURCES = threadBandwidth.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)

@@ -10,6 +10,7 @@
 #define CUDA_ERRORS
 #include "debug.h"
 #include "utils.h"
+#include "barrier.h"
 
 #define MAXDOUBLE DBL_MAX
 #define MINDOUBLE DBL_MIN
@@ -51,25 +52,6 @@ inline usec_t get_time()
 	usec_t tm = tv.tv_usec + 1000000 * tv.tv_sec;
 	return tm;
 }
-#if 0
-
-__global__ void null(uint8_t *p)
-{
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i > buff_elems) return;
-	p[i] = 0;
-}
-
-static void kernel(int s, uint8_t * dev)
-{
-	dim3 Db(block_elems);
-	dim3 Dg(s / block_elems);
-	if(s % block_elems) Db.x++;
-	null<<<Dg, Db>>>(dev);
-	if(cudaThreadSynchronize() != cudaSuccess) CUFATAL();
-
-}
-#endif
 
 struct param_t {
     uint8_t id;
@@ -77,9 +59,9 @@ struct param_t {
     size_t size;
 };
 
-pthread_barrier_t barrier;
-pthread_barrier_t barrier_in;
-pthread_barrier_t barrier_out;
+barrier_t barrier;
+barrier_t barrier_in;
+barrier_t barrier_out;
 
 void * transfer(void * _param)
 {
@@ -89,7 +71,7 @@ void * transfer(void * _param)
     stamp_t * stamp = param->stamp;
 
     cudaSetDevice(param->id);
-
+#ifdef LINUX
     int affinity;
     if(param->id == 0) {
         affinity = affinity1;
@@ -107,6 +89,7 @@ void * transfer(void * _param)
             printf("Thread %d: affinity: %u\n", param->id, affinity);
         }
     }
+#endif
 
 	if(cudaMalloc((void **)&dev, buff_elems * sizeof(float)) != cudaSuccess)
 		CUFATAL();
@@ -115,7 +98,7 @@ void * transfer(void * _param)
 	int j;
 
     for(int i = initial_elems; i <= buff_elems; i *= 2) {
-        pthread_barrier_wait(&barrier);
+        barrier_wait(&barrier);
 
         if (param->id == 0) {
             stamp->in = 0;
@@ -125,12 +108,12 @@ void * transfer(void * _param)
             stamp->out = 0;
             stamp->max_out = MINDOUBLE;
             stamp->min_out = MAXDOUBLE;
-            pthread_barrier_wait(&barrier_out);
+            barrier_wait(&barrier_out);
         }
 
         for(j = 0; j < iters; j++) {
             if (param->id == 0) {
-                pthread_barrier_wait(&barrier_out);
+                barrier_wait(&barrier_out);
                 start = get_time();
                 if(cudaMemcpy(cpu, dev, param->size * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
                     CUFATAL();
@@ -139,15 +122,11 @@ void * transfer(void * _param)
                 stamp->in += end - start;
                 stamp->min_in = MIN(stamp->min_in, (end - start));
                 stamp->max_in = MAX(stamp->max_in, (end - start));
-                pthread_barrier_wait(&barrier_in);
+                barrier_wait(&barrier_in);
             }
-#if 0
-            kernel(param->size, dev);
-            cudaThreadSynchronize();
-#endif
 
             if (param->id == 1) {
-                pthread_barrier_wait(&barrier_in);
+                barrier_wait(&barrier_in);
                 start = get_time();
                 if(cudaMemcpy(dev, cpu, param->size * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess)
                     CUFATAL();
@@ -156,17 +135,17 @@ void * transfer(void * _param)
                 stamp->out += end - start;
                 stamp->min_out = MIN(stamp->min_out, (end - start));
                 stamp->max_out = MAX(stamp->max_out, (end - start));
-                pthread_barrier_wait(&barrier_out);
+                barrier_wait(&barrier_out);
             }
         }
         if (param->id == 0) {
-            pthread_barrier_wait(&barrier_out);
+            barrier_wait(&barrier_out);
             stamp->in = stamp->in / iters;
         } else if (param->id == 1) {
             stamp->out = stamp->out /iters;
         }
 
-        pthread_barrier_wait(&barrier);
+        barrier_wait(&barrier);
     }
 
     
@@ -204,9 +183,9 @@ int main(int argc, char *argv[])
     pthread_create(&threads[0], NULL, transfer, &params[0]);
     pthread_create(&threads[1], NULL, transfer, &params[1]);
 
-    pthread_barrier_init(&barrier, NULL, 3);
-    pthread_barrier_init(&barrier_in, NULL, 2);
-    pthread_barrier_init(&barrier_out, NULL, 2);
+    barrier_init(&barrier, 3);
+    barrier_init(&barrier_in, 2);
+    barrier_init(&barrier_out, 2);
 
 	// Transfer data
 	fprintf(stdout, "#Bytes\tIn Time\tOut Time\t");
@@ -217,9 +196,9 @@ int main(int argc, char *argv[])
         params[0].size = i;
         params[1].size = i;
         // Begin
-        pthread_barrier_wait(&barrier);
+        barrier_wait(&barrier);
         // End
-        pthread_barrier_wait(&barrier);
+        barrier_wait(&barrier);
 
 		if(i * sizeof(float) > 1024 * 1024) fprintf(stdout, "%.0fMB\t", 1.0 * i * sizeof(float) / 1024 / 1024);
 		else if(i * sizeof(float) > 1024) fprintf(stdout, "%.0fKB\t", 1.0 * i * sizeof(float) / 1024);
@@ -232,9 +211,9 @@ int main(int argc, char *argv[])
     pthread_join(threads[0], NULL);
     pthread_join(threads[1], NULL);
 
-    pthread_barrier_destroy(&barrier);
-    pthread_barrier_destroy(&barrier_in);
-    pthread_barrier_destroy(&barrier_out);
+    barrier_destroy(&barrier);
+    barrier_destroy(&barrier_in);
+    barrier_destroy(&barrier_out);
 
     if(pageLocked) {
         cudaFreeHost(cpu);
