@@ -191,24 +191,9 @@ AC_MSG_CHECKING(whether to use software virtual memory)
 AC_ARG_ENABLE(vm,
 	AS_HELP_STRING([--enable-vm],[turn on software virtual memory on CUDA [[default=no]]])
 		, , enable_vm=$vm_default)
-if test "$enable_vm" = "yes" || test "$enable_vm_host" = "yes"; then
+if test "$enable_vm" = "yes"; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE([USE_VM])
-# Check for software virtual memory support
-    vm_host_default="no"
-    AC_MSG_CHECKING(whether to use host memory to store VM data structures)
-    AC_ARG_ENABLE(vm-host,
-    	AS_HELP_STRING([--enable-vm-host],[turn on using host memory to store VM data structures [[default=no]]])
-    		, , enable_host_vm=$vm_host_default)
-    if test "$enable_vm_host" = "yes"; then
-    	AC_MSG_RESULT(yes)
-    else
-    	AC_MSG_RESULT(no)
-    fi
-
-	if test "$enable_host_vm" = "no"; then
-		AC_DEFINE([USE_VM_DEVICE])
-	fi
 else
 	AC_MSG_RESULT(no)
 fi
