@@ -47,7 +47,8 @@ gmacInit(void)
     paramInit();
 
     TRACE("Using %s memory manager", paramMemManager);
-    gmac::Process::init(paramMemManager);
+    TRACE("Using %s memory allocator", paramMemAllocator);
+    gmac::Process::init(paramMemManager, paramMemAllocator);
     ASSERT(manager != NULL);
     __exitGmac();
 }

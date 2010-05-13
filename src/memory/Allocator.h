@@ -45,11 +45,12 @@ protected:
     Manager *manager;
     Allocator(Manager *manager);
 public:
-    Allocator *getAllocator(const char *name, Manager *manager);
 
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual void free(void *addr) = 0;
 };
+
+Allocator *getAllocator(Manager *manager, const char *name);
 
 }}
 

@@ -62,7 +62,7 @@ Process::~Process()
 }
 
 void
-Process::init(const char *name)
+Process::init(const char *manager, const char *allocator)
 {
     // Process is a singleton class. The only allowed instance is proc
     TRACE("Initializing process");
@@ -70,7 +70,7 @@ Process::init(const char *name)
     Context::Init();
     proc = new Process();
     apiInit();
-    memoryInit(name);
+    memoryInit(manager, allocator);
     // Register first, implicit, thread
     proc->initThread();
     gmac::Context::initThread();

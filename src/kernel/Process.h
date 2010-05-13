@@ -53,7 +53,7 @@ class Process;
 
 void apiInit(void);
 void contextInit(void);
-void memoryInit(const char *name = NULL);
+void memoryInit(const char *manager = NULL, const char *allocator = NULL);
 void memoryFini(void);
 }
 
@@ -101,7 +101,7 @@ protected:
 public:
 	virtual ~Process();
 
-	static void init(const char *name);
+	static void init(const char *manager, const char *allocator);
 
 	void initThread();
 #define ACC_AUTO_BIND -1

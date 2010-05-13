@@ -4,7 +4,7 @@
 
 namespace gmac { namespace memory {
 
-Allocator *Allocator::getAllocator(const char *allocatorName, Manager *manager)
+Allocator *getAllocator(Manager *manager, const char *allocatorName)
 {
     if(allocatorName == NULL) return new allocator::Slab(manager)
     TRACE("Using %s Allocator", allocatorName);
