@@ -11,8 +11,6 @@
 
 namespace gmac { namespace memory { namespace allocator {
 
-Cache::ContextMap Cache::map;
-
 Arena::Arena(size_t objSize) :
     ptr(NULL),
     size(0)
@@ -36,12 +34,6 @@ Arena::~Arena()
     ctx->unlock();
 }
 
-Cache::Cache(long key, size_t size) :
-    objectSize(size),
-    arenaSize(paramPageSize)
-{
-    map[Context::current()].insert(CacheMap::value_type(key, this));
-}
 
 Cache::~Cache()
 {
@@ -63,33 +55,6 @@ void *Cache::get()
     Arena *arena = new Arena(objectSize);
     arenas.insert(ArenaMap::value_type(arena->address(), arena));
     return arena->get();
-}
-
-Cache &Cache::get(long key, size_t size)
-{
-    Cache *cache = NULL;
-    ContextMap::iterator i;
-    i = map.find(Context::current());
-    if(i == map.end()) cache = new Cache(key, size);
-    else {
-        CacheMap::iterator j;
-        j = i->second.find(key);
-        if(j == i->second.end()) cache = new Cache(key, size);
-        else cache = j->second;
-    }
-    return *cache;
-}
-
-void Cache::cleanup()
-{
-    ContextMap::iterator i;
-    i = map.find(Context::current());
-    if(i == map.end()) return;
-    CacheMap::iterator j;
-    for(j = i->second.begin(); j != i->second.end(); j++)
-        delete j->second;
-    i->second.clear();
-    map.erase(i);
 }
 
 }}}

@@ -31,63 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_ALLOCATOR_CACHE_H_
-#define __MEMORY_ALLOCATOR_CACHE_H_
+#ifndef __MEMORY_ALLOCATOR_SLAB_H_
+#define __MEMORY_ALLOCATOR_SLAB_H_
 
-#include <kernel/Context.h>
-#include <util/Private.h>
+#include <memory/Allocator.h>
 
-#include <list>
-#include <map>
+#include "Cache.h"
 
 namespace gmac { namespace memory { namespace allocator {
 
-typedef std::list<void *> ObjectList;
-
-class Arena {
+class Slab : public Allocator {
 protected:
-    void *ptr;
-    size_t size;
+    typedef std::map<void *, Cache *> AddressMap;
+    AddressMap addresses;
+    typedef std::map<long, Cache *> CacheMap;
+    typedef std::map<Context *, CacheMap> ContextMap;
+    ContextMap contexts; // Per-context cache map
 
-    ObjectList __objects;
+    Cache &createCache(CacheMap &map, long key, size_t size);
+    Cache &get(long key, size_t size);
+    void cleanup();
 public:
-    Arena(size_t objSize);
-    ~Arena();
-
-    void *address() const;
-    const ObjectList &objects() const;
-
-    bool full() const;
-    bool empty() const;
-
-    void *get();
-    void put(void *obj);
-};
-
-
-class Cache {
-protected:
-    size_t objectSize;
-    size_t arenaSize;
-
-    typedef std::map<void *, Arena *> ArenaMap;
-    ArenaMap arenas;
-
-
-public:
-    Cache(size_t size);
-    virtual ~Cache();
-
-    static Cache &get(long key, size_t size);
-    static void cleanup();
-
-    void *get();
-    void put(void *obj);
-
+    virtual ~Slab();
+    
+    virtual void *alloc(size_t size, void *addr);
+    virtual void free(void *addr);
 };
 
 }}}
-
-#include "Cache.ipp"
-
 #endif
