@@ -43,6 +43,13 @@ void Arena::put(void *obj)
 }
 
 inline
+Cache::Cache(size_t size) :
+    objectSize(size),
+   arenaSize(paramPageSize)
+{ }
+
+
+inline
 void Cache::put(void *obj)
 {
     void *key = (void *)((unsigned long)obj & (paramPageSize - 1));
