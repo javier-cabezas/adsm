@@ -36,15 +36,23 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
+#include "Manager.h"
+
 namespace gmac { namespace memory {
 
 class Allocator {
+protected:
+    Manager *manager;
+    Allocator(Manager *manager);
 public:
+    Allocator *getAllocator(const char *name, Manager *manager);
 
-    virtual void *alloc(size_t size, void *addr) = 0;
+    virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual void free(void *addr) = 0;
 };
 
 }}
+
+#include "Allocator.ipp"
 
 #endif

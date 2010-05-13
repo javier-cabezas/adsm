@@ -51,7 +51,9 @@ protected:
     Cache &createCache(CacheMap &map, long key, size_t size);
     Cache &get(long key, size_t size);
     void cleanup();
+
 public:
+    Slab(Manager *manager);
     virtual ~Slab();
     
     virtual void *alloc(size_t size, void *addr);
@@ -59,4 +61,7 @@ public:
 };
 
 }}}
+
+#include "Slab.ipp"
+
 #endif

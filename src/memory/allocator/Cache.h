@@ -50,8 +50,9 @@ protected:
     size_t size;
 
     ObjectList __objects;
+    Manager *manager;
 public:
-    Arena(size_t objSize);
+    Arena(Manager *manager, size_t objSize);
     ~Arena();
 
     void *address() const;
@@ -73,9 +74,10 @@ protected:
     typedef std::map<void *, Arena *> ArenaMap;
     ArenaMap arenas;
 
+    Manager *manager;
 
 public:
-    Cache(size_t size);
+    Cache(Manager *manager, size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);
