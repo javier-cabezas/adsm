@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
-DIST_SUBDIRS = manager posix 
-SUBDIRS = manager $(OS_DIR) 
+DIST_SUBDIRS = manager allocator posix 
+SUBDIRS = manager allocator $(OS_DIR) 
 
 noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
@@ -13,7 +13,7 @@ libmemory_la_SOURCES = memory.cpp\
 			Handler.h Handler.cpp\
 			ProtRegion.h ProtRegion.ipp ProtRegion.cpp
 
-libmemory_la_LIBADD = manager/libmemory-manager.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
+libmemory_la_LIBADD = manager/libmemory-manager.la allocator/libmemory-allocator.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 
 BUILT_SOURCES = os
 
