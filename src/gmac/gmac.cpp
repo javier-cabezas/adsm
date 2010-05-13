@@ -7,10 +7,13 @@
 #include <debug.h>
 
 #include <util/Parameter.h>
+#include <util/Private.h>
+
 #include <kernel/Process.h>
 #include <kernel/Context.h>
+
 #include <memory/Manager.h>
-#include <util/Private.h>
+#include <memory/Allocator.h>
 
 #include <paraver.h>
 
@@ -146,12 +149,18 @@ gmacSetAffinity(int acc)
 gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
 {
+    gmacError_t ret = gmacSuccess;
 	__enterGmac();
 	enterFunction(FuncGmacMalloc);
-	count = (int(count) < getpagesize())? getpagesize(): count;
     gmac::Context * ctx = gmac::Context::current();
     ctx->lockRead();
-	gmacError_t ret = manager->malloc(ctx, cpuPtr, count);
+    if(allocator != NULL && count < (paramPageSize / 2)) {
+        *cpuPtr = allocator->alloc(count, NULL);   
+    }
+    else {
+	    count = (int(count) < getpagesize())? getpagesize(): count;
+	    ret = manager->malloc(ctx, cpuPtr, count);
+    }
     ctx->unlock();
 	exitFunction();
 	__exitGmac();
@@ -180,11 +189,13 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
 gmacError_t
 gmacFree(void *cpuPtr)
 {
+    gmacError_t ret = gmacSuccess;
 	__enterGmac();
 	enterFunction(FuncGmacFree);
     gmac::Context * ctx = manager->owner(cpuPtr);
     ctx->lockRead();
-    gmacError_t ret = manager->free(ctx, cpuPtr);
+    if(allocator == NULL || allocator->free(cpuPtr) == false)
+        ret = manager->free(ctx, cpuPtr);
     ctx->unlock();
 	exitFunction();
 	__exitGmac();

@@ -47,7 +47,7 @@ protected:
 public:
 
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
-    virtual void free(void *addr) = 0;
+    virtual bool free(void *addr) = 0;
 };
 
 Allocator *getAllocator(Manager *manager, const char *name);

@@ -14,9 +14,17 @@ static util::Lock *mutex = NULL;
 static void destroyManager(void)
 {
 	mutex->lock();
-	delete manager;
+	if(manager != NULL) delete manager;
 	manager = NULL;
 	mutex->unlock();
+}
+
+static void destroyAllocator(void)
+{
+    mutex->lock();
+    if(allocator != NULL) delete allocator;
+    allocator = NULL;
+    mutex->unlock();
 }
 
 static void createManager(const char *name)
@@ -47,6 +55,7 @@ void memoryInit(const char *manager, const char *allocator)
 void memoryFini(void)
 {
 	TRACE("Cleaning Memory Subsystem");
+    destroyAllocator();
 	destroyManager();
 	delete mutex;
 }
