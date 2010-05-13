@@ -1,9 +1,11 @@
 #include "Manager.h"
+#include "Allocator.h"
 
 #include <util/Lock.h>
 #include <debug.h>
 
 gmac::memory::Manager *manager= NULL;
+gmac::memory::Allocator *allocator = NULL;
 
 namespace gmac {
 
@@ -25,12 +27,21 @@ static void createManager(const char *name)
 	mutex->unlock();
 }
 
-void memoryInit(const char *manager)
+static void createAllocator(const char *name)
+{
+    mutex->lock();
+    if(allocator == NULL)
+        allocator = memory::getAllocator(manager, name);
+    mutex->unlock();
+}
+
+void memoryInit(const char *manager, const char *allocator)
 {
 	TRACE("Initializing Memory Subsystem");
 	mutex = new util::Lock(LockManager);
 	memory::Map::init();
 	createManager(manager);
+    createAllocator(allocator);
 }
 
 void memoryFini(void)

@@ -43,6 +43,7 @@ class Context;
 
 namespace memory {
 class Manager;
+class Allocator;
 }
 
 }
@@ -50,6 +51,7 @@ class Manager;
 #include <cstdio>
 extern gmac::Process *proc;
 extern gmac::memory::Manager *manager;
+extern gmac::memory::Allocator *allocator;
 
 extern gmac::util::Private __in_gmac;
 extern const char __gmac_code;
