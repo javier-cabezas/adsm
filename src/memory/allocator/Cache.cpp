@@ -1,6 +1,5 @@
 #include "Cache.h"
 
-#include <gmac/init.h>
 #include <kernel/Context.h>
 #include <memory/Manager.h>
 
@@ -11,9 +10,10 @@
 
 namespace gmac { namespace memory { namespace allocator {
 
-Arena::Arena(size_t objSize) :
+Arena::Arena(Manager *manager, size_t objSize) :
     ptr(NULL),
-    size(0)
+    size(0),
+    manager(manager)
 {
     Context *ctx = Context::current();
     ctx->lockRead();
@@ -52,7 +52,7 @@ void *Cache::get()
         return i->second->get();
     }
     // There are no free objects in any arena
-    Arena *arena = new Arena(objectSize);
+    Arena *arena = new Arena(manager, objectSize);
     arenas.insert(ArenaMap::value_type(arena->address(), arena));
     return arena->get();
 }

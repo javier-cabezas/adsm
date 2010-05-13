@@ -12,7 +12,7 @@ libmemory_la_SOURCES = memory.cpp\
 			Region.h Region.ipp Region.cpp\
 			Handler.h Handler.cpp\
 			ProtRegion.h ProtRegion.ipp ProtRegion.cpp\
-            Allocator.h
+            Allocator.h Allocator.ipp Allocator.cpp
 
 libmemory_la_LIBADD = manager/libmemory-manager.la allocator/libmemory-allocator.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 
