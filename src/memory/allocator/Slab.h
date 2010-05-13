@@ -57,7 +57,7 @@ public:
     virtual ~Slab();
     
     virtual void *alloc(size_t size, void *addr);
-    virtual void free(void *addr);
+    virtual bool free(void *addr);
 };
 
 }}}

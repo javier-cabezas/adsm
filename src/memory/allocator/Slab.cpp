@@ -49,11 +49,12 @@ void *Slab::alloc(size_t size, void *addr)
     return ret;
 }
 
-void Slab::free(void *addr)
+bool Slab::free(void *addr)
 {
     AddressMap::iterator i = addresses.find(addr);
-    ASSERT(i != addresses.end());
+    if(i == addresses.end()) return false;
     i->second->put(addr);
+    return true;
 }
 
 }}}
