@@ -6,11 +6,11 @@
 #include <threads.h>
 #include <debug.h>
 
-#include "util/Parameter.h"
-#include "kernel/Process.h"
-#include "kernel/Context.h"
-#include "memory/Manager.h"
-#include "util/Private.h"
+#include <util/Parameter.h>
+#include <kernel/Process.h>
+#include <kernel/Context.h>
+#include <memory/Manager.h>
+#include <util/Private.h>
 
 #include <paraver.h>
 
