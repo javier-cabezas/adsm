@@ -53,7 +53,7 @@ Cache::Cache(Manager *manager, size_t size) :
 inline
 void Cache::put(void *obj)
 {
-    void *key = (void *)((unsigned long)obj & (paramPageSize - 1));
+    void *key = (void *)((unsigned long)obj & ~(paramPageSize - 1));
     ArenaMap::const_iterator i;
     i = arenas.find(key);
     CFATAL(i != arenas.end(), "Address from invalid arena");
