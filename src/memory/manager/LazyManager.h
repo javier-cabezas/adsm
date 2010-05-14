@@ -37,8 +37,6 @@ WITH THE SOFTWARE.  */
 #include "Handler.h"
 #include "ProtRegion.h"
 
-#include <debug.h>
-
 #include <map>
 
 namespace gmac { namespace memory { namespace manager {

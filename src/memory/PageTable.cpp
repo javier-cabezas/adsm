@@ -8,17 +8,18 @@ namespace gmac { namespace memory {
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
-	lock(LockPageTable)
-	,pages(1)
+    logger("PageTable"),
+	lock(LockPageTable),
+	pages(1)
 #ifdef USE_VM
 	,_clean(false), _valid(true)
 #endif
 {
 	tableShift = int(log2(paramPageSize));
-	TRACE("Page Size: %zd bytes", paramPageSize);
+	logger.trace("Page Size: %zd bytes", paramPageSize);
 #ifndef USE_MMAP
-	TRACE("Table Shift: %zd bits", tableShift);
-	TRACE("Table Size: %ld entries", (1 << dirShift) / paramPageSize);
+	logger.trace("Table Shift: %zd bits", tableShift);
+	logger.trace("Table Size: %ld entries", (1 << dirShift) / paramPageSize);
 #endif
 }
 
@@ -26,7 +27,7 @@ PageTable::PageTable() :
 PageTable::~PageTable()
 { 
 //#ifndef USE_MMAP
-	TRACE("Cleaning Page Table");
+	logger.trace("Cleaning Page Table");
 	for(unsigned i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		deleteDirectory(rootTable.value(i));
@@ -80,10 +81,10 @@ void PageTable::insert(void *host, void *dev)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
 	unsigned e = entry(host, tableShift, table.size());
-	ASSERT(table.present(e) == false || (uint8_t *)table.value(e) == dev);
+	logger.assertion(table.present(e) == false || (uint8_t *)table.value(e) == dev);
 
 	table.insert(entry(host, tableShift, table.size()), dev);
-	TRACE("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
+	logger.trace("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
 	lock.unlock();
 	exitFunction();
 #endif
@@ -136,9 +137,7 @@ void *PageTable::translate(void *host)
 	uint8_t *addr =
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
 	lock.unlock();
-	//TRACE("PT pre-translate: %p -> %p", host, addr);
 	addr += offset(host);
-	//TRACE("PT translate: %p -> %p", host, addr);
 	return (void *)addr;
 #endif
 }

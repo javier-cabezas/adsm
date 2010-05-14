@@ -1,5 +1,4 @@
 #include <memory/Manager.h>
-#include <debug.h>
 
 namespace gmac { namespace memory {
 
@@ -60,7 +59,7 @@ void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 void Manager::hostUnmap(void *addr, size_t count)
 {
 #ifdef USE_GLOBAL_HOST
-	ASSERT(Map::isShared(addr) == false);
+	logger.assertion(Map::isShared(addr) == false);
 #endif
 
 #ifndef USE_MMAP

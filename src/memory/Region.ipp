@@ -64,7 +64,7 @@ Region::unrelate(Context *ctx)
 inline void
 Region::transfer()
 {
-    ASSERT(_relatives.empty() == false);
+    logger.assertion(_relatives.empty() == false);
     _context = _relatives.front();
     _relatives.pop_front();
 }

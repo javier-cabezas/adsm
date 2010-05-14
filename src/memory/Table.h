@@ -36,7 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 #include <paraver.h>
-#include <debug.h>
+
+#include <util/Logger.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -60,6 +61,7 @@ protected:
 	static const addr_t Dirty   = 0x02;
 	static const addr_t Mask    = ~0x03;
 
+    util::Logger logger;
 	T **table;
 
 	T *entry(size_t n) const;
@@ -69,8 +71,6 @@ public:
 	virtual ~Table();
 
 	bool present(size_t n) const;
-	bool dirty(size_t n) const;
-	void clean(size_t n);
 
 	void create(size_t n, size_t size = defaultSize);
 	void insert(size_t n, void *addr);

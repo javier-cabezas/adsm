@@ -6,8 +6,6 @@
 #include <util/Parameter.h>
 #include <util/Private.h>
 
-#include <debug.h>
-
 namespace gmac { namespace memory { namespace allocator {
 
 util::Logger Arena::log("Arena");

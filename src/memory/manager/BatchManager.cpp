@@ -1,23 +1,8 @@
 #include "BatchManager.h"
 
-#include <debug.h>
-
 #include "kernel/Context.h"
 
 namespace gmac { namespace memory { namespace manager {
-
-#if 0
-void BatchManager::free(void *addr)
-{
-    Region *reg = remove(addr);
-	ASSERT(reg != NULL);
-	removeVirtual(reg->start(), reg->size());
-    if(reg->owner() == Context::current()) {
-	    hostUnmap(reg->start(), reg->size());
-        delete reg;
-    }
-}
-#endif
 
 void BatchManager::flush()
 {
@@ -27,7 +12,7 @@ void BatchManager::flush()
     Map * m = current();
     m->lockRead();
     for(i = m->begin(); i != m->end(); i++) {
-        TRACE("Memory Copy to Device");
+        logger.trace("Memory Copy to Device");
         Region * r = i->second;
         r->lockRead();
         r->copyToDevice();
@@ -39,7 +24,7 @@ void BatchManager::flush()
     RegionMap &shared = Map::shared();
     shared.lockRead();
     for (s = shared.begin(); s != shared.end(); s++) {
-        TRACE("Shared Memory Copy to Device");
+        logger.trace("Shared Memory Copy to Device");
         Region * r = s->second;
         r->lockRead();
         r->copyToDevice();
@@ -138,7 +123,7 @@ BatchManager::flush(const void *, size_t)
 void
 BatchManager::map(Context *ctx, Region *r, void *devPtr)
 {
-    ASSERT(r != NULL);
+    logger.assertion(r != NULL);
     insertVirtual(ctx, r->start(), devPtr, r->size());
     if (ctx != r->owner()) {
         r->relate(ctx);

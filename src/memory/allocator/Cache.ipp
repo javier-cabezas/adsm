@@ -1,8 +1,6 @@
 #ifndef __MEMORY_ALLOCATOR_CACHE_IPP__
 #define __MEMORY_ALLOCATOR_CACHE_IPP__
 
-#include <debug.h>
-
 namespace gmac { namespace memory { namespace allocator {
 
 inline

@@ -4,7 +4,7 @@
 namespace gmac { namespace util {
 
 inline
-void Logger::trace(const char *fmt, ...)
+void Logger::trace(const char *fmt, ...) const
 {
 #ifdef DEBUG
     va_list list;
@@ -15,7 +15,7 @@ void Logger::trace(const char *fmt, ...)
 }
 
 inline
-void Logger::__assertion(unsigned c, const char *fmt, ...)
+void Logger::__assertion(unsigned c, const char *fmt, ...) const
 {
 #ifdef DEBUG
     if(c) return;
@@ -28,7 +28,7 @@ void Logger::__assertion(unsigned c, const char *fmt, ...)
 }
 
 inline
-void Logger::fatal(const char *fmt, ...)
+void Logger::fatal(const char *fmt, ...) const
 {
     va_list list;
     va_start(list, fmt);
@@ -38,7 +38,7 @@ void Logger::fatal(const char *fmt, ...)
 }
 
 inline
-void Logger::warning(const char *fmt, ...)
+void Logger::warning(const char *fmt, ...) const
 {
     va_list list;
     va_start(list, fmt);
@@ -48,7 +48,7 @@ void Logger::warning(const char *fmt, ...)
 
 
 inline
-void Logger::cfatal(unsigned c, const char *fmt, ...)
+void Logger::cfatal(unsigned c, const char *fmt, ...) const
 {
     if(c) return;
     va_list list;

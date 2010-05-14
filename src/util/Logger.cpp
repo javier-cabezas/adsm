@@ -10,6 +10,7 @@
 namespace gmac { namespace util {
 
 const char *Logger::debugString;
+char Logger::buffer[Logger::BufferSize];
 Parameter<const char *> *Logger::Level = NULL;
 Lock Logger::lock(LockLog);
 
@@ -33,11 +34,11 @@ Logger::Logger(const char *name) :
     }
 }
 
-void Logger::log(std::string tag, const char *fmt, va_list list)
+void Logger::log(std::string tag, const char *fmt, va_list list) const
 {
-    vsnprintf(buffer, BufferSize, fmt, list);
     if(active == false) return;
     lock.lock();
+    vsnprintf(buffer, BufferSize, fmt, list);
     out << tag << " [" << name << "]: " << buffer << std::endl;
     lock.unlock();
 }

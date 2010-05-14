@@ -35,11 +35,12 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_PAGETABLE_H_
 
 #include <config.h>
-#include <debug.h>
 #include <paraver.h>
 
 #include <util/Parameter.h>
 #include <util/Lock.h>
+#include <util/Logger.h>
+
 #include <memory/Table.h>
 
 #include <stdint.h>
@@ -57,6 +58,7 @@ private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;
 
+    util::Logger logger;
 	util::RWLock lock;
 
 	static size_t tableShift;
