@@ -46,6 +46,7 @@ Map::sharedFind(const void *addr)
     i = __shared.upper_bound(addr);
     if(i != __shared.end() && i->second->start() <= addr)
         ret = i->second;
+    __shared.unlock();
     return ret;
 }
 
