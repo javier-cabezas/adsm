@@ -1,6 +1,8 @@
 #ifndef __MANAGER_IPP_
 #define __MANAGER_IPP_
 
+namespace gmac { namespace memory {
+
 inline void
 Manager::insert(Region *r)
 {
@@ -53,7 +55,7 @@ Manager::ptr(Context *ctx, const void *addr)
 inline const void *
 Manager::ptr(const void *addr)
 {
-    return ptr(Context::current(), addr);
+    return ptr(::manager->owner(addr), addr);
 }
 
 inline void *
@@ -77,4 +79,5 @@ Manager::defaultProt()
     return PROT_READ | PROT_WRITE;
 }
 
+}};
 #endif
