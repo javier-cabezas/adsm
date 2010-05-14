@@ -29,7 +29,7 @@ Logger::Logger(const char *name) :
         out = std::ofstream(paramDebugFile);
 #endif
     if(debugString != NULL && 
-      (strcasestr(debugString, "all") != NULL ||
+      (strcasestr(debugString, "__all") != NULL ||
        strcasestr(debugString, name) != NULL)) {
         active = true;
     }
