@@ -5,7 +5,7 @@ namespace gmac { namespace memory {
 
 inline 
 Allocator::Allocator(Manager *manager) :
-    logger(util::Logger("Allocator")),
+    logger(util::Logger("Malloc")),
     manager(manager)
 {}
 
