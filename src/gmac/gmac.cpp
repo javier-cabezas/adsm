@@ -154,6 +154,10 @@ gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
+    if(count == 0) {
+        *cpuPtr = NULL;
+        return ret;
+    }
 	__enterGmac();
 	enterFunction(FuncGmacMalloc);
     gmac::Context * ctx = gmac::Context::current();
@@ -175,12 +179,17 @@ gmacError_t
 gmacGlobalMalloc(void **cpuPtr, size_t count)
 {
 #ifndef USE_MMAP
+    gmacError_t ret = gmacSuccess;
+    if(count == 0) {
+        *cpuPtr = NULL;
+        return ret;
+    }
     __enterGmac();
     enterFunction(FuncGmacGlobalMalloc);
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
     gmac::Context * ctx = gmac::Context::current();
     ctx->lockRead();
-	gmacError_t ret = manager->globalMalloc(ctx, cpuPtr, count);
+	ret = manager->globalMalloc(ctx, cpuPtr, count);
     ctx->unlock();
     exitFunction();
     __exitGmac();
