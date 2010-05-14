@@ -168,7 +168,7 @@ LazyManager::map(Context *ctx, Region *r, void *devPtr)
 	insertVirtual(ctx, region->start(), devPtr, region->size());
 	region->relate(ctx);
     if (region->dirty() == false && region->present()) {
-        ctx->copyToDevice(ptr(region->start()),
+        ctx->copyToDevice(ptr(ctx, region->start()),
                           region->start(),
                           region->size());
     }
