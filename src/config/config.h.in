@@ -39,4 +39,11 @@ WITH THE SOFTWARE.  */
 #define ACC_USE_LAUNCH_ARGS symbol
 #endif
 
+#define CBREAK(e, ...) \
+        if (!(e)) {      \
+            __VA_ARGS__; \
+		    break;	     \
+        }
+
+
 #endif

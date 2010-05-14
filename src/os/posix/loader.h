@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __POSIX_LOADER_H_
 #define __POSIX_LOADER_H_
 
-#include <debug.h>
-
 #include <dlfcn.h>
 
 #define SYM(ret, symbol, ...)	\
@@ -48,7 +46,7 @@ WITH THE SOFTWARE.  */
 
 #define LOAD_SYM(symbol, name)	\
 	if((symbol = (symbol##_t)dlsym(RTLD_NEXT, #name)) == NULL)	\
-		FATAL("Unable to locate "#name);
+		::logger->fatal("Unable to locate "#name);
 
 
 #endif

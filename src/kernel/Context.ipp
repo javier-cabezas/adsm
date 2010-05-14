@@ -30,11 +30,11 @@ inline
 void
 Context::kernel(gmacKernel_t k, Kernel * kernel)
 {
-    ASSERT(kernel != NULL);
-    TRACE("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
+    logger.assertion(kernel != NULL);
+    logger.trace("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
     KernelMap::iterator i;
     i = _kernels.find(k);
-    ASSERT(i == _kernels.end());
+    logger.assertion(i == _kernels.end());
     _kernels[k] = kernel;
 }
 

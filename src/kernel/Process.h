@@ -35,12 +35,11 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_PROCESS_H_
 
 #include <paraver.h>
-#include <debug.h>
 
-#include "kernel/Queue.h"
-#include "memory/Map.h"
-
-#include "gmac/gmac.h"
+#include "Queue.h"
+#include <memory/Map.h>
+#include <gmac/gmac.h>
+#include <util/Logger.h>
 
 #include <vector>
 #include <list>
@@ -84,6 +83,8 @@ public:
 class Process : public util::RWLock{
 protected:
     friend class Accelerator;
+
+    util::Logger logger;
 
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;

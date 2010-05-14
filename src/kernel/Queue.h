@@ -34,10 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_QUEUE_H_
 #define __KERNEL_QUEUE_H_
 
-#include <debug.h>
-
 #include <util/Lock.h>
 #include <util/Semaphore.h>
+#include <util/Logger.h>
 
 #include <list>
 
@@ -52,6 +51,8 @@ class Context;
 class Queue {
 protected:
 	typedef std::list<Context *> Fifo;
+
+    util::Logger logger;
 
 	util::Lock mutex;
 	Fifo _queue;

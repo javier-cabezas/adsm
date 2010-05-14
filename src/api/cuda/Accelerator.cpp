@@ -1,9 +1,7 @@
 #include "Accelerator.h"
 #include "Context.h"
 
-#include "kernel/Process.h"
-
-#include <debug.h>
+#include <kernel/Process.h>
 
 namespace gmac {
 namespace gpu {
@@ -16,15 +14,10 @@ Accelerator::Accelerator(int n, CUdevice device) :
 {
     unsigned int size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    logger.cfatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, _device);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    logger.cfatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     _memory = size;
-    //int async = 0;
-    //ret = cuDeviceGetAttribute(&async, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, _device);
-    //CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    //_async = bool(async);
-
 
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
@@ -32,12 +25,12 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #if CUDART_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
-    TRACE("Host mapped memory not supported by the HW");
+    logger.trace("Host mapped memory not supported by the HW");
 #endif
     ret = cuCtxCreate(&_ctx, flags, _device);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
+    logger.cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
-    CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
+    logger.cfatal(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
 #endif
 }
 
@@ -46,7 +39,7 @@ Accelerator::~Accelerator()
 
 gmac::Context *Accelerator::create()
 {
-	TRACE("Attaching context to Accelerator");
+	logger.trace("Attaching context to Accelerator");
 	gpu::Context *ctx = new gpu::Context(this);
 	queue.insert(ctx);
 	return ctx;
@@ -54,11 +47,11 @@ gmac::Context *Accelerator::create()
 
 void Accelerator::destroy(gmac::Context *context)
 {
-	TRACE("Destroying Context");
+	logger.trace("Destroying Context");
 	if(context == NULL) return;
 	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
 	std::set<gpu::Context *>::iterator c = queue.find(ctx);
-	ASSERT(c != queue.end());
+	logger.assertion(c != queue.end());
 	//delete ctx;
 	queue.erase(c);
 }
@@ -79,20 +72,20 @@ Accelerator::createCUDAContext()
 #if CUDART_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
-    TRACE("Host mapped memory not supported by the HW");
+    logger.trace("Host mapped memory not supported by the HW");
 #endif
     CUresult ret = cuCtxCreate(&ctx, flags, _device);
     if(ret != CUDA_SUCCESS)
         FATAL("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
-    ASSERT(ret == CUDA_SUCCESS);
+    logger.assertion(ret == CUDA_SUCCESS);
     return ctx;
 }
 
 void
 Accelerator::destroyCUDAContext(CUcontext ctx)
 {
-    CFATAL(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
+    logger.cfatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
 }
 #endif
 

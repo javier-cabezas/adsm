@@ -1,10 +1,10 @@
-#include <debug.h>
 #include <order.h>
 
 #include "Accelerator.h"
 #include "Context.h"
 
-#include "kernel/Process.h"
+#include <gmac/init.h>
+#include <kernel/Process.h>
 
 #include <cuda.h>
 
@@ -20,28 +20,28 @@ static bool initialized = false;
 void apiInit(void)
 {
 	if(initialized)
-		FATAL("GMAC double initialization not allowed");
+		::logger->fatal("GMAC double initialization not allowed");
 
-	ASSERT(proc != NULL);
-	TRACE("Initializing CUDA Driver API");
+	::logger->assertion(proc != NULL);
+	::logger->trace("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
-		FATAL("Unable to init CUDA");
+		::logger->fatal("Unable to init CUDA");
 
 	int devCount = 0;
 	int devRealCount = 0;
 
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
-		FATAL("Error getting CUDA-enabled devices");
+		::logger->fatal("Error getting CUDA-enabled devices");
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
 		int attr;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
-			FATAL("Unable to access CUDA device");
+			::logger->fatal("Unable to access CUDA device");
 #if CUDART_VERSION >= 2020
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
-			FATAL("Unable to access CUDA device");
+			::logger->fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
 			proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
 			devRealCount++;
@@ -53,7 +53,7 @@ void apiInit(void)
 	}
 
 	if(devRealCount == 0)
-		FATAL("No CUDA-enabled devices found");
+		::logger->fatal("No CUDA-enabled devices found");
 
 	initialized = true;
 }
