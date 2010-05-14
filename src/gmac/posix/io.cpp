@@ -20,7 +20,7 @@ SYM(ssize_t, __libc_write, int, const void *, size_t);
 
 void posixIoInit(void)
 {
-	TRACE("Overloading I/O POSIX functions");
+	logger->trace("Overloading I/O POSIX functions");
 	LOAD_SYM(__libc_read, read);
 	LOAD_SYM(__libc_write, write);
 }
@@ -60,7 +60,7 @@ ssize_t read(int fd, void *buf, size_t count)
 
         ret += __libc_read(fd, tmp, bytes);
         err = srcCtx->copyToDevice(manager->ptr(((char *) buf) + off), tmp, bytes);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
@@ -101,7 +101,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         size_t bytes = left < bufferSize? left: bufferSize;
 
         err = dstCtx->copyToHost(tmp, manager->ptr(((char *) buf) + off), bytes);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
         ret += __libc_write(fd, tmp, bytes);
 
         left -= bytes;

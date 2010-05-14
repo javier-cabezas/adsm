@@ -38,10 +38,13 @@ WITH THE SOFTWARE.  */
 
 #include "Manager.h"
 
+#include <util/Logger.h>
+
 namespace gmac { namespace memory {
 
 class Allocator {
 protected:
+    util::Logger logger;
     Manager *manager;
     Allocator(Manager *manager);
 public:

@@ -55,7 +55,6 @@ inline Parameter<T>::Parameter(T *address, const char *name,
     envVar(envVar),
     flags(flags)
 {
-    TRACE("Getting value for %s", name);
     const char *tmp = NULL;
     if(envVar != NULL &&
         (tmp = getenv(envVar)) != NULL) {

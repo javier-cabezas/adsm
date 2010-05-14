@@ -31,76 +31,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CONFIG_DEBUG_H
-#define __CONFIG_DEBUG_H
+#ifndef __UTIL_LOGGER_H_
+#define __UTIL_LOGGER_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <config.h>
 
-#define __THREAD_CANARY
-#include <threads.h>
-#undef __THREAD_CANARY
+#include "Parameter.h"
 
+#include <map>
+#include <string>
+#include <iostream>
+#include <cstdarg>
+#include <cassert>
 
-#if defined(__LP64__) 
-#define FMT_TID "0x%lx"
-#else
-#if defined(DARWIN)
-#define FMT_TID "%p"
-#else
-#define FMT_TID "0x%llx"
-#endif
-#endif
+#define ASSERT_STRING "in function %s [%s:%d]", __func__, __FILE__, __LINE__
+#define assertion(c, ...) __assertion(c, ASSERT_STRING)
 
-#ifdef DEBUG
-#define ASSERT(e)  \
-    if (!(e)) {    \
-		fprintf(stderr,"ASSERT ERROR at [%s:%d]\n", __FILE__, __LINE__); \
-        abort();   \
-    }
-#else
-#define ASSERT(e)
-#endif
+namespace gmac { namespace util {
 
-#define FATAL(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		abort();	\
-	} while(0)
+class Lock;
+class Logger {
+protected:
+    static Parameter<const char *> *Level;
+    static const char *debugString;
+    static Lock lock;
 
-#define CFATAL(e, fmt, ...) \
-	do {	                \
-        if (!(e)) {         \
-		    fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		    abort();	    \
-        }                   \
-	} while(0)
+    const char *name;
+    bool active;
+    std::ostream &out;
 
-#define CBREAK(e, ...) \
-        if (!(e)) {      \
-            __VA_ARGS__; \
-		    break;	     \
-        }
+    static const size_t BufferSize = 1024;
+    char buffer[BufferSize];
 
-#ifdef DEBUG
-#define TRACE(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"TRACE [%s:%d] ("FMT_TID")" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
-	} while(0)
-#else
-#define TRACE(fmt, ...)
-#endif
+    void log(std::string tag, const char *fmt, va_list list);
 
-#ifdef DEBUG
-#define WARNING(fmt, ...) \
-   do { \
-      fprintf(stderr,"WARNING [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
-   } while(0)
-#else
-#define WARNING(fmt, ...)
-#endif
+public:
+    Logger(const char *name);
 
+    void trace(const char *fmt, ...); 
+    void warning(const char *fmt, ...);
+    void __assertion(unsigned c, const char *fmt, ...);
+    void fatal(const char *fmt, ...);
+    void cfatal(unsigned c, const char *fmt, ...);
+};
+
+}}
+
+#include "Logger.ipp"
 
 #endif

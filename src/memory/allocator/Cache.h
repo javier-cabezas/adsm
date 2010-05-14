@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Context.h>
 #include <util/Private.h>
+#include <util/Logger.h>
 
 #include <list>
 #include <map>
@@ -51,6 +52,8 @@ protected:
 
     ObjectList __objects;
     Manager *manager;
+
+    static util::Logger log;
 public:
     Arena(Manager *manager, size_t objSize);
     ~Arena();
@@ -75,7 +78,7 @@ protected:
     ArenaMap arenas;
 
     Manager *manager;
-
+    static util::Logger log;
 public:
     Cache(Manager *manager, size_t size);
     virtual ~Cache();

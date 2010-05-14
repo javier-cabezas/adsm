@@ -3,6 +3,10 @@ PARAM(paramMemManager, const char *, "Rolling", "GMAC_MANAGER")
 PARAM(paramMemAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
 
+// GMAC debug settings
+PARAM(paramDebug, const char *, "none", "GMAC_DEBUG")
+//PARAM(paramDebugFile, const char *, NULL, "GMAC_DEBUG_FILE")
+
 // GMAC Page table settings
 PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
 

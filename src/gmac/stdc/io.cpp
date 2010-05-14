@@ -21,7 +21,6 @@ SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
 void stdcIoInit(void)
 {
-	TRACE("Overloading I/O STDC functions");
 	LOAD_SYM(__libc_fread, fread);
 	LOAD_SYM(__libc_fwrite, fwrite);
 }
@@ -62,9 +61,9 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 
         ret += __libc_fread(tmp, size, bytes/size, stream);
         err = srcCtx->copyToDeviceAsync(manager->ptr(((char *) buf) + off), tmp, bytes);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
         err = srcCtx->syncToDevice();
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
@@ -107,9 +106,9 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t bytes = left < bufferSize? left: bufferSize;
 
         err = dstCtx->copyToHostAsync(tmp, manager->ptr(((char *) buf) + off), bytes);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
         err = dstCtx->syncToHost();
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
         ret += __libc_fwrite(tmp, size, bytes/size, stream);
 
         left -= bytes;

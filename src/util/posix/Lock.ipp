@@ -1,9 +1,8 @@
 #ifndef __UTIL_POSIX_LOCK_IPP_
 #define __UTIL_POSIX_LOCK_IPP_
 
-
 inline 
-Owned::Owned() : __owner(0)
+Owned::Owned() : __owner(0), logger("Lock")
 {
 }
 
@@ -69,11 +68,11 @@ RWLock::lockWrite()
     pthread_rwlock_wrlock(&__lock);
 #ifdef DEBUG
     if(owner() == pthread_self())
-        WARNING("Lock %d double-locked by "FMT_TID, __name, owner());
-    ASSERT(owner() == 0);
+        logger.warning("Lock %d double-locked by "FMT_TID, __name, owner());
+    logger.assertion(owner() == 0);
     __write = true;
     acquire();
-    TRACE("%p locked by "FMT_TID, this, owner());
+    logger.trace("%p locked by "FMT_TID, this, owner());
 #endif
     exitLock();
 }
@@ -83,9 +82,9 @@ RWLock::unlock()
 {
 #ifdef DEBUG
     if(__write == true) {
-        ASSERT(owner() == SELF());
+        logger.assertion(owner() == SELF());
         __write = false;
-        TRACE("%p released by "FMT_TID, this, owner());
+        logger.trace("%p released by "FMT_TID, this, owner());
         release();
     }
 #endif

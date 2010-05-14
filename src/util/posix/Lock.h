@@ -34,9 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_POSIX_LOCK_H_
 #define __UTIL_POSIX_LOCK_H_
 
+
 #include <config.h>
 #include <paraver.h>
 #include <debug.h>
+
+#include <util/Logger.h>
 
 #include <pthread.h>
 
@@ -48,13 +51,14 @@ namespace gmac { namespace util {
 
 class Owned {
 protected:
-   pthread_t __owner;
+    pthread_t __owner;
+    Logger logger;
 public:
    Owned();
 
-   void acquire();
-   void release();
-   pthread_t owner();
+    void acquire();
+    void release();
+    pthread_t owner();
 };
 
 class Lock : public Owned {

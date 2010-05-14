@@ -86,7 +86,8 @@ enum LockName {
     LockBlockList    = 2021, // 21
     LockQueueMap     = 2022, // 22
     LockReference    = 2023, // 23
-    LockContext      = 2024  // 24
+    LockContext      = 2024, // 24
+    LockLog          = 2025  // 25
 };
 
 enum AcceleratorName {
