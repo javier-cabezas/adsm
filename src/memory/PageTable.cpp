@@ -126,11 +126,13 @@ void *PageTable::translate(void *host)
 	lock.lockRead();
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		lock.unlock();
+        logger.trace("Translate %p to NULL in RootTable");
 		return NULL;
 	}
 	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
 	if(dir.present(entry(host, dirShift, dir.size())) == false) {
 		lock.unlock();
+        logger.trace("Translate %p to NULL in Directory");
 		return NULL;
 	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
@@ -138,6 +140,7 @@ void *PageTable::translate(void *host)
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
 	lock.unlock();
 	addr += offset(host);
+    logger.trace("Translate %p -> %p", host, (void *)addr);
 	return (void *)addr;
 #endif
 }
