@@ -102,7 +102,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
     off_t  off  = 0;
     while (left != 0) {
-        size_t bytes = left < bufferSize? left: bufferSize;
+        size_t bytes = left < bufferSize ? left : bufferSize;
 
         err = dstCtx->copyToHostAsync(tmp, manager->ptr(((char *) buf) + off), bytes);
         logger->assertion(err == gmacSuccess);

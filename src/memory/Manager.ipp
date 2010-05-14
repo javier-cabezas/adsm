@@ -70,7 +70,7 @@ Manager::ptr(Context *ctx, void *addr)
 inline void *
 Manager::ptr(void *addr)
 {
-    return ptr(Context::current(), addr);
+    return ptr(::manager->owner(addr), addr);
 }
 
 inline int
