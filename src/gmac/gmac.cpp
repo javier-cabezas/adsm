@@ -354,7 +354,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	else { // dstCtx != srcCtx
 		//void *tmp;
         gmac::Context *ctx = gmac::Context::current();
-        ctx->lockRead();
+        if(ctx != srcCtx && ctx != dstCtx) ctx->lockRead();
 
         manager->flush(src, n);
         manager->invalidate(dst, n);
@@ -365,7 +365,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         size_t left = n;
         off_t  off  = 0;
         while (left != 0) {
-            size_t bytes = left < bufferSize? left: bufferSize;
+            size_t bytes = left < bufferSize ? left : bufferSize;
             err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
             logger->assertion(err == gmacSuccess);
             srcCtx->syncToHost();
@@ -379,7 +379,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             off  += bytes;
             logger->trace("Copying %zd %zd\n", bytes, bufferSize);
         }
-        ctx->unlock();
+        if(ctx != srcCtx && ctx != dstCtx) ctx->unlock();
 	}
 
 	if (srcCtx != NULL) srcCtx->unlock();

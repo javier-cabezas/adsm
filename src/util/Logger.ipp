@@ -4,7 +4,7 @@
 namespace gmac { namespace util {
 
 inline
-void Logger::trace(const char *fmt, ...) const
+void Logger::__trace(const char *fmt, ...) const
 {
 #ifdef DEBUG
     va_list list;
