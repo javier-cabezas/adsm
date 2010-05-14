@@ -140,6 +140,7 @@ Manager::globalMalloc(Context * ctx, void ** addr, size_t count)
     // Create a new (shared) region
     Region * r = newRegion(cpuAddr, count, true);
     r->lockWrite();
+    Map::addShared(r);
     ContextList::const_iterator i;
     ContextList & contexts = proc->contexts();
     contexts.lockRead();
@@ -152,7 +153,6 @@ Manager::globalMalloc(Context * ctx, void ** addr, size_t count)
         if(ret != gmacSuccess) goto cleanup;
         map(ctx, r, devAddr);
     }
-    Map::addShared(r);
     r->unlock();
     *addr = cpuAddr;
     return gmacSuccess;

@@ -71,7 +71,7 @@ void RollingRegion::relate(Context *ctx)
             buffer->push(block);
         }
         else {
-            gmacError_t ret = ctx->copyToDevice(Manager::ptr(start()), start(), size());
+            gmacError_t ret = ctx->copyToDevice(Manager::ptr(ctx, start()), start(), size());
             logger.assertion(ret == gmacSuccess);
         }
         block->relate(ctx);

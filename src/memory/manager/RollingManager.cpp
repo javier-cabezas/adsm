@@ -287,7 +287,7 @@ bool RollingManager::write(void *addr)
     return true;
 }
 
-    void
+void
 RollingManager::map(Context *ctx, Region *r, void *devPtr)
 {
     RollingRegion *region = dynamic_cast<RollingRegion *>(r);
