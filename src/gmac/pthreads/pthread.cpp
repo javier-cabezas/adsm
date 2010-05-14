@@ -58,7 +58,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 	int ret = 0;
 	__enterGmac();
 	pushState(ThreadCreate);
-    TRACE("pthread_create");
+    logger->trace("New POSIX thread");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
 	gthread->__arg = __arg;

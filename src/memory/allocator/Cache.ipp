@@ -1,6 +1,8 @@
 #ifndef __MEMORY_ALLOCATOR_CACHE_IPP__
 #define __MEMORY_ALLOCATOR_CACHE_IPP__
 
+#include <debug.h>
+
 namespace gmac { namespace memory { namespace allocator {
 
 inline
@@ -30,7 +32,7 @@ bool Arena::empty() const
 inline
 void *Arena::get()
 {
-    ASSERT(__objects.empty() == false);
+    log.assertion(__objects.empty() == false);
     void *ret = __objects.front();
     __objects.pop_front();
     return ret;
@@ -56,7 +58,7 @@ void Cache::put(void *obj)
     void *key = (void *)((unsigned long)obj & ~(paramPageSize - 1));
     ArenaMap::const_iterator i;
     i = arenas.find(key);
-    CFATAL(i != arenas.end(), "Address from invalid arena");
+   log.cfatal(i != arenas.end(), "Address for invalid arena");
     i->second->put(obj);
 }
 

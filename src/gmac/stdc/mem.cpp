@@ -18,7 +18,7 @@ extern gmac::memory::Manager *manager;
 
 void stdcMemInit(void)
 {
-	TRACE("Overloading Memory STDC functions");
+	logger->trace("Overloading Memory STDC functions");
 	LOAD_SYM(__libc_memset, memset);
 	LOAD_SYM(__libc_memcpy, memcpy);
 }
@@ -32,7 +32,7 @@ void *memset(void *s, int c, size_t n)
 	gmac::Context *ctx = manager->owner(s);
 	if(ctx == NULL) __libc_memset(s, c, n);
 	else {
-		TRACE("GMAC Memset");
+		logger->trace("GMAC Memset");
 		manager->invalidate(s, n);
 		ctx->memset(manager->ptr(s), c, n);
 	}
@@ -60,7 +60,7 @@ void *memcpy(void *dst, const void *src, size_t n)
 		return __libc_memcpy(dst, src, n);
 	}
 
-	TRACE("GMAC Memcpy");
+	logger->trace("GMAC Memcpy");
 	if(dstCtx == NULL) { // Copy to Host
 		manager->flush(src, n);
 		srcCtx->copyToHost(dst, manager->ptr(src), n);

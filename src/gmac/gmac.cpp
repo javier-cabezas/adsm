@@ -8,6 +8,7 @@
 
 #include <util/Parameter.h>
 #include <util/Private.h>
+#include <util/Logger.h>
 
 #include <kernel/Process.h>
 #include <kernel/Context.h>
@@ -25,6 +26,7 @@ extern int init;
 }
 #endif
 
+gmac::util::Logger *logger = NULL;
 gmac::util::Private __in_gmac;
 
 const char __gmac_code = 1;
@@ -33,26 +35,28 @@ const char __user_code = 0;
 static void __attribute__((constructor))
 gmacInit(void)
 {
-    TRACE("Initialiazing GMAC");
 	gmac::util::Private::init(__in_gmac);
 	__enterGmac();
+
+    logger = new gmac::util::Logger("GMAC");
+    logger->trace("Initialiazing GMAC");
 
 #ifdef PARAVER
     paraver::init = 1;
     paraverInit();
 #endif
 
+    paramInit();
+
     /* Call initialization of interpose libraries */
     osInit();
     threadInit();
     stdcInit();
 
-    paramInit();
-
-    TRACE("Using %s memory manager", paramMemManager);
-    TRACE("Using %s memory allocator", paramMemAllocator);
+    logger->trace("Using %s memory manager", paramMemManager);
+    logger->trace("Using %s memory allocator", paramMemAllocator);
     gmac::Process::init(paramMemManager, paramMemAllocator);
-    ASSERT(manager != NULL);
+    logger->assertion(manager != NULL);
     __exitGmac();
 }
 
@@ -60,9 +64,10 @@ static void __attribute__((destructor))
 gmacFini(void)
 {
 	__enterGmac();
-    TRACE("Cleaning GMAC");
+    logger->trace("Cleaning GMAC");
     delete proc;
     // We do not exitGmac to allow proper stdc function handling
+    delete logger;
 }
 
 gmacError_t
@@ -155,7 +160,7 @@ gmacMalloc(void **cpuPtr, size_t count)
     gmac::Context * ctx = gmac::Context::current();
     ctx->lockRead();
     if(allocator != NULL && count < (paramPageSize / 2)) {
-        *cpuPtr = allocator->alloc(count, NULL);   
+        *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
     }
     else {
 	    count = (int(count) < getpagesize())? getpagesize(): count;
@@ -225,12 +230,12 @@ gmacLaunch(gmacKernel_t k)
     gmac::KernelLaunch * launch = ctx->launch(k);
 
     gmacError_t ret = gmacSuccess;
-    TRACE("Flush the memory used in the kernel");
+    logger->trace("Flush the memory used in the kernel");
     manager->flush(*launch);
 
     // Wait for pending transfers
     ctx->syncToDevice();
-    TRACE("Kernel Launch");
+    logger->trace("Kernel Launch");
     ret = launch->execute();
 
 #if 0
@@ -241,7 +246,7 @@ gmacLaunch(gmacKernel_t k)
 #endif
 
     if(paramAcquireOnWrite) {
-        TRACE("Invalidate the memory used in the kernel");
+        logger->trace("Invalidate the memory used in the kernel");
         manager->invalidate(*launch);
     }
 
@@ -261,7 +266,7 @@ gmacThreadSynchronize()
     ctx->lockRead();
 	gmacError_t ret = ctx->sync();
 
-    TRACE("Memory Sync");
+    logger->trace("Memory Sync");
     manager->invalidate(ctx->releaseRegions());
 
     ctx->unlock();
@@ -289,7 +294,7 @@ gmacMemset(void *s, int c, size_t n)
     void *ret = s;
     gmac::Context *ctx = manager->owner(s);
     ctx->lockRead();
-    CFATAL(ctx != NULL, "No owner for %p\n", s);
+    logger->cfatal(ctx != NULL, "No owner for %p\n", s);
     manager->invalidate(s, n);
     ctx->memset(manager->ptr(ctx, s), c, n);
     ctx->unlock();
@@ -323,20 +328,20 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst,
 			                     manager->ptr(srcCtx, src), n);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
 	}
     else if(srcCtx == NULL) {   // To device
 		manager->invalidate(dst, n);
 		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst),
 			                       src, n);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
     }
     else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
 			                     manager->ptr(srcCtx, src), n);
-        ASSERT(err == gmacSuccess);
+        logger->assertion(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
 		//void *tmp;
@@ -354,17 +359,17 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         while (left != 0) {
             size_t bytes = left < bufferSize? left: bufferSize;
             err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
-            ASSERT(err == gmacSuccess);
+            logger->assertion(err == gmacSuccess);
             srcCtx->syncToHost();
-            ASSERT(err == gmacSuccess);
+            logger->assertion(err == gmacSuccess);
             err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
-            ASSERT(err == gmacSuccess);
+            logger->assertion(err == gmacSuccess);
             srcCtx->syncToDevice();
-            ASSERT(err == gmacSuccess);
+            logger->assertion(err == gmacSuccess);
 
             left -= bytes;
             off  += bytes;
-            TRACE("Copying %zd %zd\n", bytes, bufferSize);
+            logger->trace("Copying %zd %zd\n", bytes, bufferSize);
         }
         ctx->unlock();
 	}
