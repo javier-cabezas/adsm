@@ -328,8 +328,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 
 	if (dstCtx == NULL && srcCtx == NULL) return NULL;
 
-	if (srcCtx != NULL) srcCtx->lockRead();
-	if (dstCtx != NULL) dstCtx->lockRead();
 
     // TODO - copyDevice can be always asynchronous
 	if(dstCtx == NULL) {	    // From device
@@ -364,6 +362,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 
         size_t left = n;
         off_t  off  = 0;
+        ctx->lockWrite();
         while (left != 0) {
             size_t bytes = left < bufferSize ? left : bufferSize;
             err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
@@ -379,11 +378,8 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             off  += bytes;
             logger->trace("Copying %zd %zd\n", bytes, bufferSize);
         }
-        if(ctx != srcCtx && ctx != dstCtx) ctx->unlock();
+        ctx->unlock();
 	}
-
-	if (srcCtx != NULL) srcCtx->unlock();
-	if (dstCtx != NULL) dstCtx->unlock();
 
 	__exitGmac();
 	return ret;

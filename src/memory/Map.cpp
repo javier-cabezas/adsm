@@ -3,6 +3,8 @@
 #include <kernel/Process.h>
 #include <kernel/Context.h>
 
+#include <gmac/init.h>
+
 namespace gmac { namespace memory {
 
 RegionMap::RegionMap(paraver::LockName name) :
@@ -121,6 +123,7 @@ void Map::addShared(Region * r)
     __shared.lockWrite();
     __shared.insert(value_type(r->end(), r));
     __shared.unlock();
+    ::logger->trace("Added shared region @ %p", r->start());
 }
 
 void Map::removeShared(Region * r)
@@ -135,6 +138,7 @@ void Map::removeShared(Region * r)
         }
     }
     __shared.unlock();
+    ::logger->trace("Removed shared region @ %p", r->start());
 }
 
 bool Map::isShared(const void *addr)

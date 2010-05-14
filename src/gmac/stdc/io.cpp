@@ -52,9 +52,11 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t bufferSize = ctx->bufferPageLockedSize();
     void * tmp = ctx->bufferPageLocked();
+    ctx->lockWrite();
 
     size_t left = n;
     off_t  off  = 0;
+    if(ctx != srcCtx) srcCtx->lockRead();
     while (left != 0) {
         size_t bytes= left < bufferSize? left: bufferSize;
 
@@ -67,6 +69,8 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
+    if(ctx != srcCtx) srcCtx->unlock();
+    ctx->unlock();
     popState();
 	__exitGmac();
 
@@ -96,14 +100,15 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     //manager->flush(buf, n);
 
     gmac::Context *ctx = gmac::Context::current();
+    ctx->lockWrite();
     size_t bufferSize = ctx->bufferPageLockedSize();
     void * tmp        = ctx->bufferPageLocked();
 
     size_t left = n;
     off_t  off  = 0;
+    if(dstCtx != ctx) dstCtx->lockRead();
     while (left != 0) {
         size_t bytes = left < bufferSize ? left : bufferSize;
-
         err = dstCtx->copyToHostAsync(tmp, manager->ptr(((char *) buf) + off), bytes);
         logger->assertion(err == gmacSuccess);
         err = dstCtx->syncToHost();
@@ -113,6 +118,8 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
+    if(dstCtx != ctx) dstCtx->unlock();
+    ctx->unlock();
     popState();
 	__exitGmac();
 
