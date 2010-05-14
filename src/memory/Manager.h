@@ -196,7 +196,10 @@ public:
 //! \param managerName Name of the memory manager
 Manager *getManager(const char *managerName);
 
+} };
+
+extern gmac::memory::Manager *manager;
+
 #include "Manager.ipp"
 
-} };
 #endif
