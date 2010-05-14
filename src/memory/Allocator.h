@@ -48,7 +48,7 @@ protected:
     Manager *manager;
     Allocator(Manager *manager);
 public:
-
+    virtual ~Allocator() {};
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual bool free(void *addr) = 0;
 };
