@@ -35,12 +35,12 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MEMREGION_H_
 
 #include <config.h>
-#include <debug.h>
 
-#include "util/Lock.h"
+#include <gmac/gmac.h>
 
-#include "gmac/gmac.h"
-#include "memory/os/Memory.h"
+#include <util/Lock.h>
+#include <util/Logger.h>
+#include <memory/os/Memory.h>
 
 #include <stdint.h>
 #include <csignal>
@@ -62,6 +62,8 @@ class Region : public util::RWLock {
 private:
 	Context *_context;
 protected:
+    util::Logger logger;
+
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;

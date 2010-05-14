@@ -1,6 +1,5 @@
 #include "LazyManager.h"
 
-#include <debug.h>
 #include <kernel/Context.h>
 
 namespace gmac { namespace memory { namespace manager {
@@ -15,33 +14,11 @@ LazyManager::newRegion(void * addr, size_t count, bool shared)
 LazyManager::LazyManager()
 {}
 
-#if 0
-void LazyManager::free(void *addr)
-{
-    Region *reg = remove(addr);
-    if(reg->owner() == Context::current()) {
-        ASSERT(reg != NULL);
-        removeVirtual(reg->start(), reg->size());
-        hostUnmap(reg->start(), reg->size());
-        delete reg;
-    } else if(reg->shared() == true) {
-        ContextList::const_iterator i;
-        ContextList &contexts = proc->contexts();
-
-        //! \todo WTF is this?
-        contexts.lockRead();
-        for (i = contexts.begin(); i != contexts.end(); i++) {
-            
-        }
-        contexts.unlock();
-    }
-}
-#endif
 
 void LazyManager::invalidate()
 {
 	Context * ctx = Context::current();
-    TRACE("LazyManager Invalidation Starts");
+    logger.trace("LazyManager Invalidation Starts");
 
     Map::const_iterator i;
     Map * m = current();
@@ -69,7 +46,7 @@ void LazyManager::invalidate()
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	ctx->invalidate();
-    TRACE("LazyManager Invalidation Ends");
+    logger.trace("LazyManager Invalidation Ends");
 }
 
 void LazyManager::invalidate(const RegionSet & regions)
@@ -79,7 +56,7 @@ void LazyManager::invalidate(const RegionSet & regions)
         return;
     }
 
-    TRACE("LazyManager Invalidation Starts");
+    logger.trace("LazyManager Invalidation Starts");
 	RegionSet::const_iterator i;
 	for(i = regions.begin(); i != regions.end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
@@ -90,7 +67,7 @@ void LazyManager::invalidate(const RegionSet & regions)
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	Context::current()->invalidate();
-    TRACE("LazyManager Invalidation Ends");
+    logger.trace("LazyManager Invalidation Ends");
 }
 
 void LazyManager::flush()
@@ -158,9 +135,9 @@ void LazyManager::flush(const RegionSet & regions)
 void LazyManager::invalidate(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	ASSERT(region != NULL);
+	logger.assertion(region != NULL);
     region->lockWrite();
-	ASSERT(region->end() >= (void *)((addr_t)addr + size));
+	logger.assertion(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		if(region->start() < addr ||
 				region->end() > (void *)((addr_t)addr + size))
@@ -173,9 +150,9 @@ void LazyManager::invalidate(const void *addr, size_t size)
 void LazyManager::flush(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	ASSERT(region != NULL);
+	logger.assertion(region != NULL);
     region->lockWrite();
-	ASSERT(region->end() >= (void *)((addr_t)addr + size));
+	logger.assertion(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		region->copyToDevice();
 	}
@@ -187,7 +164,7 @@ void
 LazyManager::map(Context *ctx, Region *r, void *devPtr)
 {
 	ProtRegion *region = dynamic_cast<ProtRegion *>(r);
-	ASSERT(region != NULL);
+	logger.assertion(region != NULL);
 	insertVirtual(ctx, region->start(), devPtr, region->size());
 	region->relate(ctx);
     if (region->dirty() == false && region->present()) {
@@ -247,7 +224,7 @@ bool LazyManager::write(void *addr)
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {
-		TRACE("DMA from Device from %p (%zd bytes)", (void *) region->start(),
+		logger.trace("DMA from Device from %p (%zd bytes)", (void *) region->start(),
 				region->size());
 		region->copyToHost();
 	}
@@ -259,14 +236,14 @@ bool LazyManager::write(void *addr)
 
 bool LazyManager::touch(Region * r)
 {
-    ASSERT(r != NULL);
+    logger.assertion(r != NULL);
     ProtRegion *root = dynamic_cast<ProtRegion *>(r);
     if(root->dirty() == false) {
         root->readWrite();
 
         if(!root->present()) {
             gmacError_t ret = root->copyToHost();
-            ASSERT(ret == gmacSuccess);
+            logger.assertion(ret == gmacSuccess);
         }
     }
 

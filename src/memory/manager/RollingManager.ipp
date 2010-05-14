@@ -53,7 +53,7 @@ inline RollingBlock *
 RollingBuffer::pop()
 {
    lockWrite();
-   ASSERT(_buffer.empty() == false);
+   logger.assertion(_buffer.empty() == false);
    RollingBlock *ret = _buffer.front();
    _buffer.pop_front();
    unlock();
@@ -131,22 +131,13 @@ RollingMap::remove(RollingBlock *block)
    unlock();
 }
 
-#if 0
-inline void
-RollingManager::invalidate(RollingBlock *block)
-{
-   rollingMap.remove(block);
-   block->invalidate();
-}
-#endif
-
 inline void
 RollingManager::flush(RollingBlock *block)
 {
    rollingMap.remove(block);
-   ASSERT(block->dirty() == true);
+   logger.assertion(block->dirty() == true);
    gmacError_t ret = block->copyToDevice();
-   ASSERT(ret == gmacSuccess);
+   logger.assertion(ret == gmacSuccess);
    block->readOnly();
 }
 
@@ -154,7 +145,7 @@ inline void
 RollingManager::forceFlush(RollingBlock *block)
 {
    gmacError_t ret = block->copyToDevice();
-   ASSERT(ret == gmacSuccess);
+   logger.assertion(ret == gmacSuccess);
 }
 
 }}}

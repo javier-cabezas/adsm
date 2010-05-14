@@ -34,11 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_POSIX_MEMORY_H_
 #define __MEMORY_POSIX_MEMORY_H_
 
+#include <util/Logger.h>
+
 #include <sys/mman.h>
 
 namespace gmac { namespace memory {
 
 class Memory {
+    static util::Logger logger;
 public:
 	static int protect(void *addr, size_t count, int prot);
 };

@@ -2,7 +2,8 @@
 #include "Allocator.h"
 
 #include <util/Lock.h>
-#include <debug.h>
+
+#include <gmac/init.h>
 
 gmac::memory::Manager *manager= NULL;
 gmac::memory::Allocator *allocator = NULL;
@@ -45,7 +46,7 @@ static void createAllocator(const char *name)
 
 void memoryInit(const char *manager, const char *allocator)
 {
-	TRACE("Initializing Memory Subsystem");
+	logger->trace("Initializing Memory Subsystem");
 	mutex = new util::Lock(LockManager);
 	memory::Map::init();
 	createManager(manager);
@@ -54,7 +55,7 @@ void memoryInit(const char *manager, const char *allocator)
 
 void memoryFini(void)
 {
-	TRACE("Cleaning Memory Subsystem");
+	logger->trace("Cleaning Memory Subsystem");
     destroyAllocator();
 	destroyManager();
 	delete mutex;

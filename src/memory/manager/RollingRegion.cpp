@@ -19,7 +19,7 @@ RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, b
    cacheLine(cacheLine),
    offset((unsigned long)addr & (cacheLine -1))
 {
-   TRACE("RollingRegion Starts");
+   logger.trace("RollingRegion Starts");
    for(size_t s = 0; s < size; s += cacheLine) {
       void *p = (void *)((uint8_t *)addr + s);
       size_t regionSize = ((size -s) > cacheLine) ? cacheLine : (size - s);
@@ -31,7 +31,7 @@ RollingRegion::RollingRegion(RollingManager &manager, void *addr, size_t size, b
       _memory.insert(region);
       _memory.unlock();
    }
-   TRACE("RollingRegion Ends");
+   logger.trace("RollingRegion Ends");
 }
 
 RollingRegion::~RollingRegion()
@@ -72,7 +72,7 @@ void RollingRegion::relate(Context *ctx)
         }
         else {
             gmacError_t ret = ctx->copyToDevice(Manager::ptr(start()), start(), size());
-            ASSERT(ret == gmacSuccess);
+            logger.assertion(ret == gmacSuccess);
         }
         block->relate(ctx);
         block->unlock();
@@ -105,8 +105,8 @@ RollingBlock *RollingRegion::find(const void *addr)
 
 void RollingRegion::flush()
 {
-   assert(tryWrite() == false);
-   TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
+   logger.assertion(tryWrite() == false);
+   logger.trace("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
 
    // Flush those sub-regions that are present in _memory and dirty
    Map::const_iterator i;
@@ -114,7 +114,7 @@ void RollingRegion::flush()
       RollingBlock * block = i->second;
       block->lockWrite();
       if(block->dirty() == true)  {
-          TRACE("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
+          logger.trace("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
           manager.flush(block);
       }
       block->unlock();
@@ -124,8 +124,8 @@ void RollingRegion::flush()
 
 void RollingRegion::invalidate()
 {
-    ASSERT(tryWrite() == false);
-    TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
+    logger.assertion(tryWrite() == false);
+    logger.trace("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
     // Check if the region is already invalid
 
     _memory.lockWrite();
@@ -135,7 +135,7 @@ void RollingRegion::invalidate()
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
         block->lockWrite();
-        TRACE("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
+        logger.trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
     }
 
     // Protect the region
@@ -143,7 +143,7 @@ void RollingRegion::invalidate()
     // Invalidate those sub-regions that are present in _memory
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
-        TRACE("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
+        logger.trace("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
         block->preInvalidate();
         block->unlock();
     }
@@ -155,7 +155,7 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 {
     void *end = (void *)((addr_t)addr + size);
     Map::iterator i = _map.lower_bound(addr);
-    ASSERT(i != _map.end());
+    logger.assertion(i != _map.end());
     for(; i != _map.end() && i->second->start() < end; i++) {
         RollingBlock * block = i->second;
         block->lockWrite();
@@ -182,16 +182,16 @@ void RollingRegion::invalidate(const void *addr, size_t size)
 void RollingRegion::flush(const void *addr, size_t size)
 {
    assert(tryWrite() == false);
-   TRACE("RollingRegion Invalidate %p (%zd bytes)", (void *) addr, size);
+   logger.trace("RollingRegion Invalidate %p (%zd bytes)", (void *) addr, size);
 
    Map::iterator i = _map.lower_bound(addr);
-   ASSERT(i != _map.end());
+   logger.assertion(i != _map.end());
    for(; i != _map.end() && i->second->start() < addr; i++) {
        RollingBlock * block = i->second;
        block->lockWrite();
       // If the region is not present, just ignore it
       if(block->dirty() == true) {
-          TRACE("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
+          logger.trace("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
           manager.flush(block);
       }
       block->unlock();
@@ -244,7 +244,7 @@ RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size, bool 
 
 RollingBlock::~RollingBlock()
 {
-   TRACE("RollingBlock %p released", (void *) _addr);
+   logger.trace("RollingBlock %p released", (void *) _addr);
 }
 
 void

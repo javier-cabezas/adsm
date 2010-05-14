@@ -3,7 +3,6 @@
 #include <memory/Handler.h>
 #include <memory/ProtRegion.h>
 
-#include <debug.h>
 #include <paraver.h>
 
 namespace gmac { namespace memory {
@@ -27,19 +26,19 @@ void Handler::setHandler()
     sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(signum, &segvAction, &defaultAction) < 0)
-		FATAL("sigaction: %s", strerror(errno));
+		::logger->fatal("sigaction: %s", strerror(errno));
 
 	handler = this;
-	TRACE("New signal handler programmed");
+	::logger->trace("New signal handler programmed");
 }
 
 void Handler::restoreHandler()
 {
 	if(sigaction(signum, &defaultAction, NULL) < 0)
-		FATAL("sigaction: %s", strerror(errno));
+		::logger->fatal("sigaction: %s", strerror(errno));
 
 	handler = NULL;
-	TRACE("Old signal handler restored");
+	::logger->trace("Old signal handler restored");
 }
 
 void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
@@ -55,8 +54,8 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 #endif
     void * addr = info->si_addr;
 
-	if(!writeAccess) TRACE("Read SIGSEGV for %p", addr);
-	else TRACE("Write SIGSEGV for %p", addr);
+	if(!writeAccess) ::logger->trace("Read SIGSEGV for %p", addr);
+	else ::logger->trace("Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	if(!writeAccess) resolved = handler->read(addr);
@@ -71,7 +70,7 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 		return defaultAction.sa_handler(s);
 	}
 
-	TRACE("SIGSEGV done");
+	::logger->trace("SIGSEGV done");
 	exitFunction();
 	__exitGmac();
 }

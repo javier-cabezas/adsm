@@ -46,7 +46,6 @@ Map::sharedFind(const void *addr)
     i = __shared.upper_bound(addr);
     if(i != __shared.end() && i->second->start() <= addr)
         ret = i->second;
-    __shared.unlock();
     return ret;
 }
 
@@ -57,7 +56,7 @@ Map::clean()
     RegionMap &__global = proc->global();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
-		TRACE("Cleaning Region %p", i->second->start());
+		logger.trace("Cleaning Region %p", i->second->start());
 		__global.lockWrite();
 		__global.erase(i->first);
 		__global.unlock();
@@ -68,13 +67,14 @@ Map::clean()
 }
 
 Map::Map() :
-    RegionMap(LockMmLocal)
+    RegionMap(LockMmLocal),
+    logger("Map")
 {
 }
 
 Map::~Map()
 {
-    TRACE("Cleaning Memory Map");
+    logger.trace("Cleaning Memory Map");
     clean();
 }
 
@@ -89,7 +89,7 @@ Region *Map::remove(void *addr)
     __global.lockWrite();
     i = __global.upper_bound(addr);
     Region * r = i->second;
-    ASSERT(i != __global.end() && r->start() == addr);
+    logger.assertion(i != __global.end() && r->start() == addr);
     Context * ctx = Context::current();
     if(r->owner() == ctx) __global.erase(i);
     __global.unlock();
@@ -97,20 +97,16 @@ Region *Map::remove(void *addr)
     if(r->owner() != ctx)
         return r;
 
-    TRACE("Removing Region %p", r->start());
-    //lockWrite();
+    logger.trace("Removing Region %p", r->start());
     i = upper_bound(addr);
-    ASSERT(i != end() && r->start() == addr);
+    logger.assertion(i != end() && r->start() == addr);
     erase(i);
-    //unlock();
     return r;
 }
 
 void Map::insert(Region *r)
 {
-    //lockWrite();
     RegionMap::insert(value_type(r->end(), r));
-    //unlock();
 
     RegionMap &__global = proc->global();
     __global.lockWrite();

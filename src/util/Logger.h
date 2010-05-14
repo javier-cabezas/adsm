@@ -61,18 +61,18 @@ protected:
     std::ostream &out;
 
     static const size_t BufferSize = 1024;
-    char buffer[BufferSize];
+    static char buffer[BufferSize];
 
-    void log(std::string tag, const char *fmt, va_list list);
+    void log(std::string tag, const char *fmt, va_list list) const;
 
 public:
     Logger(const char *name);
 
-    void trace(const char *fmt, ...); 
-    void warning(const char *fmt, ...);
-    void __assertion(unsigned c, const char *fmt, ...);
-    void fatal(const char *fmt, ...);
-    void cfatal(unsigned c, const char *fmt, ...);
+    void trace(const char *fmt, ...) const; 
+    void warning(const char *fmt, ...) const;
+    void __assertion(unsigned c, const char *fmt, ...) const;
+    void fatal(const char *fmt, ...) const;
+    void cfatal(unsigned c, const char *fmt, ...) const;
 };
 
 }}

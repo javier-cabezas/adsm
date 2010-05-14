@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_BITMAP_H_
 #define __MEMORY_BITMAP_H_
 
+#include <util/Logger.h>
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -46,6 +48,8 @@ private:
 
     size_t __pageShift;
     size_t __size;
+
+    util::Logger logger;
 
     void allocate();
 public:

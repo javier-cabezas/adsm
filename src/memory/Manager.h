@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
+#include <util/Logger.h>
+
 #include <memory/Map.h>
 #include <memory/PageTable.h>
 #include <memory/os/Memory.h>
@@ -61,6 +63,8 @@ namespace gmac { namespace memory {
 //! the CPU memory to/from the accelerator memory.
 class Manager {
 protected:
+
+    util::Logger logger;
 
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT

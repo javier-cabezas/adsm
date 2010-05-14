@@ -38,7 +38,9 @@ WITH THE SOFTWARE.  */
 #include "Bitmap.h"
 
 #include <paraver.h>
+
 #include <util/Lock.h>
+#include <util/Logger.h>
 
 #include <set>
 #include <map>
@@ -54,6 +56,7 @@ public:
 class Map : public RegionMap {
 protected:
 
+    util::Logger logger;
     Region *localFind(const void *addr);
 
     void clean();
