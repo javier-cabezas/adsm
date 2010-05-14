@@ -35,7 +35,8 @@ WITH THE SOFTWARE.  */
 #define __API_CUDADRV_MODULE_H_
 
 #include <config.h>
-#include <debug.h>
+
+#include <util/Logger.h>
 
 #include <list>
 #include <vector>
@@ -85,6 +86,8 @@ class Module;
 typedef std::vector<Module *> ModuleVector;
 
 class ModuleDescriptor {
+    util::Logger logger;
+
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
     static ModuleDescriptorVector Modules;
 	const void * _fatBin;
@@ -118,6 +121,8 @@ public:
 
 class Module {
 protected:
+    util::Logger logger;
+
 	CUmodule _mod;
 	const void *_fatBin;
 

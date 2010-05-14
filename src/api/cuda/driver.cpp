@@ -1,9 +1,8 @@
 #include <config.h>
-#include <debug.h>
 
-#include "gmac/init.h"
+#include <gmac/init.h>
 
-#include "kernel/Kernel.h"
+#include <kernel/Kernel.h>
 
 #include "Accelerator.h"
 #include "Context.h"
@@ -34,8 +33,8 @@ using gmac::gpu::VariableDescriptor;
  */
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-    TRACE("CUDA Fat binary: %p", fatCubin);
-    ASSERT(proc->nAccelerators() > 0);
+    ::logger->trace("CUDA Fat binary: %p", fatCubin);
+    ::logger->assertion(proc->nAccelerators() > 0);
     __enterGmac();
     // Use the first GPU to load the fat binary
     void **ret = (void **) new ModuleDescriptor(fatCubin);
@@ -56,9 +55,9 @@ void __cudaRegisterFunction(
 		const char *devName, int threadLimit, uint3 *tid, uint3 *bid,
 		dim3 *bDim, dim3 *gDim)
 {
-    TRACE("CUDA Function");
+    ::logger->trace("CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	ASSERT(mod != NULL);
+	::logger->assertion(mod != NULL);
 	__enterGmac();
     KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
@@ -69,9 +68,9 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char *deviceAddress, const char *deviceName, int ext, int size,
 		int constant, int global)
 {
-    TRACE("CUDA Variable %s", deviceName);
+    ::logger->trace("CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	ASSERT(mod != NULL);
+	::logger->assertion(mod != NULL);
 	__enterGmac();
     VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant));
     mod->add(v);
@@ -81,9 +80,9 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
 		const void **deviceAddress, const char *deviceName, int dim, int norm, int ext)
 {
-    TRACE("CUDA Texture");
+    ::logger->trace("CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	ASSERT(mod != NULL);
+	::logger->assertion(mod != NULL);
 	__enterGmac();
     TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
 	mod->add(t);

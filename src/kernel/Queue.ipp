@@ -15,7 +15,7 @@ Queue::pop()
 {
     sem.wait();
     mutex.lock();
-    ASSERT(_queue.empty() == false);
+    logger.assertion(_queue.empty() == false);
     Context *ret = _queue.front();
     _queue.pop_front();
     mutex.unlock();

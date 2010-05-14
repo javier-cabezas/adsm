@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __API_CUDADRV_CONTEXT_H_
 
 #include <config.h>
-#include <debug.h>
 #include <paraver.h>
 
 #include "Accelerator.h"

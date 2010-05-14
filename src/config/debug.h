@@ -34,10 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_DEBUG_H
 #define __CONFIG_DEBUG_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include "config.h"
 
 #define __THREAD_CANARY
 #include <threads.h>
@@ -52,54 +49,6 @@ WITH THE SOFTWARE.  */
 #else
 #define FMT_TID "0x%llx"
 #endif
-#endif
-
-#ifdef DEBUG
-#define ASSERT(e)  \
-    if (!(e)) {    \
-		fprintf(stderr,"ASSERT ERROR at [%s:%d]\n", __FILE__, __LINE__); \
-        abort();   \
-    }
-#else
-#define ASSERT(e)
-#endif
-
-#define FATAL(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		abort();	\
-	} while(0)
-
-#define CFATAL(e, fmt, ...) \
-	do {	                \
-        if (!(e)) {         \
-		    fprintf(stderr,"FATAL [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);	\
-		    abort();	    \
-        }                   \
-	} while(0)
-
-#define CBREAK(e, ...) \
-        if (!(e)) {      \
-            __VA_ARGS__; \
-		    break;	     \
-        }
-
-#ifdef DEBUG
-#define TRACE(fmt, ...)	\
-	do {	\
-		fprintf(stderr,"TRACE [%s:%d] ("FMT_TID")" fmt "\n",  __FILE__, __LINE__, SELF(), ##__VA_ARGS__);	\
-	} while(0)
-#else
-#define TRACE(fmt, ...)
-#endif
-
-#ifdef DEBUG
-#define WARNING(fmt, ...) \
-   do { \
-      fprintf(stderr,"WARNING [%s:%d] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
-   } while(0)
-#else
-#define WARNING(fmt, ...)
 #endif
 
 

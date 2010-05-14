@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_MEMORY_TRANSFER_H_
 #define __KERNEL_MEMORY_TRANSFER_H_
 
-#include <debug.h>
-
 namespace gmac {
 
 /*!

@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_ACCELERATOR_H_
 
 #include <gmac/gmac.h>
+#include <util/Logger.h>
 #include <stddef.h>
 
 namespace gmac {
@@ -49,6 +50,7 @@ class Context;
 class Accelerator {
 protected:
 	friend class Context;
+    util::Logger logger;
 	virtual void destroy(Context *ctx) = 0;
     size_t _memory;
     unsigned _id;
@@ -57,9 +59,6 @@ public:
 	virtual ~Accelerator();
 
 	virtual Context *create() = 0;
-#if 0
-	virtual Context *clone(const Context &) = 0;
-#endif
     virtual gmacError_t bind(Context * ctx) = 0;
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;

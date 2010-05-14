@@ -1,6 +1,8 @@
 #ifndef __UTIL_POSIX_LOCK_IPP_
 #define __UTIL_POSIX_LOCK_IPP_
 
+#include <debug.h>
+
 inline 
 Owned::Owned() : __owner(0), logger("Lock")
 {
@@ -9,7 +11,7 @@ Owned::Owned() : __owner(0), logger("Lock")
 inline void
 Owned::acquire()
 {
-   ASSERT(__owner == 0);
+   logger.assertion(__owner == 0);
    __owner = pthread_self();
 }
 
@@ -41,7 +43,7 @@ Lock::unlock()
 {
 #ifdef DEBUG
    if(owner() != pthread_self())
-      WARNING("Thread "FMT_TID" releases lock owned by "FMT_TID, pthread_self(), owner());
+      logger.warning("Thread "FMT_TID" releases lock owned by "FMT_TID, pthread_self(), owner());
    release();
 #endif
    pthread_mutex_unlock(&__mutex);

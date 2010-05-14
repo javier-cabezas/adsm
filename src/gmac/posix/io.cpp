@@ -1,5 +1,4 @@
 #include <paraver.h>
-#include <debug.h>
 
 #include <init.h>
 #include <memory/Manager.h>

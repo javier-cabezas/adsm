@@ -36,8 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include "Descriptor.h"
 
-#include "memory/Region.h"
-#include "util/ReusableObject.h"
+#include <memory/Region.h>
+#include <util/ReusableObject.h>
+#include <util/Logger.h>
 
 #include <vector>
 
@@ -59,6 +60,8 @@ typedef std::vector<Argument> ArgVector;
 class KernelConfig : public ArgVector {
 protected:
     static const unsigned StackSize = 4096;
+
+    util::Logger logger;
 
     char _stack[StackSize];
     size_t _argsSize;

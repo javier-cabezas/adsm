@@ -2,11 +2,9 @@
 #include "Context.h"
 #include "Accelerator.h"
 
-#include "memory/Manager.h"
+#include <memory/Manager.h>
+#include <gmac/init.h>
 
-#include "gmac/init.h"
-
-#include <debug.h>
 
 gmac::Process *proc = NULL;
 
@@ -35,6 +33,7 @@ size_t Process::_totalMemory = 0;
 
 Process::Process() :
     RWLock(LockProcess),
+    logger("Process"),
     _global(LockMmGlobal),
     _shared(LockMmShared),
     current(0)
@@ -42,7 +41,7 @@ Process::Process() :
 
 Process::~Process()
 {
-    TRACE("Cleaning process");
+    logger.trace("Cleaning process");
     std::vector<Accelerator *>::iterator a;
     std::list<Context *>::iterator c;
     QueueMap::iterator q;
@@ -65,8 +64,8 @@ void
 Process::init(const char *manager, const char *allocator)
 {
     // Process is a singleton class. The only allowed instance is proc
-    TRACE("Initializing process");
-    ASSERT(proc == NULL);
+    ::logger->trace("Initializing process");
+    ::logger->assertion(proc == NULL);
     Context::Init();
     proc = new Process();
     apiInit();
@@ -89,17 +88,17 @@ Context *
 Process::create(int acc)
 {
     pushState(Init);
-    TRACE("Creating new context");
+    logger.trace("Creating new context");
     lockWrite();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
-    ASSERT(q != _queues.end());
+    logger.assertion(q != _queues.end());
     _queues.unlock();
     Context * ctx;
     unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        ASSERT(acc < int(_accs.size()));
+        logger.assertion(acc < int(_accs.size()));
         usedAcc = acc;
         ctx = _accs[acc]->create();
     } else {
@@ -118,7 +117,7 @@ Process::create(int acc)
         _contexts.push_back(ctx);
     }
 	unlock();
-	TRACE("Created context on Acc#%d", usedAcc);
+	logger.trace("Created context on Acc#%d", usedAcc);
     popState();
     return ctx;
 }
@@ -128,7 +127,7 @@ gmacError_t Process::migrate(Context * ctx, int acc)
 	lockWrite();
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
-	TRACE("Migrating context");
+	logger.trace("Migrating context");
     if (Context::hasCurrent()) {
 #ifndef USE_MMAP
         if (int(ctx->accId()) != acc) {
@@ -136,13 +135,13 @@ gmacError_t Process::migrate(Context * ctx, int acc)
             ret = _accs[acc]->bind(ctx);
         }
 #else
-        FATAL("Migration not implemented when using mmap");
+        logger.fatal("Migration not implemented when using mmap");
 #endif
     } else {
         // Create the context in the requested accelerator
         _accs[acc]->create();
     }
-	TRACE("Context migrated");
+	logger.trace("Context migrated");
 	unlock();
     return ret;
 }
@@ -175,7 +174,7 @@ void Process::send(THREAD_ID id)
     Context *ctx = Context::current();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(id);
-    ASSERT(q != _queues.end());
+    logger.assertion(q != _queues.end());
     _queues.unlock();
     q->second->lock();
     q->second->queue->push(ctx);
@@ -191,7 +190,7 @@ void Process::receive()
     // Get a fresh context
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
-    ASSERT(q != _queues.end());
+    logger.assertion(q != _queues.end());
     _queues.unlock();
     Context::key.set(q->second->queue->pop());
 }
@@ -201,7 +200,7 @@ void Process::sendReceive(THREAD_ID id)
     Context * ctx = Context::current();
     _queues.lockRead();
 	QueueMap::iterator q = _queues.find(id);
-	ASSERT(q != _queues.end());
+	logger.assertion(q != _queues.end());
     _queues.unlock();
     q->second->lock();
 	q->second->queue->push(ctx);
@@ -209,7 +208,7 @@ void Process::sendReceive(THREAD_ID id)
     Context::key.set(NULL);
     _queues.lockRead();
 	q = _queues.find(SELF());
-	ASSERT(q != _queues.end());
+	logger.assertion(q != _queues.end());
     Context::key.set(q->second->queue->pop());
     _queues.unlock();
 }
@@ -219,7 +218,7 @@ void Process::copy(THREAD_ID id)
     Context *ctx = Context::current();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(id);
-    ASSERT(q != _queues.end());
+    logger.assertion(q != _queues.end());
     _queues.unlock();
     ctx->inc();
     q->second->lock();

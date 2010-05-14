@@ -34,11 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef __DESCRIPTOR_KERNEL_H_
 #define __DESCRIPTOR_KERNEL_H_
 
+#include <util/Logger.h>
+
 namespace gmac {
 
 template <typename K>
 class Descriptor {
 protected:
+    util::Logger logger;
     K _key;
     const char * _name;
 

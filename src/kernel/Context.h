@@ -34,11 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_CONTEXT_H_
 #define __KERNEL_CONTEXT_H_
 
-#include <debug.h>
 
 #include <util/Parameter.h>
 #include <util/Private.h>
 #include <util/Reference.h>
+#include <util/Logger.h>
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 
@@ -65,6 +65,8 @@ public:
     };
 
 protected:
+    util::Logger logger;
+
 	/*!
 		\brief Last error on context
 	*/

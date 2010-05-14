@@ -3,7 +3,7 @@
 namespace gmac {
 
 Accelerator::Accelerator(int n) :
-    _memory(0), _id(n)
+    logger("Accelerator"), _memory(0), _id(n)
 {
 }
 

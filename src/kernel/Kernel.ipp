@@ -6,6 +6,7 @@
 
 #include "Context.h"
 
+#include <cstring>
 #include <algorithm>
 
 namespace gmac {
@@ -74,6 +75,7 @@ Argument::Argument(void * ptr, size_t size, off_t offset) :
 
 inline
 KernelConfig::KernelConfig(const KernelConfig & c) :
+    logger("KernelConfig"),
     _argsSize(0)
 {
     ArgVector::const_iterator it;
@@ -85,6 +87,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 inline
 KernelConfig::KernelConfig() :
     ArgVector(),
+    logger("KernelConfig"),
     _argsSize(0)
 {
 }
@@ -99,14 +102,14 @@ void
 KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 {
     if (size == 4) {
-        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": 0x%x", size, _argsSize, offset, *(uint32_t *) arg);
+        logger.trace("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": 0x%x", size, _argsSize, offset, *(uint32_t *) arg);
     } else if (size == 8) {
-        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": %p", size, _argsSize, offset, (void *) *(uint64_t *) arg);
+        logger.trace("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": %p", size, _argsSize, offset, (void *) *(uint64_t *) arg);
     } else {
-        TRACE("Pushing argument: +%zd, %" PRId64 "/%" PRId64, size, _argsSize, offset);
+        logger.trace("Pushing argument: +%zd, %" PRId64 "/%" PRId64, size, _argsSize, offset);
     }
 
-    ASSERT(offset + size < KernelConfig::StackSize);
+    logger.assertion(offset + size < KernelConfig::StackSize);
 
     memcpy(&_stack[offset], arg, size);
     _argsSize = offset + size;

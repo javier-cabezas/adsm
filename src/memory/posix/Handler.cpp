@@ -5,6 +5,8 @@
 
 #include <paraver.h>
 
+#include <cerrno>
+
 namespace gmac { namespace memory {
 
 struct sigaction Handler::defaultAction;

@@ -3,6 +3,6 @@
 
 namespace gmac {
 Queue::Queue() :
-    mutex(LockQueue), sem(0)
+    logger("Queue"), mutex(LockQueue), sem(0)
 {}
 }

@@ -4,6 +4,7 @@
 #include <paraver.h>
 
 #include <fstream>
+#include <cstring>
 #include <cstdarg>
 #include <cassert>
 
@@ -17,7 +18,7 @@ Lock Logger::lock(LockLog);
 Logger::Logger(const char *name) :
     name(name),
     active(false),
-    out(std::clog)
+    out(&std::clog)
 {
     if(Level == NULL) {
         Level = new Parameter<const char *>(&Logger::debugString,
@@ -39,7 +40,7 @@ void Logger::log(std::string tag, const char *fmt, va_list list) const
     if(active == false) return;
     lock.lock();
     vsnprintf(buffer, BufferSize, fmt, list);
-    out << tag << " [" << name << "]: " << buffer << std::endl;
+    *out << tag << " [" << name << "]: " << buffer << std::endl;
     lock.unlock();
 }
 

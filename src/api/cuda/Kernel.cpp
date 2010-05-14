@@ -14,7 +14,7 @@ Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
 #if CUDART_VERSION >= 3000 && LINUX
     cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
 #endif
-    ASSERT(ret == CUDA_SUCCESS);
+    logger.assertion(ret == CUDA_SUCCESS);
 }
 
 gmac::KernelLaunch *
@@ -60,9 +60,9 @@ KernelLaunch::execute()
     _ctx.pushLock();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
+    logger.cfatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
-	ASSERT(ret == CUDA_SUCCESS);
+	logger.assertion(ret == CUDA_SUCCESS);
 
 #if 0
 	// Set-up textures

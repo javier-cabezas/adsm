@@ -4,7 +4,6 @@
 #include <order.h>
 #include <config.h>
 #include <threads.h>
-#include <debug.h>
 
 #include <util/Parameter.h>
 #include <util/Private.h>

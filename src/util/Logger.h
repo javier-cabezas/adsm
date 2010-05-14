@@ -58,7 +58,7 @@ protected:
 
     const char *name;
     bool active;
-    std::ostream &out;
+    std::ostream *out;
 
     static const size_t BufferSize = 1024;
     static char buffer[BufferSize];
