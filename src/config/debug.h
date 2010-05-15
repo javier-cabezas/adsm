@@ -36,20 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "config.h"
 
-#define __THREAD_CANARY
-#include <threads.h>
-#undef __THREAD_CANARY
-
-
-#if defined(__LP64__) 
-#define FMT_TID "0x%lx"
-#else
-#if defined(DARWIN)
-#define FMT_TID "%p"
-#else
-#define FMT_TID "0x%llx"
-#endif
-#endif
 
 
 #endif
