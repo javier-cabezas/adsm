@@ -61,7 +61,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t bytes= left < bufferSize? left: bufferSize;
 
         ret += __libc_fread(tmp, size, bytes/size, stream);
-        err = srcCtx->copyToDeviceAsync(manager->ptr(((char *) buf) + off), tmp, bytes);
+        err = srcCtx->copyToDeviceAsync(manager->ptr(srcCtx, ((char *) buf) + off), tmp, bytes);
         logger->assertion(err == gmacSuccess);
         err = srcCtx->syncToDevice();
         logger->assertion(err == gmacSuccess);
@@ -109,7 +109,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     if(dstCtx != ctx) dstCtx->lockRead();
     while (left != 0) {
         size_t bytes = left < bufferSize ? left : bufferSize;
-        err = dstCtx->copyToHostAsync(tmp, manager->ptr(((char *) buf) + off), bytes);
+        err = dstCtx->copyToHostAsync(tmp, manager->ptr(dstCtx, ((char *) buf) + off), bytes);
         logger->assertion(err == gmacSuccess);
         err = dstCtx->syncToHost();
         logger->assertion(err == gmacSuccess);

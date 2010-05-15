@@ -174,28 +174,6 @@ LazyManager::map(Context *ctx, Region *r, void *devPtr)
     }
 }
 
-#if 0
-void LazyManager::flush(Region *region)
-{
-	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
-	if(r->dirty()) {
-		r->copyToDevice();
-	}
-	r->invalidate();
-}
-
-void LazyManager::dirty(Region *region) 
-{
-	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
-	r->readWrite();
-}
-
-bool LazyManager::present(Region *region) const
-{
-	ProtRegion *r = dynamic_cast<ProtRegion *>(region);
-	return r->present();
-}
-#endif
 
 // Handler Interface
 

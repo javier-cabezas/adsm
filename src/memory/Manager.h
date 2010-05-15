@@ -173,9 +173,7 @@ public:
 	//! requiered
 	//! \param addr Memory address at the CPU
 	static const void *ptr(Context *ctx, const void *addr);
-	static const void *ptr(const void *addr);
 	static void *ptr(Context *ctx, void *addr);
-	static void *ptr(void *addr);
 
     void initShared(Context *);
 

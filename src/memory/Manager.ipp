@@ -52,12 +52,6 @@ Manager::ptr(Context *ctx, const void *addr)
     return ret;
 }
 
-inline const void *
-Manager::ptr(const void *addr)
-{
-    return ptr(::manager->owner(addr), addr);
-}
-
 inline void *
 Manager::ptr(Context *ctx, void *addr)
 {
@@ -65,12 +59,6 @@ Manager::ptr(Context *ctx, void *addr)
     void *ret = (void *)pageTable.translate(addr);
     if(ret == NULL) ret = proc->translate(addr);
     return ret;
-}
-
-inline void *
-Manager::ptr(void *addr)
-{
-    return ptr(::manager->owner(addr), addr);
 }
 
 inline int
