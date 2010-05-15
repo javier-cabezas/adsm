@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define __UTIL_LOGGER_H_
 
 #include <config.h>
+#include <threads.h>
 
 #include "Parameter.h"
 
@@ -51,7 +52,7 @@ inline const char *__extract_file_name(const char *top, const char *file) {
     return file + strlen(top) + 1;
 }
 
-#define trace(fmt, ...) __trace("(%s) [%s:%d] " fmt, __func__, \
+#define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
 
 namespace gmac { namespace util {
