@@ -58,7 +58,7 @@ ssize_t read(int fd, void *buf, size_t count)
         size_t bytes= left < bufferSize? left: bufferSize;
 
         ret += __libc_read(fd, tmp, bytes);
-        err = srcCtx->copyToDevice(manager->ptr(((char *) buf) + off), tmp, bytes);
+        err = srcCtx->copyToDevice(manager->ptr(srcCtx, ((char *) buf) + off), tmp, bytes);
         logger->assertion(err == gmacSuccess);
 
         left -= bytes;
@@ -99,7 +99,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     while (left != 0) {
         size_t bytes = left < bufferSize? left: bufferSize;
 
-        err = dstCtx->copyToHost(tmp, manager->ptr(((char *) buf) + off), bytes);
+        err = dstCtx->copyToHost(tmp, manager->ptr(dstCtx, ((char *) buf) + off), bytes);
         logger->assertion(err == gmacSuccess);
         ret += __libc_write(fd, tmp, bytes);
 
