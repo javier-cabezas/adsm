@@ -52,7 +52,7 @@ typedef unsigned long addr_t;
 
 
 template<typename T>
-class Table {
+class Table : public util::Logger {
 protected:
 	static const size_t defaultSize = 512;
 	size_t nEntries;
@@ -61,7 +61,6 @@ protected:
 	static const addr_t Dirty   = 0x02;
 	static const addr_t Mask    = ~0x03;
 
-    util::Logger logger;
 	T **table;
 
 	T *entry(size_t n) const;

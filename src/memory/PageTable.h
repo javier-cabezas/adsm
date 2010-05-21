@@ -51,14 +51,13 @@ namespace gmac { namespace memory {
 
 //! Software Virtual Memory Table to keep translation from
 // CPU to accelerator memory addresses
-class PageTable {
+class PageTable : public util::Logger {
 protected:
 
 private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;
 
-    util::Logger logger;
 	util::RWLock lock;
 
 	static size_t tableShift;

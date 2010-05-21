@@ -58,8 +58,6 @@ extern gmac::util::Private __in_gmac;
 extern const char __gmac_code;
 extern const char __user_code;
 
-extern gmac::util::Logger *logger;
-
 inline void __enterGmac() { __in_gmac.set(&__gmac_code); }
 inline void __exitGmac() { __in_gmac.set(&__user_code); }
 inline char __inGmac() { 

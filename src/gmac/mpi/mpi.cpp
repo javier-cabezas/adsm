@@ -19,7 +19,7 @@ SYM(int, __MPI_Recv    , void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Stat
 
 void mpiInit(void)
 {
-	logger->trace("Overloading MPI_Sendrecv");
+	gmac::util::Logger::trace("Overloading MPI_Sendrecv");
 	LOAD_SYM(__MPI_Sendrecv, MPI_Sendrecv);
 
 	LOAD_SYM(__MPI_Send,  MPI_Send);
@@ -89,10 +89,10 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
 		err = sendCtx->copyToHostAsync(tmpSend,
                                        manager->ptr(sendCtx, sendbuf), sendbytes);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
         sendCtx->syncToHost();
 
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
 	} else {
         tmpSend = sendbuf;
     }
@@ -125,22 +125,22 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, recvbuf),
                                          tmpRecv,
                                          recvbytes);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
         err = recvCtx->syncToDevice();
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
 cleanup:
     if (allocSend) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpSend);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
     if (allocRecv) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpRecv);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
 exit:
@@ -197,17 +197,17 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
             err = manager->halloc(ctx, &tmpSend, sendbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
-                logger->fatal("Error in MPI_Send");
+                gmac::util::Logger::fatal("Error in MPI_Send");
             }
             allocSend = true;
         }
 
 		err = sendCtx->copyToHostAsync(tmpSend,
                                        manager->ptr(sendCtx, buf), sendbytes);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
         sendCtx->syncToHost();
 
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
 	} else {
         tmpSend = buf;
     }
@@ -217,7 +217,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     if (allocSend) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpSend);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
 exit:
@@ -290,7 +290,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
             err = manager->halloc(ctx, &tmpRecv, recvbytes);
             if (err != gmacSuccess) {
                 //! \todo Do something
-                logger->fatal("Error in MPI_Recv");
+                gmac::util::Logger::fatal("Error in MPI_Recv");
             }
             allocRecv = true;
         }
@@ -304,16 +304,16 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
         err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, buf),
                                          tmpRecv,
                                          recvbytes);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
         err = recvCtx->syncToDevice();
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
 cleanup:
     if (allocRecv) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpRecv);
-        logger->assertion(err == gmacSuccess);
+        gmac::util::Logger::assertion(err == gmacSuccess);
     }
 
 	__exitGmac();

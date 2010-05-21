@@ -84,8 +84,6 @@ class Process : public util::RWLock{
 protected:
     friend class Accelerator;
 
-    util::Logger logger;
-
 	std::vector<Accelerator *> _accs;
 	ContextList _contexts;
 

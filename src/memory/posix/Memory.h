@@ -41,7 +41,6 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Memory {
-    static util::Logger logger;
 public:
 	static int protect(void *addr, size_t count, int prot);
 };

@@ -42,9 +42,8 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Allocator {
+class Allocator : public util::Logger {
 protected:
-    util::Logger logger;
     Manager *manager;
     Allocator(Manager *manager);
 public:

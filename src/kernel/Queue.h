@@ -48,11 +48,9 @@ class Context;
 /*!
 	\brief Communication Queue
 */
-class Queue {
+class Queue : public util::Logger {
 protected:
 	typedef std::list<Context *> Fifo;
-
-    util::Logger logger;
 
 	util::Lock mutex;
 	Fifo _queue;

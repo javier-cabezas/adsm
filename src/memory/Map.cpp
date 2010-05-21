@@ -59,7 +59,7 @@ Map::clean()
     RegionMap &__global = proc->global();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
-		logger.trace("Cleaning Region %p", i->second->start());
+		trace("Cleaning Region %p", i->second->start());
 		__global.lockWrite();
 		__global.erase(i->first);
 		__global.unlock();
@@ -70,14 +70,13 @@ Map::clean()
 }
 
 Map::Map() :
-    RegionMap(LockMmLocal),
-    logger("Map")
+    RegionMap(LockMmLocal)
 {
 }
 
 Map::~Map()
 {
-    logger.trace("Cleaning Memory Map");
+    trace("Cleaning Memory Map");
     clean();
 }
 
@@ -92,7 +91,7 @@ Region *Map::remove(void *addr)
     __global.lockWrite();
     i = __global.upper_bound(addr);
     Region * r = i->second;
-    logger.assertion(i != __global.end() && r->start() == addr);
+    assertion(i != __global.end() && r->start() == addr);
     Context * ctx = Context::current();
     if(r->owner() == ctx) __global.erase(i);
     __global.unlock();
@@ -100,9 +99,9 @@ Region *Map::remove(void *addr)
     if(r->owner() != ctx)
         return r;
 
-    logger.trace("Removing Region %p", r->start());
+    trace("Removing Region %p", r->start());
     i = upper_bound(addr);
-    logger.assertion(i != end() && r->start() == addr);
+    assertion(i != end() && r->start() == addr);
     erase(i);
     return r;
 }
@@ -123,7 +122,7 @@ void Map::addShared(Region * r)
     __shared.lockWrite();
     __shared.insert(value_type(r->end(), r));
     __shared.unlock();
-    ::logger->trace("Added shared region @ %p", r->start());
+    util::Logger::Trace("Added shared region @ %p", r->start());
 }
 
 void Map::removeShared(Region * r)
@@ -138,7 +137,7 @@ void Map::removeShared(Region * r)
         }
     }
     __shared.unlock();
-    ::logger->trace("Removed shared region @ %p", r->start());
+    util::Logger::Trace("Removed shared region @ %p", r->start());
 }
 
 bool Map::isShared(const void *addr)

@@ -48,10 +48,9 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
-class Owned {
+class Owned : public Logger {
 protected:
     pthread_t __owner;
-    Logger logger;
 public:
    Owned();
 

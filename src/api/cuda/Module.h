@@ -85,8 +85,7 @@ public:
 class Module;
 typedef std::vector<Module *> ModuleVector;
 
-class ModuleDescriptor {
-    util::Logger logger;
+class ModuleDescriptor : public util::Logger {
 
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
     static ModuleDescriptorVector Modules;
@@ -119,9 +118,8 @@ public:
 
 };
 
-class Module {
+class Module : public util::Logger {
 protected:
-    util::Logger logger;
 
 	CUmodule _mod;
 	const void *_fatBin;

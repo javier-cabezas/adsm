@@ -47,7 +47,7 @@ Context::pushLock()
 {
     mutex.lock();
     CUresult ret = cuCtxPushCurrent(_ctx);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error pushing context %d", ret);
 }
 
 inline void
@@ -55,7 +55,7 @@ Context::popUnlock()
 {
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error popping context %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error popping context %d", ret);
     mutex.unlock();
 }
 #else
@@ -109,9 +109,9 @@ Context::sync()
         popEventState(paraver::Accelerator, 0x10000000 + _id);
 
         if (ret == CUDA_SUCCESS) {
-            logger.trace("Sync: success");
+            trace("Sync: success");
         } else {
-            logger.trace("Sync: error: %d", ret);
+            trace("Sync: error: %d", ret);
         }
 
         _pendingKernel = false;

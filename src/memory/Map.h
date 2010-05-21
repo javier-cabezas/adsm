@@ -56,7 +56,6 @@ public:
 class Map : public RegionMap {
 protected:
 
-    util::Logger logger;
     Region *localFind(const void *addr);
 
     void clean();

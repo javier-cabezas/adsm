@@ -18,7 +18,7 @@ LazyManager::LazyManager()
 void LazyManager::invalidate()
 {
 	Context * ctx = Context::current();
-    logger.trace("LazyManager Invalidation Starts");
+    trace("LazyManager Invalidation Starts");
 
     Map::const_iterator i;
     Map * m = current();
@@ -46,7 +46,7 @@ void LazyManager::invalidate()
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	ctx->invalidate();
-    logger.trace("LazyManager Invalidation Ends");
+    trace("LazyManager Invalidation Ends");
 }
 
 void LazyManager::invalidate(const RegionSet & regions)
@@ -56,7 +56,7 @@ void LazyManager::invalidate(const RegionSet & regions)
         return;
     }
 
-    logger.trace("LazyManager Invalidation Starts");
+    trace("LazyManager Invalidation Starts");
 	RegionSet::const_iterator i;
 	for(i = regions.begin(); i != regions.end(); i++) {
         ProtRegion *r = dynamic_cast<ProtRegion *>(*i);
@@ -67,7 +67,7 @@ void LazyManager::invalidate(const RegionSet & regions)
 	//gmac::Context::current()->flush();
     /// \todo Change to invalidate(regions)
 	Context::current()->invalidate();
-    logger.trace("LazyManager Invalidation Ends");
+    trace("LazyManager Invalidation Ends");
 }
 
 void LazyManager::flush()
@@ -135,9 +135,9 @@ void LazyManager::flush(const RegionSet & regions)
 void LazyManager::invalidate(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	logger.assertion(region != NULL);
+	assertion(region != NULL);
     region->lockWrite();
-	logger.assertion(region->end() >= (void *)((addr_t)addr + size));
+	assertion(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		if(region->start() < addr ||
 				region->end() > (void *)((addr_t)addr + size))
@@ -150,9 +150,9 @@ void LazyManager::invalidate(const void *addr, size_t size)
 void LazyManager::flush(const void *addr, size_t size)
 {
 	ProtRegion *region = current()->find<ProtRegion>(addr);
-	logger.assertion(region != NULL);
+	assertion(region != NULL);
     region->lockWrite();
-	logger.assertion(region->end() >= (void *)((addr_t)addr + size));
+	assertion(region->end() >= (void *)((addr_t)addr + size));
 	if(region->dirty()) {
 		region->copyToDevice();
 	}
@@ -164,7 +164,7 @@ void
 LazyManager::map(Context *ctx, Region *r, void *devPtr)
 {
 	ProtRegion *region = dynamic_cast<ProtRegion *>(r);
-	logger.assertion(region != NULL);
+	assertion(region != NULL);
 	insertVirtual(ctx, region->start(), devPtr, region->size());
 	region->relate(ctx);
     if (region->dirty() == false && region->present()) {
@@ -202,7 +202,7 @@ bool LazyManager::write(void *addr)
 	bool present = region->present();
 	region->readWrite();
 	if(present == false) {
-		logger.trace("DMA from Device from %p (%zd bytes)", (void *) region->start(),
+		trace("DMA from Device from %p (%zd bytes)", (void *) region->start(),
 				region->size());
 		region->copyToHost();
 	}
@@ -214,14 +214,14 @@ bool LazyManager::write(void *addr)
 
 bool LazyManager::touch(Region * r)
 {
-    logger.assertion(r != NULL);
+    assertion(r != NULL);
     ProtRegion *root = dynamic_cast<ProtRegion *>(r);
     if(root->dirty() == false) {
         root->readWrite();
 
         if(!root->present()) {
             gmacError_t ret = root->copyToHost();
-            logger.assertion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
         }
     }
 

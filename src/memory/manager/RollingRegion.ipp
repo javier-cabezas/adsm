@@ -13,8 +13,8 @@ RollingRegion::push(RollingBlock *region)
 inline void
 RollingBlock::preInvalidate()
 {
-   logger.assertion(tryWrite() == false);
-   logger.assertion(_dirty == false);
+   assertion(tryWrite() == false);
+   assertion(_dirty == false);
    _present = _dirty = false;
 }
 

@@ -12,7 +12,7 @@ void BatchManager::flush()
     Map * m = current();
     m->lockRead();
     for(i = m->begin(); i != m->end(); i++) {
-        logger.trace("Memory Copy to Device");
+        trace("Memory Copy to Device");
         Region * r = i->second;
         r->lockRead();
         r->copyToDevice();
@@ -24,7 +24,7 @@ void BatchManager::flush()
     RegionMap &shared = Map::shared();
     shared.lockRead();
     for (s = shared.begin(); s != shared.end(); s++) {
-        logger.trace("Shared Memory Copy to Device");
+        trace("Shared Memory Copy to Device");
         Region * r = s->second;
         r->lockRead();
         r->copyToDevice();
@@ -123,7 +123,7 @@ BatchManager::flush(const void *, size_t)
 void
 BatchManager::map(Context *ctx, Region *r, void *devPtr)
 {
-    logger.assertion(r != NULL);
+    assertion(r != NULL);
     insertVirtual(ctx, r->start(), devPtr, r->size());
     if (ctx != r->owner()) {
         r->relate(ctx);

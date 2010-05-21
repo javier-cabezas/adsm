@@ -47,10 +47,9 @@ class Context;
 	Defines the standard interface all accelerators MUST
 	implement
 */
-class Accelerator {
+class Accelerator : public util::Logger {
 protected:
 	friend class Context;
-    util::Logger logger;
 	virtual void destroy(Context *ctx) = 0;
     size_t _memory;
     unsigned _id;

@@ -29,7 +29,7 @@ Accelerator::pushLock()
 {
     mutex.lock();
     CUresult ret = cuCtxPushCurrent(_ctx);
-    logger.assertion(ret == CUDA_SUCCESS);
+    assertion(ret == CUDA_SUCCESS);
 }
 
 inline void
@@ -37,7 +37,7 @@ Accelerator::popUnlock()
 {
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
-    logger.assertion(ret == CUDA_SUCCESS);
+    assertion(ret == CUDA_SUCCESS);
     mutex.unlock();
 }
 #endif

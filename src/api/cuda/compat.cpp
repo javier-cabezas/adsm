@@ -58,7 +58,7 @@ static inline unsigned int __getNumberOfChannels(const struct cudaChannelFormatD
 	if(desc->y != 0) n++;
 	if(desc->z != 0) n++;
 	if(desc->w != 0) n++;
-	::logger->assertion(n != 3);
+	gmac::util::Logger::Assertion(n != 3);
 	return n;
 }
 
@@ -190,7 +190,7 @@ cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		const void *src, size_t spitch, size_t width, size_t height)
 {
-	::logger->trace("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	gmac::util::Logger::Trace("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -210,7 +210,7 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 	ctx->pushLock();
 	CUresult r = cuMemcpy2D(&cuCopy);
 	ctx->popUnlock();
-	::logger->assertion(r == CUDA_SUCCESS);
+	gmac::util::Logger::Assertion(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
 }
@@ -218,7 +218,7 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		CUdeviceptr src, size_t spitch, size_t width, size_t height)
 {
-	::logger->trace("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	gmac::util::Logger::Trace("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -238,7 +238,7 @@ cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 	ctx->pushLock();
 	CUresult r = cuMemcpy2DUnaligned(&cuCopy);
 	ctx->popUnlock();
-	::logger->assertion(r == CUDA_SUCCESS);
+	gmac::util::Logger::Assertion(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
 }
@@ -273,7 +273,7 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 	}
 	desc->f = __getCUDAChannelFormatKind(cuDesc.Format);
 	__setNumberOfChannels(desc, cuDesc.NumChannels, __getChannelSize(cuDesc.Format));
-	::logger->trace("cudaGetChannelDesc %d %d %d %d %d", desc->x, desc->y, desc->z,
+	gmac::util::Logger::Trace("cudaGetChannelDesc %d %d %d %d %d", desc->x, desc->y, desc->z,
 		desc->w, desc->f);
 	__exitGmac();
 	return cudaSuccess;
@@ -289,7 +289,7 @@ cudaError_t cudaMallocArray(struct cudaArray **array,
 	cuDesc.Width = width; cuDesc.Height = height;
 	cuDesc.Format = __getChannelFormatKind(desc);
 	cuDesc.NumChannels = __getNumberOfChannels(desc);
-	::logger->trace("cudaMallocArray: %zd %zd with format 0x%x and %u channels",
+	gmac::util::Logger::Trace("cudaMallocArray: %zd %zd with format 0x%x and %u channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	__enterGmac();
     gmac::Context * ctx = gmac::Context::current();
@@ -315,7 +315,7 @@ cudaError_t cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t count,
 		enum cudaMemcpyKind kind)
 {
-	::logger->assertion(kind == cudaMemcpyHostToDevice);
+	gmac::util::Logger::Assertion(kind == cudaMemcpyHostToDevice);
 	__enterGmac();
 	cudaError_t ret = __cudaMemcpyToArray((CUarray)dst, wOffset, hOffset, src, count);
 	__exitGmac();
@@ -326,7 +326,7 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t spitch, size_t width,
 		size_t height, enum cudaMemcpyKind kind)
 {
-	::logger->assertion(kind == cudaMemcpyHostToDevice);
+	gmac::util::Logger::Assertion(kind == cudaMemcpyHostToDevice);
 	__enterGmac();
 	cudaError_t ret = cudaSuccess;
     gmac::gpu::Context *ctx = dynamic_cast<gmac::gpu::Context *>(manager->owner(src));
@@ -364,13 +364,13 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 	cudaError_t ret = cudaSuccess;
     Context * ctx = Context::current();
 	const Variable *variable = ctx->constant(symbol);
-	::logger->assertion(variable != NULL);
+	gmac::util::Logger::Assertion(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
-	::logger->assertion(variable->size() >= (count + offset));
+	gmac::util::Logger::Assertion(variable->size() >= (count + offset));
 	CUdeviceptr ptr = variable->devPtr() + offset;
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
-			::logger->trace("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
+			gmac::util::Logger::Trace("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
 			ctx->pushLock();
 			r = cuMemcpyHtoD(ptr, src, count);
 			ctx->popUnlock();
@@ -477,18 +477,18 @@ cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 
 void CUDARTAPI __cudaTextureFetch(const void *tex, void *index, int integer, void *val)
 {
-	::logger->assertion(0);
+	gmac::util::Logger::Assertion(0);
 }
 
 int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
 {
-	::logger->assertion(0);
+	gmac::util::Logger::Assertion(0);
     return 0;
 }
 
 void CUDARTAPI __cudaMutexOperation(int lock)
 {
-	::logger->assertion(0);
+	gmac::util::Logger::Assertion(0);
 }
 
 

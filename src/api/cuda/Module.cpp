@@ -21,7 +21,7 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
 {
     unsigned int tmp;
     CUresult ret = cuModuleGetGlobal(&_ptr, &tmp, mod, name());
-    logger.assertion(ret == CUDA_SUCCESS);
+    assertion(ret == CUDA_SUCCESS);
     _size = tmp;
 }
 
@@ -29,39 +29,37 @@ Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
     TextureDescriptor(t.name(), t.key())
 {
     CUresult ret = cuModuleGetTexRef(&_texRef, mod, name());
-    logger.assertion(ret == CUDA_SUCCESS);
+    assertion(ret == CUDA_SUCCESS);
 }
 
 ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
-    logger("ModuleDescriptor"),
     _fatBin(fatBin)
 {
-    logger.trace("Creating module descriptor: %p", _fatBin);
+    trace("Creating module descriptor: %p", _fatBin);
     Modules.push_back(this);
 }
 
 ModuleVector
 ModuleDescriptor::createModules()
 {
-    ::logger->trace("Creating modules");
+    util::Logger::Trace("Creating modules");
     ModuleVector modules;
 
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules.begin(); it != Modules.end(); it++) {
-        ::logger->trace("Creating module: %p", (*it)->_fatBin);
+        util::Logger::Trace("Creating module: %p", (*it)->_fatBin);
         modules.push_back(new Module(*(*it)));
     }
     return modules;
 }
 
 Module::Module(const ModuleDescriptor & d) :
-    logger("Module"),
     _fatBin(d._fatBin)
 {
-    logger.trace("Module image: %p", _fatBin);
+    trace("Module image: %p", _fatBin);
     CUresult res;
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
-    logger.cfatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
+    cfatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
     Context * ctx = Context::current();
     ModuleDescriptor::KernelVector::const_iterator k;
@@ -80,7 +78,7 @@ Module::Module(const ModuleDescriptor & d) :
 #ifdef USE_VM
         if(strncmp(v->name(), dirtyBitmapSymbol, strlen(dirtyBitmapSymbol)) == 0) {
             __dirtyBitmap = &_constants.find(v->key())->second;
-            logger.trace("Found constant to set a dirty bitmap on device");
+            trace("Found constant to set a dirty bitmap on device");
         }
 #endif
     }
@@ -94,7 +92,7 @@ Module::Module(const ModuleDescriptor & d) :
 
 Module::~Module() {
     CUresult ret = cuModuleUnload(_mod);
-    logger.assertion(ret == CUDA_SUCCESS);
+    assertion(ret == CUDA_SUCCESS);
 }
 
 }}

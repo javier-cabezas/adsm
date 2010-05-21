@@ -7,8 +7,7 @@
 namespace gmac { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-    __device(NULL),
-    logger("Bitmap")
+    __device(NULL)
 {
     __pageShift = int(log2(paramPageSize));
     __size = 1 << (bits - __pageShift);
@@ -27,7 +26,7 @@ void Bitmap::allocate()
 {
     Context *ctx = Context::current();
     if(__device == NULL) {
-        logger.trace("Allocating dirty bitmap (%zu bytes)", size());
+        trace("Allocating dirty bitmap (%zu bytes)", size());
         ctx->malloc((void **)&__device, size());
     }
 }
