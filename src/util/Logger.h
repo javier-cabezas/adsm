@@ -40,6 +40,8 @@ WITH THE SOFTWARE.  */
 #include "Parameter.h"
 
 #include <map>
+#include <list>
+#include <string>
 #include <iostream>
 #include <cstring>
 #include <cstdarg>
@@ -61,6 +63,7 @@ inline const char *__extract_file_name(const char *top, const char *file) {
 
 namespace gmac { namespace util {
 
+
 class Lock;
 class Logger {
 private:
@@ -71,6 +74,7 @@ private:
 protected:
     static Parameter<const char *> *Level;
     static const char *debugString;
+    static std::list<std::string> *tags;
     static Lock lock;
 
     const char *name;
@@ -80,7 +84,11 @@ protected:
     static const size_t BufferSize = 1024;
     static char buffer[BufferSize];
 
-    void log(std::string tag, const char *fmt, va_list list, bool force = false) const;
+    void print(std::string tag, const char *fmt, va_list list) const;
+#ifdef DEBUG
+    bool check(const char *name) const;
+    void log(std::string tag, const char *fmt, va_list list) const;
+#endif
 
     Logger();
 
@@ -88,6 +96,7 @@ protected:
     void warning(const char *fmt, ...) const;
     void __assertion(unsigned c, const char *fmt, ...) const;
 public:
+    virtual ~Logger() {};
 
     static void Create(const char *name);
     static void Destroy();
