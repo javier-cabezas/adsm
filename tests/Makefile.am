@@ -13,7 +13,7 @@ noinst_PROGRAMS = bandwidth threadBandwidth\
 
 noinst_SCRIPTS = gmacTests.py
 
-EXTRA_DIST = gmacTests.py gmacLaunch.sh\
+EXTRA_DIST = gmacTests.py\
     gmacStencilCommon.cu vmStencilCommon.cu\
     gmacMatrixMulKernel.cu vmMatrixMulKernel.cu
 

@@ -23,7 +23,6 @@ unsigned Context::_next = 0;
 Context::Context(Accelerator *acc) :
     util::Reference(),
     util::RWLock(LockContext),
-    logger("Context"),
     _acc(acc),
     _kernels(),
     _releasedRegions(),

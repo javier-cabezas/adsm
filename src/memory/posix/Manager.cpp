@@ -59,7 +59,7 @@ void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
 void Manager::hostUnmap(void *addr, size_t count)
 {
 #ifdef USE_GLOBAL_HOST
-	logger.assertion(Map::isShared(addr) == false);
+	assertion(Map::isShared(addr) == false);
 #endif
 
 #ifndef USE_MMAP

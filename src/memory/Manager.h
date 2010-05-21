@@ -61,10 +61,8 @@ namespace gmac { namespace memory {
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class Manager {
+class Manager : public util::Logger {
 protected:
-
-    util::Logger logger;
 
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT

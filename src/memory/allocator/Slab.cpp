@@ -53,7 +53,7 @@ bool Slab::free(void *addr)
 {
     AddressMap::iterator i = addresses.find(addr);
     if(i == addresses.end()) {
-        logger.trace("%p was not delivered by slab allocator", addr); 
+        trace("%p was not delivered by slab allocator", addr); 
         return false;
     }
     i->second->put(addr);

@@ -30,7 +30,7 @@ bool Arena::empty() const
 inline
 void *Arena::get()
 {
-    log.assertion(__objects.empty() == false);
+    assertion(__objects.empty() == false);
     void *ret = __objects.front();
     __objects.pop_front();
     return ret;
@@ -56,7 +56,7 @@ void Cache::put(void *obj)
     void *key = (void *)((unsigned long)obj & ~(paramPageSize - 1));
     ArenaMap::const_iterator i;
     i = arenas.find(key);
-   log.cfatal(i != arenas.end(), "Address for invalid arena");
+    cfatal(i != arenas.end(), "Address for invalid arena");
     i->second->put(obj);
 }
 

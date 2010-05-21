@@ -62,8 +62,6 @@ class Region : public util::RWLock {
 private:
 	Context *_context;
 protected:
-    util::Logger logger;
-
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;

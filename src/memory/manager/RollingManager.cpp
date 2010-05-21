@@ -44,7 +44,7 @@ RollingManager::RollingManager() :
     writeBufferSize(0)
 {
     lruDelta = paramLruDelta;
-    logger.trace("Using %zd as LRU Delta Size", lruDelta);
+    trace("Using %zd as LRU Delta Size", lruDelta);
 }
 
 RollingManager::~RollingManager()
@@ -55,7 +55,7 @@ RollingManager::~RollingManager()
 
 void RollingManager::flush()
 {
-    logger.trace("RollingManager Flush Starts");
+    trace("RollingManager Flush Starts");
     Context * ctx = Context::current();
 
     // We need to go through all regions from the context because
@@ -86,7 +86,7 @@ void RollingManager::flush()
 
     /** \todo Fix vm */
     ctx->flush();
-    logger.trace("RollingManager Flush Ends");
+    trace("RollingManager Flush Ends");
 }
 
 void RollingManager::flush(const RegionSet & regions)
@@ -97,7 +97,7 @@ void RollingManager::flush(const RegionSet & regions)
         return;
     }
 
-    logger.trace("RollingManager Flush Starts");
+    trace("RollingManager Flush Starts");
     Context * ctx = Context::current();
     size_t blocks = rollingMap.currentBuffer()->size();
 
@@ -112,17 +112,17 @@ void RollingManager::flush(const RegionSet & regions)
         }
         flush(r);
         r->unlock();
-        logger.trace("Flush to Device %p", r->start());
+        trace("Flush to Device %p", r->start());
     }
 
     /** \todo Fix vm */
     ctx->flush();
-    logger.trace("RollingManager Flush Ends");
+    trace("RollingManager Flush Ends");
 }
 
 void RollingManager::invalidate()
 {
-    logger.trace("RollingManager Invalidation Starts");
+    trace("RollingManager Invalidation Starts");
     Map::iterator i;
     Map * m = current();
     m->lockRead();
@@ -149,7 +149,7 @@ void RollingManager::invalidate()
     shared.unlock();
 
     ctx->invalidate();
-    logger.trace("RollingManager Invalidation Ends");
+    trace("RollingManager Invalidation Ends");
 }
 
 void RollingManager::invalidate(const RegionSet & regions)
@@ -160,7 +160,7 @@ void RollingManager::invalidate(const RegionSet & regions)
         return;
     }
 
-    logger.trace("RollingManager Invalidation Starts");
+    trace("RollingManager Invalidation Starts");
     RegionSet::const_iterator i;
     for(i = regions.begin(); i != regions.end(); i++) {
         RollingRegion *r = dynamic_cast<RollingRegion *>(*i);
@@ -169,15 +169,15 @@ void RollingManager::invalidate(const RegionSet & regions)
         r->unlock();
     }
     gmac::Context::current()->invalidate();
-    logger.trace("RollingManager Invalidation Ends");
+    trace("RollingManager Invalidation Ends");
 }
 
 void RollingManager::invalidate(const void *addr, size_t size)
 {
     RollingRegion *reg = current()->find<RollingRegion>(addr);
-    logger.assertion(reg != NULL);
+    assertion(reg != NULL);
     reg->lockWrite();
-    logger.assertion(reg->end() >= (void *)((addr_t)addr + size));
+    assertion(reg->end() >= (void *)((addr_t)addr + size));
     reg->invalidate(addr, size);
     reg->unlock();
 }
@@ -185,9 +185,9 @@ void RollingManager::invalidate(const void *addr, size_t size)
 void RollingManager::flush(const void *addr, size_t size)
 {
     RollingRegion *reg = current()->find<RollingRegion>(addr);
-    logger.assertion(reg != NULL);
+    assertion(reg != NULL);
     reg->lockWrite();
-    logger.assertion(reg->end() >= (void *)((addr_t)addr + size));
+    assertion(reg->end() >= (void *)((addr_t)addr + size));
     reg->flush(addr, size);
     reg->unlock();
 }
@@ -201,7 +201,7 @@ bool RollingManager::read(void *addr)
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
     ProtRegion *region = root->find(addr);
-    logger.assertion(region != NULL);
+    assertion(region != NULL);
     region->lockWrite();
     if (region->present() == true) {
         region->unlock();
@@ -212,7 +212,7 @@ bool RollingManager::read(void *addr)
     if(current()->dirtyBitmap().check(ptr(addr))) {
 #endif
         gmacError_t ret = region->copyToHost();
-        logger.assertion(ret == gmacSuccess);
+        assertion(ret == gmacSuccess);
 #ifdef USE_VM
     }
 #endif
@@ -223,10 +223,10 @@ bool RollingManager::read(void *addr)
 
 bool RollingManager::touch(Region * r)
 {
-    logger.assertion(r != NULL);
+    assertion(r != NULL);
     RollingRegion *root = dynamic_cast<RollingRegion *>(r);
     const std::vector<RollingBlock *> & regions = root->subRegions();
-    logger.assertion(regions.size() > 0);
+    assertion(regions.size() > 0);
     std::vector<RollingBlock *>::const_iterator it;
 
     for (it = regions.begin(); it != regions.end(); it++) {
@@ -239,7 +239,7 @@ bool RollingManager::touch(Region * r)
                 if(current()->dirtyBitmap().check(ptr(block->start()))) {
 #endif
                     gmacError_t ret = block->copyToHost();
-                    logger.assertion(ret == gmacSuccess);
+                    assertion(ret == gmacSuccess);
 #ifdef USE_VM
                 }
 #endif
@@ -260,7 +260,7 @@ bool RollingManager::write(void *addr)
     if (root == NULL) return false;
     root->lockWrite();
     ProtRegion *region = root->find(addr);
-    logger.assertion(region != NULL);
+    assertion(region != NULL);
     // Other thread fixed the fault?
     region->lockWrite();
     if(region->dirty() == true) {
@@ -276,7 +276,7 @@ bool RollingManager::write(void *addr)
         if(current()->dirtyBitmap().check(ptr(addr))) {
 #endif
             gmacError_t ret = region->copyToHost();
-            logger.assertion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
 #ifdef USE_VM
         }
 #endif
@@ -291,7 +291,7 @@ void
 RollingManager::map(Context *ctx, Region *r, void *devPtr)
 {
     RollingRegion *region = dynamic_cast<RollingRegion *>(r);
-    logger.assertion(region != NULL);
+    assertion(region != NULL);
     insertVirtual(ctx, r->start(), devPtr, r->size());
     region->relate(ctx);
     region->transferNonDirty();

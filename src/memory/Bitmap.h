@@ -41,15 +41,13 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory  { namespace vm {
 
-class Bitmap {
+class Bitmap : public util::Logger {
 private:
     uint8_t *__bitmap;
     void *__device;
 
     size_t __pageShift;
     size_t __size;
-
-    util::Logger logger;
 
     void allocate();
 public:

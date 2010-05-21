@@ -39,9 +39,8 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 template <typename K>
-class Descriptor {
+class Descriptor : public util::Logger {
 protected:
-    util::Logger logger;
     K _key;
     const char * _name;
 

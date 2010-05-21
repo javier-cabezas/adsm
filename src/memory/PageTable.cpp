@@ -8,7 +8,6 @@ namespace gmac { namespace memory {
 size_t PageTable::tableShift;
 
 PageTable::PageTable() :
-    logger("PageTable"),
 	lock(LockPageTable),
 	pages(1)
 #ifdef USE_VM
@@ -16,10 +15,10 @@ PageTable::PageTable() :
 #endif
 {
 	tableShift = int(log2(paramPageSize));
-	logger.trace("Page Size: %zd bytes", paramPageSize);
+	trace("Page Size: %zd bytes", paramPageSize);
 #ifndef USE_MMAP
-	logger.trace("Table Shift: %zd bits", tableShift);
-	logger.trace("Table Size: %ld entries", (1 << dirShift) / paramPageSize);
+	trace("Table Shift: %zd bits", tableShift);
+	trace("Table Size: %ld entries", (1 << dirShift) / paramPageSize);
 #endif
 }
 
@@ -27,7 +26,7 @@ PageTable::PageTable() :
 PageTable::~PageTable()
 { 
 //#ifndef USE_MMAP
-	logger.trace("Cleaning Page Table");
+	trace("Cleaning Page Table");
 	for(unsigned i = 0; i < rootTable.size(); i++) {
 		if(rootTable.present(i) == false) continue;
 		deleteDirectory(rootTable.value(i));
@@ -81,10 +80,10 @@ void PageTable::insert(void *host, void *dev)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
 	unsigned e = entry(host, tableShift, table.size());
-	logger.assertion(table.present(e) == false || (uint8_t *)table.value(e) == dev);
+	assertion(table.present(e) == false || (uint8_t *)table.value(e) == dev);
 
 	table.insert(entry(host, tableShift, table.size()), dev);
-	logger.trace("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
+	trace("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
 	lock.unlock();
 	exitFunction();
 #endif
@@ -126,13 +125,13 @@ void *PageTable::translate(void *host)
 	lock.lockRead();
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		lock.unlock();
-        logger.trace("Translate %p to NULL in RootTable");
+        trace("Translate %p to NULL in RootTable");
 		return NULL;
 	}
 	Directory &dir = rootTable.get(entry(host, rootShift, rootTable.size()));
 	if(dir.present(entry(host, dirShift, dir.size())) == false) {
 		lock.unlock();
-        logger.trace("Translate %p to NULL in Directory");
+        trace("Translate %p to NULL in Directory");
 		return NULL;
 	}
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
@@ -140,7 +139,7 @@ void *PageTable::translate(void *host)
 		(uint8_t *)table.value(entry(host, tableShift, table.size()));
 	lock.unlock();
 	addr += offset(host);
-    logger.trace("Translate %p -> %p", host, (void *)addr);
+    trace("Translate %p -> %p", host, (void *)addr);
 	return (void *)addr;
 #endif
 }

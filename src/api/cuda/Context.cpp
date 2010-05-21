@@ -24,13 +24,13 @@ Context::setupStreams()
 {
     CUresult ret;
     ret = cuStreamCreate(&streamLaunch, 0);
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
     ret = cuStreamCreate(&streamToDevice, 0);
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
     ret = cuStreamCreate(&streamToHost, 0);
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
     ret = cuStreamCreate(&streamDevice, 0);
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
 
     _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
 #if CUDART_VERSION >= 2020
@@ -39,9 +39,9 @@ Context::setupStreams()
     ret = cuMemAllocHost(&_bufferPageLocked, _bufferPageLockedSize);
 #endif
     if (ret == CUDA_SUCCESS) {
-        logger.trace("Using page locked memory: %zd\n", _bufferPageLockedSize);
+        trace("Using page locked memory: %zd\n", _bufferPageLockedSize);
     } else {
-        logger.fatal("Error %d: when allocating page-locked memory", ret);
+        fatal("Error %d: when allocating page-locked memory", ret);
     }
 }
 
@@ -50,15 +50,15 @@ Context::finiStreams()
 {
     CUresult ret;
     ret = cuStreamDestroy(streamLaunch);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
     ret = cuStreamDestroy(streamToDevice);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
     ret = cuStreamDestroy(streamToHost);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
     ret = cuStreamDestroy(streamDevice);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
     ret = cuMemFreeHost(_bufferPageLocked);
-    logger.cfatal(ret == CUDA_SUCCESS, "Error freeing page-locked buffer: %d", ret);
+    cfatal(ret == CUDA_SUCCESS, "Error freeing page-locked buffer: %d", ret);
 }
 
 Context::Context(Accelerator *gpu) :
@@ -76,16 +76,16 @@ Context::Context(Accelerator *gpu) :
 
     pushLock();
     setupStreams();
-    logger.trace("Let's create modules");
+    trace("Let's create modules");
     _modules = ModuleDescriptor::createModules();
     popUnlock();
 
-    logger.trace("New Accelerator context [%p]", this);
+    trace("New Accelerator context [%p]", this);
 }
 
 Context::~Context()
 {
-    logger.trace("Remove Accelerator context [%p]", this);
+    trace("Remove Accelerator context [%p]", this);
     pushLock();
     finiStreams();
 #ifdef USE_MULTI_CONTEXT
@@ -154,7 +154,7 @@ Context::switchTo(Accelerator *gpu)
 
     pushLock();
     setupStreams();
-    logger.trace("Let's recreate modules");
+    trace("Let's recreate modules");
     _modules = ModuleDescriptor::createModules();
     popUnlock();
 
@@ -169,7 +169,7 @@ Context::switchTo(Accelerator *gpu)
 
 gmacError_t
 Context::malloc(void **addr, size_t size, unsigned align) {
-    logger.assertion(addr != NULL);
+    assertion(addr != NULL);
     zero(addr);
     if(align > 1) {
         size += align;
@@ -190,7 +190,7 @@ Context::malloc(void **addr, size_t size, unsigned align) {
 gmacError_t
 Context::mallocPageLocked(void **addr, size_t size, unsigned align)
 {
-    logger.assertion(addr != NULL);
+    assertion(addr != NULL);
     zero(addr);
     CUresult ret = CUDA_SUCCESS;
     if(align > 1) {
@@ -220,7 +220,7 @@ Context::mallocPageLocked(void **addr, size_t size, unsigned align)
 gmacError_t
 Context::free(void *addr)
 {
-    logger.assertion(addr != NULL);
+    assertion(addr != NULL);
     pushLock();
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
@@ -234,11 +234,11 @@ Context::free(void *addr)
 gmacError_t
 Context::mapToDevice(void *host, void **device, size_t size)
 {
-    logger.assertion(host   != NULL);
-    logger.assertion(device != NULL);
-    logger.assertion(size   > 0);
+    assertion(host   != NULL);
+    assertion(device != NULL);
+    assertion(size   > 0);
     Accelerator * acc = static_cast<Accelerator *>(_acc);
-    logger.cfatal(acc->major() >= 2 ||
+    cfatal(acc->major() >= 2 ||
           (acc->major() == 1 && acc->minor() >= 1), "Map to device not supported by the HW");
     zero(device);
     CUresult ret = CUDA_SUCCESS;
@@ -257,10 +257,10 @@ Context::mapToDevice(void *host, void **device, size_t size)
 gmacError_t
 Context::hostFree(void *addr)
 {
-    logger.assertion(addr != NULL);
+    assertion(addr != NULL);
 	pushLock();
 	AddressMap::iterator i = hostMem.find(addr);
-	logger.assertion(i != hostMem.end());
+	assertion(i != hostMem.end());
 	CUresult ret = cuMemFreeHost(i->second);
 	hostMem.erase(i);
 	popUnlock();
@@ -273,13 +273,13 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     enterFunction(FuncAccHostDevice);
     gmac::Context *ctx = gmac::Context::current();
 
-    logger.trace("Copy to device: %p to %p", host, dev);
+    trace("Copy to device: %p to %p", host, dev);
     CUresult ret = CUDA_SUCCESS;
 
     pushLock();
     if (_pendingToDevice) {
         if ((ret = cuStreamQuery(streamToDevice)) != CUDA_SUCCESS) {
-            logger.assertion(ret == CUDA_ERROR_NOT_READY);
+            assertion(ret == CUDA_ERROR_NOT_READY);
             ret = cuStreamSynchronize(streamToDevice);
         }
         popEventState(paraver::Accelerator, 0x10000000 + _id);
@@ -323,11 +323,11 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
 gmacError_t
 Context::copyToHost(void *host, const void *dev, size_t size)
 {
-    logger.assertion(dev != NULL);
+    assertion(dev != NULL);
     enterFunction(FuncAccDeviceHost);
     gmac::Context *ctx = gmac::Context::current();
 
-    logger.trace("Copy to host: %p to %p", dev, host);
+    trace("Copy to host: %p to %p", dev, host);
     CUresult ret = CUDA_SUCCESS;
     size_t bufferSize = ctx->bufferPageLockedSize();
     void * tmp        = ctx->bufferPageLocked();
@@ -340,7 +340,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
         ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
         CBREAK(ret == CUDA_SUCCESS, popUnlock());
-        logger.trace("Copied %zd bytes", off);
+        trace("Copied %zd bytes", off);
         ret = cuStreamSynchronize(streamToHost);
         popEventState(paraver::Accelerator, 0x10000000 + _id);
         popUnlock();
@@ -394,7 +394,7 @@ gmac::KernelLaunch *
 Context::launch(gmacKernel_t addr)
 {
     gmac::Kernel * k = kernel(addr);
-    logger.assertion(k != NULL);
+    assertion(k != NULL);
     _call._stream = streamLaunch;
     gmac::KernelLaunch * l = k->launch(_call);
 
@@ -458,15 +458,15 @@ Context::flush()
         break;
     }
     if(m == _modules.end()) return;
-    logger.trace("Setting dirty bitmap on device");
+    trace("Setting dirty bitmap on device");
     const void *__device = mm().dirtyBitmap().device();
     pushLock();
     ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
+    cfatal(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
 	ret = cuMemcpyHtoD(gpuAddr(__device), mm().dirtyBitmap().host(), mm().dirtyBitmap().size());
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
+    cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
     ret = cuCtxSynchronize();
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+    cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
     popUnlock();
 #endif
 }
@@ -479,9 +479,9 @@ Context::invalidate()
     pushLock();
     CUresult ret;
 	ret = cuMemcpyDtoH(mm().dirtyBitmap().host(), gpuAddr(__device), mm().dirtyBitmap().size());
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
+    cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
     ret = cuCtxSynchronize();
-    logger.cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+    cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
     popUnlock();
 #endif
 }

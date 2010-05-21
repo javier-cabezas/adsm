@@ -57,11 +57,9 @@ private:
 typedef std::vector<Argument> ArgVector;
 
 /// \todo create a pool of objects to avoid mallocs/frees
-class KernelConfig : public ArgVector {
+class KernelConfig : public ArgVector, public util::Logger {
 protected:
     static const unsigned StackSize = 4096;
-
-    util::Logger logger;
 
     char _stack[StackSize];
     size_t _argsSize;

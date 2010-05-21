@@ -33,7 +33,6 @@ size_t Process::_totalMemory = 0;
 
 Process::Process() :
     RWLock(LockProcess),
-    logger("Process"),
     _global(LockMmGlobal),
     _shared(LockMmShared),
     current(0)
@@ -41,7 +40,7 @@ Process::Process() :
 
 Process::~Process()
 {
-    logger.trace("Cleaning process");
+    trace("Cleaning process");
     std::vector<Accelerator *>::iterator a;
     std::list<Context *>::iterator c;
     QueueMap::iterator q;
@@ -64,8 +63,8 @@ void
 Process::init(const char *manager, const char *allocator)
 {
     // Process is a singleton class. The only allowed instance is proc
-    ::logger->trace("Initializing process");
-    ::logger->assertion(proc == NULL);
+    util::Logger::Trace("Initializing process");
+    util::Logger::Assertion(proc == NULL);
     Context::Init();
     proc = new Process();
     apiInit();
@@ -88,17 +87,17 @@ Context *
 Process::create(int acc)
 {
     pushState(Init);
-    logger.trace("Creating new context");
+    trace("Creating new context");
     lockWrite();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
-    logger.assertion(q != _queues.end());
+    assertion(q != _queues.end());
     _queues.unlock();
     Context * ctx;
     unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        logger.assertion(acc < int(_accs.size()));
+        assertion(acc < int(_accs.size()));
         usedAcc = acc;
         ctx = _accs[acc]->create();
     } else {
@@ -117,7 +116,7 @@ Process::create(int acc)
         _contexts.push_back(ctx);
     }
 	unlock();
-	logger.trace("Created context on Acc#%d", usedAcc);
+	trace("Created context on Acc#%d", usedAcc);
     popState();
     return ctx;
 }
@@ -127,7 +126,7 @@ gmacError_t Process::migrate(Context * ctx, int acc)
 	lockWrite();
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
-	logger.trace("Migrating context");
+	trace("Migrating context");
     if (Context::hasCurrent()) {
 #ifndef USE_MMAP
         if (int(ctx->accId()) != acc) {
@@ -135,13 +134,13 @@ gmacError_t Process::migrate(Context * ctx, int acc)
             ret = _accs[acc]->bind(ctx);
         }
 #else
-        logger.fatal("Migration not implemented when using mmap");
+        fatal("Migration not implemented when using mmap");
 #endif
     } else {
         // Create the context in the requested accelerator
         _accs[acc]->create();
     }
-	logger.trace("Context migrated");
+	trace("Context migrated");
 	unlock();
     return ret;
 }
@@ -174,7 +173,7 @@ void Process::send(THREAD_ID id)
     Context *ctx = Context::current();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(id);
-    logger.assertion(q != _queues.end());
+    assertion(q != _queues.end());
     _queues.unlock();
     q->second->lock();
     q->second->queue->push(ctx);
@@ -190,7 +189,7 @@ void Process::receive()
     // Get a fresh context
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(SELF());
-    logger.assertion(q != _queues.end());
+    assertion(q != _queues.end());
     _queues.unlock();
     Context::key.set(q->second->queue->pop());
 }
@@ -200,7 +199,7 @@ void Process::sendReceive(THREAD_ID id)
     Context * ctx = Context::current();
     _queues.lockRead();
 	QueueMap::iterator q = _queues.find(id);
-	logger.assertion(q != _queues.end());
+	assertion(q != _queues.end());
     _queues.unlock();
     q->second->lock();
 	q->second->queue->push(ctx);
@@ -208,7 +207,7 @@ void Process::sendReceive(THREAD_ID id)
     Context::key.set(NULL);
     _queues.lockRead();
 	q = _queues.find(SELF());
-	logger.assertion(q != _queues.end());
+	assertion(q != _queues.end());
     Context::key.set(q->second->queue->pop());
     _queues.unlock();
 }
@@ -218,7 +217,7 @@ void Process::copy(THREAD_ID id)
     Context *ctx = Context::current();
     _queues.lockRead();
     QueueMap::iterator q = _queues.find(id);
-    logger.assertion(q != _queues.end());
+    assertion(q != _queues.end());
     _queues.unlock();
     ctx->inc();
     q->second->lock();

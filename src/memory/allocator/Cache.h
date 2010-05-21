@@ -45,7 +45,7 @@ namespace gmac { namespace memory { namespace allocator {
 
 typedef std::list<void *> ObjectList;
 
-class Arena {
+class Arena : public util::Logger {
 protected:
     void *ptr;
     size_t size;
@@ -53,7 +53,6 @@ protected:
     ObjectList __objects;
     Manager *manager;
 
-    static util::Logger log;
 public:
     Arena(Manager *manager, size_t objSize);
     ~Arena();
@@ -69,7 +68,7 @@ public:
 };
 
 
-class Cache {
+class Cache : public util::Logger {
 protected:
     size_t objectSize;
     size_t arenaSize;
@@ -78,7 +77,6 @@ protected:
     ArenaMap arenas;
 
     Manager *manager;
-    static util::Logger log;
 public:
     Cache(Manager *manager, size_t size);
     virtual ~Cache();

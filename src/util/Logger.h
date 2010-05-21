@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 
 #define ASSERT_STRING "in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #define assertion(c, ...) __assertion(c, ASSERT_STRING)
+#define Assertion(c, ...) __Assertion(c, ASSERT_STRING)
 
 inline const char *__extract_file_name(const char *top, const char *file) {
     return file + strlen(top) + 1;
@@ -54,11 +55,19 @@ inline const char *__extract_file_name(const char *top, const char *file) {
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+#define Trace(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+    __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+
 
 namespace gmac { namespace util {
 
 class Lock;
 class Logger {
+private:
+    Logger(const char *name);
+    void init();
+
+    static Logger *__logger;
 protected:
     static Parameter<const char *> *Level;
     static const char *debugString;
@@ -71,16 +80,23 @@ protected:
     static const size_t BufferSize = 1024;
     static char buffer[BufferSize];
 
-    void log(std::string tag, const char *fmt, va_list list) const;
+    void log(std::string tag, const char *fmt, va_list list, bool force = false) const;
 
-public:
-    Logger(const char *name);
+    Logger();
 
     void __trace(const char *fmt, ...) const; 
     void warning(const char *fmt, ...) const;
     void __assertion(unsigned c, const char *fmt, ...) const;
-    void fatal(const char *fmt, ...) const;
-    void cfatal(unsigned c, const char *fmt, ...) const;
+public:
+
+    static void Create(const char *name);
+    static void Destroy();
+
+    static void __Trace(const char *fmt, ...);  
+    static void __Assertion(unsigned c, const char *fmt, ...);
+
+    static void fatal(const char *fmt, ...);
+    static void cfatal(unsigned c, const char *fmt, ...);
 };
 
 }}

@@ -46,7 +46,7 @@ static void createAllocator(const char *name)
 
 void memoryInit(const char *manager, const char *allocator)
 {
-	logger->trace("Initializing Memory Subsystem");
+	util::Logger::Trace("Initializing Memory Subsystem");
 	mutex = new util::Lock(LockManager);
 	memory::Map::init();
 	createManager(manager);
@@ -55,7 +55,7 @@ void memoryInit(const char *manager, const char *allocator)
 
 void memoryFini(void)
 {
-	logger->trace("Cleaning Memory Subsystem");
+	util::Logger::Trace("Cleaning Memory Subsystem");
     destroyAllocator();
 	destroyManager();
 	delete mutex;

@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libutil.la
 libutil_la_SOURCES = Lock.h Semaphore.h Private.h\
                      Parameter.h Parameter.ipp Parameter.cpp Parameter.def\
                      Logger.h Logger.ipp Logger.cpp\
-                     ReusableObject.h
+                     ReusableObject.h Reference.h
 
 libutil_la_LIBADD = $(OS_DIR)/libutil-os.la
 

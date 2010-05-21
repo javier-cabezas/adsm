@@ -8,8 +8,8 @@ bool Bitmap::check(const void *addr)
 {
     bool ret = false;
     size_t entry = ((unsigned long)addr >> __pageShift);
-    logger.trace("Bitmap check for %p -> entry %zu", addr, entry);
-    logger.trace("Bitmap entry: 0x%x", __bitmap[entry]);
+    trace("Bitmap check for %p -> entry %zu", addr, entry);
+    trace("Bitmap entry: 0x%x", __bitmap[entry]);
     if(__bitmap[entry] != 0) ret = true;
     __bitmap[entry] = 0;
     return ret;

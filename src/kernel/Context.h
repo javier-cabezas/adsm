@@ -65,7 +65,6 @@ public:
     };
 
 protected:
-    util::Logger logger;
 
 	/*!
 		\brief Last error on context

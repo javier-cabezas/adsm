@@ -8,9 +8,6 @@
 
 namespace gmac { namespace memory { namespace allocator {
 
-util::Logger Arena::log("Arena");
-util::Logger Cache::log("Cache");
-
 Arena::Arena(Manager *manager, size_t objSize) :
     ptr(NULL),
     size(0),
@@ -27,7 +24,7 @@ Arena::Arena(Manager *manager, size_t objSize) :
 
 Arena::~Arena()
 {
-    log.cfatal(__objects.size() == size, "Destroying non-full Arena");
+    util::Logger::cfatal(__objects.size() == size, "Destroying non-full Arena");
     __objects.clear();
     Context *ctx = Context::current();
     ctx->lockRead();

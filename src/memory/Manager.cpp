@@ -26,15 +26,14 @@ Manager *getManager(const char *managerName)
 	return new manager::RollingManager();
 }
 
-Manager::Manager() :
-    logger("Manager")
+Manager::Manager()
 {
-    logger.trace("Memory manager starts");
+    trace("Memory manager starts");
 }
 
 Manager::~Manager()
 {
-    logger.trace("Memory manager finishes");
+    trace("Memory manager finishes");
 }
 
 
@@ -65,7 +64,7 @@ Manager::malloc(Context * ctx, void ** addr, size_t count)
     Region * r = newRegion(cpuAddr, count, false);
     // Insert the region in the local and global memory maps
     insert(r);
-    logger.trace("Alloc %p (%zd bytes)", cpuAddr, count);
+    trace("Alloc %p (%zd bytes)", cpuAddr, count);
     *addr = cpuAddr;
     return gmacSuccess;
 }
@@ -121,7 +120,7 @@ Manager::globalMalloc(Context * ctx, void ** addr, size_t count)
     Map::addShared(r);
     r->unlock();
     *addr = cpuAddr;
-    logger.trace("Alloc %p (%zd bytes)", cpuAddr, count);
+    trace("Alloc %p (%zd bytes)", cpuAddr, count);
     return gmacSuccess;
 }
 #else
@@ -197,7 +196,7 @@ Manager::free(Context * ctx, void * addr)
             // Free memory in the device
 #ifndef USE_GLOBAL_HOST 
             ret = ctx->free(ptr(ctx, addr));
-            logger.assertion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
 #endif
             unmap(ctx, r);
         }
@@ -205,7 +204,7 @@ Manager::free(Context * ctx, void * addr)
 	}
 	else {
 		ret = ctx->free(ptr(ctx, addr));
-        logger.assertion(ret == gmacSuccess);
+        assertion(ret == gmacSuccess);
         unmap(ctx, r);
 	}
     r->unlock();
@@ -236,12 +235,12 @@ void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t cou
 {
 #ifndef USE_MMAP
 #ifndef USE_OPENCL
-	logger.trace("Virtual Request %p -> %p", cpuPtr, devPtr);
+	trace("Virtual Request %p -> %p", cpuPtr, devPtr);
 	PageTable &pageTable = ctx->mm().pageTable();
-	logger.assertion(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
+	assertion(((unsigned long)cpuPtr & (pageTable.getPageSize() -1)) == 0);
 	uint8_t *devAddr = (uint8_t *)devPtr;
 	uint8_t *cpuAddr = (uint8_t *)cpuPtr;
-	logger.trace("Page Table Request %p -> %p", cpuAddr, devAddr);
+	trace("Page Table Request %p -> %p", cpuAddr, devAddr);
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.insert(cpuAddr + off, devAddr + off);
 #endif
@@ -263,7 +262,7 @@ void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 
 void Manager::unmap(Context *ctx, Region *r)
 {
-	logger.assertion(r != NULL);
+	assertion(r != NULL);
 	r->unrelate(ctx);
 	removeVirtual(ctx, r->start(), r->size());
     if (r->shared() == false) {
@@ -283,15 +282,15 @@ Manager::initShared(Context * ctx)
     for(i = shared.begin(); i != shared.end(); i++) {
         Region * r = i->second;
         r->lockWrite();
-        logger.trace("Mapping Shared Region %p (%zd bytes)", r->start(), r->size());
+        trace("Mapping Shared Region %p (%zd bytes)", r->start(), r->size());
         void *devPtr;
 #ifdef USE_GLOBAL_HOST
-        logger.trace("Using Host Translation");
+        trace("Using Host Translation");
         gmacError_t ret = ctx->mapToDevice(r->start(), &devPtr, r->size());
 #else
         gmacError_t ret = ctx->malloc(&devPtr, r->size(), pageTable.getPageSize());
 #endif
-        logger.assertion(ret == gmacSuccess);
+        assertion(ret == gmacSuccess);
         map(ctx, r, devPtr);
         r->unlock();
     }
@@ -322,7 +321,7 @@ Manager::freeDevice(std::vector<void *> & oldAddr)
     std::vector<void *>::const_iterator i;
     for(i = oldAddr.begin(); i != oldAddr.end(); i++) {
         ret = ctx->free(*i);
-        logger.assertion(ret == gmacSuccess);
+        assertion(ret == gmacSuccess);
     }
 
     return gmacSuccess;
@@ -352,12 +351,12 @@ Manager::reallocDevice()
 #ifdef USE_GLOBAL_HOST
             // Map memory in the device
             ret = ctx->mapToDevice(r->start(), &devAddr, r->size());
-            logger.asserion(ret == gmacSuccess);
+            asserion(ret == gmacSuccess);
 #else
             oldAddr.push_back(ptr(ctx, r->start()));
             // Allocate device memory
             ret = ctx->malloc(&devAddr, r->size(), pageTable.getPageSize());
-            logger.assertion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
 #endif
             unmap(ctx, r);
             map(ctx, r, devAddr);
@@ -366,7 +365,7 @@ Manager::reallocDevice()
             oldAddr.push_back(ptr(ctx, r->start()));
             // Allocate device memory
             ret = ctx->malloc(&devAddr, r->size(), pageTable.getPageSize());
-            logger.assertion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
             unmap(ctx, r);
             // Insert mapping in the page table
             insertVirtual(r->start(), devAddr, r->size());
@@ -392,7 +391,7 @@ Manager::touchAll()
         Region * r = i->second;
         r->lockWrite();
         bool correct = touch(r);
-        logger.assertion(correct);
+        assertion(correct);
         r->unlock();
     }
     m->unlock();

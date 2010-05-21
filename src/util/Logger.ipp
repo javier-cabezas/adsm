@@ -15,6 +15,16 @@ void Logger::__trace(const char *fmt, ...) const
 }
 
 inline
+void Logger::warning(const char *fmt, ...) const
+{
+    va_list list;
+    va_start(list, fmt);
+    log("WARNING", fmt, list);
+    va_end(list);
+}
+
+
+inline
 void Logger::__assertion(unsigned c, const char *fmt, ...) const
 {
 #ifdef DEBUG
@@ -28,34 +38,75 @@ void Logger::__assertion(unsigned c, const char *fmt, ...) const
 }
 
 inline
-void Logger::fatal(const char *fmt, ...) const
+void Logger::Create(const char *name)
 {
-    va_list list;
-    va_start(list, fmt);
-    log("FATAL", fmt, list);
-    va_end(list);
-    assert(0);
+    if(__logger != NULL) return;
+    __logger = new Logger(name);
 }
 
 inline
-void Logger::warning(const char *fmt, ...) const
+void Logger::Destroy()
 {
-    va_list list;
-    va_start(list, fmt);
-    log("WARNING", fmt, list);
-    va_end(list);
+    if(__logger == NULL) return;
+    delete __logger;
+    __logger = NULL;
 }
 
+inline
+void Logger::__Trace(const char *fmt, ...)
+{
+#ifdef DEBUG
+    if(__logger == NULL) return;
+    va_list list;
+    va_start(list, fmt);
+    __logger->log("TRACE", fmt, list);
+    va_end(list);
+#endif
+}
 
 inline
-void Logger::cfatal(unsigned c, const char *fmt, ...) const
+void Logger::__Assertion(unsigned c, const char *fmt, ...)
 {
+#ifdef DEBUG
     if(c) return;
     va_list list;
     va_start(list, fmt);
-    log("FATAL", fmt, list);
+    if(__logger != NULL) __loger->log("ASSERT", fmt, list);
     va_end(list);
+    assert(c);
+#endif
+}
+
+
+inline
+void Logger::fatal(const char *fmt, ...)
+{
+    if(__logger == NULL) return;
+    va_list list;
+    va_start(list, fmt);
+    __logger->log("FATAL", fmt, list, true);
+    va_end(list);
+#ifdef DEBUG
     assert(0);
+#else
+    exit(-1);
+#endif
+}
+
+
+inline
+void Logger::cfatal(unsigned c, const char *fmt, ...)
+{
+    if(c || __logger == NULL) return;
+    va_list list;
+    va_start(list, fmt);
+    __logger->log("FATAL", fmt, list, true);
+    va_end(list);
+#ifdef DEBUG
+    assert(0);
+#else
+    exit(-1);
+#endif
 }
 
 }}
