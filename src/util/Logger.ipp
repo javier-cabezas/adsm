@@ -19,7 +19,7 @@ void Logger::warning(const char *fmt, ...) const
 {
     va_list list;
     va_start(list, fmt);
-    log("WARNING", fmt, list);
+    print("WARNING", fmt, list);
     va_end(list);
 }
 
@@ -31,7 +31,7 @@ void Logger::__assertion(unsigned c, const char *fmt, ...) const
     if(c) return;
     va_list list;
     va_start(list, fmt);
-    log("ASSERT", fmt, list);
+    print("ASSERT", fmt, list);
     va_end(list);
     assert(c);
 #endif
@@ -47,6 +47,11 @@ void Logger::Create(const char *name)
 inline
 void Logger::Destroy()
 {
+#ifdef DEBUG
+    if(tags != NULL) delete tags;
+    tags = NULL;
+#endif
+
     if(__logger == NULL) return;
     delete __logger;
     __logger = NULL;
@@ -71,7 +76,7 @@ void Logger::__Assertion(unsigned c, const char *fmt, ...)
     if(c) return;
     va_list list;
     va_start(list, fmt);
-    if(__logger != NULL) __loger->log("ASSERT", fmt, list);
+    if(__logger != NULL) __logger->print("ASSERT", fmt, list);
     va_end(list);
     assert(c);
 #endif
@@ -84,7 +89,7 @@ void Logger::fatal(const char *fmt, ...)
     if(__logger == NULL) return;
     va_list list;
     va_start(list, fmt);
-    __logger->log("FATAL", fmt, list, true);
+    __logger->print("FATAL", fmt, list);
     va_end(list);
 #ifdef DEBUG
     assert(0);
@@ -100,7 +105,7 @@ void Logger::cfatal(unsigned c, const char *fmt, ...)
     if(c || __logger == NULL) return;
     va_list list;
     va_start(list, fmt);
-    __logger->log("FATAL", fmt, list, true);
+    __logger->print("FATAL", fmt, list);
     va_end(list);
 #ifdef DEBUG
     assert(0);
