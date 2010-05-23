@@ -22,8 +22,8 @@ void apiInit(void)
 	if(initialized)
 		util::Logger::fatal("GMAC double initialization not allowed");
 
-	util::Logger::Assertion(proc != NULL);
-	util::Logger::Trace("Initializing CUDA Driver API");
+	util::Logger::ASSERTION(proc != NULL);
+	util::Logger::TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
 		util::Logger::fatal("Unable to init CUDA");
 

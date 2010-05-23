@@ -37,7 +37,7 @@ gmacInit(void)
 	__enterGmac();
 
     gmac::util::Logger::Create("GMAC");
-    gmac::util::Logger::Trace("Initialiazing GMAC");
+    gmac::util::Logger::TRACE("Initialiazing GMAC");
 
 #ifdef PARAVER
     paraver::init = 1;
@@ -51,10 +51,10 @@ gmacInit(void)
     threadInit();
     stdcInit();
 
-    gmac::util::Logger::Trace("Using %s memory manager", paramMemManager);
-    gmac::util::Logger::Trace("Using %s memory allocator", paramMemAllocator);
+    gmac::util::Logger::TRACE("Using %s memory manager", paramMemManager);
+    gmac::util::Logger::TRACE("Using %s memory allocator", paramMemAllocator);
     gmac::Process::init(paramMemManager, paramMemAllocator);
-    gmac::util::Logger::Assertion(manager != NULL);
+    gmac::util::Logger::ASSERTION(manager != NULL);
     __exitGmac();
 }
 
@@ -62,7 +62,7 @@ static void __attribute__((destructor))
 gmacFini(void)
 {
 	__enterGmac();
-    gmac::util::Logger::Trace("Cleaning GMAC");
+    gmac::util::Logger::TRACE("Cleaning GMAC");
     delete proc;
     // We do not exitGmac to allow proper stdc function handling
     gmac::util::Logger::Destroy();
@@ -237,12 +237,12 @@ gmacLaunch(gmacKernel_t k)
     gmac::KernelLaunch * launch = ctx->launch(k);
 
     gmacError_t ret = gmacSuccess;
-    gmac::util::Logger::Trace("Flush the memory used in the kernel");
+    gmac::util::Logger::TRACE("Flush the memory used in the kernel");
     manager->flush(*launch);
 
     // Wait for pending transfers
     ctx->syncToDevice();
-    gmac::util::Logger::Trace("Kernel Launch");
+    gmac::util::Logger::TRACE("Kernel Launch");
     ret = launch->execute();
 
 #if 0
@@ -253,7 +253,7 @@ gmacLaunch(gmacKernel_t k)
 #endif
 
     if(paramAcquireOnWrite) {
-        gmac::util::Logger::Trace("Invalidate the memory used in the kernel");
+        gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
         manager->invalidate(*launch);
     }
 
@@ -273,7 +273,7 @@ gmacThreadSynchronize()
     ctx->lockRead();
 	gmacError_t ret = ctx->sync();
 
-    gmac::util::Logger::Trace("Memory Sync");
+    gmac::util::Logger::TRACE("Memory Sync");
     manager->invalidate(ctx->releaseRegions());
 
     ctx->unlock();
@@ -333,20 +333,20 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst,
 			                     manager->ptr(srcCtx, src), n);
-        gmac::util::Logger::Assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcCtx == NULL) {   // To device
 		manager->invalidate(dst, n);
 		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst),
 			                       src, n);
-        gmac::util::Logger::Assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
     else if(dstCtx == srcCtx) {	// Same device copy
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
 			                     manager->ptr(srcCtx, src), n);
-        gmac::util::Logger::Assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
 		//void *tmp;
@@ -365,17 +365,17 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         while (left != 0) {
             size_t bytes = left < bufferSize ? left : bufferSize;
             err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
-            gmac::util::Logger::Assertion(err == gmacSuccess);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
             srcCtx->syncToHost();
-            gmac::util::Logger::Assertion(err == gmacSuccess);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
             err = dstCtx->copyToDeviceAsync(manager->ptr(dstCtx, ((char *) dst) + off), tmp, bytes);
-            gmac::util::Logger::Assertion(err == gmacSuccess);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
             srcCtx->syncToDevice();
-            gmac::util::Logger::Assertion(err == gmacSuccess);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
             left -= bytes;
             off  += bytes;
-            gmac::util::Logger::Trace("Copying %zd %zd\n", bytes, bufferSize);
+            gmac::util::Logger::TRACE("Copying %zd %zd\n", bytes, bufferSize);
         }
         ctx->unlock();
 	}

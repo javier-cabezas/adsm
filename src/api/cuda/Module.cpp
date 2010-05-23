@@ -42,12 +42,12 @@ ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
 ModuleVector
 ModuleDescriptor::createModules()
 {
-    util::Logger::Trace("Creating modules");
+    util::Logger::TRACE("Creating modules");
     ModuleVector modules;
 
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules.begin(); it != Modules.end(); it++) {
-        util::Logger::Trace("Creating module: %p", (*it)->_fatBin);
+        util::Logger::TRACE("Creating module: %p", (*it)->_fatBin);
         modules.push_back(new Module(*(*it)));
     }
     return modules;
