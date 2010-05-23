@@ -122,7 +122,7 @@ void Map::addShared(Region * r)
     __shared.lockWrite();
     __shared.insert(value_type(r->end(), r));
     __shared.unlock();
-    util::Logger::Trace("Added shared region @ %p", r->start());
+    util::Logger::TRACE("Added shared region @ %p", r->start());
 }
 
 void Map::removeShared(Region * r)
@@ -137,7 +137,7 @@ void Map::removeShared(Region * r)
         }
     }
     __shared.unlock();
-    util::Logger::Trace("Removed shared region @ %p", r->start());
+    util::Logger::TRACE("Removed shared region @ %p", r->start());
 }
 
 bool Map::isShared(const void *addr)

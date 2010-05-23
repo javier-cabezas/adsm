@@ -49,7 +49,7 @@ WITH THE SOFTWARE.  */
 
 #define ASSERT_STRING "in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #define assertion(c, ...) __assertion(c, ASSERT_STRING)
-#define Assertion(c, ...) __Assertion(c, ASSERT_STRING)
+#define ASSERTION(c, ...) __Assertion(c, ASSERT_STRING)
 
 inline const char *__extract_file_name(const char *top, const char *file) {
     return file + strlen(top) + 1;
@@ -57,7 +57,7 @@ inline const char *__extract_file_name(const char *top, const char *file) {
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
-#define Trace(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+#define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
 
 

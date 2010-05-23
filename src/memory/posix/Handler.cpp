@@ -31,7 +31,7 @@ void Handler::setHandler()
 		util::Logger::fatal("sigaction: %s", strerror(errno));
 
 	handler = this;
-	util::Logger::Trace("New signal handler programmed");
+	util::Logger::TRACE("New signal handler programmed");
 }
 
 void Handler::restoreHandler()
@@ -56,8 +56,8 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 #endif
     void * addr = info->si_addr;
 
-	if(!writeAccess) util::Logger::Trace("Read SIGSEGV for %p", addr);
-	else util::Logger::Trace("Write SIGSEGV for %p", addr);
+	if(!writeAccess) util::Logger::TRACE("Read SIGSEGV for %p", addr);
+	else util::Logger::TRACE("Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	if(!writeAccess) resolved = handler->read(addr);
@@ -72,7 +72,7 @@ void Handler::segvHandler(int s, siginfo_t *info, void *ctx)
 		return defaultAction.sa_handler(s);
 	}
 
-	util::Logger::Trace("SIGSEGV done");
+	util::Logger::TRACE("SIGSEGV done");
 	exitFunction();
 	__exitGmac();
 }

@@ -63,8 +63,8 @@ void
 Process::init(const char *manager, const char *allocator)
 {
     // Process is a singleton class. The only allowed instance is proc
-    util::Logger::Trace("Initializing process");
-    util::Logger::Assertion(proc == NULL);
+    util::Logger::TRACE("Initializing process");
+    util::Logger::ASSERTION(proc == NULL);
     Context::Init();
     proc = new Process();
     apiInit();
