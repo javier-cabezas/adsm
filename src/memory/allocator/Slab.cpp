@@ -44,6 +44,7 @@ void Slab::cleanup()
 void *Slab::alloc(size_t size, void *addr)
 {
     Cache &cache = get((unsigned long)addr, size);
+    trace("Using cache %p", &cache);
     void *ret = cache.get();
     addresses.insert(AddressMap::value_type(ret, &cache));
     return ret;
