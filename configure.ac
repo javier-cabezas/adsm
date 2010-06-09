@@ -72,7 +72,30 @@ AC_CHECK_LIB([pthread], [pthread_create],
 	thread_name="pthreads"]
 )
 
-AC_DEFINE(BITMAP_BIT)
+
+AC_ARG_WITH([bitmap],
+            AS_HELP_STRING([--with-bitmap],
+                           [Enable dirty bitmap granularity]),
+                           [bitmap_size="$with_bitmap"],
+                           [bitmap_size="byte"])
+if test "$bitmap_size" == "bit"; then
+    AC_DEFINE(BITMAP_BIT)
+    echo "Using bit"
+else
+    if test "$bitmap_size" == "byte"; then
+        AC_DEFINE(BITMAP_BYTE)
+        echo "Using byte"
+    else
+        if test "$bitmap_size" == "word"; then
+            AC_DEFINE(BITMAP_WORD)
+            echo "Using word"
+        else
+            echo "Wrong bitmpa granularity"
+            exit -1
+        fi
+    fi
+fi
+
 
 # Check for debug mode - MUST BE THE FIRST CHECK
 AC_MSG_CHECKING(whether to enable debug mode)
