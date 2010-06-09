@@ -15,7 +15,7 @@ Context::setup()
 {
 #ifdef USE_MULTI_CONTEXT
     _ctx = _gpu->createCUDAContext();
-    enable();
+    //enable();
 #endif
 }
 
@@ -66,7 +66,7 @@ Context::Context(Accelerator *gpu) :
     _gpu(gpu),
     _call(dim3(0), dim3(0), 0, 0)
 #ifdef USE_MULTI_CONTEXT
-    , mutex(paraver::ctxLocal)
+    , mutex(paraver::LockCtxLocal)
 #endif
     , _pendingKernel(false)
     , _pendingToDevice(false)
@@ -109,8 +109,8 @@ Context::switchTo(Accelerator *gpu)
 {
     Accelerator * oldAcc = _gpu;
 #ifdef USE_MULTI_CONTEXT
-    CUContext * oldCtx = _ctx;
-    CUContext * tmpCtx;
+    CUContext oldCtx = _ctx;
+    CUContext tmpCtx;
 #endif
 
     // Destroy and clean up current device resources
@@ -121,15 +121,15 @@ Context::switchTo(Accelerator *gpu)
     // 1- Create CUDA resources
     _gpu = gpu;
 #ifdef USE_MULTI_CONTEXT
-    _ctx->_ctx = createCUDAContext();
+    _ctx = gpu->createCUDAContext();
 #endif
     // 2- Free resources in the device
     std::vector<void *> oldAddr = manager->reallocDevice();
 
     _gpu = oldAcc;
 #ifdef USE_MULTI_CONTEXT
-    tmpCtx = _ctx->_ctx;
-    _ctx->_ctx = oldCtx;
+    tmpCtx = _ctx;
+    _ctx = oldCtx;
 #endif
     manager->freeDevice(oldAddr);
 
@@ -143,13 +143,13 @@ Context::switchTo(Accelerator *gpu)
     _modules.clear();
     clearKernels();
 #ifdef USE_MULTI_CONTEXT
-    oldAcc.destroyCUDAContext(oldCtx);
+    oldAcc->destroyCUDAContext(oldCtx);
 #endif
     popUnlock();
 
     _gpu = gpu;
 #ifdef USE_MULTI_CONTEXT
-    _ctx->_ctx = tmpCtx;
+    _ctx = tmpCtx;
 #endif
 
     pushLock();
@@ -259,10 +259,11 @@ Context::hostFree(void *addr)
 {
     assertion(addr != NULL);
 	pushLock();
-	AddressMap::iterator i = hostMem.find(addr);
-	assertion(i != hostMem.end());
-	CUresult ret = cuMemFreeHost(i->second);
-	hostMem.erase(i);
+    /// \todo Fix this
+	//AddressMap::iterator i = hostMem.find(addr);
+	//assertion(i != hostMem.end());
+	CUresult ret = cuMemFreeHost(addr);
+	//hostMem.erase(i);
 	popUnlock();
 	return error(ret);
 }
@@ -298,11 +299,11 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
             pushLock();
             pushEventState(IOWrite, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
             ret = cuMemcpyHtoDAsync(gpuAddr(((char *) dev) + off), tmp, bytes, streamToDevice);
-            CBREAK(ret == CUDA_SUCCESS, popUnlock());
+            assertion(ret == CUDA_SUCCESS);
             ret = cuStreamSynchronize(streamToDevice);
+            assertion(ret == CUDA_SUCCESS);
             popEventState(paraver::Accelerator, 0x10000000 + _id);
             popUnlock();
-            CBREAK(ret == CUDA_SUCCESS);
 
             left -= bytes;
             off  += bytes;
@@ -339,12 +340,12 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         pushLock();
         pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
         ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
-        CBREAK(ret == CUDA_SUCCESS, popUnlock());
+        assertion(ret == CUDA_SUCCESS);
         trace("Copied %zd bytes", off);
         ret = cuStreamSynchronize(streamToHost);
+        assertion(ret == CUDA_SUCCESS);
         popEventState(paraver::Accelerator, 0x10000000 + _id);
         popUnlock();
-        CBREAK(ret == CUDA_SUCCESS);
         memcpy(((char *) host) + off, tmp, bytes);
 
         left -= bytes;
