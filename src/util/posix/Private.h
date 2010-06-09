@@ -34,20 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_POSIX_PRIVATE_H_
 #define __UTIL_POSIX_PRIVATE_H_
 
-#include <config.h>
-#include <paraver.h>
-
 #include <pthread.h>
-
-#include <iostream>
-
-#include <map>
 
 namespace gmac { namespace util {
 
 class Private {
 protected:
-    pthread_key_t __key;
+    pthread_key_t _key;
 public:
     static void init(Private &var);
 
@@ -55,7 +48,8 @@ public:
     void *get();
 };
 
+}}
+
 #include "Private.ipp"
 
-}}
 #endif
