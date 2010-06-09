@@ -209,7 +209,7 @@ bool RollingManager::read(void *addr)
     }
     region->readWrite();
 #ifdef USE_VM
-    if(current()->dirtyBitmap().check(ptr(Context::current(), addr))) {
+    if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), addr))) {
 #endif
         gmacError_t ret = region->copyToHost();
         assertion(ret == gmacSuccess);
@@ -236,7 +236,7 @@ bool RollingManager::touch(Region * r)
             block->readWrite();
             if(block->present() == false) {
 #ifdef USE_VM
-                if(current()->dirtyBitmap().check(ptr(Context::current(), block->start()))) {
+                if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), block->start()))) {
 #endif
                     gmacError_t ret = block->copyToHost();
                     assertion(ret == gmacSuccess);
@@ -273,7 +273,7 @@ bool RollingManager::write(void *addr)
     region->readWrite();
     if(region->present() == false) {
 #ifdef USE_VM
-        if(current()->dirtyBitmap().check(ptr(Context::current(), addr))) {
+        if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), addr))) {
 #endif
             gmacError_t ret = region->copyToHost();
             assertion(ret == gmacSuccess);

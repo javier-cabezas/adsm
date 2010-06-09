@@ -36,11 +36,9 @@ WITH THE SOFTWARE.  */
 #define __GMAC_VM_H_
 
 
-#define MASK 0xffffffff
-#define SHIFT 21
-
 #include <stdint.h>
-__constant__ uint8_t *__dirtyBitmap;
+
+#include <cuda_runtime_api.h>
 
 
 template<typename T>
@@ -48,12 +46,48 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
+#ifdef BITMAP_WORD
+#define MASK 0xffffffff
+#define SHIFT 21
+
+__constant__ uint32_t *__dirtyBitmap;
+
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
     unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
     __dirtyBitmap[entry] = 1;
 }
+#elif BITMAP_BYTE
+#define MASK 0xffffffff
+#define SHIFT 21
+
+__constant__ uint8_t *__dirtyBitmap;
+
+template<typename T>
+__device__ __inline__ void __globalSt(T *addr, T v) {
+    *addr = v;
+    unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
+    __dirtyBitmap[entry] = 1;
+}
+#elif BITMAP_BIT
+#define MASK_ENTRY   0xffffffff
+#define SHIFT_ENTRY  26
+#define SHIFT_PAGE   21
+#define MASK_BITPOS  ((1 << (SHIFT_ENTRY - SHIFT_PAGE)) - 1)
+
+__constant__ uint32_t *__dirtyBitmap;
+
+template<typename T>
+__device__ __inline__ void __globalSt(T *addr, T v) {
+    *addr = v;
+    unsigned long entry = ((unsigned long)addr & MASK_ENTRY) >> SHIFT_ENTRY;
+    uint32_t val = 1 << (((unsigned long)addr >> SHIFT_PAGE) & MASK_BITPOS);
+    atomicOr(&__dirtyBitmap[entry], val);
+}
+#else
+
+#endif
 
 
 #endif

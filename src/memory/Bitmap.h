@@ -43,11 +43,21 @@ namespace gmac { namespace memory  { namespace vm {
 
 class Bitmap : public util::Logger {
 private:
-    uint8_t *__bitmap;
-    void *__device;
+#ifdef BITMAP_WORD
+    uint32_t *_bitmap;
+#elif BITMAP_BYTE
+    uint8_t *_bitmap;
+#elif BITMAP_BIT
+    uint32_t *_bitmap;
+    size_t _pageShift;
+    uint32_t _bitMask;
+#else
+#error "Bitmap granularity not defined"
+#endif
+    void *_device;
 
-    size_t __pageShift;
-    size_t __size;
+    size_t _entryShift;
+    size_t _size;
 
     void allocate();
 public:
@@ -58,7 +68,7 @@ public:
     void *host() const;
     const size_t size() const;
 
-    bool check(const void *);
+    bool checkAndClear(const void *);
 };
 
 }}}
