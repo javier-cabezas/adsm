@@ -10,7 +10,7 @@ bool Bitmap::checkAndClear(const void *addr)
     size_t entry = ((unsigned long)addr >> _entryShift);
     trace("Bitmap check for %p -> entry %zu", addr, entry);
     trace("Bitmap entry: 0x%x", _bitmap[entry]);
-#if BITMAP_BIT
+#ifdef BITMAP_BIT
     uint32_t val = 1 << (((unsigned long)addr >> _pageShift) & _bitMask);
     if(_bitmap[entry] & val) ret = true;
     _bitmap[entry] |= val;
