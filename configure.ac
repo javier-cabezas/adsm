@@ -72,6 +72,8 @@ AC_CHECK_LIB([pthread], [pthread_create],
 	thread_name="pthreads"]
 )
 
+AC_DEFINE(BITMAP_BIT)
+
 # Check for debug mode - MUST BE THE FIRST CHECK
 AC_MSG_CHECKING(whether to enable debug mode)
 debug_default="no"
