@@ -82,11 +82,11 @@ template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
     unsigned long entry = ((unsigned long)addr & MASK_ENTRY) >> SHIFT_ENTRY;
-    uint32_t val = 1 << (((unsigned long)addr >> SHIFT_PAGE) & MASK_BITPOS);
+    uint32_t val = 1 << ((((unsigned long)addr & MASK_ENTRY) >> SHIFT_PAGE) & MASK_BITPOS);
     atomicOr(&__dirtyBitmap[entry], val);
 }
 #else
-
+#error "Bitmap granularity not defined"
 #endif
 
 
