@@ -10,6 +10,7 @@
 #include "mpi_local.h"
 
 SYM(int, __MPI_Sendrecv, void *, int, MPI_Datatype, int, int, void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Status *);
+
 SYM(int, __MPI_Send    , void *, int, MPI_Datatype, int, int, MPI_Comm );
 SYM(int, __MPI_Ssend   , void *, int, MPI_Datatype, int, int, MPI_Comm );
 SYM(int, __MPI_Rsend   , void *, int, MPI_Datatype, int, int, MPI_Comm );
@@ -19,7 +20,7 @@ SYM(int, __MPI_Recv    , void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Stat
 
 void mpiInit(void)
 {
-	gmac::util::Logger::trace("Overloading MPI_Sendrecv");
+	gmac::util::Logger::TRACE("Overloading MPI_Sendrecv");
 	LOAD_SYM(__MPI_Sendrecv, MPI_Sendrecv);
 
 	LOAD_SYM(__MPI_Send,  MPI_Send);
@@ -35,6 +36,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         void *recvbuf, int recvcount, MPI_Datatype recvtype, 
         int source, int recvtag, MPI_Comm comm, MPI_Status *status )
 {
+	if(__inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
 	// Locate memory regions (if any)
@@ -89,10 +91,10 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
 		err = sendCtx->copyToHostAsync(tmpSend,
                                        manager->ptr(sendCtx, sendbuf), sendbytes);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
         sendCtx->syncToHost();
 
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	} else {
         tmpSend = sendbuf;
     }
@@ -125,22 +127,22 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, recvbuf),
                                          tmpRecv,
                                          recvbytes);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = recvCtx->syncToDevice();
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
 cleanup:
     if (allocSend) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpSend);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
     if (allocRecv) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpRecv);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
 exit:
@@ -152,6 +154,7 @@ exit:
 int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm,
     int (*func)(void *, int, MPI_Datatype, int, int, MPI_Comm))
 {
+	if(__inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
     if(__MPI_Send == NULL) mpiInit();
 
 	// Locate memory regions (if any)
@@ -204,10 +207,10 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
 		err = sendCtx->copyToHostAsync(tmpSend,
                                        manager->ptr(sendCtx, buf), sendbytes);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
         sendCtx->syncToHost();
 
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	} else {
         tmpSend = buf;
     }
@@ -217,7 +220,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     if (allocSend) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpSend);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
 exit:
@@ -249,6 +252,7 @@ int MPI_Bsend( void *buf, int count, MPI_Datatype datatype, int dest, int tag, M
 
 int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status )
 {
+	if(__inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     if(__MPI_Recv == NULL) mpiInit();
 
 	// Locate memory regions (if any)
@@ -304,16 +308,16 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
         err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, buf),
                                          tmpRecv,
                                          recvbytes);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = recvCtx->syncToDevice();
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
 cleanup:
     if (allocRecv) {
         // Free temporal buffer
         err = manager->hfree(ctx, tmpRecv);
-        gmac::util::Logger::assertion(err == gmacSuccess);
+        gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
 
 	__exitGmac();
