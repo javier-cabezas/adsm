@@ -36,7 +36,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 {
 }
 
-KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, size_t tokens) :
+KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens) :
     gmac::KernelConfig(),
     _grid(grid),
     _block(block),

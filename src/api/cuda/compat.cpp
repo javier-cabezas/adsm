@@ -121,14 +121,17 @@ static inline cudaError_t __getCUDAError(CUresult r)
             return cudaErrorNoDevice;
 #endif
 #if CUDART_VERSION >= 3000
-#if LINUX
         case CUDA_ERROR_ECC_UNCORRECTABLE:
             return cudaErrorECCUncorrectable;
-#endif
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
         case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
+#endif
+#if CUDART_VERSION >= 3010
+        case CUDA_ERROR_UNSUPPORTED_LIMIT:
+        case CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND:
+        case CUDA_ERROR_SHARED_OBJECT_INIT_FAILED:
 #endif
         case CUDA_ERROR_ARRAY_IS_MAPPED:
         case CUDA_ERROR_ALREADY_MAPPED:
@@ -281,9 +284,15 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 
 // CUDA Array related functions
 
+#if CUDART_VERSION >= 3010
+cudaError_t cudaMallocArray(struct cudaArray **array,
+		const struct cudaChannelFormatDesc *desc, size_t width,
+		size_t height, unsigned int flags)
+#else
 cudaError_t cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
 		size_t height)
+#endif
 {
 	CUDA_ARRAY_DESCRIPTOR cuDesc;
 	cuDesc.Width = width; cuDesc.Height = height;

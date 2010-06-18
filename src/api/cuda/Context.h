@@ -149,7 +149,7 @@ public:
     const Variable *variable(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t key) const;
 
-	void call(dim3 Dg, dim3 Db, size_t shared, int tokens);
+	void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
 	void flush();

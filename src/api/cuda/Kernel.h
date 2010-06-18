@@ -28,19 +28,19 @@ protected:
     dim3 _grid;
     dim3 _block;
     size_t _shared;
-    size_t _tokens;
+    cudaStream_t _tokens;
 
 public:
     /// \todo Remove this piece of shit
     CUstream _stream;
 
     KernelConfig(const KernelConfig & c);
-    KernelConfig(dim3 grid, dim3 block, size_t shared, size_t tokens);
+    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 
     dim3 grid() const;
     dim3 block() const;
     size_t shared() const;
-    size_t tokens() const;
+    cudaStream_t tokens() const;
 };
 
 class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
