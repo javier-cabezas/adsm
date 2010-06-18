@@ -27,7 +27,7 @@ KernelConfig::shared() const
 }
 
 inline
-size_t
+cudaStream_t
 KernelConfig::tokens() const
 {
     return _tokens;

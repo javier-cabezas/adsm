@@ -99,7 +99,7 @@ void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
 }
 
 cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
-		size_t sharedMem, int tokens)
+		size_t sharedMem, cudaStream_t tokens)
 {
 	__enterGmac();
     Context * ctx = Context::current();

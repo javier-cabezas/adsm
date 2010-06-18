@@ -157,7 +157,7 @@ Context::syncDevice()
 }
 
 inline void
-Context::call(dim3 Dg, dim3 Db, size_t shared, int tokens)
+Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     _call = KernelConfig(Dg, Db, shared, tokens);
 }
