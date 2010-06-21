@@ -33,6 +33,7 @@ void *Arena::get()
     assertion(__objects.empty() == false);
     void *ret = __objects.front();
     __objects.pop_front();
+    trace("Arena %p has %zd available objects", this, __objects.size());
     return ret;
 }
 
