@@ -18,8 +18,10 @@ Arena::Arena(Manager *manager, size_t objSize) :
     gmacError_t ret = manager->malloc(ctx, &ptr, paramPageSize);
     ctx->unlock();
     if(ret != gmacSuccess) return;
-    for(size_t s = 0; s < paramPageSize; s += objSize, size++)
-        __objects.push_back((void *)((uint8_t *)ptr + objSize));
+    for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
+        trace("Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
+        __objects.push_back((void *)((uint8_t *)ptr + s));
+    }
 }
 
 Arena::~Arena()
@@ -47,10 +49,12 @@ void *Cache::get()
     ArenaMap::iterator i;
     for(i = arenas.begin(); i != arenas.end(); i++) {
         if(i->second->empty()) continue;
+        trace("Cache %p gets memory from arena %p", this, i->second);
         return i->second->get();
     }
     // There are no free objects in any arena
     Arena *arena = new Arena(manager, objectSize);
+    trace("Cache %p creates new arena %p", this, arena);
     arenas.insert(ArenaMap::value_type(arena->address(), arena));
     return arena->get();
 }

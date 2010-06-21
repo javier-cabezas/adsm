@@ -47,6 +47,7 @@ void *Slab::alloc(size_t size, void *addr)
     trace("Using cache %p", &cache);
     void *ret = cache.get();
     addresses.insert(AddressMap::value_type(ret, &cache));
+    trace("Retuning address %p", ret);
     return ret;
 }
 
