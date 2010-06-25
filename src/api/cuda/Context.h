@@ -105,7 +105,7 @@ protected:
 
     gmacError_t switchTo(Accelerator *gpu);
 public:
-    static gmacError_t error(CUresult);
+    gmacError_t error(CUresult);
 
     static Context * current();
     static CUstream stream();

@@ -87,7 +87,8 @@ enum LockName {
     LockQueueMap     = 22, // 22
     LockReference    = 23, // 23
     LockContext      = 24, // 24
-    LockLog          = 25  // 25
+    LockLog          = 25, // 25
+    LockSystem       = 26  // 26
 };
 
 enum AcceleratorName {

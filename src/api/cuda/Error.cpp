@@ -4,7 +4,8 @@ namespace gmac { namespace gpu {
 
 #define ERROR(r, err) case r: error = err; break
 
-gmacError_t Context::error(CUresult r)
+gmacError_t
+Context::error(CUresult r)
 {
 	gmacError_t error = gmacSuccess;
 	switch(r) {
@@ -32,8 +33,8 @@ gmacError_t Context::error(CUresult r)
 		ERROR(CUDA_ERROR_UNKNOWN, gmacErrorUnknown);
 		default: error = gmacErrorUnknown;
 	}
+    _error = error;
 	return error;
 }
-
 
 }}

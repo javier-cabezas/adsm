@@ -46,47 +46,46 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
-#ifdef BITMAP_WORD
-#define MASK 0xffffffff
-#define SHIFT 21
+__constant__ int __SHIFT_ENTRY;
+//__constant__ int __SHIFT_PAGE;
 
+#define to32bit(a) ((unsigned long)a & 0xffffffff)
+
+#ifdef BITMAP_WORD
 __constant__ uint32_t *__dirtyBitmap;
 
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
-    __dirtyBitmap[entry] = 1;
+    __dirtyBitmap[to32bit(addr) >> __SHIFT_ENTRY] = 1;
 }
-#elif BITMAP_BYTE
-#define MASK 0xffffffff
-#define SHIFT 21
-
+#else
+#ifdef BITMAP_BYTE
 __constant__ uint8_t *__dirtyBitmap;
 
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long entry = ((unsigned long)addr & MASK) >> SHIFT;
-    __dirtyBitmap[entry] = 1;
+    __dirtyBitmap[to32bit(addr) >> __SHIFT_ENTRY] = 1;
 }
-#elif BITMAP_BIT
-#define MASK_ENTRY   0xffffffff
-#define SHIFT_ENTRY  26
-#define SHIFT_PAGE   21
-#define MASK_BITPOS  ((1 << (SHIFT_ENTRY - SHIFT_PAGE)) - 1)
+#else
+#ifdef BITMAP_BIT
+#define __SHIFT_BITPOS  (__SHIFT_ENTRY + 5)
+#define MASK_BITPOS  ((1 << 5) - 1)
 
 __constant__ uint32_t *__dirtyBitmap;
 
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long entry = ((unsigned long)addr & MASK_ENTRY) >> SHIFT_ENTRY;
-    uint32_t val = 1 << ((((unsigned long)addr & MASK_ENTRY) >> SHIFT_PAGE) & MASK_BITPOS);
+    unsigned long entry = to32bit(addr) >> __SHIFT_BITPOS;
+    uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_ENTRY) & MASK_BITPOS);
     atomicOr(&__dirtyBitmap[entry], val);
 }
 #else
 #error "Bitmap granularity not defined"
+#endif
+#endif
 #endif
 
 

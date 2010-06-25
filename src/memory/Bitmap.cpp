@@ -9,22 +9,25 @@ namespace gmac { namespace memory { namespace vm {
 Bitmap::Bitmap(unsigned bits) :
     _device(NULL)
 {
-#ifdef BITMAP_WORD
-    _entryShift = int(log2(paramPageSize));
-    _size = (1 << (bits - _entryShift)) * sizeof(uint32_t);
-    _bitmap = new uint32_t[_size / sizeof(uint32_t)];
-#elif BITMAP_BYTE
-    _entryShift = int(log2(paramPageSize));
-    _size = (1 << (bits - _entryShift)) * sizeof(uint8_t);
-    _bitmap = new uint8_t[_size];
-#elif BITMAP_BIT
-    _entryShift = int(log2(paramPageSize) + 5);;
-    _pageShift = int(log2(paramPageSize));
-    _bitMask = (1 << (_entryShift - _pageShift)) - 1;
-    _size = (1 << (bits - _entryShift)) / 8;
+    _shiftPage = int(log2(paramPageSize));
+    _shiftEntry = int(log2(paramPageSize / paramBitmapChunksPerPage));
+#ifdef BITMAP_BIT
+    _bitMask = (1 << 5) - 1;
+    _size = (1 << (bits - _shiftEntry)) / 8;
     _bitmap = new uint32_t[_size / sizeof(uint32_t)];
 #else
+    _bitMask = (1 << (_shiftPage - _shiftEntry)) - 1;
+#ifdef BITMAP_BYTE
+    typedef uint8_t T;
+#else
+#ifdef BITMAP_WORD
+    typedef uint32_t T;
+#else
 #error "Bitmap granularity not defined"
+#endif
+#endif
+    _size = (1 << (bits - _shiftEntry)) * sizeof(T);
+    _bitmap = new T[_size / sizeof(T)];
 #endif
     memset(_bitmap, 0, size());
 }

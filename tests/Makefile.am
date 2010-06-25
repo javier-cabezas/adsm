@@ -1,9 +1,10 @@
 MAINTAINERCLEANFILES=Makefile.in
 
 noinst_PROGRAMS = bandwidth threadBandwidth\
+				  schedAllocation\
 				  hybridComputation gmacHybridComputation gmacVecAdd\
 		gmacTexture gmacConstant\
-		gmacMemset gmacMemcpy gmacAlloc\
+		gmacMemset gmacMemcpy\
 		gmacThreadVecAdd gmacSharedVecAdd\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
@@ -25,6 +26,9 @@ bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcu
 threadBandwidth_SOURCES = threadBandwidth.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
+schedAllocation_SOURCES = schedAllocation.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
+schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
 hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
@@ -37,8 +41,8 @@ gmacMemset_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacMemcpy_SOURCES = gmacMemcpy.cu $(GMAC_TESTSOURCES)
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-gmacAlloc_SOURCES = gmacAlloc.cu $(GMAC_TESTSOURCES)
-gmacAlloc_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#gmacAlloc_SOURCES = gmacAlloc.cu $(GMAC_TESTSOURCES)
+#gmacAlloc_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu $(GMAC_TESTSOURCES)
 gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -102,7 +106,7 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -Xcompiler -fopenmp
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS)
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -arch sm_13 --ptxas-options=-v 
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)

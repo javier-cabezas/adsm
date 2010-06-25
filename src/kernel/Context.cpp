@@ -23,6 +23,7 @@ unsigned Context::_next = 0;
 Context::Context(Accelerator *acc) :
     util::Reference(),
     util::RWLock(LockContext),
+    _error(gmacSuccess),
     _acc(acc),
     _kernels(),
     _releasedRegions(),

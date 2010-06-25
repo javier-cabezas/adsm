@@ -88,7 +88,7 @@ KernelLaunch::execute()
 
 exit:
     _ctx.popUnlock();
-    return Context::error(ret);
+    return _ctx.error(ret);
 }
 
 }}
