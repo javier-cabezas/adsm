@@ -84,19 +84,19 @@ gmacHybridComputation_SOURCES = gmacHybridComputation.cu $(GMAC_TESTSOURCES)
 gmacHybridComputation_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacHybridComputation_LDFLAGS = -fopenmp
 
-vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
-vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
+#vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
 vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmStencil_DEPENDENCIES = vmStencilCommon.cu
-vmStencil_SOURCES = vmStencil.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
-vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#vmStencil_DEPENDENCIES = vmStencilCommon.cu
+#vmStencil_SOURCES = vmStencil.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
+#vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
-vmMatrixMul_SOURCES = vmMatrixMul.cu $(GMAC_TESTSOURCES)
-vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
+#vmMatrixMul_SOURCES = vmMatrixMul.cu $(GMAC_TESTSOURCES)
+#vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
 
@@ -106,7 +106,7 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -Xcompiler -fopenmp
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -arch sm_13 --ptxas-options=-v 
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v 
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
