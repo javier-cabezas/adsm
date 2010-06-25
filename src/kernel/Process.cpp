@@ -127,7 +127,7 @@ gmacError_t Process::migrate(Context * ctx, int acc)
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	trace("Migrating context");
-    if (Context::hasCurrent()) {
+    if (ctx != NULL) {
 #ifndef USE_MMAP
         if (int(ctx->accId()) != acc) {
             // Create a new context in the requested accelerator

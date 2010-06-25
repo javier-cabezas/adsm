@@ -8,6 +8,7 @@
 #include <util/Parameter.h>
 #include <util/Private.h>
 #include <util/Logger.h>
+#include <util/FileLock.h>
 
 #include <kernel/Process.h>
 #include <kernel/Context.h>
@@ -30,6 +31,14 @@ gmac::util::Private __in_gmac;
 const char __gmac_code = 1;
 const char __user_code = 0;
 
+#ifdef LINUX 
+#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
+#else
+#ifdef DARWIN
+#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
+#endif
+#endif
+
 static void __attribute__((constructor))
 gmacInit(void)
 {
@@ -43,6 +52,9 @@ gmacInit(void)
     paraver::init = 1;
     paraverInit();
 #endif
+    //gmac::util::FileLock(GLOBAL_FILE_LOCK, paraver::LockSystem);
+
+    //FILE * lockSystem;
 
     paramInit();
 
@@ -138,12 +150,16 @@ gmacSetAffinity(int acc)
 {
 	gmacError_t ret;
 	__enterGmac();
-	enterFunction(FuncGmacSetAffinity);
-    gmac::Context * ctx = gmac::Context::current();
-    // We are potentially modifying the context, let's lock it
-    ctx->lockWrite();
-    ret = proc->migrate(ctx, acc);
-    ctx->unlock();
+    enterFunction(FuncGmacSetAffinity);
+    if (gmac::Context::hasCurrent()) {
+        gmac::Context * ctx = gmac::Context::current();
+        // We are potentially modifying the context, let's lock it
+        ctx->lockWrite();
+        ret = proc->migrate(ctx, acc);
+        ctx->unlock();
+    } else {
+        ret = proc->migrate(NULL, acc);
+    }
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -153,7 +169,7 @@ gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
-    if(count == 0) {
+    if (count == 0) {
         *cpuPtr = NULL;
         return ret;
     }
@@ -327,31 +343,37 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 
 	if (dstCtx == NULL && srcCtx == NULL) return NULL;
 
-
     // TODO - copyDevice can be always asynchronous
 	if(dstCtx == NULL) {	    // From device
+        srcCtx->lockRead();
 		manager->flush(src, n);
 		err = srcCtx->copyToHost(dst,
 			                     manager->ptr(srcCtx, src), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        srcCtx->unlock();
 	}
     else if(srcCtx == NULL) {   // To device
+        dstCtx->lockRead();
 		manager->invalidate(dst, n);
 		err = dstCtx->copyToDevice(manager->ptr(dstCtx, dst),
 			                       src, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        dstCtx->unlock();
     }
     else if(dstCtx == srcCtx) {	// Same device copy
+        dstCtx->lockRead();
 		manager->flush(src, n);
 		manager->invalidate(dst, n);
 		err = dstCtx->copyDevice(manager->ptr(dstCtx, dst),
 			                     manager->ptr(srcCtx, src), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        dstCtx->unlock();
 	}
 	else { // dstCtx != srcCtx
 		//void *tmp;
         gmac::Context *ctx = gmac::Context::current();
-        if(ctx != srcCtx && ctx != dstCtx) ctx->lockRead();
+        if(ctx != srcCtx) srcCtx->lockRead();
+        if(ctx != dstCtx) dstCtx->lockRead();
 
         manager->flush(src, n);
         manager->invalidate(dst, n);
@@ -361,7 +383,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 
         size_t left = n;
         off_t  off  = 0;
-        ctx->lockWrite();
         while (left != 0) {
             size_t bytes = left < bufferSize ? left : bufferSize;
             err = srcCtx->copyToHostAsync(tmp, manager->ptr(srcCtx, ((char *) src) + off), bytes);
@@ -377,6 +398,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             off  += bytes;
             gmac::util::Logger::TRACE("Copying %zd %zd\n", bytes, bufferSize);
         }
+
+        if(ctx != srcCtx) srcCtx->unlock();
+        if(ctx != dstCtx) dstCtx->unlock();
         ctx->unlock();
 	}
 

@@ -86,6 +86,21 @@ Module::dirtyBitmap() const
 {
     return __dirtyBitmap;
 }
+
+inline
+const Variable *
+Module::shiftPage() const
+{
+    return __shiftPage;
+}
+
+inline
+const Variable *
+Module::shiftEntry() const
+{
+    return __shiftEntry;
+}
+
 #endif
 
 }}

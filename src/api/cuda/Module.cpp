@@ -8,6 +8,8 @@ ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules;
 
 #ifdef USE_VM
 const char *Module::dirtyBitmapSymbol = "__dirtyBitmap";
+const char *Module::shiftPageSymbol  = "__SHIFT_PAGE";
+const char *Module::shiftEntrySymbol = "__SHIFT_ENTRY";
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
@@ -79,6 +81,24 @@ Module::Module(const ModuleDescriptor & d) :
         if(strncmp(v->name(), dirtyBitmapSymbol, strlen(dirtyBitmapSymbol)) == 0) {
             __dirtyBitmap = &_constants.find(v->key())->second;
             trace("Found constant to set a dirty bitmap on device");
+        }
+
+        if(strncmp(v->name(), shiftPageSymbol, strlen(shiftPageSymbol)) == 0) {
+            __shiftPage = &_constants.find(v->key())->second;
+            trace("Found constant to set __SHIFT_PAGE");
+
+            size_t tmp = ctx->mm().dirtyBitmap().shiftPage();
+            res = cuMemcpyHtoD(__shiftPage->devPtr(), &tmp, sizeof(size_t));
+            cfatal(res == CUDA_SUCCESS, "Unable to set shift page");
+        }
+
+        if(strncmp(v->name(), shiftEntrySymbol, strlen(shiftEntrySymbol)) == 0) {
+            __shiftEntry = &_constants.find(v->key())->second;
+            trace("Found constant to set __SHIFT_ENTRY");
+
+            size_t tmp = ctx->mm().dirtyBitmap().shiftEntry();
+            res = cuMemcpyHtoD(__shiftEntry->devPtr(), &tmp, sizeof(size_t));
+            cfatal(res == CUDA_SUCCESS, "Unable to set shift entry");
         }
 #endif
     }

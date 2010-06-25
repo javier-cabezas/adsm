@@ -45,18 +45,23 @@ class Bitmap : public util::Logger {
 private:
 #ifdef BITMAP_WORD
     uint32_t *_bitmap;
-#elif BITMAP_BYTE
+#else
+#ifdef BITMAP_BYTE
     uint8_t *_bitmap;
-#elif BITMAP_BIT
+#else
+#ifdef BITMAP_BIT
     uint32_t *_bitmap;
-    size_t _pageShift;
-    uint32_t _bitMask;
 #else
 #error "Bitmap granularity not defined"
 #endif
+#endif
+#endif
+
     void *_device;
 
-    size_t _entryShift;
+    size_t _shiftPage;
+    size_t _shiftEntry;
+    uint32_t _bitMask;
     size_t _size;
 
     void allocate();
@@ -67,6 +72,9 @@ public:
     void *device();
     void *host() const;
     const size_t size() const;
+
+    const size_t shiftPage() const;
+    const size_t shiftEntry() const;
 
     bool checkAndClear(const void *);
 };

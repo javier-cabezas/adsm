@@ -195,9 +195,16 @@ void gmacCopy(THREAD_T);
 #else
 #include <assert.h>
 #endif
+
+#include <cstdio>
 static inline const char *gmacGetErrorString(gmacError_t err) {
-	assert(err <= gmacErrorUnknown);
+	//assert(err <= gmacErrorUnknown);
+    if (err <= gmacErrorUnknown)
 	return error[err];
+    else {
+        printf("Error %d\n", err);
+        return "WTF Error";
+    }
 }
 
 #ifdef __cplusplus

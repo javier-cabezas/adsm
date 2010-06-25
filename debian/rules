@@ -7,8 +7,8 @@ export DH_VERBOSE=1
 CFLAGS=-g -O2 -Wall
 CXXFLAGS= -g -O2 -Wall
 
-CONFARGS = --enable-mmap
-CONFARGS_PARAVER = $(CONFARGS) --enable-paraver
+CONFARGS = --enable-mmap --enable-tests
+CONFARGS_PARAVER = $(CONFARGS) --enable-paraver --enable-tests
 CONFARGS_DEBUG = $(CONFARGS) --enable-debug --enable-tests
 CONFARGS_MPI = $(CONFARGS) --enable-mpi
 
