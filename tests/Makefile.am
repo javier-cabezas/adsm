@@ -9,8 +9,8 @@ noinst_PROGRAMS = bandwidth threadBandwidth\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
 	 	gmacPingPong gmacCompress gmacCompressSend\
-		gmacMigration\
-		vmVecAdd vmNull vmStencil vmMatrixMul
+		gmacMigration
+#		vmVecAdd vmNull vmStencil vmMatrixMul
 
 noinst_SCRIPTS = gmacTests.py
 
@@ -87,8 +87,8 @@ gmacHybridComputation_LDFLAGS = -fopenmp
 #vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
 #vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
-vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
+#vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 #vmStencil_DEPENDENCIES = vmStencilCommon.cu
 #vmStencil_SOURCES = vmStencil.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
