@@ -57,10 +57,12 @@ extern gmac::memory::Allocator *allocator;
 extern gmac::util::Private __in_gmac;
 extern const char __gmac_code;
 extern const char __user_code;
+extern char __gmac_init;
 
 inline void __enterGmac() { __in_gmac.set(&__gmac_code); }
 inline void __exitGmac() { __in_gmac.set(&__user_code); }
 inline char __inGmac() { 
+    if(__gmac_init == 0) return 1;
 	char *ret = (char  *)__in_gmac.get();
 	if(ret == NULL) return 0;
 	else if(*ret == __gmac_code) return 1;

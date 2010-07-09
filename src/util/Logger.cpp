@@ -17,6 +17,7 @@ char Logger::buffer[Logger::BufferSize];
 Lock Logger::lock(LockLog);
 
 Logger *Logger::__logger = NULL;
+char __logger_active = 0;
 
 #ifdef DEBUG
 Parameter<const char *> *Logger::Level = NULL;
@@ -30,6 +31,7 @@ Logger::Logger(const char *name) :
     out(&std::clog)
 {
     init();
+    __logger_active = 1;
 }
 
 Logger::Logger() :
@@ -38,12 +40,13 @@ Logger::Logger() :
     out(&std::clog)
 {
     init();
+    __logger_active = 1;
 }
 
 void Logger::init()
 {
 #ifdef DEBUG
-    lock.lock();
+    if(__logger_active == 1) lock.lock();
     if(tags == NULL) tags = new std::list<std::string>();
     if(Level == NULL) {
         Level = new Parameter<const char *>(&Logger::debugString,
@@ -61,7 +64,7 @@ void Logger::init()
     if(debugString != NULL && strcasestr(debugString, "__all") != NULL)
         active = true;
 
-    lock.unlock();
+    if(__logger_active == 1) lock.unlock();
 #endif
 }
 

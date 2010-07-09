@@ -31,6 +31,8 @@ gmac::util::Private __in_gmac;
 const char __gmac_code = 1;
 const char __user_code = 0;
 
+char __gmac_init = 0;
+
 #ifdef LINUX 
 #define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
 #else
@@ -44,6 +46,7 @@ gmacInit(void)
 {
 	gmac::util::Private::init(__in_gmac);
 	__enterGmac();
+    __gmac_init = 1;
 
     gmac::util::Logger::Create("GMAC");
     gmac::util::Logger::TRACE("Initialiazing GMAC");
