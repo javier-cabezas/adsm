@@ -15,8 +15,8 @@
 #define MAXDOUBLE DBL_MAX
 #define MINDOUBLE DBL_MIN
 
-#define MAX(a, b) ((a) > (b)) ? (a) : (b)
-#define MIN(a, b) ((a) < (b)) ? (a) : (b)
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define BANDWIDTH(s, t) ((s) * sizeof(float) * 8.0 / 1000.0 / (t))
 
 const char *pageLockedStr = "GMAC_PAGE_LOCKED";
@@ -33,8 +33,8 @@ int affinity2;
 
 typedef unsigned long long usec_t;
 typedef struct {
-	double in, max_in, min_in;
-	double out, max_out, min_out;
+	double in, max_in, min_in, memcpy_in, memcpy_max_in, memcpy_min_in;
+	double out, max_out, min_out, memcpy_out, memcpy_max_out, memcpy_min_out;
 } stamp_t;
 
 const size_t buff_elems = 16 * 1024 * 1024;
@@ -43,7 +43,7 @@ const int iters = 256;
 //const size_t block_elems = 512;
 
 static uint8_t *cpu;
-
+static uint8_t *cpuTmp;
 
 inline usec_t get_time()
 {
@@ -104,10 +104,16 @@ void * transfer(void * _param)
             stamp->in = 0;
             stamp->max_in = MINDOUBLE;
             stamp->min_in = MAXDOUBLE;
+            stamp->memcpy_in = 0;
+            stamp->memcpy_max_in = MINDOUBLE;
+            stamp->memcpy_min_in = MAXDOUBLE;
         } else if (param->id == 1) {
             stamp->out = 0;
             stamp->max_out = MINDOUBLE;
             stamp->min_out = MAXDOUBLE;
+            stamp->memcpy_out = 0;
+            stamp->memcpy_max_out = MINDOUBLE;
+            stamp->memcpy_min_out = MAXDOUBLE;
             barrier_wait(&barrier_out);
         }
 
@@ -122,11 +128,27 @@ void * transfer(void * _param)
                 stamp->in += end - start;
                 stamp->min_in = MIN(stamp->min_in, (end - start));
                 stamp->max_in = MAX(stamp->max_in, (end - start));
+                if(pageLocked) {
+                    start = get_time();
+                    memcpy(cpuTmp, cpu, param->size * sizeof(float));
+                    end = get_time();
+                    stamp->memcpy_in += end - start;
+                    stamp->memcpy_min_in = MIN(stamp->memcpy_min_in, (end - start));
+                    stamp->memcpy_max_in = MAX(stamp->memcpy_max_in, (end - start));
+                }
                 barrier_wait(&barrier_in);
             }
 
             if (param->id == 1) {
                 barrier_wait(&barrier_in);
+                if(pageLocked) {
+                    start = get_time();
+                    memcpy(cpu, cpuTmp, param->size * sizeof(float));
+                    end = get_time();
+                    stamp->memcpy_out += end - start;
+                    stamp->memcpy_min_out = MIN(stamp->memcpy_min_out, (end - start));
+                    stamp->memcpy_max_out = MAX(stamp->memcpy_max_out, (end - start));
+                }
                 start = get_time();
                 if(cudaMemcpy(dev, cpu, param->size * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess)
                     CUFATAL();
@@ -141,8 +163,10 @@ void * transfer(void * _param)
         if (param->id == 0) {
             barrier_wait(&barrier_out);
             stamp->in = stamp->in / iters;
+            stamp->memcpy_in = stamp->memcpy_in / iters;
         } else if (param->id == 1) {
-            stamp->out = stamp->out /iters;
+            stamp->out = stamp->out / iters;
+            stamp->memcpy_out = stamp->memcpy_out / iters;
         }
 
         barrier_wait(&barrier);
@@ -165,8 +189,12 @@ int main(int argc, char *argv[])
     if(pageLocked) {
         if(cudaHostAlloc((void **) &cpu, buff_elems * sizeof(float), cudaHostAllocPortable) != cudaSuccess)
             FATAL();
+        if((cpuTmp = (uint8_t *)malloc(buff_elems * sizeof(float))) == NULL)
+            FATAL();
     } else {
         if((cpu = (uint8_t *)malloc(buff_elems * sizeof(float))) == NULL)
+            FATAL();
+        if((cpuTmp = (uint8_t *)malloc(buff_elems * sizeof(float))) == NULL)
             FATAL();
     }
 
@@ -189,9 +217,13 @@ int main(int argc, char *argv[])
 
 	// Transfer data
 	fprintf(stdout, "#Bytes\tIn Time\tOut Time\t");
-	fprintf(stdout, "In Bandwidth\tOut Bandwidth\t");
+	fprintf(stdout, "In Bwd\tOut Bwd\t");
+	fprintf(stdout, "In Mcpy\tOut Mcpy\t");
+    /*
 	fprintf(stdout, "Min In Bandwidth\tMin Out Bandwidth\t");
 	fprintf(stdout, "Max In Bandwidth\tMax Out Bandwidth\n");
+    */
+	fprintf(stdout, "\n");
 	for(int i = initial_elems; i <= buff_elems; i *= 2) {
         params[0].size = i;
         params[1].size = i;
@@ -200,12 +232,22 @@ int main(int argc, char *argv[])
         // End
         barrier_wait(&barrier);
 
-		if(i * sizeof(float) > 1024 * 1024) fprintf(stdout, "%.0fMB\t", 1.0 * i * sizeof(float) / 1024 / 1024);
-		else if(i * sizeof(float) > 1024) fprintf(stdout, "%.0fKB\t", 1.0 * i * sizeof(float) / 1024);
+		if(i * sizeof(float) > 1024 * 1024) fprintf(stdout, "%dMB\t", i * sizeof(float) / 1024 / 1024);
+		else if(i * sizeof(float) > 1024) fprintf(stdout, "%dKB\t", i * sizeof(float) / 1024);
+		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.in + stamp.memcpy_in), BANDWIDTH(i, stamp.out + stamp.memcpy_out));
 		fprintf(stdout, "%f\t%f\t", stamp.in, stamp.out);
 		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.in), BANDWIDTH(i, stamp.out));
+        #if 0
 		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.min_in), BANDWIDTH(i, stamp.min_out));
-		fprintf(stdout, "%f\t%f\n", BANDWIDTH(i, stamp.max_in), BANDWIDTH(i, stamp.max_out));
+		fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.max_in), BANDWIDTH(i, stamp.max_out));
+        #endif
+        fprintf(stdout, "%f\t%f\t", stamp.memcpy_in, stamp.memcpy_out);
+        fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.memcpy_in), BANDWIDTH(i, stamp.memcpy_out));
+        #if 0
+        fprintf(stdout, "%f\t%f\t", BANDWIDTH(i, stamp.memcpy_min_in), BANDWIDTH(i, stamp.memcpy_min_out));
+        fprintf(stdout, "%f\t%f", BANDWIDTH(i, stamp.memcpy_max_in), BANDWIDTH(i, stamp.memcpy_max_out));
+        #endif
+        fprintf(stdout, "\n");
 	}
 
     pthread_join(threads[0], NULL);
