@@ -351,7 +351,7 @@ Manager::reallocDevice()
 #ifdef USE_GLOBAL_HOST
             // Map memory in the device
             ret = ctx->mapToDevice(r->start(), &devAddr, r->size());
-            asserion(ret == gmacSuccess);
+            assertion(ret == gmacSuccess);
 #else
             oldAddr.push_back(ptr(ctx, r->start()));
             // Allocate device memory
