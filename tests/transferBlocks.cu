@@ -22,17 +22,29 @@ const char *pageLockedStr = "GMAC_PAGE_LOCKED";
 const bool pageLockedDefault = false;
 bool pageLocked = false;
 
+const char *minSizeStr = "GMAC_MIN";
+const size_t minSizeDefault = 4 * 1024;
+size_t minSize = 4 * 1024;
+
+const char *maxSizeStr = "GMAC_MAX";
+const size_t maxSizeDefault = 64 * 1024 * 1024;
+size_t maxSize = 64 * 1024 * 1024;
+
+const char *transferSizeStr = "GMAC_TRANSFER";
+const size_t transferSizeDefault = 4 * maxSizeDefault;
+size_t transferSize = 64 * 1024 * 1024;
+
+
 typedef unsigned long long usec_t;
 typedef struct {
 	double _time, _max, _min, _memcpy, _memcpy_max, _memcpy_min;
 } stamp_t;
 
-const size_t buff_size = 64 * 1024 * 1024;
-const size_t initial_size = 4096;
 const int iters = 10;
 //const size_t block_elems = 512;
 
 static uint8_t *dev;
+static uint8_t *cache;
 static uint8_t *cpu;
 static uint8_t *cpuTmp;
 
@@ -56,6 +68,13 @@ struct param_t {
     size_t totalSize;
 };
 
+void fill_cache()
+{
+    for (int i = 0; i < maxSize; i++) {
+        cache[i] = 0;
+    }
+}
+
 void * transfer(param_t param)
 {
     stamp_t * stamp = param.stamp;
@@ -70,6 +89,7 @@ void * transfer(param_t param)
 
     for(int j = 0; j < iters; j++) {
         if (param.type == TRANSFER_IN) {
+            fill_cache();
             for (int c = 0; c < param.totalSize/param.size; c++) {
                 start = get_time();
                 if(cudaMemcpy(cpu, dev + param.size * c, param.size, cudaMemcpyDeviceToHost) != cudaSuccess)
@@ -89,6 +109,7 @@ void * transfer(param_t param)
                 }
             }
         } else {
+            fill_cache();
             for (int c = 0; c < param.totalSize/param.size; c++) {
                 if (pageLocked) {
                     start = get_time();
@@ -119,24 +140,30 @@ void * transfer(param_t param)
 int main(int argc, char *argv[])
 {
     setParam<bool>(&pageLocked, pageLockedStr, pageLockedDefault);
+    setParam<size_t>(&maxSize, maxSizeStr, maxSizeDefault);
+    setParam<size_t>(&minSize, minSizeStr, minSizeDefault);
+    setParam<size_t>(&transferSize, transferSizeStr, transferSizeDefault);
 
 	stamp_t stamp;
     param_t param;
     param.stamp = &stamp;
-    param.totalSize = buff_size * 4;
+    param.totalSize = transferSize;
 
     // Alloc & init input data
     if(pageLocked) {
-        if(cudaHostAlloc((void **) &cpu, buff_size, cudaHostAllocPortable) != cudaSuccess)
+        if(cudaHostAlloc((void **) &cpu, maxSize, cudaHostAllocPortable) != cudaSuccess)
             FATAL();
         if((cpuTmp = (uint8_t *) malloc(param.totalSize)) == NULL)
             FATAL();
     } else {
-        if((cpu = (uint8_t *) malloc(buff_size)) == NULL)
+        if((cpu = (uint8_t *) malloc(maxSize)) == NULL)
             FATAL();
     }
 
 	if (cudaMalloc((void **) &dev, param.totalSize) != cudaSuccess)
+		CUFATAL();
+
+    if((cache = (uint8_t *) malloc(maxSize)) == NULL)
 		CUFATAL();
 
 	// Transfer data
@@ -149,13 +176,40 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "Max In Bandwidth\tMax Out Bandwidth\n");
     */
 	fprintf(stdout, "\n");
-	for (int i = initial_size; i <= buff_size; i *= 2) {
+	for (int i = minSize; i <= maxSize; i *= 2) {
         param.size = i;
         param.type = TRANSFER_IN;
         transfer(param);
 		if (i > 1024 * 1024) fprintf(stdout, "%dMB\t", i / 1024 / 1024);
 		else if (i > 1024) fprintf(stdout, "%dKB\t", i / 1024);
+        fprintf(stdout, "%f\t%f\t", stamp._time + stamp._memcpy, BANDWIDTH(param.totalSize, stamp._time + stamp._memcpy));
+        if (pageLocked) {
+            fprintf(stdout, "%f\t%f\t", BANDWIDTH(param.totalSize, stamp._time),
+                                        BANDWIDTH(param.totalSize, stamp._memcpy));
+        }
+        fprintf(stdout, "\n");
+
+#if 0
+        param.type = TRANSFER_OUT;
+        transfer(param);
+		if (i > 1024 * 1024) fprintf(stdout, "%dMB\t", i / 1024 / 1024);
+		else if (i > 1024) fprintf(stdout, "%dKB\t", i / 1024);
 		fprintf(stdout, "%f\t%f\t", stamp._time, BANDWIDTH(param.totalSize, stamp._time + stamp._memcpy));
+        if (pageLocked) {
+            fprintf(stdout, "%f\t%f\t", BANDWIDTH(param.totalSize, stamp._time),
+                                        BANDWIDTH(param.totalSize, stamp._memcpy));
+        }
+        fprintf(stdout, "\n");
+#endif
+	}
+
+    for (int i = minSize; i <= maxSize; i *= 2) {
+        param.size = i;
+        param.type = TRANSFER_OUT;
+        transfer(param);
+		if (i > 1024 * 1024) fprintf(stdout, "%dMB\t", i / 1024 / 1024);
+		else if (i > 1024) fprintf(stdout, "%dKB\t", i / 1024);
+		fprintf(stdout, "%f\t%f\t", stamp._time + stamp._memcpy, BANDWIDTH(param.totalSize, stamp._time + stamp._memcpy));
         if (pageLocked) {
             fprintf(stdout, "%f\t%f\t", BANDWIDTH(param.totalSize, stamp._time),
                                         BANDWIDTH(param.totalSize, stamp._memcpy));
