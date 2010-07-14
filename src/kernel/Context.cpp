@@ -29,8 +29,8 @@ Context::Context(Accelerator *acc) :
     _releasedRegions(),
     _releasedAll(false)
 {
-    _mm = new  memory::Map();
     Context::key.set(this);
+    _mm = new  memory::Map();
 	_id = ++_next;
     addThreadTid(0x10000000 + _id);
     pushState(Idle, 0x10000000 + _id);

@@ -27,25 +27,30 @@ Bitmap::Bitmap(unsigned bits) :
 #endif
 #endif
     _size = (1 << (bits - _shiftEntry)) * sizeof(T);
+#if 0
     _bitmap = new T[_size / sizeof(T)];
 #endif
-    memset(_bitmap, 0, size());
+#endif
 }
 
 Bitmap::~Bitmap()
 {
-    delete[] _bitmap;
+    //delete[] _bitmap;
     Context *ctx = Context::current();
-    if(_device != NULL) ctx->free(_device);
+    if(_device != NULL) ctx->hostFree(_bitmap);
 }
 
 void Bitmap::allocate()
 {
+    assertion(_device == NULL);
     Context *ctx = Context::current();
-    if(_device == NULL) {
-        trace("Allocating dirty bitmap (%zu bytes)", size());
-        ctx->malloc((void **)&_device, size());
-    }
+    trace("Allocating dirty bitmap (%zu bytes)", size());
+    ctx->mallocPageLocked((void **)&_bitmap, _size);
+    memset(_bitmap, 0, size());
+#if 0
+    ctx->malloc((void **)&_device, size());
+#endif
+    ctx->mapToDevice(_bitmap, &_device, _size);
 }
 
 }}}
