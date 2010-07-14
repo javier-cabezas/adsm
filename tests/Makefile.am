@@ -1,7 +1,7 @@
 MAINTAINERCLEANFILES=Makefile.in
 
 noinst_PROGRAMS = bandwidth threadBandwidth\
-				  schedAllocation\
+				  schedAllocation transferBlocks\
 				  hybridComputation gmacHybridComputation gmacVecAdd\
 		gmacTexture gmacConstant\
 		gmacMemset gmacMemcpy\
@@ -25,6 +25,9 @@ bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcu
 
 threadBandwidth_SOURCES = threadBandwidth.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
+transferBlocks_SOURCES = transferBlocks.cu $(GMAC_TESTSOURCES)
+transferBlocks_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 schedAllocation_SOURCES = schedAllocation.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
@@ -106,7 +109,7 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) -Xcompiler -fopenmp
 
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v 
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_13
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)

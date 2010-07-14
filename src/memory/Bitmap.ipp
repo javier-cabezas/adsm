@@ -56,7 +56,7 @@ bool Bitmap::checkAndClear(const void *addr)
 inline
 void *Bitmap::device() 
 {
-    allocate();
+    if (_device == NULL) allocate();
     return _device;
 }
 
