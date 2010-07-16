@@ -53,6 +53,8 @@ namespace memory {
 
 template<typename T>
 class Object: public util::RWLock {
+private:
+    virtual ~Object() {};
 protected:
     typedef enum {
         INVALID,
@@ -67,8 +69,7 @@ protected:
     State __state;
     std::set<Context *> __owners;
 
-    Object(void *_addr, size_t size);
-    virtual ~Object();
+    Object(void *__addr, size_t __size);
 public:
     virtual void release() = 0;
 
@@ -114,7 +115,8 @@ public:
     void release();
 };
 
-
 } };
+
+#include "Object.ipp"
 
 #endif
