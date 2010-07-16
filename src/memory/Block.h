@@ -55,7 +55,7 @@ protected:
 
     Block(void *_addr, size_t *size);
 public:
-    virtual ~Block();
+    virtual ~Block() {};
 
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
@@ -78,6 +78,16 @@ public:
     ~SystemBlock();
 };
 
+class GlobalBlock : public Block {
+protected:
+    Context *__owner;
+public:
+    GlobalBlock(Context *__owner, size_t size);
+    ~GlobalBlock();
+};
+
 } };
+
+#include "Block.ipp"
 
 #endif
