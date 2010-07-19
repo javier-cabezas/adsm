@@ -80,17 +80,14 @@ AC_ARG_WITH([bitmap],
                            [bitmap_size="byte"])
 if test "$bitmap_size" == "bit"; then
     AC_DEFINE(BITMAP_BIT)
-    echo "Using bit"
 else
     if test "$bitmap_size" == "byte"; then
         AC_DEFINE(BITMAP_BYTE)
-        echo "Using byte"
     else
         if test "$bitmap_size" == "word"; then
             AC_DEFINE(BITMAP_WORD)
-            echo "Using word"
         else
-            echo "Wrong bitmpa granularity"
+            echo "Wrong bitmap granularity"
             exit -1
         fi
     fi
@@ -219,8 +216,11 @@ AC_ARG_ENABLE(vm,
 if test "$enable_vm" = "yes"; then
 	AC_MSG_RESULT(yes)
 	AC_DEFINE([USE_VM])
+    echo "Using $bitmap_size granularity"
+    AM_CONDITIONAL(VM, test 1 = 1)
 else
 	AC_MSG_RESULT(no)
+    AM_CONDITIONAL(VM, test 1 = 0)
 fi
 
 # Check for using map to request host memory
