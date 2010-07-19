@@ -1,0 +1,4 @@
+MAINTAINERCLEANFILES = Makefile.in
+
+SUBDIRS = 
+DIST_SUBDIRS = posix
