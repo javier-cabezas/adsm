@@ -36,10 +36,10 @@ float devY4;
 template <uint32_t STENCIL_TILE_XSIZE, uint32_t STENCIL_TILE_YSIZE>
 __global__
 void
-kernelStencil(float * u2,
+kernelStencil(const float * u2,
               float * u3,
-              float * v,
-              float dt2,
+              const float * v,
+              const float dt2,
               const uint32_t dimZ,
               const uint32_t dimRealZ,
               const uint32_t dimZX,
@@ -70,18 +70,18 @@ kernelStencil(float * u2,
     float current;
 
     // fill the "in-front" and "behind" data
-    back.z  = __globalLd<float>(&u2[index - 3 * dimZX]);
-    back.y  = __globalLd<float>(&u2[index - 2 * dimZX]);
-    back.x  = __globalLd<float>(&u2[index - 1 * dimZX]);
-    current = __globalLd<float>(&u2[index            ]);
-    front.w = __globalLd<float>(&u2[index + 1 * dimZX]);
-    front.z = __globalLd<float>(&u2[index + 2 * dimZX]);
-    front.y = __globalLd<float>(&u2[index + 3 * dimZX]);
-    front.x = __globalLd<float>(&u2[index + 4 * dimZX]);
+    back.z  = u2[index - 3 * dimZX];
+    back.y  = u2[index - 2 * dimZX];
+    back.x  = u2[index - 1 * dimZX];
+    current = u2[index            ];
+    front.w = u2[index + 1 * dimZX];
+    front.z = u2[index + 2 * dimZX];
+    front.y = u2[index + 3 * dimZX];
+    front.x = u2[index + 4 * dimZX];
 
     //int signY = (threadIdx.y - STENCIL) >> 31;
     for (int k = 0; k < (slices - 2 * STENCIL); k++) {
-        float tmpU2 = __globalLd<float>(&u2[index + ((STENCIL + 1) * dimZX)]);
+        float tmpU2 = u2[index + ((STENCIL + 1) * dimZX)];
         index += dimZX;
 
         //////////////////////////////////////////
@@ -104,21 +104,21 @@ kernelStencil(float * u2,
         //s_data[SH(tx, ty + signY * STENCIL)] = u2[index + dimZ) * signY * STENCIL];
 
         if (threadIdx.x < STENCIL) { // halo left/right
-            s_data[SH(threadIdx.x, ty)            ] = __globalLd<float>(&u2[index - STENCIL]);
-            s_data[SH(tx + STENCIL_TILE_XSIZE, ty)] = __globalLd<float>(&u2[index + STENCIL_TILE_XSIZE]);
+            s_data[SH(threadIdx.x, ty)            ] = u2[index - STENCIL];
+            s_data[SH(tx + STENCIL_TILE_XSIZE, ty)] = u2[index + STENCIL_TILE_XSIZE];
         }
         __syncthreads();
         if (threadIdx.y < STENCIL) { // halo above/below
-            s_data[SH(tx, threadIdx.y)            ] = __globalLd<float>(&u2[index - STENCIL            * dimZ]);
-            s_data[SH(tx, ty + STENCIL_TILE_YSIZE)] = __globalLd<float>(&u2[index + STENCIL_TILE_YSIZE * dimZ]);
+            s_data[SH(tx, threadIdx.y)            ] = u2[index - STENCIL            * dimZ];
+            s_data[SH(tx, ty + STENCIL_TILE_YSIZE)] = u2[index + STENCIL_TILE_YSIZE * dimZ];
         }
 
         /////////////////////////////////////////
         // compute the output value
         s_data[SH(tx, ty)] = current;
         __syncthreads();
-        float tmp  = __globalLd<float>(&v[realIndex]);
-        float tmp1 = __globalLd<float>(&u3[index]);
+        float tmp  = v[realIndex];
+        float tmp1 = u3[index];
 
         float div  =
               devX4 * (s_data[SH_Y(-4)] + s_data[SH_Y(4)]);
@@ -198,6 +198,8 @@ struct JobDescriptor {
 
 #include <pthread.h>
 
+#define ITERATIONS 50
+
 void *
 do_stencil(void * ptr)
 {
@@ -231,20 +233,21 @@ do_stencil(void * ptr)
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-	// Call the kernel
 	dim3 Db(32, 8);
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
 	gettimeofday(&s, NULL);
-    for (uint32_t i = 0; i < ITERATIONS; i++) {
+    for (uint32_t i = 1; i <= ITERATIONS; i++) {
+        if (i % 10 == 0)
+            printf("Iteration: %d\n", i);
         float * tmp;
-
+        // Call the kernel
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),
                                          0.08,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
-        if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+        //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
             //pthread_barrier_wait(&barrier);
@@ -253,13 +256,13 @@ do_stencil(void * ptr)
             // Send data
             if (descr->prev != NULL) {
                 gmacMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
-                          descr->u3 + STENCIL * descr->sliceElems(),
-                          descr->sliceElems() * STENCIL * sizeof(float));                
+                           descr->u3 + STENCIL * descr->sliceElems(),
+                           descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
                 gmacMemcpy(descr->next->u3,
-                          descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
-                          descr->sliceElems() * STENCIL * sizeof(float));                
+                           descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
+                           descr->sliceElems() * STENCIL * sizeof(float));                
             }
 
             //pthread_barrier_wait(&barrier);
