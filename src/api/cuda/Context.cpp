@@ -464,10 +464,12 @@ Context::flush()
     pushLock();
     ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));
     cfatal(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
-    //ret = cuMemcpyHtoD(gpuAddr(__device), mm().dirtyBitmap().host(), mm().dirtyBitmap().size());
-    //cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
-    //ret = cuCtxSynchronize();
-    //cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+#ifndef USE_HOSTMAP_VM
+    ret = cuMemcpyHtoD(gpuAddr(__device), mm().dirtyBitmap().host(), mm().dirtyBitmap().size());
+    cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
+    ret = cuCtxSynchronize();
+    cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+#endif
     popUnlock();
 #endif
 }
@@ -479,10 +481,12 @@ Context::invalidate()
     const void *__device = mm().dirtyBitmap().device();
     pushLock();
     CUresult ret;
-	//ret = cuMemcpyDtoH(mm().dirtyBitmap().host(), gpuAddr(__device), mm().dirtyBitmap().size());
-    //cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
-    //ret = cuCtxSynchronize();
-    //cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+#ifndef USE_HOSTMAP_VM
+	ret = cuMemcpyDtoH(mm().dirtyBitmap().host(), gpuAddr(__device), mm().dirtyBitmap().size());
+    cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
+    ret = cuCtxSynchronize();
+    cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+#endif
     popUnlock();
 #endif
 }

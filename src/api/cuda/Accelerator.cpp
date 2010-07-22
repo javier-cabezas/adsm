@@ -35,7 +35,11 @@ Accelerator::Accelerator(int n, CUdevice device) :
 }
 
 Accelerator::~Accelerator()
-{}
+{
+#ifndef USE_MULTI_CONTEXT
+    cuCtxDestroy(_ctx);
+#endif
+}
 
 gmac::Context *Accelerator::create()
 {
