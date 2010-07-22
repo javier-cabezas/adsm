@@ -6,6 +6,43 @@ namespace gmac { namespace memory { namespace vm {
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 inline
+bool Bitmap::check(const void *addr)
+{
+    bool ret = false;
+#ifdef BITMAP_BIT
+    size_t entry = to32bit(addr) >> (_shiftEntry + 5);
+    trace("Bitmap check for %p -> entry %zu", addr, entry);
+    trace("Bitmap entry before: 0x%x", _bitmap[entry]);
+    uint32_t val = 1 << ((to32bit(addr) >> _shiftEntry) & _bitMask);
+    if((_bitmap[entry] & val) != 0) ret = true;
+    _bitmap[entry] &= ~val;
+#else
+    size_t entry = to32bit(addr) >> _shiftEntry;
+    trace("Bitmap entry before: 0x%x", _bitmap[entry]);
+    trace("Bitmap check for %p -> entry %zu", addr, entry);
+#ifdef BITMAP_BYTE
+    typedef uint8_t T;
+#else
+#ifdef BITMAP_WORD
+    typedef uint32_t T;
+#else
+#error "Bitmap granularity not defined"
+#endif
+#endif
+    if (_shiftEntry != _shiftPage) {
+        uint32_t chunkIdx = entry & _bitMask;
+        entry += chunkIdx;
+    }
+    if (_bitmap[entry] != 0) {
+        ret = true;
+    }
+#endif
+    trace("Bitmap entry after: 0x%x", _bitmap[entry]);
+    return ret;
+}
+
+
+inline
 bool Bitmap::checkAndClear(const void *addr)
 {
     bool ret = false;
@@ -31,23 +68,12 @@ bool Bitmap::checkAndClear(const void *addr)
 #endif
     if (_shiftEntry != _shiftPage) {
         uint32_t chunkIdx = entry & _bitMask;
-#if 0
-        printf("Addr:     %p\n", addr);
-        printf("ChunkIdx: %d\n", chunkIdx);
-#endif
         entry += chunkIdx;
     }
-#if 0
-    printf("Page:     %zd\n", page);
-    printf("Entry:    %zd\n", entry);
-
-    printf("Before: %x\n", _bitmap[entry]);
-#endif
-    if(_bitmap[entry] != 0) ret = true;
-    _bitmap[entry] = 0;
-#if 0
-    printf("After: %x\n", _bitmap[entry]);
-#endif
+    if(_bitmap[entry] != 0) {
+        ret = true;
+        _bitmap[entry] = 0;
+    }
 #endif
     trace("Bitmap entry after: 0x%x", _bitmap[entry]);
     return ret;

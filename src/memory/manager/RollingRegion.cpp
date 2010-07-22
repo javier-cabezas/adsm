@@ -131,15 +131,29 @@ void RollingRegion::invalidate()
     _memory.lockWrite();
     if(_memory.empty()) { _memory.unlock(); return; }
 
+    Context * ctx = Context::current();
+
     BlockList::iterator i;
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
         block->lockWrite();
         trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
+
+#ifdef USE_VM
+        // Protect the region
+        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start())))
+            Memory::protect(block->start(), block->size(), PROT_NONE);
+        else
+            Memory::protect(block->start(), block->size(), PROT_READ);
+#endif
     }
 
+#ifndef USE_VM
     // Protect the region
     Memory::protect(__void(_addr), _size, PROT_NONE);
+#endif
+
+
     // Invalidate those sub-regions that are present in _memory
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;

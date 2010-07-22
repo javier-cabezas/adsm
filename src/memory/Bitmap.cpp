@@ -7,7 +7,7 @@
 namespace gmac { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-    _device(NULL)
+     _bitmap(NULL), _device(NULL)
 {
     _shiftPage = int(log2(paramPageSize));
     _shiftEntry = int(log2(paramPageSize / paramBitmapChunksPerPage));
@@ -27,7 +27,8 @@ Bitmap::Bitmap(unsigned bits) :
 #endif
 #endif
     _size = (1 << (bits - _shiftEntry)) * sizeof(T);
-#if 0
+
+#ifndef USE_HOSTMAP_VM
     _bitmap = new T[_size / sizeof(T)];
 #endif
 #endif
@@ -35,9 +36,13 @@ Bitmap::Bitmap(unsigned bits) :
 
 Bitmap::~Bitmap()
 {
-    //delete[] _bitmap;
     Context *ctx = Context::current();
-    if(_device != NULL) ctx->hostFree(_bitmap);
+#ifdef USE_HOSTMAP_VM
+    if (_bitmap != NULL) ctx->hostFree(_bitmap);
+#else
+    if (_bitmap != NULL) delete [] _bitmap;
+    if (_device != NULL) ctx->free(_device);
+#endif
 }
 
 void Bitmap::allocate()
@@ -45,12 +50,13 @@ void Bitmap::allocate()
     assertion(_device == NULL);
     Context *ctx = Context::current();
     trace("Allocating dirty bitmap (%zu bytes)", size());
+#ifdef USE_HOSTMAP_VM
     ctx->mallocPageLocked((void **)&_bitmap, _size);
-    memset(_bitmap, 0, size());
-#if 0
+    ctx->mapToDevice(_bitmap, &_device, _size);
+#else
     ctx->malloc((void **)&_device, size());
 #endif
-    ctx->mapToDevice(_bitmap, &_device, _size);
+    memset(_bitmap, 0, size());
 }
 
 }}}

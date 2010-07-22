@@ -122,6 +122,9 @@ void RollingManager::flush(const RegionSet & regions)
 
 void RollingManager::invalidate()
 {
+    Context * ctx = Context::current();
+    ctx->invalidate();
+
     trace("RollingManager Invalidation Starts");
     Map::iterator i;
     Map * m = current();
@@ -134,7 +137,6 @@ void RollingManager::invalidate()
     }
     m->unlock();
 
-    Context * ctx = Context::current();
     RegionMap::iterator s;
     RegionMap &shared = Map::shared();
     shared.lockRead();
@@ -148,7 +150,6 @@ void RollingManager::invalidate()
     }
     shared.unlock();
 
-    ctx->invalidate();
     trace("RollingManager Invalidation Ends");
 }
 

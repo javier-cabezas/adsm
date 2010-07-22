@@ -76,6 +76,7 @@ public:
     const size_t shiftPage() const;
     const size_t shiftEntry() const;
 
+    bool check(const void *);
     bool checkAndClear(const void *);
 };
 
