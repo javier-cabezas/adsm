@@ -13,7 +13,7 @@ noinst_PROGRAMS = bandwidth threadBandwidth\
                   gmacMemset gmacMemcpy\
                   gmacThreadVecAdd gmacSharedVecAdd\
                   gmacStencil gmacThreadStencil\
-                  gmacMatrixMul\
+                  gmacMatrixMul gmacMatrixMulSimple\
                   gmacPingPong gmacCompress gmacCompressSend\
                   gmacMigration
 endif
@@ -77,6 +77,10 @@ gmacThreadStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacMatrixMul_DEPENDENCIES = gmacMatrixMulKernel.cu
 gmacMatrixMul_SOURCES = gmacMatrixMul.cu $(GMAC_TESTSOURCES)
 gmacMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacMatrixMulSimple_DEPENDENCIES = gmacMatrixMulKernel.cu
+gmacMatrixMulSimple_SOURCES = gmacMatrixMulSimple.cu $(GMAC_TESTSOURCES)
+gmacMatrixMulSimple_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacPingPong_SOURCES = gmacPingPong.cu $(GMAC_TESTSOURCES)
 gmacPingPong_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
