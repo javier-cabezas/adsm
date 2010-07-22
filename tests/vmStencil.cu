@@ -9,8 +9,6 @@
 #include "debug.h"
 #include "barrier.h"
 
-#define ITERATIONS 1000
-
 #include "vmStencilCommon.cu"
 
 

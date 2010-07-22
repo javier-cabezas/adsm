@@ -57,14 +57,14 @@ extern "C" {
 
 // includes, project
 #include <gmac.h>
-#include <gmac/vm.h>
 
 // includes, utils and debug
 #include "debug.h"
 #include "utils.h"
 
 // includes, kernels
-#include "vmMatrixMulKernel.cu"
+#include "gmacMatrixMulKernel.cu"
+
 
 const char * WAStr = "GMAC_WA";
 const char * HAStr = "GMAC_HA";
@@ -88,6 +88,10 @@ static bool check = checkDefault; // Matrix B height
 #define HC HA  // Matrix C height
 
 static float * A, * B, * C;
+struct param {
+	int i;
+	float * ptr;
+};
 
 unsigned elemsC;
 unsigned sizeC;
@@ -117,6 +121,31 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//! Run a simple test for CUDA
+////////////////////////////////////////////////////////////////////////////////
+void *
+matrixMulThread(void * ptr)
+{
+	struct param *p = (struct param *) ptr;
+
+    // timers
+    struct timeval s, t;
+
+    if (gmacMalloc((void**) &p->ptr, sizeC) != gmacSuccess) {
+        fprintf(stderr, "Error allocating C");
+        abort();
+    }
+
+    // Call the kernel
+	gettimeofday(&s, NULL);
+	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Run: ", "\n");
+
+    return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int
@@ -142,11 +171,6 @@ main(int argc, char** argv)
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
 
-    printf("Elems: %d\n", elemsA);
-    printf("Elems: %d\n", elemsB);
-    printf("Elems: %d\n", elemsC);
-
-
     // allocate memory for matrices A and B
 	gettimeofday(&s, NULL);
     if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
@@ -163,29 +187,28 @@ main(int argc, char** argv)
     }
 
     // initialize matricesmatrices
-    randInitMax(A, 100.f, elemsA);
-    randInitMax(B, 100.f, elemsB);
+    valueInit(A, 100.f, elemsA);
+    valueInit(B, 100.f, elemsB);
 
 	// Alloc output data
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-
-    // Call the kernel
 	gettimeofday(&s, NULL);
-   dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
-   dim3 grid(WC / threads.x, HC / threads.y);
-   matrixMul<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB, 0);
-	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+
+    dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 grid(WC / threads.x, HC / threads.y);
+    matrixMulSimple<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB);
+    gmacThreadSynchronize();
 	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Run: ", "\n");
+    printTime(&s, &t, "Run: ", "\n");
 
     if (check) {
         // compute reference solution
         gettimeofday(&s, NULL);
-
         // check result
-        float err;
+        float err = 0.0;
+
         printf("Computing host matrix mul. Please wait...\n");
         float* reference = (float *) malloc(sizeC);
         computeGold(reference, A, B, HA, WA, WB);
@@ -193,13 +216,19 @@ main(int argc, char** argv)
         for (int i = 0; i < elemsC; i++) {
             err += fabsf(reference[i] - C[i]);
         }
+
+        //err += checkError(reference, C, elemsC);
         gettimeofday(&t, NULL);
         printTime(&s, &t, "Check: ", "\n");
 
         fprintf(stderr, "Error: %f\n", err);
         // clean up memory
         free(reference);
+        return fabsf(err) != 0.0f;
     }
+
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Total: ", "\n");
 
 	gmacFree(A);
 	gmacFree(B);
