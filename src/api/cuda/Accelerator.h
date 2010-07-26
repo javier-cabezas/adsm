@@ -52,11 +52,17 @@ protected:
 	//bool _async;
 
 	std::set<gpu::Context *> queue;
+	
+#ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    Context * _lastContext;
+#endif
+#endif
 
     int _major;
     int _minor;
 
-#ifndef USE_MULTI_CONTEXT
     CUcontext _ctx;
     util::Lock mutex;
 #endif
@@ -77,6 +83,13 @@ public:
 #else
     void pushLock();
     void popUnlock();
+#endif
+
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    Context *lastContext();
+    void setLastContext(Context * ctx);
+#endif
 #endif
     //bool async() const;
 

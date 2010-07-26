@@ -9,6 +9,11 @@ namespace gpu {
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
 #ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    , _lastContext(NULL)
+#endif
+#endif
     , mutex(paraver::LockCtxLocal)
 #endif
 {

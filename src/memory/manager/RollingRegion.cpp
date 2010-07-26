@@ -138,32 +138,70 @@ void RollingRegion::invalidate()
         RollingBlock * block = *i;
         block->lockWrite();
         trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
-
-#ifdef USE_VM
-        // Protect the region
-        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start())))
-            Memory::protect(block->start(), block->size(), PROT_NONE);
-        else
-            Memory::protect(block->start(), block->size(), PROT_READ);
-#endif
     }
 
-#ifndef USE_VM
     // Protect the region
     Memory::protect(__void(_addr), _size, PROT_NONE);
-#endif
-
 
     // Invalidate those sub-regions that are present in _memory
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
+#ifndef USE_VM
         trace("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
         block->preInvalidate();
+#endif
         block->unlock();
     }
+#ifndef USE_VM
     _memory.clear();
+#endif
     _memory.unlock();
 }
+
+void RollingRegion::invalidateWithBitmap(int prot)
+{
+#ifdef USE_VM
+    assertion(tryWrite() == false);
+    trace("RollingRegion Invalidate with Bitmap %p (%zd bytes)", (void *) _addr, _size);
+    // Check if the region is already invalid
+
+    _memory.lockWrite();
+    if(_memory.empty()) { _memory.unlock(); return; }
+
+    Context * ctx = Context::current();
+
+    BlockList::iterator i;
+    for(i = _memory.begin(); i != _memory.end(); i++) {
+        RollingBlock * block = *i;
+        block->lockWrite();
+        trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
+
+        // Protect the region
+        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start()))) {
+            Memory::protect(block->start(), block->size(), PROT_NONE);
+        } else {
+            Memory::protect(block->start(), block->size(), prot);
+        }
+    }
+
+    // Invalidate those sub-regions that are present in _memory
+    for(i = _memory.begin(); i != _memory.end();) {
+        RollingBlock * block = *i;
+        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start()))) {
+            BlockList::iterator j = i;
+            i++;
+            trace("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
+            block->preInvalidate();
+            _memory.erase(j);
+        } else {
+            i++;
+        }
+        block->unlock();
+    }
+    _memory.unlock();
+#endif
+}
+
 
 void RollingRegion::invalidate(const void *addr, size_t size)
 {

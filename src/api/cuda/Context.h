@@ -104,6 +104,8 @@ protected:
 	~Context();
 
     gmacError_t switchTo(Accelerator *gpu);
+	void invalidate(Context & ctx);
+	void invalidate(Context & ctx, const void * addr, size_t size);
 public:
     gmacError_t error(CUresult);
 
@@ -154,6 +156,7 @@ public:
 
 	void flush();
 	void invalidate();
+	void invalidate(const void * addr, size_t size);
 
     CUdeviceptr gpuAddr(void *addr) const;
 	CUdeviceptr gpuAddr(const void *addr) const;

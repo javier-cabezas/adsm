@@ -123,7 +123,9 @@ void RollingManager::flush(const RegionSet & regions)
 void RollingManager::invalidate()
 {
     Context * ctx = Context::current();
-    ctx->invalidate();
+#ifdef USE_VM
+    ctx->mm().dirtyBitmap().synced(false);
+#endif
 
     trace("RollingManager Invalidation Starts");
     Map::iterator i;
@@ -199,6 +201,38 @@ void RollingManager::flush(const void *addr, size_t size)
 
 bool RollingManager::read(void *addr)
 {
+#ifdef USE_VM
+    Context * ctx = Context::current();
+    gmac::memory::vm::Bitmap & bitmap = ctx->mm().dirtyBitmap(); 
+    if (!bitmap.synced()) {
+        bitmap.sync();
+
+        Map::iterator i;
+        Map * m = current();
+        m->lockRead();
+        for(i = m->begin(); i != m->end(); i++) {
+            RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
+            r->lockWrite();
+            r->invalidateWithBitmap(PROT_READ);
+            r->unlock();
+        }
+        m->unlock();
+
+        RegionMap::iterator s;
+        RegionMap &shared = Map::shared();
+        shared.lockRead();
+        for (s = shared.begin(); s != shared.end(); s++) {
+            RollingRegion * r = dynamic_cast<RollingRegion *>(s->second);
+            r->lockWrite();
+            if(r->owner() == ctx) {
+                r->invalidateWithBitmap(PROT_READ);
+            }
+            r->unlock();
+        }
+        shared.unlock();
+
+    }
+#endif
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
     ProtRegion *region = root->find(addr);
@@ -255,8 +289,44 @@ bool RollingManager::touch(Region * r)
     return true;
 }
 
+#ifdef USE_VM
+#include "memory/Bitmap.h"
+#endif
+
 bool RollingManager::write(void *addr)
 {
+#ifdef USE_VM
+    Context * ctx = Context::current();
+    gmac::memory::vm::Bitmap & bitmap = ctx->mm().dirtyBitmap(); 
+    if (!bitmap.synced()) {
+        bitmap.sync();
+
+        Map::iterator i;
+        Map * m = current();
+        m->lockRead();
+        for(i = m->begin(); i != m->end(); i++) {
+            RollingRegion *r = dynamic_cast<RollingRegion *>(i->second);
+            r->lockWrite();
+            r->invalidateWithBitmap(PROT_READ | PROT_WRITE);
+            r->unlock();
+        }
+        m->unlock();
+
+        RegionMap::iterator s;
+        RegionMap &shared = Map::shared();
+        shared.lockRead();
+        for (s = shared.begin(); s != shared.end(); s++) {
+            RollingRegion * r = dynamic_cast<RollingRegion *>(s->second);
+            r->lockWrite();
+            if(r->owner() == ctx) {
+                r->invalidateWithBitmap(PROT_READ | PROT_WRITE);
+            }
+            r->unlock();
+        }
+        shared.unlock();
+
+    }
+#endif
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if (root == NULL) return false;
     root->lockWrite();

@@ -85,6 +85,8 @@ public:
    RollingBlock *find(const void *);
    void invalidate();
    void invalidate(const void *, size_t);
+   void invalidateWithBitmap(int prot);
+   void invalidateWithBitmap(const void *, size_t, int prot);
    void flush();
    void flush(const void *, size_t);
 
