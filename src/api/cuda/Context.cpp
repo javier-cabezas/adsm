@@ -460,17 +460,51 @@ Context::flush()
     }
     if(m == _modules.end()) return;
     trace("Setting dirty bitmap on device");
-    const void *__device = mm().dirtyBitmap().device();
+    gmac::memory::vm::Bitmap & bitmap = mm().dirtyBitmap();
+    const void *__device = bitmap.device();
     pushLock();
-    ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));
-    cfatal(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
-#ifndef USE_HOSTMAP_VM
-    ret = cuMemcpyHtoD(gpuAddr(__device), mm().dirtyBitmap().host(), mm().dirtyBitmap().size());
-    cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
-    ret = cuCtxSynchronize();
-    cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+    bool update;
+#ifdef USE_MULTI_CONTEXT
+    update = true;
+#else
+    Context * last = _gpu->lastContext();
+    update = last != this || !bitmap.clean();
+
+    if (last && (last != this || !last->mm().dirtyBitmap().synced())) {
+        invalidate(*last);
+    }
+    _gpu->setLastContext(this);
 #endif
+    if (update) {
+        ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));
+        cfatal(ret == CUDA_SUCCESS, "Unable to set dirty bitmap address");
+#ifndef USE_HOSTMAP_VM
+        //printf("Bitmap toDevice\n");
+        ret = cuMemcpyHtoD(gpuAddr(__device), bitmap.host(), bitmap.size());
+        cfatal(ret == CUDA_SUCCESS, "Unable to copy dirty bitmap");
+        ret = cuCtxSynchronize();
+        cfatal(ret == CUDA_SUCCESS, "Unable to wait for dirty bitmap copy");
+#endif
+    }
     popUnlock();
+#endif
+}
+
+void
+Context::invalidate(Context & ctx)
+{
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    gmac::memory::vm::Bitmap & bitmap = ctx.mm().dirtyBitmap();
+    const void *__device = bitmap.device();
+    CUresult ret;
+    //printf("Bitmap toHost\n");
+    ret = cuMemcpyDtoH(bitmap.host(), gpuAddr(bitmap.device()), bitmap.size());
+    cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
+    ret = cuCtxSynchronize();
+    cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+    bitmap.reset();
+#endif
 #endif
 }
 
@@ -478,16 +512,41 @@ void
 Context::invalidate()
 {
 #ifdef USE_VM
-    const void *__device = mm().dirtyBitmap().device();
-    pushLock();
-    CUresult ret;
 #ifndef USE_HOSTMAP_VM
-	ret = cuMemcpyDtoH(mm().dirtyBitmap().host(), gpuAddr(__device), mm().dirtyBitmap().size());
+    pushLock();
+    invalidate(*this);
+    popUnlock();
+#endif
+#endif
+}
+
+void
+Context::invalidate(Context & ctx, const void * addr, size_t size)
+{
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    gmac::memory::vm::Bitmap & bitmap = ctx.mm().dirtyBitmap();
+    const void *__device = bitmap.device();
+    CUresult ret;
+    printf("Bitmap toHost\n");
+    ret = cuMemcpyDtoH(bitmap.host(addr), gpuAddr(bitmap.device(addr)), bitmap.size(addr, size));
     cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
     ret = cuCtxSynchronize();
     cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+    bitmap.reset();
 #endif
+#endif
+}
+
+void
+Context::invalidate(const void * addr, size_t size)
+{
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+    pushLock();
+    invalidate(*this, addr, size);
     popUnlock();
+#endif
 #endif
 }
 
