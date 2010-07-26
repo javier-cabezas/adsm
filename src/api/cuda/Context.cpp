@@ -341,7 +341,7 @@ Context::copyToHost(void *host, const void *dev, size_t size)
         pushEventState(IORead, paraver::Accelerator, 0x10000000 + _id, AcceleratorIO);
         ret = cuMemcpyDtoHAsync(tmp, gpuAddr(((char *) dev) + off), bytes, streamToHost);
         assertion(ret == CUDA_SUCCESS);
-        trace("Copied %zd bytes", off);
+        trace("Copied %zd bytes", bytes);
         ret = cuStreamSynchronize(streamToHost);
         assertion(ret == CUDA_SUCCESS);
         popEventState(paraver::Accelerator, 0x10000000 + _id);
