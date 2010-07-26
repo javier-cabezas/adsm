@@ -332,6 +332,8 @@ bool RollingManager::write(void *addr)
     root->lockWrite();
     ProtRegion *region = root->find(addr);
     assertion(region != NULL);
+
+    while(rollingMap.currentBuffer()->overflows()) writeBack();
     // Other thread fixed the fault?
     region->lockWrite();
     if(region->dirty() == true) {
@@ -340,18 +342,18 @@ bool RollingManager::write(void *addr)
         return true;
     }
 
-    while(rollingMap.currentBuffer()->overflows()) writeBack();
-    region->readWrite();
     if(region->present() == false) {
 #ifdef USE_VM
         if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), addr))) {
 #endif
+            region->readWrite();
             gmacError_t ret = region->copyToHost();
             assertion(ret == gmacSuccess);
 #ifdef USE_VM
         }
 #endif
     }
+    else region->readWrite();
     region->unlock();
     root->unlock();
     rollingMap.currentBuffer()->push(dynamic_cast<RollingBlock *>(region));
