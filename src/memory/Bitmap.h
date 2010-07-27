@@ -56,6 +56,8 @@ private:
 #endif
 #endif
 #endif
+    bool _dirty;
+    bool _synced;
 
     void *_device;
 
@@ -65,19 +67,36 @@ private:
     size_t _size;
 
     void allocate();
+
+    template <bool check, bool clear>
+    bool CheckAndClear(const void *addr);
+
+    off_t offset(const void *addr) const;
 public:
     Bitmap(unsigned bits = 32);
     ~Bitmap();
 
     void *device();
+    void *device(const void * addr);
     void *host() const;
+    void *host(const void * addr) const;
     const size_t size() const;
+    const size_t size(const void * start, size_t size) const;
 
     const size_t shiftPage() const;
     const size_t shiftEntry() const;
 
     bool check(const void *);
     bool checkAndClear(const void *);
+    void clear(const void *);
+
+    bool clean() const;
+
+    void sync();
+    void reset();
+
+    bool synced() const;
+    void synced(bool s);
 };
 
 }}}

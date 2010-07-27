@@ -7,7 +7,7 @@
 namespace gmac { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-     _bitmap(NULL), _device(NULL)
+     _bitmap(NULL), _dirty(false), _synced(true), _device(NULL)
 {
     _shiftPage = int(log2(paramPageSize));
     _shiftEntry = int(log2(paramPageSize / paramBitmapChunksPerPage));
@@ -57,6 +57,15 @@ void Bitmap::allocate()
     ctx->malloc((void **)&_device, size());
 #endif
     memset(_bitmap, 0, size());
+}
+
+#include "kernel/Context.h"
+
+void Bitmap::sync()
+{
+    gmac::Context * ctx = gmac::Context::current();
+    ctx->invalidate();
+    _synced = true;
 }
 
 }}}
