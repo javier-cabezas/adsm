@@ -467,6 +467,9 @@ Context::flush()
 #ifdef USE_MULTI_CONTEXT
     update = true;
 #else
+#ifdef USE_HOSTMAP_VM
+    update = true;
+#else
     Context * last = _gpu->lastContext();
     update = last != this || !bitmap.clean();
 
@@ -474,6 +477,7 @@ Context::flush()
         invalidate(*last);
     }
     _gpu->setLastContext(this);
+#endif
 #endif
     if (update) {
         ret = cuMemcpyHtoD((*m)->dirtyBitmap()->devPtr(), &__device, sizeof(void *));

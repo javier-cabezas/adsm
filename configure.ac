@@ -223,6 +223,22 @@ else
     AM_CONDITIONAL(VM, test 1 = 0)
 fi
 
+vm_hostmap_default="no"
+AC_MSG_CHECKING(whether to use host-mapped software virtual memory)
+AC_ARG_ENABLE(vm-hostmap,
+	AS_HELP_STRING([--enable-vm-hostmap],[turn on host-mapped software virtual memory on CUDA [[default=no]]])
+		, , enable_vm_hostmap=$vm_hostmap_default)
+if test "$enable_vm_hostmap" = "yes"; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE([USE_VM])
+	AC_DEFINE([USE_HOSTMAP_VM])
+    echo "Using $bitmap_size granularity"
+    AM_CONDITIONAL(VM, test 1 = 1)
+else
+	AC_MSG_RESULT(no)
+    AM_CONDITIONAL(VM, test 1 = 0)
+fi
+
 # Check for using map to request host memory
 mmap_default="yes"
 AC_MSG_CHECKING(whether to use mmap() to allocate system memory)
