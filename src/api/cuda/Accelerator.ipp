@@ -40,6 +40,25 @@ Accelerator::popUnlock()
     assertion(ret == CUDA_SUCCESS);
     mutex.unlock();
 }
+
+#ifdef USE_VM
+#ifndef USE_HOSTMAP_VM
+inline 
+Context *
+Accelerator::lastContext()
+{
+    return _lastContext;
+}
+
+inline
+void
+Accelerator::setLastContext(Context * ctx)
+{
+    _lastContext = ctx;
+}
+#endif
+#endif
+
 #endif
 
 inline int

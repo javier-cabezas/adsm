@@ -33,6 +33,7 @@ void *Manager::mapToHost(void *addr, size_t count, int prot)
 	if(custom_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
 		return NULL;
 #endif
+    memset(cpuAddr, 0, count);
 	Memory::protect(cpuAddr, count, prot);
 #else
 	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
