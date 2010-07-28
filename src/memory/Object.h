@@ -51,17 +51,11 @@ class Context;
 
 namespace memory {
 
-template<typename T>
 class Object: public util::RWLock {
 private:
     virtual ~Object() {};
 protected:
-    typedef enum {
-        INVALID,
-        READONLY,
-        DIRTY
-    } State;
-
+    typedef std::set<SystemBlock *> SystemSet;
     typedef std::set<AcceleratorBlock *> AcceleratorSet;
 
     void *__addr;
@@ -80,11 +74,8 @@ public:
 };
 
 
-template<typename T>
 class SharedObject : public Object {
 protected:
-    typedef typename std::set<T *> SystemSet;
-
     SystemSet __system;
     AccdeleratorSet __accelerator;
 public:
@@ -93,13 +84,12 @@ public:
 };
 
 
-template<typename T>
 class ReplicatedObject : public Object {
 protected:
-    typedef typename std::map<Context *, AcceleratorSet> AcceleratorMap;
-    typedef typename std::set<T *> SystemSet;
+    typedef std::map<Context *, SystemSet> SystemMap;
+    typedef std::map<Context *, AcceleratorSet> AcceleratorMap;
 
-    SystemSet __system;
+    SystemMap __system;
     AcceleratorMap __accelerator;
 public:
     ReplicatedObject(size_t __size);
@@ -108,8 +98,6 @@ public:
 
 class CentralizedObject : public Object {
 protected:
-   typedef std::set<GlobalBlock *> SystemSet; 
-    SystemSet __system;
 public:
     CentralizedObject(size_t __size);
     void release();

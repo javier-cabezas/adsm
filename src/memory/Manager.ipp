@@ -3,6 +3,32 @@
 
 namespace gmac { namespace memory {
 
+static inline
+Manager *Manager::create()
+{
+    __count++;
+    if(__manager != NULL) return __manager;
+    __manager = new Manager();
+    return __manager;
+}
+
+static inline
+void Manager::destroy()
+{
+    __count--;
+    if(__count > 0) return;
+    delete __manager;
+    __manager = NULL;
+}
+
+static inline
+Manager *Manager::get()
+{
+    assertion(__manager != NULL);
+    return __manager;
+}
+
+
 inline void
 Manager::insert(Region *r)
 {
