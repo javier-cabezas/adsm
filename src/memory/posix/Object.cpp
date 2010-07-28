@@ -18,11 +18,11 @@ static int custom_memalign(void **addr, size_t align, size_t count)
 
 static void custom_free(void *p)
 {
-	::free(*(((void **) p) - 1)); 
+	free(*(((void **) p) - 1)); 
 }
 #endif
 
-void *Manager::mapToHost(void *addr, size_t count, int prot)
+void *Object::map(void *addr, size_t count)
 {
 	void *cpuAddr = NULL;
 #ifndef USE_MMAP
@@ -42,21 +42,7 @@ void *Manager::mapToHost(void *addr, size_t count, int prot)
 	return cpuAddr;
 }
 
-void *Manager::hostRemap(void *addr, void *hAddr, size_t count)
-{
-#if 0
-	void *cpuAddr = NULL;
-#ifdef USE_MMAP
-	cpuAddr = (void *)((uint8_t *)addr + Context::current()->id() * mmSize);
-	if(mremap(hAddr, count, count, MREMAP_FIXED, cpuAddr) != cpuAddr)
-		return NULL;
-#endif
-	return cpuAddr;
-#endif
-    return NULL;
-}
-
-void Manager::hostUnmap(void *addr, size_t count)
+void Object::unmap(void *addr, size_t count)
 {
 #ifdef USE_GLOBAL_HOST
 	assertion(Map::isShared(addr) == false);
@@ -64,7 +50,7 @@ void Manager::hostUnmap(void *addr, size_t count)
 
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
-	::free(addr);
+	free(addr);
 #else
     custom_free(addr);
 #endif

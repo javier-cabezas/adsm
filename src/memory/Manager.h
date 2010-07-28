@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
+
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to

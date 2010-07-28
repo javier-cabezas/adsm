@@ -48,13 +48,10 @@ class Context;
 
 namespace memory {
 
-template<typename T>
 class Block: public util::RWLock {
 protected:
     void *__addr;
     size_t __size;
-
-    T __state;
 
     Block(void *_addr, size_t *size);
 public:
@@ -63,11 +60,8 @@ public:
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
 
-    inline T state() const { return __state; };
-    inline void state(T s) { __state = s; };
 };
 
-template<typename T>
 class AcceleratorBlock : public Block<T> {
 protected:
     Context *__owner;
@@ -79,11 +73,15 @@ public:
 };
 
 template<typename T>
-class SystemBlock : public Block<T> {
+class SystemBlock : public Block {
 protected:
+    T __state;
 public:
     SystemBlock(size_t size);
     ~SystemBlock();
+
+    inline T state() const { return __state; };
+    inline void state(T s) { __state = s; };
 };
 } };
 

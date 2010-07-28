@@ -56,14 +56,15 @@ private:
     virtual ~Object() {};
 protected:
     typedef std::set<SystemBlock *> SystemSet;
-    typedef std::set<AcceleratorBlock *> AcceleratorSet;
 
     void *__addr;
     size_t __size;
     State __state;
-    std::set<Context *> __owners;
 
     Object(void *__addr, size_t __size);
+
+    static void *map(void *addr, size_t size);
+    static void unmap(void *addr, size_t size);
 public:
     virtual void release() = 0;
 
@@ -77,30 +78,31 @@ public:
 class SharedObject : public Object {
 protected:
     SystemSet __system;
-    AccdeleratorSet __accelerator;
+    AccelertorBlock *__accelerator;
+    Context *__owner;
 public:
     SharedObject(size_t __size);
-    void release();
+    ~SharedObject();
 };
 
 
 class ReplicatedObject : public Object {
 protected:
     typedef std::map<Context *, SystemSet> SystemMap;
-    typedef std::map<Context *, AcceleratorSet> AcceleratorMap;
+    typedef std::map<Context *, AcceleratorBlock *> AcceleratorMap;
 
     SystemMap __system;
     AcceleratorMap __accelerator;
 public:
     ReplicatedObject(size_t __size);
-    void release();
+    ~ReplicatedObject();
 };
 
 class CentralizedObject : public Object {
 protected:
 public:
     CentralizedObject(size_t __size);
-    void release();
+    ~CentralizedObject();
 };
 
 } };

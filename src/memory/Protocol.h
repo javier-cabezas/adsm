@@ -43,6 +43,8 @@ class Protocol : util::Logger {
 public:
     virtual ~Protocol() {};
 
+    virtual Block *createBlock(void *addr, size_t size) = 0;
+
     virtual gmacError_t read(Object &obj, void *addr) = 0;
     virtual gmacError_t write(Object &obj, void *addr) = 0;
     virtual gmacError_t acquire(Object &obj) = 0;
