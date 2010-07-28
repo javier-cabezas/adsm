@@ -8,6 +8,10 @@
 
 namespace gmac { namespace memory {
 
+static int Manager::__count = 0;
+static Manager *Manager::__manager = NULL;
+
+
 Region *    
 Manager::newRegion(void * addr, size_t count, bool shared)
 {
@@ -29,11 +33,13 @@ Manager *getManager(const char *managerName)
 Manager::Manager()
 {
     trace("Memory manager starts");
+    assertion(__count == 0);
 }
 
 Manager::~Manager()
 {
     trace("Memory manager finishes");
+    assertion(__count == 0);
 }
 
 
