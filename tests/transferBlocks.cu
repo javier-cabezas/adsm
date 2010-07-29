@@ -348,9 +348,9 @@ int main(int argc, char *argv[])
 
 	// Transfer data
     if (pageLocked) {
-        fprintf(stdout, "#Bytes\ttransfer\tmemcpy\tsearch\tsigsegv");
+        fprintf(stdout, "block_size\tn_blocks\ttransfer\tmemcpy\tsearch\tsigsegv");
     } else {
-        fprintf(stdout, "#Bytes\ttransfer\tsearch\tsigsegv");
+        fprintf(stdout, "block_size\tn_blocks\ttransfer\tsearch\tsigsegv");
     }
     /*
 	fprintf(stdout, "Min In Bandwidth\tMin Out Bandwidth\t");
@@ -361,8 +361,11 @@ int main(int argc, char *argv[])
         param.size = i;
         param.type = (TransferType) type;
         transfer(param);
+        #if 0
 		if (i > 1024 * 1024) fprintf(stdout, "%dMB\t", i / 1024 / 1024);
 		else if (i > 1024) fprintf(stdout, "%dKB\t", i / 1024);
+        #endif
+		fprintf(stdout, "%d\t%d\t", i, maxSize/i);
 
         if (pageLocked) {
             fprintf(stdout, "%f\t%f\t%f\t%f",

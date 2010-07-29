@@ -236,7 +236,6 @@ if test "$enable_vm_hostmap" = "yes"; then
     AM_CONDITIONAL(VM, test 1 = 1)
 else
 	AC_MSG_RESULT(no)
-    AM_CONDITIONAL(VM, test 1 = 0)
 fi
 
 # Check for using map to request host memory
