@@ -1,14 +1,15 @@
 MAINTAINERCLEANFILES=Makefile.in
 
+COMMON=bandwidth threadBandwidth\
+       schedAllocation transferBlocks\
+       hybridComputation transferCosts
+
 if VM
-noinst_PROGRAMS = bandwidth threadBandwidth\
-				  schedAllocation transferBlocks\
-				  hybridComputation\
+noinst_PROGRAMS = $(COMMON)\
                   vmVecAdd vmNull vmStencil vmMatrixMul
 else
-noinst_PROGRAMS = bandwidth threadBandwidth\
-				  schedAllocation transferBlocks\
-				  hybridComputation gmacHybridComputation gmacVecAdd\
+noinst_PROGRAMS = $(COMMON)\
+				  gmacHybridComputation gmacVecAdd\
                   gmacTexture gmacConstant\
                   gmacMemset gmacMemcpy\
                   gmacThreadVecAdd gmacSharedVecAdd\
@@ -35,13 +36,30 @@ threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH
 transferBlocks_SOURCES = transferBlocks.cu $(GMAC_TESTSOURCES)
 transferBlocks_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
+transferCosts_SOURCES = transferCosts.cu $(GMAC_TESTSOURCES)
+transferCosts_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
 schedAllocation_SOURCES = schedAllocation.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
 schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
 hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
-if !VM
+if VM
+vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
+vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
+vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+vmStencil_DEPENDENCIES = vmStencilCommon.cu
+vmStencil_SOURCES = vmStencil.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
+vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
+vmMatrixMul_SOURCES = vmMatrixMul.cu $(GMAC_TESTSOURCES)
+vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+else
 gmacVecAdd_SOURCES = gmacVecAdd.cu $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
@@ -98,20 +116,7 @@ gmacHybridComputation_SOURCES = gmacHybridComputation.cu $(GMAC_TESTSOURCES)
 gmacHybridComputation_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacHybridComputation_LDFLAGS = -fopenmp
 
-else
-vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
-vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
-vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
-
-vmStencil_DEPENDENCIES = vmStencilCommon.cu
-vmStencil_SOURCES = vmStencil.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
-vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
-
-vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
-vmMatrixMul_SOURCES = vmMatrixMul.cu $(GMAC_TESTSOURCES)
-vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/src/gmac -I$(top_builddir)/src/gmac -I$(top_srcdir)/src/
@@ -123,10 +128,10 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 
 if VM
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_13
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_20
 else
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_20
 endif
 
 .cu.lo:
