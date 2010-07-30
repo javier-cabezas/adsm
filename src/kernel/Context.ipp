@@ -69,14 +69,14 @@ Context::accId() const
     return _acc->_id;
 }
 
-inline memory::RegionSet
-Context::releaseRegions()
+inline memory::ObjectSet
+Context::releaseObjects()
 {
-    memory::RegionSet regions;
-    regions.swap(_releasedRegions);
+    memory::ObjectSet objects;
+    objects.swap(_releasedObjects);
     _releasedAll = false;
 
-    return regions;
+    return objects;
 }
 
 inline void *

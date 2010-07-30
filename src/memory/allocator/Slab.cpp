@@ -1,5 +1,7 @@
 #include "Slab.h"
 
+#include <kernel/Mode.h>
+
 namespace gmac { namespace memory { namespace allocator {
 
 Cache &Slab::createCache(CacheMap &map, long key, size_t size)
@@ -12,10 +14,10 @@ Cache &Slab::createCache(CacheMap &map, long key, size_t size)
 Cache &Slab::get(long key, size_t size)
 {
     Cache *cache = NULL;
-    ContextMap::iterator i;
-    i = contexts.find(Context::current());
-    if(i == contexts.end()) {
-        return createCache(contexts[Context::current()], key, size);
+    ModeMap::iterator i;
+    i = modes.find(Mode::current());
+    if(i == modes.end()) {
+        return createCache(modes[Mode::current()], key, size);
     }
     else {
         CacheMap::iterator j;
@@ -29,15 +31,15 @@ Cache &Slab::get(long key, size_t size)
 
 void Slab::cleanup()
 {
-    ContextMap::iterator i;
-    i = contexts.find(Context::current());
-    if(i == contexts.end()) return;
+    ModeMap::iterator i;
+    i = modes.find(Mode::current());
+    if(i == modes.end()) return;
     CacheMap::iterator j;
     for(j = i->second.begin(); j != i->second.end(); j++) {
         delete j->second;
     }
     i->second.clear();
-    contexts.erase(i);
+    modes.erase(i);
     
 }
 

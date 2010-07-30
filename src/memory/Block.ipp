@@ -3,25 +3,27 @@
 
 
 namespace gmac { namespace memory {
-Block::Block(void *__addr, size_t size) :
+Block::Block(void *addr, size_t size) :
     RWLock(paraver::LockBlock),
     __addr(__addr),
     __size(__size)
 {}
 
-AcceleratorBlock::AcceleratorBlock(Context *__owner, void *__addr, size_t __size) :
-    Block(__addr, __size),
-    __owner(__owner)
+AcceleratorBlock::AcceleratorBlock(Mode *owner, void *addr, size_t size) :
+    Block(addr, size),
+    __owner(owner)
 { }
 
 AcceleratorBlock::~AcceleratorBlock()
 { }
 
-SystemBlock::SystemBlock(size_t size) :
-    Block(NULL, 0)
+template<typename T>
+SystemBlock<T>::SystemBlock(void *addr, size_t size) :
+    Block(addr, 0)
 { }
 
-SystemBlock::~SystemBlock()
+template<typename T>
+SystemBlock<T>::~SystemBlock()
 { }
 
 }}

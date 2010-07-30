@@ -7,16 +7,12 @@
 
 namespace gmac { namespace memory {
 
-RegionMap::RegionMap(paraver::LockName name) :
-    RWLock(name)
-{
-}
 
-Region *
+Object *
 Map::localFind(const void *addr)
 {
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
+    ObjectMap::const_iterator i;
+    Object *ret = NULL;
     i = upper_bound(addr);
     if(i != end() && i->second->start() <= addr) {
         ret = i->second;
@@ -24,12 +20,12 @@ Map::localFind(const void *addr)
     return ret;
 }
 
-Region *
+Object *
 Map::globalFind(const void *addr)
 {
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
-    RegionMap &__global = proc->global();
+    ObjectMap::const_iterator i;
+    Object *ret = NULL;
+    ObjectMap &__global = proc->global();
     __global.lockRead();
     i = __global.upper_bound(addr);
     if(i != __global.end() && i->second->start() <= addr)
@@ -38,12 +34,12 @@ Map::globalFind(const void *addr)
     return ret;
 }
 
-Region *
+Object *
 Map::sharedFind(const void *addr)
 {
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
-    RegionMap &__shared = proc->shared();
+    ObjectMap::const_iterator i;
+    Object *ret = NULL;
+    ObjectMap &__shared = proc->shared();
     __shared.lockRead();
     i = __shared.upper_bound(addr);
     if(i != __shared.end() && i->second->start() <= addr)
@@ -59,7 +55,7 @@ Map::clean()
     RegionMap &__global = proc->global();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
-		trace("Cleaning Region %p", i->second->start());
+		trace("Cleaning Object %p", i->second->start());
 		__global.lockWrite();
 		__global.erase(i->first);
 		__global.unlock();
@@ -69,56 +65,42 @@ Map::clean()
 	unlock();
 }
 
-Map::Map() :
-    RegionMap(LockMmLocal)
+
+void Map::insert(Object *obj)
 {
+    ObjectMap::insert(value_type(obj->end(), obj));
+
+    ObjectMap &__global = proc->global();
+    __global.lockWrite();
+    __global.insert(value_type(obj->end(), obj));
+    __global.unlock();
 }
 
-Map::~Map()
-{
-    trace("Cleaning Memory Map");
-    clean();
-}
 
-void
-Map::init()
-{}
-
-Region *Map::remove(void *addr)
+Object *Map::remove(const void *addr)
 {
-    RegionMap::iterator i;
-    RegionMap &__global = proc->global();
+    ObjectMap::iterator i;
+    ObjectMap &__global = proc->global();
     __global.lockWrite();
     i = __global.upper_bound(addr);
-    Region * r = i->second;
-    assertion(i != __global.end() && r->start() == addr);
-    Context * ctx = Context::current();
-    if(r->owner() == ctx) __global.erase(i);
+    Object *obj = i->second;
+    assertion(i != __global.end() && obj->start() == addr);
+    assertion(obj->owner() == Context::current());
     __global.unlock();
     // If the region is global (not owned by the context) return
-    if(r->owner() != ctx)
-        return r;
 
-    trace("Removing Region %p", r->start());
+    trace("Removing Object %p", obj->start());
     i = upper_bound(addr);
-    assertion(i != end() && r->start() == addr);
+    assertion(i != end() && obj->start() == addr);
     erase(i);
-    return r;
+    return obj;
 }
 
-void Map::insert(Region *r)
-{
-    RegionMap::insert(value_type(r->end(), r));
 
-    RegionMap &__global = proc->global();
-    __global.lockWrite();
-    __global.insert(value_type(r->end(), r));
-    __global.unlock();
-}
 
-void Map::addShared(Region * r)
+void Map::insertShared(Region * r)
 {
-    RegionMap &__shared = proc->shared();
+    ObjectMap &__shared = proc->shared();
     __shared.lockWrite();
     __shared.insert(value_type(r->end(), r));
     __shared.unlock();
@@ -139,22 +121,5 @@ void Map::removeShared(Region * r)
     __shared.unlock();
     util::Logger::TRACE("Removed shared region @ %p", r->start());
 }
-
-bool Map::isShared(const void *addr)
-{
-    bool ret;
-    RegionMap &__shared = proc->shared();
-    __shared.lockRead();
-    ret = __shared.find(addr) != __shared.end();
-    __shared.unlock();
-
-    return ret;
-}
-
-RegionMap & Map::shared()
-{
-    return proc->shared();
-}
-
 
 }}

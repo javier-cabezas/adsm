@@ -38,6 +38,8 @@ WITH THE SOFTWARE.  */
 
 #include "Cache.h"
 
+namespace gmac { class Mode; }
+
 namespace gmac { namespace memory { namespace allocator {
 
 class Slab : public Allocator {
@@ -45,8 +47,8 @@ protected:
     typedef std::map<void *, Cache *> AddressMap;
     AddressMap addresses;
     typedef std::map<long, Cache *> CacheMap;
-    typedef std::map<Context *, CacheMap> ContextMap;
-    ContextMap contexts; // Per-context cache map
+    typedef std::map<Mode *, CacheMap> ModeMap;
+    ModeMap modes; // Per-context cache map
 
     Cache &createCache(CacheMap &map, long key, size_t size);
     Cache &get(long key, size_t size);

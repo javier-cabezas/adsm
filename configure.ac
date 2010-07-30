@@ -322,7 +322,7 @@ AC_CONFIG_FILES([Makefile
 	src/config/Makefile
 	src/kernel/Makefile
 	src/memory/Makefile
-	src/memory/manager/Makefile
+	src/memory/protocol/Makefile
     src/memory/allocator/Makefile
 	src/memory/posix/Makefile
 	src/gmac/Makefile

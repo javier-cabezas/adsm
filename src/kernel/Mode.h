@@ -31,41 +31,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_PROTREGION_H_
-#define __MEMORY_PROTREGION_H_
+#ifndef __KERNEL_MODE_H
+#define __KERNEL_MODE_H
 
-#include "Region.h"
+#include <kernel/Process.h>
+#include <util/Private.h>
 
-#include "memory/os/Memory.h"
+namespace gmac {
 
-#include <csignal>
-#include <vector>
+namespace memory { class Map; }
 
-namespace gmac { namespace memory {
-//! Protected Memory Region
-class ProtRegion : public Region {
+class Context;
+
+class Mode {
 protected:
-	bool _dirty;
-	bool _present;
+    static gmac::util::Private key;
 
+    Context *__context;
+    memory::Map *__map;
 public:
-	ProtRegion(void *addr, size_t size, bool shared);
-	virtual ~ProtRegion();
 
-    virtual void syncToHost();
+    Mode(memory::Map *map, Context *context) :
+        __context(context),
+        __map(map)
+    { }
 
-	virtual void invalidate();
-	virtual void readOnly();
-	virtual void readWrite();
+    ~Mode() { key.set(NULL); }
 
-	virtual bool dirty();
-	virtual bool present();
+    inline static void init() { key.set(NULL); }
+    inline static Mode *current() {
+        Mode *mode = static_cast<Mode *>(Mode::key.get());
+        if(mode == NULL) mode = proc->create();
+        return mode;
+    }
 
-    static int defaultProt();
+    inline Context &context() { return *__context; }
+    inline const Context &context() const { return *__context; }
+    inline memory::Map &map() { return *__map; }
+    inline const memory::Map &map() const { return *__map; }
+    
 };
 
-}}
+}
 
-#include "ProtRegion.ipp"
+#endif /* KERNEL_H */
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

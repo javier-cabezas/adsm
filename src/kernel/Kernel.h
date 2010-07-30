@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "Descriptor.h"
 
-#include <memory/Region.h>
+#include <memory/ObjectSet.h>
 #include <util/ReusableObject.h>
 #include <util/Logger.h>
 
@@ -80,7 +80,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class Kernel : public memory::RegionSet, public KernelDescriptor
+class Kernel : public memory::ObjectSet, public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
@@ -91,7 +91,7 @@ public:
     gmacError_t unbind(void * addr);
 };
 
-class KernelLaunch : public memory::RegionSet {
+class KernelLaunch : public memory::ObjectSet {
 public:
     virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;

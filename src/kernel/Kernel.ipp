@@ -4,7 +4,8 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#include "Context.h"
+#include <kernel/Mode.h>
+#include <memory/Object.h>
 
 #include <cstring>
 #include <algorithm>
@@ -24,16 +25,17 @@ Kernel::bind(void * addr)
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
     Context * ctx = Context::current();
-    memory::Region * region = ctx->mm().find<memory::Region>(addr);
+    memory::Object * object =
+        Mode::current()->map().find<memory::Object>(addr);
 
-    if (region != NULL) {
+    if (object != NULL) {
         const_iterator j;
 
-        j = std::find(begin(), end(), region);
+        j = std::find(begin(), end(), object);
 
         if (j == end()) {
             ret = gmacSuccess;
-            insert(region);
+            insert(object);
         } else {
             ret = gmacErrorAlreadyBound;
         }
@@ -48,13 +50,13 @@ Kernel::unbind(void * addr)
 {
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
-    Context * ctx = Context::current();
-    memory::Region * region = ctx->mm().find<memory::Region>(addr);
+    memory::Object * object =
+        Mode::current()->map().find<memory::Object>(addr);
 
-    if (region != NULL) {
+    if (object != NULL) {
         iterator j;
 
-        j = std::find(begin(), end(), region);
+        j = std::find(begin(), end(), object);
 
         if (j != end()) {
             ret = gmacSuccess;

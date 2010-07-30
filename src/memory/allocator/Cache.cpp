@@ -1,6 +1,7 @@
 #include "Cache.h"
 
 #include <kernel/Context.h>
+#include <kernel/Mode.h>
 #include <memory/Manager.h>
 
 #include <util/Parameter.h>
@@ -13,10 +14,7 @@ Arena::Arena(Manager *manager, size_t objSize) :
     size(0),
     manager(manager)
 {
-    Context *ctx = Context::current();
-    ctx->lockRead();
-    gmacError_t ret = manager->malloc(ctx, &ptr, paramPageSize);
-    ctx->unlock();
+    gmacError_t ret = manager->alloc(&ptr, paramPageSize);
     if(ret != gmacSuccess) return;
     for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
         trace("Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
@@ -28,10 +26,8 @@ Arena::~Arena()
 {
     util::Logger::cfatal(__objects.size() == size, "Destroying non-full Arena");
     __objects.clear();
-    Context *ctx = Context::current();
-    ctx->lockRead();
-    gmacError_t ret = manager->free(ctx, ptr);
-    ctx->unlock();
+    Context &ctx = Mode::current()->context();
+    gmacError_t ret = manager->free(ptr);
 }
 
 

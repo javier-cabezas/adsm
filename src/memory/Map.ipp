@@ -1,22 +1,26 @@
 #ifndef __MEMORY_MAP_IPP_
 #define __MEMORY_MAP_IPP_
 
-#include <memory/Region.h>
+//#include <memory/Object.h>
 
 namespace gmac { namespace memory {
 
-
-inline PageTable &
-Map::pageTable()
+ObjectMap::ObjectMap(paraver::LockName name) :
+    RWLock(name)
 {
-    return __pageTable;
 }
 
-inline const PageTable &
-Map::pageTable() const
+
+Map::Map() :
+    ObjectMap(LockMmLocal)
+{ }
+
+Map::~Map()
 {
-    return __pageTable;
+    trace("Cleaning Memory Map");
+    clean();
 }
+
 
 #ifdef USE_VM
 inline vm::Bitmap &
@@ -36,7 +40,7 @@ template<typename T>
 inline T *
 Map::find(const void *addr)
 {
-    Region *ret = NULL;
+    Object *ret = NULL;
     lockRead();
     ret = localFind(addr);
     if(ret == NULL) {

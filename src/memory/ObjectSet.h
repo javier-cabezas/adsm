@@ -31,43 +31,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_BATCHMANAGER_H_
-#define __MEMORY_BATCHMANAGER_H_
+#ifndef __MEMORY_OBJECTSET_H_
+#define __MEMORY_OBJECTSET_H_
 
-#include "Manager.h"
-#include "Region.h"
+#include <set>
 
-#include <stdint.h>
+namespace gmac { namespace memory {
 
-namespace gmac { namespace memory { namespace manager {
-//! Batch Memory Manager
+class Object;
 
-//! The Batch Memory Manager moves all data just before and
-//! after a kernel call
-class BatchManager : public Manager {
-public:
-	BatchManager() : Manager() { }
+typedef std::set<Object *> ObjectSet;
+} }
 
-#if 0
-	gmacError_t malloc(void ** addr, size_t count);
-	gmacError_t globalMalloc(void ** addr, size_t count);
-    void free(void * addr);
-#endif
-    void invalidate();
-    void invalidate(const RegionSet & regions);
-    void flush();
-    void flush(const RegionSet & regions);
-
-	void invalidate(const void *, size_t);
-	void flush(const void *, size_t);
-
-	void map(Context *, Region *, void *);
-
-    bool touch(Region * r) { return true; }
-};
-
-}}}
-
-#include "BatchManager.ipp"
 
 #endif
