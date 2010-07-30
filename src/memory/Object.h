@@ -36,6 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 
+#include <memory/Block.h>
+#include <memory/Protocol.h>
+
 #include <gmac/gmac.h>
 
 #include <util/Lock.h>
@@ -43,23 +46,26 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-#include "Block.h"
 
-namespace gmac {
+namespace gmac { class Mode; }
 
-class Context;
-
-namespace memory {
+namespace gmac { namespace memory {
 
 class Object: public util::RWLock {
 private:
-    virtual ~Object() {};
-protected:
-    typedef std::set<SystemBlock *> SystemSet;
+#ifdef USE_MMAP
+#ifdef ARCH_32BIT
+    static const size_t mmSize = 0;
+#else
+	static const size_t mmSize = 0x10000000000;
+#endif
+#endif
 
+    virtual ~Object() {};
+
+protected:
     void *__addr;
     size_t __size;
-    State __state;
 
     Object(void *__addr, size_t __size);
 
@@ -70,26 +76,28 @@ public:
 
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
-
-    virtual inline void owner(Context *ctx) { __owners.insert(ctx); }
 };
 
+typedef std::set<Object *> ObjectSet;
 
+template<typename T>
 class SharedObject : public Object {
 protected:
+    typedef std::set< SystemBlock<T> > SystemSet;
     SystemSet __system;
-    AccelertorBlock *__accelerator;
-    Context *__owner;
+    AcceleratorBlock *__accelerator;
+    Mode *__owner;
 public:
-    SharedObject(size_t __size);
+    SharedObject(const Protocol &protocol, size_t size);
     ~SharedObject();
 };
 
 
+#ifndef USE_MMAP
 class ReplicatedObject : public Object {
 protected:
-    typedef std::map<Context *, SystemSet> SystemMap;
-    typedef std::map<Context *, AcceleratorBlock *> AcceleratorMap;
+    typedef std::map<Mode *, SystemSet> SystemMap;
+    typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
     SystemMap __system;
     AcceleratorMap __accelerator;
@@ -104,8 +112,9 @@ public:
     CentralizedObject(size_t __size);
     ~CentralizedObject();
 };
+#endif
 
-} };
+} }
 
 #include "Object.ipp"
 

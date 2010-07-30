@@ -5,11 +5,10 @@
 
 namespace gmac {
 
-
-inline ContextList &
-Process::contexts()
+inline ModeList &
+Process::modes()
 {
-    return _contexts;
+    return _modes;
 }
 
 inline const void *
@@ -31,27 +30,27 @@ Process::nAccelerators() const
 }
 
 inline
-memory::RegionMap &Process::global()
+memory::ObjectMap &Process::global()
 {
-    return _global;
+    return __global;
 }
 
 inline
-const memory::RegionMap &Process::global() const
+const memory::ObjectMap &Process::global() const
 {
-    return _global;
+    return __global;
 }
 
 inline
-memory::RegionMap &Process::shared()
+memory::ObjectMap &Process::shared()
 {
-    return _shared;
+    return __shared;
 }
 
 inline
-const memory::RegionMap &Process::shared() const
+const memory::ObjectMap &Process::shared() const
 {
-    return _shared;
+    return __shared;
 }
 
 }

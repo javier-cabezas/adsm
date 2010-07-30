@@ -34,10 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTOCOL_H_
 #define __MEMORY_PROTOCOL_H_
 
+#include <memory/Object.h>
+
 #include <util/Logger.h>
 
-
 namespace gmac { namespace memory {
+
+class Object;
 
 class Protocol : util::Logger {
 public:
@@ -50,5 +53,7 @@ public:
     virtual gmacError_t acquire(Object &obj) = 0;
     virtual gmacError_t release(Object &obj) = 0;
 };
+
+}}
 
 #endif

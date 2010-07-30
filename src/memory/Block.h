@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class Context;
+class Mode;
 
 namespace memory {
 
@@ -53,7 +53,7 @@ protected:
     void *__addr;
     size_t __size;
 
-    Block(void *_addr, size_t *size);
+    Block(void *addr, size_t size);
 public:
     virtual ~Block() {};
 
@@ -62,14 +62,14 @@ public:
 
 };
 
-class AcceleratorBlock : public Block<T> {
+class AcceleratorBlock : public Block {
 protected:
-    Context *__owner;
+    Mode *__owner;
 public:
-    AcceleratorBlock(Context *__owner, size_t __size);
+    AcceleratorBlock(Mode *owner, void *addr, size_t size);
     ~AcceleratorBlock();
 
-    inline Context *owner() const { return __owner; }
+    inline Mode *owner() const { return __owner; }
 };
 
 template<typename T>
@@ -77,7 +77,7 @@ class SystemBlock : public Block {
 protected:
     T __state;
 public:
-    SystemBlock(size_t size);
+    SystemBlock(void *addr, size_t size);
     ~SystemBlock();
 
     inline T state() const { return __state; };

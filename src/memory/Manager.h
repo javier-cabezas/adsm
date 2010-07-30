@@ -34,9 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
+#include <gmac/gmac.h>
 #include <util/Logger.h>
-
-#include <memory/PageTable.h>
 
 #include <stdint.h>
 
@@ -54,42 +53,32 @@ namespace gmac { namespace memory {
 //! the CPU memory to/from the accelerator memory.
 class Manager : public util::Logger {
 protected:
-
-#ifdef USE_MMAP
-#ifdef ARCH_32BIT
-    static const size_t mmSize = 0;
-#else
-	static const size_t mmSize = 0x10000000000;
-#endif
-#endif
-
     static int __count;
     static Manager *__manager;
-
-	const PageTable &pageTable() const;
 
     Manager();
     ~Manager();
 public:
     // Manager management
-    static inline Manager *create();
-    static inline void destroy();
-    static inline Manager *get();
+    static Manager *create();
+    static void destroy();
+    static Manager *get();
 
     // Memory management functions
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     gmacError_t globalAlloc(void **addr, size_t size);
 #endif
-    gmacErrot_t free (void *addr);
+    gmacError_t free (void *addr);
 
     // Coherence protocol interface
     gmacError_t adquire();
     gmacError_t release();
-    void read(void *addr);
-    void write(void *addr);
-} };
+    bool read(void *addr);
+    bool write(void *addr);
+};
 
+} }
 
 #include "Manager.ipp"
 

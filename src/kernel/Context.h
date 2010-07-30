@@ -34,17 +34,17 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_CONTEXT_H_
 #define __KERNEL_CONTEXT_H_
 
+#include <gmac/gmac.h>
+
+#include <kernel/Process.h>
+#include <kernel/Accelerator.h>
+
+#include <memory/ObjectSet.h>
 
 #include <util/Parameter.h>
 #include <util/Private.h>
 #include <util/Reference.h>
 #include <util/Logger.h>
-#include <kernel/Process.h>
-#include <kernel/Accelerator.h>
-
-#include <gmac/gmac.h>
-#include <memory/Map.h>
-#include <memory/PageTable.h>
 
 
 namespace gmac {
@@ -92,7 +92,7 @@ protected:
 	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap _kernels;
-    memory::RegionSet _releasedRegions;
+    memory::ObjectSet _releasedObjects;
     bool _releasedAll;
 
     void * _bufferPageLocked;
@@ -260,7 +260,7 @@ public:
 	/*!
 		\brief Returns the regions released to the accelerator
 	*/
-    memory::RegionSet releaseRegions();
+    memory::ObjectSet releaseObjects();
 
 	/*!
 		\brief Waits for kernel execution

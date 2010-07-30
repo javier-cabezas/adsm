@@ -11,16 +11,26 @@ namespace gmac { namespace memory {
 static int Manager::__count = 0;
 static Manager *Manager::__manager = NULL;
 
-Manager::Manager()
+static Manager *Manager::create()
 {
-    trace("Memory manager starts");
-    assertion(__count == 0);
+    __count++;
+    if(__manager != NULL) return __manager;
+    __manager = new Manager();
+    return __manager;
 }
 
-Manager::~Manager()
+static void Manager::destroy()
 {
-    trace("Memory manager finishes");
-    assertion(__count == 0);
+    __count--;
+    if(__count > 0) return;
+    delete __manager;
+    __manager = NULL;
+}
+
+static Manager *Manager::get()
+{
+    assertion(__manager != NULL);
+    return __manager;
 }
 
 

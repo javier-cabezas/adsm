@@ -36,9 +36,10 @@ WITH THE SOFTWARE.  */
 
 #include <paraver.h>
 
+#include <gmac/gmac.h>
+
 #include "Queue.h"
 #include <memory/Map.h>
-#include <gmac/gmac.h>
 #include <util/Logger.h>
 
 #include <vector>
@@ -47,7 +48,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 class Accelerator;
-class Context;
+class Mode;
 class Process;
 
 void apiInit(void);
@@ -67,10 +68,10 @@ public:
     Queue * queue;
 };
 
-class ContextList : public std::list<Context *>, public util::RWLock
+class ModeList : public std::list<Mode *>, public util::RWLock
 {
 public:
-    ContextList();
+    ModeList();
 };
 
 
@@ -85,11 +86,11 @@ protected:
     friend class Accelerator;
 
 	std::vector<Accelerator *> _accs;
-	ContextList _contexts;
+	ModeList _modes;
 
 	QueueMap _queues;
-    memory::RegionMap _global;
-    memory::RegionMap _shared;
+    memory::ObjectMap __global;
+    memory::ObjectMap __shared;
 
 	unsigned current;
 
@@ -104,9 +105,9 @@ public:
 
 	void initThread();
 #define ACC_AUTO_BIND -1
-    Context * create(int acc = ACC_AUTO_BIND);
-	void remove(Context *ctx);
-	ContextList & contexts();
+    Mode * create(int acc = ACC_AUTO_BIND);
+	void remove(Mode *ctx);
+	ModeList & modes();
 
 	void *translate(void *addr) const;
 	const void *translate(const void *addr) const;
@@ -116,17 +117,17 @@ public:
     void receive();
 	void sendReceive(THREAD_ID id);
     void copy(THREAD_ID id);
-	gmacError_t migrate(Context *ctx, int acc);
+	gmacError_t migrate(Mode *mode, int acc);
 
 	void addAccelerator(Accelerator *acc);
 
 	static size_t totalMemory();
 	size_t nAccelerators() const;
 
-    memory::RegionMap &global();
-    const memory::RegionMap &global() const;
-    memory::RegionMap &shared();
-    const memory::RegionMap &shared() const;
+    memory::ObjectMap &global();
+    const memory::ObjectMap &global() const;
+    memory::ObjectMap &shared();
+    const memory::ObjectMap &shared() const;
 };
 
 }

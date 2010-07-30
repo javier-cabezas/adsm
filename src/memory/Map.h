@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MAP_H_
 #define __MEMORY_MAP_H_
 
-#include "PageTable.h"
 #include "Bitmap.h"
 
 #include <paraver.h>
@@ -47,20 +46,25 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Region;
-class RegionMap : public util::RWLock, public std::map<const void *, Region *> {
+class Object;
+class ObjectMap : public util::RWLock, public std::map<const void *, Object *> {
 public:
-    RegionMap(paraver::LockName);
+    ObjectMap(paraver::LockName);
 };
 
-class Map : public RegionMap {
+class Map : public ObjectMap {
 protected:
 
-    Region *localFind(const void *addr);
+    Object *localFind(const void *addr);
+    Object *globalFind(const void *addr);
+    Object *sharedFind(const void *addr);
+
+    void insert(Object *obj);
+    Object *remove(const void *addr);
+    void insertShared(Object *obj);
+    Object *removeShared(const void *addr);
 
     void clean();
-
-    PageTable __pageTable;
 
 #ifdef USE_VM
     vm::Bitmap __dirtyBitmap;
@@ -70,28 +74,13 @@ public:
     Map();
     virtual ~Map();
 
-    static void init();
-
-    void insert(Region *r);
-    static void addShared(Region *r);
-    static void removeShared(Region *r);
-    static bool isShared(const void *);
-    static RegionMap & shared();
-
-    Region *remove(void *addr);
-
-    PageTable &pageTable();
-    const PageTable &pageTable() const;
-
 #ifdef USE_VM
     vm::Bitmap &dirtyBitmap();
     const vm::Bitmap &dirtyBitmap() const;
 #endif
 
     template<typename T>
-    T *find(const void *addr);
-    static Region *globalFind(const void *addr);
-    static Region *sharedFind(const void *addr);
+    inline T *find(const void *addr);
 };
 
 }}
