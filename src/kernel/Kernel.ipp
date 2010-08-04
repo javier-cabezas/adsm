@@ -26,7 +26,7 @@ Kernel::bind(void * addr)
     ret = gmacErrorInvalidValue;
     Context * ctx = Context::current();
     memory::Object * object =
-        Mode::current()->map().find<memory::Object>(addr);
+        Mode::current()->map().find(addr);
 
     if (object != NULL) {
         const_iterator j;
@@ -51,7 +51,7 @@ Kernel::unbind(void * addr)
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
     memory::Object * object =
-        Mode::current()->map().find<memory::Object>(addr);
+        Mode::current()->map().find(addr);
 
     if (object != NULL) {
         iterator j;

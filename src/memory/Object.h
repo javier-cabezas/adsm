@@ -61,8 +61,6 @@ private:
 #endif
 #endif
 
-    virtual ~Object() {};
-
 protected:
     void *__addr;
     size_t __size;
@@ -72,10 +70,15 @@ protected:
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);
 public:
-    virtual void release() = 0;
+    virtual ~Object() {};
 
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
+
+    inline void *start() const { return __addr; }
+    inline void *end() const {
+        return (void *)((uint8_t *)__addr + __size);
+    }
 };
 
 typedef std::set<Object *> ObjectSet;
@@ -83,12 +86,12 @@ typedef std::set<Object *> ObjectSet;
 template<typename T>
 class SharedObject : public Object {
 protected:
-    typedef std::set< SystemBlock<T> > SystemSet;
+    typedef std::set< SystemBlock<T> *> SystemSet;
     SystemSet __system;
     AcceleratorBlock *__accelerator;
     Mode *__owner;
 public:
-    SharedObject(const Protocol &protocol, size_t size);
+    SharedObject(size_t size);
     ~SharedObject();
 };
 

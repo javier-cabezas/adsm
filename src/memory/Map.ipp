@@ -36,8 +36,7 @@ Map::dirtyBitmap() const
 }
 #endif
 
-template<typename T>
-inline T *
+inline Object *
 Map::find(const void *addr)
 {
     Object *ret = NULL;
@@ -51,7 +50,7 @@ Map::find(const void *addr)
     }
     unlock();
 
-    return dynamic_cast<T *>(ret);
+    return ret;
 }
 
 }}

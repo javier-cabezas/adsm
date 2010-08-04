@@ -9,12 +9,11 @@
 
 namespace gmac { namespace memory { namespace allocator {
 
-Arena::Arena(Manager *manager, size_t objSize) :
+Arena::Arena(size_t objSize) :
     ptr(NULL),
-    size(0),
-    manager(manager)
+    size(0)
 {
-    gmacError_t ret = manager->alloc(&ptr, paramPageSize);
+    gmacError_t ret = Manager::get()->alloc(&ptr, paramPageSize);
     if(ret != gmacSuccess) return;
     for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
         trace("Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
@@ -27,7 +26,7 @@ Arena::~Arena()
     util::Logger::cfatal(__objects.size() == size, "Destroying non-full Arena");
     __objects.clear();
     Context &ctx = Mode::current()->context();
-    gmacError_t ret = manager->free(ptr);
+    gmacError_t ret = Manager::get()->free(ptr);
 }
 
 
@@ -49,7 +48,7 @@ void *Cache::get()
         return i->second->get();
     }
     // There are no free objects in any arena
-    Arena *arena = new Arena(manager, objectSize);
+    Arena *arena = new Arena(objectSize);
     trace("Cache %p creates new arena %p", this, arena);
     arenas.insert(ArenaMap::value_type(arena->address(), arena));
     return arena->get();

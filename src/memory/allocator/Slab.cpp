@@ -6,7 +6,7 @@ namespace gmac { namespace memory { namespace allocator {
 
 Cache &Slab::createCache(CacheMap &map, long key, size_t size)
 {
-    Cache *cache = new Cache(manager, size);
+    Cache *cache = new Cache(size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }

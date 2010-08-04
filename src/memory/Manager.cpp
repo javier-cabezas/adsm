@@ -1,36 +1,54 @@
-#include "Manager.h"
-#include "manager/BatchManager.h"
-#include "manager/LazyManager.h"
-#include "manager/RollingManager.h"
+#include <memory/Manager.h>
+#include <memory/Object.h>
+
+#include <memory/protocol/Lazy.h>
 
 #include <strings.h>
 
-
 namespace gmac { namespace memory {
 
-static int Manager::__count = 0;
-static Manager *Manager::__manager = NULL;
+int Manager::__count = 0;
+Manager *Manager::__manager = NULL;
 
-static Manager *Manager::create()
+Manager *Manager::create()
 {
     __count++;
     if(__manager != NULL) return __manager;
+    gmac::util::Logger::TRACE("Creating new Memory Manager");
     __manager = new Manager();
     return __manager;
 }
 
-static void Manager::destroy()
+void Manager::destroy()
 {
     __count--;
     if(__count > 0) return;
+    gmac::util::Logger::TRACE("Destroying Memory Manager");
     delete __manager;
     __manager = NULL;
 }
 
-static Manager *Manager::get()
+Manager *Manager::get()
 {
-    assertion(__manager != NULL);
+    gmac::util::Logger::ASSERTION(__manager != NULL);
     return __manager;
+}
+
+Manager::Manager()
+{
+    trace("Memory manager starts");
+    assertion(__count == 0);
+    
+    // Create protocol
+    if(strcasecmp(paramProtocol, "Rolling") == 0) {
+        fatal("Protocol not supported yet");
+    }
+    else if(strcasecmp(paramProtocol, "Lazy") == 0) {
+        __protocol = new protocol::Lazy();
+    }
+    else {
+        fatal("Memory Coherence Protocol not defined");
+    }
 }
 
 
@@ -39,15 +57,15 @@ Manager::alloc(void ** addr, size_t size)
 {
     gmacError_t ret;
     // Create new shared object
-    SharedObject *object = new SharedObject(protocol, size);
+    Object *object = __protocol->createObject(size);
     *addr = object->addr();
     if(*addr == NULL) return gmacErrorMemoryAllocation;
 
     // Insert object into memory maps
-    Map *local = Map::current();
-    local->lockWrite();
-    local->insert(object);
-    local->unlock();
+    Map &local = Mode::current()->map();
+    local.lockWrite();
+    local.insert(object);
+    local.unlock();
 
     return gmacSuccess;
 }
@@ -56,15 +74,15 @@ gmacError_t
 Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
-    Map *local = Map::current();
-    local->lockWrite();
-    Object *object = local->find(addr);
+    Map &local = Mode::current()->map();
+    local.lockWrite();
+    Object *object = local.find(addr);
     if(object != NULL)  {
-        local->remove(object);
+        local.remove(object);
         delete object;
     }
-    else ret = gmacErrorInvalid;
-    local->unlock();
+    else ret = gmacErrorInvalidValue;
+    local.unlock();
     return ret;
 }
 
@@ -80,14 +98,16 @@ Manager::release()
     return gmacSuccess;
 }
 
-void
+bool
 Manager::read(void *addr)
 {
+    return false;
 }
 
-void
+bool
 Manager::write(void *addr)
 {
+    return false;
 }
 
 }}

@@ -1,7 +1,9 @@
 #include "Bitmap.h"
 
+#include <kernel/Mode.h>
 #include <kernel/Context.h>
 
+#include <cmath>
 #include <cstring>
 
 namespace gmac { namespace memory { namespace vm {
@@ -35,22 +37,17 @@ Bitmap::Bitmap(unsigned bits) :
 
 Bitmap::~Bitmap()
 {
-    //delete[] _bitmap;
-    Context *ctx = Context::current();
-    if(_device != NULL) ctx->hostFree(_bitmap);
+    if(_device != NULL) Mode::current()->context().hostFree(_bitmap);
 }
 
 void Bitmap::allocate()
 {
     assertion(_device == NULL);
-    Context *ctx = Context::current();
     trace("Allocating dirty bitmap (%zu bytes)", size());
-    ctx->mallocPageLocked((void **)&_bitmap, _size);
+    Context &ctx = Mode::current()->context();
+    ctx.mallocPageLocked((void **)&_bitmap, _size);
     memset(_bitmap, 0, size());
-#if 0
-    ctx->malloc((void **)&_device, size());
-#endif
-    ctx->mapToDevice(_bitmap, &_device, _size);
+    ctx.mapToDevice(_bitmap, &_device, _size);
 }
 
 }}}

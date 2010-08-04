@@ -55,7 +55,7 @@ protected:
     void cleanup();
 
 public:
-    Slab(Manager *manager);
+    Slab();
     virtual ~Slab();
     
     virtual void *alloc(size_t size, void *addr);

@@ -44,10 +44,9 @@ void Arena::put(void *obj)
 }
 
 inline
-Cache::Cache(Manager *manager, size_t size) :
+Cache::Cache(size_t size) :
     objectSize(size),
-    arenaSize(paramPageSize),
-    manager(manager)
+    arenaSize(paramPageSize)
 { }
 
 

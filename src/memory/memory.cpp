@@ -1,64 +1,25 @@
-#include "Manager.h"
-#include "Allocator.h"
+#include <memory/Manager.h>
+#include <memory/Allocator.h>
 
-#include <util/Lock.h>
-
-#include <gmac/init.h>
 
 gmac::memory::Manager *manager= NULL;
 gmac::memory::Allocator *allocator = NULL;
 
 namespace gmac {
 
-static util::Lock *mutex = NULL;
-
-static void destroyManager(void)
-{
-	mutex->lock();
-	if(manager != NULL) delete manager;
-	manager = NULL;
-	mutex->unlock();
-}
-
-static void destroyAllocator(void)
-{
-    mutex->lock();
-    if(allocator != NULL) delete allocator;
-    allocator = NULL;
-    mutex->unlock();
-}
-
-static void createManager(const char *name)
-{
-	mutex->lock();
-	if(manager == NULL)
-		manager = memory::getManager(name);
-	mutex->unlock();
-}
-
-static void createAllocator(const char *name)
-{
-    mutex->lock();
-    if(allocator == NULL)
-        allocator = memory::getAllocator(manager, name);
-    mutex->unlock();
-}
-
-void memoryInit(const char *manager, const char *allocator)
+void memoryInit(const char *managerName, const char *allocatorName)
 {
 	util::Logger::TRACE("Initializing Memory Subsystem");
-	mutex = new util::Lock(LockManager);
-	memory::Map::init();
-	createManager(manager);
-    createAllocator(allocator);
+    manager = memory::Manager::create();
+    allocator = memory::Allocator::create();
 }
 
 void memoryFini(void)
 {
 	util::Logger::TRACE("Cleaning Memory Subsystem");
-    destroyAllocator();
-	destroyManager();
-	delete mutex;
+    memory::Allocator::destroy(); allocator = NULL;
+    memory::Manager::destroy(); manager = NULL;
+    
 }
 
 
