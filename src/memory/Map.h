@@ -59,11 +59,6 @@ protected:
     Object *globalFind(const void *addr);
     Object *sharedFind(const void *addr);
 
-    void insert(Object *obj);
-    Object *remove(const void *addr);
-    void insertShared(Object *obj);
-    Object *removeShared(const void *addr);
-
     void clean();
 
 #ifdef USE_VM
@@ -79,8 +74,12 @@ public:
     const vm::Bitmap &dirtyBitmap() const;
 #endif
 
-    template<typename T>
-    inline T *find(const void *addr);
+    void insert(Object *obj);
+    Object *remove(const void *addr);
+    void insertShared(Object *obj);
+    Object *removeShared(const void *addr);
+
+    inline Object *find(const void *addr);
 };
 
 }}

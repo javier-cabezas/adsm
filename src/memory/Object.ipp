@@ -14,7 +14,7 @@ Object::Object(void *__addr, size_t __size) :
 { }
 
 template<typename T>
-SharedObject<T>::SharedObject(const Protocol &protocol, size_t size) :
+SharedObject<T>::SharedObject(size_t size) :
     Object(NULL, __size),
     __owner(Mode::current())
 {
@@ -28,8 +28,23 @@ SharedObject<T>::SharedObject(const Protocol &protocol, size_t size) :
     __accelerator = new AcceleratorBlock(__owner, device, __size);
     uint8_t *ptr = (uint8_t *)__addr;
     for(size_t i = 0; i < __size; i += paramPageSize, ptr += paramPageSize) {
-        __system.insert(protocol.createBlock(ptr, paramPageSize));
+        __system.insert(new SystemBlock<T>(ptr, paramPageSize));
     }
+}
+
+template<typename T>
+SharedObject<T>::~SharedObject()
+{
+    // Clean all system blocks
+    typename SystemSet::const_iterator i;
+    for(i = __system.begin(); i != __system.end(); i++)
+        delete (*i);
+    __system.clear();
+    void *device = __accelerator->addr();
+    delete __accelerator;
+    
+    unmap(__addr, __size);
+    __owner->context().free(device);
 }
 
 }}

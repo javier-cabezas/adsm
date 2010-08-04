@@ -4,8 +4,7 @@
 namespace gmac { namespace memory {
 
 inline 
-Allocator::Allocator(Manager *manager) :
-    manager(manager)
+Allocator::Allocator()
 {}
 
 }}

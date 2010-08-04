@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
+#include <memory/Protocol.h>
+
 #include <gmac/gmac.h>
 #include <util/Logger.h>
 
@@ -55,6 +57,8 @@ class Manager : public util::Logger {
 protected:
     static int __count;
     static Manager *__manager;
+
+    Protocol *__protocol;
 
     Manager();
     ~Manager();

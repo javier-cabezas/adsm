@@ -4,9 +4,7 @@
 namespace gmac { namespace memory { namespace allocator {
 
 inline
-Slab::Slab(Manager *manager) :
-    Allocator(manager)
-{}
+Slab::Slab() {}
 
 inline
 Slab::~Slab() {}

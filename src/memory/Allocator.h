@@ -44,15 +44,20 @@ namespace gmac { namespace memory {
 
 class Allocator : public util::Logger {
 protected:
-    Manager *manager;
-    Allocator(Manager *manager);
+    static int __count;
+    static Allocator *__allocator;
+
+    Allocator();
 public:
+    // Allocator management
+    static Allocator *create();
+    static void destroy();
+    static Allocator *get();
+
     virtual ~Allocator() {};
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual bool free(void *addr) = 0;
 };
-
-Allocator *getAllocator(Manager *manager, const char *name);
 
 }}
 

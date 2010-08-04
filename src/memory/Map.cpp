@@ -1,6 +1,7 @@
 #include "Map.h"
 
 #include <kernel/Process.h>
+#include <kernel/Mode.h>
 #include <kernel/Context.h>
 
 #include <gmac/init.h>
@@ -51,15 +52,14 @@ Map::sharedFind(const void *addr)
 void
 Map::clean()
 {
-	RegionMap::iterator i;
-    RegionMap &__global = proc->global();
+	ObjectMap::iterator i;
+    ObjectMap &__global = proc->global();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
 		trace("Cleaning Object %p", i->second->start());
 		__global.lockWrite();
 		__global.erase(i->first);
 		__global.unlock();
-		delete i->second;
 	}
 	clear();
 	unlock();
@@ -85,7 +85,7 @@ Object *Map::remove(const void *addr)
     i = __global.upper_bound(addr);
     Object *obj = i->second;
     assertion(i != __global.end() && obj->start() == addr);
-    assertion(obj->owner() == Context::current());
+    __global.erase(i);
     __global.unlock();
     // If the region is global (not owned by the context) return
 
@@ -98,28 +98,27 @@ Object *Map::remove(const void *addr)
 
 
 
-void Map::insertShared(Region * r)
+void Map::insertShared(Object* obj)
 {
     ObjectMap &__shared = proc->shared();
     __shared.lockWrite();
-    __shared.insert(value_type(r->end(), r));
+    __shared.insert(value_type(obj->end(), obj));
     __shared.unlock();
-    util::Logger::TRACE("Added shared region @ %p", r->start());
+    util::Logger::TRACE("Added shared region @ %p", obj->start());
 }
 
-void Map::removeShared(Region * r)
+Object *Map::removeShared(const void *addr)
 {
-    Map::iterator i;
-    RegionMap &__shared = proc->shared();
+    ObjectMap::iterator i;
+    ObjectMap &__shared = proc->shared();
     __shared.lockWrite();
-    for (i = __shared.begin(); i != __shared.end(); i++) {
-        if (r == i->second) {
-            __shared.erase(i);
-            break;
-        }
-    }
+    i = __shared.upper_bound(addr);
+    Object *obj = i->second;
+    assertion(i != __shared.end() && obj->start() == addr);
+    __shared.erase(i);
     __shared.unlock();
-    util::Logger::TRACE("Removed shared region @ %p", r->start());
+    util::Logger::TRACE("Removed shared region @ %p", obj->start());
+    return obj;
 }
 
 }}
