@@ -85,16 +85,16 @@ class Process : public util::RWLock{
 protected:
     friend class Accelerator;
 
-	std::vector<Accelerator *> _accs;
-	ModeList _modes;
+	std::vector<Accelerator *> __accs;
+	ModeList __modes;
 
-	QueueMap _queues;
-    memory::ObjectMap __global;
-    memory::ObjectMap __shared;
+	QueueMap __queues;
+    memory::Map __global;
+    memory::Map __shared;
 
 	unsigned current;
 
-	static size_t _totalMemory;
+	static size_t __totalMemory;
 
 	Process();
 
@@ -106,11 +106,11 @@ public:
 	void initThread();
 #define ACC_AUTO_BIND -1
     Mode * create(int acc = ACC_AUTO_BIND);
-	void remove(Mode *ctx);
+	void remove(Mode *mode);
 	ModeList & modes();
 
-	void *translate(void *addr) const;
-	const void *translate(const void *addr) const;
+	void *translate(void *addr);
+	const void *translate(const void *addr);
 
     /* Context management functions */
     void send(THREAD_ID id);

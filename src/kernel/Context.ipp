@@ -6,27 +6,6 @@
 namespace gmac {
 
 inline
-memory::Map &
-Context::mm()
-{
-    return *_mm;
-}
-
-inline
-const memory::Map &
-Context::mm() const
-{
-    return *_mm;
-}
-
-inline
-bool
-Context::hasCurrent()
-{
-    return key.get() != NULL;
-}
-
-inline
 void
 Context::kernel(gmacKernel_t k, Kernel * kernel)
 {
@@ -63,11 +42,6 @@ Context::id() const
     return _id;
 }
 
-inline unsigned
-Context::accId() const
-{
-    return _acc->_id;
-}
 
 inline memory::ObjectSet
 Context::releaseObjects()

@@ -8,11 +8,11 @@ namespace gmac {
 inline ModeList &
 Process::modes()
 {
-    return _modes;
+    return __modes;
 }
 
 inline const void *
-Process::translate(const void *addr) const
+Process::translate(const void *addr) 
 {
     return (const void *)translate((void *)addr);
 }
@@ -20,13 +20,13 @@ Process::translate(const void *addr) const
 inline size_t
 Process::totalMemory()
 {
-    return _totalMemory;
+    return __totalMemory;
 }
 
 inline size_t
 Process::nAccelerators() const
 {
-    return _accs.size();
+    return __accs.size();
 }
 
 inline

@@ -42,27 +42,43 @@ namespace gmac {
 namespace memory { class Map; }
 
 class Context;
+class Accelerator;
 
 class Mode {
 protected:
     static gmac::util::Private key;
 
+    Accelerator *__acc;
     Context *__context;
     memory::Map *__map;
+    unsigned __count;
+
+    ~Mode();
 public:
 
-    Mode(memory::Map *map, Context *context) :
-        __context(context),
-        __map(map)
-    { }
-
-    ~Mode() { key.set(NULL); }
+    Mode(Accelerator *acc);
 
     inline static void init() { key.set(NULL); }
     inline static Mode *current() {
         Mode *mode = static_cast<Mode *>(Mode::key.get());
         if(mode == NULL) mode = proc->create();
         return mode;
+    }
+    inline static bool hasCurrent() { return key.get() != NULL; }
+
+    inline void inc() { __count++; }
+    inline void destroy() { __count--; if(__count == 0) delete this; }
+    inline void nuke() { delete this; }
+    inline void attach() {
+        Mode *mode = static_cast<Mode *>(Mode::key.get());
+        if(mode == this) return;
+        if(mode != NULL) mode->destroy();
+        Mode::key.set(this);
+    }
+    inline void detach() {
+        Mode *mode = static_cast<Mode *>(Mode::key.get());
+        if(mode != NULL) mode->destroy();
+        Mode::key.set(NULL);
     }
 
     inline Context &context() { return *__context; }

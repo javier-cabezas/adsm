@@ -24,7 +24,6 @@ Kernel::bind(void * addr)
 {
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
-    Context * ctx = Context::current();
     memory::Object * object =
         Mode::current()->map().find(addr);
 

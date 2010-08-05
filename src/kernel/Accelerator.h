@@ -50,7 +50,6 @@ class Context;
 class Accelerator : public util::Logger {
 protected:
 	friend class Context;
-	virtual void destroy(Context *ctx) = 0;
     size_t _memory;
     unsigned _id;
 public:
@@ -58,6 +57,7 @@ public:
 	virtual ~Accelerator();
 
 	virtual Context *create() = 0;
+	virtual void destroy(Context *ctx) = 0;
     virtual gmacError_t bind(Context * ctx) = 0;
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;

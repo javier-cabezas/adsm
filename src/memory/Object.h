@@ -79,6 +79,7 @@ public:
     inline void *end() const {
         return (void *)((uint8_t *)__addr + __size);
     }
+    virtual void *device() const = 0;
 };
 
 typedef std::set<Object *> ObjectSet;
@@ -93,6 +94,8 @@ protected:
 public:
     SharedObject(size_t size);
     ~SharedObject();
+
+    void *device() const;
 };
 
 
