@@ -82,7 +82,7 @@ enum LockName {
     LockRegion       = 17, // 17
     LockPthread      = 18, // 18
     LockShMap        = 19, // 19
-    LockContextList  = 20, // 20
+    LockModeList     = 20, // 20
     LockBlockList    = 21, // 21
     LockQueueMap     = 22, // 22
     LockReference    = 23, // 23

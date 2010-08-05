@@ -11,8 +11,8 @@ ObjectMap::ObjectMap(paraver::LockName name) :
 }
 
 
-Map::Map() :
-    ObjectMap(LockMmLocal)
+Map::Map(paraver::LockName name) :
+    ObjectMap(name)
 { }
 
 Map::~Map()

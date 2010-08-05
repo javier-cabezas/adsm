@@ -47,6 +47,14 @@ SharedObject<T>::~SharedObject()
     __owner->context().free(device);
 }
 
+template<typename T>
+void *
+SharedObject<T>::device() const 
+{
+    return __accelerator->addr();
+}
+
+
 }}
 
 #endif

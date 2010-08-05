@@ -66,7 +66,7 @@ protected:
 #endif
 
 public:
-    Map();
+    Map(paraver::LockName);
     virtual ~Map();
 
 #ifdef USE_VM

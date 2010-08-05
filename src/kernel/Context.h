@@ -79,16 +79,6 @@ protected:
 	static gmac::util::Private key;
 	static unsigned _next;
 
-    /*!
-		\brief Memory map for the context
-	*/
-	memory::Map *_mm;
-
-    /*!
-		\brief Accelerator where the context is attached
-	*/
-	Accelerator *_acc;
-
 	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap _kernels;
@@ -100,22 +90,9 @@ protected:
 
 	Context(Accelerator *acc);
 
-    virtual void cleanup();
 	virtual ~Context();
 
-    static void Init();
-
 public:
-    /*! Gets the Context associated to the calling thread.
-     *
-     * If it does not have an associated Context, one new Context is created
-     */
-	static Context * current();
-
-    /*! Checks whether the calling thread has an associated Context
-     */
-    static bool hasCurrent();
-
     /*! Initializes the per-thread private variables of the calling thread.
      *
      * This method must be called as soon as a new thread has been created
@@ -125,17 +102,7 @@ public:
     void kernel(gmacKernel_t k, Kernel * kernel);
 
     Kernel * kernel(gmacKernel_t k);
-
-    /*!
-		\brief Returns a reference to the context memory map
-	*/
-	memory::Map &mm();
-
-	/*!
-		\brief Returns a constant reference to the context memory map
-	*/
-	const memory::Map &mm() const;
-
+    
 	/*!
 		\brief Locks the context
 	*/

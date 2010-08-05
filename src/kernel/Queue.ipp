@@ -2,21 +2,21 @@
 #define __KERNEL_QUEUE_IPP_
 
 inline void
-Queue::push(Context *ctx)
+Queue::push(Mode *mode)
 {
     mutex.lock();
-    _queue.push_back(ctx);
+    _queue.push_back(mode);
     mutex.unlock();
     sem.post();
 }
 
-inline Context *
+inline Mode *
 Queue::pop()
 {
     sem.wait();
     mutex.lock();
     assertion(_queue.empty() == false);
-    Context *ret = _queue.front();
+    Mode *ret = _queue.front();
     _queue.pop_front();
     mutex.unlock();
     return ret;
