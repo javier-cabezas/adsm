@@ -5,9 +5,7 @@
 inline int
 Memory::protect(void *addr, size_t count, int prot)
 {
-    if (prot == PROT_NONE) {
-        util::Logger::TRACE("Invalidating %p:%p", addr, (uint8_t *) addr + count - 1);
-    }
+    util::Logger::TRACE("Protecting %p:%p: %zd, %d", addr, (uint8_t *) addr + count - 1, count, prot);
     return mprotect(addr, count, prot);
 }
 
