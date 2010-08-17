@@ -25,6 +25,9 @@ static void custom_free(void *p)
 void *Manager::mapToHost(void *addr, size_t count, int prot)
 {
 	void *cpuAddr = NULL;
+    if (count % getpagesize() != 0) {
+        count = (count/getpagesize() + 1) * getpagesize();
+    }
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
 	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
