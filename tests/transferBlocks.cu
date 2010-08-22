@@ -6,6 +6,8 @@
 #include <sys/time.h>
 
 #include <map>
+#include <algorithm>
+#include <numeric>
 
 #include <sys/mman.h>
 
@@ -189,11 +191,26 @@ void * transfer(param_t param)
     reset_stamp(stamp);
     faults = 0;
 
+    static double * time    = NULL;
+    static double * memcopy = NULL;
+    static double * sigsegv = NULL;
+    static double * search  = NULL;
+
+    if (time == NULL) time = new double[1024*1024];
+    if (memcopy == NULL) memcopy = new double[1024*1024];
+    if (sigsegv == NULL) sigsegv = new double[1024*1024];
+    if (search == NULL) search = new double[1024*1024];
+
     for(int j = 0; j < iters; j++) {
         usec_t start, end;
         usec_t memcpy_start, memcpy_end;
         usec_t search_start, search_end;
         usec_t sigsegv_start, sigsegv_end;
+
+        time[j]    = 0.0;
+        memcopy[j] = 0.0;
+        sigsegv[j] = 0.0;
+        search[j]  = 0.0;
 
         current_block_size = param.size;
         if (param.type == TRANSFER_IN) {
@@ -226,9 +243,7 @@ void * transfer(param_t param)
                     memcpy_start = get_time();
                     memcpy(cpu + param.size * c, cpuTmp, param.size);
                     memcpy_end = get_time();
-                    stamp->_memcpy += memcpy_end - memcpy_start;
-                    stamp->_memcpy_min = MIN(stamp->_memcpy_min, (memcpy_end - memcpy_start));
-                    stamp->_memcpy_max = MAX(stamp->_memcpy_max, (memcpy_end - memcpy_start));
+                    memcopy[j] += memcpy_end - memcpy_start;
                 } else {
                     // SIGSEGV
                     sigsegv_start = get_time();
@@ -242,17 +257,9 @@ void * transfer(param_t param)
                     end = get_time();
                 }
 
-                stamp->_time += end - start;
-                stamp->_min = MIN(stamp->_min, (end - start));
-                stamp->_max = MAX(stamp->_max, (end - start));
-
-                stamp->_search += search_end - search_start;
-                stamp->_search_min = MIN(stamp->_search_min, (search_end - search_start));
-                stamp->_search_max = MAX(stamp->_search_max, (search_end - search_start));
-
-                stamp->_sigsegv += sigsegv_end - sigsegv_start;
-                stamp->_sigsegv_min = MIN(stamp->_sigsegv_min, (sigsegv_end - sigsegv_start));
-                stamp->_sigsegv_max = MAX(stamp->_sigsegv_max, (sigsegv_end - sigsegv_start));
+                time[j] += end - start;
+                search[j] += search_end - search_start;
+                sigsegv[j] += sigsegv_end - sigsegv_start;
             }
         } else {
             for (int c = 0; c < param.totalSize/param.size; c++) {
@@ -275,9 +282,7 @@ void * transfer(param_t param)
                         CUFATAL();
                     cudaStreamSynchronize(stream);
                     end = get_time();
-                    stamp->_memcpy += memcpy_end - memcpy_start;
-                    stamp->_memcpy_min = MIN(stamp->_memcpy_min, (memcpy_end - memcpy_start));
-                    stamp->_memcpy_max = MAX(stamp->_memcpy_max, (memcpy_end - memcpy_start));
+                    memcopy[j] += memcpy_end - memcpy_start;
                 } else {
                     // SIGSEGV
                     sigsegv_start = get_time();
@@ -291,25 +296,31 @@ void * transfer(param_t param)
                     end = get_time();
                 }
 
-                stamp->_time += end - start;
-                stamp->_min = MIN(stamp->_min, (end - start));
-                stamp->_max = MAX(stamp->_max, (end - start));
-
-                stamp->_search += search_end - search_start;
-                stamp->_search_min = MIN(stamp->_search_min, (search_end - search_start));
-                stamp->_search_max = MAX(stamp->_search_max, (search_end - search_start));
-
-                stamp->_sigsegv += sigsegv_end - sigsegv_start;
-                stamp->_sigsegv_min = MIN(stamp->_sigsegv_min, (sigsegv_end - sigsegv_start));
-                stamp->_sigsegv_max = MAX(stamp->_sigsegv_max, (sigsegv_end - sigsegv_start));
-
+                time[j] += end - start;
+                search[j] += search_end - search_start;
+                sigsegv[j] += sigsegv_end - sigsegv_start;
             }
         }
     }
-    stamp->_time = stamp->_time / iters;
-    stamp->_memcpy = stamp->_memcpy / iters;
-    stamp->_search = stamp->_search / iters;
-    stamp->_sigsegv = stamp->_sigsegv / iters;
+    stamp->_time = std::accumulate(time, time + iters, 0.0)/iters;
+    stamp->_max = *std::max_element(time, time + iters);
+    stamp->_min = *std::min_element(time, time + iters);
+    stamp->_memcpy = std::accumulate(memcopy, memcopy + iters, 0.0)/iters;
+    stamp->_memcpy_max = *std::max_element(memcopy, memcopy + iters);
+    stamp->_memcpy_min = *std::min_element(memcopy, memcopy + iters);
+    stamp->_search = std::accumulate(search, search + iters, 0.0)/iters;
+    stamp->_search_max = *std::max_element(search, search + iters);
+    stamp->_search_min = *std::min_element(search, search + iters);
+    stamp->_sigsegv = std::accumulate(sigsegv, sigsegv + iters, 0.0)/iters;
+    stamp->_sigsegv_max = *std::max_element(sigsegv, sigsegv + iters);
+    stamp->_sigsegv_min = *std::min_element(sigsegv, sigsegv + iters);
+
+    for(int j = 0; j < iters; j++) {
+        if (fabs(time[j] - stamp->_time) / stamp->_time > 0.1) printf("Fiesta en cabina1\n");
+        if (fabs(memcopy[j] - stamp->_memcpy) / stamp->_memcpy > 0.1) printf("Fiesta en cabina2\n");
+        if (fabs(search[j] - stamp->_search) / stamp->_search > 0.1) printf("Fiesta en cabina3\n");
+        if (fabs(sigsegv[j] - stamp->_sigsegv) / stamp->_sigsegv > 0.1) printf("Fiesta en cabina4\n");
+    }
 
     return NULL;
 }

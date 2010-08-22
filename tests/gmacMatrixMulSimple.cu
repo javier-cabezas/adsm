@@ -206,13 +206,13 @@ main(int argc, char** argv)
     if (check) {
         // compute reference solution
         gettimeofday(&s, NULL);
+
         // check result
         float err = 0.0;
 
         printf("Computing host matrix mul. Please wait...\n");
         float* reference = (float *) malloc(sizeC);
         computeGold(reference, A, B, HA, WA, WB);
-
         for (int i = 0; i < elemsC; i++) {
             err += fabsf(reference[i] - C[i]);
         }
