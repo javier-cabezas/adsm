@@ -105,25 +105,27 @@ RollingBlock *RollingRegion::find(const void *addr)
 
 void RollingRegion::flush()
 {
-   assertion(tryWrite() == false);
-   trace("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
+    assertion(tryWrite() == false);
+    trace("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
 
-   // Flush those sub-regions that are present in _memory and dirty
-   Map::const_iterator i;
-   for(i = _map.begin(); i != _map.end(); i++) {
-      RollingBlock * block = i->second;
-      block->lockWrite();
-      if(block->dirty() == true)  {
-          trace("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
-          manager.flush(block);
-      }
-      block->unlock();
-   }
+    // Flush those sub-regions that are present in _memory and dirty
+    Map::const_iterator i;
+    for(i = _map.begin(); i != _map.end(); i++) {
+        RollingBlock * block = i->second;
+        block->lockWrite();
+        if(block->dirty() == true)  {
+            trace("Flush RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
+            manager.flush(block);
+        }
+        block->flush(); // Reset internal counters
+        block->unlock();
+    }
 }
 
 
 void RollingRegion::invalidate()
 {
+    //printf("HOLA NOBITMAP\n");
     assertion(tryWrite() == false);
     trace("RollingRegion Invalidate %p (%zd bytes)", (void *) _addr, _size);
     // Check if the region is already invalid
@@ -133,26 +135,26 @@ void RollingRegion::invalidate()
 
     Context * ctx = Context::current();
 
+#ifndef USE_VM
     BlockList::iterator i;
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
         block->lockWrite();
         trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
     }
+#endif
 
     // Protect the region
     Memory::protect(__void(_addr), _size, PROT_NONE);
 
+#ifndef USE_VM
     // Invalidate those sub-regions that are present in _memory
     for(i = _memory.begin(); i != _memory.end(); i++) {
         RollingBlock * block = *i;
-#ifndef USE_VM
         trace("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
         block->preInvalidate();
-#endif
         block->unlock();
     }
-#ifndef USE_VM
     _memory.clear();
 #endif
     _memory.unlock();
@@ -160,6 +162,7 @@ void RollingRegion::invalidate()
 
 void RollingRegion::invalidateWithBitmap(int prot)
 {
+    //printf("HOLA BITMAP\n");
 #ifdef USE_VM
     assertion(tryWrite() == false);
     trace("RollingRegion Invalidate with Bitmap %p (%zd bytes)", (void *) _addr, _size);
@@ -171,26 +174,25 @@ void RollingRegion::invalidateWithBitmap(int prot)
     Context * ctx = Context::current();
 
     BlockList::iterator i;
-    for(i = _memory.begin(); i != _memory.end(); i++) {
+    for(i = _memory.begin(); i != _memory.end();) {
         RollingBlock * block = *i;
         block->lockWrite();
         trace("Protected RollingBlock %p:%p)", block->start(), (uint8_t *) block->start() + block->size() - 1);
 
-        // Protect the region
-        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start()))) {
-            Memory::protect(block->start(), block->size(), PROT_NONE);
-        } else {
-            Memory::protect(block->start(), block->size(), prot);
+        bool remove = false;
+        for (unsigned c = 0; c < paramBitmapChunksPerPage; c++) {
+            //printf("Chunk: %u\n", c);
+            // Protect the region
+            if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->startChunk(c)))) {
+                remove = true;
+                Memory::protect(block->startChunk(c), block->sizeChunk(), PROT_NONE);
+            } else {
+                Memory::protect(block->startChunk(c), block->sizeChunk(), prot);
+            }
         }
-    }
-
-    // Invalidate those sub-regions that are present in _memory
-    for(i = _memory.begin(); i != _memory.end();) {
-        RollingBlock * block = *i;
-        if (ctx->mm().dirtyBitmap().check(manager.ptr(ctx, block->start()))) {
+        if (remove) {
             BlockList::iterator j = i;
             i++;
-            trace("Invalidate RollingBlock %p (%zd bytes)", (void *) block->start(), block->size());
             block->preInvalidate();
             _memory.erase(j);
         } else {
@@ -289,9 +291,12 @@ RollingRegion::subRegions()
 }
 
 RollingBlock::RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared) :
-   ProtRegion(addr, size, shared),
-   _parent(parent)
-{ }
+    ProtRegion(addr, size, shared),
+    _parent(parent)
+#ifdef USE_VM
+    , transfers(0)
+#endif
+{}
 
 
 RollingBlock::~RollingBlock()
@@ -299,18 +304,211 @@ RollingBlock::~RollingBlock()
    trace("RollingBlock %p released", (void *) _addr);
 }
 
-void
-RollingBlock::readOnly()
+#ifdef USE_VM
+
+enum ModelDirection {
+    MODEL_TOHOST = 0,
+    MODEL_TODEVICE = 1
+};
+
+template <ModelDirection M>
+static inline
+float costTransferCache(const RollingBlock & block, size_t blocks)
 {
-    if(present() == false) _parent.push(this);
-    ProtRegion::readOnly();
+    if (M == MODEL_TOHOST) {
+        if (blocks * block.sizeChunk() <= paramModelL1/2) {
+            return paramModelToHostTransferL1;
+        } else if (blocks * block.sizeChunk() <= paramModelL2/2) {
+            return paramModelToHostTransferL2;
+        } else {
+            return paramModelToHostTransferMem;
+        }
+    } else { 
+        if (blocks * block.sizeChunk() <= paramModelL1/2) {
+            return paramModelToDeviceTransferL1;
+        } else if (blocks * block.sizeChunk() <= paramModelL2/2) {
+            return paramModelToDeviceTransferL2;
+        } else {
+            return paramModelToDeviceTransferMem;
+        }
+    }
+}
+
+template <ModelDirection M>
+static inline
+float costGaps(const RollingBlock & block, size_t gaps, size_t totalSize)
+{
+    return costTransferCache<M>(block, totalSize) * gaps * block.sizeChunk();
+}
+
+template <ModelDirection M>
+static inline
+float costTransfer(const RollingBlock & block, size_t blocks)
+{
+    return costTransferCache<M>(block, blocks) * blocks * block.sizeChunk();
+}
+
+template <ModelDirection M>
+static inline
+float costConfig()
+{
+    if (M == MODEL_TOHOST) {
+        return paramModelToHostConfig;
+    } else {
+        return paramModelToDeviceConfig;
+    }
+}
+
+template <ModelDirection M>
+static inline
+float cost(const RollingBlock & block, size_t blocks)
+{
+    return costConfig<M>() + costTransfer<M>(block, blocks);
+}
+
+gmacError_t
+RollingBlock::toDevice(Context * ctx, void * addr, size_t size)
+{
+    gmacError_t ret = gmacSuccess;
+    trace("Sending %zd bytes to device", size);
+    if ((ret = ctx->copyToDevice(Manager::ptr(ctx, addr), addr, size)) != gmacSuccess)
+        return ret;
+    std::list<Context *>::iterator i;
+    trace("I have %zd relatives", _relatives.size());
+    for (i = _relatives.begin(); i != _relatives.end(); i++) {
+        Context * ctx = *i;
+        if ((ret = ctx->copyToDevice(Manager::ptr(ctx, addr), addr, size)) != gmacSuccess) {
+            break;
+        }
+    }
+    return ret;
+
+}
+
+gmacError_t
+RollingBlock::toHost(Context * ctx, void * addr, size_t size)
+{
+    trace("Sending %zd bytes to host", size);
+    return ctx->copyToHost(addr, Manager::ptr(ctx, addr), size);
+}
+
+
+gmacError_t
+RollingBlock::copyToDevice()
+{
+    gmacError_t ret = gmacSuccess;
+    Context * ctx = Context::current();
+    bool in_subgroup = false;
+    size_t i = 0, g_start = 0, g_end = 0;
+    int gaps = 0;
+    gmac::memory::vm::Bitmap & bitmap = ctx->mm().dirtyBitmap();
+    transfers++;
+    while (i < chunks()) {
+        if (in_subgroup) {
+            if (bitmap.checkAndClear(_parent.manager.ptr(ctx, startChunk(i)))) {
+                //printf("CHECKED\n");
+                g_end = i;
+            } else {
+                if (costGaps<MODEL_TODEVICE>(*this, gaps + 1, i - g_start + 1) < cost<MODEL_TODEVICE>(*this, 1)) {
+                    gaps++;
+                } else {
+                    in_subgroup = false;
+                    //printf("START %zd STOP %zd\n", g_start, g_end);
+                    if ((ret = toDevice(ctx, startChunk(g_start), (g_end - g_start + 1) * sizeChunk())) != gmacSuccess) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            if (bitmap.checkAndClear(_parent.manager.ptr(ctx, ((uint8_t *) start()) + i * sizeChunk()))) {
+                g_start = i;
+                gaps = 0;
+                in_subgroup = true;
+            }
+        }
+        i++;
+    }
+    if (in_subgroup) {
+        //printf("AT END START %zd STOP %zd\n", g_start, g_end);
+        ret = toDevice(ctx, startChunk(g_start), (g_end - g_start + 1) * sizeChunk());
+    }
+    return ret;
+}
+
+gmacError_t
+RollingBlock::copyToHost()
+{
+    gmacError_t ret = gmacSuccess;
+    Context * ctx = Context::current();
+    bool in_subgroup = false;
+    size_t i = 0, g_start = 0, g_end = 0;
+    int gaps = 0;
+    uint8_t * b_start = (uint8_t *) start();
+    gmac::memory::vm::Bitmap & bitmap = ctx->mm().dirtyBitmap();
+    while (i < chunks()) {
+        if (in_subgroup) {
+            if (bitmap.checkAndClear(_parent.manager.ptr(ctx, b_start + i * sizeChunk()))) {
+                //printf("CHECKED\n");
+                g_end = i;
+            } else {
+                if (costGaps<MODEL_TOHOST>(*this, gaps + 1, i - g_start + 1) < cost<MODEL_TOHOST>(*this, 1)) {
+                    gaps++;
+                } else {
+                    in_subgroup = false;
+                    //printf("START %zd STOP %zd\n", g_start, g_end);
+                    if ((ret = toHost(ctx, startChunk(g_start), (g_end - g_start + 1) * sizeChunk())) != gmacSuccess) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            if (bitmap.checkAndClear(_parent.manager.ptr(ctx, ((uint8_t *) start()) + i * sizeChunk()))) {
+                g_start = i;
+                gaps = 0;
+                in_subgroup = true;
+            }
+        }
+        i++;
+    }
+    if (in_subgroup) {
+        //printf("AT END START %zd STOP %zd\n", g_start, g_end);
+        ret = toHost(ctx, startChunk(g_start), (g_end - g_start + 1) * sizeChunk());
+    }
+    return ret;
 }
 
 void
+RollingBlock::readWriteChunk(unsigned chunk)
+{
+    if (present() == false) _parent.push(this);
+
+    assertion(tryWrite() == false);
+    _present = _dirty = true;
+    int ret = Memory::protect(startChunk(chunk), sizeChunk(), PROT_READ | PROT_WRITE);
+    gmac::memory::vm::Bitmap & bitmap = Context::current()->mm().dirtyBitmap();
+    bitmap.set(_parent.manager.ptr(Context::current(), startChunk(chunk)));
+    assertion(ret == 0);
+}
+
+#endif
+
+inline void
 RollingBlock::readWrite()
 {
-    if(present() == false) _parent.push(this);
-    ProtRegion::readWrite();
+    if (present() == false) _parent.push(this);
+
+    assertion(tryWrite() == false);
+    _present = _dirty = true;
+    int ret = Memory::protect(__void(_addr), _size, PROT_READ | PROT_WRITE);
+    assertion(ret == 0);
+
+#ifdef USE_VM
+    gmac::memory::vm::Bitmap & bitmap = Context::current()->mm().dirtyBitmap();
+    for (unsigned c = 0; c < chunks(); c++) {
+        bitmap.set(_parent.manager.ptr(Context::current(), startChunk(c)));
+    }
+#endif
 }
+
 
 }}}

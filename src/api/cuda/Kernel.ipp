@@ -6,6 +6,13 @@
 namespace gmac { namespace gpu {
 
 inline
+CUfunction
+Kernel::cudaFunction() const
+{
+    return _f;
+}
+
+inline
 dim3
 KernelConfig::grid() const
 {

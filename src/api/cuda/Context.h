@@ -71,10 +71,6 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-#ifdef USE_MMAP
-	static const char *baseRegisterSymbol;
-#endif
-
 #ifdef USE_MULTI_CONTEXT
 	CUcontext _ctx;
 	util::Lock mutex;
@@ -156,7 +152,6 @@ public:
 
 	void flush();
 	void invalidate();
-	void invalidate(const void * addr, size_t size);
 
     CUdeviceptr gpuAddr(void *addr) const;
 	CUdeviceptr gpuAddr(const void *addr) const;

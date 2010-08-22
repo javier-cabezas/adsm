@@ -19,6 +19,7 @@ protected:
 public:
     Kernel(const gmac::KernelDescriptor & k, CUmodule mod);
     gmac::KernelLaunch * launch(gmac::KernelConfig & c);
+    CUfunction cudaFunction() const;
 
     friend class KernelLaunch;
 };

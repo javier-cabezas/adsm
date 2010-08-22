@@ -59,9 +59,8 @@ typedef unsigned long addr_t;
 
 //! Generic Memory Region Descriptor
 class Region : public util::RWLock {
-private:
-	Context *_context;
 protected:
+	Context *_context;
 	std::list<Context *> _relatives;
 	//! Starting memory address for the region
 	addr_t _addr;
@@ -84,8 +83,13 @@ public:
 	virtual ~Region();
 
 	Context *owner();
-	gmacError_t copyToDevice();
-	gmacError_t copyToHost();
+#ifdef USE_VM
+    virtual gmacError_t copyToDevice();
+    virtual gmacError_t copyToHost();
+#else
+    gmacError_t copyToDevice();
+    gmacError_t copyToHost();
+#endif
 
     bool shared();
 

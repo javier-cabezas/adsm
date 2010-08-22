@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include <config.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <map>
 #include <set>
@@ -65,7 +65,7 @@ protected:
    typedef std::map<const void *, RollingBlock *> Map;
    Map _map;
 
-   // List of sub-regions that are present in _memory
+   // List of sub-regions that are present in memory
    BlockList _memory;
 
    size_t cacheLine;
@@ -98,23 +98,55 @@ public:
 
 class RollingBlock : public ProtRegion {
 protected:
-   RollingRegion &_parent;
-   friend class RollingRegion;
-   void preInvalidate();
+    RollingRegion &_parent;
+    friend class RollingRegion;
+    void preInvalidate();
+
+    void algorithm();
+
+#ifdef USE_VM
+    unsigned transfers;
+#endif
+
+#ifdef USE_VM
+    gmacError_t toDevice(Context * ctx, void * addr, size_t size);
+    gmacError_t toHost(Context * ctx, void * addr, size_t size);
+#endif
 public:
-   RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared);
-   ~RollingBlock();
+    RollingBlock(RollingRegion &parent, void *addr, size_t size, bool shared);
+    ~RollingBlock();
 
-   // Override this methods to insert the regions in the list
-   // of sub-regions present in _memory
-   void readOnly();
-   void readWrite();
+    // Override this methods to insert the regions in the list
+    // of sub-regions present in _memory
+#ifdef USE_VM
+    void invalidate();
+    void * startChunk(unsigned chunk) const;
+    size_t sizeChunk() const;
+    size_t chunks() const;
+    unsigned chunk(const void * addr) const;
 
-   RollingRegion & getParent();
+    void readOnlyChunk(unsigned chunk);
+    void readWriteChunk(unsigned chunk);
+
+    unsigned lastChunk;
+    unsigned seqChunks;
+    bool isSeq;
+#endif
+    void readOnly();
+    void readWrite();
+
+    void flush();
+
+#ifdef USE_VM
+    gmacError_t copyToDevice();
+    gmacError_t copyToHost();
+#endif
+
+    RollingRegion & getParent();
 };
 
-#include "RollingRegion.ipp"
-
 }}}
+
+#include "RollingRegion.ipp"
 
 #endif

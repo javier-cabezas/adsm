@@ -47,7 +47,7 @@ template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
 __constant__ int __SHIFT_ENTRY;
-//__constant__ int __SHIFT_PAGE;
+__constant__ int __SHIFT_PAGE;
 
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
@@ -57,7 +57,7 @@ __constant__ uint32_t *__dirtyBitmap;
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
-    __dirtyBitmap[to32bit(addr) >> __SHIFT_ENTRY] = 1;
+    __dirtyBitmap[to32bit(addr) >> __SHIFT_PAGE] = 1;
 }
 #else
 #ifdef BITMAP_BYTE
@@ -66,7 +66,7 @@ __constant__ uint8_t *__dirtyBitmap;
 template<typename T>
 __device__ __inline__ void __globalSt(T *addr, T v) {
     *addr = v;
-    __dirtyBitmap[to32bit(addr) >> __SHIFT_ENTRY] = 1;
+    __dirtyBitmap[to32bit(addr) >> __SHIFT_PAGE] = 1;
 }
 #else
 #ifdef BITMAP_BIT
@@ -83,7 +83,8 @@ __device__ __inline__ void __globalSt(T *addr, T v) {
     atomicOr(&__dirtyBitmap[entry], val);
 }
 #else
-#error "Bitmap granularity not defined"
+//#error "Bitmap granularity not defined"
+#define __globalSt(a,v) *(a)=(v)
 #endif
 #endif
 #endif

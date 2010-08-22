@@ -10,8 +10,10 @@ PARAM(paramDebug, const char *, "none", "GMAC_DEBUG")
 // GMAC Page table settings
 PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
 
+#ifdef USE_VM
 // GMAC Bitmap settings
 PARAM(paramBitmapChunksPerPage, size_t, 1, "GMAC_BITMAP_CHUNKS", PARAM_NONZERO)
+#endif
 
 // Rolling Manager specific settings
 PARAM(paramLruDelta, size_t, 2, "GMAC_LRUDELTA", PARAM_NONZERO)
@@ -22,6 +24,20 @@ PARAM(paramBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARA
 // Miscelaneous parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
 
+// GMAC parameters for auto-tunning 
+PARAM(paramModelToHostConfig, float, 40.0, "GMAC_MODEL_TOHOSTCONFIG")       // DMA configuration costs
+PARAM(paramModelToHostTransferL1, float, 0.0007, "GMAC_MODEL_TOHOSTTRANSFER_L1") // Transfer costs for data that fits in the L1 cache
+PARAM(paramModelToHostTransferL2, float, 0.0008, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that fits in the L2 cache
+PARAM(paramModelToHostTransferMem, float, 0.0010, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
+PARAM(paramModelToDeviceConfig, float, 40.0, "GMAC_MODEL_TODEVICECONFIG")       // DMA configuration costs
+PARAM(paramModelToDeviceTransferL1, float, 0.0007, "GMAC_MODEL_TODEVICETRANSFER_L1") // Transfer costs for data that fits in the L1 cache
+PARAM(paramModelToDeviceTransferL2, float, 0.0008, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that fits in the L2 cache
+PARAM(paramModelToDeviceTransferMem, float, 0.0010, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
+PARAM(paramModelL1, size_t, 32 * 1024, "GMAC_MODEL_L1") // Size of the L1 cache
+PARAM(paramModelL2, size_t, 256 * 1024, "GMAC_MODEL_L2") // Size of the L2 cache
+
 // OpenCL parameters
 PARAM(paramOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
 PARAM(paramOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
+
+// vim:set ft=c
