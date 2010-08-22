@@ -36,9 +36,10 @@ ssize_t read(int fd, void *buf, size_t count)
 	if(__libc_read == NULL) posixIoInit();
 	if(__inGmac() == 1) return __libc_read(fd, buf, count);
 
-   gmac::Context *srcCtx = manager->owner(buf);
+   gmac::Mode *srcMode = proc->owner(buf);
 
-   if(srcCtx == NULL) return __libc_read(fd, buf, count);
+   if(srcMode == NULL) return __libc_read(fd, buf, count);
+    gmac::Context &srcCtx = srcMode->context();
 
    __enterGmac();
 	pushState(IORead);
@@ -48,9 +49,10 @@ ssize_t read(int fd, void *buf, size_t count)
 
     manager->invalidate(buf, count);
 
-    gmac::Context *ctx = gmac::Context::current();
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    void * tmp = ctx->bufferPageLocked();
+    gmac::Mode *mode = gmac::Mode::current();
+    gmac::Context &ctx = mode->context();
+    size_t bufferSize = ctx.bufferPageLockedSize();
+    void * tmp = ctx.bufferPageLocked();
 
     size_t left = count;
     off_t  off  = 0;
@@ -58,7 +60,7 @@ ssize_t read(int fd, void *buf, size_t count)
         size_t bytes= left < bufferSize? left: bufferSize;
 
         ret += __libc_read(fd, tmp, bytes);
-        err = srcCtx->copyToDevice(manager->ptr(srcCtx, ((char *) buf) + off), tmp, bytes);
+        err = srcCtx.copyToDevice(srcMode->translate(((char *) buf) + off), tmp, bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
         left -= bytes;
@@ -78,9 +80,11 @@ ssize_t write(int fd, const void *buf, size_t count)
 	if(__libc_read == NULL) posixIoInit();
 	if(__inGmac() == 1) return __libc_write(fd, buf, count);
 
-    gmac::Context *dstCtx = manager->owner(buf);
+    gmac::Mode *dstMode = proc->owner(buf);
 
-    if(dstCtx == NULL) return __libc_write(fd, buf, count);
+    if(dstMode == NULL) return __libc_write(fd, buf, count);
+
+    gmac::Context &dstCtx = dstMode->context();
 
 	__enterGmac();
     pushState(IOWrite);
@@ -88,18 +92,19 @@ ssize_t write(int fd, const void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    manager->flush(buf, count);
+    manager->release((void *)buf, count);
 
-    gmac::Context *ctx = gmac::Context::current();
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    void * tmp        = ctx->bufferPageLocked();
+    gmac::Mode *mode = gmac::Mode::current();
+    gmac::Context &ctx = mode->context();
+    size_t bufferSize = ctx.bufferPageLockedSize();
+    void * tmp        = ctx.bufferPageLocked();
 
     size_t left = count;
     off_t  off  = 0;
     while (left != 0) {
         size_t bytes = left < bufferSize? left: bufferSize;
 
-        err = dstCtx->copyToHost(tmp, manager->ptr(dstCtx, ((char *) buf) + off), bytes);
+        err = dstCtx.copyToHost(tmp, dstMode->translate(((char *) buf) + off), bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, tmp, bytes);
 

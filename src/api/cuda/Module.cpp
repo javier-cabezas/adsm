@@ -63,11 +63,11 @@ Module::Module(const ModuleDescriptor & d) :
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
     cfatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
-    Context * ctx = Context::current();
+    Context &ctx = gmac::Mode::current()->context();
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d._kernels.begin(); k != d._kernels.end(); k++) {
         Kernel * kernel = new Kernel(*k, _mod);
-        ctx->kernel(k->key(), kernel);
+        ctx.kernel(k->key(), kernel);
     }
 
     ModuleDescriptor::VariableVector::const_iterator v;
@@ -87,7 +87,7 @@ Module::Module(const ModuleDescriptor & d) :
             __shiftPage = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_PAGE");
 
-            size_t tmp = ctx->mm().dirtyBitmap().shiftPage();
+            size_t tmp = ctx.mm().dirtyBitmap().shiftPage();
             res = cuMemcpyHtoD(__shiftPage->devPtr(), &tmp, sizeof(size_t));
             cfatal(res == CUDA_SUCCESS, "Unable to set shift page");
         }
@@ -96,7 +96,7 @@ Module::Module(const ModuleDescriptor & d) :
             __shiftEntry = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_ENTRY");
 
-            size_t tmp = ctx->mm().dirtyBitmap().shiftEntry();
+            size_t tmp = ctx.mm().dirtyBitmap().shiftEntry();
             res = cuMemcpyHtoD(__shiftEntry->devPtr(), &tmp, sizeof(size_t));
             cfatal(res == CUDA_SUCCESS, "Unable to set shift entry");
         }

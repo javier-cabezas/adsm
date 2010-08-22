@@ -53,10 +53,9 @@ protected:
     memory::Map *__map;
     unsigned __count;
 
-    ~Mode();
 public:
-
     Mode(Accelerator *acc);
+    ~Mode();
 
     inline static void init() { key.set(NULL); }
     inline static Mode *current() {
@@ -68,7 +67,6 @@ public:
 
     inline void inc() { __count++; }
     inline void destroy() { __count--; if(__count == 0) delete this; }
-    inline void nuke() { delete this; }
     inline void attach() {
         Mode *mode = static_cast<Mode *>(Mode::key.get());
         if(mode == this) return;
@@ -81,11 +79,18 @@ public:
         Mode::key.set(NULL);
     }
 
+    void switchTo(Accelerator *acc);
+    inline Accelerator &accelerator() { return *__acc; }
+
     inline Context &context() { return *__context; }
     inline const Context &context() const { return *__context; }
     inline memory::Map &map() { return *__map; }
     inline const memory::Map &map() const { return *__map; }
     
+	void *translate(void *addr);
+	inline const void *translate(const void *addr) {
+        return (const void *)translate((void *)addr);
+    }
 };
 
 }

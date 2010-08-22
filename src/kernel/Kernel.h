@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include <memory/ObjectSet.h>
 #include <util/ReusableObject.h>
 #include <util/Logger.h>
+#include <gmac/gmac.h>
 
 #include <vector>
 

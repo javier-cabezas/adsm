@@ -64,6 +64,7 @@ private:
 protected:
     void *__addr;
     size_t __size;
+    Mode *__owner;
 
     Object(void *__addr, size_t __size);
 
@@ -79,6 +80,7 @@ public:
     inline void *end() const {
         return (void *)((uint8_t *)__addr + __size);
     }
+    inline Mode *owner() const { return __owner; }
     virtual void *device() const = 0;
 };
 
@@ -90,7 +92,6 @@ protected:
     typedef std::set< SystemBlock<T> *> SystemSet;
     SystemSet __system;
     AcceleratorBlock *__accelerator;
-    Mode *__owner;
 public:
     SharedObject(size_t size);
     ~SharedObject();

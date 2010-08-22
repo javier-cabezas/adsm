@@ -46,7 +46,7 @@ Process::~Process()
     QueueMap::iterator q;
     lockWrite();
     while(__modes.empty() == false) {
-        __modes.front()->nuke();
+        delete __modes.front();
         __modes.pop_front();
     }
     for(a = __accs.begin(); a != __accs.end(); a++)
@@ -226,5 +226,12 @@ void Process::copy(THREAD_ID id)
     q->second->queue->push(mode);
     q->second->unlock();
 }
+Mode *Process::owner(const void *addr)
+{
+    memory::Object *object = __global.find(addr);
+    if(object == NULL) return NULL;
+    return object->owner();
+}
+
 
 }

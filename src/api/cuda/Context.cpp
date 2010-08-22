@@ -14,7 +14,7 @@ void
 Context::setup()
 {
 #ifdef USE_MULTI_CONTEXT
-    _ctx = _gpu->createCUDAContext();
+    cuCtx = _gpu->createCUDAContext();
     //enable();
 #endif
 }
@@ -89,7 +89,7 @@ Context::~Context()
     pushLock();
     finiStreams();
 #ifdef USE_MULTI_CONTEXT
-    _gpu->destroyCUDAContext(_ctx);
+    _gpu->destroyCUDAContext(cuCtx);
 #endif
     ModuleVector::const_iterator m;
     for(m = _modules.begin(); m != _modules.end(); m++) {
@@ -98,38 +98,40 @@ Context::~Context()
     _modules.clear();
     clearKernels();
     popUnlock();
-    // CUDA might be deinitalized before executing this code
-    // mutex->pushLock();
-    // ASSERT(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
 }
 
 
+#if 0
 gmacError_t
 Context::switchTo(Accelerator *gpu)
 {
     Accelerator * oldAcc = _gpu;
 #ifdef USE_MULTI_CONTEXT
-    CUContext oldCtx = _ctx;
+    CUContext oldCtx = cuCtx;
     CUContext tmpCtx;
 #endif
 
     // Destroy and clean up current device resources
     // 1- Sync memory to host
+    Map &map = Mode::current()->map();
+    Map::iterator i;
+    for(i = map.begin(); i != map.end(); i++) {
+    }
     manager->syncToHost();
 
     // Create and setup new device resources
     // 1- Create CUDA resources
     _gpu = gpu;
 #ifdef USE_MULTI_CONTEXT
-    _ctx = gpu->createCUDAContext();
+    cuCtx = gpu->createCUDAContext();
 #endif
     // 2- Free resources in the device
     std::vector<void *> oldAddr = manager->reallocDevice();
 
     _gpu = oldAcc;
 #ifdef USE_MULTI_CONTEXT
-    tmpCtx = _ctx;
-    _ctx = oldCtx;
+    tmpCtx = cuCtx;
+    cuCtx = oldCtx;
 #endif
     manager->freeDevice(oldAddr);
 
@@ -149,7 +151,7 @@ Context::switchTo(Accelerator *gpu)
 
     _gpu = gpu;
 #ifdef USE_MULTI_CONTEXT
-    _ctx = tmpCtx;
+    cuCtx = tmpCtx;
 #endif
 
     pushLock();
@@ -166,6 +168,7 @@ Context::switchTo(Accelerator *gpu)
 
     return gmacSuccess;
 }
+#endif
 
 gmacError_t
 Context::malloc(void **addr, size_t size, unsigned align) {
@@ -237,9 +240,9 @@ Context::mapToDevice(void *host, void **device, size_t size)
     assertion(host   != NULL);
     assertion(device != NULL);
     assertion(size   > 0);
-    Accelerator * acc = static_cast<Accelerator *>(_acc);
-    cfatal(acc->major() >= 2 ||
-          (acc->major() == 1 && acc->minor() >= 1), "Map to device not supported by the HW");
+    Accelerator &acc = static_cast<Accelerator &>(gmac::Mode::current()->accelerator());
+    cfatal(acc.major() >= 2 ||
+          (acc.major() == 1 && acc.minor() >= 1), "Map to device not supported by the HW");
     zero(device);
     CUresult ret = CUDA_SUCCESS;
 #if CUDART_VERSION >= 2020
@@ -272,7 +275,7 @@ gmacError_t
 Context::copyToDevice(void *dev, const void *host, size_t size)
 {
     enterFunction(FuncAccHostDevice);
-    gmac::Context *ctx = gmac::Context::current();
+    gmac::Context &ctx = gmac::Mode::current()->context();
 
     trace("Copy to device: %p to %p", host, dev);
     CUresult ret = CUDA_SUCCESS;
@@ -288,8 +291,8 @@ Context::copyToDevice(void *dev, const void *host, size_t size)
     _pendingToDevice = false;
     popUnlock();
 
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    void * tmp        = ctx->bufferPageLocked();
+    size_t bufferSize = ctx.bufferPageLockedSize();
+    void * tmp        = ctx.bufferPageLocked();
     if (size > _bufferPageLockedSize) {
         size_t left = size;
         off_t  off  = 0;
@@ -326,12 +329,12 @@ Context::copyToHost(void *host, const void *dev, size_t size)
 {
     assertion(dev != NULL);
     enterFunction(FuncAccDeviceHost);
-    gmac::Context *ctx = gmac::Context::current();
+    gmac::Context &ctx = gmac::Mode::current()->context();
 
     trace("Copy to host: %p to %p", dev, host);
     CUresult ret = CUDA_SUCCESS;
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    void * tmp        = ctx->bufferPageLocked();
+    size_t bufferSize = ctx.bufferPageLockedSize();
+    void * tmp        = ctx.bufferPageLocked();
 
     size_t left = size;
     off_t  off  = 0;
@@ -400,12 +403,12 @@ Context::launch(gmacKernel_t addr)
     gmac::KernelLaunch * l = k->launch(_call);
 
     if (!_releasedAll) {
-        if (static_cast<memory::RegionSet *>(l)->size() == 0) {
-            _releasedRegions.clear();
-            _releasedAll = true;
-        } else {
-            _releasedRegions.insert(l->begin(), l->end());
-        }
+        //if (static_cast<memory::RegionSet *>(l)->size() == 0) {
+        //    _releasedRegions.clear();
+        //    _releasedAll = true;
+        //} else {
+        //    _releasedRegions.insert(l->begin(), l->end());
+        //}
     }
     //! \todo Move this to Kernel.cpp
     _pendingKernel = true;

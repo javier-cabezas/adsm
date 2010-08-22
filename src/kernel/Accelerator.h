@@ -58,7 +58,6 @@ public:
 
 	virtual Context *create() = 0;
 	virtual void destroy(Context *ctx) = 0;
-    virtual gmacError_t bind(Context * ctx) = 0;
 	size_t memory() const;
 	virtual size_t nContexts() const = 0;
     unsigned id() const;

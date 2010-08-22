@@ -128,6 +128,8 @@ public:
     const memory::ObjectMap &global() const;
     memory::ObjectMap &shared();
     const memory::ObjectMap &shared() const;
+
+    Mode *owner(const void *addr);
 };
 
 }

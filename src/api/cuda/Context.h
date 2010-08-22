@@ -60,7 +60,7 @@ class Context : public gmac::Context {
 protected:
     AlignmentMap _alignMap;
 
-	Accelerator  * _gpu;
+	Accelerator  *_gpu;
 	ModuleVector _modules;
 
 	KernelConfig _call;
@@ -76,7 +76,7 @@ protected:
 #endif
 
 #ifdef USE_MULTI_CONTEXT
-	CUcontext _ctx;
+	CUcontext cuCtx;
 	util::Lock mutex;
 #endif
 
@@ -103,7 +103,7 @@ protected:
 	Context(Accelerator *gpu);
 	~Context();
 
-    gmacError_t switchTo(Accelerator *gpu);
+//    gmacError_t switchTo(Accelerator *gpu);
 public:
     gmacError_t error(CUresult);
 
