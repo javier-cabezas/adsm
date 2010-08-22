@@ -48,7 +48,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t to
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     gmac::KernelLaunch(),
     KernelConfig(c),
-    _ctx(*Context::current()),
+    _ctx(dynamic_cast<Context &>(gmac::Mode::current()->context())),
     _kernel(k),
     _f(k._f)
 {

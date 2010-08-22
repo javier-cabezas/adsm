@@ -32,7 +32,8 @@ Context::zero(void **addr) const
 inline CUstream
 Context::stream()
 {
-    return current()->streamLaunch;
+    Context &ctx = dynamic_cast<Context &>(gmac::Mode::current()->context());
+    return ctx.streamLaunch;
 }
 
 

@@ -207,10 +207,12 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     __enterGmac();
     enterFunction(FuncGmacGlobalMalloc);
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-    gmac::Context * ctx = gmac::Context::current();
-    ctx->lockRead();
+    gmac::Mode *mode = gmac::Mode::current();
+    gmac::util::Logger::ASSERTION(mode != NULL);
+    gmac::Context &ctx = mode->context();
+    ctx.lockRead();
 	ret = manager->globalMalloc(ctx, cpuPtr, count);
-    ctx->unlock();
+    ctx.unlock();
     exitFunction();
     __exitGmac();
     return ret;
