@@ -2,11 +2,12 @@ MAINTAINERCLEANFILES=Makefile.in
 
 COMMON=bandwidth threadBandwidth\
        schedAllocation transferBlocks\
-       hybridComputation transferCosts
+       hybridComputation transferCosts\
+	   bitmapOverhead
 
 if VM
 noinst_PROGRAMS = $(COMMON)\
-                  vmVecAdd vmNull vmStencil vmMatrixMul
+                  vmVecAdd vmNull vmStencil vmMatrixMul vmBitmapOverhead
 else
 noinst_PROGRAMS = $(COMMON)\
 				  gmacHybridComputation gmacVecAdd\
@@ -45,9 +46,15 @@ schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
 hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
+bitmapOverhead_SOURCES = bitmapOverhead.cu $(GMAC_TESTSOURCES)
+bitmapOverhead_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+
 if VM
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+vmBitmapOverhead_SOURCES = vmBitmapOverhead.cu $(GMAC_TESTSOURCES)
+vmBitmapOverhead_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
 vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -59,6 +66,7 @@ vmStencil_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 vmMatrixMul_DEPENDENCIES = vmMatrixMulKernel.cu
 vmMatrixMul_SOURCES = vmMatrixMul.cu $(GMAC_TESTSOURCES)
 vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
 else
 gmacVecAdd_SOURCES = gmacVecAdd.cu $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -128,10 +136,10 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 
 if VM
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_20
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_13 --keep
 else
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_20
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v -arch sm_13 --keep
 endif
 
 .cu.lo:
