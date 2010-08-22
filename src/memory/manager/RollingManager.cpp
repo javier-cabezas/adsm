@@ -152,6 +152,12 @@ void RollingManager::invalidate()
     }
     shared.unlock();
 
+#ifdef USE_VM
+#ifdef DEBUG
+    gmac::memory::vm::Bitmap & bitmap = ctx->mm().dirtyBitmap(); 
+    bitmap.dump();
+#endif
+#endif
     trace("RollingManager Invalidation Ends");
 }
 
@@ -171,7 +177,7 @@ void RollingManager::invalidate(const RegionSet & regions)
         r->invalidate();
         r->unlock();
     }
-    gmac::Context::current()->invalidate();
+
     trace("RollingManager Invalidation Ends");
 }
 
@@ -230,29 +236,32 @@ bool RollingManager::read(void *addr)
             r->unlock();
         }
         shared.unlock();
-
     }
 #endif
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if(root == NULL) return false;
-    ProtRegion *region = root->find(addr);
+    root->lockRead();
+    RollingBlock *region = root->find(addr);
     assertion(region != NULL);
     region->lockWrite();
     if (region->present() == true) {
         region->unlock();
+        root->unlock();
         return true;
     }
-    region->readWrite();
+    int ret = Memory::protect(region->start(), region->size(), PROT_READ | PROT_WRITE);
+    assertion(ret == 0);
 #ifdef USE_VM
-    if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), addr))) {
+    if(current()->dirtyBitmap().check(ptr(Context::current(), addr))) {
 #endif
-        gmacError_t ret = region->copyToHost();
-        assertion(ret == gmacSuccess);
+        gmacError_t ret2 = region->copyToHost();
+        assertion(ret2 == gmacSuccess);
 #ifdef USE_VM
     }
 #endif
     region->readOnly();
     region->unlock();
+    root->unlock();
     return true;
 }
 
@@ -271,7 +280,8 @@ bool RollingManager::touch(Region * r)
             block->readWrite();
             if(block->present() == false) {
 #ifdef USE_VM
-                if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), block->start()))) {
+                /// \todo: Fix this! Should set ownership to the device
+                if(current()->dirtyBitmap().check(ptr(Context::current(), block->start()))) {
 #endif
                     gmacError_t ret = block->copyToHost();
                     assertion(ret == gmacSuccess);
@@ -329,31 +339,54 @@ bool RollingManager::write(void *addr)
 #endif
     RollingRegion *root = current()->find<RollingRegion>(addr);
     if (root == NULL) return false;
-    root->lockWrite();
-    ProtRegion *region = root->find(addr);
+    root->lockRead();
+    RollingBlock *region = root->find(addr);
     assertion(region != NULL);
 
     while(rollingMap.currentBuffer()->overflows()) writeBack();
     // Other thread fixed the fault?
     region->lockWrite();
     if(region->dirty() == true) {
+#ifdef USE_VM
+        unsigned chunk = region->chunk(addr);
+        if (region->isSeq && chunk == region->lastChunk + 1) {
+            region->lastChunk = chunk;
+            region->seqChunks++;
+        } else {
+            region->isSeq = false;
+        }
+        if (region->isSeq && region->seqChunks >= 3) {
+            region->readWrite();
+        } else {
+            region->readWriteChunk(chunk);
+        }
+#endif
         region->unlock();
         root->unlock();
         return true;
     }
 
+#ifdef USE_VM
+    region->readWriteChunk(region->chunk(addr));
+#else
+    region->readWrite();
+#endif
     if(region->present() == false) {
 #ifdef USE_VM
-        if(current()->dirtyBitmap().checkAndClear(ptr(Context::current(), addr))) {
+        if(current()->dirtyBitmap().check(ptr(Context::current(), addr))) {
 #endif
-            region->readWrite();
             gmacError_t ret = region->copyToHost();
             assertion(ret == gmacSuccess);
 #ifdef USE_VM
         }
 #endif
     }
-    else region->readWrite();
+#ifdef USE_VM
+    region->lastChunk = region->chunk(addr);
+    region->isSeq = true;
+    region->seqChunks = 1;
+#endif
+
     region->unlock();
     root->unlock();
     rollingMap.currentBuffer()->push(dynamic_cast<RollingBlock *>(region));

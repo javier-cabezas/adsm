@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef USE_VM
 namespace gmac { namespace memory  { namespace vm {
 
 class Bitmap : public util::Logger {
@@ -61,15 +62,19 @@ private:
 
     void *_device;
 
+    const void *_minAddr, *_maxAddr;
+
     size_t _shiftPage;
+#ifdef BITMAP_BIT
     size_t _shiftEntry;
     uint32_t _bitMask;
+#endif
     size_t _size;
 
     void allocate();
 
-    template <bool check, bool clear>
-    bool CheckAndClear(const void *addr);
+    template <bool check, bool clear, bool set>
+    bool CheckClearSet(const void *addr);
 
     off_t offset(const void *addr) const;
 public:
@@ -77,23 +82,30 @@ public:
     ~Bitmap();
 
     void *device();
-    void *device(const void * addr);
+    void *deviceBase();
     void *host() const;
-    void *host(const void * addr) const;
+
     const size_t size() const;
-    const size_t size(const void * start, size_t size) const;
 
     const size_t shiftPage() const;
+#ifdef BITMAP_BIT
     const size_t shiftEntry() const;
+#endif
 
     bool check(const void *);
     bool checkAndClear(const void *);
+    bool checkAndSet(const void *);
     void clear(const void *);
+    void set(const void *);
+
+    void newRange(const void * ptr, size_t count);
+    void removeRange(const void * ptr, size_t count);
 
     bool clean() const;
 
     void sync();
     void reset();
+    void dump();
 
     bool synced() const;
     void synced(bool s);
@@ -105,4 +117,4 @@ public:
 
 #endif
 
-
+#endif

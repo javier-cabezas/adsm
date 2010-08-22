@@ -58,13 +58,13 @@ Manager::malloc(Context * ctx, void ** addr, size_t count)
     cpuAddr = mapToHost(devAddr, count, defaultProt());
     if (cpuAddr == NULL) // Failed!
         return gmacErrorMemoryAllocation;
+    trace("Alloc %p (%zd bytes)", cpuAddr, count);
     // Insert mapping in the page table
     insertVirtual(cpuAddr, devAddr, count);
     // Create a new region
     Region * r = newRegion(cpuAddr, count, false);
     // Insert the region in the local and global memory maps
     insert(r);
-    trace("Alloc %p (%zd bytes)", cpuAddr, count);
     *addr = cpuAddr;
     return gmacSuccess;
 }
@@ -245,6 +245,10 @@ void Manager::insertVirtual(Context *ctx, void *cpuPtr, void *devPtr, size_t cou
 		pageTable.insert(cpuAddr + off, devAddr + off);
 #endif
 #endif
+
+#ifdef USE_VM
+    ctx->mm().dirtyBitmap().newRange(devPtr, count);
+#endif
 }
 
 void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
@@ -257,6 +261,10 @@ void Manager::removeVirtual(Context *ctx, void *cpuPtr, size_t count)
 	for(size_t off = 0; off < count; off += pageTable.getPageSize())
 		pageTable.remove(cpuAddr + off);
 #endif
+#endif
+
+#ifdef USE_VM
+    ctx->mm().dirtyBitmap().removeRange(ptr(ctx, cpuPtr), count);
 #endif
 }
 

@@ -257,7 +257,8 @@ gmacLaunch(gmacKernel_t k)
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    manager->flush(*launch);
+    //manager->flush(*launch);
+    manager->flush();
 
     // Wait for pending transfers
     ctx->syncToDevice();
@@ -293,7 +294,8 @@ gmacThreadSynchronize()
 	gmacError_t ret = ctx->sync();
 
     gmac::util::Logger::TRACE("Memory Sync");
-    manager->invalidate(ctx->releaseRegions());
+    //manager->invalidate(ctx->releaseRegions());
+    manager->invalidate();
 
     ctx->unlock();
 	exitFunction();

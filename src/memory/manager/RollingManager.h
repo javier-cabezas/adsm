@@ -81,52 +81,52 @@ public:
 
 class RollingManager : public Handler {
 protected:
-   size_t lruDelta;
+    size_t lruDelta;
 
-   RollingMap rollingMap;
-   //std::map<Context *, RollingBuffer *> regionRolling;
+    RollingMap rollingMap;
+    //std::map<Context *, RollingBuffer *> regionRolling;
 
-   util::Lock writeMutex;
-   void *writeBuffer;
-   size_t writeBufferSize;
-   void writeBack();
-	void flushToDevice();
+    util::Lock writeMutex;
+    void *writeBuffer;
+    size_t writeBufferSize;
+    void writeBack();
+    void flushToDevice();
 
-   virtual bool read(void *);
-   virtual bool write(void *);
+    virtual bool read(void *);
+    virtual bool write(void *);
 
 #ifdef DEBUG
-   void dumpRolling();
+    void dumpRolling();
 #endif
 
-   // Methods used by RollingBlock to request flushing and invalidating
-   friend class RollingRegion;
+    // Methods used by RollingBlock to request flushing and invalidating
+    friend class RollingRegion;
 #if 0
-   void invalidate(RollingBlock *region);
+    void invalidate(RollingBlock *region);
 #endif
-   void flush(RollingBlock *region);
-   void forceFlush(RollingBlock *region);
+    void flush(RollingBlock *region);
+    void forceFlush(RollingBlock *region);
 
-   Region * newRegion(void * addr, size_t count, bool shared);
-   int defaultProt();
+    Region * newRegion(void * addr, size_t count, bool shared);
+    int defaultProt();
 
 public:
-   RollingManager();
-   virtual ~RollingManager();
+    RollingManager();
+    virtual ~RollingManager();
 #if 0
-   void *malloc(void *addr, size_t size);
-   void *globalMalloc(void *addr, size_t size);
-   void free(void *addr);
+    void *malloc(void *addr, size_t size);
+    void *globalMalloc(void *addr, size_t size);
+    void free(void *addr);
 #endif
-   void invalidate();
-   void invalidate(const RegionSet & regions);
-   void flush();
-   void flush(const RegionSet & regions);
+    void invalidate();
+    void invalidate(const RegionSet & regions);
+    void flush();
+    void flush(const RegionSet & regions);
 
-   void invalidate(const void *addr, size_t size);
-   void flush(const void *addr, size_t size);
+    void invalidate(const void *addr, size_t size);
+    void flush(const void *addr, size_t size);
 
-	void map(Context *, Region *, void *);
+    void map(Context *, Region *, void *);
     bool touch(Region * r);
 };
 

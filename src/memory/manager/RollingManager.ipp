@@ -123,22 +123,22 @@ RollingMap::contextBuffer(Context *ctx)
 inline void
 RollingMap::remove(RollingBlock *block)
 {
-   lockWrite();
-   RollingMap::iterator i;
-   for(i = this->begin(); i != this->end(); i++) {
-      i->second->remove(block);
-   }
-   unlock();
+    lockWrite();
+    RollingMap::iterator i;
+    for(i = this->begin(); i != this->end(); i++) {
+        i->second->remove(block);
+    }
+    unlock();
 }
 
 inline void
 RollingManager::flush(RollingBlock *block)
 {
-   rollingMap.remove(block);
-   assertion(block->dirty() == true);
-   gmacError_t ret = block->copyToDevice();
-   assertion(ret == gmacSuccess);
-   block->readOnly();
+    rollingMap.remove(block);
+    assertion(block->dirty() == true);
+    gmacError_t ret = block->copyToDevice();
+    assertion(ret == gmacSuccess);
+    block->readOnly();
 }
 
 inline void

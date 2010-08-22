@@ -472,6 +472,52 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 	return __getCUDAError(r);
 }
 
+cudaError_t cudaBindTexture(size_t * offset, const struct textureReference *texref,
+		const void *array, const struct cudaChannelFormatDesc *desc, size_t size)
+{
+	__enterGmac();
+    Context * ctx = Context::current();
+	CUresult r;
+    const Texture * texture = ctx->texture(texref);
+    ctx->pushLock();
+	for(int i = 0; i < 3; i++) {
+		r = cuTexRefSetAddressMode(texture->texRef(), i, __getAddressMode(texref->addressMode[i]));
+		if(r != CUDA_SUCCESS) {
+			ctx->popUnlock();
+			__exitGmac();
+			return __getCUDAError(r);
+		}
+	}
+	r = cuTexRefSetFlags(texture->texRef(), CU_TRSF_READ_AS_INTEGER);
+	if(r != CUDA_SUCCESS) {
+		ctx->popUnlock();
+		__exitGmac();
+		return __getCUDAError(r);
+	}
+	r = cuTexRefSetFilterMode(texture->texRef(), __getFilterMode(texref->filterMode));
+	if(r != CUDA_SUCCESS) {
+		ctx->popUnlock();
+		__exitGmac();
+		return __getCUDAError(r);
+	}
+	r = cuTexRefSetFormat(texture->texRef(),
+			__getChannelFormatKind(&texref->channelDesc),
+			__getNumberOfChannels(&texref->channelDesc));
+	if(r != CUDA_SUCCESS) {
+		ctx->popUnlock();
+		__exitGmac();
+		return __getCUDAError(r);
+	}
+    unsigned int _offset;
+	r = cuTexRefSetAddress(&_offset, texture->texRef(), ctx->gpuAddr(manager->ptr(ctx, array)), size);
+    if (offset != NULL)
+        *offset = _offset;
+
+	ctx->popUnlock();
+	__exitGmac();
+	return __getCUDAError(r);
+}
+
 cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 {
 	__enterGmac();
@@ -536,7 +582,117 @@ cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
     return __getCUDAError(ret);
 }
 
+// Error management
+cudaError_t cudaGetLastError()
+{
+    return (cudaError_t) gmacGetLastError();
+}
 
+const char * cudaGetErrorString(cudaError_t)
+{
+    return "";
+}
+
+// Function management
+cudaError_t
+cudaFuncGetAttributes(struct cudaFuncAttributes *attr, const char *func)
+{
+    gmac::gpu::Context *ctx = dynamic_cast<gmac::gpu::Context *>(gmac::Context::current());
+    gmac::gpu::Kernel * k =  dynamic_cast<gmac::gpu::Kernel *>(ctx->kernel(func));
+    CUresult ret;
+    int _attr;
+    
+    ctx->pushLock();
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, k->cudaFunction());
+    attr->sharedSizeBytes = _attr;
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, k->cudaFunction());
+    attr->constSizeBytes = size_t(_attr);
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, k->cudaFunction());
+    attr->localSizeBytes = size_t(_attr);
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, k->cudaFunction());
+    attr->maxThreadsPerBlock = size_t(_attr);
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_NUM_REGS, k->cudaFunction());
+    attr->numRegs = _attr;
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_PTX_VERSION, k->cudaFunction());
+    attr->ptxVersion = _attr;
+    ret = cuFuncGetAttribute(&_attr, CU_FUNC_ATTRIBUTE_BINARY_VERSION, k->cudaFunction());
+    attr->binaryVersion = _attr;
+
+    ctx->popUnlock();
+    return __getCUDAError(ret);
+}
+
+// Device management
+cudaError_t
+cudaGetDevice(int * device)
+{
+    CUresult ret;
+    gmac::gpu::Context *ctx = dynamic_cast<gmac::gpu::Context *>(gmac::Context::current());
+    ctx->pushLock();
+    ret = cuCtxGetDevice(device);
+    ctx->popUnlock();
+    return __getCUDAError(ret);
+}
+
+cudaError_t
+cudaGetDeviceProperties(struct cudaDeviceProp *props, int device)
+{
+    CUdevice dev;
+    CUresult ret;
+
+    CUdevprop drvProps;
+
+    ret = cuDeviceGet(&dev, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    cuDeviceGetProperties(&drvProps, dev);
+
+    props->maxThreadsPerBlock = drvProps.maxThreadsPerBlock;
+    props->maxThreadsDim[0]  = drvProps.maxThreadsDim[0];
+    props->maxThreadsDim[1]  = drvProps.maxThreadsDim[1];
+    props->maxThreadsDim[2]  = drvProps.maxThreadsDim[2];
+    props->maxGridSize[0]    = drvProps.maxGridSize[0];
+    props->maxGridSize[1]    = drvProps.maxGridSize[1];
+    props->maxGridSize[2]    = drvProps.maxGridSize[2];
+    props->totalConstMem     = drvProps.totalConstantMemory;
+    props->sharedMemPerBlock = drvProps.sharedMemPerBlock;
+    props->warpSize          = drvProps.SIMDWidth;
+    props->memPitch          = drvProps.memPitch;
+    props->regsPerBlock      = drvProps.regsPerBlock;
+    props->clockRate         = drvProps.clockRate;
+    props->textureAlignment  = drvProps.textureAlign;
+
+    unsigned _size;
+    cuDeviceTotalMem(&_size, dev);
+    props->totalGlobalMem = _size;
+
+    int _prop;
+    
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, dev);
+    props->deviceOverlap = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, dev);
+    props->multiProcessorCount = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT, dev);
+    props->kernelExecTimeoutEnabled = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_INTEGRATED, dev);
+    props->integrated = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, dev);
+    props->canMapHostMemory = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, dev);
+    props->computeMode = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, dev);
+    props->concurrentKernels = _prop;
+    ret = cuDeviceGetAttribute(&_prop, CU_DEVICE_ATTRIBUTE_ECC_ENABLED, dev);
+    props->ECCEnabled = _prop;
+
+    return __getCUDAError(ret);
+}
+
+cudaError_t
+cudaMemcpy(void * dst, const void * src, size_t count, enum cudaMemcpyKind kind)
+{
+    return cudaSuccess;
+}
 
 #ifdef __cplusplus
 }
