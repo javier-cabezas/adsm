@@ -98,7 +98,7 @@ protected:
     void warning(const char *fmt, ...) const;
     void __assertion(unsigned c, const char *fmt, ...) const;
 public:
-    virtual ~Logger() {};
+    virtual inline ~Logger() {};
 
     static void Create(const char *name);
     static void Destroy();
