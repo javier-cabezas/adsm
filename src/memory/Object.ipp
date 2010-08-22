@@ -7,6 +7,7 @@
 namespace gmac { namespace memory {
 
 
+inline
 Object::Object(void *__addr, size_t __size) :
     RWLock(paraver::LockObject),
     __addr(__addr),
@@ -15,7 +16,7 @@ Object::Object(void *__addr, size_t __size) :
 { }
 
 template<typename T>
-SharedObject<T>::SharedObject(size_t size) :
+inline SharedObject<T>::SharedObject(size_t size) :
     Object(NULL, __size)
 {
     gmacError_t ret = gmacSuccess;
@@ -33,7 +34,7 @@ SharedObject<T>::SharedObject(size_t size) :
 }
 
 template<typename T>
-SharedObject<T>::~SharedObject()
+inline SharedObject<T>::~SharedObject()
 {
     // Clean all system blocks
     typename SystemSet::const_iterator i;
@@ -48,8 +49,7 @@ SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-void *
-SharedObject<T>::device() const 
+inline void * SharedObject<T>::device() const 
 {
     return __accelerator->addr();
 }

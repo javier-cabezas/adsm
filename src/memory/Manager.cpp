@@ -98,6 +98,11 @@ Manager::release()
     return gmacSuccess;
 }
 
+gmacError_t
+Manager::invalidate()
+{
+    return gmacSuccess;
+}
 
 gmacError_t
 Manager::adquire(void *addr, size_t size)

@@ -3,7 +3,7 @@
 
 namespace gmac { namespace memory {
 
-Manager::~Manager()
+inline Manager::~Manager()
 {
     trace("Memory manager finishes");
     assertion(__count == 0);

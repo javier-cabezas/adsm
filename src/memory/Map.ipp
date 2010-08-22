@@ -5,17 +5,17 @@
 
 namespace gmac { namespace memory {
 
-ObjectMap::ObjectMap(paraver::LockName name) :
+inline ObjectMap::ObjectMap(paraver::LockName name) :
     RWLock(name)
 {
 }
 
 
-Map::Map(paraver::LockName name) :
+inline Map::Map(paraver::LockName name) :
     ObjectMap(name)
 { }
 
-Map::~Map()
+inline Map::~Map()
 {
     trace("Cleaning Memory Map");
     clean();
