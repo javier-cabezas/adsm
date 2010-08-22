@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include <util/Logger.h>
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cmath>
 
 // Compiler check to ensure that defines set by configure script
