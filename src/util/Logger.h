@@ -60,6 +60,8 @@ inline const char *__extract_file_name(const char *top, const char *file) {
 #define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
 
+#define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
+
 
 namespace gmac { namespace util {
 
@@ -103,6 +105,7 @@ public:
 
     static void __Trace(const char *fmt, ...);  
     static void __Assertion(unsigned c, const char *fmt, ...);
+    static void __Warning(const char *fmt, ...);
 
     static void fatal(const char *fmt, ...);
     static void cfatal(unsigned c, const char *fmt, ...);

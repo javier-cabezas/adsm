@@ -10,13 +10,13 @@ namespace gmac { namespace memory {
 Object::Object(void *__addr, size_t __size) :
     RWLock(paraver::LockObject),
     __addr(__addr),
-    __size(__size)
+    __size(__size),
+    __owner(Mode::current())
 { }
 
 template<typename T>
 SharedObject<T>::SharedObject(size_t size) :
-    Object(NULL, __size),
-    __owner(Mode::current())
+    Object(NULL, __size)
 {
     gmacError_t ret = gmacSuccess;
     void *device = NULL;

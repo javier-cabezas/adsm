@@ -24,15 +24,10 @@ Context::gpuAddr(const void *addr) const
 inline void
 Context::zero(void **addr) const
 {
-    memory::addr_t *ptr = (memory::addr_t *)addr;
+    unsigned long *ptr = (unsigned long *)addr;
     *ptr = 0;
 }
 
-inline Context *
-Context::current()
-{
-    return static_cast<Context *>(gmac::Context::current());
-}
 
 inline CUstream
 Context::stream()

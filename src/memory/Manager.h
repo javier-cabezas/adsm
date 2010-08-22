@@ -78,8 +78,13 @@ public:
     // Coherence protocol interface
     gmacError_t adquire();
     gmacError_t release();
+
     bool read(void *addr);
     bool write(void *addr);
+
+    gmacError_t adquire(void *addr, size_t size);
+    gmacError_t release(void *addr, size_t size);
+    gmacError_t invalidate(void *addr, size_t size);
 };
 
 } }

@@ -70,7 +70,6 @@ public:
 	void destroy(gmac::Context * ctx);
 	size_t nContexts() const;
 
-    gmacError_t bind(gmac::Context * ctx);
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
     void destroyCUDAContext(CUcontext ctx);

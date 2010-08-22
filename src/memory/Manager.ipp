@@ -11,6 +11,5 @@ Manager::~Manager()
 }
 
 
-
 }};
 #endif

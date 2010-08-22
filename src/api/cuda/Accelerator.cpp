@@ -56,12 +56,6 @@ void Accelerator::destroy(gmac::Context *context)
 	queue.erase(c);
 }
 
-gmacError_t
-Accelerator::bind(gmac::Context *ctx)
-{
-    gpu::Context * _ctx = dynamic_cast<gpu::Context * >(ctx);
-    return _ctx->switchTo(this);
-}
 
 #ifdef USE_MULTI_CONTEXT
 CUcontext
