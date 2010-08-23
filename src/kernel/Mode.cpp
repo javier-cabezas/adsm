@@ -6,6 +6,8 @@
 
 namespace gmac {
 
+gmac::util::Private Mode::key;
+
 Mode::Mode(Accelerator *acc) :
     __acc(acc)
 {

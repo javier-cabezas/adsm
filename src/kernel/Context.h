@@ -76,7 +76,6 @@ protected:
 	*/
 	friend class memory::Manager;
 	friend class Process;
-	static gmac::util::Private key;
 	static unsigned _next;
 
 	unsigned _id;
