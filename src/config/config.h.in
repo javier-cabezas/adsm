@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define SRC_TOP_DIR "@abs_top_srcdir@"
+#define SRC_TOP_DIR "@top_srcdir@"
 
 #ifdef HAVE_CUDA
 #define ACC_LAUNCH_ARGS const char *symbol

@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Process.h>
 #include <util/Private.h>
+#include <util/Logger.h>
 
 namespace gmac {
 
@@ -44,7 +45,7 @@ namespace memory { class Map; }
 class Context;
 class Accelerator;
 
-class Mode {
+class Mode : public gmac::util::Logger {
 protected:
     static gmac::util::Private key;
 

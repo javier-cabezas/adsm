@@ -37,11 +37,12 @@ WITH THE SOFTWARE.  */
 #include <gmac/gmac.h>
 
 #include <memory/Protocol.h>
+#include <memory/Handler.h>
 #include <memory/Object.h>
 
 namespace gmac { namespace memory { namespace protocol {
 
-class Lazy : public gmac::memory::Protocol {
+class Lazy : public gmac::memory::Protocol, gmac::memory::Handler {
 public:
     typedef enum {
         INVALID,

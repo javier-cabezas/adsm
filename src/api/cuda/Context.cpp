@@ -15,7 +15,6 @@ Context::setup()
 {
 #ifdef USE_MULTI_CONTEXT
     cuCtx = _gpu->createCUDAContext();
-    //enable();
 #endif
 }
 
@@ -77,7 +76,7 @@ Context::Context(Accelerator *gpu) :
     pushLock();
     setupStreams();
     trace("Let's create modules");
-    _modules = ModuleDescriptor::createModules();
+    _modules = ModuleDescriptor::createModules(*this);
     popUnlock();
 
     trace("New Accelerator context [%p]", this);
