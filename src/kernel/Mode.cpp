@@ -11,7 +11,9 @@ gmac::util::Private Mode::key;
 Mode::Mode(Accelerator *acc) :
     __acc(acc)
 {
+    trace("Creating new context");
     __context = __acc->create();
+    trace("Creating new memory map");
     __map = new memory::Map(paraver::LockMmLocal);
 }
 

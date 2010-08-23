@@ -1,4 +1,5 @@
 #include "Module.h"
+#include "Context.h"
 
 #include <gmac/init.h>
 
@@ -42,7 +43,7 @@ ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
 }
 
 ModuleVector
-ModuleDescriptor::createModules()
+ModuleDescriptor::createModules(Context &ctx)
 {
     util::Logger::TRACE("Creating modules");
     ModuleVector modules;
@@ -50,12 +51,12 @@ ModuleDescriptor::createModules()
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules.begin(); it != Modules.end(); it++) {
         util::Logger::TRACE("Creating module: %p", (*it)->_fatBin);
-        modules.push_back(new Module(*(*it)));
+        modules.push_back(new Module(*(*it), ctx));
     }
     return modules;
 }
 
-Module::Module(const ModuleDescriptor & d) :
+Module::Module(const ModuleDescriptor & d, Context &ctx) :
     _fatBin(d._fatBin)
 {
     trace("Module image: %p", _fatBin);
@@ -63,7 +64,6 @@ Module::Module(const ModuleDescriptor & d) :
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
     cfatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
-    Context &ctx = gmac::Mode::current()->context();
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d._kernels.begin(); k != d._kernels.end(); k++) {
         Kernel * kernel = new Kernel(*k, _mod);

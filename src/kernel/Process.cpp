@@ -71,8 +71,8 @@ Process::init(const char *manager, const char *allocator)
     apiInit();
     memoryInit(manager, allocator);
     // Register first, implicit, thread
+    Mode::init();
     proc->initThread();
-    //gmac::Context::initThread();
 }
 
 void
@@ -84,11 +84,9 @@ Process::initThread()
     __queues.unlock();
 }
 
-Mode *
-Process::create(int acc)
+Mode *Process::create(int acc)
 {
     pushState(Init);
-    trace("Creating new execution mode");
     lockWrite();
     __queues.lockRead();
     QueueMap::iterator q = __queues.find(SELF());
@@ -112,14 +110,13 @@ Process::create(int acc)
     }
 	unlock();
 
-	trace("Created Execution Mode on Acc#%d", usedAcc);
+	trace("Creatintg Execution Mode on Acc#%d", usedAcc);
     popState();
 
     // Initialize the global shared memory for the context
     Mode *mode = new Mode(__accs[usedAcc]);
-    //manager->initShared(ctx);
     __modes.push_back(mode);
-
+    mode->attach();
     return mode;
 }
 

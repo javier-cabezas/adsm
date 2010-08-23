@@ -37,7 +37,7 @@ Manager *Manager::get()
 Manager::Manager()
 {
     trace("Memory manager starts");
-    assertion(__count == 0);
+    assertion(__count == 1);
     
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {

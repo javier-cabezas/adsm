@@ -49,6 +49,8 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
+class Context;
+
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
@@ -115,7 +117,7 @@ public:
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
-    static ModuleVector createModules();
+    static ModuleVector createModules(Context &ctx);
 
 
 };
@@ -143,7 +145,7 @@ protected:
 #endif
 
 public:
-	Module(const ModuleDescriptor & d);
+	Module(const ModuleDescriptor & d, Context &ctx);
 	~Module();
 
     const Variable *variable(gmacVariable_t key) const;
