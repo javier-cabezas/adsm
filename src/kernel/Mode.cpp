@@ -29,14 +29,5 @@ void Mode::switchTo(Accelerator *acc)
 {
 }
 
-void *Mode::translate(void *addr)
-{
-    memory::Object *object = __map->find(addr);
-    if(object == NULL) object = proc->shared().find(addr)->second;
-    if(object == NULL) return NULL;
-    off_t offset = (uint8_t *)addr - (uint8_t *)object->addr();
-    uint8_t *ret= (uint8_t *)object->device() + offset;
-    return ret; 
-}
 
 }

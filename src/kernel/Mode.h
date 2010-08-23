@@ -61,6 +61,7 @@ public:
     inline static Mode *current() {
         Mode *mode = static_cast<Mode *>(Mode::key.get());
         if(mode == NULL) mode = proc->create();
+        gmac::util::Logger::ASSERTION(mode != NULL);
         return mode;
     }
     inline static bool hasCurrent() { return key.get() != NULL; }
@@ -87,10 +88,6 @@ public:
     inline memory::Map &map() { return *__map; }
     inline const memory::Map &map() const { return *__map; }
     
-	void *translate(void *addr);
-	inline const void *translate(const void *addr) {
-        return (const void *)translate((void *)addr);
-    }
 };
 
 }
