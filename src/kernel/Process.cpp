@@ -72,7 +72,7 @@ Process::init(const char *manager, const char *allocator)
     memoryInit(manager, allocator);
     // Register first, implicit, thread
     proc->initThread();
-    gmac::Context::initThread();
+    //gmac::Context::initThread();
 }
 
 void
@@ -206,7 +206,7 @@ void Process::sendReceive(THREAD_ID id)
     q->second->lock();
 	q->second->queue->push(mode);
     q->second->unlock();
-    Context::key.set(NULL);
+    Mode::init();
     __queues.lockRead();
 	q = __queues.find(SELF());
 	assertion(q != __queues.end());
