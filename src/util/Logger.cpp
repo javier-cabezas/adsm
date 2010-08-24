@@ -14,7 +14,7 @@
 namespace gmac { namespace util {
 
 char Logger::buffer[Logger::BufferSize];
-LoggerLock Logger::lock;
+LoggerLock Logger::__lock;
 
 Logger *Logger::__logger = NULL;
 
@@ -91,14 +91,14 @@ void Logger::log(std::string tag, const char *fmt, va_list list) const
 
 void Logger::print(std::string tag, const char *fmt, va_list list)  const
 {
-    lock.lock();
+    __lock.lock();
     const char *__name = NULL;
     if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
     else __name = name;
 
     vsnprintf(buffer, BufferSize, fmt, list);
     *out << tag << " [" << __name << "]: " << buffer << std::endl;
-    lock.unlock();
+    __lock.unlock();
 
 }
 

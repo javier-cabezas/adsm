@@ -48,6 +48,8 @@ namespace gmac { namespace memory {
 
 class Object;
 class ObjectMap : public util::RWLock, public std::map<const void *, Object *> {
+protected:
+    friend class Map;
 public:
     ObjectMap(paraver::LockName);
 };

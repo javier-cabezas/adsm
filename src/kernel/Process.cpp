@@ -43,7 +43,6 @@ Process::~Process()
     trace("Cleaning process");
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
-    QueueMap::iterator q;
     lockWrite();
     while(__modes.empty() == false) {
         delete __modes.front();
@@ -52,12 +51,8 @@ Process::~Process()
     for(a = __accs.begin(); a != __accs.end(); a++)
         delete *a;
     __accs.clear();
-    __queues.lockRead();
-    for(q = __queues.begin(); q != __queues.end(); q++) {
-        delete q->second;
-    }
-    __queues.unlock();
     unlock();
+    __queues.cleanup();
     memoryFini();
 }
 
@@ -79,19 +74,13 @@ void
 Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
-    __queues.lockWrite();
-    __queues.insert(QueueMap::value_type(SELF(), q));
-    __queues.unlock();
+    __queues.insert(SELF(), q);
 }
 
 Mode *Process::create(int acc)
 {
     pushState(Init);
     lockWrite();
-    __queues.lockRead();
-    QueueMap::iterator q = __queues.find(SELF());
-    assertion(q != __queues.end());
-    __queues.unlock();
     unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
@@ -170,13 +159,9 @@ void *Process::translate(void *addr)
 void Process::send(THREAD_ID id)
 {
     Mode *mode = Mode::current();
-    __queues.lockRead();
     QueueMap::iterator q = __queues.find(id);
     assertion(q != __queues.end());
-    __queues.unlock();
-    q->second->lock();
     q->second->queue->push(mode);
-    q->second->unlock();
     mode->inc();
     mode->detach();
 }
@@ -186,42 +171,30 @@ void Process::receive()
     // Get current context and destroy (if necessary)
     Mode::current()->detach();
     // Get a fresh context
-    __queues.lockRead();
     QueueMap::iterator q = __queues.find(SELF());
     assertion(q != __queues.end());
-    __queues.unlock();
     q->second->queue->pop()->attach();
 }
 
 void Process::sendReceive(THREAD_ID id)
 {
     Mode * mode = Mode::current();
-    __queues.lockRead();
 	QueueMap::iterator q = __queues.find(id);
 	assertion(q != __queues.end());
-    __queues.unlock();
-    q->second->lock();
 	q->second->queue->push(mode);
-    q->second->unlock();
     Mode::init();
-    __queues.lockRead();
 	q = __queues.find(SELF());
 	assertion(q != __queues.end());
     q->second->queue->pop()->attach();
-    __queues.unlock();
 }
 
 void Process::copy(THREAD_ID id)
 {
     Mode *mode = Mode::current();
-    __queues.lockRead();
     QueueMap::iterator q = __queues.find(id);
     assertion(q != __queues.end());
-    __queues.unlock();
     mode->inc();
-    q->second->lock();
     q->second->queue->push(mode);
-    q->second->unlock();
 }
 Mode *Process::owner(const void *addr)
 {

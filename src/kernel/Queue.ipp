@@ -4,9 +4,9 @@
 inline void
 Queue::push(Mode *mode)
 {
-    mutex.lock();
+    lock();
     _queue.push_back(mode);
-    mutex.unlock();
+    unlock();
     sem.post();
 }
 
@@ -14,11 +14,11 @@ inline Mode *
 Queue::pop()
 {
     sem.wait();
-    mutex.lock();
+    lock();
     assertion(_queue.empty() == false);
     Mode *ret = _queue.front();
     _queue.pop_front();
-    mutex.unlock();
+    unlock();
     return ret;
 }
 

@@ -46,6 +46,13 @@ namespace gmac { namespace gpu {
 class Context;
 class ModuleDescriptor;
 
+class AcceleratorLock : public util::Lock {
+protected:
+    friend class Accelerator;
+public:
+    AcceleratorLock() : Lock(LockCtxLocal) {};
+};
+
 class Accelerator : public gmac::Accelerator {
 protected:
 	CUdevice _device;
@@ -58,7 +65,7 @@ protected:
 
 #ifndef USE_MULTI_CONTEXT
     CUcontext _ctx;
-    util::Lock mutex;
+    AcceleratorLock mutex;
 #endif
 
 public:

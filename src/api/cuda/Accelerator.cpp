@@ -8,9 +8,6 @@ namespace gpu {
 
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
-#ifndef USE_MULTI_CONTEXT
-    , mutex(paraver::LockCtxLocal)
-#endif
 {
     unsigned int size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
