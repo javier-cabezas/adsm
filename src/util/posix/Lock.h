@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
-class Owned : public Logger {
+class Owned {
 protected:
     pthread_t __owner;
 public:
@@ -62,7 +62,6 @@ public:
 class Lock : public Owned {
 protected:
 	pthread_mutex_t __mutex;
-    pthread_key_t __owner;
 	paraver::LockName __name;
 public:
 	Lock(paraver::LockName __name);

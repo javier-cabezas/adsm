@@ -2,6 +2,7 @@
 #define __UTIL_POSIX_LOCK_IPP_
 
 #include <debug.h>
+#include <cassert>
 
 inline 
 Owned::Owned() : __owner(0)
@@ -11,7 +12,7 @@ Owned::Owned() : __owner(0)
 inline void
 Owned::acquire()
 {
-   assertion(__owner == 0);
+   assert(__owner == 0);
    __owner = pthread_self();
 }
 
@@ -43,7 +44,7 @@ Lock::unlock()
 {
 #ifdef DEBUG
    if(owner() != pthread_self())
-      warning("Thread "FMT_TID" releases lock owned by "FMT_TID, pthread_self(), owner());
+      fprintf(stderr, "WARNING: Thread "FMT_TID" releases lock owned by "FMT_TID"\n", pthread_self(), owner());
    release();
 #endif
    pthread_mutex_unlock(&__mutex);
@@ -70,12 +71,12 @@ RWLock::lockWrite()
     pthread_rwlock_wrlock(&__lock);
 #ifdef DEBUG
     if(owner() == pthread_self())
-        warning("Lock %d double-locked by "FMT_TID, __name, owner());
-    assertion(owner() == 0);
+        fprintf(stderr, "WARNING: Lock %d double-locked by "FMT_TID"\n", __name, owner());
+    assert(owner() == 0);
     __write = true;
     acquire();
 #ifdef LOCK_LOG
-    trace("%p locked by "FMT_TID, this, owner());
+    fprintf(stderr, "LOG: %p locked by "FMT_TID"\n", this, owner());
 #endif
 #endif
     exitLock();
@@ -86,10 +87,10 @@ RWLock::unlock()
 {
 #ifdef DEBUG
     if(__write == true) {
-        assertion(owner() == SELF());
+        assert(owner() == SELF());
         __write = false;
 #ifdef LOCK_LOG
-        trace("%p released by "FMT_TID, this, owner());
+        fprintf(stderr, "LOG: %p released by "FMT_TID"\n", this, owner());
 #endif
         release();
     }

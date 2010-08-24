@@ -57,7 +57,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context : public util::Reference, public util::RWLock {
+class Context : public util::Reference, public util::RWLock, public util::Logger {
 public:
     enum Status {
         NONE,
