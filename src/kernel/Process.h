@@ -81,7 +81,7 @@ public:
     QueueMap();
 };
 
-class Process : public util::RWLock{
+class Process : public util::RWLock, public util::Logger {
 protected:
     friend class Accelerator;
 

@@ -52,7 +52,7 @@ public:
     ObjectMap(paraver::LockName);
 };
 
-class Map : public ObjectMap {
+class Map : public ObjectMap, public util::Logger {
 protected:
 
     Object *localFind(const void *addr);

@@ -51,7 +51,7 @@ namespace gmac { class Mode; }
 
 namespace gmac { namespace memory {
 
-class Object: public util::RWLock {
+class Object: public util::RWLock, public util::Logger {
 private:
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT
