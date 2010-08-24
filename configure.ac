@@ -109,6 +109,18 @@ if test "$enable_debug" = "yes"; then
 	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -g -O0 -fno-inline"
     CUDA_CFLAGS="-g -O0 --keep"
 	AC_DEFINE(DEBUG)
+    # Chech for lock logging
+    AC_MSG_CHECKING(whether to log locks)
+    lock_log_default="no"
+    AC_ARG_ENABLE(lock-log,
+        AS_HELP_STRING([--enable-lock-log],[turn on lock logging [[default=no]]])
+            , , enable_lock_log=$lock_log_default)
+    if test "$enable_lock_log" = "yes"; then
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(LOCK_LOG)
+    else
+        AC_MSG_RESULT(no)
+    fi
 else
 	AC_MSG_RESULT(no)
 	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
@@ -142,8 +154,8 @@ AC_ARG_ENABLE(paraver,
 		, , enable_paraver=$paraver_default)
 if test "$enable_paraver" = "yes"; then
 	AC_MSG_RESULT(yes)
-   AC_MSG_CHECKING(whether to compile libparaver from lib directory)
-   AC_ARG_ENABLE(compile-paraver,
+    AC_MSG_CHECKING(whether to compile libparaver from lib directory)
+    AC_ARG_ENABLE(compile-paraver,
       AC_HELP_STRING([--enable-compile-paraver], [force compiling libparaver from lib directory [[default=no]]]),
       [AC_MSG_RESULT(yes)]
       [paraver_lib="\$(abs_top_builddir)/lib/libparaver/paraver/libparaver.la"]

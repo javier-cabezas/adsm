@@ -13,11 +13,13 @@ Object *
 Map::localFind(const void *addr)
 {
     ObjectMap::const_iterator i;
+    lockRead();
     Object *ret = NULL;
     i = upper_bound(addr);
     if(i != end() && i->second->start() <= addr) {
         ret = i->second;
     }
+    unlock();
     return ret;
 }
 
@@ -68,7 +70,9 @@ Map::clean()
 
 void Map::insert(Object *obj)
 {
+    lockWrite();
     ObjectMap::insert(value_type(obj->end(), obj));
+    unlock();
 
     ObjectMap &__global = proc->global();
     __global.lockWrite();
@@ -90,9 +94,11 @@ Object *Map::remove(const void *addr)
     // If the region is global (not owned by the context) return
 
     trace("Removing Object %p", obj->start());
+    lockWrite();
     i = upper_bound(addr);
     assertion(i != end() && obj->start() == addr);
     erase(i);
+    unlock();
     return obj;
 }
 

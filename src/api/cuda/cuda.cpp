@@ -33,6 +33,8 @@ void apiInit(void)
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
 		util::Logger::fatal("Error getting CUDA-enabled devices");
 
+    util::Logger::TRACE("Found %d CUDA capable devices", devCount);
+
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;

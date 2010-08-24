@@ -51,14 +51,15 @@ WITH THE SOFTWARE.  */
 #define assertion(c, ...) __assertion(c, ASSERT_STRING)
 #define ASSERTION(c, ...) __Assertion(c, ASSERT_STRING)
 
-inline const char *__extract_file_name(const char *top, const char *file) {
-    return file + strlen(top) + 1;
+#define SRC_ROOT "src"
+inline const char *__extract_file_name(const char *file) {
+    return strstr(file, SRC_ROOT);
 }
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 
 #define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
 

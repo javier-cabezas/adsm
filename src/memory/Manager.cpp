@@ -59,13 +59,14 @@ Manager::alloc(void ** addr, size_t size)
     // Create new shared object
     Object *object = __protocol->createObject(size);
     *addr = object->addr();
-    if(*addr == NULL) return gmacErrorMemoryAllocation;
+    if(*addr == NULL) {
+        delete object;
+        return gmacErrorMemoryAllocation;
+    }
 
     // Insert object into memory maps
     Map &local = Mode::current()->map();
-    local.lockWrite();
     local.insert(object);
-    local.unlock();
 
     return gmacSuccess;
 }
@@ -75,14 +76,12 @@ Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
     Map &local = Mode::current()->map();
-    local.lockWrite();
     Object *object = local.find(addr);
     if(object != NULL)  {
         local.remove(object);
         delete object;
     }
     else ret = gmacErrorInvalidValue;
-    local.unlock();
     return ret;
 }
 
