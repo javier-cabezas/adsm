@@ -75,11 +75,8 @@ Context::Context(Accelerator *gpu) :
 
     pushLock();
     setupStreams();
-    trace("Let's create modules");
     _modules = ModuleDescriptor::createModules(*this);
     popUnlock();
-
-    trace("New Accelerator context [%p]", this);
 }
 
 Context::~Context()

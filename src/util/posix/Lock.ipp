@@ -74,7 +74,9 @@ RWLock::lockWrite()
     assertion(owner() == 0);
     __write = true;
     acquire();
+#ifdef LOCK_LOG
     trace("%p locked by "FMT_TID, this, owner());
+#endif
 #endif
     exitLock();
 }
@@ -86,7 +88,9 @@ RWLock::unlock()
     if(__write == true) {
         assertion(owner() == SELF());
         __write = false;
+#ifdef LOCK_LOG
         trace("%p released by "FMT_TID, this, owner());
+#endif
         release();
     }
 #endif

@@ -145,13 +145,7 @@ gmacSetAffinity(int acc)
 	__enterGmac();
     enterFunction(FuncGmacSetAffinity);
     if (gmac::Mode::hasCurrent()) {
-        gmac::Mode *mode = gmac::Mode::current();
-        gmac::util::Logger::ASSERTION(mode != NULL);
-        gmac::Context &ctx = mode->context();
-        // We are potentially modifying the context, let's lock it
-        ctx.lockWrite();
-        ret = proc->migrate(mode, acc);
-        ctx.unlock();
+        ret = proc->migrate(gmac::Mode::current(), acc);
     } else {
         ret = proc->migrate(NULL, acc);
     }
@@ -194,12 +188,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count)
     __enterGmac();
     enterFunction(FuncGmacGlobalMalloc);
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-    gmac::Mode *mode = gmac::Mode::current();
-    gmac::util::Logger::ASSERTION(mode != NULL);
-    gmac::Context &ctx = mode->context();
-    ctx.lockRead();
-	ret = manager->globalMalloc(ctx, cpuPtr, count);
-    ctx.unlock();
+	ret = manager->globalMalloc(cpuPtr, count);
     exitFunction();
     __exitGmac();
     return ret;
