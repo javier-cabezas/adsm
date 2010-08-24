@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <threads.h>
 
+#include "Lock.h"
 #include "Parameter.h"
 
 #include <map>
@@ -67,7 +68,13 @@ inline const char *__extract_file_name(const char *file) {
 namespace gmac { namespace util {
 
 
-class Lock;
+class LoggerLock : public Lock {
+protected:
+    friend class Logger;
+public:
+    LoggerLock();
+};
+
 class Logger {
 private:
     Logger(const char *name);
@@ -78,7 +85,7 @@ protected:
     static Parameter<const char *> *Level;
     static const char *debugString;
     static std::list<std::string> *tags;
-    static Lock lock;
+    static LoggerLock lock;
 
     const char *name;
     bool active;

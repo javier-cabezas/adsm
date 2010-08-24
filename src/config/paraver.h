@@ -90,7 +90,7 @@ enum LockName {
     LockLog          = 25, // 25
     LockSystem       = 26, // 26
     LockObject       = 27, // 27
-    LockBlock        = 28  // 28
+    LockBlock        = 28 // 28
 };
 
 enum AcceleratorName {

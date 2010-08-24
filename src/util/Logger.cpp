@@ -14,7 +14,7 @@
 namespace gmac { namespace util {
 
 char Logger::buffer[Logger::BufferSize];
-Lock Logger::lock(LockLog);
+LoggerLock Logger::lock;
 
 Logger *Logger::__logger = NULL;
 
@@ -23,6 +23,10 @@ Parameter<const char *> *Logger::Level = NULL;
 const char *Logger::debugString;
 std::list<std::string> *Logger::tags = NULL;
 #endif
+
+LoggerLock::LoggerLock() :
+    Lock(LockLog)
+{}
 
 Logger::Logger(const char *name) :
     name(name),
@@ -85,7 +89,7 @@ void Logger::log(std::string tag, const char *fmt, va_list list) const
 }
 #endif
 
-void Logger::print(std::string tag, const char *fmt, va_list list) const
+void Logger::print(std::string tag, const char *fmt, va_list list)  const
 {
     lock.lock();
     const char *__name = NULL;

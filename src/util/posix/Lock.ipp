@@ -2,8 +2,12 @@
 #define __UTIL_POSIX_LOCK_IPP_
 
 #include <debug.h>
-#include <cassert>
+#include <threads.h>
 
+#include <cassert>
+#include <cstdio>
+
+namespace gmac { namespace util {
 inline 
 Owned::Owned() : __owner(0)
 {
@@ -112,5 +116,7 @@ RWLock::tryWrite()
 #endif
     return pthread_rwlock_trywrlock(&__lock) == 0;
 }
+
+}}
 
 #endif

@@ -38,12 +38,8 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <paraver.h>
 
-#include <util/Logger.h>
-
 #include <pthread.h>
-
 #include <iostream>
-
 #include <map>
 
 namespace gmac { namespace util {
@@ -67,6 +63,7 @@ public:
 	Lock(paraver::LockName __name);
 	~Lock();
 
+protected:
 	void lock();
 	void unlock();
     bool tryLock();
@@ -81,6 +78,7 @@ public:
 	RWLock(paraver::LockName __name);
 	~RWLock();
 
+protected:
 	void lockRead();
 	void lockWrite();
 	void unlock();
@@ -88,7 +86,8 @@ public:
     bool tryWrite();
 };
 
+}}
+
 #include "Lock.ipp"
 
-}}
 #endif
