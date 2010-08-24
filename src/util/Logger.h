@@ -85,7 +85,7 @@ protected:
     static Parameter<const char *> *Level;
     static const char *debugString;
     static std::list<std::string> *tags;
-    static LoggerLock lock;
+    static LoggerLock __lock;
 
     const char *name;
     bool active;

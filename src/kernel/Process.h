@@ -75,10 +75,20 @@ public:
 };
 
 
-class QueueMap : public std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
+class QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
 {
+private:
+    typedef std::map<THREAD_ID, ThreadQueue *> Parent;
 public:
     QueueMap();
+
+    typedef Parent::iterator iterator;
+
+    void cleanup();
+    std::pair<iterator, bool> insert(THREAD_ID, ThreadQueue *);
+    iterator find(THREAD_ID);
+
+    iterator end();
 };
 
 class Process : public util::RWLock, public util::Logger {

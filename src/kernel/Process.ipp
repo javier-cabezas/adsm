@@ -5,6 +5,46 @@
 
 namespace gmac {
 
+inline void
+QueueMap::cleanup()
+{
+    QueueMap::iterator q;
+    lockWrite();
+    for(q = Parent::begin(); q != Parent::end(); q++)
+        delete q->second;
+    clear();
+    unlock();
+}
+
+inline std::pair<QueueMap::iterator, bool>
+QueueMap::insert(THREAD_ID tid, ThreadQueue *q)
+{
+    lockWrite();
+    std::pair<iterator, bool> ret =
+        Parent::insert(value_type(tid, q));
+    unlock();
+    return ret;
+}
+
+inline QueueMap::iterator
+QueueMap::find(THREAD_ID id)
+{
+    lockRead();
+    iterator q = Parent::find(id);
+    unlock();
+    return q;
+}
+
+inline QueueMap::iterator
+QueueMap::end()
+{
+    lockRead();
+    iterator ret = Parent::end();
+    unlock();
+    return ret;
+}
+    
+
 inline ModeList &
 Process::modes()
 {

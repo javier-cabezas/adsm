@@ -48,11 +48,10 @@ class Mode;
 /*!
 	\brief Communication Queue
 */
-class Queue : public util::Logger {
+class Queue : public util::Logger, public util::Lock {
 protected:
 	typedef std::list<Mode *> Fifo;
 
-	util::Lock mutex;
 	Fifo _queue;
 	util::Semaphore sem;
 
