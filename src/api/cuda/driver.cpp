@@ -5,7 +5,7 @@
 #include <kernel/Kernel.h>
 
 #include "Accelerator.h"
-#include "Context.h"
+#include "Mode.h"
 #include "Module.h"
 
 #include <cstring>
@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 using gmac::gpu::Accelerator;
-using gmac::gpu::Context;
+using gmac::gpu::Mode;
 using gmac::KernelDescriptor;
 using gmac::gpu::ModuleDescriptor;
 using gmac::gpu::TextureDescriptor;
@@ -102,10 +102,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	__enterGmac();
-    gmac::Mode *mode = gmac::Mode::current();
-    gmac::util::Logger::ASSERTION(mode != NULL);
-    Context &ctx = dynamic_cast<Context &>(mode->context());
-	ctx.call(gridDim, blockDim, sharedMem, tokens);
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+	mode->call(gridDim, blockDim, sharedMem, (gmac::gpu::Stream)tokens);
 	__exitGmac();
 	return cudaSuccess;
 }
@@ -113,10 +111,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	__enterGmac();
-    gmac::Mode *mode = gmac::Mode::current();
-    gmac::util::Logger::ASSERTION(mode != NULL);
-    Context &ctx = dynamic_cast<Context &>(mode->context()); 
-	ctx.argument(arg, count, offset);
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+	mode->argument(arg, count, offset);
 	__exitGmac();
 	return cudaSuccess;
 }

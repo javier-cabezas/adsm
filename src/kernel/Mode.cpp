@@ -12,7 +12,7 @@ Mode::Mode(Accelerator *acc) :
     __acc(acc)
 {
     trace("Creating new context");
-    __context = __acc->create();
+    __context = createContext();
     trace("Creating new memory map");
     __map = new memory::Map(paraver::LockMmLocal);
 }
@@ -24,11 +24,8 @@ Mode::~Mode()
         gmac::util::Logger::WARNING("Deleting in-use Execution Mode");
     if(this == key.get()) key.set(NULL);
     delete __map;
-    __acc->destroy(__context); 
-}
-
-void Mode::switchTo(Accelerator *acc)
-{
+    delete __context;
+    __acc->destroyMode(this); 
 }
 
 

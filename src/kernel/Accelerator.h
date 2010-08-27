@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
+class Mode;
 class KernelLaunch;
 
 /*!
@@ -57,8 +58,8 @@ public:
 	Accelerator(int n);
 	virtual ~Accelerator();
 
-    inline virtual void attachMode() { _load++; }
-    inline virtual void deattchMode() { _load--; }
+    virtual Mode *createMode() = 0;
+    virtual void destroyMode(Mode *) = 0;
     inline virtual unsigned load() const { return _load; }
 
     /*!  \brief Allocates memory on the accelerator memory */
