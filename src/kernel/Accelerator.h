@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class Context;
+class KernelLaunch;
 
 /*!
 	\brief Generic Accelerator Class
@@ -49,18 +49,41 @@ class Context;
 */
 class Accelerator : public util::Logger {
 protected:
-	friend class Context;
     size_t _memory;
     unsigned _id;
+
+    unsigned _load;
 public:
 	Accelerator(int n);
 	virtual ~Accelerator();
 
-	virtual Context *create() = 0;
-	virtual void destroy(Context *ctx) = 0;
-	size_t memory() const;
-	virtual size_t nContexts() const = 0;
-    unsigned id() const;
+    inline virtual void attachMode() { _load++; }
+    inline virtual void deattchMode() { _load--; }
+    inline virtual unsigned load() const { return _load; }
+
+    /*!  \brief Allocates memory on the accelerator memory */
+	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1) = 0;
+
+	/*!  \brief Releases memory previously allocated by Malloc */
+	virtual gmacError_t free(void *addr) = 0;
+
+	/*!  \brief Copies data from system memory to accelerator memory */
+	virtual gmacError_t copyToDevice(void *dev, const void *host,
+			size_t size) = 0;
+
+	/*!  \brief Copies data from accelerator memory to system memory */
+	virtual gmacError_t copyToHost(void *host, const void *dev,
+			size_t size) = 0;
+
+	/*!  \brief Copies data from accelerator memory to accelerator memory */
+	virtual gmacError_t copyDevice(void *dst, const void *src,
+			size_t size) = 0;
+
+	/*!  \brief Waits for kernel execution */
+	virtual gmacError_t sync() = 0;
+
+	/*!  \brief Launches the execution of a kernel */
+	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
 };
 
 }

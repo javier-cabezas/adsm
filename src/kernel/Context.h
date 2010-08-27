@@ -38,18 +38,16 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
+#include <kernel/Kernel.h>
 
 #include <memory/ObjectSet.h>
 
 #include <util/Parameter.h>
 #include <util/Private.h>
-#include <util/Reference.h>
 #include <util/Logger.h>
 
 
 namespace gmac {
-
-namespace memory { class Manager; }
 
 class Kernel;
 class KernelLaunch;
@@ -57,12 +55,8 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context : public util::Reference, public util::RWLock, public util::Logger {
+class Context : public util::RWLock, public util::Logger {
 public:
-    enum Status {
-        NONE,
-        RUNNING
-    };
 
 protected:
 
@@ -71,204 +65,25 @@ protected:
 	*/
 	gmacError_t _error;
 
-	/*!
-		\brief Per-thread key to store context
-	*/
-	friend class memory::Manager;
 	friend class Process;
 	static unsigned _next;
 
 	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap _kernels;
-    memory::ObjectSet _releasedObjects;
-    bool _releasedAll;
-
-    void * _bufferPageLocked;
-    size_t _bufferPageLockedSize;
 
 	Context(Accelerator *acc);
 
 	virtual ~Context();
 
 public:
-    /*! Initializes the per-thread private variables of the calling thread.
-     *
-     * This method must be called as soon as a new thread has been created
-    */
     static void initThread();
 
     void kernel(gmacKernel_t k, Kernel * kernel);
-
     Kernel * kernel(gmacKernel_t k);
-    
-	/*!
-		\brief Locks the context
-	*/
-	virtual void pushLock() = 0;
 
-	/*!
-		\brief Releases the context
-	*/
-	virtual void popUnlock() = 0;
-
-	/*!
-		\brief Allocates memory on the accelerator memory 
-		\param addr Pointer to memory address to store the accelerator memory
-		\param size Size, in bytes, to be allocated
-	*/
-	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1) = 0;
-
-    /*!
-		\brief Allocates page locked host memory
-		\param addr Pointer to memory address to store the memory
-		\param size Size, in bytes, to be allocated
-	*/
-	virtual gmacError_t mallocPageLocked(void **addr, size_t size, unsigned align = 1) = 0;
-
-	/*!
-		\brief Releases memory previously allocated by Malloc
-		\param addr Starting memory address to be released
-	*/
-	virtual gmacError_t free(void *addr) = 0;
-
-	/*!
-		\brief Makes page-locked memory accesible from the accelerator
-		\param host   Pointer to page-locked memory
-		\param device Pointer to memory address from the accelerator.
-		\param size Size, in bytes, to be allocated
-	*/
-	virtual gmacError_t mapToDevice(void *host, void **device, size_t size) = 0;
-
-	/*!
-		\bried Releases system memory accesible from the accelerator
-		\param addr Starting memory address to be released
-	*/
-	virtual gmacError_t hostFree(void *addr) = 0;
-
-	/*!
-		\brief Copies data from system memory to accelerator memory
-		\param dev Destination accelerator memory address
-		\param host Source system memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyToDevice(void *dev, const void *host,
-			size_t size) = 0;
-
-	/*!
-		\brief Copies data from accelerator memory to system memory
-		\param host Destination system memory address
-		\param dev Source accelerator memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyToHost(void *host, const void *dev,
-			size_t size) = 0;
-
-	/*!
-		\brief Copies data from accelerator memory to accelerator memory
-		\param src Source accelerator memory address
-		\param dst Destination accelerator memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyDevice(void *dst, const void *src,
-			size_t size) = 0;
-
-	/*!
-		\brief Copies data from system memory to accelerator memory
-				asynchronously
-		\param dev Destination accelerator memory address
-		\param host Source system memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyToDeviceAsync(void *dev, const void *host,
-			size_t size) = 0;
-
-
-	/*!
-		\brief Copies data from accelerator memory to system memory
-				asynchronously
-		\param host Destination host memory address
-		\param dev Source host memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyToHostAsync(void *host, const void *dev,
-			size_t size) = 0;
-
-    /// \todo How-to enable features only supported in some CUDA SDK versions
-    ///       like the following:
-#if 0
-    /*!
-		\brief Copies data from accelerator memory to accelerator memory
-		\param src Source accelerator memory address
-		\param dst Destination accelerator memory address
-		\param size Size, in bytes, to be copied
-	*/
-	virtual gmacError_t copyDeviceAsync(void *dst, const void *src,
-			size_t size) = 0;
-#endif
-
-
-	/*!
-		\brief Initializes accelerator memory
-		\param addr Accelerator memory address
-		\param value Value used to initialize memory
-		\param size Size, in bytes, to be initialized
-	*/
-	virtual gmacError_t memset(void *dev, int value, size_t size) = 0;
-
-
-	/*!
-		\brief Launches the execution of a kernel and registers the regions binded to de kernel
-		\param kernel Kernel to be launched
-	*/
-	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
-
-	/*!
-		\brief Returns the regions released to the accelerator
-	*/
-    memory::ObjectSet releaseObjects();
-
-	/*!
-		\brief Waits for kernel execution
-	*/
-	virtual gmacError_t sync() = 0;
-
-	/*!
-		\brief Waits for a memory transfer to host
-	*/
-	virtual gmacError_t syncToHost()   = 0;
-	/*!
-		\brief Waits for a memory transfer to device
-	*/
-	virtual gmacError_t syncToDevice() = 0;
-#if 0
-	/*!
-		\brief Waits for kernel execution
-	*/
-	virtual gmacError_t syncDevice()   = 0;
-#endif
-
-	/*!
-		\brief Returns last error
-	*/
-	gmacError_t error() const;
-
-	virtual void invalidate() = 0;
-    virtual void flush() = 0;
-
-	unsigned id() const;
-	unsigned accId() const;
-
-    /*!
-		\brief Gets the page-locked buffer associated to the Context (if supported)
-	*/
-    void * bufferPageLocked() const;
-    /*!
-		\brief Gets the size in bytes of the page-locked buffer associated to the Context (or 0 if not supported)
-	*/
-    size_t bufferPageLockedSize() const;
-
-    void clearKernels();
+    inline unsigned id() const { return _id; }
+    inline gmacError_t error() const { return _error; }
 };
 
 }

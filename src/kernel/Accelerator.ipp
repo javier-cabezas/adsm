@@ -3,6 +3,7 @@
 
 namespace gmac {
 
+#if 0
 inline
 size_t
 Accelerator::memory() const
@@ -15,6 +16,7 @@ Accelerator::id() const
 {
     return _id;
 }
+#endif
 
 }
 

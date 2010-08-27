@@ -10,26 +10,6 @@ namespace gmac { namespace gpu {
 Context::AddressMap Context::hostMem;
 void * Context::FatBin;
 
-void
-Context::setup()
-{
-#ifdef USE_MULTI_CONTEXT
-    cuCtx = _gpu->createCUDAContext();
-#endif
-}
-
-void
-Context::setupStreams()
-{
-    CUresult ret;
-    ret = cuStreamCreate(&streamLaunch, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamToDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamToHost, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
 
     _bufferPageLockedSize = paramBufferPageLockedSize * paramPageSize;
 #if CUDART_VERSION >= 2020

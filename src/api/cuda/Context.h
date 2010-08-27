@@ -71,46 +71,11 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-#ifdef USE_MMAP
-	static const char *baseRegisterSymbol;
-#endif
-
-#ifdef USE_MULTI_CONTEXT
-	CUcontext cuCtx;
-	util::Lock mutex;
-#endif
-
-    CUstream streamLaunch;
-    CUstream streamToDevice;
-    CUstream streamToHost;
-    CUstream streamDevice;
-
-    bool _pendingKernel;
-    bool _pendingToDevice;
-    bool _pendingToHost;
-
-    void zero(void **addr) const;
-
-	friend class Accelerator;
-
-    /*! Auxiliary functions used during Context creation
-     */
-	void setup();
-    void setupStreams();
-
-    void finiStreams();
-
 	Context(Accelerator *gpu);
 	~Context();
 
 //    gmacError_t switchTo(Accelerator *gpu);
 public:
-    gmacError_t error(CUresult);
-
-    static CUstream stream();
-
-	void pushLock();
-    void popUnlock();
 
     //
 	// Standard Accelerator Interface
@@ -129,17 +94,10 @@ public:
 	gmacError_t copyToDeviceAsync(void *dev, const void *host, size_t size);
 	gmacError_t copyToHostAsync(void *host, const void *dev, size_t size);
 
-#if 0
-    gmacError_t copyDeviceAsync(void *src, const void *dest, size_t size);
-#endif
-
 	gmacError_t memset(void *dev, int c, size_t size);
     gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
     gmacError_t sync();
-    gmacError_t syncToHost();
-    gmacError_t syncToDevice();
-    gmacError_t syncDevice();
 
     ///////////////////////
 	// CUDA-related methods

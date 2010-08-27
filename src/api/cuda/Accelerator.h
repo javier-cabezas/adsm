@@ -88,6 +88,10 @@ public:
 
     int major() const;
     int minor() const;
+
+    static gmacError_t error(CUresult r);
+    static CUdeviceptr gpuAddr(void *addr) const;
+    static CUdeviceptr gpuAddr(const void *addr) const;
 };
 
 }}

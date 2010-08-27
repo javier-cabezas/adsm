@@ -23,13 +23,13 @@ inline SharedObject<T>::SharedObject(size_t size) :
     gmacError_t ret = gmacSuccess;
     void *device = NULL;
     // Allocate device and host memory
-    ret = __owner->context().malloc(&device, size);
+    ret = __owner->malloc(&device, size);
     if(ret != gmacSuccess) {
         __addr = NULL;
         return;
     }
     __addr = map(device, size);
-    if(__addr == NULL) __owner->context().free(device);
+    if(__addr == NULL) __owner->free(device);
     // Create memory blocks
     __accelerator = new AcceleratorBlock(__owner, device, __size);
     uint8_t *ptr = (uint8_t *)__addr;
@@ -52,7 +52,7 @@ inline SharedObject<T>::~SharedObject()
     delete __accelerator;
     
     unmap(__addr, __size);
-    __owner->context().free(device);
+    __owner->free(device);
 }
 
 template<typename T>

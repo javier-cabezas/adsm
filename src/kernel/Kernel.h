@@ -88,8 +88,10 @@ public:
     virtual ~Kernel() {};
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
+#if 0
     gmacError_t bind(void * addr);
     gmacError_t unbind(void * addr);
+#endif
 };
 
 class KernelLaunch : public memory::ObjectSet {

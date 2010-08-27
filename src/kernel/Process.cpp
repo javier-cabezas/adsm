@@ -21,8 +21,8 @@ ThreadQueue::~ThreadQueue()
     delete queue;
 }
 
-ModeList::ModeList() :
-    RWLock(LockModeList)
+ModeMap::ModeMap() :
+    RWLock(LockModeMap)
 {}
 
 QueueMap::QueueMap() : 
@@ -43,11 +43,14 @@ Process::~Process()
     trace("Cleaning process");
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
-    lockWrite();
-    while(__modes.empty() == false) {
-        delete __modes.front();
-        __modes.pop_front();
+    __modes.lockWrite();
+    ModeMap::const_iterator i;
+    for(i = __modes.begin(); i != __modes.end(); i++) {
+        delete i->first;
     }
+    __modes.clear();
+    __modes.unlock();
+
     for(a = __accs.begin(); a != __accs.end(); a++)
         delete *a;
     __accs.clear();
@@ -92,7 +95,7 @@ Mode *Process::create(int acc)
         // attached to it
         usedAcc = 0;
         for (unsigned i = 1; i < __accs.size(); i++) {
-            if (__accs[i]->nContexts() < __accs[usedAcc]->nContexts()) {
+            if (__accs[i]->load() < __accs[usedAcc]->load()) {
                 usedAcc = i;
             }
         }
@@ -104,13 +107,15 @@ Mode *Process::create(int acc)
 
     // Initialize the global shared memory for the context
     Mode *mode = new Mode(__accs[usedAcc]);
-    __modes.push_back(mode);
+    __accs[usedAcc]->attachMode();
+    __modes.insert(mode, __accs[usedAcc]);
     mode->attach();
     return mode;
 }
 
 gmacError_t Process::migrate(Mode *mode, int acc)
 {
+#if 0
 	lockWrite();
     if (acc >= int(__accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
@@ -131,6 +136,9 @@ gmacError_t Process::migrate(Mode *mode, int acc)
 	trace("Context migrated");
 	unlock();
     return ret;
+#endif
+    fatal("Not supported yet!");
+    return gmacUnknownError;
 }
 
 

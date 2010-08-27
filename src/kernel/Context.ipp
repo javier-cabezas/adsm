@@ -1,13 +1,10 @@
 #ifndef __KERNEL_CONTEXT_IPP_
 #define __KERNEL_CONTEXT_IPP_
 
-#include "Kernel.h"
-
 namespace gmac {
 
 inline
-void
-Context::kernel(gmacKernel_t k, Kernel * kernel)
+void Context::kernel(gmacKernel_t k, Kernel * kernel)
 {
     assertion(kernel != NULL);
     trace("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
@@ -18,8 +15,7 @@ Context::kernel(gmacKernel_t k, Kernel * kernel)
 }
 
 inline
-Kernel *
-Context::kernel(gmacKernel_t k)
+Kernel * Context::kernel(gmacKernel_t k)
 {
     KernelMap::iterator i;
     i = _kernels.find(k);
@@ -28,43 +24,6 @@ Context::kernel(gmacKernel_t k)
     }
     return NULL;
 }
-
-inline gmacError_t
-Context::error() const
-{
-    return _error;
-}
-
-
-inline unsigned
-Context::id() const
-{
-    return _id;
-}
-
-
-inline memory::ObjectSet
-Context::releaseObjects()
-{
-    memory::ObjectSet objects;
-    objects.swap(_releasedObjects);
-    _releasedAll = false;
-
-    return objects;
-}
-
-inline void *
-Context::bufferPageLocked() const
-{
-    return _bufferPageLocked;
-}
-
-inline size_t
-Context::bufferPageLockedSize() const
-{
-    return _bufferPageLockedSize;
-}
-
 
 
 }

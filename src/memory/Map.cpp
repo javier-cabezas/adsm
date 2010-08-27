@@ -8,6 +8,7 @@
 
 namespace gmac { namespace memory {
 
+unsigned Map::__count = 0;
 
 Object *
 Map::localFind(const void *addr)

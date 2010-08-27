@@ -12,7 +12,8 @@ inline ObjectMap::ObjectMap(paraver::LockName name) :
 
 
 inline Map::Map(paraver::LockName name) :
-    ObjectMap(name)
+    ObjectMap(name),
+    __id(++__count)
 { }
 
 inline Map::~Map()

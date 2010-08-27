@@ -1,11 +1,11 @@
-#include "Context.h"
+#include "Accelerator.h"
 
 namespace gmac { namespace gpu {
 
 #define ERROR(r, err) case r: error = err; break
 
 gmacError_t
-Context::error(CUresult r)
+Accelerator::error(CUresult r)
 {
 	gmacError_t error = gmacSuccess;
 	switch(r) {

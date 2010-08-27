@@ -35,15 +35,17 @@ WITH THE SOFTWARE.  */
 #define __KERNEL_MODE_H
 
 #include <kernel/Process.h>
+#include <kernel/Accelerator.h>
+
 #include <util/Private.h>
 #include <util/Logger.h>
 
 namespace gmac {
 
-namespace memory { class Map; }
+namespace memory { class Map; class Object; }
 
 class Context;
-class Accelerator;
+class KernelLaunch;
 
 class Mode : public gmac::util::Logger {
 protected:
@@ -54,33 +56,61 @@ protected:
     memory::Map *__map;
     unsigned __count;
 
+    void *__buffer;
+    size_t __bufferSize;
+
+    virtual void switchIn() = 0;
+    virtual void switchOut() = 0;
+
 public:
     Mode(Accelerator *acc);
     ~Mode();
 
     inline static void init() { key.set(NULL); }
-    inline static Mode *current() {
-        Mode *mode = static_cast<Mode *>(Mode::key.get());
-        if(mode == NULL) mode = proc->create();
-        gmac::util::Logger::ASSERTION(mode != NULL);
-        return mode;
-    }
+    inline static Mode *current();
     inline static bool hasCurrent() { return key.get() != NULL; }
 
     inline void inc() { __count++; }
     inline void destroy() { __count--; if(__count == 0) delete this; }
-    inline void attach() {
-        Mode *mode = static_cast<Mode *>(Mode::key.get());
-        if(mode == this) return;
-        if(mode != NULL) mode->destroy();
-        Mode::key.set(this);
-    }
-    inline void detach() {
-        Mode *mode = static_cast<Mode *>(Mode::key.get());
-        if(mode != NULL) mode->destroy();
-        Mode::key.set(NULL);
+
+    inline unsigned id() const { return __map->id(); }
+
+    /*! \brief Attaches the execution mode to the current thread */
+    inline void attach();
+
+    /*! \brief Dettaches the execution mode to the current thread */
+    inline void detach();
+
+    inline void addObject(memory::Object *obj) { __map->insert(obj); }
+    inline void removeObject(memory::Object *obj) { __map->remove(obj); }
+    inline memory::Object *findObject(const void *addr) {
+        return __map->find(addr);
     }
 
+    /*!  \brief Allocates memory on the accelerator memory */
+	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
+
+	/*!  \brief Releases memory previously allocated by Malloc */
+	virtual gmacError_t free(void *addr);
+
+	/*!  \brief Copies data from system memory to accelerator memory */
+	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+
+	/*!  \brief Copies data from accelerator memory to system memory */
+	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
+
+	/*!  \brief Copies data from accelerator memory to accelerator memory */
+	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
+
+	/*!  \brief Waits for kernel execution */
+	virtual gmacError_t sync() = 0;
+
+	/*!  \brief Launches the execution of a kernel */
+	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
+
+
+
+#if 0
     void switchTo(Accelerator *acc);
     inline Accelerator &accelerator() { return *__acc; }
 
@@ -88,10 +118,13 @@ public:
     inline const Context &context() const { return *__context; }
     inline memory::Map &map() { return *__map; }
     inline const memory::Map &map() const { return *__map; }
+#endif
     
 };
 
 }
+
+#include "Mode.ipp"
 
 #endif /* KERNEL_H */
 

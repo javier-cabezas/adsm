@@ -79,7 +79,7 @@ static const char *lockNames[] = {
     "LockRegion",        // 17
     "LockPthread",       // 18
     "LockShMap",         // 19
-    "LockModeList",      // 20
+    "LockModeMap",       // 20
     "LockBlockList",     // 21
     "LockQueueMap",      // 22
     "LockReference",     // 23
