@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include "Kernel.h"
+#include "Module.h"
 
 #include <kernel/Mode.h>
 
@@ -48,6 +49,13 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
+class Switch {
+public:
+    static void in();
+    static void out();
+};
+
+class Mode;
 class Buffer : public util::Logger, public util::Lock {
 protected:
     Mode *__mode;
@@ -58,7 +66,7 @@ protected:
 
     friend class Mode;
 public:
-    Buffer(paraver::LockName name, Mode *mode);
+    Buffer(paraver::LockName name, Mode *__mode);
     ~Buffer();
 
     inline void *ptr() const { return __buffer; }
@@ -73,20 +81,29 @@ class ContextLock : public util::Lock {
 protected:
     friend class Context;
 public:
-    Context() : util::Lock() {};
+    ContextLock() : util::Lock() {};
 };
 #endif
 
+class Texture;
 
+class Accelerator;
 class Mode : public gmac::Mode {
 protected:
-    Stream __exe;
-    Stream __host;
-    Stream __device;
-    Stream __internal;
+    Accelerator *__acc;
 
-    Buffer __hostBuffer;
-    Buffer __deviceBuffer;
+    typedef CUstream Stream;
+    Stream streamLaunch;
+    Stream streamToDevice;
+    Stream streamToHost;
+    Stream streamDevice;
+
+    void setupStreams();
+    void cleanStreams();
+    gmacError_t syncStream(CUstream);
+
+    Buffer hostBuffer;
+    Buffer deviceBuffer;
 
     KernelConfig __call;
 
@@ -95,6 +112,7 @@ protected:
     ContextLock __mutex;
 #endif
 
+    friend class Switch;
     virtual void switchIn();
     virtual void switchOut();
 
@@ -112,9 +130,14 @@ public:
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
 
-    void call(dim3 Dg, dim3 Db, size_t shared, Stream tokens);
+    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
+    const Variable *constant(gmacVariable_t key) const;
+    const Variable *variable(gmacVariable_t key) const;
+    const Texture *texture(gmacTexture_t key) const;
+
+    inline Stream eventStream() const { return streamLaunch; }
 };
 
 }}

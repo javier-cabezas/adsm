@@ -103,7 +103,7 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 {
 	__enterGmac();
     Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
-	mode->call(gridDim, blockDim, sharedMem, (gmac::gpu::Stream)tokens);
+	mode->call(gridDim, blockDim, sharedMem, tokens);
 	__exitGmac();
 	return cudaSuccess;
 }

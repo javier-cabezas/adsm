@@ -56,15 +56,14 @@ public:
     AcceleratorLock() : Lock(LockCtxLocal) {};
 };
 
-class AligmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
+class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
 
 class Accelerator : public gmac::Accelerator {
 protected:
 	CUdevice _device;
 
-	std::set<gpu::Mode *> queue;
-     
-    AligmentMap __alignMap;
+	std::set<Mode *> queue;
+    AlignmentMap __alignMap;
 
     int _major;
     int _minor;
@@ -77,6 +76,7 @@ protected:
     void switchIn();
     void switchOut();
 
+    static gmacError_t __error;
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
@@ -105,6 +105,7 @@ public:
     /* Asynchronous interface */
     gmacError_t copyToDeviceAsync(void *dec, const void *host, size_t size, Stream stream);
     gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, Stream stream);
+    gmacError_t syncStream(Stream stream);
 
 	gmacError_t sync();
 	gmac::KernelLaunch * launch(gmacKernel_t kernel);

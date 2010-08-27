@@ -1,10 +1,15 @@
 #include "Mode.h"
+#include "Context.h"
+#include "Accelerator.h"
 
 namespace gmac { namespace gpu {
 
-Mode::Mode() :
-    __hostBuffer(paraver::LockIoHost, this),
-    __deviceBuffer(paraver::LockIoDevice, this)
+Mode::Mode(Accelerator *acc) :
+    gmac::Mode(acc),
+    __acc(acc),
+    hostBuffer(paraver::LockIoHost, this),
+    deviceBuffer(paraver::LockIoDevice, this),
+    __call()
 {
 #ifdef USE_MULTI_CONTEXT
     __ctx = __acc->createContext();
@@ -14,13 +19,13 @@ Mode::Mode() :
 void Mode::setupStreams()
 {
     CUresult ret;
-    ret = cuStreamCreate(&__exe, 0);
+    ret = cuStreamCreate(&streamLaunch, 0);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&__device, 0);
+    ret = cuStreamCreate(&streamToDevice, 0);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&__host, 0);
+    ret = cuStreamCreate(&streamToHost, 0);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&__internal, 0);
+    ret = cuStreamCreate(&streamDevice, 0);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
 }
 
@@ -60,52 +65,90 @@ gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(__deviceBuffer.ptr() == NULL)
+    if(deviceBuffer.ptr() == NULL)
         return gmac::Mode::copyToDevice(dev, host, size);
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
-    __device.lock();
+    deviceBuffer.lock();
     switchIn();
     while(offset < size) {
-        if(__deviceBuffer.ready() == false) ret = acc->syncStream(__device);
+        if(deviceBuffer.ready() == false) ret = __acc->syncStream(streamDevice);
         if(ret != gmacSuccess) break;
-        size_t len = __hostBuffer.size();
-        if((size - offset) < __hostBuffer.size()) len = size - offset;
-        memcpy(__deviceBuffer.ptr(), (uint8_t *)host + offset, len);
-        ret = __acc->copyToDeviceAsync((uint8_t *)dev + offset, __deviceBuffer.ptr(), len);
+        size_t len = hostBuffer.size();
+        if((size - offset) < hostBuffer.size()) len = size - offset;
+        memcpy(deviceBuffer.ptr(), (uint8_t *)host + offset, len);
+        ret = __acc->copyToDeviceAsync((uint8_t *)dev + offset, deviceBuffer.ptr(), len, streamDevice);
         if(ret != gmacSuccess) break;
         offset += len;
-        __deviceBuffer.busy();
+        deviceBuffer.busy();
     }
     switchOut();
-    __device.unlock();
+    deviceBuffer.unlock();
     return ret;
 }
 
 gmacError_t Mode::copyToHost(void *host, const void *device, size_t size)
 {
     if(size == 0) return gmacSuccess;
-    if(__hostBuffer.ptr() == NULL)
+    if(hostBuffer.ptr() == NULL)
         return gmac::Mode::copyToHost(host, device, size);
 
+    gmacError_t ret = gmacSuccess;
     size_t offset = size;
-    __host.lock();
+    hostBuffer.lock();
     switchIn();
     while(offset < size) {
-        assert(__hostBuffer.ready() == true);
+        assert(hostBuffer.ready() == true);
         if(ret != gmacSuccess) break;
-        size_t len = __hostBuffer.size();
-        if((size - offset) < __hostBuffer.size()) len = size - offset;
-        ret = __acc->copyToHost(__hostBuffer.ptr(), device, len);
+        size_t len = hostBuffer.size();
+        if((size - offset) < hostBuffer.size()) len = size - offset;
+        ret = __acc->copyToHost(hostBuffer.ptr(), device, len);
         if(ret != gmacSuccess) break;
-        memcpy((uint8_t *)host + offset, __hostBuffer.ptr(), len);
+        memcpy((uint8_t *)host + offset, hostBuffer.ptr(), len);
         offset += len;
     }
 
     switchOut();
-    __host.unlock;
+    hostBuffer.unlock();
     return ret;
+}
+
+gmacError_t Mode::hostAlloc(void **addr, size_t size)
+{
+    switchIn();
+#if CUDART_VERSION >= 2020
+    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE);
+#else
+    CUresult ret = cuMemAllocHost(addr, size);
+#endif
+    switchOut();
+    return Accelerator::error(ret);
+}
+
+gmacError_t Mode::hostFree(void *addr)
+{
+    switchIn();
+    CUresult r = cuMemFreeHost(addr);
+    switchOut();
+    return Accelerator::error(r);
+}
+
+
+const Variable *Mode::constant(gmacVariable_t key) const
+{
+    return dynamic_cast<Context *>(__context)->constant(key);
+}
+
+
+const Variable *Mode::variable(gmacVariable_t key) const
+{
+    return dynamic_cast<Context *>(__context)->variable(key);
+}
+
+const Texture *Mode::texture(gmacTexture_t key) const
+{
+    return dynamic_cast<Context *>(__context)->texture(key);
 }
 
 

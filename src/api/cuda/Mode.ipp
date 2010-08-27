@@ -3,6 +3,17 @@
 
 namespace gmac { namespace gpu {
 
+inline void Switch::in()
+{
+    dynamic_cast<Mode *>(Mode::current())->switchIn();
+}
+
+inline void Switch::out()
+{
+    dynamic_cast<Mode *>(Mode::current())->switchOut();
+}
+
+
 inline Buffer::Buffer(paraver::LockName name, Mode *__mode) :
     util::Lock(name),
     __mode(__mode),
@@ -48,29 +59,7 @@ void Mode::switchOut()
 }
 
 inline
-gmacError_t Mode::hostAlloc(void **addr, size_t size)
-{
-    switchIn();
-#if CUDART_VERSION >= 2020
-    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE);
-#else
-    CUresult ret = cuMemAllocHost(addr, size);
-#endif
-    switchOut();
-    return Accelerator::error(ret);
-}
-
-inline
-gmacError_t Mode::hostFree(void *addr)
-{
-    switchIn();
-    CUresult r = cuMemFreeHost(addr);
-    switchOut();
-    return Accelerator::error(r);
-}
-
-inline
-void Mode::call(dim3 Dg, dim3 Db, size_t shared, Stream tokens)
+void Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     __call = KernelConfig(Dg, Db, shared, tokens);
 }

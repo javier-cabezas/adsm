@@ -41,8 +41,8 @@ WITH THE SOFTWARE.  */
 #include "Kernel.h"
 #include "Module.h"
 
-#include "util/Lock.h"
-#include "kernel/Context.h"
+#include <util/Lock.h>
+#include <kernel/Context.h>
 
 #include <stdint.h>
 #include <cuda.h>
