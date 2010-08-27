@@ -26,13 +26,6 @@ KernelConfig::shared() const
     return _shared;
 }
 
-inline
-Stream
-KernelConfig::tokens() const
-{
-    return _tokens;
-}
-
 
 }}
 

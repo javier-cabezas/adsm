@@ -4,6 +4,8 @@ namespace gmac { namespace gpu {
 
 #define ERROR(r, err) case r: error = err; break
 
+gmacError_t Accelerator::__error = gmacSuccess;
+
 gmacError_t
 Accelerator::error(CUresult r)
 {
@@ -33,7 +35,7 @@ Accelerator::error(CUresult r)
 		ERROR(CUDA_ERROR_UNKNOWN, gmacErrorUnknown);
 		default: error = gmacErrorUnknown;
 	}
-    _error = error;
+    __error = error;
 	return error;
 }
 

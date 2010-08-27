@@ -1,5 +1,5 @@
 #include "Accelerator.h"
-#include "Context.h"
+#include "Mode.h"
 
 #include <kernel/Process.h>
 
@@ -24,7 +24,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
-    ret = cuCtxCreate(&_ctx, flags, _device);
+    ret = cuCtxCreate(&__ctx, flags, _device);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     cfatal(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
@@ -45,9 +45,9 @@ gmac::Mode *Accelerator::createMode()
 void Accelerator::destroyMode(gmac::Mode *mode)
 {
 	trace("Destroying Execution Mode");
-	if(context == NULL) return;
-	gpu::Mode *ctx = dynamic_cast<gpu::Mode*>(mode);
-	std::set<gpu::Mode *>::iterator c = queue.find(mode);
+	if(mode == NULL) return;
+	Mode *m = dynamic_cast<gpu::Mode*>(mode);
+	std::set<Mode *>::iterator c = queue.find(m);
 	assertion(c != queue.end());
 	//delete ctx;
 	queue.erase(c);
@@ -103,8 +103,8 @@ gmacError_t Accelerator::free(void *addr)
     assertion(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
-    i = _alignMap.find(gpuPtr);
-    if (i == _alignMap.end()) return gmacErrorInvalidValue;
+    i = __alignMap.find(gpuPtr);
+    if (i == __alignMap.end()) return gmacErrorInvalidValue;
     CUresult ret = cuMemFree(i->second);
     return error(ret);
 }

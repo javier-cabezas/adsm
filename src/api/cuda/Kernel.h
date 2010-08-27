@@ -28,24 +28,23 @@ protected:
     dim3 _grid;
     dim3 _block;
     size_t _shared;
-    Stream _tokens;
 
 public:
     /// \todo Remove this piece of shit
     CUstream _stream;
 
+    KernelConfig() {};
     KernelConfig(const KernelConfig & c);
-    KernelConfig(dim3 grid, dim3 block, size_t shared, Stream tokens);
+    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 
     dim3 grid() const;
     dim3 block() const;
     size_t shared() const;
-    Stream tokens() const;
 };
 
 class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
 protected:
-    Context & _ctx;
+    Mode *mode;
     // \todo Is this really necessary?
     const Kernel & _kernel;
     CUfunction _f;
