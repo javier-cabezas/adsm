@@ -33,7 +33,6 @@ public:
     /// \todo Remove this piece of shit
     CUstream _stream;
 
-    KernelConfig() {};
     KernelConfig(const KernelConfig & c);
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 

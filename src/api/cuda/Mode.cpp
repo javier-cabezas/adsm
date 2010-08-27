@@ -9,7 +9,7 @@ Mode::Mode(Accelerator *acc) :
     __acc(acc),
     hostBuffer(paraver::LockIoHost, this),
     deviceBuffer(paraver::LockIoDevice, this),
-    __call()
+    __call(dim3(0), dim3(0), 0, 0)
 {
 #ifdef USE_MULTI_CONTEXT
     __ctx = __acc->createContext();
