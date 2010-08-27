@@ -58,8 +58,6 @@ protected:
 	Accelerator  *_gpu;
 	ModuleVector _modules;
 
-	KernelConfig _call;
-
     static void * FatBin;
 	static const unsigned USleepLaunch = 100;
 
