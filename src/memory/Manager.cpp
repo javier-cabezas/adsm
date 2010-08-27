@@ -65,8 +65,7 @@ Manager::alloc(void ** addr, size_t size)
     }
 
     // Insert object into memory maps
-    Map &local = Mode::current()->map();
-    local.insert(object);
+    Mode::current()->addObject(object);
 
     return gmacSuccess;
 }
@@ -75,10 +74,9 @@ gmacError_t
 Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
-    Map &local = Mode::current()->map();
-    Object *object = local.find(addr);
+    Object *object = Mode::current()->findObject(addr);
     if(object != NULL)  {
-        local.remove(object);
+        Mode::current()->removeObject(object);
         delete object;
     }
     else ret = gmacErrorInvalidValue;

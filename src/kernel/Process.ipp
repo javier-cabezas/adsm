@@ -5,6 +5,24 @@
 
 namespace gmac {
 
+inline std::pair<ModeMap::iterator, bool>
+ModeMap::insert(Mode *mode, Accelerator *acc)
+{
+    lockWrite();
+    std::pair<iterator, bool> ret = Parent::insert(value_type(mode, acc));
+    unlock();
+    return ret;
+}
+
+inline size_t
+ModeMap::remove(Mode *mode)
+{
+    lockWrite();
+    size_type ret = Parent::erase(mode);
+    unlock();
+    return ret;
+}
+
 inline void
 QueueMap::cleanup()
 {
@@ -44,13 +62,6 @@ QueueMap::end()
     return ret;
 }
     
-
-inline ModeList &
-Process::modes()
-{
-    return __modes;
-}
-
 inline const void *
 Process::translate(const void *addr) 
 {

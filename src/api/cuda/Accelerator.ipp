@@ -5,6 +5,20 @@
 
 namespace gmac { namespace gpu {
 
+inline CUdeviceptr
+Context::gpuAddr(void *addr) const
+{
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
+}
+
+inline CUdeviceptr
+Context::gpuAddr(const void *addr) const
+{
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
+}
+
 inline CUdevice
 Accelerator::device() const
 {
@@ -17,30 +31,6 @@ Accelerator::nContexts() const
     return queue.size();
 }
 
-//inline bool
-//Accelerator::async() const
-//{
-//    return _async;
-//}
-
-#ifndef USE_MULTI_CONTEXT
-inline void
-Accelerator::pushLock()
-{
-    mutex.lock();
-    CUresult ret = cuCtxPushCurrent(_ctx);
-    assertion(ret == CUDA_SUCCESS);
-}
-
-inline void
-Accelerator::popUnlock()
-{
-    CUcontext tmp;
-    CUresult ret = cuCtxPopCurrent(&tmp);
-    assertion(ret == CUDA_SUCCESS);
-    mutex.unlock();
-}
-#endif
 
 inline int
 Accelerator::major() const

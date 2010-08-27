@@ -64,10 +64,10 @@ private:
     uint32_t _bitMask;
     size_t _size;
 
-    void allocate();
+    virtual void allocate() = 0;
 public:
     Bitmap(unsigned bits = 32);
-    ~Bitmap();
+    virtual ~Bitmap() = 0;
 
     void *device();
     void *host() const;

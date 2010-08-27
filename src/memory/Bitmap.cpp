@@ -35,9 +35,10 @@ Bitmap::Bitmap(unsigned bits) :
 #endif
 }
 
+#if 0
 Bitmap::~Bitmap()
 {
-    if(_device != NULL) Mode::current()->context().hostFree(_bitmap);
+    if(_device != NULL) Mode::current().hostFree(_bitmap);
 }
 
 void Bitmap::allocate()
@@ -45,9 +46,10 @@ void Bitmap::allocate()
     assertion(_device == NULL);
     trace("Allocating dirty bitmap (%zu bytes)", size());
     Context &ctx = Mode::current()->context();
-    ctx.mallocPageLocked((void **)&_bitmap, _size);
+    Mode::current()->mallocPageLocked((void **)&_bitmap, _size);
     memset(_bitmap, 0, size());
-    ctx.mapToDevice(_bitmap, &_device, _size);
+    Mode::current()->mapToDevice(_bitmap, &_device, _size);
 }
+#endif
 
 }}}

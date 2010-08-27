@@ -18,9 +18,9 @@ Kernel::Kernel(const KernelDescriptor & k) :
 {
 }
 
+#if 0
 inline
-gmacError_t
-Kernel::bind(void * addr)
+gmacError_t Kernel::bind(void * addr)
 {
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
@@ -44,8 +44,7 @@ Kernel::bind(void * addr)
 }
 
 inline
-gmacError_t
-Kernel::unbind(void * addr)
+gmacError_t Kernel::unbind(void * addr)
 {
     gmacError_t ret;
     ret = gmacErrorInvalidValue;
@@ -66,6 +65,7 @@ Kernel::unbind(void * addr)
 
     return ret;
 }
+#endif
 
 inline
 Argument::Argument(void * ptr, size_t size, off_t offset) :
@@ -97,8 +97,7 @@ KernelConfig::~KernelConfig()
 }
 
 inline
-void
-KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
+void KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 {
     if (size == 4) {
         trace("Pushing argument: +%zd, %" PRId64 "/%" PRId64 ": 0x%x", size, _argsSize, offset, *(uint32_t *) arg);
@@ -116,15 +115,13 @@ KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
 }
 
 inline
-off_t
-KernelConfig::argsSize() const
+off_t KernelConfig::argsSize() const
 {
     return _argsSize;
 }
 
 inline
-char *
-KernelConfig::argsArray()
+char * KernelConfig::argsArray()
 {
     return _stack;
 }

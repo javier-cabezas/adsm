@@ -37,7 +37,7 @@ void *Object::map(void *addr, size_t count)
 #endif
 	Memory::protect(cpuAddr, count, prot);
 #else
-	cpuAddr = (void *)((uint8_t *)addr + Mode::current()->context().id() * mmSize);
+	cpuAddr = (void *)((uint8_t *)addr + Mode::current()->id() * mmSize);
 	if(mmap(cpuAddr, count, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
 		return NULL;
 #endif

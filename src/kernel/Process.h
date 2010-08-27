@@ -68,10 +68,20 @@ public:
     Queue * queue;
 };
 
-class ModeList : public std::list<Mode *>, public util::RWLock
+class ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
 {
+private:
+    typedef std::map<Mode *, Accelerator *> Parent;
+
+    friend class Process;
 public:
-    ModeList();
+    ModeMap();
+
+    typedef Parent::iterator iterator;
+    typedef Parent::const_iterator const_iterator;
+
+    std::pair<iterator, bool> insert(Mode *, Accelerator *);
+    size_t remove(Mode *mode);
 };
 
 
@@ -96,7 +106,7 @@ protected:
     friend class Accelerator;
 
 	std::vector<Accelerator *> __accs;
-	ModeList __modes;
+	ModeMap __modes;
 
 	QueueMap __queues;
     memory::Map __global;
@@ -117,7 +127,6 @@ public:
 #define ACC_AUTO_BIND -1
     Mode * create(int acc = ACC_AUTO_BIND);
 	void remove(Mode *mode);
-	ModeList & modes();
 
 	void *translate(void *addr);
 	const void *translate(const void *addr);
