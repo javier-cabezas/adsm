@@ -53,13 +53,8 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>
-{};
-
 class Context : public gmac::Context {
 protected:
-    AlignmentMap _alignMap;
-
 	Accelerator  *_gpu;
 	ModuleVector _modules;
 
@@ -77,28 +72,6 @@ protected:
 //    gmacError_t switchTo(Accelerator *gpu);
 public:
 
-    //
-	// Standard Accelerator Interface
-    //
-	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
-	gmacError_t mallocPageLocked(void **addr, size_t size, unsigned align = 1);
-	gmacError_t free(void *addr);
-
-	gmacError_t mapToDevice(void *host, void **device, size_t size);
-	gmacError_t hostFree(void *addr);
-
-	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	gmacError_t copyDevice(void *dst, const void *src, size_t size);
-
-	gmacError_t copyToDeviceAsync(void *dev, const void *host, size_t size);
-	gmacError_t copyToHostAsync(void *host, const void *dev, size_t size);
-
-	gmacError_t memset(void *dev, int c, size_t size);
-    gmac::KernelLaunch * launch(gmacKernel_t kernel);
-
-    gmacError_t sync();
-
     ///////////////////////
 	// CUDA-related methods
 	///////////////////////
@@ -106,15 +79,7 @@ public:
     const Variable *variable(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t key) const;
 
-	void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	void argument(const void *arg, size_t size, off_t offset);
-
-	void flush();
-	void invalidate();
-
-    CUdeviceptr gpuAddr(void *addr) const;
-	CUdeviceptr gpuAddr(const void *addr) const;
-
+	
 };
 
 }}

@@ -65,7 +65,7 @@ protected:
 	*/
 	gmacError_t _error;
 
-	friend class Process;
+	friend class Mode;
 	static unsigned _next;
 
 	unsigned _id;
@@ -73,10 +73,9 @@ protected:
     KernelMap _kernels;
 
 	Context(Accelerator *acc);
-
+public:
 	virtual ~Context();
 
-public:
     static void initThread();
 
     void kernel(gmacKernel_t k, Kernel * kernel);

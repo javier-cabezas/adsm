@@ -106,8 +106,7 @@ Mode *Process::create(int acc)
     popState();
 
     // Initialize the global shared memory for the context
-    Mode *mode = new Mode(__accs[usedAcc]);
-    __accs[usedAcc]->attachMode();
+    Mode *mode = __accs[usedAcc]->createMode();
     __modes.insert(mode, __accs[usedAcc]);
     mode->attach();
     return mode;
@@ -138,25 +137,24 @@ gmacError_t Process::migrate(Mode *mode, int acc)
     return ret;
 #endif
     fatal("Not supported yet!");
-    return gmacUnknownError;
+    return gmacErrorUnknown;
 }
 
 
 void Process::remove(Mode *mode)
 {
 	__modes.remove(mode);
+    
 }
 
 void Process::addAccelerator(Accelerator *acc)
 {
 	__accs.push_back(acc);
-	__totalMemory += acc->memory();
 }
 
 void *Process::translate(void *addr)
 {
-    memory::Map &map = Mode::current()->map();
-    memory::Object *object = map.find(addr);
+    memory::Object *object = Mode::current()->find(addr);
     if(object == NULL) object = __shared.find(addr);
     if(object == NULL) return NULL;
     off_t offset = (uint8_t *)addr - (uint8_t *)object->addr();

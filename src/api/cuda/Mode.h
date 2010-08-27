@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <paraver.h>
 
+#include "Kernel.h"
+
 #include <kernel/Mode.h>
 
 #include <stdint.h>
@@ -46,11 +48,14 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-class Buffer : public util::Lock {
+class Buffer : public util::Logger, public util::Lock {
 protected:
+    Mode *__mode;
+
     void *__buffer;
     size_t __size;
     bool __ready;
+
     friend class Mode;
 public:
     Buffer(paraver::LockName name, Mode *mode);
@@ -75,13 +80,15 @@ public:
 
 class Mode : public gmac::Mode {
 protected:
-    CUstream __exe;
-    CUstream __host;
-    CUstream __device;
-    CUstream __internal;
+    Stream __exe;
+    Stream __host;
+    Stream __device;
+    Stream __internal;
 
     Buffer __hostBuffer;
     Buffer __deviceBuffer;
+
+    KernelConfig __call;
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext __ctx;
@@ -91,20 +98,23 @@ protected:
     virtual void switchIn();
     virtual void switchOut();
 
-    void syncStream(CUstream stream);
 public:
     Mode(Accelerator *acc);
-    virtual ~Mode();
+    ~Mode();
 
-	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
-	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
-    virtual gmacError_t sync();
-    virtual gmac::KernelLaunch launch(const char *);
+    gmacError_t sync();
+    gmac::KernelLaunch *launch(const char *);
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
+
+    void call(dim3 Dg, dim3 Db, size_t shared, Stream tokens);
+	void argument(const void *arg, size_t size, off_t offset);
+
 };
 
 }}

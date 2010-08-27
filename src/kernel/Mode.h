@@ -59,6 +59,9 @@ protected:
     void *__buffer;
     size_t __bufferSize;
 
+    virtual Context *createContext();
+    virtual void destroyContext(Context *ctx);
+
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
@@ -108,18 +111,7 @@ public:
 	/*!  \brief Launches the execution of a kernel */
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
 
-
-
-#if 0
-    void switchTo(Accelerator *acc);
-    inline Accelerator &accelerator() { return *__acc; }
-
-    inline Context &context() { return *__context; }
-    inline const Context &context() const { return *__context; }
-    inline memory::Map &map() { return *__map; }
-    inline const memory::Map &map() const { return *__map; }
-#endif
-    
+    inline memory::Object* find(void *addr) { return __map->find(addr); }
 };
 
 }

@@ -34,20 +34,20 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {}
 
-gmac::Context *Accelerator::create()
+gmac::Mode *Accelerator::createMode()
 {
-	trace("Attaching context to Accelerator");
-	gpu::Context *ctx = new gpu::Context(this);
-	queue.insert(ctx);
-	return ctx;
+	trace("Attaching Execution Mode to Accelerator");
+	gpu::Mode *mode = new gpu::Mode(this);
+	queue.insert(mode);
+	return mode;
 }
 
-void Accelerator::destroy(gmac::Context *context)
+void Accelerator::destroyMode(gmac::Mode *mode)
 {
-	trace("Destroying Context");
+	trace("Destroying Execution Mode");
 	if(context == NULL) return;
-	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
-	std::set<gpu::Context *>::iterator c = queue.find(ctx);
+	gpu::Mode *ctx = dynamic_cast<gpu::Mode*>(mode);
+	std::set<gpu::Mode *>::iterator c = queue.find(mode);
 	assertion(c != queue.end());
 	//delete ctx;
 	queue.erase(c);
@@ -79,5 +79,34 @@ Accelerator::destroyCUDAContext(CUcontext ctx)
     cfatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
 }
 #endif
+
+gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
+{
+    assertion(addr != NULL);
+    *addr = NULL;
+    if(align > 1) {
+        size += align;
+    }
+    CUdeviceptr ptr = 0;
+    CUresult ret = cuMemAlloc(&ptr, size);
+    CUdeviceptr gpuPtr = ptr;
+    if(gpuPtr % align) {
+        gpuPtr += align - (gpuPtr % align);
+    }
+    *addr = (void *)gpuPtr;
+    __alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    return error(ret);
+}
+
+gmacError_t Accelerator::free(void *addr)
+{
+    assertion(addr != NULL);
+    AlignmentMap::const_iterator i;
+    CUdeviceptr gpuPtr = gpuAddr(addr);
+    i = _alignMap.find(gpuPtr);
+    if (i == _alignMap.end()) return gmacErrorInvalidValue;
+    CUresult ret = cuMemFree(i->second);
+    return error(ret);
+}
 
 }}

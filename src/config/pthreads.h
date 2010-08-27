@@ -12,7 +12,7 @@
 #if defined(DARWIN)
 #define FMT_TID "%p"
 #else
-#define FMT_TID "0x%llx"
+#define FMT_TID "0x%lx"
 #endif
 #endif
 

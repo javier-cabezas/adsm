@@ -73,7 +73,7 @@ gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
         size_t len = __hostBuffer.size();
         if((size - offset) < __hostBuffer.size()) len = size - offset;
         memcpy(__deviceBuffer.ptr(), (uint8_t *)host + offset, len);
-        ret = __acc->copyToDevice((uint8_t *)dev + offset, __deviceBuffer.ptr(), len);
+        ret = __acc->copyToDeviceAsync((uint8_t *)dev + offset, __deviceBuffer.ptr(), len);
         if(ret != gmacSuccess) break;
         offset += len;
         __deviceBuffer.busy();
@@ -104,7 +104,7 @@ gmacError_t Mode::copyToHost(void *host, const void *device, size_t size)
     }
 
     switchOut();
-    __hostUnlock;
+    __host.unlock;
     return ret;
 }
 
