@@ -154,7 +154,7 @@ void Process::addAccelerator(Accelerator *acc)
 
 void *Process::translate(void *addr)
 {
-    memory::Object *object = Mode::current()->find(addr);
+    memory::Object *object = Mode::current()->findObject(addr);
     if(object == NULL) object = __shared.find(addr);
     if(object == NULL) return NULL;
     off_t offset = (uint8_t *)addr - (uint8_t *)object->addr();

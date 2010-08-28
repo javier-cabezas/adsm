@@ -59,20 +59,10 @@ class Context : public util::RWLock, public util::Logger {
 public:
 
 protected:
-
-	/*!
-		\brief Last error on context
-	*/
-	gmacError_t _error;
-
-	friend class Mode;
-	static unsigned _next;
-
-	unsigned _id;
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
-    KernelMap _kernels;
+    KernelMap kernels;
 
-	Context(Accelerator *acc);
+	Context(Mode *mode);
 public:
 	virtual ~Context();
 
@@ -81,8 +71,7 @@ public:
     void kernel(gmacKernel_t k, Kernel * kernel);
     Kernel * kernel(gmacKernel_t k);
 
-    inline unsigned id() const { return _id; }
-    inline gmacError_t error() const { return _error; }
+
 };
 
 }

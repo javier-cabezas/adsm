@@ -50,14 +50,14 @@ class KernelLaunch;
 class Mode : public gmac::util::Logger {
 protected:
     static gmac::util::Private key;
+    static unsigned next;
+
+    unsigned __id;
 
     Accelerator *__acc;
     Context *__context;
     memory::Map *__map;
     unsigned __count;
-
-    void *__buffer;
-    size_t __bufferSize;
 
     virtual Context *createContext();
     virtual void destroyContext(Context *ctx);
@@ -65,6 +65,7 @@ protected:
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
+	gmacError_t __error;
 public:
     Mode(Accelerator *acc);
     ~Mode();
@@ -76,7 +77,7 @@ public:
     inline void inc() { __count++; }
     inline void destroy() { __count--; if(__count == 0) delete this; }
 
-    inline unsigned id() const { return __map->id(); }
+    inline unsigned id() const { return __id; }
 
     /*! \brief Attaches the execution mode to the current thread */
     inline void attach();
@@ -111,7 +112,8 @@ public:
 	/*!  \brief Launches the execution of a kernel */
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
 
-    inline memory::Object* find(void *addr) { return __map->find(addr); }
+
+    inline gmacError_t error() const { return __error; }
 };
 
 }
