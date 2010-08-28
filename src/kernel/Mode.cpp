@@ -7,8 +7,10 @@
 namespace gmac {
 
 gmac::util::Private Mode::key;
+unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
+    __id(next++),
     __acc(acc)
 {
     trace("Creating new context");

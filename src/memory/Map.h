@@ -56,9 +56,6 @@ public:
 
 class Map : public ObjectMap, public util::Logger {
 protected:
-    static unsigned __count;
-    unsigned __id;
-
     Object *localFind(const void *addr);
     Object *globalFind(const void *addr);
     Object *sharedFind(const void *addr);
@@ -72,8 +69,6 @@ protected:
 public:
     Map(paraver::LockName);
     virtual ~Map();
-
-    inline unsigned id() const { return __id; }
 
 #ifdef USE_VM
     vm::Bitmap &dirtyBitmap();

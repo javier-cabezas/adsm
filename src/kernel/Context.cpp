@@ -7,22 +7,18 @@ extern gmac::memory::Manager *manager;
 
 namespace gmac {
 
-unsigned Context::_next = 0;
-
-Context::Context(Accelerator *acc) :
+Context::Context(Mode *mode) :
     util::RWLock(LockContext),
-    _error(gmacSuccess),
-    _kernels()
+    kernels()
 {
-	_id = ++_next;
-    addThreadTid(0x10000000 + _id);
-    pushState(Idle, 0x10000000 + _id);
+    addThreadTid(0x10000000 + mode->id());
+    pushState(Idle, 0x10000000 + mode->id());
 }
 
 Context::~Context()
 {
     KernelMap::iterator it;
-    for (it = _kernels.begin(); it != _kernels.end(); it++) {
+    for (it = kernels.begin(); it != kernels.end(); it++) {
         delete it->second;
     }
 }
