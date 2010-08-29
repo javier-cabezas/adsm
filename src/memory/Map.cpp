@@ -1,4 +1,5 @@
 #include "Map.h"
+#include "Object.h"
 
 #include <kernel/Process.h>
 #include <kernel/Mode.h>

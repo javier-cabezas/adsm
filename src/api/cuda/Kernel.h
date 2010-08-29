@@ -9,6 +9,8 @@
 
 namespace gmac { namespace gpu {
 
+class Mode;
+
 class KernelLaunch;
 class KernelConfig;
 

@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
+#include <kernel/Context.h>
 
 #include <util/Private.h>
 #include <util/Logger.h>
@@ -54,10 +55,10 @@ protected:
 
     unsigned __id;
 
-    Accelerator *__acc;
-    Context *__context;
-    memory::Map *__map;
-    unsigned __count;
+    Accelerator *acc;
+    Context *context;
+    memory::Map *map;
+    unsigned count;
 
     virtual Context *createContext();
     virtual void destroyContext(Context *ctx);
@@ -74,8 +75,8 @@ public:
     inline static Mode *current();
     inline static bool hasCurrent() { return key.get() != NULL; }
 
-    inline void inc() { __count++; }
-    inline void destroy() { __count--; if(__count == 0) delete this; }
+    inline void inc() { count++; }
+    inline void destroy() { count--; if(count == 0) delete this; }
 
     inline unsigned id() const { return __id; }
 
@@ -85,10 +86,10 @@ public:
     /*! \brief Dettaches the execution mode to the current thread */
     inline void detach();
 
-    inline void addObject(memory::Object *obj) { __map->insert(obj); }
-    inline void removeObject(memory::Object *obj) { __map->remove(obj); }
+    inline void addObject(memory::Object *obj) { map->insert(obj); }
+    inline void removeObject(memory::Object *obj) { map->remove(obj); }
     inline memory::Object *findObject(const void *addr) {
-        return __map->find(addr);
+        return map->find(addr);
     }
 
     /*!  \brief Allocates memory on the accelerator memory */

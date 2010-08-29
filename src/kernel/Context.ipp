@@ -25,6 +25,24 @@ Kernel * Context::kernel(gmacKernel_t k)
     return NULL;
 }
 
+inline
+gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
+{
+    return acc->copyToDevice(dev, host, size);
+}
+
+inline
+gmacError_t Context::copyToHost(void *host, const void *dev, size_t size)
+{
+    return acc->copyToHost(host, dev, size);
+}
+
+inline
+gmacError_t Context::copyDevice(void *dst, const void *src, size_t size)
+{
+    return acc->copyDevice(dst, src, size);
+}
+
 
 }
 

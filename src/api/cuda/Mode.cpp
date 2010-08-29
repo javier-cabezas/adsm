@@ -137,18 +137,18 @@ gmacError_t Mode::hostFree(void *addr)
 
 const Variable *Mode::constant(gmacVariable_t key) const
 {
-    return dynamic_cast<Context *>(__context)->constant(key);
+    return dynamic_cast<Context *>(context)->constant(key);
 }
 
 
 const Variable *Mode::variable(gmacVariable_t key) const
 {
-    return dynamic_cast<Context *>(__context)->variable(key);
+    return dynamic_cast<Context *>(context)->variable(key);
 }
 
 const Texture *Mode::texture(gmacTexture_t key) const
 {
-    return dynamic_cast<Context *>(__context)->texture(key);
+    return dynamic_cast<Context *>(context)->texture(key);
 }
 
 

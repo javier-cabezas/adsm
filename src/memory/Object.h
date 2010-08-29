@@ -35,19 +35,18 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_OBJECT_H_
 
 #include <config.h>
+#include <gmac/gmac.h>
 
 #include <memory/Block.h>
 #include <memory/Protocol.h>
 
-#include <gmac/gmac.h>
+#include <kernel/Mode.h>
 
 #include <util/Lock.h>
 #include <util/Logger.h>
 
 #include <set>
 
-
-namespace gmac { class Mode; }
 
 namespace gmac { namespace memory {
 

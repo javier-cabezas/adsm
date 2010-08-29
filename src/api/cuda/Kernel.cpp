@@ -1,6 +1,6 @@
-#include "Mode.h"
 #include "Kernel.h"
 #include "Module.h"
+#include "Mode.h"
 #include "Accelerator.h"
 
 #include <cuda_runtime_api.h>

@@ -36,11 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <gmac/gmac.h>
 
-#include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 #include <kernel/Kernel.h>
-
-#include <memory/ObjectSet.h>
 
 #include <util/Parameter.h>
 #include <util/Private.h>
@@ -59,19 +56,25 @@ class Context : public util::RWLock, public util::Logger {
 public:
 
 protected:
+    Accelerator *acc;
+
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap kernels;
 
-	Context(Mode *mode);
+	Context(Accelerator *acc);
 public:
 	virtual ~Context();
 
     static void initThread();
 
+	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	virtual gmacError_t sync() = 0;
+	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
+
     void kernel(gmacKernel_t k, Kernel * kernel);
     Kernel * kernel(gmacKernel_t k);
-
-
 };
 
 }

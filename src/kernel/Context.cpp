@@ -3,12 +3,11 @@
 #include <memory/Manager.h>
 #include <config/paraver.h>
 
-extern gmac::memory::Manager *manager;
-
 namespace gmac {
 
-Context::Context(Mode *mode) :
+Context::Context(Accelerator *acc) :
     util::RWLock(LockContext),
+    acc(acc),
     kernels()
 {
     addThreadTid(0x10000000 + mode->id());
