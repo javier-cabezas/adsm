@@ -10,9 +10,8 @@ namespace gmac { namespace gpu {
 Context::AddressMap Context::hostMem;
 void * Context::FatBin;
 
-Context::Context(Accelerator *gpu) :
-    gmac::Context(gpu),
-    _gpu(gpu)
+Context::Context(Accelerator *acc) :
+    gmac::Context(acc)
 {
     _modules = ModuleDescriptor::createModules(*this);
 }
@@ -25,7 +24,7 @@ Context::~Context()
         delete (*m);
     }
     _modules.clear();
-
+}
 
 
 }}

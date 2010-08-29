@@ -55,7 +55,6 @@ namespace gmac { namespace gpu {
 
 class Context : public gmac::Context {
 protected:
-	Accelerator  *_gpu;
 	ModuleVector _modules;
 
     static void * FatBin;
@@ -64,7 +63,7 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-	Context(Accelerator *gpu);
+	Context(Accelerator *acc);
 	~Context();
 
 //    gmacError_t switchTo(Accelerator *gpu);

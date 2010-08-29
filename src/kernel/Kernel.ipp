@@ -4,9 +4,6 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#include <kernel/Mode.h>
-#include <memory/Object.h>
-
 #include <cstring>
 #include <algorithm>
 
