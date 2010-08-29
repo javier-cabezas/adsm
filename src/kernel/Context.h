@@ -39,8 +39,6 @@ WITH THE SOFTWARE.  */
 #include <kernel/Accelerator.h>
 #include <kernel/Kernel.h>
 
-#include <util/Parameter.h>
-#include <util/Private.h>
 #include <util/Logger.h>
 
 

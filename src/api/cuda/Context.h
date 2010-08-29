@@ -53,9 +53,31 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
+class Buffer : public util::Logger, public util::Lock {
+protected:
+    Mode *mode;
+
+    void *buffer;
+    size_t __size;
+    bool __ready;
+
+    friend class Context;
+public:
+    Buffer(paraver::LockName name, Mode *mode);
+    ~Buffer();
+
+    inline void *ptr() const { return buffer; }
+    inline size_t size() const { return __size; }
+    inline bool ready() const { return __ready; }
+    inline void busy() { __ready = false; }
+    inline void idle() { __ready = true; }
+};
+
+
 class Context : public gmac::Context {
 protected:
-	ModuleVector _modules;
+    Accelerator *acc;
+	ModuleVector modules;
 
     static void * FatBin;
 	static const unsigned USleepLaunch = 100;
@@ -63,20 +85,39 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-	Context(Accelerator *acc);
+    Buffer inputBuffer;
+    Buffer outputBuffer;
+
+    typedef CUstream Stream;
+    Stream streamLaunch;
+    Stream streamToDevice;
+    Stream streamToHost;
+    Stream streamDevice;
+
+    void setupStreams();
+    void cleanStreams();
+    gmacError_t syncStream(CUstream);
+
+    KernelConfig __call;
+
+public:
+	Context(Accelerator *acc, Mode *mode);
 	~Context();
 
-//    gmacError_t switchTo(Accelerator *gpu);
-public:
+	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
-    ///////////////////////
-	// CUDA-related methods
-	///////////////////////
+    gmacError_t sync();
+    gmac::KernelLaunch *launch(const char *);
+
+    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
+	void argument(const void *arg, size_t size, off_t offset);
+
 	const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;
     const Texture  *texture(gmacTexture_t key) const;
-
-	
+    const Stream eventStream() const;
 };
 
 }}
