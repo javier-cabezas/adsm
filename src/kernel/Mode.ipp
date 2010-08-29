@@ -5,6 +5,7 @@
 
 namespace gmac {
 
+
 inline 
 Mode *Mode::current()
 {
@@ -36,54 +37,54 @@ inline
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {
     switchIn();
-    gmacError_t ret = acc->malloc(addr, size, align);
+    __error = acc->malloc(addr, size, align);
     switchOut();
-    return ret;
+    return __error;
 }
 
 inline
 gmacError_t Mode::free(void *addr)
 {
     switchIn();
-    gmacError_t ret = acc->free(addr);
+    __error = acc->free(addr);
     switchOut();
-    return ret;
+    return __error;
 }
 
 inline
 gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     switchIn();
-    gmacError_t ret = context->copyToDevice(dev, host, size);
+    __error = context->copyToDevice(dev, host, size);
     switchOut();
-    return ret;
+    return __error;
 }
 
 inline
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
     switchIn();
-    gmacError_t ret = context->copyToHost(host, dev, size);
+    __error = context->copyToHost(host, dev, size);
     switchOut();
-    return ret;
+    return __error;
 }
 
 inline
 gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 {
     switchIn();
-    gmacError_t ret = context->copyDevice(dst, src, size);
+    __error = context->copyDevice(dst, src, size);
     switchOut();
-    return ret;
+    return __error;
 }
 
 inline
 gmacError_t Mode::sync()
 {
     switchIn();
-    gmacError_t ret = context->sync();
+    __error = context->sync();
     switchOut();
-    return ret;
+    return __error;
 }
 
 

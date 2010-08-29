@@ -60,9 +60,6 @@ protected:
     memory::Map *map;
     unsigned count;
 
-    virtual Context *createContext();
-    virtual void destroyContext(Context *ctx);
-
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
@@ -108,13 +105,16 @@ public:
 	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
 	/*!  \brief Waits for kernel execution */
-	virtual gmacError_t sync() = 0;
+	virtual gmacError_t sync();
 
 	/*!  \brief Launches the execution of a kernel */
-	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
+	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
-
+    /*!  \brief Returns the last error code */
     inline gmacError_t error() const { return __error; }
+
+    /*!  \brief Sets up the last error code */
+    inline void error(gmacError_t err) { __error = err; }
 };
 
 }

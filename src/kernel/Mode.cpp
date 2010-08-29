@@ -13,8 +13,6 @@ Mode::Mode(Accelerator *acc) :
     __id(next++),
     acc(acc)
 {
-    trace("Creating new context");
-    context = createContext();
     trace("Creating new memory map");
     map = new memory::Map(paraver::LockMmLocal);
 }

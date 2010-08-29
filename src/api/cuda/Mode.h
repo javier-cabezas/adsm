@@ -37,8 +37,7 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <paraver.h>
 
-#include "Kernel.h"
-#include "Module.h"
+#include "Context.h"
 
 #include <kernel/Mode.h>
 
@@ -55,27 +54,6 @@ public:
     static void out();
 };
 
-class Mode;
-class Buffer : public util::Logger, public util::Lock {
-protected:
-    Mode *__mode;
-
-    void *__buffer;
-    size_t __size;
-    bool __ready;
-
-    friend class Mode;
-public:
-    Buffer(paraver::LockName name, Mode *__mode);
-    ~Buffer();
-
-    inline void *ptr() const { return __buffer; }
-    inline size_t size() const { return __size; }
-    inline bool ready() const { return __ready; }
-    inline void busy() { __ready = false; }
-    inline void idle() { __ready = true; }
-};
-
 #ifdef USE_MULTI_CONTEXT
 class ContextLock : public util::Lock {
 protected:
@@ -90,23 +68,8 @@ class Texture;
 class Accelerator;
 class Mode : public gmac::Mode {
 protected:
-    Accelerator *__acc;
-
-    typedef CUstream Stream;
-    Stream streamLaunch;
-    Stream streamToDevice;
-    Stream streamToHost;
-    Stream streamDevice;
-
-    void setupStreams();
-    void cleanStreams();
-    gmacError_t syncStream(CUstream);
-
-    Buffer hostBuffer;
-    Buffer deviceBuffer;
-
-    KernelConfig __call;
-
+    Accelerator *acc;
+    Context *context;
 #ifdef USE_MULTI_CONTEXT
     CUcontext __ctx;
     ContextLock __mutex;
@@ -120,24 +83,23 @@ public:
     Mode(Accelerator *acc);
     ~Mode();
 
-	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	gmacError_t copyDevice(void *dst, const void *src, size_t size);
-
-    gmacError_t sync();
-    gmac::KernelLaunch *launch(const char *);
-
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-    const Variable *constant(gmacVariable_t key) const;
-    const Variable *variable(gmacVariable_t key) const;
-    const Texture *texture(gmacTexture_t key) const;
+    inline const Variable *constant(gmacVariable_t key) const {
+        return context->constant(key);
+    }
+    inline const Variable *variable(gmacVariable_t key) const {
+        return context->variable(key);
+    }
+    inline const Texture *texture(gmacTexture_t key) const {
+        return context->texture(key);
+    }
 
-    inline Stream eventStream() const { return streamLaunch; }
+    inline Stream eventStream() const { return context->eventStream(); }
 };
 
 }}
