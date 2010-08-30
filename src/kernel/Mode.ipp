@@ -5,7 +5,6 @@
 
 namespace gmac {
 
-
 inline 
 Mode *Mode::current()
 {
@@ -97,7 +96,7 @@ gmac::KernelLaunch *Mode::launch(gmacKernel_t kernel)
     return ret;
 }
 
-
 }
+
 
 #endif

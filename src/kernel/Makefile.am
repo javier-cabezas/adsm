@@ -6,6 +6,7 @@ libkernel_la_SOURCES = \
 			Accelerator.h Accelerator.ipp Accelerator.cpp\
 			Descriptor.h Descriptor.ipp\
 			Kernel.h Kernel.ipp\
+            IOBuffer.h IOBuffer.ipp\
             Mode.h Mode.ipp Mode.cpp\
 			Context.h Context.ipp Context.cpp\
             Queue.h Queue.ipp Queue.cpp

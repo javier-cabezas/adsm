@@ -71,7 +71,7 @@ enum LockName {
     LockCtxGlobal    = 6,  // 6
     LockCtxCreate    = 7,  // 7
     LockQueue        = 8,  // 8
-    LockIoHost       = 9,  // 9
+    LockIo           = 9,  // 9
     LockIoDevice     = 10, // 10
     LockProcess      = 11, // 11
     LockWriteMutex   = 12, // 12

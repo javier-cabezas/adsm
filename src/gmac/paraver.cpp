@@ -68,7 +68,7 @@ static const char *lockNames[] = {
     "LockCtxGlobal",     // 6
     "LockCtxCreate",     // 7
 	"LockQueueLock",     // 8
-	"LockIoHostLock",    // 9
+	"LockIoLock",        // 9
     "LockIoDeviceLock",  // 10
 	"LockProcess",       // 11
     "LockWriteMutex",    // 12

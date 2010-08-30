@@ -1,4 +1,5 @@
 #include "Mode.h"
+#include "IOBuffer.h"
 #include "Accelerator.h"
 
 #include <memory/Object.h>
@@ -26,6 +27,11 @@ Mode::~Mode()
     delete map;
     delete context;
     acc->destroyMode(this); 
+}
+
+IOBuffer *Mode::getIOBuffer(size_t size)
+{
+    return new IOBuffer(this, size);
 }
 
 

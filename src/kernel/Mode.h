@@ -46,6 +46,7 @@ namespace gmac {
 namespace memory { class Map; class Object; }
 
 class Context;
+class IOBuffer;
 class KernelLaunch;
 
 class Mode : public gmac::util::Logger {
@@ -110,6 +111,9 @@ public:
 	/*!  \brief Launches the execution of a kernel */
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
+    /*!  \brief Returns a buffer to be used by I/O operations */
+    virtual IOBuffer *getIOBuffer(size_t size);
+    
     /*!  \brief Returns the last error code */
     inline gmacError_t error() const { return __error; }
 
