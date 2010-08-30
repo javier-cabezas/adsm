@@ -83,13 +83,15 @@ gmacFini(void)
     gmac::util::Logger::Destroy();
 }
 
+
+#if 0
 gmacError_t
 gmacClear(gmacKernel_t k)
 {
     gmacError_t ret = gmacSuccess;
     __enterGmac();
     enterFunction(FuncGmacClear);
-    gmac::Kernel *kernel = gmac::Mode::current()->context().kernel(k);
+    gmac::Kernel *kernel = gmac::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else kernel->clear();
     exitFunction();
@@ -103,7 +105,7 @@ gmacBind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     __enterGmac();
     enterFunction(FuncGmacBind);
-    gmac::Kernel *kernel = gmac::Mode::current()->context().kernel(k);
+    gmac::Kernel *kernel = gmac::Mode::current()->kernel(k);
 
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->bind(obj);
@@ -118,13 +120,14 @@ gmacUnbind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     __enterGmac();
     enterFunction(FuncGmacUnbind);
-    gmac::Kernel  * kernel = gmac::Mode::current()->context().kernel(k);
+    gmac::Kernel  * kernel = gmac::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->unbind(obj);
 	exitFunction();
 	__exitGmac();
     return ret;
 }
+#endif
 
 size_t
 gmacAccs()
@@ -225,15 +228,14 @@ gmacLaunch(gmacKernel_t k)
 {
     __enterGmac();
     enterFunction(FuncGmacLaunch);
-    gmac::Context &ctx = gmac::Mode::current()->context();
-    gmac::KernelLaunch * launch = ctx.launch(k);
+    gmac::KernelLaunch * launch = gmac::Mode::current()->launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
     manager->release();
 
     // Wait for pending transfers
-    ctx.syncToDevice();
+    gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Kernel Launch");
     ret = launch->execute();
 
@@ -253,9 +255,8 @@ gmacThreadSynchronize()
 {
 	__enterGmac();
 	enterFunction(FuncGmacSync);
-    gmac::Context &ctx = gmac::Mode::current()->context();
 
-	gmacError_t ret = ctx.sync();
+	gmacError_t ret = gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Memory Sync");
     manager->invalidate();
 
@@ -268,12 +269,12 @@ gmacError_t
 gmacGetLastError()
 {
 	__enterGmac();
-    gmac::Context &ctx = gmac::Mode::current()->context();
-	gmacError_t ret = ctx.error();
+	gmacError_t ret = gmac::Mode::current()->error();
 	__exitGmac();
 	return ret;
 }
 
+#if 0
 void *
 gmacMemset(void *s, int c, size_t n)
 {
@@ -356,6 +357,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	return ret;
 
 }
+#endif
 
 void
 gmacSend(pthread_t id)
