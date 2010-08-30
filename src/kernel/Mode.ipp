@@ -16,19 +16,6 @@ void Mode::kernel(gmacKernel_t k, Kernel * kernel)
     kernels[k] = kernel;
 }
 
-#if 0
-inline
-Kernel *Mode::kernel(gmacKernel_t k)
-{
-    KernelMap::iterator i;
-    i = kernels.find(k);
-    if (i != kernels.end()) {
-        return i->second;
-    }
-    return NULL;
-}
-#endif
-
 
 inline 
 Mode *Mode::current()
@@ -47,6 +34,7 @@ void Mode::attach()
     if(mode == this) return;
     if(mode != NULL) mode->destroy();
     key.set(this);
+    count++;
 }
 
 inline

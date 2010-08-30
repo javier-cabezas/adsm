@@ -73,9 +73,6 @@ protected:
     AcceleratorLock __mutex;
 #endif
 
-    void switchIn();
-    void switchOut();
-
     static gmacError_t __error;
 public:
 	Accelerator(int n, CUdevice device);
@@ -88,8 +85,10 @@ public:
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
     void destroyCUDAContext(CUcontext ctx);
+#else
+    void switchIn();
+    void switchOut();
 #endif
-    //bool async() const;
 
     int major() const;
     int minor() const;

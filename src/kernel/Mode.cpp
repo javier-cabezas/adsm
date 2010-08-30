@@ -11,8 +11,9 @@ gmac::util::Private Mode::key;
 unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
-    __id(next++),
-    acc(acc)
+    __id(++next),
+    acc(acc),
+    count(0)
 {
     trace("Creating new memory map");
     map = new memory::Map(paraver::LockMmLocal);
@@ -22,7 +23,7 @@ Mode::~Mode()
 {
     count--;
     if(count > 0)
-        gmac::util::Logger::WARNING("Deleting in-use Execution Mode");
+        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count);
     if(this == key.get()) key.set(NULL);
 
     KernelMap::iterator it;
@@ -31,7 +32,6 @@ Mode::~Mode()
     }
 
     delete map;
-    delete context;
     acc->destroyMode(this); 
 }
 

@@ -36,20 +36,18 @@ Accelerator::~Accelerator()
 
 gmac::Mode *Accelerator::createMode()
 {
-	trace("Attaching Execution Mode to Accelerator");
 	gpu::Mode *mode = new gpu::Mode(this);
 	queue.insert(mode);
+	trace("Attaching Execution Mode %p to Accelerator", mode);
 	return mode;
 }
 
 void Accelerator::destroyMode(gmac::Mode *mode)
 {
-	trace("Destroying Execution Mode");
+	trace("Destroying Execution Mode %p", mode);
 	if(mode == NULL) return;
-	Mode *m = dynamic_cast<gpu::Mode*>(mode);
-	std::set<Mode *>::iterator c = queue.find(m);
+	std::set<Mode *>::iterator c = queue.find((Mode *)mode);
 	assertion(c != queue.end());
-	//delete ctx;
 	queue.erase(c);
 }
 
