@@ -1,7 +1,7 @@
 #ifndef __API_CUDADRV_KERNEL_IPP_
 #define __API_CUDADRV_KERNEL_IPP_
 
-#include "kernel/Kernel.h"
+#include <kernel/Kernel.h>
 
 namespace gmac { namespace gpu {
 

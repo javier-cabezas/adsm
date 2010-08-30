@@ -38,8 +38,6 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include "Context.h"
-#include "IOBuffer.h"
-#include "Module.h"
 
 #include <kernel/Mode.h>
 
@@ -83,19 +81,20 @@ protected:
     virtual void switchIn();
     virtual void switchOut();
 
+    IOBuffer *ioBuffer;
+
+	ModuleVector modules;
 public:
     Mode(Accelerator *acc);
     ~Mode();
 
-    IOBuffer *getIOBuffer(size_t size);
+    inline IOBuffer *getIOBuffer() { return ioBuffer; }
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
 
-    gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t len);
-    gmacError_t waitDevice();
-    gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t len);
-    gmacError_t waitHost();
+    gmacError_t bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t size);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);

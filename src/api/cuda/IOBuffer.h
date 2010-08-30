@@ -41,23 +41,19 @@ namespace gmac { namespace gpu {
 class Mode;
 class IOBuffer : public gmac::IOBuffer, public gmac::util::Logger {
 public:
-    typedef enum { Idle, Dump, Fill} State;
+    typedef enum { Idle, ToDevice, ToHost} State;
 protected:
     Mode *mode;
-    Context *context;
 
     State __state;
-
-    friend class Context;
+    bool pin;
 public:
-    IOBuffer(Mode *mode, size_t size);
+    IOBuffer(size_t size);
     ~IOBuffer();
 
     inline State state() const { return __state; }
-
-    gmacError_t dump(void *addr, size_t len);
-    gmacError_t fill(void *addr, size_t len);
-    gmacError_t sync();
+    inline void state(State s) { __state = s; }
+    inline bool isPinned() const { return pin; }
 };
 
 }}

@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_CONTEXT_H_
-#define __API_CUDADRV_CONTEXT_H_
+#ifndef __API_CUDA_CONTEXT_H_
+#define __API_CUDA_CONTEXT_H_
 
 #include <config.h>
 #include <paraver.h>
@@ -57,7 +57,6 @@ namespace gmac { namespace gpu {
 class Context : public gmac::Context {
 protected:
     Accelerator *acc;
-	ModuleVector modules;
 
     static void * FatBin;
 	static const unsigned USleepLaunch = 100;
@@ -77,6 +76,9 @@ protected:
     void setupStreams();
     void cleanStreams();
     gmacError_t syncStream(CUstream);
+    gmacError_t waitForBuffer(IOBuffer *buffer);
+    IOBuffer *toDeviceBuffer;
+    IOBuffer *toHostBuffer;
 
     KernelConfig __call;
 
@@ -88,21 +90,17 @@ public:
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
+    gmac::KernelLaunch *launch(gmac::Kernel *kernel);
     gmacError_t sync();
-    gmac::KernelLaunch *launch(const char *);
 
     gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t size);
     gmacError_t waitDevice();
     gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t size);
-    gmacError_t waitHost();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-	const Variable *constant(gmacVariable_t key) const;
-    const Variable *variable(gmacVariable_t key) const;
-    const Texture  *texture(gmacTexture_t key) const;
-    const Stream eventStream() const;
+    inline const Stream eventStream() const { return streamLaunch; }
 };
 
 }}

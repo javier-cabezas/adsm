@@ -79,12 +79,6 @@ public:
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyDevice(void *dst, const void *src,
 			size_t size) = 0;
-
-	/*!  \brief Waits for kernel execution */
-	virtual gmacError_t sync() = 0;
-
-	/*!  \brief Launches the execution of a kernel */
-	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel) = 0;
 };
 
 }

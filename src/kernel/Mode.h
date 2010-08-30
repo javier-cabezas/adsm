@@ -61,6 +61,9 @@ protected:
     memory::Map *map;
     unsigned count;
 
+    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
+    KernelMap kernels;
+
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
@@ -105,14 +108,24 @@ public:
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
-	/*!  \brief Waits for kernel execution */
-	virtual gmacError_t sync();
 
 	/*!  \brief Launches the execution of a kernel */
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
+	/*!  \brief Waits for kernel execution */
+	virtual gmacError_t sync();
+
+
     /*!  \brief Returns a buffer to be used by I/O operations */
-    virtual IOBuffer *getIOBuffer(size_t size);
+    virtual IOBuffer *getIOBuffer() = 0;
+
+    virtual gmacError_t bufferToDevice(IOBuffer *buffer, void *dst, size_t size) = 0;
+    virtual gmacError_t bufferToHost(IOBuffer *buffer, void *dst, size_t size) = 0;
+
+
+    void kernel(gmacKernel_t k, Kernel * kernel);
+    //Kernel * kernel(gmacKernel_t k);
+
     
     /*!  \brief Returns the last error code */
     inline gmacError_t error() const { return __error; }

@@ -42,19 +42,17 @@ class Mode;
 
 class IOBuffer : public gmac::util::Lock {
 protected:
-    Mode *mode;
     void *__addr;
     size_t __size;
 public:
-    IOBuffer(Mode *mode, size_t size);
-    virtual ~IOBuffer();
+    IOBuffer(size_t size);
+    inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return __addr; }
     inline size_t size() const { return __size; }
 
-    virtual gmacError_t dump(void *dst, size_t len);
-    virtual gmacError_t fill(void *src, size_t len);
-    inline virtual gmacError_t sync() { return gmacSuccess; }
+    inline void lock() { gmac::util::Lock::lock(); }
+    inline void unlock() { gmac::util::Lock::unlock(); }
 };
 
 

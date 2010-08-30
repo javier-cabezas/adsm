@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_MODULE_H_
-#define __API_CUDADRV_MODULE_H_
+#ifndef __API_CUDA_MODULE_H_
+#define __API_CUDA_MODULE_H_
 
 #include <config.h>
 
@@ -48,8 +48,6 @@ WITH THE SOFTWARE.  */
 #include <driver_types.h>
 
 namespace gmac { namespace gpu {
-
-class Context;
 
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
@@ -117,7 +115,7 @@ public:
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
-    static ModuleVector createModules(Context &ctx);
+    static ModuleVector createModules(Mode &mode);
 
 
 };
@@ -145,7 +143,7 @@ protected:
 #endif
 
 public:
-	Module(const ModuleDescriptor & d, Context &ctx);
+	Module(const ModuleDescriptor & d, Mode &mode);
 	~Module();
 
     const Variable *variable(gmacVariable_t key) const;

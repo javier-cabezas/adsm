@@ -1,5 +1,5 @@
 #include "Module.h"
-#include "Context.h"
+#include "Mode.h"
 
 #include <gmac/init.h>
 
@@ -43,7 +43,7 @@ ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
 }
 
 ModuleVector
-ModuleDescriptor::createModules(Context &ctx)
+ModuleDescriptor::createModules(Mode &mode)
 {
     util::Logger::TRACE("Creating modules");
     ModuleVector modules;
@@ -51,12 +51,12 @@ ModuleDescriptor::createModules(Context &ctx)
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules.begin(); it != Modules.end(); it++) {
         util::Logger::TRACE("Creating module: %p", (*it)->_fatBin);
-        modules.push_back(new Module(*(*it), ctx));
+        modules.push_back(new Module(*(*it), mode));
     }
     return modules;
 }
 
-Module::Module(const ModuleDescriptor & d, Context &ctx) :
+Module::Module(const ModuleDescriptor & d, Mode &mode) :
     _fatBin(d._fatBin)
 {
     trace("Module image: %p", _fatBin);
@@ -67,7 +67,7 @@ Module::Module(const ModuleDescriptor & d, Context &ctx) :
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d._kernels.begin(); k != d._kernels.end(); k++) {
         Kernel * kernel = new Kernel(*k, _mod);
-        ctx.kernel(k->key(), kernel);
+        mode.kernel(k->key(), kernel);
     }
 
     ModuleDescriptor::VariableVector::const_iterator v;
