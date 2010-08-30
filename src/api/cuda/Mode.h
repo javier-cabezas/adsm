@@ -38,6 +38,8 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include "Context.h"
+#include "IOBuffer.h"
+#include "Module.h"
 
 #include <kernel/Mode.h>
 
@@ -54,6 +56,7 @@ public:
     static void out();
 };
 
+
 #ifdef USE_MULTI_CONTEXT
 class ContextLock : public util::Lock {
 protected:
@@ -64,8 +67,9 @@ public:
 #endif
 
 class Texture;
-
 class Accelerator;
+class IOBuffer;
+
 class Mode : public gmac::Mode {
 protected:
     Accelerator *acc;
@@ -83,23 +87,24 @@ public:
     Mode(Accelerator *acc);
     ~Mode();
 
+    IOBuffer *getIOBuffer(size_t size);
+
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
+
+    gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t len);
+    gmacError_t waitDevice();
+    gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t len);
+    gmacError_t waitHost();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-    inline const Variable *constant(gmacVariable_t key) const {
-        return context->constant(key);
-    }
-    inline const Variable *variable(gmacVariable_t key) const {
-        return context->variable(key);
-    }
-    inline const Texture *texture(gmacTexture_t key) const {
-        return context->texture(key);
-    }
+    const Variable *constant(gmacVariable_t key) const;
+    const Variable *variable(gmacVariable_t key) const;
+    const Texture *texture(gmacTexture_t key) const;
 
-    inline Stream eventStream() const { return context->eventStream(); }
+    Stream eventStream() const;
 };
 
 }}

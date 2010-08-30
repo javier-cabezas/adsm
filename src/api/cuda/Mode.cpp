@@ -38,4 +38,24 @@ gmacError_t Mode::hostFree(void *addr)
     return Accelerator::error(r);
 }
 
+const Variable *Mode::constant(gmacVariable_t key) const
+{
+    return context->constant(key);
+}
+
+const Variable *Mode::variable(gmacVariable_t key) const
+{
+    return context->variable(key);
+}
+
+const Texture *Mode::texture(gmacTexture_t key) const
+{
+    return context->texture(key);
+}
+
+
+Stream Mode::eventStream() const {
+    return context->eventStream();
+}
+
 }}

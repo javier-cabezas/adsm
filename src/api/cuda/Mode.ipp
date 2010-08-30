@@ -3,18 +3,6 @@
 
 namespace gmac { namespace gpu {
 
-inline void Switch::in()
-{
-    dynamic_cast<Mode *>(Mode::current())->switchIn();
-}
-
-inline void Switch::out()
-{
-    dynamic_cast<Mode *>(Mode::current())->switchOut();
-}
-
-
-
 inline
 void Mode::switchIn()
 {
@@ -34,6 +22,50 @@ void Mode::switchOut()
     __mutex.unlock();
     cfatal(ret != CUDA_SUCCESS, "Unable to switch back from CUDA mode");
 #endif
+}
+
+inline
+IOBuffer *Mode::getIOBuffer(size_t size)
+{
+    IOBuffer *buffer = new IOBuffer(this, size);
+    if(buffer->addr() == NULL) { delete buffer; return NULL; }
+    return buffer;
+}
+
+inline
+gmacError_t Mode::bufferToDevice(IOBuffer *buffer, void *addr, size_t len)
+{
+    switchIn();
+    gmacError_t ret = context->bufferToDevice(buffer, addr, len);
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::waitDevice()
+{
+    switchIn();
+    gmacError_t ret = context->waitDevice();
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::bufferToHost(IOBuffer *buffer, void *addr, size_t len)
+{
+    switchIn();
+    gmacError_t ret = context->bufferToHost(buffer, addr, len);
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::waitHost()
+{
+    switchIn();
+    gmacError_t ret = context->waitHost();
+    switchOut();
+    return ret;
 }
 
 }}

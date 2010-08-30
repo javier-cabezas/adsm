@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include <paraver.h>
 
 #include "Accelerator.h"
+#include "IOBuffer.h"
 #include "Kernel.h"
 #include "Module.h"
 
@@ -53,27 +54,6 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace gpu {
 
-class Buffer : public util::Logger, public util::Lock {
-protected:
-    Mode *mode;
-
-    void *buffer;
-    size_t __size;
-    bool __ready;
-
-    friend class Context;
-public:
-    Buffer(paraver::LockName name, Mode *mode);
-    ~Buffer();
-
-    inline void *ptr() const { return buffer; }
-    inline size_t size() const { return __size; }
-    inline bool ready() const { return __ready; }
-    inline void busy() { __ready = false; }
-    inline void idle() { __ready = true; }
-};
-
-
 class Context : public gmac::Context {
 protected:
     Accelerator *acc;
@@ -85,8 +65,8 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-    Buffer inputBuffer;
-    Buffer outputBuffer;
+    IOBuffer inputBuffer;
+    IOBuffer outputBuffer;
 
     typedef CUstream Stream;
     Stream streamLaunch;
@@ -110,6 +90,11 @@ public:
 
     gmacError_t sync();
     gmac::KernelLaunch *launch(const char *);
+
+    gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t waitDevice();
+    gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t waitHost();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
