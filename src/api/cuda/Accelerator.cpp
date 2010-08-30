@@ -109,4 +109,10 @@ gmacError_t Accelerator::free(void *addr)
     return error(ret);
 }
 
+gmacError_t Accelerator::sync()
+{
+    CUresult ret = cuCtxSynchronize();
+    return error(ret);
+}
+
 }}

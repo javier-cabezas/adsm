@@ -1,7 +1,21 @@
 #ifndef __API_CUDA_MODE_IPP_H_
 #define __API_CUDA_MODE_IPP_H_
 
+#include "Context.h"
+
 namespace gmac { namespace gpu {
+
+inline
+void Switch::in()
+{
+    dynamic_cast<Mode *>(Mode::current())->switchIn();
+}
+
+inline
+void Switch::out()
+{
+    dynamic_cast<Mode *>(Mode::current())->switchOut();
+}
 
 inline
 void Mode::switchIn()
@@ -25,48 +39,39 @@ void Mode::switchOut()
 }
 
 inline
-IOBuffer *Mode::getIOBuffer(size_t size)
-{
-    IOBuffer *buffer = new IOBuffer(this, size);
-    if(buffer->addr() == NULL) { delete buffer; return NULL; }
-    return buffer;
-}
-
-inline
-gmacError_t Mode::bufferToDevice(IOBuffer *buffer, void *addr, size_t len)
+gmacError_t Mode::bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t len)
 {
     switchIn();
-    gmacError_t ret = context->bufferToDevice(buffer, addr, len);
+    gmacError_t ret = context->bufferToDevice(dynamic_cast<IOBuffer *>(buffer), addr, len);
     switchOut();
     return ret;
 }
 
 inline
-gmacError_t Mode::waitDevice()
+gmacError_t Mode::bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t len)
 {
     switchIn();
-    gmacError_t ret = context->waitDevice();
+    gmacError_t ret = context->bufferToHost(dynamic_cast<IOBuffer *>(buffer), addr, len);
     switchOut();
     return ret;
 }
 
 inline
-gmacError_t Mode::bufferToHost(IOBuffer *buffer, void *addr, size_t len)
+void Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     switchIn();
-    gmacError_t ret = context->bufferToHost(buffer, addr, len);
+    context->call(Dg, Db, shared, tokens);
     switchOut();
-    return ret;
 }
 
 inline
-gmacError_t Mode::waitHost()
+void Mode::argument(const void *arg, size_t size, off_t offset)
 {
     switchIn();
-    gmacError_t ret = context->waitHost();
+    context->argument(arg, size, offset);
     switchOut();
-    return ret;
 }
+
 
 }}
 

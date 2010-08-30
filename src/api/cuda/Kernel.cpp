@@ -82,7 +82,7 @@ KernelLaunch::execute()
 
     pushEventState(Running, paraver::Accelerator, 0x10000000 + mode->id(), AcceleratorRun);
 
-	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
+	ret = cuLaunchGridAsync(_f, grid().x, grid().y, __stream);
 
 exit:
     Switch::out();

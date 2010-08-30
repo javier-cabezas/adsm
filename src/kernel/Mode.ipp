@@ -5,6 +5,31 @@
 
 namespace gmac {
 
+inline
+void Mode::kernel(gmacKernel_t k, Kernel * kernel)
+{
+    assertion(kernel != NULL);
+    trace("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
+    KernelMap::iterator i;
+    i = kernels.find(k);
+    assertion(i == kernels.end());
+    kernels[k] = kernel;
+}
+
+#if 0
+inline
+Kernel *Mode::kernel(gmacKernel_t k)
+{
+    KernelMap::iterator i;
+    i = kernels.find(k);
+    if (i != kernels.end()) {
+        return i->second;
+    }
+    return NULL;
+}
+#endif
+
+
 inline 
 Mode *Mode::current()
 {
@@ -78,22 +103,26 @@ gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 }
 
 inline
+gmac::KernelLaunch *Mode::launch(const char *kernel)
+{
+    KernelMap::iterator i = kernels.find(kernel);
+    assert(i != kernels.end());
+    gmac::Kernel * k = i->second;
+    assertion(k != NULL);
+    switchIn();
+    gmac::KernelLaunch *l  = context->launch(k);
+    switchOut();
+
+    return l;
+}
+
+inline
 gmacError_t Mode::sync()
 {
     switchIn();
     __error = context->sync();
     switchOut();
     return __error;
-}
-
-
-inline
-gmac::KernelLaunch *Mode::launch(gmacKernel_t kernel)
-{
-    switchIn();
-    gmac::KernelLaunch *ret = context->launch(kernel);
-    switchOut();
-    return ret;
 }
 
 }

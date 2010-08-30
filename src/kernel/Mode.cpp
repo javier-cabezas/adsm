@@ -24,15 +24,15 @@ Mode::~Mode()
     if(count > 0)
         gmac::util::Logger::WARNING("Deleting in-use Execution Mode");
     if(this == key.get()) key.set(NULL);
+
+    KernelMap::iterator it;
+    for (it = kernels.begin(); it != kernels.end(); it++) {
+        delete it->second;
+    }
+
     delete map;
     delete context;
     acc->destroyMode(this); 
 }
-
-IOBuffer *Mode::getIOBuffer(size_t size)
-{
-    return new IOBuffer(this, size);
-}
-
 
 }

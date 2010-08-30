@@ -53,18 +53,16 @@ ssize_t read(int fd, void *buf, size_t count)
 
     manager->invalidate(buf, count);
 
-    size_t bufferSize = paramBufferPageLockedSize * paramPageSize;
-    gmac::IOBuffer *buffer = dstMode->getIOBuffer(bufferSize);
+    gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
 
     size_t left = count;
     off_t  off  = 0;
     while (left != 0) {
-        size_t bytes= left < bufferSize? left: bufferSize;
+        size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
-        err = buffer->fill(proc->translate(((char *) buf) + off), bytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        err = buffer->sync();
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        ret = dstMode->bufferToDevice(buffer, proc->translate((char *)buf + off), bytes);
+        gmac::util::Logger::ASSERTION(ret == gmacSuccess);
+
         left -= bytes;
         off  += bytes;
     }
@@ -99,15 +97,12 @@ ssize_t write(int fd, const void *buf, size_t count)
     manager->release((void *)buf, count);
 
     off_t  off  = 0;
-    size_t bufferSize = paramBufferPageLockedSize * paramPageSize;
-    gmac::IOBuffer *buffer = srcMode->getIOBuffer(bufferSize);
+    gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
 
     size_t left = count;
     while (left != 0) {
-        size_t bytes = left < bufferSize? left: bufferSize;
-        err = buffer->fill(proc->translate((char *)buf + off), bytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        err = buffer->sync();
+        size_t bytes = left < buffer->size() ? left : buffer->size();
+        err = srcMode->bufferToHost(buffer, proc->translate((char *)buf + off), bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, buffer->addr(), bytes);
 

@@ -2,13 +2,14 @@ MAINTAINERCLEANFILES=Makefile.in
 
 noinst_PROGRAMS = bandwidth threadBandwidth\
 				  schedAllocation transferBlocks\
-				  hybridComputation gmacHybridComputation gmacVecAdd\
-		gmacTexture gmacConstant\
-		gmacMemset gmacMemcpy\
+                  gmacVecAdd\
+                  gmacTexture gmacConstant\
 		gmacThreadVecAdd gmacSharedVecAdd\
 		gmacStencil gmacThreadStencil\
 		gmacMatrixMul\
 	 	gmacPingPong gmacCompress gmacCompressSend\
+		gmacMemset gmacMemcpy\
+        hybridComputation gmacHybridComputation\
 		gmacMigration
 #		vmVecAdd vmNull vmStencil vmMatrixMul
 

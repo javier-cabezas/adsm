@@ -14,8 +14,19 @@ Mode::Mode(Accelerator *acc) :
 
     switchIn();
     context = new Context(acc, this);
-    switchOut();
+    ioBuffer = new IOBuffer(paramBufferPageLockedSize * paramPageSize);
     gmac::Mode::context = context;
+    modules = ModuleDescriptor::createModules(*this);
+    switchOut();
+}
+
+Mode::~Mode()
+{
+    ModuleVector::const_iterator m;
+    for(m = modules.begin(); m != modules.end(); m++) {
+        delete (*m);
+    }
+    modules.clear();
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
@@ -38,21 +49,36 @@ gmacError_t Mode::hostFree(void *addr)
     return Accelerator::error(r);
 }
 
+
 const Variable *Mode::constant(gmacVariable_t key) const
 {
-    return context->constant(key);
+    ModuleVector::const_iterator m;
+    for(m = modules.begin(); m != modules.end(); m++) {
+        const Variable *var = (*m)->constant(key);
+        if(var != NULL) return var;
+    }
+    return NULL;
 }
 
 const Variable *Mode::variable(gmacVariable_t key) const
 {
-    return context->variable(key);
+    ModuleVector::const_iterator m;
+    for(m = modules.begin(); m != modules.end(); m++) {
+        const Variable *var = (*m)->variable(key);
+        if(var != NULL) return var;
+    }
+    return NULL;
 }
 
 const Texture *Mode::texture(gmacTexture_t key) const
 {
-    return context->texture(key);
+    ModuleVector::const_iterator m;
+    for(m = modules.begin(); m != modules.end(); m++) {
+        const Texture *tex = (*m)->texture(key);
+        if(tex != NULL) return tex;
+    }
+    return NULL;
 }
-
 
 Stream Mode::eventStream() const {
     return context->eventStream();
