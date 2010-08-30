@@ -103,6 +103,7 @@ gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
     return error(ret);
 }
 
+inline
 gmacError_t Accelerator::syncStream(Stream stream)
 {
     switchIn();
