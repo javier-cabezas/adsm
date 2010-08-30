@@ -9,13 +9,21 @@
 
 #include <pthread.h>
 
-static gmac::util::Lock *pLock;
+class ThreadLock : public gmac::util::Lock {
+public:
+    ThreadLock() : gmac::util::Lock(LockPthread) {};
+
+    void lock() { gmac::util::Lock::lock(); }
+    void unlock() { gmac::util::Lock::unlock(); }
+};
+
+static ThreadLock *pLock;
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
 {
-	pLock = new gmac::util::Lock(LockPthread);
+	pLock = new ThreadLock;
 	LOAD_SYM(__pthread_create, pthread_create);
 }
 
