@@ -24,6 +24,8 @@ void Mode::switchIn()
     __mutex.lock();
     CUresult ret = cuCtxPushCurrent(__ctx);
     cfatal(ret != CUDA_SUCCESS, "Unable to switch to CUDA mode");
+#else
+    acc->switchIn();
 #endif
 }
 
@@ -35,6 +37,8 @@ void Mode::switchOut()
     CUresult ret = cuCtxPopCurrent(&tmp);
     __mutex.unlock();
     cfatal(ret != CUDA_SUCCESS, "Unable to switch back from CUDA mode");
+#else
+    acc->switchOut();
 #endif
 }
 

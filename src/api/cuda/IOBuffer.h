@@ -43,8 +43,6 @@ class IOBuffer : public gmac::IOBuffer, public gmac::util::Logger {
 public:
     typedef enum { Idle, ToDevice, ToHost} State;
 protected:
-    Mode *mode;
-
     State __state;
     bool pin;
 public:

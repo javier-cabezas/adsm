@@ -23,9 +23,13 @@ Mode::Mode(Accelerator *acc) :
 Mode::~Mode()
 {
     ModuleVector::const_iterator m;
+    switchIn();
     for(m = modules.begin(); m != modules.end(); m++) {
         delete (*m);
     }
+    delete context;
+    delete ioBuffer;
+    switchOut();
     modules.clear();
 }
 

@@ -17,7 +17,7 @@ Object::Object(void *__addr, size_t __size) :
 
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size) :
-    Object(NULL, __size),
+    Object(NULL, size),
     __accelerator(NULL)
 {
     gmacError_t ret = gmacSuccess;
