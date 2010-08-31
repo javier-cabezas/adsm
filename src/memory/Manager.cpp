@@ -77,6 +77,7 @@ Manager::free(void * addr)
     gmacError_t ret = gmacSuccess;
     Object *object = Mode::current()->findObject(addr);
     if(object != NULL)  {
+        object->lock();
         Mode::current()->removeObject(object);
         delete object;
     }
@@ -88,8 +89,12 @@ gmacError_t Manager::acquire()
 {
     const Map &map = Mode::current()->objects();
     Map::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++)
-        protocol->acquire(*i->second);
+    for(i = map.begin(); i != map.end(); i++) {
+        Object &object = *i->second;
+        object.lock();
+        protocol->acquire(object);
+        object.unlock();
+    }
     return gmacSuccess;
 }
 
@@ -97,8 +102,12 @@ gmacError_t Manager::release()
 {
     const Map &map = Mode::current()->objects();
     Map::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++)
-        protocol->release(*i->second);
+    for(i = map.begin(); i != map.end(); i++) {
+        Object &object = *i->second;
+        object.lock();
+        protocol->release(object);
+        object.unlock();
+    }
     return gmacSuccess;
 }
 
@@ -124,20 +133,26 @@ gmacError_t Manager::invalidate(void *addr, size_t size)
 
 bool Manager::read(void *addr)
 {
+    bool ret = true;
     Object *obj = gmac::Mode::current()->findObject(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
-    if(protocol->read(*obj, addr) != gmacSuccess) return false;
-    return true;
+    obj->lock();
+    if(protocol->read(*obj, addr) != gmacSuccess) ret = false;
+    obj->unlock();
+    return ret;
 }
 
 bool Manager::write(void *addr)
 {
+    bool ret = true;
     Object *obj = gmac::Mode::current()->findObject(addr);
     if(obj == NULL) return false;
     trace("Write access for object %p", obj->addr());
-    if(protocol->write(*obj, addr) != gmacSuccess) return false;
-    return true;
+    obj->lock();
+    if(protocol->write(*obj, addr) != gmacSuccess) ret = false;
+    obj->unlock();
+    return ret;
 }
 
 }}
