@@ -12,6 +12,7 @@
 
 #include <kernel/Process.h>
 #include <kernel/Context.h>
+#include <kernel/IOBuffer.h>
 
 #include <memory/Manager.h>
 #include <memory/Allocator.h>
@@ -287,7 +288,6 @@ gmacMemset(void *s, int c, size_t n)
 }
 
 
-#if 0
 void *
 gmacMemcpy(void *dst, const void *src, size_t n)
 {
@@ -301,56 +301,45 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmac::Mode *srcMode = proc->owner(src);
 	if (dstMode == NULL && srcMode == NULL) return NULL;
 
-	gmac::Context &dstCtx = dstMode->context();
-	gmac::Context &srcCtx = srcMode->context();
-
     // TODO - copyDevice can be always asynchronous
 	if(dstMode == NULL) {	    // From device
 		manager->release((void *)src, n);
-		err = srcCtx.copyToHost(dst, proc->translate(src), n);
+		err = srcMode->copyToHost(dst, proc->translate(src), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
 		manager->invalidate(dst, n);
-		err = dstCtx.copyToDevice(proc->translate(dst),src, n);
+		err = dstMode->copyToDevice(proc->translate(dst),src, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
-    else if(&dstCtx == &srcCtx) {	// Same device copy
+    else if(dstMode == srcMode) {	// Same device copy
 		manager->release((void *)src, n);
 		manager->invalidate(dst, n);
-		err = dstCtx.copyDevice(proc->translate(dst), proc->translate(src), n);
+		err = dstMode->copyDevice(proc->translate(dst), proc->translate(src), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
 	else { // dstCtx != srcCtx
         gmac::Mode *mode = gmac::Mode::current();
         gmac::util::Logger::ASSERTION(mode != NULL);
-        gmac::Context &ctx = mode->context();
 
         manager->release((void *)src, n);
         manager->invalidate(dst, n);
 
-        ctx.lockWrite();
-        size_t bufferSize = ctx.bufferPageLockedSize();
-        void *tmp        = ctx.bufferPageLocked();
+        off_t off = 0;
+        gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
 
         size_t left = n;
-        off_t  off  = 0;
         while (left != 0) {
-            size_t bytes = left < bufferSize ? left : bufferSize;
-            err = srcCtx.copyToHostAsync(tmp, proc->translate(((char *) src) + off), bytes);
+            size_t bytes = left < buffer->size() ? left : buffer->size();
+            err = srcMode->bufferToHost(buffer, proc->translate((char *)src + off), bytes);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
-            srcCtx.syncToHost();
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
-            err = dstCtx.copyToDeviceAsync(proc->translate(((char *) dst) + off), tmp, bytes);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
-            srcCtx.syncToDevice();
+
+            err = dstMode->bufferToDevice(buffer, proc->translate((char *)dst + off), bytes);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
             left -= bytes;
             off  += bytes;
-            gmac::util::Logger::TRACE("Copying %zd %zd\n", bytes, bufferSize);
         }
-        ctx.unlock();
 
 	}
 
@@ -358,7 +347,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	return ret;
 
 }
-#endif
 
 void
 gmacSend(pthread_t id)

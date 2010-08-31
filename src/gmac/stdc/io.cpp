@@ -65,7 +65,6 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    delete buffer;
     popState();
 	__exitGmac();
 
@@ -108,7 +107,6 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    delete buffer;
     popState();
 	__exitGmac();
 
