@@ -11,17 +11,8 @@ inline Lazy::~Lazy()
 
 inline Object *Lazy::createObject(size_t size)
 {
-    return new SharedObject<Lazy::State>(size);
+    return new SharedObject<Lazy::State>(size, ReadOnly);
 }
-
-inline gmacError_t read(Object &o, void *addr)
-{
-    SharedObject<Lazy::State> &obj =
-        dynamic_cast<SharedObject<Lazy::State> &>(o);
-
-    return gmacSuccess;
-}
-
 
 } } }
 

@@ -1,4 +1,5 @@
 #include <memory/Manager.h>
+#include <memory/Map.h>
 #include <memory/Object.h>
 
 #include <memory/protocol/Lazy.h>
@@ -44,7 +45,7 @@ Manager::Manager()
         fatal("Protocol not supported yet");
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        __protocol = new protocol::Lazy();
+        protocol = new protocol::Lazy();
     }
     else {
         fatal("Memory Coherence Protocol not defined");
@@ -57,7 +58,7 @@ Manager::alloc(void ** addr, size_t size)
 {
     gmacError_t ret;
     // Create new shared object
-    Object *object = __protocol->createObject(size);
+    Object *object = protocol->createObject(size);
     *addr = object->addr();
     if(*addr == NULL) {
         delete object;
@@ -83,52 +84,60 @@ Manager::free(void * addr)
     return ret;
 }
 
-gmacError_t
-Manager::adquire()
+gmacError_t Manager::acquire()
+{
+    const Map &map = Mode::current()->objects();
+    Map::const_iterator i;
+    for(i = map.begin(); i != map.end(); i++)
+        protocol->acquire(*i->second);
+    return gmacSuccess;
+}
+
+gmacError_t Manager::release()
+{
+    const Map &map = Mode::current()->objects();
+    Map::const_iterator i;
+    for(i = map.begin(); i != map.end(); i++)
+        protocol->release(*i->second);
+    return gmacSuccess;
+}
+
+gmacError_t Manager::invalidate()
 {
     return gmacSuccess;
 }
 
-gmacError_t
-Manager::release()
+gmacError_t Manager::adquire(void *addr, size_t size)
 {
     return gmacSuccess;
 }
 
-gmacError_t
-Manager::invalidate()
+gmacError_t Manager::release(void *addr, size_t size)
 {
     return gmacSuccess;
 }
 
-gmacError_t
-Manager::adquire(void *addr, size_t size)
+gmacError_t Manager::invalidate(void *addr, size_t size)
 {
     return gmacSuccess;
 }
 
-gmacError_t
-Manager::release(void *addr, size_t size)
+bool Manager::read(void *addr)
 {
-    return gmacSuccess;
+    Object *obj = gmac::Mode::current()->findObject(addr);
+    if(obj == NULL) return false;
+    trace("Read access for object %p", obj->addr());
+    if(protocol->read(*obj, addr) != gmacSuccess) return false;
+    return true;
 }
 
-gmacError_t
-Manager::invalidate(void *addr, size_t size)
+bool Manager::write(void *addr)
 {
-    return gmacSuccess;
-}
-
-bool
-Manager::read(void *addr)
-{
-    return false;
-}
-
-bool
-Manager::write(void *addr)
-{
-    return false;
+    Object *obj = gmac::Mode::current()->findObject(addr);
+    if(obj == NULL) return false;
+    trace("Write access for object %p", obj->addr());
+    if(protocol->write(*obj, addr) != gmacSuccess) return false;
+    return true;
 }
 
 }}

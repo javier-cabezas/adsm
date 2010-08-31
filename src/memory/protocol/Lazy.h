@@ -45,9 +45,9 @@ namespace gmac { namespace memory { namespace protocol {
 class Lazy : public gmac::memory::Protocol, gmac::memory::Handler {
 public:
     typedef enum {
-        INVALID,
-        READONLY,
-        DIRYT
+        Invalid,
+        ReadOnly,
+        Dirty 
     } State;
 protected:
 

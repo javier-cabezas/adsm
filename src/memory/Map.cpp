@@ -81,25 +81,23 @@ void Map::insert(Object *obj)
 }
 
 
-Object *Map::remove(const void *addr)
+void Map::remove(Object *obj)
 {
     ObjectMap::iterator i;
     ObjectMap &__global = proc->global();
     __global.lockWrite();
-    i = __global.upper_bound(addr);
-    Object *obj = i->second;
-    assertion(i != __global.end() && obj->start() == addr);
+    i = __global.find(obj->end());
+    assertion(i != __global.end());
     __global.erase(i);
     __global.unlock();
     // If the region is global (not owned by the context) return
 
     trace("Removing Object %p", obj->start());
     lockWrite();
-    i = upper_bound(addr);
-    assertion(i != end() && obj->start() == addr);
+    i = ObjectMap::find(obj->end());
+    assertion(i != end());
     erase(i);
     unlock();
-    return obj;
 }
 
 

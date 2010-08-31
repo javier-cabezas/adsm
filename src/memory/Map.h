@@ -76,7 +76,7 @@ public:
 #endif
 
     void insert(Object *obj);
-    Object *remove(const void *addr);
+    void remove(Object *obj);
     void insertShared(Object *obj);
     Object *removeShared(const void *addr);
 

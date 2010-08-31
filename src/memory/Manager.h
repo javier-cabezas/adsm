@@ -58,7 +58,7 @@ protected:
     static int __count;
     static Manager *__manager;
 
-    Protocol *__protocol;
+    Protocol *protocol;
 
     Manager();
     ~Manager();
@@ -76,7 +76,7 @@ public:
     gmacError_t free (void *addr);
 
     // Coherence protocol interface
-    gmacError_t adquire();
+    gmacError_t acquire();
     gmacError_t release();
     gmacError_t invalidate();
 

@@ -87,21 +87,29 @@ typedef std::set<Object *> ObjectSet;
 
 template<typename T>
 class SharedObject : public Object {
-protected:
-    typedef std::set< SystemBlock<T> *> SystemSet;
-    SystemSet __system;
-    AcceleratorBlock *__accelerator;
 public:
-    SharedObject(size_t size);
+    typedef std::map<void *, SystemBlock<T> *> SystemMap;
+protected:
+    SystemMap systemMap;
+    AcceleratorBlock *accelerator;
+public:
+    SharedObject(size_t size, T init);
     ~SharedObject();
 
     void *device() const;
+    void *device(void *addr) const;
+    SystemBlock<T> *findBlock(void *addr);
+    inline SystemMap &blocks() { return systemMap; }
+
+    void state(T s);
 };
 
 
 #ifndef USE_MMAP
+template<typename T>
 class ReplicatedObject : public Object {
 protected:
+    typedef std::set< SystemBlock<T> *, BlockComp> SystemSet;
     typedef std::map<Mode *, SystemSet> SystemMap;
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
