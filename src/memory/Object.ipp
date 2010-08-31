@@ -9,7 +9,7 @@ namespace gmac { namespace memory {
 
 inline
 Object::Object(void *__addr, size_t __size) :
-    RWLock(paraver::LockObject),
+    Lock(paraver::LockObject),
     __addr(__addr),
     __size(__size),
     __owner(Mode::current())
@@ -20,7 +20,6 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     Object(NULL, size),
     accelerator(NULL)
 {
-    lockWrite();
     gmacError_t ret = gmacSuccess;
     void *device = NULL;
     // Allocate device and host memory
@@ -40,13 +39,11 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
             ptr + paramPageSize,
             new SystemBlock<T>(ptr, paramPageSize, init)));
     }
-    unlock();
 }
 
 template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
-    lockWrite();
     if(__addr == NULL) return;
     // Clean all system blocks
     typename SystemMap::const_iterator i;
@@ -58,7 +55,6 @@ inline SharedObject<T>::~SharedObject()
     
     unmap(__addr, __size);
     __owner->free(device);
-    unlock();
 }
 
 template<typename T>
@@ -78,21 +74,17 @@ template<typename T>
 inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr) 
 {
     SystemBlock<T> *ret = NULL;
-    lockRead();
     typename SystemMap::const_iterator block = systemMap.upper_bound(addr);
     if(block != systemMap.end()) ret = block->second;
-    unlock();
     return ret;
 }
 
 template<typename T>
 inline void SharedObject<T>::state(T s)
 {
-    lockWrite();
     typename SystemMap::const_iterator i;
     for(i = systemMap.begin(); i != systemMap.end(); i++)
         i->second->state(s);
-    unlock();
 }
 
 }}
