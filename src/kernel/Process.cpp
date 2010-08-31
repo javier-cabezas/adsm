@@ -157,9 +157,7 @@ void *Process::translate(void *addr)
     memory::Object *object = Mode::current()->findObject(addr);
     if(object == NULL) object = __shared.find(addr);
     if(object == NULL) return NULL;
-    off_t offset = (uint8_t *)addr - (uint8_t *)object->addr();
-    uint8_t *ret= (uint8_t *)object->device() + offset;
-    return ret; 
+    return object->device(addr); 
 }
 
 void Process::send(THREAD_ID id)
@@ -202,6 +200,7 @@ void Process::copy(THREAD_ID id)
     mode->inc();
     q->second->queue->push(mode);
 }
+
 Mode *Process::owner(const void *addr)
 {
     memory::Object *object = __global.find(addr);

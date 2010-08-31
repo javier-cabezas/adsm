@@ -63,7 +63,6 @@ private:
 protected:
     void *__addr;
     size_t __size;
-    Mode *__owner;
 
     Object(void *__addr, size_t __size);
 
@@ -81,8 +80,12 @@ public:
     inline void *end() const {
         return (void *)((uint8_t *)__addr + __size);
     }
-    inline Mode *owner() const { return __owner; }
-    virtual void *device() const = 0;
+
+    virtual gmacError_t acquire(Block *block) = 0;
+    virtual gmacError_t release(Block *block) = 0;
+
+    virtual Mode *owner() const = 0;
+    virtual void *device(void *addr) const = 0;
 };
 
 typedef std::set<Object *> ObjectSet;
@@ -92,16 +95,22 @@ class SharedObject : public Object {
 public:
     typedef std::map<void *, SystemBlock<T> *> SystemMap;
 protected:
+    Mode *__owner;
+
     SystemMap systemMap;
     AcceleratorBlock *accelerator;
 public:
     SharedObject(size_t size, T init);
     ~SharedObject();
 
-    void *device() const;
-    void *device(void *addr) const;
     SystemBlock<T> *findBlock(void *addr);
     inline SystemMap &blocks() { return systemMap; }
+
+    gmacError_t acquire(Block *block);
+    gmacError_t release(Block *block);
+
+    void *device(void *addr) const;
+    inline Mode *owner() const { return __owner; }
 
     void state(T s);
 };
@@ -111,11 +120,11 @@ public:
 template<typename T>
 class ReplicatedObject : public Object {
 protected:
-    typedef std::set< SystemBlock<T> *, BlockComp> SystemSet;
+    typedef std::map<void *, SystemBlock<T> *, BlockComp> SystemMap;
     typedef std::map<Mode *, SystemSet> SystemMap;
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
-    SystemMap __system;
+    SystemMap systemMap;
     AcceleratorMap __accelerator;
 public:
     ReplicatedObject(size_t __size);

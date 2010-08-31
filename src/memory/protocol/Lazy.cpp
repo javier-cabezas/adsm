@@ -6,6 +6,7 @@ namespace gmac { namespace memory { namespace protocol {
 
 gmacError_t Lazy::acquire(Object &obj)
 {
+    gmacError_t ret = gmacSuccess;
     SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
     SharedObject<State>::SystemMap &map = object.blocks();
     SharedObject<State>::SystemMap::iterator i;
@@ -21,11 +22,12 @@ gmacError_t Lazy::acquire(Object &obj)
             case Invalid: break;
         }
     }
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Lazy::release(Object &obj)
 {
+    gmacError_t ret = gmacSuccess;
     SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
     SharedObject<State>::SystemMap &map = object.blocks();
     SharedObject<State>::SystemMap::iterator i;
@@ -33,7 +35,7 @@ gmacError_t Lazy::release(Object &obj)
         SystemBlock<State> *block = i->second;
         switch(block->state()) {
             case Dirty:
-                object.owner()->copyToDevice(object.device(block->addr()), block->addr(), block->size());
+                ret = object.release(block);
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
                     fatal("Unable to set memory permissions");
                 block->state(Invalid);
@@ -44,7 +46,7 @@ gmacError_t Lazy::release(Object &obj)
             break;
         }
     }
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Lazy::invalidate(Object &obj)
@@ -54,7 +56,7 @@ gmacError_t Lazy::invalidate(Object &obj)
     SharedObject<State>::SystemMap::iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
-        block->state(Dirty);
+        block->state(Invalid);
     }
     if(Memory::protect(object.addr(), object.size(), PROT_NONE))
         fatal("Unable to set memory permissions");
@@ -68,7 +70,7 @@ gmacError_t Lazy::read(Object &obj, void *addr)
     if(block == NULL) return gmacErrorInvalidValue;
     if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
         return gmacErrorInvalidValue;
-    object.owner()->copyToHost(block->addr(), object.device(block->addr()), block->size());
+    object.acquire(block);
     if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
         return gmacErrorInvalidValue;
     block->state(ReadOnly);
