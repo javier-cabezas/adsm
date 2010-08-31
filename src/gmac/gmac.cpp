@@ -274,19 +274,20 @@ gmacGetLastError()
 	return ret;
 }
 
-#if 0
 void *
 gmacMemset(void *s, int c, size_t n)
 {
     __enterGmac();
     void *ret = s;
-    gmac::Context &ctx = gmac::Mode::current()->context();
+    gmac::Mode *mode = gmac::Mode::current();
     manager->invalidate(s, n);
-    ctx.memset(proc->translate(s), c, n);
+    mode->memset(proc->translate(s), c, n);
 	__exitGmac();
     return ret;
 }
 
+
+#if 0
 void *
 gmacMemcpy(void *dst, const void *src, size_t n)
 {

@@ -106,6 +106,8 @@ public:
     gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, Stream stream);
     gmacError_t syncStream(Stream stream);
 
+    gmacError_t memset(void *addr, int c, size_t size);
+
 	gmacError_t sync();
 	gmac::KernelLaunch * launch(gmacKernel_t kernel);
 

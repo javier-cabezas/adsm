@@ -90,6 +90,8 @@ public:
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
+    gmacError_t memset(void *addr, int c, size_t size);
+
     gmac::KernelLaunch *launch(gmac::Kernel *kernel);
     gmacError_t sync();
 

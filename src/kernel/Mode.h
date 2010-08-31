@@ -109,6 +109,8 @@ public:
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
+    /*!  \brief Sets the contents of accelerator memory */
+    virtual gmacError_t memset(void *addr, int c, size_t size);
 
 	/*!  \brief Launches the execution of a kernel */
 	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel);

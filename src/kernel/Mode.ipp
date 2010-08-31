@@ -91,6 +91,15 @@ gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 }
 
 inline
+gmacError_t Mode::memset(void *addr, int c, size_t size)
+{
+    switchIn();
+    __error = context->memset(addr, c, size);
+    switchOut();
+    return __error;
+}
+
+inline
 gmac::KernelLaunch *Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels.find(kernel);
