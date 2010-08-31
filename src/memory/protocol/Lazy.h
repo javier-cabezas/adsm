@@ -40,9 +40,11 @@ WITH THE SOFTWARE.  */
 #include <memory/Handler.h>
 #include <memory/Object.h>
 
+#include <util/Logger.h>
+
 namespace gmac { namespace memory { namespace protocol {
 
-class Lazy : public gmac::memory::Protocol, gmac::memory::Handler {
+class Lazy : public gmac::memory::Protocol, public gmac::memory::Handler {
 public:
     typedef enum {
         Invalid,
@@ -60,8 +62,10 @@ public:
 
     gmacError_t read(Object &obj, void *addr);
     gmacError_t write(Object &obj, void *addr);
+
     gmacError_t acquire(Object &obj);
     gmacError_t release(Object &obj);
+    gmacError_t invalidate(Object &obj);
 };
 
 

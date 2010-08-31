@@ -15,7 +15,7 @@ gmacError_t Lazy::acquire(Object &obj)
             case Dirty:
             case ReadOnly:
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
-                    return gmacErrorInvalidValue;
+                    fatal("Unable to set memory permissions");
                 block->state(ReadOnly);
                 break;
             case Invalid: break;
@@ -35,7 +35,7 @@ gmacError_t Lazy::release(Object &obj)
             case Dirty:
                 object.owner()->copyToDevice(object.device(block->addr()), block->addr(), block->size());
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
-                    return gmacErrorInvalidValue;
+                    fatal("Unable to set memory permissions");
                 block->state(Invalid);
             break;
 
@@ -44,6 +44,20 @@ gmacError_t Lazy::release(Object &obj)
             break;
         }
     }
+    return gmacSuccess;
+}
+
+gmacError_t Lazy::invalidate(Object &obj)
+{
+    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
+    SharedObject<State>::SystemMap &map = object.blocks();
+    SharedObject<State>::SystemMap::iterator i;
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> *block = i->second;
+        block->state(Dirty);
+    }
+    if(Memory::protect(object.addr(), object.size(), PROT_NONE))
+        fatal("Unable to set memory permissions");
     return gmacSuccess;
 }
 

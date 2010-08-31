@@ -142,6 +142,12 @@ gmacError_t Context::copyDevice(void *dst, const void *src, size_t size)
     return ret;
 }
 
+gmacError_t Context::memset(void *addr, int c, size_t size)
+{
+    gmacError_t ret = acc->memset(addr, c, size);
+    return ret;
+}
+
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
     __call.stream(streamLaunch);

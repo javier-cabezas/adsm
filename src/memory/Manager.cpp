@@ -113,21 +113,53 @@ gmacError_t Manager::release()
 
 gmacError_t Manager::invalidate()
 {
+    const Map &map = Mode::current()->objects();
+    Map::const_iterator i;
+    for(i = map.begin(); i != map.end(); i++) {
+        Object &object = *i->second;
+        object.lock();
+        protocol->invalidate(object);
+        object.unlock();
+    }
     return gmacSuccess;
 }
 
 gmacError_t Manager::adquire(void *addr, size_t size)
 {
+    uint8_t *ptr = (uint8_t *)addr;
+    do {
+        Object *obj = Mode::current()->findObject(ptr);
+        obj->lock();
+        protocol->invalidate(*obj);
+        ptr += obj->size();
+        obj->unlock();
+    } while(ptr < (uint8_t *)addr + size);
     return gmacSuccess;
 }
 
 gmacError_t Manager::release(void *addr, size_t size)
 {
+    uint8_t *ptr = (uint8_t *)addr;
+    do {
+        Object *obj = Mode::current()->findObject(ptr);
+        obj->lock();
+        protocol->release(*obj);
+        ptr += obj->size();
+        obj->unlock();
+    } while(ptr < (uint8_t *)addr + size);
     return gmacSuccess;
 }
 
 gmacError_t Manager::invalidate(void *addr, size_t size)
 {
+    uint8_t *ptr = (uint8_t *)addr;
+    do {
+        Object *obj = Mode::current()->findObject(ptr);
+        obj->lock();
+        protocol->acquire(*obj);
+        ptr += obj->size();
+        obj->unlock();
+    } while(ptr < (uint8_t *)addr + size);
     return gmacSuccess;
 }
 

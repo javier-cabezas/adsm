@@ -4,7 +4,6 @@ namespace gmac { namespace memory {
 
 SharedObject::~SharedObject()
 {
-    lockWrite();
     if(__addr != NULL) {
         void *device = Map::current()->pageTable().translate(__addr);
         __owner->free(device);
@@ -17,7 +16,6 @@ SharedObject::~SharedObject()
             delete (*i);
         __system.clear();
     }
-    unlock();
 }
 
 

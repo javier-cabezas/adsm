@@ -107,6 +107,21 @@ gmacError_t Accelerator::free(void *addr)
     return error(ret);
 }
 
+gmacError_t Accelerator::memset(void *addr, int c, size_t size)
+{
+    CUresult ret = CUDA_SUCCESS;
+    if(size % 32 == 0) {
+        int seed = c | (c << 8) | (c << 16) | (c << 24);
+        ret = cuMemsetD32(gpuAddr(addr), seed, size);
+    }
+    else if(size % 16) {
+        short seed = c | (c << 8);
+        ret = cuMemsetD16(gpuAddr(addr), seed, size);
+    }
+    else ret = cuMemsetD8(gpuAddr(addr), c, size);
+    return error(ret);
+}
+
 gmacError_t Accelerator::sync()
 {
     CUresult ret = cuCtxSynchronize();

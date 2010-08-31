@@ -42,7 +42,7 @@ namespace gmac { namespace memory {
 
 class Object;
 
-class Protocol : util::Logger {
+class Protocol : public util::Logger {
 public:
     virtual ~Protocol() {};
 
@@ -52,6 +52,7 @@ public:
     virtual gmacError_t write(Object &obj, void *addr) = 0;
     virtual gmacError_t acquire(Object &obj) = 0;
     virtual gmacError_t release(Object &obj) = 0;
+    virtual gmacError_t invalidate(Object &obj) = 0;
 };
 
 }}

@@ -66,6 +66,8 @@ public:
 	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
+    virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
+
     virtual gmac::KernelLaunch *launch(gmac::Kernel *kernel) = 0;
     virtual gmacError_t sync() = 0;
 };
