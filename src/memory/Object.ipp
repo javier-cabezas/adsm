@@ -11,13 +11,13 @@ inline
 Object::Object(void *__addr, size_t __size) :
     Lock(paraver::LockObject),
     __addr(__addr),
-    __size(__size),
-    __owner(Mode::current())
+    __size(__size)
 { }
 
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, T init) :
     Object(NULL, size),
+    __owner(Mode::current()),
     accelerator(NULL)
 {
     gmacError_t ret = gmacSuccess;
@@ -57,11 +57,13 @@ inline SharedObject<T>::~SharedObject()
     __owner->free(device);
 }
 
+#if 0
 template<typename T>
 inline void * SharedObject<T>::device() const 
 {
     return accelerator->addr();
 }
+#endif
 
 template<typename T>
 inline void *SharedObject<T>::device(void *addr) const
@@ -69,6 +71,7 @@ inline void *SharedObject<T>::device(void *addr) const
     off_t offset = (unsigned long)addr - (unsigned long)__addr;
     return (uint8_t *)accelerator->addr() + offset;
 }
+
 
 template<typename T>
 inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr) 
@@ -78,6 +81,21 @@ inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr)
     if(block != systemMap.end()) ret = block->second;
     return ret;
 }
+
+template<typename T>
+inline gmacError_t SharedObject<T>::acquire(Block *block)
+{
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)__addr;
+    return accelerator->get(off, block);
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::release(Block *block)
+{
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)__addr;
+    return accelerator->put(off, block);
+}
+
 
 template<typename T>
 inline void SharedObject<T>::state(T s)

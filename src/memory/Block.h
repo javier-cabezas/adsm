@@ -55,22 +55,23 @@ protected:
     size_t __size;
 
     Block(void *addr, size_t size);
+    inline void *mirrorAddress(void *src) const;
 public:
     virtual ~Block() {};
 
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
-
 };
 
 class AcceleratorBlock : public Block {
 protected:
-    Mode *__owner;
+    Mode *owner;
 public:
     AcceleratorBlock(Mode *owner, void *addr, size_t size);
     ~AcceleratorBlock();
 
-    inline Mode *owner() const { return __owner; }
+    gmacError_t put(off_t off, Block *block);
+    gmacError_t get(off_t off, Block *block);
 };
 
 template<typename T>
@@ -80,6 +81,8 @@ protected:
 public:
     SystemBlock(void *addr, size_t size, T state);
     ~SystemBlock();
+
+    gmacError_t update(off_t off, Block *block);
 
     T state();
     void state(T s);
