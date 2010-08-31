@@ -100,7 +100,6 @@ Mode *Process::create(int acc)
             }
         }
     }
-	unlock();
 
 	trace("Creatintg Execution Mode on Acc#%d", usedAcc);
     popState();
@@ -108,6 +107,7 @@ Mode *Process::create(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = __accs[usedAcc]->createMode();
     __modes.insert(mode, __accs[usedAcc]);
+	unlock();
     mode->attach();
     return mode;
 }
