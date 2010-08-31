@@ -92,6 +92,7 @@ public:
     inline memory::Object *findObject(const void *addr) {
         return map->find(addr);
     }
+    inline const memory::Map &objects() { return *map; }
 
     /*!  \brief Allocates memory on the accelerator memory */
 	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1);

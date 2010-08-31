@@ -7,7 +7,7 @@ inline Manager::~Manager()
 {
     trace("Memory manager finishes");
     assertion(__count == 0);
-    delete __protocol;
+    delete protocol;
 }
 
 

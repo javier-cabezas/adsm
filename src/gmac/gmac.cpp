@@ -258,7 +258,7 @@ gmacThreadSynchronize()
 
 	gmacError_t ret = gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Memory Sync");
-    manager->invalidate();
+    manager->acquire();
 
 	exitFunction();
 	__exitGmac();

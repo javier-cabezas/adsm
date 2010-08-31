@@ -13,6 +13,7 @@ void * Context::FatBin;
 
 Context::Context(Accelerator *acc, Mode *mode) :
     gmac::Context(acc),
+    acc(acc),
     inputBuffer(paramBufferPageLockedSize * paramPageSize),
     outputBuffer(paramBufferPageLockedSize * paramPageSize),
     __call(dim3(0), dim3(0), 0, NULL)
@@ -119,7 +120,7 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
         return gmac::Context::copyToHost(host, device, size);
 
     gmacError_t ret = gmacSuccess;
-    size_t offset = size;
+    size_t offset = 0;
     inputBuffer.lock();
     while(offset < size) {
         if(ret != gmacSuccess) break;

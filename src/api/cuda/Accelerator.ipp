@@ -61,54 +61,42 @@ int Accelerator::minor() const
 inline
 gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
 {
-    switchIn();
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
-    switchOut();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToDeviceAsync(void *dev, const void *host, size_t size, Stream stream)
 {
-    switchIn();
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
-    switchOut();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
 {
-    switchIn();
     CUresult ret =cuMemcpyDtoH(host, gpuAddr(dev), size);
-    switchOut();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t size, Stream stream)
 {
-    switchIn();
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
-    switchOut();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
 {
-    switchIn();
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
-    switchOut();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::syncStream(Stream stream)
 {
-    switchIn();
     CUresult ret = cuStreamSynchronize(stream);
-    switchOut();
     return error(ret);
 }
 

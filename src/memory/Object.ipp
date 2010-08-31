@@ -16,10 +16,11 @@ Object::Object(void *__addr, size_t __size) :
 { }
 
 template<typename T>
-inline SharedObject<T>::SharedObject(size_t size) :
+inline SharedObject<T>::SharedObject(size_t size, T init) :
     Object(NULL, size),
-    __accelerator(NULL)
+    accelerator(NULL)
 {
+    lockWrite();
     gmacError_t ret = gmacSuccess;
     void *device = NULL;
     // Allocate device and host memory
@@ -31,36 +32,68 @@ inline SharedObject<T>::SharedObject(size_t size) :
     __addr = map(device, size);
     if(__addr == NULL) __owner->free(device);
     // Create memory blocks
-    __accelerator = new AcceleratorBlock(__owner, device, __size);
+    accelerator = new AcceleratorBlock(__owner, device, __size);
     uint8_t *ptr = (uint8_t *)__addr;
     trace("Creating Shared Object %p (%zd bytes)", ptr, size);
     for(size_t i = 0; i < __size; i += paramPageSize, ptr += paramPageSize) {
-        __system.insert(new SystemBlock<T>(ptr, paramPageSize));
+        systemMap.insert(typename SystemMap::value_type(
+            ptr + paramPageSize,
+            new SystemBlock<T>(ptr, paramPageSize, init)));
     }
+    unlock();
 }
 
 template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
+    lockWrite();
     if(__addr == NULL) return;
     // Clean all system blocks
-    typename SystemSet::const_iterator i;
-    for(i = __system.begin(); i != __system.end(); i++)
-        delete (*i);
-    __system.clear();
-    void *device = __accelerator->addr();
-    delete __accelerator;
+    typename SystemMap::const_iterator i;
+    for(i = systemMap.begin(); i != systemMap.end(); i++)
+        delete i->second;
+    systemMap.clear();
+    void *device = accelerator->addr();
+    delete accelerator;
     
     unmap(__addr, __size);
     __owner->free(device);
+    unlock();
 }
 
 template<typename T>
 inline void * SharedObject<T>::device() const 
 {
-    return __accelerator->addr();
+    return accelerator->addr();
 }
 
+template<typename T>
+inline void *SharedObject<T>::device(void *addr) const
+{
+    off_t offset = (unsigned long)addr - (unsigned long)__addr;
+    return (uint8_t *)accelerator->addr() + offset;
+}
+
+template<typename T>
+inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr) 
+{
+    SystemBlock<T> *ret = NULL;
+    lockRead();
+    typename SystemMap::const_iterator block = systemMap.upper_bound(addr);
+    if(block != systemMap.end()) ret = block->second;
+    unlock();
+    return ret;
+}
+
+template<typename T>
+inline void SharedObject<T>::state(T s)
+{
+    lockWrite();
+    typename SystemMap::const_iterator i;
+    for(i = systemMap.begin(); i != systemMap.end(); i++)
+        i->second->state(s);
+    unlock();
+}
 
 }}
 

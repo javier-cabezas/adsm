@@ -48,7 +48,8 @@ class Mode;
 
 namespace memory {
 
-class Block: public util::RWLock {
+
+class Block: protected util::RWLock {
 protected:
     void *__addr;
     size_t __size;
@@ -77,12 +78,13 @@ class SystemBlock : public Block {
 protected:
     T __state;
 public:
-    SystemBlock(void *addr, size_t size);
+    SystemBlock(void *addr, size_t size, T state);
     ~SystemBlock();
 
-    inline T state() const { return __state; };
-    inline void state(T s) { __state = s; };
+    T state();
+    void state(T s);
 };
+
 } };
 
 #include "Block.ipp"
