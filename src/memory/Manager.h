@@ -71,7 +71,7 @@ public:
     // Memory management functions
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
-    gmacError_t globalAlloc(void **addr, size_t size);
+    gmacError_t globalAlloc(void **addr, size_t size, int hint);
 #endif
     gmacError_t free (void *addr);
 

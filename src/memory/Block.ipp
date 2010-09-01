@@ -20,13 +20,11 @@ inline AcceleratorBlock::~AcceleratorBlock()
 
 inline gmacError_t AcceleratorBlock::put(off_t off, Block *block)
 {
-    gmac::util::Logger::TRACE("Putting S@%p to A@%p", (uint8_t *)__addr + off, block->addr());
     return owner->copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
 }
 
 inline gmacError_t AcceleratorBlock::get(off_t off, Block *block)
 {
-    gmac::util::Logger::TRACE("Getting S@%p from A@%p", (uint8_t *)__addr + off, block->addr());
     return owner->copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
 }
 

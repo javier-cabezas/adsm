@@ -14,6 +14,11 @@ inline Object *Lazy::createObject(size_t size)
     return new SharedObject<Lazy::State>(size, ReadOnly);
 }
 
+inline Object *Lazy::createReplicatedObject(size_t size)
+{
+    return new ReplicatedObject<Lazy::State>(size, ReadOnly);
+}
+
 } } }
 
 #endif

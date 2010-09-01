@@ -6,34 +6,31 @@
 
 namespace gmac { namespace memory {
 
-
-inline
-Object::Object(void *__addr, size_t __size) :
+inline Object::Object(void *__addr, size_t __size) :
     Lock(paraver::LockObject),
     __addr(__addr),
     __size(__size)
 { }
 
 template<typename T>
-inline SharedObject<T>::SharedObject(size_t size, T init) :
-    Object(NULL, size),
-    __owner(Mode::current()),
-    accelerator(NULL)
+inline StateObject<T>::StateObject(size_t size) :
+    Object(NULL, size)
+{ }
+
+template<typename T>
+inline StateObject<T>::~StateObject()
 {
-    gmacError_t ret = gmacSuccess;
-    void *device = NULL;
-    // Allocate device and host memory
-    ret = __owner->malloc(&device, size);
-    if(ret != gmacSuccess) {
-        __addr = NULL;
-        return;
-    }
-    __addr = map(device, size);
-    if(__addr == NULL) __owner->free(device);
-    // Create memory blocks
-    accelerator = new AcceleratorBlock(__owner, device, __size);
+    // Clean all system blocks
+    typename SystemMap::const_iterator i;
+    for(i = systemMap.begin(); i != systemMap.end(); i++)
+        delete i->second;
+    systemMap.clear();
+}
+
+template<typename T>
+inline void StateObject<T>::setupSystem(T init)
+{
     uint8_t *ptr = (uint8_t *)__addr;
-    trace("Creating Shared Object %p (%zd bytes)", ptr, size);
     for(size_t i = 0; i < __size; i += paramPageSize, ptr += paramPageSize) {
         systemMap.insert(typename SystemMap::value_type(
             ptr + paramPageSize,
@@ -42,39 +39,7 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
 }
 
 template<typename T>
-inline SharedObject<T>::~SharedObject()
-{
-    if(__addr == NULL) return;
-    // Clean all system blocks
-    typename SystemMap::const_iterator i;
-    for(i = systemMap.begin(); i != systemMap.end(); i++)
-        delete i->second;
-    systemMap.clear();
-    void *device = accelerator->addr();
-    delete accelerator;
-    
-    unmap(__addr, __size);
-    __owner->free(device);
-}
-
-#if 0
-template<typename T>
-inline void * SharedObject<T>::device() const 
-{
-    return accelerator->addr();
-}
-#endif
-
-template<typename T>
-inline void *SharedObject<T>::device(void *addr) const
-{
-    off_t offset = (unsigned long)addr - (unsigned long)__addr;
-    return (uint8_t *)accelerator->addr() + offset;
-}
-
-
-template<typename T>
-inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr) 
+inline SystemBlock<T> *StateObject<T>::findBlock(void *addr) 
 {
     SystemBlock<T> *ret = NULL;
     typename SystemMap::const_iterator block = systemMap.upper_bound(addr);
@@ -83,27 +48,122 @@ inline SystemBlock<T> *SharedObject<T>::findBlock(void *addr)
 }
 
 template<typename T>
+inline void StateObject<T>::state(T s)
+{
+    typename SystemMap::const_iterator i;
+    for(i = systemMap.begin(); i != systemMap.end(); i++)
+        i->second->state(s);
+}
+
+
+
+
+template<typename T>
+inline SharedObject<T>::SharedObject(size_t size, T init) :
+    StateObject<T>(size),
+    __owner(Mode::current()),
+    accelerator(NULL)
+{
+    gmacError_t ret = gmacSuccess;
+    void *device = NULL;
+    // Allocate device and host memory
+    ret = __owner->malloc(&device, size);
+    if(ret != gmacSuccess) {
+        StateObject<T>::__addr = NULL;
+        return;
+    }
+    StateObject<T>::__addr = StateObject<T>::map(device, size);
+    if(StateObject<T>::__addr == NULL) __owner->free(device);
+
+    trace("Creating Shared Object %p (%zd bytes)", StateObject<T>::__addr, StateObject<T>::__size);
+    // Create memory blocks
+    accelerator = new AcceleratorBlock(__owner, device, StateObject<T>::__size);
+    setupSystem(init);
+}
+
+template<typename T>
+inline SharedObject<T>::~SharedObject()
+{
+    if(StateObject<T>::__addr == NULL) return;
+    delete accelerator;
+    void *__device = accelerator->addr();
+    StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
+    __owner->free(__device);
+}
+
+template<typename T>
+inline void *SharedObject<T>::device(void *addr) const
+{
+    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::__addr;
+    return (uint8_t *)accelerator->addr() + offset;
+}
+
+template<typename T>
 inline gmacError_t SharedObject<T>::acquire(Block *block)
 {
-    off_t off = (uint8_t *)block->addr() - (uint8_t *)__addr;
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::__addr;
     return accelerator->get(off, block);
 }
 
 template<typename T>
 inline gmacError_t SharedObject<T>::release(Block *block)
 {
-    off_t off = (uint8_t *)block->addr() - (uint8_t *)__addr;
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::__addr;
     return accelerator->put(off, block);
 }
 
 
+#ifndef USE_MMAP
 template<typename T>
-inline void SharedObject<T>::state(T s)
+inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
+    StateObject<T>(size)
 {
-    typename SystemMap::const_iterator i;
-    for(i = systemMap.begin(); i != systemMap.end(); i++)
-        i->second->state(s);
 }
+
+template<typename T>
+inline ReplicatedObject<T>::~ReplicatedObject()
+{
+    if(StateObject<T>::__addr == NULL) return;
+    AcceleratorMap::iterator i;
+    for(i = accelerator.begin(); i != accelerator.end(); i++) {
+        i->first->free(i->second->addr());
+        delete i->second;
+    }
+    accelerator.clear();
+    
+    StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
+}
+
+template<typename T>
+inline void *ReplicatedObject<T>::device(void *addr) const
+{
+    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::__addr;
+    AcceleratorMap::const_iterator i = accelerator.find(gmac::Mode::current());
+    Object::assertion(i != accelerator.end());
+    
+    return (uint8_t *)i->second->addr() + offset;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::acquire(Block *block)
+{
+    Object::fatal("Reacquiring ownership of a replicated object is forbiden");
+    return gmacErrorInvalidValue;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::release(Block *block)
+{
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::__addr;
+    AcceleratorMap::iterator i;
+    for(i = accelerator.begin(); i != accelerator.end(); i++) {
+        i->second->put(off, block);
+    }
+    return gmacSuccess;
+}
+
+
+#endif
 
 }}
 

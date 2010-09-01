@@ -92,6 +92,7 @@ public:
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
+    void *hostAddress(void *addr);
 
     gmacError_t bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t size);
     gmacError_t bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t size);

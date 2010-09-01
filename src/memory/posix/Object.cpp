@@ -29,13 +29,13 @@ void *Object::map(void *addr, size_t count)
 	void *cpuAddr = NULL;
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
-	if(posix_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
+	if(posix_memalign(&cpuAddr, getpagesize(), count) != 0)
 		return NULL;
 #else
-	if(custom_memalign(&cpuAddr, pageTable().getPageSize(), count) != 0)
+	if(custom_memalign(&cpuAddr, getpagesize(), count) != 0)
 		return NULL;
 #endif
-	Memory::protect(cpuAddr, count, prot);
+    mprotect(cpuAddr, count, PROT_NONE);
 #else
 	cpuAddr = (void *)((uint8_t *)addr + Mode::current()->id() * mmSize);
 	if(mmap(cpuAddr, count, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)

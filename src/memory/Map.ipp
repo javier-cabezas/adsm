@@ -1,8 +1,6 @@
 #ifndef __MEMORY_MAP_IPP_
 #define __MEMORY_MAP_IPP_
 
-//#include <memory/Object.h>
-
 namespace gmac { namespace memory {
 
 inline ObjectMap::ObjectMap(paraver::LockName name) :
@@ -36,20 +34,20 @@ Map::dirtyBitmap() const
 }
 #endif
 
-inline Object *
-Map::find(const void *addr)
+inline Object *Map::localFind(const void *addr)
+{
+    return mapFind(*this, addr);
+}
+
+
+inline Object *Map::find(const void *addr)
 {
     Object *ret = NULL;
-    lockRead();
     ret = localFind(addr);
-    if(ret == NULL) {
-        ret = globalFind(addr);
-    }
-    if(ret == NULL) {
-        ret = sharedFind(addr);
-    }
-    unlock();
-
+    if(ret == NULL) { ret = globalFind(addr); }
+#ifndef USE_MMAP
+    if(ret == NULL) { ret = sharedFind(addr); }
+#endif
     return ret;
 }
 
