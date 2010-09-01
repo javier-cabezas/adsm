@@ -102,6 +102,8 @@ public:
 };
 
 class Process : public util::RWLock, public util::Logger {
+public:
+    typedef std::map<Mode *, void *> AllocMap;
 protected:
     friend class Accelerator;
 
@@ -127,6 +129,10 @@ public:
 #define ACC_AUTO_BIND -1
     Mode * create(int acc = ACC_AUTO_BIND);
 	void remove(Mode *mode);
+
+#ifndef USE_MMAP
+    gmacError_t globalMalloc(AllocMap &map, size_t size);
+#endif
 
 	void *translate(void *addr);
 	const void *translate(const void *addr);
