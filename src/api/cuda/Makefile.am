@@ -7,6 +7,7 @@ libapi_la_SOURCES = cuda.cpp driver.cpp compat.cpp\
     IOBuffer.h IOBuffer.ipp IOBuffer.cpp\
     Mode.h Mode.ipp Mode.cpp\
 	Context.h Context.ipp Context.cpp \
-	Module.h Module.ipp Module.cpp
+	Module.h Module.ipp Module.cpp\
+    Object.cpp
 libapi_la_LIBADD = -lcuda
 libapi_la_LDFLAGS = -L$(CUDA_DIR)/lib$(ARCH)

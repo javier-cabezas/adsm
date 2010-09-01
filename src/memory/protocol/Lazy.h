@@ -59,6 +59,9 @@ public:
 
     // Protocol Interface
     Object *createObject(size_t size);
+#ifndef USE_MMAP
+    Object *createReplicatedObject(size_t size);
+#endif
 
     gmacError_t read(Object &obj, void *addr);
     gmacError_t write(Object &obj, void *addr);

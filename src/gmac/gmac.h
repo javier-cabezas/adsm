@@ -107,18 +107,6 @@ static const char *error[] = {
 	"Uknown error"
 };
 
-#define gmacKernel(__f,__a...)                                           ((gmacKernel_t) (void (*)(__a)) __f)
-#define gmacKernelT1(__f,__t1,__a...)                                    ((gmacKernel_t) (void (*)(__a)) __f<__t1>)
-#define gmacKernelT2(__f,__t1,__t2,__a...)                               ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2>)
-#define gmacKernelT3(__f,__t1,__t2,__t3,__a...)                          ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3>)
-#define gmacKernelT4(__f,__t1,__t2,__t3,__t4,__a...)                     ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4>)
-#define gmacKernelT5(__f,__t1,__t2,__t3,__t4,__t5,__a...)                ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5>)
-#define gmacKernelT6(__f,__t1,__t2,__t3,__t4,__t5,__t6,__a...)           ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6>)
-#define gmacKernelT7(__f,__t1,__t2,__t3,__t4,__t5,__t6,__t7,__a...)      ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6,__t7>)
-#define gmacKernelT8(__f,__t1,__t2,__t3,__t4,__t5,__t6,__t7,__t8,__a...) ((gmacKernel_t) (void (*)(__a)) __f<__t1,__t2,__t3,__t4,__t5,__t6,__t7,__t8>)
-
-gmacError_t gmacBind(void * obj, gmacKernel_t k);
-
 /*!
 	\brief Returns the number of available accelerators
 
@@ -150,7 +138,7 @@ gmacError_t gmacMalloc(void **devPtr, size_t count);
 /*!
 	\brief Allocates global memory at all GPUS
 */
-gmacError_t gmacGlobalMalloc(void **devPtr, size_t count);
+gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, int hint = 0);
 
 /*!
 	\brief Gets a GPU address

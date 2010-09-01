@@ -53,6 +53,15 @@ gmacError_t Mode::hostFree(void *addr)
     return Accelerator::error(r);
 }
 
+void *Mode::hostAddress(void *addr)
+{
+    switchIn();
+    CUdeviceptr device;
+    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
+    if(ret != CUDA_SUCCESS) device = NULL;
+    switchOut();
+    return (void *)device;
+}
 
 const Variable *Mode::constant(gmacVariable_t key) const
 {

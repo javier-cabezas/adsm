@@ -8,6 +8,7 @@ libmemory_la_SOURCES = memory.cpp\
             Block.h Block.ipp\
             Object.h Object.ipp\
 			Map.h Map.ipp Map.cpp\
+            Protocol.h Protocol.cpp\
 			Manager.h Manager.ipp Manager.cpp\
 			Handler.h Handler.cpp\
             Allocator.h Allocator.ipp Allocator.cpp

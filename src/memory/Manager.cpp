@@ -53,8 +53,7 @@ Manager::Manager()
 }
 
 
-gmacError_t
-Manager::alloc(void ** addr, size_t size)
+gmacError_t Manager::alloc(void ** addr, size_t size)
 {
     gmacError_t ret;
     // Create new shared object
@@ -71,8 +70,24 @@ Manager::alloc(void ** addr, size_t size)
     return gmacSuccess;
 }
 
-gmacError_t
-Manager::free(void * addr)
+#ifndef USE_MMAP
+gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
+{
+    gmacError_t ret;
+    Object *object = protocol->createReplicatedObject(size);
+    *addr = object->addr();
+    if(*addr == NULL) {
+        delete object;
+        return gmacErrorMemoryAllocation;
+    }
+
+    Mode::current()->addReplicatedObject(object);
+
+    return gmacSuccess;
+}
+#endif
+
+gmacError_t Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
     Object *object = Mode::current()->findObject(addr);

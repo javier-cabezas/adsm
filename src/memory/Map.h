@@ -56,9 +56,12 @@ public:
 
 class Map : public ObjectMap, public util::Logger {
 protected:
+    Object *mapFind(ObjectMap &map, const void *addr);
     Object *localFind(const void *addr);
     Object *globalFind(const void *addr);
+#ifndef USE_MMAP
     Object *sharedFind(const void *addr);
+#endif
 
     void clean();
 
@@ -77,8 +80,13 @@ public:
 
     void insert(Object *obj);
     void remove(Object *obj);
+#ifndef USE_MMAP
     void insertShared(Object *obj);
     Object *removeShared(const void *addr);
+
+    void insertGlobal(Object *obj);
+    void removeGlobal(Object *obj);
+#endif
 
     inline Object *find(const void *addr);
     

@@ -47,6 +47,11 @@ public:
     virtual ~Protocol() {};
 
     virtual Object *createObject(size_t size) = 0;
+#ifndef USE_MMAP
+    virtual Object *createReplicatedObject(size_t size) = 0;
+    virtual Object *createCentralizedObject(size_t size)
+;
+#endif
 
     virtual gmacError_t read(Object &obj, void *addr) = 0;
     virtual gmacError_t write(Object &obj, void *addr) = 0;

@@ -91,44 +91,60 @@ public:
 typedef std::set<Object *> ObjectSet;
 
 template<typename T>
-class SharedObject : public Object {
+class StateObject: public Object {
 public:
     typedef std::map<void *, SystemBlock<T> *> SystemMap;
 protected:
+    SystemMap systemMap;
+    void setupSystem(T init);
+public:
+    StateObject(size_t size);
+    virtual ~StateObject();
+
+    SystemBlock<T> *findBlock(void *addr);
+    inline SystemMap &blocks() { return systemMap; }
+
+    virtual void state(T s);
+};
+
+
+template<typename T>
+class SharedObject : public StateObject<T> {
+protected:
     Mode *__owner;
 
-    SystemMap systemMap;
     AcceleratorBlock *accelerator;
 public:
     SharedObject(size_t size, T init);
     ~SharedObject();
 
-    SystemBlock<T> *findBlock(void *addr);
-    inline SystemMap &blocks() { return systemMap; }
+    virtual gmacError_t acquire(Block *block);
+    virtual gmacError_t release(Block *block);
 
-    gmacError_t acquire(Block *block);
-    gmacError_t release(Block *block);
-
-    void *device(void *addr) const;
-    inline Mode *owner() const { return __owner; }
-
-    void state(T s);
+    virtual void *device(void *addr) const;
+    inline virtual Mode *owner() const { return __owner; }
 };
 
 
 #ifndef USE_MMAP
 template<typename T>
-class ReplicatedObject : public Object {
+class ReplicatedObject : public StateObject<T> {
 protected:
-    typedef std::map<void *, SystemBlock<T> *, BlockComp> SystemMap;
-    typedef std::map<Mode *, SystemSet> SystemMap;
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
-    SystemMap systemMap;
-    AcceleratorMap __accelerator;
+    AcceleratorMap accelerator;
 public:
-    ReplicatedObject(size_t __size);
+    ReplicatedObject(size_t size, T init);
     ~ReplicatedObject();
+
+    virtual gmacError_t acquire(Block *block);
+    virtual gmacError_t release(Block *block);
+
+    virtual void *device(void *addr) const;
+    inline virtual Mode *owner() const { return gmac::Mode::current(); }
+
+    void addOwner(Mode *mode);
+    void removeOwner(Mode *mode);
 };
 
 class CentralizedObject : public Object {
@@ -136,6 +152,19 @@ protected:
 public:
     CentralizedObject(size_t __size);
     ~CentralizedObject();
+
+    virtual void *device(void *addr) const;
+    inline virtual Mode *owner() const { return gmac::Mode::current(); }
+
+    inline gmacError_t acquire(Block *block) {
+        fatal("Trying to acquire a centralized object");
+        return gmacErrorInvalidValue;
+    }
+    inline gmacError_t release(Block *block) {
+        fatal("Trying to release a centralized object");
+        return gmacErrorInvalidValue;
+    }
+
 };
 #endif
 
