@@ -112,6 +112,29 @@ Mode *Process::create(int acc)
     return mode;
 }
 
+#ifndef USE_MMAP
+gmacError_t Process::globalMalloc(AllocMap &map, size_t size)
+{
+    gmacError_t ret;
+    ModeMap::iterator i;
+    for(i = __modes.begin(); i != __modes.end(); i++) {
+        void *addr;
+        ret = i->first->malloc(&addr, size);
+        if(ret != gmacSuccess) goto cleanup;
+        map.insert(AllocMap::value_type(i->first, addr));
+    }
+
+    return gmacSuccess;
+cleanup:
+    AllocMap::iterator j;
+    for(j = map.begin(); j != map.end(); j++) 
+        j->first->free(j->second);
+    map.clear();
+    return gmacErrorMemoryAllocation;
+
+}
+#endif
+
 gmacError_t Process::migrate(Mode *mode, int acc)
 {
 #if 0
