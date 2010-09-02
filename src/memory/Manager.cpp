@@ -102,45 +102,62 @@ gmacError_t Manager::free(void * addr)
 
 gmacError_t Manager::acquire()
 {
+    gmacError_t ret = gmacSuccess;
     const Map &map = Mode::current()->objects();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
         object.lock();
-        protocol->acquire(object);
+        ret = protocol->acquire(object);
         object.unlock();
+        if(ret != gmacSuccess) return ret;
     }
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Manager::release()
 {
+    trace("Releasing Objects");
+    gmacError_t ret = gmacSuccess;
     const Map &map = Mode::current()->objects();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
         object.lock();
-        protocol->release(object);
+        ret = protocol->release(object);
         object.unlock();
+        if(ret != gmacSuccess) return ret;
     }
-    return gmacSuccess;
+    const ObjectMap &shared = proc->shared();
+    ObjectMap::const_iterator j;
+    for(j = shared.begin(); j != shared.end(); j++) {
+        Object &object = *j->second;
+        object.lock();
+        ret = protocol->flush(object);
+        object.unlock();
+        if(ret != gmacSuccess) return ret;
+    }
+    return ret;
 }
 
 gmacError_t Manager::invalidate()
 {
+    gmacError_t ret = gmacSuccess;
     const Map &map = Mode::current()->objects();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
         object.lock();
-        protocol->invalidate(object);
+        ret = protocol->invalidate(object);
         object.unlock();
+        if(ret != gmacSuccess) return ret;
     }
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Manager::adquire(void *addr, size_t size)
 {
+    gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
         Object *obj = Mode::current()->findObject(ptr);
@@ -148,25 +165,29 @@ gmacError_t Manager::adquire(void *addr, size_t size)
         protocol->invalidate(*obj);
         ptr += obj->size();
         obj->unlock();
+        if(ret != gmacSuccess) return ret;
     } while(ptr < (uint8_t *)addr + size);
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Manager::release(void *addr, size_t size)
 {
+    gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
         Object *obj = Mode::current()->findObject(ptr);
         obj->lock();
-        protocol->release(*obj);
+        ret = protocol->release(*obj);
         ptr += obj->size();
         obj->unlock();
+        if(ret != gmacSuccess) return ret;
     } while(ptr < (uint8_t *)addr + size);
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Manager::invalidate(void *addr, size_t size)
 {
+    gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
         Object *obj = Mode::current()->findObject(ptr);
@@ -174,8 +195,9 @@ gmacError_t Manager::invalidate(void *addr, size_t size)
         protocol->acquire(*obj);
         ptr += obj->size();
         obj->unlock();
+        if(ret != gmacSuccess) return ret;
     } while(ptr < (uint8_t *)addr + size);
-    return gmacSuccess;
+    return ret;
 }
 
 bool Manager::read(void *addr)

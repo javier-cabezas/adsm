@@ -20,11 +20,13 @@ inline AcceleratorBlock::~AcceleratorBlock()
 
 inline gmacError_t AcceleratorBlock::put(off_t off, Block *block)
 {
+    trace("Mode %p is putting %p into device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
     return owner->copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
 }
 
 inline gmacError_t AcceleratorBlock::get(off_t off, Block *block)
 {
+    trace("Mode %p is getting %p from device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
     return owner->copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
 }
 

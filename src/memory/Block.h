@@ -49,7 +49,7 @@ class Mode;
 namespace memory {
 
 
-class Block: protected util::RWLock {
+class Block: protected util::RWLock, public util::Logger {
 protected:
     void *__addr;
     size_t __size;

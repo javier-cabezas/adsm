@@ -89,10 +89,13 @@ gmacError_t Context::waitForBuffer(IOBuffer *buffer)
 
 gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
 {
+    trace("Transferring %zd bytes from host %p to device %p", size, host, dev);
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(outputBuffer.isPinned() == false)
+    if(outputBuffer.isPinned() == false) {
+        trace("Not using pinned memory for transfer");
         return gmac::Context::copyToDevice(dev, host, size);
+    }
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
@@ -150,6 +153,7 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
+    if(syncStream(streamToDevice) != gmacSuccess) return NULL;
     __call.stream(streamLaunch);
     return kernel->launch(__call);
 }

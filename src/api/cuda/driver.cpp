@@ -120,7 +120,8 @@ cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 extern gmacError_t gmacLaunch(gmacKernel_t k);
 cudaError_t cudaLaunch(gmacKernel_t k)
 {
-	gmacLaunch(k);
+	gmacError_t ret = gmacLaunch(k);
+    assert(ret == gmacSuccess);
 	return cudaSuccess;
 }
 
