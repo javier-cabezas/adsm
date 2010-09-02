@@ -73,7 +73,10 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
         return;
     }
     StateObject<T>::__addr = StateObject<T>::map(device, size);
-    if(StateObject<T>::__addr == NULL) __owner->free(device);
+    if(StateObject<T>::__addr == NULL) {
+        __owner->free(device);
+        return;
+    }
 
     trace("Creating Shared Object %p (%zd bytes)", StateObject<T>::__addr, StateObject<T>::__size);
     // Create memory blocks
@@ -118,17 +121,38 @@ template<typename T>
 inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     StateObject<T>(size)
 {
+    Process::AllocMap allocMap;
+    if(proc->globalMalloc(allocMap, size) != gmacSuccess) {
+        StateObject<T>::__addr = NULL;
+        return;
+    }
+
+    StateObject<T>::__addr = StateObject<T>::map(NULL, size);
+    if(StateObject<T>::__addr == NULL) {
+        proc->globalFree(allocMap);
+        return;
+    }
+
+    trace("Creating Shared Global Object %p (%zd bytes)", StateObject<T>::__addr, StateObject<T>::__size);
+    // Create memory blocks
+    Process::AllocMap::iterator i;
+    for(i = allocMap.begin(); i != allocMap.end(); i++) {
+        accelerator.insert(AcceleratorMap::value_type(i->first,
+            new AcceleratorBlock(i->first, i->second, StateObject<T>::__size)));
+    }
+    setupSystem(init);
 }
 
 template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
 {
     if(StateObject<T>::__addr == NULL) return;
+    Process::AllocMap map;
     AcceleratorMap::iterator i;
-    for(i = accelerator.begin(); i != accelerator.end(); i++) {
-        i->first->free(i->second->addr());
-        delete i->second;
-    }
+    for(i = accelerator.begin(); i != accelerator.end(); i++)
+        map.insert(Process::AllocMap::value_type(
+            i->first, i->second->addr()));
+    proc->globalFree(map);
     accelerator.clear();
     
     StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
