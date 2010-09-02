@@ -61,6 +61,9 @@ extern gmac::Process *proc;
 
 namespace gmac {
 
+namespace memory { class DistributedObject; }
+
+
 class ThreadQueue : public util::Lock {
 public:
     ThreadQueue();
@@ -102,8 +105,6 @@ public:
 };
 
 class Process : public util::RWLock, public util::Logger {
-public:
-    typedef std::map<Mode *, void *> AllocMap;
 protected:
     friend class Accelerator;
 
@@ -131,8 +132,8 @@ public:
 	void remove(Mode *mode);
 
 #ifndef USE_MMAP
-    gmacError_t globalMalloc(AllocMap &map, size_t size);
-    gmacError_t globalFree(AllocMap &map);
+    gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
+    gmacError_t globalFree(memory::DistributedObject &object);
 #endif
 
 	void *translate(void *addr);

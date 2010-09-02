@@ -34,6 +34,7 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 	if(i >= vecSize) return;
 
 	c[i] = a[i] + b[i];
+    //c[i] = a[i];
 }
 
 void *addVector(void *ptr)
@@ -49,6 +50,8 @@ void *addVector(void *ptr)
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
+    fprintf(stderr,"Vector call: %p %p %p\n", gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize));
+
 	gettimeofday(&s, NULL);
 	vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();

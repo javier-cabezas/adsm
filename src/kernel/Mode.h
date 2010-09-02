@@ -89,8 +89,8 @@ public:
 
     inline void addObject(memory::Object *obj) { map->insert(obj); }
 #ifndef USE_MMAP
-    inline void addSharedObject(memory::Object *obj) { map->insertShared(obj); }
-    inline void addReplicatedObject(memory::Object *obj) { map->insertGlobal(obj); }
+    inline void addReplicatedObject(memory::Object *obj) { map->insertShared(obj); }
+    inline void addCentralizedObject(memory::Object *obj) { map->insertGlobal(obj); }
 #endif
     inline void removeObject(memory::Object *obj) { map->remove(obj); }
     inline memory::Object *findObject(const void *addr) {

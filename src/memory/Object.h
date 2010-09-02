@@ -90,6 +90,12 @@ public:
 
 typedef std::set<Object *> ObjectSet;
 
+class DistributedObject {
+public:
+    virtual gmacError_t addOwner(Mode *mode) = 0;
+    virtual gmacError_t removeOwner(Mode *mode) = 0;
+};
+
 template<typename T>
 class StateObject: public Object {
 public:
@@ -128,7 +134,7 @@ public:
 
 #ifndef USE_MMAP
 template<typename T>
-class ReplicatedObject : public StateObject<T> {
+class ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
@@ -143,8 +149,8 @@ public:
     virtual void *device(void *addr) const;
     inline virtual Mode *owner() const { return gmac::Mode::current(); }
 
-    void addOwner(Mode *mode);
-    void removeOwner(Mode *mode);
+    gmacError_t addOwner(Mode *mode);
+    gmacError_t removeOwner(Mode *mode);
 };
 
 class CentralizedObject : public Object {

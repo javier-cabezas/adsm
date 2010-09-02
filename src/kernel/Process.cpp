@@ -3,6 +3,7 @@
 #include "Accelerator.h"
 
 #include <memory/Manager.h>
+#include <memory/Object.h>
 #include <gmac/init.h>
 
 
@@ -107,42 +108,52 @@ Mode *Process::create(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = __accs[usedAcc]->createMode();
     __modes.insert(mode, __accs[usedAcc]);
+
+    trace("Adding %zd shared memory objects", __shared.size());
+    memory::Map::iterator i;
+    for(i = __shared.begin(); i != __shared.end(); i++) {
+        memory::DistributedObject *obj =
+                dynamic_cast<memory::DistributedObject *>(i->second);
+        obj->addOwner(mode);
+    }
 	unlock();
+
     mode->attach();
     return mode;
 }
 
 #ifndef USE_MMAP
-gmacError_t Process::globalMalloc(AllocMap &map, size_t size)
+gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t size)
 {
     gmacError_t ret;
     ModeMap::iterator i;
+    lockRead();
     for(i = __modes.begin(); i != __modes.end(); i++) {
-        void *addr;
-        ret = i->first->malloc(&addr, size);
-        if(ret != gmacSuccess) goto cleanup;
-        map.insert(AllocMap::value_type(i->first, addr));
+        if((ret = object.addOwner(i->first)) != gmacSuccess) goto cleanup;
     }
-
+    unlock();
     return gmacSuccess;
 cleanup:
-    AllocMap::iterator j;
-    for(j = map.begin(); j != map.end(); j++) 
-        j->first->free(j->second);
-    map.clear();
+    ModeMap::iterator j;
+    for(j = __modes.begin(); j != i; j++) {
+        object.removeOwner(j->first);
+    }
+    unlock();
     return gmacErrorMemoryAllocation;
 
 }
 
-gmacError_t Process::globalFree(AllocMap &map)
+gmacError_t Process::globalFree(memory::DistributedObject &object)
 {
     gmacError_t ret = gmacSuccess;
-    AllocMap::iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        gmacError_t r = i->first->free(i->second);
-        if(r != gmacSuccess) ret = r;
+    ModeMap::iterator i;
+    lockRead();
+    for(i = __modes.begin(); i != __modes.end(); i++) {
+        gmacError_t tmp = object.removeOwner(i->first);
+        if(tmp != gmacSuccess) ret = tmp;
     }
-    return ret;
+    unlock();
+    return gmacSuccess;
 }
 #endif
 
@@ -177,8 +188,16 @@ gmacError_t Process::migrate(Mode *mode, int acc)
 
 void Process::remove(Mode *mode)
 {
+    trace("Adding %zd shared memory objects", __shared.size());
+    memory::Map::iterator i;
+    for(i = __shared.begin(); i != __shared.end(); i++) {
+        memory::DistributedObject *obj =
+                dynamic_cast<memory::DistributedObject *>(i->second);
+        obj->removeOwner(mode);
+    }
+    lockWrite();
 	__modes.remove(mode);
-    
+    unlock();   
 }
 
 void Process::addAccelerator(Accelerator *acc)

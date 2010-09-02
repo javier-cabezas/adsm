@@ -58,6 +58,7 @@ public:
     virtual gmacError_t acquire(Object &obj) = 0;
     virtual gmacError_t release(Object &obj) = 0;
     virtual gmacError_t invalidate(Object &obj) = 0;
+    virtual gmacError_t flush(Object &obj) = 0;
 };
 
 }}

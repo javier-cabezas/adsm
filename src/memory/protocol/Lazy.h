@@ -69,6 +69,7 @@ public:
     gmacError_t acquire(Object &obj);
     gmacError_t release(Object &obj);
     gmacError_t invalidate(Object &obj);
+    gmacError_t flush(Object &obj);
 };
 
 

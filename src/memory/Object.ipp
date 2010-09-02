@@ -121,38 +121,30 @@ template<typename T>
 inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     StateObject<T>(size)
 {
-    Process::AllocMap allocMap;
-    if(proc->globalMalloc(allocMap, size) != gmacSuccess) {
+    // This line might seem useless, but we first need to make sure that
+    // the curren thread has an execution mode attached
+    Mode *mode = gmac::Mode::current(); 
+    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::__size);
+    if(proc->globalMalloc(*this, size) != gmacSuccess) {
         StateObject<T>::__addr = NULL;
         return;
     }
 
     StateObject<T>::__addr = StateObject<T>::map(NULL, size);
     if(StateObject<T>::__addr == NULL) {
-        proc->globalFree(allocMap);
+        proc->globalFree(*this);
         return;
     }
 
-    trace("Creating Shared Global Object %p (%zd bytes)", StateObject<T>::__addr, StateObject<T>::__size);
-    // Create memory blocks
-    Process::AllocMap::iterator i;
-    for(i = allocMap.begin(); i != allocMap.end(); i++) {
-        accelerator.insert(AcceleratorMap::value_type(i->first,
-            new AcceleratorBlock(i->first, i->second, StateObject<T>::__size)));
-    }
     setupSystem(init);
+    trace("Replicated object create @ %p", StateObject<T>::__addr);
 }
 
 template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
 {
     if(StateObject<T>::__addr == NULL) return;
-    Process::AllocMap map;
-    AcceleratorMap::iterator i;
-    for(i = accelerator.begin(); i != accelerator.end(); i++)
-        map.insert(Process::AllocMap::value_type(
-            i->first, i->second->addr()));
-    proc->globalFree(map);
+    proc->globalFree(*this);
     accelerator.clear();
     
     StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
@@ -186,6 +178,29 @@ inline gmacError_t ReplicatedObject<T>::release(Block *block)
     return gmacSuccess;
 }
 
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
+{
+    void *device = NULL;
+    gmacError_t ret;
+    if((ret = mode->malloc(&device, StateObject<T>::__size)) != gmacSuccess)
+        return ret;
+    accelerator.insert(AcceleratorMap::value_type(mode,
+            new AcceleratorBlock(mode, device, StateObject<T>::__size)));
+    trace("Adding replicated object @ %p to mode %p", device, mode);
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::removeOwner(Mode *mode)
+{
+    AcceleratorMap::iterator i = accelerator.find(mode);
+    Object::assertion(i != accelerator.end());
+    accelerator.erase(i);
+    gmacError_t ret = mode->free(i->second->addr());
+    delete i->second;
+    return ret;
+}
 
 #endif
 
