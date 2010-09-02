@@ -7,9 +7,9 @@ namespace gmac { namespace memory { namespace protocol {
 gmacError_t Lazy::acquire(Object &obj)
 {
     gmacError_t ret = gmacSuccess;
-    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
-    SharedObject<State>::SystemMap &map = object.blocks();
-    SharedObject<State>::SystemMap::iterator i;
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         switch(block->state()) {
@@ -28,9 +28,9 @@ gmacError_t Lazy::acquire(Object &obj)
 gmacError_t Lazy::release(Object &obj)
 {
     gmacError_t ret = gmacSuccess;
-    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
-    SharedObject<State>::SystemMap &map = object.blocks();
-    SharedObject<State>::SystemMap::iterator i;
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         switch(block->state()) {
@@ -51,9 +51,9 @@ gmacError_t Lazy::release(Object &obj)
 
 gmacError_t Lazy::invalidate(Object &obj)
 {
-    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
-    SharedObject<State>::SystemMap &map = object.blocks();
-    SharedObject<State>::SystemMap::iterator i;
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         block->state(Invalid);
@@ -65,7 +65,7 @@ gmacError_t Lazy::invalidate(Object &obj)
 
 gmacError_t Lazy::read(Object &obj, void *addr)
 {
-    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
@@ -79,7 +79,7 @@ gmacError_t Lazy::read(Object &obj, void *addr)
 
 gmacError_t Lazy::write(Object &obj, void *addr)
 {
-    SharedObject<State> &object = dynamic_cast<SharedObject<State> &>(obj);
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     if(Memory::protect(block->addr(), block->size(), PROT_READ | PROT_WRITE) < 0)

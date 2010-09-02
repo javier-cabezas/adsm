@@ -46,10 +46,6 @@ void *Object::map(void *addr, size_t count)
 
 void Object::unmap(void *addr, size_t count)
 {
-#ifdef USE_GLOBAL_HOST
-	assertion(Map::isShared(addr) == false);
-#endif
-
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
 	free(addr);
