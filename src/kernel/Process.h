@@ -132,6 +132,7 @@ public:
 
 #ifndef USE_MMAP
     gmacError_t globalMalloc(AllocMap &map, size_t size);
+    gmacError_t globalFree(AllocMap &map);
 #endif
 
 	void *translate(void *addr);

@@ -133,6 +133,17 @@ cleanup:
     return gmacErrorMemoryAllocation;
 
 }
+
+gmacError_t Process::globalFree(AllocMap &map)
+{
+    gmacError_t ret = gmacSuccess;
+    AllocMap::iterator i;
+    for(i = map.begin(); i != map.end(); i++) {
+        gmacError_t r = i->first->free(i->second);
+        if(r != gmacSuccess) ret = r;
+    }
+    return ret;
+}
 #endif
 
 gmacError_t Process::migrate(Mode *mode, int acc)
