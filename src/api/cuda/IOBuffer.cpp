@@ -7,6 +7,7 @@ namespace gmac { namespace gpu {
 
 IOBuffer::IOBuffer(size_t size) :
     gmac::IOBuffer(size),
+    __state(Idle),
     pin(false)
 {
 #if CUDART_VERSION >= 2020

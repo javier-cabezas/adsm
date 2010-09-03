@@ -94,10 +94,10 @@ protected:
     static const size_t BufferSize = 1024;
     static char buffer[BufferSize];
 
-    void print(std::string tag, const char *fmt, va_list list) const;
+    void print(const char *tag, const char *fmt, va_list list) const;
 #ifdef DEBUG
     bool check(const char *name) const;
-    void log(std::string tag, const char *fmt, va_list list) const;
+    void log(const char *tag, const char *fmt, va_list list) const;
 #endif
 
     Logger();

@@ -26,11 +26,6 @@ Mode::~Mode()
         gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count);
     if(this == key.get()) key.set(NULL);
 
-    KernelMap::iterator it;
-    for (it = kernels.begin(); it != kernels.end(); it++) {
-        delete it->second;
-    }
-
     delete map;
     acc->destroyMode(this); 
 }

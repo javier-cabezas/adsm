@@ -83,7 +83,11 @@ protected:
 
     IOBuffer *ioBuffer;
 
+#ifdef USE_MULTI_CONTEXT
+    ModuleVector &modules;
+#else
 	ModuleVector modules;
+#endif
 public:
     Mode(Accelerator *acc);
     ~Mode();

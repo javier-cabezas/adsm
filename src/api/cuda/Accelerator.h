@@ -38,6 +38,8 @@ WITH THE SOFTWARE.  */
 #include <kernel/Accelerator.h>
 #include <util/Lock.h>
 
+#include "Module.h"
+
 #include <cuda.h>
 #include <vector_types.h>
 
@@ -71,6 +73,7 @@ protected:
 #ifndef USE_MULTI_CONTEXT
     CUcontext __ctx;
     AcceleratorLock __mutex;
+    ModuleVector modules;
 #endif
 
     static gmacError_t __error;
@@ -86,6 +89,7 @@ public:
     CUcontext createCUDAContext();
     void destroyCUDAContext(CUcontext ctx);
 #else
+    ModuleVector &createModules();
     void switchIn();
     void switchOut();
 #endif

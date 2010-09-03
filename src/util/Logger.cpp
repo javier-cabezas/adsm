@@ -51,8 +51,8 @@ void Logger::init()
     if(Level == NULL) {
         Level = new Parameter<const char *>(&Logger::debugString,
             "Logger::debugString", "none", "GMAC_DEBUG");
-        char *tmp = new char[strlen(debugString)];
-        memcpy(tmp, debugString, strlen(debugString));
+        char *tmp = new char[strlen(debugString) + 1];
+        memcpy(tmp, debugString, strlen(debugString) + 1);
         char *tag = strtok(tmp, ", ");
         while(tag != NULL) {
             tags->push_back(std::string(tag));
@@ -77,14 +77,17 @@ bool Logger::check(const char *name) const
     return false;
 }
 
-void Logger::log(std::string tag, const char *fmt, va_list list) const
+void Logger::log(const char *tag, const char *fmt, va_list list) const
 {
     char *__name = NULL;
-    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
+    int status = 0;
+    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, &status);
     else __name = (char *)name;
 
+    if(status != 0) return;
+
     if(active == false && check(__name) == false) {
-        if(name == NULL) free(__name);
+        //if(name == NULL) free(__name);
         return;
     }
 
@@ -94,7 +97,7 @@ void Logger::log(std::string tag, const char *fmt, va_list list) const
 }
 #endif
 
-void Logger::print(std::string tag, const char *fmt, va_list list)  const
+void Logger::print(const char *tag, const char *fmt, va_list list)  const
 {
     __lock.lock();
     const char *__name = NULL;
