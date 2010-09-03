@@ -42,6 +42,14 @@ ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
     Modules.push_back(this);
 }
 
+ModuleDescriptor::~ModuleDescriptor()
+{
+    _kernels.clear();
+    _variables.clear();
+    _constants.clear();
+    _textures.clear();
+}
+
 ModuleVector
 ModuleDescriptor::createModules(Mode &mode)
 {
@@ -110,9 +118,13 @@ Module::Module(const ModuleDescriptor & d, Mode &mode) :
 
 }
 
-Module::~Module() {
+Module::~Module()
+{
     CUresult ret = cuModuleUnload(_mod);
     assertion(ret == CUDA_SUCCESS);
+    _variables.clear();
+    _constants.clear();
+    _textures.clear();
 }
 
 }}

@@ -110,6 +110,7 @@ class ModuleDescriptor : public util::Logger {
 
 public:
     ModuleDescriptor(const void * fatBin);
+    ~ModuleDescriptor();
 
     void add(gmac::KernelDescriptor & k);
     void add(VariableDescriptor     & v);

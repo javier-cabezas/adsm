@@ -32,7 +32,11 @@ Accelerator::Accelerator(int n, CUdevice device) :
 }
 
 Accelerator::~Accelerator()
-{}
+{
+#ifndef USE_MULTI_CONTEXT
+    assertion(cuCtxDestroy(__ctx) == CUDA_SUCCESS);
+#endif
+}
 
 gmac::Mode *Accelerator::createMode()
 {

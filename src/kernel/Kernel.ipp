@@ -91,6 +91,7 @@ KernelConfig::KernelConfig() :
 inline
 KernelConfig::~KernelConfig()
 {
+    clear();
 }
 
 inline

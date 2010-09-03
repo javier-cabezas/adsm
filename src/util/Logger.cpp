@@ -79,13 +79,18 @@ bool Logger::check(const char *name) const
 
 void Logger::log(std::string tag, const char *fmt, va_list list) const
 {
-    const char *__name = NULL;
+    char *__name = NULL;
     if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
-    else __name = name;
+    else __name = (char *)name;
 
-    if(active == false && check(__name) == false) return;
+    if(active == false && check(__name) == false) {
+        if(name == NULL) free(__name);
+        return;
+    }
 
     print(tag, fmt, list);
+
+    if(name == NULL) free(__name);
 }
 #endif
 
