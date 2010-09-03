@@ -74,6 +74,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
 gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 {
     gmacError_t ret;
+#if 0
     Object *object = protocol->createReplicatedObject(size);
     *addr = object->addr();
     if(*addr == NULL) {
@@ -82,6 +83,18 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
     }
 
     Mode::current()->addReplicatedObject(object);
+#else
+    Object *object = protocol->createCentralizedObject(size);
+    *addr = object->addr();
+    if(*addr == NULL) {
+        fatal("Allocation failure");
+        delete object;
+        return gmacErrorMemoryAllocation;
+    }
+
+    Mode::current()->addCentralizedObject(object);
+
+#endif
 
     return gmacSuccess;
 }
@@ -207,7 +220,7 @@ bool Manager::read(void *addr)
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
     obj->lock();
-    if(protocol->read(*obj, addr) != gmacSuccess) ret = false;
+    assertion(protocol->read(*obj, addr) == gmacSuccess);
     obj->unlock();
     return ret;
 }

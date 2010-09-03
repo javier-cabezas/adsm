@@ -12,7 +12,7 @@ IOBuffer::IOBuffer(size_t size) :
 #if CUDART_VERSION >= 2020
     CUresult ret = cuMemHostAlloc(&__addr, size, CU_MEMHOSTALLOC_PORTABLE);
 #else
-    CUresult ret = cuMemAllocHost(__addr, size);
+    CUresult ret = cuMemAllocHost(&__addr, size);
 #endif
     if(ret == CUDA_SUCCESS) pin = true;
     else {

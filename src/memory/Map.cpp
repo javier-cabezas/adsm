@@ -38,9 +38,9 @@ void Map::clean()
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
 		trace("Cleaning Object %p", i->second->start());
-		__global.lockWrite();
+		if(&__global != this) __global.lockWrite();
 		__global.erase(i->first);
-		__global.unlock();
+		if(&__global != this) __global.unlock();
 	}
 	clear();
 	unlock();

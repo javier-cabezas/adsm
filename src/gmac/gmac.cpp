@@ -233,7 +233,7 @@ gmacLaunch(gmacKernel_t k)
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    manager->release();
+    gmac::util::Logger::ASSERTION(manager->release() == gmacSuccess);
 
     // Wait for pending transfers
     gmac::Mode::current()->sync();

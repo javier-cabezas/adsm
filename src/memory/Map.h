@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Object;
-class ObjectMap : public util::RWLock, public std::map<const void *, Object *> {
+class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
 protected:
     friend class Map;
 public:
