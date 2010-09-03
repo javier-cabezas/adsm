@@ -245,6 +245,7 @@ gmacLaunch(gmacKernel_t k)
         manager->invalidate();
     }
 
+    delete launch;
     exitFunction();
     __exitGmac();
 
