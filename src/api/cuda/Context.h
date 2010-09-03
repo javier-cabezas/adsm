@@ -64,8 +64,7 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-    IOBuffer inputBuffer;
-    IOBuffer outputBuffer;
+    IOBuffer buffer;
 
     typedef CUstream Stream;
     Stream streamLaunch;

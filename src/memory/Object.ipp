@@ -126,6 +126,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     Mode *mode = gmac::Mode::current(); 
     trace("Creating Replicated Object (%zd bytes)", StateObject<T>::__size);
     if(proc->globalMalloc(*this, size) != gmacSuccess) {
+        Object::fatal("Unable to create replicated object");
         StateObject<T>::__addr = NULL;
         return;
     }
@@ -183,8 +184,8 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
 {
     void *device = NULL;
     gmacError_t ret;
-    if((ret = mode->malloc(&device, StateObject<T>::__size)) != gmacSuccess)
-        return ret;
+    ret = mode->malloc(&device, StateObject<T>::__size);
+    Object::cfatal(ret == gmacSuccess, "Unable to replicate Object");
     accelerator.insert(AcceleratorMap::value_type(mode,
             new AcceleratorBlock(mode, device, StateObject<T>::__size)));
     trace("Adding replicated object @ %p to mode %p", device, mode);

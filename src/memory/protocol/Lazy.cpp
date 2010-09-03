@@ -36,6 +36,7 @@ gmacError_t Lazy::release(Object &obj)
         switch(block->state()) {
             case Dirty:
                 ret = object.release(block);
+                if(ret != gmacSuccess) return ret;
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
                     fatal("Unable to set memory permissions");
                 block->state(Invalid);
@@ -74,6 +75,7 @@ gmacError_t Lazy::flush(Object &obj)
         switch(block->state()) {
             case Dirty:
                 ret = object.release(block);
+                if(ret != gmacSuccess) return ret;
                 if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
                     fatal("Unable to set memory permissions");
                 block->state(ReadOnly);
@@ -95,7 +97,8 @@ gmacError_t Lazy::read(Object &obj, void *addr)
     if(block == NULL) return gmacErrorInvalidValue;
     if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
         return gmacErrorInvalidValue;
-    object.acquire(block);
+    gmacError_t ret = object.acquire(block);
+    if(ret != gmacSuccess) return ret;
     if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
         return gmacErrorInvalidValue;
     block->state(ReadOnly);

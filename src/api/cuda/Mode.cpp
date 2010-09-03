@@ -37,7 +37,7 @@ gmacError_t Mode::hostAlloc(void **addr, size_t size)
 {
     switchIn();
 #if CUDART_VERSION >= 2020
-    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE);
+    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
 #else
     CUresult ret = cuMemAllocHost(addr, size);
 #endif

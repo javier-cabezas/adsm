@@ -91,6 +91,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     }
     CUdeviceptr ptr = 0;
     CUresult ret = cuMemAlloc(&ptr, size);
+    if(ret != CUDA_SUCCESS) return error(ret);
     CUdeviceptr gpuPtr = ptr;
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);

@@ -14,8 +14,7 @@ void * Context::FatBin;
 Context::Context(Accelerator *acc, Mode *mode) :
     gmac::Context(acc),
     acc(acc),
-    inputBuffer(paramBufferPageLockedSize * paramPageSize),
-    outputBuffer(paramBufferPageLockedSize * paramPageSize),
+    buffer(paramBufferPageLockedSize * paramPageSize),
     __call(dim3(0), dim3(0), 0, NULL)
 {
     setupStreams();
@@ -92,50 +91,54 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
     trace("Transferring %zd bytes from host %p to device %p", size, host, dev);
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(outputBuffer.isPinned() == false) {
+    if(buffer.isPinned() == false) {
         trace("Not using pinned memory for transfer");
         return gmac::Context::copyToDevice(dev, host, size);
     }
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
-    outputBuffer.lock();
+    buffer.lock();
     while(offset < size) {
-        if(outputBuffer.state() != IOBuffer::Idle)
+        if(buffer.state() != IOBuffer::Idle)
             ret = acc->syncStream(streamToDevice);
         if(ret != gmacSuccess) break;
-        size_t len = outputBuffer.size();
-        if((size - offset) < outputBuffer.size()) len = size - offset;
-        memcpy(outputBuffer.addr(), (uint8_t *)host + offset, len);
-        outputBuffer.state(IOBuffer::ToDevice);
-        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, outputBuffer.addr(), len, streamToDevice);
+        size_t len = buffer.size();
+        if((size - offset) < buffer.size()) len = size - offset;
+        memcpy(buffer.addr(), (uint8_t *)host + offset, len);
+        buffer.state(IOBuffer::ToDevice);
+        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, buffer.addr(), len, streamToDevice);
         if(ret != gmacSuccess) break;
         offset += len;
     }
-    outputBuffer.unlock();
+    buffer.unlock();
     return ret;
 }
 
 gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
 {
+    trace("Transferring %zd bytes from device %p to host %p", size, device, host);
+
     if(size == 0) return gmacSuccess;
-    if(inputBuffer.isPinned() == false)
+    if(buffer.isPinned() == true)
         return gmac::Context::copyToHost(host, device, size);
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
-    inputBuffer.lock();
+    buffer.lock();
     while(offset < size) {
         if(ret != gmacSuccess) break;
-        size_t len = inputBuffer.size();
-        if((size - offset) < inputBuffer.size()) len = size - offset;
-        inputBuffer.state(IOBuffer::ToHost);
-        ret = acc->copyToHost(inputBuffer.addr(), device, len);
+        size_t len = buffer.size();
+        if((size - offset) < buffer.size()) len = size - offset;
+        buffer.state(IOBuffer::ToHost);
+        ret = acc->copyToHostAsync(buffer.addr(), (uint8_t *)device + offset, len, streamToHost);
         if(ret != gmacSuccess) break;
-        memcpy((uint8_t *)host + offset, inputBuffer.addr(), len);
+        ret = acc->syncStream(streamToHost);
+        if(ret != gmacSuccess) break;
+        memcpy((uint8_t *)host + offset, buffer.addr(), len);
         offset += len;
     }
-    inputBuffer.unlock();
+    buffer.unlock();
     return ret;
 }
 

@@ -14,7 +14,7 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
 const unsigned nIterDefault = 2;
-const size_t vecSizeDefault = 128 * 1024;
+const size_t vecSizeDefault = 1024 * 1024;
 
 unsigned nIter = 0;
 size_t vecSize = 0;
@@ -34,7 +34,6 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 	if(i >= vecSize) return;
 
 	c[i] = a[i] + b[i];
-    //c[i] = a[i];
 }
 
 void *addVector(void *ptr)
@@ -50,10 +49,11 @@ void *addVector(void *ptr)
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
+    fprintf(stderr,"0x%x -- %d >> Vector call: %p %p %p\n", vecSize, p->i, gmacPtr((p->ptr)), gmacPtr(a), gmacPtr(b));
     fprintf(stderr,"Vector call: %p %p %p\n", gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize));
 
 	gettimeofday(&s, NULL);
-	vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
+	 vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Run: ", "\n");
