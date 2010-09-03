@@ -82,6 +82,14 @@ Accelerator::destroyCUDAContext(CUcontext ctx)
 }
 #endif
 
+#ifndef USE_MULTI_CONTEXT
+ModuleVector &Accelerator::createModules()
+{
+    if(modules.empty()) modules = ModuleDescriptor::createModules();
+    return modules;
+}
+#endif
+
 gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
 {
     assertion(addr != NULL);

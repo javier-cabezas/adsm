@@ -116,7 +116,7 @@ public:
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
-    static ModuleVector createModules(Mode &mode);
+    static ModuleVector createModules();
 
 
 };
@@ -129,10 +129,12 @@ protected:
 
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
+    typedef std::map<const char *, Kernel *> KernelMap;
 
     VariableMap _variables;
 	VariableMap _constants;
 	TextureMap  _textures;
+    KernelMap _kernels;
 
 #ifdef USE_VM
     static const char *dirtyBitmapSymbol;
@@ -144,8 +146,10 @@ protected:
 #endif
 
 public:
-	Module(const ModuleDescriptor & d, Mode &mode);
+	Module(const ModuleDescriptor & d);
 	~Module();
+
+    void registerKernels(Mode &mode) const;
 
     const Variable *variable(gmacVariable_t key) const;
 	const Variable *constant(gmacVariable_t key) const;

@@ -51,7 +51,7 @@ ModuleDescriptor::~ModuleDescriptor()
 }
 
 ModuleVector
-ModuleDescriptor::createModules(Mode &mode)
+ModuleDescriptor::createModules()
 {
     util::Logger::TRACE("Creating modules");
     ModuleVector modules;
@@ -59,12 +59,12 @@ ModuleDescriptor::createModules(Mode &mode)
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules.begin(); it != Modules.end(); it++) {
         util::Logger::TRACE("Creating module: %p", (*it)->_fatBin);
-        modules.push_back(new Module(*(*it), mode));
+        modules.push_back(new Module(*(*it)));
     }
     return modules;
 }
 
-Module::Module(const ModuleDescriptor & d, Mode &mode) :
+Module::Module(const ModuleDescriptor & d) :
     _fatBin(d._fatBin)
 {
     trace("Module image: %p", _fatBin);
@@ -75,7 +75,7 @@ Module::Module(const ModuleDescriptor & d, Mode &mode) :
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d._kernels.begin(); k != d._kernels.end(); k++) {
         Kernel * kernel = new Kernel(*k, _mod);
-        mode.kernel(k->key(), kernel);
+        _kernels.insert(KernelMap::value_type(k->key(), kernel));
     }
 
     ModuleDescriptor::VariableVector::const_iterator v;
@@ -125,6 +125,14 @@ Module::~Module()
     _variables.clear();
     _constants.clear();
     _textures.clear();
+}
+
+void Module::registerKernels(Mode &mode) const
+{
+    KernelMap::const_iterator k;
+    for (k = _kernels.begin(); k != _kernels.end(); k++) {
+        mode.kernel(k->first, k->second);
+    }
 }
 
 }}
