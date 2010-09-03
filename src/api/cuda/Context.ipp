@@ -9,6 +9,7 @@ inline
 void Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     __call = KernelConfig(Dg, Db, shared, tokens);
+    __call.stream(streamLaunch);
 }
 
 inline

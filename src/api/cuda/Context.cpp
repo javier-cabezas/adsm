@@ -18,6 +18,7 @@ Context::Context(Accelerator *acc, Mode *mode) :
     __call(dim3(0), dim3(0), 0, NULL)
 {
     setupStreams();
+    __call.stream(streamLaunch);
 }
 
 Context::~Context()
@@ -120,12 +121,13 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
     trace("Transferring %zd bytes from device %p to host %p", size, device, host);
 
     if(size == 0) return gmacSuccess;
-    if(buffer.isPinned() == true)
+    if(buffer.isPinned() == false)
         return gmac::Context::copyToHost(host, device, size);
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
     buffer.lock();
+    assertion(buffer.state() == IOBuffer::Idle);
     while(offset < size) {
         if(ret != gmacSuccess) break;
         size_t len = buffer.size();
@@ -138,6 +140,7 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
         memcpy((uint8_t *)host + offset, buffer.addr(), len);
         offset += len;
     }
+    buffer.state(IOBuffer::Idle);
     buffer.unlock();
     return ret;
 }
@@ -156,13 +159,17 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
-    if(syncStream(streamToDevice) != gmacSuccess) return NULL;
-    __call.stream(streamLaunch);
     return kernel->launch(__call);
 }
 
 gmacError_t Context::sync()
 {
+    switch(buffer.state()) {
+        case IOBuffer::ToHost: syncStream(streamToHost); break;
+        case IOBuffer::ToDevice: syncStream(streamToDevice); break;
+        case IOBuffer::Idle: break;
+    }
+    buffer.state(IOBuffer::Idle);
     return syncStream(streamLaunch);
 }
 

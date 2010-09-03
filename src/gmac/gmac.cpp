@@ -168,13 +168,13 @@ gmacMalloc(void **cpuPtr, size_t count)
     }
 	__enterGmac();
 	enterFunction(FuncGmacMalloc);
-    if(allocator != NULL && count < (paramPageSize / 2)) {
-        *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
-    }
-    else {
+    //if(allocator != NULL && count < (paramPageSize / 2)) {
+    //    *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
+    //}
+    //else {
 	    count = (int(count) < getpagesize())? getpagesize(): count;
 	    ret = manager->alloc(cpuPtr, count);
-    }
+    //}
 	exitFunction();
 	__exitGmac();
 	return ret;
@@ -207,7 +207,7 @@ gmacFree(void *cpuPtr)
     gmacError_t ret = gmacSuccess;
 	__enterGmac();
 	enterFunction(FuncGmacFree);
-    if(allocator == NULL || allocator->free(cpuPtr) == false)
+    //if(allocator == NULL || allocator->free(cpuPtr) == false)
         ret = manager->free(cpuPtr);
 	exitFunction();
 	__exitGmac();

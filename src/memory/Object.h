@@ -85,7 +85,7 @@ public:
     virtual gmacError_t release(Block *block) = 0;
 
     virtual Mode *owner() const = 0;
-    virtual void *device(void *addr) const = 0;
+    virtual void *device(void *addr) = 0;
 };
 
 typedef std::set<Object *> ObjectSet;
@@ -127,7 +127,7 @@ public:
     virtual gmacError_t acquire(Block *block);
     virtual gmacError_t release(Block *block);
 
-    virtual void *device(void *addr) const;
+    virtual void *device(void *addr);
     inline virtual Mode *owner() const { return __owner; }
 };
 
@@ -136,7 +136,12 @@ public:
 template<typename T>
 class ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
-    typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
+    class AcceleratorMap: public std::map<Mode *, AcceleratorBlock *>, util::RWLock {
+    protected:
+        friend class ReplicatedObject<T>;
+    public:
+        AcceleratorMap() : util::RWLock(paraver::LockObject) {};
+    };
 
     AcceleratorMap accelerator;
 public:
@@ -146,7 +151,7 @@ public:
     virtual gmacError_t acquire(Block *block);
     virtual gmacError_t release(Block *block);
 
-    virtual void *device(void *addr) const;
+    virtual void *device(void *addr);
     inline virtual Mode *owner() const { return gmac::Mode::current(); }
 
     gmacError_t addOwner(Mode *mode);
@@ -159,7 +164,7 @@ public:
     CentralizedObject(size_t __size);
     ~CentralizedObject();
 
-    virtual void *device(void *addr) const;
+    virtual void *device(void *addr);
     inline virtual Mode *owner() const { return gmac::Mode::current(); }
 
     inline gmacError_t acquire(Block *block) {

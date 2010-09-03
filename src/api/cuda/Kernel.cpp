@@ -31,7 +31,8 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     gmac::KernelConfig(c),
     _grid(c._grid),
     _block(c._block),
-    _shared(c._shared)
+    _shared(c._shared),
+    __stream(c.__stream)
 {
 }
 
@@ -39,7 +40,8 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t to
     gmac::KernelConfig(),
     _grid(grid),
     _block(block),
-    _shared(shared)
+    _shared(shared),
+    __stream(NULL)
 {
 }
 

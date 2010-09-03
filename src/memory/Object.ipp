@@ -32,9 +32,10 @@ inline void StateObject<T>::setupSystem(T init)
 {
     uint8_t *ptr = (uint8_t *)__addr;
     for(size_t i = 0; i < __size; i += paramPageSize, ptr += paramPageSize) {
+        size_t blockSize = (__size > paramPageSize) ? paramPageSize : __size;
         systemMap.insert(typename SystemMap::value_type(
-            ptr + paramPageSize,
-            new SystemBlock<T>(ptr, paramPageSize, init)));
+            ptr + blockSize,
+            new SystemBlock<T>(ptr, blockSize, init)));
     }
 }
 
@@ -88,14 +89,14 @@ template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
     if(StateObject<T>::__addr == NULL) return;
-    delete accelerator;
     void *__device = accelerator->addr();
+    delete accelerator;
     StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
     __owner->free(__device);
 }
 
 template<typename T>
-inline void *SharedObject<T>::device(void *addr) const
+inline void *SharedObject<T>::device(void *addr)
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::__addr;
     return (uint8_t *)accelerator->addr() + offset;
@@ -146,16 +147,19 @@ inline ReplicatedObject<T>::~ReplicatedObject()
 {
     if(StateObject<T>::__addr == NULL) return;
     proc->globalFree(*this);
+    accelerator.lockWrite();
     accelerator.clear();
-    
+    accelerator.unlock();
     StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
 }
 
 template<typename T>
-inline void *ReplicatedObject<T>::device(void *addr) const
+inline void *ReplicatedObject<T>::device(void *addr)
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::__addr;
-    AcceleratorMap::const_iterator i = accelerator.find(gmac::Mode::current());
+    accelerator.lockRead();
+    typename AcceleratorMap::const_iterator i = accelerator.find(gmac::Mode::current());
+    accelerator.unlock();
     Object::assertion(i != accelerator.end());
     
     return (uint8_t *)i->second->addr() + offset;
@@ -172,10 +176,12 @@ template<typename T>
 inline gmacError_t ReplicatedObject<T>::release(Block *block)
 {
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::__addr;
-    AcceleratorMap::iterator i;
+    typename AcceleratorMap::iterator i;
+    accelerator.lockRead();
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         i->second->put(off, block);
     }
+    accelerator.unlock();
     return gmacSuccess;
 }
 
@@ -186,8 +192,10 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
     gmacError_t ret;
     ret = mode->malloc(&device, StateObject<T>::__size);
     Object::cfatal(ret == gmacSuccess, "Unable to replicate Object");
-    accelerator.insert(AcceleratorMap::value_type(mode,
+    accelerator.lockWrite();
+    accelerator.insert(typename AcceleratorMap::value_type(mode,
             new AcceleratorBlock(mode, device, StateObject<T>::__size)));
+    accelerator.unlock();
     trace("Adding replicated object @ %p to mode %p", device, mode);
     return ret;
 }
@@ -195,9 +203,11 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::removeOwner(Mode *mode)
 {
-    AcceleratorMap::iterator i = accelerator.find(mode);
+    accelerator.lockWrite();
+    typename AcceleratorMap::iterator i = accelerator.find(mode);
     Object::assertion(i != accelerator.end());
     accelerator.erase(i);
+    accelerator.unlock();
     gmacError_t ret = mode->free(i->second->addr());
     delete i->second;
     return ret;

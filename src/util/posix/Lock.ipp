@@ -37,7 +37,7 @@ Lock::lock()
 {
    enterLock(__name);
    pthread_mutex_lock(&__mutex);
-#ifdef DEBUG
+#ifdef LOCK_DEBUG
    acquire();
 #endif
    exitLock();
@@ -46,7 +46,7 @@ Lock::lock()
 inline void
 Lock::unlock()
 {
-#ifdef DEBUG
+#ifdef LOCK_DEBUG
    if(owner() != pthread_self())
       fprintf(stderr, "WARNING: Thread "FMT_TID" releases lock owned by "FMT_TID"\n", pthread_self(), owner());
    release();
@@ -73,7 +73,7 @@ RWLock::lockWrite()
 {
     enterLock(__name);
     pthread_rwlock_wrlock(&__lock);
-#ifdef DEBUG
+#ifdef LOCK_DEBUG
     if(owner() == pthread_self())
         fprintf(stderr, "WARNING: Lock %d double-locked by "FMT_TID"\n", __name, owner());
     assert(owner() == 0);
@@ -89,7 +89,7 @@ RWLock::lockWrite()
 inline void
 RWLock::unlock()
 {
-#ifdef DEBUG
+#ifdef LOCK_DEBUG
     if(__write == true) {
         assert(owner() == SELF());
         __write = false;
@@ -111,7 +111,7 @@ RWLock::tryRead()
 inline bool
 RWLock::tryWrite()
 {
-#ifdef DEBUG
+#ifdef LOCK_DEBUG
     if(pthread_self() == owner()) return false;
 #endif
     return pthread_rwlock_trywrlock(&__lock) == 0;

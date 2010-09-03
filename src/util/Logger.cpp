@@ -87,13 +87,14 @@ void Logger::log(const char *tag, const char *fmt, va_list list) const
     if(status != 0) return;
 
     if(active == false && check(__name) == false) {
-        //if(name == NULL) free(__name);
+        if(name == NULL && __name != NULL ) free(__name);
         return;
     }
 
     print(tag, fmt, list);
 
-    if(name == NULL) free(__name);
+
+    if(name == NULL && __name != NULL ) free(__name);
 }
 #endif
 

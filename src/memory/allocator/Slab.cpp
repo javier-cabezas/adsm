@@ -15,9 +15,14 @@ Cache &Slab::get(long key, size_t size)
 {
     Cache *cache = NULL;
     ModeMap::iterator i;
+    modes.lockRead();
     i = modes.find(Mode::current());
+    modes.unlock();
     if(i == modes.end()) {
-        return createCache(modes[Mode::current()], key, size);
+        modes.lockWrite();
+        Cache &ret = createCache(modes[Mode::current()], key, size);
+        modes.unlock();
+        return ret;
     }
     else {
         CacheMap::iterator j;
@@ -32,15 +37,18 @@ Cache &Slab::get(long key, size_t size)
 void Slab::cleanup()
 {
     ModeMap::iterator i;
+    modes.lockRead();
     i = modes.find(Mode::current());
+    modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;
     for(j = i->second.begin(); j != i->second.end(); j++) {
         delete j->second;
     }
     i->second.clear();
+    modes.lockWrite();
     modes.erase(i);
-    
+    modes.unlock();
 }
 
 void *Slab::alloc(size_t size, void *addr)
@@ -48,14 +56,18 @@ void *Slab::alloc(size_t size, void *addr)
     Cache &cache = get((unsigned long)addr, size);
     trace("Using cache %p", &cache);
     void *ret = cache.get();
+    addresses.lockWrite();
     addresses.insert(AddressMap::value_type(ret, &cache));
+    addresses.unlock();
     trace("Retuning address %p", ret);
     return ret;
 }
 
 bool Slab::free(void *addr)
 {
+    addresses.lockRead();
     AddressMap::iterator i = addresses.find(addr);
+    addresses.unlock();
     if(i == addresses.end()) {
         trace("%p was not delivered by slab allocator", addr); 
         return false;

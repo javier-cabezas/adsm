@@ -34,6 +34,12 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {
 #ifndef USE_MULTI_CONTEXT
+    switchIn();
+    ModuleVector::iterator i;
+    for(i = modules.begin(); i != modules.end(); i++)
+        delete *i;
+    modules.clear();
+    switchOut();
     assertion(cuCtxDestroy(__ctx) == CUDA_SUCCESS);
 #endif
 }

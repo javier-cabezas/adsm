@@ -23,7 +23,7 @@ CentralizedObject::~CentralizedObject()
     mode->hostFree(__addr);
 }
 
-void *CentralizedObject::device(void *addr) const
+void *CentralizedObject::device(void *addr)
 {
     off_t offset = (unsigned long)addr - (unsigned long)__addr;
     gmac::gpu::Mode *mode = dynamic_cast<gmac::gpu::Mode *>(gmac::Mode::current());

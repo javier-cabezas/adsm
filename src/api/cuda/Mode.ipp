@@ -20,8 +20,8 @@ void Switch::out()
 inline
 void Mode::switchIn()
 {
-#ifdef USE_MULTI_CONTEXT
     __mutex.lock();
+#ifdef USE_MULTI_CONTEXT
     CUresult ret = cuCtxPushCurrent(__ctx);
     cfatal(ret != CUDA_SUCCESS, "Unable to switch to CUDA mode");
 #else
@@ -35,11 +35,11 @@ void Mode::switchOut()
 #ifdef USE_MULTI_CONTEXT
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
-    __mutex.unlock();
     cfatal(ret != CUDA_SUCCESS, "Unable to switch back from CUDA mode");
 #else
     acc->switchOut();
 #endif
+    __mutex.unlock();
 }
 
 inline
