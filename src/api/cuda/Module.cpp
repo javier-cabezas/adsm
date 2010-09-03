@@ -125,6 +125,10 @@ Module::~Module()
     _variables.clear();
     _constants.clear();
     _textures.clear();
+
+    KernelMap::iterator i;
+    for(i = _kernels.begin(); i != _kernels.end(); i++) delete i->second;
+    _kernels.clear();
 }
 
 void Module::registerKernels(Mode &mode) const

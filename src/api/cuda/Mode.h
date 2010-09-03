@@ -55,14 +55,12 @@ public:
 };
 
 
-#ifdef USE_MULTI_CONTEXT
 class ContextLock : public util::Lock {
 protected:
-    friend class Context;
+    friend class Mode;
 public:
-    ContextLock() : util::Lock() {};
+    ContextLock() : util::Lock(paraver::LockRegion) {};
 };
-#endif
 
 class Texture;
 class Accelerator;
@@ -74,8 +72,8 @@ protected:
     Context *context;
 #ifdef USE_MULTI_CONTEXT
     CUcontext __ctx;
-    ContextLock __mutex;
 #endif
+    ContextLock __mutex;
 
     friend class Switch;
     virtual void switchIn();
