@@ -74,7 +74,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
 gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 {
     gmacError_t ret;
-    if(hint == 0) {
+    if(hint == 1) {
         Object *object = protocol->createReplicatedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
