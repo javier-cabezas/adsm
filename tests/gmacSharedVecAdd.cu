@@ -13,7 +13,7 @@
 const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
-const unsigned nIterDefault = 2;
+const unsigned nIterDefault = 4;
 const size_t vecSizeDefault = 1024 * 1024;
 
 unsigned nIter = 0;
@@ -49,8 +49,6 @@ void *addVector(void *ptr)
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
-    fprintf(stderr,"0x%x -- %d >> Vector call: %p %p %p\n", vecSize, p->i, gmacPtr((p->ptr)), gmacPtr(a), gmacPtr(b));
-    fprintf(stderr,"Vector call: %p %p %p\n", gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize));
 
 	gettimeofday(&s, NULL);
 	 vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);

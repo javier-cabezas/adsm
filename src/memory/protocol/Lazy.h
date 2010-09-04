@@ -61,6 +61,7 @@ public:
     Object *createObject(size_t size);
 #ifndef USE_MMAP
     Object *createReplicatedObject(size_t size);
+    bool requireUpdate(Block *block);
 #endif
 
     gmacError_t read(Object &obj, void *addr);

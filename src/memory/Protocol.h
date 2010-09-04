@@ -51,6 +51,7 @@ public:
     virtual Object *createReplicatedObject(size_t size) = 0;
     virtual Object *createCentralizedObject(size_t size)
 ;
+    virtual bool requireUpdate(Block *block) = 0;
 #endif
 
     virtual gmacError_t read(Object &obj, void *addr) = 0;

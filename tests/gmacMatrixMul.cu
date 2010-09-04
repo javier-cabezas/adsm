@@ -218,13 +218,14 @@ main(int argc, char** argv)
     // compute reference solution
 	gettimeofday(&s, NULL);
     // check result
-    float err;
+    float err = 0;
     printf("Computing host matrix mul. Please wait...\n");
     float* reference = (float *) malloc(sizeC * nIter);
     computeGold(reference, A, B, HA, WA, WB);
 
     for (unsigned n = 0; n < nIter; n++) {
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
+        fprintf(stderr,"L: %f\n", *params[n].ptr);
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");
@@ -239,7 +240,7 @@ main(int argc, char** argv)
     delete [] params;
     delete [] threads;
 
-	gmacFree(A);
+	assert(gmacFree(A) == gmacSuccess);
 	gmacFree(B);
 
     return fabsf(err) != 0.0f;

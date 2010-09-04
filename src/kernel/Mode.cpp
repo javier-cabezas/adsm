@@ -4,6 +4,8 @@
 
 #include <memory/Object.h>
 #include <memory/Map.h>
+#include <memory/Manager.h>
+#include <gmac/init.h>
 
 namespace gmac {
 
@@ -28,6 +30,12 @@ Mode::~Mode()
 
     delete map;
     acc->destroyMode(this); 
+}
+
+
+bool Mode::requireUpdate(memory::Block *block)
+{
+    return manager->requireUpdate(block);
 }
 
 }

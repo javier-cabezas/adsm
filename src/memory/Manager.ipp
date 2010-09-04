@@ -10,6 +10,12 @@ inline Manager::~Manager()
     delete protocol;
 }
 
+#ifndef USE_MMAP
+inline bool Manager::requireUpdate(Block *block)
+{
+    return protocol->requireUpdate(block);
+}
+#endif
 
 }};
 #endif

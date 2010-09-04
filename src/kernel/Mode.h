@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-namespace memory { class Map; class Object; }
+namespace memory { class Map; class Object; class Block; }
 
 class Context;
 class IOBuffer;
@@ -91,6 +91,7 @@ public:
 #ifndef USE_MMAP
     inline void addReplicatedObject(memory::Object *obj) { map->insertShared(obj); }
     inline void addCentralizedObject(memory::Object *obj) { map->insertGlobal(obj); }
+    bool requireUpdate(memory::Block *block);
 #endif
     inline void removeObject(memory::Object *obj) { map->remove(obj); }
     inline memory::Object *findObject(const void *addr) {

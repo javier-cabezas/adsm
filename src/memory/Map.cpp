@@ -66,18 +66,22 @@ void Map::remove(Object *obj)
     trace("Removing Object %p", obj->start());
     lockWrite();
     i = ObjectMap::find(obj->end());
-    if(i == end()) {
-        unlock();
-        return;
+    if(i != end()) {
+        erase(i);
     }
-    erase(i);
     unlock();
+
+    ObjectMap &__shared = proc->shared();
+    __shared.lockWrite();
+    i = __shared.find(obj->end());
+    if(i != __shared.end()) __shared.erase(i);
+    __shared.unlock();
+
 
     ObjectMap &__global = proc->global();
     __global.lockWrite();
     i = __global.find(obj->end());
-    assertion(i != __global.end());
-    __global.erase(i);
+    if(i != __global.end()) __global.erase(i);
     __global.unlock();
 
 }
