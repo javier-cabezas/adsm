@@ -42,9 +42,9 @@ gmacError_t Lazy::release(Object &obj)
                 block->state(Invalid);
             break;
 
-        case Invalid:
-        case ReadOnly:
-            break;
+            case Invalid:
+            case ReadOnly:
+                break;
         }
     }
     return ret;
@@ -115,6 +115,22 @@ gmacError_t Lazy::write(Object &obj, void *addr)
     block->state(Dirty);
     return gmacSuccess;
 }
+
+#ifndef USE_MMAP
+bool Lazy::requireUpdate(Block *b)
+{
+    SystemBlock<State> *block = dynamic_cast<SystemBlock<State> *>(b);
+    switch(block->state()) {
+        case Dirty:
+            return false;
+        case Invalid:
+        case ReadOnly:
+            return true;
+    }
+    return true;
+}
+
+#endif
 
 
 } } }

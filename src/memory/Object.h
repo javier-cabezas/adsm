@@ -50,7 +50,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Object: protected util::Lock, public util::Logger {
+class Object: protected util::RWLock, public util::Logger {
 private:
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT
@@ -92,6 +92,7 @@ typedef std::set<Object *> ObjectSet;
 
 class DistributedObject {
 public:
+    virtual ~DistributedObject() {};
     virtual gmacError_t addOwner(Mode *mode) = 0;
     virtual gmacError_t removeOwner(Mode *mode) = 0;
 };
@@ -122,7 +123,7 @@ protected:
     AcceleratorBlock *accelerator;
 public:
     SharedObject(size_t size, T init);
-    ~SharedObject();
+    virtual ~SharedObject();
 
     virtual gmacError_t acquire(Block *block);
     virtual gmacError_t release(Block *block);
@@ -146,7 +147,7 @@ protected:
     AcceleratorMap accelerator;
 public:
     ReplicatedObject(size_t size, T init);
-    ~ReplicatedObject();
+    virtual ~ReplicatedObject();
 
     virtual gmacError_t acquire(Block *block);
     virtual gmacError_t release(Block *block);
@@ -162,7 +163,7 @@ class CentralizedObject : public Object {
 protected:
 public:
     CentralizedObject(size_t __size);
-    ~CentralizedObject();
+    virtual ~CentralizedObject();
 
     virtual void *device(void *addr);
     inline virtual Mode *owner() const { return gmac::Mode::current(); }

@@ -22,7 +22,6 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
     if(i >= size) return;
 
     c[i] = a[i] + b[i];
-    c[i] = 1.0; //a[i];
 }
 
 
@@ -65,7 +64,7 @@ int main(int argc, char *argv[])
     gettimeofday(&s, NULL);
     float error = 0;
     for(int i = 0; i < vecSize; i++) {
-        error += c[i] - a[i]; // - (a[i] + b[i]);
+        error += c[i] - (a[i] + b[i]);
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");
