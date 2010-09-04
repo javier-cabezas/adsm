@@ -5,7 +5,7 @@
 
 namespace gmac { namespace memory {
 inline Block::Block(void *addr, size_t size) :
-    RWLock(paraver::LockBlock),
+    Lock(paraver::LockBlock),
     __addr(addr),
     __size(size)
 {}
@@ -45,18 +45,14 @@ inline SystemBlock<T>::~SystemBlock()
 template<typename T>
 inline T SystemBlock<T>::state()
 { 
-    lockRead();
     T ret = __state;
-    unlock();
     return ret;
 }
 
 template<typename T>
 inline void SystemBlock<T>::state(T s)
 {
-    lockWrite();
     __state = s;
-    unlock();
 }
 
 }}

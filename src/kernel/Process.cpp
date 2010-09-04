@@ -55,7 +55,6 @@ Process::~Process()
     for(a = __accs.begin(); a != __accs.end(); a++)
         delete *a;
     __accs.clear();
-    unlock();
     __queues.cleanup();
     memoryFini();
 }

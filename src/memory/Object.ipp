@@ -26,6 +26,7 @@ inline StateObject<T>::~StateObject()
     for(i = systemMap.begin(); i != systemMap.end(); i++)
         delete i->second;
     systemMap.clear();
+    unlock();
 }
 
 template<typename T>

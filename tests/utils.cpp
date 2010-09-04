@@ -19,7 +19,7 @@ void printAvgTime(struct timeval *start, struct timeval *end, const char *pre, c
 void randInit(float *a, size_t size)
 {
 	for(unsigned i = 0; i < size; i++) {
-		a[i] = .001;// * rand();
+		a[i] = 1.0 * rand();
 	}
 }
 

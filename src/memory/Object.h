@@ -68,8 +68,6 @@ protected:
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);
-
-    friend class Manager;
 public:
     virtual ~Object() {};
 
