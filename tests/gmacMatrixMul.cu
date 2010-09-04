@@ -225,7 +225,6 @@ main(int argc, char** argv)
 
     for (unsigned n = 0; n < nIter; n++) {
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
-        fprintf(stderr,"L: %f\n", *params[n].ptr);
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");

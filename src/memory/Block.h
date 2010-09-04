@@ -49,7 +49,7 @@ class Mode;
 namespace memory {
 
 
-class Block: protected util::RWLock, public util::Logger {
+class Block: protected util::Lock, public util::Logger {
 protected:
     void *__addr;
     size_t __size;
@@ -61,6 +61,9 @@ public:
 
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
+
+    inline void lock() { return util::Lock::lock(); }
+    inline void unlock() { return util::Lock::unlock(); }
 };
 
 class AcceleratorBlock : public Block {
