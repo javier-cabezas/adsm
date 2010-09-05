@@ -33,9 +33,11 @@ Mode::~Mode()
 }
 
 
+#ifndef USE_MMAP
 bool Mode::requireUpdate(memory::Block *block)
 {
     return manager->requireUpdate(block);
 }
+#endif
 
 }

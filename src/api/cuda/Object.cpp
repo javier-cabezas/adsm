@@ -4,6 +4,7 @@
 
 namespace gmac { namespace memory {
 
+#ifndef USE_MMAP
 CentralizedObject::CentralizedObject(size_t size) :
     Object(NULL, size)
 {
@@ -29,5 +30,6 @@ void *CentralizedObject::device(void *addr)
     gmac::gpu::Mode *mode = dynamic_cast<gmac::gpu::Mode *>(gmac::Mode::current());
     return (uint8_t *)mode->hostAddress(__addr) + offset;
 }
+#endif
 
 }}
