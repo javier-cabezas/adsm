@@ -26,10 +26,12 @@ Object *Map::globalFind(const void *addr)
     return mapFind(proc->global(), addr);
 }
 
+#ifndef USE_MMAP
 Object *Map::sharedFind(const void *addr)
 {
     return mapFind(proc->shared(), addr);
 }
+#endif
 
 void Map::clean()
 {
