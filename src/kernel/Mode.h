@@ -73,7 +73,7 @@ public:
     ~Mode();
 
     inline static void init() { key.set(NULL); }
-    inline static Mode *current();
+    static Mode *current();
     inline static bool hasCurrent() { return key.get() != NULL; }
 
     inline void inc() { count++; }
@@ -82,10 +82,10 @@ public:
     inline unsigned id() const { return __id; }
 
     /*! \brief Attaches the execution mode to the current thread */
-    inline void attach();
+    void attach();
 
     /*! \brief Dettaches the execution mode to the current thread */
-    inline void detach();
+    void detach();
 
     inline void addObject(memory::Object *obj) { map->insert(obj); }
 #ifndef USE_MMAP
@@ -143,8 +143,6 @@ public:
 };
 
 }
-
-#include "Mode.ipp"
 
 #endif /* KERNEL_H */
 

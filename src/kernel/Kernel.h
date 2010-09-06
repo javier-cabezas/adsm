@@ -50,7 +50,8 @@ public:
     void * _ptr;
     size_t _size;
     off_t  _offset;
-    Argument(void * ptr, size_t size, off_t offset);
+    Argument(void * ptr, size_t size, off_t offset) :
+        _ptr(ptr), _size(size), _offset(offset) {}
 private:
     friend class Kernel;
 };
@@ -68,13 +69,13 @@ protected:
     KernelConfig(const KernelConfig & c);
 public:
     /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig();
-    virtual ~KernelConfig();
+    KernelConfig() : _argsSize(0) {};
+    virtual ~KernelConfig() { clear(); };
 
     void pushArgument(const void * arg, size_t size, off_t offset);
-    off_t argsSize() const;
+    inline off_t argsSize() const { return _argsSize; }
 
-    char * argsArray();
+    inline char * argsArray() { return _stack; }
 };
 
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
@@ -84,14 +85,11 @@ class KernelLaunch;
 class Kernel : public memory::ObjectSet, public KernelDescriptor
 {
 public:
-    Kernel(const KernelDescriptor & k);
+    Kernel(const KernelDescriptor & k) :
+        KernelDescriptor(k.name(), k.key()) {};
     virtual ~Kernel() {};
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
-#if 0
-    gmacError_t bind(void * addr);
-    gmacError_t unbind(void * addr);
-#endif
 };
 
 class KernelLaunch : public memory::ObjectSet {
@@ -102,7 +100,6 @@ public:
 
 }
 
-#include "Kernel.ipp"
 
 #endif /* KERNEL_H */
 

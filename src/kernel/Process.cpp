@@ -26,9 +26,63 @@ ModeMap::ModeMap() :
     RWLock(LockModeMap)
 {}
 
+std::pair<ModeMap::iterator, bool>
+ModeMap::insert(Mode *mode, Accelerator *acc)
+{
+    lockWrite();
+    std::pair<iterator, bool> ret = Parent::insert(value_type(mode, acc));
+    unlock();
+    return ret;
+}
+
+size_t ModeMap::remove(Mode *mode)
+{
+    lockWrite();
+    size_type ret = Parent::erase(mode);
+    unlock();
+    return ret;
+}
+
 QueueMap::QueueMap() : 
     util::RWLock(LockQueueMap)
 {}
+
+void QueueMap::cleanup()
+{
+    QueueMap::iterator q;
+    lockWrite();
+    for(q = Parent::begin(); q != Parent::end(); q++)
+        delete q->second;
+    clear();
+    unlock();
+}
+
+std::pair<QueueMap::iterator, bool>
+QueueMap::insert(THREAD_ID tid, ThreadQueue *q)
+{
+    lockWrite();
+    std::pair<iterator, bool> ret =
+        Parent::insert(value_type(tid, q));
+    unlock();
+    return ret;
+}
+
+QueueMap::iterator QueueMap::find(THREAD_ID id)
+{
+    lockRead();
+    iterator q = Parent::find(id);
+    unlock();
+    return q;
+}
+
+QueueMap::iterator QueueMap::end()
+{
+    lockRead();
+    iterator ret = Parent::end();
+    unlock();
+    return ret;
+}
+
 
 size_t Process::__totalMemory = 0;
 

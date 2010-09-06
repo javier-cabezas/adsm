@@ -74,6 +74,4 @@ public:
 
 }
 
-#include "Context.ipp"
-
 #endif
