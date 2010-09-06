@@ -62,8 +62,6 @@ public:
 	Mode *pop();
 };
 
-#include "Queue.ipp"
-
 }
 
 

@@ -34,11 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDA_IOBUFFER_H_
 #define __API_CUDA_IOBUFFER_H_
 
+#include <util/Logger.h>
 #include <kernel/IOBuffer.h>
 
 namespace gmac { namespace gpu {
 
-class Mode;
 class IOBuffer : public gmac::IOBuffer, public gmac::util::Logger {
 public:
     typedef enum { Idle, ToDevice, ToHost} State;

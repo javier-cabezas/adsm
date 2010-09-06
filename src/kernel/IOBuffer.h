@@ -38,14 +38,14 @@ WITH THE SOFTWARE.  */
 #include <util/Lock.h>
 
 namespace gmac {
-class Mode;
 
 class IOBuffer : public gmac::util::Lock {
 protected:
     void *__addr;
     size_t __size;
 public:
-    IOBuffer(size_t size);
+    IOBuffer(size_t size) :
+        util::Lock(paraver::LockIo), __addr(NULL), __size(size) {}
     inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return __addr; }
@@ -57,8 +57,6 @@ public:
 
 
 }
-
-#include "IOBuffer.ipp"
 
 #endif /* KERNEL_H */
 

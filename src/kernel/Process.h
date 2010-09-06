@@ -137,7 +137,9 @@ public:
 #endif
 
 	void *translate(void *addr);
-	const void *translate(const void *addr);
+	inline const void *translate(const void *addr) {
+        return (const void *)translate((void *)addr);
+    }
 
     /* Context management functions */
     void send(THREAD_ID id);
@@ -148,19 +150,17 @@ public:
 
 	void addAccelerator(Accelerator *acc);
 
-	static size_t totalMemory();
-	size_t nAccelerators() const;
+	inline static size_t totalMemory() { return __totalMemory; }
+	inline size_t nAccelerators() const { return __accs.size(); }
 
-    memory::ObjectMap &global();
-    const memory::ObjectMap &global() const;
-    memory::ObjectMap &shared();
-    const memory::ObjectMap &shared() const;
+    inline memory::ObjectMap &global() { return __global; }
+    inline const memory::ObjectMap &global() const { return __global; }
+    inline memory::ObjectMap &shared() { return __shared; }
+    inline const memory::ObjectMap &shared() const { return __shared; }
 
     Mode *owner(const void *addr);
 };
 
 }
-
-#include "Process.ipp"
 
 #endif

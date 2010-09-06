@@ -83,6 +83,5 @@ public:
 
 }
 
-#include "Accelerator.ipp"
 
 #endif
