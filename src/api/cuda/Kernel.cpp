@@ -5,7 +5,7 @@
 
 #include <cuda_runtime_api.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     gmac::Kernel(k)

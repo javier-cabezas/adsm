@@ -2,7 +2,7 @@
 #include "Context.h"
 #include "Accelerator.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 Mode::Mode(Accelerator *acc) :
     gmac::Mode(acc),

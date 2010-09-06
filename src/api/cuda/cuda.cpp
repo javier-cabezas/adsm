@@ -45,11 +45,11 @@ void apiInit(void)
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			util::Logger::fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
-			proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+			proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
 			devRealCount++;
 		}
 #else
-        proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+        proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
         devRealCount++;
 #endif
 	}

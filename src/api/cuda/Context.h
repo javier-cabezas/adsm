@@ -52,7 +52,7 @@ WITH THE SOFTWARE.  */
 #include <vector>
 #include <map>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 class Context : public gmac::Context {
 protected:

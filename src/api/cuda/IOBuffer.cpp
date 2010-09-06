@@ -3,7 +3,7 @@
 
 #include <cuda.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 IOBuffer::IOBuffer(size_t size) :
     gmac::IOBuffer(size),

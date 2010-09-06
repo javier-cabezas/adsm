@@ -3,7 +3,7 @@
 
 #include <gmac/init.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules;
 

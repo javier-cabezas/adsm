@@ -12,7 +12,7 @@
 #include <string>
 #include <list>
 
-using gmac::gpu::Switch;
+using gmac::cuda::Switch;
 
 static inline size_t __getChannelSize(CUarray_format format)
 {
@@ -361,16 +361,16 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 extern "C" {
 #endif
 
-using gmac::gpu::Mode;
-using gmac::gpu::Module;
-using gmac::gpu::Variable;
+using gmac::cuda::Mode;
+using gmac::cuda::Module;
+using gmac::cuda::Variable;
 
 cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
 		size_t offset, enum cudaMemcpyKind kind)
 {
 	__enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode *mode = dynamic_cast<gmac::gpu::Mode *>(gmac::Mode::current());
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
 	const Variable *variable = mode->constant(symbol);
 	gmac::util::Logger::ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -426,13 +426,13 @@ static inline CUaddress_mode __getAddressMode(cudaTextureAddressMode mode)
 #ifdef __cplusplus
 extern "C" {
 #endif
-using gmac::gpu::Texture;
+using gmac::cuda::Texture;
 
 cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 		const struct cudaArray *array, const struct cudaChannelFormatDesc *desc)
 {
 	__enterGmac();
-    gmac::gpu::Mode *mode = dynamic_cast<gmac::gpu::Mode *>(gmac::Mode::current());
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
 	CUresult r;
     const Texture * texture = mode->texture(texref);
     Switch::in();
@@ -474,7 +474,7 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 {
 	__enterGmac();
-    Mode *mode = dynamic_cast<gmac::gpu::Mode *>(gmac::Mode::current());
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
     const Texture * texture = mode->texture(texref);
     Switch::in();
 	CUresult r = cuTexRefDestroy(texture->texRef());

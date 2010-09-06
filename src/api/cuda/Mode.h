@@ -46,7 +46,7 @@ WITH THE SOFTWARE.  */
 #include <vector_types.h>
 
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 class Switch {
 public:

@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include <util/Logger.h>
 #include <kernel/IOBuffer.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 class IOBuffer : public gmac::IOBuffer, public gmac::util::Logger {
 public:
@@ -55,7 +55,5 @@ public:
 };
 
 }}
-
-#include "IOBuffer.ipp"
 
 #endif

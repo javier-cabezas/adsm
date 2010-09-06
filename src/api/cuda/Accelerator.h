@@ -45,7 +45,7 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 class Mode;
 class ModuleDescriptor;
 

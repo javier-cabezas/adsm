@@ -7,7 +7,7 @@
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 class Mode;
 
@@ -39,9 +39,9 @@ public:
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 
     inline void stream(CUstream s) { __stream = s; }
-    dim3 grid() const;
-    dim3 block() const;
-    size_t shared() const;
+    dim3 grid() const { return _grid; }
+    dim3 block() const { return _block; }
+    size_t shared() const { return _shared; }
 };
 
 class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
@@ -59,7 +59,5 @@ public:
 };
 
 }}
-
-#include "Kernel.ipp"
 
 #endif

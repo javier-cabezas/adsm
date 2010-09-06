@@ -3,7 +3,7 @@
 
 #include "Accelerator.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 inline
 void Accelerator::switchIn()

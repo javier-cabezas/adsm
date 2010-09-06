@@ -1,7 +1,7 @@
 #ifndef __API_CUDADRV_MODULE_IPP_
 #define __API_CUDADRV_MODULE_IPP_
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 inline bool
 VariableDescriptor::constant() const
