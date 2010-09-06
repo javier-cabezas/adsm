@@ -115,6 +115,10 @@ public:
 	gmacError_t sync();
 	gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
+    gmacError_t hostAlloc(void **addr, size_t size);
+    gmacError_t hostFree(void *addr);
+    void *hostAddress(void *addr);
+
     static gmacError_t error(CUresult r);
     static CUdeviceptr gpuAddr(void *addr);
     static CUdeviceptr gpuAddr(const void *addr);
