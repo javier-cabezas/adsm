@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;

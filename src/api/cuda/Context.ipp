@@ -3,7 +3,7 @@
 
 #include "Kernel.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 inline
 void Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)

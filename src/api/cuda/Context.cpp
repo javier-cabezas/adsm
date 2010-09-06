@@ -6,7 +6,7 @@
 #include <memory/Manager.h>
 #include <gmac/init.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 Context::AddressMap Context::hostMem;
 void * Context::FatBin;

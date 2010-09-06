@@ -3,7 +3,7 @@
 
 #include "Context.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 inline
 void Switch::in()

@@ -3,8 +3,7 @@
 
 #include <kernel/Process.h>
 
-namespace gmac {
-namespace gpu {
+namespace gmac { namespace cuda {
 
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
@@ -46,7 +45,7 @@ Accelerator::~Accelerator()
 
 gmac::Mode *Accelerator::createMode()
 {
-	gpu::Mode *mode = new gpu::Mode(this);
+	cuda::Mode *mode = new cuda::Mode(this);
 	queue.insert(mode);
 	trace("Attaching Execution Mode %p to Accelerator", mode);
 	return mode;

@@ -1,6 +1,6 @@
 #include "Accelerator.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 #define ERROR(r, err) case r: error = err; break
 

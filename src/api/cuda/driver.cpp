@@ -21,12 +21,12 @@
 extern "C" {
 #endif
 
-using gmac::gpu::Accelerator;
-using gmac::gpu::Mode;
+using gmac::cuda::Accelerator;
+using gmac::cuda::Mode;
 using gmac::KernelDescriptor;
-using gmac::gpu::ModuleDescriptor;
-using gmac::gpu::TextureDescriptor;
-using gmac::gpu::VariableDescriptor;
+using gmac::cuda::ModuleDescriptor;
+using gmac::cuda::TextureDescriptor;
+using gmac::cuda::VariableDescriptor;
 
 /*!
  * @returns Module **
