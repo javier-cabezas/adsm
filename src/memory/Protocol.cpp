@@ -1,5 +1,5 @@
 #include "Protocol.h"
-#include "Object.h"
+#include "CentralizedObject.h"
 
 namespace gmac { namespace memory {
 

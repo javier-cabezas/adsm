@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,47 +31,47 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_QUEUE_H_
-#define __KERNEL_QUEUE_H_
+#ifndef __MEMORY_REPLICATEDOBJECT_H_
+#define __MEMORY_REPLICATEDOBJECT_H_
 
-#include <util/Lock.h>
-#include <util/Semaphore.h>
-#include <util/Logger.h>
+#include <memory/StateObject.h>
+#include <memory/DistributedObject.h>
+#include <memory/Block.h>
+#include <kernel/Mode.h>
 
-#include <list>
+#include <map>
 
-namespace gmac {
+namespace gmac { namespace memory {
 
-
-class Mode;
-
-/*!
-	\brief Communication Queue
-*/
-class Queue : public util::Logger, public util::Lock {
+#ifndef USE_MMAP
+template<typename T>
+class ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
-	typedef std::list<Mode *> Fifo;
+    class AcceleratorMap: public std::map<Mode *, AcceleratorBlock *>, util::RWLock {
+    protected:
+        friend class ReplicatedObject<T>;
+    public:
+        AcceleratorMap() : util::RWLock(paraver::LockObject) {};
+    };
 
-	Fifo _queue;
-	util::Semaphore sem;
-
+    AcceleratorMap accelerator;
 public:
-	Queue();
+    ReplicatedObject(size_t size, T init);
+    virtual ~ReplicatedObject();
 
-	void push(Mode *mode);
-	Mode *pop();
+    virtual gmacError_t acquire(Block *block);
+    virtual gmacError_t release(Block *block);
+
+    virtual void *device(void *addr);
+    inline virtual Mode *owner() const { return gmac::Mode::current(); }
+
+    gmacError_t addOwner(Mode *mode);
+    gmacError_t removeOwner(Mode *mode);
 };
+#endif
 
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue *queue;
-};
+} }
 
-
-
-}
-
+#include "ReplicatedObject.ipp"
 
 #endif

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,47 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_QUEUE_H_
-#define __KERNEL_QUEUE_H_
+#ifndef __MEMORY_SHAREDOBJECT_H_
+#define __MEMORY_SHAREDOBJECT_H_
 
-#include <util/Lock.h>
-#include <util/Semaphore.h>
-#include <util/Logger.h>
+#include <memory/StateObject.h>
+#include <memory/Block.h>
+#include <kernel/Mode.h>
 
-#include <list>
+namespace gmac { namespace memory {
 
-namespace gmac {
-
-
-class Mode;
-
-/*!
-	\brief Communication Queue
-*/
-class Queue : public util::Logger, public util::Lock {
+template<typename T>
+class SharedObject : public StateObject<T> {
 protected:
-	typedef std::list<Mode *> Fifo;
+    Mode *__owner;
 
-	Fifo _queue;
-	util::Semaphore sem;
-
+    AcceleratorBlock *accelerator;
 public:
-	Queue();
+    SharedObject(size_t size, T init);
+    virtual ~SharedObject();
 
-	void push(Mode *mode);
-	Mode *pop();
+    virtual gmacError_t acquire(Block *block);
+    virtual gmacError_t release(Block *block);
+
+    virtual void *device(void *addr);
+    inline virtual Mode *owner() const { return __owner; }
 };
 
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue *queue;
-};
+} }
 
-
-
-}
-
+#include "SharedObject.ipp"
 
 #endif

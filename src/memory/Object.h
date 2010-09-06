@@ -34,19 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_OBJECT_H_
 #define __MEMORY_OBJECT_H_
 
-#include <config.h>
-#include <gmac/gmac.h>
+#include <paraver.h>
 
 #include <memory/Block.h>
-#include <memory/Protocol.h>
-
-#include <kernel/Mode.h>
-
 #include <util/Lock.h>
 #include <util/Logger.h>
 
 #include <set>
-
 
 namespace gmac { namespace memory {
 
@@ -64,7 +58,8 @@ protected:
     void *__addr;
     size_t __size;
 
-    Object(void *__addr, size_t __size);
+    Object(void *__addr, size_t __size) :
+        RWLock(paraver::LockObject), __addr(__addr), __size(__size) {};
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);
@@ -86,100 +81,7 @@ public:
     virtual void *device(void *addr) = 0;
 };
 
-typedef std::set<Object *> ObjectSet;
-
-class DistributedObject {
-public:
-    virtual ~DistributedObject() {};
-    virtual gmacError_t addOwner(Mode *mode) = 0;
-    virtual gmacError_t removeOwner(Mode *mode) = 0;
-};
-
-template<typename T>
-class StateObject: public Object {
-public:
-    typedef std::map<void *, SystemBlock<T> *> SystemMap;
-protected:
-    SystemMap systemMap;
-    void setupSystem(T init);
-public:
-    StateObject(size_t size);
-    virtual ~StateObject();
-
-    SystemBlock<T> *findBlock(void *addr);
-    inline SystemMap &blocks() { return systemMap; }
-
-    virtual void state(T s);
-};
-
-
-template<typename T>
-class SharedObject : public StateObject<T> {
-protected:
-    Mode *__owner;
-
-    AcceleratorBlock *accelerator;
-public:
-    SharedObject(size_t size, T init);
-    virtual ~SharedObject();
-
-    virtual gmacError_t acquire(Block *block);
-    virtual gmacError_t release(Block *block);
-
-    virtual void *device(void *addr);
-    inline virtual Mode *owner() const { return __owner; }
-};
-
-
-#ifndef USE_MMAP
-template<typename T>
-class ReplicatedObject : public StateObject<T>, public DistributedObject {
-protected:
-    class AcceleratorMap: public std::map<Mode *, AcceleratorBlock *>, util::RWLock {
-    protected:
-        friend class ReplicatedObject<T>;
-    public:
-        AcceleratorMap() : util::RWLock(paraver::LockObject) {};
-    };
-
-    AcceleratorMap accelerator;
-public:
-    ReplicatedObject(size_t size, T init);
-    virtual ~ReplicatedObject();
-
-    virtual gmacError_t acquire(Block *block);
-    virtual gmacError_t release(Block *block);
-
-    virtual void *device(void *addr);
-    inline virtual Mode *owner() const { return gmac::Mode::current(); }
-
-    gmacError_t addOwner(Mode *mode);
-    gmacError_t removeOwner(Mode *mode);
-};
-
-class CentralizedObject : public Object {
-protected:
-public:
-    CentralizedObject(size_t __size);
-    virtual ~CentralizedObject();
-
-    virtual void *device(void *addr);
-    inline virtual Mode *owner() const { return gmac::Mode::current(); }
-
-    inline gmacError_t acquire(Block *block) {
-        fatal("Trying to acquire a centralized object");
-        return gmacErrorInvalidValue;
-    }
-    inline gmacError_t release(Block *block) {
-        fatal("Trying to release a centralized object");
-        return gmacErrorInvalidValue;
-    }
-
-};
-#endif
-
 } }
 
-#include "Object.ipp"
 
 #endif

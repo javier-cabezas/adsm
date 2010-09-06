@@ -1,3 +1,0 @@
-namespace gmac { namespace memory {
-
-}}

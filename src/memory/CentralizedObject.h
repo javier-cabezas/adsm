@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,47 +31,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_QUEUE_H_
-#define __KERNEL_QUEUE_H_
-
-#include <util/Lock.h>
-#include <util/Semaphore.h>
-#include <util/Logger.h>
-
-#include <list>
-
-namespace gmac {
+#ifndef __MEMORY_CENTRALIZEDOBJECT_H_
+#define __MEMORY_CENTRALIZEDOBJECT_H_
 
 
-class Mode;
+#include <memory/Object.h>
+#include <memory/Block.h>
+#include <kernel/Mode.h>
 
-/*!
-	\brief Communication Queue
-*/
-class Queue : public util::Logger, public util::Lock {
+
+namespace gmac { namespace memory {
+#ifndef USE_MMAP
+class CentralizedObject : public Object {
 protected:
-	typedef std::list<Mode *> Fifo;
-
-	Fifo _queue;
-	util::Semaphore sem;
-
 public:
-	Queue();
+    CentralizedObject(size_t __size);
+    virtual ~CentralizedObject();
 
-	void push(Mode *mode);
-	Mode *pop();
+    virtual void *device(void *addr);
+    inline virtual Mode *owner() const { return gmac::Mode::current(); }
+
+    inline gmacError_t acquire(Block *block) {
+        fatal("Trying to acquire a centralized object");
+        return gmacErrorInvalidValue;
+    }
+    inline gmacError_t release(Block *block) {
+        fatal("Trying to release a centralized object");
+        return gmacErrorInvalidValue;
+    }
+
 };
+#endif
 
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue *queue;
-};
-
-
-
-}
-
+} }
 
 #endif

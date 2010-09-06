@@ -1,8 +1,24 @@
 #include "Lazy.h"
 
-#include <os/Memory.h>
+#include <memory/StateObject.h>
+#include <memory/SharedObject.h>
+#include <memory/ReplicatedObject.h>
+#include <memory/os/Memory.h>
 
 namespace gmac { namespace memory { namespace protocol {
+
+Object *Lazy::createObject(size_t size)
+{
+    return new SharedObject<Lazy::State>(size, ReadOnly);
+}
+
+#ifndef USE_MMAP
+Object *Lazy::createReplicatedObject(size_t size)
+{
+    return new ReplicatedObject<Lazy::State>(size, ReadOnly);
+}
+#endif
+
 
 gmacError_t Lazy::acquire(Object &obj)
 {

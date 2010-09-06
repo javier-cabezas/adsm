@@ -51,13 +51,15 @@ class ObjectMap : protected util::RWLock, public std::map<const void *, Object *
 protected:
     friend class Map;
 public:
-    ObjectMap(paraver::LockName);
+    ObjectMap(paraver::LockName name) : util::RWLock(name) {};
 };
 
 class Map : public ObjectMap, public util::Logger {
 protected:
     Object *mapFind(ObjectMap &map, const void *addr);
-    Object *localFind(const void *addr);
+    inline Object *localFind(const void *addr) {
+        return mapFind(*this, addr);
+    }
     Object *globalFind(const void *addr);
 #ifndef USE_MMAP
     Object *sharedFind(const void *addr);
@@ -70,12 +72,12 @@ protected:
 #endif
 
 public:
-    Map(paraver::LockName);
+    Map(paraver::LockName name) : ObjectMap(name) {};
     virtual ~Map();
 
 #ifdef USE_VM
-    vm::Bitmap &dirtyBitmap();
-    const vm::Bitmap &dirtyBitmap() const;
+    vm::Bitmap &dirtyBitmap() { return __dirtyBirmap; }
+    const vm::Bitmap &dirtyBitmap() const { return __dirtyBitmap; }
 #endif
 
     void insert(Object *obj);
@@ -88,12 +90,11 @@ public:
     void removeGlobal(Object *obj);
 #endif
 
-    inline Object *find(const void *addr);
+    Object *find(const void *addr);
     
 };
 
 }}
 
-#include "Map.ipp"
 
 #endif

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,47 +31,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_QUEUE_H_
-#define __KERNEL_QUEUE_H_
+#ifndef __MEMORY_DISTRIBUTEDOBJECT_H_
+#define __MEMORY_DISTRIBUTEDOBJECT_H_
 
-#include <util/Lock.h>
-#include <util/Semaphore.h>
-#include <util/Logger.h>
-
-#include <list>
-
-namespace gmac {
+#include <kernel/Mode.h>
 
 
-class Mode;
+namespace gmac { namespace memory {
 
-/*!
-	\brief Communication Queue
-*/
-class Queue : public util::Logger, public util::Lock {
-protected:
-	typedef std::list<Mode *> Fifo;
-
-	Fifo _queue;
-	util::Semaphore sem;
-
+class DistributedObject {
 public:
-	Queue();
-
-	void push(Mode *mode);
-	Mode *pop();
+    virtual ~DistributedObject() {};
+    virtual gmacError_t addOwner(Mode *mode) = 0;
+    virtual gmacError_t removeOwner(Mode *mode) = 0;
 };
 
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue *queue;
-};
-
-
-
-}
-
+} }
 
 #endif

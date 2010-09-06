@@ -11,6 +11,15 @@ namespace gmac { namespace memory {
 int Manager::__count = 0;
 Manager *Manager::__manager = NULL;
 
+Manager::~Manager()
+{
+    trace("Memory manager finishes");
+    assertion(__count == 0);
+    delete protocol;
+}
+
+
+
 Manager *Manager::create()
 {
     __count++;
@@ -218,5 +227,13 @@ bool Manager::write(void *addr)
     if(protocol->write(*obj, addr) != gmacSuccess) ret = false;
     return ret;
 }
+
+#ifndef USE_MMAP
+bool Manager::requireUpdate(Block *block)
+{
+    return protocol->requireUpdate(block);
+}
+#endif
+
 
 }}

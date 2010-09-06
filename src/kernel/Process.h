@@ -64,13 +64,6 @@ namespace gmac {
 namespace memory { class DistributedObject; }
 
 
-class ThreadQueue : public util::Lock {
-public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue * queue;
-};
-
 class ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
 {
 private:

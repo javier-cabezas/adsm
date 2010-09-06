@@ -4,23 +4,13 @@
 
 #include <memory/Manager.h>
 #include <memory/Object.h>
+#include <memory/DistributedObject.h>
 #include <gmac/init.h>
 
 
 gmac::Process *proc = NULL;
 
 namespace gmac {
-
-ThreadQueue::ThreadQueue() :
-    util::Lock(LockThreadQueue)
-{
-    queue = new Queue();
-}
-
-ThreadQueue::~ThreadQueue()
-{
-    delete queue;
-}
 
 ModeMap::ModeMap() :
     RWLock(LockModeMap)

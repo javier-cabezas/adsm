@@ -91,6 +91,4 @@ public:
 
 } }
 
-#include "Manager.ipp"
-
 #endif
