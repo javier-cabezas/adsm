@@ -146,4 +146,29 @@ gmacError_t Accelerator::sync()
     return error(ret);
 }
 
+gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
+{
+#if CUDART_VERSION >= 2020
+    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
+#else
+    CUresult ret = cuMemAllocHost(addr, size);
+#endif
+    return error(ret);
+}
+
+gmacError_t Accelerator::hostFree(void *addr)
+{
+    CUresult r = cuMemFreeHost(addr);
+    return error(r);
+}
+
+void *Accelerator::hostAddress(void *addr)
+{
+    CUdeviceptr device;
+    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
+    if(ret != CUDA_SUCCESS) device = NULL;
+    return (void *)device;
+}
+
+
 }}

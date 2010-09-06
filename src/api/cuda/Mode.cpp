@@ -45,31 +45,25 @@ Mode::~Mode()
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
 {
     switchIn();
-#if CUDART_VERSION >= 2020
-    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
-#else
-    CUresult ret = cuMemAllocHost(addr, size);
-#endif
+    gmacError_t ret = acc->hostAlloc(addr, size);
     switchOut();
-    return Accelerator::error(ret);
+    return ret;
 }
 
 gmacError_t Mode::hostFree(void *addr)
 {
     switchIn();
-    CUresult r = cuMemFreeHost(addr);
+    gmacError_t ret = acc->hostFree(addr);
     switchOut();
-    return Accelerator::error(r);
+    return ret;
 }
 
 void *Mode::hostAddress(void *addr)
 {
     switchIn();
-    CUdeviceptr device;
-    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
-    if(ret != CUDA_SUCCESS) device = NULL;
+    void *ret = acc->hostAddress(addr);
     switchOut();
-    return (void *)device;
+    return ret;
 }
 
 const Variable *Mode::constant(gmacVariable_t key) const
