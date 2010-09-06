@@ -6,12 +6,14 @@ noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
             Bitmap.h Bitmap.ipp Bitmap.cpp\
             Block.h Block.ipp\
-            Object.h Object.ipp\
-			Map.h Map.ipp Map.cpp\
+            Object.h StateObject.h StateObject.ipp\
+            SharedObject.h SharedObject.ipp DistributedObject.h\
+            ReplicatedObject.h ReplicatedObject.ipp CentralizedObject.h \
+			Map.h Map.cpp\
             Protocol.h Protocol.cpp\
-			Manager.h Manager.ipp Manager.cpp\
+			Manager.h Manager.cpp\
 			Handler.h Handler.cpp\
-            Allocator.h Allocator.ipp Allocator.cpp
+            Allocator.h Allocator.cpp
 
 libmemory_la_LIBADD = protocol/libmemory-protocol.la allocator/libmemory-allocator.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 

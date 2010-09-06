@@ -54,8 +54,8 @@ public:
 protected:
 
 public:
-    Lazy();
-    ~Lazy();
+    Lazy() {};
+    ~Lazy() {};
 
     // Protocol Interface
     Object *createObject(size_t size);
@@ -76,6 +76,5 @@ public:
 
 } } }
 
-#include "Lazy.ipp"
 
 #endif

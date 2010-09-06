@@ -34,11 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_KERNEL_H
 #define __KERNEL_KERNEL_H
 
-#include "Descriptor.h"
-
+#include <kernel/Descriptor.h>
 #include <memory/ObjectSet.h>
+
 #include <util/ReusableObject.h>
 #include <util/Logger.h>
+
 #include <gmac/gmac.h>
 
 #include <vector>

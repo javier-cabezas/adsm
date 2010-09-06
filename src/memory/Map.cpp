@@ -9,6 +9,12 @@
 
 namespace gmac { namespace memory {
 
+Map::~Map()
+{
+    trace("Cleaning Memory Map");
+    clean();
+}
+
 Object * Map::mapFind(ObjectMap &map, const void *addr)
 {
     ObjectMap::const_iterator i;
@@ -32,6 +38,19 @@ Object *Map::sharedFind(const void *addr)
     return mapFind(proc->shared(), addr);
 }
 #endif
+
+Object *Map::find(const void *addr)
+{
+    Object *ret = NULL;
+    ret = localFind(addr);
+    if(ret == NULL) { ret = globalFind(addr); }
+#ifndef USE_MMAP
+    if(ret == NULL) { ret = sharedFind(addr); }
+#endif
+    return ret;
+}
+
+
 
 void Map::clean()
 {

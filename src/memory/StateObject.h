@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,35 +31,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_MEMORY_TRANSFER_H_
-#define __KERNEL_MEMORY_TRANSFER_H_
+#ifndef __MEMORY_STATEOBJECT_H_
+#define __MEMORY_STATEOBJECT_H_
 
-namespace gmac {
 
-/*!
-	\brief Memory transfer descriptor
-*/
-class MemoryTransfer {
-protected:
-    const void * _src;
-    void * _dst;
+#include <memory/Object.h>
+#include <memory/Block.h>
 
-    Context * _ctxSrc;
-    Context * _ctxDst;
+#include <map>
 
+namespace gmac { namespace memory {
+
+template<typename T>
+class StateObject: public Object {
 public:
-    MemoryTransfer(void *dst, const void *src, size_t n);
+    typedef std::map<void *, SystemBlock<T> *> SystemMap;
+protected:
+    SystemMap systemMap;
+    void setupSystem(T init);
+public:
+    StateObject(size_t size);
+    virtual ~StateObject();
 
-    const void * src() const;
-    void * dst() const;
+    SystemBlock<T> *findBlock(void *addr);
+    inline SystemMap &blocks() { return systemMap; }
 
-    Context * ctxSrc() const;
-    Context * ctxDst() const;
+    virtual void state(T s);
 };
 
-#include "Context.ipp"
+} }
 
-}
-
+#include "StateObject.ipp"
 
 #endif

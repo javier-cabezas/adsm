@@ -47,7 +47,7 @@ protected:
     static int __count;
     static Allocator *__allocator;
 
-    Allocator();
+    Allocator() {};
 public:
     // Allocator management
     static Allocator *create();
@@ -60,7 +60,5 @@ public:
 };
 
 }}
-
-#include "Allocator.ipp"
 
 #endif

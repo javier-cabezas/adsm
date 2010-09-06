@@ -1,4 +1,4 @@
-#include <memory/Object.h>
+#include <memory/CentralizedObject.h>
 
 #include "Mode.h"
 

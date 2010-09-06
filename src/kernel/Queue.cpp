@@ -25,4 +25,16 @@ Mode * Queue::pop()
     return ret;
 }
 
+ThreadQueue::ThreadQueue() :
+    util::Lock(LockThreadQueue)
+{
+    queue = new Queue();
+}
+
+ThreadQueue::~ThreadQueue()
+{
+    delete queue;
+}
+
+
 }
