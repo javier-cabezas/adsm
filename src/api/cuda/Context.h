@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define __API_CUDA_CONTEXT_H_
 
 #include <config.h>
-#include <paraver.h>
 
 #include "Accelerator.h"
 #include "IOBuffer.h"

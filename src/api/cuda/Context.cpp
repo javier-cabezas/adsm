@@ -3,8 +3,9 @@
 
 #include <config.h>
 
-#include <memory/Manager.h>
 #include <gmac/init.h>
+#include <memory/Manager.h>
+#include <trace/Thread.h>
 
 namespace gmac { namespace cuda {
 
@@ -57,11 +58,11 @@ gmacError_t Context::syncStream(CUstream stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
-    pushState(paraver::IOWrite , 0x10000000 + id);
+    gmac::trace::Thread::io();
     while ((ret = cuStreamQuery(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
-    popEventState(paraver::Accelerator, 0x10000000 + id);
+    gmac::trace::Thread::resume();
 
     if (ret == CUDA_SUCCESS) { trace("Sync: success"); }
     else { trace("Sync: error: %d", ret); }

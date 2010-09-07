@@ -1,7 +1,7 @@
 #include "Context.h"
 
 #include <memory/Manager.h>
-#include <config/paraver.h>
+#include <trace/Thread.h>
 
 namespace gmac {
 
@@ -10,11 +10,13 @@ Context::Context(Accelerator *acc, unsigned id) :
     acc(acc),
     id(id)
 {
-    addThreadTid(0x10000000 + id);
-    pushState(Idle, 0x10000000 + id);
+    gmac::trace::Thread::start(id);
 }
 
-Context::~Context() { }
+Context::~Context()
+{ 
+    gmac::trace::Thread::end(id);
+}
 
 
 gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)

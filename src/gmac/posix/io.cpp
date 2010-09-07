@@ -1,10 +1,9 @@
-#include <paraver.h>
-
-#include <init.h>
+#include <gmac/init.h>
+#include <os/loader.h>
 #include <memory/Manager.h>
 #include <kernel/Mode.h>
 #include <kernel/IOBuffer.h>
-#include <os/loader.h>
+#include <trace/Thread.h>
 
 #include <unistd.h>
 #include <cstdio>
@@ -46,7 +45,7 @@ ssize_t read(int fd, void *buf, size_t count)
         return __libc_read(fd, buf, count);
     }
 
-	pushState(IORead);
+    gmac::trace::Thread::io();
 
     gmacError_t err;
     size_t ret = 0;
@@ -66,7 +65,7 @@ ssize_t read(int fd, void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    popState();
+    gmac::trace::Thread::resume();
 	__exitGmac();
 
     return ret;
@@ -88,7 +87,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         return __libc_write(fd, buf, count);
     }
 
-    pushState(IOWrite);
+    gmac::trace::Thread::io();
 
     gmacError_t err;
     size_t ret = 0;
@@ -108,7 +107,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    popState();
+    gmac::trace::Thread::resume();
 	__exitGmac();
 
     return ret;

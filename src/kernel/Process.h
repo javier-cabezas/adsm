@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_PROCESS_H_
 #define __KERNEL_PROCESS_H_
 
-#include <paraver.h>
-
 #include <gmac/gmac.h>
 
 #include "Queue.h"

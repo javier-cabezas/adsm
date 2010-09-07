@@ -3,9 +3,9 @@
 #include <kernel/Process.h>
 #include <kernel/Context.h>
 #include <util/Lock.h>
+#include <trace/Thread.h>
 
 #include <order.h>
-#include <paraver.h>
 
 #include <pthread.h>
 
@@ -43,13 +43,13 @@ static void *gmac_pthread(void *arg)
 	__enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     proc->initThread();
-	addThread();
+    gmac::trace::Thread::start();
 	pLock->unlock();
-	pushState(Running);
+    gmac::trace::Thread::run();
 	__exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
 	__enterGmac();
-	popState();
+    gmac::trace::Thread::resume();
     // Context already destroyed in Process destructor
 	free(gthread);
 	__exitGmac();
@@ -63,7 +63,6 @@ int pthread_create(pthread_t *__restrict __newthread,
 {
 	int ret = 0;
 	__enterGmac();
-	pushState(ThreadCreate);
     gmac::util::Logger::TRACE("New POSIX thread");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
@@ -72,7 +71,6 @@ int pthread_create(pthread_t *__restrict __newthread,
 	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
 	pLock->lock();
 	pLock->unlock();
-	popState();
 	__exitGmac();
 	return ret;
 }

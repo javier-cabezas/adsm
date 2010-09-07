@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_OBJECT_H_
 #define __MEMORY_OBJECT_H_
 
-#include <paraver.h>
-
 #include <memory/Block.h>
 #include <util/Lock.h>
 #include <util/Logger.h>

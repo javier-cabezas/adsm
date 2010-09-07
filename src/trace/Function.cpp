@@ -2,8 +2,9 @@
 #include <util/Logger.h>
 #include <cassert>
 
-#ifdef PARAVER
 namespace gmac { namespace trace {
+
+#ifdef PARAVER
 const char *Function::eventName = "Function";
 Function::FunctionMap *Function::map = NULL;
 paraver::EventName *Function::event = NULL;

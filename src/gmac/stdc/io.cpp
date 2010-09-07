@@ -6,6 +6,7 @@
 #include <memory/Manager.h>
 #include <kernel/IOBuffer.h>
 #include <kernel/Mode.h>
+#include <trace/Thread.h>
 
 #include <unistd.h>
 #include <cstdio>
@@ -45,8 +46,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         return  __libc_fread(buf, size, nmemb, stream);
     }
 	
-	pushState(IORead);
-
+    gmac::trace::Thread::io();
     gmacError_t err;
     size_t ret = 0;
 
@@ -65,7 +65,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    popState();
+    gmac::trace::Thread::resume();
 	__exitGmac();
 
     return ret;
@@ -85,8 +85,8 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
 	__enterGmac();
-    pushState(IOWrite);
 
+    gmac::trace::Thread::io();
     gmacError_t err;
     size_t n = size * nmemb;
     size_t ret = 0;
@@ -107,7 +107,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    popState();
+    gmac::trace::Thread::resume();
 	__exitGmac();
 
     return ret;
