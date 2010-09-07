@@ -349,6 +349,7 @@ AC_CONFIG_FILES([Makefile
     src/os/posix/Makefile
 	src/util/Makefile
     src/util/posix/Makefile
+    src/trace/Makefile
 	tests/Makefile
 ])
 AC_OUTPUT
