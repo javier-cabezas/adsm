@@ -1,9 +1,9 @@
 #include "Function.h"
-#include "Logger.h"
+#include <util/Logger.h>
 #include <cassert>
 
 #ifdef PARAVER
-namespace gmac { namespace util {
+namespace gmac { namespace trace {
 const char *Function::eventName = "Function";
 Function::FunctionMap *Function::map = NULL;
 paraver::EventName *Function::event = NULL;
@@ -34,8 +34,8 @@ void Function::end()
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
-    Logger::ASSERTION(event != NULL);
-    Logger::ASSERTION(map != NULL);
+    util::Logger::ASSERTION(event != NULL);
+    util::Logger::ASSERTION(map != NULL);
 
     paraver::trace->__pushEvent(*event, 0);
 #endif

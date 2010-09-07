@@ -1,7 +1,7 @@
 #include <gmac/init.h>
 #include <memory/Handler.h>
 #include <memory/Manager.h>
-#include <util/Function.h>
+#include <trace/Function.h>
 
 #include <signal.h>
 #include <cerrno>
@@ -21,7 +21,7 @@ int Handler::signum = SIGBUS;
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	__enterGmac();
-	util::Function::start("GmacSignal");
+	trace::Function::start("GmacSignal");
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
 #if defined(LINUX)
@@ -48,7 +48,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	}
 
 	gmac::util::Logger::TRACE("SIGSEGV done");
-	util::Function::end();
+	trace::Function::end();
 	__exitGmac();
 }
 
