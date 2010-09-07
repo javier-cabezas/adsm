@@ -36,20 +36,17 @@ WITH THE SOFTWARE.  */
 
 #include <cstdio>
 
-#include <config.h>
-#include <paraver.h>
-
+#include <util/Lock.h>
 #include <util/Logger.h>
 
 namespace gmac { namespace util {
 
-class FileLock : public Logger {
+class FileLock : public ParaverLock, public Logger {
 protected:
     FILE * _file;
     int _fd;
-	paraver::LockName _name;
 public:
-	FileLock(const char * fname, paraver::LockName name);
+	FileLock(const char * fname, const char *name);
 	~FileLock();
 
 	void lock();

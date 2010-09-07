@@ -61,37 +61,6 @@ enum FunctionName {
     FuncVmSync           = 22  // 22
 };
 
-enum LockName {
-    __LockNameBase   = 0,
-    LockMmLocal      = 1,  // 1
-    LockMmGlobal     = 2,  // 2
-    LockMmShared     = 3,  // 3
-    LockPageTable    = 4,  // 4
-    LockCtxLocal     = 5,  // 5
-    LockCtxGlobal    = 6,  // 6
-    LockCtxCreate    = 7,  // 7
-    LockQueue        = 8,  // 8
-    LockIo           = 9,  // 9
-    LockIoDevice     = 10, // 10
-    LockProcess      = 11, // 11
-    LockWriteMutex   = 12, // 12
-    LockRollingMap   = 13, // 13
-    LockRollingBuffer= 14, // 14
-    LockManager      = 15, // 15
-    LockThreadQueue  = 16, // 16
-    LockRegion       = 17, // 17
-    LockPthread      = 18, // 18
-    LockShMap        = 19, // 19
-    LockModeMap      = 20, // 20
-    LockBlockList    = 21, // 21
-    LockQueueMap     = 22, // 22
-    LockReference    = 23, // 23
-    LockContext      = 24, // 24
-    LockLog          = 25, // 25
-    LockSystem       = 26, // 26
-    LockObject       = 27, // 27
-    LockBlock        = 28 // 28
-};
 
 enum AcceleratorName {
     __AcceleratorNameBase = 0,
@@ -115,12 +84,10 @@ EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
 EVENT(Accelerator);
-EVENT(Lock);
 
 STATE(ThreadCreate);
 STATE(IORead);
 STATE(IOWrite);
-STATE(Exclusive);
 STATE(Init);
 
 }

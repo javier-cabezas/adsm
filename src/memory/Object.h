@@ -59,7 +59,7 @@ protected:
     size_t __size;
 
     Object(void *__addr, size_t __size) :
-        RWLock(paraver::LockObject), __addr(__addr), __size(__size) {};
+        RWLock("memory::Object"), __addr(__addr), __size(__size) {};
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);

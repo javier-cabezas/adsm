@@ -13,7 +13,7 @@ gmac::Process *proc = NULL;
 namespace gmac {
 
 ModeMap::ModeMap() :
-    RWLock(LockModeMap)
+    RWLock("ModeMap")
 {}
 
 std::pair<ModeMap::iterator, bool>
@@ -34,7 +34,7 @@ size_t ModeMap::remove(Mode *mode)
 }
 
 QueueMap::QueueMap() : 
-    util::RWLock(LockQueueMap)
+    util::RWLock("QueueMap")
 {}
 
 void QueueMap::cleanup()
@@ -77,9 +77,9 @@ QueueMap::iterator QueueMap::end()
 size_t Process::__totalMemory = 0;
 
 Process::Process() :
-    RWLock(LockProcess),
-    __global(LockMmGlobal),
-    __shared(LockMmShared),
+    RWLock("Process"),
+    __global("GlobalMemoryMap"),
+    __shared("SharedMemoryMap"),
     current(0)
 {}
 

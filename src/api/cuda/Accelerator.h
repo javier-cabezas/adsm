@@ -55,7 +55,7 @@ class AcceleratorLock : public util::Lock {
 protected:
     friend class Accelerator;
 public:
-    AcceleratorLock() : Lock(LockCtxLocal) {};
+    AcceleratorLock() : Lock("Accelerator") {};
 };
 
 class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };

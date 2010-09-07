@@ -45,7 +45,7 @@ protected:
     size_t __size;
 public:
     IOBuffer(size_t size) :
-        util::Lock(paraver::LockIo), __addr(NULL), __size(size) {}
+        util::Lock("IOBuffer"), __addr(NULL), __size(size) {}
     inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return __addr; }
