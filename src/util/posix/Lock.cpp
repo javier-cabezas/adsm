@@ -7,7 +7,6 @@ namespace gmac { namespace util {
 #ifdef PARAVER
 const char *ParaverLock::eventName = "Lock";
 const char *ParaverLock::exclusiveName = "Exclusive";
-unsigned ParaverLock::count = 0;
 ParaverLock::LockMap *ParaverLock::map = NULL;
 paraver::EventName *ParaverLock::event = NULL;
 paraver::StateName *ParaverLock::exclusive = NULL;
@@ -22,7 +21,7 @@ ParaverLock::ParaverLock(const char *name)
     if(map == NULL) map = new LockMap();
     LockMap::const_iterator i = map->find(std::string(name));
     if(i == map->end()) {
-        id = ++count;
+        id = map->size() + 1;
         event->registerType(id, std::string(name));
         map->insert(LockMap::value_type(std::string(name), id));
     }

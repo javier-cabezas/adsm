@@ -6,6 +6,7 @@ SUBDIRS = $(OS_DIR)
 noinst_LTLIBRARIES = libutil.la
 libutil_la_SOURCES = Lock.h Semaphore.h Private.h\
                      Parameter.h Parameter.ipp Parameter.cpp Parameter.def\
+                     Function.h Function.cpp\
                      Logger.h Logger.ipp Logger.cpp\
                      ReusableObject.h Reference.h\
                      FileLock.h
