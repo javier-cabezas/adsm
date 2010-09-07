@@ -10,7 +10,7 @@
 namespace gmac { namespace util {
 
 inline
-void ParaverLock::push()
+void ParaverLock::enter()
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
@@ -20,48 +20,60 @@ void ParaverLock::push()
 }
 
 inline
-void ParaverLock::pop()
+void ParaverLock::locked()
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
-    paraver::trace->__popState(
-        paraver::trace->__pushEvent(*event, 0));
+    paraver::trace->__pushEvent(*event, 0);
 #endif
 }
+
+
+inline
+void ParaverLock::exit()
+{
+#ifdef PARAVER
+    if(paraver::trace == NULL) return;
+    paraver::trace->__popState();
+#endif
+}
+
 
 inline void
 Lock::lock()
 {
-    push();
+    enter();
     pthread_mutex_lock(&__mutex);
-    pop();
+    locked();
 }
 
 inline void
 Lock::unlock()
 {
+    exit();
     pthread_mutex_unlock(&__mutex);
 }
 
 inline void
 RWLock::lockRead()
 {
-    push();
+    exit();
     pthread_rwlock_rdlock(&__lock);
-    pop();
+    locked();
 }
 
 inline void
 RWLock::lockWrite()
 {
-    push();
+    enter();
     pthread_rwlock_wrlock(&__lock);
-    pop();
+    locked();
 }
 
 inline void
 RWLock::unlock()
 {
+    exit();
     pthread_rwlock_unlock(&__lock);
 }
 

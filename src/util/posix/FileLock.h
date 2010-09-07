@@ -51,7 +51,6 @@ public:
 
 	void lock();
 	void unlock();
-    bool tryLock();
 
     FILE * file();
 };
