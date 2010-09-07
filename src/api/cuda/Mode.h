@@ -59,7 +59,7 @@ class ContextLock : public util::Lock {
 protected:
     friend class Mode;
 public:
-    ContextLock() : util::Lock(paraver::LockRegion) {};
+    ContextLock() : util::Lock("Context") {};
 };
 
 class Texture;

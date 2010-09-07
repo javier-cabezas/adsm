@@ -5,7 +5,7 @@
 
 namespace gmac { namespace memory {
 inline Block::Block(void *addr, size_t size) :
-    Lock(paraver::LockBlock),
+    Lock("memory::Block"),
     __addr(addr),
     __size(size)
 {}

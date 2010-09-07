@@ -18,7 +18,7 @@ Mode::Mode(Accelerator *acc) :
     count(0)
 {
     trace("Creating new memory map");
-    map = new memory::Map(paraver::LockMmLocal);
+    map = new memory::Map("ModeMemoryMap");
 }
 
 Mode::~Mode()

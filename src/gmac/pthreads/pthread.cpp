@@ -11,7 +11,7 @@
 
 class ThreadLock : public gmac::util::Lock {
 public:
-    ThreadLock() : gmac::util::Lock(LockPthread) {};
+    ThreadLock() : gmac::util::Lock("Thread") {};
 
     void lock() { gmac::util::Lock::lock(); }
     void unlock() { gmac::util::Lock::unlock(); }

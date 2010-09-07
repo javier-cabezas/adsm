@@ -17,7 +17,7 @@
 #include <memory/Manager.h>
 #include <memory/Allocator.h>
 
-#include <paraver.h>
+#include <config/paraver.h>
 
 #include <cstdlib>
 

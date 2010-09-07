@@ -51,7 +51,7 @@ class ObjectMap : protected util::RWLock, public std::map<const void *, Object *
 protected:
     friend class Map;
 public:
-    ObjectMap(paraver::LockName name) : util::RWLock(name) {};
+    ObjectMap(const char *name) : util::RWLock(name) {};
 };
 
 class Map : public ObjectMap, public util::Logger {
@@ -72,7 +72,7 @@ protected:
 #endif
 
 public:
-    Map(paraver::LockName name) : ObjectMap(name) {};
+    Map(const char *name) : ObjectMap(name) {};
     virtual ~Map();
 
 #ifdef USE_VM

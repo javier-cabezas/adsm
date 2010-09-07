@@ -1,8 +1,6 @@
 #include "Logger.h"
 #include "Lock.h"
 
-#include <paraver.h>
-
 #include <fstream>
 #include <cstring>
 #include <cstdarg>
@@ -25,7 +23,7 @@ std::list<std::string> *Logger::tags = NULL;
 #endif
 
 LoggerLock::LoggerLock() :
-    Lock(LockLog)
+    Lock("Logger")
 {}
 
 Logger::Logger(const char *name) :

@@ -51,12 +51,12 @@ class KernelLaunch;
 	\brief Generic Context Class
 */
 class Context : public util::RWLock, public util::Logger {
-public:
-
 protected:
     Accelerator *acc;
 
-	Context(Accelerator *acc);
+    unsigned id;
+
+	Context(Accelerator *acc, unsigned id);
 public:
 	virtual ~Context();
 

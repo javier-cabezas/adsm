@@ -12,7 +12,7 @@ Context::AddressMap Context::hostMem;
 void * Context::FatBin;
 
 Context::Context(Accelerator *acc, Mode *mode) :
-    gmac::Context(acc),
+    gmac::Context(acc, mode->id()),
     acc(acc),
     buffer(paramBufferPageLockedSize * paramPageSize),
     __call(dim3(0), dim3(0), 0, NULL)
@@ -57,10 +57,11 @@ gmacError_t Context::syncStream(CUstream stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
+    pushState(paraver::IOWrite , 0x10000000 + id);
     while ((ret = cuStreamQuery(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
-    popEventState(paraver::Accelerator, 0x10000000 + _id);
+    popEventState(paraver::Accelerator, 0x10000000 + id);
 
     if (ret == CUDA_SUCCESS) { trace("Sync: success"); }
     else { trace("Sync: error: %d", ret); }

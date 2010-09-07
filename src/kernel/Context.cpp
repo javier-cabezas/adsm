@@ -5,12 +5,13 @@
 
 namespace gmac {
 
-Context::Context(Accelerator *acc) :
-    util::RWLock(LockContext),
-    acc(acc)
+Context::Context(Accelerator *acc, unsigned id) :
+    util::RWLock("Context"),
+    acc(acc),
+    id(id)
 {
-    addThreadTid(0x10000000 + mode->id());
-    pushState(Idle, 0x10000000 + mode->id());
+    addThreadTid(0x10000000 + id);
+    pushState(Idle, 0x10000000 + id);
 }
 
 Context::~Context() { }

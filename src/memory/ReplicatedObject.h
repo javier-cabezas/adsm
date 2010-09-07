@@ -47,12 +47,7 @@ namespace gmac { namespace memory {
 template<typename T>
 class ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
-    class AcceleratorMap: public std::map<Mode *, AcceleratorBlock *>, util::RWLock {
-    protected:
-        friend class ReplicatedObject<T>;
-    public:
-        AcceleratorMap() : util::RWLock(paraver::LockObject) {};
-    };
+    typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
     AcceleratorMap accelerator;
 public:

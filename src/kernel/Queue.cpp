@@ -2,8 +2,8 @@
 #include "Queue.h"
 
 namespace gmac {
-Queue::Queue() :
-    util::Lock(LockQueue), sem(0)
+Queue::Queue(const char *name) :
+    util::Lock(name), sem(0)
 {}
 
 void Queue::push(Mode *mode)
@@ -25,10 +25,9 @@ Mode * Queue::pop()
     return ret;
 }
 
-ThreadQueue::ThreadQueue() :
-    util::Lock(LockThreadQueue)
+ThreadQueue::ThreadQueue()
 {
-    queue = new Queue();
+    queue = new Queue("ThreadQueue");
 }
 
 ThreadQueue::~ThreadQueue()

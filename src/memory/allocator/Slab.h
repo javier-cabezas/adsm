@@ -49,7 +49,7 @@ protected:
     protected:
         friend class Slab;
     public:
-        AddressMap() : util::RWLock(paraver::LockRegion) {};
+        AddressMap() : util::RWLock("memory::Slab") {};
     };
 
     typedef std::map<long, Cache *> CacheMap;
@@ -58,7 +58,7 @@ protected:
     protected:
         friend class Slab;
     public:
-        ModeMap() : util::RWLock(paraver::LockRegion) {};
+        ModeMap() : util::RWLock("memory::Slab") {};
     };
 
     AddressMap addresses;

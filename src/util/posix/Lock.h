@@ -35,55 +35,62 @@ WITH THE SOFTWARE.  */
 #define __UTIL_POSIX_LOCK_H_
 
 
-#include <config.h>
-#include <paraver.h>
+#include <gmac/paraver.h>
 
 #include <pthread.h>
+#include <string>
 #include <iostream>
 #include <map>
 
 namespace gmac { namespace util {
 
-class Owned {
+class ParaverLock {
 protected:
-    pthread_t __owner;
-public:
-   Owned();
+#ifdef PARAVER
+    static const char *eventName;
+    static const char *exclusiveName;
 
-    void acquire();
-    void release();
-    pthread_t owner();
+    typedef std::map<std::string, unsigned> LockMap;
+    static unsigned count;
+    static LockMap *map;
+    unsigned id;
+
+    static paraver::EventName *event;
+    static paraver::StateName *exclusive;
+
+    void setup();
+#endif
+public:
+    ParaverLock(const char *name);
+
+    void push();
+    void pop();
 };
 
-class Lock : public Owned {
+class Lock : public ParaverLock {
 protected:
 	pthread_mutex_t __mutex;
-	paraver::LockName __name;
 public:
-	Lock(paraver::LockName __name);
+	Lock(const char *__name);
 	~Lock();
 
 protected:
 	void lock();
 	void unlock();
-    bool tryLock();
 };
 
-class RWLock : public Owned {
+class RWLock : public ParaverLock {
 protected:
 	pthread_rwlock_t __lock;
     bool __write;
-	paraver::LockName __name;
 public:
-	RWLock(paraver::LockName __name);
+	RWLock(const char *__name);
 	~RWLock();
 
 protected:
 	void lockRead();
 	void lockWrite();
 	void unlock();
-    bool tryRead();
-    bool tryWrite();
 };
 
 }}

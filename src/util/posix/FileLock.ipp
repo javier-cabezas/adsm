@@ -12,10 +12,10 @@ inline void
 FileLock::lock()
 {
     int ret;
-    enterLock(_name);
+    push();
     ret = flock(_fd, LOCK_EX);
     assertion(ret == 0, "Error locking file: %s", strerr(errno));
-    exitLock();
+    pop();
 }
 
 inline void

@@ -56,13 +56,13 @@ protected:
 	util::Semaphore sem;
 
 public:
-	Queue();
+	Queue(const char *name);
 
 	void push(Mode *mode);
 	Mode *pop();
 };
 
-class ThreadQueue : public util::Lock {
+class ThreadQueue {
 public:
     ThreadQueue();
     ~ThreadQueue();
