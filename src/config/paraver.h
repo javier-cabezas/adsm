@@ -79,7 +79,6 @@ namespace paraver {
 
 extern Trace *trace;
 
-EVENT(Function);
 EVENT(HostDeviceCopy);
 EVENT(DeviceHostCopy);
 EVENT(DeviceDeviceCopy);
@@ -159,20 +158,6 @@ void popEventState(EventName * e, uint32_t tid)
     paraver::trace->__pushEvent(t, *e, tid, 0);
 }
 
-#define enterFunction(s) \
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, paraver::s)
-#define exitFunction() \
-	if(paraver::trace != NULL) paraver::trace->__pushEvent(*paraver::Function, 0)
-
-#define enterLock(s) \
-	if(paraver::trace != NULL) {\
-		paraver::trace->__pushState(paraver::trace->__pushEvent(*paraver::Lock, s), *paraver::Exclusive);\
-	}
-#define exitLock() \
-	if(paraver::trace != NULL) {\
-		paraver::trace->__popState(paraver::trace->__pushEvent(*paraver::Lock, 0));\
-	}
-
 #else
 
 #define addThread()
@@ -182,12 +167,6 @@ void popEventState(EventName * e, uint32_t tid)
 #define pushEvent(...)
 #define pushEventState(...)
 #define popEventState(...)
-
-#define enterFunction(s)
-#define exitFunction()
-
-#define enterLock(s)
-#define exitLock()
 
 #define Time_t uint64_t
 
