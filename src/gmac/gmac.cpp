@@ -55,7 +55,6 @@ gmacInit(void)
 
 #ifdef PARAVER
     paraver::init = 1;
-    paraverInit();
 #endif
     //gmac::util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
 

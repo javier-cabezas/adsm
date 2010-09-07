@@ -3,6 +3,8 @@
 #include "Mode.h"
 #include "Accelerator.h"
 
+#include <trace/Thread.h>
+
 #include <cuda_runtime_api.h>
 
 namespace gmac { namespace cuda {
@@ -82,7 +84,7 @@ KernelLaunch::execute()
         goto exit;
 	}
 
-    pushEventState(Running, paraver::Accelerator, 0x10000000 + mode->id(), AcceleratorRun);
+    gmac::trace::Thread::run();
 
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, __stream);
 

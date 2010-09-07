@@ -2,10 +2,11 @@
 #include "Mode.h"
 #include "Accelerator.h"
 
+#include <gmac/init.h>
 #include <memory/Manager.h>
 #include <memory/Object.h>
 #include <memory/DistributedObject.h>
-#include <gmac/init.h>
+#include <trace/Thread.h>
 
 
 gmac::Process *proc = NULL;
@@ -126,7 +127,6 @@ Process::initThread()
 
 Mode *Process::create(int acc)
 {
-    pushState(Init);
     lockWrite();
     unsigned usedAcc;
 
@@ -146,7 +146,6 @@ Mode *Process::create(int acc)
     }
 
 	trace("Creatintg Execution Mode on Acc#%d", usedAcc);
-    popState();
 
     // Initialize the global shared memory for the context
     Mode *mode = __accs[usedAcc]->createMode();

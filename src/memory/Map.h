@@ -36,8 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "Bitmap.h"
 
-#include <paraver.h>
-
 #include <util/Lock.h>
 #include <util/Logger.h>
 

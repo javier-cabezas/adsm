@@ -57,7 +57,7 @@ Lock::unlock()
 inline void
 RWLock::lockRead()
 {
-    exit();
+    enter();
     pthread_rwlock_rdlock(&__lock);
     locked();
 }

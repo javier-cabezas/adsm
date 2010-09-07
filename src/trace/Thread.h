@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,85 +31,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDA_MODE_H_
-#define __API_CUDA_MODE_H_
+#ifndef __PARAVER_THREAD_H_
+#define __PARAVER_THREAD_H_
 
-#include <config.h>
+#include <gmac/paraver.h>
+#include <config/threads.h>
 
-#include "Context.h"
+#include <map>
 
-#include <kernel/Mode.h>
+namespace gmac { namespace trace {
 
-#include <stdint.h>
-#include <cuda.h>
-#include <vector_types.h>
-
-
-namespace gmac { namespace cuda {
-
-class Switch {
-public:
-    static void in();
-    static void out();
-};
-
-
-class ContextLock : public util::Lock {
+class Thread {
 protected:
-    friend class Mode;
-public:
-    ContextLock() : util::Lock("Context") {};
-};
+#ifdef PARAVER
+    const static uint32_t offset = 0x100000;
+    static const char *initName;
+    static const char *ioName;
 
-class Texture;
-class Accelerator;
-class IOBuffer;
+    static paraver::StateName *initState;
+    static paraver::StateName *ioState;
 
-class Mode : public gmac::Mode {
-protected:
-    Accelerator *acc;
-    Context *context;
-#ifdef USE_MULTI_CONTEXT
-    CUcontext __ctx;
-#endif
-    ContextLock __mutex;
-
-    friend class Switch;
-    virtual void switchIn();
-    virtual void switchOut();
-
-    IOBuffer *ioBuffer;
-
-#ifdef USE_MULTI_CONTEXT
-    ModuleVector &modules;
-#else
-	ModuleVector modules;
+    static bool sanityChecks();
 #endif
 public:
-    Mode(Accelerator *acc);
-    ~Mode();
+    static void start();
+    static void start(THREAD_ID tid);
+    static void end(THREAD_ID tid);
 
-    inline IOBuffer *getIOBuffer() { return ioBuffer; }
+    static void run();
+    static void run(THREAD_ID tid);
 
-    gmacError_t hostAlloc(void **addr, size_t size);
-    gmacError_t hostFree(void *addr);
-    void *hostAddress(void *addr);
+    static void init(THREAD_ID tid);
+    static void io();
+    static void io(THREAD_ID tid);
 
-    gmacError_t bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t size);
-    gmacError_t bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t size);
-
-    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	void argument(const void *arg, size_t size, off_t offset);
-
-    const Variable *constant(gmacVariable_t key) const;
-    const Variable *variable(gmacVariable_t key) const;
-    const Texture *texture(gmacTexture_t key) const;
-
-    Stream eventStream() const;
+    static void resume();
+    static void resume(THREAD_ID tid);
 };
 
 }}
-
-#include "Mode.ipp"
 
 #endif
