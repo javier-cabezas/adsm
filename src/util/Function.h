@@ -31,71 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_POSIX_LOCK_H_
-#define __UTIL_POSIX_LOCK_H_
-
+#ifndef __UTIL_FUNCTION_H_
+#define __UTIL_FUNCTION_H_
 
 #include <gmac/paraver.h>
 
-#include <pthread.h>
-#include <string>
-#include <iostream>
 #include <map>
 
 namespace gmac { namespace util {
 
-class ParaverLock {
+class Function {
 protected:
 #ifdef PARAVER
     static const char *eventName;
-    static const char *exclusiveName;
 
-    typedef std::map<std::string, unsigned> LockMap;
-    static unsigned count;
-    static LockMap *map;
-    unsigned id;
+    typedef std::map<std::string, unsigned> FunctionMap;
+    static FunctionMap *map;
 
     static paraver::EventName *event;
-    static paraver::StateName *exclusive;
-
-    void setup();
 #endif
 public:
-    ParaverLock(const char *name);
-
-    void enter();
-    void locked();
-    void exit();
-};
-
-class Lock : public ParaverLock {
-protected:
-	pthread_mutex_t __mutex;
-public:
-	Lock(const char *__name);
-	~Lock();
-
-protected:
-	void lock();
-	void unlock();
-};
-
-class RWLock : public ParaverLock {
-protected:
-	pthread_rwlock_t __lock;
-    bool __write;
-public:
-	RWLock(const char *__name);
-	~RWLock();
-
-protected:
-	void lockRead();
-	void lockWrite();
-	void unlock();
+    static void start(const char *name);
+    static void end();
 };
 
 }}
-
-#include "Lock.ipp"
 
 #endif
