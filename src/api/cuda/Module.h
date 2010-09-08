@@ -104,8 +104,10 @@ class ModuleDescriptor : public util::Logger {
 
 #ifdef USE_VM
     VariableDescriptor * __dirtyBitmap;
-    VariableDescriptor * __shiftEntry;
     VariableDescriptor * __shiftPage;
+#ifdef BITMAP_BIT
+    VariableDescriptor * __shiftEntry;
+#endif
 #endif
 
 public:
@@ -137,12 +139,14 @@ protected:
     KernelMap _kernels;
 
 #ifdef USE_VM
-    static const char *dirtyBitmapSymbol;
-    static const char *shiftPageSymbol;
-    static const char *shiftEntrySymbol;
-	Variable *__dirtyBitmap;
-	Variable *__shiftPage;
-	Variable *__shiftEntry;
+    static const char *_DirtyBitmapSymbol;
+    static const char *_ShiftPageSymbol;
+	Variable *_dirtyBitmap;
+	Variable *_shiftPage;
+#ifdef BITMAP_BIT
+    static const char *_ShiftEntrySymbol;
+	Variable *_shiftEntry;
+#endif
 #endif
 
 public:

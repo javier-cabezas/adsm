@@ -34,6 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_MODE_H
 #define __KERNEL_MODE_H
 
+#ifdef USE_VM
+#include "memory/Bitmap.h"
+#endif
+
 #include <kernel/Process.h>
 #include <kernel/Accelerator.h>
 #include <kernel/Context.h>
@@ -54,12 +58,15 @@ protected:
     static gmac::util::Private key;
     static unsigned next;
 
-    unsigned __id;
+    unsigned _id;
 
-    Accelerator *acc;
-    Context *context;
-    memory::Map *map;
-    unsigned count;
+    Accelerator *_acc;
+    Context *_context;
+    memory::Map *_map;
+#ifdef USE_VM
+    memory::vm::Bitmap _bitmap;
+#endif
+    unsigned _count;
 
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap kernels;
@@ -67,19 +74,19 @@ protected:
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
-	gmacError_t __error;
+	gmacError_t _error;
 public:
-    Mode(Accelerator *acc);
+    Mode(Accelerator *_acc);
     ~Mode();
 
-    inline static void init() { key.set(NULL); }
+    static void init();
     static Mode *current();
-    inline static bool hasCurrent() { return key.get() != NULL; }
+    static bool hasCurrent();
 
-    inline void inc() { count++; }
-    inline void destroy() { count--; if(count == 0) delete this; }
+    void inc();
+    void destroy();
 
-    inline unsigned id() const { return __id; }
+    unsigned id() const;
 
     /*! \brief Attaches the execution mode to the current thread */
     void attach();
@@ -87,22 +94,20 @@ public:
     /*! \brief Dettaches the execution mode to the current thread */
     void detach();
 
-    inline void addObject(memory::Object *obj) { map->insert(obj); }
+    void addObject(memory::Object *obj);
 #ifndef USE_MMAP
-    inline void addReplicatedObject(memory::Object *obj) { map->insertShared(obj); }
-    inline void addCentralizedObject(memory::Object *obj) { map->insertGlobal(obj); }
+    void addReplicatedObject(memory::Object *obj);
+    void addCentralizedObject(memory::Object *obj);
     bool requireUpdate(memory::Block *block);
 #endif
-    inline void removeObject(memory::Object *obj) { map->remove(obj); }
-    inline memory::Object *findObject(const void *addr) {
-        return map->find(addr);
-    }
-    inline const memory::Map &objects() { return *map; }
+    void removeObject(memory::Object *obj);
+    memory::Object *findObject(const void *addr);
+    const memory::Map &objects();
 
     /*!  \brief Allocates memory on the accelerator memory */
 	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
 
-	/*!  \brief Releases memory previously allocated by Malloc */
+	/*!  \brief Releases memory previously allocated by malloc */
 	virtual gmacError_t free(void *addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
@@ -136,13 +141,20 @@ public:
 
     
     /*!  \brief Returns the last error code */
-    inline gmacError_t error() const { return __error; }
+    gmacError_t error() const;
 
     /*!  \brief Sets up the last error code */
-    inline void error(gmacError_t err) { __error = err; }
+    void error(gmacError_t err);
+
+#ifdef USE_VM
+    memory::vm::Bitmap & dirtyBitmap();
+    const memory::vm::Bitmap & dirtyBitmap() const;
+#endif
 };
 
 }
+
+#include "Mode.ipp"
 
 #endif /* KERNEL_H */
 

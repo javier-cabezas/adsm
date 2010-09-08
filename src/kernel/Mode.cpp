@@ -13,23 +13,26 @@ gmac::util::Private Mode::key;
 unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
-    __id(++next),
-    acc(acc),
-    count(0)
+    _id(++next),
+    _acc(acc),
+#ifdef USE_VM
+    _bitmap(),
+#endif
+    _count(0)
 {
     trace("Creating new memory map");
-    map = new memory::Map("ModeMemoryMap");
+    _map = new memory::Map("ModeMemoryMap");
 }
 
 Mode::~Mode()
 {
-    count--;
-    if(count > 0)
-        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count);
+    _count--;
+    if(_count > 0)
+        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", _count);
     if(this == key.get()) key.set(NULL);
 
-    delete map;
-    acc->destroyMode(this); 
+    delete _map;
+    _acc->destroyMode(this); 
 }
 
 void Mode::kernel(gmacKernel_t k, Kernel * kernel)
@@ -56,7 +59,7 @@ void Mode::attach()
     if(mode == this) return;
     if(mode != NULL) mode->destroy();
     key.set(this);
-    count++;
+    _count++;
 }
 
 void Mode::detach()
@@ -69,49 +72,49 @@ void Mode::detach()
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {
     switchIn();
-    __error = acc->malloc(addr, size, align);
+    _error = _acc->malloc(addr, size, align);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmacError_t Mode::free(void *addr)
 {
     switchIn();
-    __error = acc->free(addr);
+    _error = _acc->free(addr);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     switchIn();
-    __error = context->copyToDevice(dev, host, size);
+    _error = _context->copyToDevice(dev, host, size);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
     switchIn();
-    __error = context->copyToHost(host, dev, size);
+    _error = _context->copyToHost(host, dev, size);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 {
     switchIn();
-    __error = context->copyDevice(dst, src, size);
+    _error = _context->copyDevice(dst, src, size);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmacError_t Mode::memset(void *addr, int c, size_t size)
 {
     switchIn();
-    __error = context->memset(addr, c, size);
+    _error = _context->memset(addr, c, size);
     switchOut();
-    return __error;
+    return _error;
 }
 
 gmac::KernelLaunch *Mode::launch(const char *kernel)
@@ -121,7 +124,7 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
     gmac::Kernel * k = i->second;
     assertion(k != NULL);
     switchIn();
-    gmac::KernelLaunch *l  = context->launch(k);
+    gmac::KernelLaunch *l  = _context->launch(k);
     switchOut();
 
     return l;
@@ -130,9 +133,9 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
 gmacError_t Mode::sync()
 {
     switchIn();
-    __error = context->sync();
+    _error = _context->sync();
     switchOut();
-    return __error;
+    return _error;
 }
 
 

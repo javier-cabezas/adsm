@@ -65,18 +65,9 @@ protected:
 
     void clean();
 
-#ifdef USE_VM
-    vm::Bitmap __dirtyBitmap;
-#endif
-
 public:
     Map(const char *name) : ObjectMap(name) {};
     virtual ~Map();
-
-#ifdef USE_VM
-    vm::Bitmap &dirtyBitmap() { return __dirtyBirmap; }
-    const vm::Bitmap &dirtyBitmap() const { return __dirtyBitmap; }
-#endif
 
     void insert(Object *obj);
     void remove(Object *obj);
@@ -93,6 +84,5 @@ public:
 };
 
 }}
-
 
 #endif
