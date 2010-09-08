@@ -31,13 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_CONTEXT_H_
-#define __API_CUDADRV_CONTEXT_H_
+#ifndef __API_CUDA_CONTEXT_H_
+#define __API_CUDA_CONTEXT_H_
 
 #include <config.h>
-#include <paraver.h>
 
 #include "Accelerator.h"
+#include "IOBuffer.h"
 #include "Kernel.h"
 #include "Module.h"
 
@@ -51,19 +51,11 @@ WITH THE SOFTWARE.  */
 #include <vector>
 #include <map>
 
-namespace gmac { namespace gpu {
-
-class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>
-{};
+namespace gmac { namespace cuda {
 
 class Context : public gmac::Context {
 protected:
-    AlignmentMap _alignMap;
-
-	Accelerator  * _gpu;
-	ModuleVector _modules;
-
-	KernelConfig _call;
+    Accelerator *acc;
 
     static void * FatBin;
 	static const unsigned USleepLaunch = 100;
@@ -71,96 +63,44 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap hostMem;
 
-#ifdef USE_MMAP
-	static const char *baseRegisterSymbol;
-#endif
+    IOBuffer buffer;
 
-#ifdef USE_MULTI_CONTEXT
-	CUcontext _ctx;
-	util::Lock mutex;
-#endif
+    typedef CUstream Stream;
+    Stream _streamLaunch;
+    Stream _streamToDevice;
+    Stream _streamToHost;
+    Stream _streamDevice;
 
-    CUstream streamLaunch;
-    CUstream streamToDevice;
-    CUstream streamToHost;
-    CUstream streamDevice;
-
-    bool _pendingKernel;
-    bool _pendingToDevice;
-    bool _pendingToHost;
-
-    void zero(void **addr) const;
-
-	friend class Accelerator;
-
-    /*! Auxiliary functions used during Context creation
-     */
-	void setup();
     void setupStreams();
+    void cleanStreams();
+    gmacError_t syncStream(CUstream);
+    gmacError_t waitForBuffer(IOBuffer *buffer);
+    IOBuffer *toDeviceBuffer;
+    IOBuffer *toHostBuffer;
 
-    void finiStreams();
+    KernelConfig _call;
 
-	Context(Accelerator *gpu);
-	~Context();
-
-    gmacError_t switchTo(Accelerator *gpu);
-	void invalidate(Context & ctx);
-	void invalidate(Context & ctx, const void * addr, size_t size);
 public:
-    gmacError_t error(CUresult);
-
-    static Context * current();
-    static CUstream stream();
-
-	void pushLock();
-    void popUnlock();
-
-    //
-	// Standard Accelerator Interface
-    //
-	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
-	gmacError_t mallocPageLocked(void **addr, size_t size, unsigned align = 1);
-	gmacError_t free(void *addr);
-
-	gmacError_t mapToDevice(void *host, void **device, size_t size);
-	gmacError_t hostFree(void *addr);
+	Context(Accelerator *acc, Mode *mode);
+	~Context();
 
 	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
-	gmacError_t copyToDeviceAsync(void *dev, const void *host, size_t size);
-	gmacError_t copyToHostAsync(void *host, const void *dev, size_t size);
+    gmacError_t memset(void *addr, int c, size_t size);
 
-#if 0
-    gmacError_t copyDeviceAsync(void *src, const void *dest, size_t size);
-#endif
-
-	gmacError_t memset(void *dev, int c, size_t size);
-    gmac::KernelLaunch * launch(gmacKernel_t kernel);
-
+    gmac::KernelLaunch *launch(gmac::Kernel *kernel);
     gmacError_t sync();
-    gmacError_t syncToHost();
-    gmacError_t syncToDevice();
-    gmacError_t syncDevice();
 
-    ///////////////////////
-	// CUDA-related methods
-	///////////////////////
-	const Variable *constant(gmacVariable_t key) const;
-    const Variable *variable(gmacVariable_t key) const;
-    const Texture  *texture(gmacTexture_t key) const;
+    gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t waitDevice();
+    gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t size);
 
-	void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
+    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-	void flush();
-	void invalidate();
-	void invalidate(const void * addr, size_t size);
-
-    CUdeviceptr gpuAddr(void *addr) const;
-	CUdeviceptr gpuAddr(const void *addr) const;
-
+    const Stream eventStream() const;
 };
 
 }}

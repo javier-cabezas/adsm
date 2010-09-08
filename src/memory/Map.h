@@ -34,10 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MAP_H_
 #define __MEMORY_MAP_H_
 
-#include "PageTable.h"
 #include "Bitmap.h"
-
-#include <paraver.h>
 
 #include <util/Lock.h>
 #include <util/Logger.h>
@@ -47,55 +44,45 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Region;
-class RegionMap : public util::RWLock, public std::map<const void *, Region *> {
+class Object;
+class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
+protected:
+    friend class Map;
 public:
-    RegionMap(paraver::LockName);
+    ObjectMap(const char *name) : util::RWLock(name) {};
 };
 
-class Map : public RegionMap {
+class Map : public ObjectMap, public util::Logger {
 protected:
-
-    Region *localFind(const void *addr);
+    Object *mapFind(ObjectMap &map, const void *addr);
+    inline Object *localFind(const void *addr) {
+        return mapFind(*this, addr);
+    }
+    Object *globalFind(const void *addr);
+#ifndef USE_MMAP
+    Object *sharedFind(const void *addr);
+#endif
 
     void clean();
 
-    PageTable __pageTable;
-
-#ifdef USE_VM
-    vm::Bitmap __dirtyBitmap;
-#endif
-
 public:
-    Map();
+    Map(const char *name) : ObjectMap(name) {};
     virtual ~Map();
 
-    static void init();
+    void insert(Object *obj);
+    void remove(Object *obj);
+#ifndef USE_MMAP
+    void insertShared(Object *obj);
+    Object *removeShared(const void *addr);
 
-    void insert(Region *r);
-    static void addShared(Region *r);
-    static void removeShared(Region *r);
-    static bool isShared(const void *);
-    static RegionMap & shared();
-
-    Region *remove(void *addr);
-
-    PageTable &pageTable();
-    const PageTable &pageTable() const;
-
-#ifdef USE_VM
-    vm::Bitmap &dirtyBitmap();
-    const vm::Bitmap &dirtyBitmap() const;
+    void insertGlobal(Object *obj);
+    void removeGlobal(Object *obj);
 #endif
 
-    template<typename T>
-    T *find(const void *addr);
-    static Region *globalFind(const void *addr);
-    static Region *sharedFind(const void *addr);
+    Object *find(const void *addr);
+    
 };
 
 }}
-
-#include "Map.ipp"
 
 #endif

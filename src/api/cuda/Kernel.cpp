@@ -1,10 +1,13 @@
-#include "Context.h"
 #include "Kernel.h"
 #include "Module.h"
+#include "Mode.h"
+#include "Accelerator.h"
+
+#include <trace/Thread.h>
 
 #include <cuda_runtime_api.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     gmac::Kernel(k)
@@ -31,7 +34,6 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     _grid(c._grid),
     _block(c._block),
     _shared(c._shared),
-    _tokens(c._tokens),
     _stream(c._stream)
 {
 }
@@ -41,14 +43,14 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t to
     _grid(grid),
     _block(block),
     _shared(shared),
-    _tokens(tokens)
+    _stream(NULL)
 {
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     gmac::KernelLaunch(),
     KernelConfig(c),
-    _ctx(*Context::current()),
+    mode(dynamic_cast<Mode *>(gmac::Mode::current())),
     _kernel(k),
     _f(k._f)
 {
@@ -57,7 +59,7 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 gmacError_t
 KernelLaunch::execute()
 {
-    _ctx.pushLock();
+    Switch::in();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
     cfatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
@@ -82,13 +84,13 @@ KernelLaunch::execute()
         goto exit;
 	}
 
-    pushEventState(Running, paraver::Accelerator, 0x10000000 + _ctx.id(), AcceleratorRun);
+    gmac::trace::Thread::run();
 
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 
 exit:
-    _ctx.popUnlock();
-    return _ctx.error(ret);
+    Switch::out();
+    return Accelerator::error(ret);
 }
 
 }}

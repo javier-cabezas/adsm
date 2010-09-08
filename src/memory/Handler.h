@@ -36,27 +36,17 @@ WITH THE SOFTWARE.  */
 
 #include <cstdlib>
 
-#include <memory/Manager.h>
-
 namespace gmac { namespace memory {
 
-class ProtRegion;
-
 //! Handler for Read/Write faults
-class Handler : public Manager {
+class Handler {
 private:
-	static struct sigaction defaultAction;
 	void setHandler(void);
 	void restoreHandler(void);
-	static void segvHandler(int, siginfo_t *, void *);
 
     static int signum;
 	static unsigned count;
 	static Handler *handler;
-
-protected:
-	virtual bool read(void *) = 0;
-	virtual bool write(void *) = 0;
 	
 public:
 	Handler() {

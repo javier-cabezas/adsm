@@ -34,67 +34,94 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDADRV_ACCELERATOR_H_
 #define __API_CUDADRV_ACCELERATOR_H_
 
-#include <kernel/Accelerator.h>
+#include "kernel/Mode.h"
+#include "kernel/Accelerator.h"
 #include "util/Lock.h"
+
+#include "Module.h"
 
 #include <cuda.h>
 #include <vector_types.h>
 
 #include <set>
 
-namespace gmac { namespace gpu {
-class Context;
+namespace gmac { namespace cuda {
+class Mode;
 class ModuleDescriptor;
+
+typedef CUstream Stream;
+
+class AcceleratorLock : public util::Lock {
+protected:
+    friend class Accelerator;
+public:
+    AcceleratorLock() : Lock("Accelerator") {};
+};
+
+class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
 
 class Accelerator : public gmac::Accelerator {
 protected:
 	CUdevice _device;
-	//bool _async;
 
-	std::set<gpu::Context *> queue;
-	
-#ifndef USE_MULTI_CONTEXT
-#ifdef USE_VM
-#ifndef USE_HOSTMAP_VM
-    Context * _lastContext;
-#endif
-#endif
+	std::set<Mode *> _queue;
+    AlignmentMap _alignMap;
 
     int _major;
     int _minor;
 
+#ifndef USE_MULTI_CONTEXT
     CUcontext _ctx;
-    util::Lock mutex;
+    AcceleratorLock _mutex;
+    ModuleVector _modules;
 #endif
 
+    static gmacError_t _error;
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
 	CUdevice device() const;
 
-	gmac::Context *create();
-	void destroy(gmac::Context * ctx);
-	size_t nContexts() const;
+	gmac::Mode *createMode();
+    void destroyMode(gmac::Mode *mode);
 
-    gmacError_t bind(gmac::Context * ctx);
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUDAContext();
     void destroyCUDAContext(CUcontext ctx);
 #else
-    void pushLock();
-    void popUnlock();
+    ModuleVector &createModules();
+    void switchIn();
+    void switchOut();
 #endif
-
-#ifdef USE_VM
-#ifndef USE_HOSTMAP_VM
-    Context *lastContext();
-    void setLastContext(Context * ctx);
-#endif
-#endif
-    //bool async() const;
 
     int major() const;
     int minor() const;
+
+	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
+	gmacError_t free(void *addr);
+
+    /* Synchronous interface */
+	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyDevice(void *dst, const void *src, size_t size);
+
+    /* Asynchronous interface */
+    gmacError_t copyToDeviceAsync(void *dec, const void *host, size_t size, Stream stream);
+    gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, Stream stream);
+    gmacError_t syncStream(Stream stream);
+
+    gmacError_t memset(void *addr, int c, size_t size);
+
+	gmacError_t sync();
+	gmac::KernelLaunch * launch(gmacKernel_t kernel);
+
+    gmacError_t hostAlloc(void **addr, size_t size);
+    gmacError_t hostFree(void *addr);
+    void *hostMap(void *addr);
+
+    static gmacError_t error(CUresult r);
+    static CUdeviceptr gpuAddr(void *addr);
+    static CUdeviceptr gpuAddr(const void *addr);
 };
 
 }}

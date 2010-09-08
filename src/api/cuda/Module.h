@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_MODULE_H_
-#define __API_CUDADRV_MODULE_H_
+#ifndef __API_CUDA_MODULE_H_
+#define __API_CUDA_MODULE_H_
 
 #include <config.h>
 
@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
@@ -104,12 +104,15 @@ class ModuleDescriptor : public util::Logger {
 
 #ifdef USE_VM
     VariableDescriptor * __dirtyBitmap;
-    VariableDescriptor * __shiftEntry;
     VariableDescriptor * __shiftPage;
+#ifdef BITMAP_BIT
+    VariableDescriptor * __shiftEntry;
+#endif
 #endif
 
 public:
     ModuleDescriptor(const void * fatBin);
+    ~ModuleDescriptor();
 
     void add(gmac::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
@@ -128,23 +131,29 @@ protected:
 
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
+    typedef std::map<const char *, Kernel *> KernelMap;
 
     VariableMap _variables;
 	VariableMap _constants;
 	TextureMap  _textures;
+    KernelMap _kernels;
 
 #ifdef USE_VM
-    static const char *dirtyBitmapSymbol;
-    static const char *shiftPageSymbol;
-    static const char *shiftEntrySymbol;
-	Variable *__dirtyBitmap;
-	Variable *__shiftPage;
-	Variable *__shiftEntry;
+    static const char *_DirtyBitmapSymbol;
+    static const char *_ShiftPageSymbol;
+	Variable *_dirtyBitmap;
+	Variable *_shiftPage;
+#ifdef BITMAP_BIT
+    static const char *_ShiftEntrySymbol;
+	Variable *_shiftEntry;
+#endif
 #endif
 
 public:
 	Module(const ModuleDescriptor & d);
 	~Module();
+
+    void registerKernels(Mode &mode) const;
 
     const Variable *variable(gmacVariable_t key) const;
 	const Variable *constant(gmacVariable_t key) const;

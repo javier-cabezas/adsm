@@ -1,78 +1,13 @@
 #include "Map.h"
+#include "Object.h"
 
 #include <kernel/Process.h>
+#include <kernel/Mode.h>
 #include <kernel/Context.h>
 
 #include <gmac/init.h>
 
 namespace gmac { namespace memory {
-
-RegionMap::RegionMap(paraver::LockName name) :
-    RWLock(name)
-{
-}
-
-Region *
-Map::localFind(const void *addr)
-{
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
-    i = upper_bound(addr);
-    if(i != end() && i->second->start() <= addr) {
-        ret = i->second;
-    }
-    return ret;
-}
-
-Region *
-Map::globalFind(const void *addr)
-{
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
-    RegionMap &__global = proc->global();
-    __global.lockRead();
-    i = __global.upper_bound(addr);
-    if(i != __global.end() && i->second->start() <= addr)
-        ret = i->second;
-    __global.unlock();
-    return ret;
-}
-
-Region *
-Map::sharedFind(const void *addr)
-{
-    RegionMap::const_iterator i;
-    Region *ret = NULL;
-    RegionMap &__shared = proc->shared();
-    __shared.lockRead();
-    i = __shared.upper_bound(addr);
-    if(i != __shared.end() && i->second->start() <= addr)
-        ret = i->second;
-    __shared.unlock();
-    return ret;
-}
-
-void
-Map::clean()
-{
-	RegionMap::iterator i;
-    RegionMap &__global = proc->global();
-	lockWrite();
-	for(i = begin(); i != end(); i++) {
-		trace("Cleaning Region %p", i->second->start());
-		__global.lockWrite();
-		__global.erase(i->first);
-		__global.unlock();
-		delete i->second;
-	}
-	clear();
-	unlock();
-}
-
-Map::Map() :
-    RegionMap(LockMmLocal)
-{
-}
 
 Map::~Map()
 {
@@ -80,81 +15,142 @@ Map::~Map()
     clean();
 }
 
-void
-Map::init()
-{}
-
-Region *Map::remove(void *addr)
+Object * Map::mapFind(ObjectMap &map, const void *addr)
 {
-    RegionMap::iterator i;
-    RegionMap &__global = proc->global();
-    __global.lockWrite();
-    i = __global.upper_bound(addr);
-    Region * r = i->second;
-    assertion(i != __global.end() && r->start() == addr);
-    Context * ctx = Context::current();
-    if(r->owner() == ctx) __global.erase(i);
-    __global.unlock();
-    // If the region is global (not owned by the context) return
-    if(r->owner() != ctx)
-        return r;
-
-    trace("Removing Region %p", r->start());
-    i = upper_bound(addr);
-    assertion(i != end() && r->start() == addr);
-    erase(i);
-    return r;
-}
-
-void Map::insert(Region *r)
-{
-    RegionMap::insert(value_type(r->end(), r));
-
-    RegionMap &__global = proc->global();
-    __global.lockWrite();
-    __global.insert(value_type(r->end(), r));
-    __global.unlock();
-}
-
-void Map::addShared(Region * r)
-{
-    RegionMap &__shared = proc->shared();
-    __shared.lockWrite();
-    __shared.insert(value_type(r->end(), r));
-    __shared.unlock();
-    util::Logger::TRACE("Added shared region @ %p", r->start());
-}
-
-void Map::removeShared(Region * r)
-{
-    Map::iterator i;
-    RegionMap &__shared = proc->shared();
-    __shared.lockWrite();
-    for (i = __shared.begin(); i != __shared.end(); i++) {
-        if (r == i->second) {
-            __shared.erase(i);
-            break;
-        }
-    }
-    __shared.unlock();
-    util::Logger::TRACE("Removed shared region @ %p", r->start());
-}
-
-bool Map::isShared(const void *addr)
-{
-    bool ret;
-    RegionMap &__shared = proc->shared();
-    __shared.lockRead();
-    ret = __shared.find(addr) != __shared.end();
-    __shared.unlock();
-
+    ObjectMap::const_iterator i;
+    Object *ret = NULL;
+    map.lockRead();
+    i = map.upper_bound(addr);
+    if(i != map.end() && i->second->start() <= addr)
+        ret = i->second;
+    map.unlock();
     return ret;
 }
 
-RegionMap & Map::shared()
+Object *Map::globalFind(const void *addr)
 {
-    return proc->shared();
+    return mapFind(proc->global(), addr);
 }
 
+#ifndef USE_MMAP
+Object *Map::sharedFind(const void *addr)
+{
+    return mapFind(proc->shared(), addr);
+}
+#endif
+
+Object *Map::find(const void *addr)
+{
+    Object *ret = NULL;
+    ret = localFind(addr);
+    if(ret == NULL) { ret = globalFind(addr); }
+#ifndef USE_MMAP
+    if(ret == NULL) { ret = sharedFind(addr); }
+#endif
+    return ret;
+}
+
+
+
+void Map::clean()
+{
+	ObjectMap::iterator i;
+    ObjectMap &__global = proc->global();
+	lockWrite();
+	for(i = begin(); i != end(); i++) {
+		trace("Cleaning Object %p", i->second->start());
+		if(&__global != this) __global.lockWrite();
+		__global.erase(i->first);
+		if(&__global != this) __global.unlock();
+	}
+	clear();
+	unlock();
+}
+
+
+void Map::insert(Object *obj)
+{
+    lockWrite();
+    ObjectMap::insert(value_type(obj->end(), obj));
+    unlock();
+
+    ObjectMap &__global = proc->global();
+    __global.lockWrite();
+    __global.insert(value_type(obj->end(), obj));
+    __global.unlock();
+}
+
+
+void Map::remove(Object *obj)
+{
+    ObjectMap::iterator i;
+    trace("Removing Object %p", obj->start());
+    lockWrite();
+    i = ObjectMap::find(obj->end());
+    if(i != end()) {
+        erase(i);
+    }
+    unlock();
+
+    ObjectMap &__shared = proc->shared();
+    __shared.lockWrite();
+    i = __shared.find(obj->end());
+    if(i != __shared.end()) __shared.erase(i);
+    __shared.unlock();
+
+
+    ObjectMap &__global = proc->global();
+    __global.lockWrite();
+    i = __global.find(obj->end());
+    if(i != __global.end()) __global.erase(i);
+    __global.unlock();
+
+}
+
+#ifndef USE_MMAP
+void Map::insertShared(Object* obj)
+{
+    ObjectMap &__shared = proc->shared();
+    __shared.lockWrite();
+    __shared.insert(value_type(obj->end(), obj));
+    __shared.unlock();
+    util::Logger::TRACE("Added shared object @ %p", obj->start());
+}
+
+Object *Map::removeShared(const void *addr)
+{
+    ObjectMap::iterator i;
+    ObjectMap &__shared = proc->shared();
+    __shared.lockWrite();
+    i = __shared.upper_bound(addr);
+    Object *obj = i->second;
+    assertion(i != __shared.end() && obj->start() == addr);
+    __shared.erase(i);
+    __shared.unlock();
+    util::Logger::TRACE("Removed shared object @ %p", obj->start());
+    return obj;
+}
+
+void Map::insertGlobal(Object* obj)
+{
+    ObjectMap &__global = proc->global();
+    __global.lockWrite();
+    __global.insert(value_type(obj->end(), obj));
+    __global.unlock();
+    util::Logger::TRACE("Added global object @ %p", obj->start());
+}
+
+
+void Map::removeGlobal(Object *obj)
+{
+    ObjectMap &__global = proc->global();
+    __global.lockWrite();
+    ObjectMap::iterator i = __global.find(obj->end());
+    assertion(i != __global.end());
+    __global.erase(i);
+    __global.unlock();
+    util::Logger::TRACE("Removed global region @ %p", obj->start());
+}
+#endif
 
 }}

@@ -34,9 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_ALLOCATOR_CACHE_H_
 #define __MEMORY_ALLOCATOR_CACHE_H_
 
-#include <kernel/Context.h>
+#include <gmac/gmac.h>
+
 #include <util/Private.h>
 #include <util/Logger.h>
+#include <memory/Manager.h>
 
 #include <list>
 #include <map>
@@ -51,10 +53,9 @@ protected:
     size_t size;
 
     ObjectList __objects;
-    Manager *manager;
 
 public:
-    Arena(Manager *manager, size_t objSize);
+    Arena(size_t objSize);
     ~Arena();
 
     void *address() const;
@@ -76,9 +77,8 @@ protected:
     typedef std::map<void *, Arena *> ArenaMap;
     ArenaMap arenas;
 
-    Manager *manager;
 public:
-    Cache(Manager *manager, size_t size);
+    Cache(size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);

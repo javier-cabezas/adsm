@@ -34,11 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_PROCESS_H_
 #define __KERNEL_PROCESS_H_
 
-#include <paraver.h>
+#include <gmac/gmac.h>
 
 #include "Queue.h"
 #include <memory/Map.h>
-#include <gmac/gmac.h>
 #include <util/Logger.h>
 
 #include <vector>
@@ -47,7 +46,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 class Accelerator;
-class Context;
+class Mode;
 class Process;
 
 void apiInit(void);
@@ -60,40 +59,56 @@ extern gmac::Process *proc;
 
 namespace gmac {
 
-class ThreadQueue : public util::Lock {
+namespace memory { class DistributedObject; }
+
+
+class ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
+{
+private:
+    typedef std::map<Mode *, Accelerator *> Parent;
+
+    friend class Process;
 public:
-    ThreadQueue();
-    ~ThreadQueue();
-    Queue * queue;
+    ModeMap();
+
+    typedef Parent::iterator iterator;
+    typedef Parent::const_iterator const_iterator;
+
+    std::pair<iterator, bool> insert(Mode *, Accelerator *);
+    size_t remove(Mode *mode);
 };
 
-class ContextList : public std::list<Context *>, public util::RWLock
-{
-public:
-    ContextList();
-};
 
-
-class QueueMap : public std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
+class QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
 {
+private:
+    typedef std::map<THREAD_ID, ThreadQueue *> Parent;
 public:
     QueueMap();
+
+    typedef Parent::iterator iterator;
+
+    void cleanup();
+    std::pair<iterator, bool> insert(THREAD_ID, ThreadQueue *);
+    iterator find(THREAD_ID);
+
+    iterator end();
 };
 
-class Process : public util::RWLock{
+class Process : public util::RWLock, public util::Logger {
 protected:
     friend class Accelerator;
 
-	std::vector<Accelerator *> _accs;
-	ContextList _contexts;
+	std::vector<Accelerator *> __accs;
+	ModeMap __modes;
 
-	QueueMap _queues;
-    memory::RegionMap _global;
-    memory::RegionMap _shared;
+	QueueMap __queues;
+    memory::Map __global;
+    memory::Map __shared;
 
 	unsigned current;
 
-	static size_t _totalMemory;
+	static size_t __totalMemory;
 
 	Process();
 
@@ -104,33 +119,39 @@ public:
 
 	void initThread();
 #define ACC_AUTO_BIND -1
-    Context * create(int acc = ACC_AUTO_BIND);
-	void remove(Context *ctx);
-	ContextList & contexts();
+    Mode * create(int acc = ACC_AUTO_BIND);
+	void remove(Mode *mode);
 
-	void *translate(void *addr) const;
-	const void *translate(const void *addr) const;
+#ifndef USE_MMAP
+    gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
+    gmacError_t globalFree(memory::DistributedObject &object);
+#endif
+
+	void *translate(void *addr);
+	inline const void *translate(const void *addr) {
+        return (const void *)translate((void *)addr);
+    }
 
     /* Context management functions */
     void send(THREAD_ID id);
     void receive();
 	void sendReceive(THREAD_ID id);
     void copy(THREAD_ID id);
-	gmacError_t migrate(Context *ctx, int acc);
+	gmacError_t migrate(Mode *mode, int acc);
 
 	void addAccelerator(Accelerator *acc);
 
-	static size_t totalMemory();
-	size_t nAccelerators() const;
+	inline static size_t totalMemory() { return __totalMemory; }
+	inline size_t nAccelerators() const { return __accs.size(); }
 
-    memory::RegionMap &global();
-    const memory::RegionMap &global() const;
-    memory::RegionMap &shared();
-    const memory::RegionMap &shared() const;
+    inline memory::ObjectMap &global() { return __global; }
+    inline const memory::ObjectMap &global() const { return __global; }
+    inline memory::ObjectMap &shared() { return __shared; }
+    inline const memory::ObjectMap &shared() const { return __shared; }
+
+    Mode *owner(const void *addr);
 };
 
 }
-
-#include "Process.ipp"
 
 #endif

@@ -38,10 +38,17 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
+class ReferenceLock : public Lock {
+protected:
+    friend class Reference;
+public:
+    ReferenceLock() : Lock(LockReference) {};
+};
+
 class Reference {
 private:
-    unsigned _count;
-    util::Lock _mutex;
+    unsigned __count;
+    ReferenceLock __lock;
 
 protected:
 
@@ -49,17 +56,17 @@ protected:
     virtual ~Reference() {};
 
 public:
-    Reference() : _count(1), _mutex(LockReference) { };
+    Reference() : __count(1) { };
     inline void inc() {
-        _mutex.lock();
-        _count++;
-        _mutex.unlock();
+        __lock.lock();
+        __count++;
+        __lock.unlock();
     }
     inline void destroy() {
-        _mutex.lock();
-        _count--;
-        bool dead = _count == 0;
-        _mutex.unlock();
+        __lock.lock();
+        __count--;
+        bool dead = __count == 0;
+        __lock.unlock();
         if(dead == false) return;
         cleanup();
         delete this;

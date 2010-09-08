@@ -2,110 +2,81 @@
 #define __UTIL_POSIX_LOCK_IPP_
 
 #include <debug.h>
+#include <threads.h>
 
-inline 
-Owned::Owned() : __owner(0)
+#include <cassert>
+#include <cstdio>
+
+namespace gmac { namespace util {
+
+inline
+void ParaverLock::enter()
 {
+#ifdef PARAVER
+    if(paraver::trace == NULL) return;
+    paraver::trace->__pushState(
+        paraver::trace->__pushEvent(*event, id), *exclusive);
+#endif
 }
 
-inline void
-Owned::acquire()
+inline
+void ParaverLock::locked()
 {
-   assertion(__owner == 0);
-   __owner = pthread_self();
+#ifdef PARAVER
+    if(paraver::trace == NULL) return;
+    paraver::trace->__pushEvent(*event, 0);
+#endif
 }
 
-inline void
-Owned::release()
+
+inline
+void ParaverLock::exit()
 {
-   __owner = 0;
+#ifdef PARAVER
+    if(paraver::trace == NULL) return;
+    paraver::trace->__popState();
+#endif
 }
 
-inline pthread_t
-Owned::owner()
-{
-   return __owner;
-}
 
 inline void
 Lock::lock()
 {
-   enterLock(__name);
-   pthread_mutex_lock(&__mutex);
-#ifdef DEBUG
-   acquire();
-#endif
-   exitLock();
+    enter();
+    pthread_mutex_lock(&__mutex);
+    locked();
 }
 
 inline void
 Lock::unlock()
 {
-#ifdef DEBUG
-   if(owner() != pthread_self())
-      warning("Thread "FMT_TID" releases lock owned by "FMT_TID, pthread_self(), owner());
-   release();
-#endif
-   pthread_mutex_unlock(&__mutex);
-}
-
-inline bool
-Lock::tryLock()
-{
-   return pthread_mutex_trylock(&__mutex) == 0;
+    exit();
+    pthread_mutex_unlock(&__mutex);
 }
 
 inline void
 RWLock::lockRead()
 {
-   enterLock(__name);
-   pthread_rwlock_rdlock(&__lock);
-   exitLock();
+    enter();
+    pthread_rwlock_rdlock(&__lock);
+    locked();
 }
 
 inline void
 RWLock::lockWrite()
 {
-    enterLock(__name);
+    enter();
     pthread_rwlock_wrlock(&__lock);
-#ifdef DEBUG
-    if(owner() == pthread_self())
-        warning("Lock %d double-locked by "FMT_TID, __name, owner());
-    assertion(owner() == 0);
-    __write = true;
-    acquire();
-    trace("%p locked by "FMT_TID, this, owner());
-#endif
-    exitLock();
+    locked();
 }
 
 inline void
 RWLock::unlock()
 {
-#ifdef DEBUG
-    if(__write == true) {
-        assertion(owner() == SELF());
-        __write = false;
-        trace("%p released by "FMT_TID, this, owner());
-        release();
-    }
-#endif
+    exit();
     pthread_rwlock_unlock(&__lock);
 }
 
-inline bool
-RWLock::tryRead()
-{
-    return pthread_rwlock_tryrdlock(&__lock) == 0;
-}
-
-inline bool
-RWLock::tryWrite()
-{
-#ifdef DEBUG
-    if(pthread_self() == owner()) return false;
-#endif
-    return pthread_rwlock_trywrlock(&__lock) == 0;
-}
+}}
 
 #endif

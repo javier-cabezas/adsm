@@ -4,11 +4,12 @@ SUBDIRS = stdc $(BUILD_MPI) $(OS_DIR) $(THREAD_DIR)
 
 lib_LTLIBRARIES = libgmac.la
 nobase_include_HEADERS = gmac.h gmac/vm.h
-libgmac_la_SOURCES = gmac.h gmac.cpp paraver.cpp init.h
+libgmac_la_SOURCES = gmac.h gmac.cpp paraver.h init.h
 libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/libgmac-thread.la\
 		../kernel/libkernel.la\
 		../memory/libmemory.la\
 		../util/libutil.la\
+        ../trace/libtrace.la\
 		../api/$(API_DIR)/libapi.la\
 		$(PARAVER_LIB)
 

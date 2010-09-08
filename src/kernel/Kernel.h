@@ -34,11 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_KERNEL_H
 #define __KERNEL_KERNEL_H
 
-#include "Descriptor.h"
+#include <kernel/Descriptor.h>
+#include <memory/ObjectSet.h>
 
-#include <memory/Region.h>
 #include <util/ReusableObject.h>
 #include <util/Logger.h>
+
+#include <gmac/gmac.h>
 
 #include <vector>
 
@@ -49,7 +51,8 @@ public:
     void * _ptr;
     size_t _size;
     off_t  _offset;
-    Argument(void * ptr, size_t size, off_t offset);
+    Argument(void * ptr, size_t size, off_t offset) :
+        _ptr(ptr), _size(size), _offset(offset) {}
 private:
     friend class Kernel;
 };
@@ -67,31 +70,30 @@ protected:
     KernelConfig(const KernelConfig & c);
 public:
     /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig();
-    virtual ~KernelConfig();
+    KernelConfig() : _argsSize(0) {};
+    virtual ~KernelConfig() { clear(); };
 
     void pushArgument(const void * arg, size_t size, off_t offset);
-    off_t argsSize() const;
+    inline off_t argsSize() const { return _argsSize; }
 
-    char * argsArray();
+    inline char * argsArray() { return _stack; }
 };
 
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class Kernel : public memory::RegionSet, public KernelDescriptor
+class Kernel : public memory::ObjectSet, public KernelDescriptor
 {
 public:
-    Kernel(const KernelDescriptor & k);
+    Kernel(const KernelDescriptor & k) :
+        KernelDescriptor(k.name(), k.key()) {};
     virtual ~Kernel() {};
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
-    gmacError_t bind(void * addr);
-    gmacError_t unbind(void * addr);
 };
 
-class KernelLaunch : public memory::RegionSet {
+class KernelLaunch : public memory::ObjectSet {
 public:
     virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;
@@ -99,7 +101,6 @@ public:
 
 }
 
-#include "Kernel.ipp"
 
 #endif /* KERNEL_H */
 
