@@ -1,6 +1,6 @@
 // GMAC global settings
-PARAM(paramMemManager, const char *, "Rolling", "GMAC_MANAGER")
-PARAM(paramMemAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
+PARAM(paramProtocol, const char *, "Lazy", "GMAC_PROTOCOL")
+PARAM(paramAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
 
 // GMAC debug settings

@@ -1,7 +1,7 @@
 #include <order.h>
 
 #include "Accelerator.h"
-#include "Context.h"
+#include "Mode.h"
 
 #include <gmac/init.h>
 #include <kernel/Process.h>
@@ -33,6 +33,8 @@ void apiInit(void)
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
 		util::Logger::fatal("Error getting CUDA-enabled devices");
 
+    util::Logger::TRACE("Found %d CUDA capable devices", devCount);
+
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
@@ -43,11 +45,11 @@ void apiInit(void)
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			util::Logger::fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
-			proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+			proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
 			devRealCount++;
 		}
 #else
-        proc->addAccelerator(new gmac::gpu::Accelerator(i, cuDev));
+        proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
         devRealCount++;
 #endif
 	}

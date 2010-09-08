@@ -2,8 +2,9 @@ MAINTAINERCLEANFILES=Makefile.in
 
 COMMON=bandwidth threadBandwidth\
        schedAllocation transferBlocks\
-       hybridComputation transferCosts\
-	   bitmapOverhead
+       hybridComputation transferCosts
+
+#bitmapOverhead
 
 if VM
 noinst_PROGRAMS = $(COMMON)\
@@ -46,8 +47,8 @@ schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
 hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
-bitmapOverhead_SOURCES = bitmapOverhead.cu $(GMAC_TESTSOURCES)
-bitmapOverhead_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+#bitmapOverhead_SOURCES = bitmapOverhead.cu $(GMAC_TESTSOURCES)
+#bitmapOverhead_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
 
 if VM
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)

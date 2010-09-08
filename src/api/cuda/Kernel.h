@@ -1,13 +1,15 @@
 #ifndef __API_CUDADRV_KERNEL_H_
 #define __API_CUDADRV_KERNEL_H_
 
-#include "kernel/Kernel.h"
+#include <kernel/Kernel.h>
 
 #include <cuda.h>
 #include <driver_types.h>
 #include <cuda_runtime_api.h>
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
+
+class Mode;
 
 class KernelLaunch;
 class KernelConfig;
@@ -28,24 +30,23 @@ protected:
     dim3 _grid;
     dim3 _block;
     size_t _shared;
-    cudaStream_t _tokens;
 
+    CUstream _stream;
 public:
     /// \todo Remove this piece of shit
-    CUstream _stream;
 
     KernelConfig(const KernelConfig & c);
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 
-    dim3 grid() const;
-    dim3 block() const;
-    size_t shared() const;
-    cudaStream_t tokens() const;
+    inline void stream(CUstream s) { _stream = s; }
+    dim3 grid() const { return _grid; }
+    dim3 block() const { return _block; }
+    size_t shared() const { return _shared; }
 };
 
 class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
 protected:
-    Context & _ctx;
+    Mode *mode;
     // \todo Is this really necessary?
     const Kernel & _kernel;
     CUfunction _f;
@@ -58,7 +59,5 @@ public:
 };
 
 }}
-
-#include "Kernel.ipp"
 
 #endif

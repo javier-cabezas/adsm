@@ -82,6 +82,15 @@ void Logger::__Assertion(unsigned c, const char *fmt, ...)
 #endif
 }
 
+inline
+void Logger::__Warning(const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    if(__logger != NULL) __logger->print("WARNING", fmt, list);
+    va_end(list);
+}
+
 
 inline
 void Logger::fatal(const char *fmt, ...)

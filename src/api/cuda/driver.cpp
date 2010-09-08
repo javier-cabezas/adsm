@@ -5,7 +5,7 @@
 #include <kernel/Kernel.h>
 
 #include "Accelerator.h"
-#include "Context.h"
+#include "Mode.h"
 #include "Module.h"
 
 #include <cstring>
@@ -21,12 +21,12 @@
 extern "C" {
 #endif
 
-using gmac::gpu::Accelerator;
-using gmac::gpu::Context;
+using gmac::cuda::Accelerator;
+using gmac::cuda::Mode;
 using gmac::KernelDescriptor;
-using gmac::gpu::ModuleDescriptor;
-using gmac::gpu::TextureDescriptor;
-using gmac::gpu::VariableDescriptor;
+using gmac::cuda::ModuleDescriptor;
+using gmac::cuda::TextureDescriptor;
+using gmac::cuda::VariableDescriptor;
 
 /*!
  * @returns Module **
@@ -45,8 +45,8 @@ void **__cudaRegisterFatBinary(void *fatCubin)
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
 	__enterGmac();
-    //! \todo Correctly undo everything
-    //ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
+    ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
+    delete mod;
 	__exitGmac();
 }
 
@@ -102,8 +102,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	__enterGmac();
-    Context * ctx = Context::current();
-	ctx->call(gridDim, blockDim, sharedMem, tokens);
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+	mode->call(gridDim, blockDim, sharedMem, tokens);
 	__exitGmac();
 	return cudaSuccess;
 }
@@ -111,8 +111,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	__enterGmac();
-    Context * ctx = Context::current();
-	ctx->argument(arg, count, offset);
+    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+	mode->argument(arg, count, offset);
 	__exitGmac();
 	return cudaSuccess;
 }
@@ -120,7 +120,8 @@ cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 extern gmacError_t gmacLaunch(gmacKernel_t k);
 cudaError_t cudaLaunch(gmacKernel_t k)
 {
-	gmacLaunch(k);
+	gmacError_t ret = gmacLaunch(k);
+    assert(ret == gmacSuccess);
 	return cudaSuccess;
 }
 

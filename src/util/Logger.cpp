@@ -1,8 +1,6 @@
 #include "Logger.h"
 #include "Lock.h"
 
-#include <paraver.h>
-
 #include <fstream>
 #include <cstring>
 #include <cstdarg>
@@ -14,7 +12,7 @@
 namespace gmac { namespace util {
 
 char Logger::buffer[Logger::BufferSize];
-Lock Logger::lock(LockLog);
+LoggerLock Logger::__lock;
 
 Logger *Logger::__logger = NULL;
 
@@ -23,6 +21,10 @@ Parameter<const char *> *Logger::Level = NULL;
 const char *Logger::debugString;
 std::list<std::string> *Logger::tags = NULL;
 #endif
+
+LoggerLock::LoggerLock() :
+    Lock("Logger")
+{}
 
 Logger::Logger(const char *name) :
     name(name),
@@ -47,8 +49,8 @@ void Logger::init()
     if(Level == NULL) {
         Level = new Parameter<const char *>(&Logger::debugString,
             "Logger::debugString", "none", "GMAC_DEBUG");
-        char *tmp = new char[strlen(debugString)];
-        memcpy(tmp, debugString, strlen(debugString));
+        char *tmp = new char[strlen(debugString) + 1];
+        memcpy(tmp, debugString, strlen(debugString) + 1);
         char *tag = strtok(tmp, ", ");
         while(tag != NULL) {
             tags->push_back(std::string(tag));
@@ -73,28 +75,37 @@ bool Logger::check(const char *name) const
     return false;
 }
 
-void Logger::log(std::string tag, const char *fmt, va_list list) const
+void Logger::log(const char *tag, const char *fmt, va_list list) const
 {
-    const char *__name = NULL;
-    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
-    else __name = name;
+    char *__name = NULL;
+    int status = 0;
+    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, &status);
+    else __name = (char *)name;
 
-    if(active == false && check(__name) == false) return;
+    if(status != 0) return;
+
+    if(active == false && check(__name) == false) {
+        if(name == NULL && __name != NULL ) free(__name);
+        return;
+    }
 
     print(tag, fmt, list);
+
+
+    if(name == NULL && __name != NULL ) free(__name);
 }
 #endif
 
-void Logger::print(std::string tag, const char *fmt, va_list list) const
+void Logger::print(const char *tag, const char *fmt, va_list list)  const
 {
-    lock.lock();
+    __lock.lock();
     const char *__name = NULL;
     if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
     else __name = name;
 
     vsnprintf(buffer, BufferSize, fmt, list);
     *out << tag << " [" << __name << "]: " << buffer << std::endl;
-    lock.unlock();
+    __lock.unlock();
 
 }
 

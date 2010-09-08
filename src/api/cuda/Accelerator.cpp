@@ -1,21 +1,12 @@
 #include "Accelerator.h"
-#include "Context.h"
+#include "Mode.h"
 
 #include <kernel/Process.h>
 
-namespace gmac {
-namespace gpu {
+namespace gmac { namespace cuda {
 
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
-#ifndef USE_MULTI_CONTEXT
-#ifdef USE_VM
-#ifndef USE_HOSTMAP_VM
-    , _lastContext(NULL)
-#endif
-#endif
-    , mutex(paraver::LockCtxLocal)
-#endif
 {
     unsigned int size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
@@ -42,35 +33,33 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {
 #ifndef USE_MULTI_CONTEXT
-    cuCtxDestroy(_ctx);
+    switchIn();
+    ModuleVector::iterator i;
+    for(i = _modules.begin(); i != _modules.end(); i++)
+        delete *i;
+    _modules.clear();
+    switchOut();
+    assertion(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
 #endif
 }
 
-gmac::Context *Accelerator::create()
+gmac::Mode *Accelerator::createMode()
 {
-	trace("Attaching context to Accelerator");
-	gpu::Context *ctx = new gpu::Context(this);
-	queue.insert(ctx);
-	return ctx;
+	cuda::Mode *mode = new cuda::Mode(this);
+	_queue.insert(mode);
+	trace("Attaching Execution Mode %p to Accelerator", mode);
+	return mode;
 }
 
-void Accelerator::destroy(gmac::Context *context)
+void Accelerator::destroyMode(gmac::Mode *mode)
 {
-	trace("Destroying Context");
-	if(context == NULL) return;
-	gpu::Context *ctx = dynamic_cast<gpu::Context *>(context);
-	std::set<gpu::Context *>::iterator c = queue.find(ctx);
-	assertion(c != queue.end());
-	//delete ctx;
-	queue.erase(c);
+	trace("Destroying Execution Mode %p", mode);
+	if(mode == NULL) return;
+	std::set<Mode *>::iterator c = _queue.find((Mode *)mode);
+	assertion(c != _queue.end());
+	_queue.erase(c);
 }
 
-gmacError_t
-Accelerator::bind(gmac::Context *ctx)
-{
-    gpu::Context * _ctx = dynamic_cast<gpu::Context * >(ctx);
-    return _ctx->switchTo(this);
-}
 
 #ifdef USE_MULTI_CONTEXT
 CUcontext
@@ -97,5 +86,89 @@ Accelerator::destroyCUDAContext(CUcontext ctx)
     cfatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
 }
 #endif
+
+#ifndef USE_MULTI_CONTEXT
+ModuleVector &Accelerator::createModules()
+{
+    if(_modules.empty()) _modules = ModuleDescriptor::createModules();
+    return _modules;
+}
+#endif
+
+gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
+{
+    assertion(addr != NULL);
+    *addr = NULL;
+    if(align > 1) {
+        size += align;
+    }
+    CUdeviceptr ptr = 0;
+    CUresult ret = cuMemAlloc(&ptr, size);
+    if(ret != CUDA_SUCCESS) return error(ret);
+    CUdeviceptr gpuPtr = ptr;
+    if(gpuPtr % align) {
+        gpuPtr += align - (gpuPtr % align);
+    }
+    *addr = (void *)gpuPtr;
+    _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    return error(ret);
+}
+
+gmacError_t Accelerator::free(void *addr)
+{
+    assertion(addr != NULL);
+    AlignmentMap::const_iterator i;
+    CUdeviceptr gpuPtr = gpuAddr(addr);
+    i = _alignMap.find(gpuPtr);
+    if (i == _alignMap.end()) return gmacErrorInvalidValue;
+    CUresult ret = cuMemFree(i->second);
+    return error(ret);
+}
+
+gmacError_t Accelerator::memset(void *addr, int c, size_t size)
+{
+    CUresult ret = CUDA_SUCCESS;
+    if(size % 32 == 0) {
+        int seed = c | (c << 8) | (c << 16) | (c << 24);
+        ret = cuMemsetD32(gpuAddr(addr), seed, size);
+    }
+    else if(size % 16) {
+        short seed = c | (c << 8);
+        ret = cuMemsetD16(gpuAddr(addr), seed, size);
+    }
+    else ret = cuMemsetD8(gpuAddr(addr), c, size);
+    return error(ret);
+}
+
+gmacError_t Accelerator::sync()
+{
+    CUresult ret = cuCtxSynchronize();
+    return error(ret);
+}
+
+gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
+{
+#if CUDART_VERSION >= 2020
+    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
+#else
+    CUresult ret = cuMemAllocHost(addr, size);
+#endif
+    return error(ret);
+}
+
+gmacError_t Accelerator::hostFree(void *addr)
+{
+    CUresult r = cuMemFreeHost(addr);
+    return error(r);
+}
+
+void *Accelerator::hostMap(void *addr)
+{
+    CUdeviceptr device;
+    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
+    if(ret != CUDA_SUCCESS) device = NULL;
+    return (void *)device;
+}
+
 
 }}

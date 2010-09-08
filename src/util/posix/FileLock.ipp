@@ -12,28 +12,21 @@ inline void
 FileLock::lock()
 {
     int ret;
-    enterLock(_name);
+    enter();
     ret = flock(_fd, LOCK_EX);
     assertion(ret == 0, "Error locking file: %s", strerr(errno));
-    exitLock();
+    locked();
 }
 
 inline void
 FileLock::unlock()
 {
     int ret;
+    exit();
     ret = flock(_fd, LOCK_UN);
     assertion(ret == 0, "Error unlocking file: %s", strerr(errno));
 }
 
-inline bool
-FileLock::tryLock()
-{
-    int ret;
-    ret = flock(_fd, LOCK_EX | LOCK_NB);
-    assertion(ret == 0 || ret == EWOULDBLOCK, "Error trylocking file: %s", strerr(errno));
-    return ret == 0;
-}
 
 inline FILE *
 FileLock::file()

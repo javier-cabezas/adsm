@@ -38,22 +38,38 @@ WITH THE SOFTWARE.  */
 
 #include "Cache.h"
 
+namespace gmac { class Mode; }
+
 namespace gmac { namespace memory { namespace allocator {
+
 
 class Slab : public Allocator {
 protected:
-    typedef std::map<void *, Cache *> AddressMap;
-    AddressMap addresses;
+    class AddressMap : public std::map<void *, Cache *>, util::RWLock {
+    protected:
+        friend class Slab;
+    public:
+        AddressMap() : util::RWLock("memory::Slab") {};
+    };
+
     typedef std::map<long, Cache *> CacheMap;
-    typedef std::map<Context *, CacheMap> ContextMap;
-    ContextMap contexts; // Per-context cache map
+
+    class ModeMap : public std::map<Mode *, CacheMap>, util::RWLock {
+    protected:
+        friend class Slab;
+    public:
+        ModeMap() : util::RWLock("memory::Slab") {};
+    };
+
+    AddressMap addresses;
+    ModeMap modes; // Per-context cache map
 
     Cache &createCache(CacheMap &map, long key, size_t size);
     Cache &get(long key, size_t size);
     void cleanup();
 
 public:
-    Slab(Manager *manager);
+    Slab();
     virtual ~Slab();
     
     virtual void *alloc(size_t size, void *addr);

@@ -3,7 +3,42 @@
 
 #include "Accelerator.h"
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
+
+inline
+void Accelerator::switchIn()
+{
+#ifndef USE_MULTI_CONTEXT
+    _mutex.lock();
+    CUresult ret = cuCtxPushCurrent(_ctx);
+    cfatal(ret == CUDA_SUCCESS, "Unable to switch to CUDA mode [%d]", ret);
+#endif
+}
+
+inline
+void Accelerator::switchOut()
+{
+#ifndef USE_MULTI_CONTEXT
+    CUcontext tmp;
+    CUresult ret = cuCtxPopCurrent(&tmp);
+    _mutex.unlock();
+    cfatal(ret == CUDA_SUCCESS, "Unable to switch back from CUDA mode [%d]", ret);
+#endif
+}
+
+inline
+CUdeviceptr Accelerator::gpuAddr(void *addr)
+{
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
+}
+
+inline
+CUdeviceptr Accelerator::gpuAddr(const void *addr)
+{
+    unsigned long a = (unsigned long)addr;
+    return (CUdeviceptr)(a & 0xffffffff);
+}
 
 inline CUdevice
 Accelerator::device() const
@@ -11,66 +46,58 @@ Accelerator::device() const
     return _device;
 }
 
-inline size_t
-Accelerator::nContexts() const
-{
-    return queue.size();
-}
-
-//inline bool
-//Accelerator::async() const
-//{
-//    return _async;
-//}
-
-#ifndef USE_MULTI_CONTEXT
-inline void
-Accelerator::pushLock()
-{
-    mutex.lock();
-    CUresult ret = cuCtxPushCurrent(_ctx);
-    assertion(ret == CUDA_SUCCESS);
-}
-
-inline void
-Accelerator::popUnlock()
-{
-    CUcontext tmp;
-    CUresult ret = cuCtxPopCurrent(&tmp);
-    assertion(ret == CUDA_SUCCESS);
-    mutex.unlock();
-}
-
-#ifdef USE_VM
-#ifndef USE_HOSTMAP_VM
-inline 
-Context *
-Accelerator::lastContext()
-{
-    return _lastContext;
-}
-
 inline
-void
-Accelerator::setLastContext(Context * ctx)
-{
-    _lastContext = ctx;
-}
-#endif
-#endif
-
-#endif
-
-inline int
-Accelerator::major() const
+int Accelerator::major() const
 {
     return _major;
 }
 
-inline int
-Accelerator::minor() const
+inline 
+int Accelerator::minor() const
 {
     return _minor;
+}
+
+inline
+gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
+{
+    CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::copyToDeviceAsync(void *dev, const void *host, size_t size, Stream stream)
+{
+    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
+{
+    CUresult ret =cuMemcpyDtoH(host, gpuAddr(dev), size);
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t size, Stream stream)
+{
+    CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
+{
+    CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::syncStream(Stream stream)
+{
+    CUresult ret = cuStreamSynchronize(stream);
+    return error(ret);
 }
 
 }}

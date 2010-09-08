@@ -43,27 +43,33 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 
-class Context;
+class Mode;
 
 /*!
 	\brief Communication Queue
 */
-class Queue : public util::Logger {
+class Queue : public util::Logger, public util::Lock {
 protected:
-	typedef std::list<Context *> Fifo;
+	typedef std::list<Mode *> Fifo;
 
-	util::Lock mutex;
 	Fifo _queue;
 	util::Semaphore sem;
 
 public:
-	Queue();
+	Queue(const char *name);
 
-	void push(Context *ctx);
-	Context *pop();
+	void push(Mode *mode);
+	Mode *pop();
 };
 
-#include "Queue.ipp"
+class ThreadQueue {
+public:
+    ThreadQueue();
+    ~ThreadQueue();
+    Queue *queue;
+};
+
+
 
 }
 

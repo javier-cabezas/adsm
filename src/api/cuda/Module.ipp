@@ -1,7 +1,7 @@
 #ifndef __API_CUDADRV_MODULE_IPP_
 #define __API_CUDADRV_MODULE_IPP_
 
-namespace gmac { namespace gpu {
+namespace gmac { namespace cuda {
 
 inline bool
 VariableDescriptor::constant() const
@@ -84,22 +84,24 @@ inline
 const Variable *
 Module::dirtyBitmap() const
 {
-    return __dirtyBitmap;
+    return _dirtyBitmap;
 }
 
 inline
 const Variable *
 Module::shiftPage() const
 {
-    return __shiftPage;
+    return _shiftPage;
 }
 
+#ifdef BITMAP_BIT
 inline
 const Variable *
 Module::shiftEntry() const
 {
-    return __shiftEntry;
+    return _shiftEntry;
 }
+#endif
 
 #endif
 

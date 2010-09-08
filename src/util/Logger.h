@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 #include <threads.h>
 
+#include "Lock.h"
 #include "Parameter.h"
 
 #include <map>
@@ -51,20 +52,29 @@ WITH THE SOFTWARE.  */
 #define assertion(c, ...) __assertion(c, ASSERT_STRING)
 #define ASSERTION(c, ...) __Assertion(c, ASSERT_STRING)
 
-inline const char *__extract_file_name(const char *top, const char *file) {
-    return file + strlen(top) + 1;
+#define SRC_ROOT "src"
+inline const char *__extract_file_name(const char *file) {
+    return strstr(file, SRC_ROOT);
 }
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(SRC_TOP_DIR, __FILE__), __LINE__, ##__VA_ARGS__)
+    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+
+#define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
 
 
 namespace gmac { namespace util {
 
 
-class Lock;
+class LoggerLock : public Lock {
+protected:
+    friend class Logger;
+public:
+    LoggerLock();
+};
+
 class Logger {
 private:
     Logger(const char *name);
@@ -75,7 +85,7 @@ protected:
     static Parameter<const char *> *Level;
     static const char *debugString;
     static std::list<std::string> *tags;
-    static Lock lock;
+    static LoggerLock __lock;
 
     const char *name;
     bool active;
@@ -84,10 +94,10 @@ protected:
     static const size_t BufferSize = 1024;
     static char buffer[BufferSize];
 
-    void print(std::string tag, const char *fmt, va_list list) const;
+    void print(const char *tag, const char *fmt, va_list list) const;
 #ifdef DEBUG
     bool check(const char *name) const;
-    void log(std::string tag, const char *fmt, va_list list) const;
+    void log(const char *tag, const char *fmt, va_list list) const;
 #endif
 
     Logger();
@@ -96,13 +106,14 @@ protected:
     void warning(const char *fmt, ...) const;
     void __assertion(unsigned c, const char *fmt, ...) const;
 public:
-    virtual ~Logger() {};
+    virtual inline ~Logger() {};
 
     static void Create(const char *name);
     static void Destroy();
 
     static void __Trace(const char *fmt, ...);  
     static void __Assertion(unsigned c, const char *fmt, ...);
+    static void __Warning(const char *fmt, ...);
 
     static void fatal(const char *fmt, ...);
     static void cfatal(unsigned c, const char *fmt, ...);

@@ -37,7 +37,6 @@ void *addVector(void *ptr)
 	struct timeval s, t;
 	gmacError_t ret = gmacSuccess;
 
-    gmacKernel_t kernel  = gmacKernel(vecAdd, float *, const float *, const float *, size_t);
 	gettimeofday(&s, NULL);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
@@ -52,13 +51,6 @@ void *addVector(void *ptr)
 	assert(ret == gmacSuccess);
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Alloc: ", "\n");
-
-    ret = gmacBind(a, kernel);
-    assert(ret == gmacSuccess);
-    ret = gmacBind(b, kernel);
-    assert(ret == gmacSuccess);
-    ret = gmacBind(*c, kernel);
-    assert(ret == gmacSuccess);
 
 	// Call the kernel
 	dim3 Db(blockSize);
