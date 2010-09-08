@@ -138,7 +138,7 @@ Mode *Process::create(int acc)
         // Bind the new Context to the accelerator with less contexts
         // attached to it
         usedAcc = 0;
-        for (unsigned i = 1; i < __accs.size(); i++) {
+        for (unsigned i = 0; i < __accs.size(); i++) {
             if (__accs[i]->load() < __accs[usedAcc]->load()) {
                 usedAcc = i;
             }

@@ -48,6 +48,7 @@ gmac::Mode *Accelerator::createMode()
 	cuda::Mode *mode = new cuda::Mode(this);
 	queue.insert(mode);
 	trace("Attaching Execution Mode %p to Accelerator", mode);
+    _load++;
 	return mode;
 }
 
@@ -58,6 +59,7 @@ void Accelerator::destroyMode(gmac::Mode *mode)
 	std::set<Mode *>::iterator c = queue.find((Mode *)mode);
 	assertion(c != queue.end());
 	queue.erase(c);
+    _load--;
 }
 
 

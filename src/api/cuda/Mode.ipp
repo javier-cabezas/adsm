@@ -46,7 +46,7 @@ inline
 gmacError_t Mode::bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t len)
 {
     switchIn();
-    gmacError_t ret = context->bufferToDevice(dynamic_cast<IOBuffer *>(buffer), addr, len);
+    gmacError_t ret = _context->bufferToDevice(dynamic_cast<IOBuffer *>(buffer), addr, len);
     switchOut();
     return ret;
 }
@@ -55,7 +55,7 @@ inline
 gmacError_t Mode::bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t len)
 {
     switchIn();
-    gmacError_t ret = context->bufferToHost(dynamic_cast<IOBuffer *>(buffer), addr, len);
+    gmacError_t ret = _context->bufferToHost(dynamic_cast<IOBuffer *>(buffer), addr, len);
     switchOut();
     return ret;
 }
@@ -64,7 +64,7 @@ inline
 void Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     switchIn();
-    context->call(Dg, Db, shared, tokens);
+    _context->call(Dg, Db, shared, tokens);
     switchOut();
 }
 
@@ -72,7 +72,7 @@ inline
 void Mode::argument(const void *arg, size_t size, off_t offset)
 {
     switchIn();
-    context->argument(arg, size, offset);
+    _context->argument(arg, size, offset);
     switchOut();
 }
 

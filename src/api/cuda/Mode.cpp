@@ -13,9 +13,9 @@ Mode::Mode(Accelerator *acc) :
 #endif
 
     switchIn();
-    context = new Context(acc, this);
+    _context = new Context(acc, this);
     ioBuffer = new IOBuffer(paramBufferPageLockedSize * paramPageSize);
-    gmac::Mode::_context = context;
+    gmac::Mode::_context = _context;
 #ifdef USE_MULTI_CONTEXT
     modules = ModuleDescriptor::createModules();
 #else
@@ -36,7 +36,7 @@ Mode::~Mode()
         delete (*m);
     }
 #endif
-    delete context;
+    delete _context;
     delete ioBuffer;
     switchOut();
     modules.clear();
@@ -97,7 +97,7 @@ const Texture *Mode::texture(gmacTexture_t key) const
 }
 
 Stream Mode::eventStream() const {
-    return context->eventStream();
+    return _context->eventStream();
 }
 
 }}

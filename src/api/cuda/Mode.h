@@ -68,7 +68,7 @@ class IOBuffer;
 class Mode : public gmac::Mode {
 protected:
     Accelerator *acc;
-    Context *context;
+    Context *_context;
 #ifdef USE_MULTI_CONTEXT
     CUcontext __ctx;
 #endif
