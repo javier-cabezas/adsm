@@ -8,9 +8,11 @@ namespace gmac { namespace cuda {
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules;
 
 #ifdef USE_VM
-const char *Module::dirtyBitmapSymbol = "__dirtyBitmap";
-const char *Module::shiftPageSymbol  = "__SHIFT_PAGE";
-const char *Module::shiftEntrySymbol = "__SHIFT_ENTRY";
+const char *Module::_DirtyBitmapSymbol = "__dirtyBitmap";
+const char *Module::_ShiftPageSymbol  = "__SHIFT_PAGE";
+#ifdef BITMAP_BIT
+const char *Module::_ShiftEntrySymbol = "__SHIFT_ENTRY";
+#endif
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
@@ -86,28 +88,31 @@ Module::Module(const ModuleDescriptor & d) :
     for (v = d._constants.begin(); v != d._constants.end(); v++) {
         _constants.insert(VariableMap::value_type(v->key(), Variable(*v, _mod)));
 #ifdef USE_VM
-        if(strncmp(v->name(), dirtyBitmapSymbol, strlen(dirtyBitmapSymbol)) == 0) {
-            __dirtyBitmap = &_constants.find(v->key())->second;
+        if(strncmp(v->name(), _DirtyBitmapSymbol, strlen(_DirtyBitmapSymbol)) == 0) {
+            _dirtyBitmap = &_constants.find(v->key())->second;
             trace("Found constant to set a dirty bitmap on device");
         }
 
-        if(strncmp(v->name(), shiftPageSymbol, strlen(shiftPageSymbol)) == 0) {
-            __shiftPage = &_constants.find(v->key())->second;
+        Mode * mode = Mode::current();
+        if(strncmp(v->name(), _ShiftPageSymbol, strlen(_ShiftPageSymbol)) == 0) {
+            _shiftPage = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_PAGE");
 
-            size_t tmp = ctx.mm().dirtyBitmap().shiftPage();
-            res = cuMemcpyHtoD(__shiftPage->devPtr(), &tmp, sizeof(size_t));
+            size_t tmp = mode->dirtyBitmap().shiftPage();
+            res = cuMemcpyHtoD(_shiftPage->devPtr(), &tmp, sizeof(size_t));
             cfatal(res == CUDA_SUCCESS, "Unable to set shift page");
         }
 
-        if(strncmp(v->name(), shiftEntrySymbol, strlen(shiftEntrySymbol)) == 0) {
-            __shiftEntry = &_constants.find(v->key())->second;
+#ifdef BITMAP_BIT
+        if(strncmp(v->name(), _ShiftEntrySymbol, strlen(_ShiftEntrySymbol)) == 0) {
+            _shiftEntry = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_ENTRY");
 
-            size_t tmp = ctx.mm().dirtyBitmap().shiftEntry();
-            res = cuMemcpyHtoD(__shiftEntry->devPtr(), &tmp, sizeof(size_t));
+            size_t tmp = mode->dirtyBitmap().shiftEntry();
+            res = cuMemcpyHtoD(_shiftEntry->devPtr(), &tmp, sizeof(size_t));
             cfatal(res == CUDA_SUCCESS, "Unable to set shift entry");
         }
+#endif
 #endif
     }
 
