@@ -15,8 +15,8 @@ Mode::Mode(Accelerator *acc) :
     switchIn();
     context = new Context(acc, this);
     ioBuffer = new IOBuffer(paramBufferPageLockedSize * paramPageSize);
-    gmac::Mode::context = context;
-#ifdef USE_MULI_CONTEXT
+    gmac::Mode::_context = context;
+#ifdef USE_MULTI_CONTEXT
     modules = ModuleDescriptor::createModules();
 #else
     modules = acc->createModules();
@@ -58,10 +58,10 @@ gmacError_t Mode::hostFree(void *addr)
     return ret;
 }
 
-void *Mode::hostAddress(void *addr)
+void *Mode::hostMap(void *addr)
 {
     switchIn();
-    void *ret = acc->hostAddress(addr);
+    void *ret = acc->hostMap(addr);
     switchOut();
     return ret;
 }

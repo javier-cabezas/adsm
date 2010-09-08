@@ -93,7 +93,7 @@ public:
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
-    void *hostAddress(void *addr);
+    void *hostMap(void *addr);
 
     gmacError_t bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t size);
     gmacError_t bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t size);
@@ -106,6 +106,13 @@ public:
     const Texture *texture(gmacTexture_t key) const;
 
     Stream eventStream() const;
+
+    static Mode * current () {
+        Mode *mode = static_cast<Mode *>(gmac::Mode::key.get());
+        if(mode == NULL) mode = static_cast<Mode *>(proc->create());
+        gmac::util::Logger::ASSERTION(mode != NULL);
+        return mode;
+    }
 };
 
 }}
