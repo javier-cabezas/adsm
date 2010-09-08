@@ -162,7 +162,7 @@ gmacError_t Accelerator::hostFree(void *addr)
     return error(r);
 }
 
-void *Accelerator::hostAddress(void *addr)
+void *Accelerator::hostMap(void *addr)
 {
     CUdeviceptr device;
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
