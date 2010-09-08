@@ -8,16 +8,22 @@ namespace gmac { namespace cuda {
 inline
 void Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
-    __call = KernelConfig(Dg, Db, shared, tokens);
-    __call.stream(streamLaunch);
+    _call = KernelConfig(Dg, Db, shared, tokens);
+    _call.stream(_streamLaunch);
 }
 
 inline
 void Context::argument(const void *arg, size_t size, off_t offset)
 {
-    __call.pushArgument(arg, size, offset);
+    _call.pushArgument(arg, size, offset);
 }
 
+
+inline const Stream
+Context::eventStream() const
+{
+    return _streamLaunch;
+}
 
 }}
 

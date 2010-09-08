@@ -1,6 +1,6 @@
 #include "Bitmap.h"
 
-#include <kernel/Mode.h>
+#include "kernel/Mode.h"
 
 #include <cmath>
 #include <cstring>

@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDADRV_ACCELERATOR_H_
 #define __API_CUDADRV_ACCELERATOR_H_
 
-#include <kernel/Mode.h>
-#include <kernel/Accelerator.h>
-#include <util/Lock.h>
+#include "kernel/Mode.h"
+#include "kernel/Accelerator.h"
+#include "util/Lock.h"
 
 #include "Module.h"
 
@@ -64,19 +64,19 @@ class Accelerator : public gmac::Accelerator {
 protected:
 	CUdevice _device;
 
-	std::set<Mode *> queue;
-    AlignmentMap __alignMap;
+	std::set<Mode *> _queue;
+    AlignmentMap _alignMap;
 
     int _major;
     int _minor;
 
 #ifndef USE_MULTI_CONTEXT
-    CUcontext __ctx;
-    AcceleratorLock __mutex;
-    ModuleVector modules;
+    CUcontext _ctx;
+    AcceleratorLock _mutex;
+    ModuleVector _modules;
 #endif
 
-    static gmacError_t __error;
+    static gmacError_t _error;
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();

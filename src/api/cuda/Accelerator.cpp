@@ -23,7 +23,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
-    ret = cuCtxCreate(&__ctx, flags, _device);
+    ret = cuCtxCreate(&_ctx, flags, _device);
     cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     cfatal(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
@@ -35,18 +35,18 @@ Accelerator::~Accelerator()
 #ifndef USE_MULTI_CONTEXT
     switchIn();
     ModuleVector::iterator i;
-    for(i = modules.begin(); i != modules.end(); i++)
+    for(i = _modules.begin(); i != _modules.end(); i++)
         delete *i;
-    modules.clear();
+    _modules.clear();
     switchOut();
-    assertion(cuCtxDestroy(__ctx) == CUDA_SUCCESS);
+    assertion(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
 #endif
 }
 
 gmac::Mode *Accelerator::createMode()
 {
 	cuda::Mode *mode = new cuda::Mode(this);
-	queue.insert(mode);
+	_queue.insert(mode);
 	trace("Attaching Execution Mode %p to Accelerator", mode);
     _load++;
 	return mode;
@@ -56,9 +56,9 @@ void Accelerator::destroyMode(gmac::Mode *mode)
 {
 	trace("Destroying Execution Mode %p", mode);
 	if(mode == NULL) return;
-	std::set<Mode *>::iterator c = queue.find((Mode *)mode);
-	assertion(c != queue.end());
-	queue.erase(c);
+	std::set<Mode *>::iterator c = _queue.find((Mode *)mode);
+	assertion(c != _queue.end());
+	_queue.erase(c);
     _load--;
 }
 
@@ -92,8 +92,8 @@ Accelerator::destroyCUDAContext(CUcontext ctx)
 #ifndef USE_MULTI_CONTEXT
 ModuleVector &Accelerator::createModules()
 {
-    if(modules.empty()) modules = ModuleDescriptor::createModules();
-    return modules;
+    if(_modules.empty()) _modules = ModuleDescriptor::createModules();
+    return _modules;
 }
 #endif
 
@@ -112,7 +112,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
         gpuPtr += align - (gpuPtr % align);
     }
     *addr = (void *)gpuPtr;
-    __alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     return error(ret);
 }
 
@@ -121,8 +121,8 @@ gmacError_t Accelerator::free(void *addr)
     assertion(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
-    i = __alignMap.find(gpuPtr);
-    if (i == __alignMap.end()) return gmacErrorInvalidValue;
+    i = _alignMap.find(gpuPtr);
+    if (i == _alignMap.end()) return gmacErrorInvalidValue;
     CUresult ret = cuMemFree(i->second);
     return error(ret);
 }

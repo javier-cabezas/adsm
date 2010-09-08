@@ -17,7 +17,8 @@ Table<T>::Table(size_t nEntries) :
 {
     trace("Creating Table with %zd entries (%p)", nEntries, this);
 
-    table = (T **)valloc(nEntries * sizeof(T *));
+    posix_memalign((void **) &table, getpagesize(), nEntries * sizeof(T *));
+
     assertion(table != NULL);
     memset(table, 0, nEntries * sizeof(T *));
     trace("Table memory @ %p", table);

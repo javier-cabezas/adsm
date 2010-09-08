@@ -9,8 +9,8 @@ inline
 void Accelerator::switchIn()
 {
 #ifndef USE_MULTI_CONTEXT
-    __mutex.lock();
-    CUresult ret = cuCtxPushCurrent(__ctx);
+    _mutex.lock();
+    CUresult ret = cuCtxPushCurrent(_ctx);
     cfatal(ret == CUDA_SUCCESS, "Unable to switch to CUDA mode [%d]", ret);
 #endif
 }
@@ -21,7 +21,7 @@ void Accelerator::switchOut()
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
     CUresult ret = cuCtxPopCurrent(&tmp);
-    __mutex.unlock();
+    _mutex.unlock();
     cfatal(ret == CUDA_SUCCESS, "Unable to switch back from CUDA mode [%d]", ret);
 #endif
 }
