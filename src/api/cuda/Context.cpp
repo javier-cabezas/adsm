@@ -16,10 +16,10 @@ Context::Context(Accelerator *acc, Mode *mode) :
     gmac::Context(acc, mode->id()),
     acc(acc),
     buffer(paramBufferPageLockedSize * paramPageSize),
-    __call(dim3(0), dim3(0), 0, NULL)
+    _call(dim3(0), dim3(0), 0, NULL)
 {
     setupStreams();
-    __call.stream(streamLaunch);
+    _call.stream(_streamLaunch);
 }
 
 Context::~Context()
@@ -31,35 +31,35 @@ Context::~Context()
 void Context::setupStreams()
 {
     CUresult ret;
-    ret = cuStreamCreate(&streamLaunch, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamToDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamToHost, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
-    ret = cuStreamCreate(&streamDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream %d", ret);
+    ret = cuStreamCreate(&_streamLaunch, 0);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
+    ret = cuStreamCreate(&_streamToDevice, 0);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
+    ret = cuStreamCreate(&_streamToHost, 0);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
+    ret = cuStreamCreate(&_streamDevice, 0);
+    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
 }
 
 void Context::cleanStreams()
 {
     CUresult ret;
-    ret = cuStreamDestroy(streamLaunch);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
-    ret = cuStreamDestroy(streamToDevice);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
-    ret = cuStreamDestroy(streamToHost);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
-    ret = cuStreamDestroy(streamDevice);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA streams: %d", ret);
+    ret = cuStreamDestroy(_streamLaunch);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
+    ret = cuStreamDestroy(_streamToDevice);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
+    ret = cuStreamDestroy(_streamToHost);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
+    ret = cuStreamDestroy(_streamDevice);
+    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
 }
 
-gmacError_t Context::syncStream(CUstream stream)
+gmacError_t Context::syncStream(CUstream _stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
     gmac::trace::Thread::io();
-    while ((ret = cuStreamQuery(stream)) == CUDA_ERROR_NOT_READY) {
+    while ((ret = cuStreamQuery(_stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
     gmac::trace::Thread::resume();
@@ -76,12 +76,12 @@ gmacError_t Context::waitForBuffer(IOBuffer *buffer)
     switch(buffer->state()) {
         case IOBuffer::Idle: return gmacSuccess;
         case IOBuffer::ToDevice:
-            ret = syncStream(streamToDevice);
+            ret = syncStream(_streamToDevice);
             toDeviceBuffer->state(IOBuffer::Idle);
             assert(buffer->state() == IOBuffer::Idle);
             break;
         case IOBuffer::ToHost:
-            ret = syncStream(streamToHost);
+            ret = syncStream(_streamToHost);
             toHostBuffer->state(IOBuffer::Idle);
             assert(buffer->state() == IOBuffer::Idle);
             break;
@@ -104,13 +104,13 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
     buffer.lock();
     while(offset < size) {
         if(buffer.state() != IOBuffer::Idle)
-            ret = acc->syncStream(streamToDevice);
+            ret = acc->syncStream(_streamToDevice);
         if(ret != gmacSuccess) break;
         size_t len = buffer.size();
         if((size - offset) < buffer.size()) len = size - offset;
         memcpy(buffer.addr(), (uint8_t *)host + offset, len);
         buffer.state(IOBuffer::ToDevice);
-        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, buffer.addr(), len, streamToDevice);
+        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, buffer.addr(), len, _streamToDevice);
         if(ret != gmacSuccess) break;
         offset += len;
     }
@@ -135,9 +135,9 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
         size_t len = buffer.size();
         if((size - offset) < buffer.size()) len = size - offset;
         buffer.state(IOBuffer::ToHost);
-        ret = acc->copyToHostAsync(buffer.addr(), (uint8_t *)device + offset, len, streamToHost);
+        ret = acc->copyToHostAsync(buffer.addr(), (uint8_t *)device + offset, len, _streamToHost);
         if(ret != gmacSuccess) break;
-        ret = acc->syncStream(streamToHost);
+        ret = acc->syncStream(_streamToHost);
         if(ret != gmacSuccess) break;
         memcpy((uint8_t *)host + offset, buffer.addr(), len);
         offset += len;
@@ -161,18 +161,18 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
-    return kernel->launch(__call);
+    return kernel->launch(_call);
 }
 
 gmacError_t Context::sync()
 {
     switch(buffer.state()) {
-        case IOBuffer::ToHost: syncStream(streamToHost); break;
-        case IOBuffer::ToDevice: syncStream(streamToDevice); break;
+        case IOBuffer::ToHost: syncStream(_streamToHost); break;
+        case IOBuffer::ToDevice: syncStream(_streamToDevice); break;
         case IOBuffer::Idle: break;
     }
     buffer.state(IOBuffer::Idle);
-    return syncStream(streamLaunch);
+    return syncStream(_streamLaunch);
 }
 
 gmacError_t Context::bufferToDevice(IOBuffer *buffer, void *addr, size_t len)
@@ -182,7 +182,7 @@ gmacError_t Context::bufferToDevice(IOBuffer *buffer, void *addr, size_t len)
     size_t bytes = (len < buffer->size()) ? len : buffer->size();
     buffer->state(IOBuffer::ToDevice);
     toDeviceBuffer = buffer;
-    ret = acc->copyToDeviceAsync(addr, buffer->addr(), bytes, streamToDevice);
+    ret = acc->copyToDeviceAsync(addr, buffer->addr(), bytes, _streamToDevice);
     return ret;
 }
 
@@ -193,7 +193,7 @@ gmacError_t Context::bufferToHost(IOBuffer *buffer, void *addr, size_t len)
     buffer->state(IOBuffer::ToHost);
     toHostBuffer = buffer;
     size_t bytes = (len < buffer->size()) ? len : buffer->size();
-    ret = acc->copyToHostAsync(buffer->addr(), addr, bytes, streamToHost);
+    ret = acc->copyToHostAsync(buffer->addr(), addr, bytes, _streamToHost);
     if(ret != gmacSuccess) return ret;
     ret = waitForBuffer(buffer);
     return ret;

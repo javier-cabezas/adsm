@@ -31,14 +31,14 @@ protected:
     dim3 _block;
     size_t _shared;
 
-    CUstream __stream;
+    CUstream _stream;
 public:
     /// \todo Remove this piece of shit
 
     KernelConfig(const KernelConfig & c);
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
 
-    inline void stream(CUstream s) { __stream = s; }
+    inline void stream(CUstream s) { _stream = s; }
     dim3 grid() const { return _grid; }
     dim3 block() const { return _block; }
     size_t shared() const { return _shared; }

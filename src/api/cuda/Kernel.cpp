@@ -34,7 +34,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     _grid(c._grid),
     _block(c._block),
     _shared(c._shared),
-    __stream(c.__stream)
+    _stream(c._stream)
 {
 }
 
@@ -43,7 +43,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t to
     _grid(grid),
     _block(block),
     _shared(shared),
-    __stream(NULL)
+    _stream(NULL)
 {
 }
 
@@ -86,7 +86,7 @@ KernelLaunch::execute()
 
     gmac::trace::Thread::run();
 
-	ret = cuLaunchGridAsync(_f, grid().x, grid().y, __stream);
+	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 
 exit:
     Switch::out();

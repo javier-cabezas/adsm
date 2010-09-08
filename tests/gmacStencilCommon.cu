@@ -259,14 +259,14 @@ do_stencil(void * ptr)
 
             // Send data
             if (descr->prev != NULL) {
-                memcpy((void *) (descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems()),
-                       (void *) (descr->u3 + STENCIL * descr->sliceElems()),
-                       descr->sliceElems() * STENCIL * sizeof(float));
+                gmacMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
+                           descr->u3 + STENCIL * descr->sliceElems(),
+                           descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                memcpy((void *) descr->next->u3,
-                       (void *) (descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems()),
-                       descr->sliceElems() * STENCIL * sizeof(float));                
+                gmacMemcpy(descr->next->u3,
+                           descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
+                           descr->sliceElems() * STENCIL * sizeof(float));                
             }
 
             //pthread_barrier_wait(&barrier);

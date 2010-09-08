@@ -41,8 +41,8 @@ WITH THE SOFTWARE.  */
 #include "Kernel.h"
 #include "Module.h"
 
-#include <util/Lock.h>
-#include <kernel/Context.h>
+#include "util/Lock.h"
+#include "kernel/Context.h"
 
 #include <stdint.h>
 #include <cuda.h>
@@ -66,10 +66,10 @@ protected:
     IOBuffer buffer;
 
     typedef CUstream Stream;
-    Stream streamLaunch;
-    Stream streamToDevice;
-    Stream streamToHost;
-    Stream streamDevice;
+    Stream _streamLaunch;
+    Stream _streamToDevice;
+    Stream _streamToHost;
+    Stream _streamDevice;
 
     void setupStreams();
     void cleanStreams();
@@ -78,7 +78,7 @@ protected:
     IOBuffer *toDeviceBuffer;
     IOBuffer *toHostBuffer;
 
-    KernelConfig __call;
+    KernelConfig _call;
 
 public:
 	Context(Accelerator *acc, Mode *mode);
@@ -100,7 +100,7 @@ public:
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-    inline const Stream eventStream() const { return streamLaunch; }
+    const Stream eventStream() const;
 };
 
 }}
