@@ -1,4 +1,6 @@
 MAINTAINERCLEANFILES = Makefile.in
+DIST_SUBDIRS = memory allocator
+SUBDIRS = memory allocator
 
 noinst_LTLIBRARIES = libapi.la
 libapi_la_SOURCES = cuda.cpp driver.cpp compat.cpp\
@@ -7,7 +9,7 @@ libapi_la_SOURCES = cuda.cpp driver.cpp compat.cpp\
     IOBuffer.h IOBuffer.cpp\
     Mode.h Mode.ipp Mode.cpp\
 	Context.h Context.ipp Context.cpp \
-	Module.h Module.ipp Module.cpp\
-    CentralizedObject.cpp Bitmap.cpp
-libapi_la_LIBADD = -lcuda
+	Module.h Module.ipp Module.cpp
+    
+libapi_la_LIBADD = memory/libapi-memory.la allocator/libapi-allocator.la -lcuda
 libapi_la_LDFLAGS = -L$(CUDA_DIR)/lib$(ARCH)

@@ -348,6 +348,7 @@ AC_CONFIG_FILES([Makefile
 	src/config/config.h
 	src/config/Makefile
 	src/kernel/Makefile
+    src/kernel/allocator/Makefile
 	src/memory/Makefile
 	src/memory/protocol/Makefile
     src/memory/allocator/Makefile
@@ -359,6 +360,8 @@ AC_CONFIG_FILES([Makefile
 	src/gmac/mpi/Makefile
 	src/api/Makefile
 	src/api/cuda/Makefile
+    src/api/cuda/memory/Makefile
+    src/api/cuda/allocator/Makefile
 	src/api/opencl/Makefile
 	src/os/Makefile
     src/os/posix/Makefile
