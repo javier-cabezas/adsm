@@ -1,6 +1,6 @@
 #include <memory/CentralizedObject.h>
 
-#include "Mode.h"
+#include "../Mode.h"
 
 namespace gmac { namespace memory {
 
