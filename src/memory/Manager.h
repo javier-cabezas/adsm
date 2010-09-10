@@ -34,10 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_MEMMANAGER_H_
 #define __MEMORY_MEMMANAGER_H_
 
-#include <memory/Protocol.h>
+#include "memory/Bitmap.h"
+#include "memory/Protocol.h"
 
-#include <gmac/gmac.h>
-#include <util/Logger.h>
+#include "gmac/gmac.h"
+#include "util/Logger.h"
 
 #include <stdint.h>
 
@@ -54,8 +55,13 @@ namespace gmac { namespace memory {
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class Manager : public util::Logger {
+private:
+#ifndef USE_MMAP
+    void checkBitmapToHost();
+    void checkBitmapToDevice();
+#endif
 protected:
-    static int __count;
+    static int _count;
     static Manager *__manager;
 
     Protocol *protocol;
@@ -84,7 +90,7 @@ public:
     bool read(void *addr);
     bool write(void *addr);
 
-    gmacError_t adquire(void *addr, size_t size);
+    gmacError_t acquire(void *addr, size_t size);
     gmacError_t release(void *addr, size_t size);
     gmacError_t invalidate(void *addr, size_t size);
 };

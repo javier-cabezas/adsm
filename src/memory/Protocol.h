@@ -57,6 +57,9 @@ public:
     virtual gmacError_t read(Object &obj, void *addr) = 0;
     virtual gmacError_t write(Object &obj, void *addr) = 0;
     virtual gmacError_t acquire(Object &obj) = 0;
+#ifdef USE_VM
+    virtual gmacError_t acquireWithBitmap(Object &obj) = 0;
+#endif
     virtual gmacError_t release(Object &obj) = 0;
     virtual gmacError_t invalidate(Object &obj) = 0;
     virtual gmacError_t flush(Object &obj) = 0;

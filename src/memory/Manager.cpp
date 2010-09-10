@@ -8,13 +8,13 @@
 
 namespace gmac { namespace memory {
 
-int Manager::__count = 0;
+int Manager::_count = 0;
 Manager *Manager::__manager = NULL;
 
 Manager::~Manager()
 {
     trace("Memory manager finishes");
-    assertion(__count == 0);
+    assertion(_count == 0);
     delete protocol;
 }
 
@@ -22,7 +22,7 @@ Manager::~Manager()
 
 Manager *Manager::create()
 {
-    __count++;
+    _count++;
     if(__manager != NULL) return __manager;
     gmac::util::Logger::TRACE("Creating new Memory Manager");
     __manager = new Manager();
@@ -31,8 +31,8 @@ Manager *Manager::create()
 
 void Manager::destroy()
 {
-    __count--;
-    if(__count > 0) return;
+    _count--;
+    if(_count > 0) return;
     gmac::util::Logger::TRACE("Destroying Memory Manager");
     delete __manager;
     __manager = NULL;
@@ -47,7 +47,7 @@ Manager *Manager::get()
 Manager::Manager()
 {
     trace("Memory manager starts");
-    assertion(__count == 1);
+    assertion(_count == 1);
     
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
@@ -125,21 +125,27 @@ gmacError_t Manager::free(void * addr)
 gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
-    const Map &map = Mode::current()->objects();
+    Mode * mode = Mode::current();
+    const Map &map = mode->objects();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
         ret = protocol->acquire(object);
         if(ret != gmacSuccess) return ret;
     }
+
     return ret;
 }
 
 gmacError_t Manager::release()
 {
+#ifdef USE_VM
+    checkBitmapToDevice();
+#endif
     trace("Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    const Map &map = Mode::current()->objects();
+    Mode * mode = Mode::current();
+    const Map &map = mode->objects();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
@@ -153,6 +159,7 @@ gmacError_t Manager::release()
         ret = protocol->flush(object);
         if(ret != gmacSuccess) return ret;
     }
+
     return ret;
 }
 
@@ -169,7 +176,7 @@ gmacError_t Manager::invalidate()
     return ret;
 }
 
-gmacError_t Manager::adquire(void *addr, size_t size)
+gmacError_t Manager::acquire(void *addr, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
@@ -208,10 +215,43 @@ gmacError_t Manager::invalidate(void *addr, size_t size)
     return ret;
 }
 
+
+#ifdef USE_VM
+void Manager::checkBitmapToHost()
+{
+    Mode *mode = gmac::Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    if (!bitmap.synced()) {
+        bitmap.syncHost();
+
+        const Map &map = mode->objects();
+        Map::const_iterator i;
+        for(i = map.begin(); i != map.end(); i++) {
+            Object &object = *i->second;
+            gmacError_t ret = protocol->acquireWithBitmap(object);
+            assertion(ret == gmacSuccess);
+        }
+    }
+}
+
+void Manager::checkBitmapToDevice()
+{
+    Mode *mode = gmac::Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    if (!bitmap.clean()) {
+        bitmap.syncDevice();
+    }
+}
+#endif
+
 bool Manager::read(void *addr)
 {
+    Mode *mode = gmac::Mode::current();
+#ifdef USE_VM
+    checkBitmapToHost();
+#endif
     bool ret = true;
-    Object *obj = gmac::Mode::current()->findObject(addr);
+    Object *obj = mode->findObject(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
     assertion(protocol->read(*obj, addr) == gmacSuccess);
@@ -220,8 +260,12 @@ bool Manager::read(void *addr)
 
 bool Manager::write(void *addr)
 {
+    Mode *mode = gmac::Mode::current();
+#ifdef USE_VM
+    checkBitmapToHost();
+#endif
     bool ret = true;
-    Object *obj = gmac::Mode::current()->findObject(addr);
+    Object *obj = mode->findObject(addr);
     if(obj == NULL) return false;
     trace("Write access for object %p", obj->addr());
     if(protocol->write(*obj, addr) != gmacSuccess) ret = false;
@@ -234,6 +278,5 @@ bool Manager::requireUpdate(Block *block)
     return protocol->requireUpdate(block);
 }
 #endif
-
 
 }}

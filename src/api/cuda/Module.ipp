@@ -89,7 +89,7 @@ Module::dirtyBitmap() const
 
 inline
 const Variable *
-Module::shiftPage() const
+Module::dirtyBitmapShiftPage() const
 {
     return _shiftPage;
 }
@@ -97,7 +97,7 @@ Module::shiftPage() const
 #ifdef BITMAP_BIT
 inline
 const Variable *
-Module::shiftEntry() const
+Module::dirtyBitmapShiftEntry() const
 {
     return _shiftEntry;
 }

@@ -68,6 +68,9 @@ public:
     gmacError_t write(Object &obj, void *addr);
 
     gmacError_t acquire(Object &obj);
+#ifdef USE_VM
+    gmacError_t acquireWithBitmap(Object &obj);
+#endif
     gmacError_t release(Object &obj);
     gmacError_t invalidate(Object &obj);
     gmacError_t flush(Object &obj);

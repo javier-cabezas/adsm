@@ -113,6 +113,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     }
     *addr = (void *)gpuPtr;
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    trace("Allocating device memory: %p - %zd bytes (alignment %u)", *addr, size, align);
     return error(ret);
 }
 

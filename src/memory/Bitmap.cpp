@@ -9,7 +9,7 @@
 namespace gmac { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-    _bitmap(NULL), _dirty(false), _synced(true), _device(NULL), _minAddr(NULL), _maxAddr(NULL)
+    _bitmap(NULL), _dirty(true), _synced(true), _device(NULL), _minAddr(NULL), _maxAddr(NULL)
 {
     _shiftPage = int(log2(paramPageSize));
     if (paramBitmapChunksPerPage > 1) {
@@ -30,6 +30,9 @@ Bitmap::Bitmap(unsigned bits) :
 #endif
 #endif
     _size = (1 << (bits - _shiftPage)) * sizeof(T);
+
+    trace("Shift page: %u", _shiftPage);
+    trace("Pages: %u", _size / sizeof(T));
 
 #ifndef USE_HOSTMAP_VM
     _bitmap = new T[_size / sizeof(T)];

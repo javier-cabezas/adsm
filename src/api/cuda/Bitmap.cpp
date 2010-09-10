@@ -49,23 +49,46 @@ Bitmap::~Bitmap()
 }
 
 void
-Bitmap::sync()
+Bitmap::syncHost()
 {
 #ifndef USE_HOSTMAP_VM
     trace("Syncing Bitmap");
     Mode * mode = Mode::current();
+
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
     trace("Setting dirty bitmap on host: %p -> %p: %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
-    const void *__device = bitmap.deviceBase();
-    CUresult ret;
+    gmacError_t ret;
     //printf("Bitmap toHost\n");
-    ret = cuMemcpyDtoH(bitmap.host(), cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.size());
-    cfatal(ret == CUDA_SUCCESS, "Unable to copy back dirty bitmap");
-    ret = cuCtxSynchronize();
-    cfatal(ret == CUDA_SUCCESS, "Unable to wait for copy back dirty bitmap");
+    ret = mode->copyToHost(bitmap.host(), bitmap.device(), bitmap.size());
+    cfatal(ret == gmacSuccess, "Unable to copy back dirty bitmap");
     bitmap.reset();
+#endif
+}
 
-    _synced = true;
+void
+Bitmap::syncDevice()
+{
+#ifndef USE_HOSTMAP_VM
+    trace("Syncing Bitmap");
+    gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
+
+    gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
+    trace("Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
+    gmacError_t ret;
+    ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &_device, sizeof(void *));
+    cfatal(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode->dirtyBitmapDevPtr());
+    ret = mode->copyToDevice((void *) mode->dirtyBitmapShiftPageDevPtr(), &_shiftPage, sizeof(int));
+    cfatal(ret == gmacSuccess, "Unable to set shift page in the device %p", (void *) mode->dirtyBitmapShiftPageDevPtr());
+#ifdef BITMAP_BIT
+    ret = mode->copyToDevice((void *) mode->dirtyBitmapShiftEntryDevPtr(), &_shiftEntry, sizeof(int));
+    cfatal(ret == gmacSuccess, "Unable to set shift entry in the device %p", (void *) mode->dirtyBitmapShiftEntryDevPtr());
+#endif
+
+    //printf("Bitmap toHost\n");
+    ret = mode->copyToDevice(bitmap.device(), bitmap.host(), bitmap.size());
+    cfatal(ret == gmacSuccess, "Unable to copy dirty bitmap to device");
+
+    _synced = false;
 #endif
 }
 

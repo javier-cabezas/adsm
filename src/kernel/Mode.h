@@ -64,7 +64,7 @@ protected:
     Context *_context;
     memory::Map *_map;
 #ifdef USE_VM
-    memory::vm::Bitmap _bitmap;
+    memory::vm::Bitmap *_bitmap;
 #endif
     unsigned _count;
 
@@ -78,6 +78,7 @@ protected:
 public:
     Mode(Accelerator *_acc);
     ~Mode();
+    void release();
 
     static void init();
     static Mode *current();

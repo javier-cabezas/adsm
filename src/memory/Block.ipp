@@ -34,7 +34,7 @@ inline gmacError_t AcceleratorBlock::get(off_t off, Block *block)
 template<typename T>
 inline SystemBlock<T>::SystemBlock(void *addr, size_t size, T state) :
     Block(addr, size),
-    __state(state)
+    _state(state)
 { }
 
 template<typename T>
@@ -45,14 +45,14 @@ inline SystemBlock<T>::~SystemBlock()
 template<typename T>
 inline T SystemBlock<T>::state()
 { 
-    T ret = __state;
+    T ret = _state;
     return ret;
 }
 
 template<typename T>
 inline void SystemBlock<T>::state(T s)
 {
-    __state = s;
+    _state = s;
 }
 
 }}

@@ -55,15 +55,15 @@ namespace gmac { namespace cuda {
 
 class Context : public gmac::Context {
 protected:
-    Accelerator *acc;
+    Accelerator * _acc;
 
-    static void * FatBin;
-	static const unsigned USleepLaunch = 100;
+    static void * _FatBin;
+	static const unsigned _USleepLaunch = 100;
 
 	typedef std::map<void *, void *> AddressMap;
-	static AddressMap hostMem;
+	static AddressMap _HostMem;
 
-    IOBuffer buffer;
+    IOBuffer _buffer;
 
     typedef CUstream Stream;
     Stream _streamLaunch;
@@ -75,8 +75,8 @@ protected:
     void cleanStreams();
     gmacError_t syncStream(CUstream);
     gmacError_t waitForBuffer(IOBuffer *buffer);
-    IOBuffer *toDeviceBuffer;
-    IOBuffer *toHostBuffer;
+    IOBuffer * _toDeviceBuffer;
+    IOBuffer * _toHostBuffer;
 
     KernelConfig _call;
 

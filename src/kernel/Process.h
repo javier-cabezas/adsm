@@ -99,10 +99,10 @@ class Process : public util::RWLock, public util::Logger {
 protected:
     friend class Accelerator;
 
-	std::vector<Accelerator *> __accs;
-	ModeMap __modes;
+	std::vector<Accelerator *> _accs;
+	ModeMap _modes;
 
-	QueueMap __queues;
+	QueueMap _queues;
     memory::Map __global;
     memory::Map __shared;
 
@@ -142,7 +142,7 @@ public:
 	void addAccelerator(Accelerator *acc);
 
 	inline static size_t totalMemory() { return __totalMemory; }
-	inline size_t nAccelerators() const { return __accs.size(); }
+	inline size_t nAccelerators() const { return _accs.size(); }
 
     inline memory::ObjectMap &global() { return __global; }
     inline const memory::ObjectMap &global() const { return __global; }
