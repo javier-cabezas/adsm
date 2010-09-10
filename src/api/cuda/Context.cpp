@@ -15,6 +15,7 @@ void * Context::FatBin;
 Context::Context(Accelerator *acc, Mode *mode) :
     gmac::Context(acc, mode->id()),
     acc(acc),
+    buffer(NULL),
     _call(dim3(0), dim3(0), 0, NULL)
 {
     setupStreams();
@@ -51,6 +52,8 @@ void Context::cleanStreams()
     cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
     ret = cuStreamDestroy(_streamDevice);
     cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
+
+    if(buffer != NULL) proc->destroyIOBuffer(buffer);
 }
 
 gmacError_t Context::syncStream(CUstream _stream)
@@ -76,15 +79,13 @@ gmacError_t Context::waitForBuffer(IOBuffer *buffer)
         case IOBuffer::Idle: return gmacSuccess;
         case IOBuffer::ToDevice:
             ret = syncStream(_streamToDevice);
-            toDeviceBuffer->state(IOBuffer::Idle);
-            assert(buffer->state() == IOBuffer::Idle);
             break;
         case IOBuffer::ToHost:
             ret = syncStream(_streamToHost);
-            toHostBuffer->state(IOBuffer::Idle);
-            assert(buffer->state() == IOBuffer::Idle);
             break;
     };
+
+    buffer->state(IOBuffer::Idle);
     return ret;
 }
 
@@ -93,17 +94,17 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
     trace("Transferring %zd bytes from host %p to device %p", size, host, dev);
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
+    if(buffer == NULL) buffer = proc->createIOBuffer(paramPageSize);
     if(buffer == NULL) {
         trace("Not using pinned memory for transfer");
         return gmac::Context::copyToDevice(dev, host, size);
     }
 
-    gmacError_t ret = gmacSuccess;
+    gmacError_t ret = waitForBuffer(buffer);
+    if(ret != gmacSuccess) return ret;
     size_t offset = 0;
     while(offset < size) {
-        if(buffer->state() != IOBuffer::Idle)
-            ret = acc->syncStream(_streamToDevice);
+        ret = waitForBuffer(buffer);
         if(ret != gmacSuccess) break;
         size_t len = buffer->size();
         if((size - offset) < buffer->size()) len = size - offset;
@@ -113,7 +114,6 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
         if(ret != gmacSuccess) break;
         offset += len;
     }
-    proc->destroyIOBuffer(buffer);
     return ret;
 }
 
@@ -122,26 +122,24 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
     trace("Transferring %zd bytes from device %p to host %p", size, device, host);
 
     if(size == 0) return gmacSuccess;
-    IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
+    if(buffer == NULL) buffer = proc->createIOBuffer(paramPageSize);
     if(buffer == NULL)
         return gmac::Context::copyToHost(host, device, size);
 
-    gmacError_t ret = gmacSuccess;
+    gmacError_t ret = waitForBuffer(buffer);
+    if(ret != gmacSuccess) return ret;
     size_t offset = 0;
     while(offset < size) {
-        if(ret != gmacSuccess) break;
         size_t len = buffer->size();
         if((size - offset) < buffer->size()) len = size - offset;
         buffer->state(IOBuffer::ToHost);
         ret = acc->copyToHostAsync(buffer->addr(), (uint8_t *)device + offset, len, _streamToHost);
         if(ret != gmacSuccess) break;
-        ret = acc->syncStream(_streamToHost);
+        ret = waitForBuffer(buffer);
         if(ret != gmacSuccess) break;
         memcpy((uint8_t *)host + offset, buffer->addr(), len);
         offset += len;
     }
-    buffer->state(IOBuffer::Idle);
-    proc->destroyIOBuffer(buffer);
     return ret;
 }
 
@@ -164,15 +162,14 @@ gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 
 gmacError_t Context::sync()
 {
-#if 0
-    switch(buffer.state()) {
-        case IOBuffer::ToHost: syncStream(_streamToHost); break;
-        case IOBuffer::ToDevice: syncStream(_streamToDevice); break;
-        case IOBuffer::Idle: break;
+    if(buffer != NULL) {
+        switch(buffer->state()) {
+            case IOBuffer::ToHost: syncStream(_streamToHost); break;
+            case IOBuffer::ToDevice: syncStream(_streamToDevice); break;
+            case IOBuffer::Idle: break;
+        }
+       buffer->state(IOBuffer::Idle);
     }
-    buffer.state(IOBuffer::Idle);
-
-#endif
     return syncStream(_streamLaunch);
 }
 
