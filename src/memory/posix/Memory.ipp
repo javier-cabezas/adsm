@@ -6,7 +6,8 @@ inline int
 Memory::protect(void *addr, size_t count, int prot)
 {
     util::Logger::TRACE("Setting memory permisions to %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
-    return mprotect(addr, count, prot);
+    util::Logger::ASSERTION(mprotect(addr, count, prot) == 0);
+    return 0;
 }
 
 #endif

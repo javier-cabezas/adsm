@@ -103,7 +103,8 @@ public:
 
     bool clean() const;
 
-    void sync();
+    void syncHost();
+    void syncDevice();
     void reset();
 
 #ifdef DEBUG_BITMAP

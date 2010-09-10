@@ -3,6 +3,10 @@
 
 namespace gmac { namespace memory {
 
+#ifdef USE_VM
+#include "Bitmap.h"
+#endif
+
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, T init) :
     StateObject<T>(size),
@@ -12,11 +16,16 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     gmacError_t ret = gmacSuccess;
     void *device = NULL;
     // Allocate device and host memory
-    ret = __owner->malloc(&device, size);
+    ret = __owner->malloc(&device, size, paramPageSize);
     if(ret != gmacSuccess) {
         StateObject<T>::__addr = NULL;
         return;
     }
+#ifdef USE_VM
+    Mode *mode = Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    bitmap.newRange(device, size);
+#endif
     StateObject<T>::__addr = StateObject<T>::map(device, size);
     if(StateObject<T>::__addr == NULL) {
         __owner->free(device);
@@ -34,10 +43,16 @@ inline SharedObject<T>::~SharedObject()
 {
     StateObject<T>::lockWrite();
     if(StateObject<T>::__addr == NULL) { StateObject<T>::unlock(); return; }
-    void *__device = accelerator->addr();
+    void *devAddr = accelerator->addr();
     delete accelerator;
     StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
-    __owner->free(__device);
+    __owner->free(devAddr);
+#ifdef USE_VM
+    Mode *mode = Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    bitmap.removeRange(devAddr, StateObject<T>::__size);
+#endif
+
     trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::__addr);
     StateObject<T>::unlock();
 }

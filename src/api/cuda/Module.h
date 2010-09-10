@@ -161,10 +161,11 @@ public:
 
 #ifdef USE_VM
     const Variable *dirtyBitmap() const;
-    const Variable *shiftPage() const;
-    const Variable *shiftEntry() const;
+    const Variable *dirtyBitmapShiftPage() const;
+#ifdef BITMAP_BIT
+    const Variable *dirtyBitmapShiftEntry() const;
 #endif
-
+#endif
 };
 
 }}

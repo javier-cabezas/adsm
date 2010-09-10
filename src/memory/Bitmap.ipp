@@ -21,7 +21,7 @@ inline
 bool Bitmap::CheckClearSet(const void * addr)
 {
     if (!_synced) {
-        sync();
+        syncHost();
     }
     bool ret = false;
     size_t entry = offset(addr);
@@ -126,7 +126,7 @@ const size_t Bitmap::size() const
 {
     if (_minAddr != NULL) {
         assertion(_maxAddr != NULL && _maxAddr > _minAddr);
-        return (offset(_maxAddr) - offset(_minAddr)) * sizeof(_bitmap[0]);
+        return (offset(_maxAddr) - offset(_minAddr) + 1) * sizeof(_bitmap[0]);
     } else {
         return _size;
     }
@@ -156,6 +156,7 @@ bool Bitmap::clean() const
 inline
 void Bitmap::reset()
 {
+    _synced = true;
     _dirty = false;
 }
 

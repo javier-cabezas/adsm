@@ -19,7 +19,6 @@ Object *Lazy::createReplicatedObject(size_t size)
 }
 #endif
 
-
 gmacError_t Lazy::acquire(Object &obj)
 {
     gmacError_t ret = gmacSuccess;
@@ -30,18 +29,47 @@ gmacError_t Lazy::acquire(Object &obj)
         SystemBlock<State> *block = i->second;
         block->lock();
         switch(block->state()) {
-            case Dirty:
+            case Invalid:
             case ReadOnly:
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
                     fatal("Unable to set memory permissions");
-                block->state(ReadOnly);
+                block->state(Invalid);
                 break;
-            case Invalid: break;
+            case Dirty:
+                fatal("Block in incogruent state in aquire");
+                break;
         }
         block->unlock();
     }
     return ret;
 }
+
+#ifdef USE_VM
+gmacError_t Lazy::acquireWithBitmap(Object &obj)
+{
+    Mode *mode = gmac::Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    gmacError_t ret = gmacSuccess;
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> *block = i->second;
+        block->lock();
+        if (bitmap.check(obj.device(block->addr()))) {
+            if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
+                fatal("Unable to set memory permissions");
+            block->state(Invalid);
+        } else {
+            if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                fatal("Unable to set memory permissions");
+            block->state(ReadOnly);
+        }
+        block->unlock();
+    }
+    return ret;
+}
+#endif
 
 gmacError_t Lazy::release(Object &obj)
 {
@@ -56,9 +84,9 @@ gmacError_t Lazy::release(Object &obj)
             case Dirty:
                 ret = object.release(block);
                 if(ret != gmacSuccess) return ret;
-                if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
+                if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
                     fatal("Unable to set memory permissions");
-                block->state(Invalid);
+                block->state(ReadOnly);
             break;
 
             case Invalid:
@@ -120,12 +148,20 @@ gmacError_t Lazy::read(Object &obj, void *addr)
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
-    if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0) {
-        block->unlock();
-        return gmacErrorInvalidValue;
+#ifdef USE_VM
+    Mode *mode = Mode::current();
+    vm::Bitmap &bitmap = mode->dirtyBitmap();
+   if (bitmap.checkAndClear(obj.device(block->addr()))) {
+#endif
+        if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0) {
+            block->unlock();
+            return gmacErrorInvalidValue;
+        }
+        gmacError_t ret = object.acquire(block);
+        if(ret != gmacSuccess) { block->unlock(); return ret; }
+#ifdef USE_VM
     }
-    gmacError_t ret = object.acquire(block);
-    if(ret != gmacSuccess) {block->unlock(); return ret; }
+#endif
     if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0) {
         block->unlock();
         return gmacErrorInvalidValue;

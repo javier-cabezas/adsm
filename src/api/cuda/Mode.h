@@ -80,6 +80,14 @@ protected:
 
     IOBuffer *ioBuffer;
 
+#ifdef USE_VM
+    CUdeviceptr _bitmapDevPtr;
+    CUdeviceptr _bitmapShiftPageDevPtr;
+#ifdef BITMAP_BIT
+    CUdeviceptr _bitmapShiftEntryDevPtr;
+#endif
+#endif
+
 #ifdef USE_MULTI_CONTEXT
     ModuleVector &modules;
 #else
@@ -107,12 +115,15 @@ public:
 
     Stream eventStream() const;
 
-    static Mode * current () {
-        Mode *mode = static_cast<Mode *>(gmac::Mode::key.get());
-        if(mode == NULL) mode = static_cast<Mode *>(proc->create());
-        gmac::util::Logger::ASSERTION(mode != NULL);
-        return mode;
-    }
+    static Mode * current();
+
+#ifdef USE_VM
+    CUdeviceptr dirtyBitmapDevPtr() const;
+    CUdeviceptr dirtyBitmapShiftPageDevPtr() const;
+#ifdef BITMAP_BIT
+    CUdeviceptr dirtyBitmapShiftEntryDevPtr() const;
+#endif
+#endif
 };
 
 }}

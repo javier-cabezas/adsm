@@ -16,7 +16,7 @@ Mode::Mode(Accelerator *acc) :
     _id(++next),
     _acc(acc),
 #ifdef USE_VM
-    _bitmap(),
+    _bitmap(new memory::vm::Bitmap()),
 #endif
     _count(0)
 {
@@ -30,11 +30,15 @@ Mode::~Mode()
     if(_count > 0)
         gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", _count);
     if(this == key.get()) key.set(NULL);
+}
 
+void
+Mode::release()
+{
+    delete _bitmap;
     delete _map;
     _acc->destroyMode(this); 
 }
-
 void Mode::kernel(gmacKernel_t k, Kernel * kernel)
 {
     assertion(kernel != NULL);

@@ -22,8 +22,18 @@ Mode::Mode(Accelerator *acc) :
     modules = acc->createModules();
 #endif
     ModuleVector::const_iterator i;
-    for(i = modules.begin(); i != modules.end(); i++)
+    for(i = modules.begin(); i != modules.end(); i++) {
         (*i)->registerKernels(*this);
+#ifdef USE_VM
+        if((*i)->dirtyBitmap() != NULL) {
+            _bitmapDevPtr = (*i)->dirtyBitmap()->devPtr();
+            _bitmapShiftPageDevPtr = (*i)->dirtyBitmapShiftPage()->devPtr();
+#ifdef BITMAP_BIT
+            _bitmapShiftEntryDevPtr = (*i)->dirtyBitmapShiftEntry()->devPtr();
+#endif
+        }
+#endif
+    }
     switchOut();
 }
 

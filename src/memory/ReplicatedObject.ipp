@@ -76,13 +76,13 @@ inline gmacError_t ReplicatedObject<T>::release(Block *block)
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
 {
-    void *device = NULL;
+    void *devAddr = NULL;
     gmacError_t ret;
-    ret = mode->malloc(&device, StateObject<T>::__size);
+    ret = mode->malloc(&devAddr, StateObject<T>::__size, paramPageSize);
     Object::cfatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
-    AcceleratorBlock *dev = new AcceleratorBlock(mode, device, StateObject<T>::__size);
+    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::__size);
     accelerator.insert(typename AcceleratorMap::value_type(mode, dev));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
@@ -90,8 +90,13 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
         off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::__addr;
         dev->put(off, i->second);
     }
+#ifdef USE_VM
+    vm::Bitmap & bitmap = mode->dirtyBitmap();
+    bitmap.newRange(devAddr, StateObject<T>::__size);
+#endif
+
     StateObject<T>::unlock();
-    trace("Adding replicated object @ %p to mode %p", device, mode);
+    trace("Adding replicated object @ %p to mode %p", devAddr, mode);
     return ret;
 }
 
@@ -104,6 +109,10 @@ inline gmacError_t ReplicatedObject<T>::removeOwner(Mode *mode)
     AcceleratorBlock *acc = i->second;
     accelerator.erase(i);
     gmacError_t ret = mode->free(acc->addr());
+#ifdef USE_VM
+    vm::Bitmap & bitmap = mode->dirtyBitmap();
+    bitmap.removeRange(acc->addr(), StateObject<T>::__size);
+#endif
     delete acc;
     StateObject<T>::unlock();
     return ret;

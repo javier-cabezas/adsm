@@ -76,6 +76,36 @@ void Mode::argument(const void *arg, size_t size, off_t offset)
     switchOut();
 }
 
+inline Mode *
+Mode::current()
+{
+    Mode *mode = static_cast<Mode *>(gmac::Mode::key.get());
+    if(mode == NULL) mode = static_cast<Mode *>(proc->create());
+    gmac::util::Logger::ASSERTION(mode != NULL);
+    return mode;
+}
+
+#ifdef USE_VM
+inline CUdeviceptr
+Mode::dirtyBitmapDevPtr() const
+{
+    return _bitmapDevPtr;
+}
+
+inline CUdeviceptr
+Mode::dirtyBitmapShiftPageDevPtr() const
+{
+    return _bitmapShiftPageDevPtr;
+}
+
+#ifdef BITMAP_BIT
+inline CUdeviceptr
+Mode::dirtyBitmapShiftEntryDevPtr() const
+{
+    return _bitmapShiftEntryDevPtr;
+}
+#endif
+#endif
 
 }}
 

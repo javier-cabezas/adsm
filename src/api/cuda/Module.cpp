@@ -91,26 +91,15 @@ Module::Module(const ModuleDescriptor & d) :
         if(strncmp(v->name(), _DirtyBitmapSymbol, strlen(_DirtyBitmapSymbol)) == 0) {
             _dirtyBitmap = &_constants.find(v->key())->second;
             trace("Found constant to set a dirty bitmap on device");
-        }
-
-        Mode * mode = Mode::current();
-        if(strncmp(v->name(), _ShiftPageSymbol, strlen(_ShiftPageSymbol)) == 0) {
+        } else if(strncmp(v->name(), _ShiftPageSymbol, strlen(_ShiftPageSymbol)) == 0) {
             _shiftPage = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_PAGE");
-
-            size_t tmp = mode->dirtyBitmap().shiftPage();
-            res = cuMemcpyHtoD(_shiftPage->devPtr(), &tmp, sizeof(size_t));
-            cfatal(res == CUDA_SUCCESS, "Unable to set shift page");
         }
 
 #ifdef BITMAP_BIT
-        if(strncmp(v->name(), _ShiftEntrySymbol, strlen(_ShiftEntrySymbol)) == 0) {
+        else if(strncmp(v->name(), _ShiftEntrySymbol, strlen(_ShiftEntrySymbol)) == 0) {
             _shiftEntry = &_constants.find(v->key())->second;
             trace("Found constant to set __SHIFT_ENTRY");
-
-            size_t tmp = mode->dirtyBitmap().shiftEntry();
-            res = cuMemcpyHtoD(_shiftEntry->devPtr(), &tmp, sizeof(size_t));
-            cfatal(res == CUDA_SUCCESS, "Unable to set shift entry");
         }
 #endif
 #endif

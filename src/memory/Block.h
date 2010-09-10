@@ -80,7 +80,7 @@ public:
 template<typename T>
 class SystemBlock : public Block {
 protected:
-    T __state;
+    T _state;
 public:
     SystemBlock(void *addr, size_t size, T state);
     ~SystemBlock();

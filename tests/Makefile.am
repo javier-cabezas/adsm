@@ -8,7 +8,9 @@ COMMON=bandwidth threadBandwidth\
 
 if VM
 noinst_PROGRAMS = $(COMMON)\
-                  vmVecAdd vmNull vmStencil vmMatrixMul vmBitmapOverhead
+                  vmVecAdd vmNull vmStencil vmMatrixMul
+
+# vmBitmapOverhead
 else
 noinst_PROGRAMS = $(COMMON)\
 				  gmacHybridComputation gmacVecAdd\
@@ -54,8 +56,8 @@ if VM
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
 vmVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-vmBitmapOverhead_SOURCES = vmBitmapOverhead.cu $(GMAC_TESTSOURCES)
-vmBitmapOverhead_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+#vmBitmapOverhead_SOURCES = vmBitmapOverhead.cu $(GMAC_TESTSOURCES)
+#vmBitmapOverhead_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 vmNull_SOURCES = vmNull.cu $(GMAC_TESTSOURCES)
 vmNull_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)

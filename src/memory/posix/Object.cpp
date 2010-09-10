@@ -1,4 +1,5 @@
 #include "memory/Object.h"
+#include "memory/os/Memory.h"
 
 #include <sys/mman.h>
 
@@ -26,25 +27,25 @@ static void custom_free(void *p)
 
 void *Object::map(void *addr, size_t count)
 {
-	void *cpuAddr = NULL;
+    void *cpuAddr = NULL;
     if (count % getpagesize() != 0) {
         count = (count/getpagesize() + 1) * getpagesize();
     }
 #ifndef USE_MMAP
 #ifdef HAVE_POSIX_MEMALIGN
-	if(posix_memalign(&cpuAddr, getpagesize(), count) != 0)
-		return NULL;
+    if(posix_memalign(&cpuAddr, getpagesize(), count) != 0)
+        return NULL;
 #else
-	if(custom_memalign(&cpuAddr, getpagesize(), count) != 0)
-		return NULL;
+    if(custom_memalign(&cpuAddr, getpagesize(), count) != 0)
+        return NULL;
 #endif
-    mprotect(cpuAddr, count, PROT_NONE);
+    Memory::protect(cpuAddr, count, PROT_NONE);
 #else
-	cpuAddr = (void *)((uint8_t *)addr + Mode::current()->id() * mmSize);
-	if(mmap(cpuAddr, count, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
-		return NULL;
+    cpuAddr = (void *)((uint8_t *)addr + Mode::current()->id() * mmSize);
+    if(mmap(cpuAddr, count, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
+        return NULL;
 #endif
-	return cpuAddr;
+    return cpuAddr;
 }
 
 void Object::unmap(void *addr, size_t count)

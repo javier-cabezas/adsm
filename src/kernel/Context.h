@@ -52,7 +52,7 @@ class KernelLaunch;
 */
 class Context : public util::RWLock, public util::Logger {
 protected:
-    Accelerator *acc;
+    Accelerator *_acc;
 
     unsigned id;
 
