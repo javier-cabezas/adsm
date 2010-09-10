@@ -37,12 +37,12 @@ WITH THE SOFTWARE.  */
 #include <config.h>
 
 #include "Accelerator.h"
-#include "IOBuffer.h"
 #include "Kernel.h"
 #include "Module.h"
 
-#include "util/Lock.h"
-#include "kernel/Context.h"
+#include <util/Lock.h>
+#include <kernel/Context.h>
+#include <kernel/IOBuffer.h>
 
 #include <stdint.h>
 #include <cuda.h>
@@ -63,8 +63,6 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap _HostMem;
 
-    IOBuffer _buffer;
-
     typedef CUstream Stream;
     Stream _streamLaunch;
     Stream _streamToDevice;
@@ -75,8 +73,7 @@ protected:
     void cleanStreams();
     gmacError_t syncStream(CUstream);
     gmacError_t waitForBuffer(IOBuffer *buffer);
-    IOBuffer * _toDeviceBuffer;
-    IOBuffer * _toHostBuffer;
+    IOBuffer *_buffer;
 
     KernelConfig _call;
 
