@@ -40,19 +40,25 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 class IOBuffer : public gmac::util::Lock {
-protected:
-    void *__addr;
-    size_t __size;
 public:
-    IOBuffer(size_t size) :
-        util::Lock("IOBuffer"), __addr(NULL), __size(size) {}
+    typedef enum { Idle, ToHost, ToDevice } State;
+    State _state;
+protected:
+    void *_addr;
+    size_t _size;
+public:
+    IOBuffer(void *addr, size_t size) :
+        util::Lock("IOBuffer"), _addr(addr), _size(size) {}
     inline virtual ~IOBuffer() {};
 
-    inline void *addr() const { return __addr; }
-    inline size_t size() const { return __size; }
+    inline void *addr() const { return _addr; }
+    inline size_t size() const { return _size; }
 
     inline void lock() { gmac::util::Lock::lock(); }
     inline void unlock() { gmac::util::Lock::unlock(); }
+
+    State state() const { return _state; }
+    void state(State s) { _state = s; }
 };
 
 

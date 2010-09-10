@@ -15,7 +15,6 @@ void * Context::FatBin;
 Context::Context(Accelerator *acc, Mode *mode) :
     gmac::Context(acc, mode->id()),
     acc(acc),
-    buffer(paramBufferPageLockedSize * paramPageSize),
     _call(dim3(0), dim3(0), 0, NULL)
 {
     setupStreams();
@@ -94,27 +93,27 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
     trace("Transferring %zd bytes from host %p to device %p", size, host, dev);
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer.isPinned() == false) {
+    IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
+    if(buffer == NULL) {
         trace("Not using pinned memory for transfer");
         return gmac::Context::copyToDevice(dev, host, size);
     }
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
-    buffer.lock();
     while(offset < size) {
-        if(buffer.state() != IOBuffer::Idle)
+        if(buffer->state() != IOBuffer::Idle)
             ret = acc->syncStream(_streamToDevice);
         if(ret != gmacSuccess) break;
-        size_t len = buffer.size();
-        if((size - offset) < buffer.size()) len = size - offset;
-        memcpy(buffer.addr(), (uint8_t *)host + offset, len);
-        buffer.state(IOBuffer::ToDevice);
-        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, buffer.addr(), len, _streamToDevice);
+        size_t len = buffer->size();
+        if((size - offset) < buffer->size()) len = size - offset;
+        memcpy(buffer->addr(), (uint8_t *)host + offset, len);
+        buffer->state(IOBuffer::ToDevice);
+        ret = acc->copyToDeviceAsync((uint8_t *)dev + offset, buffer->addr(), len, _streamToDevice);
         if(ret != gmacSuccess) break;
         offset += len;
     }
-    buffer.unlock();
+    proc->destroyIOBuffer(buffer);
     return ret;
 }
 
@@ -123,27 +122,26 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
     trace("Transferring %zd bytes from device %p to host %p", size, device, host);
 
     if(size == 0) return gmacSuccess;
-    if(buffer.isPinned() == false)
+    IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
+    if(buffer == NULL)
         return gmac::Context::copyToHost(host, device, size);
 
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
-    buffer.lock();
-    assertion(buffer.state() == IOBuffer::Idle);
     while(offset < size) {
         if(ret != gmacSuccess) break;
-        size_t len = buffer.size();
-        if((size - offset) < buffer.size()) len = size - offset;
-        buffer.state(IOBuffer::ToHost);
-        ret = acc->copyToHostAsync(buffer.addr(), (uint8_t *)device + offset, len, _streamToHost);
+        size_t len = buffer->size();
+        if((size - offset) < buffer->size()) len = size - offset;
+        buffer->state(IOBuffer::ToHost);
+        ret = acc->copyToHostAsync(buffer->addr(), (uint8_t *)device + offset, len, _streamToHost);
         if(ret != gmacSuccess) break;
         ret = acc->syncStream(_streamToHost);
         if(ret != gmacSuccess) break;
-        memcpy((uint8_t *)host + offset, buffer.addr(), len);
+        memcpy((uint8_t *)host + offset, buffer->addr(), len);
         offset += len;
     }
-    buffer.state(IOBuffer::Idle);
-    buffer.unlock();
+    buffer->state(IOBuffer::Idle);
+    proc->destroyIOBuffer(buffer);
     return ret;
 }
 
@@ -166,12 +164,15 @@ gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 
 gmacError_t Context::sync()
 {
+#if 0
     switch(buffer.state()) {
         case IOBuffer::ToHost: syncStream(_streamToHost); break;
         case IOBuffer::ToDevice: syncStream(_streamToDevice); break;
         case IOBuffer::Idle: break;
     }
     buffer.state(IOBuffer::Idle);
+
+#endif
     return syncStream(_streamLaunch);
 }
 
