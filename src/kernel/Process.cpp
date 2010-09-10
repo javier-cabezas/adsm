@@ -89,6 +89,8 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
+
+    if(_ioMemory != NULL) delete _ioMemory;
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     __modes.lockWrite();
@@ -102,7 +104,6 @@ Process::~Process()
     for(a = __accs.begin(); a != __accs.end(); a++)
         delete *a;
     __accs.clear();
-    if(_ioMemory != NULL) delete _ioMemory;
     __queues.cleanup();
     memoryFini();
 }
@@ -164,6 +165,8 @@ Mode *Process::create(int acc)
 	unlock();
 
     mode->attach();
+    if(_ioMemory == NULL)
+        _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
     return mode;
 }
 
@@ -252,12 +255,17 @@ void Process::addAccelerator(Accelerator *acc)
 
 IOBuffer *Process::createIOBuffer(size_t size)
 {
-    if(_ioMemory == NULL) _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
-    return NULL;
+    assertion(_ioMemory != NULL);
+    void *addr = _ioMemory->get(size);
+    if(addr == NULL) return NULL;
+    return new IOBuffer(addr, size);
 }
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
+    assertion(_ioMemory != NULL);
+    _ioMemory->put(buffer->addr(), buffer->size());
+    delete buffer;
 }
 
 
