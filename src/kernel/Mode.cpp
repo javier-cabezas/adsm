@@ -35,7 +35,9 @@ Mode::~Mode()
 void
 Mode::release()
 {
+#ifdef USE_VM
     delete _bitmap;
+#endif
     delete _map;
     _acc->destroyMode(this); 
 }
