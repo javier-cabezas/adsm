@@ -130,9 +130,6 @@ public:
 	virtual gmacError_t sync();
 
 
-    /*!  \brief Returns a buffer to be used by I/O operations */
-    virtual IOBuffer *getIOBuffer() = 0;
-
     virtual gmacError_t bufferToDevice(IOBuffer *buffer, void *dst, size_t size) = 0;
     virtual gmacError_t bufferToHost(IOBuffer *buffer, void *dst, size_t size) = 0;
 

@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include "Context.h"
 
 #include <kernel/Mode.h>
+#include <kernel/IOBuffer.h>
 
 #include <stdint.h>
 #include <cuda.h>
@@ -63,7 +64,6 @@ public:
 
 class Texture;
 class Accelerator;
-class IOBuffer;
 
 class Mode : public gmac::Mode {
 protected:
@@ -96,8 +96,6 @@ protected:
 public:
     Mode(Accelerator *acc);
     ~Mode();
-
-    inline IOBuffer *getIOBuffer() { return ioBuffer; }
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
