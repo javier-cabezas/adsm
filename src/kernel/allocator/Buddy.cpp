@@ -112,7 +112,7 @@ void *Buddy::get(size_t &size)
     size = 1 << i;
     trace("Request for %d bytes of I/O memory", size);
     off_t off = getFromList(i);
-    trace("Retunign address at offset %d", off);
+    trace("Returning address at offset %d", off);
     return (uint8_t *)_addr + off;
 }
 

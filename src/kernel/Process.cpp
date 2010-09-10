@@ -90,7 +90,6 @@ Process::~Process()
 {
     trace("Cleaning process");
 
-    if(_ioMemory != NULL) delete _ioMemory;
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     __modes.lockWrite();

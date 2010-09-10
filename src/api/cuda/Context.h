@@ -73,6 +73,7 @@ protected:
     void cleanStreams();
     gmacError_t syncStream(CUstream);
     gmacError_t waitForBuffer(IOBuffer *buffer);
+    IOBuffer *buffer;
     IOBuffer *toDeviceBuffer;
     IOBuffer *toHostBuffer;
 

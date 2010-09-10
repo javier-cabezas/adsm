@@ -42,13 +42,14 @@ namespace gmac {
 class IOBuffer : public gmac::util::Lock {
 public:
     typedef enum { Idle, ToHost, ToDevice } State;
-    State _state;
 protected:
     void *_addr;
     size_t _size;
+
+    State _state;
 public:
     IOBuffer(void *addr, size_t size) :
-        util::Lock("IOBuffer"), _addr(addr), _size(size) {}
+        util::Lock("IOBuffer"), _addr(addr), _size(size), _state(Idle) {}
     inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return _addr; }
