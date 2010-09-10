@@ -179,7 +179,6 @@ gmacError_t Context::bufferToDevice(IOBuffer *buffer, void *addr, size_t len)
     if(ret != gmacSuccess) return ret;
     size_t bytes = (len < buffer->size()) ? len : buffer->size();
     buffer->state(IOBuffer::ToDevice);
-    toDeviceBuffer = buffer;
     ret = acc->copyToDeviceAsync(addr, buffer->addr(), bytes, _streamToDevice);
     return ret;
 }
@@ -189,7 +188,6 @@ gmacError_t Context::bufferToHost(IOBuffer *buffer, void *addr, size_t len)
     gmacError_t ret = waitForBuffer(buffer);
     if(ret != gmacSuccess) return ret;
     buffer->state(IOBuffer::ToHost);
-    toHostBuffer = buffer;
     size_t bytes = (len < buffer->size()) ? len : buffer->size();
     ret = acc->copyToHostAsync(buffer->addr(), addr, bytes, _streamToHost);
     if(ret != gmacSuccess) return ret;
