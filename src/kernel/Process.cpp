@@ -1,6 +1,7 @@
 #include "Process.h"
 #include "Mode.h"
 #include "Accelerator.h"
+#include "allocator/Buddy.h"
 
 #include <gmac/init.h>
 #include <memory/Manager.h>
@@ -81,7 +82,8 @@ Process::Process() :
     RWLock("Process"),
     __global("GlobalMemoryMap"),
     __shared("SharedMemoryMap"),
-    current(0)
+    current(0),
+    _ioMemory(NULL)
 {}
 
 Process::~Process()
@@ -101,6 +103,7 @@ Process::~Process()
     for(a = _accs.begin(); a != _accs.end(); a++)
         delete *a;
     _accs.clear();
+    if(_ioMemory != NULL) delete _ioMemory;
     _queues.cleanup();
     memoryFini();
 }
@@ -246,6 +249,17 @@ void Process::addAccelerator(Accelerator *acc)
 {
 	_accs.push_back(acc);
 }
+
+IOBuffer *Process::createIOBuffer(size_t size)
+{
+    if(_ioMemory == NULL) _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
+    return NULL;
+}
+
+void Process::destroyIOBuffer(IOBuffer *buffer)
+{
+}
+
 
 void *Process::translate(void *addr)
 {

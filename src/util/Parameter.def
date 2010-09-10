@@ -2,6 +2,7 @@
 PARAM(paramProtocol, const char *, "Lazy", "GMAC_PROTOCOL")
 PARAM(paramAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
+PARAM(paramIOMemory, size_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
 
 // GMAC debug settings
 PARAM(paramDebug, const char *, "none", "GMAC_DEBUG")

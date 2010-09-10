@@ -37,6 +37,9 @@ WITH THE SOFTWARE.  */
 #include <gmac/gmac.h>
 
 #include "Queue.h"
+#include "IOBuffer.h"
+#include "allocator/Buddy.h"
+
 #include <memory/Map.h>
 #include <util/Logger.h>
 
@@ -111,6 +114,7 @@ protected:
 	static size_t __totalMemory;
 
 	Process();
+    kernel::allocator::Buddy *_ioMemory;
 
 public:
 	virtual ~Process();
@@ -126,6 +130,9 @@ public:
     gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
     gmacError_t globalFree(memory::DistributedObject &object);
 #endif
+
+    IOBuffer *createIOBuffer(size_t size);
+    void destroyIOBuffer(IOBuffer *buffer);
 
 	void *translate(void *addr);
 	inline const void *translate(const void *addr) {
