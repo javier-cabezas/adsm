@@ -242,7 +242,7 @@ gmacLaunch(gmacKernel_t k)
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
-        manager->invalidate();
+        //manager->invalidate();
     }
 
     delete launch;
@@ -281,9 +281,7 @@ gmacMemset(void *s, int c, size_t n)
 {
     __enterGmac();
     void *ret = s;
-    gmac::Mode *mode = gmac::Mode::current();
-    manager->invalidate(s, n);
-    mode->memset(proc->translate(s), c, n);
+    manager->memset(s, c, n);
 	__exitGmac();
     return ret;
 }
@@ -300,8 +298,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	// Locate memory regions (if any)
     gmac::Mode *dstMode = proc->owner(dst);
     gmac::Mode *srcMode = proc->owner(src);
-	if (dstMode == NULL && srcMode == NULL) return NULL;
+	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
 
+#if 0
     // TODO - copyDevice can be always asynchronous
 	if(dstMode == NULL) {	    // From device
 		manager->release((void *)src, n);
@@ -343,6 +342,8 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         }
 
 	}
+#endif
+    manager->memcpy(dst, src, n);
 
 	__exitGmac();
 	return ret;

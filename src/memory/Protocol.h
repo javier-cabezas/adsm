@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTOCOL_H_
 #define __MEMORY_PROTOCOL_H_
 
-#include <memory/Object.h>
+#include "memory/Object.h"
 
-#include <util/Logger.h>
+#include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
@@ -61,8 +61,20 @@ public:
     virtual gmacError_t acquireWithBitmap(Object &obj) = 0;
 #endif
     virtual gmacError_t release(Object &obj) = 0;
-    virtual gmacError_t invalidate(Object &obj) = 0;
-    virtual gmacError_t flush(Object &obj) = 0;
+
+    virtual gmacError_t toHost(Object &obj) = 0;
+    virtual gmacError_t toDevice(Object &obj) = 0;
+
+    virtual gmacError_t toIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n) = 0;
+    virtual gmacError_t fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n) = 0;
+
+    virtual gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n) = 0;
+    virtual gmacError_t fromPointer(void *dst, const void *src, Object &dstObj, size_t n) = 0;
+
+    virtual gmacError_t copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n) = 0;
+    virtual gmacError_t memset(void *s, int c, size_t n) = 0;
+
+    //virtual gmacError_t toHost(Object &obj) = 0;
 };
 
 }}

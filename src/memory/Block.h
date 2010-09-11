@@ -91,7 +91,7 @@ public:
     void state(T s);
 };
 
-} };
+}}
 
 #include "Block.ipp"
 

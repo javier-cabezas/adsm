@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "Context.h"
 
-#include <kernel/Mode.h>
+#include "kernel/Mode.h"
 
 #include <stdint.h>
 #include <cuda.h>
@@ -103,8 +103,8 @@ public:
     gmacError_t hostFree(void *addr);
     void *hostMap(void *addr);
 
-    gmacError_t bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t size);
-    gmacError_t bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t bufferToDevice(void *dst, gmac::IOBuffer *buffer, size_t size, off_t off = 0);
+    gmacError_t deviceToBuffer(gmac::IOBuffer *buffer, const void *src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);

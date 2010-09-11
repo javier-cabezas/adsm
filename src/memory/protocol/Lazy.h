@@ -72,8 +72,18 @@ public:
     gmacError_t acquireWithBitmap(Object &obj);
 #endif
     gmacError_t release(Object &obj);
-    gmacError_t invalidate(Object &obj);
-    gmacError_t flush(Object &obj);
+
+    gmacError_t toHost(Object &obj);
+    gmacError_t toDevice(Object &obj);
+
+    gmacError_t toIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n);
+    gmacError_t fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n);
+
+    gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n);
+    gmacError_t fromPointer(void *dst, const void *src, Object &dstObj, size_t n);
+
+    gmacError_t copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n);
+    gmacError_t memset(void *s, int c, size_t n);
 };
 
 

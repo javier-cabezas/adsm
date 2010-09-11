@@ -43,21 +43,21 @@ namespace gmac { namespace memory {
 template<typename T>
 class SharedObject : public StateObject<T> {
 protected:
-    Mode *__owner;
+    Mode *_owner;
 
     AcceleratorBlock *accelerator;
 public:
     SharedObject(size_t size, T init);
     virtual ~SharedObject();
 
-    virtual gmacError_t acquire(Block *block);
-    virtual gmacError_t release(Block *block);
+    gmacError_t toHost(Block *block);
+    gmacError_t toDevice(Block *block);
 
-    virtual void *device(void *addr);
-    inline virtual Mode *owner() const { return __owner; }
+    void *device(void *addr);
+    inline Mode *owner() const { return _owner; }
 };
 
-} }
+}}
 
 #include "SharedObject.ipp"
 

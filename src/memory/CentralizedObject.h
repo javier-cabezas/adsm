@@ -35,9 +35,9 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_CENTRALIZEDOBJECT_H_
 
 
-#include <memory/Object.h>
-#include <memory/Block.h>
-#include <kernel/Mode.h>
+#include "memory/Object.h"
+#include "memory/Block.h"
+#include "kernel/Mode.h"
 
 
 namespace gmac { namespace memory {
@@ -51,11 +51,11 @@ public:
     virtual void *device(void *addr);
     inline virtual Mode *owner() const { return gmac::Mode::current(); }
 
-    inline gmacError_t acquire(Block *block) {
+    inline gmacError_t toHost(Block *block) {
         fatal("Trying to acquire a centralized object");
         return gmacErrorInvalidValue;
     }
-    inline gmacError_t release(Block *block) {
+    inline gmacError_t toDevice(Block *block) {
         fatal("Trying to release a centralized object");
         return gmacErrorInvalidValue;
     }
@@ -63,6 +63,6 @@ public:
 };
 #endif
 
-} }
+}}
 
 #endif

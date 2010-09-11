@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDADRV_ACCELERATOR_H_
-#define __API_CUDADRV_ACCELERATOR_H_
+#ifndef __API_CUDA_ACCELERATOR_H_
+#define __API_CUDA_ACCELERATOR_H_
 
 #include "kernel/Mode.h"
 #include "kernel/Accelerator.h"
@@ -40,7 +40,6 @@ WITH THE SOFTWARE.  */
 
 #include "Module.h"
 
-#include <cuda.h>
 #include <vector_types.h>
 
 #include <set>

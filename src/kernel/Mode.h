@@ -133,9 +133,8 @@ public:
     /*!  \brief Returns a buffer to be used by I/O operations */
     virtual IOBuffer *getIOBuffer() = 0;
 
-    virtual gmacError_t bufferToDevice(IOBuffer *buffer, void *dst, size_t size) = 0;
-    virtual gmacError_t bufferToHost(IOBuffer *buffer, void *dst, size_t size) = 0;
-
+    virtual gmacError_t bufferToDevice(void *dst, IOBuffer *buffer, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t deviceToBuffer(IOBuffer *buffer, const void *dst, size_t size, off_t off = 0) = 0;
 
     void kernel(gmacKernel_t k, Kernel * kernel);
     //Kernel * kernel(gmacKernel_t k);

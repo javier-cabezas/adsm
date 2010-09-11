@@ -90,9 +90,12 @@ public:
     bool read(void *addr);
     bool write(void *addr);
 
-    gmacError_t acquire(void *addr, size_t size);
-    gmacError_t release(void *addr, size_t size);
-    gmacError_t invalidate(void *addr, size_t size);
+    gmacError_t toIOBuffer(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t fromIOBuffer(IOBuffer *buffer, void *addr, size_t size);
+
+    gmacError_t memcpy(void * dst, const void * src, size_t n);
+    gmacError_t memset(void * dst, int c, size_t n);
+    gmacError_t move(void * addr, Mode *mode);
 };
 
 } }

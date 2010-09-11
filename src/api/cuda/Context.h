@@ -93,9 +93,9 @@ public:
     gmac::KernelLaunch *launch(gmac::Kernel *kernel);
     gmacError_t sync();
 
-    gmacError_t bufferToDevice(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t bufferToDevice(void *dst, IOBuffer *buffer, size_t size, off_t off = 0);
     gmacError_t waitDevice();
-    gmacError_t bufferToHost(IOBuffer *buffer, void *addr, size_t size);
+    gmacError_t deviceToBuffer(IOBuffer *buffer, const void *dst, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);

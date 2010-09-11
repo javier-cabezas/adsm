@@ -34,15 +34,16 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_OBJECT_H_
 #define __MEMORY_OBJECT_H_
 
-#include <memory/Block.h>
-#include <util/Lock.h>
-#include <util/Logger.h>
+#include "Block.h"
+
+#include "util/Lock.h"
+#include "util/Logger.h"
 
 #include <set>
 
 namespace gmac { namespace memory {
 
-class Object: protected util::RWLock, public util::Logger {
+class Object: public util::RWLock, public util::Logger {
 private:
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT
@@ -53,33 +54,34 @@ private:
 #endif
 
 protected:
-    void *__addr;
-    size_t __size;
+    void *_addr;
+    size_t _size;
 
-    Object(void *__addr, size_t __size) :
-        RWLock("memory::Object"), __addr(__addr), __size(__size) {};
+    Object(void *_addr, size_t _size) :
+        RWLock("memory::Object"), _addr(_addr), _size(_size) {};
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);
 public:
-    virtual ~Object() {};
+    virtual ~Object();
 
-    inline void *addr() const { return __addr; };
-    inline size_t size() const { return __size; };
+    void *addr() const;
+    size_t size() const;
 
-    inline void *start() const { return __addr; }
-    inline void *end() const {
-        return (void *)((uint8_t *)__addr + __size);
-    }
+    void *start() const;
+    void *end() const;
 
-    virtual gmacError_t acquire(Block *block) = 0;
-    virtual gmacError_t release(Block *block) = 0;
+    virtual gmacError_t toHost(Block *block) = 0;
+    virtual gmacError_t toDevice(Block *block) = 0;
 
     virtual Mode *owner() const = 0;
     virtual void *device(void *addr) = 0;
+
+    virtual gmacError_t move(Mode *mode);
 };
 
-} }
+}}
 
+#include "Object.ipp"
 
 #endif

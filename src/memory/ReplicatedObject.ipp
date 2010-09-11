@@ -11,31 +11,31 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     // This line might seem useless, but we first need to make sure that
     // the curren thread has an execution mode attached
     Mode *mode = gmac::Mode::current(); 
-    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::__size);
+    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::_size);
     if(proc->globalMalloc(*this, size) != gmacSuccess) {
         Object::fatal("Unable to create replicated object");
-        StateObject<T>::__addr = NULL;
+        StateObject<T>::_addr = NULL;
         return;
     }
 
-    StateObject<T>::__addr = StateObject<T>::map(NULL, size);
-    if(StateObject<T>::__addr == NULL) {
+    StateObject<T>::_addr = StateObject<T>::map(NULL, size);
+    if(StateObject<T>::_addr == NULL) {
         proc->globalFree(*this);
         return;
     }
 
     setupSystem(init);
-    trace("Replicated object create @ %p", StateObject<T>::__addr);
+    trace("Replicated object create @ %p", StateObject<T>::_addr);
 }
 
 template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
 {
-    if(StateObject<T>::__addr == NULL) { return; }
+    if(StateObject<T>::_addr == NULL) { return; }
     proc->globalFree(*this);
     StateObject<T>::lockWrite();
     accelerator.clear();
-    StateObject<T>::unmap(StateObject<T>::__addr, StateObject<T>::__size);
+    StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);
     StateObject<T>::unlock();
 }
 
@@ -43,7 +43,7 @@ template<typename T>
 inline void *ReplicatedObject<T>::device(void *addr)
 {
     StateObject<T>::lockRead();
-    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::__addr;
+    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
     typename AcceleratorMap::const_iterator i = accelerator.find(gmac::Mode::current());
     Object::assertion(i != accelerator.end());
     void *ret = (uint8_t *)i->second->addr() + offset;
@@ -52,18 +52,18 @@ inline void *ReplicatedObject<T>::device(void *addr)
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::acquire(Block *block)
+inline gmacError_t ReplicatedObject<T>::toHost(Block *block)
 {
-    Object::fatal("Reacquiring ownership of a replicated object is forbiden");
+    Object::fatal("Modifications to ReplicatedObjects in the device are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::release(Block *block)
+inline gmacError_t ReplicatedObject<T>::toDevice(Block *block)
 {
     gmacError_t ret = gmacSuccess;
     StateObject<T>::lockRead();
-    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::__addr;
+    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
     typename AcceleratorMap::iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         gmacError_t tmp = i->second->put(off, block);
@@ -78,21 +78,21 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
 {
     void *devAddr = NULL;
     gmacError_t ret;
-    ret = mode->malloc(&devAddr, StateObject<T>::__size, paramPageSize);
+    ret = mode->malloc(&devAddr, StateObject<T>::_size, paramPageSize);
     Object::cfatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
-    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::__size);
+    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::_size);
     accelerator.insert(typename AcceleratorMap::value_type(mode, dev));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
         if(mode->requireUpdate(i->second) == false) continue;
-        off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::__addr;
+        off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::_addr;
         dev->put(off, i->second);
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode->dirtyBitmap();
-    bitmap.newRange(devAddr, StateObject<T>::__size);
+    bitmap.newRange(devAddr, StateObject<T>::_size);
 #endif
 
     StateObject<T>::unlock();
@@ -111,7 +111,7 @@ inline gmacError_t ReplicatedObject<T>::removeOwner(Mode *mode)
     gmacError_t ret = mode->free(acc->addr());
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode->dirtyBitmap();
-    bitmap.removeRange(acc->addr(), StateObject<T>::__size);
+    bitmap.removeRange(acc->addr(), StateObject<T>::_size);
 #endif
     delete acc;
     StateObject<T>::unlock();

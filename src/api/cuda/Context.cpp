@@ -3,9 +3,9 @@
 
 #include <config.h>
 
-#include <gmac/init.h>
-#include <memory/Manager.h>
-#include <trace/Thread.h>
+#include "gmac/init.h"
+#include "memory/Manager.h"
+#include "trace/Thread.h"
 
 namespace gmac { namespace cuda {
 
@@ -175,25 +175,25 @@ gmacError_t Context::sync()
     return syncStream(_streamLaunch);
 }
 
-gmacError_t Context::bufferToDevice(IOBuffer *_buffer, void *addr, size_t len)
+gmacError_t Context::bufferToDevice(void * dst, IOBuffer *_buffer, size_t len, off_t off)
 {
     gmacError_t ret = waitForBuffer(_buffer);
     if(ret != gmacSuccess) return ret;
     size_t bytes = (len < _buffer->size()) ? len : _buffer->size();
     _buffer->state(IOBuffer::ToDevice);
     _toDeviceBuffer = _buffer;
-    ret = _acc->copyToDeviceAsync(addr, _buffer->addr(), bytes, _streamToDevice);
+    ret = _acc->copyToDeviceAsync(dst, _buffer->addr(), bytes, _streamToDevice);
     return ret;
 }
 
-gmacError_t Context::bufferToHost(IOBuffer *_buffer, void *addr, size_t len)
+gmacError_t Context::deviceToBuffer(IOBuffer *_buffer, const void * src, size_t len, off_t off)
 {
     gmacError_t ret = waitForBuffer(_buffer);
     if(ret != gmacSuccess) return ret;
     _buffer->state(IOBuffer::ToHost);
     _toHostBuffer = _buffer;
     size_t bytes = (len < _buffer->size()) ? len : _buffer->size();
-    ret = _acc->copyToHostAsync(_buffer->addr(), addr, bytes, _streamToHost);
+    ret = _acc->copyToHostAsync((char *) _buffer->addr() + off, src, bytes, _streamToHost);
     if(ret != gmacSuccess) return ret;
     ret = waitForBuffer(_buffer);
     return ret;

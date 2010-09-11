@@ -43,19 +43,19 @@ void Mode::switchOut()
 }
 
 inline
-gmacError_t Mode::bufferToDevice(gmac::IOBuffer *buffer, void *addr, size_t len)
+gmacError_t Mode::bufferToDevice(void *dst, gmac::IOBuffer *buffer, size_t len, off_t off)
 {
     switchIn();
-    gmacError_t ret = _context->bufferToDevice(dynamic_cast<IOBuffer *>(buffer), addr, len);
+    gmacError_t ret = _context->bufferToDevice(dst, dynamic_cast<IOBuffer *>(buffer), len, off);
     switchOut();
     return ret;
 }
 
 inline
-gmacError_t Mode::bufferToHost(gmac::IOBuffer *buffer, void *addr, size_t len)
+gmacError_t Mode::deviceToBuffer(gmac::IOBuffer *buffer, const void * src, size_t len, off_t off)
 {
     switchIn();
-    gmacError_t ret = _context->bufferToHost(dynamic_cast<IOBuffer *>(buffer), addr, len);
+    gmacError_t ret = _context->deviceToBuffer(dynamic_cast<IOBuffer *>(buffer), src, len, off);
     switchOut();
     return ret;
 }

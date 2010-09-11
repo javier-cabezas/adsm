@@ -1,7 +1,5 @@
-#ifndef __API_CUDADRV_ACCELERATOR_IPP_
-#define __API_CUDADRV_ACCELERATOR_IPP_
-
-#include "Accelerator.h"
+#ifndef __API_CUDA_ACCELERATOR_IPP_
+#define __API_CUDA_ACCELERATOR_IPP_
 
 namespace gmac { namespace cuda {
 
