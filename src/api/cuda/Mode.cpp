@@ -14,7 +14,6 @@ Mode::Mode(Accelerator *acc) :
 
     switchIn();
     _context = new Context(acc, this);
-    ioBuffer = new IOBuffer(paramBufferPageLockedSize * paramPageSize);
     gmac::Mode::_context = _context;
 #ifdef USE_MULTI_CONTEXT
     modules = ModuleDescriptor::createModules();
@@ -47,7 +46,6 @@ Mode::~Mode()
     }
 #endif
     delete _context;
-    delete ioBuffer;
     switchOut();
     modules.clear();
 }

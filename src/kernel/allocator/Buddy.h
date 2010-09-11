@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ALLOCATOR_BUDDY_H
 #define __KERNEL_ALLOCATOR_BUDDY_H
 
+#include <util/Logger.h>
 #include <stdint.h>
 
 #include <list>
@@ -41,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace kernel { namespace allocator {
 
-class Buddy {
+class Buddy : public util::Logger {
 protected:
     void *_addr;
     size_t _size;
@@ -54,17 +55,17 @@ protected:
     void initMemory();
     void finiMemory();
 
-    typedef std::list<void *> List;
+    typedef std::list<off_t> List;
     typedef std::map<uint8_t, List> Tree;
 
     Tree _tree;
-    void *getFromList(uint8_t i);
-    void putToList(void *addr, uint8_t i);
+    off_t getFromList(uint8_t i);
+    void putToList(off_t addr, uint8_t i);
 public:
     Buddy(size_t size);
     ~Buddy();
 
-    void *get(size_t size);
+    void *get(size_t &size);
     void put(void *addr, size_t size);
 };
 

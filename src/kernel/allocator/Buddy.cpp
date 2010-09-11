@@ -6,7 +6,7 @@ namespace gmac { namespace kernel { namespace allocator {
 
 Buddy::Buddy(size_t size) :
     _size(round(size)),
-    _index(index(_index))
+    _index(index(_size))
 {
     initMemory();
 }
@@ -57,26 +57,32 @@ uint32_t Buddy::round(register uint32_t x) const
     return x;
 }
 
-void *Buddy::getFromList(uint8_t i)
+off_t Buddy::getFromList(uint8_t i)
 {
-    if(i > _index) return NULL;
+    if(i > _index) {
+        trace("Requested size (%d) larger than available I/O memory", 1 << i);
+        return -1;
+    }
     /* Check for spare chunks of the requested size */
     List &list = _tree[i];
     if(list.empty() == false) {
-        void * ret = list.front();
+        trace("Returning chunk of %d bytes", 1 << i);
+        off_t ret = list.front();
         list.pop_front();
         return ret;
     }
 
     /* No spare chunks, try splitting a bigger one */
-    void *larger = getFromList(i + 1);
-    if(larger == NULL) return NULL; /* Not enough memory */
-    void *mid = (uint8_t *)larger + (1 << i);
+    trace("Asking for chunk of %d bytes (%d)", 1 << (i + 1), i + 1);
+    off_t larger = getFromList(i + 1);
+    if(larger == -1) return -1; /* Not enough memory */
+    trace("Spliting chunk 0x%x from size %d into two halves", larger, (1 << (i + 1)));
+    off_t mid = larger + (1 << i);
     list.push_back(mid);
     return larger;
 }
 
-void Buddy::putToList(void *addr, uint8_t i)
+void Buddy::putToList(off_t addr, uint8_t i)
 {
     if(i == _index) {
         _tree[i].push_back(addr);
@@ -88,24 +94,34 @@ void Buddy::putToList(void *addr, uint8_t i)
     List &list = _tree[i];
     List::iterator buddy;
     for(buddy = list.begin(); buddy != list.end(); buddy++) {
-        if(((unsigned long)*buddy & mask) != ((unsigned long )addr & mask))
+        if((*buddy & mask) != (addr & mask))
             continue;
-        return putToList((void *)((unsigned long)addr & mask), i + 1);        
+        trace("Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));
+        list.erase(buddy);
+        return putToList((addr & mask), i + 1);        
     }
+    trace("Inserting 0x%x into %d chunk list", addr, 1 << i);
+    list.push_back(addr);
     return;
 
 }
 
-void *Buddy::get(size_t size)
+void *Buddy::get(size_t &size)
 {
     uint8_t i = index(size);
-    return getFromList(i);
+    size = 1 << i;
+    trace("Request for %d bytes of I/O memory", size);
+    off_t off = getFromList(i);
+    trace("Returning address at offset %d", off);
+    return (uint8_t *)_addr + off;
 }
 
 void Buddy::put(void *addr, size_t size)
 {
     uint8_t i = index(size);
-    return putToList(addr, i);
+    off_t off = (uint8_t *)addr - (uint8_t *)_addr;
+    trace("Releasing %d bytes at offset %d of I/O memory", size, off);
+    return putToList(off, i);
 }
 
 }}}
