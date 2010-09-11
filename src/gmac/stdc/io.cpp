@@ -50,7 +50,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     gmacError_t err;
     size_t ret = 0;
 
-    gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
+    gmac::IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
     
     size_t left = n;
     off_t  off  = 0;
@@ -63,6 +63,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
+    proc->destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	__exitGmac();
 
@@ -90,7 +91,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
+    gmac::IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
 
     size_t left = n;
     buffer->lock();
@@ -103,6 +104,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
+    proc->destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	__exitGmac();
 

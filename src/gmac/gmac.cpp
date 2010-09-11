@@ -326,7 +326,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
         manager->invalidate(dst, n);
 
         off_t off = 0;
-        gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
+        gmac::IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
 
         size_t left = n;
         while (left != 0) {
@@ -340,6 +340,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
             left -= bytes;
             off  += bytes;
         }
+        proc->destroyIOBuffer(buffer);
 
 	}
 #endif

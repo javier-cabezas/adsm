@@ -89,6 +89,7 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
+
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     _modes.lockWrite();
@@ -165,6 +166,8 @@ Mode *Process::create(int acc)
 	unlock();
 
     mode->attach();
+    if(_ioMemory == NULL)
+        _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
     return mode;
 }
 
@@ -186,6 +189,7 @@ cleanup:
     }
     unlock();
     return gmacErrorMemoryAllocation;
+
 }
 
 gmacError_t Process::globalFree(memory::DistributedObject &object)
@@ -206,21 +210,21 @@ gmacError_t Process::migrate(Mode *mode, int acc)
 {
 #if 0
 	lockWrite();
-    if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
+    if (acc >= int(__accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	trace("Migrating execution mode");
     if (mode != NULL) {
 #ifndef USE_MMAP
         if (int(mode->context().accId()) != acc) {
             // Create a new context in the requested accelerator
-            ret = _accs[acc]->bind(ctx);
+            ret = __accs[acc]->bind(ctx);
         }
 #else
         fatal("Migration not implemented when using mmap");
 #endif
     } else {
         // Create the context in the requested accelerator
-        _accs[acc]->create();
+        __accs[acc]->create();
     }
 	trace("Context migrated");
 	unlock();
@@ -252,12 +256,17 @@ void Process::addAccelerator(Accelerator *acc)
 
 IOBuffer *Process::createIOBuffer(size_t size)
 {
-    if(_ioMemory == NULL) _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
-    return NULL;
+    assertion(_ioMemory != NULL);
+    void *addr = _ioMemory->get(size);
+    if(addr == NULL) return NULL;
+    return new IOBuffer(addr, size);
 }
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
+    assertion(_ioMemory != NULL);
+    _ioMemory->put(buffer->addr(), buffer->size());
+    delete buffer;
 }
 
 
