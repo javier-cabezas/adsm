@@ -63,15 +63,14 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap _HostMem;
 
-    typedef CUstream Stream;
-    Stream _streamLaunch;
-    Stream _streamToDevice;
-    Stream _streamToHost;
-    Stream _streamDevice;
+    CUstream _streamLaunch;
+    CUstream _streamToDevice;
+    CUstream _streamToHost;
+    CUstream _streamDevice;
 
-    void setupStreams();
-    void cleanStreams();
-    gmacError_t syncStream(CUstream);
+    void setupCUstreams();
+    void cleanCUstreams();
+    gmacError_t syncCUstream(CUstream);
     gmacError_t waitForBuffer(IOBuffer *buffer);
     IOBuffer *_buffer;
 
@@ -97,7 +96,7 @@ public:
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
 
-    const Stream eventStream() const;
+    const CUstream eventStream() const;
 };
 
 }}

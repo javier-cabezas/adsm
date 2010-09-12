@@ -115,8 +115,8 @@ public:
     static void __Assertion(unsigned c, const char *fmt, ...);
     static void __Warning(const char *fmt, ...);
 
-    static void fatal(const char *fmt, ...);
-    static void cfatal(unsigned c, const char *fmt, ...);
+    static void Fatal(const char *fmt, ...);
+    static void CFatal(unsigned c, const char *fmt, ...);
 };
 
 }}

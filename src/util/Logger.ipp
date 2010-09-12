@@ -93,7 +93,7 @@ void Logger::__Warning(const char *fmt, ...)
 
 
 inline
-void Logger::fatal(const char *fmt, ...)
+void Logger::Fatal(const char *fmt, ...)
 {
     if(__logger == NULL) return;
     va_list list;
@@ -109,7 +109,7 @@ void Logger::fatal(const char *fmt, ...)
 
 
 inline
-void Logger::cfatal(unsigned c, const char *fmt, ...)
+void Logger::CFatal(unsigned c, const char *fmt, ...)
 {
     if(c || __logger == NULL) return;
     va_list list;

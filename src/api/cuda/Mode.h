@@ -45,15 +45,7 @@ WITH THE SOFTWARE.  */
 #include <cuda.h>
 #include <vector_types.h>
 
-
 namespace gmac { namespace cuda {
-
-class Switch {
-public:
-    static void in();
-    static void out();
-};
-
 
 class ContextLock : public util::Lock {
 protected:
@@ -68,15 +60,12 @@ class Accelerator;
 class Mode : public gmac::Mode {
 protected:
     Accelerator *acc;
-    Context *_context;
 #ifdef USE_MULTI_CONTEXT
-    CUcontext __ctx;
+    CUcontext _cudaCtx;
 #endif
-    ContextLock __mutex;
-
     friend class Switch;
-    virtual void switchIn();
-    virtual void switchOut();
+    void switchIn();
+    void switchOut();
 
     IOBuffer *ioBuffer;
 
@@ -88,10 +77,13 @@ protected:
 #endif
 #endif
 
+    Context * context();
+    const Context * context() const;
+
 #ifdef USE_MULTI_CONTEXT
-    ModuleVector &modules;
-#else
 	ModuleVector modules;
+#else
+    ModuleVector &modules;
 #endif
 public:
     Mode(Accelerator *acc);
@@ -100,6 +92,8 @@ public:
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
     void *hostMap(void *addr);
+
+	gmacError_t execute(gmac::KernelLaunch * launch);
 
     gmacError_t bufferToDevice(void *dst, gmac::IOBuffer *buffer, size_t size, off_t off = 0);
     gmacError_t deviceToBuffer(gmac::IOBuffer *buffer, const void *src, size_t size, off_t off = 0);
@@ -111,7 +105,7 @@ public:
     const Variable *variable(gmacVariable_t key) const;
     const Texture *texture(gmacTexture_t key) const;
 
-    Stream eventStream() const;
+    CUstream eventStream() const;
 
     static Mode * current();
 

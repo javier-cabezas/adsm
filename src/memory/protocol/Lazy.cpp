@@ -32,11 +32,11 @@ gmacError_t Lazy::acquire(Object &obj)
             case Invalid:
             case ReadOnly:
                 if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
-                    fatal("Unable to set memory permissions");
+                    Fatal("Unable to set memory permissions");
                 block->state(Invalid);
                 break;
             case Dirty:
-                fatal("Block in incogruent state in aquire");
+                Fatal("Block in incogruent state in aquire");
                 break;
         }
         block->unlock();
@@ -58,11 +58,11 @@ gmacError_t Lazy::acquireWithBitmap(Object &obj)
         block->lock();
         if (bitmap.check(obj.device(block->addr()))) {
             if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
-                fatal("Unable to set memory permissions");
+                Fatal("Unable to set memory permissions");
             block->state(Invalid);
         } else {
             if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
-                fatal("Unable to set memory permissions");
+                Fatal("Unable to set memory permissions");
             block->state(ReadOnly);
         }
         block->unlock();
@@ -85,7 +85,7 @@ gmacError_t Lazy::release(Object &obj)
                 ret = object.toDevice(block);
                 if(ret != gmacSuccess) return ret;
                 if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
-                    fatal("Unable to set memory permissions");
+                    Fatal("Unable to set memory permissions");
                 block->state(ReadOnly);
             break;
 
@@ -111,7 +111,7 @@ gmacError_t Lazy::toHost(Object &obj)
         block->unlock();
     }
     if(Memory::protect(object.addr(), object.size(), PROT_NONE))
-        fatal("Unable to set memory permissions");
+        Fatal("Unable to set memory permissions");
     return gmacSuccess;
 }
 
@@ -130,7 +130,7 @@ gmacError_t Lazy::toDevice(Object &obj)
                 ret = object.toDevice(block);
                 if(ret != gmacSuccess) { block->unlock(); return ret; }
                 if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
-                    fatal("Unable to set memory permissions");
+                    Fatal("Unable to set memory permissions");
                 block->state(ReadOnly);
             break;
 
@@ -143,10 +143,10 @@ gmacError_t Lazy::toDevice(Object &obj)
     return ret;
 }
 
-static size_t blockRemainder(void * blockAddr, size_t blockSize, void * ptr, size_t n)
+static size_t blockRemainder(const void * blockAddr, size_t blockSize, const void * ptr, size_t n)
 {
-    char * _ptr  = (char *) ptr;
-    char * _addr = (char *) blockAddr;
+    const char * _ptr  = (const char *) ptr;
+    const char * _addr = (const char *) blockAddr;
 
     if (_ptr >= _addr && _ptr + n <  _addr + blockSize) {
         return n;
@@ -160,9 +160,9 @@ static size_t blockRemainder(void * blockAddr, size_t blockSize, void * ptr, siz
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
+Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, const void *addr, size_t n)
 {
-    cfatal(n <= buffer->size(), "Wrong buffer size");
+    CFatal(n <= buffer->size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
     StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
@@ -180,13 +180,12 @@ Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
             switch(block->state()) {
                 case Dirty:
                 case ReadOnly:
-                    count = blockRemainder(block->addr(), block->size(), addr, n);
                     memcpy((char *) buffer->addr() + off, (char *) addr + off, count);
                     break;
 
                 case Invalid:
                     Mode * mode = obj.owner();
-                    ret = mode->deviceToBuffer(buffer, (char *)addr + off, count);
+                    ret = mode->deviceToBuffer(buffer, (char *)addr + off, count, off);
                     if(ret != gmacSuccess) { block->unlock(); return ret; }
 
                     break;
@@ -203,7 +202,7 @@ Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
 gmacError_t
 Lazy::fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
 {
-    cfatal(n <= buffer->size(), "Wrong buffer size");
+    CFatal(n <= buffer->size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
     StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
@@ -225,16 +224,16 @@ Lazy::fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
 
                 case ReadOnly:
                     if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
-                        fatal("Unable to set memory permissions");
+                        Fatal("Unable to set memory permissions");
                     memcpy((char *) addr + off, (char *) buffer->addr() + off, count);
                     if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
-                        fatal("Unable to set memory permissions");
+                        Fatal("Unable to set memory permissions");
                     ret = object.toDevice(block);
                     break;
 
                 case Invalid:
                     Mode *mode = Mode::current();
-                    ret = mode->bufferToDevice((char *)addr + off, buffer, count);
+                    ret = mode->bufferToDevice((char *)addr + off, buffer, count, off);
                     if(ret != gmacSuccess) { block->unlock(); return ret; }
                     break;
             }           
@@ -248,9 +247,40 @@ Lazy::fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
 }
 
 gmacError_t
-Lazy::toPointer(void *dst, const void *src, const Object &srcObj, size_t n)
+Lazy::toPointer(void *dst, const void *src, Object &srcObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
+
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(srcObj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
+    off_t off = 0;
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> *block = i->second;
+        block->lock();
+
+        if ((src >= block->addr() && src < (char *) block->addr() + block->size()) ||
+            (src <  block->addr() && (char *) src + n > block->addr())) {
+            size_t count = blockRemainder(block->addr(), block->size(), src, n);
+
+            switch(block->state()) {
+                case Dirty:
+                case ReadOnly:
+                    memcpy((char *)dst + off, (char *)src + off, count);
+                    break;
+
+                case Invalid:
+                    Mode * mode = srcObj.owner();
+                    ret = mode->copyToHost(dst, (char *)src + off, count);
+                    if(ret != gmacSuccess) { block->unlock(); return ret; }
+
+                    break;
+            }
+            off += count;
+        }
+
+        block->unlock();
+    }
 
     return ret;
 }
@@ -260,20 +290,59 @@ Lazy::fromPointer(void *dst, const void *src, Object &dstObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
+    StateObject<State> &object = dynamic_cast<StateObject<State> &>(dstObj);
+    StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::iterator i;
+    off_t off = 0;
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> *block = i->second;
+        block->lock();
+
+        if ((dst >= block->addr() && dst < (char *)block->addr() + block->size()) ||
+            (dst <  block->addr() && (char *)dst + n > block->addr())) {
+            size_t count = blockRemainder(block->addr(), block->size(), dst, n);
+
+            switch(block->state()) {
+                case Dirty:
+                    memcpy((char *) dst + off, (char *) src + off, count);
+                    break;
+
+                case ReadOnly:
+                    if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
+                        Fatal("Unable to set memory permissions");
+                    memcpy((char *)dst + off, (char *)src + off, count);
+                    if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                        Fatal("Unable to set memory permissions");
+                    ret = object.toDevice(block);
+                    break;
+
+                case Invalid:
+                    Mode *mode = Mode::current();
+                    ret = mode->copyToDevice((char *)dst + off, src, count);
+                    if(ret != gmacSuccess) { block->unlock(); return ret; }
+                    break;
+            }           
+            off += count;
+        }
+
+        block->unlock();
+    }
+
     return ret;
-}
+} 
 
 gmacError_t
 Lazy::copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
-
+    Fatal("Functionality not implemented yet");
     return ret;
 }
 
 gmacError_t
 Lazy::memset(void *s, int c, size_t n)
 {
+    Fatal("Functionality not implemented yet");
     gmacError_t ret = gmacSuccess;
 
     return ret;
@@ -342,5 +411,4 @@ bool Lazy::requireUpdate(Block *b)
 
 #endif
 
-
-} } }
+}}}

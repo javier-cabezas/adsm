@@ -20,18 +20,18 @@ static bool initialized = false;
 void apiInit(void)
 {
 	if(initialized)
-		util::Logger::fatal("GMAC double initialization not allowed");
+		util::Logger::Fatal("GMAC double initialization not allowed");
 
 	util::Logger::ASSERTION(proc != NULL);
 	util::Logger::TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
-		util::Logger::fatal("Unable to init CUDA");
+		util::Logger::Fatal("Unable to init CUDA");
 
 	int devCount = 0;
 	int devRealCount = 0;
 
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
-		util::Logger::fatal("Error getting CUDA-enabled devices");
+		util::Logger::Fatal("Error getting CUDA-enabled devices");
 
     util::Logger::TRACE("Found %d CUDA capable devices", devCount);
 
@@ -40,10 +40,10 @@ void apiInit(void)
 		CUdevice cuDev;
 		int attr;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
-			util::Logger::fatal("Unable to access CUDA device");
+			util::Logger::Fatal("Unable to access CUDA device");
 #if CUDART_VERSION >= 2020
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
-			util::Logger::fatal("Unable to access CUDA device");
+			util::Logger::Fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
 			proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
 			devRealCount++;
@@ -55,7 +55,10 @@ void apiInit(void)
 	}
 
 	if(devRealCount == 0)
-		util::Logger::fatal("No CUDA-enabled devices found");
+		util::Logger::Fatal("No CUDA-enabled devices found");
+
+    // Initialize the private per-thread variables
+    gmac::cuda::Accelerator::init();
 
 	initialized = true;
 }

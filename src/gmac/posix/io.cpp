@@ -57,7 +57,7 @@ ssize_t read(int fd, void *buf, size_t count)
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
-        ret = manager->fromIOBuffer(buffer, (char *)buf + off, bytes);
+        ret = manager->fromIOBuffer((char *)buf + off, buffer, bytes);
         gmac::util::Logger::ASSERTION(ret == gmacSuccess);
 
         left -= bytes;

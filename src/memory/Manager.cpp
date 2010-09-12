@@ -51,13 +51,13 @@ Manager::Manager()
     
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        fatal("Protocol not supported yet");
+        Fatal("Protocol not supported yet");
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
         protocol = new protocol::Lazy();
     }
     else {
-        fatal("Memory Coherence Protocol not defined");
+        Fatal("Memory Coherence Protocol not defined");
     }
 }
 
@@ -179,10 +179,10 @@ gmacError_t Manager::invalidate()
 }
 #endif
 
-gmacError_t Manager::toIOBuffer(IOBuffer *buffer, void *addr, size_t size)
+gmacError_t Manager::toIOBuffer(IOBuffer *buffer, const void *addr, size_t size)
 {
     gmacError_t ret = gmacSuccess;
-    uint8_t *ptr = (uint8_t *)addr;
+    const uint8_t *ptr = (const uint8_t *)addr;
     do {
         Object *obj = Mode::current()->findObject(ptr);
         protocol->toIOBuffer(buffer, *obj, addr, size);
@@ -192,12 +192,13 @@ gmacError_t Manager::toIOBuffer(IOBuffer *buffer, void *addr, size_t size)
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(IOBuffer *buffer, void *addr, size_t size)
+gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer *buffer, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
-        Object *obj = Mode::current()->findObject(ptr);
+        gmac::Mode *mode = proc->owner(addr);
+        Object *obj = mode->findObject(ptr);
         ret = protocol->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         if(ret != gmacSuccess) return ret;

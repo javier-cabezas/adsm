@@ -2,6 +2,7 @@
 
 #include <memory/Manager.h>
 
+#include "Accelerator.h"
 #include "Mode.h"
 #include "Module.h"
 
@@ -370,7 +371,7 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 {
 	__enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+    Mode *mode = gmac::cuda::Mode::current();
 	const Variable *variable = mode->constant(symbol);
 	gmac::util::Logger::ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -432,7 +433,7 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 		const struct cudaArray *array, const struct cudaChannelFormatDesc *desc)
 {
 	__enterGmac();
-    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+    Mode *mode = gmac::cuda::Mode::current();
 	CUresult r;
     const Texture * texture = mode->texture(texref);
     Switch::in();
@@ -474,7 +475,7 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 {
 	__enterGmac();
-    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
+    Mode *mode = gmac::cuda::Mode::current();
     const Texture * texture = mode->texture(texref);
     Switch::in();
 	CUresult r = cuTexRefDestroy(texture->texRef());
@@ -531,7 +532,7 @@ cudaError_t cudaEventQuery(cudaEvent_t event)
 
 cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
 {
-    CUresult ret = cuEventRecord((CUevent) event, dynamic_cast<Mode *>(gmac::Mode::current())->eventStream());
+    CUresult ret = cuEventRecord((CUevent) event, gmac::cuda::Mode::current()->eventStream());
     return __getCUDAError(ret);
 }
 

@@ -18,50 +18,42 @@ Context::Context(Accelerator *acc, Mode *mode) :
     _buffer(NULL),
     _call(dim3(0), dim3(0), 0, NULL)
 {
-    setupStreams();
+    setupCUstreams();
     _call.stream(_streamLaunch);
 }
 
 Context::~Context()
 {
     trace("Remove Accelerator context [%p]", this);
-    cleanStreams();
+    cleanCUstreams();
 }
 
-void Context::setupStreams()
+void Context::setupCUstreams()
 {
     CUresult ret;
-    ret = cuStreamCreate(&_streamLaunch, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
-    ret = cuStreamCreate(&_streamToDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
-    ret = cuStreamCreate(&_streamToHost, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
-    ret = cuStreamCreate(&_streamDevice, 0);
-    cfatal(ret == CUDA_SUCCESS, "Unable to create CUDA _stream %d", ret);
+    _streamLaunch   = _acc->createCUstream();
+    _streamToDevice = _acc->createCUstream();
+    _streamToHost   = _acc->createCUstream();
+    _streamDevice   = _acc->createCUstream();
 }
 
-void Context::cleanStreams()
+void Context::cleanCUstreams()
 {
     CUresult ret;
-    ret = cuStreamDestroy(_streamLaunch);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
-    ret = cuStreamDestroy(_streamToDevice);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
-    ret = cuStreamDestroy(_streamToHost);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
-    ret = cuStreamDestroy(_streamDevice);
-    cfatal(ret == CUDA_SUCCESS, "Error destroying CUDA _streams: %d", ret);
+    _acc->destroyCUstream(_streamLaunch);
+    _acc->destroyCUstream(_streamToDevice);
+    _acc->destroyCUstream(_streamToHost);
+    _acc->destroyCUstream(_streamDevice);
 
     if(_buffer != NULL) proc->destroyIOBuffer(_buffer);
 }
 
-gmacError_t Context::syncStream(CUstream _stream)
+gmacError_t Context::syncCUstream(CUstream _stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
     gmac::trace::Thread::io();
-    while ((ret = cuStreamQuery(_stream)) == CUDA_ERROR_NOT_READY) {
+    while ((ret = _acc->queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
     gmac::trace::Thread::resume();
@@ -78,10 +70,10 @@ gmacError_t Context::waitForBuffer(IOBuffer *buffer)
     switch(buffer->state()) {
         case IOBuffer::Idle: return gmacSuccess;
         case IOBuffer::ToDevice:
-            ret = syncStream(_streamToDevice);
+            ret = syncCUstream(_streamToDevice);
             break;
         case IOBuffer::ToHost:
-            ret = syncStream(_streamToHost);
+            ret = syncCUstream(_streamToHost);
             break;
     };
 
@@ -135,7 +127,7 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
         _buffer->state(IOBuffer::ToHost);
         ret = _acc->copyToHostAsync(_buffer->addr(), (uint8_t *)device + offset, len, _streamToHost);
         if(ret != gmacSuccess) break;
-        ret = _acc->syncStream(_streamToHost);
+        ret = _acc->syncCUstream(_streamToHost);
         if(ret != gmacSuccess) break;
         memcpy((uint8_t *)host + offset, _buffer->addr(), len);
         offset += len;
@@ -164,13 +156,13 @@ gmacError_t Context::sync()
 {
     if(_buffer != NULL) {
         switch(_buffer->state()) {
-            case IOBuffer::ToHost: syncStream(_streamToHost); break;
-            case IOBuffer::ToDevice: syncStream(_streamToDevice); break;
+            case IOBuffer::ToHost: syncCUstream(_streamToHost); break;
+            case IOBuffer::ToDevice: syncCUstream(_streamToDevice); break;
             case IOBuffer::Idle: break;
         }
        _buffer->state(IOBuffer::Idle);
     }
-    return syncStream(_streamLaunch);
+    return syncCUstream(_streamLaunch);
 }
 
 gmacError_t Context::bufferToDevice(void * dst, IOBuffer *buffer, size_t len, off_t off)

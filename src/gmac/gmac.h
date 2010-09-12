@@ -116,13 +116,13 @@ size_t gmacAccs();
 
 
 /*!
-	\brief Sets the affinity of a thread to a concrete accelerator
+	\brief Migrates the GPU execution mode of a thread to a concrete accelerator
 
     Sets the affinity of a thread to a concrete accelerator. Valid values are 0 ... gmacAccs() - 1.
     Currently only works if this is the first gmac call in the thread.
 	\param acc index of the preferred accelerator
 */
-gmacError_t gmacSetAffinity(int acc);
+gmacError_t gmacMigrate(int acc);
 
 
 /*!
