@@ -38,12 +38,14 @@ WITH THE SOFTWARE.  */
 #include "memory/Bitmap.h"
 #endif
 
-#include <kernel/Process.h>
-#include <kernel/Accelerator.h>
-#include <kernel/Context.h>
+#include "memory/Manager.h"
 
-#include <util/Private.h>
-#include <util/Logger.h>
+#include "kernel/Accelerator.h"
+#include "kernel/Context.h"
+
+#include "util/Private.h"
+#include "util/Logger.h"
+#include "util/Lock.h"
 
 namespace gmac {
 
@@ -53,7 +55,8 @@ class Context;
 class IOBuffer;
 class KernelLaunch;
 
-class Mode : public gmac::util::Logger {
+class Mode : public gmac::util::Logger, protected gmac::util::RWLock {
+    friend class gmac::memory::Manager;
 protected:
     static gmac::util::Private<Mode> key;
     static unsigned next;

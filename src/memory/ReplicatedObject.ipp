@@ -1,6 +1,8 @@
 #ifndef __MEMORY_REPLICATEDOBJECT_IPP
 #define __MEMORY_REPLICATEDOBJECT_IPP
 
+#include "kernel/Process.h"
+
 namespace gmac { namespace memory {
 
 #ifndef USE_MMAP

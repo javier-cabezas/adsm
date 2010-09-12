@@ -1,6 +1,8 @@
 #ifndef __API_CUDA_MODE_IPP_H_
 #define __API_CUDA_MODE_IPP_H_
 
+#include "kernel/Process.h"
+
 #include "Context.h"
 
 namespace gmac { namespace cuda {

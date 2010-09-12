@@ -92,11 +92,13 @@ void Map::remove(Object *obj)
     }
     unlock();
 
+#if 0
     ObjectMap &__shared = proc->shared();
     __shared.lockWrite();
     i = __shared.find(obj->end());
     if(i != __shared.end()) __shared.erase(i);
     __shared.unlock();
+#endif
 
 
     ObjectMap &__global = proc->global();

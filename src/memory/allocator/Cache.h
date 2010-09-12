@@ -69,7 +69,7 @@ public:
 };
 
 
-class Cache : public util::Logger {
+class Cache : public util::Logger, protected util::Lock {
 protected:
     size_t objectSize;
     size_t arenaSize;

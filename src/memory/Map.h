@@ -45,19 +45,18 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Object;
+
 class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
 protected:
     friend class Map;
 public:
     ObjectMap(const char *name) : util::RWLock(name) {};
 };
-
+ 
 class Map : public ObjectMap, public util::Logger {
 protected:
     Object *mapFind(ObjectMap &map, const void *addr);
-    inline Object *localFind(const void *addr) {
-        return mapFind(*this, addr);
-    }
+    Object *localFind(const void *addr);
     Object *globalFind(const void *addr);
 #ifndef USE_MMAP
     Object *sharedFind(const void *addr);
@@ -84,5 +83,7 @@ public:
 };
 
 }}
+
+#include "Map.ipp"
 
 #endif

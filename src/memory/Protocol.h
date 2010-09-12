@@ -34,12 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTOCOL_H_
 #define __MEMORY_PROTOCOL_H_
 
-#include "memory/Object.h"
+
+#include "kernel/IOBuffer.h"
 
 #include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
+class Block;
 class Object;
 
 class Protocol : public util::Logger {

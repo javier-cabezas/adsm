@@ -1,6 +1,8 @@
 #ifndef __KERNEL_MODE_IPP
 #define __KERNEL_MODE_IPP
 
+#include "memory/Map.h"
+
 namespace gmac {
 
 inline void Mode::init()
@@ -70,7 +72,8 @@ Mode::removeObject(memory::Object *obj)
 inline memory::Object *
 Mode::findObject(const void *addr)
 {
-    return _map->find(addr);
+    memory::Object *obj = _map->find(addr);
+    return obj;
 }
 
 inline const memory::Map &

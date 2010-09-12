@@ -45,6 +45,7 @@ void Arena::put(void *obj)
 
 inline
 Cache::Cache(size_t size) :
+    util::Lock("Cache"),
     objectSize(size),
     arenaSize(paramPageSize)
 { }
@@ -53,11 +54,13 @@ Cache::Cache(size_t size) :
 inline
 void Cache::put(void *obj)
 {
+    lock();
     void *key = (void *)((unsigned long)obj & ~(paramPageSize - 1));
     ArenaMap::const_iterator i;
     i = arenas.find(key);
-    CFatal(i != arenas.end(), "Address for invalid arena");
+    CFatal(i != arenas.end(), "Address for invalid arena: %p, %p", obj, key);
     i->second->put(obj);
+    unlock();
 }
 
 }}}
