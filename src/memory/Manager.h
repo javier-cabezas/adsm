@@ -46,6 +46,9 @@ WITH THE SOFTWARE.  */
 #include <iterator>
 #include <map>
 
+namespace gmac {
+class Mode;
+}
 
 namespace gmac { namespace memory {
 

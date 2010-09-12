@@ -22,8 +22,7 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
         return;
     }
 #ifdef USE_VM
-    Mode *mode = Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    vm::Bitmap &bitmap = _owner->dirtyBitmap();
     bitmap.newRange(device, size);
 #endif
     StateObject<T>::_addr = StateObject<T>::map(device, size);
@@ -48,8 +47,7 @@ inline SharedObject<T>::~SharedObject()
     StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);
     _owner->free(devAddr);
 #ifdef USE_VM
-    Mode *mode = Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    vm::Bitmap &bitmap = _owner->dirtyBitmap();
     bitmap.removeRange(devAddr, StateObject<T>::_size);
 #endif
 

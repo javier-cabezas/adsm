@@ -41,6 +41,7 @@ Cache::~Cache()
 void *Cache::get()
 {
     ArenaMap::iterator i;
+    lock();
     for(i = arenas.begin(); i != arenas.end(); i++) {
         if(i->second->empty()) continue;
         trace("Cache %p gets memory from arena %p", this, i->second);
@@ -50,7 +51,9 @@ void *Cache::get()
     Arena *arena = new Arena(objectSize);
     trace("Cache %p creates new arena %p", this, arena);
     arenas.insert(ArenaMap::value_type(arena->address(), arena));
-    return arena->get();
+    void *ptr = arena->get();
+    unlock();
+    return ptr;
 }
 
 }}}

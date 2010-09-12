@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <util/Private.h>
 #include <util/Logger.h>
 
+#include "kernel/Process.h"
+
 namespace gmac {
 
 class Process;

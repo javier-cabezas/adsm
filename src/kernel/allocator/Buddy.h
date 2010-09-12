@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_ALLOCATOR_BUDDY_H
 #define __KERNEL_ALLOCATOR_BUDDY_H
 
+#include <util/Lock.h>
 #include <util/Logger.h>
 #include <stdint.h>
 
@@ -42,7 +43,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace kernel { namespace allocator {
 
-class Buddy : public util::Logger {
+class Buddy : public util::Logger, protected util::Lock  {
 protected:
     void *_addr;
     size_t _size;

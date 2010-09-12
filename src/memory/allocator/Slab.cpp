@@ -67,11 +67,11 @@ bool Slab::free(void *addr)
 {
     addresses.lockRead();
     AddressMap::iterator i = addresses.find(addr);
-    addresses.unlock();
     if(i == addresses.end()) {
         trace("%p was not delivered by slab allocator", addr); 
         return false;
     }
+    addresses.unlock();
     i->second->put(addr);
     return true;
 }

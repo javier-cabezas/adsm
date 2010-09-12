@@ -159,10 +159,12 @@ gmacError_t Accelerator::syncCUstream(CUstream stream)
 inline
 void Accelerator::pushContext()
 {
+    trace("Push context");
     CUresult ret;
 #ifdef USE_MULTI_CONTEXT
     ret = cuCtxPushCurrent(*Accelerator::_Ctx.get());
 #else
+    _mutex.lock();
     ret = cuCtxPushCurrent(_ctx);
 #endif
     CFatal(ret == CUDA_SUCCESS, "Error pushing CUcontext");
@@ -171,9 +173,13 @@ void Accelerator::pushContext()
 inline
 void Accelerator::popContext()
 {
+    trace("Pop context");
     CUresult ret;
     CUcontext tmp;
     ret = cuCtxPopCurrent(&tmp);
+#ifndef USE_MULTI_CONTEXT
+    _mutex.unlock();
+#endif
     CFatal(ret == CUDA_SUCCESS, "Error pushing CUcontext");
 }
 

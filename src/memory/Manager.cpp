@@ -1,8 +1,10 @@
-#include <memory/Manager.h>
-#include <memory/Map.h>
-#include <memory/Object.h>
+#include "kernel/Process.h"
 
-#include <memory/protocol/Lazy.h>
+#include "memory/Manager.h"
+#include "memory/Map.h"
+#include "memory/Object.h"
+
+#include "memory/protocol/Lazy.h"
 
 #include <strings.h>
 
@@ -127,12 +129,14 @@ gmacError_t Manager::acquire()
     gmacError_t ret = gmacSuccess;
     Mode * mode = Mode::current();
     const Map &map = mode->objects();
+    mode->lockRead();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
         ret = protocol->acquire(object);
         if(ret != gmacSuccess) return ret;
     }
+    mode->unlock();
 
     return ret;
 }

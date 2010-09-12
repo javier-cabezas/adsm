@@ -13,6 +13,7 @@ gmac::util::Private<Mode> Mode::key;
 unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
+    RWLock("Mode"),
     _id(++next),
     _acc(acc),
 #ifdef USE_VM

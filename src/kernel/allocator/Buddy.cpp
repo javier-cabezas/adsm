@@ -5,6 +5,7 @@
 namespace gmac { namespace kernel { namespace allocator {
 
 Buddy::Buddy(size_t size) :
+    Lock("Buddy"),
     _size(round(size)),
     _index(index(_size))
 {
@@ -111,7 +112,9 @@ void *Buddy::get(size_t &size)
     uint8_t i = index(size);
     size = 1 << i;
     trace("Request for %d bytes of I/O memory", size);
+    lock();
     off_t off = getFromList(i);
+    unlock();
     trace("Returning address at offset %d", off);
     return (uint8_t *)_addr + off;
 }
@@ -121,7 +124,9 @@ void Buddy::put(void *addr, size_t size)
     uint8_t i = index(size);
     off_t off = (uint8_t *)addr - (uint8_t *)_addr;
     trace("Releasing %d bytes at offset %d of I/O memory", size, off);
-    return putToList(off, i);
+    lock();
+    putToList(off, i);
+    unlock();
 }
 
 }}}

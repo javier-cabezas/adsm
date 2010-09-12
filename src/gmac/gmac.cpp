@@ -10,10 +10,10 @@
 #include <util/Logger.h>
 #include <util/FileLock.h>
 
-
-#include <kernel/Process.h>
 #include <kernel/Context.h>
+#include <kernel/Mode.h>
 #include <kernel/IOBuffer.h>
+#include <kernel/Process.h>
 
 #include <memory/Manager.h>
 #include <memory/Allocator.h>
