@@ -28,7 +28,7 @@ extern int init;
 }
 #endif
 
-gmac::util::Private __in_gmac;
+gmac::util::Private<const char> __in_gmac;
 
 const char __gmac_code = 1;
 const char __user_code = 0;
@@ -46,7 +46,7 @@ char __gmac_init = 0;
 static void __attribute__((constructor))
 gmacInit(void)
 {
-	gmac::util::Private::init(__in_gmac);
+	gmac::util::Private<const char>::init(__in_gmac);
 	__enterGmac();
     __gmac_init = 1;
 
@@ -143,11 +143,11 @@ gmacAccs()
 }
 
 gmacError_t
-gmacSetAffinity(int acc)
+gmacMigrate(int acc)
 {
 	gmacError_t ret;
 	__enterGmac();
-    gmac::trace::Function::start("gmacSetAffinity");
+    gmac::trace::Function::start("gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
         ret = proc->migrate(gmac::Mode::current(), acc);
     } else {
@@ -228,17 +228,18 @@ gmacError_t
 gmacLaunch(gmacKernel_t k)
 {
     __enterGmac();
+    gmac::Mode * mode = gmac::Mode::current();
     gmac::trace::Function::start("gmacLaunch");
-    gmac::KernelLaunch * launch = gmac::Mode::current()->launch(k);
+    gmac::KernelLaunch * launch = mode->launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
     gmac::util::Logger::ASSERTION(manager->release() == gmacSuccess);
 
     // Wait for pending transfers
-    gmac::Mode::current()->sync();
+    mode->sync();
     gmac::util::Logger::TRACE("Kernel Launch");
-    ret = launch->execute();
+    ret = mode->execute(launch);
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
@@ -286,7 +287,6 @@ gmacMemset(void *s, int c, size_t n)
     return ret;
 }
 
-
 void *
 gmacMemcpy(void *dst, const void *src, size_t n)
 {
@@ -299,56 +299,10 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmac::Mode *dstMode = proc->owner(dst);
     gmac::Mode *srcMode = proc->owner(src);
 	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
-
-#if 0
-    // TODO - copyDevice can be always asynchronous
-	if(dstMode == NULL) {	    // From device
-		manager->release((void *)src, n);
-		err = srcMode->copyToHost(dst, proc->translate(src), n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-	}
-    else if(srcMode == NULL) {   // To device
-		manager->invalidate(dst, n);
-		err = dstMode->copyToDevice(proc->translate(dst),src, n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-    }
-    else if(dstMode == srcMode) {	// Same device copy
-		manager->release((void *)src, n);
-		manager->invalidate(dst, n);
-		err = dstMode->copyDevice(proc->translate(dst), proc->translate(src), n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-	}
-	else { // dstCtx != srcCtx
-        gmac::Mode *mode = gmac::Mode::current();
-        gmac::util::Logger::ASSERTION(mode != NULL);
-
-        manager->release((void *)src, n);
-        manager->invalidate(dst, n);
-
-        off_t off = 0;
-        gmac::IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
-
-        size_t left = n;
-        while (left != 0) {
-            size_t bytes = left < buffer->size() ? left : buffer->size();
-            err = srcMode->bufferToHost(buffer, proc->translate((char *)src + off), bytes);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
-
-            err = dstMode->bufferToDevice(buffer, proc->translate((char *)dst + off), bytes);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
-
-            left -= bytes;
-            off  += bytes;
-        }
-        proc->destroyIOBuffer(buffer);
-
-	}
-#endif
     manager->memcpy(dst, src, n);
 
 	__exitGmac();
 	return ret;
-
 }
 
 void

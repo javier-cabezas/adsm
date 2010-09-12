@@ -46,7 +46,6 @@ public:
 
 class KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
 protected:
-    Mode *mode;
     // \todo Is this really necessary?
     const Kernel & _kernel;
     CUfunction _f;

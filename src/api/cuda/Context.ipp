@@ -19,7 +19,7 @@ void Context::argument(const void *arg, size_t size, off_t offset)
 }
 
 
-inline const Stream
+inline const CUstream
 Context::eventStream() const
 {
     return _streamLaunch;

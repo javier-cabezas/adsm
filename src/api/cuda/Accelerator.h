@@ -48,13 +48,19 @@ namespace gmac { namespace cuda {
 class Mode;
 class ModuleDescriptor;
 
+class Switch {
+public:
+    static void in();
+    static void out();
+};
+
 typedef CUstream Stream;
 
 class AcceleratorLock : public util::Lock {
 protected:
     friend class Accelerator;
 public:
-    AcceleratorLock() : Lock("Accelerator") {};
+    AcceleratorLock() : Lock("Accelerator") {}
 };
 
 class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
@@ -69,28 +75,39 @@ protected:
     int _major;
     int _minor;
 
-#ifndef USE_MULTI_CONTEXT
+#ifdef USE_MULTI_CONTEXT
+    static gmac::util::Private<CUcontext> _Ctx;
+#else
     CUcontext _ctx;
     AcceleratorLock _mutex;
     ModuleVector _modules;
 #endif
 
+    void pushContext();
+    void popContext();
+
     static gmacError_t _error;
 public:
+    friend class Switch;
+
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
 	CUdevice device() const;
+
+    static void init();
 
 	gmac::Mode *createMode();
     void destroyMode(gmac::Mode *mode);
 
 #ifdef USE_MULTI_CONTEXT
-    CUcontext createCUDAContext();
-    void destroyCUDAContext(CUcontext ctx);
+    CUcontext createCUcontext();
+    void destroyCUcontext(CUcontext ctx);
+
+    void setCUcontext(CUcontext *ctx);
+    ModuleVector createModules();
+    void destroyModules(ModuleVector & modules);
 #else
     ModuleVector &createModules();
-    void switchIn();
-    void switchOut();
 #endif
 
     int major() const;
@@ -105,9 +122,14 @@ public:
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToDeviceAsync(void *dec, const void *host, size_t size, Stream stream);
-    gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, Stream stream);
-    gmacError_t syncStream(Stream stream);
+    gmacError_t copyToDeviceAsync(void *dec, const void *host, size_t size, CUstream stream);
+    gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream);
+    CUstream createCUstream();
+    void destroyCUstream(CUstream stream);
+    CUresult queryCUstream(CUstream stream);
+    gmacError_t syncCUstream(CUstream stream);
+
+    gmacError_t execute(KernelLaunch * launch);
 
     gmacError_t memset(void *addr, int c, size_t size);
 
@@ -121,6 +143,8 @@ public:
     static gmacError_t error(CUresult r);
     static CUdeviceptr gpuAddr(void *addr);
     static CUdeviceptr gpuAddr(const void *addr);
+
+    gmacError_t bind(gmac::Mode * mode);
 };
 
 }}

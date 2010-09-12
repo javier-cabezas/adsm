@@ -72,7 +72,7 @@ Module::Module(const ModuleDescriptor & d) :
     trace("Module image: %p", _fatBin);
     CUresult res;
     res = cuModuleLoadFatBinary(&_mod, _fatBin);
-    cfatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
+    CFatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d._kernels.begin(); k != d._kernels.end(); k++) {

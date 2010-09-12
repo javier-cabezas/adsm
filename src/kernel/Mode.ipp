@@ -5,6 +5,11 @@ namespace gmac {
 
 inline void Mode::init()
 {
+    gmac::util::Private<Mode>::init(key);
+}
+
+inline void Mode::initThread()
+{
     key.set(NULL);
 }
 
@@ -28,6 +33,11 @@ inline void Mode::destroy()
 inline unsigned Mode::id() const
 {
     return _id;
+}
+
+inline unsigned Mode::accId() const
+{
+    return _acc->id();
 }
 
 inline void

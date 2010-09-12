@@ -54,7 +54,7 @@ extern gmac::Process *proc;
 extern gmac::memory::Manager *manager;
 extern gmac::memory::Allocator *allocator;
 
-extern gmac::util::Private __in_gmac;
+extern gmac::util::Private<const char> __in_gmac;
 extern const char __gmac_code;
 extern const char __user_code;
 extern char __gmac_init;

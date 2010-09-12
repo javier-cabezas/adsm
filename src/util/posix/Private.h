@@ -38,14 +38,17 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
+template <typename T = void>
 class Private {
 protected:
     pthread_key_t _key;
+    
 public:
     static void init(Private &var);
+    //Private();
 
     void set(const void *value);
-    void *get();
+    T * get();
 };
 
 }}

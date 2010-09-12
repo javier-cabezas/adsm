@@ -1,8 +1,14 @@
 MAINTAINERCLEANFILES=Makefile.in
+DIST_SUBDIRS = input
 
 COMMON=bandwidth threadBandwidth\
        schedAllocation transferBlocks\
        hybridComputation transferCosts
+
+BUILT_SOURCES = inputset
+
+inputset:
+	$(LN_S) $(LN_FLAGS) $(abs_srcdir)/input $@
 
 #bitmapOverhead
 
@@ -13,7 +19,7 @@ noinst_PROGRAMS = $(COMMON)\
 # vmBitmapOverhead
 else
 noinst_PROGRAMS = $(COMMON)\
-				  gmacHybridComputation gmacVecAdd\
+				  gmacHybridComputation gmacVecAdd gmacFileVecAdd\
                   gmacTexture gmacConstant\
                   gmacMemset gmacMemcpy\
                   gmacThreadVecAdd gmacSharedVecAdd\
@@ -73,6 +79,9 @@ vmMatrixMul_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 else
 gmacVecAdd_SOURCES = gmacVecAdd.cu $(GMAC_TESTSOURCES)
 gmacVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+
+gmacFileVecAdd_SOURCES = gmacFileVecAdd.cu $(GMAC_TESTSOURCES)
+gmacFileVecAdd_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacMemset_SOURCES = gmacMemset.cu $(GMAC_TESTSOURCES)
 gmacMemset_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
@@ -147,4 +156,5 @@ endif
 
 .cu.lo:
 	$(top_srcdir)/cudalt.py $@ $(NVCC) -c  $< $($(basename $@)_CPPFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CFLAGS)
+
 

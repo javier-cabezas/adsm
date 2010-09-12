@@ -104,7 +104,8 @@ Process::~Process()
     for(a = _accs.begin(); a != _accs.end(); a++)
         delete *a;
     _accs.clear();
-    if(_ioMemory != NULL) delete _ioMemory;
+    // TODO: Free buddy allocator
+    //if(_ioMemory != NULL) delete _ioMemory;
     _queues.cleanup();
     memoryFini();
 }
@@ -118,8 +119,10 @@ Process::init(const char *manager, const char *allocator)
     proc = new Process();
     apiInit();
     memoryInit(manager, allocator);
+    // Create the private per-thread variables
     // Register first, implicit, thread
     Mode::init();
+
     proc->initThread();
 }
 
@@ -128,6 +131,8 @@ Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
     _queues.insert(SELF(), q);
+    // Set the private per-thread variables
+    Mode::initThread();
 }
 
 Mode *Process::create(int acc)
@@ -208,29 +213,31 @@ gmacError_t Process::globalFree(memory::DistributedObject &object)
 
 gmacError_t Process::migrate(Mode *mode, int acc)
 {
-#if 0
 	lockWrite();
-    if (acc >= int(__accs.size())) return gmacErrorInvalidValue;
+    if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	trace("Migrating execution mode");
     if (mode != NULL) {
 #ifndef USE_MMAP
-        if (int(mode->context().accId()) != acc) {
+        if (int(mode->accId()) != acc) {
             // Create a new context in the requested accelerator
-            ret = __accs[acc]->bind(ctx);
+            ret = _accs[acc]->bind(mode);
+
+            if (ret == gmacSuccess) {
+                
+            }
         }
 #else
         fatal("Migration not implemented when using mmap");
 #endif
+        unlock();
     } else {
         // Create the context in the requested accelerator
-        __accs[acc]->create();
+        unlock();
+        create(acc);
     }
 	trace("Context migrated");
-	unlock();
     return ret;
-#endif
-    fatal("Not supported yet!");
     return gmacErrorUnknown;
 }
 
@@ -304,7 +311,7 @@ void Process::sendReceive(THREAD_ID id)
 	QueueMap::iterator q = _queues.find(id);
 	assertion(q != _queues.end());
 	q->second->queue->push(mode);
-    Mode::init();
+    Mode::initThread();
 	q = _queues.find(SELF());
 	assertion(q != _queues.end());
     q->second->queue->pop()->attach();

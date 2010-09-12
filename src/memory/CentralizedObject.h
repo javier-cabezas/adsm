@@ -52,11 +52,11 @@ public:
     inline virtual Mode *owner() const { return gmac::Mode::current(); }
 
     inline gmacError_t toHost(Block *block) {
-        fatal("Trying to acquire a centralized object");
+        Fatal("Trying to acquire a centralized object");
         return gmacErrorInvalidValue;
     }
     inline gmacError_t toDevice(Block *block) {
-        fatal("Trying to release a centralized object");
+        Fatal("Trying to release a centralized object");
         return gmacErrorInvalidValue;
     }
 

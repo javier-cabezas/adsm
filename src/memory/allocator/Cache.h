@@ -52,7 +52,7 @@ protected:
     void *ptr;
     size_t size;
 
-    ObjectList __objects;
+    ObjectList _objects;
 
 public:
     Arena(size_t objSize);

@@ -62,7 +62,7 @@ void Handler::setHandler()
     sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(signum, &segvAction, &defaultAction) < 0)
-		gmac::util::Logger::fatal("sigaction: %s", strerror(errno));
+		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
 
 	handler = this;
 	gmac::util::Logger::TRACE("New signal handler programmed");
@@ -71,7 +71,7 @@ void Handler::setHandler()
 void Handler::restoreHandler()
 {
 	if(sigaction(signum, &defaultAction, NULL) < 0)
-		gmac::util::Logger::fatal("sigaction: %s", strerror(errno));
+		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
 
 	handler = NULL;
 	gmac::util::Logger::TRACE("Old signal handler restored");

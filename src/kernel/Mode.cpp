@@ -9,7 +9,7 @@
 
 namespace gmac {
 
-gmac::util::Private Mode::key;
+gmac::util::Private<Mode> Mode::key;
 unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
@@ -53,7 +53,7 @@ void Mode::kernel(gmacKernel_t k, Kernel * kernel)
 
 Mode *Mode::current()
 {
-    Mode *mode = static_cast<Mode *>(Mode::key.get());
+    Mode *mode = Mode::key.get();
     if(mode == NULL) mode = proc->create();
     gmac::util::Logger::ASSERTION(mode != NULL);
     return mode;
@@ -61,7 +61,7 @@ Mode *Mode::current()
 
 void Mode::attach()
 {
-    Mode *mode = static_cast<Mode *>(Mode::key.get());
+    Mode *mode = Mode::key.get();
     if(mode == this) return;
     if(mode != NULL) mode->destroy();
     key.set(this);
@@ -70,7 +70,7 @@ void Mode::attach()
 
 void Mode::detach()
 {
-    Mode *mode = static_cast<Mode *>(Mode::key.get());
+    Mode *mode = Mode::key.get();
     if(mode != NULL) mode->destroy();
     key.set(NULL);
 }
@@ -130,7 +130,7 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
     gmac::Kernel * k = i->second;
     assertion(k != NULL);
     switchIn();
-    gmac::KernelLaunch *l  = _context->launch(k);
+    gmac::KernelLaunch *l = _context->launch(k);
     switchOut();
 
     return l;

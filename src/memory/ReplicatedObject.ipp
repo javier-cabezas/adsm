@@ -13,7 +13,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     Mode *mode = gmac::Mode::current(); 
     trace("Creating Replicated Object (%zd bytes)", StateObject<T>::_size);
     if(proc->globalMalloc(*this, size) != gmacSuccess) {
-        Object::fatal("Unable to create replicated object");
+        Object::Fatal("Unable to create replicated object");
         StateObject<T>::_addr = NULL;
         return;
     }
@@ -54,7 +54,7 @@ inline void *ReplicatedObject<T>::device(void *addr)
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toHost(Block *block)
 {
-    Object::fatal("Modifications to ReplicatedObjects in the device are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the device are forbidden");
     return gmacErrorInvalidValue;
 }
 
@@ -79,7 +79,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
     void *devAddr = NULL;
     gmacError_t ret;
     ret = mode->malloc(&devAddr, StateObject<T>::_size, paramPageSize);
-    Object::cfatal(ret == gmacSuccess, "Unable to replicate Object");
+    Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
     AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::_size);

@@ -7,19 +7,22 @@ namespace gmac { namespace cuda {
 Mode::Mode(Accelerator *acc) :
     gmac::Mode(acc),
     acc(acc)
+#ifndef USE_MULTI_CONTEXT
+    , modules(acc->createModules())
+#endif
 {
 #ifdef USE_MULTI_CONTEXT
-    __ctx = acc->createContext();
+    _cudaCtx = acc->createCUcontext();
 #endif
 
     switchIn();
     _context = new Context(acc, this);
     gmac::Mode::_context = _context;
+
 #ifdef USE_MULTI_CONTEXT
-    modules = ModuleDescriptor::createModules();
-#else
     modules = acc->createModules();
 #endif
+
     ModuleVector::const_iterator i;
     for(i = modules.begin(); i != modules.end(); i++) {
         (*i)->registerKernels(*this);
@@ -41,9 +44,7 @@ Mode::~Mode()
     ModuleVector::const_iterator m;
     switchIn();
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
-        delete (*m);
-    }
+    acc->destroyModules(modules);
 #endif
     delete _context;
     switchOut();
@@ -104,8 +105,9 @@ const Texture *Mode::texture(gmacTexture_t key) const
     return NULL;
 }
 
-Stream Mode::eventStream() const {
-    return _context->eventStream();
+CUstream Mode::eventStream() const
+{
+    return context()->eventStream();
 }
 
 }}

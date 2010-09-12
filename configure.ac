@@ -72,7 +72,6 @@ AC_CHECK_LIB([pthread], [pthread_create],
 	thread_name="pthreads"]
 )
 
-
 AC_ARG_WITH([bitmap],
             AS_HELP_STRING([--with-bitmap],
                            [Enable dirty bitmap granularity]),
@@ -302,10 +301,10 @@ AC_ARG_ENABLE(tests,
     AS_HELP_STRING([--enable-tests],[turn on tests [[default=no]]])
         , , enable_tests=$tests_default)
 if test "$enable_tests" = "yes"; then
+    AM_CONDITIONAL([BUILD_TESTS], [test -n "x"])
     AC_MSG_RESULT(yes)
-    BUILD_TESTS="tests"
 else
-    BUILD_TESTS=""
+    AM_CONDITIONAL([BUILD_TESTS], [test -n ""])
     AC_MSG_RESULT(no)
 fi
 
@@ -323,7 +322,6 @@ else
 fi
 
 AC_SUBST(ARCH)
-AC_SUBST(BUILD_TESTS)
 AC_SUBST(BUILD_MPI)
 AC_SUBST(NVCC)
 AC_SUBST(CUDA_DIR)

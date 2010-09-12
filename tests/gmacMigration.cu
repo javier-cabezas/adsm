@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
     fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-    gmacSetAffinity(0);
+    gmacMigrate(0);
     gettimeofday(&s, NULL);
     // Alloc & init input data
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < ITER; i++) {
         vecInc<<<Dg, Db>>>(gmacPtr(a), vecSize);
         if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-        gmacSetAffinity(i % 2);
+        gmacMigrate(i % 2);
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Run migrate: ", "\n");

@@ -50,7 +50,6 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t to
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     gmac::KernelLaunch(),
     KernelConfig(c),
-    mode(dynamic_cast<Mode *>(gmac::Mode::current())),
     _kernel(k),
     _f(k._f)
 {
@@ -59,10 +58,9 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 gmacError_t
 KernelLaunch::execute()
 {
-    Switch::in();
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    cfatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
+    CFatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
 	assertion(ret == CUDA_SUCCESS);
 
@@ -89,7 +87,6 @@ KernelLaunch::execute()
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 
 exit:
-    Switch::out();
     return Accelerator::error(ret);
 }
 

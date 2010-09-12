@@ -17,14 +17,14 @@ Arena::Arena(size_t objSize) :
     if(ret != gmacSuccess) return;
     for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
         trace("Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
-        __objects.push_back((void *)((uint8_t *)ptr + s));
+        _objects.push_back((void *)((uint8_t *)ptr + s));
     }
 }
 
 Arena::~Arena()
 {
-    util::Logger::cfatal(__objects.size() == size, "Destroying non-full Arena");
-    __objects.clear();
+    util::Logger::CFatal(_objects.size() == size, "Destroying non-full Arena");
+    _objects.clear();
     gmacError_t ret = Manager::get()->free(ptr);
 }
 

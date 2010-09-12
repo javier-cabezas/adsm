@@ -55,7 +55,7 @@ class KernelLaunch;
 
 class Mode : public gmac::util::Logger {
 protected:
-    static gmac::util::Private key;
+    static gmac::util::Private<Mode> key;
     static unsigned next;
 
     unsigned _id;
@@ -81,6 +81,7 @@ public:
     void release();
 
     static void init();
+    static void initThread();
     static Mode *current();
     static bool hasCurrent();
 
@@ -88,6 +89,7 @@ public:
     void destroy();
 
     unsigned id() const;
+    unsigned accId() const;
 
     /*! \brief Attaches the execution mode to the current thread */
     void attach();
@@ -106,28 +108,29 @@ public:
     const memory::Map &objects();
 
     /*!  \brief Allocates memory on the accelerator memory */
-	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
+	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
 
 	/*!  \brief Releases memory previously allocated by malloc */
-	virtual gmacError_t free(void *addr);
+	gmacError_t free(void *addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
-	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	gmacError_t copyDevice(void *dst, const void *src, size_t size);
 
     /*!  \brief Sets the contents of accelerator memory */
-    virtual gmacError_t memset(void *addr, int c, size_t size);
+    gmacError_t memset(void *addr, int c, size_t size);
 
 	/*!  \brief Launches the execution of a kernel */
-	virtual gmac::KernelLaunch * launch(gmacKernel_t kernel);
+	KernelLaunch * launch(gmacKernel_t kernel);
+	virtual gmacError_t execute(KernelLaunch * launch) = 0;
 
 	/*!  \brief Waits for kernel execution */
-	virtual gmacError_t sync();
+	gmacError_t sync();
 
 
     virtual gmacError_t bufferToDevice(void *dst, IOBuffer *buffer, size_t size, off_t off = 0) = 0;
