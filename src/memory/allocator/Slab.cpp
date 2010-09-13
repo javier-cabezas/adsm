@@ -72,6 +72,7 @@ bool Slab::free(void *addr)
         return false;
     }
     addresses.unlock();
+    trace("Inserting %p in cache %p", addr, i->second);
     i->second->put(addr);
     return true;
 }
