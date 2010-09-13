@@ -33,7 +33,7 @@ Object::end() const
 }
 
 inline gmacError_t
-Object::move(Mode *mode)
+Object::realloc(Mode &mode)
 {
     return gmacSuccess;
 }

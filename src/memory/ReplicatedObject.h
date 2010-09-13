@@ -58,7 +58,7 @@ public:
     gmacError_t toDevice(Block *block) const;
 
     void *device(void *addr) const;
-    inline Mode *owner() const { return gmac::Mode::current(); }
+    inline Mode &owner() const { return *gmac::Mode::current(); }
 
     gmacError_t addOwner(Mode *mode);
     gmacError_t removeOwner(Mode *mode);

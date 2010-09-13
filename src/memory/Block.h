@@ -68,9 +68,9 @@ public:
 
 class AcceleratorBlock : public Block {
 protected:
-    Mode *owner;
+    Mode &_owner;
 public:
-    AcceleratorBlock(Mode *owner, void *addr, size_t size);
+    AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
 
     gmacError_t toDevice(off_t off, Block *block);

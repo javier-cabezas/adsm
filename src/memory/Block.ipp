@@ -1,7 +1,7 @@
 #ifndef __MEMORY_BLOCK_IPP
 #define __MEMORY_BLOCK_IPP
 
-#include <kernel/Mode.h>
+#include "kernel/Mode.h"
 
 namespace gmac { namespace memory {
 inline Block::Block(void *addr, size_t size) :
@@ -10,9 +10,9 @@ inline Block::Block(void *addr, size_t size) :
     __size(size)
 {}
 
-inline AcceleratorBlock::AcceleratorBlock(Mode *owner, void *addr, size_t size) :
+inline AcceleratorBlock::AcceleratorBlock(Mode &owner, void *addr, size_t size) :
     Block(addr, size),
-    owner(owner)
+    _owner(owner)
 { }
 
 inline AcceleratorBlock::~AcceleratorBlock()
@@ -20,14 +20,14 @@ inline AcceleratorBlock::~AcceleratorBlock()
 
 inline gmacError_t AcceleratorBlock::toDevice(off_t off, Block *block)
 {
-    trace("Mode %p is putting %p into device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
-    return owner->copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
+    trace("Mode %d is putting %p into device @ %p", _owner.id(), block->addr(), (uint8_t *)__addr + off);
+    return _owner.copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
 }
 
 inline gmacError_t AcceleratorBlock::toHost(off_t off, Block *block)
 {
-    trace("Mode %p is getting %p from device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
-    return owner->copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
+    trace("Mode %d is getting %p from device @ %p", _owner.id(), block->addr(), (uint8_t *)__addr + off);
+    return _owner.copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
 }
 
 

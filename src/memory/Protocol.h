@@ -39,6 +39,10 @@ WITH THE SOFTWARE.  */
 
 #include "util/Logger.h"
 
+namespace gmac { 
+class Mode;
+}
+
 namespace gmac { namespace memory {
 
 class Block;
@@ -75,6 +79,8 @@ public:
 
     virtual gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n) = 0;
     virtual gmacError_t memset(const Object & obj, void * s, int c, size_t n) = 0;
+
+    virtual gmacError_t move(Object &obj, Mode &mode) = 0;
 
     //virtual gmacError_t toHost(Object &obj) = 0;
 };

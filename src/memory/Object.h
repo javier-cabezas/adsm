@@ -76,10 +76,10 @@ public:
     virtual gmacError_t toHost(Block *block) const = 0;
     virtual gmacError_t toDevice(Block *block) const = 0;
 
-    virtual Mode *owner() const = 0;
+    virtual Mode &owner() const = 0;
     virtual void *device(void *addr) const = 0;
 
-    virtual gmacError_t move(Mode *mode);
+    virtual gmacError_t realloc(Mode &mode);
 };
 
 }}

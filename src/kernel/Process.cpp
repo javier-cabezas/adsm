@@ -333,9 +333,9 @@ Mode *Process::owner(const void *addr) const
 {
     const memory::Object *object = __global.getObjectRead(addr);
     if(object == NULL) return NULL;
-    Mode * ret = object->owner();
+    Mode & ret = object->owner();
     __global.putObject(object);
-    return ret;
+    return &ret;
 }
 
 
