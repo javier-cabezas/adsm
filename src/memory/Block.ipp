@@ -18,13 +18,13 @@ inline AcceleratorBlock::AcceleratorBlock(Mode *owner, void *addr, size_t size) 
 inline AcceleratorBlock::~AcceleratorBlock()
 { }
 
-inline gmacError_t AcceleratorBlock::put(off_t off, Block *block)
+inline gmacError_t AcceleratorBlock::toDevice(off_t off, Block *block)
 {
     trace("Mode %p is putting %p into device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
     return owner->copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
 }
 
-inline gmacError_t AcceleratorBlock::get(off_t off, Block *block)
+inline gmacError_t AcceleratorBlock::toHost(off_t off, Block *block)
 {
     trace("Mode %p is getting %p from device @ %p", owner, block->addr(), (uint8_t *)__addr + off);
     return owner->copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
@@ -43,7 +43,7 @@ inline SystemBlock<T>::~SystemBlock()
 
 
 template<typename T>
-inline T SystemBlock<T>::state()
+inline T SystemBlock<T>::state() const
 { 
     T ret = _state;
     return ret;

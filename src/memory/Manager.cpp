@@ -185,14 +185,14 @@ gmacError_t Manager::invalidate()
 }
 #endif
 
-gmacError_t Manager::toIOBuffer(IOBuffer *buffer, const void *addr, size_t size)
+gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     const uint8_t *ptr = (const uint8_t *)addr;
     Mode *mode = Mode::current();
     do {
         const Object *obj = mode->getObjectRead(ptr);
-        protocol->toIOBuffer(buffer, *obj, addr, size);
+        ret = protocol->toIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode->putObject(obj);
         if(ret != gmacSuccess) return ret;
@@ -200,14 +200,13 @@ gmacError_t Manager::toIOBuffer(IOBuffer *buffer, const void *addr, size_t size)
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer *buffer, size_t size)
+gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
         gmac::Mode *mode = proc->owner(addr);
         const Object *obj = mode->getObjectRead(ptr);
-        protocol->toIOBuffer(buffer, *obj, addr, size);
         ret = protocol->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode->putObject(obj);

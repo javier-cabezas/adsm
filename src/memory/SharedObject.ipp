@@ -65,7 +65,7 @@ template<typename T>
 inline gmacError_t SharedObject<T>::toHost(Block *block) const
 {
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
-    gmacError_t ret = accelerator->get(off, block);
+    gmacError_t ret = accelerator->toHost(off, block);
     return ret;
 }
 
@@ -73,7 +73,7 @@ template<typename T>
 inline gmacError_t SharedObject<T>::toDevice(Block *block) const
 {
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
-    gmacError_t ret = accelerator->put(off, block);
+    gmacError_t ret = accelerator->toDevice(off, block);
     return ret;
 }
 

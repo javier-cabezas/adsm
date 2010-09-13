@@ -76,8 +76,8 @@ public:
     gmacError_t toHost(const Object &obj);
     gmacError_t toDevice(const Object &obj);
 
-    gmacError_t toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n);
-    gmacError_t fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n);
+    gmacError_t toIOBuffer(IOBuffer &buffer, const Object &obj, const void *addr, size_t n);
+    gmacError_t fromIOBuffer(IOBuffer &buffer, const Object &obj, void *addr, size_t n);
 
     gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n);
     gmacError_t fromPointer(void *dst, const void *src, const Object &dstObj, size_t n);

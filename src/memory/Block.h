@@ -49,7 +49,7 @@ class Mode;
 namespace memory {
 
 
-class Block: protected util::Lock, public util::Logger {
+class Block: public util::Lock, public util::Logger {
 protected:
     void *__addr;
     size_t __size;
@@ -73,8 +73,8 @@ public:
     AcceleratorBlock(Mode *owner, void *addr, size_t size);
     ~AcceleratorBlock();
 
-    gmacError_t put(off_t off, Block *block);
-    gmacError_t get(off_t off, Block *block);
+    gmacError_t toDevice(off_t off, Block *block);
+    gmacError_t toHost(off_t off, Block *block);
 };
 
 template<typename T>
@@ -87,7 +87,7 @@ public:
 
     gmacError_t update(off_t off, Block *block);
 
-    T state();
+    T state() const;
     void state(T s);
 };
 

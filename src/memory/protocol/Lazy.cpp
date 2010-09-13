@@ -160,9 +160,9 @@ static size_t blockRemainder(const void * blockAddr, size_t blockSize, const voi
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n)
+Lazy::toIOBuffer(IOBuffer &buffer, const Object &obj, const void *addr, size_t n)
 {
-    CFatal(n <= buffer->size(), "Wrong buffer size");
+    CFatal(n <= buffer.size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -180,7 +180,7 @@ Lazy::toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n
             switch(block->state()) {
                 case Dirty:
                 case ReadOnly:
-                    memcpy((char *) buffer->addr() + off, (char *) addr + off, count);
+                    memcpy((char *) buffer.addr() + off, (char *) addr + off, count);
                     break;
 
                 case Invalid:
@@ -200,9 +200,9 @@ Lazy::toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n
 }
 
 gmacError_t
-Lazy::fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n)
+Lazy::fromIOBuffer(IOBuffer &buffer, const Object &obj, void *addr, size_t n)
 {
-    CFatal(n <= buffer->size(), "Wrong buffer size");
+    CFatal(n <= buffer.size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -219,13 +219,13 @@ Lazy::fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n)
 
             switch(block->state()) {
                 case Dirty:
-                    memcpy((char *) addr + off, (char *) buffer->addr() + off, count);
+                    memcpy((char *) addr + off, (char *) buffer.addr() + off, count);
                     break;
 
                 case ReadOnly:
                     if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
                         Fatal("Unable to set memory permissions");
-                    memcpy((char *) addr + off, (char *) buffer->addr() + off, count);
+                    memcpy((char *) addr + off, (char *) buffer.addr() + off, count);
                     if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
                         Fatal("Unable to set memory permissions");
                     ret = object.toDevice(block);

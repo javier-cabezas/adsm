@@ -64,10 +64,10 @@ gmacError_t Context::syncCUstream(CUstream _stream)
     return Accelerator::error(ret);
 }
 
-gmacError_t Context::waitForBuffer(IOBuffer *buffer)
+gmacError_t Context::waitForBuffer(IOBuffer &buffer)
 {
     gmacError_t ret = gmacErrorUnknown;
-    switch(buffer->state()) {
+    switch(buffer.state()) {
         case IOBuffer::Idle: return gmacSuccess;
         case IOBuffer::ToDevice:
             ret = syncCUstream(_streamToDevice);
@@ -77,7 +77,7 @@ gmacError_t Context::waitForBuffer(IOBuffer *buffer)
             break;
     };
 
-    buffer->state(IOBuffer::Idle);
+    buffer.state(IOBuffer::Idle);
     return ret;
 }
 
@@ -92,11 +92,11 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
         return gmac::Context::copyToDevice(dev, host, size);
     }
 
-    gmacError_t ret = waitForBuffer(_buffer);
+    gmacError_t ret = waitForBuffer(*_buffer);
     if(ret != gmacSuccess) return ret;
     size_t offset = 0;
     while(offset < size) {
-        ret = waitForBuffer(_buffer);
+        ret = waitForBuffer(*_buffer);
         if(ret != gmacSuccess) break;
         size_t len = _buffer->size();
         if((size - offset) < _buffer->size()) len = size - offset;
@@ -118,7 +118,7 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
     if(_buffer == NULL)
         return gmac::Context::copyToHost(host, device, size);
 
-    gmacError_t ret = waitForBuffer(_buffer);
+    gmacError_t ret = waitForBuffer(*_buffer);
     if(ret != gmacSuccess) return ret;
     size_t offset = 0;
     while(offset < size) {
@@ -165,23 +165,23 @@ gmacError_t Context::sync()
     return syncCUstream(_streamLaunch);
 }
 
-gmacError_t Context::bufferToDevice(void * dst, IOBuffer *buffer, size_t len, off_t off)
+gmacError_t Context::bufferToDevice(void * dst, IOBuffer &buffer, size_t len, off_t off)
 {
     gmacError_t ret = waitForBuffer(buffer);
     if(ret != gmacSuccess) return ret;
-    size_t bytes = (len < buffer->size()) ? len : buffer->size();
-    buffer->state(IOBuffer::ToDevice);
-    ret = _acc->copyToDeviceAsync(dst, (char *) buffer->addr() + off, bytes, _streamToDevice);
+    size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    buffer.state(IOBuffer::ToDevice);
+    ret = _acc->copyToDeviceAsync(dst, (char *) buffer.addr() + off, bytes, _streamToDevice);
     return ret;
 }
 
-gmacError_t Context::deviceToBuffer(IOBuffer *buffer, const void * src, size_t len, off_t off)
+gmacError_t Context::deviceToBuffer(IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
     gmacError_t ret = waitForBuffer(buffer);
     if(ret != gmacSuccess) return ret;
-    buffer->state(IOBuffer::ToHost);
-    size_t bytes = (len < buffer->size()) ? len : buffer->size();
-    ret = _acc->copyToHostAsync((char *) buffer->addr() + off, src, bytes, _streamToHost);
+    buffer.state(IOBuffer::ToHost);
+    size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    ret = _acc->copyToHostAsync((char *) buffer.addr() + off, src, bytes, _streamToHost);
     if(ret != gmacSuccess) return ret;
     ret = waitForBuffer(buffer);
     return ret;

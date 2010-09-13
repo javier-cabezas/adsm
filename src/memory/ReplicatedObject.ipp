@@ -68,7 +68,7 @@ inline gmacError_t ReplicatedObject<T>::toDevice(Block *block) const
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
-        gmacError_t tmp = i->second->put(off, block);
+        gmacError_t tmp = i->second->toDevice(off, block);
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -90,7 +90,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
         if(mode->requireUpdate(i->second) == false) continue;
         off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::_addr;
-        dev->put(off, i->second);
+        dev->toDevice(off, i->second);
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode->dirtyBitmap();
