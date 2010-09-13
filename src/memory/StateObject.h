@@ -53,8 +53,9 @@ public:
     StateObject(size_t size);
     virtual ~StateObject();
 
-    SystemBlock<T> *findBlock(void *addr);
+    SystemBlock<T> *findBlock(void *addr) const;
     inline SystemMap &blocks() { return systemMap; }
+    inline const SystemMap &blocks() const { return systemMap; }
 
     virtual void state(T s);
 };

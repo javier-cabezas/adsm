@@ -9,48 +9,71 @@
 
 namespace gmac { namespace memory {
 
+Object * ObjectMap::mapFind(const void *addr) const
+{
+    ObjectMap::const_iterator i;
+    Object *ret = NULL;
+    lockRead();
+    i = upper_bound(addr);
+    if(i != end() && i->second->start() <= addr)
+        ret = i->second;
+    unlock();
+    return ret;
+}
+
+
+const Object *ObjectMap::getObjectRead(const void *addr) const
+{
+    const Object *ret = NULL;
+    ret = mapFind(addr);
+    if (ret != NULL) ret->lockRead();
+    return ret;
+}
+
+Object *ObjectMap::getObjectWrite(const void *addr) const
+{
+    Object *ret = NULL;
+    ret = mapFind(addr);
+    if (ret != NULL) ret->lockWrite();
+    return ret;
+}
+
+void ObjectMap::putObject(const Object *obj) const
+{
+    obj->unlock();
+}
+
+
 Map::~Map()
 {
     trace("Cleaning Memory Map");
     clean();
 }
 
-Object * Map::mapFind(ObjectMap &map, const void *addr)
+
+const Object *Map::getObjectRead(const void *addr) const
 {
-    ObjectMap::const_iterator i;
     Object *ret = NULL;
-    map.lockRead();
-    i = map.upper_bound(addr);
-    if(i != map.end() && i->second->start() <= addr)
-        ret = i->second;
-    map.unlock();
+    ret = mapFind(addr);
+    if(ret == NULL)  ret = proc->global().mapFind(addr);
+#ifndef USE_MMAP
+    if(ret == NULL)  ret = proc->shared().mapFind(addr);
+#endif
+    if (ret != NULL) ret->lockRead();
     return ret;
 }
 
-Object *Map::globalFind(const void *addr)
-{
-    return mapFind(proc->global(), addr);
-}
-
-#ifndef USE_MMAP
-Object *Map::sharedFind(const void *addr)
-{
-    return mapFind(proc->shared(), addr);
-}
-#endif
-
-Object *Map::find(const void *addr)
+Object *Map::getObjectWrite(const void *addr) const
 {
     Object *ret = NULL;
-    ret = localFind(addr);
-    if(ret == NULL) { ret = globalFind(addr); }
+    ret = mapFind(addr);
+    if(ret == NULL)  ret = proc->global().mapFind(addr);
 #ifndef USE_MMAP
-    if(ret == NULL) { ret = sharedFind(addr); }
+    if(ret == NULL)  ret = proc->shared().mapFind(addr);
 #endif
+    if (ret != NULL) ret->lockWrite();
     return ret;
 }
-
-
 
 void Map::clean()
 {

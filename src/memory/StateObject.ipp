@@ -33,7 +33,7 @@ inline void StateObject<T>::setupSystem(T init)
 }
 
 template<typename T>
-inline SystemBlock<T> *StateObject<T>::findBlock(void *addr) 
+inline SystemBlock<T> *StateObject<T>::findBlock(void *addr) const
 {
     SystemBlock<T> *ret = NULL;
     lockRead();

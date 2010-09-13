@@ -19,12 +19,12 @@ Object *Lazy::createReplicatedObject(size_t size)
 }
 #endif
 
-gmacError_t Lazy::acquire(Object &obj)
+gmacError_t Lazy::acquire(const Object &obj)
 {
     gmacError_t ret = gmacSuccess;
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         block->lock();
@@ -45,7 +45,7 @@ gmacError_t Lazy::acquire(Object &obj)
 }
 
 #ifdef USE_VM
-gmacError_t Lazy::acquireWithBitmap(Object &obj)
+gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 {
     Mode *mode = gmac::Mode::current();
     vm::Bitmap &bitmap = mode->dirtyBitmap();
@@ -71,12 +71,12 @@ gmacError_t Lazy::acquireWithBitmap(Object &obj)
 }
 #endif
 
-gmacError_t Lazy::release(Object &obj)
+gmacError_t Lazy::release(const Object &obj)
 {
     gmacError_t ret = gmacSuccess;
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         block->lock();
@@ -98,12 +98,12 @@ gmacError_t Lazy::release(Object &obj)
     return ret;
 }
 
-gmacError_t Lazy::toHost(Object &obj)
+gmacError_t Lazy::toHost(const Object &obj)
 {
     abort();
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         block->lock();
@@ -115,13 +115,13 @@ gmacError_t Lazy::toHost(Object &obj)
     return gmacSuccess;
 }
 
-gmacError_t Lazy::toDevice(Object &obj)
+gmacError_t Lazy::toDevice(const Object &obj)
 {
     abort();
     gmacError_t ret = gmacSuccess;
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
         block->lock();
@@ -160,14 +160,14 @@ static size_t blockRemainder(const void * blockAddr, size_t blockSize, const voi
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, const void *addr, size_t n)
+Lazy::toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n)
 {
     CFatal(n <= buffer->size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
@@ -200,14 +200,14 @@ Lazy::toIOBuffer(IOBuffer *buffer, Object &obj, const void *addr, size_t n)
 }
 
 gmacError_t
-Lazy::fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
+Lazy::fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n)
 {
     CFatal(n <= buffer->size(), "Wrong buffer size");
     gmacError_t ret = gmacSuccess;
 
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
@@ -247,13 +247,13 @@ Lazy::fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n)
 }
 
 gmacError_t
-Lazy::toPointer(void *dst, const void *src, Object &srcObj, size_t n)
+Lazy::toPointer(void *dst, const void *src, const Object &srcObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(srcObj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(srcObj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
@@ -286,13 +286,13 @@ Lazy::toPointer(void *dst, const void *src, Object &srcObj, size_t n)
 }
 
 gmacError_t
-Lazy::fromPointer(void *dst, const void *src, Object &dstObj, size_t n)
+Lazy::fromPointer(void *dst, const void *src, const Object &dstObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(dstObj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(dstObj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
         SystemBlock<State> *block = i->second;
@@ -332,7 +332,7 @@ Lazy::fromPointer(void *dst, const void *src, Object &dstObj, size_t n)
 } 
 
 gmacError_t
-Lazy::copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n)
+Lazy::copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
     Fatal("Functionality not implemented yet");
@@ -340,7 +340,7 @@ Lazy::copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_
 }
 
 gmacError_t
-Lazy::memset(void *s, int c, size_t n)
+Lazy::memset(const Object &obj, void *s, int c, size_t n)
 {
     Fatal("Functionality not implemented yet");
     gmacError_t ret = gmacSuccess;
@@ -348,9 +348,9 @@ Lazy::memset(void *s, int c, size_t n)
     return ret;
 }
 
-gmacError_t Lazy::read(Object &obj, void *addr)
+gmacError_t Lazy::read(const Object &obj, void *addr)
 {
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
@@ -377,9 +377,9 @@ gmacError_t Lazy::read(Object &obj, void *addr)
     return gmacSuccess;
 }
 
-gmacError_t Lazy::write(Object &obj, void *addr)
+gmacError_t Lazy::write(const Object &obj, void *addr)
 {
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();

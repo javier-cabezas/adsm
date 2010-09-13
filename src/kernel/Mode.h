@@ -55,7 +55,7 @@ class Context;
 class IOBuffer;
 class KernelLaunch;
 
-class Mode : public gmac::util::Logger, protected gmac::util::RWLock {
+class Mode : public gmac::util::Logger {
     friend class gmac::memory::Manager;
 protected:
     static gmac::util::Private<Mode> key;
@@ -107,7 +107,9 @@ public:
     bool requireUpdate(memory::Block *block);
 #endif
     void removeObject(memory::Object *obj);
-    memory::Object *findObject(const void *addr);
+    const memory::Object *getObjectRead(const void *addr) const;
+    memory::Object *getObjectWrite(const void *addr);
+    void putObject(const memory::Object *obj);
     const memory::Map &objects();
 
     /*!  \brief Allocates memory on the accelerator memory */

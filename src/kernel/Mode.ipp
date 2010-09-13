@@ -69,11 +69,24 @@ Mode::removeObject(memory::Object *obj)
     _map->remove(obj);
 }
 
-inline memory::Object *
-Mode::findObject(const void *addr)
+inline const memory::Object *
+Mode::getObjectRead(const void *addr) const
 {
-    memory::Object *obj = _map->find(addr);
+    const memory::Object *obj = _map->getObjectRead(addr);
     return obj;
+}
+
+inline memory::Object *
+Mode::getObjectWrite(const void *addr)
+{
+    memory::Object *obj = _map->getObjectWrite(addr);
+    return obj;
+}
+
+inline void
+Mode::putObject(const memory::Object *obj)
+{
+    _map->putObject(obj);
 }
 
 inline const memory::Map &

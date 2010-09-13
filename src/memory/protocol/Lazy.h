@@ -64,26 +64,26 @@ public:
     bool requireUpdate(Block *block);
 #endif
 
-    gmacError_t read(Object &obj, void *addr);
-    gmacError_t write(Object &obj, void *addr);
+    gmacError_t read(const Object &obj, void *addr);
+    gmacError_t write(const Object &obj, void *addr);
 
-    gmacError_t acquire(Object &obj);
+    gmacError_t acquire(const Object &obj);
 #ifdef USE_VM
-    gmacError_t acquireWithBitmap(Object &obj);
+    gmacError_t acquireWithBitmap(const Object &obj);
 #endif
-    gmacError_t release(Object &obj);
+    gmacError_t release(const Object &obj);
 
-    gmacError_t toHost(Object &obj);
-    gmacError_t toDevice(Object &obj);
+    gmacError_t toHost(const Object &obj);
+    gmacError_t toDevice(const Object &obj);
 
-    gmacError_t toIOBuffer(IOBuffer *buffer, Object &obj, const void *addr, size_t n);
-    gmacError_t fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n);
+    gmacError_t toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n);
+    gmacError_t fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n);
 
-    gmacError_t toPointer(void *dst, const void *src, Object &srcObj, size_t n);
-    gmacError_t fromPointer(void *dst, const void *src, Object &dstObj, size_t n);
+    gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n);
+    gmacError_t fromPointer(void *dst, const void *src, const Object &dstObj, size_t n);
 
-    gmacError_t copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n);
-    gmacError_t memset(void *s, int c, size_t n);
+    gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n);
+    gmacError_t memset(const Object &obj, void * s, int c, size_t n);
 };
 
 

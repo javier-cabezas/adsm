@@ -279,10 +279,13 @@ void Process::destroyIOBuffer(IOBuffer *buffer)
 
 void *Process::translate(void *addr)
 {
-    memory::Object *object = Mode::current()->findObject(addr);
-    if(object == NULL) object = __shared.find(addr);
+    Mode * mode = Mode::current();
+    const memory::Object *object = mode->getObjectRead(addr);
     if(object == NULL) return NULL;
-    return object->device(addr); 
+    void * ptr = object->device(addr);
+    mode->putObject(object);
+
+    return ptr;
 }
 
 void Process::send(THREAD_ID id)
@@ -326,11 +329,13 @@ void Process::copy(THREAD_ID id)
     q->second->queue->push(mode);
 }
 
-Mode *Process::owner(const void *addr)
+Mode *Process::owner(const void *addr) const
 {
-    memory::Object *object = __global.find(addr);
+    const memory::Object *object = __global.getObjectRead(addr);
     if(object == NULL) return NULL;
-    return object->owner();
+    Mode * ret = object->owner();
+    __global.putObject(object);
+    return ret;
 }
 
 

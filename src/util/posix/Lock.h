@@ -63,35 +63,35 @@ protected:
 public:
     ParaverLock(const char *name);
 
-    void enter();
-    void locked();
-    void exit();
+    void enter() const;
+    void locked() const;
+    void exit() const;
 };
 
 class Lock : public ParaverLock {
 protected:
-	pthread_mutex_t __mutex;
+	mutable pthread_mutex_t __mutex;
 public:
 	Lock(const char *__name);
 	~Lock();
 
 protected:
-	void lock();
-	void unlock();
+	void lock() const;
+	void unlock() const;
 };
 
 class RWLock : public ParaverLock {
 protected:
-	pthread_rwlock_t __lock;
+	mutable pthread_rwlock_t __lock;
     bool __write;
 public:
 	RWLock(const char *__name);
 	~RWLock();
 
 protected:
-	void lockRead();
-	void lockWrite();
-	void unlock();
+	void lockRead() const;
+	void lockWrite() const;
+	void unlock() const;
 };
 
 }}

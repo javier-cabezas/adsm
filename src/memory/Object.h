@@ -43,7 +43,9 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class Object: public util::RWLock, public util::Logger {
+class Object: protected util::RWLock, public util::Logger {
+    friend class Map;
+    friend class ObjectMap;
 private:
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT
@@ -71,11 +73,11 @@ public:
     void *start() const;
     void *end() const;
 
-    virtual gmacError_t toHost(Block *block) = 0;
-    virtual gmacError_t toDevice(Block *block) = 0;
+    virtual gmacError_t toHost(Block *block) const = 0;
+    virtual gmacError_t toDevice(Block *block) const = 0;
 
     virtual Mode *owner() const = 0;
-    virtual void *device(void *addr) = 0;
+    virtual void *device(void *addr) const = 0;
 
     virtual gmacError_t move(Mode *mode);
 };

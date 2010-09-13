@@ -49,19 +49,21 @@ class Object;
 class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
 protected:
     friend class Map;
+    friend class Manager;
+    Object *mapFind(const void *addr) const;
+
 public:
     ObjectMap(const char *name) : util::RWLock(name) {};
+
+    virtual const Object *getObjectRead(const void *addr) const;
+    virtual Object *getObjectWrite(const void *addr) const;
+
+    virtual void putObject(const Object *obj) const;
+
 };
  
 class Map : public ObjectMap, public util::Logger {
 protected:
-    Object *mapFind(ObjectMap &map, const void *addr);
-    Object *localFind(const void *addr);
-    Object *globalFind(const void *addr);
-#ifndef USE_MMAP
-    Object *sharedFind(const void *addr);
-#endif
-
     void clean();
 
 public:
@@ -78,12 +80,10 @@ public:
     void removeGlobal(Object *obj);
 #endif
 
-    Object *find(const void *addr);
-    
+    const Object *getObjectRead(const void *addr) const;
+    Object *getObjectWrite(const void *addr) const;
 };
 
 }}
-
-#include "Map.ipp"
 
 #endif

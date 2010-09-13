@@ -106,8 +106,8 @@ protected:
 	ModeMap _modes;
 
 	QueueMap _queues;
-    memory::Map __global;
-    memory::Map __shared;
+    memory::ObjectMap __global;
+    memory::ObjectMap __shared;
 
 	unsigned current;
 
@@ -156,7 +156,7 @@ public:
     inline memory::ObjectMap &shared() { return __shared; }
     inline const memory::ObjectMap &shared() const { return __shared; }
 
-    Mode *owner(const void *addr);
+    Mode *owner(const void *addr) const;
 };
 
 }
