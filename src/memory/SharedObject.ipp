@@ -40,8 +40,7 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
 template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
-    StateObject<T>::lockWrite();
-    if(StateObject<T>::_addr == NULL) { StateObject<T>::unlock(); return; }
+    if(StateObject<T>::_addr == NULL) { return; }
     void *devAddr = accelerator->addr();
     delete accelerator;
     StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);
@@ -52,39 +51,37 @@ inline SharedObject<T>::~SharedObject()
 #endif
 
     trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::_addr);
-    StateObject<T>::unlock();
 }
 
 template<typename T>
 inline void *SharedObject<T>::device(void *addr) const
 {
-    StateObject<T>::lockRead();
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
     void *ret = (uint8_t *)accelerator->addr() + offset;
-    StateObject<T>::unlock();
     return ret;
 }
 
 template<typename T>
 inline gmacError_t SharedObject<T>::toHost(Block *block) const
 {
-    StateObject<T>::lockRead();
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
     gmacError_t ret = accelerator->get(off, block);
-    StateObject<T>::unlock();
     return ret;
 }
 
 template<typename T>
 inline gmacError_t SharedObject<T>::toDevice(Block *block) const
 {
-    StateObject<T>::lockRead();
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
     gmacError_t ret = accelerator->put(off, block);
-    StateObject<T>::unlock();
     return ret;
 }
 
+template<typename T>
+gmacError_t SharedObject<T>::move(Mode *mode)
+{
+    return gmacSuccess;
+}
 
 }}
 

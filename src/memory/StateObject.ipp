@@ -11,13 +11,11 @@ inline StateObject<T>::StateObject(size_t size) :
 template<typename T>
 inline StateObject<T>::~StateObject()
 {
-    lockWrite();
     // Clean all system blocks
     typename SystemMap::const_iterator i;
     for(i = systemMap.begin(); i != systemMap.end(); i++)
         delete i->second;
     systemMap.clear();
-    unlock();
 }
 
 template<typename T>
@@ -36,10 +34,8 @@ template<typename T>
 inline SystemBlock<T> *StateObject<T>::findBlock(void *addr) const
 {
     SystemBlock<T> *ret = NULL;
-    lockRead();
     typename SystemMap::const_iterator block = systemMap.upper_bound(addr);
     if(block != systemMap.end()) ret = block->second;
-    unlock();
     return ret;
 }
 
@@ -47,10 +43,8 @@ template<typename T>
 inline void StateObject<T>::state(T s)
 {
     typename SystemMap::const_iterator i;
-    lockWrite();
     for(i = systemMap.begin(); i != systemMap.end(); i++)
         i->second->state(s);
-    unlock();
 }
 
 }}

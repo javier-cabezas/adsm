@@ -55,6 +55,8 @@ public:
 
     void *device(void *addr) const;
     inline Mode *owner() const { return _owner; }
+
+    gmacError_t move(Mode *mode);
 };
 
 }}
