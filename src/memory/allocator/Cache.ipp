@@ -4,9 +4,9 @@
 namespace gmac { namespace memory { namespace allocator {
 
 inline
-void *Arena::address() const
+void *Arena::key() const
 {
-    return ptr;
+    return (uint8_t *)ptr + paramPageSize;
 }
 
 inline
@@ -55,10 +55,10 @@ inline
 void Cache::put(void *obj)
 {
     lock();
-    void *key = (void *)((unsigned long)obj & ~(paramPageSize - 1));
     ArenaMap::const_iterator i;
-    i = arenas.find(key);
-    CFatal(i != arenas.end(), "Address for invalid arena: %p, %p", obj, key);
+    i = arenas.upper_bound(obj);
+    CFatal(i != arenas.end(), "Address for invalid arena: %p", obj);
+    CFatal(i->second->address() <= obj, "Address for invalid arena: %p", obj);
     i->second->put(obj);
     unlock();
 }
