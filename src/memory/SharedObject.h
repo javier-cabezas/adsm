@@ -50,10 +50,10 @@ public:
     SharedObject(size_t size, T init);
     virtual ~SharedObject();
 
-    gmacError_t toHost(Block *block);
-    gmacError_t toDevice(Block *block);
+    gmacError_t toHost(Block *block) const;
+    gmacError_t toDevice(Block *block) const;
 
-    void *device(void *addr);
+    void *device(void *addr) const;
     inline Mode *owner() const { return _owner; }
 };
 

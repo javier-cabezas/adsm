@@ -42,7 +42,7 @@ inline ReplicatedObject<T>::~ReplicatedObject()
 }
 
 template<typename T>
-inline void *ReplicatedObject<T>::device(void *addr)
+inline void *ReplicatedObject<T>::device(void *addr) const
 {
     StateObject<T>::lockRead();
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
@@ -54,19 +54,19 @@ inline void *ReplicatedObject<T>::device(void *addr)
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::toHost(Block *block)
+inline gmacError_t ReplicatedObject<T>::toHost(Block *block) const
 {
     Object::Fatal("Modifications to ReplicatedObjects in the device are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::toDevice(Block *block)
+inline gmacError_t ReplicatedObject<T>::toDevice(Block *block) const
 {
     gmacError_t ret = gmacSuccess;
     StateObject<T>::lockRead();
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
-    typename AcceleratorMap::iterator i;
+    typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         gmacError_t tmp = i->second->put(off, block);
         if(tmp != gmacSuccess) ret = tmp;

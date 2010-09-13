@@ -56,7 +56,7 @@ inline SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-inline void *SharedObject<T>::device(void *addr)
+inline void *SharedObject<T>::device(void *addr) const
 {
     StateObject<T>::lockRead();
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
@@ -66,7 +66,7 @@ inline void *SharedObject<T>::device(void *addr)
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toHost(Block *block)
+inline gmacError_t SharedObject<T>::toHost(Block *block) const
 {
     StateObject<T>::lockRead();
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
@@ -76,7 +76,7 @@ inline gmacError_t SharedObject<T>::toHost(Block *block)
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toDevice(Block *block)
+inline gmacError_t SharedObject<T>::toDevice(Block *block) const
 {
     StateObject<T>::lockRead();
     off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;

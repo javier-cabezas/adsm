@@ -24,7 +24,7 @@ CentralizedObject::~CentralizedObject()
     mode->hostFree(_addr);
 }
 
-void *CentralizedObject::device(void *addr)
+void *CentralizedObject::device(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)_addr;
     gmac::cuda::Mode *mode = dynamic_cast<gmac::cuda::Mode *>(gmac::Mode::current());

@@ -56,25 +56,25 @@ public:
     virtual bool requireUpdate(Block *block) = 0;
 #endif
 
-    virtual gmacError_t read(Object &obj, void *addr) = 0;
-    virtual gmacError_t write(Object &obj, void *addr) = 0;
-    virtual gmacError_t acquire(Object &obj) = 0;
+    virtual gmacError_t read(const Object &obj, void *addr) = 0;
+    virtual gmacError_t write(const Object &obj, void *addr) = 0;
+    virtual gmacError_t acquire(const Object &obj) = 0;
 #ifdef USE_VM
-    virtual gmacError_t acquireWithBitmap(Object &obj) = 0;
+    virtual gmacError_t acquireWithBitmap(const Object &obj) = 0;
 #endif
-    virtual gmacError_t release(Object &obj) = 0;
+    virtual gmacError_t release(const Object &obj) = 0;
 
-    virtual gmacError_t toHost(Object &obj) = 0;
-    virtual gmacError_t toDevice(Object &obj) = 0;
+    virtual gmacError_t toHost(const Object &obj) = 0;
+    virtual gmacError_t toDevice(const Object &obj) = 0;
 
-    virtual gmacError_t toIOBuffer(IOBuffer *buffer, Object &obj, const void *addr, size_t n) = 0;
-    virtual gmacError_t fromIOBuffer(IOBuffer *buffer, Object &obj, void *addr, size_t n) = 0;
+    virtual gmacError_t toIOBuffer(IOBuffer *buffer, const Object &obj, const void *addr, size_t n) = 0;
+    virtual gmacError_t fromIOBuffer(IOBuffer *buffer, const Object &obj, void *addr, size_t n) = 0;
 
-    virtual gmacError_t toPointer(void *dst, const void *src, Object &srcObj, size_t n) = 0;
-    virtual gmacError_t fromPointer(void *dst, const void *src, Object &dstObj, size_t n) = 0;
+    virtual gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n) = 0;
+    virtual gmacError_t fromPointer(void *dst, const void *src, const Object &dstObj, size_t n) = 0;
 
-    virtual gmacError_t copy(void *dst, const void *src, Object &dstObj, const void *srcObj, size_t n) = 0;
-    virtual gmacError_t memset(void *s, int c, size_t n) = 0;
+    virtual gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n) = 0;
+    virtual gmacError_t memset(const Object & obj, void * s, int c, size_t n) = 0;
 
     //virtual gmacError_t toHost(Object &obj) = 0;
 };
