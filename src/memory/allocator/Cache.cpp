@@ -45,12 +45,13 @@ void *Cache::get()
     for(i = arenas.begin(); i != arenas.end(); i++) {
         if(i->second->empty()) continue;
         trace("Cache %p gets memory from arena %p", this, i->second);
+        unlock();
         return i->second->get();
     }
     // There are no free objects in any arena
     Arena *arena = new Arena(objectSize);
-    trace("Cache %p creates new arena %p", this, arena);
-    arenas.insert(ArenaMap::value_type(arena->address(), arena));
+    trace("Cache %p creates new arena %p with key %p", this, arena, arena->key());
+    arenas.insert(ArenaMap::value_type(arena->key() , arena));
     void *ptr = arena->get();
     unlock();
     return ptr;

@@ -58,7 +58,8 @@ public:
     Arena(size_t objSize);
     ~Arena();
 
-    void *address() const;
+    inline void *address() const { return ptr; }
+    void *key() const;
     const ObjectList &objects() const;
 
     bool full() const;
