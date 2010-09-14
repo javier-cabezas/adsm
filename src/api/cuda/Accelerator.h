@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDA_ACCELERATOR_H_
 #define __API_CUDA_ACCELERATOR_H_
 
-#include "kernel/Mode.h"
-#include "kernel/Accelerator.h"
-#include "util/Lock.h"
+#include <kernel/Mode.h>
+#include <kernel/Accelerator.h>
+#include <util/Lock.h>
+#include <trace/Function.h>
 
 #include "Module.h"
 

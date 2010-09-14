@@ -67,10 +67,12 @@ void Accelerator::init()
 
 gmac::Mode *Accelerator::createMode()
 {
+    trace::Function::start("Accelerator::createMode");
 	cuda::Mode *mode = new cuda::Mode(this);
 	_queue.insert(mode);
 	trace("Attaching Execution Mode %p to Accelerator", mode);
     _load++;
+    trace::Function::end();
 	return mode;
 }
 
@@ -78,10 +80,12 @@ void Accelerator::destroyMode(gmac::Mode *mode)
 {
 	trace("Destroying Execution Mode %p", mode);
 	if(mode == NULL) return;
+    trace::Function::start("Accelerator::destroyMode");
 	std::set<Mode *>::iterator c = _queue.find((Mode *)mode);
 	assertion(c != _queue.end());
 	_queue.erase(c);
     _load--;
+    trace::Function::end();
 }
 
 
@@ -89,6 +93,7 @@ void Accelerator::destroyMode(gmac::Mode *mode)
 CUcontext
 Accelerator::createCUcontext()
 {
+    trace::Function::start("Accelerator::creaceCUContext");
     CUcontext ctx, tmp;
     unsigned int flags = 0;
 #if CUDART_VERSION >= 2020
@@ -101,13 +106,16 @@ Accelerator::createCUcontext()
         Fatal("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     assertion(ret == CUDA_SUCCESS);
+    trace::Function::end();
     return ctx;
 }
 
 void
 Accelerator::destroyCUcontext(CUcontext ctx)
 {
+    trace::Function::start("Accelerator::destroyCUContext");
     CFatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
+    trace::Function::end();
 }
 
 #endif
@@ -115,37 +123,44 @@ Accelerator::destroyCUcontext(CUcontext ctx)
 #ifdef USE_MULTI_CONTEXT
 ModuleVector Accelerator::createModules()
 {
+    trace::Function::start("Accelerator::createModules");
     pushContext();
     ModuleVector modules = ModuleDescriptor::createModules();
     popContext();
+    trace::Function::end();
     return modules;
 }
 
 void
 Accelerator::destroyModules(ModuleVector & modules)
 {
+    trace::Function::start("Accelerator::destroyModules");
     pushContext();
     ModuleVector::iterator i;
     for(i = modules.begin(); i != modules.end(); i++)
         delete *i;
     modules.clear();
     popContext();
+    trace::Function::end();
 }
 
 #else
 ModuleVector &Accelerator::createModules()
 {
+    trace::Function::start("Accelerator::createModules");
     if(_modules.empty()) {
         pushContext();
         _modules = ModuleDescriptor::createModules();
         popContext();
     }
+    trace::Function::end();
     return _modules;
 }
 #endif
 
 gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
 {
+    trace::Function::start("Accelerator::malloc");
     assertion(addr != NULL);
     *addr = NULL;
     if(align > 1) {
@@ -155,7 +170,10 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     pushContext();
     CUresult ret = cuMemAlloc(&ptr, size);
     popContext();
-    if(ret != CUDA_SUCCESS) return error(ret);
+    if(ret != CUDA_SUCCESS) {
+        trace::Function::end();
+        return error(ret);
+    }
     CUdeviceptr gpuPtr = ptr;
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
@@ -165,26 +183,34 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
     trace("Allocating device memory: %p - %zd bytes (alignment %u)", *addr, size, align);
+    trace::Function::end();
     return error(ret);
 }
 
 gmacError_t Accelerator::free(void *addr)
 {
+    trace::Function::start("Accelerator::free");
     assertion(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
     _alignMap.lockRead();
     i = _alignMap.find(gpuPtr);
-    if (i == _alignMap.end()) { _alignMap.unlock(); return gmacErrorInvalidValue; }
+    if (i == _alignMap.end()) {
+        _alignMap.unlock();
+        trace::Function::end();
+        return gmacErrorInvalidValue;
+    }
     _alignMap.unlock();
     pushContext();
     CUresult ret = cuMemFree(i->second);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 gmacError_t Accelerator::memset(void *addr, int c, size_t size)
 {
+    trace::Function::start("Accelerator::memset");
     CUresult ret = CUDA_SUCCESS;
     pushContext();
     if(size % 32 == 0) {
@@ -197,19 +223,23 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
     }
     else ret = cuMemsetD8(gpuAddr(addr), c, size);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 gmacError_t Accelerator::sync()
 {
+    trace::Function::start("Accelerator::sync");
     pushContext();
     CUresult ret = cuCtxSynchronize();
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 {
+    trace::Function::start("Accelerator::hostAlloc");
     pushContext();
 #if CUDART_VERSION >= 2020
     CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
@@ -217,24 +247,29 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
     CUresult ret = cuMemAllocHost(addr, size);
 #endif
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 gmacError_t Accelerator::hostFree(void *addr)
 {
+    trace::Function::start("Accelerator::hostFree");
     pushContext();
     CUresult r = cuMemFreeHost(addr);
     popContext();
+    trace::Function::end();
     return error(r);
 }
 
 void *Accelerator::hostMap(void *addr)
 {
+    trace::Function::start("Accelerator::hostMap");
     CUdeviceptr device;
     pushContext();
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
-    if(ret != CUDA_SUCCESS) device = NULL;
+    if(ret != CUDA_SUCCESS) device = 0;
+    trace::Function::end();
     return (void *)device;
 }
 
@@ -242,10 +277,12 @@ void *Accelerator::hostMap(void *addr)
 gmacError_t
 Accelerator::bind(gmac::Mode * mode)
 {
+    trace::Function::start("Accelerator::bind");
     gmacError_t ret = gmacSuccess;
     pushContext();
 
     popContext();
+    trace::Function::end();
     return ret;
 }
 

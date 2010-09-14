@@ -61,98 +61,118 @@ int Accelerator::minor() const
 inline
 gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
 {
+    trace::Function::start("Accelerator::copyToDevice");
     trace("Copy to device: %p -> %p (%zd)", host, dev, size);
     pushContext();
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToDeviceAsync(void *dev, const void *host, size_t size, CUstream stream)
 {
+    trace::Function::start("Accelerator::copyToDeviceAsync");
     trace("Async copy to device: %p -> %p (%zd)", host, dev, size);
     pushContext();
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
 {
+    trace::Function::start("Accelerator::copyToHost");
     trace("Copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
     CUresult ret =cuMemcpyDtoH(host, gpuAddr(dev), size);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream)
 {
+    trace::Function::start("Accelerator::copyToHostAsync");
     trace("Async copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
 {
+    trace::Function::start("Accelerator::copyDevice");
     trace("Copy device-device: %p -> %p (%zd)", src, dst, size);
     pushContext();
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
 inline
 gmacError_t Accelerator::execute(KernelLaunch * launch)
 {
+    trace::Function::start("Accelertor::execute");
     trace("Executing KernelLaunch");
     pushContext();
     gmacError_t ret = launch->execute();
     popContext();
+    trace::Function::end();
     return ret;
 }
 
 inline
 CUstream Accelerator::createCUstream()
 {
+    trace::Function::start("Accelerator::createCUstream");
     CUstream stream;
     pushContext();
     CUresult ret = cuStreamCreate(&stream, 0);
     popContext();
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
+    trace::Function::end();
     return stream;
 }
 
 inline
 void Accelerator::destroyCUstream(CUstream stream)
 {
+    trace::Function::start("Acceleartor::createCUstream");
     pushContext();
     CUresult ret = cuStreamDestroy(stream);
     popContext();
     CFatal(ret == CUDA_SUCCESS, "Unable to destroy CUDA stream");
+    trace::Function::end();
 }
 
 inline
 CUresult Accelerator::queryCUstream(CUstream stream)
 {
+    trace::Function::start("Accelerator::queryCUstream");
     pushContext();
     CUresult ret = cuStreamQuery(stream);
     popContext();
+    trace::Function::end();
     return ret;
 }
 
 inline
 gmacError_t Accelerator::syncCUstream(CUstream stream)
 {
+    trace::Function::start("Accelerator::syncCUstream");
     pushContext();
     CUresult ret = cuStreamSynchronize(stream);
     popContext();
+    trace::Function::end();
     return error(ret);
 }
 
