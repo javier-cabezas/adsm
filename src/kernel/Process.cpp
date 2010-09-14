@@ -171,8 +171,10 @@ Mode *Process::create(int acc)
 	unlock();
 
     mode->attach();
+    lockWrite();
     if(_ioMemory == NULL)
-        _ioMemory = new kernel::allocator::Buddy(paramIOMemory);
+        _ioMemory = new kernel::allocator::Buddy(_accs.size() * paramIOMemory);
+    unlock();
     return mode;
 }
 
@@ -228,7 +230,7 @@ gmacError_t Process::migrate(Mode *mode, int acc)
             }
         }
 #else
-        fatal("Migration not implemented when using mmap");
+        Fatal("Migration not implemented when using mmap");
 #endif
         unlock();
     } else {

@@ -1,5 +1,5 @@
 MAINTAINERCLEANFILES=Makefile.in
-DIST_SUBDIRS = input
+dist_data_DATA = input
 
 COMMON=bandwidth threadBandwidth\
        schedAllocation transferBlocks\
@@ -35,7 +35,7 @@ EXTRA_DIST = gmacTests.py\
     gmacStencilCommon.cu vmStencilCommon.cu\
     gmacMatrixMulKernel.cu vmMatrixMulKernel.cu
 
-GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h
+GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h cycle.h
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
 bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart

@@ -115,6 +115,7 @@ void *Buddy::get(size_t &size)
     lock();
     off_t off = getFromList(i);
     unlock();
+    if(off < 0) return NULL;
     trace("Returning address at offset %d", off);
     return (uint8_t *)_addr + off;
 }
