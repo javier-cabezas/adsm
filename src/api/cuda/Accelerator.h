@@ -63,7 +63,13 @@ public:
     AcceleratorLock() : Lock("Accelerator") {}
 };
 
-class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
+class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
+protected:
+    friend class Accelerator;
+public:
+    AlignmentMap() : RWLock("Aligment") {}
+    ~AlignmentMap() { lockWrite(); }
+};
 
 class Accelerator : public gmac::Accelerator {
 protected:
@@ -86,7 +92,6 @@ protected:
     void pushContext();
     void popContext();
 
-    static gmacError_t _error;
 public:
     friend class Switch;
 

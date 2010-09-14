@@ -54,6 +54,7 @@ protected:
 
 public:
     ObjectMap(const char *name) : util::RWLock(name) {};
+    virtual ~ObjectMap() {};
 
     virtual const Object *getObjectRead(const void *addr) const;
     virtual Object *getObjectWrite(const void *addr) const;

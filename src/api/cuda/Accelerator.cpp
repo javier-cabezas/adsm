@@ -161,7 +161,9 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
         gpuPtr += align - (gpuPtr % align);
     }
     *addr = (void *)gpuPtr;
+    _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    _alignMap.unlock();
     trace("Allocating device memory: %p - %zd bytes (alignment %u)", *addr, size, align);
     return error(ret);
 }
@@ -171,8 +173,10 @@ gmacError_t Accelerator::free(void *addr)
     assertion(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
+    _alignMap.lockRead();
     i = _alignMap.find(gpuPtr);
-    if (i == _alignMap.end()) return gmacErrorInvalidValue;
+    if (i == _alignMap.end()) { _alignMap.unlock(); return gmacErrorInvalidValue; }
+    _alignMap.unlock();
     pushContext();
     CUresult ret = cuMemFree(i->second);
     popContext();
