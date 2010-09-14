@@ -14,8 +14,7 @@ void ParaverLock::enter() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
-    paraver::trace->__pushState(
-        paraver::trace->__pushEvent(*event, id), *exclusive);
+    paraver::trace->__pushEvent(*event, id);
 #endif
 }
 
@@ -24,7 +23,8 @@ void ParaverLock::locked() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
-    paraver::trace->__pushEvent(*event, 0);
+    paraver::trace->__pushState(
+        paraver::trace->__pushEvent(*event, 0), *exclusive);
 #endif
 }
 

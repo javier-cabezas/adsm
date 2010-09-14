@@ -61,6 +61,7 @@ gmacInit(void)
     //FILE * lockSystem;
 
     paramInit();
+    gmac::trace::Function::init();
 
     /* Call initialization of interpose libraries */
     osInit();
@@ -135,7 +136,7 @@ gmacAccs()
 {
     size_t ret;
 	__enterGmac();
-    gmac::trace::Function::start("gmacAccs");
+    gmac::trace::Function::start("GMAC", "gmacAccs");
     ret = proc->nAccelerators();
     gmac::trace::Function::end();
 	__exitGmac();
@@ -147,7 +148,7 @@ gmacMigrate(int acc)
 {
 	gmacError_t ret;
 	__enterGmac();
-    gmac::trace::Function::start("gmacMigrate");
+    gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
         ret = proc->migrate(gmac::Mode::current(), acc);
     } else {
@@ -167,7 +168,7 @@ gmacMalloc(void **cpuPtr, size_t count)
         return ret;
     }
 	__enterGmac();
-    gmac::trace::Function::start("gmacMalloc");
+    gmac::trace::Function::start("GMAC","gmacMalloc");
     if(allocator != NULL && count < (paramPageSize / 2)) {
         *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
     }
@@ -190,7 +191,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
         return ret;
     }
     __enterGmac();
-    gmac::trace::Function::start("gmacGlobalMalloc");
+    gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
 	ret = manager->globalAlloc(cpuPtr, count, hint);
     gmac::trace::Function::end();
@@ -206,7 +207,7 @@ gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
 	__enterGmac();
-    gmac::trace::Function::start("gmacFree");
+    gmac::trace::Function::start("GMAC", "gmacFree");
     if(allocator == NULL || allocator->free(cpuPtr) == false)
         ret = manager->free(cpuPtr);
     gmac::trace::Function::end();
@@ -229,7 +230,7 @@ gmacLaunch(gmacKernel_t k)
 {
     __enterGmac();
     gmac::Mode * mode = gmac::Mode::current();
-    gmac::trace::Function::start("gmacLaunch");
+    gmac::trace::Function::start("GMAC", "gmacLaunch");
     gmac::KernelLaunch * launch = mode->launch(k);
 
     gmacError_t ret = gmacSuccess;
@@ -257,7 +258,7 @@ gmacError_t
 gmacThreadSynchronize()
 {
 	__enterGmac();
-    gmac::trace::Function::start("gmacSync");
+    gmac::trace::Function::start("GMAC", "gmacSync");
 
 	gmacError_t ret = gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Memory Sync");

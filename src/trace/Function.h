@@ -35,23 +35,41 @@ WITH THE SOFTWARE.  */
 #define __PARAVER_FUNCTION_H_
 
 #include <gmac/paraver.h>
+#include <util/Lock.h>
 
 #include <map>
 
 namespace gmac { namespace trace {
 
+class FunctionMap : public std::map<std::string, unsigned> {
+protected:
+    unsigned _id;
+    static unsigned _count;
+    static const unsigned stride = 256;
+public:
+    FunctionMap() { _id = _count; _count += stride; }
+    inline unsigned id() const { return _id; }
+};
+
+class ModuleMap : public std::map<std::string, FunctionMap>, protected util::Lock {
+protected:
+    friend class Function;
+public:
+    ModuleMap() : Lock("Paraver") {};
+};
+
 class Function {
 protected:
 #ifdef PARAVER
     static const char *eventName;
-
-    typedef std::map<std::string, unsigned> FunctionMap;
-    static FunctionMap *map;
-
+    static ModuleMap *map;
     static paraver::EventName *event;
+
+    static FunctionMap &getFunctionMap(const char *module);
 #endif
 public:
-    static void start(const char *name);
+    static void init();
+    static void start(const char *module, const char *name);
     static void end();
 };
 
