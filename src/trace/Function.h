@@ -41,36 +41,38 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace trace {
 
+#if PARAVER
 class FunctionMap : public std::map<std::string, unsigned> {
 protected:
+    paraver::EventName *_event;
     unsigned _id;
-    static unsigned _count;
-    static const unsigned stride = 256;
+    static const unsigned _stride = 64;
 public:
-    FunctionMap() { _id = _count; _count += stride; }
-    inline unsigned id() const { return _id; }
+    FunctionMap(unsigned, const char *);
+    unsigned id() const { return _id; }
+    paraver::EventName &event() { return *_event; }
 };
 
-class ModuleMap : public std::map<std::string, FunctionMap>, protected util::Lock {
+class ModuleMap : protected std::map<std::string, FunctionMap *>,
+                protected util::Lock {
 protected:
     friend class Function;
 public:
     ModuleMap() : Lock("Paraver") {};
+    FunctionMap &get(const char *name);
 };
+#endif
 
 class Function {
 protected:
 #ifdef PARAVER
-    static const char *eventName;
     static ModuleMap *map;
-    static paraver::EventName *event;
-
     static FunctionMap &getFunctionMap(const char *module);
 #endif
 public:
     static void init();
     static void start(const char *module, const char *name);
-    static void end();
+    static void end(const char *module);
 };
 
 }}
