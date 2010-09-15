@@ -138,7 +138,7 @@ gmacAccs()
 	__enterGmac();
     gmac::trace::Function::start("GMAC", "gmacAccs");
     ret = proc->nAccelerators();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
 	__exitGmac();
 	return ret;
 }
@@ -154,7 +154,7 @@ gmacMigrate(int acc)
     } else {
         ret = proc->migrate(NULL, acc);
     }
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
 	__exitGmac();
 	return ret;
 }
@@ -176,7 +176,7 @@ gmacMalloc(void **cpuPtr, size_t count)
 	    count = (int(count) < getpagesize())? getpagesize(): count;
 	    ret = manager->alloc(cpuPtr, count);
     }
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
 	__exitGmac();
 	return ret;
 }
@@ -194,7 +194,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
     gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
 	ret = manager->globalAlloc(cpuPtr, count, hint);
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
     __exitGmac();
     return ret;
 #else
@@ -210,7 +210,7 @@ gmacFree(void *cpuPtr)
     gmac::trace::Function::start("GMAC", "gmacFree");
     if(allocator == NULL || allocator->free(cpuPtr) == false)
         ret = manager->free(cpuPtr);
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
 	__exitGmac();
 	return ret;
 }
@@ -248,7 +248,7 @@ gmacLaunch(gmacKernel_t k)
     }
 
     delete launch;
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
     __exitGmac();
 
     return ret;
@@ -264,7 +264,7 @@ gmacThreadSynchronize()
     gmac::util::Logger::TRACE("Memory Sync");
     manager->acquire();
 
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("GMAC");
 	__exitGmac();
 	return ret;
 }

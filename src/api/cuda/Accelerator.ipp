@@ -66,7 +66,7 @@ gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
     pushContext();
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -78,7 +78,7 @@ gmacError_t Accelerator::copyToDeviceAsync(void *dev, const void *host, size_t s
     pushContext();
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -90,7 +90,7 @@ gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
     pushContext();
     CUresult ret =cuMemcpyDtoH(host, gpuAddr(dev), size);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -102,7 +102,7 @@ gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t siz
     pushContext();
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -114,7 +114,7 @@ gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
     pushContext();
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -126,7 +126,7 @@ gmacError_t Accelerator::execute(KernelLaunch * launch)
     pushContext();
     gmacError_t ret = launch->execute();
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return ret;
 }
 
@@ -139,7 +139,7 @@ CUstream Accelerator::createCUstream()
     CUresult ret = cuStreamCreate(&stream, 0);
     popContext();
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return stream;
 }
 
@@ -151,7 +151,7 @@ void Accelerator::destroyCUstream(CUstream stream)
     CUresult ret = cuStreamDestroy(stream);
     popContext();
     CFatal(ret == CUDA_SUCCESS, "Unable to destroy CUDA stream");
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
 }
 
 inline
@@ -161,7 +161,7 @@ CUresult Accelerator::queryCUstream(CUstream stream)
     pushContext();
     CUresult ret = cuStreamQuery(stream);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return ret;
 }
 
@@ -172,7 +172,7 @@ gmacError_t Accelerator::syncCUstream(CUstream stream)
     pushContext();
     CUresult ret = cuStreamSynchronize(stream);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 

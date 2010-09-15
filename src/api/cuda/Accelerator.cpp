@@ -72,7 +72,7 @@ gmac::Mode *Accelerator::createMode()
 	_queue.insert(mode);
 	trace("Attaching Execution Mode %p to Accelerator", mode);
     _load++;
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
 	return mode;
 }
 
@@ -85,7 +85,7 @@ void Accelerator::destroyMode(gmac::Mode *mode)
 	assertion(c != _queue.end());
 	_queue.erase(c);
     _load--;
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
 }
 
 
@@ -106,7 +106,7 @@ Accelerator::createCUcontext()
         Fatal("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     assertion(ret == CUDA_SUCCESS);
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return ctx;
 }
 
@@ -115,7 +115,7 @@ Accelerator::destroyCUcontext(CUcontext ctx)
 {
     gmac::trace::Function::start("Accelerator","destroyCUContext");
     CFatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
 }
 
 #endif
@@ -127,7 +127,7 @@ ModuleVector Accelerator::createModules()
     pushContext();
     ModuleVector modules = ModuleDescriptor::createModules();
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return modules;
 }
 
@@ -141,7 +141,7 @@ Accelerator::destroyModules(ModuleVector & modules)
         delete *i;
     modules.clear();
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
 }
 
 #else
@@ -153,7 +153,7 @@ ModuleVector &Accelerator::createModules()
         _modules = ModuleDescriptor::createModules();
         popContext();
     }
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return _modules;
 }
 #endif
@@ -171,7 +171,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     CUresult ret = cuMemAlloc(&ptr, size);
     popContext();
     if(ret != CUDA_SUCCESS) {
-        gmac::trace::Function::end();
+        gmac::trace::Function::end("Accelerator");
         return error(ret);
     }
     CUdeviceptr gpuPtr = ptr;
@@ -183,7 +183,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
     trace("Allocating device memory: %p - %zd bytes (alignment %u)", *addr, size, align);
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -197,14 +197,14 @@ gmacError_t Accelerator::free(void *addr)
     i = _alignMap.find(gpuPtr);
     if (i == _alignMap.end()) {
         _alignMap.unlock();
-        gmac::trace::Function::end();
+        gmac::trace::Function::end("Accelerator");
         return gmacErrorInvalidValue;
     }
     _alignMap.unlock();
     pushContext();
     CUresult ret = cuMemFree(i->second);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -223,7 +223,7 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
     }
     else ret = cuMemsetD8(gpuAddr(addr), c, size);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -233,7 +233,7 @@ gmacError_t Accelerator::sync()
     pushContext();
     CUresult ret = cuCtxSynchronize();
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -247,7 +247,7 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
     CUresult ret = cuMemAllocHost(addr, size);
 #endif
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
 
@@ -257,7 +257,7 @@ gmacError_t Accelerator::hostFree(void *addr)
     pushContext();
     CUresult r = cuMemFreeHost(addr);
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return error(r);
 }
 
@@ -269,7 +269,7 @@ void *Accelerator::hostMap(void *addr)
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
     if(ret != CUDA_SUCCESS) device = 0;
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return (void *)device;
 }
 
@@ -282,7 +282,7 @@ Accelerator::bind(gmac::Mode * mode)
     pushContext();
 
     popContext();
-    gmac::trace::Function::end();
+    gmac::trace::Function::end("Accelerator");
     return ret;
 }
 
