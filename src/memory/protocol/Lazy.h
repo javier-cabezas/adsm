@@ -92,6 +92,8 @@ public:
 
     gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n);
     gmacError_t memset(const Object &obj, void * s, int c, size_t n);
+
+    gmacError_t move(Object &obj, Mode &mode);
 };
 
 class Entry {

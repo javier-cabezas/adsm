@@ -20,7 +20,7 @@ int Handler::signum = SIGBUS;
 
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
-	__enterGmac();
+	enterGmac();
 	trace::Function::start("GMAC", "gmacSignal");
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
@@ -49,7 +49,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 
 	gmac::util::Logger::TRACE("SIGSEGV done");
 	trace::Function::end("GMAC");
-	__exitGmac();
+	exitGmac();
 }
 
 
