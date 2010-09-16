@@ -1,5 +1,5 @@
 // GMAC global settings
-PARAM(paramProtocol, const char *, "Lazy", "GMAC_PROTOCOL")
+PARAM(paramProtocol, const char *, "Rolling", "GMAC_PROTOCOL")
 PARAM(paramAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 PARAM(paramAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
 PARAM(paramIOMemory, size_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
@@ -15,7 +15,7 @@ PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
 PARAM(paramBitmapChunksPerPage, size_t, 1, "GMAC_BITMAP_CHUNKS", PARAM_NONZERO)
 
 // Rolling Manager specific settings
-PARAM(paramLruDelta, size_t, 2, "GMAC_LRUDELTA", PARAM_NONZERO)
+PARAM(paramRollSize, size_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
 
 // Context specific settings
 PARAM(paramBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)

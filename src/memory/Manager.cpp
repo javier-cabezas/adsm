@@ -1,10 +1,10 @@
-#include "kernel/Process.h"
+#include <kernel/Process.h>
 
-#include "memory/Manager.h"
-#include "memory/Map.h"
-#include "memory/Object.h"
+#include "Manager.h"
+#include "Map.h"
+#include "Object.h"
 
-#include "memory/protocol/Lazy.h"
+#include "protocol/Lazy.h"
 
 #include <strings.h>
 
@@ -53,10 +53,10 @@ Manager::Manager()
     
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        Fatal("Protocol not supported yet");
+        protocol = new protocol::Lazy(paramRollSize);
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        protocol = new protocol::Lazy();
+        protocol = new protocol::Lazy(-1);
     }
     else {
         Fatal("Memory Coherence Protocol not defined");
@@ -148,6 +148,8 @@ gmacError_t Manager::release()
 #endif
     trace("Releasing Objects");
     gmacError_t ret = gmacSuccess;
+    protocol->release();
+#if 0
     Mode * mode = Mode::current();
     const Map &map = mode->objects();
     map.lockRead();
@@ -165,7 +167,7 @@ gmacError_t Manager::release()
         if(ret != gmacSuccess) return ret;
     }
     map.unlock();
-
+#endif
     return ret;
 }
 

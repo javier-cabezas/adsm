@@ -151,6 +151,7 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
+    gmac::trace::Thread::run(id);
     return kernel->launch(_call);
 }
 
@@ -164,7 +165,9 @@ gmacError_t Context::sync()
         }
        _buffer->state(IOBuffer::Idle);
     }
-    return syncCUstream(_streamLaunch);
+    gmacError_t ret = syncCUstream(_streamLaunch);
+    gmac::trace::Thread::resume(id);
+    return ret;
 }
 
 gmacError_t Context::bufferToDevice(void * dst, IOBuffer &buffer, size_t len, off_t off)

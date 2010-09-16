@@ -82,8 +82,6 @@ KernelLaunch::execute()
         goto exit;
 	}
 
-    gmac::trace::Thread::run();
-
 	ret = cuLaunchGridAsync(_f, grid().x, grid().y, _stream);
 
 exit:
