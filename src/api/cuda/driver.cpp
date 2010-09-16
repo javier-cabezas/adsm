@@ -34,7 +34,7 @@ using gmac::cuda::VariableDescriptor;
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
     gmac::util::Logger::TRACE("CUDA Fat binary: %p", fatCubin);
-    gmac::util::Logger::ASSERTION(proc->nAccelerators() > 0);
+    gmac::util::Logger::ASSERTION(gmac::proc->nAccelerators() > 0);
     gmac::enterGmac();
     // Use the first GPU to load the fat binary
     void **ret = (void **) new ModuleDescriptor(fatCubin);

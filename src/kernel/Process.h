@@ -58,9 +58,9 @@ void memoryInit(const char *manager = NULL, const char *allocator = NULL);
 void memoryFini(void);
 }
 
-extern gmac::Process *proc;
-
 namespace gmac {
+
+extern Process *proc;
 
 namespace memory { class DistributedObject; }
 
