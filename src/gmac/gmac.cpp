@@ -28,12 +28,14 @@ extern int init;
 }
 #endif
 
-gmac::util::Private<const char> __in_gmac;
+namespace gmac {
+gmac::util::Private<const char> _inGmac;
+gmac::util::RWLock * _inGmacLock;
 
-const char __gmac_code = 1;
-const char __user_code = 0;
+const char _gmacCode = 1;
+const char _userCode = 0;
 
-char __gmac_init = 0;
+char _gmac_init = 0;
 
 #ifdef LINUX 
 #define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
@@ -44,60 +46,63 @@ char __gmac_init = 0;
 #endif
 
 static void __attribute__((constructor))
-gmacInit(void)
+init(void)
 {
-	gmac::util::Private<const char>::init(__in_gmac);
-	__enterGmac();
-    __gmac_init = 1;
+	util::Private<const char>::init(_inGmac);
+    _inGmacLock = new util::RWLock("Process");
 
-    gmac::util::Logger::Create("GMAC");
-    gmac::util::Logger::TRACE("Initialiazing GMAC");
+	enterGmac();
+    _gmac_init = 1;
+
+    util::Logger::Create("GMAC");
+    util::Logger::TRACE("Initialiazing GMAC");
 
 #ifdef PARAVER
     paraver::init = 1;
 #endif
-    //gmac::util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
+    //util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
 
     //FILE * lockSystem;
 
     paramInit();
-    gmac::trace::Function::init();
+    trace::Function::init();
 
     /* Call initialization of interpose libraries */
     osInit();
     threadInit();
     stdcInit();
 
-    gmac::util::Logger::TRACE("Using %s memory manager", paramProtocol);
-    gmac::util::Logger::TRACE("Using %s memory allocator", paramAllocator);
-    gmac::Process::init(paramProtocol, paramAllocator);
-    gmac::util::Logger::ASSERTION(manager != NULL);
-    __exitGmac();
+    util::Logger::TRACE("Using %s memory manager", paramProtocol);
+    util::Logger::TRACE("Using %s memory allocator", paramAllocator);
+    Process::init(paramProtocol, paramAllocator);
+    util::Logger::ASSERTION(manager != NULL);
+    exitGmac();
 }
 
 static void __attribute__((destructor))
-gmacFini(void)
+fini(void)
 {
-	__enterGmac();
+	gmac::enterGmac();
     gmac::util::Logger::TRACE("Cleaning GMAC");
     delete proc;
     // We do not exitGmac to allow proper stdc function handling
     gmac::util::Logger::Destroy();
 }
 
+} // namespace gmac
 
 #if 0
 gmacError_t
 gmacClear(gmacKernel_t k)
 {
     gmacError_t ret = gmacSuccess;
-    __enterGmac();
+    gmac::enterGmac();
     enterFunction(FuncGmacClear);
     gmac::Kernel *kernel = gmac::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else kernel->clear();
     exitFunction();
-    __exitGmac();
+    gmac::exitGmac();
     return ret;
 }
 
@@ -105,14 +110,14 @@ gmacError_t
 gmacBind(void * obj, gmacKernel_t k)
 {
     gmacError_t ret = gmacSuccess;
-    __enterGmac();
+    gmac::enterGmac();
     enterFunction(FuncGmacBind);
     gmac::Kernel *kernel = gmac::Mode::current()->kernel(k);
 
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->bind(obj);
     exitFunction();
-    __exitGmac();
+    gmac::exitGmac();
     return ret;
 }
 
@@ -120,13 +125,13 @@ gmacError_t
 gmacUnbind(void * obj, gmacKernel_t k)
 {
     gmacError_t ret = gmacSuccess;
-    __enterGmac();
+    gmac::enterGmac();
     enterFunction(FuncGmacUnbind);
     gmac::Kernel  * kernel = gmac::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->unbind(obj);
 	exitFunction();
-	__exitGmac();
+	gmac::exitGmac();
     return ret;
 }
 #endif
@@ -135,11 +140,11 @@ size_t
 gmacAccs()
 {
     size_t ret;
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacAccs");
-    ret = proc->nAccelerators();
+    ret = gmac::proc->nAccelerators();
     gmac::trace::Function::end("GMAC");
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
@@ -147,15 +152,15 @@ gmacError_t
 gmacMigrate(int acc)
 {
 	gmacError_t ret;
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
-        ret = proc->migrate(gmac::Mode::current(), acc);
+        ret = gmac::proc->migrate(gmac::Mode::current(), acc);
     } else {
-        ret = proc->migrate(NULL, acc);
+        ret = gmac::proc->migrate(NULL, acc);
     }
     gmac::trace::Function::end("GMAC");
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
@@ -167,17 +172,17 @@ gmacMalloc(void **cpuPtr, size_t count)
         *cpuPtr = NULL;
         return ret;
     }
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Function::start("GMAC","gmacMalloc");
-    if(allocator != NULL && count < (paramPageSize / 2)) {
-        *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
+    if(gmac::allocator != NULL && count < (paramPageSize / 2)) {
+        *cpuPtr = gmac::allocator->alloc(count, __builtin_return_address(0));   
     }
     else {
 	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = manager->alloc(cpuPtr, count);
+	    ret = gmac::manager->alloc(cpuPtr, count);
     }
     gmac::trace::Function::end("GMAC");
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
@@ -190,12 +195,12 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
         *cpuPtr = NULL;
         return ret;
     }
-    __enterGmac();
+    gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = manager->globalAlloc(cpuPtr, count, hint);
+	ret = gmac::manager->globalAlloc(cpuPtr, count, hint);
     gmac::trace::Function::end("GMAC");
-    __exitGmac();
+    gmac::exitGmac();
     return ret;
 #else
     return gmacErrorFeatureNotSupported;
@@ -206,12 +211,12 @@ gmacError_t
 gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacFree");
-    if(allocator == NULL || allocator->free(cpuPtr) == false)
-        ret = manager->free(cpuPtr);
+    if(gmac::allocator == NULL || gmac::allocator->free(cpuPtr) == false)
+        ret = gmac::manager->free(cpuPtr);
     gmac::trace::Function::end("GMAC");
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
@@ -219,23 +224,23 @@ void *
 gmacPtr(void *ptr)
 {
     void *ret = NULL;
-    __enterGmac();
-    ret = proc->translate(ptr);
-    __exitGmac();
+    gmac::enterGmac();
+    ret = gmac::proc->translate(ptr);
+    gmac::exitGmac();
     return ret;
 }
 
 gmacError_t
 gmacLaunch(gmacKernel_t k)
 {
-    __enterGmac();
+    gmac::enterGmac();
     gmac::Mode * mode = gmac::Mode::current();
     gmac::trace::Function::start("GMAC", "gmacLaunch");
     gmac::KernelLaunch * launch = mode->launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    gmac::util::Logger::ASSERTION(manager->release() == gmacSuccess);
+    gmac::util::Logger::ASSERTION(gmac::manager->release() == gmacSuccess);
 
     // Wait for pending transfers
     mode->sync();
@@ -244,12 +249,12 @@ gmacLaunch(gmacKernel_t k)
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
-        //manager->invalidate();
+        //gmac::manager->invalidate();
     }
 
     delete launch;
     gmac::trace::Function::end("GMAC");
-    __exitGmac();
+    gmac::exitGmac();
 
     return ret;
 }
@@ -257,81 +262,81 @@ gmacLaunch(gmacKernel_t k)
 gmacError_t
 gmacThreadSynchronize()
 {
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacSync");
 
 	gmacError_t ret = gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Memory Sync");
-    manager->acquire();
+    gmac::manager->acquire();
 
     gmac::trace::Function::end("GMAC");
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
 gmacError_t
 gmacGetLastError()
 {
-	__enterGmac();
+	gmac::enterGmac();
 	gmacError_t ret = gmac::Mode::current()->error();
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
 void *
 gmacMemset(void *s, int c, size_t n)
 {
-    __enterGmac();
+    gmac::enterGmac();
     void *ret = s;
-    manager->memset(s, c, n);
-	__exitGmac();
+    gmac::manager->memset(s, c, n);
+	gmac::exitGmac();
     return ret;
 }
 
 void *
 gmacMemcpy(void *dst, const void *src, size_t n)
 {
-	__enterGmac();
+	gmac::enterGmac();
 	void *ret = dst;
 
     gmacError_t err;
 
 	// Locate memory regions (if any)
-    gmac::Mode *dstMode = proc->owner(dst);
-    gmac::Mode *srcMode = proc->owner(src);
+    gmac::Mode *dstMode = gmac::proc->owner(dst);
+    gmac::Mode *srcMode = gmac::proc->owner(src);
 	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
-    manager->memcpy(dst, src, n);
+    gmac::manager->memcpy(dst, src, n);
 
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
 void
 gmacSend(pthread_t id)
 {
-    __enterGmac();
-    proc->send((THREAD_ID)id);
-    __exitGmac();
+    gmac::enterGmac();
+    gmac::proc->send((THREAD_ID)id);
+    gmac::exitGmac();
 }
 
 void gmacReceive()
 {
-    __enterGmac();
-    proc->receive();
-    __exitGmac();
+    gmac::enterGmac();
+    gmac::proc->receive();
+    gmac::exitGmac();
 }
 
 void
 gmacSendReceive(pthread_t id)
 {
-	__enterGmac();
-	proc->sendReceive((THREAD_ID)id);
-	__exitGmac();
+	gmac::enterGmac();
+	gmac::proc->sendReceive((THREAD_ID)id);
+	gmac::exitGmac();
 }
 
 void gmacCopy(pthread_t id)
 {
-    __enterGmac();
-    proc->copy((THREAD_ID)id);
-    __exitGmac();
+    gmac::enterGmac();
+    gmac::proc->copy((THREAD_ID)id);
+    gmac::exitGmac();
 }

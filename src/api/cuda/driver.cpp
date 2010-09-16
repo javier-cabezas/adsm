@@ -34,20 +34,20 @@ using gmac::cuda::VariableDescriptor;
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
     gmac::util::Logger::TRACE("CUDA Fat binary: %p", fatCubin);
-    gmac::util::Logger::ASSERTION(proc->nAccelerators() > 0);
-    __enterGmac();
+    gmac::util::Logger::ASSERTION(gmac::proc->nAccelerators() > 0);
+    gmac::enterGmac();
     // Use the first GPU to load the fat binary
     void **ret = (void **) new ModuleDescriptor(fatCubin);
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
 void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
-	__enterGmac();
+	gmac::enterGmac();
     ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
     delete mod;
-	__exitGmac();
+	gmac::exitGmac();
 }
 
 void __cudaRegisterFunction(
@@ -58,10 +58,10 @@ void __cudaRegisterFunction(
     gmac::util::Logger::TRACE("CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	gmac::util::Logger::ASSERTION(mod != NULL);
-	__enterGmac();
+	gmac::enterGmac();
     KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
-	__exitGmac();
+	gmac::exitGmac();
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
@@ -71,10 +71,10 @@ void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
     gmac::util::Logger::TRACE("CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	gmac::util::Logger::ASSERTION(mod != NULL);
-	__enterGmac();
+	gmac::enterGmac();
     VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant));
     mod->add(v);
-	__exitGmac();
+	gmac::exitGmac();
 }
 
 void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
@@ -83,10 +83,10 @@ void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference 
     gmac::util::Logger::TRACE("CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	gmac::util::Logger::ASSERTION(mod != NULL);
-	__enterGmac();
+	gmac::enterGmac();
     TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
 	mod->add(t);
-	__exitGmac();
+	gmac::exitGmac();
 }
 
 void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr)
@@ -101,19 +101,19 @@ void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
 cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
-	__enterGmac();
+	gmac::enterGmac();
     Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
 	mode->call(gridDim, blockDim, sharedMem, tokens);
-	__exitGmac();
+	gmac::exitGmac();
 	return cudaSuccess;
 }
 
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
-	__enterGmac();
+	gmac::enterGmac();
     Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
 	mode->argument(arg, count, offset);
-	__exitGmac();
+	gmac::exitGmac();
 	return cudaSuccess;
 }
 

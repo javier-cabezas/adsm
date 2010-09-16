@@ -49,7 +49,7 @@ public:
     virtual ~CentralizedObject();
 
     virtual void *device(void *addr) const;
-    inline virtual Mode *owner() const { return gmac::Mode::current(); }
+    inline virtual Mode &owner() const { return *gmac::Mode::current(); }
 
     inline gmacError_t toHost(Block *block) const {
         Fatal("Trying to acquire a centralized object");

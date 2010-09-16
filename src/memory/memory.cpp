@@ -2,10 +2,10 @@
 #include <memory/Allocator.h>
 
 
-gmac::memory::Manager *manager= NULL;
-gmac::memory::Allocator *allocator = NULL;
-
 namespace gmac {
+
+memory::Manager *manager= NULL;
+memory::Allocator *allocator = NULL;
 
 void memoryInit(const char *managerName, const char *allocatorName)
 {

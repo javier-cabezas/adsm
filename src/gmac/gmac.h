@@ -84,6 +84,7 @@ typedef enum {
     gmacErrorAlreadyBound,
 	gmacErrorApiFailureBase,
     gmacErrorFeatureNotSupported,
+    gmacErrorInsufficientDeviceMemory,
 	gmacErrorUnknown
 #ifdef __cplusplus
 };
@@ -104,6 +105,7 @@ static const char *error[] = {
 	"Invalid device function",
 	"GMAC general failure",
     "Feature not supported with the current configure configuration",
+    "Insufficient memory",
 	"Uknown error"
 };
 

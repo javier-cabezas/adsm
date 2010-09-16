@@ -84,7 +84,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode *mode)
     Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
-    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::_size);
+    AcceleratorBlock *dev = new AcceleratorBlock(*mode, devAddr, StateObject<T>::_size);
     accelerator.insert(typename AcceleratorMap::value_type(mode, dev));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
