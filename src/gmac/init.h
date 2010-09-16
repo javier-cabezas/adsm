@@ -54,20 +54,45 @@ class Allocator;
 #include <cstdio>
 namespace gmac {
 
+class GMACLock : public util::RWLock {
+public:
+    GMACLock() : util::RWLock("Process") {}
+
+    void lockRead()  const { util::RWLock::lockRead();  }
+    void lockWrite() const { util::RWLock::lockWrite(); }
+    void unlock()    const { util::RWLock::unlock();   }
+};
+
 extern Process *proc;
 extern memory::Manager *manager;
 extern memory::Allocator *allocator;
 
 extern util::Private<const char> _inGmac;
+extern GMACLock * _inGmacLock;
 extern const char _gmacCode;
 extern const char _userCode;
-extern char _gmac_init;
+extern char _gmacInit;
 
-inline void enterGmac() { _inGmac.set(&_gmacCode); }
-inline void exitGmac()  { _inGmac.set(&_userCode); }
+inline void enterGmac()
+{
+    _inGmacLock->lockRead();
+    _inGmac.set(&_gmacCode);
+}
+
+inline void enterGmacExclusive()
+{
+    _inGmacLock->lockWrite();
+    _inGmac.set(&_gmacCode);
+}
+
+inline void exitGmac()
+{
+    _inGmac.set(&_userCode);
+    _inGmacLock->unlock();
+}
 
 inline char inGmac() { 
-    if(_gmac_init == 0) return 1;
+    if(_gmacInit == 0) return 1;
     char *ret = (char  *)_inGmac.get();
     if(ret == NULL) return 0;
     else if(*ret == _gmacCode) return 1;
