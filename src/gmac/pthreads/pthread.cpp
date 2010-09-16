@@ -40,19 +40,19 @@ struct gmac_thread_t {
 //static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg)
 {
-	__enterGmac();
+	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     proc->initThread();
     gmac::trace::Thread::start();
 	pLock->unlock();
     gmac::trace::Thread::run();
-	__exitGmac();
+	gmac::exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
-	__enterGmac();
+	gmac::enterGmac();
     gmac::trace::Thread::resume();
     // Context already destroyed in Process destructor
 	free(gthread);
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }
 
@@ -62,7 +62,7 @@ int pthread_create(pthread_t *__restrict __newthread,
                    void *__restrict __arg)
 {
 	int ret = 0;
-	__enterGmac();
+	gmac::enterGmac();
     gmac::util::Logger::TRACE("New POSIX thread");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
@@ -71,6 +71,6 @@ int pthread_create(pthread_t *__restrict __newthread,
 	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
 	pLock->lock();
 	pLock->unlock();
-	__exitGmac();
+	gmac::exitGmac();
 	return ret;
 }

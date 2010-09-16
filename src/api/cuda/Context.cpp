@@ -101,8 +101,10 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
         size_t len = _buffer->size();
         if((size - offset) < _buffer->size()) len = size - offset;
         memcpy(_buffer->addr(), (uint8_t *)host + offset, len);
+        assertion(len <= paramPageSize);
         _buffer->state(IOBuffer::ToDevice);
         ret = _acc->copyToDeviceAsync((uint8_t *)dev + offset, _buffer->addr(), len, _streamToDevice);
+        assertion(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         offset += len;
     }

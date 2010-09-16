@@ -34,14 +34,14 @@ extern "C"
 ssize_t read(int fd, void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(__inGmac() == 1) return __libc_read(fd, buf, count);
+	if(gmac::inGmac() == 1) return __libc_read(fd, buf, count);
 
 
-    __enterGmac();
+    gmac::enterGmac();
     gmac::Mode *dstMode = proc->owner(buf);
 
     if(dstMode == NULL) {
-        __exitGmac();
+        gmac::exitGmac();
         return __libc_read(fd, buf, count);
     }
 
@@ -65,7 +65,7 @@ ssize_t read(int fd, void *buf, size_t count)
     }
     proc->destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
-	__exitGmac();
+	gmac::exitGmac();
 
     return ret;
 }
@@ -76,13 +76,13 @@ extern "C"
 ssize_t write(int fd, const void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(__inGmac() == 1) return __libc_write(fd, buf, count);
+	if(gmac::inGmac() == 1) return __libc_write(fd, buf, count);
 
-	__enterGmac();
+	gmac::enterGmac();
     gmac::Mode *srcMode = proc->owner(buf);
 
     if(srcMode == NULL) {
-        __exitGmac();
+        gmac::exitGmac();
         return __libc_write(fd, buf, count);
     }
 
@@ -106,7 +106,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     }
     proc->destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
-	__exitGmac();
+	gmac::exitGmac();
 
     return ret;
 }

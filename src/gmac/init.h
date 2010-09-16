@@ -52,22 +52,27 @@ class Allocator;
 }
 
 #include <cstdio>
-extern gmac::Process *proc;
-extern gmac::memory::Manager *manager;
-extern gmac::memory::Allocator *allocator;
+namespace gmac {
 
-extern gmac::util::Private<const char> __in_gmac;
-extern const char __gmac_code;
-extern const char __user_code;
-extern char __gmac_init;
+extern Process *proc;
+extern memory::Manager *manager;
+extern memory::Allocator *allocator;
 
-inline void __enterGmac() { __in_gmac.set(&__gmac_code); }
-inline void __exitGmac() { __in_gmac.set(&__user_code); }
-inline char __inGmac() { 
-    if(__gmac_init == 0) return 1;
-	char *ret = (char  *)__in_gmac.get();
-	if(ret == NULL) return 0;
-	else if(*ret == __gmac_code) return 1;
-	return 0;
+extern util::Private<const char> _inGmac;
+extern const char _gmacCode;
+extern const char _userCode;
+extern char _gmac_init;
+
+inline void enterGmac() { _inGmac.set(&_gmacCode); }
+inline void exitGmac()  { _inGmac.set(&_userCode); }
+
+inline char inGmac() { 
+    if(_gmac_init == 0) return 1;
+    char *ret = (char  *)_inGmac.get();
+    if(ret == NULL) return 0;
+    else if(*ret == _gmacCode) return 1;
+    return 0;
+}
+
 }
 #endif
