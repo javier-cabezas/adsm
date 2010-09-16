@@ -18,7 +18,7 @@ bool List::empty() const
 size_t List::size() const
 {
     lockRead();
-    size_t ret = std::list<Entry>::empty();
+    size_t ret = std::list<Entry>::size();
     unlock();
     return ret;
 }
