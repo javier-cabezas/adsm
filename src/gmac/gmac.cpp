@@ -80,7 +80,7 @@ gmacError_t
 gmacMigrate(int acc)
 {
 	gmacError_t ret;
-	gmac::enterGmac();
+	gmac::enterGmacExclusive();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
         ret = gmac::proc->migrate(gmac::Mode::current(), acc);
