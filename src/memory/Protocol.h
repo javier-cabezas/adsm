@@ -49,6 +49,7 @@ public:
     virtual ~Protocol() {};
 
     virtual Object *createObject(size_t size) = 0;
+    virtual void deleteObject(const Object &obj) = 0;
 #ifndef USE_MMAP
     virtual Object *createReplicatedObject(size_t size) = 0;
     virtual Object *createCentralizedObject(size_t size)
@@ -62,7 +63,7 @@ public:
 #ifdef USE_VM
     virtual gmacError_t acquireWithBitmap(const Object &obj) = 0;
 #endif
-    virtual gmacError_t release(const Object &obj) = 0;
+    virtual gmacError_t release() = 0;
 
     virtual gmacError_t toHost(const Object &obj) = 0;
     virtual gmacError_t toDevice(const Object &obj) = 0;

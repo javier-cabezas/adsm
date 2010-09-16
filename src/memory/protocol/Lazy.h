@@ -39,12 +39,16 @@ WITH THE SOFTWARE.  */
 #include <memory/Protocol.h>
 #include <memory/Handler.h>
 #include <memory/Object.h>
+#include <memory/StateObject.h>
 
 #include <util/Logger.h>
 
 namespace gmac { namespace memory { namespace protocol {
 
-class Lazy : public gmac::memory::Protocol, public gmac::memory::Handler {
+
+class List;
+
+class Lazy : public Protocol, Handler, protected std::map<Mode *, List>, util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -52,26 +56,30 @@ public:
         Dirty 
     } State;
 protected:
+    unsigned _maxListSize;
 
+
+    gmacError_t release(const StateObject<State> &object, SystemBlock<State> *block);
 public:
-    Lazy() {};
-    ~Lazy() {};
+    Lazy(unsigned limit) : RWLock("Lazy"), _maxListSize(limit) {};
+    virtual ~Lazy() {};
 
     // Protocol Interface
     Object *createObject(size_t size);
+    void deleteObject(const Object &obj);
 #ifndef USE_MMAP
     Object *createReplicatedObject(size_t size);
     bool requireUpdate(Block *block);
 #endif
 
     gmacError_t read(const Object &obj, void *addr);
-    gmacError_t write(const Object &obj, void *addr);
+    virtual gmacError_t write(const Object &obj, void *addr);
 
     gmacError_t acquire(const Object &obj);
 #ifdef USE_VM
     gmacError_t acquireWithBitmap(const Object &obj);
 #endif
-    gmacError_t release(const Object &obj);
+    virtual gmacError_t release();
 
     gmacError_t toHost(const Object &obj);
     gmacError_t toDevice(const Object &obj);
@@ -85,6 +93,35 @@ public:
     gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n);
     gmacError_t memset(const Object &obj, void * s, int c, size_t n);
 };
+
+class Entry {
+public:
+    const StateObject<Lazy::State> &object;
+    SystemBlock<Lazy::State> *block;
+
+    Entry(const StateObject<Lazy::State> &object,
+            SystemBlock<Lazy::State> *block) :
+        object(object), block(block) {};
+
+
+    inline void lock() const { block->lock(); }
+    inline void unlock() const { block->unlock(); }
+};
+
+class List : protected std::list<Entry>, util::RWLock {
+protected:
+public:
+    List() : util::RWLock("List") {};
+
+    void purge(const StateObject<Lazy::State> &object);
+    void push(const StateObject<Lazy::State> &object,
+            SystemBlock<Lazy::State> *block);
+    Entry pop();
+
+    bool empty() const;
+    size_t size() const;
+};
+
 
 
 } } }

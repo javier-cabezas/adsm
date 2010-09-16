@@ -62,8 +62,8 @@ public:
     inline void *addr() const { return __addr; };
     inline size_t size() const { return __size; };
 
-    inline void lock() { return util::Lock::lock(); }
-    inline void unlock() { return util::Lock::unlock(); }
+    inline void lock() const { return util::Lock::lock(); }
+    inline void unlock() const { return util::Lock::unlock(); }
 };
 
 class AcceleratorBlock : public Block {

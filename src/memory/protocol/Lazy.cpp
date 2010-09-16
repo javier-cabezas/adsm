@@ -7,10 +7,65 @@
 
 namespace gmac { namespace memory { namespace protocol {
 
+bool List::empty() const
+{
+    lockRead();
+    bool ret = std::list<Entry>::empty();
+    unlock();
+    return ret;
+}
+
+size_t List::size() const
+{
+    lockRead();
+    size_t ret = std::list<Entry>::empty();
+    unlock();
+    return ret;
+}
+
+void List::purge(const StateObject<Lazy::State> &obj)
+{
+    lockWrite();
+    iterator i;
+    for(i = begin(); i != end(); ) {
+        if(&(i->object) == &obj) i = erase(i);
+        else i++;
+    }
+    unlock();
+}
+
+void List::push(const StateObject<Lazy::State> &obj,
+        SystemBlock<Lazy::State> *block)
+{
+    lockWrite();
+    push_back(Entry(obj, block));
+    unlock();
+}
+
+Entry List::pop() 
+{
+    lockWrite();
+    Entry ret = front();
+    pop_front();
+    unlock();
+    return ret;
+}
+
+
 Object *Lazy::createObject(size_t size)
 {
     return new SharedObject<Lazy::State>(size, ReadOnly);
 }
+
+void Lazy::deleteObject(const Object &obj)
+{
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    lockRead();
+    iterator i;
+    for(i = begin(); i != end(); i++) i->second.purge(object);
+    unlock();
+}
+
 
 #ifndef USE_MMAP
 Object *Lazy::createReplicatedObject(size_t size)
@@ -71,31 +126,47 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 }
 #endif
 
-gmacError_t Lazy::release(const Object &obj)
+gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> *block)
 {
     gmacError_t ret = gmacSuccess;
-    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
-    const StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
-        switch(block->state()) {
-            case Dirty:
-                ret = object.toDevice(block);
-                if(ret != gmacSuccess) return ret;
-                if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+    block->lock();
+    switch(block->state()) {
+        case Dirty:
+            ret = object.toDevice(block);
+            if(ret != gmacSuccess) return ret;
+            if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
-                block->state(ReadOnly);
+            block->state(ReadOnly);
             break;
 
-            case Invalid:
-            case ReadOnly:
-                break;
-        }
-        block->unlock();
+        case Invalid:
+        case ReadOnly:
+            break;
     }
+    block->unlock();
     return ret;
+}
+
+
+gmacError_t Lazy::release()
+{
+    // Get the dirty list for the current mode
+    lockRead();
+    iterator i = find(gmac::Mode::current());
+    if(i == end()) {
+        unlock();
+        return gmacSuccess;
+    }
+    List &list = i->second;
+    unlock();
+
+    // Release dirty blocks
+    while(list.empty() == false) {
+        Entry e = list.pop();
+        gmacError_t ret = release(e.object, e.block);
+        if(ret != gmacSuccess) return ret;
+    }
+    return gmacSuccess;
 }
 
 gmacError_t Lazy::toHost(const Object &obj)
@@ -348,6 +419,8 @@ Lazy::memset(const Object &obj, void *s, int c, size_t n)
     return ret;
 }
 
+
+
 gmacError_t Lazy::read(const Object &obj, void *addr)
 {
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -389,6 +462,22 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     }
     block->state(Dirty);
     block->unlock();
+
+    lockRead();
+    iterator i = find(gmac::Mode::current());
+    if(i == end())
+        i = insert(value_type(gmac::Mode::current(), List())).first;
+    assertion(i != end());
+    List &list = i->second;
+    unlock();
+
+    list.push(object, block);
+    // Release dirty blocks
+    while(list.size() > _maxListSize) {
+        Entry e = list.pop();
+        gmacError_t ret = release(e.object, e.block);
+        if(ret != gmacSuccess) return ret;
+    }
     return gmacSuccess;
 }
 
