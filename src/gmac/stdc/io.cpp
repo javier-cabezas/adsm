@@ -57,7 +57,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_fread(buffer->addr(), size, bytes/size, stream);
-        err = manager->fromIOBuffer((char *)buf + off, *buffer,  bytes);
+        err = gmac::manager->fromIOBuffer((char *)buf + off, *buffer,  bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
         left -= bytes;
@@ -79,7 +79,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fwrite == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
-    gmac::Mode *srcMode = proc->owner(buf);
+    gmac::Mode *srcMode = gmac::proc->owner(buf);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
@@ -91,20 +91,20 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = proc->createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(paramPageSize);
 
     size_t left = n;
     buffer->lock();
     while (left != 0) {
         size_t bytes = left < buffer->size() ? left : buffer->size();
-        err = manager->toIOBuffer(*buffer, (const char *)buf + off, bytes);
+        err = gmac::manager->toIOBuffer(*buffer, (const char *)buf + off, bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         ret += __libc_fwrite(buffer->addr(), size, bytes/size, stream);
 
         left -= bytes;
         off  += bytes;
     }
-    proc->destroyIOBuffer(buffer);
+    gmac::proc->destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 

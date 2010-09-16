@@ -42,7 +42,7 @@ static void *gmac_pthread(void *arg)
 {
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    proc->initThread();
+    gmac::proc->initThread();
     gmac::trace::Thread::start();
 	pLock->unlock();
     gmac::trace::Thread::run();

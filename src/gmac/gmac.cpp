@@ -142,7 +142,7 @@ gmacAccs()
     size_t ret;
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacAccs");
-    ret = proc->nAccelerators();
+    ret = gmac::proc->nAccelerators();
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
 	return ret;
@@ -155,9 +155,9 @@ gmacMigrate(int acc)
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
-        ret = proc->migrate(gmac::Mode::current(), acc);
+        ret = gmac::proc->migrate(gmac::Mode::current(), acc);
     } else {
-        ret = proc->migrate(NULL, acc);
+        ret = gmac::proc->migrate(NULL, acc);
     }
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -174,12 +174,12 @@ gmacMalloc(void **cpuPtr, size_t count)
     }
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC","gmacMalloc");
-    if(allocator != NULL && count < (paramPageSize / 2)) {
-        *cpuPtr = allocator->alloc(count, __builtin_return_address(0));   
+    if(gmac::allocator != NULL && count < (paramPageSize / 2)) {
+        *cpuPtr = gmac::allocator->alloc(count, __builtin_return_address(0));   
     }
     else {
 	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = manager->alloc(cpuPtr, count);
+	    ret = gmac::manager->alloc(cpuPtr, count);
     }
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -198,7 +198,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
     gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = manager->globalAlloc(cpuPtr, count, hint);
+	ret = gmac::manager->globalAlloc(cpuPtr, count, hint);
     gmac::trace::Function::end("GMAC");
     gmac::exitGmac();
     return ret;
@@ -213,8 +213,8 @@ gmacFree(void *cpuPtr)
     gmacError_t ret = gmacSuccess;
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacFree");
-    if(allocator == NULL || allocator->free(cpuPtr) == false)
-        ret = manager->free(cpuPtr);
+    if(gmac::allocator == NULL || gmac::allocator->free(cpuPtr) == false)
+        ret = gmac::manager->free(cpuPtr);
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
 	return ret;
@@ -225,7 +225,7 @@ gmacPtr(void *ptr)
 {
     void *ret = NULL;
     gmac::enterGmac();
-    ret = proc->translate(ptr);
+    ret = gmac::proc->translate(ptr);
     gmac::exitGmac();
     return ret;
 }
@@ -240,7 +240,7 @@ gmacLaunch(gmacKernel_t k)
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    gmac::util::Logger::ASSERTION(manager->release() == gmacSuccess);
+    gmac::util::Logger::ASSERTION(gmac::manager->release() == gmacSuccess);
 
     // Wait for pending transfers
     mode->sync();
@@ -249,7 +249,7 @@ gmacLaunch(gmacKernel_t k)
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
-        //manager->invalidate();
+        //gmac::manager->invalidate();
     }
 
     delete launch;
@@ -267,7 +267,7 @@ gmacThreadSynchronize()
 
 	gmacError_t ret = gmac::Mode::current()->sync();
     gmac::util::Logger::TRACE("Memory Sync");
-    manager->acquire();
+    gmac::manager->acquire();
 
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -288,7 +288,7 @@ gmacMemset(void *s, int c, size_t n)
 {
     gmac::enterGmac();
     void *ret = s;
-    manager->memset(s, c, n);
+    gmac::manager->memset(s, c, n);
 	gmac::exitGmac();
     return ret;
 }
@@ -302,10 +302,10 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmacError_t err;
 
 	// Locate memory regions (if any)
-    gmac::Mode *dstMode = proc->owner(dst);
-    gmac::Mode *srcMode = proc->owner(src);
+    gmac::Mode *dstMode = gmac::proc->owner(dst);
+    gmac::Mode *srcMode = gmac::proc->owner(src);
 	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
-    manager->memcpy(dst, src, n);
+    gmac::manager->memcpy(dst, src, n);
 
 	gmac::exitGmac();
 	return ret;
@@ -315,14 +315,14 @@ void
 gmacSend(pthread_t id)
 {
     gmac::enterGmac();
-    proc->send((THREAD_ID)id);
+    gmac::proc->send((THREAD_ID)id);
     gmac::exitGmac();
 }
 
 void gmacReceive()
 {
     gmac::enterGmac();
-    proc->receive();
+    gmac::proc->receive();
     gmac::exitGmac();
 }
 
@@ -330,13 +330,13 @@ void
 gmacSendReceive(pthread_t id)
 {
 	gmac::enterGmac();
-	proc->sendReceive((THREAD_ID)id);
+	gmac::proc->sendReceive((THREAD_ID)id);
 	gmac::exitGmac();
 }
 
 void gmacCopy(pthread_t id)
 {
     gmac::enterGmac();
-    proc->copy((THREAD_ID)id);
+    gmac::proc->copy((THREAD_ID)id);
     gmac::exitGmac();
 }
