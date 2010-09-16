@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDA_ACCELERATOR_H_
 #define __API_CUDA_ACCELERATOR_H_
 
-#include "kernel/Mode.h"
-#include "kernel/Accelerator.h"
-#include "util/Lock.h"
+#include <kernel/Mode.h>
+#include <kernel/Accelerator.h>
+#include <util/Lock.h>
+#include <trace/Function.h>
 
 #include "Module.h"
 
@@ -63,7 +64,13 @@ public:
     AcceleratorLock() : Lock("Accelerator") {}
 };
 
-class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr> { };
+class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
+protected:
+    friend class Accelerator;
+public:
+    AlignmentMap() : RWLock("Aligment") {}
+    ~AlignmentMap() { lockWrite(); }
+};
 
 class Accelerator : public gmac::Accelerator {
 protected:
@@ -86,7 +93,6 @@ protected:
     void pushContext();
     void popContext();
 
-    static gmacError_t _error;
 public:
     friend class Switch;
 

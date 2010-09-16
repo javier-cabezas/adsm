@@ -4,8 +4,6 @@ namespace gmac { namespace cuda {
 
 #define ERROR(r, err) case r: error = err; break
 
-gmacError_t Accelerator::_error = gmacSuccess;
-
 gmacError_t
 Accelerator::error(CUresult r)
 {
@@ -35,7 +33,6 @@ Accelerator::error(CUresult r)
 		ERROR(CUDA_ERROR_UNKNOWN, gmacErrorUnknown);
 		default: error = gmacErrorUnknown;
 	}
-    _error = error;
 	return error;
 }
 
