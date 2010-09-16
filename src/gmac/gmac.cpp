@@ -1,14 +1,11 @@
 #include <gmac.h>
-#include <init.h>
+#include "init.h"
 
 #include <order.h>
 #include <config.h>
 #include <threads.h>
 
-#include <util/Parameter.h>
-#include <util/Private.h>
 #include <util/Logger.h>
-#include <util/FileLock.h>
 
 #include <kernel/Context.h>
 #include <kernel/Mode.h>
@@ -21,75 +18,6 @@
 #include <trace/Function.h>
 
 #include <cstdlib>
-
-#ifdef PARAVER
-namespace paraver {
-extern int init;
-}
-#endif
-
-namespace gmac {
-gmac::util::Private<const char> _inGmac;
-gmac::util::RWLock * _inGmacLock;
-
-const char _gmacCode = 1;
-const char _userCode = 0;
-
-char _gmac_init = 0;
-
-#ifdef LINUX 
-#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
-#else
-#ifdef DARWIN
-#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
-#endif
-#endif
-
-static void __attribute__((constructor))
-init(void)
-{
-	util::Private<const char>::init(_inGmac);
-    _inGmacLock = new util::RWLock("Process");
-
-	enterGmac();
-    _gmac_init = 1;
-
-    util::Logger::Create("GMAC");
-    util::Logger::TRACE("Initialiazing GMAC");
-
-#ifdef PARAVER
-    paraver::init = 1;
-#endif
-    //util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
-
-    //FILE * lockSystem;
-
-    paramInit();
-    trace::Function::init();
-
-    /* Call initialization of interpose libraries */
-    osInit();
-    threadInit();
-    stdcInit();
-
-    util::Logger::TRACE("Using %s memory manager", paramProtocol);
-    util::Logger::TRACE("Using %s memory allocator", paramAllocator);
-    Process::init(paramProtocol, paramAllocator);
-    util::Logger::ASSERTION(manager != NULL);
-    exitGmac();
-}
-
-static void __attribute__((destructor))
-fini(void)
-{
-	gmac::enterGmac();
-    gmac::util::Logger::TRACE("Cleaning GMAC");
-    delete proc;
-    // We do not exitGmac to allow proper stdc function handling
-    gmac::util::Logger::Destroy();
-}
-
-} // namespace gmac
 
 #if 0
 gmacError_t
@@ -152,7 +80,7 @@ gmacError_t
 gmacMigrate(int acc)
 {
 	gmacError_t ret;
-	gmac::enterGmac();
+	gmac::enterGmacExclusive();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
         ret = gmac::proc->migrate(gmac::Mode::current(), acc);
