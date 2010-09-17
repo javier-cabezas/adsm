@@ -3,6 +3,9 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4])
 AC_USE_SYSTEM_EXTENSIONS
 
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
+
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CXX
@@ -119,8 +122,8 @@ if test "$enable_debug" = "yes"; then
     fi
 else
 	AC_MSG_RESULT(no)
-	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
-	CFLAGS="$CFLAGS -Wall -Wno-unused-variable -Werror -g -O3 -fomit-frame-pointer"
+	CXXFLAGS="$CXXFLAGS -Wall -Wno-unused-variable -Werror -O3 -fomit-frame-pointer"
+	CFLAGS="$CFLAGS -Wall -Wno-unused-variable -Werror -O3 -fomit-frame-pointer"
     CUDA_CFLAGS="-O3"
 fi
 
