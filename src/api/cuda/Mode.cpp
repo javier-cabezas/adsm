@@ -107,7 +107,7 @@ const Texture *Mode::texture(gmacTexture_t key) const
 
 CUstream Mode::eventStream() const
 {
-    return context()->eventStream();
+    return context().eventStream();
 }
 
 }}

@@ -51,12 +51,12 @@ void Mode::kernel(gmacKernel_t k, Kernel * kernel)
     kernels[k] = kernel;
 }
 
-Mode *Mode::current()
+Mode &Mode::current()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) mode = proc->create();
     gmac::util::Logger::ASSERTION(mode != NULL);
-    return mode;
+    return *mode;
 }
 
 void Mode::attach()
@@ -146,10 +146,15 @@ gmacError_t Mode::sync()
 
 
 #ifndef USE_MMAP
-bool Mode::requireUpdate(memory::Block *block)
+bool Mode::requireUpdate(memory::Block &block)
 {
     return manager->requireUpdate(block);
 }
 #endif
+
+gmacError_t Mode::moveTo(Mode &mode)
+{
+    return gmacSuccess;
+}
 
 }

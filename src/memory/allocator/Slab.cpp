@@ -16,11 +16,12 @@ Cache &Slab::get(long key, size_t size)
     Cache *cache = NULL;
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(Mode::current());
+    Mode *mode = &Mode::current();
+    i = modes.find(mode);
     modes.unlock();
     if(i == modes.end()) {
         modes.lockWrite();
-        Cache &ret = createCache(modes[Mode::current()], key, size);
+        Cache &ret = createCache(modes[mode], key, size);
         modes.unlock();
         return ret;
     }
@@ -38,7 +39,7 @@ void Slab::cleanup()
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(Mode::current());
+    i = modes.find(&Mode::current());
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;

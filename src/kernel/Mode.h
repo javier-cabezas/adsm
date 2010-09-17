@@ -85,7 +85,7 @@ public:
 
     static void init();
     static void initThread();
-    static Mode *current();
+    static Mode &current();
     static bool hasCurrent();
 
     void inc();
@@ -104,7 +104,7 @@ public:
 #ifndef USE_MMAP
     void addReplicatedObject(memory::Object *obj);
     void addCentralizedObject(memory::Object *obj);
-    bool requireUpdate(memory::Block *block);
+    bool requireUpdate(memory::Block &block);
 #endif
     void removeObject(memory::Object *obj);
     const memory::Object *getObjectRead(const void *addr) const;
@@ -155,6 +155,8 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
+
+    gmacError_t moveTo(Mode &mode);
 };
 
 }

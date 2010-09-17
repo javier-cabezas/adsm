@@ -10,7 +10,7 @@ namespace gmac { namespace memory {
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, T init) :
     StateObject<T>(size),
-    _owner(*Mode::current()),
+    _owner(Mode::current()),
     _accBlock(NULL)
 {
     gmacError_t ret = gmacSuccess;
@@ -62,17 +62,23 @@ inline void *SharedObject<T>::device(void *addr) const
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toHost(Block *block) const
+inline gmacError_t SharedObject<T>::toHost(Block &block, void *hostAddr) const
 {
-    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
-    gmacError_t ret = _accBlock->toHost(off, block);
+    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::_addr;
+    gmacError_t ret;
+    if (hostAddr == NULL) {
+        ret = _accBlock->toHost(off, block);
+    } else {
+        ret = _accBlock->toHost(off, hostAddr, block.size());
+    }
+
     return ret;
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toDevice(Block *block) const
+inline gmacError_t SharedObject<T>::toDevice(Block &block) const
 {
-    off_t off = (uint8_t *)block->addr() - (uint8_t *)StateObject<T>::_addr;
+    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::_addr;
     gmacError_t ret = _accBlock->toDevice(off, block);
     return ret;
 }

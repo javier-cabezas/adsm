@@ -79,13 +79,15 @@ gmacAccs()
 gmacError_t
 gmacMigrate(int acc)
 {
-	gmacError_t ret;
+	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
     if (gmac::Mode::hasCurrent()) {
         ret = gmac::proc->migrate(gmac::Mode::current(), acc);
     } else {
-        ret = gmac::proc->migrate(NULL, acc);
+        if (gmac::proc->create(acc) == NULL) {
+            ret = gmacErrorUnknown;
+        } 
     }
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -162,18 +164,18 @@ gmacError_t
 gmacLaunch(gmacKernel_t k)
 {
     gmac::enterGmac();
-    gmac::Mode * mode = gmac::Mode::current();
+    gmac::Mode &mode = gmac::Mode::current();
     gmac::trace::Function::start("GMAC", "gmacLaunch");
-    gmac::KernelLaunch * launch = mode->launch(k);
+    gmac::KernelLaunch * launch = mode.launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
     gmac::util::Logger::ASSERTION(gmac::manager->release() == gmacSuccess);
 
     // Wait for pending transfers
-    mode->sync();
+    mode.sync();
     gmac::util::Logger::TRACE("Kernel Launch");
-    ret = mode->execute(launch);
+    ret = mode.execute(launch);
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
@@ -193,7 +195,7 @@ gmacThreadSynchronize()
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacSync");
 
-	gmacError_t ret = gmac::Mode::current()->sync();
+	gmacError_t ret = gmac::Mode::current().sync();
     gmac::util::Logger::TRACE("Memory Sync");
     gmac::manager->acquire();
 
@@ -206,7 +208,7 @@ gmacError_t
 gmacGetLastError()
 {
 	gmac::enterGmac();
-	gmacError_t ret = gmac::Mode::current()->error();
+	gmacError_t ret = gmac::Mode::current().error();
 	gmac::exitGmac();
 	return ret;
 }

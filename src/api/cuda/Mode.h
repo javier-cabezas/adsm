@@ -77,8 +77,8 @@ protected:
 #endif
 #endif
 
-    Context * context();
-    const Context * context() const;
+    Context &context();
+    const Context &context() const;
 
 #ifdef USE_MULTI_CONTEXT
 	ModuleVector modules;
@@ -107,7 +107,7 @@ public:
 
     CUstream eventStream() const;
 
-    static Mode * current();
+    static Mode & current();
 
 #ifdef USE_VM
     CUdeviceptr dirtyBitmapDevPtr() const;

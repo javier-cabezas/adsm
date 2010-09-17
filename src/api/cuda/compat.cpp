@@ -371,8 +371,8 @@ cudaError_t cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count
 {
 	gmac::enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode *mode = gmac::cuda::Mode::current();
-	const Variable *variable = mode->constant(symbol);
+    Mode &mode = gmac::cuda::Mode::current();
+	const Variable *variable = mode.constant(symbol);
 	gmac::util::Logger::ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
 	gmac::util::Logger::ASSERTION(variable->size() >= (count + offset));
@@ -433,9 +433,9 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 		const struct cudaArray *array, const struct cudaChannelFormatDesc *desc)
 {
 	gmac::enterGmac();
-    Mode *mode = gmac::cuda::Mode::current();
+    Mode &mode = gmac::cuda::Mode::current();
 	CUresult r;
-    const Texture * texture = mode->texture(texref);
+    const Texture * texture = mode.texture(texref);
     Switch::in();
 	for(int i = 0; i < 3; i++) {
 		r = cuTexRefSetAddressMode(texture->texRef(), i, __getAddressMode(texref->addressMode[i]));
@@ -475,8 +475,8 @@ cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
 cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 {
 	gmac::enterGmac();
-    Mode *mode = gmac::cuda::Mode::current();
-    const Texture * texture = mode->texture(texref);
+    Mode &mode = gmac::cuda::Mode::current();
+    const Texture * texture = mode.texture(texref);
     Switch::in();
 	CUresult r = cuTexRefDestroy(texture->texRef());
     Switch::out();
@@ -532,7 +532,7 @@ cudaError_t cudaEventQuery(cudaEvent_t event)
 
 cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
 {
-    CUresult ret = cuEventRecord((CUevent) event, gmac::cuda::Mode::current()->eventStream());
+    CUresult ret = cuEventRecord((CUevent) event, gmac::cuda::Mode::current().eventStream());
     return __getCUDAError(ret);
 }
 

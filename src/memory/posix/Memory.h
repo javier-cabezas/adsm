@@ -41,11 +41,24 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Memory {
+private:
+#ifdef USE_MMAP
+#ifdef ARCH_32BIT
+    static const size_t mmSize = 0;
+#else
+	static const size_t mmSize = 0x10000000000;
+#endif
+#endif
+
 public:
 	static int protect(void *addr, size_t count, int prot);
+	static void *map(void *addr, size_t count, int prot = 0);
+	static void *remap(void *addr, void *to, size_t count, int prot = 0);
+	static void unmap(void *addr, size_t count);
 };
+
+}}
 
 #include "Memory.ipp"
 
-}}
 #endif
