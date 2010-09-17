@@ -81,7 +81,7 @@ public:
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     gmacError_t globalAlloc(void **addr, size_t size, int hint);
-    bool requireUpdate(Block *block);
+    bool requireUpdate(Block &block);
 #endif
     gmacError_t free (void *addr);
 

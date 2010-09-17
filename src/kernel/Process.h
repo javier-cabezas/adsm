@@ -78,7 +78,7 @@ public:
     typedef Parent::const_iterator const_iterator;
 
     std::pair<iterator, bool> insert(Mode *, Accelerator *);
-    size_t remove(Mode *mode);
+    size_t remove(Mode &mode);
 };
 
 
@@ -124,7 +124,7 @@ public:
 	void initThread();
 #define ACC_AUTO_BIND -1
     Mode * create(int acc = ACC_AUTO_BIND);
-	void remove(Mode *mode);
+	void remove(Mode &mode);
 
 #ifndef USE_MMAP
     gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
@@ -144,7 +144,7 @@ public:
     void receive();
 	void sendReceive(THREAD_ID id);
     void copy(THREAD_ID id);
-	gmacError_t migrate(Mode *mode, int acc);
+	gmacError_t migrate(Mode &mode, int acc);
 
 	void addAccelerator(Accelerator *acc);
 

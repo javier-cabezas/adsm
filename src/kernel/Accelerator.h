@@ -81,8 +81,6 @@ public:
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyDevice(void *dst, const void *src,
 			size_t size) = 0;
-
-    virtual gmacError_t bind(Mode * mode) = 0;
 };
 
 }

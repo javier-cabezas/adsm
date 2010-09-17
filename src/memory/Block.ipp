@@ -18,18 +18,23 @@ inline AcceleratorBlock::AcceleratorBlock(Mode &owner, void *addr, size_t size) 
 inline AcceleratorBlock::~AcceleratorBlock()
 { }
 
-inline gmacError_t AcceleratorBlock::toDevice(off_t off, Block *block)
+inline gmacError_t AcceleratorBlock::toDevice(off_t off, Block &block)
 {
-    trace("Mode %d is putting %p into device @ %p", _owner.id(), block->addr(), (uint8_t *)__addr + off);
-    return _owner.copyToDevice((uint8_t *)__addr + off, block->addr(), block->size());
+    trace("Mode %d is putting %p into device @ %p", _owner.id(), block.addr(), (uint8_t *)__addr + off);
+    return _owner.copyToDevice((uint8_t *)__addr + off, block.addr(), block.size());
 }
 
-inline gmacError_t AcceleratorBlock::toHost(off_t off, Block *block)
+inline gmacError_t AcceleratorBlock::toHost(off_t off, Block &block)
 {
-    trace("Mode %d is getting %p from device @ %p", _owner.id(), block->addr(), (uint8_t *)__addr + off);
-    return _owner.copyToHost(block->addr(), (uint8_t *)__addr + off, block->size());
+    trace("Mode %d is getting %p from device @ %p", _owner.id(), block.addr(), (uint8_t *)__addr + off);
+    return _owner.copyToHost(block.addr(), (uint8_t *)__addr + off, block.size());
 }
 
+inline gmacError_t AcceleratorBlock::toHost(off_t off, void *hostAddr, size_t count)
+{
+    trace("Mode %d is getting %p from device @ %p", _owner.id(), hostAddr, (uint8_t *)__addr + off);
+    return _owner.copyToHost(hostAddr, (uint8_t *)__addr + off, count);
+}
 
 template<typename T>
 inline SystemBlock<T>::SystemBlock(void *addr, size_t size, T state) :

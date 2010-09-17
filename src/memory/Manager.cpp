@@ -76,7 +76,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
     }
 
     // Insert object into memory maps
-    Mode::current()->addObject(object);
+    Mode::current().addObject(object);
 
     return gmacSuccess;
 }
@@ -84,6 +84,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
 #ifndef USE_MMAP
 gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 {
+    Mode &mode = gmac::Mode::current();
     gmacError_t ret;
     if(hint == 1) {
         Object *object = protocol->createReplicatedObject(size);
@@ -93,7 +94,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
             return gmacErrorMemoryAllocation;
         }
 
-        Mode::current()->addReplicatedObject(object);
+        mode.addReplicatedObject(object);
     }
     else {
         Object *object = protocol->createCentralizedObject(size);
@@ -103,7 +104,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
             return gmacErrorMemoryAllocation;
         }
 
-        Mode::current()->addCentralizedObject(object);
+        mode.addCentralizedObject(object);
     }
 
     return gmacSuccess;
@@ -115,9 +116,10 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 gmacError_t Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
-    Object *object = Mode::current()->getObjectWrite(addr);
+    Mode &mode = Mode::current();
+    Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
-        Mode::current()->removeObject(object);
+        mode.removeObject(object);
         delete object;
     }
     else ret = gmacErrorInvalidValue;
@@ -127,8 +129,8 @@ gmacError_t Manager::free(void * addr)
 gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
-    Mode * mode = Mode::current();
-    const Map &map = mode->objects();
+    Mode &mode = Mode::current();
+    const Map &map = mode.objects();
     map.lockRead();
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
@@ -191,12 +193,12 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     const uint8_t *ptr = (const uint8_t *)addr;
-    Mode *mode = Mode::current();
+    Mode &mode = Mode::current();
     do {
-        const Object *obj = mode->getObjectRead(ptr);
+        const Object *obj = mode.getObjectRead(ptr);
         ret = protocol->toIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
-        mode->putObject(obj);
+        mode.putObject(obj);
         if(ret != gmacSuccess) return ret;
     } while(ptr < (uint8_t *)addr + size);
     return ret;
@@ -207,11 +209,11 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
-        gmac::Mode *mode = proc->owner(addr);
-        const Object *obj = mode->getObjectRead(ptr);
+        gmac::Mode &mode = *proc->owner(addr);
+        const Object *obj = mode.getObjectRead(ptr);
         ret = protocol->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
-        mode->putObject(obj);
+        mode.putObject(obj);
         if(ret != gmacSuccess) return ret;
     } while(ptr < (uint8_t *)addr + size);
     return ret;
@@ -239,8 +241,8 @@ void Manager::checkBitmapToHost()
 
 void Manager::checkBitmapToDevice()
 {
-    Mode *mode = gmac::Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    Mode &mode = gmac::Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (!bitmap.clean()) {
         bitmap.syncDevice();
     }
@@ -249,36 +251,36 @@ void Manager::checkBitmapToDevice()
 
 bool Manager::read(void *addr)
 {
-    Mode *mode = gmac::Mode::current();
+    Mode &mode = gmac::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
     bool ret = true;
-    const Object *obj = mode->getObjectRead(addr);
+    const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
     assertion(protocol->read(*obj, addr) == gmacSuccess);
-    mode->putObject(obj);
+    mode.putObject(obj);
     return ret;
 }
 
 bool Manager::write(void *addr)
 {
-    Mode *mode = gmac::Mode::current();
+    Mode &mode = gmac::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
     bool ret = true;
-    const Object *obj = mode->getObjectRead(addr);
+    const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Write access for object %p", obj->addr());
     if(protocol->write(*obj, addr) != gmacSuccess) ret = false;
-    mode->putObject(obj);
+    mode.putObject(obj);
     return ret;
 }
 
 #ifndef USE_MMAP
-bool Manager::requireUpdate(Block *block)
+bool Manager::requireUpdate(Block &block)
 {
     return protocol->requireUpdate(block);
 }

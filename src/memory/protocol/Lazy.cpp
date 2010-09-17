@@ -18,7 +18,7 @@ bool List::empty() const
 size_t List::size() const
 {
     lockRead();
-    size_t ret = std::list<Entry>::empty();
+    size_t ret = std::list<Entry>::size();
     unlock();
     return ret;
 }
@@ -102,8 +102,8 @@ gmacError_t Lazy::acquire(const Object &obj)
 #ifdef USE_VM
 gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 {
-    Mode *mode = gmac::Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    Mode &mode = gmac::Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
     gmacError_t ret = gmacSuccess;
     StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
     StateObject<State>::SystemMap &map = object.blocks();
@@ -126,24 +126,24 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 }
 #endif
 
-gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> *block)
+gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &block)
 {
     gmacError_t ret = gmacSuccess;
-    block->lock();
-    switch(block->state()) {
+    block.lock();
+    switch(block.state()) {
         case Dirty:
             ret = object.toDevice(block);
             if(ret != gmacSuccess) return ret;
-            if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+            if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
-            block->state(ReadOnly);
+            block.state(ReadOnly);
             break;
 
         case Invalid:
         case ReadOnly:
             break;
     }
-    block->unlock();
+    block.unlock();
     return ret;
 }
 
@@ -152,7 +152,7 @@ gmacError_t Lazy::release()
 {
     // Get the dirty list for the current mode
     lockRead();
-    iterator i = find(gmac::Mode::current());
+    iterator i = find(&gmac::Mode::current());
     if(i == end()) {
         unlock();
         return gmacSuccess;
@@ -163,7 +163,7 @@ gmacError_t Lazy::release()
     // Release dirty blocks
     while(list.empty() == false) {
         Entry e = list.pop();
-        gmacError_t ret = release(e.object, e.block);
+        gmacError_t ret = release(e.object, *e.block);
         if(ret != gmacSuccess) return ret;
     }
     return gmacSuccess;
@@ -176,24 +176,24 @@ gmacError_t Lazy::toHost(const Object &obj)
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
-        switch(block->state()) {
+        SystemBlock<State> &block = *i->second;
+        block.lock();
+        switch(block.state()) {
             case Invalid:
-                if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
+                if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toHost(block);
-                if(ret != gmacSuccess) { block->unlock(); return ret; }
-                if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                if(ret != gmacSuccess) { block.unlock(); return ret; }
+                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
-                block->state(ReadOnly);
+                block.state(ReadOnly);
                 break;
 
             case Dirty:
             case ReadOnly:
                 break;
         }
-        block->unlock();
+        block.unlock();
     }
     return ret;
 }
@@ -205,22 +205,22 @@ gmacError_t Lazy::toDevice(const Object &obj)
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
-        switch(block->state()) {
+        SystemBlock<State> &block = *i->second;
+        block.lock();
+        switch(block.state()) {
             case Dirty:
                 ret = object.toDevice(block);
-                if(ret != gmacSuccess) { block->unlock(); return ret; }
-                if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                if(ret != gmacSuccess) { block.unlock(); return ret; }
+                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
-                block->state(ReadOnly);
+                block.state(ReadOnly);
             break;
 
         case Invalid:
         case ReadOnly:
             break;
         }
-        block->unlock();
+        block.unlock();
     }
     return ret;
 }
@@ -292,37 +292,37 @@ Lazy::fromIOBuffer(IOBuffer &buffer, const Object &obj, void *addr, size_t n)
     StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
+        SystemBlock<State> &block = *i->second;
+        block.lock();
 
-        if ((addr >= block->addr() && addr < (char *) block->addr() + block->size()) ||
-            (addr <  block->addr() && (char *) addr + n > block->addr())) {
-            size_t count = blockRemainder(block->addr(), block->size(), addr, n);
+        if ((addr >= block.addr() && addr < (char *) block.addr() + block.size()) ||
+            (addr <  block.addr() && (char *) addr + n > block.addr())) {
+            size_t count = blockRemainder(block.addr(), block.size(), addr, n);
 
-            switch(block->state()) {
+            switch(block.state()) {
                 case Dirty:
                     memcpy((char *) addr + off, (char *) buffer.addr() + off, count);
                     break;
 
                 case ReadOnly:
-                    if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
+                    if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
                         Fatal("Unable to set memory permissions");
                     memcpy((char *) addr + off, (char *) buffer.addr() + off, count);
-                    if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                    if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
                         Fatal("Unable to set memory permissions");
                     ret = object.toDevice(block);
                     break;
 
                 case Invalid:
-                    Mode *mode = Mode::current();
-                    ret = mode->bufferToDevice((char *)addr + off, buffer, count, off);
-                    if(ret != gmacSuccess) { block->unlock(); return ret; }
+                    Mode &mode = Mode::current();
+                    ret = mode.bufferToDevice((char *)addr + off, buffer, count, off);
+                    if(ret != gmacSuccess) { block.unlock(); return ret; }
                     break;
             }           
             off += count;
         }
 
-        block->unlock();
+        block.unlock();
     }
 
     return ret;
@@ -377,37 +377,37 @@ Lazy::fromPointer(void *dst, const void *src, const Object &dstObj, size_t n)
     StateObject<State>::SystemMap::const_iterator i;
     off_t off = 0;
     for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
+        SystemBlock<State> &block = *i->second;
+        block.lock();
 
-        if ((dst >= block->addr() && dst < (char *)block->addr() + block->size()) ||
-            (dst <  block->addr() && (char *)dst + n > block->addr())) {
-            size_t count = blockRemainder(block->addr(), block->size(), dst, n);
+        if ((dst >= block.addr() && dst < (char *)block.addr() + block.size()) ||
+            (dst <  block.addr() && (char *)dst + n > block.addr())) {
+            size_t count = blockRemainder(block.addr(), block.size(), dst, n);
 
-            switch(block->state()) {
+            switch(block.state()) {
                 case Dirty:
                     memcpy((char *) dst + off, (char *) src + off, count);
                     break;
 
                 case ReadOnly:
-                    if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0)
+                    if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
                         Fatal("Unable to set memory permissions");
                     memcpy((char *)dst + off, (char *)src + off, count);
-                    if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+                    if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
                         Fatal("Unable to set memory permissions");
                     ret = object.toDevice(block);
                     break;
 
                 case Invalid:
-                    Mode *mode = Mode::current();
-                    ret = mode->copyToDevice((char *)dst + off, src, count);
-                    if(ret != gmacSuccess) { block->unlock(); return ret; }
+                    Mode &mode = Mode::current();
+                    ret = mode.copyToDevice((char *)dst + off, src, count);
+                    if(ret != gmacSuccess) { block.unlock(); return ret; }
                     break;
             }           
             off += count;
         }
 
-        block->unlock();
+        block.unlock();
     }
 
     return ret;
@@ -447,21 +447,26 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
+    void * tmp;
 #ifdef USE_VM
-    Mode *mode = Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
-   if (bitmap.checkAndClear(obj.device(block->addr()))) {
+    Mode &mode = Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
+    if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-        if(Memory::protect(block->addr(), block->size(), PROT_WRITE) < 0) {
+        tmp = Memory::map(NULL, block->size(), PROT_WRITE);
+        if (tmp == NULL) {
             block->unlock();
             return gmacErrorInvalidValue;
         }
-        gmacError_t ret = object.toHost(block);
-        if(ret != gmacSuccess) { block->unlock(); return ret; }
+
+        gmacError_t ret = object.toHost(*block, tmp);
+        if(ret != gmacSuccess) { Memory::unmap(tmp, block->size()); block->unlock(); return ret; }
 #ifdef USE_VM
     }
 #endif
-    if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0) {
+    Memory::protect(tmp, block->size(), PROT_READ);
+    void *old = Memory::remap(tmp, block->addr(), block->size());
+    if (old != block->addr()) {
         block->unlock();
         return gmacErrorInvalidValue;
     }
@@ -476,7 +481,25 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
-    if(Memory::protect(block->addr(), block->size(), PROT_READ | PROT_WRITE) < 0) {
+    void * tmp;
+    Mode &mode = Mode::current();
+#ifdef USE_VM
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
+    if (bitmap.checkAndClear(obj.device(block->addr()))) {
+#endif
+        tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
+        if (tmp == NULL) {
+            block->unlock();
+            return gmacErrorInvalidValue;
+        }
+
+        gmacError_t ret = object.toHost(*block, tmp);
+        if(ret != gmacSuccess) { Memory::unmap(tmp, block->size()); block->unlock(); return ret; }
+#ifdef USE_VM
+    }
+#endif
+    void *old = Memory::remap(tmp, block->addr(), block->size());
+    if (old != block->addr()) {
         block->unlock();
         return gmacErrorInvalidValue;
     }
@@ -484,9 +507,9 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     block->unlock();
 
     lockRead();
-    iterator i = find(gmac::Mode::current());
+    iterator i = find(&mode);
     if(i == end())
-        i = insert(value_type(gmac::Mode::current(), List())).first;
+        i = insert(value_type(&mode, List())).first;
     assertion(i != end());
     List &list = i->second;
     unlock();
@@ -495,26 +518,26 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     // Release dirty blocks
     while(list.size() > _maxListSize) {
         Entry e = list.pop();
-        gmacError_t ret = release(e.object, e.block);
+        gmacError_t ret = release(e.object, *e.block);
         if(ret != gmacSuccess) return ret;
     }
     return gmacSuccess;
 }
 
 #ifndef USE_MMAP
-bool Lazy::requireUpdate(Block *b)
+bool Lazy::requireUpdate(Block &b)
 {
     bool ret = true;
-    b->lock();
-    SystemBlock<State> *block = dynamic_cast<SystemBlock<State> *>(b);
-    switch(block->state()) {
+    b.lock();
+    SystemBlock<State> &block = dynamic_cast<SystemBlock<State> &>(b);
+    switch(block.state()) {
         case Dirty:
             ret = false; break;
         case Invalid:
         case ReadOnly:
             ret = true; break;
     }
-    b->unlock();
+    b.unlock();
     return ret;
 }
 

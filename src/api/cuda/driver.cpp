@@ -102,8 +102,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	gmac::enterGmac();
-    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
-	mode->call(gridDim, blockDim, sharedMem, tokens);
+    Mode &mode = gmac::cuda::Mode::current();
+	mode.call(gridDim, blockDim, sharedMem, tokens);
 	gmac::exitGmac();
 	return cudaSuccess;
 }
@@ -111,8 +111,8 @@ cudaError_t cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	gmac::enterGmac();
-    Mode *mode = dynamic_cast<Mode *>(gmac::Mode::current());
-	mode->argument(arg, count, offset);
+    Mode &mode = gmac::cuda::Mode::current();
+	mode.argument(arg, count, offset);
 	gmac::exitGmac();
 	return cudaSuccess;
 }

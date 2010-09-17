@@ -49,13 +49,13 @@ public:
     virtual ~CentralizedObject();
 
     virtual void *device(void *addr) const;
-    inline virtual Mode &owner() const { return *gmac::Mode::current(); }
+    inline virtual Mode &owner() const { return gmac::Mode::current(); }
 
-    inline gmacError_t toHost(Block *block) const {
+    inline gmacError_t toHost(Block &block, void *hostAddr = 0) const {
         Fatal("Trying to acquire a centralized object");
         return gmacErrorInvalidValue;
     }
-    inline gmacError_t toDevice(Block *block) const {
+    inline gmacError_t toDevice(Block &block) const {
         Fatal("Trying to release a centralized object");
         return gmacErrorInvalidValue;
     }

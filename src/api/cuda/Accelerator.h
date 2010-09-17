@@ -149,8 +149,6 @@ public:
     static gmacError_t error(CUresult r);
     static CUdeviceptr gpuAddr(void *addr);
     static CUdeviceptr gpuAddr(const void *addr);
-
-    gmacError_t bind(gmac::Mode * mode);
 };
 
 }}

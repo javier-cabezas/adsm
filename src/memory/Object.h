@@ -46,15 +46,6 @@ namespace gmac { namespace memory {
 class Object: protected util::RWLock, public util::Logger {
     friend class Map;
     friend class ObjectMap;
-private:
-#ifdef USE_MMAP
-#ifdef ARCH_32BIT
-    static const size_t mmSize = 0;
-#else
-	static const size_t mmSize = 0x10000000000;
-#endif
-#endif
-
 protected:
     void *_addr;
     size_t _size;
@@ -73,8 +64,8 @@ public:
     void *start() const;
     void *end() const;
 
-    virtual gmacError_t toHost(Block *block) const = 0;
-    virtual gmacError_t toDevice(Block *block) const = 0;
+    virtual gmacError_t toHost(Block &block, void * hostAddr = NULL) const = 0;
+    virtual gmacError_t toDevice(Block &block) const = 0;
 
     virtual Mode &owner() const = 0;
     virtual void *device(void *addr) const = 0;

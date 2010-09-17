@@ -6,7 +6,7 @@ noinst_LTLIBRARIES = libmemory.la
 libmemory_la_SOURCES = memory.cpp\
             Bitmap.h Bitmap.ipp Bitmap.cpp\
             Block.h Block.ipp\
-            Object.h Object.ipp ObjectSet.h\
+            Object.h Object.ipp Object.cpp ObjectSet.h\
             StateObject.h StateObject.ipp\
             SharedObject.h SharedObject.ipp DistributedObject.h\
             ReplicatedObject.h ReplicatedObject.ipp CentralizedObject.h \

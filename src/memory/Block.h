@@ -59,8 +59,8 @@ protected:
 public:
     virtual ~Block() {};
 
-    inline void *addr() const { return __addr; };
-    inline size_t size() const { return __size; };
+    inline void *addr() const { return __addr; }
+    inline size_t size() const { return __size; }
 
     inline void lock() const { return util::Lock::lock(); }
     inline void unlock() const { return util::Lock::unlock(); }
@@ -73,14 +73,16 @@ public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
 
-    gmacError_t toDevice(off_t off, Block *block);
-    gmacError_t toHost(off_t off, Block *block);
+    gmacError_t toDevice(off_t off, Block &block);
+    gmacError_t toHost(off_t off, Block &block);
+    gmacError_t toHost(off_t off, void *hostAddr, size_t count);
 };
 
 template<typename T>
 class SystemBlock : public Block {
 protected:
     T _state;
+
 public:
     SystemBlock(void *addr, size_t size, T state);
     ~SystemBlock();
@@ -89,6 +91,8 @@ public:
 
     T state() const;
     void state(T s);
+
+    inline void *addr() const { return __addr; }
 };
 
 }}

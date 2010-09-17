@@ -11,12 +11,12 @@ gmac::util::Private<CUcontext> Accelerator::_Ctx;
 
 void Switch::in()
 {
-    dynamic_cast<Mode *>(Mode::current())->acc->pushContext();
+    Mode::current().acc->pushContext();
 }
 
 void Switch::out()
 {
-    dynamic_cast<Mode *>(Mode::current())->acc->popContext();
+    Mode::current().acc->popContext();
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
@@ -271,19 +271,6 @@ void *Accelerator::hostMap(void *addr)
     if(ret != CUDA_SUCCESS) device = 0;
     gmac::trace::Function::end("Accelerator");
     return (void *)device;
-}
-
-
-gmacError_t
-Accelerator::bind(gmac::Mode * mode)
-{
-    gmac::trace::Function::start("Accelerator","bind");
-    gmacError_t ret = gmacSuccess;
-    pushContext();
-
-    popContext();
-    gmac::trace::Function::end("Accelerator");
-    return ret;
 }
 
 }}

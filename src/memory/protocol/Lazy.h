@@ -59,7 +59,7 @@ protected:
     unsigned _maxListSize;
 
 
-    gmacError_t release(const StateObject<State> &object, SystemBlock<State> *block);
+    gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
 public:
     Lazy(unsigned limit) : RWLock("Lazy"), _maxListSize(limit) {};
     virtual ~Lazy() {};
@@ -69,7 +69,7 @@ public:
     void deleteObject(const Object &obj);
 #ifndef USE_MMAP
     Object *createReplicatedObject(size_t size);
-    bool requireUpdate(Block *block);
+    bool requireUpdate(Block &block);
 #endif
 
     gmacError_t read(const Object &obj, void *addr);

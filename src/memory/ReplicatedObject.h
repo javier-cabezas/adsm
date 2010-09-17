@@ -54,14 +54,14 @@ public:
     ReplicatedObject(size_t size, T init);
     virtual ~ReplicatedObject();
 
-    gmacError_t toHost(Block *block) const;
-    gmacError_t toDevice(Block *block) const;
+    gmacError_t toHost(Block &block, void *hostAddr = 0) const;
+    gmacError_t toDevice(Block &block) const;
 
     void *device(void *addr) const;
-    inline Mode &owner() const { return *gmac::Mode::current(); }
+    inline Mode &owner() const { return gmac::Mode::current(); }
 
-    gmacError_t addOwner(Mode *mode);
-    gmacError_t removeOwner(Mode *mode);
+    gmacError_t addOwner(Mode &mode);
+    gmacError_t removeOwner(Mode &mode);
 };
 #endif
 
