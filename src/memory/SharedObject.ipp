@@ -25,7 +25,13 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     vm::Bitmap &bitmap = _owner.dirtyBitmap();
     bitmap.newRange(device, size);
 #endif
+
+#ifdef USE_MMAP
     StateObject<T>::_addr = StateObject<T>::map(device, size);
+#else
+    StateObject<T>::_addr = StateObject<T>::map(NULL, size);
+#endif
+
     if(StateObject<T>::_addr == NULL) {
         _owner.free(device);
         return;
