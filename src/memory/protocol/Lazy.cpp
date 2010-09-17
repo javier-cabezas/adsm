@@ -447,6 +447,11 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
+    if (block->state() != Invalid) {
+        // Somebody already fixed it
+        block->unlock();
+        return gmacSuccess;
+    }
     void * tmp;
 #ifdef USE_VM
     Mode &mode = Mode::current();
@@ -481,6 +486,11 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
+    if (block->state() == Dirty) {
+        // Somebody already fixed it
+        block->unlock();
+        return gmacSuccess;
+    }
     void * tmp;
     Mode &mode = Mode::current();
 #ifdef USE_VM
