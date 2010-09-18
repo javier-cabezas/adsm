@@ -484,38 +484,49 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
 {
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
+    void *old;
+    gmacError_t ret = gmacSuccess;
     if(block == NULL) return gmacErrorInvalidValue;
     block->lock();
-    if (block->state() == Dirty) {
-        // Somebody already fixed it
-        block->unlock();
-        return gmacSuccess;
-    }
-    void * tmp;
     Mode &mode = Mode::current();
-#ifdef USE_VM
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    if (bitmap.checkAndClear(obj.device(block->addr()))) {
-#endif
-        tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
-        if (tmp == NULL) {
+    switch (block->state()) {
+        case Dirty:
+            // Somebody already fixed it
             block->unlock();
-            return gmacErrorInvalidValue;
-        }
-
-        gmacError_t ret = object.toHost(*block, tmp);
-        if(ret != gmacSuccess) { Memory::unmap(tmp, block->size()); block->unlock(); return ret; }
+            return gmacSuccess;
+        case Invalid:
+            void * tmp;
 #ifdef USE_VM
-    }
+            vm::Bitmap &bitmap = mode.dirtyBitmap();
+            if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-    void *old = Memory::remap(tmp, block->addr(), block->size());
-    if (old != block->addr()) {
-        block->unlock();
-        return gmacErrorInvalidValue;
-    }
-    block->state(Dirty);
-    block->unlock();
+                tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
+                if (tmp == NULL) {
+                    block->unlock();
+                    return gmacErrorInvalidValue;
+                }
 
+                ret = object.toHost(*block, tmp);
+                if(ret != gmacSuccess) {
+                    Memory::unmap(tmp, block->size());
+                    block->unlock();
+                    return ret;
+                }
+#ifdef USE_VM
+            }
+#endif
+            old = Memory::remap(tmp, block->addr(), block->size());
+            if (old != block->addr()) {
+                block->unlock();
+                return gmacErrorInvalidValue;
+            }
+            block->state(Dirty);
+            break;
+        case ReadOnly:
+            Memory::protect(block->addr(), block->size(), PROT_READ | PROT_WRITE);
+            break;
+    }
+    block->unlock();
     lockRead();
     iterator i = find(&mode);
     if(i == end())
