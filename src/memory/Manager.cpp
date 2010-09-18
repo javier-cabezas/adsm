@@ -130,6 +130,8 @@ gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
     Mode &mode = Mode::current();
+    if (mode.releasedObjects() == false) { return gmacSuccess; }
+
     const Map &map = mode.objects();
     map.lockRead();
     Map::const_iterator i;
@@ -139,6 +141,7 @@ gmacError_t Manager::acquire()
         if(ret != gmacSuccess) return ret;
     }
     map.unlock();
+    mode.releaseObjects();
 
     return ret;
 }
@@ -148,9 +151,12 @@ gmacError_t Manager::release()
 #ifdef USE_VM
     checkBitmapToDevice();
 #endif
+    Mode &mode = Mode::current();
     trace("Releasing Objects");
     gmacError_t ret = gmacSuccess;
     protocol->release();
+
+    mode.releaseObjects();
 #if 0
     Mode * mode = Mode::current();
     const Map &map = mode->objects();
