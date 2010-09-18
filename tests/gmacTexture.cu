@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
 	for(int i = 0; i < width * height; i++)
 		data[i] = i;
 	assert(cudaMallocArray(&array, &tex.channelDesc, width, height) == cudaSuccess);
-	cudaMemcpy2DToArray(array, 0, 0, data, width * sizeof(unsigned short),
-			width * sizeof(unsigned short), height, cudaMemcpyHostToDevice);
+	assert(cudaMemcpy2DToArray(array, 0, 0, data, width * sizeof(unsigned short),
+			width * sizeof(unsigned short), height, cudaMemcpyHostToDevice) == cudaSuccess);
 
 	assert(cudaBindTextureToArray(tex, array) == cudaSuccess);
 
