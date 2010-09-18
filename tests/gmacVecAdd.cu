@@ -45,11 +45,17 @@ int main(int argc, char *argv[])
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Alloc: ", "\n");
 
+    float sum = 0.f;
+
     gettimeofday(&s, NULL);
     randInit(a, vecSize);
     randInit(b, vecSize);
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Init: ", "\n");
+
+    for(int i = 0; i < vecSize; i++) {
+        sum += a[i] + b[i];
+    }
     
     // Call the kernel
     gettimeofday(&s, NULL);
@@ -63,13 +69,17 @@ int main(int argc, char *argv[])
 
     gettimeofday(&s, NULL);
     float error = 0;
+    float sum2 = 0;
     for(int i = 0; i < vecSize; i++) {
         error += c[i] - (a[i] + b[i]);
+        sum2 += a[i] + b[i];
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");
 
     fprintf(stderr,"Error: %f\n", error);
+
+    fprintf(stderr, "%f vs %f\n", sum, sum2);
 
     gmacFree(a);
     gmacFree(b);

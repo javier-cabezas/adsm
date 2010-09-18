@@ -520,12 +520,12 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
                 block->unlock();
                 return gmacErrorInvalidValue;
             }
-            block->state(Dirty);
             break;
         case ReadOnly:
             Memory::protect(block->addr(), block->size(), PROT_READ | PROT_WRITE);
             break;
     }
+    block->state(Dirty);
     block->unlock();
     lockRead();
     iterator i = find(&mode);
