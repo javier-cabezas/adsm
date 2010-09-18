@@ -14,6 +14,7 @@ unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator *acc) :
     _id(++next),
+    _releasedObjects(true),
     _acc(acc),
 #ifdef USE_VM
     _bitmap(new memory::vm::Bitmap()),

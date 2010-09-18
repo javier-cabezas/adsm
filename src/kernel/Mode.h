@@ -62,6 +62,7 @@ protected:
     static unsigned next;
 
     unsigned _id;
+    bool _releasedObjects;
 
     Accelerator *_acc;
     Context *_context;
@@ -137,7 +138,6 @@ public:
 	/*!  \brief Waits for kernel execution */
 	gmacError_t sync();
 
-
     virtual gmacError_t bufferToDevice(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
     virtual gmacError_t deviceToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
 
@@ -155,8 +155,11 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
-
     gmacError_t moveTo(Mode &mode);
+
+    bool releasedObjects() const;
+    void releaseObjects();
+    void acquireObjects();
 };
 
 }

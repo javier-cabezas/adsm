@@ -121,6 +121,24 @@ Mode::dirtyBitmap() const
 }
 #endif
 
+inline bool
+Mode::releasedObjects() const
+{
+    return _releasedObjects;
+}
+
+inline void
+Mode::releaseObjects()
+{
+    _releasedObjects = true;
+}
+
+inline void
+Mode::acquireObjects()
+{
+    _releasedObjects = false;
+}
+
 }
 
 #endif
