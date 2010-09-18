@@ -1,5 +1,4 @@
 MAINTAINERCLEANFILES=Makefile.in
-dist_data_DATA = input
 
 COMMON=bandwidth threadBandwidth\
        schedAllocation transferBlocks\
