@@ -24,7 +24,7 @@ VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, boo
 Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
     VariableDescriptor(v.name(), v.key(), v.constant())
 {
-    unsigned int tmp;
+    size_t tmp;
     CUresult ret = cuModuleGetGlobal(&_ptr, &tmp, mod, name());
     assertion(ret == CUDA_SUCCESS);
     _size = tmp;

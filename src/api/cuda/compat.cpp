@@ -126,8 +126,10 @@ static inline cudaError_t __getCUDAError(CUresult r)
 #if CUDART_VERSION >= 3000
         case CUDA_ERROR_ECC_UNCORRECTABLE:
             return cudaErrorECCUncorrectable;
+#if CUDART_VERSION <= 3010
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
+#endif
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
         case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
 #endif
@@ -135,6 +137,9 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_UNSUPPORTED_LIMIT:
         case CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND:
         case CUDA_ERROR_SHARED_OBJECT_INIT_FAILED:
+#endif
+#if CUDART_VERSION >= 3020
+        case CUDA_ERROR_OPERATING_SYSTEM:
 #endif
         case CUDA_ERROR_ARRAY_IS_MAPPED:
         case CUDA_ERROR_ALREADY_MAPPED:
