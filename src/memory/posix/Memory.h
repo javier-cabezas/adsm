@@ -59,6 +59,4 @@ public:
 
 }}
 
-#include "Memory.ipp"
-
 #endif

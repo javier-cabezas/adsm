@@ -1,6 +1,7 @@
 #include <gmac/init.h>
 
 #include <memory/Manager.h>
+#include <kernel/Process.h>
 
 #include "Accelerator.h"
 #include "Mode.h"
@@ -337,23 +338,20 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t spitch, size_t width,
 		size_t height, enum cudaMemcpyKind kind)
 {
-#if 0
 	gmac::util::Logger::ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
 	cudaError_t ret = cudaSuccess;
-    gmac::gpu::Mode *mode = dynamic_cast<gmac::gpu::Context *>(manager->owner(src));
-    if(ctx == NULL) {
+    gmac::cuda::Mode *mode = dynamic_cast<gmac::cuda::Mode *>(gmac::proc->owner(src));
+    if(mode == NULL) {
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,
 				height);
     }
     else {
-        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, ctx->gpuAddr(src), spitch, width,
+        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)gmac::proc->translate(src), spitch, width,
 				height);
     }
 	gmac::exitGmac();
 	return ret;
-#endif
-    return cudaErrorUnknown;
 }
 
 #ifdef __cplusplus
