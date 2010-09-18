@@ -29,15 +29,23 @@ void Accelerator::switchOut()
 inline
 CUdeviceptr Accelerator::gpuAddr(void *addr)
 {
+#if CUDART_VERSION <= 3010
     unsigned long a = (unsigned long)addr;
     return (CUdeviceptr)(a & 0xffffffff);
+#else
+    return (CUdeviceptr)addr;
+#endif
 }
 
 inline
 CUdeviceptr Accelerator::gpuAddr(const void *addr)
 {
+#if CUDART_VERSION <= 3010
     unsigned long a = (unsigned long)addr;
     return (CUdeviceptr)(a & 0xffffffff);
+#else
+    return (CUdeviceptr)addr;
+#endif
 }
 
 inline CUdevice

@@ -22,7 +22,7 @@ void Switch::out()
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), _device(device)
 {
-    unsigned int size = 0;
+    size_t size = 0;
     CUresult ret = cuDeviceTotalMem(&size, _device);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, _device);
