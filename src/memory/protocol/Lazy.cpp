@@ -91,7 +91,7 @@ gmacError_t Lazy::acquire(const Object &obj)
                 block->state(Invalid);
                 break;
             case Dirty:
-                Fatal("Block in incogruent state in aquire");
+                Fatal("Block in incongruent state in acquire: %p", block->addr());
                 break;
         }
         block->unlock();
@@ -128,6 +128,7 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 
 gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &block)
 {
+    trace("Releasing block %p", block.addr());
     gmacError_t ret = gmacSuccess;
     block.lock();
     switch(block.state()) {
@@ -526,6 +527,7 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
             break;
     }
     block->state(Dirty);
+    trace("Setting block %p to dirty state", block->addr());
     block->unlock();
     lockRead();
     iterator i = find(&mode);
