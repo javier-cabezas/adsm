@@ -9,7 +9,7 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const size_t vecSizeDefault = 16 * 1024 * 1024;
+const size_t vecSizeDefault = 1 * 1024 * 1024;
 
 size_t vecSize = 0;
 const size_t blockSize = 512;
@@ -78,8 +78,6 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     fprintf(stderr,"Error: %f\n", error);
-
-    fprintf(stderr, "%f vs %f\n", sum, sum2);
 
     gmacFree(a);
     gmacFree(b);

@@ -19,11 +19,7 @@ void *Memory::map(void *addr, size_t count, int prot)
     if (addr == NULL) {
         cpuAddr = mmap(NULL, count, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
     } else {
-#ifdef USE_MMAP
-        cpuAddr = (void *)((uint8_t *)addr + Mode::current().id() * Memory::mmSize);
-#else
         cpuAddr = addr;
-#endif
         if(mmap(cpuAddr, count, prot, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
             return NULL;
     }

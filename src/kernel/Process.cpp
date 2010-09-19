@@ -90,6 +90,9 @@ Process::~Process()
 {
     trace("Cleaning process");
 
+    if(_ioMemory != NULL) delete _ioMemory;
+    _ioMemory = NULL;
+
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     _modes.lockWrite();
@@ -105,7 +108,6 @@ Process::~Process()
         delete *a;
     _accs.clear();
     // TODO: Free buddy allocator
-    //if(_ioMemory != NULL) delete _ioMemory;
     _queues.cleanup();
     memoryFini();
 }
@@ -267,7 +269,7 @@ IOBuffer *Process::createIOBuffer(size_t size)
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
-    assertion(_ioMemory != NULL);
+    if(_ioMemory == NULL) return;
     _ioMemory->put(buffer->addr(), buffer->size());
     delete buffer;
 }

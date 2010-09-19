@@ -140,7 +140,6 @@ public:
     gmacError_t memset(void *addr, int c, size_t size);
 
 	gmacError_t sync();
-	gmac::KernelLaunch * launch(gmacKernel_t kernel);
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);

@@ -15,6 +15,7 @@ Buddy::Buddy(size_t size) :
 Buddy::~Buddy()
 {
     finiMemory();
+    _tree.clear();
 }
 
 uint8_t Buddy::ones(register uint32_t x) const

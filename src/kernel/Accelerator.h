@@ -70,6 +70,8 @@ public:
 	/*!  \brief Releases memory previously allocated by Malloc */
 	virtual gmacError_t free(void *addr) = 0;
 
+    virtual gmacError_t sync() = 0;
+
 	/*!  \brief Copies data from system memory to accelerator memory */
 	virtual gmacError_t copyToDevice(void *dev, const void *host,
 			size_t size) = 0;
