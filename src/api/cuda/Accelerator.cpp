@@ -50,8 +50,9 @@ Accelerator::~Accelerator()
 #ifndef USE_MULTI_CONTEXT
     pushContext();
     ModuleVector::iterator i;
-    for(i = _modules.begin(); i != _modules.end(); i++)
+    for(i = _modules.begin(); i != _modules.end(); i++) {
         delete *i;
+    }
     _modules.clear();
     popContext();
     assertion(cuCtxDestroy(_ctx) == CUDA_SUCCESS);

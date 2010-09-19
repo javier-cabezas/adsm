@@ -45,10 +45,10 @@ Mode::~Mode()
     switchIn();
 #ifdef USE_MULTI_CONTEXT
     acc->destroyModules(modules);
+    modules.clear();
 #endif
     delete _context;
     switchOut();
-    modules.clear();
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
