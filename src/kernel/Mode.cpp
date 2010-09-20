@@ -2,24 +2,24 @@
 #include "IOBuffer.h"
 #include "Accelerator.h"
 
-#include <memory/Object.h>
-#include <memory/Map.h>
-#include <memory/Manager.h>
-#include <gmac/init.h>
+#include "memory/Manager.h"
+#include "memory/Object.h"
+#include "memory/Protocol.h"
+#include "gmac/init.h"
 
 namespace gmac {
 
 gmac::util::Private<Mode> Mode::key;
 unsigned Mode::next = 0;
 
-Mode::Mode(Accelerator *acc) :
+Mode::Mode(Accelerator &acc) :
     _id(++next),
     _releasedObjects(true),
-    _acc(acc),
+    _acc(&acc)
 #ifdef USE_VM
-    _bitmap(new memory::vm::Bitmap()),
+    , _bitmap(new memory::vm::Bitmap())
 #endif
-    _count(0)
+    , _count(0)
 {
     trace("Creating new memory map");
     _map = new memory::Map("ModeMemoryMap");
@@ -40,7 +40,7 @@ Mode::release()
     delete _bitmap;
 #endif
     delete _map;
-    _acc->destroyMode(this); 
+    _acc->unregisterMode(*this); 
 }
 void Mode::kernel(gmacKernel_t k, Kernel * kernel)
 {
@@ -153,9 +153,57 @@ bool Mode::requireUpdate(memory::Block &block)
 }
 #endif
 
-gmacError_t Mode::moveTo(Mode &mode)
+// Nobody can enter GMAC until this has finished. No locks are needed
+gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    return gmacSuccess;
+    trace("Moving to %d", acc.id());
+    switchIn();
+    gmacError_t ret = gmacSuccess;
+    size_t free;
+    size_t needed = 0;
+    acc.memInfo(&free, NULL);
+    gmac::memory::Map::const_iterator i;
+    for(i = _map->begin(); i != _map->end(); i++) {
+        gmac::memory::Object &object = *i->second;
+        needed += object.size();
+    }
+
+    if (needed > free) {
+        return gmacErrorInsufficientDeviceMemory;
+    }
+
+    for(i = _map->begin(); i != _map->end(); i++) {
+        gmac::memory::Object &object = *i->second;
+        manager->protocol().toHost(object);
+        object.free();
+    }
+
+    _acc->unregisterMode(*this);
+    delete _context;
+    _acc = &acc;
+    _acc->registerMode(*this);
+    _context = newContext();
+
+    for(i = _map->begin(); i != _map->end(); i++) {
+        gmac::memory::Object &object = *i->second;
+        object.realloc(*this);
+    }
+
+    CFatal(ret == gmacSuccess, "Error migrating context: not enough memory");
+
+    //
+    // \TODO What to do if there are many threads sharing the same mode!!
+    //
+    switchOut();
+
+    return ret;
+}
+
+void Mode::memInfo(size_t *free, size_t *total)
+{
+    switchIn();
+    _acc->memInfo(free, total);
+    switchOut();
 }
 
 }

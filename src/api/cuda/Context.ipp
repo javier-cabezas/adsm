@@ -25,6 +25,12 @@ Context::eventStream() const
     return _streamLaunch;
 }
 
+inline Accelerator &
+Context::accelerator()
+{
+    return *static_cast<Accelerator *>(_acc);
+}
+
 }}
 
 #endif

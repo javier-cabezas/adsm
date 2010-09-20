@@ -90,8 +90,8 @@ protected:
     ModuleVector _modules;
 #endif
 
-    void pushContext();
-    void popContext();
+    void pushContext() const;
+    void popContext() const;
 
 public:
     friend class Switch;
@@ -103,7 +103,8 @@ public:
     static void init();
 
 	gmac::Mode *createMode();
-    void destroyMode(gmac::Mode *mode);
+    void registerMode(gmac::Mode &mode);
+    void unregisterMode(gmac::Mode &mode);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();
@@ -113,7 +114,7 @@ public:
     ModuleVector createModules();
     void destroyModules(ModuleVector & modules);
 #else
-    ModuleVector &createModules();
+    ModuleVector *createModules();
 #endif
 
     int major() const;
@@ -148,6 +149,8 @@ public:
     static gmacError_t error(CUresult r);
     static CUdeviceptr gpuAddr(void *addr);
     static CUdeviceptr gpuAddr(const void *addr);
+
+    void memInfo(size_t *free, size_t *total) const;
 };
 
 }}

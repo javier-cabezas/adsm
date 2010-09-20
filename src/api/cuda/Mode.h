@@ -59,13 +59,14 @@ class Accelerator;
 
 class Mode : public gmac::Mode {
 protected:
-    Accelerator *acc;
 #ifdef USE_MULTI_CONTEXT
     CUcontext _cudaCtx;
 #endif
     friend class Switch;
     void switchIn();
     void switchOut();
+
+    gmac::Context * newContext();
 
     IOBuffer *ioBuffer;
 
@@ -83,10 +84,10 @@ protected:
 #ifdef USE_MULTI_CONTEXT
 	ModuleVector modules;
 #else
-    ModuleVector &modules;
+    ModuleVector *modules;
 #endif
 public:
-    Mode(Accelerator *acc);
+    Mode(Accelerator &acc);
     ~Mode();
 
     gmacError_t hostAlloc(void **addr, size_t size);
@@ -116,6 +117,8 @@ public:
     CUdeviceptr dirtyBitmapShiftEntryDevPtr() const;
 #endif
 #endif
+
+    Accelerator &accelerator();
 };
 
 }}

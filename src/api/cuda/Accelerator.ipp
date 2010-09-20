@@ -185,7 +185,7 @@ gmacError_t Accelerator::syncCUstream(CUstream stream)
 }
 
 inline
-void Accelerator::pushContext()
+void Accelerator::pushContext() const
 {
     trace("Push context");
     CUresult ret;
@@ -199,7 +199,7 @@ void Accelerator::pushContext()
 }
 
 inline
-void Accelerator::popContext()
+void Accelerator::popContext() const
 {
     trace("Pop context");
     CUresult ret;

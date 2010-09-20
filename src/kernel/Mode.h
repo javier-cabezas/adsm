@@ -78,9 +78,11 @@ protected:
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
+    virtual gmac::Context *newContext() = 0;
+
 	gmacError_t _error;
 public:
-    Mode(Accelerator *_acc);
+    Mode(Accelerator &_acc);
     ~Mode();
     void release();
 
@@ -110,7 +112,7 @@ public:
     void removeObject(memory::Object *obj);
     const memory::Object *getObjectRead(const void *addr) const;
     memory::Object *getObjectWrite(const void *addr);
-    void putObject(const memory::Object *obj);
+    void putObject(const memory::Object &obj);
     const memory::Map &objects();
 
     /*!  \brief Allocates memory on the accelerator memory */
@@ -155,7 +157,9 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
-    gmacError_t moveTo(Mode &mode);
+    gmacError_t moveTo(Accelerator &acc);
+
+    void memInfo(size_t *free, size_t *total);
 
     bool releasedObjects() const;
     void releaseObjects();

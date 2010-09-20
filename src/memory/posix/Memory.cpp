@@ -18,10 +18,12 @@ void *Memory::map(void *addr, size_t count, int prot)
 
     if (addr == NULL) {
         cpuAddr = mmap(NULL, count, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
+        util::Logger::TRACE("Getting map: %d @ %p - %p", prot, cpuAddr, (uint8_t *)addr + count);
     } else {
         cpuAddr = addr;
         if(mmap(cpuAddr, count, prot, MAP_PRIVATE | MAP_ANON | MAP_FIXED, -1, 0) != cpuAddr)
             return NULL;
+        util::Logger::TRACE("Getting fixed map: %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
     }
 
     return cpuAddr;
@@ -29,6 +31,7 @@ void *Memory::map(void *addr, size_t count, int prot)
 
 void *Memory::remap(void *addr, void *to, size_t count, int prot)
 {
+    util::Logger::TRACE("Getting fixed remap: %d @ %p -> %p", prot, addr, to);
     void * ret = mremap(addr, count, count, MREMAP_FIXED | MREMAP_MAYMOVE, to);
     if (ret != to) {
         return NULL;

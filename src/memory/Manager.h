@@ -67,7 +67,7 @@ protected:
     static int _count;
     static Manager *__manager;
 
-    Protocol *protocol;
+    Protocol *_protocol;
 
     Manager();
     ~Manager();
@@ -98,9 +98,13 @@ public:
 
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);
-    gmacError_t move(void * addr, Mode *mode);
+    gmacError_t moveTo(void * addr, Mode &mode);
+
+    Protocol &protocol() const;
 };
 
 } }
+
+#include "Manager.ipp"
 
 #endif

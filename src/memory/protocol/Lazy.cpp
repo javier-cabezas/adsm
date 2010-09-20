@@ -185,13 +185,14 @@ gmacError_t Lazy::toHost(const Object &obj)
                     Fatal("Unable to set memory permissions");
                 ret = object.toHost(block);
                 if(ret != gmacSuccess) { block.unlock(); return ret; }
-                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
-                    Fatal("Unable to set memory permissions");
-                block.state(ReadOnly);
+                block.state(Dirty);
+                ret = addDirty(object, block, false);
                 break;
 
             case Dirty:
+                break;
             case ReadOnly:
+                ret = addDirty(object, block, false);
                 break;
         }
         block.unlock();
@@ -425,14 +426,52 @@ Lazy::copy(void *dst, const void *src, const Object &dstObj, const Object &srcOb
 gmacError_t
 Lazy::memset(const Object &obj, void *s, int c, size_t n)
 {
-    Fatal("Functionality not implemented yet");
     gmacError_t ret = gmacSuccess;
+
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
+    off_t off = 0;
+    Mode &mode = Mode::current();
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> &block = *i->second;
+        block.lock();
+
+        if ((s >= block.addr() && s < (char *) block.addr() + block.size()) ||
+            (s <  block.addr() && (char *) s + n > block.addr())) {
+            size_t count = blockRemainder(block.addr(), block.size(), s, n);
+
+            switch(block.state()) {
+                case Dirty:
+                    ::memset((char *) s + off, c, count);
+                    break;
+
+                case ReadOnly:
+                    ret = mode.memset((char *)s + off, c, count);
+                    if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+                        Fatal("Unable to set memory permissions");
+                    ::memset((char *) s + off, c, count);
+                    if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+                        Fatal("Unable to set memory permissions");
+                    ret = object.toDevice(block);
+                    break;
+
+                case Invalid:
+                    ret = mode.memset((char *)s + off, c, count);
+                    if(ret != gmacSuccess) { block.unlock(); return ret; }
+                    break;
+            }           
+            off += count;
+        }
+
+        block.unlock();
+    }
 
     return ret;
 }
 
 gmacError_t
-Lazy::move(Object &obj, Mode &mode)
+Lazy::moveTo(Object &obj, Mode &mode)
 {
     gmacError_t ret = gmacSuccess;
     ret = toHost(obj);
@@ -529,6 +568,14 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     block->state(Dirty);
     trace("Setting block %p to dirty state", block->addr());
     block->unlock();
+    ret = addDirty(object, *block);
+    return gmacSuccess;
+}
+
+gmacError_t
+Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow)
+{
+    Mode &mode = Mode::current();
     lockRead();
     iterator i = find(&mode);
     if(i == end())
@@ -537,12 +584,15 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     List &list = i->second;
     unlock();
 
-    list.push(object, block);
-    // Release dirty blocks
-    while(list.size() > _maxListSize) {
-        Entry e = list.pop();
-        gmacError_t ret = release(e.object, *e.block);
-        if(ret != gmacSuccess) return ret;
+    list.push(object, &block);
+
+    if (checkOverflow) {
+        // Release dirty blocks
+        while(list.size() > _maxListSize) {
+            Entry e = list.pop();
+            gmacError_t ret = release(e.object, *e.block);
+            if(ret != gmacSuccess) return ret;
+        }
     }
     return gmacSuccess;
 }

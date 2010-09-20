@@ -4,27 +4,41 @@
 
 namespace gmac { namespace cuda {
 
-Mode::Mode(Accelerator *acc) :
-    gmac::Mode(acc),
-    acc(acc)
-#ifndef USE_MULTI_CONTEXT
-    , modules(acc->createModules())
-#endif
+Mode::Mode(Accelerator &acc) :
+    gmac::Mode(acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    _cudaCtx = acc->createCUcontext();
+    _cudaCtx = accelerator().createCUcontext();
 #endif
+    _context = newContext();
+}
 
+Mode::~Mode()
+{
+    ModuleVector::const_iterator m;
     switchIn();
-    _context = new Context(acc, this);
-    gmac::Mode::_context = _context;
-
 #ifdef USE_MULTI_CONTEXT
-    modules = acc->createModules();
+    accelerator().destroyModules(modules);
+    modules.clear();
 #endif
+    delete _context;
+    switchOut();
+}
+
+gmac::Context * Mode::newContext()
+{
+    Context * context = new Context(accelerator(), *this);
+    switchIn();
+    modules = accelerator().createModules();
+
+    kernels.clear();
 
     ModuleVector::const_iterator i;
+#ifdef USE_MULTI_CONTEXT
     for(i = modules.begin(); i != modules.end(); i++) {
+#else
+    for(i = modules->begin(); i != modules->end(); i++) {
+#endif
         (*i)->registerKernels(*this);
 #ifdef USE_VM
         if((*i)->dirtyBitmap() != NULL) {
@@ -37,24 +51,14 @@ Mode::Mode(Accelerator *acc) :
 #endif
     }
     switchOut();
-}
 
-Mode::~Mode()
-{
-    ModuleVector::const_iterator m;
-    switchIn();
-#ifdef USE_MULTI_CONTEXT
-    acc->destroyModules(modules);
-    modules.clear();
-#endif
-    delete _context;
-    switchOut();
+    return context;
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
 {
     switchIn();
-    gmacError_t ret = acc->hostAlloc(addr, size);
+    gmacError_t ret = accelerator().hostAlloc(addr, size);
     switchOut();
     return ret;
 }
@@ -62,7 +66,7 @@ gmacError_t Mode::hostAlloc(void **addr, size_t size)
 gmacError_t Mode::hostFree(void *addr)
 {
     switchIn();
-    gmacError_t ret = acc->hostFree(addr);
+    gmacError_t ret = accelerator().hostFree(addr);
     switchOut();
     return ret;
 }
@@ -70,7 +74,7 @@ gmacError_t Mode::hostFree(void *addr)
 void *Mode::hostMap(void *addr)
 {
     switchIn();
-    void *ret = acc->hostMap(addr);
+    void *ret = accelerator().hostMap(addr);
     switchOut();
     return ret;
 }
@@ -78,7 +82,11 @@ void *Mode::hostMap(void *addr)
 const Variable *Mode::constant(gmacVariable_t key) const
 {
     ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
     for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
         const Variable *var = (*m)->constant(key);
         if(var != NULL) return var;
     }
@@ -88,7 +96,11 @@ const Variable *Mode::constant(gmacVariable_t key) const
 const Variable *Mode::variable(gmacVariable_t key) const
 {
     ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
     for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
         const Variable *var = (*m)->variable(key);
         if(var != NULL) return var;
     }
@@ -98,7 +110,11 @@ const Variable *Mode::variable(gmacVariable_t key) const
 const Texture *Mode::texture(gmacTexture_t key) const
 {
     ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
     for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
         const Texture *tex = (*m)->texture(key);
         if(tex != NULL) return tex;
     }

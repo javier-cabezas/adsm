@@ -38,9 +38,9 @@ Object *ObjectMap::getObjectWrite(const void *addr) const
     return ret;
 }
 
-void ObjectMap::putObject(const Object *obj) const
+void ObjectMap::putObject(const Object &obj) const
 {
-    obj->unlock();
+    obj.unlock();
 }
 
 

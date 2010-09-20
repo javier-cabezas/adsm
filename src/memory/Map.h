@@ -59,7 +59,7 @@ public:
     virtual const Object *getObjectRead(const void *addr) const;
     virtual Object *getObjectWrite(const void *addr) const;
 
-    virtual void putObject(const Object *obj) const;
+    virtual void putObject(const Object &obj) const;
 
 };
  

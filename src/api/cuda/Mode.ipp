@@ -11,7 +11,7 @@ inline
 void Mode::switchIn()
 {
 #ifdef USE_MULTI_CONTEXT
-    acc->setCUcontext(&_cudaCtx);
+    accelerator().setCUcontext(&_cudaCtx);
 #endif
 }
 
@@ -19,7 +19,7 @@ inline
 void Mode::switchOut()
 {
 #ifdef USE_MULTI_CONTEXT
-    acc->setCUcontext(NULL);
+    accelerator().setCUcontext(NULL);
 #endif
 }
 
@@ -39,7 +39,7 @@ inline gmacError_t
 Mode::execute(gmac::KernelLaunch * launch)
 {
     switchIn();
-    gmacError_t ret = acc->execute(dynamic_cast<KernelLaunch *>(launch));
+    gmacError_t ret = accelerator().execute(dynamic_cast<KernelLaunch *>(launch));
     switchOut();
     return ret;
 }
@@ -108,6 +108,12 @@ Mode::dirtyBitmapShiftEntryDevPtr() const
 }
 #endif
 #endif
+
+inline Accelerator &
+Mode::accelerator()
+{
+    return *static_cast<Accelerator *>(_acc);
+}
 
 }}
 
