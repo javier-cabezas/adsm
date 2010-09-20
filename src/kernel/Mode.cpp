@@ -10,6 +10,8 @@
 namespace gmac {
 
 gmac::util::Private<Mode> Mode::key;
+gmac::util::Private<Context> Mode::_context;
+
 unsigned Mode::next = 0;
 
 Mode::Mode(Accelerator &acc) :
@@ -60,6 +62,13 @@ Mode &Mode::current()
     return *mode;
 }
 
+Context &Mode::currentContext()
+{
+    Context *context = Mode::_context.get();
+    gmac::util::Logger::ASSERTION(context != NULL);
+    return *context;
+}
+
 void Mode::attach()
 {
     Mode *mode = Mode::key.get();
@@ -95,7 +104,7 @@ gmacError_t Mode::free(void *addr)
 gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     switchIn();
-    _error = _context->copyToDevice(dev, host, size);
+    _error = currentContext().copyToDevice(dev, host, size);
     switchOut();
     return _error;
 }
@@ -103,7 +112,7 @@ gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
     switchIn();
-    _error = _context->copyToHost(host, dev, size);
+    _error = currentContext().copyToHost(host, dev, size);
     switchOut();
     return _error;
 }
@@ -111,7 +120,7 @@ gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 {
     switchIn();
-    _error = _context->copyDevice(dst, src, size);
+    _error = currentContext().copyDevice(dst, src, size);
     switchOut();
     return _error;
 }
@@ -119,7 +128,7 @@ gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 gmacError_t Mode::memset(void *addr, int c, size_t size)
 {
     switchIn();
-    _error = _context->memset(addr, c, size);
+    _error = currentContext().memset(addr, c, size);
     switchOut();
     return _error;
 }
@@ -131,7 +140,7 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
     gmac::Kernel * k = i->second;
     assertion(k != NULL);
     switchIn();
-    gmac::KernelLaunch *l = _context->launch(k);
+    gmac::KernelLaunch *l = currentContext().launch(k);
     switchOut();
 
     return l;
@@ -140,7 +149,7 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
 gmacError_t Mode::sync()
 {
     switchIn();
-    _error = _context->sync();
+    _error = currentContext().sync();
     switchOut();
     return _error;
 }
@@ -179,10 +188,10 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     _acc->unregisterMode(*this);
-    delete _context;
+    delete Mode::_context.get();
     _acc = &acc;
     _acc->registerMode(*this);
-    _context = newContext();
+    newContext();
 
     for(i = _map->begin(); i != _map->end(); i++) {
         gmac::memory::Object &object = *i->second;

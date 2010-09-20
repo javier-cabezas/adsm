@@ -50,6 +50,7 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 class Accelerator;
 class Mode;
+class Context;
 class Process;
 
 void apiInit(void);
@@ -81,6 +82,22 @@ public:
     size_t remove(Mode &mode);
 };
 
+class ContextMap : private std::map<Context *, Mode *>, public util::RWLock
+{
+private:
+    typedef std::map<Context *, Mode *> Parent;
+
+    friend class Process;
+public:
+    ContextMap();
+
+    typedef Parent::iterator iterator;
+    typedef Parent::const_iterator const_iterator;
+
+    std::pair<iterator, bool> insert(Context *context, Mode *mode);
+    size_t remove(Context &context);
+};
+
 
 class QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
 {
@@ -104,6 +121,7 @@ protected:
 
 	std::vector<Accelerator *> _accs;
 	ModeMap _modes;
+	ContextMap _contexts;
 
 	QueueMap _queues;
     memory::ObjectMap __global;

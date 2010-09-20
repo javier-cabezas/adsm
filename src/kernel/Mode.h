@@ -65,7 +65,8 @@ protected:
     bool _releasedObjects;
 
     Accelerator *_acc;
-    Context *_context;
+    static gmac::util::Private<Context> _context;
+    //Context *_context;
     memory::Map *_map;
 #ifdef USE_VM
     memory::vm::Bitmap *_bitmap;
@@ -78,7 +79,7 @@ protected:
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
-    virtual gmac::Context *newContext() = 0;
+    virtual void newContext() = 0;
 
 	gmacError_t _error;
 public:
@@ -89,6 +90,7 @@ public:
     static void init();
     static void initThread();
     static Mode &current();
+    static Context &currentContext();
     static bool hasCurrent();
 
     void inc();
@@ -135,7 +137,7 @@ public:
 
 	/*!  \brief Launches the execution of a kernel */
 	KernelLaunch * launch(gmacKernel_t kernel);
-	virtual gmacError_t execute(KernelLaunch * launch) = 0;
+	virtual gmacError_t execute(KernelLaunch &launch) = 0;
 
 	/*!  \brief Waits for kernel execution */
 	gmacError_t sync();

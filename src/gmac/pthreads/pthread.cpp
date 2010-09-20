@@ -50,7 +50,7 @@ static void *gmac_pthread(void *arg)
 	void *ret = gthread->__start_routine(gthread->__arg);
 	gmac::enterGmac();
     gmac::trace::Thread::resume();
-    // Context already destroyed in Process destructor
+    // Modes and Contexts already destroyed in Process destructor
 	free(gthread);
 	gmac::exitGmac();
 	return ret;

@@ -127,12 +127,12 @@ gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
 }
 
 inline
-gmacError_t Accelerator::execute(KernelLaunch * launch)
+gmacError_t Accelerator::execute(KernelLaunch &launch)
 {
     gmac::trace::Function::start("Accelerator","execute");
     trace("Executing KernelLaunch");
     pushContext();
-    gmacError_t ret = launch->execute();
+    gmacError_t ret = launch.execute();
     popContext();
     gmac::trace::Function::end("Accelerator");
     return ret;

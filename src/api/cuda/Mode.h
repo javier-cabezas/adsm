@@ -66,7 +66,7 @@ protected:
     void switchIn();
     void switchOut();
 
-    gmac::Context * newContext();
+    void newContext();
 
     IOBuffer *ioBuffer;
 
@@ -94,7 +94,7 @@ public:
     gmacError_t hostFree(void *addr);
     void *hostMap(void *addr);
 
-	gmacError_t execute(gmac::KernelLaunch * launch);
+	gmacError_t execute(gmac::KernelLaunch &launch);
 
     gmacError_t bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
     gmacError_t deviceToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
