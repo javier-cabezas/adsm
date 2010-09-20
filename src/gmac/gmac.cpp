@@ -175,7 +175,7 @@ gmacLaunch(gmacKernel_t k)
     // Wait for pending transfers
     mode.sync();
     gmac::util::Logger::TRACE("Kernel Launch");
-    ret = mode.execute(launch);
+    ret = mode.execute(*launch);
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");

@@ -10,7 +10,7 @@ Mode::Mode(Accelerator &acc) :
 #ifdef USE_MULTI_CONTEXT
     _cudaCtx = accelerator().createCUcontext();
 #endif
-    _context = newContext();
+    newContext();
 }
 
 Mode::~Mode()
@@ -21,11 +21,10 @@ Mode::~Mode()
     accelerator().destroyModules(modules);
     modules.clear();
 #endif
-    delete _context;
     switchOut();
 }
 
-gmac::Context * Mode::newContext()
+void Mode::newContext()
 {
     Context * context = new Context(accelerator(), *this);
     switchIn();
@@ -52,7 +51,7 @@ gmac::Context * Mode::newContext()
     }
     switchOut();
 
-    return context;
+    _context.set(context);
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)

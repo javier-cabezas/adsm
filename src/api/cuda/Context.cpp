@@ -23,7 +23,6 @@ Context::Context(Accelerator &acc, Mode &mode) :
 
 Context::~Context()
 {
-    trace("Remove Accelerator context [%p]", this);
     //if(_buffer != NULL) delete _buffer;
     cleanCUstreams();
 }

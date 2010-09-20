@@ -35,6 +35,28 @@ size_t ModeMap::remove(Mode &mode)
     return ret;
 }
 
+ContextMap::ContextMap() :
+    RWLock("ContextMap")
+{}
+
+std::pair<ContextMap::iterator, bool>
+ContextMap::insert(Context *context, Mode *mode)
+{
+    lockWrite();
+    std::pair<iterator, bool> ret = Parent::insert(value_type(context, mode));
+    unlock();
+    return ret;
+}
+
+size_t ContextMap::remove(Context &context)
+{
+    lockWrite();
+    size_type ret = Parent::erase(&context);
+    unlock();
+    return ret;
+}
+
+
 QueueMap::QueueMap() : 
     util::RWLock("QueueMap")
 {}
@@ -95,11 +117,17 @@ Process::~Process()
 
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
-    _modes.lockWrite();
-    ModeMap::const_iterator i;
-    for(i = _modes.begin(); i != _modes.end(); i++) {
-        i->first->release();
+    ContextMap::const_iterator i;
+    for(i = _contexts.begin(); i != _contexts.end(); i++) {
         delete i->first;
+    }
+
+    // TODO: Why is this lock necessary?
+    _modes.lockWrite();
+    ModeMap::const_iterator j;
+    for(j = _modes.begin(); j != _modes.end(); j++) {
+        j->first->release();
+        delete j->first;
     }
     _modes.clear();
     _modes.unlock();
@@ -162,6 +190,7 @@ Mode *Process::create(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = _accs[usedAcc]->createMode();
     _accs[usedAcc]->registerMode(*mode);
+    _contexts.insert(&mode->currentContext(), mode);
     _modes.insert(mode, _accs[usedAcc]);
 
     trace("Adding %zd shared memory objects", __shared.size());
@@ -216,9 +245,9 @@ gmacError_t Process::globalFree(memory::DistributedObject &object)
 }
 #endif
 
+// This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
 {
-	lockWrite();
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
 	trace("Migrating execution mode");
@@ -226,22 +255,23 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
+        Context &context = mode.currentContext();
         ret = mode.moveTo(*_accs[acc]);
 
         if (ret == gmacSuccess) {
+            _contexts.remove(context);
+            _contexts.insert(&context, &mode);
             _modes[&mode] = _accs[acc];                 
         }
     }
 #else
     Fatal("Migration not implemented when using mmap");
 #endif
-    unlock();
 	trace("Context migrated");
     return ret;
-    return gmacErrorUnknown;
 }
 
-
+// TODO when is this function called
 void Process::remove(Mode &mode)
 {
     trace("Adding %zd shared memory objects", __shared.size());

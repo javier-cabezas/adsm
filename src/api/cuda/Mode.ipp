@@ -26,20 +26,20 @@ void Mode::switchOut()
 inline Context &
 Mode::context()
 {
-    return dynamic_cast<Context &>(*_context);
+    return dynamic_cast<Context &>(currentContext());
 }
 
 inline const Context &
 Mode::context() const
 {
-    return dynamic_cast<Context &>(*_context);
+    return dynamic_cast<Context &>(currentContext());
 }
 
 inline gmacError_t
-Mode::execute(gmac::KernelLaunch * launch)
+Mode::execute(gmac::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = accelerator().execute(dynamic_cast<KernelLaunch *>(launch));
+    gmacError_t ret = accelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     switchOut();
     return ret;
 }

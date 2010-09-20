@@ -12,7 +12,7 @@ libmemory_la_SOURCES = memory.cpp\
             ReplicatedObject.h ReplicatedObject.ipp CentralizedObject.h \
 			Map.h Map.cpp\
             Protocol.h Protocol.cpp\
-			Manager.h Manager.cpp\
+			Manager.h Manager.cpp Manager.ipp\
 			Handler.h Handler.cpp\
             Allocator.h Allocator.cpp
 

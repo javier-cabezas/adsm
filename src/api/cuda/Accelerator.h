@@ -136,7 +136,7 @@ public:
     CUresult queryCUstream(CUstream stream);
     gmacError_t syncCUstream(CUstream stream);
 
-    gmacError_t execute(KernelLaunch * launch);
+    gmacError_t execute(KernelLaunch &launch);
 
     gmacError_t memset(void *addr, int c, size_t size);
 
