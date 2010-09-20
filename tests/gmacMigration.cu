@@ -13,12 +13,10 @@ const char *msg = "Done!";
 
 __global__ void vecInc(float *a, size_t size)
 {
-    /*
     int i =  threadIdx.x + blockIdx.x * blockDim.x;
     if(i >= size) return;
 
     a[i] += 1;
-    */
 }
 
 #define ITER 250
@@ -65,7 +63,7 @@ int main(int argc, char *argv[])
 
     float error = 0;
     for(int i = 0; i < vecSize; i++) {
-        error += a[i] - float(0);
+        error += a[i] - float(2*ITER);
     }
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");
@@ -74,5 +72,5 @@ int main(int argc, char *argv[])
 
     gmacFree(a);
 
-    return error != 0;
+    return error != 0.f;
 }

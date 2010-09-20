@@ -84,7 +84,7 @@ Mode::getObjectWrite(const void *addr)
 }
 
 inline void
-Mode::putObject(const memory::Object *obj)
+Mode::putObject(const memory::Object &obj)
 {
     _map->putObject(obj);
 }

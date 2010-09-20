@@ -11,12 +11,12 @@ gmac::util::Private<CUcontext> Accelerator::_Ctx;
 
 void Switch::in()
 {
-    Mode::current().acc->pushContext();
+    Mode::current().accelerator().pushContext();
 }
 
 void Switch::out()
 {
-    Mode::current().acc->popContext();
+    Mode::current().accelerator().popContext();
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
@@ -69,20 +69,28 @@ void Accelerator::init()
 gmac::Mode *Accelerator::createMode()
 {
     gmac::trace::Function::start("Accelerator","createMode");
-	cuda::Mode *mode = new cuda::Mode(this);
-	_queue.insert(mode);
-	trace("Attaching Execution Mode %p to Accelerator", mode);
-    _load++;
+	Mode *mode = new Mode(*this);
     gmac::trace::Function::end("Accelerator");
-	return mode;
+	trace("Creating Execution Mode %p to Accelerator", mode);
+    return mode;
 }
 
-void Accelerator::destroyMode(gmac::Mode *mode)
+void Accelerator::registerMode(gmac::Mode &mode)
 {
-	trace("Destroying Execution Mode %p", mode);
-	if(mode == NULL) return;
-    gmac::trace::Function::start("Accelerator","destroyMode");
-	std::set<Mode *>::iterator c = _queue.find((Mode *)mode);
+    Mode &_mode = static_cast<Mode &>(mode);
+	trace("Registering Execution Mode %p to Accelerator", &_mode);
+    gmac::trace::Function::start("Accelerator","registerMode");
+	_queue.insert(&_mode);
+    _load++;
+    gmac::trace::Function::end("Accelerator");
+}
+
+void Accelerator::unregisterMode(gmac::Mode &mode)
+{
+    Mode &_mode = static_cast<Mode &>(mode);
+	trace("Unregistering Execution Mode %p", &_mode);
+    gmac::trace::Function::start("Accelerator","unregisterMode");
+	std::set<Mode *>::iterator c = _queue.find(&_mode);
 	assertion(c != _queue.end());
 	_queue.erase(c);
     _load--;
@@ -146,7 +154,7 @@ Accelerator::destroyModules(ModuleVector & modules)
 }
 
 #else
-ModuleVector &Accelerator::createModules()
+ModuleVector *Accelerator::createModules()
 {
     gmac::trace::Function::start("Accelerator","createModules");
     if(_modules.empty()) {
@@ -155,7 +163,7 @@ ModuleVector &Accelerator::createModules()
         popContext();
     }
     gmac::trace::Function::end("Accelerator");
-    return _modules;
+    return &_modules;
 }
 #endif
 
@@ -164,12 +172,13 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     gmac::trace::Function::start("Accelerator","malloc");
     assertion(addr != NULL);
     *addr = NULL;
+    size_t gpuSize;
     if(align > 1) {
-        size += align;
+        gpuSize = size + align;
     }
     CUdeviceptr ptr = 0;
     pushContext();
-    CUresult ret = cuMemAlloc(&ptr, size);
+    CUresult ret = cuMemAlloc(&ptr, gpuSize);
     popContext();
     if(ret != CUDA_SUCCESS) {
         gmac::trace::Function::end("Accelerator");
@@ -183,7 +192,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
-    trace("Allocating device memory: %p - %zd bytes (alignment %u)", *addr, size, align);
+    trace("Allocating device memory: %p (originally %p) - %zd (originally %zd) bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
     gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
@@ -272,6 +281,19 @@ void *Accelerator::hostMap(void *addr)
     if(ret != CUDA_SUCCESS) device = 0;
     gmac::trace::Function::end("Accelerator");
     return (void *)device;
+}
+
+void Accelerator::memInfo(size_t *free, size_t *total) const
+{
+    pushContext();
+    size_t fakeFree;
+    size_t fakeTotal;
+    if (!free)  free  = &fakeFree;
+    if (!total) total = &fakeTotal;
+
+    CUresult ret = cuMemGetInfo(free, total);
+    CFatal(ret == CUDA_SUCCESS, "Error getting memory info");
+    popContext();
 }
 
 }}

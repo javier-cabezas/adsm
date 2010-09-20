@@ -33,6 +33,12 @@ Object::end() const
 }
 
 inline gmacError_t
+Object::free()
+{
+    return gmacSuccess;
+}
+
+inline gmacError_t
 Object::realloc(Mode &mode)
 {
     return gmacSuccess;

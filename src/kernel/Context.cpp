@@ -6,9 +6,9 @@
 
 namespace gmac {
 
-Context::Context(Accelerator *acc, unsigned id) :
+Context::Context(Accelerator &acc, unsigned id) :
     util::RWLock("Context"),
-    _acc(acc),
+    _acc(&acc),
     id(id)
 {
     gmac::trace::Thread::start(id);

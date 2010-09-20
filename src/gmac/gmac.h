@@ -105,7 +105,7 @@ static const char *error[] = {
 	"Invalid device function",
 	"GMAC general failure",
     "Feature not supported with the current configure configuration",
-    "Insufficient memory",
+    "Insufficient memory in the device",
 	"Uknown error"
 };
 

@@ -161,6 +161,7 @@ Mode *Process::create(int acc)
 
     // Initialize the global shared memory for the context
     Mode *mode = _accs[usedAcc]->createMode();
+    _accs[usedAcc]->registerMode(*mode);
     _modes.insert(mode, _accs[usedAcc]);
 
     trace("Adding %zd shared memory objects", __shared.size());
@@ -225,9 +226,10 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
+        ret = mode.moveTo(*_accs[acc]);
 
         if (ret == gmacSuccess) {
-                
+            _modes[&mode] = _accs[acc];                 
         }
     }
 #else
@@ -281,7 +283,7 @@ void *Process::translate(void *addr)
     const memory::Object *object = mode.getObjectRead(addr);
     if(object == NULL) return NULL;
     void * ptr = object->device(addr);
-    mode.putObject(object);
+    mode.putObject(*object);
 
     return ptr;
 }
@@ -332,7 +334,7 @@ Mode *Process::owner(const void *addr) const
     const memory::Object *object = __global.getObjectRead(addr);
     if(object == NULL) return NULL;
     Mode & ret = object->owner();
-    __global.putObject(object);
+    __global.putObject(*object);
     return &ret;
 }
 

@@ -55,8 +55,6 @@ namespace gmac { namespace cuda {
 
 class Context : public gmac::Context {
 protected:
-    Accelerator * _acc;
-
     static void * _FatBin;
 	static const unsigned _USleepLaunch = 100;
 
@@ -77,7 +75,7 @@ protected:
     KernelConfig _call;
 
 public:
-	Context(Accelerator *acc, Mode *mode);
+	Context(Accelerator &acc, Mode &mode);
 	~Context();
 
 	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
@@ -97,6 +95,8 @@ public:
 	void argument(const void *arg, size_t size, off_t offset);
 
     const CUstream eventStream() const;
+
+    Accelerator & accelerator();
 };
 
 }}

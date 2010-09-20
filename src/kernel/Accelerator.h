@@ -61,7 +61,8 @@ public:
 	virtual ~Accelerator();
 
     virtual Mode *createMode() = 0;
-    virtual void destroyMode(Mode *) = 0;
+    virtual void registerMode(Mode &) = 0;
+    virtual void unregisterMode(Mode &) = 0;
     inline virtual unsigned load() const { return _load; }
 
     /*!  \brief Allocates memory on the accelerator memory */
@@ -83,6 +84,8 @@ public:
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyDevice(void *dst, const void *src,
 			size_t size) = 0;
+
+    virtual void memInfo(size_t *free, size_t *total) const = 0;
 };
 
 }

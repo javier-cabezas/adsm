@@ -58,6 +58,7 @@ public:
 protected:
     unsigned _maxListSize;
 
+    gmacError_t addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow = true);
 
     gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
 public:
@@ -93,7 +94,7 @@ public:
     gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n);
     gmacError_t memset(const Object &obj, void * s, int c, size_t n);
 
-    gmacError_t move(Object &obj, Mode &mode);
+    gmacError_t moveTo(Object &obj, Mode &mode);
 };
 
 class Entry {

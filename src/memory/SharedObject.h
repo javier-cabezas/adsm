@@ -43,7 +43,7 @@ namespace gmac { namespace memory {
 template<typename T>
 class SharedObject : public StateObject<T> {
 protected:
-    Mode &_owner;
+    Mode *_owner;
 
     AcceleratorBlock *_accBlock;
 public:
@@ -54,8 +54,9 @@ public:
     gmacError_t toDevice(Block &block) const;
 
     void *device(void *addr) const;
-    inline Mode &owner() const { return _owner; }
+    inline Mode &owner() const { return *_owner; }
 
+    gmacError_t free();
     gmacError_t realloc(Mode &mode);
 };
 

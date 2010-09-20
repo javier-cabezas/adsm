@@ -56,7 +56,7 @@ protected:
 
     unsigned id;
 
-	Context(Accelerator *acc, unsigned id);
+	Context(Accelerator &acc, unsigned id);
 public:
 	virtual ~Context();
 
