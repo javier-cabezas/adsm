@@ -30,16 +30,16 @@ int main(int argc, char *argv[])
 	if(size % blockSize) Db.x++;
 
 	fprintf(stderr,"Test full memset: ");
-    //gmacMemset(ptr, 0, size * sizeof(long));
-    memset(ptr, 0, size * sizeof(long));
+    gmacMemset(ptr, 0, size * sizeof(long));
+    //memset(ptr, 0, size * sizeof(long));
 
 	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
     gmacThreadSynchronize();
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
-	//gmacMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
-	memset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
+	gmacMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
+	//memset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	gmacFree(ptr);
