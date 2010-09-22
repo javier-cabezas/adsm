@@ -202,7 +202,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
     Mode &mode = Mode::current();
     do {
         const Object *obj = mode.getObjectRead(ptr);
-        ret = _protocol->toIOBuffer(buffer, *obj, proc->translate(addr), size);
+        ret = _protocol->toIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode.putObject(*obj);
         if(ret != gmacSuccess) return ret;
@@ -217,7 +217,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
     do {
         gmac::Mode &mode = *proc->owner(addr);
         const Object *obj = mode.getObjectRead(ptr);
-        ret = _protocol->fromIOBuffer(buffer, *obj, proc->translate(addr), size);
+        ret = _protocol->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode.putObject(*obj);
         if(ret != gmacSuccess) return ret;

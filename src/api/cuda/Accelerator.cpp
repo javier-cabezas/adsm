@@ -172,9 +172,9 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     gmac::trace::Function::start("Accelerator","malloc");
     assertion(addr != NULL);
     *addr = NULL;
-    size_t gpuSize;
+    size_t gpuSize = size;
     if(align > 1) {
-        gpuSize = size + align;
+        gpuSize += align;
     }
     CUdeviceptr ptr = 0;
     pushContext();

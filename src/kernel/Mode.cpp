@@ -103,6 +103,7 @@ gmacError_t Mode::free(void *addr)
 
 gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
+    util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
     switchIn();
     _error = currentContext().copyToDevice(dev, host, size);
     switchOut();
@@ -111,6 +112,7 @@ gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
+    util::Logger::trace("Copy %p to host %p (%zd bytes)", dev , host, size);
     switchIn();
     _error = currentContext().copyToHost(host, dev, size);
     switchOut();
