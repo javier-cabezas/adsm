@@ -269,7 +269,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, const Object &obj, const void *addr, size_t n
 
                 case Invalid:
                     Mode & mode = obj.owner();
-                    ret = mode.deviceToBuffer(buffer, (char *)addr + off, count, off);
+                    ret = mode.deviceToBuffer(buffer, proc->translate((char *)addr + off), count, off);
                     if(ret != gmacSuccess) { block->unlock(); return ret; }
 
                     break;

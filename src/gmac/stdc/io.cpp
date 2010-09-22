@@ -7,6 +7,7 @@
 #include <kernel/IOBuffer.h>
 #include <kernel/Mode.h>
 #include <trace/Thread.h>
+#include <util/Logger.h>
 
 #include <unistd.h>
 #include <cstdio>
@@ -91,16 +92,20 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(paramPageSize);
+    size_t bufferSize = paramPageSize > size ? paramPageSize : size;
+    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(bufferSize);
 
     size_t left = n;
     buffer->lock();
     while (left != 0) {
-        size_t bytes = left < buffer->size() ? left : buffer->size();
+        size_t bytes = left < bufferSize ? left : bufferSize;
+        gmac::util::Logger::TRACE("Filling I/O buffer from device %p with %zd bytes (%zd)", (const char *)buf + off, bytes, size);
         err = gmac::manager->toIOBuffer(*buffer, (const char *)buf + off, bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        ret += __libc_fwrite(buffer->addr(), size, bytes/size, stream);
 
+        int __ret = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
+        ret += __ret;
+        
         left -= bytes;
         off  += bytes;
     }

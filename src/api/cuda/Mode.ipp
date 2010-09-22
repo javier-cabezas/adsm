@@ -47,6 +47,7 @@ Mode::execute(gmac::KernelLaunch & launch)
 inline
 gmacError_t Mode::bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
 {
+    util::Logger::trace("Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);
     switchIn();
     gmacError_t ret = context().bufferToDevice(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
     switchOut();
@@ -56,6 +57,7 @@ gmacError_t Mode::bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t len, 
 inline
 gmacError_t Mode::deviceToBuffer(gmac::IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
+    util::Logger::trace("Copy %p to host %p (%zd bytes)", src, buffer.addr(), len);
     switchIn();
     gmacError_t ret = context().deviceToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
     switchOut();
