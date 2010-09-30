@@ -1,7 +1,7 @@
 #ifndef __MEMORY_REPLICATEDOBJECT_IPP
 #define __MEMORY_REPLICATEDOBJECT_IPP
 
-#include "kernel/Process.h"
+#include "core/Process.h"
 
 namespace gmac { namespace memory {
 
@@ -12,9 +12,10 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
 {
     // This line might seem useless, but we first need to make sure that
     // the curren thread has an execution mode attached
+    Process &proc = gmac::Process::current();
     Mode &mode = gmac::Mode::current(); 
     trace("Creating Replicated Object (%zd bytes)", StateObject<T>::_size);
-    if(proc->globalMalloc(*this, size) != gmacSuccess) {
+    if(proc.globalMalloc(*this, size) != gmacSuccess) {
         Object::Fatal("Unable to create replicated object");
         StateObject<T>::_addr = NULL;
         return;
@@ -22,7 +23,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
 
     StateObject<T>::_addr = StateObject<T>::map(NULL, size);
     if(StateObject<T>::_addr == NULL) {
-        proc->globalFree(*this);
+        proc.globalFree(*this);
         return;
     }
 
@@ -34,7 +35,8 @@ template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
 {
     if(StateObject<T>::_addr == NULL) { return; }
-    proc->globalFree(*this);
+    Process &proc = gmac::Process::current();
+    proc.globalFree(*this);
     StateObject<T>::lockWrite();
     accelerator.clear();
     StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);

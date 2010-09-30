@@ -38,8 +38,8 @@ WITH THE SOFTWARE.  */
 
 #include "Context.h"
 
-#include "kernel/Mode.h"
-#include "kernel/IOBuffer.h"
+#include "core/Mode.h"
+#include "core/IOBuffer.h"
 
 #include <stdint.h>
 #include <cuda.h>
@@ -87,7 +87,7 @@ protected:
     ModuleVector *modules;
 #endif
 public:
-    Mode(Accelerator &acc);
+    Mode(Process &proc, Accelerator &acc);
     ~Mode();
 
     gmacError_t hostAlloc(void **addr, size_t size);

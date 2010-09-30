@@ -5,17 +5,17 @@
 #include <config.h>
 #include <threads.h>
 
-#include <util/Logger.h>
+#include "util/Logger.h"
 
-#include <kernel/Context.h>
-#include <kernel/Mode.h>
-#include <kernel/IOBuffer.h>
-#include <kernel/Process.h>
+#include "core/Context.h"
+#include "core/Mode.h"
+#include "core/IOBuffer.h"
+#include "core/Process.h"
 
-#include <memory/Manager.h>
-#include <memory/Allocator.h>
+#include "memory/Manager.h"
+#include "memory/Allocator.h"
 
-#include <trace/Function.h>
+#include "trace/Function.h"
 
 #include <cstdlib>
 
@@ -70,7 +70,8 @@ gmacAccs()
     size_t ret;
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacAccs");
-    ret = gmac::proc->nAccelerators();
+    gmac::Process &proc = gmac::Process::current();
+    ret = proc.nAccelerators();
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
 	return ret;
@@ -82,10 +83,11 @@ gmacMigrate(int acc)
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
+    gmac::Process &proc = gmac::Process::current();
     if (gmac::Mode::hasCurrent()) {
-        ret = gmac::proc->migrate(gmac::Mode::current(), acc);
+        ret = proc.migrate(gmac::Mode::current(), acc);
     } else {
-        if (gmac::proc->create(acc) == NULL) {
+        if (proc.create(acc) == NULL) {
             ret = gmacErrorUnknown;
         } 
     }
@@ -155,7 +157,8 @@ gmacPtr(void *ptr)
 {
     void *ret = NULL;
     gmac::enterGmac();
-    ret = gmac::proc->translate(ptr);
+    gmac::Process &proc = gmac::Process::current();
+    ret = proc.translate(ptr);
     gmac::exitGmac();
     return ret;
 }
@@ -232,8 +235,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmacError_t err;
 
 	// Locate memory regions (if any)
-    gmac::Mode *dstMode = gmac::proc->owner(dst);
-    gmac::Mode *srcMode = gmac::proc->owner(src);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *dstMode = proc.owner(dst);
+    gmac::Mode *srcMode = proc.owner(src);
 	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
     gmac::manager->memcpy(dst, src, n);
 
@@ -245,14 +249,16 @@ void
 gmacSend(pthread_t id)
 {
     gmac::enterGmac();
-    gmac::proc->send((THREAD_ID)id);
+    gmac::Process &proc = gmac::Process::current();
+    proc.send((THREAD_ID)id);
     gmac::exitGmac();
 }
 
 void gmacReceive()
 {
     gmac::enterGmac();
-    gmac::proc->receive();
+    gmac::Process &proc = gmac::Process::current();
+    proc.receive();
     gmac::exitGmac();
 }
 
@@ -260,13 +266,15 @@ void
 gmacSendReceive(pthread_t id)
 {
 	gmac::enterGmac();
-	gmac::proc->sendReceive((THREAD_ID)id);
+    gmac::Process &proc = gmac::Process::current();
+	proc.sendReceive((THREAD_ID)id);
 	gmac::exitGmac();
 }
 
 void gmacCopy(pthread_t id)
 {
     gmac::enterGmac();
-    gmac::proc->copy((THREAD_ID)id);
+    gmac::Process &proc = gmac::Process::current();
+    proc.copy((THREAD_ID)id);
     gmac::exitGmac();
 }

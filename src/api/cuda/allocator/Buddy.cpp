@@ -1,7 +1,7 @@
-#include <kernel/allocator/Buddy.h>
+#include "core/allocator/Buddy.h"
 #include "../Mode.h"
 
-#include <util/Logger.h>
+#include "util/Logger.h"
 
 namespace gmac { namespace kernel { namespace allocator {
 

@@ -2,12 +2,12 @@
 
 #include <paraver.h>
 
-#include <init.h>
-#include <memory/Manager.h>
-#include <kernel/IOBuffer.h>
-#include <kernel/Mode.h>
-#include <trace/Thread.h>
-#include <util/Logger.h>
+#include "init.h"
+#include "memory/Manager.h"
+#include "core/IOBuffer.h"
+#include "core/Mode.h"
+#include "trace/Thread.h"
+#include "util/Logger.h"
 
 #include <unistd.h>
 #include <cstdio>
@@ -40,7 +40,8 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
 
     gmac::enterGmac();
-    gmac::Mode *dstMode = gmac::proc->owner(buf);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) {
         gmac::exitGmac();
@@ -51,7 +52,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     gmacError_t err;
     size_t ret = 0;
 
-    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
     
     size_t left = n;
     off_t  off  = 0;
@@ -64,7 +65,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    gmac::proc->destroyIOBuffer(buffer);
+    proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 
@@ -80,7 +81,8 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fwrite == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
-    gmac::Mode *srcMode = gmac::proc->owner(buf);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
@@ -93,7 +95,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     off_t  off  = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(bufferSize);
+    gmac::IOBuffer *buffer = proc.createIOBuffer(bufferSize);
 
     size_t left = n;
     buffer->lock();
@@ -109,7 +111,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= bytes;
         off  += bytes;
     }
-    gmac::proc->destroyIOBuffer(buffer);
+    proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 

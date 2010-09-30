@@ -28,7 +28,7 @@ Context::eventStream() const
 inline Accelerator &
 Context::accelerator()
 {
-    return *static_cast<Accelerator *>(_acc);
+    return static_cast<Accelerator &>(acc_);
 }
 
 }}

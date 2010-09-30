@@ -4,8 +4,8 @@
 
 namespace gmac { namespace cuda {
 
-Mode::Mode(Accelerator &acc) :
-    gmac::Mode(acc)
+Mode::Mode(Process &proc, Accelerator &acc) :
+    gmac::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
     _cudaCtx = accelerator().createCUcontext();

@@ -34,14 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTOCOL_LAZY_H_
 #define __MEMORY_PROTOCOL_LAZY_H_
 
-#include <gmac/gmac.h>
+#include "memory/Handler.h"
+#include "memory/Object.h"
+#include "memory/Protocol.h"
+#include "memory/StateObject.h"
 
-#include <memory/Protocol.h>
-#include <memory/Handler.h>
-#include <memory/Object.h>
-#include <memory/StateObject.h>
-
-#include <util/Logger.h>
+#include "util/Logger.h"
 
 namespace gmac { namespace memory { namespace protocol {
 

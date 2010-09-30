@@ -3,10 +3,10 @@
 
 #include <cstring>
 
-#include <init.h>
-#include <memory/Manager.h>
-#include <memory/Region.h>
-#include <kernel/Context.h>
+#include "init.h"
+#include "memory/Manager.h"
+#include "memory/Region.h"
+#include "core/Context.h"
 
 #include "stdc.h"
 

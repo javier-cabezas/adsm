@@ -40,8 +40,9 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class Mode;
 class KernelLaunch;
+class Mode;
+class Process;
 
 /*!
 	\brief Generic Accelerator Class
@@ -60,7 +61,7 @@ public:
     unsigned id() const;
 	virtual ~Accelerator();
 
-    virtual Mode *createMode() = 0;
+    virtual Mode *createMode(Process &proc) = 0;
     virtual void registerMode(Mode &) = 0;
     virtual void unregisterMode(Mode &) = 0;
     inline virtual unsigned load() const { return _load; }

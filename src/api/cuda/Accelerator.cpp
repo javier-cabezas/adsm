@@ -1,7 +1,7 @@
 #include "Accelerator.h"
 #include "Mode.h"
 
-#include <kernel/Process.h>
+#include "core/Process.h"
 
 namespace gmac { namespace cuda {
 
@@ -66,10 +66,10 @@ void Accelerator::init()
 #endif
 }
 
-gmac::Mode *Accelerator::createMode()
+gmac::Mode *Accelerator::createMode(gmac::Process &proc)
 {
     gmac::trace::Function::start("Accelerator","createMode");
-	Mode *mode = new Mode(*this);
+	Mode *mode = new Mode(proc, *this);
     gmac::trace::Function::end("Accelerator");
 	trace("Creating Execution Mode %p to Accelerator", mode);
     return mode;

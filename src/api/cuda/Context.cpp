@@ -44,7 +44,8 @@ void Context::cleanCUstreams()
     accelerator().destroyCUstream(_streamToHost);
     accelerator().destroyCUstream(_streamDevice);
 
-    if(_buffer != NULL) proc->destroyIOBuffer(_buffer);
+    gmac::Process &proc = gmac::Process::current();
+    if(_buffer != NULL) proc.destroyIOBuffer(_buffer);
 }
 
 gmacError_t Context::syncCUstream(CUstream _stream)
@@ -86,7 +87,8 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
     trace::Function::start("Context", "copyToDevice");
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(_buffer == NULL) _buffer = proc->createIOBuffer(paramPageSize);
+    gmac::Process &proc = gmac::Process::current();
+    if(_buffer == NULL) _buffer = proc.createIOBuffer(paramPageSize);
     if(_buffer == NULL) {
         trace("Not using pinned memory for transfer");
         trace::Function::end("Context");
@@ -120,7 +122,8 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
     trace("Transferring %zd bytes from device %p to host %p", size, device, host);
     trace::Function::start("Context", "copyToHost");
     if(size == 0) return gmacSuccess;
-    if(_buffer == NULL) _buffer = proc->createIOBuffer(paramPageSize);
+    gmac::Process &proc = gmac::Process::current();
+    if(_buffer == NULL) _buffer = proc.createIOBuffer(paramPageSize);
     if(_buffer == NULL) {
         trace::Function::end("Context");
         return gmac::Context::copyToHost(host, device, size);

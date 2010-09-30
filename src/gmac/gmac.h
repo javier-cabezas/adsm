@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
  * \verbatim
  * src/                - GMAC root directory 
  * src/gmac/           - Frontend directory
- * src/kernel/         - Backend API base classes
+ * src/core/           - Backend API base classes
  * src/api/            - Backend root directory
  * src/api/cuda        - CUDA run-time backend (no threading support)
  * src/api/cudadrv     - CUDA driver backend (full-featured)

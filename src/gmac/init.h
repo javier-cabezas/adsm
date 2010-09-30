@@ -34,10 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __INIT_H_
 #define __INIT_H_
 
-#include <util/Private.h>
-#include <util/Logger.h>
+#include "util/Private.h"
+#include "util/Logger.h"
 
-#include "kernel/Process.h"
+#include "core/Process.h"
 
 namespace gmac {
 
@@ -63,7 +63,6 @@ public:
     void unlock()    const { util::RWLock::unlock();   }
 };
 
-extern Process *proc;
 extern memory::Manager *manager;
 extern memory::Allocator *allocator;
 

@@ -90,7 +90,7 @@ fini(void)
 {
 	gmac::enterGmac();
     gmac::util::Logger::TRACE("Cleaning GMAC");
-    delete proc;
+    gmac::Process::fini();
     delete _inGmacLock;
     // We do not exitGmac to allow proper stdc function handling
     gmac::util::Logger::Destroy();
