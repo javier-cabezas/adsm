@@ -140,7 +140,7 @@ void Map::remove(Object *obj)
 void Map::insertReplicated(Object* obj)
 {
     gmac::Process &proc = parent_.process();
-    ObjectMap &replicated = proc.shared();
+    ObjectMap &replicated = proc.replicated();
     replicated.lockWrite();
     replicated.insert(value_type(obj->end(), obj));
     replicated.unlock();
@@ -151,7 +151,7 @@ Object *Map::removeReplicated(const void *addr)
 {
     gmac::Process &proc = parent_.process();
     ObjectMap::iterator i;
-    ObjectMap &replicated = proc.shared();
+    ObjectMap &replicated = proc.replicated();
     replicated.lockWrite();
     i = replicated.upper_bound(addr);
     Object *obj = i->second;
