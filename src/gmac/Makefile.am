@@ -6,7 +6,7 @@ lib_LTLIBRARIES = libgmac.la
 nobase_include_HEADERS = gmac.h gmac/vm.h
 libgmac_la_SOURCES = gmac.h gmac.cpp paraver.h init.h init.cpp
 libgmac_la_LIBADD = stdc/libgmac-stdc.la $(OS_DIR)/libgmac-os.la $(THREAD_DIR)/libgmac-thread.la\
-		../kernel/libkernel.la\
+		../core/libcore.la\
 		../memory/libmemory.la\
 		../util/libutil.la\
         ../trace/libtrace.la\

@@ -61,8 +61,6 @@ void memoryFini(void);
 
 namespace gmac {
 
-extern Process *proc;
-
 namespace memory { class DistributedObject; }
 
 
@@ -119,30 +117,34 @@ class Process : public util::RWLock, public util::Logger {
 protected:
     friend class Accelerator;
 
-	std::vector<Accelerator *> _accs;
-	ModeMap _modes;
-	ContextMap _contexts;
+    static Process *Proc_;
 
-	QueueMap _queues;
-    memory::ObjectMap __global;
-    memory::ObjectMap __shared;
+    std::vector<Accelerator *> _accs;
+    ModeMap _modes;
+    ContextMap _contexts;
 
-	unsigned current;
+    QueueMap _queues;
+    memory::ObjectMap shared_;
+    memory::ObjectMap centralized_;
+    memory::ObjectMap replicated_;
 
-	static size_t __totalMemory;
+    unsigned current_;
 
-	Process();
+    static size_t __totalMemory;
+
+    Process();
     kernel::allocator::Buddy *_ioMemory;
 
 public:
-	virtual ~Process();
+    virtual ~Process();
 
-	static void init(const char *manager, const char *allocator);
+    static void init(const char *manager, const char *allocator);
+    static void fini();
 
-	void initThread();
+    void initThread();
 #define ACC_AUTO_BIND -1
     Mode * create(int acc = ACC_AUTO_BIND);
-	void remove(Mode &mode);
+    void remove(Mode &mode);
 
 #ifndef USE_MMAP
     gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
@@ -152,31 +154,37 @@ public:
     IOBuffer *createIOBuffer(size_t size);
     void destroyIOBuffer(IOBuffer *buffer);
 
-	void *translate(void *addr);
-	inline const void *translate(const void *addr) {
+    void *translate(void *addr);
+    inline const void *translate(const void *addr) {
         return (const void *)translate((void *)addr);
     }
 
     /* Context management functions */
     void send(THREAD_ID id);
     void receive();
-	void sendReceive(THREAD_ID id);
+    void sendReceive(THREAD_ID id);
     void copy(THREAD_ID id);
-	gmacError_t migrate(Mode &mode, int acc);
+    gmacError_t migrate(Mode &mode, int acc);
 
-	void addAccelerator(Accelerator *acc);
+    void addAccelerator(Accelerator *acc);
 
-	inline static size_t totalMemory() { return __totalMemory; }
-	inline size_t nAccelerators() const { return _accs.size(); }
+    static size_t totalMemory();
+    size_t nAccelerators() const;
 
-    inline memory::ObjectMap &global() { return __global; }
-    inline const memory::ObjectMap &global() const { return __global; }
-    inline memory::ObjectMap &shared() { return __shared; }
-    inline const memory::ObjectMap &shared() const { return __shared; }
+    memory::ObjectMap &shared();
+    const memory::ObjectMap &shared() const;
+    memory::ObjectMap &replicated();
+    const memory::ObjectMap &replicated() const;
+    memory::ObjectMap &centralized();
+    const memory::ObjectMap &centralized() const;
 
     Mode *owner(const void *addr) const;
+
+    static Process &current();
 };
 
 }
+
+#include "Process.ipp"
 
 #endif

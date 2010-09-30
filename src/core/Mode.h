@@ -40,8 +40,8 @@ WITH THE SOFTWARE.  */
 
 #include "memory/Manager.h"
 
-#include "kernel/Accelerator.h"
-#include "kernel/Context.h"
+#include "core/Accelerator.h"
+#include "core/Context.h"
 
 #include "util/Private.h"
 #include "util/Logger.h"
@@ -54,6 +54,7 @@ namespace memory { class Map; class Object; class Block; }
 class Context;
 class IOBuffer;
 class KernelLaunch;
+class Process;
 
 class Mode : public gmac::util::Logger {
     friend class gmac::memory::Manager;
@@ -61,10 +62,14 @@ protected:
     static gmac::util::Private<Mode> key;
     static unsigned next;
 
-    unsigned _id;
+    unsigned id_;
+
+    Process &proc_;
+    // Must be a pointer since the Mode can change the accelerator on which it is running
+    Accelerator *acc_;
+
     bool _releasedObjects;
 
-    Accelerator *_acc;
     static gmac::util::Private<Context> _context;
     //Context *_context;
     memory::Map *_map;
@@ -83,7 +88,7 @@ protected:
 
 	gmacError_t _error;
 public:
-    Mode(Accelerator &_acc);
+    Mode(Process &proc, Accelerator &acc);
     ~Mode();
     void release();
 
@@ -166,6 +171,9 @@ public:
     bool releasedObjects() const;
     void releaseObjects();
     void acquireObjects();
+
+    Process &process();
+    const Process &process() const;
 };
 
 }

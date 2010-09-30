@@ -1,11 +1,9 @@
 #include "Map.h"
 #include "Object.h"
 
-#include <kernel/Process.h>
-#include <kernel/Mode.h>
-#include <kernel/Context.h>
-
-#include <gmac/init.h>
+#include "core/Process.h"
+#include "core/Mode.h"
+#include "core/Context.h"
 
 namespace gmac { namespace memory {
 
@@ -53,11 +51,13 @@ Map::~Map()
 
 const Object *Map::getObjectRead(const void *addr) const
 {
+    const gmac::Process &proc = parent_.process();
     Object *ret = NULL;
     ret = mapFind(addr);
-    if(ret == NULL)  ret = proc->global().mapFind(addr);
+    if(ret == NULL)  ret = proc.shared().mapFind(addr);
 #ifndef USE_MMAP
-    if(ret == NULL)  ret = proc->shared().mapFind(addr);
+    if(ret == NULL)  ret = proc.replicated().mapFind(addr);
+    if(ret == NULL)  ret = proc.centralized().mapFind(addr);
 #endif
     if (ret != NULL) ret->lockRead();
     return ret;
@@ -65,11 +65,13 @@ const Object *Map::getObjectRead(const void *addr) const
 
 Object *Map::getObjectWrite(const void *addr) const
 {
+    const gmac::Process &proc = parent_.process();
     Object *ret = NULL;
     ret = mapFind(addr);
-    if(ret == NULL)  ret = proc->global().mapFind(addr);
+    if(ret == NULL)  ret = proc.shared().mapFind(addr);
 #ifndef USE_MMAP
-    if(ret == NULL)  ret = proc->shared().mapFind(addr);
+    if(ret == NULL)  ret = proc.replicated().mapFind(addr);
+    if(ret == NULL)  ret = proc.centralized().mapFind(addr);
 #endif
     if (ret != NULL) ret->lockWrite();
     return ret;
@@ -77,14 +79,15 @@ Object *Map::getObjectWrite(const void *addr) const
 
 void Map::clean()
 {
+    gmac::Process &proc = parent_.process();
 	ObjectMap::iterator i;
-    ObjectMap &__global = proc->global();
+    ObjectMap &global = proc.shared();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
 		trace("Cleaning Object %p", i->second->start());
-		if(&__global != this) __global.lockWrite();
-		__global.erase(i->first);
-		if(&__global != this) __global.unlock();
+		if(&global != this) global.lockWrite();
+		global.erase(i->first);
+		if(&global != this) global.unlock();
 	}
 	clear();
 	unlock();
@@ -97,10 +100,11 @@ void Map::insert(Object *obj)
     ObjectMap::insert(value_type(obj->end(), obj));
     unlock();
 
-    ObjectMap &__global = proc->global();
-    __global.lockWrite();
-    __global.insert(value_type(obj->end(), obj));
-    __global.unlock();
+    gmac::Process &proc = parent_.process();
+    ObjectMap &shared = proc.shared();
+    shared.lockWrite();
+    shared.insert(value_type(obj->end(), obj));
+    shared.unlock();
 }
 
 
@@ -123,58 +127,62 @@ void Map::remove(Object *obj)
     __shared.unlock();
 #endif
 
-
-    ObjectMap &__global = proc->global();
-    __global.lockWrite();
-    i = __global.find(obj->end());
-    if(i != __global.end()) __global.erase(i);
-    __global.unlock();
+    gmac::Process &proc = parent_.process();
+    ObjectMap &shared = proc.shared();
+    shared.lockWrite();
+    i = shared.find(obj->end());
+    if(i != shared.end()) shared.erase(i);
+    shared.unlock();
 
 }
 
 #ifndef USE_MMAP
-void Map::insertShared(Object* obj)
+void Map::insertReplicated(Object* obj)
 {
-    ObjectMap &__shared = proc->shared();
-    __shared.lockWrite();
-    __shared.insert(value_type(obj->end(), obj));
-    __shared.unlock();
+    gmac::Process &proc = parent_.process();
+    ObjectMap &replicated = proc.shared();
+    replicated.lockWrite();
+    replicated.insert(value_type(obj->end(), obj));
+    replicated.unlock();
     util::Logger::TRACE("Added shared object @ %p", obj->start());
 }
 
-Object *Map::removeShared(const void *addr)
+Object *Map::removeReplicated(const void *addr)
 {
+    gmac::Process &proc = parent_.process();
     ObjectMap::iterator i;
-    ObjectMap &__shared = proc->shared();
-    __shared.lockWrite();
-    i = __shared.upper_bound(addr);
+    ObjectMap &replicated = proc.shared();
+    replicated.lockWrite();
+    i = replicated.upper_bound(addr);
     Object *obj = i->second;
-    assertion(i != __shared.end() && obj->start() == addr);
-    __shared.erase(i);
-    __shared.unlock();
+    assertion(i != replicated.end() && obj->start() == addr);
+    replicated.erase(i);
+    replicated.unlock();
     util::Logger::TRACE("Removed shared object @ %p", obj->start());
     return obj;
 }
 
-void Map::insertGlobal(Object* obj)
+void Map::insertCentralized(Object* obj)
 {
-    ObjectMap &__global = proc->global();
-    __global.lockWrite();
-    __global.insert(value_type(obj->end(), obj));
-    __global.unlock();
-    util::Logger::TRACE("Added global object @ %p", obj->start());
+    gmac::Process &proc = parent_.process();
+    ObjectMap &centralized = proc.centralized();
+    centralized.lockWrite();
+    centralized.insert(value_type(obj->end(), obj));
+    centralized.unlock();
+    util::Logger::TRACE("Added centralized object @ %p", obj->start());
 }
 
 
-void Map::removeGlobal(Object *obj)
+void Map::removeCentralized(Object *obj)
 {
-    ObjectMap &__global = proc->global();
-    __global.lockWrite();
-    ObjectMap::iterator i = __global.find(obj->end());
-    assertion(i != __global.end());
-    __global.erase(i);
-    __global.unlock();
-    util::Logger::TRACE("Removed global region @ %p", obj->start());
+    gmac::Process &proc = parent_.process();
+    ObjectMap &centralized = proc.centralized();
+    centralized.lockWrite();
+    ObjectMap::iterator i = centralized.find(obj->end());
+    assertion(i != centralized.end());
+    centralized.erase(i);
+    centralized.unlock();
+    util::Logger::TRACE("Removed centralized region @ %p", obj->start());
 }
 #endif
 

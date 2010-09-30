@@ -1,11 +1,11 @@
 #include <os/loader.h>
 
 #include <paraver.h>
-#include <order.h>
+#include "order.h"
 
-#include <init.h>
-#include <memory/Manager.h>
-#include <kernel/Context.h>
+#include "init.h"
+#include "memory/Manager.h"
+#include "core/Context.h"
 
 #include "mpi_local.h"
 

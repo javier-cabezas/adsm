@@ -34,10 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __API_CUDA_ACCELERATOR_H_
 #define __API_CUDA_ACCELERATOR_H_
 
-#include <kernel/Mode.h>
-#include <kernel/Accelerator.h>
-#include <util/Lock.h>
-#include <trace/Function.h>
+#include "core/Mode.h"
+#include "core/Accelerator.h"
+#include "util/Lock.h"
+#include "trace/Function.h"
 
 #include "Module.h"
 
@@ -102,7 +102,7 @@ public:
 
     static void init();
 
-	gmac::Mode *createMode();
+	gmac::Mode *createMode(gmac::Process &proc);
     void registerMode(gmac::Mode &mode);
     void unregisterMode(gmac::Mode &mode);
 

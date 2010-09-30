@@ -3,16 +3,16 @@
 #include "Accelerator.h"
 #include "allocator/Buddy.h"
 
-#include <gmac/init.h>
-#include <memory/Manager.h>
-#include <memory/Object.h>
-#include <memory/DistributedObject.h>
-#include <trace/Thread.h>
+#include "gmac/init.h"
+#include "memory/Manager.h"
+#include "memory/Object.h"
+#include "memory/DistributedObject.h"
+#include "trace/Thread.h"
 
 
 namespace gmac {
 
-Process *proc = NULL;
+Process *Process::Proc_ = NULL;
 
 ModeMap::ModeMap() :
     RWLock("ModeMap")
@@ -57,7 +57,7 @@ size_t ContextMap::remove(Context &context)
 }
 
 
-QueueMap::QueueMap() : 
+QueueMap::QueueMap() :
     util::RWLock("QueueMap")
 {}
 
@@ -102,9 +102,10 @@ size_t Process::__totalMemory = 0;
 
 Process::Process() :
     RWLock("Process"),
-    __global("GlobalMemoryMap"),
-    __shared("SharedMemoryMap"),
-    current(0),
+    shared_("SharedMemoryMap"),
+    centralized_("CentralizedMemoryMap"),
+    replicated_("ReplicatedMemoryMap"),
+    current_(0),
     _ioMemory(NULL)
 {}
 
@@ -143,17 +144,23 @@ Process::~Process()
 void
 Process::init(const char *manager, const char *allocator)
 {
-    // Process is a singleton class. The only allowed instance is proc
+    // Process is a singleton class. The only allowed instance is Proc_
     util::Logger::TRACE("Initializing process");
-    util::Logger::ASSERTION(proc == NULL);
-    proc = new Process();
+    util::Logger::ASSERTION(Process::Proc_ == NULL);
+    Process::Proc_ = new Process();
     apiInit();
     memoryInit(manager, allocator);
     // Create the private per-thread variables
     // Register first, implicit, thread
     Mode::init();
 
-    proc->initThread();
+    Process::Proc_->initThread();
+}
+
+void
+Process::fini()
+{
+    delete Process::Proc_;
 }
 
 void
@@ -185,22 +192,22 @@ Mode *Process::create(int acc)
         }
     }
 
-	trace("Creatintg Execution Mode on Acc#%d", usedAcc);
+    trace("Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = _accs[usedAcc]->createMode();
+    Mode *mode = _accs[usedAcc]->createMode(*this);
     _accs[usedAcc]->registerMode(*mode);
     _contexts.insert(&mode->currentContext(), mode);
     _modes.insert(mode, _accs[usedAcc]);
 
-    trace("Adding %zd shared memory objects", __shared.size());
+    trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
-    for(i = __shared.begin(); i != __shared.end(); i++) {
+    for(i = replicated_.begin(); i != replicated_.end(); i++) {
         memory::DistributedObject *obj =
                 dynamic_cast<memory::DistributedObject *>(i->second);
         obj->addOwner(*mode);
     }
-	unlock();
+    unlock();
 
     mode->attach();
     lockWrite();
@@ -250,7 +257,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
 {
     if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
-	trace("Migrating execution mode");
+    trace("Migrating execution mode");
 #ifndef USE_MMAP
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
@@ -261,34 +268,34 @@ gmacError_t Process::migrate(Mode &mode, int acc)
         if (ret == gmacSuccess) {
             _contexts.remove(context);
             _contexts.insert(&context, &mode);
-            _modes[&mode] = _accs[acc];                 
+            _modes[&mode] = _accs[acc];
         }
     }
 #else
     Fatal("Migration not implemented when using mmap");
 #endif
-	trace("Context migrated");
+    trace("Context migrated");
     return ret;
 }
 
 // TODO when is this function called
 void Process::remove(Mode &mode)
 {
-    trace("Adding %zd shared memory objects", __shared.size());
+    trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
-    for(i = __shared.begin(); i != __shared.end(); i++) {
+    for(i = replicated_.begin(); i != replicated_.end(); i++) {
         memory::DistributedObject *obj =
                 dynamic_cast<memory::DistributedObject *>(i->second);
         obj->removeOwner(mode);
     }
     lockWrite();
-	_modes.remove(mode);
-    unlock();   
+    _modes.remove(mode);
+    unlock();
 }
 
 void Process::addAccelerator(Accelerator *acc)
 {
-	_accs.push_back(acc);
+    _accs.push_back(acc);
 }
 
 IOBuffer *Process::createIOBuffer(size_t size)
@@ -341,12 +348,12 @@ void Process::receive()
 void Process::sendReceive(THREAD_ID id)
 {
     Mode &mode = Mode::current();
-	QueueMap::iterator q = _queues.find(id);
-	assertion(q != _queues.end());
-	q->second->queue->push(&mode);
+    QueueMap::iterator q = _queues.find(id);
+    assertion(q != _queues.end());
+    q->second->queue->push(&mode);
     Mode::initThread();
-	q = _queues.find(SELF());
-	assertion(q != _queues.end());
+    q = _queues.find(SELF());
+    assertion(q != _queues.end());
     q->second->queue->pop()->attach();
 }
 
@@ -361,12 +368,11 @@ void Process::copy(THREAD_ID id)
 
 Mode *Process::owner(const void *addr) const
 {
-    const memory::Object *object = __global.getObjectRead(addr);
+    const memory::Object *object = shared_.getObjectRead(addr);
     if(object == NULL) return NULL;
     Mode & ret = object->owner();
-    __global.putObject(*object);
+    shared_.putObject(*object);
     return &ret;
 }
-
 
 }

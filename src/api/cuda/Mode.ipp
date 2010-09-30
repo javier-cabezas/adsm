@@ -1,7 +1,7 @@
 #ifndef __API_CUDA_MODE_IPP_H_
 #define __API_CUDA_MODE_IPP_H_
 
-#include "kernel/Process.h"
+#include "core/Process.h"
 
 #include "Context.h"
 
@@ -83,10 +83,7 @@ void Mode::argument(const void *arg, size_t size, off_t offset)
 inline Mode &
 Mode::current()
 {
-    Mode *mode = static_cast<Mode *>(gmac::Mode::key.get());
-    if(mode == NULL) mode = static_cast<Mode *>(proc->create());
-    gmac::util::Logger::ASSERTION(mode != NULL);
-    return *mode;
+    return static_cast<Mode &>(gmac::Mode::current());
 }
 
 #ifdef USE_VM
@@ -114,7 +111,7 @@ Mode::dirtyBitmapShiftEntryDevPtr() const
 inline Accelerator &
 Mode::accelerator()
 {
-    return *static_cast<Accelerator *>(_acc);
+    return *static_cast<Accelerator *>(acc_);
 }
 
 }}

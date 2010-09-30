@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_DISTRIBUTEDOBJECT_H_
 #define __MEMORY_DISTRIBUTEDOBJECT_H_
 
-#include <kernel/Mode.h>
+#include "core/Mode.h"
 
 
 namespace gmac { namespace memory {

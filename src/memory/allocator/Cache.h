@@ -34,11 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_ALLOCATOR_CACHE_H_
 #define __MEMORY_ALLOCATOR_CACHE_H_
 
-#include <gmac/gmac.h>
-
-#include <util/Private.h>
-#include <util/Logger.h>
-#include <memory/Manager.h>
+#include "memory/Manager.h"
+#include "util/Private.h"
+#include "util/Logger.h"
 
 #include <list>
 #include <map>
