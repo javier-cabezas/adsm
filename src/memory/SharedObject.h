@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_SHAREDOBJECT_H_
 #define __MEMORY_SHAREDOBJECT_H_
 
-#include <memory/StateObject.h>
-#include <memory/Block.h>
-#include <kernel/Mode.h>
+#include "memory/StateObject.h"
+#include "memory/Block.h"
+#include "core/Mode.h"
 
 namespace gmac { namespace memory {
 

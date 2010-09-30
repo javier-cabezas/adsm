@@ -42,8 +42,10 @@ WITH THE SOFTWARE.  */
 #include <set>
 #include <map>
 
-namespace gmac { namespace memory {
+namespace gmac {
+class Mode;
 
+namespace memory {
 class Object;
 
 class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
@@ -66,19 +68,20 @@ public:
 class Map : public ObjectMap, public util::Logger {
 protected:
     void clean();
+    Mode &parent_;
 
 public:
-    Map(const char *name) : ObjectMap(name) {};
+    Map(const char *name, Mode &parent) : ObjectMap(name), parent_(parent) {}
     virtual ~Map();
 
     void insert(Object *obj);
     void remove(Object *obj);
 #ifndef USE_MMAP
-    void insertShared(Object *obj);
-    Object *removeShared(const void *addr);
+    void insertReplicated(Object *obj);
+    Object *removeReplicated(const void *addr);
 
-    void insertGlobal(Object *obj);
-    void removeGlobal(Object *obj);
+    void insertCentralized(Object *obj);
+    void removeCentralized(Object *obj);
 #endif
 
     const Object *getObjectRead(const void *addr) const;

@@ -31,77 +31,47 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_KERNEL_H
-#define __KERNEL_KERNEL_H
+#ifndef __KERNEL_CONTEXT_H_
+#define __KERNEL_CONTEXT_H_
 
-#include <kernel/Descriptor.h>
-#include <memory/ObjectSet.h>
+#include "gmac/gmac.h"
 
-#include <util/ReusableObject.h>
-#include <util/Logger.h>
+#include "core/Accelerator.h"
+#include "core/Kernel.h"
 
-#include <gmac/gmac.h>
+#include "util/Logger.h"
 
-#include <vector>
 
 namespace gmac {
 
-class Argument : public util::ReusableObject<Argument> {
-public:
-    void * _ptr;
-    size_t _size;
-    off_t  _offset;
-    Argument(void * ptr, size_t size, off_t offset) :
-        _ptr(ptr), _size(size), _offset(offset) {}
-private:
-    friend class Kernel;
-};
-
-typedef std::vector<Argument> ArgVector;
-
-/// \todo create a pool of objects to avoid mallocs/frees
-class KernelConfig : public ArgVector, public util::Logger {
-protected:
-    static const unsigned StackSize = 4096;
-
-    char _stack[StackSize];
-    size_t _argsSize;
-
-    KernelConfig(const KernelConfig & c);
-public:
-    /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig() : _argsSize(0) {};
-    virtual ~KernelConfig() { clear(); };
-
-    void pushArgument(const void * arg, size_t size, off_t offset);
-    inline off_t argsSize() const { return _argsSize; }
-
-    inline char * argsArray() { return _stack; }
-};
-
-typedef Descriptor<gmacKernel_t> KernelDescriptor;
-
+class Kernel;
 class KernelLaunch;
 
-class Kernel : public memory::ObjectSet, public KernelDescriptor
-{
-public:
-    Kernel(const KernelDescriptor & k) :
-        KernelDescriptor(k.name(), k.key()) {};
-    virtual ~Kernel() {};
+/*!
+	\brief Generic Context Class
+*/
+class Context : public util::RWLock, public util::Logger {
+protected:
+    Accelerator &acc_;
 
-    virtual KernelLaunch * launch(KernelConfig & c) = 0;
-};
+    unsigned id;
 
-class KernelLaunch : public memory::ObjectSet {
+	Context(Accelerator &acc, unsigned id);
 public:
-    virtual ~KernelLaunch() {};
-    virtual gmacError_t execute() = 0;
+	virtual ~Context();
+
+    static void initThread();
+
+	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size);
+
+    virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
+
+    virtual gmac::KernelLaunch *launch(gmac::Kernel *kernel) = 0;
+    virtual gmacError_t sync() = 0;
 };
 
 }
 
-
-#endif /* KERNEL_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif

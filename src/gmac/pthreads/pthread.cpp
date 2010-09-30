@@ -1,11 +1,11 @@
-#include <init.h>
-#include <os/loader.h>
-#include <kernel/Process.h>
-#include <kernel/Context.h>
-#include <util/Lock.h>
-#include <trace/Thread.h>
+#include "core/Process.h"
+#include "core/Context.h"
+#include "init.h"
+#include "os/loader.h"
+#include "trace/Thread.h"
+#include "util/Lock.h"
 
-#include <order.h>
+#include "order.h"
 
 #include <pthread.h>
 
@@ -42,7 +42,8 @@ static void *gmac_pthread(void *arg)
 {
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    gmac::proc->initThread();
+    gmac::Process &proc = gmac::Process::current();
+    proc.initThread();
     gmac::trace::Thread::start();
 	pLock->unlock();
     gmac::trace::Thread::run();

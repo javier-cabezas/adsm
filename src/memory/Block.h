@@ -34,12 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_BLOCK_H_
 #define __MEMORY_BLOCK_H_
 
-#include <config.h>
+#include "config.h"
 
-#include <gmac/gmac.h>
+#include "gmac/gmac.h"
 
-#include <util/Lock.h>
-#include <util/Logger.h>
+#include "util/Lock.h"
+#include "util/Logger.h"
 
 
 namespace gmac {

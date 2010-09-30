@@ -1,7 +1,7 @@
 #ifndef __API_CUDADRV_KERNEL_H_
 #define __API_CUDADRV_KERNEL_H_
 
-#include <kernel/Kernel.h>
+#include "core/Kernel.h"
 
 #include <cuda.h>
 #include <driver_types.h>

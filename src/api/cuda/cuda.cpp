@@ -3,8 +3,8 @@
 #include "Accelerator.h"
 #include "Mode.h"
 
-#include <gmac/init.h>
-#include <kernel/Process.h>
+#include "gmac/init.h"
+#include "core/Process.h"
 
 #include <cuda.h>
 
@@ -19,10 +19,10 @@ static bool initialized = false;
 
 void apiInit(void)
 {
+    gmac::Process &proc = gmac::Process::current();
 	if(initialized)
 		util::Logger::Fatal("GMAC double initialization not allowed");
 
-	util::Logger::ASSERTION(proc != NULL);
 	util::Logger::TRACE("Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
 		util::Logger::Fatal("Unable to init CUDA");
@@ -45,11 +45,11 @@ void apiInit(void)
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			util::Logger::Fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
-			proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+			proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
 			devRealCount++;
 		}
 #else
-        proc->addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+        proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
         devRealCount++;
 #endif
 	}

@@ -1,11 +1,11 @@
 #include "Cache.h"
 
-#include <kernel/Context.h>
-#include <kernel/Mode.h>
-#include <memory/Manager.h>
+#include "core/Context.h"
+#include "core/Mode.h"
+#include "memory/Manager.h"
 
-#include <util/Parameter.h>
-#include <util/Private.h>
+#include "util/Parameter.h"
+#include "util/Private.h"
 
 namespace gmac { namespace memory { namespace allocator {
 

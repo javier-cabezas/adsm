@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_PROTOCOL_H_
 
 
-#include "kernel/IOBuffer.h"
+#include "core/IOBuffer.h"
 
 #include "util/Logger.h"
 

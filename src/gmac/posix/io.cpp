@@ -1,9 +1,9 @@
-#include <gmac/init.h>
-#include <os/loader.h>
-#include <memory/Manager.h>
-#include <kernel/Mode.h>
-#include <kernel/IOBuffer.h>
-#include <trace/Thread.h>
+#include "core/Mode.h"
+#include "core/IOBuffer.h"
+#include "gmac/init.h"
+#include "memory/Manager.h"
+#include "os/loader.h"
+#include "trace/Thread.h"
 
 #include <unistd.h>
 #include <cstdio>
@@ -38,7 +38,8 @@ ssize_t read(int fd, void *buf, size_t count)
 
 
     gmac::enterGmac();
-    gmac::Mode *dstMode = gmac::proc->owner(buf);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) {
         gmac::exitGmac();
@@ -50,7 +51,7 @@ ssize_t read(int fd, void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
 
     size_t left = count;
     off_t  off  = 0;
@@ -63,7 +64,7 @@ ssize_t read(int fd, void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    gmac::proc->destroyIOBuffer(buffer);
+    proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 
@@ -79,7 +80,8 @@ ssize_t write(int fd, const void *buf, size_t count)
 	if(gmac::inGmac() == 1) return __libc_write(fd, buf, count);
 
 	gmac::enterGmac();
-    gmac::Mode *srcMode = gmac::proc->owner(buf);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) {
         gmac::exitGmac();
@@ -92,7 +94,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = gmac::proc->createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
 
     size_t left = count;
     while (left != 0) {
@@ -104,7 +106,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    gmac::proc->destroyIOBuffer(buffer);
+    proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 
