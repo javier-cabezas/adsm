@@ -1,7 +1,7 @@
 #ifndef __MEMORY_BLOCK_IPP
 #define __MEMORY_BLOCK_IPP
 
-#include "kernel/Mode.h"
+#include "core/Mode.h"
 
 namespace gmac { namespace memory {
 inline Block::Block(void *addr, size_t size) :

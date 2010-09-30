@@ -36,12 +36,12 @@ inline void Mode::destroy()
 
 inline unsigned Mode::id() const
 {
-    return _id;
+    return id_;
 }
 
 inline unsigned Mode::accId() const
 {
-    return _acc->id();
+    return acc_->id();
 }
 
 inline void
@@ -54,13 +54,13 @@ Mode::addObject(memory::Object *obj)
 inline void
 Mode::addReplicatedObject(memory::Object *obj)
 {
-    _map->insertShared(obj);
+    _map->insertReplicated(obj);
 }
 
 inline void
 Mode::addCentralizedObject(memory::Object *obj)
 {
-    _map->insertGlobal(obj);
+    _map->insertCentralized(obj);
 }
 
 #endif
@@ -139,6 +139,18 @@ inline void
 Mode::acquireObjects()
 {
     _releasedObjects = false;
+}
+
+inline Process &
+Mode::process()
+{
+    return proc_;
+}
+
+inline const Process &
+Mode::process() const
+{
+    return proc_;
 }
 
 }

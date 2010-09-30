@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 
 #include "memory/Object.h"
 #include "memory/Block.h"
-#include "kernel/Mode.h"
+#include "core/Mode.h"
 
 
 namespace gmac { namespace memory {

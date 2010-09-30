@@ -40,9 +40,9 @@ WITH THE SOFTWARE.  */
 #include "Kernel.h"
 #include "Module.h"
 
-#include <util/Lock.h>
-#include <kernel/Context.h>
-#include <kernel/IOBuffer.h>
+#include "util/Lock.h"
+#include "core/Context.h"
+#include "core/IOBuffer.h"
 
 #include <stdint.h>
 #include <cuda.h>

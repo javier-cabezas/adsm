@@ -1,11 +1,11 @@
-#include "Mode.h"
-#include "IOBuffer.h"
 #include "Accelerator.h"
+#include "IOBuffer.h"
+#include "Mode.h"
+#include "Process.h"
 
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/Protocol.h"
-#include "gmac/init.h"
 
 namespace gmac {
 
@@ -14,17 +14,18 @@ gmac::util::Private<Context> Mode::_context;
 
 unsigned Mode::next = 0;
 
-Mode::Mode(Accelerator &acc) :
-    _id(++next),
-    _releasedObjects(true),
-    _acc(&acc)
+Mode::Mode(Process &proc, Accelerator &acc) :
+    id_(++next),
+    proc_(proc),
+    acc_(&acc),
+    _releasedObjects(true)
 #ifdef USE_VM
     , _bitmap(new memory::vm::Bitmap())
 #endif
     , _count(0)
 {
     trace("Creating new memory map");
-    _map = new memory::Map("ModeMemoryMap");
+    _map = new memory::Map("ModeMemoryMap", *this);
 }
 
 Mode::~Mode()
@@ -42,7 +43,7 @@ Mode::release()
     delete _bitmap;
 #endif
     delete _map;
-    _acc->unregisterMode(*this); 
+    acc_->unregisterMode(*this); 
 }
 void Mode::kernel(gmacKernel_t k, Kernel * kernel)
 {
@@ -56,8 +57,9 @@ void Mode::kernel(gmacKernel_t k, Kernel * kernel)
 
 Mode &Mode::current()
 {
+    Process &proc = Process::current();
     Mode *mode = Mode::key.get();
-    if(mode == NULL) mode = proc->create();
+    if(mode == NULL) mode = proc.create();
     gmac::util::Logger::ASSERTION(mode != NULL);
     return *mode;
 }
@@ -88,7 +90,7 @@ void Mode::detach()
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {
     switchIn();
-    _error = _acc->malloc(addr, size, align);
+    _error = acc_->malloc(addr, size, align);
     switchOut();
     return _error;
 }
@@ -96,7 +98,7 @@ gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 gmacError_t Mode::free(void *addr)
 {
     switchIn();
-    _error = _acc->free(addr);
+    _error = acc_->free(addr);
     switchOut();
     return _error;
 }
@@ -156,6 +158,8 @@ gmacError_t Mode::sync()
     return _error;
 }
 
+// TODO: remove this
+extern gmac::memory::Manager *manager;
 
 #ifndef USE_MMAP
 bool Mode::requireUpdate(memory::Block &block)
@@ -167,12 +171,12 @@ bool Mode::requireUpdate(memory::Block &block)
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    trace("Moving to %d", acc.id());
+    trace("Moving to %d", acc_->id());
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
     size_t needed = 0;
-    acc.memInfo(&free, NULL);
+    acc_->memInfo(&free, NULL);
     gmac::memory::Map::const_iterator i;
     for(i = _map->begin(); i != _map->end(); i++) {
         gmac::memory::Object &object = *i->second;
@@ -189,10 +193,10 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         object.free();
     }
 
-    _acc->unregisterMode(*this);
+    acc_->unregisterMode(*this);
     delete Mode::_context.get();
-    _acc = &acc;
-    _acc->registerMode(*this);
+    acc_ = &acc;
+    acc_->registerMode(*this);
     newContext();
 
     for(i = _map->begin(); i != _map->end(); i++) {
@@ -213,7 +217,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 void Mode::memInfo(size_t *free, size_t *total)
 {
     switchIn();
-    _acc->memInfo(free, total);
+    acc_->memInfo(free, total);
     switchOut();
 }
 

@@ -34,10 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_REPLICATEDOBJECT_H_
 #define __MEMORY_REPLICATEDOBJECT_H_
 
-#include <memory/StateObject.h>
-#include <memory/DistributedObject.h>
-#include <memory/Block.h>
-#include <kernel/Mode.h>
+#include "memory/StateObject.h"
+#include "memory/DistributedObject.h"
+#include "memory/Block.h"
+#include "core/Mode.h"
 
 #include <map>
 

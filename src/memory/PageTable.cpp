@@ -1,6 +1,6 @@
 #include "PageTable.h"
 
-#include <kernel/Context.h>
+#include "core/Context.h"
 
 
 namespace gmac { namespace memory {

@@ -1,4 +1,4 @@
-#include <kernel/Process.h>
+#include "core/Process.h"
 
 #include "Manager.h"
 #include "Map.h"
@@ -212,10 +212,11 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
 
 gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
 {
+    gmac::Process &proc = gmac::Process::current();
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
-        gmac::Mode &mode = *proc->owner(addr);
+        gmac::Mode &mode = *proc.owner(addr);
         const Object *obj = mode.getObjectRead(ptr);
         ret = _protocol->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
@@ -294,8 +295,9 @@ bool Manager::requireUpdate(Block &block)
 
 gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 {
-    gmac::Mode *dstMode = proc->owner(dst);
-    gmac::Mode *srcMode = proc->owner(src);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *dstMode = proc.owner(dst);
+    gmac::Mode *srcMode = proc.owner(src);
 
 	if (dstMode == NULL && srcMode == NULL) {
         memcpy(dst, src, n);
@@ -361,7 +363,8 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 
 gmacError_t Manager::memset(void *s, int c, size_t n)
 {
-    gmac::Mode *mode = proc->owner(s);
+    gmac::Process &proc = gmac::Process::current();
+    gmac::Mode *mode = proc.owner(s);
 	if (mode == NULL) {
         ::memset(s, c, n);
         return gmacSuccess;

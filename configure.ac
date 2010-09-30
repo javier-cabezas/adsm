@@ -348,8 +348,8 @@ AC_CONFIG_FILES([Makefile
 	src/Makefile
 	src/config/config.h
 	src/config/Makefile
-	src/kernel/Makefile
-    src/kernel/allocator/Makefile
+	src/core/Makefile
+    src/core/allocator/Makefile
 	src/memory/Makefile
 	src/memory/protocol/Makefile
     src/memory/allocator/Makefile
