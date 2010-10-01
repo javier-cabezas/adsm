@@ -47,3 +47,29 @@ syntax: regexp
 syntax: regexp
 .*\.la
 
+syntax regexp
+\.cudafe
+syntax regexp
+\.cu.cpp$
+syntax regexp
+\.stub\.c$
+syntax regexp
+\.ptx$
+syntax regexp
+\.gpu$
+syntax regexp
+\.cubin$
+
+
+syntax: regexp
+^tests/bandwidth$
+syntax: regexp
+^tests/hybridComputation$
+syntax: regexp
+^tests/schedAllocation$
+syntax: regexp
+^tests/threadBandwidth$
+syntax: regexp
+^tests/transferBlocks$
+syntax: regexp
+^tests/transferCosts$
