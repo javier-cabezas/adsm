@@ -197,7 +197,7 @@ Mode *Process::create(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = accs_[usedAcc]->createMode(*this);
     accs_[usedAcc]->registerMode(*mode);
-    contexts_.insert(&mode->currentContext(), mode);
+    contexts_.insert(&Context::current(), mode);
     modes_.insert(mode, accs_[usedAcc]);
 
     trace("Adding %zd replicated memory objects", replicated_.size());
@@ -262,7 +262,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
-        Context &context = mode.currentContext();
+        Context &context = Context::current();
         ret = mode.moveTo(*accs_[acc]);
 
         if (ret == gmacSuccess) {
@@ -303,7 +303,7 @@ IOBuffer *Process::createIOBuffer(size_t size)
     assertion(ioMemory_ != NULL);
     void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
-    return new IOBuffer(addr, size);
+    return new IOBuffer(Context::current(), addr, size);
 }
 
 void Process::destroyIOBuffer(IOBuffer *buffer)

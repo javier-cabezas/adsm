@@ -23,18 +23,6 @@ void Mode::switchOut()
 #endif
 }
 
-inline Context &
-Mode::context()
-{
-    return dynamic_cast<Context &>(currentContext());
-}
-
-inline const Context &
-Mode::context() const
-{
-    return dynamic_cast<Context &>(currentContext());
-}
-
 inline gmacError_t
 Mode::execute(gmac::KernelLaunch & launch)
 {
@@ -49,7 +37,7 @@ gmacError_t Mode::bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t len, 
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);
     switchIn();
-    gmacError_t ret = context().bufferToDevice(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
+    gmacError_t ret = Context::current().bufferToDevice(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
     switchOut();
     return ret;
 }
@@ -59,7 +47,7 @@ gmacError_t Mode::deviceToBuffer(gmac::IOBuffer &buffer, const void * src, size_
 {
     util::Logger::trace("Copy %p to host %p (%zd bytes)", src, buffer.addr(), len);
     switchIn();
-    gmacError_t ret = context().deviceToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
+    gmacError_t ret = Context::current().deviceToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
     switchOut();
     return ret;
 }
@@ -68,7 +56,7 @@ inline
 void Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     switchIn();
-    context().call(Dg, Db, shared, tokens);
+    Context::current().call(Dg, Db, shared, tokens);
     switchOut();
 }
 
@@ -76,7 +64,7 @@ inline
 void Mode::argument(const void *arg, size_t size, off_t offset)
 {
     switchIn();
-    context().argument(arg, size, offset);
+    Context::current().argument(arg, size, offset);
     switchOut();
 }
 

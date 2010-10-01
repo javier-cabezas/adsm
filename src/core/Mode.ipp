@@ -8,13 +8,11 @@ namespace gmac {
 inline void Mode::init()
 {
     gmac::util::Private<Mode>::init(key);
-    gmac::util::Private<Context>::init(_context);
 }
 
 inline void Mode::initThread()
 {
     key.set(NULL);
-    _context.set(NULL);
 }
 
 inline bool

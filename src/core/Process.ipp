@@ -4,13 +4,13 @@ namespace gmac {
 inline size_t
 Process::totalMemory()
 {
-    return __totalMemory;
+    return TotalMemory_;
 }
 
 inline size_t
 Process::nAccelerators() const
 {
-    return _accs.size();
+    return accs_.size();
 }
 
 inline memory::ObjectMap &
