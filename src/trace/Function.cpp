@@ -12,7 +12,7 @@ ModuleMap *Function::map = NULL;
 FunctionMap::FunctionMap(unsigned n, const char *name)
 {
     _event = paraver::Factory<paraver::EventName>::create(name);
-    _id = n * _stride;
+    id_ = n * _stride;
 }
 
 

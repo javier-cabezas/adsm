@@ -30,7 +30,7 @@ void Mode::newContext()
     switchIn();
     modules = accelerator().createModules();
 
-    kernels.clear();
+    kernels_.clear();
 
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT

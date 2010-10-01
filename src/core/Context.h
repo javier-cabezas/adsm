@@ -54,7 +54,7 @@ class Context : public util::RWLock, public util::Logger {
 protected:
     Accelerator &acc_;
 
-    unsigned id;
+    unsigned id_;
 
 	Context(Accelerator &acc, unsigned id);
 public:

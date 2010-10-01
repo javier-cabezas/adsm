@@ -68,25 +68,25 @@ protected:
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
-    bool _releasedObjects;
+    bool releasedObjects_;
 
     static gmac::util::Private<Context> _context;
     //Context *_context;
-    memory::Map *_map;
+    memory::Map *map_;
 #ifdef USE_VM
     memory::vm::Bitmap *_bitmap;
 #endif
-    unsigned _count;
+    unsigned count_;
 
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
-    KernelMap kernels;
+    KernelMap kernels_;
 
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
     virtual void newContext() = 0;
 
-	gmacError_t _error;
+	gmacError_t error_;
 public:
     Mode(Process &proc, Accelerator &acc);
     ~Mode();

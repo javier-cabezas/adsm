@@ -168,7 +168,7 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 gmac::KernelLaunch *Context::launch(gmac::Kernel *kernel)
 {
     trace::Function::start("Context", "launch");
-    gmac::trace::Thread::run(id);
+    gmac::trace::Thread::run(id_);
     gmac::KernelLaunch *ret = kernel->launch(_call);
     trace::Function::end("Context");
     return ret;
@@ -186,7 +186,7 @@ gmacError_t Context::sync()
        _buffer->state(IOBuffer::Idle);
     }
     gmacError_t ret = syncCUstream(_streamLaunch);
-    gmac::trace::Thread::resume(id);
+    gmac::trace::Thread::resume(id_);
     trace::Function::end("Context");
     return ret;
 }

@@ -18,21 +18,21 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     id_(++next),
     proc_(proc),
     acc_(&acc),
-    _releasedObjects(true)
+    releasedObjects_(true)
 #ifdef USE_VM
     , _bitmap(new memory::vm::Bitmap())
 #endif
-    , _count(0)
+    , count_(0)
 {
     trace("Creating new memory map");
-    _map = new memory::Map("ModeMemoryMap", *this);
+    map_ = new memory::Map("ModeMemoryMap", *this);
 }
 
 Mode::~Mode()
 {
-    _count--;
-    if(_count > 0)
-        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", _count);
+    count_--;
+    if(count_ > 0)
+        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count_);
     if(this == key.get()) key.set(NULL);
 }
 
@@ -42,7 +42,7 @@ Mode::release()
 #ifdef USE_VM
     delete _bitmap;
 #endif
-    delete _map;
+    delete map_;
     acc_->unregisterMode(*this); 
 }
 void Mode::kernel(gmacKernel_t k, Kernel * kernel)
@@ -50,9 +50,9 @@ void Mode::kernel(gmacKernel_t k, Kernel * kernel)
     assertion(kernel != NULL);
     trace("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
     KernelMap::iterator i;
-    i = kernels.find(k);
-    assertion(i == kernels.end());
-    kernels[k] = kernel;
+    i = kernels_.find(k);
+    assertion(i == kernels_.end());
+    kernels_[k] = kernel;
 }
 
 Mode &Mode::current()
@@ -77,7 +77,7 @@ void Mode::attach()
     if(mode == this) return;
     if(mode != NULL) mode->destroy();
     key.set(this);
-    _count++;
+    count_++;
 }
 
 void Mode::detach()
@@ -90,57 +90,57 @@ void Mode::detach()
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {
     switchIn();
-    _error = acc_->malloc(addr, size, align);
+    error_ = acc_->malloc(addr, size, align);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmacError_t Mode::free(void *addr)
 {
     switchIn();
-    _error = acc_->free(addr);
+    error_ = acc_->free(addr);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
     switchIn();
-    _error = currentContext().copyToDevice(dev, host, size);
+    error_ = currentContext().copyToDevice(dev, host, size);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
     util::Logger::trace("Copy %p to host %p (%zd bytes)", dev , host, size);
     switchIn();
-    _error = currentContext().copyToHost(host, dev, size);
+    error_ = currentContext().copyToHost(host, dev, size);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 {
     switchIn();
-    _error = currentContext().copyDevice(dst, src, size);
+    error_ = currentContext().copyDevice(dst, src, size);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmacError_t Mode::memset(void *addr, int c, size_t size)
 {
     switchIn();
-    _error = currentContext().memset(addr, c, size);
+    error_ = currentContext().memset(addr, c, size);
     switchOut();
-    return _error;
+    return error_;
 }
 
 gmac::KernelLaunch *Mode::launch(const char *kernel)
 {
-    KernelMap::iterator i = kernels.find(kernel);
-    assert(i != kernels.end());
+    KernelMap::iterator i = kernels_.find(kernel);
+    assert(i != kernels_.end());
     gmac::Kernel * k = i->second;
     assertion(k != NULL);
     switchIn();
@@ -153,9 +153,9 @@ gmac::KernelLaunch *Mode::launch(const char *kernel)
 gmacError_t Mode::sync()
 {
     switchIn();
-    _error = currentContext().sync();
+    error_ = currentContext().sync();
     switchOut();
-    return _error;
+    return error_;
 }
 
 // TODO: remove this
@@ -178,7 +178,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     size_t needed = 0;
     acc_->memInfo(&free, NULL);
     gmac::memory::Map::const_iterator i;
-    for(i = _map->begin(); i != _map->end(); i++) {
+    for(i = map_->begin(); i != map_->end(); i++) {
         gmac::memory::Object &object = *i->second;
         needed += object.size();
     }
@@ -187,7 +187,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         return gmacErrorInsufficientDeviceMemory;
     }
 
-    for(i = _map->begin(); i != _map->end(); i++) {
+    for(i = map_->begin(); i != map_->end(); i++) {
         gmac::memory::Object &object = *i->second;
         manager->protocol().toHost(object);
         object.free();
@@ -199,7 +199,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     acc_->registerMode(*this);
     newContext();
 
-    for(i = _map->begin(); i != _map->end(); i++) {
+    for(i = map_->begin(); i != map_->end(); i++) {
         gmac::memory::Object &object = *i->second;
         object.realloc(*this);
     }

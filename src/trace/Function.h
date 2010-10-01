@@ -45,11 +45,11 @@ namespace gmac { namespace trace {
 class FunctionMap : public std::map<std::string, unsigned> {
 protected:
     paraver::EventName *_event;
-    unsigned _id;
+    unsigned id_;
     static const unsigned _stride = 64;
 public:
     FunctionMap(unsigned, const char *);
-    unsigned id() const { return _id; }
+    unsigned id() const { return id_; }
     paraver::EventName &event() { return *_event; }
 };
 

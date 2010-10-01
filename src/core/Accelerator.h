@@ -29,7 +29,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-WITH THE SOFTWARE.  */
+WITH THE SOFTWARE.
+*/
 
 #ifndef __KERNEL_ACCELERATOR_H_
 #define __KERNEL_ACCELERATOR_H_
@@ -51,10 +52,10 @@ class Process;
 */
 class Accelerator : public util::Logger {
 protected:
-    size_t _memory;
-    unsigned _id;
+    size_t memory_;
+    unsigned id_;
 
-    unsigned _load;
+    unsigned load_;
 public:
 	Accelerator(int n);
 
@@ -64,12 +65,12 @@ public:
     virtual Mode *createMode(Process &proc) = 0;
     virtual void registerMode(Mode &) = 0;
     virtual void unregisterMode(Mode &) = 0;
-    inline virtual unsigned load() const { return _load; }
+    inline virtual unsigned load() const { return load_; }
 
     /*!  \brief Allocates memory on the accelerator memory */
 	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1) = 0;
 
-	/*!  \brief Releases memory previously allocated by Malloc */
+	/*!  \brief Releases memory previously allocated by malloc */
 	virtual gmacError_t free(void *addr) = 0;
 
     virtual gmacError_t sync() = 0;
