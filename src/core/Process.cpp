@@ -1,6 +1,8 @@
-#include "Process.h"
-#include "Mode.h"
 #include "Accelerator.h"
+#include "IOBuffer.h"
+#include "Mode.h"
+#include "Process.h"
+
 #include "allocator/Buddy.h"
 
 #include "gmac/init.h"
@@ -303,11 +305,12 @@ IOBuffer *Process::createIOBuffer(size_t size)
     assertion(ioMemory_ != NULL);
     void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
-    return new IOBuffer(Context::current(), addr, size);
+    return new IOBuffer(Mode::current(), addr, size);
 }
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
+	assertion(buffer->state() == IOBuffer::Idle, "Destroying buffer still in use");
     if(ioMemory_ == NULL) return;
     ioMemory_->put(buffer->addr(), buffer->size());
     delete buffer;

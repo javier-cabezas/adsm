@@ -34,12 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_PROTOCOL_H_
 #define __MEMORY_PROTOCOL_H_
 
-
-#include "core/IOBuffer.h"
+#include "gmac/gmac.h"
 
 #include "util/Logger.h"
 
-namespace gmac { 
+namespace gmac {
+class IOBuffer;
 class Mode;
 }
 

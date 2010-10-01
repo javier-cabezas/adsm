@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include <gmac/gmac.h>
 
 #include "Queue.h"
-#include "IOBuffer.h"
 #include "allocator/Buddy.h"
 
 #include <memory/Map.h>
@@ -49,6 +48,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 class Accelerator;
+class IOBuffer;
 class Mode;
 class Context;
 class Process;
