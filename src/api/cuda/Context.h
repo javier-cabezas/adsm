@@ -69,7 +69,6 @@ protected:
     void setupCUstreams();
     void cleanCUstreams();
     gmacError_t syncCUstream(CUstream);
-    gmacError_t waitForBuffer(IOBuffer &buffer);
     IOBuffer *_buffer;
 
     KernelConfig _call;
@@ -99,6 +98,7 @@ public:
     const CUstream eventStream() const;
 
     Accelerator & accelerator();
+    gmacError_t waitForBuffer(IOBuffer &buffer);
 };
 
 }}

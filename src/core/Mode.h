@@ -171,6 +171,8 @@ public:
 
     Process &process();
     const Process &process() const;
+
+    gmacError_t waitForBuffer(IOBuffer &buffer);
 };
 
 }
