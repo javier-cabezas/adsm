@@ -25,13 +25,13 @@ Mode::hasCurrent()
 
 inline void Mode::inc()
 {
-    _count++;
+    count_++;
 }
 
 inline void Mode::destroy()
 {
-    _count--;
-    if(_count == 0) delete this;
+    count_--;
+    if(count_ == 0) delete this;
 }
 
 inline unsigned Mode::id() const
@@ -47,20 +47,20 @@ inline unsigned Mode::accId() const
 inline void
 Mode::addObject(memory::Object *obj)
 {
-    _map->insert(obj);
+    map_->insert(obj);
 }
 
 #ifndef USE_MMAP
 inline void
 Mode::addReplicatedObject(memory::Object *obj)
 {
-    _map->insertReplicated(obj);
+    map_->insertReplicated(obj);
 }
 
 inline void
 Mode::addCentralizedObject(memory::Object *obj)
 {
-    _map->insertCentralized(obj);
+    map_->insertCentralized(obj);
 }
 
 #endif
@@ -68,45 +68,45 @@ Mode::addCentralizedObject(memory::Object *obj)
 inline void
 Mode::removeObject(memory::Object *obj)
 {
-    _map->remove(obj);
+    map_->remove(obj);
 }
 
 inline const memory::Object *
 Mode::getObjectRead(const void *addr) const
 {
-    const memory::Object *obj = _map->getObjectRead(addr);
+    const memory::Object *obj = map_->getObjectRead(addr);
     return obj;
 }
 
 inline memory::Object *
 Mode::getObjectWrite(const void *addr)
 {
-    memory::Object *obj = _map->getObjectWrite(addr);
+    memory::Object *obj = map_->getObjectWrite(addr);
     return obj;
 }
 
 inline void
 Mode::putObject(const memory::Object &obj)
 {
-    _map->putObject(obj);
+    map_->putObject(obj);
 }
 
 inline const memory::Map &
 Mode::objects()
 {
-    return *_map;
+    return *map_;
 }
 
 inline gmacError_t
 Mode::error() const
 {
-    return _error;
+    return error_;
 }
 
 inline void
 Mode::error(gmacError_t err)
 {
-    _error = err;
+    error_ = err;
 }
 
 #ifdef USE_VM
@@ -126,19 +126,19 @@ Mode::dirtyBitmap() const
 inline bool
 Mode::releasedObjects() const
 {
-    return _releasedObjects;
+    return releasedObjects_;
 }
 
 inline void
 Mode::releaseObjects()
 {
-    _releasedObjects = true;
+    releasedObjects_ = true;
 }
 
 inline void
 Mode::acquireObjects()
 {
-    _releasedObjects = false;
+    releasedObjects_ = false;
 }
 
 inline Process &

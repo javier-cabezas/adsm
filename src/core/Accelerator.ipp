@@ -7,7 +7,7 @@ namespace gmac {
 inline unsigned
 Accelerator::id() const
 {
-    return _id;
+    return id_;
 }
 
 }
