@@ -43,9 +43,9 @@ WITH THE SOFTWARE.  */
 #include "core/Accelerator.h"
 #include "core/Context.h"
 
-#include "util/Private.h"
-#include "util/Logger.h"
 #include "util/Lock.h"
+#include "util/Logger.h"
+#include "util/Private.h"
 
 namespace gmac {
 
@@ -70,8 +70,6 @@ protected:
 
     bool releasedObjects_;
 
-    static gmac::util::Private<Context> _context;
-    //Context *_context;
     memory::Map *map_;
 #ifdef USE_VM
     memory::vm::Bitmap *_bitmap;
@@ -95,7 +93,6 @@ public:
     static void init();
     static void initThread();
     static Mode &current();
-    static Context &currentContext();
     static bool hasCurrent();
 
     void inc();

@@ -78,9 +78,6 @@ protected:
 #endif
 #endif
 
-    Context &context();
-    const Context &context() const;
-
 #ifdef USE_MULTI_CONTEXT
 	ModuleVector modules;
 #else

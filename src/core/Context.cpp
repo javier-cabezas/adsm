@@ -6,6 +6,8 @@
 
 namespace gmac {
 
+gmac::util::Private<Context> Context::Key_;
+
 Context::Context(Accelerator &acc, unsigned id) :
     util::RWLock("Context"),
     acc_(acc),
@@ -19,6 +21,32 @@ Context::~Context()
     gmac::trace::Thread::end(id_);
 }
 
+
+void
+Context::init()
+{
+    gmac::util::Private<Context>::init(Key_);
+}
+
+void
+Context::initThread()
+{
+    Key_.set(NULL);
+}
+
+Context &
+Context::current()
+{
+    Context *context = Context::Key_.get();
+    gmac::util::Logger::ASSERTION(context != NULL);
+    return *context;
+}
+
+void
+Context::current(Context *context)
+{
+    Key_.set(context);
+}
 
 gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
 {

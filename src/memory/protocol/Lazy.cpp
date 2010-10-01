@@ -420,7 +420,55 @@ gmacError_t
 Lazy::copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n)
 {
     gmacError_t ret = gmacSuccess;
-    Fatal("Functionality not implemented yet");
+
+#if 0
+    const StateObject<State> &dstObject = dynamic_cast<const StateObject<State> &>(dstObj);
+    const StateObject<State> &srcObject = dynamic_cast<const StateObject<State> &>(srcObj);
+
+    const StateObject<State>::SystemMap &map = object.blocks();
+    StateObject<State>::SystemMap::const_iterator i;
+    off_t off = 0;
+    Mode &mode = Mode::current();
+
+    gmac::IOBuffer *toHostBuffer = NULL;
+    gmac::IOBuffer *toDeviceBuffer = NULL;
+
+    for(i = map.begin(); i != map.end(); i++) {
+        SystemBlock<State> &block = *i->second;
+        block.lock();
+
+        if ((src >= block.addr() && src < (char *) block.addr() + block.size()) ||
+            (src <  block.addr() && (char *) src + n > block.addr())) {
+            size_t count = blockRemainder(block.addr(), block.size(), src, n);
+
+            switch(block.state()) {
+                case Dirty:
+                case ReadOnly:
+                    if (toDeviceBuffer == NULL) toDeviceBuffer = proc.createIOBuffer(count);
+                    ::memcpy(buffer->addr() + off, src + off, count);
+                    break;
+
+                    ret = mode.memset((char *)s + off, c, count);
+                    if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+                        Fatal("Unable to set memory permissions");
+                    ::memset((char *) s + off, c, count);
+                    if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+                        Fatal("Unable to set memory permissions");
+                    ret = object.toDevice(block);
+                    break;
+
+                case Invalid:
+                    ret = mode.memset((char *)s + off, c, count);
+                    if(ret != gmacSuccess) { block.unlock(); return ret; }
+                    break;
+            }           
+            off += count;
+        }
+
+        block.unlock();
+    }
+
+#endif
     return ret;
 }
 

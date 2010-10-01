@@ -8,7 +8,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     gmac::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    _cudaCtx = accelerator().createCUcontext();
+    _cudaCtx = accelerator().createCUContext::current();
 #endif
     newContext();
 }
@@ -51,7 +51,7 @@ void Mode::newContext()
     }
     switchOut();
 
-    _context.set(context);
+    gmac::Context::current(context);
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
@@ -122,7 +122,7 @@ const Texture *Mode::texture(gmacTexture_t key) const
 
 CUstream Mode::eventStream() const
 {
-    return context().eventStream();
+    return Context::current().eventStream();
 }
 
 }}

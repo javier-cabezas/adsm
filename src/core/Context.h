@@ -40,12 +40,14 @@ WITH THE SOFTWARE.  */
 #include "core/Kernel.h"
 
 #include "util/Logger.h"
+#include "util/Private.h"
 
 
 namespace gmac {
 
 class Kernel;
 class KernelLaunch;
+class IOBuffer;
 
 /*!
 	\brief Generic Context Class
@@ -53,6 +55,7 @@ class KernelLaunch;
 class Context : public util::RWLock, public util::Logger {
 protected:
     Accelerator &acc_;
+    static gmac::util::Private<Context> Key_;
 
     unsigned id_;
 
@@ -60,7 +63,10 @@ protected:
 public:
 	virtual ~Context();
 
+    static void init();
     static void initThread();
+    static Context &current();
+    static void current(Context *context);
 
 	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
@@ -70,6 +76,8 @@ public:
 
     virtual gmac::KernelLaunch *launch(gmac::Kernel *kernel) = 0;
     virtual gmacError_t sync() = 0;
+
+    virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
 }

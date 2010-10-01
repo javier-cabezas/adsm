@@ -34,8 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __KERNEL_IOBUFFER_H
 #define __KERNEL_IOBUFFER_H
 
-#include <gmac/gmac.h>
-#include <util/Lock.h>
+#include "gmac/gmac.h"
+#include "util/Lock.h"
+
+#include "Context.h"
 
 namespace gmac {
 
@@ -47,9 +49,10 @@ protected:
     size_t size_;
 
     State state_;
+    Context &context_;
 public:
-    IOBuffer(void *addr, size_t size) :
-        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle) {}
+    IOBuffer(Context &context, void *addr, size_t size) :
+        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), context_(context) {}
     inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return addr_; }
@@ -58,10 +61,11 @@ public:
     inline void lock() { gmac::util::Lock::lock(); }
     inline void unlock() { gmac::util::Lock::unlock(); }
 
+    inline void wait() { context_.waitForBuffer(*this); }
+
     State state() const { return state_; }
     void state(State s) { state_ = s; }
 };
-
 
 }
 
