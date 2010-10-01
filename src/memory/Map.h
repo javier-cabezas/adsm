@@ -78,10 +78,7 @@ public:
     void remove(Object *obj);
 #ifndef USE_MMAP
     void insertReplicated(Object *obj);
-    Object *removeReplicated(const void *addr);
-
     void insertCentralized(Object *obj);
-    void removeCentralized(Object *obj);
 #endif
 
     const Object *getObjectRead(const void *addr) const;
