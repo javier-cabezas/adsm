@@ -22,24 +22,9 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 }
 
 
-int main(int argc, char *argv[])
+float doTest(float *a, float *b, float *c, float *orig)
 {
-	float *a, *b, *c;
 	struct timeval s, t;
-
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
-
-    gettimeofday(&s, NULL);
-    // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    // Alloc output data
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    gettimeofday(&t, NULL);
-    printTime(&s, &t, "Alloc: ", "\n");
 
     FILE * fA = fopen("inputset/vectorA", "r");
     FILE * fB = fopen("inputset/vectorB", "r");
@@ -50,7 +35,7 @@ int main(int argc, char *argv[])
     fclose(fA);
     fclose(fB);
     printTime(&s, &t, "Init: ", "\n");
-    
+
     // Call the kernel
     gettimeofday(&s, NULL);
     dim3 Db(blockSize);
@@ -60,26 +45,91 @@ int main(int argc, char *argv[])
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Run: ", "\n");
-
-    float * orig = (float *) malloc(vecSize * sizeof(float));
-    FILE * fO = fopen("inputset/vectorC", "r");
-    fread(orig, sizeof(float), vecSize, fO);
-    fclose(fO);
-
+ 
     gettimeofday(&s, NULL);
     float error = 0;
     for(int i = 0; i < vecSize; i++) {
         error += orig[i] - (c[i]);
     }
     gettimeofday(&t, NULL);
+    fprintf(stderr,"Error: %f\n", error);
     printTime(&s, &t, "Check: ", "\n");
 
-    fprintf(stderr,"Error: %f\n", error);
+    return error;
+}
+
+int main(int argc, char *argv[])
+{
+	float *a, *b, *c;
+	struct timeval s, t;
+    float error1, error2, error3;
+
+	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+
+    float * orig = (float *) malloc(vecSize * sizeof(float));
+    FILE * fO = fopen("inputset/vectorC", "r");
+    fread(orig, sizeof(float), vecSize, fO);
+    fclose(fO);
+
+    // Alloc output data
+    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+        CUFATAL();
+
+    //////////////////////
+    // Test shared objects
+    //////////////////////
+    fprintf(stderr,"SHARED OBJECTS\n");
+    gettimeofday(&s, NULL);
+    // Alloc & init input data
+    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+        CUFATAL();
+    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+        CUFATAL();
+    gettimeofday(&t, NULL);
+    printTime(&s, &t, "Alloc: ", "\n");
+
+    error1 = doTest(a, b, c, orig);
 
     gmacFree(a);
     gmacFree(b);
-    gmacFree(c);
 
+    //////////////////////////
+    // Test replicated objects
+    //////////////////////////
+    fprintf(stderr,"REPLICATED OBJECTS\n");
+    gettimeofday(&s, NULL);
+    // Alloc & init input data
+    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
+        CUFATAL();
+    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
+        CUFATAL();
+    gettimeofday(&t, NULL);
+    printTime(&s, &t, "Alloc: ", "\n");
+
+    error2 = doTest(a, b, c, orig);
+
+    gmacFree(a);
+    gmacFree(b);
+
+    ///////////////////////////
+    // Test centralized objects
+    ///////////////////////////
+    fprintf(stderr,"CENTRALIZED OBJECTS\n");
+    gettimeofday(&s, NULL);
+    // Alloc & init input data
+    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
+        CUFATAL();
+    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
+        CUFATAL();
+    gettimeofday(&t, NULL);
+    printTime(&s, &t, "Alloc: ", "\n");
+
+    error3 = doTest(a, b, c, orig);
+
+    gmacFree(a);
+    gmacFree(b);
+
+    gmacFree(c);
     free(orig);
-    return error != 0;
+    return error1 != 0.f && error2 != 0.f && error3 != 0.f;
 }

@@ -86,7 +86,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 {
     Mode &mode = gmac::Mode::current();
     gmacError_t ret;
-    if(hint == 1) {
+    if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
         Object *object = _protocol->createReplicatedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
@@ -96,7 +96,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
 
         mode.addReplicatedObject(object);
     }
-    else {
+    else if (GMAC_GLOBAL_MALLOC_CENTRALIZED) {
         Object *object = _protocol->createCentralizedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
@@ -105,6 +105,8 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
         }
 
         mode.addCentralizedObject(object);
+    } else {
+        return gmacErrorInvalidValue;
     }
 
     return gmacSuccess;
@@ -120,6 +122,7 @@ gmacError_t Manager::free(void * addr)
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
         mode.removeObject(object);
+        mode.putObject(*object);
         delete object;
     }
     else ret = gmacErrorInvalidValue;

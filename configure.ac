@@ -271,21 +271,6 @@ else
 	AC_MSG_RESULT(no)
 fi
 
-global_host_default="no"
-AC_MSG_CHECKING(whether to use a host memory for global allocations)
-AC_ARG_ENABLE(global-host,
-	AS_HELP_STRING([--enable-global-host],[turn on host memory for global allocations [[default=no]]])
-		, , enable_global_host=$global_host_default)
-if test "$enable_global_host" = "yes"; then
-    if test "$enable_mmap" = "yes"; then
-        AC_MSG_ERROR("mmap() cannot be used when host-mapped global regions are used")
-    fi
-	AC_MSG_RESULT(yes)
-	AC_DEFINE([USE_GLOBAL_HOST])
-else
-	AC_MSG_RESULT(no)
-fi
-
 multi_context_default="no"
 AC_MSG_CHECKING(whether to use multiple device contexts per device)
 AC_ARG_ENABLE(multi-context,

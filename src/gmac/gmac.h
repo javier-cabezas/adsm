@@ -137,10 +137,16 @@ gmacError_t gmacMigrate(int acc);
 */
 gmacError_t gmacMalloc(void **devPtr, size_t count);
 
+
+enum GmacGlobalMallocType {
+    GMAC_GLOBAL_MALLOC_REPLICATED  = 0,
+    GMAC_GLOBAL_MALLOC_CENTRALIZED = 1
+};
+
 /*!
 	\brief Allocates global memory at all GPUS
 */
-gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, int hint = 0);
+gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, int hint = GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
 /*!
 	\brief Gets a GPU address
