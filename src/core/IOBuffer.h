@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "gmac/gmac.h"
 #include "util/Lock.h"
 
-#include "Context.h"
+#include "Mode.h"
 
 namespace gmac {
 
@@ -49,10 +49,10 @@ protected:
     size_t size_;
 
     State state_;
-    Context &context_;
+    Mode &mode_;
 public:
-    IOBuffer(Context &context, void *addr, size_t size) :
-        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), context_(context) {}
+    IOBuffer(Mode &mode, void *addr, size_t size) :
+        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(mode) {}
     inline virtual ~IOBuffer() {};
 
     inline void *addr() const { return addr_; }
@@ -61,10 +61,11 @@ public:
     inline void lock() { gmac::util::Lock::lock(); }
     inline void unlock() { gmac::util::Lock::unlock(); }
 
-    inline void wait() { context_.waitForBuffer(*this); }
+    inline State state() const { return state_; }
+    inline void toHost() { state_ = ToHost; }
+    inline void toDevice() { state_ = ToDevice; }
 
-    State state() const { return state_; }
-    void state(State s) { state_ = s; }
+    inline gmacError_t wait() { gmacError_t ret = mode_.waitForBuffer(*this); state_ = Idle; return ret; }
 };
 
 }
