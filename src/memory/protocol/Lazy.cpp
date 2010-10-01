@@ -1,5 +1,7 @@
 #include "Lazy.h"
 
+#include "core/IOBuffer.h"
+
 #include "memory/StateObject.h"
 #include "memory/SharedObject.h"
 #include "memory/ReplicatedObject.h"

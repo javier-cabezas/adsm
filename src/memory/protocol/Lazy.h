@@ -41,8 +41,11 @@ WITH THE SOFTWARE.  */
 
 #include "util/Logger.h"
 
-namespace gmac { namespace memory { namespace protocol {
+namespace gmac {
 
+class IOBuffer;
+
+namespace memory { namespace protocol {
 
 class List;
 
