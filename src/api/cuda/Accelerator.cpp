@@ -27,7 +27,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, _device);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    _memory = size;
+    memory_ = size;
 
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
@@ -81,7 +81,7 @@ void Accelerator::registerMode(gmac::Mode &mode)
 	trace("Registering Execution Mode %p to Accelerator", &_mode);
     gmac::trace::Function::start("Accelerator","registerMode");
 	_queue.insert(&_mode);
-    _load++;
+    load_++;
     gmac::trace::Function::end("Accelerator");
 }
 
@@ -93,7 +93,7 @@ void Accelerator::unregisterMode(gmac::Mode &mode)
 	std::set<Mode *>::iterator c = _queue.find(&_mode);
 	assertion(c != _queue.end());
 	_queue.erase(c);
-    _load--;
+    load_--;
     gmac::trace::Function::end("Accelerator");
 }
 

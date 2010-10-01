@@ -9,14 +9,14 @@ namespace gmac {
 Context::Context(Accelerator &acc, unsigned id) :
     util::RWLock("Context"),
     acc_(acc),
-    id(id)
+    id_(id)
 {
     gmac::trace::Thread::start(id);
 }
 
 Context::~Context()
 { 
-    gmac::trace::Thread::end(id);
+    gmac::trace::Thread::end(id_);
 }
 
 

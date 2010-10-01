@@ -64,19 +64,19 @@ class KernelConfig : public ArgVector, public util::Logger {
 protected:
     static const unsigned StackSize = 4096;
 
-    char _stack[StackSize];
-    size_t _argsSize;
+    char stack_[StackSize];
+    size_t argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
     /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig() : _argsSize(0) {};
+    KernelConfig() : argsSize_(0) {};
     virtual ~KernelConfig() { clear(); };
 
     void pushArgument(const void * arg, size_t size, off_t offset);
-    inline off_t argsSize() const { return _argsSize; }
+    inline off_t argsSize() const { return argsSize_; }
 
-    inline char * argsArray() { return _stack; }
+    inline char * argsArray() { return stack_; }
 };
 
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
