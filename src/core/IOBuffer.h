@@ -43,23 +43,23 @@ class IOBuffer : public gmac::util::Lock {
 public:
     typedef enum { Idle, ToHost, ToDevice } State;
 protected:
-    void *_addr;
-    size_t _size;
+    void *addr_;
+    size_t size_;
 
-    State _state;
+    State state_;
 public:
     IOBuffer(void *addr, size_t size) :
-        util::Lock("IOBuffer"), _addr(addr), _size(size), _state(Idle) {}
+        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle) {}
     inline virtual ~IOBuffer() {};
 
-    inline void *addr() const { return _addr; }
-    inline size_t size() const { return _size; }
+    inline void *addr() const { return addr_; }
+    inline size_t size() const { return size_; }
 
     inline void lock() { gmac::util::Lock::lock(); }
     inline void unlock() { gmac::util::Lock::unlock(); }
 
-    State state() const { return _state; }
-    void state(State s) { _state = s; }
+    State state() const { return state_; }
+    void state(State s) { state_ = s; }
 };
 
 

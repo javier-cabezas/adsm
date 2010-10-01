@@ -98,7 +98,7 @@ QueueMap::iterator QueueMap::end()
 }
 
 
-size_t Process::__totalMemory = 0;
+size_t Process::TotalMemory_ = 0;
 
 Process::Process() :
     RWLock("Process"),
@@ -106,38 +106,38 @@ Process::Process() :
     centralized_("CentralizedMemoryMap"),
     replicated_("ReplicatedMemoryMap"),
     current_(0),
-    _ioMemory(NULL)
+    ioMemory_(NULL)
 {}
 
 Process::~Process()
 {
     trace("Cleaning process");
 
-    if(_ioMemory != NULL) delete _ioMemory;
-    _ioMemory = NULL;
+    if(ioMemory_ != NULL) delete ioMemory_;
+    ioMemory_ = NULL;
 
     std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     ContextMap::const_iterator i;
-    for(i = _contexts.begin(); i != _contexts.end(); i++) {
+    for(i = contexts_.begin(); i != contexts_.end(); i++) {
         delete i->first;
     }
 
     // TODO: Why is this lock necessary?
-    _modes.lockWrite();
+    modes_.lockWrite();
     ModeMap::const_iterator j;
-    for(j = _modes.begin(); j != _modes.end(); j++) {
+    for(j = modes_.begin(); j != modes_.end(); j++) {
         j->first->release();
         delete j->first;
     }
-    _modes.clear();
-    _modes.unlock();
+    modes_.clear();
+    modes_.unlock();
 
-    for(a = _accs.begin(); a != _accs.end(); a++)
+    for(a = accs_.begin(); a != accs_.end(); a++)
         delete *a;
-    _accs.clear();
+    accs_.clear();
     // TODO: Free buddy allocator
-    _queues.cleanup();
+    queues_.cleanup();
     memoryFini();
 }
 
@@ -167,7 +167,7 @@ void
 Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
-    _queues.insert(SELF(), q);
+    queues_.insert(SELF(), q);
     // Set the private per-thread variables
     Mode::initThread();
 }
@@ -178,15 +178,15 @@ Mode *Process::create(int acc)
     unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        assertion(acc < int(_accs.size()));
+        assertion(acc < int(accs_.size()));
         usedAcc = acc;
     }
     else {
         // Bind the new Context to the accelerator with less contexts
         // attached to it
         usedAcc = 0;
-        for (unsigned i = 0; i < _accs.size(); i++) {
-            if (_accs[i]->load() < _accs[usedAcc]->load()) {
+        for (unsigned i = 0; i < accs_.size(); i++) {
+            if (accs_[i]->load() < accs_[usedAcc]->load()) {
                 usedAcc = i;
             }
         }
@@ -195,10 +195,10 @@ Mode *Process::create(int acc)
     trace("Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = _accs[usedAcc]->createMode(*this);
-    _accs[usedAcc]->registerMode(*mode);
-    _contexts.insert(&mode->currentContext(), mode);
-    _modes.insert(mode, _accs[usedAcc]);
+    Mode *mode = accs_[usedAcc]->createMode(*this);
+    accs_[usedAcc]->registerMode(*mode);
+    contexts_.insert(&mode->currentContext(), mode);
+    modes_.insert(mode, accs_[usedAcc]);
 
     trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
@@ -211,8 +211,8 @@ Mode *Process::create(int acc)
 
     mode->attach();
     lockWrite();
-    if(_ioMemory == NULL)
-        _ioMemory = new kernel::allocator::Buddy(_accs.size() * paramIOMemory);
+    if(ioMemory_ == NULL)
+        ioMemory_ = new kernel::allocator::Buddy(accs_.size() * paramIOMemory);
     unlock();
     return mode;
 }
@@ -223,14 +223,14 @@ gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t size
     gmacError_t ret;
     ModeMap::iterator i;
     lockRead();
-    for(i = _modes.begin(); i != _modes.end(); i++) {
+    for(i = modes_.begin(); i != modes_.end(); i++) {
         if((ret = object.addOwner(*i->first)) != gmacSuccess) goto cleanup;
     }
     unlock();
     return gmacSuccess;
 cleanup:
     ModeMap::iterator j;
-    for(j = _modes.begin(); j != i; j++) {
+    for(j = modes_.begin(); j != i; j++) {
         object.removeOwner(*j->first);
     }
     unlock();
@@ -243,7 +243,7 @@ gmacError_t Process::globalFree(memory::DistributedObject &object)
     gmacError_t ret = gmacSuccess;
     ModeMap::iterator i;
     lockRead();
-    for(i = _modes.begin(); i != _modes.end(); i++) {
+    for(i = modes_.begin(); i != modes_.end(); i++) {
         gmacError_t tmp = object.removeOwner(*i->first);
         if(tmp != gmacSuccess) ret = tmp;
     }
@@ -255,7 +255,7 @@ gmacError_t Process::globalFree(memory::DistributedObject &object)
 // This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
 {
-    if (acc >= int(_accs.size())) return gmacErrorInvalidValue;
+    if (acc >= int(accs_.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
     trace("Migrating execution mode");
 #ifndef USE_MMAP
@@ -263,12 +263,12 @@ gmacError_t Process::migrate(Mode &mode, int acc)
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
         Context &context = mode.currentContext();
-        ret = mode.moveTo(*_accs[acc]);
+        ret = mode.moveTo(*accs_[acc]);
 
         if (ret == gmacSuccess) {
-            _contexts.remove(context);
-            _contexts.insert(&context, &mode);
-            _modes[&mode] = _accs[acc];
+            contexts_.remove(context);
+            contexts_.insert(&context, &mode);
+            modes_[&mode] = accs_[acc];
         }
     }
 #else
@@ -289,27 +289,27 @@ void Process::remove(Mode &mode)
         obj->removeOwner(mode);
     }
     lockWrite();
-    _modes.remove(mode);
+    modes_.remove(mode);
     unlock();
 }
 
 void Process::addAccelerator(Accelerator *acc)
 {
-    _accs.push_back(acc);
+    accs_.push_back(acc);
 }
 
 IOBuffer *Process::createIOBuffer(size_t size)
 {
-    assertion(_ioMemory != NULL);
-    void *addr = _ioMemory->get(size);
+    assertion(ioMemory_ != NULL);
+    void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
     return new IOBuffer(addr, size);
 }
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
-    if(_ioMemory == NULL) return;
-    _ioMemory->put(buffer->addr(), buffer->size());
+    if(ioMemory_ == NULL) return;
+    ioMemory_->put(buffer->addr(), buffer->size());
     delete buffer;
 }
 
@@ -328,8 +328,8 @@ void *Process::translate(void *addr)
 void Process::send(THREAD_ID id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = _queues.find(id);
-    assertion(q != _queues.end());
+    QueueMap::iterator q = queues_.find(id);
+    assertion(q != queues_.end());
     q->second->queue->push(&mode);
     mode.inc();
     mode.detach();
@@ -340,28 +340,28 @@ void Process::receive()
     // Get current context and destroy (if necessary)
     Mode::current().detach();
     // Get a fresh context
-    QueueMap::iterator q = _queues.find(SELF());
-    assertion(q != _queues.end());
+    QueueMap::iterator q = queues_.find(SELF());
+    assertion(q != queues_.end());
     q->second->queue->pop()->attach();
 }
 
 void Process::sendReceive(THREAD_ID id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = _queues.find(id);
-    assertion(q != _queues.end());
+    QueueMap::iterator q = queues_.find(id);
+    assertion(q != queues_.end());
     q->second->queue->push(&mode);
     Mode::initThread();
-    q = _queues.find(SELF());
-    assertion(q != _queues.end());
+    q = queues_.find(SELF());
+    assertion(q != queues_.end());
     q->second->queue->pop()->attach();
 }
 
 void Process::copy(THREAD_ID id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = _queues.find(id);
-    assertion(q != _queues.end());
+    QueueMap::iterator q = queues_.find(id);
+    assertion(q != queues_.end());
     mode.inc();
     q->second->queue->push(&mode);
 }

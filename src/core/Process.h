@@ -119,21 +119,21 @@ protected:
 
     static Process *Proc_;
 
-    std::vector<Accelerator *> _accs;
-    ModeMap _modes;
-    ContextMap _contexts;
+    std::vector<Accelerator *> accs_;
+    ModeMap modes_;
+    ContextMap contexts_;
 
-    QueueMap _queues;
+    QueueMap queues_;
     memory::ObjectMap shared_;
     memory::ObjectMap centralized_;
     memory::ObjectMap replicated_;
 
     unsigned current_;
 
-    static size_t __totalMemory;
+    static size_t TotalMemory_;
 
     Process();
-    kernel::allocator::Buddy *_ioMemory;
+    kernel::allocator::Buddy *ioMemory_;
 
 public:
     virtual ~Process();
