@@ -8,27 +8,27 @@ namespace gmac { namespace memory {
 CentralizedObject::CentralizedObject(size_t size) :
     Object(NULL, size)
 {
-    trace("Creating Centralized Object (%zd bytes)", _size);
+    trace("Creating Centralized Object (%zd bytes)", size_);
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
-    if(mode.hostAlloc(&_addr, size) != gmacSuccess) {
-        _addr = NULL;
+    if(mode.hostAlloc(&addr_, size) != gmacSuccess) {
+        addr_ = NULL;
         return;
     }
-    trace("Centralized Object @ %p to mode %p", device(_addr), &mode);
+    trace("Centralized Object @ %p to mode %p", device(addr_), &mode);
 }
 
 CentralizedObject::~CentralizedObject()
 {
-    if(_addr == NULL) return;
+    if(addr_ == NULL) return;
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
-    mode.hostFree(_addr);
+    mode.hostFree(addr_);
 }
 
 void *CentralizedObject::device(void *addr) const
 {
-    off_t offset = (unsigned long)addr - (unsigned long)_addr;
+    off_t offset = (unsigned long)addr - (unsigned long)addr_;
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
-    return (uint8_t *)mode.hostMap(_addr) + offset;
+    return (uint8_t *)mode.hostMap(addr_) + offset;
 }
 #endif
 

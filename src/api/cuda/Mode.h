@@ -48,7 +48,6 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace cuda {
 
 class ContextLock : public util::Lock {
-protected:
     friend class Mode;
 public:
     ContextLock() : util::Lock("Context") {};
@@ -58,11 +57,11 @@ class Texture;
 class Accelerator;
 
 class Mode : public gmac::Mode {
+    friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
     CUcontext _cudaCtx;
 #endif
-    friend class Switch;
     void switchIn();
     void switchOut();
 

@@ -18,7 +18,7 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     // Allocate device and host memory
     ret = _owner->malloc(&device, size, paramPageSize);
     if(ret != gmacSuccess) {
-        StateObject<T>::_addr = NULL;
+        StateObject<T>::addr_ = NULL;
         return;
     }
 #ifdef USE_VM
@@ -27,42 +27,42 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
 #endif
 
 #ifdef USE_MMAP
-    StateObject<T>::_addr = StateObject<T>::map(device, size);
+    StateObject<T>::addr_ = StateObject<T>::map(device, size);
 #else
-    StateObject<T>::_addr = StateObject<T>::map(NULL, size);
+    StateObject<T>::addr_ = StateObject<T>::map(NULL, size);
 #endif
 
-    if(StateObject<T>::_addr == NULL) {
+    if(StateObject<T>::addr_ == NULL) {
         _owner->free(device);
         return;
     }
 
-    trace("Creating Shared Object %p (%zd bytes)", StateObject<T>::_addr, StateObject<T>::_size);
+    trace("Creating Shared Object %p (%zd bytes)", StateObject<T>::addr_, StateObject<T>::size_);
     // Create memory blocks
-    _accBlock = new AcceleratorBlock(*_owner, device, StateObject<T>::_size);
+    _accBlock = new AcceleratorBlock(*_owner, device, StateObject<T>::size_);
     setupSystem(init);
 }
 
 template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
-    if(StateObject<T>::_addr == NULL) { return; }
+    if(StateObject<T>::addr_ == NULL) { return; }
     void *devAddr = _accBlock->addr();
     delete _accBlock;
-    StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);
+    StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
     _owner->free(devAddr);
 #ifdef USE_VM
     vm::Bitmap &bitmap = _owner->dirtyBitmap();
-    bitmap.removeRange(devAddr, StateObject<T>::_size);
+    bitmap.removeRange(devAddr, StateObject<T>::size_);
 #endif
 
-    trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::_addr);
+    trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
 }
 
 template<typename T>
 inline void *SharedObject<T>::device(void *addr) const
 {
-    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
+    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     void *ret = (uint8_t *)_accBlock->addr() + offset;
     return ret;
 }
@@ -70,7 +70,7 @@ inline void *SharedObject<T>::device(void *addr) const
 template<typename T>
 inline gmacError_t SharedObject<T>::toHost(Block &block, void *hostAddr) const
 {
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::_addr;
+    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
     gmacError_t ret;
     if (hostAddr == NULL) {
         ret = _accBlock->toHost(off, block);
@@ -84,7 +84,7 @@ inline gmacError_t SharedObject<T>::toHost(Block &block, void *hostAddr) const
 template<typename T>
 inline gmacError_t SharedObject<T>::toDevice(Block &block) const
 {
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::_addr;
+    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
     gmacError_t ret = _accBlock->toDevice(off, block);
     return ret;
 }
@@ -94,7 +94,7 @@ gmacError_t SharedObject<T>::free()
 {
 #ifdef USE_VM
     vm::Bitmap &bitmap = _owner->dirtyBitmap();
-    bitmap.removeRange(_accBlock->addr(), StateObject<T>::_size);
+    bitmap.removeRange(_accBlock->addr(), StateObject<T>::size_);
 #endif
     gmacError_t ret;
     ret = _owner->free(_accBlock->addr());
@@ -107,9 +107,9 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
 {
     void *device = NULL;
     // Allocate device and host memory
-    gmacError_t ret = mode.malloc(&device, StateObject<T>::_size, paramPageSize);
+    gmacError_t ret = mode.malloc(&device, StateObject<T>::size_, paramPageSize);
     if(ret != gmacSuccess) {
-        StateObject<T>::_addr = NULL;
+        StateObject<T>::addr_ = NULL;
         return gmacErrorInsufficientDeviceMemory;
     }
 
@@ -117,10 +117,10 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
 
 #ifdef USE_VM
     vm::Bitmap &bitmap = _owner->dirtyBitmap();
-    bitmap.newRange(device, StateObject<T>::_size);
+    bitmap.newRange(device, StateObject<T>::size_);
 #endif
     _owner = &mode;
-    _accBlock = new AcceleratorBlock(mode, device, StateObject<T>::_size);
+    _accBlock = new AcceleratorBlock(mode, device, StateObject<T>::size_);
     return gmacSuccess;
 }
 

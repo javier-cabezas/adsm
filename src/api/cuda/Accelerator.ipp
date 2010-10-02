@@ -51,7 +51,7 @@ CUdeviceptr Accelerator::gpuAddr(const void *addr)
 inline CUdevice
 Accelerator::device() const
 {
-    return _device;
+    return device_;
 }
 
 inline

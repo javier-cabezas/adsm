@@ -21,9 +21,9 @@ inline StateObject<T>::~StateObject()
 template<typename T>
 inline void StateObject<T>::setupSystem(T init)
 {
-    uint8_t *ptr = (uint8_t *)_addr;
-    for(size_t i = 0; i < _size; i += paramPageSize, ptr += paramPageSize) {
-        size_t blockSize = ((_size - i) > paramPageSize) ? paramPageSize : (_size - i);
+    uint8_t *ptr = (uint8_t *)addr_;
+    for(size_t i = 0; i < size_; i += paramPageSize, ptr += paramPageSize) {
+        size_t blockSize = ((size_ - i) > paramPageSize) ? paramPageSize : (size_ - i);
         systemMap.insert(typename SystemMap::value_type(
             ptr + blockSize,
             new SystemBlock<T>(ptr, blockSize, init)));

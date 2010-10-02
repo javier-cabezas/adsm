@@ -47,11 +47,11 @@ class Object: protected util::RWLock, public util::Logger {
     friend class Map;
     friend class ObjectMap;
 protected:
-    void *_addr;
-    size_t _size;
+    void *addr_;
+    size_t size_;
 
-    Object(void *_addr, size_t _size) :
-        RWLock("memory::Object"), _addr(_addr), _size(_size) {};
+    Object(void *addr, size_t size) :
+        RWLock("memory::Object"), addr_(addr), size_(size) {};
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);

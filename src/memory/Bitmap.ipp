@@ -1,5 +1,5 @@
-#ifndef __MEMORY_BITMAP_IPP
-#define __MEMORY_BITMAP_IPP
+#ifndef GMAC_MEMORY_BITMAP_IPP_
+#define GMAC_MEMORY_BITMAP_IPP_
 
 namespace gmac { namespace memory { namespace vm {
 
@@ -9,9 +9,9 @@ inline
 off_t Bitmap::offset(const void *addr) const
 {
 #ifdef BITMAP_BIT
-    off_t entry = to32bit(addr) >> (_shiftEntry + 5);
+    off_t entry = to32bit(addr) >> (shiftEntry_ + 5);
 #else
-    off_t entry = to32bit(addr) >> _shiftPage;
+    off_t entry = to32bit(addr) >> shiftPage_;
 #endif
     return entry;
 }
@@ -27,32 +27,32 @@ bool Bitmap::CheckClearSet(const void * addr)
     size_t entry = offset(addr);
     trace("Bitmap check for %p -> entry %zu", addr, entry);
     if (__clear || __set) {
-        trace("Bitmap entry before: 0x%x", _bitmap[entry]);
+        trace("Bitmap entry before: 0x%x", bitmap_[entry]);
     }
 #ifdef BITMAP_BIT
-    uint32_t val = 1 << ((to32bit(addr) >> _shiftEntry) & _bitMask);
-    if(__check && (_bitmap[entry] & val) != 0) ret = true;
+    uint32_t val = 1 << ((to32bit(addr) >> shiftEntry_) & bitMask_);
+    if(__check && (bitmap_[entry] & val) != 0) ret = true;
     if(__clear) {
-        _bitmap[entry] &= ~val;
-        _dirty = true;
+        bitmap_[entry] &= ~val;
+        dirty_ = true;
     }
 #else
-    if(__check && _bitmap[entry] != 0) {
+    if(__check && bitmap_[entry] != 0) {
         ret = true;
     }
     if (__clear) {
-        _bitmap[entry] = 0;
-        _dirty = true;
+        bitmap_[entry] = 0;
+        dirty_ = true;
     }
     if (__set) {
-        _bitmap[entry] = 2;
-        _dirty = true;
+        bitmap_[entry] = 2;
+        dirty_ = true;
     }
 #endif
     if (__clear || __set) {
-        trace("Bitmap entry after: 0x%x", _bitmap[entry]);
+        trace("Bitmap entry after: 0x%x", bitmap_[entry]);
     } else {
-        trace("Bitmap entry: 0x%x", _bitmap[entry]);
+        trace("Bitmap entry: 0x%x", bitmap_[entry]);
     }
     return ret;
 }
@@ -94,55 +94,55 @@ void Bitmap::set(const void *addr)
 inline
 void *Bitmap::device() 
 {
-    if (_device == NULL) allocate();
-    if (_minAddr != NULL) {
-        assertion(_maxAddr != NULL && _maxAddr > _minAddr);
-        return ((uint8_t *)_device) + offset(_minAddr);
+    if (device_ == NULL) allocate();
+    if (minAddr_ != NULL) {
+        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        return ((uint8_t *)device_) + offset(minAddr_);
     } else {
-        return _device;
+        return device_;
     }
 }
 
 inline
 void *Bitmap::deviceBase() 
 {
-    if (_device == NULL) allocate();
-    return _device;
+    if (device_ == NULL) allocate();
+    return device_;
 }
 
 inline
 void *Bitmap::host() const
 {
-    if (_minAddr != NULL) {
-        assertion(_maxAddr != NULL && _maxAddr > _minAddr);
-        return ((uint8_t *)_bitmap) + offset(_minAddr);
+    if (minAddr_ != NULL) {
+        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        return ((uint8_t *)bitmap_) + offset(minAddr_);
     } else {
-        return _bitmap;
+        return bitmap_;
     }
 }
 
 inline
 const size_t Bitmap::size() const
 {
-    if (_minAddr != NULL) {
-        assertion(_maxAddr != NULL && _maxAddr > _minAddr);
-        return (offset(_maxAddr) - offset(_minAddr) + 1) * sizeof(_bitmap[0]);
+    if (minAddr_ != NULL) {
+        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        return (offset(maxAddr_) - offset(minAddr_) + 1) * sizeof(bitmap_[0]);
     } else {
-        return _size;
+        return size_;
     }
 }
 
 inline
 const size_t Bitmap::shiftPage() const
 {
-    return _shiftPage;
+    return shiftPage_;
 }
 
 #ifdef BITMAP_BIT
 inline
 const size_t Bitmap::shiftEntry() const
 {
-    return _shiftEntry;
+    return shiftEntry_;
 }
 #endif
 
@@ -156,52 +156,52 @@ bool Bitmap::clean() const
 inline
 void Bitmap::reset()
 {
-    _synced = true;
-    _dirty = false;
+    synced_ = true;
+    dirty_ = false;
 }
 
 
 inline
 bool Bitmap::synced() const
 {
-    return _synced;
+    return synced_;
 }
 
 inline
 void Bitmap::synced(bool s)
 {
-    _synced = s;
+    synced_ = s;
 }
 
 inline
 void Bitmap::newRange(const void * ptr, size_t count)
 {
-    if (_device == NULL) allocate();
-    if (_minAddr == NULL) {
-        _minAddr = ptr;
-        _maxAddr = ((uint8_t *) ptr) + count - 1;
-    } else if (ptr < _minAddr) {
-        _minAddr = ptr;
-    } else if (((uint8_t *) ptr) + count > _maxAddr) {
-        _maxAddr = ((uint8_t *) ptr) + count - 1;
+    if (device_ == NULL) allocate();
+    if (minAddr_ == NULL) {
+        minAddr_ = ptr;
+        maxAddr_ = ((uint8_t *) ptr) + count - 1;
+    } else if (ptr < minAddr_) {
+        minAddr_ = ptr;
+    } else if (((uint8_t *) ptr) + count > maxAddr_) {
+        maxAddr_ = ((uint8_t *) ptr) + count - 1;
     }
-    trace("ptr: %p (%zd) minAddr: %p maxAddr: %p", ptr, count, _minAddr, _maxAddr);
+    trace("ptr: %p (%zd) minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
 }
 
 inline
 void Bitmap::removeRange(const void * ptr, size_t count)
 {
-    if (ptr == _minAddr) {
-        if (((uint8_t *) ptr) + count == _maxAddr) {
-            _maxAddr = NULL;
-            _minAddr = NULL;
+    if (ptr == minAddr_) {
+        if (((uint8_t *) ptr) + count == maxAddr_) {
+            maxAddr_ = NULL;
+            minAddr_ = NULL;
         } else {
-            _minAddr = ((uint8_t *) ptr) + count;
+            minAddr_ = ((uint8_t *) ptr) + count;
         }
-    } else if (((uint8_t *) ptr) + count == _maxAddr) {
-        _maxAddr = ptr;
+    } else if (((uint8_t *) ptr) + count == maxAddr_) {
+        maxAddr_ = ptr;
     }
-    trace("minAddr: %p maxAddr: %p", _minAddr, _maxAddr);
+    trace("minAddr: %p maxAddr: %p", minAddr_, maxAddr_);
 }
 
 }}}
