@@ -51,15 +51,16 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     gmac::trace::Thread::io();
     gmacError_t err;
     size_t ret = 0;
-
     gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
+
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
     size_t left = n;
     off_t  off  = 0;
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_fread(buffer->addr(), size, bytes/size, stream);
-        err = gmac::manager->fromIOBuffer((char *)buf + off, *buffer,  bytes);
+        err = manager.fromIOBuffer((char *)buf + off, *buffer,  bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
@@ -99,12 +100,14 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
     gmac::IOBuffer *buffer = proc.createIOBuffer(bufferSize);
 
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+
     size_t left = n;
     buffer->lock();
     while (left != 0) {
         size_t bytes = left < bufferSize ? left : bufferSize;
         gmac::util::Logger::TRACE("Filling I/O buffer from device %p with %zd bytes (%zd)", (const char *)buf + off, bytes, size);
-        err = gmac::manager->toIOBuffer(*buffer, (const char *)buf + off, bytes);
+        err = manager.toIOBuffer(*buffer, (const char *)buf + off, bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);

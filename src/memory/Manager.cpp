@@ -10,65 +10,32 @@
 
 namespace gmac { namespace memory {
 
-int Manager::_count = 0;
-Manager *Manager::__manager = NULL;
-
 Manager::~Manager()
 {
     trace("Memory manager finishes");
-    assertion(_count == 0);
-    delete _protocol;
-}
-
-
-
-Manager *Manager::create()
-{
-    _count++;
-    if(__manager != NULL) return __manager;
-    gmac::util::Logger::TRACE("Creating new Memory Manager");
-    __manager = new Manager();
-    return __manager;
-}
-
-void Manager::destroy()
-{
-    _count--;
-    if(_count > 0) return;
-    gmac::util::Logger::TRACE("Destroying Memory Manager");
-    delete __manager;
-    __manager = NULL;
-}
-
-Manager *Manager::get()
-{
-    gmac::util::Logger::ASSERTION(__manager != NULL);
-    return __manager;
+    delete protocol_;
 }
 
 Manager::Manager()
 {
     trace("Memory manager starts");
-    assertion(_count == 1);
-    
-    // Create _protocol
+    // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        _protocol = new protocol::Lazy(paramRollSize);
+        protocol_ = new protocol::Lazy(paramRollSize);
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        _protocol = new protocol::Lazy(-1);
+        protocol_ = new protocol::Lazy(-1);
     }
     else {
         Fatal("Memory Coherence Protocol not defined");
     }
 }
 
-
 gmacError_t Manager::alloc(void ** addr, size_t size)
 {
     gmacError_t ret;
     // Create new shared object
-    Object *object = _protocol->createObject(size);
+    Object *object = protocol_->createObject(size);
     *addr = object->addr();
     if(*addr == NULL) {
         delete object;
@@ -82,12 +49,12 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
 }
 
 #ifndef USE_MMAP
-gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
+gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
     Mode &mode = gmac::Mode::current();
     gmacError_t ret;
     if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
-        Object *object = _protocol->createReplicatedObject(size);
+        Object *object = protocol_->createReplicatedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
             delete object;
@@ -97,7 +64,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, int hint)
         mode.addReplicatedObject(object);
     }
     else if (GMAC_GLOBAL_MALLOC_CENTRALIZED) {
-        Object *object = _protocol->createCentralizedObject(size);
+        Object *object = protocol_->createCentralizedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
             delete object;
@@ -140,7 +107,7 @@ gmacError_t Manager::acquire()
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
-        ret = _protocol->acquire(object);
+        ret = protocol_->acquire(object);
         if(ret != gmacSuccess) return ret;
     }
     map.unlock();
@@ -157,7 +124,7 @@ gmacError_t Manager::release()
     Mode &mode = Mode::current();
     trace("Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    _protocol->release();
+    protocol_->release();
 
     mode.releaseObjects();
 #if 0
@@ -167,14 +134,14 @@ gmacError_t Manager::release()
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
-        ret = _protocol->release(object);
+        ret = protocol_->release(object);
         if(ret != gmacSuccess) return ret;
     }
     const ObjectMap &shared = proc->shared();
     ObjectMap::const_iterator j;
     for(j = shared.begin(); j != shared.end(); j++) {
         Object &object = *j->second;
-        ret = _protocol->toDevice(object);
+        ret = protocol_->toDevice(object);
         if(ret != gmacSuccess) return ret;
     }
     map.unlock();
@@ -191,7 +158,7 @@ gmacError_t Manager::invalidate()
     Map::const_iterator i;
     for(i = map.begin(); i != map.end(); i++) {
         Object &object = *i->second;
-        ret = _protocol->invalidate(object);
+        ret = protocol_->invalidate(object);
         if(ret != gmacSuccess) return ret;
     }
     return ret;
@@ -205,7 +172,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
     Mode &mode = Mode::current();
     do {
         const Object *obj = mode.getObjectRead(ptr);
-        ret = _protocol->toIOBuffer(buffer, *obj, addr, size);
+        ret = protocol_->toIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode.putObject(*obj);
         if(ret != gmacSuccess) return ret;
@@ -221,7 +188,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
     do {
         gmac::Mode &mode = *proc.owner(addr);
         const Object *obj = mode.getObjectRead(ptr);
-        ret = _protocol->fromIOBuffer(buffer, *obj, addr, size);
+        ret = protocol_->fromIOBuffer(buffer, *obj, addr, size);
         ptr += obj->size();
         mode.putObject(*obj);
         if(ret != gmacSuccess) return ret;
@@ -242,7 +209,7 @@ void Manager::checkBitmapToHost()
         Map::const_iterator i;
         for(i = map.begin(); i != map.end(); i++) {
             Object &object = *i->second;
-            gmacError_t ret = _protocol->acquireWithBitmap(object);
+            gmacError_t ret = protocol_->acquireWithBitmap(object);
             assertion(ret == gmacSuccess);
         }
         map.unlock();
@@ -269,7 +236,7 @@ bool Manager::read(void *addr)
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
-    assertion(_protocol->read(*obj, addr) == gmacSuccess);
+    assertion(protocol_->read(*obj, addr) == gmacSuccess);
     mode.putObject(*obj);
     return ret;
 }
@@ -284,7 +251,7 @@ bool Manager::write(void *addr)
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Write access for object %p", obj->addr());
-    if(_protocol->write(*obj, addr) != gmacSuccess) ret = false;
+    if(protocol_->write(*obj, addr) != gmacSuccess) ret = false;
     mode.putObject(*obj);
     return ret;
 }
@@ -292,7 +259,7 @@ bool Manager::write(void *addr)
 #ifndef USE_MMAP
 bool Manager::requireUpdate(Block &block)
 {
-    return _protocol->requireUpdate(block);
+    return protocol_->requireUpdate(block);
 }
 #endif
 
@@ -317,15 +284,15 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     }
     gmacError_t err;
     if (dstMode == NULL) {	    // From device
-		err = _protocol->toPointer(dst, src, *srcObj, n);
+		err = protocol_->toPointer(dst, src, *srcObj, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
-		err = _protocol->fromPointer(dst, src, *srcObj, n);
+		err = protocol_->fromPointer(dst, src, *srcObj, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
     else {
-		err = _protocol->copy(dst, src, *dstObj, *srcObj, n);
+		err = protocol_->copy(dst, src, *dstObj, *srcObj, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
 
@@ -375,7 +342,7 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
 
     const Object * obj = mode->getObjectRead(s);
     gmacError_t ret;
-    ret = _protocol->memset(*obj, s, c, n);
+    ret = protocol_->memset(*obj, s, c, n);
     mode->putObject(*obj);
     return ret;
 }

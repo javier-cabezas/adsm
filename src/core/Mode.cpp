@@ -152,13 +152,11 @@ gmacError_t Mode::sync()
     return error_;
 }
 
-// TODO: remove this
-extern gmac::memory::Manager *manager;
-
 #ifndef USE_MMAP
 bool Mode::requireUpdate(memory::Block &block)
 {
-    return manager->requireUpdate(block);
+	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    return manager.requireUpdate(block);
 }
 #endif
 
@@ -181,9 +179,10 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         return gmacErrorInsufficientDeviceMemory;
     }
 
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     for(i = map_->begin(); i != map_->end(); i++) {
         gmac::memory::Object &object = *i->second;
-        manager->protocol().toHost(object);
+        manager.protocol().toHost(object);
         object.free();
     }
 

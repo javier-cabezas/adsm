@@ -106,12 +106,14 @@ gmacMalloc(void **cpuPtr, size_t count)
     }
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC","gmacMalloc");
-    if(gmac::allocator != NULL && count < (paramPageSize / 2)) {
-        *cpuPtr = gmac::allocator->alloc(count, __builtin_return_address(0));   
+    gmac::memory::Allocator &allocator = gmac::memory::Allocator::getInstance();
+    if(count < (paramPageSize / 2)) {
+        *cpuPtr = allocator.alloc(count, __builtin_return_address(0));
     }
     else {
+    	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = gmac::manager->alloc(cpuPtr, count);
+	    ret = manager.alloc(cpuPtr, count);
     }
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -145,8 +147,11 @@ gmacFree(void *cpuPtr)
     gmacError_t ret = gmacSuccess;
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacFree");
-    if(gmac::allocator == NULL || gmac::allocator->free(cpuPtr) == false)
-        ret = gmac::manager->free(cpuPtr);
+    gmac::memory::Allocator &allocator = gmac::memory::Allocator::getInstance();
+    if (allocator.free(cpuPtr) == false) {
+    	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+        ret = manager.free(cpuPtr);
+    }
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
 	return ret;
@@ -168,12 +173,13 @@ gmacLaunch(gmacKernel_t k)
 {
     gmac::enterGmac();
     gmac::Mode &mode = gmac::Mode::current();
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     gmac::trace::Function::start("GMAC", "gmacLaunch");
     gmac::KernelLaunch * launch = mode.launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    gmac::util::Logger::ASSERTION(gmac::manager->release() == gmacSuccess);
+    gmac::util::Logger::CFatal(manager.release() == gmacSuccess, "Error releasing objects");
 
     // Wait for pending transfers
     mode.sync();
@@ -182,7 +188,7 @@ gmacLaunch(gmacKernel_t k)
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
-        //gmac::manager->invalidate();
+        //manager.invalidate();
     }
 
     delete launch;
@@ -200,7 +206,8 @@ gmacThreadSynchronize()
 
 	gmacError_t ret = gmac::Mode::current().sync();
     gmac::util::Logger::TRACE("Memory Sync");
-    gmac::manager->acquire();
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    manager.acquire();
 
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -221,7 +228,8 @@ gmacMemset(void *s, int c, size_t n)
 {
     gmac::enterGmac();
     void *ret = s;
-    gmac::manager->memset(s, c, n);
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    manager.memset(s, c, n);
 	gmac::exitGmac();
     return ret;
 }
@@ -238,8 +246,9 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmac::Process &proc = gmac::Process::current();
     gmac::Mode *dstMode = proc.owner(dst);
     gmac::Mode *srcMode = proc.owner(src);
-	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);;
-    gmac::manager->memcpy(dst, src, n);
+	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);
+	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    manager.memcpy(dst, src, n);
 
 	gmac::exitGmac();
 	return ret;

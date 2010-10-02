@@ -147,10 +147,10 @@ gmacHybridComputation.o: gmacHybridComputation.cu
 
 if VM
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v --keep
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v
 else
 .cu.o:
-	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v --keep
+	$(NVCC) -c $< -o $@ $($(basename $@)_CPPFLAGS) $($(basename $@)_CUDAFLAGS) $(AM_CPPFLAGS) $(DEFS) $(CUDA_CFLAGS) --ptxas-options=-v
 endif
 
 .cu.lo:
