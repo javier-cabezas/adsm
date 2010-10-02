@@ -29,23 +29,23 @@ namespace gmac { namespace memory { namespace vm {
 
 void Bitmap::allocate()
 {
-    assertion(_device == NULL);
+    assertion(device_ == NULL);
     gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
 #ifdef USE_HOSTMAP_VM
-    mode->hostAlloc((void **)&_bitmap, _size);
-    _device = mode->hostMap(_bitmap);
+    mode->hostAlloc((void **)&_bitmap, size_);
+    device_ = mode->hostMap(_bitmap);
     memset(_bitmap, 0, size());
     trace("Allocating dirty bitmap (%zu bytes)", size());
 #else
-    mode->malloc((void **)&_device, _size);
-    trace("Allocating dirty bitmap %p -> %p (%zu bytes)", _bitmap, _device, _size);
+    mode->malloc((void **)&device_, size_);
+    trace("Allocating dirty bitmap %p -> %p (%zu bytes)", _bitmap, device_, size_);
 #endif
 }
 
 Bitmap::~Bitmap()
 {
     gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
-    if(_device != NULL) mode->hostFree(_bitmap);
+    if(device_ != NULL) mode->hostFree(_bitmap);
 }
 
 void
@@ -75,7 +75,7 @@ Bitmap::syncDevice()
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
     trace("Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
     gmacError_t ret;
-    ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &_device, sizeof(void *));
+    ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &device_, sizeof(void *));
     cfatal(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode->dirtyBitmapDevPtr());
     ret = mode->copyToDevice((void *) mode->dirtyBitmapShiftPageDevPtr(), &_shiftPage, sizeof(int));
     cfatal(ret == gmacSuccess, "Unable to set shift page in the device %p", (void *) mode->dirtyBitmapShiftPageDevPtr());

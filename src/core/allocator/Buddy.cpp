@@ -6,8 +6,8 @@ namespace gmac { namespace kernel { namespace allocator {
 
 Buddy::Buddy(size_t size) :
     Lock("Buddy"),
-    _size(round(size)),
-    _index(index(_size))
+    size_(round(size)),
+    index_(index(size_))
 {
     initMemory();
 }
@@ -61,7 +61,7 @@ uint32_t Buddy::round(register uint32_t x) const
 
 off_t Buddy::getFromList(uint8_t i)
 {
-    if(i > _index) {
+    if(i > index_) {
         trace("Requested size (%d) larger than available I/O memory", 1 << i);
         return -1;
     }
@@ -86,7 +86,7 @@ off_t Buddy::getFromList(uint8_t i)
 
 void Buddy::putToList(off_t addr, uint8_t i)
 {
-    if(i == _index) {
+    if(i == index_) {
         _tree[i].push_back(addr);
         return;
     }
@@ -118,13 +118,13 @@ void *Buddy::get(size_t &size)
     unlock();
     if(off < 0) return NULL;
     trace("Returning address at offset %d", off);
-    return (uint8_t *)_addr + off;
+    return (uint8_t *)addr_ + off;
 }
 
 void Buddy::put(void *addr, size_t size)
 {
     uint8_t i = index(size);
-    off_t off = (uint8_t *)addr - (uint8_t *)_addr;
+    off_t off = (uint8_t *)addr - (uint8_t *)addr_;
     trace("Releasing %d bytes at offset %d of I/O memory", size, off);
     lock();
     putToList(off, i);

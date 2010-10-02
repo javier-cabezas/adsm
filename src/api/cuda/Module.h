@@ -86,7 +86,9 @@ class Module;
 typedef std::vector<Module *> ModuleVector;
 
 class ModuleDescriptor : public util::Logger {
+	friend class Module;
 
+protected:
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
     static ModuleDescriptorVector Modules;
 	const void * _fatBin;
@@ -99,8 +101,6 @@ class ModuleDescriptor : public util::Logger {
 	VariableVector _variables;
 	VariableVector _constants;
 	TextureVector  _textures;
-
-    friend class Module;
 
 #ifdef USE_VM
     VariableDescriptor * __dirtyBitmap;

@@ -11,25 +11,25 @@ Object::~Object()
 inline void *
 Object::addr() const
 {
-    return _addr;
+    return addr_;
 }
 
 inline size_t
 Object::size() const
 {
-    return _size;
+    return size_;
 }
 
 inline void *
 Object::start() const
 {
-    return _addr;
+    return addr_;
 }
 
 inline void *
 Object::end() const
 {
-    return (void *)((uint8_t *)_addr + _size);
+    return (void *)((uint8_t *)addr_ + size_);
 }
 
 inline gmacError_t

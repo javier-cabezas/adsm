@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_KERNEL_H
-#define __KERNEL_KERNEL_H
+#ifndef GMAC_CORE_KERNEL_H
+#define GMAC_CORE_KERNEL_H
 
 #include "core/Descriptor.h"
 #include "memory/ObjectSet.h"
@@ -47,14 +47,13 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 class Argument : public util::ReusableObject<Argument> {
+	friend class Kernel;
 public:
-    void * _ptr;
-    size_t _size;
-    off_t  _offset;
+    void * ptr_;
+    size_t size_;
+    off_t  offset_;
     Argument(void * ptr, size_t size, off_t offset) :
-        _ptr(ptr), _size(size), _offset(offset) {}
-private:
-    friend class Kernel;
+        ptr_(ptr), size_(size), offset_(offset) {}
 };
 
 typedef std::vector<Argument> ArgVector;

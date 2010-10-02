@@ -15,14 +15,13 @@ class KernelLaunch;
 class KernelConfig;
 
 class Kernel : public gmac::Kernel {
+    friend class KernelLaunch;
 protected:
     CUfunction _f;
 
 public:
     Kernel(const gmac::KernelDescriptor & k, CUmodule mod);
     gmac::KernelLaunch * launch(gmac::KernelConfig & c);
-
-    friend class KernelLaunch;
 };
 
 class KernelConfig : public gmac::KernelConfig {

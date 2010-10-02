@@ -20,12 +20,12 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	gmac::Accelerator(n), _device(device)
+	gmac::Accelerator(n), device_(device)
 {
     size_t size = 0;
-    CUresult ret = cuDeviceTotalMem(&size, _device);
+    CUresult ret = cuDeviceTotalMem(&size, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    ret = cuDeviceComputeCapability(&_major, &_minor, _device);
+    ret = cuDeviceComputeCapability(&_major, &_minor, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     memory_ = size;
 
@@ -37,7 +37,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
-    ret = cuCtxCreate(&_ctx, flags, _device);
+    ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     CFatal(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
@@ -110,7 +110,7 @@ Accelerator::createCUcontext()
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
-    CUresult ret = cuCtxCreate(&ctx, flags, _device);
+    CUresult ret = cuCtxCreate(&ctx, flags, device_);
     if(ret != CUDA_SUCCESS)
         Fatal("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);

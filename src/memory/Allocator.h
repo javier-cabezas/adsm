@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_ALLOCATOR_H_
-#define __MEMORY_ALLOCATOR_H_
+#ifndef GMAC_MEMORY_ALLOCATOR_H_
+#define GMAC_MEMORY_ALLOCATOR_H_
 
 #include <stddef.h>
 
@@ -43,6 +43,7 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class Allocator : public util::Logger, public util::Singleton<Allocator> {
+	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Allocator>;
 protected:
     Allocator() {}

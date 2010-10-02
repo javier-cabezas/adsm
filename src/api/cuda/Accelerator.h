@@ -59,14 +59,12 @@ public:
 typedef CUstream Stream;
 
 class AcceleratorLock : public util::Lock {
-protected:
     friend class Accelerator;
 public:
     AcceleratorLock() : Lock("Accelerator") {}
 };
 
 class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
-protected:
     friend class Accelerator;
 public:
     AlignmentMap() : RWLock("Aligment") {}
@@ -74,8 +72,9 @@ public:
 };
 
 class Accelerator : public gmac::Accelerator {
+    friend class Switch;
 protected:
-	CUdevice _device;
+	CUdevice device_;
 
 	std::set<Mode *> _queue;
     AlignmentMap _alignMap;
@@ -95,8 +94,6 @@ protected:
     void popContext() const;
 
 public:
-    friend class Switch;
-
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
 	CUdevice device() const;

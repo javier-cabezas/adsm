@@ -45,22 +45,22 @@ namespace gmac { namespace memory  { namespace vm {
 class Bitmap : public util::Logger {
 private:
 #ifdef BITMAP_WORD
-    uint32_t *_bitmap;
+    uint32_t *bitmap_;
 #else
 #ifdef BITMAP_BYTE
-    uint8_t *_bitmap;
+    uint8_t *bitmap_;
 #else
 #ifdef BITMAP_BIT
-    uint32_t *_bitmap;
+    uint32_t *bitmap_;
 #else
 #error "Bitmap granularity not defined"
 #endif
 #endif
 #endif
-    bool _dirty;
-    bool _synced;
+    bool dirty_;
+    bool synced_;
 
-    void *_device;
+    void *device_;
 
     const void *_minAddr, *_maxAddr;
 
@@ -69,7 +69,7 @@ private:
     size_t _shiftEntry;
     uint32_t _bitMask;
 #endif
-    size_t _size;
+    size_t size_;
 
     void allocate();
 

@@ -14,7 +14,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     // the curren thread has an execution mode attached
     Process &proc = gmac::Process::current();
     Mode &mode = gmac::Mode::current(); 
-    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::_size);
+    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
     if(proc.globalMalloc(*this, size) != gmacSuccess) {
         Object::Fatal("Unable to create replicated object");
         StateObject<T>::_addr = NULL;
@@ -28,7 +28,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     }
 
     setupSystem(init);
-    trace("Replicated object create @ %p", StateObject<T>::_addr);
+    trace("Replicated object create @ %p", StateObject<T>::addr_);
 }
 
 template<typename T>
@@ -96,7 +96,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode.dirtyBitmap();
-    bitmap.newRange(devAddr, StateObject<T>::_size);
+    bitmap.newRange(devAddr, StateObject<T>::size_);
 #endif
 
     StateObject<T>::unlock();
@@ -115,7 +115,7 @@ inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
     gmacError_t ret = mode.free(acc->addr());
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode.dirtyBitmap();
-    bitmap.removeRange(acc->addr(), StateObject<T>::_size);
+    bitmap.removeRange(acc->addr(), StateObject<T>::size_);
 #endif
     delete acc;
     StateObject<T>::unlock();

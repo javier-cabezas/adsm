@@ -45,9 +45,9 @@ namespace gmac { namespace kernel { namespace allocator {
 
 class Buddy : public util::Logger, protected util::Lock  {
 protected:
-    void *_addr;
-    size_t _size;
-    uint8_t _index;
+    void *addr_;
+    size_t size_;
+    uint8_t index_;
 
     uint8_t ones(register uint32_t x) const;
     uint8_t index(register uint32_t x) const;

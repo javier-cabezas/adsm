@@ -59,6 +59,7 @@ namespace gmac { namespace memory {
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class Manager : public util::Logger, public util::Singleton<Manager> {
+	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Manager>;
 private:
 #ifdef USE_VM

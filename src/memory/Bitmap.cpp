@@ -9,16 +9,16 @@
 namespace gmac { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-    _bitmap(NULL), _dirty(true), _synced(true), _device(NULL), _minAddr(NULL), _maxAddr(NULL)
+    bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minAddr_(NULL), maxAddr_(NULL)
 {
-    _shiftPage = int(log2(paramPageSize));
+    shiftPage_ = int(log2(paramPageSize));
     if (paramBitmapChunksPerPage > 1) {
-        _shiftPage -= int(log2(paramBitmapChunksPerPage));
+        shiftPage_ -= int(log2(paramBitmapChunksPerPage));
     }
 #ifdef BITMAP_BIT
-    _bitMask = (1 << 5) - 1;
-    _size = (1 << (bits - _shiftPage)) / 8;
-    _bitmap = new uint32_t[_size / sizeof(uint32_t)];
+    bitMask_ = (1 << 5) - 1;
+    size_ = (1 << (bits - shiftPage_)) / 8;
+    bitmap_ = new uint32_t[size_ / sizeof(uint32_t)];
 #else
 #ifdef BITMAP_BYTE
     typedef uint8_t T;
@@ -29,14 +29,14 @@ Bitmap::Bitmap(unsigned bits) :
 #error "Bitmap granularity not defined"
 #endif
 #endif
-    _size = (1 << (bits - _shiftPage)) * sizeof(T);
+    size_ = (1 << (bits - shiftPage_)) * sizeof(T);
 
-    trace("Shift page: %u", _shiftPage);
-    trace("Pages: %u", _size / sizeof(T));
+    trace("Shift page: %u", shiftPage_);
+    trace("Pages: %u", size_ / sizeof(T));
 
 #ifndef USE_HOSTMAP_VM
-    _bitmap = new T[_size / sizeof(T)];
-    memset(_bitmap, 0, _size);
+    bitmap_ = new T[size_ / sizeof(T)];
+    memset(bitmap_, 0, size_);
 #endif
 #endif
 }
@@ -49,11 +49,11 @@ void Bitmap::dump()
 
     static int idx = 0;
     char path[256];
-    sprintf(path, "__bitmap_%d", idx++);
-    //printf("Writing %p - %zd\n", _bitmap, _size);
+    sprintf(path, "_bitmap__%d", idx++);
+    //printf("Writing %p - %zd\n", bitmap_, _size);
     FILE * file = fopen(path, "w");
-    fwrite(_bitmap, 1, _size, file);
-    //memset(_bitmap, 0, _size);
+    fwrite(bitmap_, 1, size_, file);
+    //memset(bitmap_, 0, _size);
     fclose(file);
 }
 #endif
