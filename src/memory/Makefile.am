@@ -14,7 +14,7 @@ libmemory_la_SOURCES = memory.cpp\
             Protocol.h Protocol.cpp\
 			Manager.h Manager.cpp Manager.ipp\
 			Handler.h Handler.cpp\
-            Allocator.h Allocator.cpp
+            Allocator.h
 
 libmemory_la_LIBADD = protocol/libmemory-protocol.la allocator/libmemory-allocator.la $(OS_DIR)/libmemory-os.la $(PARAVER_LIB) -lm
 
