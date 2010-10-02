@@ -13,7 +13,7 @@ Arena::Arena(size_t objSize) :
     ptr(NULL),
     size(0)
 {
-    gmacError_t ret = Manager::get()->alloc(&ptr, paramPageSize);
+    gmacError_t ret = Manager::getInstance().alloc(&ptr, paramPageSize);
     if(ret != gmacSuccess) return;
     for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
         trace("Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
@@ -25,7 +25,7 @@ Arena::~Arena()
 {
     util::Logger::CFatal(_objects.size() == size, "Destroying non-full Arena");
     _objects.clear();
-    gmacError_t ret = Manager::get()->free(ptr);
+    gmacError_t ret = Manager::getInstance().free(ptr);
 }
 
 

@@ -63,9 +63,6 @@ public:
     void unlock()    const { util::RWLock::unlock();   }
 };
 
-extern memory::Manager *manager;
-extern memory::Allocator *allocator;
-
 extern util::Private<const char> _inGmac;
 extern GMACLock * _inGmacLock;
 extern const char _gmacCode;

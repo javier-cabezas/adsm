@@ -38,23 +38,16 @@ WITH THE SOFTWARE.  */
 
 #include "Manager.h"
 
-#include <util/Logger.h>
+#include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
-class Allocator : public util::Logger {
+class Allocator : public util::Logger, public util::Singleton<Allocator> {
+	friend class util::Singleton<Allocator>;
 protected:
-    static int __count;
-    static Allocator *__allocator;
-
-    Allocator() {};
+    Allocator() {}
 public:
-    // Allocator management
-    static Allocator *create();
-    static void destroy();
-    static Allocator *get();
-
-    virtual ~Allocator() {};
+    virtual ~Allocator() {}
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual bool free(void *addr) = 0;
 };

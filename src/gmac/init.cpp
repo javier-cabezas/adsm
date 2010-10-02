@@ -81,7 +81,6 @@ init(void)
     util::Logger::TRACE("Using %s memory manager", paramProtocol);
     util::Logger::TRACE("Using %s memory allocator", paramAllocator);
     Process::init(paramProtocol, paramAllocator);
-    util::Logger::ASSERTION(manager != NULL);
     exitGmac();
 }
 

@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "gmac/gmac.h"
 #include "util/Logger.h"
+#include "util/Singleton.h"
 
 #include <stdint.h>
 
@@ -57,35 +58,33 @@ namespace gmac { namespace memory {
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class Manager : public util::Logger {
+class Manager : public util::Logger, public util::Singleton<Manager> {
+	friend class util::Singleton<Manager>;
 private:
-#ifndef USE_MMAP
+#ifdef USE_VM
     void checkBitmapToHost();
     void checkBitmapToDevice();
 #endif
 protected:
-    static int _count;
-    static Manager *__manager;
-
-    Protocol *_protocol;
+    // TODO should we allow per-object protocol?
+    Protocol *protocol_;
 
     Manager();
     ~Manager();
 public:
-    // Manager management
-    static Manager *create();
-    static void destroy();
-    static Manager *get();
-
+    //////////////////////////////
     // Memory management functions
+    //////////////////////////////
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
-    gmacError_t globalAlloc(void **addr, size_t size, int hint);
+    gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
     bool requireUpdate(Block &block);
 #endif
-    gmacError_t free (void *addr);
+    gmacError_t free(void *addr);
 
+    ///////////////////////////////
     // Coherence protocol interface
+    ///////////////////////////////
     gmacError_t acquire();
     gmacError_t release();
     gmacError_t invalidate();
@@ -93,17 +92,27 @@ public:
     bool read(void *addr);
     bool write(void *addr);
 
+    /////////////////////////
+    // Memory bulk operations
+    /////////////////////////
     gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
     gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
 
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);
+
+    ///////////////////
+    // Object migration
+    ///////////////////
     gmacError_t moveTo(void * addr, Mode &mode);
 
+    ///////////////////////////////////////////////////
+    // Direct access to protocol for internal functions
+    ///////////////////////////////////////////////////
     Protocol &protocol() const;
 };
 
-} }
+}}
 
 #include "Manager.ipp"
 

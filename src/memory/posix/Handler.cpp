@@ -35,8 +35,9 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-	if(!writeAccess) resolved = manager->read(addr);
-	else resolved = manager->write(addr);
+	Manager &manager = Manager::getInstance();
+	if(!writeAccess) resolved = manager.read(addr);
+	else resolved = manager.write(addr);
 
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
