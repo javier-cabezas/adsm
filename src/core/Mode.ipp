@@ -43,20 +43,20 @@ inline unsigned Mode::accId() const
 }
 
 inline void
-Mode::addObject(memory::Object *obj)
+Mode::addObject(memory::Object &obj)
 {
     map_->insert(obj);
 }
 
 #ifndef USE_MMAP
 inline void
-Mode::addReplicatedObject(memory::Object *obj)
+Mode::addReplicatedObject(memory::Object &obj)
 {
     map_->insertReplicated(obj);
 }
 
 inline void
-Mode::addCentralizedObject(memory::Object *obj)
+Mode::addCentralizedObject(memory::Object &obj)
 {
     map_->insertCentralized(obj);
 }
@@ -64,7 +64,7 @@ Mode::addCentralizedObject(memory::Object *obj)
 #endif
 
 inline void
-Mode::removeObject(memory::Object *obj)
+Mode::removeObject(memory::Object &obj)
 {
     map_->remove(obj);
 }

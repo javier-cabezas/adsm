@@ -107,13 +107,13 @@ public:
     /*! \brief Dettaches the execution mode to the current thread */
     void detach();
 
-    void addObject(memory::Object *obj);
+    void addObject(memory::Object &obj);
 #ifndef USE_MMAP
-    void addReplicatedObject(memory::Object *obj);
-    void addCentralizedObject(memory::Object *obj);
+    void addReplicatedObject(memory::Object &obj);
+    void addCentralizedObject(memory::Object &obj);
     bool requireUpdate(memory::Block &block);
 #endif
-    void removeObject(memory::Object *obj);
+    void removeObject(memory::Object &obj);
     const memory::Object *getObjectRead(const void *addr) const;
     memory::Object *getObjectWrite(const void *addr);
     void putObject(const memory::Object &obj);

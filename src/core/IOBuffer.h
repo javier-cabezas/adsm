@@ -65,7 +65,15 @@ public:
     inline void toHost() { state_ = ToHost; }
     inline void toDevice() { state_ = ToDevice; }
 
-    inline gmacError_t wait() { gmacError_t ret = mode_.waitForBuffer(*this); state_ = Idle; return ret; }
+    inline gmacError_t wait()
+    {
+    	gmacError_t ret = gmacSuccess;
+    	if (state_ != Idle) {
+    		ret = mode_.waitForBuffer(*this);
+    		state_ = Idle;
+    	}
+    	return ret;
+    }
 };
 
 }

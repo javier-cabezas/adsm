@@ -67,13 +67,11 @@ protected:
 
     void newContext();
 
-    IOBuffer *ioBuffer;
-
 #ifdef USE_VM
-    CUdeviceptr _bitmapDevPtr;
-    CUdeviceptr _bitmapShiftPageDevPtr;
+    CUdeviceptr bitmapDevPtr_;
+    CUdeviceptr bitmapShiftPageDevPtr_;
 #ifdef BITMAP_BIT
-    CUdeviceptr _bitmapShiftEntryDevPtr;
+    CUdeviceptr bitmapShiftEntryDevPtr_;
 #endif
 #endif
 
