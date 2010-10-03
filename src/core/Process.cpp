@@ -111,6 +111,7 @@ Process::Process() :
 {
 	// Create the private per-thread variables for the implicit thread
 	initThread();
+	Mode::init();
 }
 
 Process::~Process()
