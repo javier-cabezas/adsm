@@ -33,7 +33,7 @@ using gmac::cuda::VariableDescriptor;
  */
 void **__cudaRegisterFatBinary(void *fatCubin)
 {
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::util::Logger::TRACE("CUDA Fat binary: %p", fatCubin);
     gmac::util::Logger::ASSERTION(proc.nAccelerators() > 0);
     gmac::enterGmac();

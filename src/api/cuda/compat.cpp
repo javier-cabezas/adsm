@@ -341,7 +341,7 @@ cudaError_t cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 	gmac::util::Logger::ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
 	cudaError_t ret = cudaSuccess;
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::cuda::Mode *mode = dynamic_cast<gmac::cuda::Mode *>(proc.owner(src));
     if(mode == NULL) {
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,

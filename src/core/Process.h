@@ -44,6 +44,7 @@ WITH THE SOFTWARE.  */
 #include "gmac/gmac.h"
 #include "memory/Map.h"
 #include "util/Logger.h"
+#include "util/Singleton.h"
 
 namespace gmac {
 class Accelerator;
@@ -112,12 +113,11 @@ public:
     iterator end();
 };
 
-class Process : public util::RWLock, public util::Logger {
+class Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {
+	// Needed to let Singleton call the protected constructor
+	friend class util::Singleton<Process>;
+	//friend class Accelerator;
 protected:
-    friend class Accelerator;
-
-    static Process *Proc_;
-
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
     ContextMap contexts_;
@@ -137,12 +137,9 @@ protected:
 public:
     virtual ~Process();
 
-    static void init(const char *manager, const char *allocator);
-    static void fini();
-
     void initThread();
 #define ACC_AUTO_BIND -1
-    Mode * create(int acc = ACC_AUTO_BIND);
+    Mode * createMode(int acc = ACC_AUTO_BIND);
     void remove(Mode &mode);
 
 #ifndef USE_MMAP
@@ -178,8 +175,6 @@ public:
     const memory::ObjectMap &centralized() const;
 
     Mode *owner(const void *addr) const;
-
-    static Process &current();
 };
 
 }

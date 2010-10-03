@@ -35,16 +35,15 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_CONTEXT_H_
 
 #include "gmac/gmac.h"
-#include "core/Accelerator.h"
-#include "core/Kernel.h"
 #include "util/Logger.h"
 #include "util/Private.h"
 
 namespace gmac {
 
+class Accelerator;
+class IOBuffer;
 class Kernel;
 class KernelLaunch;
-class IOBuffer;
 
 /*!
 	\brief Generic Context Class
@@ -71,7 +70,7 @@ public:
 
     virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
 
-    virtual gmac::KernelLaunch *launch(gmac::Kernel *kernel) = 0;
+    virtual gmac::KernelLaunch &launch(gmac::Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;
 
     virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;

@@ -27,7 +27,7 @@ void KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
         trace("Pushing argument: +%zd, %" PRId64 "/%" PRId64, size, argsSize_, offset);
     }
 
-    assertion(offset + size < KernelConfig::StackSize);
+    assertion(offset + size < KernelConfig::StackSize_);
 
     memcpy(&stack_[offset], arg, size);
     argsSize_ = offset + size;

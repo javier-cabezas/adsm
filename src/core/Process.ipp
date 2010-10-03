@@ -51,12 +51,6 @@ Process::centralized() const
     return centralized_;
 }
 
-inline
-Process &Process::current()
-{
-    return *Proc_;
-}
-
 }
 
 #endif

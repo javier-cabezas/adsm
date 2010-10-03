@@ -1,11 +1,12 @@
-#include "Accelerator.h"
-#include "IOBuffer.h"
-#include "Mode.h"
-#include "Process.h"
-
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/Protocol.h"
+
+#include "Accelerator.h"
+#include "IOBuffer.h"
+#include "Kernel.h"
+#include "Mode.h"
+#include "Process.h"
 
 namespace gmac {
 
@@ -44,22 +45,21 @@ Mode::release()
     delete map_;
     acc_->unregisterMode(*this); 
 }
-void Mode::kernel(gmacKernel_t k, Kernel * kernel)
+void Mode::kernel(gmacKernel_t k, Kernel &kernel)
 {
-    assertion(kernel != NULL);
-    trace("CTX: %p Registering kernel %s: %p", this, kernel->name(), k);
+    trace("CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
     KernelMap::iterator i;
     i = kernels_.find(k);
     assertion(i == kernels_.end());
-    kernels_[k] = kernel;
+    kernels_[k] = &kernel;
 }
 
 Mode &Mode::current()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
-        Process &proc = Process::current();
-        mode = proc.create();
+        Process &proc = Process::getInstance();
+        mode = proc.createMode();
     }
     gmac::util::Logger::ASSERTION(mode != NULL);
     return *mode;
@@ -131,14 +131,13 @@ gmacError_t Mode::memset(void *addr, int c, size_t size)
     return error_;
 }
 
-gmac::KernelLaunch *Mode::launch(const char *kernel)
+gmac::KernelLaunch &Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     assert(i != kernels_.end());
     gmac::Kernel * k = i->second;
-    assertion(k != NULL);
     switchIn();
-    gmac::KernelLaunch *l = Context::current().launch(k);
+    gmac::KernelLaunch &l = Context::current().launch(*k);
     switchOut();
 
     return l;

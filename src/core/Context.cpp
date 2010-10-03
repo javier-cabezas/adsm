@@ -1,8 +1,9 @@
-#include "Context.h"
+#include "memory/Manager.h"
+#include "trace/Thread.h"
+#include "trace/Function.h"
 
-#include <memory/Manager.h>
-#include <trace/Thread.h>
-#include <trace/Function.h>
+#include "Accelerator.h"
+#include "Context.h"
 
 namespace gmac {
 

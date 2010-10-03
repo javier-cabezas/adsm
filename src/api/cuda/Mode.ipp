@@ -3,6 +3,7 @@
 
 #include "core/Process.h"
 
+#include "Accelerator.h"
 #include "Context.h"
 
 namespace gmac { namespace cuda {

@@ -80,7 +80,11 @@ init(void)
 
     util::Logger::TRACE("Using %s memory manager", paramProtocol);
     util::Logger::TRACE("Using %s memory allocator", paramAllocator);
-    Process::init(paramProtocol, paramAllocator);
+    // Process is a singleton class. The only allowed instance is Proc_
+    util::Logger::TRACE("Initializing process");
+    Process::create<Process>();
+    apiInit();
+    memoryInit(paramProtocol, paramAllocator);
     exitGmac();
 }
 
@@ -89,7 +93,7 @@ fini(void)
 {
 	gmac::enterGmac();
     gmac::util::Logger::TRACE("Cleaning GMAC");
-    gmac::Process::fini();
+    gmac::Process::destroy();
     delete _inGmacLock;
     // We do not exitGmac to allow proper stdc function handling
     gmac::util::Logger::Destroy();
