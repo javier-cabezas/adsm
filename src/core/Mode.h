@@ -172,7 +172,7 @@ public:
     Process &process();
     const Process &process() const;
 
-    gmacError_t waitForBuffer(IOBuffer &buffer);
+    virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
 }

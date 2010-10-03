@@ -10,6 +10,24 @@ Accelerator::id() const
     return id_;
 }
 
+inline unsigned
+Accelerator::busId() const
+{
+	return busId_;
+}
+
+inline unsigned
+Accelerator::busDevId() const
+{
+	return busDevId_;
+}
+
+inline bool
+Accelerator::integrated() const
+{
+	return integrated_;
+}
+
 }
 
 #endif
