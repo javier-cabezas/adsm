@@ -14,8 +14,6 @@
 
 namespace gmac {
 
-Process *Process::Proc_ = NULL;
-
 ModeMap::ModeMap() :
     RWLock("ModeMap")
 {}
@@ -109,7 +107,10 @@ Process::Process() :
     replicated_("ReplicatedMemoryMap"),
     current_(0),
     ioMemory_(NULL)
-{}
+{
+	// Create the private per-thread variables for the implicit thread
+	Process::getInstance().initThread();
+}
 
 Process::~Process()
 {
@@ -144,28 +145,6 @@ Process::~Process()
 }
 
 void
-Process::init(const char *manager, const char *allocator)
-{
-    // Process is a singleton class. The only allowed instance is Proc_
-    util::Logger::TRACE("Initializing process");
-    util::Logger::ASSERTION(Process::Proc_ == NULL);
-    Process::Proc_ = new Process();
-    apiInit();
-    memoryInit(manager, allocator);
-    // Create the private per-thread variables
-    // Register first, implicit, thread
-    Mode::init();
-
-    Process::Proc_->initThread();
-}
-
-void
-Process::fini()
-{
-    delete Process::Proc_;
-}
-
-void
 Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
@@ -174,7 +153,7 @@ Process::initThread()
     Mode::initThread();
 }
 
-Mode *Process::create(int acc)
+Mode *Process::createMode(int acc)
 {
     lockWrite();
     unsigned usedAcc;

@@ -40,7 +40,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
 
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) {
@@ -84,7 +84,7 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fwrite == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);

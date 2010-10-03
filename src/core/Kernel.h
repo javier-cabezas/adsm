@@ -34,15 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_KERNEL_H
 #define GMAC_CORE_KERNEL_H
 
-#include "core/Descriptor.h"
-#include "memory/ObjectSet.h"
+#include <vector>
 
+
+#include "core/Descriptor.h"
+#include "gmac/gmac.h"
+#include "memory/ObjectSet.h"
 #include "util/Logger.h"
 #include "util/ReusableObject.h"
-
-#include "gmac/gmac.h"
-
-#include <vector>
 
 namespace gmac {
 
@@ -61,16 +60,16 @@ typedef std::vector<Argument> ArgVector;
 /// \todo create a pool of objects to avoid mallocs/frees
 class KernelConfig : public ArgVector, public util::Logger {
 protected:
-    static const unsigned StackSize = 4096;
+    static const unsigned StackSize_ = 4096;
 
-    char stack_[StackSize];
+    char stack_[StackSize_];
     size_t argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
     /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig() : argsSize_(0) {};
-    virtual ~KernelConfig() { clear(); };
+    KernelConfig() : argsSize_(0) {}
+    virtual ~KernelConfig() { clear(); }
 
     void pushArgument(const void * arg, size_t size, off_t offset);
     inline off_t argsSize() const { return argsSize_; }
@@ -87,7 +86,7 @@ class Kernel : public memory::ObjectSet, public KernelDescriptor
 public:
     Kernel(const KernelDescriptor & k) :
         KernelDescriptor(k.name(), k.key()) {};
-    virtual ~Kernel() {};
+    virtual ~Kernel() {}
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
 };

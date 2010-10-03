@@ -38,7 +38,7 @@ ssize_t read(int fd, void *buf, size_t count)
 
 
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) {
@@ -82,7 +82,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	if(gmac::inGmac() == 1) return __libc_write(fd, buf, count);
 
 	gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) {

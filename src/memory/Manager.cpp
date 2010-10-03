@@ -182,7 +182,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
 
 gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
 {
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     do {
@@ -265,7 +265,7 @@ bool Manager::requireUpdate(Block &block)
 
 gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 {
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(dst);
     gmac::Mode *srcMode = proc.owner(src);
 
@@ -333,7 +333,7 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 
 gmacError_t Manager::memset(void *s, int c, size_t n)
 {
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *mode = proc.owner(s);
 	if (mode == NULL) {
         ::memset(s, c, n);

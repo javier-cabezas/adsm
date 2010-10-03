@@ -10,6 +10,7 @@
 #include "core/Context.h"
 #include "core/Mode.h"
 #include "core/IOBuffer.h"
+#include "core/Kernel.h"
 #include "core/Process.h"
 
 #include "memory/Manager.h"
@@ -70,7 +71,7 @@ gmacAccs()
     size_t ret;
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacAccs");
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     ret = proc.nAccelerators();
     gmac::trace::Function::end("GMAC");
 	gmac::exitGmac();
@@ -83,11 +84,11 @@ gmacMigrate(int acc)
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
     gmac::trace::Function::start("GMAC", "gmacMigrate");
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     if (gmac::Mode::hasCurrent()) {
         ret = proc.migrate(gmac::Mode::current(), acc);
     } else {
-        if (proc.create(acc) == NULL) {
+        if (proc.createMode(acc) == NULL) {
             ret = gmacErrorUnknown;
         } 
     }
@@ -162,7 +163,7 @@ gmacPtr(void *ptr)
 {
     void *ret = NULL;
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     ret = proc.translate(ptr);
     gmac::exitGmac();
     return ret;
@@ -175,7 +176,7 @@ gmacLaunch(gmacKernel_t k)
     gmac::Mode &mode = gmac::Mode::current();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     gmac::trace::Function::start("GMAC", "gmacLaunch");
-    gmac::KernelLaunch * launch = mode.launch(k);
+    gmac::KernelLaunch &launch = mode.launch(k);
 
     gmacError_t ret = gmacSuccess;
     gmac::util::Logger::TRACE("Flush the memory used in the kernel");
@@ -184,14 +185,14 @@ gmacLaunch(gmacKernel_t k)
     // Wait for pending transfers
     mode.sync();
     gmac::util::Logger::TRACE("Kernel Launch");
-    ret = mode.execute(*launch);
+    ret = mode.execute(launch);
 
     if(paramAcquireOnWrite) {
         gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
         //manager.invalidate();
     }
 
-    delete launch;
+    delete &launch;
     gmac::trace::Function::end("GMAC");
     gmac::exitGmac();
 
@@ -243,7 +244,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
     gmacError_t err;
 
 	// Locate memory regions (if any)
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(dst);
     gmac::Mode *srcMode = proc.owner(src);
 	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);
@@ -258,7 +259,7 @@ void
 gmacSend(pthread_t id)
 {
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     proc.send((THREAD_ID)id);
     gmac::exitGmac();
 }
@@ -266,7 +267,7 @@ gmacSend(pthread_t id)
 void gmacReceive()
 {
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     proc.receive();
     gmac::exitGmac();
 }
@@ -275,7 +276,7 @@ void
 gmacSendReceive(pthread_t id)
 {
 	gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
 	proc.sendReceive((THREAD_ID)id);
 	gmac::exitGmac();
 }
@@ -283,7 +284,7 @@ gmacSendReceive(pthread_t id)
 void gmacCopy(pthread_t id)
 {
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
     proc.copy((THREAD_ID)id);
     gmac::exitGmac();
 }

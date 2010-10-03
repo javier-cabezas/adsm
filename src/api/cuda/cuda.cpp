@@ -19,7 +19,7 @@ static bool initialized = false;
 
 void apiInit(void)
 {
-    gmac::Process &proc = gmac::Process::current();
+    gmac::Process &proc = gmac::Process::getInstance();
 	if(initialized)
 		util::Logger::Fatal("GMAC double initialization not allowed");
 

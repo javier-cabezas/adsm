@@ -34,44 +34,48 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_CONTEXT_H_
 #define GMAC_API_CUDA_CONTEXT_H_
 
-#include <config.h>
-
-#include "Accelerator.h"
-#include "Kernel.h"
-#include "Module.h"
-
-#include "util/Lock.h"
-#include "core/Context.h"
-#include "core/IOBuffer.h"
-
-#include <stdint.h>
 #include <cuda.h>
+#include <stdint.h>
 #include <vector_types.h>
 
-#include <vector>
 #include <map>
+#include <vector>
 
-namespace gmac { namespace cuda {
+#include "config.h"
+
+#include "core/Context.h"
+#include "util/Lock.h"
+
+#include "Kernel.h"
+
+namespace gmac {
+
+class IOBuffer;
+
+namespace cuda {
+
+class Accelerator;
 
 class Context : public gmac::Context {
 protected:
-    static void * _FatBin;
-	static const unsigned _USleepLaunch = 100;
+    static void * FatBin_;
+	static const unsigned USleepLaunch_ = 100;
 
 	typedef std::map<void *, void *> AddressMap;
-	static AddressMap _HostMem;
+	static AddressMap HostMem_;
 
-    CUstream _streamLaunch;
-    CUstream _streamToDevice;
-    CUstream _streamToHost;
-    CUstream _streamDevice;
+    CUstream streamLaunch_;
+    CUstream streamToDevice_;
+    CUstream streamToHost_;
+    CUstream streamDevice_;
+
+    IOBuffer *buffer_;
+
+    KernelConfig call_;
 
     void setupCUstreams();
     void cleanCUstreams();
     gmacError_t syncCUstream(CUstream);
-    IOBuffer *_buffer;
-
-    KernelConfig _call;
 
 public:
 	Context(Accelerator &acc, Mode &mode);
@@ -85,7 +89,7 @@ public:
 
     gmacError_t memset(void *addr, int c, size_t size);
 
-    gmac::KernelLaunch *launch(gmac::Kernel *kernel);
+    gmac::KernelLaunch &launch(gmac::Kernel &kernel);
     gmacError_t sync();
 
     gmacError_t bufferToDevice(void *dst, IOBuffer &buffer, size_t size, off_t off = 0);

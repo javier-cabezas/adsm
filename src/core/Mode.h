@@ -138,7 +138,7 @@ public:
     gmacError_t memset(void *addr, int c, size_t size);
 
 	/*!  \brief Launches the execution of a kernel */
-	KernelLaunch * launch(gmacKernel_t kernel);
+	KernelLaunch &launch(gmacKernel_t kernel);
 	virtual gmacError_t execute(KernelLaunch &launch) = 0;
 
 	/*!  \brief Waits for kernel execution */
@@ -147,7 +147,7 @@ public:
     virtual gmacError_t bufferToDevice(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
     virtual gmacError_t deviceToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
 
-    void kernel(gmacKernel_t k, Kernel * kernel);
+    void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);
 
     
