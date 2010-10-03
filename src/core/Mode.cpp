@@ -213,12 +213,4 @@ void Mode::memInfo(size_t *free, size_t *total)
     switchOut();
 }
 
-gmacError_t Mode::waitForBuffer(IOBuffer &buffer)
-{
-	switchIn();
-	error_ = Context::current().waitForBuffer(buffer);
-	switchOut();
-	return error_;
-}
-
 }

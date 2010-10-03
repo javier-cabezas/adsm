@@ -72,8 +72,6 @@ public:
 
     virtual gmac::KernelLaunch &launch(gmac::Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;
-
-    virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
 }

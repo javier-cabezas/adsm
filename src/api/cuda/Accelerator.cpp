@@ -37,6 +37,17 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
+    int val;
+    ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
+    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    busId_ = val;
+    ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, n);
+    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    busDevId_ = val;
+    ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
+    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    integrated_ = val;
+
     ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);

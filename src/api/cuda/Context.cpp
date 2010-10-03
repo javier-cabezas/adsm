@@ -23,7 +23,14 @@ Context::Context(Accelerator &acc, Mode &mode) :
 
 Context::~Context()
 {
-    //if(_buffer != NULL) delete _buffer;
+	// Destroy context's private IOBuffer (if any)
+    if(buffer_ != NULL) {
+    	// Wait for pending transfers
+    	buffer_->wait();
+    	gmac::Process &proc = gmac::Process::getInstance();
+    	proc.destroyIOBuffer(buffer_);
+    }
+
     cleanCUstreams();
 }
 
@@ -43,9 +50,6 @@ void Context::cleanCUstreams()
     accelerator().destroyCUstream(streamToDevice_);
     accelerator().destroyCUstream(streamToHost_);
     accelerator().destroyCUstream(streamDevice_);
-
-    gmac::Process &proc = gmac::Process::getInstance();
-    if(buffer_ != NULL) proc.destroyIOBuffer(buffer_);
 }
 
 gmacError_t Context::syncCUstream(CUstream _stream)

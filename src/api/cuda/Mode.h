@@ -105,6 +105,7 @@ public:
     CUstream eventStream() const;
 
     static Mode & current();
+    Accelerator &accelerator();
 
 #ifdef USE_VM
     CUdeviceptr dirtyBitmapDevPtr() const;
@@ -114,7 +115,7 @@ public:
 #endif
 #endif
 
-    Accelerator &accelerator();
+    gmacError_t waitForBuffer(IOBuffer &buffer);
 };
 
 }}

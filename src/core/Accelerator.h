@@ -55,6 +55,9 @@ class Accelerator: public util::Logger {
 protected:
 	size_t memory_;
 	unsigned id_;
+	unsigned busId_;
+	unsigned busDevId_;
+	bool integrated_;
 
 	unsigned load_;
 public:
@@ -89,6 +92,11 @@ public:
 	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size) = 0;
 
 	virtual void memInfo(size_t *free, size_t *total) const = 0;
+
+	// TODO: use this methods for something useful
+	unsigned busId() const;
+	unsigned busDevId() const;
+	bool integrated() const;
 };
 
 }

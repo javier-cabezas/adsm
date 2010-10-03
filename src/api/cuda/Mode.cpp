@@ -125,4 +125,12 @@ CUstream Mode::eventStream() const
     return Context::current().eventStream();
 }
 
+gmacError_t Mode::waitForBuffer(IOBuffer &buffer)
+{
+	switchIn();
+	error_ = Context::current().waitForBuffer(buffer);
+	switchOut();
+	return error_;
+}
+
 }}
