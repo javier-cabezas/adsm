@@ -31,24 +31,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __DESCRIPTOR_KERNEL_H_
-#define __DESCRIPTOR_KERNEL_H_
+#ifndef GMAC_CORE_DESCRIPTOR_H_
+#define GMAC_CORE_DESCRIPTOR_H_
 
-#include <util/Logger.h>
+#include "util/Logger.h"
 
 namespace gmac {
 
 template <typename K>
 class Descriptor : public util::Logger {
 protected:
-    K _key;
-    const char * _name;
+    K key_;
+    const char * name_;
 
 public:
     Descriptor(const char * name, K key) :
-        _key(key), _name(name) {};
-    inline const char * name() const { return _name;}
-    K key() const { return _key; }
+        key_(key), name_(name) {};
+    inline const char * name() const { return name_;}
+    K key() const { return key_; }
 };
 
 }

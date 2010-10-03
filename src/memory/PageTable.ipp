@@ -1,5 +1,5 @@
-#ifndef __MEMORY_PAGETABLE_IPP_
-#define __MEMORY_PAGETABLE_IPP_
+#ifndef GMAC_MEMORY_PAGETABLE_IPP_
+#define GMAC_MEMORY_PAGETABLE_IPP_
 
 inline int
 PageTable::entry(const void *addr, unsigned long shift, size_t size) const
@@ -39,6 +39,5 @@ PageTable::getTableSize() const
 {
     return (1 << dirShift) / paramPageSize;
 }
-
 
 #endif

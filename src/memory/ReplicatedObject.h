@@ -31,15 +31,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_REPLICATEDOBJECT_H_
-#define __MEMORY_REPLICATEDOBJECT_H_
-
-#include "memory/StateObject.h"
-#include "memory/DistributedObject.h"
-#include "memory/Block.h"
-#include "core/Mode.h"
+#ifndef GMAC_MEMORY_REPLICATEDOBJECT_H_
+#define GMAC_MEMORY_REPLICATEDOBJECT_H_
 
 #include <map>
+
+#include "core/Mode.h"
+#include "memory/Block.h"
+#include "memory/DistributedObject.h"
+#include "memory/StateObject.h"
 
 namespace gmac { namespace memory {
 

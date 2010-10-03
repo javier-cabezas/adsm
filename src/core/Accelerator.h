@@ -32,12 +32,13 @@
  WITH THE SOFTWARE.
  */
 
-#ifndef __KERNEL_ACCELERATOR_H_
-#define __KERNEL_ACCELERATOR_H_
+#ifndef GMAC_CORE_ACCELERATOR_H_
+#define GMAC_CORE_ACCELERATOR_H_
 
-#include <gmac/gmac.h>
-#include <util/Logger.h>
 #include <stddef.h>
+
+#include "gmac/gmac.h"
+#include "util/Logger.h"
 
 namespace gmac {
 

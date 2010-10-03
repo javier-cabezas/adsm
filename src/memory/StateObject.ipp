@@ -1,5 +1,5 @@
-#ifndef __MEMORY_STATEOBJECT_IPP
-#define __MEMORY_STATEOBJECT_IPP
+#ifndef GMAC_MEMORY_STATEOBJECT_IPP
+#define GMAC_MEMORY_STATEOBJECT_IPP
 
 namespace gmac { namespace memory {
 

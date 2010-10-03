@@ -34,18 +34,17 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_SHAREDOBJECT_H_
 #define __MEMORY_SHAREDOBJECT_H_
 
-#include "memory/StateObject.h"
-#include "memory/Block.h"
 #include "core/Mode.h"
+#include "memory/Block.h"
+#include "memory/StateObject.h"
 
 namespace gmac { namespace memory {
 
 template<typename T>
 class SharedObject : public StateObject<T> {
 protected:
-    Mode *_owner;
-
-    AcceleratorBlock *_accBlock;
+    Mode *owner_;
+    AcceleratorBlock *accBlock_;
 public:
     SharedObject(size_t size, T init);
     virtual ~SharedObject();
@@ -54,7 +53,7 @@ public:
     gmacError_t toDevice(Block &block) const;
 
     void *device(void *addr) const;
-    inline Mode &owner() const { return *_owner; }
+    inline Mode &owner() const { return *owner_; }
 
     gmacError_t free();
     gmacError_t realloc(Mode &mode);

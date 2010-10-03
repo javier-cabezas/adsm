@@ -1,5 +1,5 @@
-#ifndef __KERNEL_MODE_IPP
-#define __KERNEL_MODE_IPP
+#ifndef GMAC_CORE_MODE_IPP
+#define GMAC_CORE_MODE_IPP
 
 #include "memory/Map.h"
 

@@ -31,13 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_BITMAP_H_
-#define __MEMORY_BITMAP_H_
-
-#include <util/Logger.h>
+#ifndef GMAC_MEMORY_BITMAP_H_
+#define GMAC_MEMORY_BITMAP_H_
 
 #include <stdint.h>
 #include <stddef.h>
+
+#include <util/Logger.h>
 
 #ifdef USE_VM
 namespace gmac { namespace memory  { namespace vm {

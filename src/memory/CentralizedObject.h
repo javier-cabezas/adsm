@@ -31,21 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_CENTRALIZEDOBJECT_H_
-#define __MEMORY_CENTRALIZEDOBJECT_H_
+#ifndef GMAC_MEMORY_CENTRALIZEDOBJECT_H_
+#define GMAC_MEMORY_CENTRALIZEDOBJECT_H_
 
-
-#include "memory/Object.h"
-#include "memory/Block.h"
 #include "core/Mode.h"
-
+#include "memory/Block.h"
+#include "memory/Object.h"
 
 namespace gmac { namespace memory {
 #ifndef USE_MMAP
 class CentralizedObject : public Object {
-protected:
 public:
-    CentralizedObject(size_t __size);
+    CentralizedObject(size_t size);
     virtual ~CentralizedObject();
 
     virtual void *device(void *addr) const;

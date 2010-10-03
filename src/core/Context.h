@@ -31,17 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_CONTEXT_H_
-#define __KERNEL_CONTEXT_H_
+#ifndef GMAC_CORE_CONTEXT_H_
+#define GMAC_CORE_CONTEXT_H_
 
 #include "gmac/gmac.h"
-
 #include "core/Accelerator.h"
 #include "core/Kernel.h"
-
 #include "util/Logger.h"
 #include "util/Private.h"
-
 
 namespace gmac {
 

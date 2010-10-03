@@ -10,12 +10,12 @@ namespace gmac { namespace memory {
 
 struct sigaction defaultAction;
 Handler *handler = NULL;
-unsigned Handler::count = 0;
+unsigned Handler::Count_ = 0;
 
 #if defined(LINUX)
-int Handler::signum = SIGSEGV;
+int Handler::Signum_ = SIGSEGV;
 #elif defined(DARWIN)
-int Handler::signum = SIGBUS;
+int Handler::Signum_ = SIGBUS;
 #endif
 
 static void segvHandler(int s, siginfo_t *info, void *ctx)
@@ -62,19 +62,19 @@ void Handler::setHandler()
 	segvAction.sa_flags = SA_SIGINFO | SA_RESTART;
     sigemptyset(&segvAction.sa_mask);
 
-	if(sigaction(signum, &segvAction, &defaultAction) < 0)
+	if(sigaction(Signum_, &segvAction, &defaultAction) < 0)
 		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
 
-	handler = this;
+	Handler_ = this;
 	gmac::util::Logger::TRACE("New signal handler programmed");
 }
 
 void Handler::restoreHandler()
 {
-	if(sigaction(signum, &defaultAction, NULL) < 0)
+	if(sigaction(Signum_, &defaultAction, NULL) < 0)
 		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
 
-	handler = NULL;
+	Handler_ = NULL;
 	gmac::util::Logger::TRACE("Old signal handler restored");
 }
 

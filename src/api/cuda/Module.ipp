@@ -1,37 +1,37 @@
-#ifndef __API_CUDADRV_MODULE_IPP_
-#define __API_CUDADRV_MODULE_IPP_
+#ifndef GMAC_API_CUDA_MODULE_IPP_
+#define GMAC_API_CUDA_MODULE_IPP_
 
 namespace gmac { namespace cuda {
 
 inline bool
 VariableDescriptor::constant() const
 {
-    return _constant;
+    return constant_;
 }
 
 inline size_t
 Variable::size() const
 {
-    return _size;
+    return size_;
 }
 
 inline CUdeviceptr
 Variable::devPtr() const
 {
-    return _ptr;
+    return ptr_;
 }
 
 inline CUtexref
 Texture::texRef() const
 {
-    return _texRef;
+    return texRef_;
 }
 
 inline
 void
 ModuleDescriptor::add(gmac::KernelDescriptor & k)
 {
-    _kernels.push_back(k);
+    kernels_.push_back(k);
 }
 
 inline
@@ -39,9 +39,9 @@ void
 ModuleDescriptor::add(VariableDescriptor & v)
 {
     if (v.constant()) {
-        _constants.push_back(v);
+        constants_.push_back(v);
     } else {
-        _variables.push_back(v);
+        variables_.push_back(v);
     }
 }
 
@@ -49,15 +49,15 @@ inline
 void
 ModuleDescriptor::add(TextureDescriptor & t)
 {
-    _textures.push_back(t);
+    textures_.push_back(t);
 }
 
 inline const Variable *
 Module::constant(gmacVariable_t key) const
 {
     VariableMap::const_iterator v;
-    v = _constants.find(key);
-    if(v == _constants.end()) return NULL;
+    v = constants_.find(key);
+    if(v == constants_.end()) return NULL;
     return &v->second;
 }
 
@@ -65,8 +65,8 @@ inline const Variable *
 Module::variable(gmacVariable_t key) const
 {
     VariableMap::const_iterator v;
-    v = _variables.find(key);
-    if(v == _variables.end()) return NULL;
+    v = variables_.find(key);
+    if(v == variables_.end()) return NULL;
     return &v->second;
 }
 
@@ -74,8 +74,8 @@ inline const Texture *
 Module::texture(gmacTexture_t key) const
 {
     TextureMap::const_iterator t;
-    t = _textures.find(key);
-    if(t == _textures.end()) return NULL;
+    t = textures_.find(key);
+    if(t == textures_.end()) return NULL;
     return &t->second;
 }
 
@@ -84,14 +84,14 @@ inline
 const Variable *
 Module::dirtyBitmap() const
 {
-    return _dirtyBitmap;
+    return dirtyBitmap_;
 }
 
 inline
 const Variable *
 Module::dirtyBitmapShiftPage() const
 {
-    return _shiftPage;
+    return shiftPage_;
 }
 
 #ifdef BITMAP_BIT
@@ -99,7 +99,7 @@ inline
 const Variable *
 Module::dirtyBitmapShiftEntry() const
 {
-    return _shiftEntry;
+    return shiftEntry_;
 }
 #endif
 

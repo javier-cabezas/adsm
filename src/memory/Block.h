@@ -31,35 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_BLOCK_H_
-#define __MEMORY_BLOCK_H_
+#ifndef GMAC_MEMORY_BLOCK_H_
+#define GMAC_MEMORY_BLOCK_H_
 
 #include "config.h"
 
+#include "core/Mode.h"
 #include "gmac/gmac.h"
-
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-#include "core/Mode.h"
-
-namespace gmac {
-
-namespace memory {
-
+namespace gmac { namespace memory {
 
 class Block: public util::Lock, public util::Logger {
 protected:
-    void *__addr;
-    size_t __size;
+    void *addr_;
+    size_t size_;
 
     Block(void *addr, size_t size);
     inline void *mirrorAddress(void *src) const;
 public:
     virtual ~Block() {};
 
-    inline void *addr() const { return __addr; }
-    inline size_t size() const { return __size; }
+    inline void *addr() const { return addr_; }
+    inline size_t size() const { return size_; }
 
     inline void lock() const { return util::Lock::lock(); }
     inline void unlock() const { return util::Lock::unlock(); }
@@ -67,7 +62,7 @@ public:
 
 class AcceleratorBlock : public Block {
 protected:
-    Mode &_owner;
+    Mode &owner_;
 public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
@@ -80,7 +75,7 @@ public:
 template<typename T>
 class SystemBlock : public Block {
 protected:
-    T _state;
+    T state_;
 
 public:
     SystemBlock(void *addr, size_t size, T state);
@@ -91,7 +86,7 @@ public:
     T state() const;
     void state(T s);
 
-    inline void *addr() const { return __addr; }
+    inline void *addr() const { return addr_; }
 };
 
 }}

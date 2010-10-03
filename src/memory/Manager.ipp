@@ -1,5 +1,5 @@
-#ifndef __GMAC_MEMORY_MANAGER_IPP
-#define __GMAC_MEMORY_MANAGER_IPP
+#ifndef GMAC_MEMORY_MANAGER_IPP_
+#define GMAC_MEMORY_MANAGER_IPP_
 
 namespace gmac { namespace memory {
 

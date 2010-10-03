@@ -31,17 +31,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __API_CUDA_MODULE_H_
-#define __API_CUDA_MODULE_H_
+#ifndef GMAC_API_CUDA_MODULE_H_
+#define GMAC_API_CUDA_MODULE_H_
 
-#include <config.h>
+#include "config.h"
 
-#include <util/Logger.h>
+#include "util/Logger.h"
+
+#include "Kernel.h"
 
 #include <list>
 #include <vector>
-
-#include "Kernel.h"
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -56,7 +56,7 @@ typedef Descriptor<gmacTexture_t> TextureDescriptor;
 
 class VariableDescriptor : public Descriptor<gmacVariable_t> {
 protected:
-    bool _constant;
+    bool constant_;
 
 public:
     VariableDescriptor(const char *name, gmacVariable_t key, bool constant);
@@ -64,8 +64,8 @@ public:
 };
 
 class Variable : public VariableDescriptor {
-	CUdeviceptr _ptr;
-    size_t _size;
+	CUdeviceptr ptr_;
+    size_t size_;
 public:
 	Variable(const VariableDescriptor & v, CUmodule mod);
     size_t size() const;
@@ -74,7 +74,7 @@ public:
 
 class Texture : public TextureDescriptor {
 protected:
-    CUtexref _texRef;
+    CUtexref texRef_;
 
 public:
 	Texture(const TextureDescriptor & t, CUmodule mod);
@@ -90,23 +90,23 @@ class ModuleDescriptor : public util::Logger {
 
 protected:
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
-    static ModuleDescriptorVector Modules;
-	const void * _fatBin;
+    static ModuleDescriptorVector Modules_;
+	const void * fatBin_;
 
     typedef std::vector<gmac::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
 	typedef std::vector<TextureDescriptor>      TextureVector;
 
-    KernelVector   _kernels;
-	VariableVector _variables;
-	VariableVector _constants;
-	TextureVector  _textures;
+    KernelVector   kernels_;
+	VariableVector variables_;
+	VariableVector constants_;
+	TextureVector  textures_;
 
 #ifdef USE_VM
-    VariableDescriptor * __dirtyBitmap;
-    VariableDescriptor * __shiftPage;
+    VariableDescriptor * dirtyBitmap_;
+    VariableDescriptor * shiftPage_;
 #ifdef BITMAP_BIT
-    VariableDescriptor * __shiftEntry;
+    VariableDescriptor * shiftEntry_;
 #endif
 #endif
 
@@ -126,26 +126,26 @@ public:
 class Module : public util::Logger {
 protected:
 
-	CUmodule _mod;
-	const void *_fatBin;
+	CUmodule mod_;
+	const void *fatBin_;
 
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
     typedef std::map<const char *, Kernel *> KernelMap;
 
-    VariableMap _variables;
-	VariableMap _constants;
-	TextureMap  _textures;
-    KernelMap _kernels;
+    VariableMap variables_;
+	VariableMap constants_;
+	TextureMap  textures_;
+    KernelMap kernels_;
 
 #ifdef USE_VM
-    static const char *_DirtyBitmapSymbol;
-    static const char *_ShiftPageSymbol;
-	Variable *_dirtyBitmap;
-	Variable *_shiftPage;
+    static const char *DirtyBitmapSymbol_;
+    static const char *ShiftPageSymbol_;
+	Variable *dirtyBitmap_;
+	Variable *shiftPage_;
 #ifdef BITMAP_BIT
-    static const char *_ShiftEntrySymbol;
-	Variable *_shiftEntry;
+    static const char *ShiftEntrySymbol_;
+	Variable *shiftEntry_;
 #endif
 #endif
 
