@@ -101,6 +101,7 @@ QueueMap::iterator QueueMap::end()
 size_t Process::TotalMemory_ = 0;
 
 Process::Process() :
+	util::Singleton<Process>(),
     RWLock("Process"),
     shared_("SharedMemoryMap"),
     centralized_("CentralizedMemoryMap"),
@@ -109,7 +110,7 @@ Process::Process() :
     ioMemory_(NULL)
 {
 	// Create the private per-thread variables for the implicit thread
-	Process::getInstance().initThread();
+	initThread();
 }
 
 Process::~Process()
