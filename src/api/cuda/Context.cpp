@@ -93,11 +93,10 @@ gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
         return gmac::Context::copyToDevice(dev, host, size);
     }
 
-    gmacError_t ret = waitForBuffer(*buffer_);
-    if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
+    gmacError_t ret = gmacSuccess;
     size_t offset = 0;
     while(offset < size) {
-        ret = waitForBuffer(*buffer_);
+        ret = buffer_->wait();
         if(ret != gmacSuccess) break;
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
@@ -136,7 +135,7 @@ gmacError_t Context::copyToHost(void *host, const void *device, size_t size)
         buffer_->toHost();
         ret = accelerator().copyToHostAsync(buffer_->addr(), (uint8_t *)device + offset, len, streamToHost_);
         if(ret != gmacSuccess) break;
-        ret = accelerator().syncCUstream(streamToHost_);
+        ret = buffer_->wait();
         if(ret != gmacSuccess) break;
         trace::Function::start("Context", "memcpyToHost");
         memcpy((uint8_t *)host + offset, buffer_->addr(), len);
