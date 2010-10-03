@@ -72,11 +72,11 @@ public:
     Map(const char *name, Mode &parent) : ObjectMap(name), parent_(parent) {}
     virtual ~Map();
 
-    void insert(Object *obj);
-    void remove(Object *obj);
+    void insert(Object &obj);
+    void remove(Object &obj);
 #ifndef USE_MMAP
-    void insertReplicated(Object *obj);
-    void insertCentralized(Object *obj);
+    void insertReplicated(Object &obj);
+    void insertCentralized(Object &obj);
 #endif
 
     const Object *getObjectRead(const void *addr) const;

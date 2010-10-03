@@ -43,7 +43,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
     }
 
     // Insert object into memory maps
-    Mode::current().addObject(object);
+    Mode::current().addObject(*object);
 
     return gmacSuccess;
 }
@@ -61,7 +61,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
             return gmacErrorMemoryAllocation;
         }
 
-        mode.addReplicatedObject(object);
+        mode.addReplicatedObject(*object);
     }
     else if (GMAC_GLOBAL_MALLOC_CENTRALIZED) {
         Object *object = protocol_->createCentralizedObject(size);
@@ -71,7 +71,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
             return gmacErrorMemoryAllocation;
         }
 
-        mode.addCentralizedObject(object);
+        mode.addCentralizedObject(*object);
     } else {
         return gmacErrorInvalidValue;
     }
@@ -88,7 +88,7 @@ gmacError_t Manager::free(void * addr)
     Mode &mode = Mode::current();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
-        mode.removeObject(object);
+        mode.removeObject(*object);
         mode.putObject(*object);
         delete object;
     }

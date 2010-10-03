@@ -26,7 +26,6 @@ Context::~Context()
 	// Destroy context's private IOBuffer (if any)
     if(buffer_ != NULL) {
     	// Wait for pending transfers
-    	buffer_->wait();
     	gmac::Process &proc = gmac::Process::getInstance();
     	proc.destroyIOBuffer(buffer_);
     }
