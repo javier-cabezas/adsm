@@ -12,10 +12,11 @@ namespace gmac { namespace cuda {
 Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     gmac::Kernel(k)
 {
-    CUresult ret = cuModuleGetFunction(&_f, mod, _name);
+    CUresult ret = cuModuleGetFunction(&_f, mod, name_);
     //! \todo Calculate this dynamically
 #if CUDART_VERSION >= 3000 && LINUX
-    cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
+    ret = cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
+    assertion(ret == CUDA_SUCCESS);
 #endif
     assertion(ret == CUDA_SUCCESS);
 }
@@ -67,7 +68,7 @@ KernelLaunch::execute()
 #if 0
 	// Set-up textures
 	Textures::const_iterator t;
-	for(t = _textures.begin(); t != _textures.end(); t++) {
+	for(t = textures_.begin(); t != textures_.end(); t++) {
 		cuParamSetTexRef(_f, CU_PARAM_TR_DEFAULT, *(*t));
 	}
 #endif

@@ -1,5 +1,5 @@
-#ifndef __API_CUDADRV_KERNEL_H_
-#define __API_CUDADRV_KERNEL_H_
+#ifndef GMAC_API_CUDA_KERNEL_H_
+#define GMAC_API_CUDA_KERNEL_H_
 
 #include "core/Kernel.h"
 

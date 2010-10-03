@@ -31,11 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_DISTRIBUTEDOBJECT_H_
-#define __MEMORY_DISTRIBUTEDOBJECT_H_
+#ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
+#define GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
 
 #include "core/Mode.h"
-
 
 namespace gmac { namespace memory {
 
@@ -46,6 +45,6 @@ public:
     virtual gmacError_t removeOwner(Mode &mode) = 0;
 };
 
-} }
+}}
 
 #endif

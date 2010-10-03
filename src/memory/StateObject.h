@@ -31,14 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_STATEOBJECT_H_
-#define __MEMORY_STATEOBJECT_H_
-
-
-#include <memory/Object.h>
-#include <memory/Block.h>
+#ifndef GMAC_MEMORY_STATEOBJECT_H_
+#define GMAC_MEMORY_STATEOBJECT_H_
 
 #include <map>
+
+#include "memory/Block.h"
+#include "memory/Object.h"
 
 namespace gmac { namespace memory {
 

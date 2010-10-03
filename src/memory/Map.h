@@ -31,16 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MAP_H_
-#define __MEMORY_MAP_H_
+#ifndef GMAC_MEMORY_MAP_H_
+#define GMAC_MEMORY_MAP_H_
 
-#include "Bitmap.h"
-
-#include <util/Lock.h>
-#include <util/Logger.h>
-
-#include <set>
 #include <map>
+#include <set>
+
+#include "util/Lock.h"
+#include "util/Logger.h"
 
 namespace gmac {
 class Mode;

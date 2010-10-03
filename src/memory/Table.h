@@ -31,17 +31,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_TABLE_H_
-#define __MEMORY_TABLE_H_
+#ifndef GMAC_MEMORY_TABLE_H_
+#define GMAC_MEMORY_TABLE_H_
+
+#include <cstdlib>
+#include <stdint.h>
+#include <cmath>
 
 #include <config.h>
 #include <paraver.h>
 
-#include <util/Logger.h>
-
-#include <stdint.h>
-#include <cstdlib>
-#include <cmath>
+#include "util/Logger.h"
 
 // Compiler check to ensure that defines set by configure script
 // are consistent

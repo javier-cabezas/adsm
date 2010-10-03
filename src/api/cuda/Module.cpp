@@ -5,19 +5,19 @@
 
 namespace gmac { namespace cuda {
 
-ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules;
+ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 
 #ifdef USE_VM
-const char *Module::_DirtyBitmapSymbol = "__dirtyBitmap";
-const char *Module::_ShiftPageSymbol  = "__SHIFT_PAGE";
+const char *Module::DirtyBitmapSymbol_ = "__dirtyBitmap";
+const char *Module::ShiftPageSymbol_   = "__SHIFT_PAGE";
 #ifdef BITMAP_BIT
-const char *Module::_ShiftEntrySymbol = "__SHIFT_ENTRY";
+const char *Module::ShiftEntrySymbol_  = "__SHIFT_ENTRY";
 #endif
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
     Descriptor<gmacVariable_t>(name, key),
-    _constant(constant)
+    constant_(constant)
 {
 }
 
@@ -25,31 +25,31 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
     VariableDescriptor(v.name(), v.key(), v.constant())
 {
     size_t tmp;
-    CUresult ret = cuModuleGetGlobal(&_ptr, &tmp, mod, name());
+    CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, name());
     assertion(ret == CUDA_SUCCESS);
-    _size = tmp;
+    size_ = tmp;
 }
 
 Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
     TextureDescriptor(t.name(), t.key())
 {
-    CUresult ret = cuModuleGetTexRef(&_texRef, mod, name());
+    CUresult ret = cuModuleGetTexRef(&texRef_, mod, name());
     assertion(ret == CUDA_SUCCESS);
 }
 
 ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
-    _fatBin(fatBin)
+    fatBin_(fatBin)
 {
-    trace("Creating module descriptor: %p", _fatBin);
-    Modules.push_back(this);
+    trace("Creating module descriptor: %p", fatBin_);
+    Modules_.push_back(this);
 }
 
 ModuleDescriptor::~ModuleDescriptor()
 {
-    _kernels.clear();
-    _variables.clear();
-    _constants.clear();
-    _textures.clear();
+    kernels_.clear();
+    variables_.clear();
+    constants_.clear();
+    textures_.clear();
 }
 
 ModuleVector
@@ -59,46 +59,46 @@ ModuleDescriptor::createModules()
     ModuleVector modules;
 
     ModuleDescriptorVector::const_iterator it;
-    for (it = Modules.begin(); it != Modules.end(); it++) {
-        util::Logger::TRACE("Creating module: %p", (*it)->_fatBin);
+    for (it = Modules_.begin(); it != Modules_.end(); it++) {
+        util::Logger::TRACE("Creating module: %p", (*it)->fatBin_);
         modules.push_back(new Module(*(*it)));
     }
     return modules;
 }
 
 Module::Module(const ModuleDescriptor & d) :
-    _fatBin(d._fatBin)
+    fatBin_(d.fatBin_)
 {
-    trace("Module image: %p", _fatBin);
+    trace("Module image: %p", fatBin_);
     CUresult res;
-    res = cuModuleLoadFatBinary(&_mod, _fatBin);
+    res = cuModuleLoadFatBinary(&mod_, fatBin_);
     CFatal(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
     ModuleDescriptor::KernelVector::const_iterator k;
-    for (k = d._kernels.begin(); k != d._kernels.end(); k++) {
-        Kernel * kernel = new Kernel(*k, _mod);
-        _kernels.insert(KernelMap::value_type(k->key(), kernel));
+    for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
+        Kernel * kernel = new Kernel(*k, mod_);
+        kernels_.insert(KernelMap::value_type(k->key(), kernel));
     }
 
     ModuleDescriptor::VariableVector::const_iterator v;
-    for (v = d._variables.begin(); v != d._variables.end(); v++) {
-        _variables.insert(VariableMap::value_type(v->key(), Variable(*v, _mod)));
+    for (v = d.variables_.begin(); v != d.variables_.end(); v++) {
+        variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
     }
 
-    for (v = d._constants.begin(); v != d._constants.end(); v++) {
-        _constants.insert(VariableMap::value_type(v->key(), Variable(*v, _mod)));
+    for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
+        constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
 #ifdef USE_VM
-        if(strncmp(v->name(), _DirtyBitmapSymbol, strlen(_DirtyBitmapSymbol)) == 0) {
-            _dirtyBitmap = &_constants.find(v->key())->second;
+        if(strncmp(v->name(), DirtyBitmapSymbol_, strlen(DirtyBitmapSymbol_)) == 0) {
+            dirtyBitmap_ = &constants_.find(v->key())->second;
             trace("Found constant to set a dirty bitmap on device");
-        } else if(strncmp(v->name(), _ShiftPageSymbol, strlen(_ShiftPageSymbol)) == 0) {
-            _shiftPage = &_constants.find(v->key())->second;
+        } else if(strncmp(v->name(), ShiftPageSymbol_, strlen(ShiftPageSymbol_)) == 0) {
+            shiftPage_ = &constants_.find(v->key())->second;
             trace("Found constant to set __SHIFT_PAGE");
         }
 
 #ifdef BITMAP_BIT
-        else if(strncmp(v->name(), _ShiftEntrySymbol, strlen(_ShiftEntrySymbol)) == 0) {
-            _shiftEntry = &_constants.find(v->key())->second;
+        else if(strncmp(v->name(), ShiftEntrySymbol_, strlen(ShiftEntrySymbol_)) == 0) {
+            _shiftEntry = &constants_.find(v->key())->second;
             trace("Found constant to set __SHIFT_ENTRY");
         }
 #endif
@@ -106,29 +106,29 @@ Module::Module(const ModuleDescriptor & d) :
     }
 
     ModuleDescriptor::TextureVector::const_iterator t;
-    for (t = d._textures.begin(); t != d._textures.end(); t++) {
-        _textures.insert(TextureMap::value_type(t->key(), Texture(*t, _mod)));
+    for (t = d.textures_.begin(); t != d.textures_.end(); t++) {
+        textures_.insert(TextureMap::value_type(t->key(), Texture(*t, mod_)));
     }
 
 }
 
 Module::~Module()
 {
-    CUresult ret = cuModuleUnload(_mod);
+    CUresult ret = cuModuleUnload(mod_);
     assertion(ret == CUDA_SUCCESS);
-    _variables.clear();
-    _constants.clear();
-    _textures.clear();
+    variables_.clear();
+    constants_.clear();
+    textures_.clear();
 
     KernelMap::iterator i;
-    for(i = _kernels.begin(); i != _kernels.end(); i++) delete i->second;
-    _kernels.clear();
+    for(i = kernels_.begin(); i != kernels_.end(); i++) delete i->second;
+    kernels_.clear();
 }
 
 void Module::registerKernels(Mode &mode) const
 {
     KernelMap::const_iterator k;
-    for (k = _kernels.begin(); k != _kernels.end(); k++) {
+    for (k = kernels_.begin(); k != kernels_.end(); k++) {
         mode.kernel(k->first, k->second);
     }
 }

@@ -55,8 +55,8 @@ WITH THE SOFTWARE.  */
  */
 
 
-#ifndef __GMAC_H_
-#define __GMAC_H_
+#ifndef GMAC_GMAC_GMAC_H_
+#define GMAC_GMAC_GMAC_H_
 
 #include <stddef.h>
 

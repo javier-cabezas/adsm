@@ -1,3 +1,5 @@
+#ifndef GMAC_CORE_MODE_IPP_
+#define GMAC_CORE_MODE_IPP_
 
 namespace gmac {
 
@@ -56,3 +58,5 @@ Process &Process::current()
 }
 
 }
+
+#endif

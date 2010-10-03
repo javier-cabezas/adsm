@@ -361,7 +361,7 @@ gmacError_t Manager::moveTo(void * addr, Mode &mode)
         gmacError_t ret = accelerator->get(idx++ * paramPageSize, i->second);
     }
 
-    _owner->free(accelerator->addr());
+    owner_->free(accelerator->addr());
     
     StateObject<T>::unlock();
 #endif

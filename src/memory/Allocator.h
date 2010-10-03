@@ -36,9 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
-#include "Manager.h"
-
 #include "util/Logger.h"
+
+#include "Manager.h"
 
 namespace gmac { namespace memory {
 

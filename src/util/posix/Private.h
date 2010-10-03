@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_POSIX_PRIVATE_H_
-#define __UTIL_POSIX_PRIVATE_H_
+#ifndef GMAC_UTIL_POSIX_PRIVATE_H_
+#define GMAC_UTIL_POSIX_PRIVATE_H_
 
 #include <pthread.h>
 
@@ -41,7 +41,7 @@ namespace gmac { namespace util {
 template <typename T = void>
 class Private {
 protected:
-    pthread_key_t _key;
+    pthread_key_t key_;
     
 public:
     static void init(Private &var);

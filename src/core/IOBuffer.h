@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_IOBUFFER_H
-#define __KERNEL_IOBUFFER_H
+#ifndef GMAC_CORE_IOBUFFER_H_
+#define GMAC_CORE_IOBUFFER_H_
 
 #include "gmac/gmac.h"
 #include "util/Lock.h"
@@ -70,6 +70,6 @@ public:
 
 }
 
-#endif /* KERNEL_H */
+#endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

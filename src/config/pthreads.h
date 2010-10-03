@@ -1,5 +1,5 @@
-#ifndef __CONFIG_PTHREADS_H_
-#define __CONFIG_PTHREADS_H_
+#ifndef GMAC_CONFIG_PTHREADS_H_
+#define GMAC_CONFIG_PTHREADS_H_
 
 #include <pthread.h>
 

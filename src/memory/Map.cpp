@@ -1,9 +1,9 @@
-#include "Map.h"
-#include "Object.h"
-
 #include "core/Process.h"
 #include "core/Mode.h"
 #include "core/Context.h"
+
+#include "Map.h"
+#include "Object.h"
 
 namespace gmac { namespace memory {
 

@@ -32,9 +32,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
 
-#ifndef __GMAC_VM_H_
-#define __GMAC_VM_H_
-
+#ifndef GMAC_USER_VM_H_
+#define GMAC_USER_VM_H_
 
 #include <stdint.h>
 

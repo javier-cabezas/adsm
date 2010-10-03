@@ -160,7 +160,6 @@ void Bitmap::reset()
     dirty_ = false;
 }
 
-
 inline
 bool Bitmap::synced() const
 {

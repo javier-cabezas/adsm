@@ -31,20 +31,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_PROCESS_H_
-#define __KERNEL_PROCESS_H_
+#ifndef GMAC_CORE_PROCESS_H_
+#define GMAC_CORE_PROCESS_H_
 
-#include <gmac/gmac.h>
-
-#include "Queue.h"
-#include "allocator/Buddy.h"
-
-#include <memory/Map.h>
-#include <util/Logger.h>
-
-#include <vector>
 #include <list>
 #include <map>
+#include <vector>
+
+#include "Queue.h"
+
+#include "allocator/Buddy.h"
+#include "gmac/gmac.h"
+#include "memory/Map.h"
+#include "util/Logger.h"
 
 namespace gmac {
 class Accelerator;

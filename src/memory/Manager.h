@@ -31,28 +31,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MEMMANAGER_H_
-#define __MEMORY_MEMMANAGER_H_
+#ifndef GMAC_MEMORY_MEMMANAGER_H_
+#define GMAC_MEMORY_MEMMANAGER_H_
 
-#include "memory/Bitmap.h"
-#include "memory/Protocol.h"
+#include <stdint.h>
 
 #include "gmac/gmac.h"
 #include "util/Logger.h"
 #include "util/Singleton.h"
 
-#include <stdint.h>
-
-#include <iostream>
-#include <iterator>
-#include <map>
-
 namespace gmac {
+class IOBuffer;
 class Mode;
 }
 
 namespace gmac { namespace memory {
 
+class Protocol;
 
 //! Memory Manager Interface
 

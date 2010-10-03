@@ -31,19 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_PAGETABLE_H_
-#define __MEMORY_PAGETABLE_H_
+#ifndef GMAC_MEMORY_PAGETABLE_H_
+#define GMAC_MEMORY_PAGETABLE_H_
+
+#include <stdint.h>
 
 #include <config.h>
 #include <paraver.h>
 
-#include <util/Parameter.h>
+#include <memory/Table.h>
 #include <util/Lock.h>
 #include <util/Logger.h>
-
-#include <memory/Table.h>
-
-#include <stdint.h>
+#include <util/Parameter.h>
 
 namespace gmac { namespace memory {
 
@@ -52,8 +51,6 @@ namespace gmac { namespace memory {
 //! Software Virtual Memory Table to keep translation from
 // CPU to accelerator memory addresses
 class PageTable : public util::Logger {
-protected:
-
 private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;

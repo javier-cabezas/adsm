@@ -1,5 +1,5 @@
-#ifndef __API_CUDADRV_CONTEXT_IPP_
-#define __API_CUDADRV_CONTEXT_IPP_
+#ifndef GMAC_API_CUDA_CONTEXT_IPP_
+#define GMAC_API_CUDA_CONTEXT_IPP_
 
 #include "Kernel.h"
 

@@ -1,5 +1,5 @@
 #include "Handler.h"
 
 namespace gmac { namespace memory {
-Handler *Handler::handler = NULL;
+Handler *Handler::Handler_ = NULL;
 } };
