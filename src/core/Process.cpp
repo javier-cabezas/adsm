@@ -9,6 +9,7 @@
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/DistributedObject.h"
+#include "trace/Function.h"
 #include "trace/Thread.h"
 
 
@@ -111,7 +112,7 @@ Process::Process() :
 {
 	// Create the private per-thread variables for the implicit thread
 	initThread();
-	Mode::init();
+    Mode::init();
 }
 
 Process::~Process()
@@ -153,6 +154,7 @@ Process::initThread()
     queues_.insert(SELF(), q);
     // Set the private per-thread variables
     Mode::initThread();
+    trace::Function::initThread();
 }
 
 Mode *Process::createMode(int acc)

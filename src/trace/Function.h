@@ -34,8 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAVER_FUNCTION_H_
 #define __PARAVER_FUNCTION_H_
 
-#include <gmac/paraver.h>
-#include <util/Lock.h>
+#include "gmac/paraver.h"
+#include "util/Lock.h"
+#include "util/Private.h"
 
 #include <map>
 
@@ -65,12 +66,16 @@ public:
 
 class Function {
 protected:
+#ifdef DEBUG
+    static util::Private<std::list<std::string> > Funcs_;
+#endif
 #ifdef PARAVER
     static ModuleMap *map;
     static FunctionMap &getFunctionMap(const char *module);
 #endif
 public:
     static void init();
+    static void initThread();
     static void start(const char *module, const char *name);
     static void end(const char *module);
 };

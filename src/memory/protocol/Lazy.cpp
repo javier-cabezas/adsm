@@ -7,6 +7,8 @@
 #include "memory/ReplicatedObject.h"
 #include "memory/os/Memory.h"
 
+#include "trace/Function.h"
+
 namespace gmac { namespace memory { namespace protocol {
 
 bool List::empty() const
@@ -534,13 +536,18 @@ Lazy::moveTo(Object &obj, Mode &mode)
 
 gmacError_t Lazy::read(const Object &obj, void *addr)
 {
+    trace::Function::start("Lazy", "read");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
-    if(block == NULL) return gmacErrorInvalidValue;
+    if(block == NULL) {
+        trace::Function::end("Lazy");
+        return gmacErrorInvalidValue;
+    }
     block->lock();
     if (block->state() != Invalid) {
         // Somebody already fixed it
         block->unlock();
+        trace::Function::end("Lazy");
         return gmacSuccess;
     }
     void * tmp;
@@ -552,6 +559,7 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
         tmp = Memory::map(NULL, block->size(), PROT_WRITE);
         if (tmp == NULL) {
             block->unlock();
+            trace::Function::end("Lazy");
             return gmacErrorInvalidValue;
         }
 
@@ -564,26 +572,33 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
     void *old = Memory::remap(tmp, block->addr(), block->size());
     if (old != block->addr()) {
         block->unlock();
+        trace::Function::end("Lazy");
         return gmacErrorInvalidValue;
     }
     block->state(ReadOnly);
     block->unlock();
+    trace::Function::end("Lazy");
     return gmacSuccess;
 }
 
 gmacError_t Lazy::write(const Object &obj, void *addr)
 {
+    trace::Function::start("Lazy", "write");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     void *old;
     gmacError_t ret = gmacSuccess;
-    if(block == NULL) return gmacErrorInvalidValue;
+    if(block == NULL) {
+        trace::Function::end("Lazy");
+        return gmacErrorInvalidValue;
+    }
     block->lock();
     Mode &mode = Mode::current();
     switch (block->state()) {
         case Dirty:
             // Somebody already fixed it
             block->unlock();
+            trace::Function::end("Lazy");
             return gmacSuccess;
         case Invalid:
             void * tmp;
@@ -594,6 +609,7 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
                 tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
                 if (tmp == NULL) {
                     block->unlock();
+                    trace::Function::end("Lazy");
                     return gmacErrorInvalidValue;
                 }
 
@@ -601,6 +617,7 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
                 if(ret != gmacSuccess) {
                     Memory::unmap(tmp, block->size());
                     block->unlock();
+                    trace::Function::end("Lazy");
                     return ret;
                 }
 #ifdef USE_VM
@@ -609,6 +626,7 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
             old = Memory::remap(tmp, block->addr(), block->size());
             if (old != block->addr()) {
                 block->unlock();
+                trace::Function::end("Lazy");
                 return gmacErrorInvalidValue;
             }
             break;
@@ -620,6 +638,7 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
     trace("Setting block %p to dirty state", block->addr());
     block->unlock();
     ret = addDirty(object, *block);
+    trace::Function::end("Lazy");
     return gmacSuccess;
 }
 

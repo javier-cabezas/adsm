@@ -75,7 +75,7 @@ void *addVector(void *ptr)
 	gmacFree(b);
 	gmacFree(*c);
 
-    assert(error == 0);
+    assert(error == 0.f);
 
 	return NULL;
 }

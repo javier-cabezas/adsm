@@ -1,10 +1,15 @@
-#include "Function.h"
-#include <util/Logger.h>
-
-#include <ostream>
 #include <cassert>
+#include <list>
+#include <ostream>
+
+#include "util/Logger.h"
+#include "Function.h"
 
 namespace gmac { namespace trace {
+
+#ifdef DEBUG
+util::Private<std::list<std::string> > Function::Funcs_;
+#endif
 
 #ifdef PARAVER
 ModuleMap *Function::map = NULL;
@@ -34,14 +39,27 @@ FunctionMap &ModuleMap::get(const char *module)
 
 void Function::init()
 {
+#ifdef DEBUG
+    util::Private<std::list<std::string> >::init(Funcs_);
+#endif
 #ifdef PARAVER
     map = new ModuleMap();
 #endif
 }
 
+void Function::initThread()
+{
+#ifdef DEBUG
+    Funcs_.set(new std::list<std::string>());
+#endif
+}
 
 void Function::start(const char *module, const char *name)
 {
+#ifdef DEBUG
+    gmac::util::Logger::TRACE("FUNCTION START %s:%s", module, name);
+    Funcs_.get()->push_back(std::string(name));
+#endif
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
     map->lock();
@@ -67,6 +85,11 @@ void Function::end(const char *module)
 
     FunctionMap &function = map->get(module);
     paraver::trace->__pushEvent(function.event(), 0);
+#endif
+#ifdef DEBUG
+    gmac::util::Logger::ASSERTION(Funcs_.get()->size() > 0);
+    gmac::util::Logger::TRACE("FUNCTION END %s:%s", module, Funcs_.get()->back().c_str());
+    Funcs_.get()->pop_back();
 #endif
 }
 

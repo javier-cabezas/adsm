@@ -48,7 +48,6 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 		return defaultAction.sa_handler(s);
 	}
 
-	gmac::util::Logger::TRACE("SIGSEGV done");
 	trace::Function::end("GMAC");
 	exitGmac();
 }

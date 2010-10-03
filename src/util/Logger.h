@@ -54,7 +54,9 @@ WITH THE SOFTWARE.  */
 
 #define SRC_ROOT "src"
 inline const char *__extract_file_name(const char *file) {
-    return strstr(file, SRC_ROOT);
+    const char *guess = strstr(file, SRC_ROOT);
+    if(guess == NULL) return file;
+    return guess;
 }
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
