@@ -122,7 +122,7 @@ gmacMalloc(void **cpuPtr, size_t count)
 }
 
 gmacError_t
-gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
+gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
 {
 #ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
@@ -133,7 +133,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, int hint)
     gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = gmac::manager->globalAlloc(cpuPtr, count, hint);
+	ret = gmac::memory::Manager::getInstance().globalAlloc(cpuPtr, count, hint);
     gmac::trace::Function::end("GMAC");
     gmac::exitGmac();
     return ret;

@@ -185,6 +185,8 @@ Mode *Process::createMode(int acc)
     contexts_.insert(&Context::current(), mode);
     modes_.insert(mode, accs_[usedAcc]);
 
+    mode->attach();
+
     trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
     for(i = replicated_.begin(); i != replicated_.end(); i++) {
@@ -194,7 +196,6 @@ Mode *Process::createMode(int acc)
     }
     unlock();
 
-    mode->attach();
     lockWrite();
     if(ioMemory_ == NULL)
         ioMemory_ = new kernel::allocator::Buddy(accs_.size() * paramIOMemory);

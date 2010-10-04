@@ -31,16 +31,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_POSIX_LOCK_H_
-#define __UTIL_POSIX_LOCK_H_
-
-
-#include <gmac/paraver.h>
+#ifndef GMAC_UTIL_POSIX_LOCK_H_
+#define GMAC_UTIL_POSIX_LOCK_H_
 
 #include <pthread.h>
+
 #include <string>
 #include <iostream>
 #include <map>
+
+#include "gmac/paraver.h"
 
 namespace gmac { namespace util {
 
@@ -70,9 +70,9 @@ public:
 
 class Lock : public ParaverLock {
 protected:
-	mutable pthread_mutex_t __mutex;
+	mutable pthread_mutex_t mutex_;
 public:
-	Lock(const char *__name);
+	Lock(const char *name);
 	~Lock();
 
 protected:
@@ -82,10 +82,10 @@ protected:
 
 class RWLock : public ParaverLock {
 protected:
-	mutable pthread_rwlock_t __lock;
-    bool __write;
+	mutable pthread_rwlock_t lock_;
+    bool write_;
 public:
-	RWLock(const char *__name);
+	RWLock(const char *name);
 	~RWLock();
 
 protected:

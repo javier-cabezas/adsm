@@ -146,7 +146,7 @@ enum GmacGlobalMallocType {
 /*!
 	\brief Allocates global memory at all GPUS
 */
-gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, int hint = GMAC_GLOBAL_MALLOC_CENTRALIZED);
+gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint = GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
 /*!
 	\brief Gets a GPU address

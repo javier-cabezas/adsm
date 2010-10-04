@@ -11,18 +11,18 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     StateObject<T>(size)
 {
     // This line might seem useless, but we first need to make sure that
-    // the curren thread has an execution mode attached
-    Process &proc = gmac::Process::current();
+    // the current thread has an execution mode attached
+    Process &proc = gmac::Process::getInstance();
     Mode &mode = gmac::Mode::current(); 
     trace("Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
     if(proc.globalMalloc(*this, size) != gmacSuccess) {
         Object::Fatal("Unable to create replicated object");
-        StateObject<T>::_addr = NULL;
+        StateObject<T>::addr_ = NULL;
         return;
     }
 
-    StateObject<T>::_addr = StateObject<T>::map(NULL, size);
-    if(StateObject<T>::_addr == NULL) {
+    StateObject<T>::addr_ = StateObject<T>::map(NULL, size);
+    if(StateObject<T>::addr_ == NULL) {
         proc.globalFree(*this);
         return;
     }
@@ -34,12 +34,12 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
 template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
 {
-    if(StateObject<T>::_addr == NULL) { return; }
-    Process &proc = gmac::Process::current();
+    if(StateObject<T>::addr_ == NULL) { return; }
+    Process &proc = gmac::Process::getInstance();
     proc.globalFree(*this);
     StateObject<T>::lockWrite();
     accelerator.clear();
-    StateObject<T>::unmap(StateObject<T>::_addr, StateObject<T>::_size);
+    StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
     StateObject<T>::unlock();
 }
 
@@ -47,7 +47,7 @@ template<typename T>
 inline void *ReplicatedObject<T>::device(void *addr) const
 {
     StateObject<T>::lockRead();
-    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::_addr;
+    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     typename AcceleratorMap::const_iterator i = accelerator.find(&gmac::Mode::current());
     Object::assertion(i != accelerator.end());
     void *ret = (uint8_t *)i->second->addr() + offset;
@@ -67,7 +67,7 @@ inline gmacError_t ReplicatedObject<T>::toDevice(Block &block) const
 {
     gmacError_t ret = gmacSuccess;
     StateObject<T>::lockRead();
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::_addr;
+    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         gmacError_t tmp = i->second->toDevice(off, block);
@@ -82,16 +82,16 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 {
     void *devAddr = NULL;
     gmacError_t ret;
-    ret = mode.malloc(&devAddr, StateObject<T>::_size, paramPageSize);
+    ret = mode.malloc(&devAddr, StateObject<T>::size_, paramPageSize);
     Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
-    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::_size);
+    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::size_);
     accelerator.insert(typename AcceleratorMap::value_type(&mode, dev));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
         if(mode.requireUpdate(*i->second) == false) continue;
-        off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::_addr;
+        off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::addr_;
         dev->toDevice(off, *i->second);
     }
 #ifdef USE_VM

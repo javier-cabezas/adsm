@@ -31,14 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_LOGGER_H_
-#define __UTIL_LOGGER_H_
-
-#include <config.h>
-#include <threads.h>
-
-#include "Lock.h"
-#include "Parameter.h"
+#ifndef GMAC_UTIL_LOGGER_H_
+#define GMAC_UTIL_LOGGER_H_
 
 #include <map>
 #include <list>
@@ -47,6 +41,12 @@ WITH THE SOFTWARE.  */
 #include <cstring>
 #include <cstdarg>
 #include <cassert>
+
+#include "config.h"
+#include "threads.h"
+
+#include "Lock.h"
+#include "Parameter.h"
 
 #define ASSERT_STRING "in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #define assertion(c, ...) __assertion(c, ASSERT_STRING)
@@ -59,6 +59,18 @@ inline const char *__extract_file_name(const char *file) {
     return guess;
 }
 
+namespace gmac { namespace util {
+
+class LoggerLock : public Lock {
+    // Allow Logger to lock/unlock
+    friend class Logger;
+
+public:
+    LoggerLock();
+};
+
+class Logger {
+
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
@@ -66,35 +78,23 @@ inline const char *__extract_file_name(const char *file) {
 
 #define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
 
-
-namespace gmac { namespace util {
-
-
-class LoggerLock : public Lock {
-protected:
-    friend class Logger;
-public:
-    LoggerLock();
-};
-
-class Logger {
 private:
     Logger(const char *name);
     void init();
 
-    static Logger *__logger;
+    static Logger *Logger_;
 protected:
-    static Parameter<const char *> *Level;
-    static const char *debugString;
-    static std::list<std::string> *tags;
-    static LoggerLock __lock;
+    static Parameter<const char *> *Level_;
+    static const char *DebugString_;
+    static std::list<std::string> *Tags_;
+    static LoggerLock Lock_;
 
-    const char *name;
-    bool active;
-    std::ostream *out;
+    const char *name_;
+    bool active_;
+    std::ostream *out_;
 
-    static const size_t BufferSize = 1024;
-    static char buffer[BufferSize];
+    static const size_t BufferSize_ = 1024;
+    static char buffer[BufferSize_];
 
     void print(const char *tag, const char *fmt, va_list list) const;
 #ifdef DEBUG
