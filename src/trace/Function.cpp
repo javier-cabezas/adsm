@@ -41,6 +41,7 @@ void Function::init()
 {
 #ifdef DEBUG
     util::Private<std::list<std::string> >::init(Funcs_);
+    Funcs_.set(NULL);
 #endif
 #ifdef PARAVER
     map = new ModuleMap();

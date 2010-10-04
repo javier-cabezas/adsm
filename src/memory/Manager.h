@@ -47,6 +47,7 @@ class Mode;
 
 namespace gmac { namespace memory {
 
+class Block;
 class Protocol;
 
 //! Memory Manager Interface

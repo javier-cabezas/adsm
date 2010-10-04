@@ -11,15 +11,15 @@
 
 namespace gmac { namespace util {
 
-char Logger::buffer[Logger::BufferSize];
-LoggerLock Logger::__lock;
+char Logger::buffer[Logger::BufferSize_];
+LoggerLock Logger::Lock_;
 
-Logger *Logger::__logger = NULL;
+Logger *Logger::Logger_ = NULL;
 
 #ifdef DEBUG
-Parameter<const char *> *Logger::Level = NULL;
-const char *Logger::debugString;
-std::list<std::string> *Logger::tags = NULL;
+Parameter<const char *> *Logger::Level_ = NULL;
+const char *Logger::DebugString_;
+std::list<std::string> *Logger::Tags_ = NULL;
 #endif
 
 LoggerLock::LoggerLock() :
@@ -27,17 +27,17 @@ LoggerLock::LoggerLock() :
 {}
 
 Logger::Logger(const char *name) :
-    name(name),
-    active(false),
-    out(&std::clog)
+    name_(name),
+    active_(false),
+    out_(&std::clog)
 {
     init();
 }
 
 Logger::Logger() :
-    name(NULL),
-    active(false),
-    out(&std::clog)
+    name_(NULL),
+    active_(false),
+    out_(&std::clog)
 {
     init();
 }
@@ -45,31 +45,31 @@ Logger::Logger() :
 void Logger::init()
 {
 #ifdef DEBUG
-    if(tags == NULL) tags = new std::list<std::string>();
-    if(Level == NULL) {
-        Level = new Parameter<const char *>(&Logger::debugString,
-            "Logger::debugString", "none", "GMAC_DEBUG");
-        char *tmp = new char[strlen(debugString) + 1];
-        memcpy(tmp, debugString, strlen(debugString) + 1);
+    if(Tags_ == NULL) Tags_ = new std::list<std::string>();
+    if(Level_ == NULL) {
+        Level_ = new Parameter<const char *>(&Logger::DebugString_,
+            "Logger::DebugString_", "none", "GMAC_DEBUG");
+        char *tmp = new char[strlen(DebugString_) + 1];
+        memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
         char *tag = strtok(tmp, ", ");
         while(tag != NULL) {
-            tags->push_back(std::string(tag));
+            Tags_->push_back(std::string(tag));
             tag = strtok(NULL, ", ");
         }
         delete[] tmp;
     }
 
-    if(debugString != NULL && strcasestr(debugString, "__all") != NULL)
-        active = true;
+    if(DebugString_ != NULL && strcasestr(DebugString_, "__all") != NULL)
+        active_ = true;
 #endif
 }
 
 #ifdef DEBUG
 bool Logger::check(const char *name) const
 {
-    if(tags == NULL) return false;
+    if(Tags_ == NULL) return false;
     std::list<std::string>::const_iterator i;
-    for(i = tags->begin(); i != tags->end(); i++) {
+    for(i = Tags_->begin(); i != Tags_->end(); i++) {
         if(strstr(name, i->c_str()) != NULL) return true;
     }
     return false;
@@ -77,35 +77,34 @@ bool Logger::check(const char *name) const
 
 void Logger::log(const char *tag, const char *fmt, va_list list) const
 {
-    char *__name = NULL;
+    char *name = NULL;
     int status = 0;
-    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, &status);
-    else __name = (char *)name;
+    if(name_ == NULL) name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, &status);
+    else name = (char *)name_;
 
     if(status != 0) return;
 
-    if(active == false && check(__name) == false) {
-        if(name == NULL && __name != NULL ) free(__name);
+    if(active_ == false && check(name) == false) {
+        if(name_ == NULL && name != NULL ) free(name);
         return;
     }
 
     print(tag, fmt, list);
 
-
-    if(name == NULL && __name != NULL ) free(__name);
+    if(name_ == NULL && name != NULL ) free(name);
 }
 #endif
 
 void Logger::print(const char *tag, const char *fmt, va_list list)  const
 {
-    __lock.lock();
-    const char *__name = NULL;
-    if(name == NULL) __name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
-    else __name = name;
+    Lock_.lock();
+    const char *name = NULL;
+    if(name_ == NULL) name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
+    else name = name_;
 
-    vsnprintf(buffer, BufferSize, fmt, list);
-    *out << tag << " [" << __name << "]: " << buffer << std::endl;
-    __lock.unlock();
+    vsnprintf(buffer, BufferSize_, fmt, list);
+    *out_ << tag << " [" << name << "]: " << buffer << std::endl;
+    Lock_.unlock();
 
 }
 

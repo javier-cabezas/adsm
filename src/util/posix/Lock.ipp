@@ -1,5 +1,5 @@
-#ifndef __UTIL_POSIX_LOCK_IPP_
-#define __UTIL_POSIX_LOCK_IPP_
+#ifndef GMAC_UTIL_POSIX_LOCK_IPP_
+#define GMAC_UTIL_POSIX_LOCK_IPP_
 
 #include <debug.h>
 #include <threads.h>
@@ -43,7 +43,7 @@ inline void
 Lock::lock() const
 {
     enter();
-    pthread_mutex_lock(&__mutex);
+    pthread_mutex_lock(&mutex_);
     locked();
 }
 
@@ -51,14 +51,14 @@ inline void
 Lock::unlock() const
 {
     exit();
-    pthread_mutex_unlock(&__mutex);
+    pthread_mutex_unlock(&mutex_);
 }
 
 inline void
 RWLock::lockRead() const
 {
     enter();
-    pthread_rwlock_rdlock(&__lock);
+    pthread_rwlock_rdlock(&lock_);
     locked();
 }
 
@@ -66,7 +66,7 @@ inline void
 RWLock::lockWrite() const
 {
     enter();
-    pthread_rwlock_wrlock(&__lock);
+    pthread_rwlock_wrlock(&lock_);
     locked();
 }
 
@@ -74,7 +74,7 @@ inline void
 RWLock::unlock() const
 {
     exit();
-    pthread_rwlock_unlock(&__lock);
+    pthread_rwlock_unlock(&lock_);
 }
 
 }}

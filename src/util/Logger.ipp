@@ -1,5 +1,5 @@
-#ifndef __UTIL_LOGGER_IPP_
-#define __UTIL_LOGGER_IPP_
+#ifndef GMAC_UTIL_LOGGER_IPP_
+#define GMAC_UTIL_LOGGER_IPP_
 
 namespace gmac { namespace util {
 
@@ -40,31 +40,31 @@ void Logger::__assertion(unsigned c, const char *fmt, ...) const
 inline
 void Logger::Create(const char *name)
 {
-    if(__logger != NULL) return;
-    __logger = new Logger(name);
+    if(Logger_ != NULL) return;
+    Logger_ = new Logger(name);
 }
 
 inline
 void Logger::Destroy()
 {
 #ifdef DEBUG
-    if(tags != NULL) delete tags;
-    tags = NULL;
+    if(Tags_ != NULL) delete Tags_;
+    Tags_ = NULL;
 #endif
 
-    if(__logger == NULL) return;
-    delete __logger;
-    __logger = NULL;
+    if(Logger_ == NULL) return;
+    delete Logger_;
+    Logger_ = NULL;
 }
 
 inline
 void Logger::__Trace(const char *fmt, ...)
 {
 #ifdef DEBUG
-    if(__logger == NULL) return;
+    if(Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    __logger->log("TRACE", fmt, list);
+    Logger_->log("TRACE", fmt, list);
     va_end(list);
 #endif
 }
@@ -76,7 +76,7 @@ void Logger::__Assertion(unsigned c, const char *fmt, ...)
     if(c) return;
     va_list list;
     va_start(list, fmt);
-    if(__logger != NULL) __logger->print("ASSERT", fmt, list);
+    if(Logger_ != NULL) Logger_->print("ASSERT", fmt, list);
     va_end(list);
     assert(c);
 #endif
@@ -87,7 +87,7 @@ void Logger::__Warning(const char *fmt, ...)
 {
     va_list list;
     va_start(list, fmt);
-    if(__logger != NULL) __logger->print("WARNING", fmt, list);
+    if(Logger_ != NULL) Logger_->print("WARNING", fmt, list);
     va_end(list);
 }
 
@@ -95,10 +95,10 @@ void Logger::__Warning(const char *fmt, ...)
 inline
 void Logger::Fatal(const char *fmt, ...)
 {
-    if(__logger == NULL) return;
+    if(Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    __logger->print("FATAL", fmt, list);
+    Logger_->print("FATAL", fmt, list);
     va_end(list);
 #ifdef DEBUG
     assert(0);
@@ -111,10 +111,10 @@ void Logger::Fatal(const char *fmt, ...)
 inline
 void Logger::CFatal(unsigned c, const char *fmt, ...)
 {
-    if(c || __logger == NULL) return;
+    if(c || Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    __logger->print("FATAL", fmt, list);
+    Logger_->print("FATAL", fmt, list);
     va_end(list);
 #ifdef DEBUG
     assert(0);

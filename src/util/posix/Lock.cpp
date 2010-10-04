@@ -1,6 +1,6 @@
-#include "Lock.h"
-
 #include <string>
+
+#include "Lock.h"
 
 namespace gmac { namespace util {
 
@@ -35,23 +35,23 @@ ParaverLock::ParaverLock(const char *name)
 Lock::Lock(const char *name) :
     ParaverLock(name)
 {
-    pthread_mutex_init(&__mutex, NULL);
+    pthread_mutex_init(&mutex_, NULL);
 }
 
 Lock::~Lock()
 {
-    pthread_mutex_destroy(&__mutex);
+    pthread_mutex_destroy(&mutex_);
 }
 
 RWLock::RWLock(const char *name) :
     ParaverLock(name)
 {
-    pthread_rwlock_init(&__lock, NULL);
+    pthread_rwlock_init(&lock_, NULL);
 }
 
 RWLock::~RWLock()
 {
-    pthread_rwlock_destroy(&__lock);
+    pthread_rwlock_destroy(&lock_);
 }
 
 }}
