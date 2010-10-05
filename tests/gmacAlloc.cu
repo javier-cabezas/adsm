@@ -13,7 +13,7 @@ __global__ void kernelFill(int *A, off_t off, size_t size)
 int main(int argc, char *argv[])
 {
     const size_t totalSize = 8 * 1024 * 1024;
-    for (size_t currentSize = totalSize; currentSize > 0; currentSize /= 2) {
+    for (size_t currentSize = totalSize; currentSize > 32; currentSize /= 2) {
         fprintf(stderr, "Testing object size %zd\n", currentSize);
         assert(totalSize % currentSize == 0);
         size_t nObjects = totalSize / currentSize;
