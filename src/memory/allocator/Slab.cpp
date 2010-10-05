@@ -73,9 +73,10 @@ bool Slab::free(void *addr)
         trace("%p was not delivered by slab allocator", addr); 
         return false;
     }
-    addresses.unlock();
     trace("Inserting %p in cache %p", addr, i->second);
     i->second->put(addr);
+    addresses.erase(i);
+    addresses.unlock();
     return true;
 }
 
