@@ -34,14 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_MODE_H_
 #define GMAC_CORE_MODE_H_
 
+#include "core/Accelerator.h"
+#include "core/Context.h"
+
 #ifdef USE_VM
 #include "memory/Bitmap.h"
 #endif
 
 #include "memory/Manager.h"
-
-#include "core/Accelerator.h"
-#include "core/Context.h"
+#include "memory/Map.h"
 
 #include "util/Lock.h"
 #include "util/Logger.h"
@@ -68,9 +69,9 @@ protected:
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
-    bool releasedObjects_;
+    memory::Map map_;
 
-    memory::Map *map_;
+    bool releasedObjects_;
 #ifdef USE_VM
     memory::vm::Bitmap *_bitmap;
 #endif
@@ -100,6 +101,8 @@ public:
 
     unsigned id() const;
     unsigned accId() const;
+
+    bool integrated() const;
 
     /*! \brief Attaches the execution mode to the current thread */
     void attach();

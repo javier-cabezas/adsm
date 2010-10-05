@@ -18,6 +18,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     id_(++next),
     proc_(proc),
     acc_(&acc),
+    map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
     , _bitmap(new memory::vm::Bitmap())
@@ -25,7 +26,6 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     , count_(0)
 {
     trace("Creating new memory map");
-    map_ = new memory::Map("ModeMemoryMap", *this);
 }
 
 Mode::~Mode()
@@ -42,7 +42,6 @@ Mode::release()
 #ifdef USE_VM
     delete _bitmap;
 #endif
-    delete map_;
     acc_->unregisterMode(*this); 
 }
 void Mode::kernel(gmacKernel_t k, Kernel &kernel)
@@ -169,7 +168,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     size_t needed = 0;
     acc_->memInfo(&free, NULL);
     gmac::memory::Map::const_iterator i;
-    for(i = map_->begin(); i != map_->end(); i++) {
+    for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;
         needed += object.size();
     }
@@ -179,7 +178,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    for(i = map_->begin(); i != map_->end(); i++) {
+    for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;
         manager.protocol().toHost(object);
         object.free();
@@ -191,7 +190,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     acc_->registerMode(*this);
     newContext();
 
-    for(i = map_->begin(); i != map_->end(); i++) {
+    for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;
         object.realloc(*this);
     }

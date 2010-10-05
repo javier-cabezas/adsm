@@ -135,6 +135,7 @@ matrixMulThread(void * ptr)
         fprintf(stderr, "Error allocating C");
         abort();
     }
+    fprintf(stderr, "Before: %p\n", p->ptr);
 
     // Call the kernel
 	gettimeofday(&s, NULL);
@@ -146,6 +147,70 @@ matrixMulThread(void * ptr)
 	printTime(&s, &t, "Run: ", "\n");
 
     return NULL;
+}
+
+float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned elemsC)
+{
+    pthread_t * threads = new pthread_t[nIter];
+	param * params = new param[nIter];
+
+    struct timeval s, t;
+
+    // allocate memory for matrices A and B
+	gettimeofday(&s, NULL);
+
+    // initialize matricesmatrices
+    valueInit(A, 100.f, elemsA);
+    valueInit(B, 100.f, elemsB);
+
+	// Alloc output data
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Init: ", "\n");
+
+    for (unsigned n = 0; n < nIter; n++) {
+		params[n].i = n;
+		pthread_create(&threads[n], NULL, matrixMulThread, &(params[n]));
+	}
+
+	for (unsigned n = 0; n < nIter; n++) {
+		pthread_join(threads[n], NULL);
+	}
+
+    // compute reference solution
+	gettimeofday(&s, NULL);
+    // check result
+    float err = 0;
+    printf("Computing host matrix mul. Please wait...\n");
+    float* reference = (float *) malloc(sizeC * nIter);
+    computeGold(reference, A, B, HA, WA, WB);
+
+    for (unsigned n = 0; n < nIter; n++) {
+        fprintf(stderr, "After: %p\n", params[n].ptr);
+        err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
+    }
+
+    gettimeofday(&t, NULL);
+    printTime(&s, &t, "Check: ", "\n");
+
+    fprintf(stderr, "Error: %f\n", err);
+
+    for (unsigned n = 0; n < nIter; n++) {
+        for (unsigned i = 0; i < elemsC; i++) {
+            assert(params[n].ptr[i] == 1.f);
+        }
+    }
+
+    // clean up memory
+    free(reference);
+
+    for (unsigned n = 0; n < nIter; n++) {
+        assert(gmacFree(params[n].ptr) == gmacSuccess);
+    }
+
+    delete [] params;
+    delete [] threads;
+
+    return err;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,11 +240,6 @@ main(int argc, char** argv)
         abort();
     }
 
-    struct timeval s, t;
-
-    pthread_t * threads = new pthread_t[nIter];
-	param * params = new param[nIter];
-
     unsigned elemsA = WA * HA;
     unsigned elemsB = WB * HB;
              elemsC = WC * HC / nIter;
@@ -187,60 +247,59 @@ main(int argc, char** argv)
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
 
+    
+    fprintf(stderr, "Size A: %zd\n", sizeA);
+    fprintf(stderr, "Size B: %zd\n", sizeB);
+    fprintf(stderr, "Size C: %zd\n", sizeC);
+
+    struct timeval s, t;
+
+#if 0
+    /////////////////////
+    // CENTRALIZED OBJECT
+    /////////////////////
+    fprintf(stderr, "CENTRALIZED OBJECTS\n");
     // allocate memory for matrices A and B
 	gettimeofday(&s, NULL);
-    if (gmacGlobalMalloc((void**) &A, sizeA) != gmacSuccess) {
+    if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
     }
-    if (gmacGlobalMalloc((void**) &B, sizeB) != gmacSuccess) {
+    if (gmacGlobalMalloc((void**) &B, sizeB, GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess) {
         fprintf(stderr, "Error allocating B");
         abort();
     }
 
-    // initialize matricesmatrices
-    valueInit(A, 100.f, elemsA);
-    valueInit(B, 100.f, elemsB);
-
-	// Alloc output data
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Alloc: ", "\n");
-
-    for (unsigned n = 0; n < nIter; n++) {
-		params[n].i = n;
-		pthread_create(&threads[n], NULL, matrixMulThread, &(params[n]));
-	}
-
-	for (unsigned n = 0; n < nIter; n++) {
-		pthread_join(threads[n], NULL);
-	}
-
-    // compute reference solution
-	gettimeofday(&s, NULL);
-    // check result
-    float err = 0;
-    printf("Computing host matrix mul. Please wait...\n");
-    float* reference = (float *) malloc(sizeC * nIter);
-    computeGold(reference, A, B, HA, WA, WB);
-
-    for (unsigned n = 0; n < nIter; n++) {
-        err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
-    }
-    gettimeofday(&t, NULL);
-    printTime(&s, &t, "Check: ", "\n");
-
-    fprintf(stderr, "Error: %f\n", err);
-    // clean up memory
-    free(reference);
-
+    float err = doTest(A, B, elemsA, elemsB, elemsC);
 	gettimeofday(&t, NULL);
 	printTime(&s, &t, "Total: ", "\n");
 
-    delete [] params;
-    delete [] threads;
+    assert(gmacFree(A) == gmacSuccess);
+	assert(gmacFree(B) == gmacSuccess);
+#endif
 
-	assert(gmacFree(A) == gmacSuccess);
-	gmacFree(B);
+    ////////////////////
+    // REPLICATED OBJECT
+    ////////////////////
+    fprintf(stderr, "REPLICATED OBJECTS\n");
+    // allocate memory for matrices A and B
+	gettimeofday(&s, NULL);
+    if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess) {
+        fprintf(stderr, "Error allocating A");
+        abort();
+    }
+    if (gmacGlobalMalloc((void**) &B, sizeB, GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess) {
+        fprintf(stderr, "Error allocating B");
+        abort();
+    }
 
-    return fabsf(err) != 0.0f;
+    float err2 = doTest(A, B, elemsA, elemsB, elemsC);
+	gettimeofday(&t, NULL);
+	printTime(&s, &t, "Total: ", "\n");
+
+    assert(gmacFree(A) == gmacSuccess);
+	assert(gmacFree(B) == gmacSuccess);
+
+    // return fabsf(err) != 0.0f && fabsf(err2) != 0.0f;
+    return fabsf(err2) != 0.0f;
 }

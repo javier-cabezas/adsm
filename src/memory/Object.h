@@ -72,6 +72,8 @@ public:
 
     virtual gmacError_t free();
     virtual gmacError_t realloc(Mode &mode);
+
+    virtual bool local() const = 0;
 };
 
 }}

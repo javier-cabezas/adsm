@@ -57,6 +57,7 @@ public:
         return gmacErrorInvalidValue;
     }
 
+    inline bool local() const { return false; }
 };
 #endif
 

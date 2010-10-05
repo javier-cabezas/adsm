@@ -25,7 +25,7 @@ noinst_PROGRAMS = $(COMMON)\
                   gmacStencil gmacThreadStencil\
                   gmacMatrixMul gmacMatrixMulSimple\
                   gmacPingPong gmacCompress gmacCompressSend\
-                  gmacMigration
+                  gmacMigration gmacAlloc
 endif
 
 noinst_SCRIPTS = gmacTests.py
@@ -88,8 +88,8 @@ gmacMemset_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 gmacMemcpy_SOURCES = gmacMemcpy.cu $(GMAC_TESTSOURCES)
 gmacMemcpy_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
-#gmacAlloc_SOURCES = gmacAlloc.cu $(GMAC_TESTSOURCES)
-#gmacAlloc_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
+gmacAlloc_SOURCES = gmacAlloc.cu $(GMAC_TESTSOURCES)
+gmacAlloc_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)
 
 gmacTexture_SOURCES = gmacTexture.cu $(GMAC_TESTSOURCES)
 gmacTexture_LDADD = ../src/gmac/libgmac.la $(PARAVER_LIB)

@@ -42,23 +42,28 @@ inline unsigned Mode::accId() const
     return acc_->id();
 }
 
+inline bool Mode::integrated() const
+{
+    return acc_->integrated();
+}
+
 inline void
 Mode::addObject(memory::Object &obj)
 {
-    map_->insert(obj);
+    map_.insert(obj);
 }
 
 #ifndef USE_MMAP
 inline void
 Mode::addReplicatedObject(memory::Object &obj)
 {
-    map_->insertReplicated(obj);
+    map_.insertReplicated(obj);
 }
 
 inline void
 Mode::addCentralizedObject(memory::Object &obj)
 {
-    map_->insertCentralized(obj);
+    map_.insertCentralized(obj);
 }
 
 #endif
@@ -66,33 +71,33 @@ Mode::addCentralizedObject(memory::Object &obj)
 inline void
 Mode::removeObject(memory::Object &obj)
 {
-    map_->remove(obj);
+    map_.remove(obj);
 }
 
 inline const memory::Object *
 Mode::getObjectRead(const void *addr) const
 {
-    const memory::Object *obj = map_->getObjectRead(addr);
+    const memory::Object *obj = map_.getObjectRead(addr);
     return obj;
 }
 
 inline memory::Object *
 Mode::getObjectWrite(const void *addr)
 {
-    memory::Object *obj = map_->getObjectWrite(addr);
+    memory::Object *obj = map_.getObjectWrite(addr);
     return obj;
 }
 
 inline void
 Mode::putObject(const memory::Object &obj)
 {
-    map_->putObject(obj);
+    map_.putObject(obj);
 }
 
 inline const memory::Map &
 Mode::objects()
 {
-    return *map_;
+    return map_;
 }
 
 inline gmacError_t

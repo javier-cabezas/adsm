@@ -54,7 +54,7 @@ void Slab::cleanup()
 
 void *Slab::alloc(size_t size, void *addr)
 {
-    Cache &cache = get((unsigned long)addr, size);
+    Cache &cache = get((unsigned long)addr ^ size, size);
     trace("Using cache %p", &cache);
     void *ret = cache.get();
     addresses.lockWrite();
@@ -69,6 +69,7 @@ bool Slab::free(void *addr)
     addresses.lockRead();
     AddressMap::iterator i = addresses.find(addr);
     if(i == addresses.end()) {
+        addresses.unlock();
         trace("%p was not delivered by slab allocator", addr); 
         return false;
     }

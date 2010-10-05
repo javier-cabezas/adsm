@@ -31,10 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_ALLOCATOR_SLAB_H_
-#define __MEMORY_ALLOCATOR_SLAB_H_
+#ifndef GMAC_MEMORY_ALLOCATOR_SLAB_H_
+#define GMAC_MEMORY_ALLOCATOR_SLAB_H_
 
-#include <memory/Allocator.h>
+#include "memory/Allocator.h"
 
 #include "Cache.h"
 
@@ -49,13 +49,12 @@ protected:
     protected:
         friend class Slab;
     public:
-        AddressMap() : util::RWLock("memory::Slab") {};
+        AddressMap() : util::RWLock("memory::Slab") {}
     };
 
     typedef std::map<long, Cache *> CacheMap;
 
     class ModeMap : public std::map<Mode *, CacheMap>, util::RWLock {
-    protected:
         friend class Slab;
     public:
         ModeMap() : util::RWLock("memory::Slab") {};

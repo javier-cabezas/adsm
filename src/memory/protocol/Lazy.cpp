@@ -11,50 +11,50 @@
 
 namespace gmac { namespace memory { namespace protocol {
 
+List Lazy::GlobalCache_;
+
 bool List::empty() const
 {
-    lockRead();
     bool ret = std::list<Entry>::empty();
-    unlock();
     return ret;
 }
 
 size_t List::size() const
 {
-    lockRead();
     size_t ret = std::list<Entry>::size();
-    unlock();
     return ret;
 }
 
 void List::purge(const StateObject<Lazy::State> &obj)
 {
-    lockWrite();
     iterator i;
     for(i = begin(); i != end(); ) {
         if(&(i->object) == &obj) i = erase(i);
         else i++;
     }
-    unlock();
 }
 
 void List::push(const StateObject<Lazy::State> &obj,
         SystemBlock<Lazy::State> *block)
 {
-    lockWrite();
     push_back(Entry(obj, block));
-    unlock();
 }
 
 Entry List::pop() 
 {
-    lockWrite();
     Entry ret = front();
     pop_front();
-    unlock();
     return ret;
 }
 
+Lazy::Lazy(unsigned limit)
+    : RWLock("Lazy"), _maxListSize(limit)
+{
+}
+
+Lazy::~Lazy()
+{
+}
 
 Object *Lazy::createObject(size_t size)
 {
@@ -155,6 +155,18 @@ gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &
 
 gmacError_t Lazy::release()
 {
+    // Release global dirty blocks
+    GlobalCache_.lockWrite();
+    while(GlobalCache_.empty() == false) {
+        Entry e = GlobalCache_.pop();
+        gmacError_t ret = release(e.object, *e.block);
+        if(ret != gmacSuccess) {
+            GlobalCache_.unlock();
+            return ret;
+        }
+    }
+    GlobalCache_.unlock();
+
     // Get the dirty list for the current mode
     lockRead();
     iterator i = find(&gmac::Mode::current());
@@ -165,12 +177,18 @@ gmacError_t Lazy::release()
     List &list = i->second;
     unlock();
 
+    list.lockWrite();
     // Release dirty blocks
     while(list.empty() == false) {
         Entry e = list.pop();
         gmacError_t ret = release(e.object, *e.block);
-        if(ret != gmacSuccess) return ret;
+        if(ret != gmacSuccess) {
+            list.unlock();
+            return ret;
+        }
     }
+    list.unlock();
+
     return gmacSuccess;
 }
 
@@ -564,7 +582,12 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
         }
 
         gmacError_t ret = object.toHost(*block, tmp);
-        if(ret != gmacSuccess) { Memory::unmap(tmp, block->size()); block->unlock(); return ret; }
+        if(ret != gmacSuccess) {
+            Memory::unmap(tmp, block->size());
+            block->unlock();
+            return ret;
+        }
+            
 #ifdef USE_VM
     }
 #endif
@@ -645,24 +668,48 @@ gmacError_t Lazy::write(const Object &obj, void *addr)
 gmacError_t
 Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow)
 {
-    Mode &mode = Mode::current();
-    lockRead();
-    iterator i = find(&mode);
-    if(i == end())
-        i = insert(value_type(&mode, List())).first;
-    assertion(i != end());
-    List &list = i->second;
-    unlock();
+    Mode &mode = object.owner();
 
-    list.push(object, &block);
+    if (object.local()) {
+        lockRead();
+        iterator i = find(&mode);
+        if(i == end())
+            i = insert(value_type(&mode, List())).first;
+        assertion(i != end());
+        List &list = i->second;
+        unlock();
 
-    if (checkOverflow) {
-        // Release dirty blocks
-        while(list.size() > _maxListSize) {
-            Entry e = list.pop();
-            gmacError_t ret = release(e.object, *e.block);
-            if(ret != gmacSuccess) return ret;
+        list.lockWrite();
+        list.push(object, &block);
+
+        if (checkOverflow) {
+            // Release dirty blocks
+            while(list.size() > _maxListSize) {
+                Entry e = list.pop();
+                gmacError_t ret = release(e.object, *e.block);
+                if(ret != gmacSuccess) {
+                    list.unlock();
+                    return ret;
+                }
+            }
         }
+        list.unlock();
+    } else {
+        GlobalCache_.lockWrite();
+        GlobalCache_.push(object, &block);
+
+        if (checkOverflow) {
+            // Release dirty blocks
+            while(GlobalCache_.size() > _maxListSize) {
+                Entry e = GlobalCache_.pop();
+                gmacError_t ret = release(e.object, *e.block);
+                if(ret != gmacSuccess) {
+                    GlobalCache_.unlock();
+                    return ret;
+                }
+            }
+        }
+        GlobalCache_.unlock();
     }
     return gmacSuccess;
 }

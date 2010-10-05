@@ -62,6 +62,8 @@ public:
 
     gmacError_t addOwner(Mode &mode);
     gmacError_t removeOwner(Mode &mode);
+
+    inline bool local() const { return false; }
 };
 #endif
 
