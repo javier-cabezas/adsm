@@ -135,7 +135,6 @@ matrixMulThread(void * ptr)
         fprintf(stderr, "Error allocating C");
         abort();
     }
-    fprintf(stderr, "Before: %p\n", p->ptr);
 
     // Call the kernel
 	gettimeofday(&s, NULL);
@@ -185,7 +184,6 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     computeGold(reference, A, B, HA, WA, WB);
 
     for (unsigned n = 0; n < nIter; n++) {
-        fprintf(stderr, "After: %p\n", params[n].ptr);
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
     }
 

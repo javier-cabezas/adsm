@@ -48,14 +48,9 @@ WITH THE SOFTWARE.  */
 #include "Lock.h"
 #include "Parameter.h"
 
-#ifdef DEBUG
 #define ASSERT_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #define assertion(c, ...) __assertion(c, "Assertion " #c ASSERT_STRING)
 #define ASSERTION(c, ...) __Assertion(c, "Assertion " #c ASSERT_STRING)
-#else
-#define assertion(c, ...)
-#define ASSERTION(c, ...)
-#endif
 
 #define SRC_ROOT "src"
 inline const char *__extract_file_name(const char *file) {
@@ -76,15 +71,10 @@ public:
 
 class Logger {
 
-#ifdef DEBUG
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
-#else
-#define trace(fmt, ...)
-#define TRACE(fmt, ...)
-#endif
 
 #define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
 
