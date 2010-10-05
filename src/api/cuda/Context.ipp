@@ -6,13 +6,6 @@
 
 namespace gmac { namespace cuda {
 
-inline
-Context &
-Context::current()
-{
-    return dynamic_cast<Context &>(gmac::Context::current());
-}
-
 inline void
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {

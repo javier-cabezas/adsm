@@ -36,28 +36,6 @@ size_t ModeMap::remove(Mode &mode)
     return ret;
 }
 
-ContextMap::ContextMap() :
-    RWLock("ContextMap")
-{}
-
-std::pair<ContextMap::iterator, bool>
-ContextMap::insert(Context *context, Mode *mode)
-{
-    lockWrite();
-    std::pair<iterator, bool> ret = Parent::insert(value_type(context, mode));
-    unlock();
-    return ret;
-}
-
-size_t ContextMap::remove(Context &context)
-{
-    lockWrite();
-    size_type ret = Parent::erase(&context);
-    unlock();
-    return ret;
-}
-
-
 QueueMap::QueueMap() :
     util::RWLock("QueueMap")
 {}
@@ -123,10 +101,6 @@ Process::~Process()
     ioMemory_ = NULL;
 
     std::list<Mode *>::iterator c;
-    ContextMap::const_iterator i;
-    for(i = contexts_.begin(); i != contexts_.end(); i++) {
-        delete i->first;
-    }
 
     // TODO: Why is this lock necessary?
     modes_.lockWrite();
@@ -182,7 +156,6 @@ Mode *Process::createMode(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = accs_[usedAcc]->createMode(*this);
     accs_[usedAcc]->registerMode(*mode);
-    contexts_.insert(&Context::current(), mode);
     modes_.insert(mode, accs_[usedAcc]);
 
     mode->attach();
@@ -248,12 +221,9 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
-        Context &context = Context::current();
         ret = mode.moveTo(*accs_[acc]);
 
         if (ret == gmacSuccess) {
-            contexts_.remove(context);
-            contexts_.insert(&context, &mode);
             modes_[&mode] = accs_[acc];
         }
     }

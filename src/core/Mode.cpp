@@ -100,7 +100,7 @@ gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
     switchIn();
-    error_ = Context::current().copyToDevice(dev, host, size);
+    error_ = getContext().copyToDevice(dev, host, size);
     switchOut();
     return error_;
 }
@@ -109,7 +109,7 @@ gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
     util::Logger::trace("Copy %p to host %p (%zd bytes)", dev , host, size);
     switchIn();
-    error_ = Context::current().copyToHost(host, dev, size);
+    error_ = getContext().copyToHost(host, dev, size);
     switchOut();
     return error_;
 }
@@ -117,7 +117,7 @@ gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 {
     switchIn();
-    error_ = Context::current().copyDevice(dst, src, size);
+    error_ = getContext().copyDevice(dst, src, size);
     switchOut();
     return error_;
 }
@@ -125,7 +125,7 @@ gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
 gmacError_t Mode::memset(void *addr, int c, size_t size)
 {
     switchIn();
-    error_ = Context::current().memset(addr, c, size);
+    error_ = getContext().memset(addr, c, size);
     switchOut();
     return error_;
 }
@@ -136,7 +136,7 @@ gmac::KernelLaunch &Mode::launch(const char *kernel)
     assert(i != kernels_.end());
     gmac::Kernel * k = i->second;
     switchIn();
-    gmac::KernelLaunch &l = Context::current().launch(*k);
+    gmac::KernelLaunch &l = getContext().launch(*k);
     switchOut();
 
     return l;
@@ -145,7 +145,7 @@ gmac::KernelLaunch &Mode::launch(const char *kernel)
 gmacError_t Mode::sync()
 {
     switchIn();
-    error_ = Context::current().sync();
+    error_ = getContext().sync();
     switchOut();
     return error_;
 }
@@ -185,10 +185,10 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     acc_->unregisterMode(*this);
-    delete &Context::current();
+//    delete &getContext();
     acc_ = &acc;
     acc_->registerMode(*this);
-    newContext();
+//    newContext();
 
     for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;

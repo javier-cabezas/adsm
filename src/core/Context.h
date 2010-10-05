@@ -51,8 +51,6 @@ class KernelLaunch;
 class Context : public util::RWLock, public util::Logger {
 protected:
     Accelerator &acc_;
-    static gmac::util::Private<Context> Key_;
-
     unsigned id_;
 
 	Context(Accelerator &acc, unsigned id);
@@ -60,9 +58,6 @@ public:
 	virtual ~Context();
 
     static void init();
-    static void initThread();
-    static Context &current();
-    static void current(Context *context);
 
 	virtual gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);

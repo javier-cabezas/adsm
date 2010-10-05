@@ -5,6 +5,30 @@
 
 namespace gmac {
 
+inline void ContextMap::add(THREAD_ID id, Context *ctx)
+{
+    lockWrite();
+    Parent::insert(Parent::value_type(id, ctx));
+    unlock();
+}
+
+inline Context *ContextMap::find(THREAD_ID id)
+{
+    lockRead();
+    Parent::iterator i = Parent::find(id);
+    Context *ret = NULL;
+    if(i != end()) ret = i->second;
+    unlock();
+    return ret;
+}
+
+inline void ContextMap::remove(THREAD_ID id)
+{
+    lockWrite();
+    std::map<THREAD_ID, Context *>::erase(id);
+    unlock();
+}
+
 inline void Mode::init()
 {
     gmac::util::Private<Mode>::init(key);

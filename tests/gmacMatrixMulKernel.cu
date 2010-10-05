@@ -115,8 +115,7 @@ matrixMul( float* C, float* A, float* B, int wA, int wB, int offset)
     // Write the block sub-matrix to device memory;
     // each thread writes one element
     int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
-    //C[c + wB * ty + tx] = Csub;
-    C[c + wB * ty + tx] = 1.f;
+    C[c + wB * ty + tx] = Csub;
 }
 
 __global__ void

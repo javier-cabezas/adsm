@@ -10,7 +10,6 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #ifdef USE_MULTI_CONTEXT
     _cudaCtx = accelerator().createCUContext::current();
 #endif
-    newContext();
 }
 
 Mode::~Mode()
@@ -24,9 +23,11 @@ Mode::~Mode()
     switchOut();
 }
 
-void Mode::newContext()
+gmac::Context &Mode::getContext()
 {
-    Context * context = new Context(accelerator(), *this);
+    gmac::Context *context = contextMap_.find(SELF());
+    if(context != NULL) return *context;
+    context = new Context(accelerator(), *this);
     switchIn();
     modules = accelerator().createModules();
 
@@ -51,7 +52,8 @@ void Mode::newContext()
     }
     switchOut();
 
-    gmac::Context::current(context);
+    contextMap_.add(SELF(), context);
+    return *context;
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
@@ -120,15 +122,17 @@ const Texture *Mode::texture(gmacTexture_t key) const
     return NULL;
 }
 
-CUstream Mode::eventStream() const
+CUstream Mode::eventStream()
 {
-    return Context::current().eventStream();
+    Context &ctx = dynamic_cast<Context &>(getContext());
+    return ctx.eventStream();
 }
 
 gmacError_t Mode::waitForBuffer(IOBuffer &buffer)
 {
 	switchIn();
-	error_ = Context::current().waitForBuffer(buffer);
+    Context &ctx = dynamic_cast<Context &>(getContext());
+	error_ = ctx.waitForBuffer(buffer);
 	switchOut();
 	return error_;
 }
