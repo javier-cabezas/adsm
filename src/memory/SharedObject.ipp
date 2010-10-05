@@ -124,6 +124,12 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
     return gmacSuccess;
 }
 
+template<typename T>
+bool SharedObject<T>::local() const
+{
+    return true;
+}
+
 }}
 
 #endif

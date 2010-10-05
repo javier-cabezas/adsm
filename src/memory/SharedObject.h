@@ -57,6 +57,8 @@ public:
 
     gmacError_t free();
     gmacError_t realloc(Mode &mode);
+
+    bool local() const;
 };
 
 }}

@@ -1,5 +1,5 @@
-#ifndef __MEMORY_ALLOCATOR_CACHE_IPP__
-#define __MEMORY_ALLOCATOR_CACHE_IPP__
+#ifndef GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
+#define GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 
 namespace gmac { namespace memory { namespace allocator {
 
@@ -55,11 +55,15 @@ inline
 void Cache::put(void *obj)
 {
     lock();
-    ArenaMap::const_iterator i;
+    ArenaMap::iterator i;
     i = arenas.upper_bound(obj);
     CFatal(i != arenas.end(), "Address for invalid arena: %p", obj);
     CFatal(i->second->address() <= obj, "Address for invalid arena: %p", obj);
     i->second->put(obj);
+    if(i->second->full()) {
+        delete i->second;
+        arenas.erase(i);
+    }
     unlock();
 }
 

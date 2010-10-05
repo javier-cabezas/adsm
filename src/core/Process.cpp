@@ -122,7 +122,6 @@ Process::~Process()
     if(ioMemory_ != NULL) delete ioMemory_;
     ioMemory_ = NULL;
 
-    std::vector<Accelerator *>::iterator a;
     std::list<Mode *>::iterator c;
     ContextMap::const_iterator i;
     for(i = contexts_.begin(); i != contexts_.end(); i++) {
@@ -139,6 +138,7 @@ Process::~Process()
     modes_.clear();
     modes_.unlock();
 
+    std::vector<Accelerator *>::iterator a;
     for(a = accs_.begin(); a != accs_.end(); a++)
         delete *a;
     accs_.clear();
@@ -360,6 +360,16 @@ Mode *Process::owner(const void *addr) const
     Mode & ret = object->owner();
     shared_.putObject(*object);
     return &ret;
+}
+
+bool Process::allIntegrated()
+{
+    bool ret = true;
+    std::vector<Accelerator *>::iterator a;
+    for(a = accs_.begin(); a != accs_.end(); a++) {
+        ret = ret && (*a)->integrated();
+    }
+    return ret;
 }
 
 }

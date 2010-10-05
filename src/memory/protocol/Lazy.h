@@ -57,14 +57,15 @@ public:
         Dirty 
     } State;
 protected:
+    static List GlobalCache_;
     unsigned _maxListSize;
 
     gmacError_t addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow = true);
 
     gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
 public:
-    Lazy(unsigned limit) : RWLock("Lazy"), _maxListSize(limit) {};
-    virtual ~Lazy() {};
+    Lazy(unsigned limit);
+    virtual ~Lazy();
 
     // Protocol Interface
     Object *createObject(size_t size);
@@ -113,7 +114,7 @@ public:
 };
 
 class List : protected std::list<Entry>, util::RWLock {
-protected:
+    friend class Lazy;
 public:
     List() : util::RWLock("List") {};
 
@@ -125,7 +126,6 @@ public:
     bool empty() const;
     size_t size() const;
 };
-
 
 
 } } }

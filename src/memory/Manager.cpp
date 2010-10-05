@@ -33,6 +33,10 @@ Manager::Manager()
 
 gmacError_t Manager::alloc(void ** addr, size_t size)
 {
+    Mode &mode = Mode::current();
+    // For integrated devices we want to use Centralized objects to avoid memory transfers
+    if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
+
     gmacError_t ret;
     // Create new shared object
     Object *object = protocol_->createObject(size);
@@ -43,7 +47,7 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
     }
 
     // Insert object into memory maps
-    Mode::current().addObject(*object);
+    mode.addObject(*object);
 
     return gmacSuccess;
 }
@@ -51,7 +55,10 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
 #ifndef USE_MMAP
 gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
+    gmac::Process &proc = gmac::Process::getInstance();
     Mode &mode = gmac::Mode::current();
+
+    if (proc.allIntegrated()) hint = GMAC_GLOBAL_MALLOC_CENTRALIZED;
     gmacError_t ret;
     if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
         Object *object = protocol_->createReplicatedObject(size);
@@ -236,7 +243,8 @@ bool Manager::read(void *addr)
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
-    assertion(protocol_->read(*obj, addr) == gmacSuccess);
+    gmacError_t err;
+    assertion((err = protocol_->read(*obj, addr)) == gmacSuccess);
     mode.putObject(*obj);
     return ret;
 }
@@ -367,7 +375,5 @@ gmacError_t Manager::moveTo(void * addr, Mode &mode)
 #endif
     return gmacSuccess;
 }
-
-
 
 }}

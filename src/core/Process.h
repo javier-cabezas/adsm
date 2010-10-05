@@ -166,6 +166,7 @@ public:
 
     static size_t totalMemory();
     size_t nAccelerators() const;
+    bool allIntegrated();
 
     memory::ObjectMap &shared();
     const memory::ObjectMap &shared() const;
