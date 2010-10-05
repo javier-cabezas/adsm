@@ -36,10 +36,10 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
         owner_->free(device);
         return;
     }
-
-    trace("Creating Shared Object %p (%zd bytes)", StateObject<T>::addr_, StateObject<T>::size_);
     // Create memory blocks
     accBlock_ = new AcceleratorBlock(*owner_, device, StateObject<T>::size_);
+
+    trace("Creating Shared Object %p (%zd bytes) @ %p", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
     setupSystem(init);
 }
 

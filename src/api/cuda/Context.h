@@ -81,8 +81,6 @@ public:
 	Context(Accelerator &acc, Mode &mode);
 	~Context();
 
-    static Context &current();
-
 	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 	gmacError_t copyDevice(void *dst, const void *src, size_t size);

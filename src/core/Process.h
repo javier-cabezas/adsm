@@ -80,23 +80,6 @@ public:
     size_t remove(Mode &mode);
 };
 
-class ContextMap : private std::map<Context *, Mode *>, public util::RWLock
-{
-private:
-    typedef std::map<Context *, Mode *> Parent;
-
-    friend class Process;
-public:
-    ContextMap();
-
-    typedef Parent::iterator iterator;
-    typedef Parent::const_iterator const_iterator;
-
-    std::pair<iterator, bool> insert(Context *context, Mode *mode);
-    size_t remove(Context &context);
-};
-
-
 class QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
 {
 private:
@@ -120,7 +103,6 @@ class Process : public util::Singleton<Process>, public util::RWLock, public uti
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
-    ContextMap contexts_;
 
     QueueMap queues_;
     memory::ObjectMap shared_;

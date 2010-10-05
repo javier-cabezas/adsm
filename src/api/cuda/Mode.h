@@ -65,7 +65,7 @@ protected:
     void switchIn();
     void switchOut();
 
-    void newContext();
+    gmac::Context &getContext();
 
 #ifdef USE_VM
     CUdeviceptr bitmapDevPtr_;
@@ -80,6 +80,7 @@ protected:
 #else
     ModuleVector *modules;
 #endif
+
 public:
     Mode(Process &proc, Accelerator &acc);
     ~Mode();
@@ -100,7 +101,7 @@ public:
     const Variable *variable(gmacVariable_t key) const;
     const Texture *texture(gmacTexture_t key) const;
 
-    CUstream eventStream() const;
+    CUstream eventStream();
 
     static Mode & current();
     Accelerator &accelerator();

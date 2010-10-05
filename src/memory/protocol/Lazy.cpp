@@ -562,6 +562,7 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
         return gmacErrorInvalidValue;
     }
     block->lock();
+
     if (block->state() != Invalid) {
         // Somebody already fixed it
         block->unlock();

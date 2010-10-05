@@ -194,12 +194,6 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
 
     fprintf(stderr, "Error: %f\n", err);
 
-    for (unsigned n = 0; n < nIter; n++) {
-        for (unsigned i = 0; i < elemsC; i++) {
-            assert(params[n].ptr[i] == 1.f);
-        }
-    }
-
     // clean up memory
     free(reference);
 

@@ -57,6 +57,16 @@ class IOBuffer;
 class KernelLaunch;
 class Process;
 
+class ContextMap : protected std::map<THREAD_ID, Context *>, util::RWLock {
+protected:
+    typedef std::map<THREAD_ID, Context *> Parent;
+public:
+    ContextMap() : RWLock("ContextMap") {};
+    void add(THREAD_ID id, Context *ctx);
+    Context *find(THREAD_ID id);
+    void remove(THREAD_ID id);
+};
+
 class Mode : public gmac::util::Logger {
     friend class gmac::memory::Manager;
 protected:
@@ -77,13 +87,15 @@ protected:
 #endif
     unsigned count_;
 
+    ContextMap contextMap_;
+
     typedef std::map<gmacKernel_t, Kernel *> KernelMap;
     KernelMap kernels_;
 
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
-    virtual void newContext() = 0;
+    virtual Context &getContext() = 0;
 
 	gmacError_t error_;
 public:
