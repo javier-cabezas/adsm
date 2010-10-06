@@ -65,6 +65,7 @@ public:
     void add(THREAD_ID id, Context *ctx);
     Context *find(THREAD_ID id);
     void remove(THREAD_ID id);
+    void clean();
 };
 
 class Mode : public gmac::util::Logger {

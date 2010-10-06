@@ -25,7 +25,16 @@ inline Context *ContextMap::find(THREAD_ID id)
 inline void ContextMap::remove(THREAD_ID id)
 {
     lockWrite();
-    std::map<THREAD_ID, Context *>::erase(id);
+    Parent::erase(id);
+    unlock();
+}
+
+inline void ContextMap::clean()
+{
+    Parent::iterator i;
+    lockWrite();
+    for(i = begin(); i != end(); i++) delete i->second;
+    Parent::clear();
     unlock();
 }
 

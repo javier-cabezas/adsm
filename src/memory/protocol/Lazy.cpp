@@ -54,6 +54,10 @@ Lazy::Lazy(unsigned limit)
 
 Lazy::~Lazy()
 {
+    lockWrite();
+    for(iterator i = begin(); i != end(); i++)
+        delete i->second;
+    unlock();
 }
 
 Object *Lazy::createObject(size_t size)

@@ -34,6 +34,7 @@ Mode::~Mode()
     if(count_ > 0)
         gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count_);
     if(this == key.get()) key.set(NULL);
+    contextMap_.clean();
 }
 
 void Mode::finiThread()
