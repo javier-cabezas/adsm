@@ -87,7 +87,6 @@ void Map::clean()
     ObjectMap &global = proc.shared();
 	lockWrite();
 	for(i = begin(); i != end(); i++) {
-		trace("Cleaning Object %p", i->second->start());
 		if(&global != this) global.lockWrite();
 		global.erase(i->first);
 		if(&global != this) global.unlock();
@@ -205,9 +204,10 @@ void Map::makeOrphans()
         orphans.insert(value_type(orphan->end(), orphan));
         delete i->second;
     }
-    clean();
     unlock();
     orphans.unlock();
+
+    clean();
 }
 
 }}
