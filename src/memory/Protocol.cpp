@@ -6,7 +6,9 @@ namespace gmac { namespace memory {
 #ifndef USE_MMAP
 Object *Protocol::createCentralizedObject(size_t size)
 {
-    return new CentralizedObject(size);
+    Object *ret = new CentralizedObject(size);
+    ret->init();
+    return ret;
 }
 #endif
 

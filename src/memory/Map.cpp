@@ -4,6 +4,7 @@
 
 #include "Map.h"
 #include "Object.h"
+#include "OrphanObject.h"
 
 namespace gmac { namespace memory {
 
@@ -115,7 +116,10 @@ void Map::remove(Object &obj)
     lockWrite();
     i = ObjectMap::find(obj.end());
     if (i != end()) {
+        trace("Removing Local Object %p", obj.start());
         erase(i);
+
+        assertion(ObjectMap::find(obj.end()) == end());
     }
     unlock();
 
@@ -175,7 +179,21 @@ void Map::insertCentralized(Object &obj)
     centralized.unlock();
     util::Logger::TRACE("Added centralized object @ %p", obj.start());
 }
-
 #endif
+
+void Map::makeOrphans()
+{
+    trace("Converting remaining objects to orphans");
+    ObjectMap &orphans = parent_.process().orphans();
+    orphans.lockWrite();
+    lockWrite();
+    for(iterator i = begin(); i != end(); i++) {
+        OrphanObject *orphan = new OrphanObject(*i->second);
+        orphans.insert(value_type(orphan->end(), orphan));
+        delete i->second;
+    }
+    unlock();
+    orphans.unlock();
+}
 
 }}

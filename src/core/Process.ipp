@@ -51,6 +51,18 @@ Process::centralized() const
     return centralized_;
 }
 
+inline memory::ObjectMap &
+Process::orphans()
+{
+    return orphans_;
+}
+
+inline const memory::ObjectMap &
+Process::orphans() const
+{
+    return orphans_;
+}
+
 }
 
 #endif

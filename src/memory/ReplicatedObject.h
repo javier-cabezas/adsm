@@ -54,6 +54,9 @@ public:
     ReplicatedObject(size_t size, T init);
     virtual ~ReplicatedObject();
 
+    void init();
+    void fini();
+
     gmacError_t toHost(Block &block, void *hostAddr = 0) const;
     gmacError_t toDevice(Block &block) const;
 

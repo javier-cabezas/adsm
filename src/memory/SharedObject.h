@@ -49,6 +49,9 @@ public:
     SharedObject(size_t size, T init);
     virtual ~SharedObject();
 
+    void init();
+    void fini();
+
     gmacError_t toHost(Block &block, void *hostAddr = 0) const;
     gmacError_t toDevice(Block &block) const;
 

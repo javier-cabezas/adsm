@@ -92,12 +92,6 @@ Mode::addCentralizedObject(memory::Object &obj)
 
 #endif
 
-inline void
-Mode::removeObject(memory::Object &obj)
-{
-    map_.remove(obj);
-}
-
 inline const memory::Object *
 Mode::getObjectRead(const void *addr) const
 {

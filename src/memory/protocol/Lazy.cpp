@@ -58,7 +58,9 @@ Lazy::~Lazy()
 
 Object *Lazy::createObject(size_t size)
 {
-    return new SharedObject<Lazy::State>(size, ReadOnly);
+    Object *ret = new SharedObject<Lazy::State>(size, ReadOnly);
+    ret->init();
+    return ret;
 }
 
 void Lazy::deleteObject(const Object &obj)
@@ -66,7 +68,7 @@ void Lazy::deleteObject(const Object &obj)
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     lockRead();
     iterator i;
-    for(i = begin(); i != end(); i++) i->second.purge(object);
+    for(i = begin(); i != end(); i++) i->second->purge(object);
     unlock();
 }
 
@@ -74,7 +76,9 @@ void Lazy::deleteObject(const Object &obj)
 #ifndef USE_MMAP
 Object *Lazy::createReplicatedObject(size_t size)
 {
-    return new ReplicatedObject<Lazy::State>(size, ReadOnly);
+    Object *ret = new ReplicatedObject<Lazy::State>(size, ReadOnly);
+    ret->init();
+    return ret;
 }
 #endif
 
@@ -174,10 +178,11 @@ gmacError_t Lazy::release()
         unlock();
         return gmacSuccess;
     }
-    List &list = i->second;
+    List &list = *i->second;
     unlock();
 
     list.lockWrite();
+    trace("Cache contains %zd elements\n", list.size());
     // Release dirty blocks
     while(list.empty() == false) {
         Entry e = list.pop();
@@ -672,16 +677,19 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
     Mode &mode = object.owner();
 
     if (object.local()) {
-        lockRead();
+        lockWrite();
         iterator i = find(&mode);
-        if(i == end())
-            i = insert(value_type(&mode, List())).first;
+        if(i == end()) {
+            i = insert(value_type(&mode, new List())).first;
+        }
         assertion(i != end());
-        List &list = i->second;
+        List &list = *i->second;
         unlock();
 
         list.lockWrite();
         list.push(object, &block);
+
+        trace("Adding %p to dirty list %p (%zd)", block.addr(), &list, list.size());
 
         if (checkOverflow) {
             // Release dirty blocks
@@ -692,6 +700,7 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
                     list.unlock();
                     return ret;
                 }
+                trace("Eagerly transferring %p", e.block->addr());
             }
         }
         list.unlock();

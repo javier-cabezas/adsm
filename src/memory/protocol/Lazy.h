@@ -49,7 +49,7 @@ namespace memory { namespace protocol {
 
 class List;
 
-class Lazy : public Protocol, Handler, protected std::map<Mode *, List>, util::RWLock {
+class Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
 public:
     typedef enum {
         Invalid,
