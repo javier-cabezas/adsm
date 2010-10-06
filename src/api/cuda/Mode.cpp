@@ -8,8 +8,29 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     gmac::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    _cudaCtx = accelerator().createCUContext::current();
+    cudaCtx_ = accelerator().createCUContext::current();
 #endif
+    switchIn();
+    modules = accelerator().createModules();
+
+    ModuleVector::const_iterator i;
+#ifdef USE_MULTI_CONTEXT
+    for(i = modules.begin(); i != modules.end(); i++) {
+#else
+    for(i = modules->begin(); i != modules->end(); i++) {
+#endif
+        (*i)->registerKernels(*this);
+#ifdef USE_VM
+        if((*i)->dirtyBitmap() != NULL) {
+            bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
+            bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
+#ifdef BITMAP_BIT
+            bitmapShiftEntryDevPtr_ = (*i)->dirtyBitmapShiftEntry()->devPtr();
+#endif
+        }
+#endif
+    }
+    switchOut();
 }
 
 Mode::~Mode()
@@ -28,30 +49,7 @@ gmac::Context &Mode::getContext()
     gmac::Context *context = contextMap_.find(SELF());
     if(context != NULL) return *context;
     context = new Context(accelerator(), *this);
-    switchIn();
-    modules = accelerator().createModules();
-
-    kernels_.clear();
-
-    ModuleVector::const_iterator i;
-#ifdef USE_MULTI_CONTEXT
-    for(i = modules.begin(); i != modules.end(); i++) {
-#else
-    for(i = modules->begin(); i != modules->end(); i++) {
-#endif
-        (*i)->registerKernels(*this);
-#ifdef USE_VM
-        if((*i)->dirtyBitmap() != NULL) {
-            _bitmapDevPtr = (*i)->dirtyBitmap()->devPtr();
-            _bitmapShiftPageDevPtr = (*i)->dirtyBitmapShiftPage()->devPtr();
-#ifdef BITMAP_BIT
-            _bitmapShiftEntryDevPtr = (*i)->dirtyBitmapShiftEntry()->devPtr();
-#endif
-        }
-#endif
-    }
-    switchOut();
-
+    CFatal(context != NULL, "Error creating new context");
     contextMap_.add(SELF(), context);
     return *context;
 }

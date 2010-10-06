@@ -109,7 +109,7 @@ void Logger::Fatal(const char *fmt, ...)
 
 
 inline
-void Logger::CFatal(unsigned c, const char *fmt, ...)
+void Logger::__CFatal(unsigned c, const char *fmt, ...)
 {
     if(c || Logger_ == NULL) return;
     va_list list;

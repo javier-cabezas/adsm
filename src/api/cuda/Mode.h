@@ -60,7 +60,7 @@ class Mode : public gmac::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
-    CUcontext _cudaCtx;
+    CUcontext cudaCtx_;
 #endif
     void switchIn();
     void switchOut();

@@ -12,7 +12,7 @@ inline
 void Mode::switchIn()
 {
 #ifdef USE_MULTI_CONTEXT
-    accelerator().setCUcontext(&_cudaCtx);
+    accelerator().setCUcontext(&cudaCtx_);
 #endif
 }
 
