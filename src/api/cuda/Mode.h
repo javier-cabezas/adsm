@@ -81,6 +81,9 @@ protected:
     ModuleVector *modules;
 #endif
 
+    void load();
+    void reload();
+
 public:
     Mode(Process &proc, Accelerator &acc);
     ~Mode();

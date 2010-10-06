@@ -200,6 +200,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         return gmacErrorInsufficientDeviceMemory;
     }
 
+    trace("Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;
@@ -207,18 +208,22 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         object.free();
     }
 
+    trace("Cleaning contexts");
+    contextMap_.clean();
+
+    trace("Registering mode in new accelerator");
     acc_->unregisterMode(*this);
-//    delete &getContext();
     acc_ = &acc;
     acc_->registerMode(*this);
-//    newContext();
-
+    
+    trace("Reallocating objects");
     for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;
         object.realloc(*this);
     }
 
-    CFatal(ret == gmacSuccess, "Error migrating context: not enough memory");
+    trace("Reloading mode");
+    reload();
 
     //
     // \TODO What to do if there are many threads sharing the same mode!!

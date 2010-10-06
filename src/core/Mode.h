@@ -98,6 +98,7 @@ protected:
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 
+    virtual void reload() = 0;
     virtual Context &getContext() = 0;
 
 	gmacError_t error_;
