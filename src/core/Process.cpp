@@ -104,13 +104,12 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
-
     if(ioMemory_ != NULL) delete ioMemory_;
     ioMemory_ = NULL;
 
-    std::list<Mode *>::iterator c;
 
     // TODO: Why is this lock necessary?
+    std::list<Mode *>::iterator c;
     modes_.lockWrite();
     ModeMap::const_iterator j;
     for(j = modes_.begin(); j != modes_.end(); j++) {
@@ -278,8 +277,7 @@ IOBuffer *Process::createIOBuffer(size_t size)
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
 	assertion(buffer->state() == IOBuffer::Idle, "Destroying buffer still in use");
-    if(ioMemory_ == NULL) return;
-    ioMemory_->put(buffer->addr(), buffer->size());
+    if(ioMemory_ != NULL) ioMemory_->put(buffer->addr(), buffer->size());
     delete buffer;
 }
 

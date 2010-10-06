@@ -41,7 +41,6 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 
 class Accelerator;
-class IOBuffer;
 class Kernel;
 class KernelLaunch;
 

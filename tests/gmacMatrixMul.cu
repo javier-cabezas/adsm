@@ -246,7 +246,6 @@ main(int argc, char** argv)
 
     struct timeval s, t;
 
-#if 0
     /////////////////////
     // CENTRALIZED OBJECT
     /////////////////////
@@ -268,7 +267,6 @@ main(int argc, char** argv)
 
     assert(gmacFree(A) == gmacSuccess);
 	assert(gmacFree(B) == gmacSuccess);
-#endif
 
     ////////////////////
     // REPLICATED OBJECT
