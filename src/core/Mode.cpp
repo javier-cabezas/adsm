@@ -40,6 +40,12 @@ void Mode::finiThread()
 {
     Mode *mode = key.get();
     if(mode == NULL) return;
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    memory::Map::iterator i;
+    for(i = mode->map_.begin(); i != mode->map_.end(); i++) {
+        gmac::memory::Object &object = *i->second;
+        manager.protocol().toHost(object);
+    }
     mode->map_.makeOrphans();
     Process::getInstance().remove(*mode);
     //delete mode;
