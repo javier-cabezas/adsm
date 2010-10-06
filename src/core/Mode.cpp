@@ -49,7 +49,7 @@ void Mode::finiThread()
     }
     mode->map_.makeOrphans();
     Process::getInstance().remove(*mode);
-    //delete mode;
+    delete mode;
 }
 
 

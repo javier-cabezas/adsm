@@ -71,7 +71,11 @@ QueueMap::iterator QueueMap::find(THREAD_ID id)
 void QueueMap::erase(THREAD_ID id)
 {
     lockWrite();
-    Parent::erase(id);
+    iterator i = Parent::find(id);
+    if(i != Parent::end()) {
+        delete i->second;
+        Parent::erase(i);
+    }
     unlock();
 }
 
@@ -107,6 +111,9 @@ Process::~Process()
     if(ioMemory_ != NULL) delete ioMemory_;
     ioMemory_ = NULL;
 
+    memory::ObjectMap::iterator i;
+    for(i = orphans_.begin(); i != orphans_.end(); i++) delete i->second;
+    orphans_.clear();
 
     // TODO: Why is this lock necessary?
     std::list<Mode *>::iterator c;
