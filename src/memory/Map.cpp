@@ -60,6 +60,7 @@ const Object *Map::getObjectRead(const void *addr) const
     if(ret == NULL)  ret = proc.replicated().mapFind(addr);
     if(ret == NULL)  ret = proc.centralized().mapFind(addr);
 #endif
+    if(ret == NULL)  ret = proc.orphans().mapFind(addr);
     if (ret != NULL) ret->lockRead();
     return ret;
 }
@@ -74,6 +75,7 @@ Object *Map::getObjectWrite(const void *addr) const
     if(ret == NULL)  ret = proc.replicated().mapFind(addr);
     if(ret == NULL)  ret = proc.centralized().mapFind(addr);
 #endif
+    if(ret == NULL)  ret = proc.orphans().mapFind(addr);
     if (ret != NULL) ret->lockWrite();
     return ret;
 }
@@ -192,6 +194,7 @@ void Map::makeOrphans()
         orphans.insert(value_type(orphan->end(), orphan));
         delete i->second;
     }
+    clean();
     unlock();
     orphans.unlock();
 }
