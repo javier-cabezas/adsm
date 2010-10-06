@@ -66,6 +66,8 @@ public:
     Context *find(THREAD_ID id);
     void remove(THREAD_ID id);
     void clean();
+
+    gmacError_t sync();
 };
 
 class Mode : public gmac::util::Logger {
