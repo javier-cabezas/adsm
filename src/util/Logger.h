@@ -52,6 +52,8 @@ WITH THE SOFTWARE.  */
 #define assertion(c, ...) __assertion(c, "Assertion " #c ASSERT_STRING)
 #define ASSERTION(c, ...) __Assertion(c, "Assertion " #c ASSERT_STRING)
 
+#define CFatal(c, ...) __CFatal(c, "Condition " #c ASSERT_STRING)
+
 #define SRC_ROOT "src"
 inline const char *__extract_file_name(const char *file) {
     const char *guess = strstr(file, SRC_ROOT);
@@ -118,7 +120,7 @@ public:
     static void __Warning(const char *fmt, ...);
 
     static void Fatal(const char *fmt, ...);
-    static void CFatal(unsigned c, const char *fmt, ...);
+    static void __CFatal(unsigned c, const char *fmt, ...);
 };
 
 }}
