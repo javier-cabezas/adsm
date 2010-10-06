@@ -36,8 +36,18 @@ Mode::~Mode()
     if(this == key.get()) key.set(NULL);
 }
 
-void
-Mode::release()
+void Mode::finiThread()
+{
+    Mode *mode = key.get();
+    if(mode == NULL) return;
+    mode->map_.makeOrphans();
+    Process::getInstance().remove(*mode);
+    //delete mode;
+}
+
+
+
+void Mode::release()
 {
 #ifdef USE_VM
     delete _bitmap;
@@ -79,6 +89,12 @@ void Mode::detach()
     if(mode != NULL) mode->destroy();
     key.set(NULL);
 }
+
+void Mode::removeObject(memory::Object &obj)
+{
+    map_.remove(obj);
+}
+
 
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {

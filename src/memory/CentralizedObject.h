@@ -45,6 +45,9 @@ public:
     CentralizedObject(size_t size);
     virtual ~CentralizedObject();
 
+    virtual void init();
+    virtual void fini();
+
     virtual void *device(void *addr) const;
     inline virtual Mode &owner() const { return gmac::Mode::current(); }
 

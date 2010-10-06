@@ -68,6 +68,13 @@ QueueMap::iterator QueueMap::find(THREAD_ID id)
     return q;
 }
 
+void QueueMap::erase(THREAD_ID id)
+{
+    lockWrite();
+    Parent::erase(id);
+    unlock();
+}
+
 QueueMap::iterator QueueMap::end()
 {
     lockRead();
@@ -85,6 +92,7 @@ Process::Process() :
     shared_("SharedMemoryMap"),
     centralized_("CentralizedMemoryMap"),
     replicated_("ReplicatedMemoryMap"),
+    orphans_("OrhpanMemoryMap"),
     current_(0),
     ioMemory_(NULL)
 {
@@ -121,14 +129,19 @@ Process::~Process()
     memoryFini();
 }
 
-void
-Process::initThread()
+void Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
     queues_.insert(SELF(), q);
     // Set the private per-thread variables
     Mode::initThread();
     trace::Function::initThread();
+}
+
+void Process::finiThread()
+{
+    queues_.erase(SELF());
+    Mode::finiThread();
 }
 
 Mode *Process::createMode(int acc)

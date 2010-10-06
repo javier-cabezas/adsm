@@ -105,6 +105,7 @@ public:
 
     static void init();
     static void initThread();
+    static void finiThread();
     static Mode &current();
     static bool hasCurrent();
 

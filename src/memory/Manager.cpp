@@ -97,6 +97,7 @@ gmacError_t Manager::free(void * addr)
     if(object != NULL)  {
         mode.removeObject(*object);
         mode.putObject(*object);
+        object->fini();
         delete object;
     }
     else ret = gmacErrorInvalidValue;

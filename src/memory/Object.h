@@ -70,6 +70,9 @@ public:
     virtual Mode &owner() const = 0;
     virtual void *device(void *addr) const = 0;
 
+    virtual void init() = 0;
+    virtual void fini() = 0;
+
     virtual gmacError_t free();
     virtual gmacError_t realloc(Mode &mode);
 

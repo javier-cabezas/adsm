@@ -9,7 +9,7 @@ namespace gmac { namespace memory {
 
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, T init) :
-    StateObject<T>(size),
+    StateObject<T>(size, init),
     owner_(&Mode::current()),
     accBlock_(NULL)
 {
@@ -25,23 +25,11 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
     bitmap.newRange(device, size);
 #endif
-
-#ifdef USE_MMAP
-    StateObject<T>::addr_ = StateObject<T>::map(device, size);
-#else
-    StateObject<T>::addr_ = StateObject<T>::map(NULL, size);
-#endif
-
-    if(StateObject<T>::addr_ == NULL) {
-        owner_->free(device);
-        return;
-    }
     // Create memory blocks
     accBlock_ = new AcceleratorBlock(*owner_, device, StateObject<T>::size_);
 
-    trace("Creating Shared Object %p (%zd bytes) @ %p", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
-    setupSystem(init);
 }
+
 
 template<typename T>
 inline SharedObject<T>::~SharedObject()
@@ -49,7 +37,6 @@ inline SharedObject<T>::~SharedObject()
     if(StateObject<T>::addr_ == NULL) { return; }
     void *devAddr = accBlock_->addr();
     delete accBlock_;
-    StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
     owner_->free(devAddr);
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
@@ -58,6 +45,31 @@ inline SharedObject<T>::~SharedObject()
 
     trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
 }
+
+template<typename T>
+inline void SharedObject<T>::init()
+{
+
+#ifdef USE_MMAP
+    StateObject<T>::addr_ = StateObject<T>::map(device, StateObject<T>::size_);
+#else
+    StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
+#endif
+
+    if(StateObject<T>::addr_ == NULL) {
+        return;
+    }
+
+    trace("Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
+    StateObject<T>::setupSystem();
+}
+
+template<typename T>
+inline void SharedObject<T>::fini()
+{
+    StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
+}
+
 
 template<typename T>
 inline void *SharedObject<T>::device(void *addr) const

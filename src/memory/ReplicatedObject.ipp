@@ -8,7 +8,7 @@ namespace gmac { namespace memory {
 #ifndef USE_MMAP
 template<typename T>
 inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
-    StateObject<T>(size)
+    StateObject<T>(size, init)
 {
     // This line might seem useless, but we first need to make sure that
     // the current thread has an execution mode attached
@@ -21,15 +21,10 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
         return;
     }
 
-    StateObject<T>::addr_ = StateObject<T>::map(NULL, size);
-    if(StateObject<T>::addr_ == NULL) {
-        proc.globalFree(*this);
-        return;
-    }
-
-    setupSystem(init);
     trace("Replicated object create @ %p", StateObject<T>::addr_);
 }
+
+
 
 template<typename T>
 inline ReplicatedObject<T>::~ReplicatedObject()
@@ -39,9 +34,29 @@ inline ReplicatedObject<T>::~ReplicatedObject()
     proc.globalFree(*this);
     StateObject<T>::lockWrite();
     accelerator.clear();
+    StateObject<T>::unlock();
+}
+
+template<typename T>
+inline void ReplicatedObject<T>::init()
+{
+    StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
+    if(StateObject<T>::addr_ == NULL) {
+        return;
+    }
+
+    StateObject<T>::setupSystem();
+
+}
+
+template<typename T>
+inline void ReplicatedObject<T>::fini()
+{
+    StateObject<T>::lockWrite();
     StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
     StateObject<T>::unlock();
 }
+
 
 template<typename T>
 inline void *ReplicatedObject<T>::device(void *addr) const

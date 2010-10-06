@@ -60,7 +60,6 @@ public:
     virtual Object *getObjectWrite(const void *addr) const;
 
     virtual void putObject(const Object &obj) const;
-
 };
  
 class Map : public ObjectMap, public util::Logger {
@@ -81,6 +80,8 @@ public:
 
     const Object *getObjectRead(const void *addr) const;
     Object *getObjectWrite(const void *addr) const;
+
+    void makeOrphans();
 };
 
 }}

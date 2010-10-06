@@ -92,6 +92,7 @@ public:
     void cleanup();
     std::pair<iterator, bool> insert(THREAD_ID, ThreadQueue *);
     iterator find(THREAD_ID);
+    void erase(THREAD_ID id);
 
     iterator end();
 };
@@ -108,6 +109,7 @@ protected:
     memory::ObjectMap shared_;
     memory::ObjectMap centralized_;
     memory::ObjectMap replicated_;
+    memory::ObjectMap orphans_;
 
     unsigned current_;
 
@@ -120,6 +122,7 @@ public:
     virtual ~Process();
 
     void initThread();
+    void finiThread();
 #define ACC_AUTO_BIND -1
     Mode * createMode(int acc = ACC_AUTO_BIND);
     void remove(Mode &mode);
@@ -156,6 +159,8 @@ public:
     const memory::ObjectMap &replicated() const;
     memory::ObjectMap &centralized();
     const memory::ObjectMap &centralized() const;
+    memory::ObjectMap &orphans();
+    const memory::ObjectMap &orphans() const;
 
     Mode *owner(const void *addr) const;
 };

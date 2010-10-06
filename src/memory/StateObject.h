@@ -46,10 +46,11 @@ class StateObject: public Object {
 public:
     typedef std::map<void *, SystemBlock<T> *> SystemMap;
 protected:
+    T init_;
     SystemMap systemMap;
-    void setupSystem(T init);
+    void setupSystem();
 public:
-    StateObject(size_t size);
+    StateObject(size_t size, T init);
     virtual ~StateObject();
 
     SystemBlock<T> *findBlock(void *addr) const;
