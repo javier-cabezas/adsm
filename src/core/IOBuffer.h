@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class IOBuffer : public gmac::util::Lock {
+class IOBuffer : public util::Lock, util::Logger {
 public:
     typedef enum { Idle, ToHost, ToDevice } State;
 protected:
@@ -62,14 +62,15 @@ public:
     inline void unlock() { gmac::util::Lock::unlock(); }
 
     inline State state() const { return state_; }
-    inline void toHost() { state_ = ToHost; }
-    inline void toDevice() { state_ = ToDevice; }
+    inline void toHost() { state_ = ToHost; trace("Buffer %p goes ToHost", this); }
+    inline void toDevice() { state_ = ToDevice; trace("Buffer %p goes ToDevice", this); }
 
     inline gmacError_t wait()
     {
     	gmacError_t ret = gmacSuccess;
     	if (state_ != Idle) {
     		ret = mode_.waitForBuffer(*this);
+            trace("Buffer %p goes Idle", this);
     		state_ = Idle;
     	}
     	return ret;

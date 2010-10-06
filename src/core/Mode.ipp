@@ -38,6 +38,20 @@ inline void ContextMap::clean()
     unlock();
 }
 
+inline gmacError_t ContextMap::sync()
+{
+    Parent::iterator i;
+    gmacError_t ret;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        ret = i->second->sync();
+        if(ret == gmacSuccess) continue;
+        unlock(); return ret;
+    }
+    unlock();
+    return ret;
+}
+
 inline void Mode::init()
 {
     gmac::util::Private<Mode>::init(key);

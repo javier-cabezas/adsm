@@ -168,7 +168,7 @@ gmac::KernelLaunch &Mode::launch(const char *kernel)
 gmacError_t Mode::sync()
 {
     switchIn();
-    error_ = getContext().sync();
+    error_ = contextMap_.sync();
     switchOut();
     return error_;
 }

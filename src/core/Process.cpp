@@ -283,7 +283,6 @@ IOBuffer *Process::createIOBuffer(size_t size)
 
 void Process::destroyIOBuffer(IOBuffer *buffer)
 {
-	assertion(buffer->state() == IOBuffer::Idle, "Destroying buffer still in use");
     if(ioMemory_ != NULL) ioMemory_->put(buffer->addr(), buffer->size());
     delete buffer;
 }
