@@ -157,6 +157,17 @@ void Map::remove(Object &obj)
         centralized.erase(i);
     }
     centralized.unlock();
+
+    // Orphan object
+    ObjectMap &orphans = proc.orphans();
+    orphans.lockWrite();
+    i = orphans.find(obj.end());
+    if (i != orphans.end()) {
+        trace("Removing Orphan Object %p", obj.start());
+        orphans.erase(i);
+    }
+    orphans.unlock();
+
 }
 
 #ifndef USE_MMAP
