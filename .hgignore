@@ -73,3 +73,37 @@ syntax: regexp
 ^tests/transferBlocks$
 syntax: regexp
 ^tests/transferCosts$
+syntax: regexp
+^tests/gmacCompress$
+syntax: regexp
+^tests/gmacCompressSend$
+syntax: regexp
+^tests/gmacConstant$
+syntax: regexp
+^tests/gmacFileVecAdd$
+syntax: regexp
+^tests/gmacHybridComputation$
+syntax: regexp
+^tests/gmacMatrixMul$
+syntax: regexp
+^tests/gmacMatrixMulSimple$
+syntax: regexp
+^tests/gmacMemcpy$
+syntax: regexp
+^tests/gmacMemset$
+syntax: regexp
+^tests/gmacMigration$
+syntax: regexp
+^tests/gmacPingPong$
+syntax: regexp
+^tests/gmacSharedVecAdd$
+syntax: regexp
+^tests/gmacStencil$
+syntax: regexp
+^tests/gmacTexture$
+syntax: regexp
+^tests/gmacThreadStencil$
+syntax: regexp
+^tests/gmacThreadVecAdd$
+syntax: regexp
+^tests/gmacVecAdd$
