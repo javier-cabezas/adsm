@@ -37,25 +37,25 @@ EXTRA_DIST = gmacTests.py\
 GMAC_TESTSOURCES=debug.h utils.cpp utils.ipp utils.h cycle.h
 
 bandwidth_SOURCES = bandwidth.cu $(GMAC_TESTSOURCES)
-bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+bandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 threadBandwidth_SOURCES = threadBandwidth.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
-threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+threadBandwidth_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 transferBlocks_SOURCES = transferBlocks.cu $(GMAC_TESTSOURCES)
-transferBlocks_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+transferBlocks_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 transferCosts_SOURCES = transferCosts.cu $(GMAC_TESTSOURCES)
-transferCosts_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+transferCosts_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 schedAllocation_SOURCES = schedAllocation.cu barrier.c barrier.h $(GMAC_TESTSOURCES)
-schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+schedAllocation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 hybridComputation_SOURCES = hybridComputation.cu $(GMAC_TESTSOURCES)
-hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+hybridComputation_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 #bitmapOverhead_SOURCES = bitmapOverhead.cu $(GMAC_TESTSOURCES)
-#bitmapOverhead_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib -L$(CUDA_DIR)/lib$(ARCH) -lcuda -lcudart
+#bitmapOverhead_LDADD = $(PARAVER_LIB) -L$(CUDA_DIR)/lib$(ARCH) -L$(CUDA_DIR)/lib -lcuda -lcudart
 
 if VM
 vmVecAdd_SOURCES = vmVecAdd.cu $(GMAC_TESTSOURCES)
