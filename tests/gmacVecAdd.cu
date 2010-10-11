@@ -74,10 +74,11 @@ int main(int argc, char *argv[])
         error += c[i] - (a[i] + b[i]);
         sum2 += a[i] + b[i];
     }
+    assert(sum == sum2);
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Check: ", "\n");
 
-    fprintf(stderr,"Error: %f\n", error);
+    fprintf(stderr, "Error: %f\n", error);
 
     gmacFree(a);
     gmacFree(b);

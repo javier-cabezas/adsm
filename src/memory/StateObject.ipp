@@ -31,12 +31,24 @@ inline void StateObject<T>::setupSystem()
 }
 
 template<typename T>
-inline SystemBlock<T> *StateObject<T>::findBlock(void *addr) const
+inline SystemBlock<T> *StateObject<T>::findBlock(const void *addr) const
 {
     SystemBlock<T> *ret = NULL;
-    typename SystemMap::const_iterator block = systemMap.upper_bound(addr);
+    typename SystemMap::const_iterator block = systemMap.upper_bound((void *)addr);
     if(block != systemMap.end()) ret = block->second;
     return ret;
+}
+
+template<typename T>
+inline typename StateObject<T>::SystemMap::iterator StateObject<T>::getBlockIterator(const void *addr)
+{
+    return systemMap.upper_bound(addr);
+}
+
+template<typename T>
+inline typename StateObject<T>::SystemMap::const_iterator StateObject<T>::getBlockIterator(const void *addr) const
+{
+    return systemMap.upper_bound((void *) addr);
 }
 
 template<typename T>

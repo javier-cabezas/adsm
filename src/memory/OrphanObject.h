@@ -57,16 +57,8 @@ public:
         return gmac::Mode::current();
     }
 
-    inline gmacError_t toHost(Block &block, void *hostAddr = 0) const {
-        Fatal("Trying to acquire a centralized object");
-        return gmacErrorInvalidValue;
-    }
-    inline gmacError_t toDevice(Block &block) const {
-        Fatal("Trying to release a centralized object");
-        return gmacErrorInvalidValue;
-    }
-
-    inline bool local() const { return false; }
+    inline bool isLocal() const { return false; }
+    inline bool isInAccelerator() const { return false; }
 };
 
 }}

@@ -58,15 +58,10 @@ protected:
 public:
     virtual ~Object();
 
-    void *addr() const;
+    uint8_t *addr() const;
+    uint8_t *end() const;
     size_t size() const;
-
-    void *start() const;
-    void *end() const;
-
-    virtual gmacError_t toHost(Block &block, void * hostAddr = NULL) const = 0;
-    virtual gmacError_t toDevice(Block &block) const = 0;
-
+ 
     virtual Mode &owner() const = 0;
     virtual void *device(void *addr) const = 0;
 
@@ -76,7 +71,8 @@ public:
     virtual gmacError_t free();
     virtual gmacError_t realloc(Mode &mode);
 
-    virtual bool local() const = 0;
+    virtual bool isLocal() const = 0;
+    virtual bool isInAccelerator() const = 0;
 };
 
 }}

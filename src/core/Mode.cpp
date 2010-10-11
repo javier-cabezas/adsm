@@ -184,7 +184,7 @@ bool Mode::requireUpdate(memory::Block &block)
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    trace("Moving to %d", acc_->id());
+    trace("Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
@@ -208,10 +208,10 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     acc_->unregisterMode(*this);
-//    delete &getContext();
+//  delete &getContext();
     acc_ = &acc;
     acc_->registerMode(*this);
-//    newContext();
+//  newContext();
 
     for(i = map_.begin(); i != map_.end(); i++) {
         gmac::memory::Object &object = *i->second;

@@ -75,31 +75,87 @@ template<typename T>
 inline void *SharedObject<T>::device(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
-    void *ret = (uint8_t *)accBlock_->addr() + offset;
+    void *ret = accBlock_->addr() + offset;
     return ret;
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toHost(Block &block, void *hostAddr) const
+inline gmacError_t SharedObject<T>::toHost(Block &block) const
 {
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
-    gmacError_t ret;
-    if (hostAddr == NULL) {
-        ret = accBlock_->toHost(off, block);
-    } else {
-        ret = accBlock_->toHost(off, hostAddr, block.size());
-    }
+    off_t off = block.addr() - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(block.addr(), accBlock_->addr() + off, block.size());
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(block.addr() + blockOff, accBlock_->addr() + off, count);
 
     return ret;
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toDevice(Block &block) const
+inline gmacError_t SharedObject<T>::toHostPointer(Block &block, unsigned blockOff, void * ptr, size_t count) const
 {
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
-    gmacError_t ret = accBlock_->toDevice(off, block);
+    assertion(block.addr() + blockOff + count <= block.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(ptr, accBlock_->addr() + off, count);
+
     return ret;
 }
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    assertion(buffer.addr() + bufferOff + count <= buffer.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().deviceToBuffer(buffer, accBlock_->addr() + off, bufferOff, count);
+
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toAccelerator(Block &block) const
+{
+    off_t off = block.addr() - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, block.addr(), block.size());
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, block.addr() + blockOff, count);
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void * ptr, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, ptr, count);
+
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    assertion(buffer.addr() + bufferOff + count <= buffer.end());
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().bufferToDevice(accBlock_->addr() + off, buffer, bufferOff, count);
+
+    return ret;
+}
+
 
 template<typename T>
 gmacError_t SharedObject<T>::free()
@@ -137,7 +193,13 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
 }
 
 template<typename T>
-bool SharedObject<T>::local() const
+bool SharedObject<T>::isLocal() const
+{
+    return true;
+}
+
+template<typename T>
+bool SharedObject<T>::isInAccelerator() const
 {
     return true;
 }
