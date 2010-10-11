@@ -146,7 +146,8 @@ enum GmacGlobalMallocType {
 /*!
 	\brief Allocates global memory at all GPUS
 */
-gmacError_t gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint = GMAC_GLOBAL_MALLOC_CENTRALIZED);
+#define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
+gmacError_t __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
 
 /*!
 	\brief Gets a GPU address
@@ -188,11 +189,12 @@ void gmacCopy(THREAD_T);
 
 #ifdef __cplusplus
 #include <cassert>
+#include <cstdio>
 #else
 #include <assert.h>
+#include <stdio.h>
 #endif
 
-#include <cstdio>
 static inline const char *gmacGetErrorString(gmacError_t err) {
 	//assert(err <= gmacErrorUnknown);
     if (err <= gmacErrorUnknown)
