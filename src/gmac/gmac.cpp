@@ -122,7 +122,7 @@ gmacMalloc(void **cpuPtr, size_t count)
 }
 
 gmacError_t
-gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
+__gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
 {
 #ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
