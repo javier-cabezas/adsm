@@ -55,7 +55,8 @@ public:
         util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(mode) {}
     inline virtual ~IOBuffer() {};
 
-    inline void *addr() const { return addr_; }
+    inline uint8_t *addr() const { return (uint8_t *) addr_; }
+    inline uint8_t *end() const { return addr() + size_; }
     inline size_t size() const { return size_; }
 
     inline void lock() { gmac::util::Lock::lock(); }

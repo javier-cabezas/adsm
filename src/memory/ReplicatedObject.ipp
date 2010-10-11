@@ -65,27 +65,103 @@ inline void *ReplicatedObject<T>::device(void *addr) const
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     typename AcceleratorMap::const_iterator i = accelerator.find(&gmac::Mode::current());
     Object::assertion(i != accelerator.end());
-    void *ret = (uint8_t *)i->second->addr() + offset;
+    void *ret = i->second->addr() + offset;
     StateObject<T>::unlock();
     return ret;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::toHost(Block &block, void * hostAddr) const
+inline gmacError_t ReplicatedObject<T>::toHost(Block &block) const
 {
-    Object::Fatal("Modifications to ReplicatedObjects in the device are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::toDevice(Block &block) const
+inline gmacError_t ReplicatedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
+{
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    return gmacErrorInvalidValue;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const
+{
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    return gmacErrorInvalidValue;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+{
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    return gmacErrorInvalidValue;
+}
+
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block) const
 {
     gmacError_t ret = gmacSuccess;
     StateObject<T>::lockRead();
-    off_t off = (uint8_t *)block.addr() - (uint8_t *)StateObject<T>::addr_;
+    off_t off = block.addr() - StateObject<T>::addr();
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
-        gmacError_t tmp = i->second->toDevice(off, block);
+        AcceleratorBlock &accBlock = *i->second;
+        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, block.addr(), block.size());
+        if(tmp != gmacSuccess) ret = tmp;
+    }
+    StateObject<T>::unlock();
+    return ret;
+}
+
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    gmacError_t ret = gmacSuccess;
+    StateObject<T>::lockRead();
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    typename AcceleratorMap::const_iterator i;
+    for(i = accelerator.begin(); i != accelerator.end(); i++) {
+        AcceleratorBlock &accBlock = *i->second;
+        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, block.addr() + blockOff, count);
+        if(tmp != gmacSuccess) ret = tmp;
+    }
+    StateObject<T>::unlock();
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    gmacError_t ret = gmacSuccess;
+    StateObject<T>::lockRead();
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    typename AcceleratorMap::const_iterator i;
+    for(i = accelerator.begin(); i != accelerator.end(); i++) {
+        AcceleratorBlock &accBlock = *i->second;
+        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, ptr, count);
+        if(tmp != gmacSuccess) ret = tmp;
+    }
+    StateObject<T>::unlock();
+    return ret;
+}
+
+template<typename T>
+inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+{
+    assertion(block.addr() + blockOff + count <= block.end());
+    assertion(buffer.addr() + bufferOff + count <= buffer.end());
+    gmacError_t ret = gmacSuccess;
+    StateObject<T>::lockRead();
+    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    typename AcceleratorMap::const_iterator i;
+    for(i = accelerator.begin(); i != accelerator.end(); i++) {
+        AcceleratorBlock &accBlock = *i->second;
+        gmacError_t tmp = accBlock.owner().bufferToDevice(accBlock.addr() + off, buffer, bufferOff, count);
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -105,9 +181,10 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
     accelerator.insert(typename AcceleratorMap::value_type(&mode, dev));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
-        if(mode.requireUpdate(*i->second) == false) continue;
-        off_t off = (uint8_t *)i->second->addr() - (uint8_t *)StateObject<T>::addr_;
-        dev->toDevice(off, *i->second);
+        SystemBlock<T> &block = *i->second;
+        if(mode.requireUpdate(block) == false) continue;
+        off_t off = block.addr() - StateObject<T>::addr();
+        gmacError_t tmp = dev->owner().copyToDevice(dev->addr() + off, block.addr(), block.size());
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode.dirtyBitmap();

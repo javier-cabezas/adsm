@@ -8,28 +8,22 @@ Object::~Object()
 {
 }
 
-inline void *
+inline uint8_t *
 Object::addr() const
 {
-    return addr_;
+    return (uint8_t *) addr_;
+}
+
+inline uint8_t *
+Object::end() const
+{
+    return addr() + size_;
 }
 
 inline size_t
 Object::size() const
 {
     return size_;
-}
-
-inline void *
-Object::start() const
-{
-    return addr_;
-}
-
-inline void *
-Object::end() const
-{
-    return (void *)((uint8_t *)addr_ + size_);
 }
 
 inline gmacError_t

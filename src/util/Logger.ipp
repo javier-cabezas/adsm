@@ -25,15 +25,15 @@ void Logger::warning(const char *fmt, ...) const
 
 
 inline
-void Logger::__assertion(unsigned c, const char *fmt, ...) const
+void Logger::__assertion(unsigned c, const char *cStr, const char *fmt, ...) const
 {
 #ifdef DEBUG
     if(c) return;
     va_list list;
     va_start(list, fmt);
-    print("ASSERT", fmt, list);
+    Logger_->print(cStr, fmt, list);
     va_end(list);
-    assert(c);
+    abort();
 #endif
 }
 
@@ -70,24 +70,25 @@ void Logger::__Trace(const char *fmt, ...)
 }
 
 inline
-void Logger::__Assertion(unsigned c, const char *fmt, ...)
+void Logger::__Assertion(unsigned c, const char *cStr, const char *fmt, ...)
 {
 #ifdef DEBUG
-    if(c) return;
+    if(c || Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    if(Logger_ != NULL) Logger_->print("ASSERT", fmt, list);
+    Logger_->print(cStr, fmt, list);
     va_end(list);
-    assert(c);
+    abort();
 #endif
 }
 
 inline
 void Logger::__Warning(const char *fmt, ...)
 {
+    if(Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    if(Logger_ != NULL) Logger_->print("WARNING", fmt, list);
+    Logger_->print("WARNING", fmt, list);
     va_end(list);
 }
 
@@ -100,27 +101,19 @@ void Logger::Fatal(const char *fmt, ...)
     va_start(list, fmt);
     Logger_->print("FATAL", fmt, list);
     va_end(list);
-#ifdef DEBUG
-    assert(0);
-#else
-    exit(-1);
-#endif
+    abort();
 }
 
 
 inline
-void Logger::__CFatal(unsigned c, const char *fmt, ...)
+void Logger::__CFatal(unsigned c, const char *cStr, const char *fmt, ...)
 {
     if(c || Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    Logger_->print("FATAL", fmt, list);
+    Logger_->print(cStr, fmt, list);
     va_end(list);
-#ifdef DEBUG
-    assert(0);
-#else
-    exit(-1);
-#endif
+    abort();
 }
 
 }}

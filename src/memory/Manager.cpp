@@ -1,12 +1,12 @@
+#include <strings.h>
+
+#include "core/IOBuffer.h"
 #include "core/Process.h"
+#include "protocol/Lazy.h"
 
 #include "Manager.h"
 #include "Map.h"
 #include "Object.h"
-
-#include "protocol/Lazy.h"
-
-#include <strings.h>
 
 namespace gmac { namespace memory {
 
@@ -173,34 +173,65 @@ gmacError_t Manager::invalidate()
 }
 #endif
 
-gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
+gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count)
 {
+    assertion(count <= buffer.size());
+    gmac::Process &proc = gmac::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     const uint8_t *ptr = (const uint8_t *)addr;
-    Mode &mode = Mode::current();
+    unsigned off = 0;
     do {
-        const Object *obj = mode.getObjectRead(ptr);
-        ret = protocol_->toIOBuffer(buffer, *obj, addr, size);
-        ptr += obj->size();
-        mode.putObject(*obj);
-        if(ret != gmacSuccess) return ret;
-    } while(ptr < (uint8_t *)addr + size);
+        // Check if the address range belongs to one GMAC object
+        Mode * mode = proc.owner(ptr + off);
+        if (mode == NULL) return gmacErrorInvalidValue;
+        const Object *obj = mode->getObjectRead(ptr + off);
+        if (!obj) return gmacErrorInvalidValue;
+        // Compute sizes for the current object
+        size_t objCount = obj->addr() + obj->size() - (ptr + off);
+        size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
+        unsigned objOff = ptr - obj->addr();
+        // Handle objects with no memory in the accelerator
+        if (!obj->isInAccelerator()) {
+            ::memcpy(buffer.addr() + off, ptr + off, c);
+        } else { // Handle objects with memory in the accelerator
+            ret = protocol_->toIOBuffer(buffer, off, *obj, objOff, c);
+            if(ret != gmacSuccess) return ret;
+        }
+        mode->putObject(*obj);
+        off += objCount;
+        trace("Copying from obj %p: %zd of %zd", obj->addr(), c, count);
+    } while(ptr + off < ptr + count);
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t size)
+gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
 {
+    assertion(count <= buffer.size());
     gmac::Process &proc = gmac::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
+    unsigned off = 0;
     do {
-        gmac::Mode &mode = *proc.owner(addr);
-        const Object *obj = mode.getObjectRead(ptr);
-        ret = protocol_->fromIOBuffer(buffer, *obj, addr, size);
-        ptr += obj->size();
-        mode.putObject(*obj);
-        if(ret != gmacSuccess) return ret;
-    } while(ptr < (uint8_t *)addr + size);
+        // Check if the address range belongs to one GMAC object
+        Mode *mode = proc.owner(ptr + off);
+        if (mode == NULL) return gmacErrorInvalidValue;
+        const Object *obj = mode->getObjectRead(ptr + off);
+        if (!obj) return gmacErrorInvalidValue;
+        // Compute sizes for the current object
+        size_t objCount = obj->addr() + obj->size() - (ptr + off);
+        size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
+        unsigned objOff = ptr - obj->addr();
+        // Handle objects with no memory in the accelerator
+        if (!obj->isInAccelerator()) {
+            ::memcpy(ptr + off, buffer.addr() + off, c);
+        } else { // Handle objects with memory in the accelerator
+            ret = protocol_->fromIOBuffer(*obj, objOff, buffer, off, c);
+            if(ret != gmacSuccess) return ret;
+        }
+        mode->putObject(*obj);
+        off += objCount;
+        trace("Copying to obj %p: %zd of %zd", obj->addr(), c, count);
+    } while(ptr + off < ptr + count);
     return ret;
 }
 
@@ -279,36 +310,49 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     gmac::Mode *srcMode = proc.owner(src);
 
 	if (dstMode == NULL && srcMode == NULL) {
-        memcpy(dst, src, n);
+        ::memcpy(dst, src, n);
         return gmacSuccess;
     }
 
     const Object *dstObj = NULL;
     const Object *srcObj = NULL;
-	if (dstMode == NULL) {
+	if (dstMode != NULL) {
         dstObj = dstMode->getObjectRead(dst);
+        assertion(dstObj != NULL);
     }
-    if (srcMode == NULL) {
+    if (srcMode != NULL) {
         srcObj = srcMode->getObjectRead(src);
+        assertion(srcObj != NULL);
     }
-    gmacError_t err;
+
+    gmacError_t err = gmacSuccess;
     if (dstMode == NULL) {	    // From device
 		err = protocol_->toPointer(dst, src, *srcObj, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
-		err = protocol_->fromPointer(dst, src, *srcObj, n);
+		err = protocol_->fromPointer(dst, src, *dstObj, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
     else {
-		err = protocol_->copy(dst, src, *dstObj, *srcObj, n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        if (!srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
+            ::memcpy(dst, src, n);
+        } else if (srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
+            err = protocol_->toPointer(dst, src, *srcObj, n);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        } else if (!srcObj->isInAccelerator() && dstObj->isInAccelerator()) {
+            err = protocol_->fromPointer(dst, src, *srcObj, n);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        } else {
+            err = protocol_->copy(dst, src, *dstObj, *srcObj, n);
+            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        }
 	}
 
-    if (dstMode == NULL) {
+    if (dstMode != NULL) {
         dstMode->putObject(*dstObj);
     }
-    if (srcMode == NULL) {
+    if (srcMode != NULL) {
         srcMode->putObject(*srcObj);
     }
 #if 0

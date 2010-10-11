@@ -14,7 +14,7 @@ Object * ObjectMap::mapFind(const void *addr) const
     Object *ret = NULL;
     lockRead();
     i = upper_bound(addr);
-    if(i != end() && i->second->start() <= addr)
+    if(i != end() && i->second->addr() <= addr)
         ret = i->second;
     unlock();
     return ret;
@@ -101,7 +101,7 @@ void Map::insert(Object &obj)
     lockWrite();
     ObjectMap::insert(value_type(obj.end(), &obj));
     unlock();
-    trace("Adding Shared Object %p", obj.start());
+    trace("Adding Shared Object %p", obj.addr());
 
     gmac::Process &proc = parent_.process();
     ObjectMap &shared = proc.shared();
@@ -117,7 +117,7 @@ void Map::remove(Object &obj)
     lockWrite();
     i = ObjectMap::find(obj.end());
     if (i != end()) {
-        trace("Removing Local Object %p", obj.start());
+        trace("Removing Local Object %p", obj.addr());
         erase(i);
 
         assertion(ObjectMap::find(obj.end()) == end());
@@ -130,7 +130,7 @@ void Map::remove(Object &obj)
     shared.lockWrite();
     i = shared.find(obj.end());
     if (i != shared.end()) {
-        trace("Removing Shared Object %p", obj.start());
+        trace("Removing Shared Object %p", obj.addr());
         shared.erase(i);
     }
     shared.unlock();
@@ -141,7 +141,7 @@ void Map::remove(Object &obj)
     replicated.lockWrite();
     i = replicated.find(obj.end());
     if (i != replicated.end()) {
-        trace("Removing Replicated Object %p", obj.start());
+        trace("Removing Replicated Object %p", obj.addr());
         replicated.erase(i);
     }
     replicated.unlock();
@@ -152,7 +152,7 @@ void Map::remove(Object &obj)
     centralized.lockWrite();
     i = centralized.find(obj.end());
     if (i != centralized.end()) {
-        trace("Removing Centralized Object %p", obj.start());
+        trace("Removing Centralized Object %p", obj.addr());
         centralized.erase(i);
     }
     centralized.unlock();
@@ -162,7 +162,7 @@ void Map::remove(Object &obj)
     orphans.lockWrite();
     i = orphans.find(obj.end());
     if (i != orphans.end()) {
-        trace("Removing Orphan Object %p", obj.start());
+        trace("Removing Orphan Object %p", obj.addr());
         orphans.erase(i);
     }
     orphans.unlock();
@@ -172,24 +172,24 @@ void Map::remove(Object &obj)
 #ifndef USE_MMAP
 void Map::insertReplicated(Object &obj)
 {
-    trace("Adding Replicated Object %p", obj.start());
+    trace("Adding Replicated Object %p", obj.addr());
     gmac::Process &proc = parent_.process();
     ObjectMap &replicated = proc.replicated();
     replicated.lockWrite();
     replicated.insert(value_type(obj.end(), &obj));
     replicated.unlock();
-    util::Logger::TRACE("Added shared object @ %p", obj.start());
+    util::Logger::TRACE("Added shared object @ %p", obj.addr());
 }
 
 void Map::insertCentralized(Object &obj)
 {
-    trace("Adding Centralized Object %p", obj.start());
+    trace("Adding Centralized Object %p", obj.addr());
     gmac::Process &proc = parent_.process();
     ObjectMap &centralized = proc.centralized();
     centralized.lockWrite();
     centralized.insert(value_type(obj.end(), &obj));
     centralized.unlock();
-    util::Logger::TRACE("Added centralized object @ %p", obj.start());
+    util::Logger::TRACE("Added centralized object @ %p", obj.addr());
 }
 #endif
 

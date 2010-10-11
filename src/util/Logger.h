@@ -48,11 +48,11 @@ WITH THE SOFTWARE.  */
 #include "Lock.h"
 #include "Parameter.h"
 
-#define ASSERT_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
-#define assertion(c, ...) __assertion(c, "Assertion " #c ASSERT_STRING)
-#define ASSERTION(c, ...) __Assertion(c, "Assertion " #c ASSERT_STRING)
+#define LOCATION_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
+#define assertion(c, ...) __assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
+#define ASSERTION(c, ...) __Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 
-#define CFatal(c, ...) __CFatal(c, "Condition " #c ASSERT_STRING)
+#define CFatal(c, ...) __CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
 #define SRC_ROOT "src"
 inline const char *__extract_file_name(const char *file) {
@@ -98,6 +98,7 @@ protected:
     static const size_t BufferSize_ = 1024;
     static char buffer[BufferSize_];
 
+    void __print(const char *tag, const char *fmt, va_list list) const;
     void print(const char *tag, const char *fmt, va_list list) const;
 #ifdef DEBUG
     bool check(const char *name) const;
@@ -108,7 +109,7 @@ protected:
 
     void __trace(const char *fmt, ...) const; 
     void warning(const char *fmt, ...) const;
-    void __assertion(unsigned c, const char *fmt, ...) const;
+    void __assertion(unsigned c, const char *cStr, const char *fmt, ...) const;
 public:
     virtual inline ~Logger() {};
 
@@ -116,11 +117,11 @@ public:
     static void Destroy();
 
     static void __Trace(const char *fmt, ...);  
-    static void __Assertion(unsigned c, const char *fmt, ...);
+    static void __Assertion(unsigned c, const char * cStr, const char *fmt, ...);
     static void __Warning(const char *fmt, ...);
 
     static void Fatal(const char *fmt, ...);
-    static void __CFatal(unsigned c, const char *fmt, ...);
+    static void __CFatal(unsigned c, const char * cStr, const char *fmt, ...);
 };
 
 }}
