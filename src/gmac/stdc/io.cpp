@@ -52,7 +52,6 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
     gmacError_t err;
     size_t ret = 0;
     gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
-
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
     size_t left = n;

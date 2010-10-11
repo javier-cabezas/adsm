@@ -53,7 +53,21 @@ public:
     StateObject(size_t size, T init);
     virtual ~StateObject();
 
-    SystemBlock<T> *findBlock(void *addr) const;
+    // To host functions
+    virtual gmacError_t toHost(Block &block) const = 0;
+    virtual gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
+    virtual gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+
+    // To accelerator functions
+    virtual gmacError_t toAccelerator(Block &block) const = 0;
+    virtual gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+
+    SystemBlock<T> *findBlock(const void *addr) const;
+    typename SystemMap::iterator getBlockIterator(const void *addr);
+    typename SystemMap::const_iterator getBlockIterator(const void *addr) const;
     inline SystemMap &blocks() { return systemMap; }
     inline const SystemMap &blocks() const { return systemMap; }
 

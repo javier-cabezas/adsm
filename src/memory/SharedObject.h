@@ -52,8 +52,17 @@ public:
     void init();
     void fini();
 
-    gmacError_t toHost(Block &block, void *hostAddr = 0) const;
-    gmacError_t toDevice(Block &block) const;
+    // To host functions
+    gmacError_t toHost(Block &block) const;
+    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
+    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+
+    // To accelerator functions
+    gmacError_t toAccelerator(Block &block) const;
+    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
+    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     void *device(void *addr) const;
     inline Mode &owner() const { return *owner_; }
@@ -61,7 +70,8 @@ public:
     gmacError_t free();
     gmacError_t realloc(Mode &mode);
 
-    bool local() const;
+    bool isLocal() const;
+    bool isInAccelerator() const;
 };
 
 }}

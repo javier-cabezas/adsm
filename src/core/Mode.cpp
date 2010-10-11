@@ -184,7 +184,7 @@ bool Mode::requireUpdate(memory::Block &block)
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    trace("Moving to %d", acc_->id());
+    trace("Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
