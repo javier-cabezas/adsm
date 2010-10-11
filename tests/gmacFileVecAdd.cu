@@ -31,6 +31,7 @@ float doTest(float *a, float *b, float *c, float *orig)
     gettimeofday(&s, NULL);
     fread(a, sizeof(float), vecSize, fA);
     fread(b, sizeof(float), vecSize, fB);
+
     gettimeofday(&t, NULL);
     fclose(fA);
     fclose(fB);
@@ -45,7 +46,7 @@ float doTest(float *a, float *b, float *c, float *orig)
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Run: ", "\n");
- 
+
     gettimeofday(&s, NULL);
     float error = 0;
     for(int i = 0; i < vecSize; i++) {
@@ -69,7 +70,6 @@ int main(int argc, char *argv[])
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen("inputset/vectorC", "r");
     fread(orig, sizeof(float), vecSize, fO);
-    fclose(fO);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
@@ -90,6 +90,10 @@ int main(int argc, char *argv[])
 
     error1 = doTest(a, b, c, orig);
 
+    FILE * fC = fopen("vectorC_shared", "w");
+    fwrite(c, sizeof(float), vecSize, fC);
+    fclose(fC);
+
     gmacFree(a);
     gmacFree(b);
 
@@ -108,6 +112,10 @@ int main(int argc, char *argv[])
 
     error2 = doTest(a, b, c, orig);
 
+    fC = fopen("vectorC_replicated", "w");
+    fwrite(c, sizeof(float), vecSize, fC);
+    fclose(fC);
+
     gmacFree(a);
     gmacFree(b);
 
@@ -125,6 +133,10 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Alloc: ", "\n");
 
     error3 = doTest(a, b, c, orig);
+
+    fC = fopen("vectorC_centralized", "w");
+    fwrite(c, sizeof(float), vecSize, fC);
+    fclose(fC);
 
     gmacFree(a);
     gmacFree(b);

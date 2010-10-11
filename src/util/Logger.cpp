@@ -95,18 +95,21 @@ void Logger::log(const char *tag, const char *fmt, va_list list) const
 }
 #endif
 
-void Logger::print(const char *tag, const char *fmt, va_list list)  const
+void Logger::__print(const char *tag, const char *fmt, va_list list)  const
 {
-    Lock_.lock();
     const char *name = NULL;
     if(name_ == NULL) name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
     else name = name_;
 
     vsnprintf(buffer, BufferSize_, fmt, list);
     *out_ << tag << " [" << name << "]: " << buffer << std::endl;
-    Lock_.unlock();
-
 }
 
+void Logger::print(const char *tag, const char *fmt, va_list list)  const
+{
+    Lock_.lock();
+    __print(tag, fmt, list);
+    Lock_.unlock();
+}
 
 }}
