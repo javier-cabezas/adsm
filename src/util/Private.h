@@ -34,6 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_PRIVATE_H_
 #define __UTIL_PRIVATE_H_
 
-#include <os/Private.h>
+#if defined(POSIX)
+#include "util/posix/Private.h"
+#elif defined(WINDOWS)
+#include "util/windows/Private.h"
+#endif
 
 #endif

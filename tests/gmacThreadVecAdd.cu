@@ -64,7 +64,7 @@ void *addVector(void *ptr)
 
 	gettimeofday(&s, NULL);
 	float error = 0;
-	for(int i = 0; i < vecSize; i++) {
+	for(unsigned i = 0; i < vecSize; i++) {
 		error += (*c)[i] - (a[i] + b[i]);
 	}
 	gettimeofday(&t, NULL);

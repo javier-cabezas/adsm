@@ -34,7 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_LOCK_H_
 #define GMAC_UTIL_LOCK_H_
 
-
-#include "os/Lock.h"
+#if defined(POSIX)
+#include "util/posix/Lock.h"
+#elif defined(WINDOWS)
+#include "util/windows/Lock.h"
+#endif
 
 #endif

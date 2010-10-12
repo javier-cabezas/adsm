@@ -31,9 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_FILE_LOCK_H_
-#define __UTIL_FILE_LOCK_H_
+#ifndef GMAC_UTIL_FILE_LOCK_H_
+#define GMAC_UTIL_FILE_LOCK_H_
 
-#include <os/FileLock.h>
+#if defined(POSIX)
+#include "util/posix/FileLock.h"
+#elif defined(WINDOWS)
+#include "util/windows/FileLock.h"
+#endif
 
 #endif

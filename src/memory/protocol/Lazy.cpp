@@ -4,10 +4,17 @@
 
 #include "core/IOBuffer.h"
 
+#include "config/config.h"
+
 #include "memory/StateObject.h"
 #include "memory/SharedObject.h"
 #include "memory/ReplicatedObject.h"
-#include "memory/os/Memory.h"
+
+#if defined(POSIX)
+#include "memory/posix/Memory.h"
+#elif defined(WINDOWS)
+#include "memory/windows/Memory.h"
+#endif
 
 #include "trace/Function.h"
 

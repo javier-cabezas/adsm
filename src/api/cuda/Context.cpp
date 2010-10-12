@@ -1,8 +1,6 @@
 #include "Context.h"
 #include "Mode.h"
 
-#include <config.h>
-
 #include "gmac/init.h"
 #include "memory/Manager.h"
 #include "trace/Thread.h"

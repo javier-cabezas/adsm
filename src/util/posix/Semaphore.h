@@ -34,8 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_POSIX_SEMAPHORE_H_
 #define __UTIL_POSIX_SEMAPHORE_H_
 
-#include <config.h>
-
+#include "config/config.h"
 #include <pthread.h>
 
 #include <iostream>

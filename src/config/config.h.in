@@ -34,7 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define SRC_TOP_DIR "@top_srcdir@"
+#define SRC_TOP_DIR "@CMAKE_SOURCE_DIR@"
+#define OS_DIR @OS_DIR@
+#define API_DIR @API_DIR@
 
 #ifdef HAVE_CUDA
 #define ACC_LAUNCH_ARGS const char *symbol

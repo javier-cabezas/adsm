@@ -42,11 +42,11 @@ WITH THE SOFTWARE.  */
 #include <cstdarg>
 #include <cassert>
 
-#include "config.h"
-#include "threads.h"
+#include "config/config.h"
+#include "config/threads.h"
 
-#include "Lock.h"
-#include "Parameter.h"
+#include "util/Lock.h"
+#include "util/Parameter.h"
 
 #define LOCATION_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #define assertion(c, ...) __assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)

@@ -1,9 +1,9 @@
 #include <gmac.h>
 #include "init.h"
 
-#include <order.h>
-#include <config.h>
-#include <threads.h>
+#include "config/order.h"
+#include "config/config.h"
+#include "config/threads.h"
 
 #include "util/Logger.h"
 

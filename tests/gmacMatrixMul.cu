@@ -240,9 +240,9 @@ main(int argc, char** argv)
              sizeC = sizeof(float) * elemsC;
 
     
-    fprintf(stderr, "Size A: %zd\n", sizeA);
-    fprintf(stderr, "Size B: %zd\n", sizeB);
-    fprintf(stderr, "Size C: %zd\n", sizeC);
+    fprintf(stderr, "Size A: %d\n", sizeA);
+    fprintf(stderr, "Size B: %d\n", sizeB);
+    fprintf(stderr, "Size C: %d\n", sizeC);
 
     struct timeval s, t;
 

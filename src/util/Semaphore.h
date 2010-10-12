@@ -34,6 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_SEMAPHORE_H_
 #define __UTIL_SEMAPHORE_H_
 
-#include <os/Semaphore.h>
-
+#if defined(POSIX)
+#include "util/posix/Semaphore.h"
+#elif defined(WINDOWS)
+#include "util/windows/Semaphore.h"
+#endif
 #endif

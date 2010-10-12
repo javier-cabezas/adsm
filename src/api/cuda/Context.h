@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <vector>
 
-#include "config.h"
+#include "config/config.h"
 
 #include "core/Context.h"
 #include "util/Lock.h"

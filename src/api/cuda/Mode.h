@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_MODE_H_
 #define GMAC_API_CUDA_MODE_H_
 
-#include <config.h>
+#include "config/config.h"
 
 #include "Context.h"
 

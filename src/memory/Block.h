@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BLOCK_H_
 #define GMAC_MEMORY_BLOCK_H_
 
-#include "config.h"
+#include "config/config.h"
 
 #include "core/Mode.h"
 #include "gmac/gmac.h"

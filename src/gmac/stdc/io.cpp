@@ -1,8 +1,11 @@
-#include <os/loader.h>
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#endif
 
-#include <paraver.h>
+#include "gmac/paraver.h"
 
-#include "init.h"
+#include "gmac/init.h"
 #include "memory/Manager.h"
 #include "core/IOBuffer.h"
 #include "core/Mode.h"
