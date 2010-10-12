@@ -1,11 +1,11 @@
 #include "core/Process.h"
 #include "core/Context.h"
-#include "init.h"
-#include "os/loader.h"
+#include "gmac/init.h"
+#include "os/posix/loader.h"
 #include "trace/Thread.h"
 #include "util/Lock.h"
 
-#include "order.h"
+#include "config/order.h"
 
 #include <pthread.h>
 

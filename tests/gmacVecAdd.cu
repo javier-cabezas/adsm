@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     gettimeofday(&t, NULL);
     printTime(&s, &t, "Init: ", "\n");
 
-    for(int i = 0; i < vecSize; i++) {
+    for(unsigned i = 0; i < vecSize; i++) {
         sum += a[i] + b[i];
     }
     
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     gettimeofday(&s, NULL);
     float error = 0;
     float sum2 = 0;
-    for(int i = 0; i < vecSize; i++) {
+    for(unsigned i = 0; i < vecSize; i++) {
         error += c[i] - (a[i] + b[i]);
         sum2 += a[i] + b[i];
     }

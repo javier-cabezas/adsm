@@ -1,6 +1,4 @@
-#include <config.h>
-
-#include <gmac/init.h>
+#include "gmac/init.h"
 
 #include "core/Kernel.h"
 

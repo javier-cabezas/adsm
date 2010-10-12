@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 
 #include <stdint.h>
 
-#include "order.h"
+#include "config/order.h"
 
 #include <iostream>
 #include <vector>

@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef __CONFIG_DEBUG_H
 #define __CONFIG_DEBUG_H
 
-#include "config.h"
-
-
+#include "config/config.h"
 
 #endif

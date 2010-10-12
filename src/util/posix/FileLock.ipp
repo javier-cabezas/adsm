@@ -4,7 +4,7 @@
 #include <sys/file.h>
 #include <errno.h>
 
-#include <debug.h>
+#include "config/debug.h"
 
 namespace gmac { namespace util {
 

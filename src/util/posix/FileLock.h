@@ -36,8 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <cstdio>
 
-#include <util/Lock.h>
-#include <util/Logger.h>
+#include "util/Lock.h"
+#include "util/Logger.h"
 
 namespace gmac { namespace util {
 

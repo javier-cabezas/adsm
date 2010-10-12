@@ -1,5 +1,11 @@
-#include "memory/Object.h"
-#include "memory/os/Memory.h"
+#include "config/config.h"
+
+#include "Object.h"
+#if defined(POSIX)
+#include "memory/posix/Memory.h"
+#elif defined(WINDOWS
+#include "memory/windows/Memory.h"
+#endif
 
 #include <sys/mman.h>
 

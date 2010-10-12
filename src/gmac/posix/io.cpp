@@ -1,8 +1,8 @@
+#include "os/posix/loader.h"
 #include "core/Mode.h"
 #include "core/IOBuffer.h"
 #include "gmac/init.h"
 #include "memory/Manager.h"
-#include "os/loader.h"
 #include "trace/Thread.h"
 
 #include <unistd.h>
