@@ -49,7 +49,7 @@ float doTest(float *a, float *b, float *c, float *orig)
 
     gettimeofday(&s, NULL);
     float error = 0;
-    for(int i = 0; i < vecSize; i++) {
+    for(unsigned i = 0; i < vecSize; i++) {
         error += orig[i] - (c[i]);
     }
     gettimeofday(&t, NULL);
