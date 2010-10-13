@@ -1,16 +1,18 @@
 project(gmac)
 cmake_minimum_required(VERSION 2.8)
 
+include(gmac.cmake)
 include(CheckFunctionExists)
 include(FindThreads)
-include(gmac.cmake)
 
+# Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     add_definitions(-DHAVE_PTHREADS)
     set(gmac_LIBS ${gmac_LIBS} ${CMAKE_THREAD_LIBS_INIT})
     set(THREAD_DIR "pthreads")
 endif(CMAKE_USE_PTHREADS_INIT)
 
+# Identify operating system being used
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     message(STATUS "Compiling for GNU/Linux")
     set(OS_DIR "posix")
@@ -30,6 +32,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DWINDOWS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+# Identify API being used
 if(USE_OPENCL)
     message(FATAL_ERROR "OpenCL still not supported")
 else(USE_OPENCL)
@@ -47,6 +50,16 @@ else(USE_OPENCL)
     endif(EXISTS ${NVCC})
 endif(USE_OPENCL)
 
+
+# Add subdirectories
+add_subdirectory(src)
+
+# Setup GMAC as main target
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
+add_library(gmac SHARED ${gmac_SRC})
+
+# Setup configuration options
 if(USE_VM)
     message(STATUS "Compiling with VM support")
     add_definitions(-DUSE_VM)
@@ -62,14 +75,35 @@ if(USE_VM)
     endif(VM_BITMAP MATCHES "bit")
 endif(USE_VM)
 
+# Check if GMAC is buid with Paraver support
+if(USE_PARAVER)
+    message(STATUS "Compiling with Paraver support")
+    add_definitions(-DPARAVER)
+    find_library(PARAVER paraver)
+    if(EXISTS ${PARAVER})
+        message(STATUS "Using Paraver library at ${PARAVER}")
+        set(gmac_LIBS ${gmac_LIBS} paraver)
+    else()
+        message(STATUS "Using Paraver library from source code")
+        include(ExternalProject)
+        ExternalProject_Add(EP_paraver
+            DOWNLOAD_COMMAND ""
+            SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libparaver"
+            INSTALL_DIR "${CMAKE_BINARY_DIR}/lib/libparaver"
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/libparaver
+            )
+        add_dependencies(gmac EP_paraver)
+        include_directories(${CMAKE_BINARY_DIR}/lib/libparaver/include)
+        set(gmac_LIBDIR ${gmac_LIBDIR} ${CMAKE_BINARY_DIR}/lib/libparaver/lib)
+        set(gmac_LIBS ${gmac_LIBS} ${CMAKE_BINARY_DIR}/lib/libparaver/lib/libparaver.so)
+    endif()
+endif(USE_PARAVER)
 
-if(${OS_DIR} MATCHES "posix")
-    message(STATUS "Compiling for POSIX")
-    add_definitions(-DPOSIX)
-    find_library(dl_LIB "libdl.so")
-    set(gmac_LIBS ${gmac_LIBS} ${dl_LIB})
-    check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
-endif(${OS_DIR} MATCHES "posix")
+# Check if tests are compiled
+if(MAKE_TESTS)
+    message(STATUS "Compiling GMAC tests")
+    add_subdirectory(tests)
+endif(MAKE_TESTS)
 
 # Set default configuration to RELEASE
 if(NOT CMAKE_BUILD_TYPE)
@@ -86,37 +120,23 @@ set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -O0")
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
-if(USE_PARAVER)
-    message(STATUS "Compiling with Paraver support")
-    find_library(PARAVER paraver)
-    if(EXISTS ${PARAVER})
-        message(STATUS "Using Paraver library at ${PARAVER}")
-    else()
-        message(STATUS "Using Paraver library from source code")
-        add_subdirectory(lib/libparaver)
-        set(gmac_LIBS ${gmac_LIBS} paraver)
-    endif()
-endif(USE_PARAVER)
+
+# Setup extra libraries needed by GMAC
+if(${OS_DIR} MATCHES "posix")
+    message(STATUS "Compiling for POSIX")
+    add_definitions(-DPOSIX)
+    find_library(dl_LIB "libdl.so")
+    set(gmac_LIBS ${gmac_LIBS} ${dl_LIB})
+    check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+endif(${OS_DIR} MATCHES "posix")
 
 
-# Add subdirectories
-add_subdirectory(src)
-
-
-# Build GMAC library
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
-get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
-add_library(gmac SHARED ${gmac_SRC})
 target_link_libraries(gmac ${gmac_LIBS})
+link_directories(${gmac_LIBDIR})
 set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac LIBRARY DESTINATION lib)
 install(FILES  gmac.h gmac/vm.h DESTINATION include)
 
-#add_subdirectory(doc)
-if(MAKE_TESTS)
-    message(STATUS "Compiling GMAC tests")
-    add_subdirectory(tests)
-endif(MAKE_TESTS)
 
 
