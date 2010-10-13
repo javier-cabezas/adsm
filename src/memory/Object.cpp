@@ -3,7 +3,7 @@
 #include "Object.h"
 #if defined(POSIX)
 #include "memory/posix/Memory.h"
-#elif defined(WINDOWS
+#elif defined(WINDOWS)
 #include "memory/windows/Memory.h"
 #endif
 

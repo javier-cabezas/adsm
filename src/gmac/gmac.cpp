@@ -1,5 +1,5 @@
-#include <gmac.h>
-#include "init.h"
+#include "gmac/gmac.h"
+#include "gmac/init.h"
 
 #include "config/order.h"
 #include "config/config.h"

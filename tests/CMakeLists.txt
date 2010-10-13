@@ -1,4 +1,4 @@
-include_directories(${CMAKE_SOURCE_DIR}/src/gmac})
+include_directories(${PROJECT_SOURCE_DIR}/src/gmac)
 
 include(FindCUDA)
 
@@ -28,9 +28,9 @@ else(USE_VM)
     cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
     add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC})
     target_link_libraries(gmacSharedVecAdd gmac)
-    configure_file(inputset/vectorA ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorA COPYONLY)
-    configure_file(inputset/vectorB ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorB COPYONLY)
-    configure_file(inputset/vectorC ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorC COPYONLY)
+    configure_file(input/vectorA ${CMAKE_CURRENT_BINARY_DIR}/input/vectorA COPYONLY)
+    configure_file(input/vectorB ${CMAKE_CURRENT_BINARY_DIR}/input/vectorB COPYONLY)
+    configure_file(input/vectorC ${CMAKE_CURRENT_BINARY_DIR}/input/vectorC COPYONLY)
 
     # gmacFileVecAdd
     cuda_compile(fileVecAdd gmacFileVecAdd.cu)
