@@ -8,6 +8,7 @@
 #include "gmac/init.h"
 #include "memory/Manager.h"
 #include "core/IOBuffer.h"
+#include "core/Process.h"
 #include "core/Mode.h"
 #include "trace/Thread.h"
 #include "util/Logger.h"

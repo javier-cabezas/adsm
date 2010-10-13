@@ -68,11 +68,7 @@ typedef pthread_t THREAD_T;
 extern "C" {
 #endif
 
-#ifdef __cplusplus
-enum gmacError_t {
-#else
 typedef enum {
-#endif
 	gmacSuccess = 0,
 	gmacErrorMemoryAllocation,
 	gmacErrorLaunchFailure,
@@ -86,11 +82,7 @@ typedef enum {
     gmacErrorFeatureNotSupported,
     gmacErrorInsufficientDeviceMemory,
 	gmacErrorUnknown
-#ifdef __cplusplus
-};
-#else
 } gmacError_t;
-#endif
 
 typedef const char * gmacKernel_t;
 

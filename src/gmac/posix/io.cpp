@@ -1,5 +1,6 @@
 #include "os/posix/loader.h"
 #include "core/Mode.h"
+#include "core/Process.h"
 #include "core/IOBuffer.h"
 #include "gmac/init.h"
 #include "memory/Manager.h"

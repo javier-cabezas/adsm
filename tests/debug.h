@@ -10,7 +10,7 @@
 #define gmacGetErrorString cudaGetErrorString
 #define gmacGetLastError cudaGetLastError
 #else
-#include <gmac.h>
+#include "gmac.h"
 #endif
 
 

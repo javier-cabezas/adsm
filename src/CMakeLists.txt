@@ -9,5 +9,4 @@ add_subdirectory(memory)
 add_subdirectory(os)
 add_subdirectory(api)
 
-#add_subdirectory(config)
 add_subdirectory(gmac)

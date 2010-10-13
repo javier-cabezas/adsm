@@ -19,6 +19,7 @@
  * }}}
  */
 
+#include "core/Process.h"
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
