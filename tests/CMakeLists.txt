@@ -28,6 +28,14 @@ else(USE_VM)
     cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
     add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC})
     target_link_libraries(gmacSharedVecAdd gmac)
+    configure_file(inputset/vectorA ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorA COPYONLY)
+    configure_file(inputset/vectorB ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorB COPYONLY)
+    configure_file(inputset/vectorC ${CMAKE_CURRENT_BINARY_DIR}/inputset/vectorC COPYONLY)
+
+    # gmacFileVecAdd
+    cuda_compile(fileVecAdd gmacFileVecAdd.cu)
+    add_executable(gmacFileVecAdd ${fileVecAdd} ${common_SRC})
+    target_link_libraries(gmacFileVecAdd gmac)
 
     # gmacMatrixMul
     cuda_compile(matrixMul gmacMatrixMul.cu)
