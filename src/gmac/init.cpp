@@ -65,6 +65,7 @@ init(void)
     Process::create<Process>();
     apiInit();
     memoryInit(paramProtocol, paramAllocator);
+
     exitGmac();
 }
 
