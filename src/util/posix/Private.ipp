@@ -1,13 +1,15 @@
 #ifndef GMAC_UTIL_POSIX_PRIVATE_IPP_
 #define GMAC_UTIL_POSIX_PRIVATE_IPP_
 
+#include <cassert>
+
 namespace gmac { namespace util {
 
 template <typename T>
 inline
 void Private<T>::init(Private &var)
 {
-    pthread_key_create(&var.key_, NULL);
+    assert(pthread_key_create(&var.key_, NULL) == 0);
 }
 
 #if 0

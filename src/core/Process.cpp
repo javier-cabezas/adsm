@@ -12,7 +12,6 @@
 #include "trace/Function.h"
 #include "trace/Thread.h"
 
-
 namespace gmac {
 
 ModeMap::ModeMap() :
@@ -90,6 +89,7 @@ QueueMap::iterator QueueMap::end()
 
 size_t Process::TotalMemory_ = 0;
 
+
 Process::Process() :
 	util::Singleton<Process>(),
     RWLock("Process"),
@@ -101,8 +101,8 @@ Process::Process() :
     ioMemory_(NULL)
 {
 	// Create the private per-thread variables for the implicit thread
-	initThread();
     Mode::init();
+	initThread();
 }
 
 Process::~Process()
