@@ -50,6 +50,7 @@ protected:
     static const char *eventName;
     static const char *exclusiveName;
 
+
     typedef std::map<std::string, unsigned> LockMap;
     static unsigned count;
     static LockMap *map;

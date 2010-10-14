@@ -686,6 +686,7 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
 
 gmacError_t Lazy::write(const Object &obj, void *addr)
 {
+
     trace::Function::start("Lazy", "write");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
@@ -770,12 +771,12 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
             // Release dirty blocks
             while(list.size() > _maxListSize) {
                 Entry e = list.pop();
+                trace("Eagerly transferring %p", e.block->addr());
                 gmacError_t ret = release(e.object, *e.block);
                 if(ret != gmacSuccess) {
                     list.unlock();
                     return ret;
                 }
-                trace("Eagerly transferring %p", e.block->addr());
             }
         }
         list.unlock();

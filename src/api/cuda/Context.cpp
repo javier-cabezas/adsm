@@ -59,6 +59,7 @@ gmacError_t Context::syncCUstream(CUstream _stream)
     }
     gmac::trace::Thread::resume();
 
+
     if (ret == CUDA_SUCCESS) { trace("Sync: success"); }
     else { trace("Sync: error: %d", ret); }
 
@@ -176,11 +177,12 @@ gmac::KernelLaunch &Context::launch(gmac::Kernel &kernel)
 
 gmacError_t Context::sync()
 {
+    gmacError_t ret = gmacSuccess;
     trace::Function::start("Context", "sync");
     if(buffer_ != NULL) {
-    	buffer_->wait();
+        waitForBuffer(*buffer_);
     }
-    gmacError_t ret = syncCUstream(streamLaunch_);
+    ret = syncCUstream(streamLaunch_);
     gmac::trace::Thread::resume(id_);
     trace::Function::end("Context");
     return ret;
