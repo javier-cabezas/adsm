@@ -1,0 +1,109 @@
+Makefile.in
+
+syntax: regexp
+^autom4te\.cache$
+syntax: regexp
+^m4$
+syntax: regexp
+^aclocal\.m4$
+syntax: regexp
+^depcomp$
+syntax: regexp
+^install-sh$
+syntax: regexp
+^libtool$
+syntax: regexp
+^ltmain.sh$
+syntax: regexp
+^missing$
+syntax: regexp
+^config\..*$
+syntax: regexp
+^configure$
+
+syntax: regexp
+Makefile$
+syntax: regexp
+Makefile\.in$
+
+syntax: regexp
+/os$
+syntax: regexp
+^src/config/api$
+
+syntax: regexp
+^src/config/config\.h$
+syntax: regexp
+^src/config/threads\.h$
+syntax: regexp
+^doc/Doxyfile$
+
+syntax: regexp
+\..*$
+syntax: regexp
+.*\.o
+syntax: regexp
+.*\.lo
+syntax: regexp
+.*\.la
+
+syntax regexp
+\.cudafe
+syntax regexp
+\.cu.cpp$
+syntax regexp
+\.stub\.c$
+syntax regexp
+\.ptx$
+syntax regexp
+\.gpu$
+syntax regexp
+\.cubin$
+
+
+syntax: regexp
+^tests/bandwidth$
+syntax: regexp
+^tests/hybridComputation$
+syntax: regexp
+^tests/schedAllocation$
+syntax: regexp
+^tests/threadBandwidth$
+syntax: regexp
+^tests/transferBlocks$
+syntax: regexp
+^tests/transferCosts$
+syntax: regexp
+^tests/gmacCompress$
+syntax: regexp
+^tests/gmacCompressSend$
+syntax: regexp
+^tests/gmacConstant$
+syntax: regexp
+^tests/gmacFileVecAdd$
+syntax: regexp
+^tests/gmacHybridComputation$
+syntax: regexp
+^tests/gmacMatrixMul$
+syntax: regexp
+^tests/gmacMatrixMulSimple$
+syntax: regexp
+^tests/gmacMemcpy$
+syntax: regexp
+^tests/gmacMemset$
+syntax: regexp
+^tests/gmacMigration$
+syntax: regexp
+^tests/gmacPingPong$
+syntax: regexp
+^tests/gmacSharedVecAdd$
+syntax: regexp
+^tests/gmacStencil$
+syntax: regexp
+^tests/gmacTexture$
+syntax: regexp
+^tests/gmacThreadStencil$
+syntax: regexp
+^tests/gmacThreadVecAdd$
+syntax: regexp
+^tests/gmacVecAdd$
