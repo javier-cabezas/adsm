@@ -85,12 +85,15 @@ if(USE_PARAVER)
         set(gmac_LIBS ${gmac_LIBS} paraver)
     else()
         message(STATUS "Using Paraver library from source code")
+        if(CMAKE_BUILD_TYPE MATCHES "Debug")
+            set(PARAVER_CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug)
+        endif(CMAKE_BUILD_TYPE MATCHES "Debug")
         include(ExternalProject)
         ExternalProject_Add(EP_paraver
             DOWNLOAD_COMMAND ""
             SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libparaver"
             INSTALL_DIR "${CMAKE_BINARY_DIR}/lib/libparaver"
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/libparaver
+            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/libparaver
             )
         add_dependencies(gmac EP_paraver)
         include_directories(${CMAKE_BINARY_DIR}/lib/libparaver/include)
@@ -117,9 +120,8 @@ set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")

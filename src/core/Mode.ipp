@@ -41,12 +41,14 @@ inline void ContextMap::clean()
 inline gmacError_t ContextMap::sync()
 {
     Parent::iterator i;
-    gmacError_t ret;
+    gmacError_t ret = gmacSuccess;
     lockRead();
     for(i = begin(); i != end(); i++) {
         ret = i->second->sync();
-        if(ret == gmacSuccess) continue;
-        unlock(); return ret;
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
     }
     unlock();
     return ret;

@@ -66,8 +66,7 @@ public:
     inline void toHost() { state_ = ToHost; trace("Buffer %p goes ToHost", this); }
     inline void toDevice() { state_ = ToDevice; trace("Buffer %p goes ToDevice", this); }
 
-    inline gmacError_t wait()
-    {
+    inline gmacError_t wait() {
     	gmacError_t ret = gmacSuccess;
     	if (state_ != Idle) {
     		ret = mode_.waitForBuffer(*this);
