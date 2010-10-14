@@ -83,13 +83,13 @@ public:
 
 	/*!  \brief Copies data from system memory to accelerator memory */
 	virtual gmacError_t
-			copyToDevice(void *dev, const void *host, size_t size) = 0;
+			copyToAccelerator(void *dev, const void *host, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to system memory */
 	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	virtual gmacError_t copyDevice(void *dst, const void *src, size_t size) = 0;
+	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size) = 0;
 
 	virtual void memInfo(size_t *free, size_t *total) const = 0;
 

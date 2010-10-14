@@ -122,12 +122,12 @@ public:
 	gmacError_t free(void *addr);
 
     /* Synchronous interface */
-	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToDeviceAsync(void *dec, const void *host, size_t size, CUstream stream);
+    gmacError_t copyToAcceleratorAsync(void *dec, const void *host, size_t size, CUstream stream);
     gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);

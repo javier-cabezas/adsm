@@ -146,13 +146,13 @@ public:
 	gmacError_t free(void *addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
-	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to system memory */
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     /*!  \brief Sets the contents of accelerator memory */
     gmacError_t memset(void *addr, int c, size_t size);
@@ -164,8 +164,8 @@ public:
 	/*!  \brief Waits for kernel execution */
 	gmacError_t sync();
 
-    virtual gmacError_t bufferToDevice(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
-    virtual gmacError_t deviceToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t bufferToAccelerator(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
 
     void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);

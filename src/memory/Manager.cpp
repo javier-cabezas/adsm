@@ -276,7 +276,7 @@ bool Manager::read(void *addr)
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
     gmacError_t err;
-    assertion((err = protocol_->read(*obj, addr)) == gmacSuccess);
+    assertion((err = protocol_->signalRead(*obj, addr)) == gmacSuccess);
     mode.putObject(*obj);
     return ret;
 }
@@ -291,7 +291,7 @@ bool Manager::write(void *addr)
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Write access for object %p", obj->addr());
-    if(protocol_->write(*obj, addr) != gmacSuccess) ret = false;
+    if(protocol_->signalWrite(*obj, addr) != gmacSuccess) ret = false;
     mode.putObject(*obj);
     return ret;
 }
@@ -327,24 +327,25 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 
     gmacError_t err = gmacSuccess;
     if (dstMode == NULL) {	    // From device
-		err = protocol_->toPointer(dst, src, *srcObj, n);
+		err = protocol_->toPointer(dst, *srcObj, (uint8_t *)src - srcObj->addr(), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
-		err = protocol_->fromPointer(dst, src, *dstObj, n);
+		err = protocol_->fromPointer(*dstObj, (uint8_t *)dst - dstObj->addr(), src, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
     else {
         if (!srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
             ::memcpy(dst, src, n);
         } else if (srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
-            err = protocol_->toPointer(dst, src, *srcObj, n);
+            err = protocol_->toPointer(dst, *srcObj, (uint8_t *)src - srcObj->addr(), n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         } else if (!srcObj->isInAccelerator() && dstObj->isInAccelerator()) {
-            err = protocol_->fromPointer(dst, src, *srcObj, n);
+            err = protocol_->fromPointer(*dstObj, (uint8_t *)dst - dstObj->addr(), src, n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         } else {
-            err = protocol_->copy(dst, src, *dstObj, *srcObj, n);
+            err = protocol_->copy(*dstObj, (uint8_t *)dst - dstObj->addr(),
+                                  *srcObj, (uint8_t *)src - srcObj->addr(), n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         }
 	}
@@ -395,7 +396,7 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
 
     const Object * obj = mode->getObjectRead(s);
     gmacError_t ret;
-    ret = protocol_->memset(*obj, s, c, n);
+    ret = protocol_->memset(*obj, (uint8_t *)s - obj->addr(), c, n);
     mode->putObject(*obj);
     return ret;
 }
