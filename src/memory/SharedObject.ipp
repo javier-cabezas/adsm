@@ -14,19 +14,19 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     accBlock_(NULL)
 {
     gmacError_t ret = gmacSuccess;
-    void *device = NULL;
-    // Allocate device and host memory
-    ret = owner_->malloc(&device, size, paramPageSize);
+    void *accAddr = NULL;
+    // Allocate accelerator and host memory
+    ret = owner_->malloc(&accAddr, size, paramPageSize);
     if(ret != gmacSuccess) {
         StateObject<T>::addr_ = NULL;
         return;
     }
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
-    bitmap.newRange(device, size);
+    bitmap.newRange(accAddr, size);
 #endif
     // Create memory blocks
-    accBlock_ = new AcceleratorBlock(*owner_, device, StateObject<T>::size_);
+    accBlock_ = new AcceleratorBlock(*owner_, accAddr, StateObject<T>::size_);
 
 }
 
@@ -72,7 +72,7 @@ inline void SharedObject<T>::fini()
 
 
 template<typename T>
-inline void *SharedObject<T>::device(void *addr) const
+inline void *SharedObject<T>::getAcceleratorAddr(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     void *ret = accBlock_->addr() + offset;
@@ -113,7 +113,7 @@ inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff
     assertion(block.addr() + blockOff + count <= block.end());
     assertion(buffer.addr() + bufferOff + count <= buffer.end());
     off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().deviceToBuffer(buffer, accBlock_->addr() + off, bufferOff, count);
+    gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + off, bufferOff, count);
 
     return ret;
 }
@@ -122,7 +122,7 @@ template<typename T>
 inline gmacError_t SharedObject<T>::toAccelerator(Block &block) const
 {
     off_t off = block.addr() - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, block.addr(), block.size());
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr(), block.size());
     return ret;
 }
 
@@ -131,7 +131,7 @@ inline gmacError_t SharedObject<T>::toAccelerator(Block &block, unsigned blockOf
 {
     assertion(block.addr() + blockOff + count <= block.end());
     off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, block.addr() + blockOff, count);
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr() + blockOff, count);
     return ret;
 }
 
@@ -140,7 +140,7 @@ inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsig
 {
     assertion(block.addr() + blockOff + count <= block.end());
     off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToDevice(accBlock_->addr() + off, ptr, count);
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, ptr, count);
 
     return ret;
 }
@@ -151,7 +151,7 @@ inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsign
     assertion(block.addr() + blockOff + count <= block.end());
     assertion(buffer.addr() + bufferOff + count <= buffer.end());
     off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().bufferToDevice(accBlock_->addr() + off, buffer, bufferOff, count);
+    gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, bufferOff, count);
 
     return ret;
 }
@@ -178,7 +178,7 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
     gmacError_t ret = mode.malloc(&device, StateObject<T>::size_, paramPageSize);
     if(ret != gmacSuccess) {
         StateObject<T>::addr_ = NULL;
-        return gmacErrorInsufficientDeviceMemory;
+        return gmacErrorInsufficientAcceleratorMemory;
     }
 
     trace("Reallocating object %p -> %p\n", accBlock_->addr(), device);

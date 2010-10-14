@@ -67,10 +67,10 @@ int Accelerator::minor() const
 }
 
 inline
-gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
+gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    gmac::trace::Function::start("Accelerator","copyToDevice");
-    trace("Copy to device: %p -> %p (%zd)", host, dev, size);
+    gmac::trace::Function::start("Accelerator","copyToAccelerator");
+    trace("Copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
     popContext();
@@ -79,10 +79,10 @@ gmacError_t Accelerator::copyToDevice(void *dev, const void *host, size_t size)
 }
 
 inline
-gmacError_t Accelerator::copyToDeviceAsync(void *dev, const void *host, size_t size, CUstream stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, const void *host, size_t size, CUstream stream)
 {
-    gmac::trace::Function::start("Accelerator","copyToDeviceAsync");
-    trace("Async copy to device: %p -> %p (%zd)", host, dev, size);
+    gmac::trace::Function::start("Accelerator","copyToAcceleratorAsync");
+    trace("Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
     popContext();
@@ -115,10 +115,10 @@ gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t siz
 }
 
 inline
-gmacError_t Accelerator::copyDevice(void *dst, const void *src, size_t size)
+gmacError_t Accelerator::copyAccelerator(void *dst, const void *src, size_t size)
 {
-    gmac::trace::Function::start("Accelerator","copyDevice");
-    trace("Copy device-device: %p -> %p (%zd)", src, dst, size);
+    gmac::trace::Function::start("Accelerator","copyAccelerator");
+    trace("Copy accelerator-accelerator: %p -> %p (%zd)", src, dst, size);
     pushContext();
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
     popContext();

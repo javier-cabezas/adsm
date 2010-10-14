@@ -94,8 +94,8 @@ public:
 
 	gmacError_t execute(gmac::KernelLaunch &launch);
 
-    gmacError_t bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t deviceToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);

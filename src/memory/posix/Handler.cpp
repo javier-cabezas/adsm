@@ -1,15 +1,14 @@
-#include <gmac/init.h>
-#include <memory/Handler.h>
-#include <memory/Manager.h>
-#include <trace/Function.h>
-
-#include <signal.h>
+#include <csignal>
 #include <cerrno>
+
+#include "gmac/init.h"
+#include "memory/Handler.h"
+#include "memory/Manager.h"
+#include "trace/Function.h"
 
 namespace gmac { namespace memory {
 
 struct sigaction defaultAction;
-Handler *handler = NULL;
 unsigned Handler::Count_ = 0;
 
 #if defined(LINUX)
