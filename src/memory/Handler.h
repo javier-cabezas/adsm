@@ -36,10 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include <cstdlib>
 
+#include "config/common.h"
+
 namespace gmac { namespace memory {
 
 //! Handler for Read/Write faults
-class Handler {
+class GMAC_LOCAL Handler {
 private:
 	void setHandler(void);
 	void restoreHandler(void);

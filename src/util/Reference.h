@@ -34,18 +34,19 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_REFERENCE_H_
 #define __UTIL_REFERENCE_H_
 
-#include <util/Lock.h>
+#include "config/common.h"
+#include "util/Lock.h"
 
 namespace gmac { namespace util {
 
-class ReferenceLock : public Lock {
+class GMAC_LOCAL ReferenceLock : public Lock {
 protected:
     friend class Reference;
 public:
     ReferenceLock() : Lock(LockReference) {};
 };
 
-class Reference {
+class GMAC_LOCAL Reference {
 private:
     unsigned __count;
     ReferenceLock __lock;

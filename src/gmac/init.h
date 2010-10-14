@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_INIT_H_
 #define GMAC_GMAC_INIT_H_
 
+#include "config/common.h"
 #include "util/Private.h"
 #include "util/Logger.h"
 
@@ -52,7 +53,7 @@ class Allocator;
 #include <cstdio>
 namespace gmac {
 
-class GMACLock : public util::RWLock {
+class GMAC_LOCAL GMACLock : public util::RWLock {
 public:
     GMACLock() : util::RWLock("Process") {}
 

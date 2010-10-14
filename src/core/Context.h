@@ -34,7 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_CONTEXT_H_
 #define GMAC_CORE_CONTEXT_H_
 
-#include "gmac/gmac.h"
+#include "config/common.h"
+
+#include "include/gmac-types.h"
 #include "util/Logger.h"
 #include "util/Private.h"
 
@@ -47,7 +49,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class Context : public util::RWLock, public util::Logger {
+class GMAC_LOCAL Context : public util::RWLock, public util::Logger {
 protected:
     Accelerator &acc_;
     unsigned id_;

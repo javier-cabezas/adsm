@@ -34,16 +34,17 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BLOCK_H_
 #define GMAC_MEMORY_BLOCK_H_
 
+#include "config/common.h"
 #include "config/config.h"
 
 #include "core/Mode.h"
-#include "gmac/gmac.h"
+#include "include/gmac-types.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
-class Block: public util::Lock, public util::Logger {
+class GMAC_LOCAL Block : public util::Lock, public util::Logger {
 protected:
     void *addr_;
     size_t size_;
@@ -61,7 +62,7 @@ public:
     inline void unlock() const { return util::Lock::unlock(); }
 };
 
-class AcceleratorBlock : public Block {
+class GMAC_LOCAL AcceleratorBlock : public Block {
 protected:
     Mode &owner_;
 public:
@@ -78,7 +79,7 @@ public:
 };
 
 template<typename T>
-class SystemBlock : public Block {
+class GMAC_LOCAL SystemBlock : public Block {
 protected:
     T state_;
 

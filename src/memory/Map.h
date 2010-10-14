@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <set>
 
+#include "config/common.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
 
@@ -46,7 +47,7 @@ class Mode;
 namespace memory {
 class Object;
 
-class ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
+class GMAC_LOCAL ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
 protected:
     friend class Map;
     friend class Manager;
@@ -62,7 +63,7 @@ public:
     virtual void putObject(const Object &obj) const;
 };
  
-class Map : public ObjectMap, public util::Logger {
+class GMAC_LOCAL Map : public ObjectMap, public util::Logger {
 protected:
     void clean();
     Mode &parent_;

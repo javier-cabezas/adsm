@@ -36,7 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <stdint.h>
 
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "util/Logger.h"
 #include "util/Singleton.h"
 
@@ -54,7 +55,7 @@ class Protocol;
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class Manager : public util::Logger, public util::Singleton<Manager> {
+class GMAC_LOCAL Manager : public util::Logger, public util::Singleton<Manager> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Manager>;
 private:

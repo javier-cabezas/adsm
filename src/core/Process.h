@@ -38,13 +38,15 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <vector>
 
-#include "Queue.h"
-
-#include "allocator/Buddy.h"
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "memory/Map.h"
 #include "util/Logger.h"
 #include "util/Singleton.h"
+
+#include "Queue.h"
+#include "allocator/Buddy.h"
+
 
 namespace gmac {
 class Accelerator;
@@ -64,7 +66,7 @@ namespace gmac {
 namespace memory { class DistributedObject; }
 
 
-class ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
+class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
 {
 private:
     typedef std::map<Mode *, Accelerator *> Parent;
@@ -80,7 +82,7 @@ public:
     size_t remove(Mode &mode);
 };
 
-class QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
+class GMAC_LOCAL QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
 {
 private:
     typedef std::map<THREAD_ID, ThreadQueue *> Parent;
@@ -97,7 +99,7 @@ public:
     iterator end();
 };
 
-class Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {
+class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Process>;
 	//friend class Accelerator;

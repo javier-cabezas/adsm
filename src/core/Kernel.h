@@ -31,21 +31,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_KERNEL_H
-#define GMAC_CORE_KERNEL_H
+#ifndef GMAC_CORE_KERNEL_H_
+#define GMAC_CORE_KERNEL_H_
 
 #include <vector>
 
 
-#include "core/Descriptor.h"
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "memory/ObjectSet.h"
 #include "util/Logger.h"
 #include "util/ReusableObject.h"
 
+#include "Descriptor.h"
+
 namespace gmac {
 
-class Argument : public util::ReusableObject<Argument> {
+class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
 public:
     void * ptr_;
@@ -58,7 +60,7 @@ public:
 typedef std::vector<Argument> ArgVector;
 
 /// \todo create a pool of objects to avoid mallocs/frees
-class KernelConfig : public ArgVector, public util::Logger {
+class GMAC_LOCAL KernelConfig : public ArgVector, public util::Logger {
 protected:
     static const unsigned StackSize_ = 4096;
 
@@ -81,7 +83,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class Kernel : public memory::ObjectSet, public KernelDescriptor
+class GMAC_LOCAL Kernel : public memory::ObjectSet, public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k) :
@@ -91,7 +93,7 @@ public:
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
 };
 
-class KernelLaunch : public memory::ObjectSet {
+class GMAC_LOCAL KernelLaunch : public memory::ObjectSet {
 public:
     virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;

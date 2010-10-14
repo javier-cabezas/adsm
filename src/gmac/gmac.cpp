@@ -1,8 +1,9 @@
-#include "gmac/gmac.h"
-#include "gmac/init.h"
+#include <cstdlib>
 
-#include "config/order.h"
+#include "include/gmac.h"
+
 #include "config/config.h"
+#include "config/order.h"
 #include "config/threads.h"
 
 #include "util/Logger.h"
@@ -18,7 +19,8 @@
 
 #include "trace/Function.h"
 
-#include <cstdlib>
+#include "init.h"
+
 
 #if 0
 gmacError_t
@@ -264,7 +266,8 @@ gmacSend(pthread_t id)
     gmac::exitGmac();
 }
 
-void gmacReceive()
+void
+gmacReceive()
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
@@ -281,7 +284,8 @@ gmacSendReceive(pthread_t id)
 	gmac::exitGmac();
 }
 
-void gmacCopy(pthread_t id)
+void
+gmacCopy(pthread_t id)
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();

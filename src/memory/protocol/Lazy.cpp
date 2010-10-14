@@ -85,7 +85,6 @@ void Lazy::deleteObject(const Object &obj)
     unlock();
 }
 
-
 #ifndef USE_MMAP
 Object *Lazy::createReplicatedObject(size_t size)
 {

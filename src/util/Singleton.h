@@ -8,13 +8,15 @@
 #ifndef GMAC_UTIL_SINGLETON_H_
 #define GMAC_UTIL_SINGLETON_H_
 
+#include "config/common.h"
+
 /*
  *
  */
 namespace gmac { namespace util {
 
 template <typename T>
-class Singleton {
+class GMAC_LOCAL Singleton {
 private:
 	static T *Singleton_;
 protected:

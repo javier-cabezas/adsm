@@ -34,13 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef __MEMORY_POSIX_MEMORY_H_
 #define __MEMORY_POSIX_MEMORY_H_
 
-#include <util/Logger.h>
-
 #include <sys/mman.h>
+
+#include "config/common.h"
+#include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
-class Memory {
+class GMAC_LOCAL Memory {
 private:
 #ifdef USE_MMAP
 #ifdef ARCH_32BIT

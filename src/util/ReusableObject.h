@@ -32,69 +32,69 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
 
-#ifndef CYCLE_UTILS_REUSABLE_OBJECT_H
-#define CYCLE_UTILS_REUSABLE_OBJECT_H
+#ifndef CYCLE_UTILS_REUSABLE_OBJECT_H_
+#define CYCLE_UTILS_REUSABLE_OBJECT_H_
 
 #include <cstddef>
 
-namespace gmac {
-    namespace util {
+#include "config/common.h"
 
-        /*! \todo Delete ? */
-        template <typename Type>
-        class Pool {
-            template <typename Type2> friend class ReusableObject;
-        public:
-            Pool()
-                : freeList(NULL)
-                {}
+namespace gmac { namespace util {
 
-            ~Pool()
-                {
-                    Object * next, * tmp;
-                    for (next = freeList; next; next = tmp) {
-                        tmp = next->next;
-                        delete next;
-                    }
-                }
+/*! \todo Delete ? */
+template <typename Type>
+class GMAC_LOCAL Pool {
+    template <typename Type2> friend class ReusableObject;
+public:
+    Pool()
+        : freeList(NULL)
+        {}
 
-            union Object {
-                char shit[sizeof(Type)];
-                Object * next;
-            };
+    ~Pool()
+        {
+            Object * next, * tmp;
+            for (next = freeList; next; next = tmp) {
+                tmp = next->next;
+                delete next;
+            }
+        }
 
-        private:
-            Object * freeList;
+    union Object {
+        char shit[sizeof(Type)];
+        Object * next;
+    };
 
-        };
+private:
+    Object * freeList;
 
-        /*! \todo Delete ? */
-        template <typename Type>
-        class ReusableObject {
-        public:
-            void * operator new (size_t bytes)
-                {
-                    typename Pool<Type>::Object * res = pool.freeList;
-                    return res? (pool.freeList = pool.freeList->next, res) : new typename Pool<Type>::Object;
-                }
+};
 
-            void operator delete (void *ptr)
-                {
-                    ((typename Pool<Type>::Object *) ptr)->next = pool.freeList;
-                    pool.freeList = (typename Pool<Type>::Object *) ptr;
-                }
-  
-        protected:
-            static Pool<Type> pool;
-        };
+/*! \todo Delete ? */
+template <typename Type>
+class GMAC_LOCAL ReusableObject {
+public:
+    void * operator new (size_t bytes)
+        {
+            typename Pool<Type>::Object * res = pool.freeList;
+            return res? (pool.freeList = pool.freeList->next, res) : new typename Pool<Type>::Object;
+        }
+
+    void operator delete (void *ptr)
+        {
+            ((typename Pool<Type>::Object *) ptr)->next = pool.freeList;
+            pool.freeList = (typename Pool<Type>::Object *) ptr;
+        }
+
+protected:
+    static Pool<Type> pool;
+};
 
 // Static initialization
 
-        template<class T> Pool<T> 
-        ReusableObject<T>::pool;
+template<class T> GMAC_LOCAL Pool<T> 
+ReusableObject<T>::pool;
 
-    };
-};
+}}
 
 #endif /* CYCLE_UTILS_REUSABLE_OBJECT_H */
 

@@ -36,10 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include <pthread.h>
 
+#include "config/common.h"
+
 namespace gmac { namespace util {
 
 template <typename T = void>
-class Private {
+class GMAC_LOCAL Private {
 protected:
     pthread_key_t key_;
     

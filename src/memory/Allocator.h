@@ -36,13 +36,15 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
+#include "config/common.h"
+
 #include "util/Logger.h"
 
 #include "Manager.h"
 
 namespace gmac { namespace memory {
 
-class Allocator : public util::Logger, public util::Singleton<Allocator> {
+class GMAC_LOCAL Allocator : public util::Logger, public util::Singleton<Allocator> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Allocator>;
 protected:

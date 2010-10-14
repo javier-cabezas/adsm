@@ -132,6 +132,10 @@ if(${OS_DIR} MATCHES "posix")
     check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
 endif(${OS_DIR} MATCHES "posix")
 
+# GMAC is a DLL
+add_definitions(-DGMAC_DLL)
+# Compiling GMAC
+add_definitions(-DGMAC_DLL_EXPORTS)
 
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})

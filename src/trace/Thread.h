@@ -31,17 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_THREAD_H_
-#define __PARAVER_THREAD_H_
-
-#include <gmac/paraver.h>
-#include <config/threads.h>
+#ifndef GMAC_PARAVER_THREAD_H_
+#define GMAC_PARAVER_THREAD_H_
 
 #include <map>
 
+#include "config/common.h"
+#include "config/threads.h"
+#include "gmac/paraver.h"
+
 namespace gmac { namespace trace {
 
-class Thread {
+class GMAC_LOCAL Thread {
 protected:
 #ifdef PARAVER
     const static uint32_t offset = 0x100000;

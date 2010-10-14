@@ -34,13 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_CENTRALIZEDOBJECT_H_
 #define GMAC_MEMORY_CENTRALIZEDOBJECT_H_
 
+#include "config/common.h"
 #include "core/Mode.h"
 #include "memory/Block.h"
 #include "memory/Object.h"
 
 namespace gmac { namespace memory {
 #ifndef USE_MMAP
-class CentralizedObject : public Object {
+class GMAC_LOCAL CentralizedObject : public Object {
 public:
     CentralizedObject(size_t size);
     virtual ~CentralizedObject();

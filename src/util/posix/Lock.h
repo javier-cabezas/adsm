@@ -40,11 +40,12 @@ WITH THE SOFTWARE.  */
 #include <iostream>
 #include <map>
 
+#include "config/common.h"
 #include "gmac/paraver.h"
 
 namespace gmac { namespace util {
 
-class ParaverLock {
+class GMAC_LOCAL ParaverLock {
 protected:
 #ifdef PARAVER
     static const char *eventName;
@@ -69,7 +70,7 @@ public:
     void exit() const;
 };
 
-class Lock : public ParaverLock {
+class GMAC_LOCAL Lock : public ParaverLock {
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
@@ -81,7 +82,7 @@ protected:
 	void unlock() const;
 };
 
-class RWLock : public ParaverLock {
+class GMAC_LOCAL RWLock : public ParaverLock {
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;

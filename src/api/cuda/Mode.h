@@ -34,6 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_MODE_H_
 #define GMAC_API_CUDA_MODE_H_
 
+#include <stdint.h>
+#include <cuda.h>
+#include <vector_types.h>
+
+#include "config/common.h"
 #include "config/config.h"
 
 #include "Context.h"
@@ -41,13 +46,9 @@ WITH THE SOFTWARE.  */
 #include "core/Mode.h"
 #include "core/IOBuffer.h"
 
-#include <stdint.h>
-#include <cuda.h>
-#include <vector_types.h>
-
 namespace gmac { namespace cuda {
 
-class ContextLock : public util::Lock {
+class GMAC_LOCAL ContextLock : public util::Lock {
     friend class Mode;
 public:
     ContextLock() : util::Lock("Context") {};
@@ -56,7 +57,7 @@ public:
 class Texture;
 class Accelerator;
 
-class Mode : public gmac::Mode {
+class GMAC_LOCAL Mode : public gmac::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT

@@ -31,65 +31,58 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAMS_H_
-#define __PARAMS_H_
 
-#include <stdint.h>
+#ifndef GMAC_ERROR_H_
+#define GMAC_ERROR_H_
 
-#include <cstdlib>
-#include <map>
-
-#include <stdint.h>
-
-#include "config/common.h"
-#include "config/order.h"
-
-#include <iostream>
-#include <vector>
-
-enum GMAC_LOCAL ParamFlags {
-    PARAM_NONZERO = 0x1
-};
-
-namespace gmac { namespace util {
-class GMAC_LOCAL __Parameter {
-public:
-    virtual ~__Parameter() {};
-    virtual void print() const = 0;
-};
-
-template<typename T>
-class GMAC_LOCAL Parameter : public __Parameter {
-protected:
-    T *value;
-    T def;
-
-    const char *name;
-    const char *envVar;
-    uint32_t flags;
-    bool envSet;
-
-public:
-    virtual ~Parameter() {};
-    Parameter(T *address, const char *name, T def, const char *envVar,
-        uint32_t flags = 0);
-
-    void print() const;
-};
-
-} }
-
-
-typedef struct GMAC_LOCAL {
-    gmac::util::__Parameter *(*ctor)(void);
-    gmac::util::__Parameter *param;
-} ParameterCtor;
-
-extern ParameterCtor ParamCtorList[];
-
-#define PARAM(v, t, d, ...)  extern t v;
-#include "Parameter.def"
-
-#include "Parameter.ipp"
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+typedef enum {
+	gmacSuccess = 0,
+	gmacErrorMemoryAllocation,
+	gmacErrorLaunchFailure,
+	gmacErrorNotReady,
+	gmacErrorNoAccelerator,
+	gmacErrorInvalidValue,
+	gmacErrorInvalidAccelerator,
+	gmacErrorInvalidAcceleratorFunction,
+    gmacErrorAlreadyBound,
+	gmacErrorApiFailureBase,
+    gmacErrorFeatureNotSupported,
+    gmacErrorInsufficientAcceleratorMemory,
+	gmacErrorUnknown
+} gmacError_t;
+
+typedef const char * gmacKernel_t;
+
+static const char *error[] = {
+	"No error",
+	"Memory allocation",
+	"Launch failure",
+	"Accelerator is not ready",
+	"Accelerator is not present",
+	"Invalid value",
+	"Invalid accelerator",
+	"Invalid accelerator function",
+	"GMAC general failure",
+    "Feature not supported with the current configure configuration",
+    "Insufficient memory in the accelerator",
+	"Uknown error"
+};
+
+enum GmacGlobalMallocType {
+    GMAC_GLOBAL_MALLOC_REPLICATED  = 0,
+    GMAC_GLOBAL_MALLOC_CENTRALIZED = 1
+};
+
+
+#ifdef __cplusplus
+};
+#endif
+
+
+#endif /* GMAC_ERROR_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
