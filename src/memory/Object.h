@@ -63,7 +63,7 @@ public:
     size_t size() const;
  
     virtual Mode &owner() const = 0;
-    virtual void *device(void *addr) const = 0;
+    virtual void *getAcceleratorAddr(void *addr) const = 0;
 
     virtual void init() = 0;
     virtual void fini() = 0;

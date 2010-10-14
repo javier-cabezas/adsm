@@ -65,9 +65,9 @@ protected:
 	static AddressMap HostMem_;
 
     CUstream streamLaunch_;
-    CUstream streamToDevice_;
+    CUstream streamToAccelerator_;
     CUstream streamToHost_;
-    CUstream streamDevice_;
+    CUstream streamAccelerator_;
 
     IOBuffer *buffer_;
 
@@ -81,18 +81,18 @@ public:
 	Context(Accelerator &acc, Mode &mode);
 	~Context();
 
-	gmacError_t copyToDevice(void *dev, const void *host, size_t size);
+	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
 	gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	gmacError_t copyDevice(void *dst, const void *src, size_t size);
+	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     gmacError_t memset(void *addr, int c, size_t size);
 
     gmac::KernelLaunch &launch(gmac::Kernel &kernel);
     gmacError_t sync();
 
-    gmacError_t bufferToDevice(void *dst, IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t waitDevice();
-    gmacError_t deviceToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(void *dst, IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
+    gmacError_t waitAccelerator();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);

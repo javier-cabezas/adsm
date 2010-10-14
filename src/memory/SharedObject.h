@@ -64,7 +64,7 @@ public:
     gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
     gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
-    void *device(void *addr) const;
+    void *getAcceleratorAddr(void *addr) const;
     inline Mode &owner() const { return *owner_; }
 
     gmacError_t free();

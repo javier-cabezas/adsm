@@ -43,7 +43,7 @@ namespace gmac {
 
 class IOBuffer : public util::Lock, util::Logger {
 public:
-    typedef enum { Idle, ToHost, ToDevice } State;
+    typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:
     void *addr_;
     size_t size_;
@@ -64,7 +64,7 @@ public:
 
     inline State state() const { return state_; }
     inline void toHost() { state_ = ToHost; trace("Buffer %p goes ToHost", this); }
-    inline void toDevice() { state_ = ToDevice; trace("Buffer %p goes ToDevice", this); }
+    inline void toAccelerator() { state_ = ToAccelerator; trace("Buffer %p goes ToAccelerator", this); }
 
     inline gmacError_t wait() {
     	gmacError_t ret = gmacSuccess;

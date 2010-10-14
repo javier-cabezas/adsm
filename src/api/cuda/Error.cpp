@@ -14,13 +14,13 @@ Accelerator::error(CUresult r)
 		ERROR(CUDA_ERROR_OUT_OF_MEMORY, gmacErrorMemoryAllocation);
 		ERROR(CUDA_ERROR_NOT_INITIALIZED, gmacErrorNotReady);
 		ERROR(CUDA_ERROR_DEINITIALIZED, gmacErrorNotReady);
-		ERROR(CUDA_ERROR_NO_DEVICE, gmacErrorNoDevice);
-		ERROR(CUDA_ERROR_INVALID_DEVICE, gmacErrorInvalidDevice);
-		ERROR(CUDA_ERROR_INVALID_IMAGE, gmacErrorInvalidDeviceFunction);
+		ERROR(CUDA_ERROR_NO_DEVICE, gmacErrorNoAccelerator);
+		ERROR(CUDA_ERROR_INVALID_DEVICE, gmacErrorInvalidAccelerator);
+		ERROR(CUDA_ERROR_INVALID_IMAGE, gmacErrorInvalidAcceleratorFunction);
 		ERROR(CUDA_ERROR_INVALID_CONTEXT, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_ALREADY_MAPPED, gmacErrorMemoryAllocation);
-		ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidDeviceFunction);	
+		ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidAcceleratorFunction);	
 		ERROR(CUDA_ERROR_ALREADY_ACQUIRED, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_FILE_NOT_FOUND, gmacErrorApiFailureBase);
 		ERROR(CUDA_ERROR_INVALID_HANDLE, gmacErrorApiFailureBase);

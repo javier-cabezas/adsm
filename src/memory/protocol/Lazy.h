@@ -63,6 +63,21 @@ protected:
     gmacError_t addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow = true);
 
     gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
+
+
+    gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                   const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                  const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+
+    gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                       const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
@@ -75,8 +90,8 @@ public:
     bool requireUpdate(Block &block);
 #endif
 
-    gmacError_t read(const Object &obj, void *addr);
-    virtual gmacError_t write(const Object &obj, void *addr);
+    gmacError_t signalRead(const Object &obj, void *addr);
+    gmacError_t signalWrite(const Object &obj, void *addr);
 
     gmacError_t acquire(const Object &obj);
 #ifdef USE_VM
@@ -90,11 +105,11 @@ public:
     gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
     gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
 
-    gmacError_t toPointer(void *dst, const void *src, const Object &srcObj, size_t n);
-    gmacError_t fromPointer(void *dst, const void *src, const Object &dstObj, size_t n);
+    gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
+    gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
 
-    gmacError_t copy(void *dst, const void *src, const Object &dstObj, const Object &srcObj, size_t n);
-    gmacError_t memset(const Object &obj, void * s, int c, size_t n);
+    gmacError_t copy(const Object &dstObj, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n);
+    gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t n);
 
     gmacError_t moveTo(Object &obj, Mode &mode);
 };

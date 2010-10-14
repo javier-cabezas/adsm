@@ -301,19 +301,20 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), addr, n);
+        unsigned blockOff = addr + off - block.addr();
 
         switch(block.state()) {
             case Dirty:
             case ReadOnly:
-                memcpy(buffer.addr() + bufferOff + off, addr + off, count);
+                ::memcpy(buffer.addr() + bufferOff + off, addr + off, count);
                 break;
 
             case Invalid:
-                Process &proc = Process::getInstance();
-                Mode &mode = object.owner();
-                ret = mode.deviceToBuffer(buffer, object.device(addr + off), count, bufferOff + off);
-                if(ret != gmacSuccess) { block.unlock(); return ret; }
-
+                ret = object.toHostBuffer(block, blockOff, buffer, bufferOff + off, count);
+                if(ret != gmacSuccess) {
+                    block.unlock();
+                    return ret;
+                }
                 break;
         }
         off += count;
@@ -336,7 +337,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     unsigned off = 0;
-    uint8_t * addr = obj.addr() + objectOff;
+    uint8_t * addr = object.addr() + objectOff;
     i = object.getBlockIterator(addr);
     assertion(i != map.end());
 
@@ -345,6 +346,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), addr, n);
+        unsigned blockOff = addr + off - block.addr();
 
         switch(block.state()) {
             case Dirty:
@@ -361,9 +363,11 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
                 break;
 
             case Invalid:
-                Mode &mode = Mode::current();
-                ret = mode.bufferToDevice(addr + off, buffer, count, bufferOff + off);
-                if(ret != gmacSuccess) { block.unlock(); return ret; }
+                ret = object.toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff + off, count);
+                if(ret != gmacSuccess) {
+                    block.unlock();
+                    return ret;
+                }
                 break;
         }           
         off += count;
@@ -375,16 +379,16 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
 }
 
 gmacError_t
-Lazy::toPointer(void *_dst, const void *_src, const Object &srcObj, size_t n)
+Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
-    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(srcObj);
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objSrc);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     unsigned off = 0;
     uint8_t * dst = (uint8_t *)_dst;
-    const uint8_t * src = (const uint8_t *)_src;
+    const uint8_t * src = (const uint8_t *) object.addr() + objectOff;
     i = object.getBlockIterator(src);
     assertion(i != map.end());
 
@@ -416,16 +420,16 @@ Lazy::toPointer(void *_dst, const void *_src, const Object &srcObj, size_t n)
 }
 
 gmacError_t
-Lazy::fromPointer(void *_dst, const void *_src, const Object &dstObj, size_t n)
+Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
-    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(dstObj);
+    const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objDst);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     unsigned off = 0;
-    uint8_t * dst = (uint8_t *)_dst;
-    const uint8_t * src = (uint8_t *)_src;
+    uint8_t * dst = object.addr() + objectOff;
+    const uint8_t * src = (const uint8_t *) _src;
     i = object.getBlockIterator(dst);
     assertion(i != map.end());
 
@@ -463,26 +467,144 @@ Lazy::fromPointer(void *_dst, const void *_src, const Object &dstObj, size_t n)
     return ret;
 } 
 
+inline
 gmacError_t
-Lazy::copy(void *_dst, const void *_src, const Object &dstObj, const Object &srcObj, size_t n)
+Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                      const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // Host memory to host memory
+    ::memcpy(blockDst.addr() + blockOffDst,
+             blockSrc.addr() + blockOffSrc, count);
+    return gmacSuccess;
+}
+
+gmacError_t
+Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // Host memory to host memory AND accelerator memory
+    uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
+    if (tmp == NULL) {
+        return gmacErrorInvalidValue;
+    }
+
+    if (blockOffDst > 0) {
+        ::memcpy(tmp, blockDst.addr(), blockOffDst);
+    }
+    ::memcpy(tmp + blockOffDst, blockSrc.addr() + blockOffSrc, count);
+    if (blockDst.addr() + blockOffDst + count < blockDst.end() - 1) {
+        ::memcpy(tmp + blockOffDst + count,
+                 blockDst.addr() + blockOffDst + count,
+                 blockDst.end() - (blockDst.addr() + blockOffDst + count));
+    }
+    if(Memory::protect(tmp, blockDst.size(), PROT_READ) < 0)
+        Fatal("Unable to set memory permissions");
+
+    uint8_t *old = (uint8_t *)Memory::remap(tmp, blockDst.addr(), blockDst.size());
+    if (old != blockDst.addr()) {
+        return gmacErrorInvalidValue;
+    }
+    return gmacSuccess;
+}
+
+inline
+gmacError_t
+Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                        const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // Host memory to accelerator memory
+    return objectDst.toAcceleratorFromPointer(blockDst, blockOffDst, blockSrc.addr() + blockOffSrc, count);
+}
+
+
+gmacError_t
+Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                             const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // Accelerator memory to host memory
+    return objectSrc.toHostPointer(blockSrc, blockOffSrc, blockSrc.addr() + blockOffSrc, count);
+}
+
+gmacError_t
+Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
+    if (tmp == NULL) {
+        return gmacErrorInvalidValue;
+    }
+
+    if (blockOffDst > 0) {
+        ::memcpy(tmp, blockDst.addr(), blockOffDst);
+    }
+    gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp + blockOffSrc, count);
+    if(ret != gmacSuccess) {
+        blockDst.unlock();
+    }
+    if (blockDst.addr() + blockOffDst + count < blockDst.end() - 1) {
+        ::memcpy(tmp + blockOffDst + count,
+                 blockDst.addr() + blockOffDst + count,
+                 blockDst.end() - (blockDst.addr() + blockOffDst + count));
+    }
+    if(Memory::protect(tmp, blockDst.size(), PROT_READ) < 0)
+        Fatal("Unable to set memory permissions");
+
+    void *old = Memory::remap(tmp, blockDst.addr(), blockDst.size());
+    if (old != blockDst.addr()) {
+        return gmacErrorInvalidValue;
+    }
+
+    ret = objectDst.toAccelerator(blockDst, blockOffDst, count);
+    return ret;
+}
+
+gmacError_t
+Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                               const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    Process &p = Process::getInstance();
+    IOBuffer *buffer = p.createIOBuffer(count); 
+    if (!buffer) {
+        void *tmp = Memory::map(NULL, count, PROT_READ | PROT_WRITE);
+        CFatal(tmp != NULL, "Unable to set memory permissions");
+       gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp, count);
+       if (ret != gmacSuccess) return ret;
+       ret = objectDst.toAcceleratorFromPointer(blockDst, blockOffDst, tmp, count);
+       if (ret != gmacSuccess) return ret;
+    } else {
+       gmacError_t ret = objectSrc.toHostBuffer(blockSrc, blockOffSrc, *buffer, 0, count);
+       if (ret != gmacSuccess) return ret;
+       ret = buffer->wait();
+       if (ret != gmacSuccess) return ret;
+       ret = objectDst.toAcceleratorFromBuffer(blockDst, blockOffDst, *buffer, 0, count);
+       if (ret != gmacSuccess) return ret;
+       ret = buffer->wait();
+       if (ret != gmacSuccess) return ret;
+       p.destroyIOBuffer(buffer);
+    }
+    return gmacSuccess;
+}
+
+gmacError_t
+Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n)
 {
     gmacError_t ret = gmacSuccess;
     
-    const StateObject<State> &dstObject = dynamic_cast<const StateObject<State> &>(dstObj);
-    const StateObject<State> &srcObject = dynamic_cast<const StateObject<State> &>(srcObj);
+    const StateObject<State> &objectDst = dynamic_cast<const StateObject<State> &>(objDst);
+    const StateObject<State> &objectSrc = dynamic_cast<const StateObject<State> &>(objSrc);
 
-    const StateObject<State>::SystemMap &mapDst = dstObject.blocks();
-    const StateObject<State>::SystemMap &mapSrc = srcObject.blocks();
+    const StateObject<State>::SystemMap &mapDst = objectDst.blocks();
+    const StateObject<State>::SystemMap &mapSrc = objectSrc.blocks();
     unsigned off = 0;
 
     gmac::IOBuffer *toHostBuffer = NULL;
     gmac::IOBuffer *toDeviceBuffer = NULL;
 
-    uint8_t * dst = (uint8_t *)_dst;
-    uint8_t * src = (uint8_t *)_src;
+    uint8_t * dst = objectDst.addr() + offDst;
+    uint8_t * src = objectSrc.addr() + offSrc;
 
-    StateObject<State>::SystemMap::const_iterator iDst = dstObject.getBlockIterator(dst);
-    StateObject<State>::SystemMap::const_iterator iSrc = srcObject.getBlockIterator(src);
+    StateObject<State>::SystemMap::const_iterator iDst = objectDst.getBlockIterator(dst);
+    StateObject<State>::SystemMap::const_iterator iSrc = objectSrc.getBlockIterator(src);
     assertion(iDst != mapDst.end());
     assertion(iSrc != mapSrc.end());
     do {
@@ -500,64 +622,52 @@ Lazy::copy(void *_dst, const void *_src, const Object &dstObj, const Object &src
         unsigned blockOffSrc = src + off - blockSrc.addr();
 
         switch(blockSrc.state()) {
+            uint8_t * tmp;
+            uint8_t * old;
             // Source location present in host memory
             case Dirty:
             case ReadOnly:
-                uint8_t * tmp;
-                uint8_t * old;
                 switch(blockDst.state()) {
-                    case ReadOnly:
-                        tmp = (uint8_t *) Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
-                        if (tmp == NULL) {
-                            blockDst.unlock();
-                            blockSrc.unlock();
-                            return gmacErrorInvalidValue;
-                        }
-
-                        if (blockDst.addr() < dst + off) {
-                            ::memcpy(tmp, blockDst.addr(), dst + off - blockDst.addr());
-                        }
-                        if (dst + off + count < blockDst.end() - 1) {
-                            ::memcpy(tmp + blockOffDst + count, dst + off + count, blockDst.end() - (dst + off + count));
-                        }
-                        ::memcpy(tmp + blockOffDst, src + off, count);
-                        if(Memory::protect(tmp, blockDst.size(), PROT_READ) < 0)
-                            Fatal("Unable to set memory permissions");
-
-                        old = (uint8_t *) Memory::remap(tmp, blockDst.addr(), blockDst.size());
-                        if (old != blockDst.addr()) {
-                            blockDst.unlock();
-                            blockSrc.unlock();
-                            return gmacErrorInvalidValue;
-                        }
-                        break;
                     case Dirty:
-                        ::memcpy(dst + off, src + off, count);
+                        ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
+                                              objectSrc, blockSrc, blockOffSrc, count);
+                        break;
+                    case ReadOnly:
+                        ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
+                                                 objectSrc, blockSrc, blockOffSrc, count);
                         break;
                     case Invalid:
-                        ret = dstObject.toAcceleratorFromPointer(blockDst, blockOffDst, src + off, count);
-                        if(ret != gmacSuccess) {
-                            blockDst.unlock();
-                            blockSrc.unlock();
-                            return ret;
-                        }
+                        ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
+                                                objectSrc, blockSrc, blockOffSrc, count);
                         break;
                 }
-
                 break;
 
             // Source location in accelerator memory
             case Invalid:
-                //ret = mode.memset((char *)s + off, c, count);
-                if(ret != gmacSuccess) {
-                    blockDst.unlock();
-                    blockSrc.unlock();
-                    return ret;
+                switch(blockDst.state()) {
+                    case Dirty:
+                        ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
+                                              objectSrc, blockSrc, blockOffSrc, count);
+                        break;
+                    // Accelerator memory to host memory AND accelerator memory
+                    case ReadOnly:
+                        ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
+                                                 objectSrc, blockSrc, blockOffSrc, count);
+                        break;
+                    // Host memory to accelerator memory
+                    case Invalid:
+                        ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
+                                                objectSrc, blockSrc, blockOffSrc, count);
+                        break;
                 }
                 break;
         }           
         blockDst.unlock();
         blockSrc.unlock();
+        if(ret != gmacSuccess) {
+            return ret;
+        }
         off += count;
         if (blockDst.addr() + countDst == blockDst.end()) {
             iDst++;
@@ -571,7 +681,7 @@ Lazy::copy(void *_dst, const void *_src, const Object &dstObj, const Object &src
 }
 
 gmacError_t
-Lazy::memset(const Object &obj, void *_s, int c, size_t n)
+Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -579,7 +689,7 @@ Lazy::memset(const Object &obj, void *_s, int c, size_t n)
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
     unsigned off = 0;
-    uint8_t * s = (uint8_t *)_s;
+    uint8_t * s = object.addr() + objectOff;
     i = object.getBlockIterator(s);
     assert(i != map.end());
     
@@ -631,7 +741,7 @@ Lazy::moveTo(Object &obj, Mode &mode)
     return ret;
 }
 
-gmacError_t Lazy::read(const Object &obj, void *addr)
+gmacError_t Lazy::signalRead(const Object &obj, void *addr)
 {
     trace::Function::start("Lazy", "read");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -684,7 +794,7 @@ gmacError_t Lazy::read(const Object &obj, void *addr)
     return gmacSuccess;
 }
 
-gmacError_t Lazy::write(const Object &obj, void *addr)
+gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
 {
 
     trace::Function::start("Lazy", "write");

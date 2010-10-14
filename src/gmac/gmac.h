@@ -73,14 +73,14 @@ typedef enum {
 	gmacErrorMemoryAllocation,
 	gmacErrorLaunchFailure,
 	gmacErrorNotReady,
-	gmacErrorNoDevice,
+	gmacErrorNoAccelerator,
 	gmacErrorInvalidValue,
-	gmacErrorInvalidDevice,
-	gmacErrorInvalidDeviceFunction,
+	gmacErrorInvalidAccelerator,
+	gmacErrorInvalidAcceleratorFunction,
     gmacErrorAlreadyBound,
 	gmacErrorApiFailureBase,
     gmacErrorFeatureNotSupported,
-    gmacErrorInsufficientDeviceMemory,
+    gmacErrorInsufficientAcceleratorMemory,
 	gmacErrorUnknown
 } gmacError_t;
 
@@ -90,14 +90,14 @@ static const char *error[] = {
 	"No error",
 	"Memory allocation",
 	"Launch failure",
-	"Device is not ready",
-	"Device is not present",
+	"Accelerator is not ready",
+	"Accelerator is not present",
 	"Invalid value",
-	"Invalid device",
-	"Invalid device function",
+	"Invalid accelerator",
+	"Invalid accelerator function",
 	"GMAC general failure",
     "Feature not supported with the current configure configuration",
-    "Insufficient memory in the device",
+    "Insufficient memory in the accelerator",
 	"Uknown error"
 };
 
