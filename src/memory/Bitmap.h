@@ -37,12 +37,13 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 #include <stddef.h>
 
-#include <util/Logger.h>
+#include "config/common.h"
+#include "util/Logger.h"
 
 #ifdef USE_VM
 namespace gmac { namespace memory  { namespace vm {
 
-class Bitmap : public util::Logger {
+class GMAC_LOCAL Bitmap : public util::Logger {
 private:
 #ifdef BITMAP_WORD
     uint32_t *bitmap_;

@@ -34,14 +34,16 @@ WITH THE SOFTWARE.  */
 #ifndef __UTIL_POSIX_SEMAPHORE_H_
 #define __UTIL_POSIX_SEMAPHORE_H_
 
-#include "config/config.h"
 #include <pthread.h>
 
 #include <iostream>
 
+#include "config/common.h"
+#include "config/config.h"
+
 namespace gmac { namespace util {
 
-class Semaphore {
+class GMAC_LOCAL Semaphore {
 protected:
 	int _val;
     pthread_cond_t _cond;

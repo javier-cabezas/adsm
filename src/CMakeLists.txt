@@ -1,5 +1,7 @@
 add_subdirectory(config)
 
+add_subdirectory(include)
+
 add_subdirectory(util)
 add_subdirectory(trace)
 

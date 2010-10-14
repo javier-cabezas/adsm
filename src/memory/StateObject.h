@@ -36,13 +36,15 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
-#include "memory/Block.h"
-#include "memory/Object.h"
+#include "config/common.h"
+
+#include "Block.h"
+#include "Object.h"
 
 namespace gmac { namespace memory {
 
 template<typename T>
-class StateObject: public Object {
+class GMAC_LOCAL StateObject: public Object {
 public:
     typedef std::map<void *, SystemBlock<T> *> SystemMap;
 protected:

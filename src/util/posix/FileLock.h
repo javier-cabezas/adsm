@@ -36,12 +36,13 @@ WITH THE SOFTWARE.  */
 
 #include <cstdio>
 
+#include "config/common.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
 
 namespace gmac { namespace util {
 
-class FileLock : public ParaverLock, public Logger {
+class GMAC_LOCAL FileLock : public ParaverLock, public Logger {
 protected:
     FILE * _file;
     int _fd;

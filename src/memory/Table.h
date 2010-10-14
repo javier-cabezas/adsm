@@ -38,8 +38,9 @@ WITH THE SOFTWARE.  */
 #include <stdint.h>
 #include <cmath>
 
-#include <config.h>
-#include <paraver.h>
+#include "config/config.h"
+#include "config/common.h"
+#include "gmac/paraver.h"
 
 #include "util/Logger.h"
 
@@ -52,7 +53,7 @@ typedef unsigned long addr_t;
 
 
 template<typename T>
-class Table : public util::Logger {
+class GMAC_LOCAL Table : public util::Logger {
 protected:
 	static const size_t defaultSize = 512;
 	size_t nEntries;

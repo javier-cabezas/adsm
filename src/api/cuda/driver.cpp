@@ -1,11 +1,3 @@
-#include "gmac/init.h"
-
-#include "core/Kernel.h"
-
-#include "Accelerator.h"
-#include "Mode.h"
-#include "Module.h"
-
 #include <cstring>
 
 #include <cuda.h>
@@ -14,6 +6,15 @@
 
 #include <string>
 #include <vector>
+
+#include "include/gmac.h"
+#include "gmac/init.h"
+
+#include "core/Kernel.h"
+
+#include "Accelerator.h"
+#include "Mode.h"
+#include "Module.h"
 
 #ifdef __cplusplus
 extern "C" {

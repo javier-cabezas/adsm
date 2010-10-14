@@ -34,7 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_H_
 #define GMAC_MEMORY_PROTOCOL_H_
 
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "util/Logger.h"
 
 namespace gmac {
@@ -47,7 +48,7 @@ namespace gmac { namespace memory {
 class Block;
 class Object;
 
-class Protocol : public util::Logger {
+class GMAC_LOCAL Protocol : public util::Logger {
 public:
     virtual ~Protocol() {};
 

@@ -42,6 +42,7 @@ WITH THE SOFTWARE.  */
 #include <cstdarg>
 #include <cassert>
 
+#include "config/common.h"
 #include "config/config.h"
 #include "config/threads.h"
 
@@ -55,7 +56,7 @@ WITH THE SOFTWARE.  */
 #define CFatal(c, ...) __CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
 #define SRC_ROOT "src"
-inline const char *__extract_file_name(const char *file) {
+inline static const char *__extract_file_name(const char *file) {
     const char *guess = strstr(file, SRC_ROOT);
     if(guess == NULL) return file;
     return guess;
@@ -63,7 +64,7 @@ inline const char *__extract_file_name(const char *file) {
 
 namespace gmac { namespace util {
 
-class LoggerLock : public Lock {
+class GMAC_LOCAL LoggerLock : public Lock {
     // Allow Logger to lock/unlock
     friend class Logger;
 
@@ -71,7 +72,7 @@ public:
     LoggerLock();
 };
 
-class Logger {
+class GMAC_LOCAL Logger {
 
 #define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
     __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)

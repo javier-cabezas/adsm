@@ -34,14 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_IOBUFFER_H_
 #define GMAC_CORE_IOBUFFER_H_
 
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "util/Lock.h"
 
 #include "Mode.h"
 
 namespace gmac {
 
-class IOBuffer : public util::Lock, util::Logger {
+class GMAC_LOCAL IOBuffer : public util::Lock, util::Logger {
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:

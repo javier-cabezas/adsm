@@ -34,11 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
 #define GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
 
+#include "config/common.h"
 #include "core/Mode.h"
 
 namespace gmac { namespace memory {
 
-class DistributedObject {
+class GMAC_LOCAL DistributedObject {
 public:
     virtual ~DistributedObject() {}
     virtual gmacError_t addOwner(Mode &mode) = 0;

@@ -1,3 +1,4 @@
+#include "config/common.h"
 #include "core/Process.h"
 #include "core/Context.h"
 #include "gmac/init.h"
@@ -9,7 +10,7 @@
 
 #include <pthread.h>
 
-class ThreadLock : public gmac::util::Lock {
+class GMAC_LOCAL ThreadLock : public gmac::util::Lock {
 public:
     ThreadLock() : gmac::util::Lock("Thread") {};
 

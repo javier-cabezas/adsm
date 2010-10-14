@@ -31,9 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_PROTOCOL_LAZY_H_
-#define __MEMORY_PROTOCOL_LAZY_H_
+#ifndef GMAC_MEMORY_PROTOCOL_LAZY_H_
+#define GMAC_MEMORY_PROTOCOL_LAZY_H_
 
+#include "config/common.h"
 #include "memory/Handler.h"
 #include "memory/Object.h"
 #include "memory/Protocol.h"
@@ -49,7 +50,7 @@ namespace memory { namespace protocol {
 
 class List;
 
-class Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
+class GMAC_LOCAL Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -114,7 +115,7 @@ public:
     gmacError_t moveTo(Object &obj, Mode &mode);
 };
 
-class Entry {
+class GMAC_LOCAL Entry {
 public:
     const StateObject<Lazy::State> &object;
     SystemBlock<Lazy::State> *block;
@@ -128,7 +129,7 @@ public:
     inline void unlock() const { block->unlock(); }
 };
 
-class List : protected std::list<Entry>, util::RWLock {
+class GMAC_LOCAL List : protected std::list<Entry>, util::RWLock {
     friend class Lazy;
 public:
     List() : util::RWLock("List") {};

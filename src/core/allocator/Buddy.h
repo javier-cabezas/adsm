@@ -31,19 +31,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __KERNEL_ALLOCATOR_BUDDY_H
-#define __KERNEL_ALLOCATOR_BUDDY_H
+#ifndef GMAC_KERNEL_ALLOCATOR_BUDDY_H
+#define GMAC_KERNEL_ALLOCATOR_BUDDY_H
 
-#include <util/Lock.h>
-#include <util/Logger.h>
 #include <stdint.h>
 
 #include <list>
 #include <map>
 
+#include "config/common.h"
+#include "util/Lock.h"
+#include "util/Logger.h"
+
+
 namespace gmac { namespace kernel { namespace allocator {
 
-class Buddy : public util::Logger, protected util::Lock  {
+class GMAC_LOCAL Buddy : public util::Logger, protected util::Lock  {
 protected:
     void *addr_;
     size_t size_;

@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_MODE_H_
 #define GMAC_CORE_MODE_H_
 
+#include "config/common.h"
+
 #include "core/Accelerator.h"
 #include "core/Context.h"
 
@@ -57,7 +59,7 @@ class IOBuffer;
 class KernelLaunch;
 class Process;
 
-class ContextMap : protected std::map<THREAD_ID, Context *>, util::RWLock {
+class GMAC_LOCAL ContextMap : protected std::map<THREAD_ID, Context *>, util::RWLock {
 protected:
     typedef std::map<THREAD_ID, Context *> Parent;
 public:
@@ -70,7 +72,7 @@ public:
     gmacError_t sync();
 };
 
-class Mode : public gmac::util::Logger {
+class GMAC_LOCAL Mode : public gmac::util::Logger {
     friend class gmac::memory::Manager;
 protected:
     static gmac::util::Private<Mode> key;

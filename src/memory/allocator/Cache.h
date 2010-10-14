@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <list>
 #include <map>
 
+#include "config/common.h"
 #include "memory/Manager.h"
 #include "util/Private.h"
 #include "util/Logger.h"
@@ -45,7 +46,7 @@ namespace gmac { namespace memory { namespace allocator {
 
 typedef std::list<void *> ObjectList;
 
-class Arena : public util::Logger {
+class GMAC_LOCAL Arena : public util::Logger {
 protected:
     void *ptr;
     size_t size;
@@ -68,7 +69,7 @@ public:
 };
 
 
-class Cache : public util::Logger, protected util::Lock {
+class GMAC_LOCAL Cache : public util::Logger, protected util::Lock {
 protected:
     size_t objectSize;
     size_t arenaSize;

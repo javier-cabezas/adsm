@@ -36,13 +36,14 @@ WITH THE SOFTWARE.  */
 
 #include <stdint.h>
 
-#include <config.h>
-#include <paraver.h>
+#include "config/common.h"
+#include "config/config.h"
+#include "gmac/paraver.h"
 
-#include <memory/Table.h>
-#include <util/Lock.h>
-#include <util/Logger.h>
-#include <util/Parameter.h>
+#include "memory/Table.h"
+#include "util/Lock.h"
+#include "util/Logger.h"
+#include "util/Parameter.h"
 
 namespace gmac { namespace memory {
 
@@ -50,7 +51,7 @@ namespace gmac { namespace memory {
 
 //! Software Virtual Memory Table to keep translation from
 // CPU to accelerator memory addresses
-class PageTable : public util::Logger {
+class GMAC_LOCAL PageTable : public util::Logger {
 private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;

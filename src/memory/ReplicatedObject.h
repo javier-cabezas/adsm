@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
+#include "config/common.h"
 #include "core/Mode.h"
 #include "memory/Block.h"
 #include "memory/DistributedObject.h"
@@ -45,7 +46,7 @@ namespace gmac { namespace memory {
 
 #ifndef USE_MMAP
 template<typename T>
-class ReplicatedObject : public StateObject<T>, public DistributedObject {
+class GMAC_LOCAL ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 

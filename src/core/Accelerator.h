@@ -37,7 +37,8 @@
 
 #include <stddef.h>
 
-#include "gmac/gmac.h"
+#include "config/common.h"
+#include "include/gmac-types.h"
 #include "util/Logger.h"
 
 namespace gmac {
@@ -51,7 +52,7 @@ class Process;
  Defines the standard interface all accelerators MUST
  implement
  */
-class Accelerator: public util::Logger {
+class GMAC_LOCAL Accelerator: public util::Logger {
 protected:
 	size_t memory_;
 	unsigned id_;

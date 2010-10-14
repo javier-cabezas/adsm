@@ -37,9 +37,11 @@ WITH THE SOFTWARE.  */
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include "config/common.h"
+
 namespace gmac { namespace util {
 
-class Shared {
+class GMAC_LOCAL Shared {
 protected:
     key_t _key;
 public:

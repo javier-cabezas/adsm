@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_ALLOCATOR_SLAB_H_
 #define GMAC_MEMORY_ALLOCATOR_SLAB_H_
 
+#include "config/common.h"
 #include "memory/Allocator.h"
 
 #include "Cache.h"
@@ -42,10 +43,9 @@ namespace gmac { class Mode; }
 
 namespace gmac { namespace memory { namespace allocator {
 
-
-class Slab : public Allocator {
+class GMAC_LOCAL Slab : public Allocator {
 protected:
-    class AddressMap : public std::map<void *, Cache *>, util::RWLock {
+    class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, util::RWLock {
     protected:
         friend class Slab;
     public:
@@ -54,7 +54,7 @@ protected:
 
     typedef std::map<long, Cache *> CacheMap;
 
-    class ModeMap : public std::map<Mode *, CacheMap>, util::RWLock {
+    class GMAC_LOCAL ModeMap : public std::map<Mode *, CacheMap>, util::RWLock {
         friend class Slab;
     public:
         ModeMap() : util::RWLock("memory::Slab") {};

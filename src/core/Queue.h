@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <list>
 
+#include "config/common.h"
+
 #include "util/Lock.h"
 #include "util/Semaphore.h"
 #include "util/Logger.h"
@@ -47,7 +49,7 @@ class Mode;
 /*!
 	\brief Communication Queue
 */
-class Queue : public util::Logger, public util::Lock {
+class GMAC_LOCAL Queue : public util::Logger, public util::Lock {
 protected:
 	typedef std::list<Mode *> Fifo;
 
@@ -61,7 +63,7 @@ public:
 	Mode *pop();
 };
 
-class ThreadQueue {
+class GMAC_LOCAL ThreadQueue {
 public:
     ThreadQueue();
     ~ThreadQueue();

@@ -35,6 +35,7 @@ WITH THE SOFTWARE.
 #ifndef GMAC_API_CUDA_ACCELERATOR_H_
 #define GMAC_API_CUDA_ACCELERATOR_H_
 
+#include "config/common.h"
 #include "core/Mode.h"
 #include "core/Accelerator.h"
 #include "util/Lock.h"
@@ -50,7 +51,7 @@ namespace gmac { namespace cuda {
 class Mode;
 class ModuleDescriptor;
 
-class Switch {
+class GMAC_LOCAL Switch {
 public:
     static void in();
     static void out();
@@ -58,20 +59,20 @@ public:
 
 typedef CUstream Stream;
 
-class AcceleratorLock : public util::Lock {
+class GMAC_LOCAL AcceleratorLock : public util::Lock {
     friend class Accelerator;
 public:
     AcceleratorLock() : Lock("Accelerator") {}
 };
 
-class AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
+class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
     friend class Accelerator;
 public:
     AlignmentMap() : RWLock("Aligment") {}
     ~AlignmentMap() { lockWrite(); }
 };
 
-class Accelerator : public gmac::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::Accelerator {
     friend class Switch;
 protected:
 	CUdevice device_;

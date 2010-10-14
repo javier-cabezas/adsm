@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 #include <vector>
 
+#include "config/common.h"
 #include "config/config.h"
 
 #include "core/Context.h"
@@ -56,7 +57,7 @@ namespace cuda {
 
 class Accelerator;
 
-class Context : public gmac::Context {
+class GMAC_LOCAL Context : public gmac::Context {
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;

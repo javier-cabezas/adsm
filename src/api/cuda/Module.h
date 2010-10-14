@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_MODULE_H_
 #define GMAC_API_CUDA_MODULE_H_
 
+#include "config/common.h"
 #include "config/config.h"
 
 #include "util/Logger.h"
@@ -54,7 +55,7 @@ typedef const struct textureReference * gmacTexture_t;
 
 typedef Descriptor<gmacTexture_t> TextureDescriptor;
 
-class VariableDescriptor : public Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -63,7 +64,7 @@ public:
     bool constant() const;
 };
 
-class Variable : public VariableDescriptor {
+class GMAC_LOCAL Variable : public VariableDescriptor {
 	CUdeviceptr ptr_;
     size_t size_;
 public:
@@ -72,7 +73,7 @@ public:
     CUdeviceptr devPtr() const;
 };
 
-class Texture : public TextureDescriptor {
+class GMAC_LOCAL Texture : public TextureDescriptor {
 protected:
     CUtexref texRef_;
 
@@ -85,7 +86,7 @@ public:
 class Module;
 typedef std::vector<Module *> ModuleVector;
 
-class ModuleDescriptor : public util::Logger {
+class GMAC_LOCAL ModuleDescriptor : public util::Logger {
 	friend class Module;
 
 protected:
@@ -123,7 +124,7 @@ public:
 
 };
 
-class Module : public util::Logger {
+class GMAC_LOCAL Module : public util::Logger {
 protected:
 
 	CUmodule mod_;
