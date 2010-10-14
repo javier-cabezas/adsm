@@ -34,23 +34,23 @@ Mode::execute(gmac::KernelLaunch & launch)
 }
 
 inline
-gmacError_t Mode::bufferToDevice(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
+gmacError_t Mode::bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    gmacError_t ret = ctx.bufferToDevice(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
+    gmacError_t ret = ctx.bufferToAccelerator(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
     switchOut();
     return ret;
 }
 
 inline
-gmacError_t Mode::deviceToBuffer(gmac::IOBuffer &buffer, const void * src, size_t len, off_t off)
+gmacError_t Mode::acceleratorToBuffer(gmac::IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
     util::Logger::trace("Copy %p to host %p (%zd bytes)", src, buffer.addr(), len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    gmacError_t ret = ctx.deviceToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
+    gmacError_t ret = ctx.acceleratorToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
     switchOut();
     return ret;
 }

@@ -59,7 +59,7 @@ inline void ReplicatedObject<T>::fini()
 
 
 template<typename T>
-inline void *ReplicatedObject<T>::device(void *addr) const
+inline void *ReplicatedObject<T>::getAcceleratorAddr(void *addr) const
 {
     StateObject<T>::lockRead();
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
@@ -108,7 +108,7 @@ inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block) const
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
-        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, block.addr(), block.size());
+        gmacError_t tmp = accBlock.owner().copyToAccelerator(accBlock.addr() + off, block.addr(), block.size());
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -126,7 +126,7 @@ inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block, unsigned blo
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
-        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, block.addr() + blockOff, count);
+        gmacError_t tmp = accBlock.owner().copyToAccelerator(accBlock.addr() + off, block.addr() + blockOff, count);
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -143,7 +143,7 @@ inline gmacError_t ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, u
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
-        gmacError_t tmp = accBlock.owner().copyToDevice(accBlock.addr() + off, ptr, count);
+        gmacError_t tmp = accBlock.owner().copyToAccelerator(accBlock.addr() + off, ptr, count);
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -161,7 +161,7 @@ inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, un
     typename AcceleratorMap::const_iterator i;
     for(i = accelerator.begin(); i != accelerator.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
-        gmacError_t tmp = accBlock.owner().bufferToDevice(accBlock.addr() + off, buffer, bufferOff, count);
+        gmacError_t tmp = accBlock.owner().bufferToAccelerator(accBlock.addr() + off, buffer, bufferOff, count);
         if(tmp != gmacSuccess) ret = tmp;
     }
     StateObject<T>::unlock();
@@ -171,28 +171,28 @@ inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, un
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 {
-    void *devAddr = NULL;
+    void *accAddr = NULL;
     gmacError_t ret;
-    ret = mode.malloc(&devAddr, StateObject<T>::size_, paramPageSize);
+    ret = mode.malloc(&accAddr, StateObject<T>::size_, paramPageSize);
     Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
 
     StateObject<T>::lockWrite();
-    AcceleratorBlock *dev = new AcceleratorBlock(mode, devAddr, StateObject<T>::size_);
-    accelerator.insert(typename AcceleratorMap::value_type(&mode, dev));
+    AcceleratorBlock *acc = new AcceleratorBlock(mode, accAddr, StateObject<T>::size_);
+    accelerator.insert(typename AcceleratorMap::value_type(&mode, acc));
     typename StateObject<T>::SystemMap::iterator i;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
         SystemBlock<T> &block = *i->second;
         if(mode.requireUpdate(block) == false) continue;
         off_t off = block.addr() - StateObject<T>::addr();
-        gmacError_t tmp = dev->owner().copyToDevice(dev->addr() + off, block.addr(), block.size());
+        gmacError_t tmp = acc->owner().copyToAccelerator(acc->addr() + off, block.addr(), block.size());
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode.dirtyBitmap();
-    bitmap.newRange(devAddr, StateObject<T>::size_);
+    bitmap.newRange(accAddr, StateObject<T>::size_);
 #endif
 
     StateObject<T>::unlock();
-    trace("Adding replicated object @ %p to mode %p", devAddr, &mode);
+    trace("Adding replicated object @ %p to mode %p", accAddr, &mode);
     return ret;
 }
 

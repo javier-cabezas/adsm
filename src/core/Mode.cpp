@@ -119,11 +119,11 @@ gmacError_t Mode::free(void *addr)
     return error_;
 }
 
-gmacError_t Mode::copyToDevice(void *dev, const void *host, size_t size)
+gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
     switchIn();
-    error_ = getContext().copyToDevice(dev, host, size);
+    error_ = getContext().copyToAccelerator(dev, host, size);
     switchOut();
     return error_;
 }
@@ -137,10 +137,10 @@ gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
     return error_;
 }
 
-gmacError_t Mode::copyDevice(void *dst, const void *src, size_t size)
+gmacError_t Mode::copyAccelerator(void *dst, const void *src, size_t size)
 {
     switchIn();
-    error_ = getContext().copyDevice(dst, src, size);
+    error_ = getContext().copyAccelerator(dst, src, size);
     switchOut();
     return error_;
 }
@@ -197,7 +197,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     if (needed > free) {
-        return gmacErrorInsufficientDeviceMemory;
+        return gmacErrorInsufficientAcceleratorMemory;
     }
 
     trace("Releasing object memory in accelerator");

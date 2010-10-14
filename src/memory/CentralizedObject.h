@@ -45,11 +45,11 @@ public:
     CentralizedObject(size_t size);
     virtual ~CentralizedObject();
 
-    virtual void init();
-    virtual void fini();
+    void init();
+    void fini();
 
-    virtual void *device(void *addr) const;
-    inline virtual Mode &owner() const { return gmac::Mode::current(); }
+    void *getAcceleratorAddr(void *addr) const;
+    inline Mode &owner() const { return gmac::Mode::current(); }
 
     inline bool isLocal() const { return false; }
     inline bool isInAccelerator() const { return false; }

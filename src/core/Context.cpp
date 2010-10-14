@@ -27,10 +27,10 @@ Context::init()
 }
 
 
-gmacError_t Context::copyToDevice(void *dev, const void *host, size_t size)
+gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    trace::Function::start("Context", "copyToDevice");
-    gmacError_t ret = acc_.copyToDevice(dev, host, size);
+    trace::Function::start("Context", "copyToAccelerator");
+    gmacError_t ret = acc_.copyToAccelerator(dev, host, size);
     trace::Function::end("Context");
     return ret;
 }
@@ -43,10 +43,10 @@ gmacError_t Context::copyToHost(void *host, const void *dev, size_t size)
     return ret;
 }
 
-gmacError_t Context::copyDevice(void *dst, const void *src, size_t size)
+gmacError_t Context::copyAccelerator(void *dst, const void *src, size_t size)
 {
-    trace::Function::start("Context", "copyDevice");
-    gmacError_t ret = acc_.copyDevice(dst, src, size);
+    trace::Function::start("Context", "copyAccelerator");
+    gmacError_t ret = acc_.copyAccelerator(dst, src, size);
     trace::Function::end("Context");
     return ret;
 }

@@ -21,18 +21,18 @@ void CentralizedObject::init()
         addr_ = NULL;
         return;
     }
-    trace("Centralized Object @ %p initialized", device(addr_));
+    trace("Centralized Object @ %p initialized", getAcceleratorAddr(addr_));
 }
 
 void CentralizedObject::fini()
 {
     if(addr_ == NULL) return;
-    trace("Centralized Object @ %p finalized", device(addr_));
+    trace("Centralized Object @ %p finalized", getAcceleratorAddr(addr_));
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
     mode.hostFree(addr_);
 }
 
-void *CentralizedObject::device(void *addr) const
+void *CentralizedObject::getAcceleratorAddr(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)addr_;
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
