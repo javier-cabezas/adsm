@@ -1,8 +1,8 @@
 add_subdirectory(stdc)
 add_subdirectory(${OS_DIR})
-if(EXISTS THREAD_DIR)
+if(DEFINED THREAD_DIR)
     add_subdirectory(${THREAD_DIR})
-endif(EXISTS THREAD_DIR)
+endif(DEFINED THREAD_DIR)
 
 set(gmac_lib_SRC
     gmac.cpp
