@@ -97,7 +97,7 @@ protected:
     std::ostream *out_;
 
     static const size_t BufferSize_ = 1024;
-    static char buffer[BufferSize_];
+    static char Buffer_[BufferSize_];
 
     void __print(const char *tag, const char *fmt, va_list list) const;
     void print(const char *tag, const char *fmt, va_list list) const;
