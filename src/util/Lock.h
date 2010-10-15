@@ -34,10 +34,48 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_LOCK_H_
 #define GMAC_UTIL_LOCK_H_
 
+#include "config/common.h"
+#include "gmac/paraver.h"
+
+namespace gmac { namespace util {
+
+class GMAC_LOCAL ParaverLock {
+protected:
+#ifdef PARAVER
+    static const char *eventName;
+    static const char *exclusiveName;
+
+
+    typedef std::map<std::string, unsigned> LockMap;
+    static unsigned count;
+    static LockMap *map;
+    unsigned id;
+
+    static paraver::EventName *event;
+    static paraver::StateName *exclusive;
+
+    mutable bool exclusive_;
+
+    void setup();
+#endif
+public:
+    ParaverLock(const char *name);
+
+    void enter() const;
+    void locked() const;
+    void done() const;
+    void exit() const;
+};
+
+} }
+
+#include "Lock.ipp"
+
 #if defined(POSIX)
 #include "util/posix/Lock.h"
 #elif defined(WINDOWS)
 #include "util/windows/Lock.h"
 #endif
+
 
 #endif

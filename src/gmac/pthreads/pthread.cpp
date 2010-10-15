@@ -41,11 +41,11 @@ struct gmac_thread_t {
 //static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg)
 {
+    gmac::trace::Thread::start();
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     gmac::Process &proc = gmac::Process::getInstance();
     proc.initThread();
-    gmac::trace::Thread::start();
 	pLock->unlock();
     gmac::trace::Thread::run();
 	gmac::exitGmac();
