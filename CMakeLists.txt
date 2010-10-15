@@ -54,6 +54,7 @@ else(USE_OPENCL)
 endif(USE_OPENCL)
 
 
+
 # Add subdirectories
 add_subdirectory(src)
 
@@ -80,6 +81,7 @@ if(USE_VM)
     endif(VM_BITMAP MATCHES "bit")
 endif(USE_VM)
 
+
 # Check if GMAC is buid with Paraver support
 if(USE_PARAVER)
     message(STATUS "Compiling with Paraver support")
@@ -90,21 +92,23 @@ if(USE_PARAVER)
         set(gmac_LIBS ${gmac_LIBS} paraver)
     else()
         message(STATUS "Using Paraver library from source code")
+        set(EP_paraver_SRC ${CMAKE_SOURCE_DIR}/lib/libparaver)
+        set(EP_paraver_BIN ${CMAKE_BINARY_DIR}/lib/libparaver)
         if(CMAKE_BUILD_TYPE MATCHES "Debug")
             set(PARAVER_CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug)
         endif(CMAKE_BUILD_TYPE MATCHES "Debug")
         include(ExternalProject)
         ExternalProject_Add(EP_paraver
             DOWNLOAD_COMMAND ""
-            SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libparaver"
+            SOURCE_DIR ${EP_paraver_SRC}
             CMAKE_ARGS ${PARAVER_CMAKE_ARGS} 
-            BINARY_DIR "${CMAKE_BINARY_DIR}/lib/libparaver"
+            BINARY_DIR ${EP_paraver_BIN}
             INSTALL_COMMAND ""
             )
         add_dependencies(gmac EP_paraver)
-        include_directories(${CMAKE_SOURCE_DIR}/lib/libparaver ${CMAKE_BINARY_DIR}/lib/libparaver)
-        set(gmac_LIBDIR ${gmac_LIBDIR} ${CMAKE_BINARY_DIR}/lib/libparaver/lib)
-        set(gmac_LIBS ${gmac_LIBS} ${CMAKE_BINARY_DIR}/lib/libparaver/paraver/libparaver.so)
+        include_directories(${EP_paraver_SRC} ${EP_paraver_BIN})
+        set(gmac_LIBS ${gmac_LIBS}
+            ${EP_paraver_BIN}/paraver/${CMAKE_SHARED_LIBRARY_PREFIX}paraver${CMAKE_SHARED_LIBRARY_SUFFIX})
         install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/libparaver)")
     endif()
 endif(USE_PARAVER)
@@ -149,8 +153,8 @@ link_directories(${gmac_LIBDIR})
 set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac 
-     LIBRARY DESTINATION lib${LIB_SUFFIX}
-     ARCHIVE DESTINATION lib${LIB_SUFFIX}
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
      PUBLIC_HEADER DESTINATION include
      PRIVATE_HEADER DESTINATION include/gmac)
