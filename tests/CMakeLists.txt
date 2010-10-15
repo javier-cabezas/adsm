@@ -1,4 +1,3 @@
-add_subdirectory(unit)
 add_subdirectory(simple)
 
 #original Makefile.am contents follow:
