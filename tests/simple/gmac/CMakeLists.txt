@@ -1,6 +1,6 @@
 set(common_ROOT ../../common)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/gmac ${common_ROOT})
+include_directories(${PROJECT_SOURCE_DIR}/src/include ${common_ROOT})
 
 include(FindCUDA)
 
