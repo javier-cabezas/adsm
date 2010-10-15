@@ -41,34 +41,9 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/common.h"
-#include "gmac/paraver.h"
+#include "util/Lock.h"
 
 namespace gmac { namespace util {
-
-class GMAC_LOCAL ParaverLock {
-protected:
-#ifdef PARAVER
-    static const char *eventName;
-    static const char *exclusiveName;
-
-
-    typedef std::map<std::string, unsigned> LockMap;
-    static unsigned count;
-    static LockMap *map;
-    unsigned id;
-
-    static paraver::EventName *event;
-    static paraver::StateName *exclusive;
-
-    void setup();
-#endif
-public:
-    ParaverLock(const char *name);
-
-    void enter() const;
-    void locked() const;
-    void exit() const;
-};
 
 class GMAC_LOCAL Lock : public ParaverLock {
 protected:

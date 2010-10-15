@@ -1,7 +1,8 @@
 add_subdirectory(${OS_DIR})
 
 set(util_SRC
-    Lock.h Semaphore.h
+    Lock.h Lock.ipp Lock.cpp
+    Semaphore.h
     Private.h
     Parameter.h Parameter.ipp Parameter.cpp Parameter.def
     Logger.h Logger.ipp Logger.cpp
