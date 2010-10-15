@@ -58,6 +58,8 @@ add_subdirectory(src)
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
 add_library(gmac SHARED ${gmac_SRC})
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gmac.h)
+set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gmac/vm.h)
 
 # Setup configuration options
 if(USE_VM)
@@ -92,13 +94,15 @@ if(USE_PARAVER)
         ExternalProject_Add(EP_paraver
             DOWNLOAD_COMMAND ""
             SOURCE_DIR "${CMAKE_SOURCE_DIR}/lib/libparaver"
-            INSTALL_DIR "${CMAKE_BINARY_DIR}/lib/libparaver"
-            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/libparaver
+            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} 
+            BINARY_DIR "${CMAKE_BINARY_DIR}/lib/libparaver"
+            INSTALL_COMMAND ""
             )
         add_dependencies(gmac EP_paraver)
-        include_directories(${CMAKE_BINARY_DIR}/lib/libparaver/include)
+        include_directories(${CMAKE_SOURCE_DIR}/lib/libparaver ${CMAKE_BINARY_DIR}/lib/libparaver)
         set(gmac_LIBDIR ${gmac_LIBDIR} ${CMAKE_BINARY_DIR}/lib/libparaver/lib)
-        set(gmac_LIBS ${gmac_LIBS} ${CMAKE_BINARY_DIR}/lib/libparaver/lib/libparaver.so)
+        set(gmac_LIBS ${gmac_LIBS} ${CMAKE_BINARY_DIR}/lib/libparaver/paraver/libparaver.so)
+        install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/libparaver)")
     endif()
 endif(USE_PARAVER)
 
@@ -137,8 +141,10 @@ target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
 set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
 
-install(TARGETS gmac LIBRARY DESTINATION lib)
-install(FILES  gmac.h gmac/vm.h DESTINATION include)
+install(TARGETS gmac 
+     LIBRARY DESTINATION lib
+     PUBLIC_HEADER DESTINATION include
+     PRIVATE_HEADER DESTINATION include/gmac)
 
 
 
