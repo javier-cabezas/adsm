@@ -37,13 +37,16 @@ if(USE_OPENCL)
     message(FATAL_ERROR "OpenCL still not supported")
 else(USE_OPENCL)
     # Default compilation for CUDA
-    find_path(NVCC nvcc)
+    find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
+            HINTS ENV "CUDA_BIN_PATH")
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
         set(CUDA_INCLUDE "${NVCC}/../include")
         include_directories(${CUDA_INCLUDE})
-        find_library(cuda_LIB "libcuda.so")
+        find_library(cuda_LIB
+            ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}
+            HINTS ENV "CUDA_LIB_PATH")
         set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
     else(EXISTS ${NVCC})
         message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
@@ -146,7 +149,9 @@ link_directories(${gmac_LIBDIR})
 set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac 
-     LIBRARY DESTINATION lib
+     LIBRARY DESTINATION lib${LIB_SUFFIX}
+     ARCHIVE DESTINATION lib${LIB_SUFFIX}
+     RUNTIME DESTINATION bin
      PUBLIC_HEADER DESTINATION include
      PRIVATE_HEADER DESTINATION include/gmac)
 
