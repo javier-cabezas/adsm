@@ -53,8 +53,7 @@ public:
     void * ptr_;
     size_t size_;
     off_t  offset_;
-    Argument(void * ptr, size_t size, off_t offset) :
-        ptr_(ptr), size_(size), offset_(offset) {}
+    Argument(void * ptr, size_t size, off_t offset);
 };
 
 typedef std::vector<Argument> ArgVector;
@@ -64,19 +63,19 @@ class GMAC_LOCAL KernelConfig : public ArgVector, public util::Logger {
 protected:
     static const unsigned StackSize_ = 4096;
 
-    char stack_[StackSize_];
+    uint8_t stack_[StackSize_];
     size_t argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
     /// \todo create a pool of objects to avoid mallocs/frees
-    KernelConfig() : argsSize_(0) {}
-    virtual ~KernelConfig() { clear(); }
+    KernelConfig();
+    virtual ~KernelConfig();
 
     void pushArgument(const void * arg, size_t size, off_t offset);
-    inline off_t argsSize() const { return argsSize_; }
+    off_t argsSize() const;
 
-    inline char * argsArray() { return stack_; }
+    uint8_t *argsArray();
 };
 
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
@@ -86,20 +85,21 @@ class KernelLaunch;
 class GMAC_LOCAL Kernel : public memory::ObjectSet, public KernelDescriptor
 {
 public:
-    Kernel(const KernelDescriptor & k) :
-        KernelDescriptor(k.name(), k.key()) {};
-    virtual ~Kernel() {}
+    Kernel(const KernelDescriptor & k);
+    virtual ~Kernel();
 
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
 };
 
 class GMAC_LOCAL KernelLaunch : public memory::ObjectSet {
 public:
-    virtual ~KernelLaunch() {};
+    virtual ~KernelLaunch();
     virtual gmacError_t execute() = 0;
 };
 
 }
+
+#include "Kernel.ipp"
 
 #endif
 
