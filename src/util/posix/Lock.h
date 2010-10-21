@@ -41,38 +41,46 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/common.h"
+#include "test/types.h"
 #include "util/Lock.h"
+
 
 namespace gmac { namespace util {
 
-class GMAC_LOCAL Lock : public ParaverLock {
+class GMAC_LOCAL LockImpl : public ParaverLock {
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
-	Lock(const char *name);
-	~Lock();
+	LockImpl(const char *name);
+	VIRTUAL ~LockImpl();
 
 protected:
-	void lock() const;
-	void unlock() const;
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public ParaverLock {
+class GMAC_LOCAL RWLockImpl : public ParaverLock {
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
 public:
-	RWLock(const char *name);
-	~RWLock();
+	RWLockImpl(const char *name);
+	VIRTUAL ~RWLockImpl();
 
 protected:
-	void lockRead() const;
-	void lockWrite() const;
-	void unlock() const;
+	TESTABLE void lockRead() const;
+	TESTABLE void lockWrite() const;
+	TESTABLE void unlock() const;
 };
 
 }}
 
 #include "Lock.ipp"
+
+#ifdef DEBUG
+#include "test/Lock.h"
+#endif
+
+
 
 #endif

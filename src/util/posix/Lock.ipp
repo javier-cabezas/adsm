@@ -10,7 +10,7 @@
 namespace gmac { namespace util {
 
 inline void
-Lock::lock() const
+LockImpl::lock() const
 {
     enter();
     pthread_mutex_lock(&mutex_);
@@ -18,14 +18,14 @@ Lock::lock() const
 }
 
 inline void
-Lock::unlock() const
+LockImpl::unlock() const
 {
     exit();
     pthread_mutex_unlock(&mutex_);
 }
 
 inline void
-RWLock::lockRead() const
+RWLockImpl::lockRead() const
 {
     enter();
     pthread_rwlock_rdlock(&lock_);
@@ -33,7 +33,7 @@ RWLock::lockRead() const
 }
 
 inline void
-RWLock::lockWrite() const
+RWLockImpl::lockWrite() const
 {
     enter();
     pthread_rwlock_wrlock(&lock_);
@@ -41,7 +41,7 @@ RWLock::lockWrite() const
 }
 
 inline void
-RWLock::unlock() const
+RWLockImpl::unlock() const
 {
     exit();
     pthread_rwlock_unlock(&lock_);

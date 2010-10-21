@@ -15,7 +15,7 @@
 namespace gmac {
 
 ModeMap::ModeMap() :
-    RWLock("ModeMap")
+    util::RWLock("ModeMap")
 {}
 
 std::pair<ModeMap::iterator, bool>
@@ -92,7 +92,7 @@ size_t Process::TotalMemory_ = 0;
 
 Process::Process() :
 	util::Singleton<Process>(),
-    RWLock("Process"),
+    util::RWLock("Process"),
     shared_("SharedMemoryMap"),
     centralized_("CentralizedMemoryMap"),
     replicated_("ReplicatedMemoryMap"),

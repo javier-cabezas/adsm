@@ -60,7 +60,7 @@ class GMAC_LOCAL ModuleMap : protected std::map<std::string, FunctionMap *>,
 protected:
     friend class Function;
 public:
-    ModuleMap() : Lock("Paraver") {};
+    ModuleMap() : util::Lock("Paraver") {};
     FunctionMap &get(const char *name);
 };
 #endif

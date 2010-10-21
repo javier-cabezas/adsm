@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,53 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_OBJECT_H_
-#define GMAC_MEMORY_OBJECT_H_
-
-#include <set>
+#ifndef GMAC_TEST_CONTRACT_H
+#define GMAC_TEST_CONTRACT_H
 
 #include "config/common.h"
-#include "util/Lock.h"
-#include "util/Logger.h"
 
-#include "Block.h"
+#ifdef DEBUG
 
-namespace gmac { namespace memory {
+#define ENSURES(a) test::Contract::Ensures(__FILE__, __LINE__, #a, a)
+#define REQUIRES(a) test::Contract::Requires(__FILE__, __LINE__, #a, a)
+#define EXPECTS(a) test::Contract::Expects(__FILE__, __LINE__, #a, a)
+#define ASSERT(a) test::Contract::Assert(__FILE__, __LINE__, #a, a)
 
-class GMAC_LOCAL Object: protected util::RWLock, public util::Logger {
-    friend class Map;
-    friend class ObjectMap;
+#define ISVALID() isValid(__FILE__, __LINE__)
+
+namespace gmac { namespace test {
+
+class GMAC_LOCAL Contract {
+private:
+    static void Preamble(const char *file, const int line);
 protected:
-    void *addr_;
-    size_t size_;
-
-    Object(void *addr, size_t size) :
-        util::RWLock("memory::Object"), addr_(addr), size_(size) {};
-
-    static void *map(void *addr, size_t size);
-    static void unmap(void *addr, size_t size);
-public:
-    virtual ~Object();
-
-    uint8_t *addr() const;
-    uint8_t *end() const;
-    size_t size() const;
- 
-    virtual Mode &owner() const = 0;
-    virtual void *getAcceleratorAddr(void *addr) const = 0;
-
-    virtual void init() = 0;
-    virtual void fini() = 0;
-
-    virtual gmacError_t free();
-    virtual gmacError_t realloc(Mode &mode);
-
-    virtual bool isLocal() const = 0;
-    virtual bool isInAccelerator() const = 0;
+    static void Ensures(const char *file, const int line, const char *clause, bool b);
+    static void Requires(const char *file, const int line, const char *clause, bool b);
+    static void Expects(const char *file, const int line, const char *clause, bool b);
+    static void Assert(const char *file, const int line, const char *clause, bool b);
 };
 
-}}
+} }
+#endif
 
-#include "Object.ipp"
 
 #endif

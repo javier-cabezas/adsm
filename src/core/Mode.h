@@ -63,7 +63,7 @@ class GMAC_LOCAL ContextMap : protected std::map<THREAD_ID, Context *>, util::RW
 protected:
     typedef std::map<THREAD_ID, Context *> Parent;
 public:
-    ContextMap() : RWLock("ContextMap") {};
+    ContextMap() : util::RWLock("ContextMap") {};
     void add(THREAD_ID id, Context *ctx);
     Context *find(THREAD_ID id);
     void remove(THREAD_ID id);

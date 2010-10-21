@@ -62,13 +62,13 @@ typedef CUstream Stream;
 class GMAC_LOCAL AcceleratorLock : public util::Lock {
     friend class Accelerator;
 public:
-    AcceleratorLock() : Lock("Accelerator") {}
+    AcceleratorLock() : util::Lock("Accelerator") {}
 };
 
 class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
     friend class Accelerator;
 public:
-    AlignmentMap() : RWLock("Aligment") {}
+    AlignmentMap() : util::RWLock("Aligment") {}
     ~AlignmentMap() { lockWrite(); }
 };
 
