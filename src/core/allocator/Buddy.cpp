@@ -5,7 +5,7 @@
 namespace gmac { namespace kernel { namespace allocator {
 
 Buddy::Buddy(size_t size) :
-    Lock("Buddy"),
+    util::Lock("Buddy"),
     size_(round(size)),
     index_(index(size_))
 {
