@@ -10,7 +10,7 @@
 namespace gmac { namespace util {
 
 inline void
-Lock::lock() const
+LockImpl::lock() const
 {
     enter();
     pthread_mutex_lock(&mutex_);
@@ -18,7 +18,7 @@ Lock::lock() const
 }
 
 inline void
-Lock::unlock() const
+LockImpl::unlock() const
 {
     exit();
     pthread_mutex_unlock(&mutex_);

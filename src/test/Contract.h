@@ -31,23 +31,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TEST_TEST_H
-#define GMAC_TEST_TEST_H
+#ifndef GMAC_TEST_CONTRACT_H
+#define GMAC_TEST_CONTRACT_H
 
 #include "config/common.h"
-
-#ifdef DEBUG
-#define TESTABLE virtual
-#define VIRTUAL
-#else
-#define TESTABLE
-#define VIRTUAL virtual
-#endif
 
 #ifdef DEBUG
 
 #define ENSURES(a) test::Contract::Ensures(__FILE__, __LINE__, #a, a)
 #define REQUIRES(a) test::Contract::Requires(__FILE__, __LINE__, #a, a)
+#define EXPECTS(a) test::Contract::Expects(__FILE__, __LINE__, #a, a)
 #define ASSERT(a) test::Contract::Assert(__FILE__, __LINE__, #a, a)
 
 #define ISVALID() isValid(__FILE__, __LINE__)
@@ -60,9 +53,8 @@ private:
 protected:
     static void Ensures(const char *file, const int line, const char *clause, bool b);
     static void Requires(const char *file, const int line, const char *clause, bool b);
+    static void Expects(const char *file, const int line, const char *clause, bool b);
     static void Assert(const char *file, const int line, const char *clause, bool b);
-
-    virtual void isValid(const char *file, const int line) = 0;
 };
 
 } }

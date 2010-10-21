@@ -1,3 +1,4 @@
+add_subdirectory(test)
 set(util_os_SRC
     Lock.h Lock.ipp Lock.cpp
     FileLock.h FileLock.ipp FileLock.cpp
