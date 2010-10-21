@@ -68,11 +68,15 @@ extern const char _gmacCode;
 extern const char _userCode;
 extern char _gmacInit;
 
+void enterGmac() GMAC_LOCAL;
+
 inline void enterGmac()
 {
     _inGmacLock->lockRead();
     _inGmac.set(&_gmacCode);
 }
+
+void enterGmacExclusive() GMAC_LOCAL;
 
 inline void enterGmacExclusive()
 {
@@ -80,11 +84,15 @@ inline void enterGmacExclusive()
     _inGmac.set(&_gmacCode);
 }
 
+void exitGmac() GMAC_LOCAL;
+
 inline void exitGmac()
 {
     _inGmac.set(&_userCode);
     _inGmacLock->unlock();
 }
+
+char inGmac() GMAC_LOCAL;
 
 inline char inGmac() { 
     if(_gmacInit == 0) return 1;
