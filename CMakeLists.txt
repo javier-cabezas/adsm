@@ -32,7 +32,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DWINDOWS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+
 # Identify API being used
+option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
     message(FATAL_ERROR "OpenCL still not supported")
 else(USE_OPENCL)
@@ -66,9 +68,9 @@ set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gma
 set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gmac/vm.h)
 
 # Setup configuration options
+option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)
     message(STATUS "Compiling with VM support")
-    add_definitions(-DUSE_VM)
     if(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'bit' bitmap implementation")
         add_definitions(-DBITMAP_BIT)
@@ -83,6 +85,7 @@ endif(USE_VM)
 
 
 # Check if GMAC is buid with Paraver support
+option(USE_PARAVER "Enable production of Paraver traces" OFF)
 if(USE_PARAVER)
     message(STATUS "Compiling with Paraver support")
     add_definitions(-DPARAVER)
@@ -114,6 +117,7 @@ if(USE_PARAVER)
 endif(USE_PARAVER)
 
 # Check if tests are compiled
+option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)
     message(STATUS "Compiling GMAC tests")
     add_subdirectory(tests)
