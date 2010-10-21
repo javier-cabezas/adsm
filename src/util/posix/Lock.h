@@ -65,12 +65,12 @@ protected:
     bool write_;
 public:
 	RWLockImpl(const char *name);
-	~RWLockImpl();
+	VIRTUAL ~RWLockImpl();
 
 protected:
-	void lockRead() const;
-	void lockWrite() const;
-	void unlock() const;
+	TESTABLE void lockRead() const;
+	TESTABLE void lockWrite() const;
+	TESTABLE void unlock() const;
 };
 
 }}
