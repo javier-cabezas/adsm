@@ -52,7 +52,7 @@ protected:
     size_t size_;
 
     Object(void *addr, size_t size) :
-        RWLock("memory::Object"), addr_(addr), size_(size) {};
+        util::RWLock("memory::Object"), addr_(addr), size_(size) {};
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);

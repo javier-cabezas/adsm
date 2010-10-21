@@ -68,7 +68,7 @@ public:
 class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
     friend class Accelerator;
 public:
-    AlignmentMap() : RWLock("Aligment") {}
+    AlignmentMap() : util::RWLock("Aligment") {}
     ~AlignmentMap() { lockWrite(); }
 };
 

@@ -57,7 +57,7 @@ Entry List::pop()
 }
 
 Lazy::Lazy(unsigned limit)
-    : RWLock("Lazy"), _maxListSize(limit)
+    : util::RWLock("Lazy"), _maxListSize(limit)
 {
 }
 

@@ -25,7 +25,7 @@ LockImpl::unlock() const
 }
 
 inline void
-RWLock::lockRead() const
+RWLockImpl::lockRead() const
 {
     enter();
     pthread_rwlock_rdlock(&lock_);
@@ -33,7 +33,7 @@ RWLock::lockRead() const
 }
 
 inline void
-RWLock::lockWrite() const
+RWLockImpl::lockWrite() const
 {
     enter();
     pthread_rwlock_wrlock(&lock_);
@@ -41,7 +41,7 @@ RWLock::lockWrite() const
 }
 
 inline void
-RWLock::unlock() const
+RWLockImpl::unlock() const
 {
     exit();
     pthread_rwlock_unlock(&lock_);
