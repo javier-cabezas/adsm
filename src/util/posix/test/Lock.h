@@ -41,6 +41,8 @@ WITH THE SOFTWARE.  */
 #include <sys/types.h>
 #include <pthread.h>
 
+#include <set>
+
 namespace gmac { namespace util { 
 
 class GMAC_LOCAL LockTest :
@@ -56,6 +58,23 @@ public:
     VIRTUAL ~LockTest();
 
     TESTABLE void lock() const;
+    TESTABLE void unlock() const;
+};
+
+class GMAC_LOCAL RWLockTest :
+    public gmac::util::RWLockImpl,
+    public gmac::test::Contract {
+protected:
+    mutable enum { Idle, Read, Write } state_;
+    mutable pthread_mutex_t internal_;
+    mutable std::set<pthread_t> readers_;
+    mutable pthread_t writer_;
+public:
+    RWLockTest(const char *name);
+    VIRTUAL ~RWLockTest();
+
+    TESTABLE void lockRead() const;
+    TESTABLE void lockWrite() const;
     TESTABLE void unlock() const;
 };
 

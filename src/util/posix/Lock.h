@@ -59,13 +59,13 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public ParaverLock {
+class GMAC_LOCAL RWLockImpl : public ParaverLock {
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
 public:
-	RWLock(const char *name);
-	~RWLock();
+	RWLockImpl(const char *name);
+	~RWLockImpl();
 
 protected:
 	void lockRead() const;

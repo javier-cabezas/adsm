@@ -81,10 +81,12 @@ namespace gmac { namespace util {
 
 #ifdef DEBUG
 class LockTest;
+class RWLockTest;
 typedef LockTest Lock;
+typedef RWLockTest RWLock;
 #else
-class LockImpl;
 typedef LockImpl Lock;
+typedef RWLockImpl RWLock;
 #endif
 
 } }

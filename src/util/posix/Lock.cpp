@@ -15,13 +15,13 @@ LockImpl::~LockImpl()
     pthread_mutex_destroy(&mutex_);
 }
 
-RWLock::RWLock(const char *name) :
+RWLockImpl::RWLockImpl(const char *name) :
     ParaverLock(name)
 {
     pthread_rwlock_init(&lock_, NULL);
 }
 
-RWLock::~RWLock()
+RWLockImpl::~RWLockImpl()
 {
     pthread_rwlock_destroy(&lock_);
 }
