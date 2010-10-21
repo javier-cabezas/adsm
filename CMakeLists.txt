@@ -113,11 +113,18 @@ if(USE_PARAVER)
     endif()
 endif(USE_PARAVER)
 
-# Check if tests are compiled
+# Check if tests must be compiled
 if(MAKE_TESTS)
-    message(STATUS "Compiling GMAC tests")
+    message(STATUS "Compile GMAC tests")
     add_subdirectory(tests)
 endif(MAKE_TESTS)
+
+# Check if doc must be generated
+if(MAKE_DOC)
+    message(STATUS "Generate GMAC documentation")
+    add_subdirectory(doc)
+endif(MAKE_DOC)
+
 
 # Set default configuration to RELEASE
 if(NOT CMAKE_BUILD_TYPE)

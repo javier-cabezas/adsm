@@ -1,12 +1,13 @@
-
-include_directories(${KDE4_INCLUDES} ${KDE4_INCLUDE_DIR} ${QT_INCLUDES} )
-
-
 ########### install files ###############
 
-install(FILES  Doxyfile.in DESTINATION )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
+execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND doxygen Doxyfile
+    RESULT_VARIABLE ret_var
+    OUTPUT_VARIABLE output_var)
 
+#install(FILES  Doxyfile.in DESTINATION )
 
 #original Makefile.am contents follow:
 
