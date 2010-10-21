@@ -4,13 +4,13 @@
 
 namespace gmac { namespace util {
 
-Lock::Lock(const char *name) :
+LockImpl::LockImpl(const char *name) :
     ParaverLock(name)
 {
     pthread_mutex_init(&mutex_, NULL);
 }
 
-Lock::~Lock()
+LockImpl::~LockImpl()
 {
     pthread_mutex_destroy(&mutex_);
 }

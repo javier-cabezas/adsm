@@ -35,7 +35,9 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_LOCK_H_
 
 #include "config/common.h"
+#include "test/Contract.h"
 #include "gmac/paraver.h"
+
 
 namespace gmac { namespace util {
 
@@ -69,13 +71,25 @@ public:
 
 } }
 
-#include "Lock.ipp"
-
 #if defined(POSIX)
 #include "util/posix/Lock.h"
 #elif defined(WINDOWS)
 #include "util/windows/Lock.h"
 #endif
+
+namespace gmac { namespace util {
+
+#ifdef DEBUG
+class LockTest;
+typedef LockTest Lock;
+#else
+class LockImpl;
+typedef LockImpl Lock;
+#endif
+
+} }
+
+#include "Lock.ipp"
 
 
 #endif

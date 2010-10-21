@@ -31,56 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_FUNCTION_H_
-#define __PARAVER_FUNCTION_H_
-
-#include <map>
+#ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
+#define GMAC_UTIL_POSIX_TEST_LOCK_H_
 
 #include "config/common.h"
-#include "gmac/paraver.h"
-#include "util/Lock.h"
-#include "util/Private.h"
+#include "test/types.h"
+#include "util/posix/Lock.h"
 
-namespace gmac { namespace trace {
+#include <sys/types.h>
+#include <pthread.h>
 
-#if PARAVER
-class GMAC_LOCAL FunctionMap : public std::map<std::string, unsigned> {
+namespace gmac { namespace util { 
+
+class GMAC_LOCAL LockTest :
+    public gmac::util::LockImpl,
+    public gmac::test::Contract {
 protected:
-    paraver::EventName *_event;
-    unsigned id_;
-    static const unsigned _stride = 64;
+    mutable pthread_mutex_t internal_;
+    mutable bool locked_;
+    mutable pthread_t owner_;
+
 public:
-    FunctionMap(unsigned, const char *);
-    unsigned id() const { return id_; }
-    paraver::EventName &event() { return *_event; }
+    LockTest(const char *name);
+    VIRTUAL ~LockTest();
+
+    TESTABLE void lock() const;
+    TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL ModuleMap : protected std::map<std::string, FunctionMap *>,
-                protected util::Lock {
-protected:
-    friend class Function;
-public:
-    ModuleMap() : util::Lock("Paraver") {};
-    FunctionMap &get(const char *name);
-};
-#endif
-
-class GMAC_LOCAL Function {
-protected:
-#ifdef DEBUG
-    static util::Private<std::list<std::string> > Funcs_;
-#endif
-#ifdef PARAVER
-    static ModuleMap *map;
-    static FunctionMap &getFunctionMap(const char *module);
-#endif
-public:
-    static void init();
-    static void initThread();
-    static void start(const char *module, const char *name);
-    static void end(const char *module);
-};
-
-}}
+} }
 
 #endif
