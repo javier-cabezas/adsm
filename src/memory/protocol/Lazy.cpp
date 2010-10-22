@@ -20,7 +20,7 @@
 
 namespace gmac { namespace memory { namespace protocol {
 
-List Lazy::GlobalCache_;
+List LazyImpl::GlobalCache_;
 
 bool List::empty() const
 {
@@ -34,7 +34,7 @@ size_t List::size() const
     return ret;
 }
 
-void List::purge(const StateObject<Lazy::State> &obj)
+void List::purge(const StateObject<LazyImpl::State> &obj)
 {
     iterator i;
     for(i = begin(); i != end(); ) {
@@ -43,8 +43,8 @@ void List::purge(const StateObject<Lazy::State> &obj)
     }
 }
 
-void List::push(const StateObject<Lazy::State> &obj,
-        SystemBlock<Lazy::State> *block)
+void List::push(const StateObject<LazyImpl::State> &obj,
+        SystemBlock<LazyImpl::State> *block)
 {
     push_back(Entry(obj, block));
 }
@@ -56,12 +56,12 @@ Entry List::pop()
     return ret;
 }
 
-Lazy::Lazy(unsigned limit)
-    : util::RWLock("Lazy"), _maxListSize(limit)
+LazyImpl::LazyImpl(unsigned limit)
+    : util::RWLock("LazyImpl"), _maxListSize(limit)
 {
 }
 
-Lazy::~Lazy()
+LazyImpl::~LazyImpl()
 {
     lockWrite();
     for(iterator i = begin(); i != end(); i++)
@@ -69,14 +69,14 @@ Lazy::~Lazy()
     unlock();
 }
 
-Object *Lazy::createObject(size_t size)
+Object *LazyImpl::createObject(size_t size)
 {
-    Object *ret = new SharedObject<Lazy::State>(size, ReadOnly);
+    Object *ret = new SharedObject<LazyImpl::State>(size, ReadOnly);
     ret->init();
     return ret;
 }
 
-void Lazy::deleteObject(const Object &obj)
+void LazyImpl::deleteObject(const Object &obj)
 {
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     lockRead();
@@ -86,15 +86,15 @@ void Lazy::deleteObject(const Object &obj)
 }
 
 #ifndef USE_MMAP
-Object *Lazy::createReplicatedObject(size_t size)
+Object *LazyImpl::createReplicatedObject(size_t size)
 {
-    Object *ret = new ReplicatedObject<Lazy::State>(size, ReadOnly);
+    Object *ret = new ReplicatedObject<LazyImpl::State>(size, ReadOnly);
     ret->init();
     return ret;
 }
 #endif
 
-gmacError_t Lazy::acquire(const Object &obj)
+gmacError_t LazyImpl::acquire(const Object &obj)
 {
     gmacError_t ret = gmacSuccess;
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -120,7 +120,7 @@ gmacError_t Lazy::acquire(const Object &obj)
 }
 
 #ifdef USE_VM
-gmacError_t Lazy::acquireWithBitmap(const Object &obj)
+gmacError_t LazyImpl::acquireWithBitmap(const Object &obj)
 {
     Mode &mode = gmac::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -146,7 +146,7 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 }
 #endif
 
-gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &block)
+gmacError_t LazyImpl::release(const StateObject<State> &object, SystemBlock<State> &block)
 {
     trace("Releasing block %p", block.addr());
     gmacError_t ret = gmacSuccess;
@@ -169,7 +169,7 @@ gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &
 }
 
 
-gmacError_t Lazy::release()
+gmacError_t LazyImpl::release()
 {
     // Release global dirty blocks
     GlobalCache_.lockWrite();
@@ -209,7 +209,7 @@ gmacError_t Lazy::release()
     return gmacSuccess;
 }
 
-gmacError_t Lazy::toHost(const Object &obj)
+gmacError_t LazyImpl::toHost(const Object &obj)
 {
     gmacError_t ret = gmacSuccess;
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -239,7 +239,7 @@ gmacError_t Lazy::toHost(const Object &obj)
     return ret;
 }
 
-gmacError_t Lazy::toDevice(const Object &obj)
+gmacError_t LazyImpl::toDevice(const Object &obj)
 {
     gmacError_t ret = gmacSuccess;
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -280,7 +280,7 @@ static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const 
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n)
+LazyImpl::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n)
 {
     assertion(objectOff < obj.size());
     assertion(bufferOff < buffer.size());
@@ -325,7 +325,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
 }
 
 gmacError_t
-Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n)
+LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n)
 {
     assertion(objectOff < obj.size());
     assertion(bufferOff < buffer.size());
@@ -378,7 +378,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
 }
 
 gmacError_t
-Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
+LazyImpl::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -419,7 +419,7 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
 }
 
 gmacError_t
-Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t n)
+LazyImpl::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -468,7 +468,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
 
 inline
 gmacError_t
-Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                       const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to host memory
@@ -478,7 +478,7 @@ Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsi
 }
 
 gmacError_t
-Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to host memory AND accelerator memory
@@ -508,7 +508,7 @@ Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, u
 
 inline
 gmacError_t
-Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to accelerator memory
@@ -517,7 +517,7 @@ Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, un
 
 
 gmacError_t
-Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                              const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Accelerator memory to host memory
@@ -525,7 +525,7 @@ Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDs
 }
 
 gmacError_t
-Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                 const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
@@ -558,7 +558,7 @@ Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &bloc
 }
 
 gmacError_t
-Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     Process &p = Process::getInstance();
@@ -585,7 +585,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
 }
 
 gmacError_t
-Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n)
+LazyImpl::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n)
 {
     gmacError_t ret = gmacSuccess;
     
@@ -680,7 +680,7 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
 }
 
 gmacError_t
-Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
+LazyImpl::memset(const Object &obj, unsigned objectOff, int c, size_t n)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -730,7 +730,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
 }
 
 gmacError_t
-Lazy::moveTo(Object &obj, Mode &mode)
+LazyImpl::moveTo(Object &obj, Mode &mode)
 {
     gmacError_t ret = gmacSuccess;
     ret = toHost(obj);
@@ -740,13 +740,13 @@ Lazy::moveTo(Object &obj, Mode &mode)
     return ret;
 }
 
-gmacError_t Lazy::signalRead(const Object &obj, void *addr)
+gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
 {
-    trace::Function::start("Lazy", "read");
+    trace::Function::start("LazyImpl", "read");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     if(block == NULL) {
-        trace::Function::end("Lazy");
+        trace::Function::end("LazyImpl");
         return gmacErrorInvalidValue;
     }
     block->lock();
@@ -754,7 +754,7 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
     if (block->state() != Invalid) {
         // Somebody already fixed it
         block->unlock();
-        trace::Function::end("Lazy");
+        trace::Function::end("LazyImpl");
         return gmacSuccess;
     }
     void * tmp;
@@ -766,7 +766,7 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
         tmp = Memory::map(NULL, block->size(), PROT_WRITE);
         if (tmp == NULL) {
             block->unlock();
-            trace::Function::end("Lazy");
+            trace::Function::end("LazyImpl");
             return gmacErrorInvalidValue;
         }
 
@@ -784,25 +784,25 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
     void *old = Memory::remap(tmp, block->addr(), block->size());
     if (old != block->addr()) {
         block->unlock();
-        trace::Function::end("Lazy");
+        trace::Function::end("LazyImpl");
         return gmacErrorInvalidValue;
     }
     block->state(ReadOnly);
     block->unlock();
-    trace::Function::end("Lazy");
+    trace::Function::end("LazyImpl");
     return gmacSuccess;
 }
 
-gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
+gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
 {
 
-    trace::Function::start("Lazy", "write");
+    trace::Function::start("LazyImpl", "write");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     void *old;
     gmacError_t ret = gmacSuccess;
     if(block == NULL) {
-        trace::Function::end("Lazy");
+        trace::Function::end("LazyImpl");
         return gmacErrorInvalidValue;
     }
     block->lock();
@@ -811,7 +811,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
         case Dirty:
             // Somebody already fixed it
             block->unlock();
-            trace::Function::end("Lazy");
+            trace::Function::end("LazyImpl");
             return gmacSuccess;
         case Invalid:
             void * tmp;
@@ -822,7 +822,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
                 tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
                 if (tmp == NULL) {
                     block->unlock();
-                    trace::Function::end("Lazy");
+                    trace::Function::end("LazyImpl");
                     return gmacErrorInvalidValue;
                 }
 
@@ -830,7 +830,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
                 if(ret != gmacSuccess) {
                     Memory::unmap(tmp, block->size());
                     block->unlock();
-                    trace::Function::end("Lazy");
+                    trace::Function::end("LazyImpl");
                     return ret;
                 }
 #ifdef USE_VM
@@ -839,7 +839,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
             old = Memory::remap(tmp, block->addr(), block->size());
             if (old != block->addr()) {
                 block->unlock();
-                trace::Function::end("Lazy");
+                trace::Function::end("LazyImpl");
                 return gmacErrorInvalidValue;
             }
             break;
@@ -851,12 +851,12 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
     trace("Setting block %p to dirty state", block->addr());
     block->unlock();
     ret = addDirty(object, *block);
-    trace::Function::end("Lazy");
+    trace::Function::end("LazyImpl");
     return gmacSuccess;
 }
 
 gmacError_t
-Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow)
+LazyImpl::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow)
 {
     Mode &mode = object.owner();
 
@@ -910,7 +910,7 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
 }
 
 #ifndef USE_MMAP
-bool Lazy::requireUpdate(Block &b)
+bool LazyImpl::requireUpdate(Block &b)
 {
     bool ret = true;
     b.lock();

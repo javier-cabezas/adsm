@@ -51,8 +51,8 @@ public:
     SharedObjectImpl(size_t size, T init);
     virtual ~SharedObjectImpl();
 
-    void init();
-    void fini();
+    TESTABLE void init();
+    TESTABLE void fini();
 
     // To host functions
     TESTABLE gmacError_t toHost(Block &block) const;
@@ -67,10 +67,10 @@ public:
     TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     void *getAcceleratorAddr(void *addr) const;
-    inline Mode &owner() const { return *owner_; }
+    TESTABLE inline Mode &owner() const { return *owner_; }
 
     gmacError_t free();
-    gmacError_t realloc(Mode &mode);
+    TESTABLE gmacError_t realloc(Mode &mode);
 
     bool isLocal() const;
     bool isInAccelerator() const;

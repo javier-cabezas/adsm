@@ -50,12 +50,12 @@ namespace memory { namespace protocol {
 
 class List;
 
-class GMAC_LOCAL Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
+class GMAC_LOCAL LazyImpl : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
 public:
     typedef enum {
         Invalid,
         ReadOnly,
-        Dirty 
+        Dirty
     } State;
 protected:
     static List GlobalCache_;
@@ -80,8 +80,8 @@ protected:
     gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
 public:
-    Lazy(unsigned limit);
-    virtual ~Lazy();
+    LazyImpl(unsigned limit);
+    virtual ~LazyImpl();
 
     // Protocol Interface
     Object *createObject(size_t size);
@@ -91,8 +91,8 @@ public:
     bool requireUpdate(Block &block);
 #endif
 
-    gmacError_t signalRead(const Object &obj, void *addr);
-    gmacError_t signalWrite(const Object &obj, void *addr);
+    TESTABLE gmacError_t signalRead(const Object &obj, void *addr);
+    TESTABLE gmacError_t signalWrite(const Object &obj, void *addr);
 
     gmacError_t acquire(const Object &obj);
 #ifdef USE_VM
@@ -103,25 +103,43 @@ public:
     gmacError_t toHost(const Object &obj);
     gmacError_t toDevice(const Object &obj);
 
-    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
-    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
+    TESTABLE gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count);
+    TESTABLE gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count);
 
-    gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
-    gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
+    TESTABLE gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t count);
+    TESTABLE gmacError_t fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count);
 
-    gmacError_t copy(const Object &dstObj, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n);
-    gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t n);
+    gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
+    gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 
     gmacError_t moveTo(Object &obj, Mode &mode);
 };
 
+}}}
+
+#ifdef DEBUG
+#include "test/Lazy.h"
+#endif
+
+namespace gmac { namespace memory { namespace protocol {
+
+#ifdef DEBUG
+#define Lazy LazyTest
+#else
+#define Lazy LazyImpl
+#endif
+
+}}}
+
+namespace gmac { namespace memory { namespace protocol {
+
 class GMAC_LOCAL Entry {
 public:
-    const StateObject<Lazy::State> &object;
-    SystemBlock<Lazy::State> *block;
+    const StateObject<LazyImpl::State> &object;
+    SystemBlock<LazyImpl::State> *block;
 
-    Entry(const StateObject<Lazy::State> &object,
-            SystemBlock<Lazy::State> *block) :
+    Entry(const StateObject<LazyImpl::State> &object,
+            SystemBlock<LazyImpl::State> *block) :
         object(object), block(block) {};
 
 
@@ -130,13 +148,13 @@ public:
 };
 
 class GMAC_LOCAL List : protected std::list<Entry>, util::RWLock {
-    friend class Lazy;
+    friend class LazyImpl;
 public:
     List() : util::RWLock("List") {};
 
-    void purge(const StateObject<Lazy::State> &object);
-    void push(const StateObject<Lazy::State> &object,
-            SystemBlock<Lazy::State> *block);
+    void purge(const StateObject<LazyImpl::State> &object);
+    void push(const StateObject<LazyImpl::State> &object,
+            SystemBlock<LazyImpl::State> *block);
     Entry pop();
 
     bool empty() const;
@@ -144,7 +162,6 @@ public:
 };
 
 
-} } }
-
+}}}
 
 #endif
