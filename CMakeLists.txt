@@ -71,6 +71,7 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gm
 option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)
     message(STATUS "Compiling with VM support")
+    add_definitions(-DUSE_VM)
     if(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'bit' bitmap implementation")
         add_definitions(-DBITMAP_BIT)
@@ -116,12 +117,19 @@ if(USE_PARAVER)
     endif()
 endif(USE_PARAVER)
 
-# Check if tests are compiled
+# Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)
-    message(STATUS "Compiling GMAC tests")
+    message(STATUS "Compile GMAC tests")
     add_subdirectory(tests)
 endif(MAKE_TESTS)
+
+# Check if doc must be generated
+if(MAKE_DOC)
+    message(STATUS "Generate GMAC documentation")
+    add_subdirectory(doc)
+endif(MAKE_DOC)
+
 
 # Set default configuration to RELEASE
 if(NOT CMAKE_BUILD_TYPE)

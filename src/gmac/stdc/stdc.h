@@ -34,12 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_STDC_H_
 #define GMAC_GMAC_STDC_H_
 
+#include "config/common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void stdcMemInit();
-void stdcIoInit();
+void stdcMemInit() GMAC_LOCAL;
+void stdcIoInit() GMAC_LOCAL;
 
 #ifdef __cplusplus
 }

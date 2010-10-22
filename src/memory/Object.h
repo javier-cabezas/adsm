@@ -51,8 +51,7 @@ protected:
     void *addr_;
     size_t size_;
 
-    Object(void *addr, size_t size) :
-        util::RWLock("memory::Object"), addr_(addr), size_(size) {};
+    Object(void *addr, size_t size);
 
     static void *map(void *addr, size_t size);
     static void unmap(void *addr, size_t size);
@@ -62,7 +61,7 @@ public:
     uint8_t *addr() const;
     uint8_t *end() const;
     size_t size() const;
- 
+
     virtual Mode &owner() const = 0;
     virtual void *getAcceleratorAddr(void *addr) const = 0;
 

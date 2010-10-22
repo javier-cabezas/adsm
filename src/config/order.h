@@ -34,14 +34,16 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CONFIG_ORDER_H_
 #define GMAC_CONFIG_ORDER_H_
 
+#include "common.h"
+
 /* Common constructors */
-void paraverInit(void);
-void paramInit(void);
+void paraverInit(void) GMAC_LOCAL;
+void paramInit(void) GMAC_LOCAL;
 
 /* Interposition Constructors */
-void osInit(void);
-void threadInit(void);
-void stdcInit(void);
+void osInit(void) GMAC_LOCAL;
+void threadInit(void) GMAC_LOCAL;
+void stdcInit(void) GMAC_LOCAL;
 
 
 #endif
