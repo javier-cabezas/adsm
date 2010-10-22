@@ -34,13 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_POSIX_H_
 #define GMAC_GMAC_POSIX_H_
 
+#include "config/common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void posixIoInit();
-void posixForkInit();
+void posixIoInit() GMAC_LOCAL;
+void posixForkInit() GMAC_LOCAL;
 
 #ifdef __cplusplus
 }

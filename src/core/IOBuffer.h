@@ -52,33 +52,26 @@ protected:
     State state_;
     Mode &mode_;
 public:
-    IOBuffer(Mode &mode, void *addr, size_t size) :
-        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(mode) {}
-    inline virtual ~IOBuffer() {};
+    IOBuffer(Mode &mode, void *addr, size_t size);
+    virtual ~IOBuffer();
 
-    inline uint8_t *addr() const { return (uint8_t *) addr_; }
-    inline uint8_t *end() const { return addr() + size_; }
-    inline size_t size() const { return size_; }
+    uint8_t *addr() const;
+    uint8_t *end() const;
+    size_t size() const;
 
-    inline void lock() { gmac::util::Lock::lock(); }
-    inline void unlock() { gmac::util::Lock::unlock(); }
+    void lock();
+    void unlock();
 
-    inline State state() const { return state_; }
-    inline void toHost() { state_ = ToHost; trace("Buffer %p goes ToHost", this); }
-    inline void toAccelerator() { state_ = ToAccelerator; trace("Buffer %p goes ToAccelerator", this); }
+    State state() const;
+    void toHost();
+    void toAccelerator();
 
-    inline gmacError_t wait() {
-    	gmacError_t ret = gmacSuccess;
-    	if (state_ != Idle) {
-    		ret = mode_.waitForBuffer(*this);
-            trace("Buffer %p goes Idle", this);
-    		state_ = Idle;
-    	}
-    	return ret;
-    }
+    gmacError_t wait();
 };
 
 }
+
+#include "IOBuffer.ipp"
 
 #endif
 

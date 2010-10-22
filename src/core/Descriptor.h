@@ -46,12 +46,15 @@ protected:
     const char * name_;
 
 public:
-    Descriptor(const char * name, K key) :
-        key_(key), name_(name) {};
-    inline const char * name() const { return name_;}
-    K key() const { return key_; }
+    Descriptor(const char * name, K key);
+    const char * name() const;
+    K key() const;
 };
 
 }
+
+
+#include "Descriptor.ipp"
+
 
 #endif
