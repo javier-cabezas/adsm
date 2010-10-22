@@ -163,5 +163,5 @@ install(TARGETS gmac
      PUBLIC_HEADER DESTINATION include
      PRIVATE_HEADER DESTINATION include/gmac)
 
-
+configure_gmac_groups()
 
