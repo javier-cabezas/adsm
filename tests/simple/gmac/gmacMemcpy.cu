@@ -26,14 +26,10 @@ int check(long *ptr, int s)
 	return a - s;
 }
 
-
-int main(int argc, char *argv[])
+int doTest(long *host, long *device)
 {
-	long *ptr;
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
-	long *host = (long *)malloc(size * sizeof(long));
-	assert(host != NULL);
-	init(host, size, 1);
+    init(host, size, 1);
+    int ret1, ret2, ret3;
 
 	// Call the kernel
 	dim3 Db(blockSize);
@@ -41,21 +37,45 @@ int main(int argc, char *argv[])
 	if(size % blockSize) Db.x++;
 
 	printf("Test full memcpy: ");
-	memcpy(ptr, host, size * sizeof(long));
-	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
+	memcpy(device, host, size * sizeof(long));
+	reset<<<Dg, Db>>>(gmacPtr(device), 1);
     gmacThreadSynchronize();
-	printf("%d\n", check(ptr, 2 * size));
+    ret1 = check(device, 2 * size);
+	printf("%d\n", ret1);
 
 	printf("Test partial memcpy: ");
-	memcpy(&ptr[size / 8], host, 3 * size / 4 * sizeof(long));
-	printf("%d\n", check(ptr, 5 * size / 4));
+	memcpy(&device[size / 8], host, 3 * size / 4 * sizeof(long));
+    ret2 = check(device, 5 * size / 4);
+	printf("%d\n", ret2);
 
 	fprintf(stderr,"Test reverse full: ");
-	memcpy(host, ptr, size * sizeof(long));
-	fprintf(stderr, "%d\n", check(host, 5 * size / 4));
+	memcpy(host, device, size * sizeof(long));
+    ret3 = check(host, 5 * size / 4);
+	fprintf(stderr, "%d\n", ret3);
 
+    return (ret1 != 0 || ret2 != 0 || ret3 != 0);
+}
+
+int main(int argc, char *argv[])
+{
+	long *ptr;
+	long *host = (long *)malloc(size * sizeof(long));
+	assert(host != NULL);
+
+    // memcpy
+	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+
+    int res1 = doTest(host, ptr);
+    if (res1 != 0) fprintf(stderr, "Failed!\n");
 	gmacFree(ptr);
+
+    // gmacMemcpy
+	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+    int res2 = doTest(host, ptr);
+    if (res2 != 0) fprintf(stderr, "Failed!\n");
+	gmacFree(ptr);
+
 	free(host);
 
-    return 0;
+    return (res1 != 0 || res2 != 0);
 }

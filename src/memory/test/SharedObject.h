@@ -13,6 +13,9 @@ public:
     SharedObjectTest(size_t size, T init);
     virtual ~SharedObjectTest();
 
+    void init();
+    void fini();
+
     // To host functions
     gmacError_t toHost(Block &block) const;
     gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
@@ -24,6 +27,9 @@ public:
     gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
     gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
     gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+
+    Mode &owner() const;
+    gmacError_t realloc(Mode &mode);
 };
 
 }}

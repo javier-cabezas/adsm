@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,53 +31,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
-#define GMAC_UTIL_POSIX_TEST_LOCK_H_
+#ifndef GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
+#define GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
 
-#include <sys/types.h>
-#include <pthread.h>
-
-#include <set>
-
-#include "config/common.h"
+#include "memory/protocol/Lazy.h"
 #include "test/types.h"
-#include "util/posix/Lock.h"
 
-namespace gmac { namespace util { 
+namespace gmac { namespace memory { namespace protocol {
 
-class GMAC_LOCAL LockTest :
-    public gmac::util::LockImpl,
+class GMAC_LOCAL LazyTest :
+    public LazyImpl,
     public virtual gmac::test::Contract {
-protected:
-    mutable pthread_mutex_t internal_;
-    mutable bool locked_;
-    mutable pthread_t owner_;
-
 public:
-    LockTest(const char *name);
-    VIRTUAL ~LockTest();
+    LazyTest(unsigned limit);
+    virtual ~LazyTest();
 
-    TESTABLE void lock() const;
-    TESTABLE void unlock() const;
+    gmacError_t signalRead(const Object &obj, void *addr);
+    gmacError_t signalWrite(const Object &obj, void *addr);
+
+    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
+    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
+
+    gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
+    gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
 };
 
-class GMAC_LOCAL RWLockTest :
-    public gmac::util::RWLockImpl,
-    public virtual gmac::test::Contract {
-protected:
-    mutable enum { Idle, Read, Write } state_;
-    mutable pthread_mutex_t internal_;
-    mutable std::set<pthread_t> readers_;
-    mutable pthread_t writer_;
-public:
-    RWLockTest(const char *name);
-    VIRTUAL ~RWLockTest();
-
-    TESTABLE void lockRead() const;
-    TESTABLE void lockWrite() const;
-    TESTABLE void unlock() const;
-};
-
-}}
+}}}
 
 #endif
