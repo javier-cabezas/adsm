@@ -31,30 +31,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_DESCRIPTOR_H_
-#define GMAC_CORE_DESCRIPTOR_H_
+#ifndef GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
+#define GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
 
-#include "config/common.h"
-#include "util/Logger.h"
+#include "memory/protocol/Lazy.h"
+#include "test/types.h"
 
-namespace gmac {
+namespace gmac { namespace memory { namespace protocol {
 
-template <typename K>
-class GMAC_LOCAL Descriptor : public util::Logger {
-protected:
-    K key_;
-    const char * name_;
-
+class GMAC_LOCAL LazyTest :
+    public LazyImpl,
+    public virtual gmac::test::Contract {
 public:
-    Descriptor(const char * name, K key);
-    const char * name() const;
-    K key() const;
+    LazyTest(unsigned limit);
+    virtual ~LazyTest();
+
+    gmacError_t signalRead(const Object &obj, void *addr);
+    gmacError_t signalWrite(const Object &obj, void *addr);
+
+    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
+    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
+
+    gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
+    gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
 };
 
-}
-
-
-#include "Descriptor.ipp"
-
+}}}
 
 #endif

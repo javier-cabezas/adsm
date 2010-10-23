@@ -81,6 +81,4 @@ protected:
 #include "test/Lock.h"
 #endif
 
-
-
 #endif

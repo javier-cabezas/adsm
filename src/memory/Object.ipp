@@ -4,6 +4,12 @@
 namespace gmac { namespace memory {
 
 inline
+Object::Object(void *addr, size_t size) :
+    util::RWLock("memory::Object"), addr_(addr), size_(size)
+{
+}
+
+inline
 Object::~Object()
 {
 }

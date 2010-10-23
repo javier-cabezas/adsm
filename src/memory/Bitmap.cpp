@@ -1,9 +1,9 @@
+#include <cmath>
+#include <cstring>
+
 #include "Bitmap.h"
 
 #include "core/Mode.h"
-
-#include <cmath>
-#include <cstring>
 
 #ifdef USE_VM
 namespace gmac { namespace memory { namespace vm {
