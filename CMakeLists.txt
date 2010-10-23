@@ -14,7 +14,6 @@ if(CMAKE_USE_PTHREADS_INIT)
     set(THREAD_DIR "pthreads")
 elseif(CMAKE_USE_WIN32_THREADS_INIT)
     message(STATUS "Using Windows threads")
-    add_definitions(/DHAVE_WINTHREADS)
 endif(CMAKE_USE_PTHREADS_INIT)
 
 # Identify operating system being used
@@ -62,15 +61,6 @@ endif(USE_OPENCL)
 
 
 
-# Add subdirectories
-add_subdirectory(src)
-
-# Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
-get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
-add_library(gmac SHARED ${gmac_SRC})
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gmac.h)
-set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/gmac/gmac/vm.h)
 
 # Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
@@ -130,6 +120,7 @@ if(MAKE_TESTS)
 endif(MAKE_TESTS)
 
 # Check if doc must be generated
+option(MAKE_DOC "Generate GMAC documentation" OFF)
 if(MAKE_DOC)
     message(STATUS "Generate GMAC documentation")
     add_subdirectory(doc)
@@ -137,9 +128,7 @@ endif(MAKE_DOC)
 
 
 # Set default configuration to RELEASE
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TPYE Release)
-endif(NOT CMAKE_BUILD_TYPE)
+option(CMAKE_BUILD_TYPE "Build configuration" "Release")
 
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
@@ -168,6 +157,17 @@ if(${OS_DIR} MATCHES "posix")
     check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
 endif(${OS_DIR} MATCHES "posix")
 
+# Add subdirectories
+add_subdirectory(src)
+
+# Setup GMAC as main target
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
+add_library(gmac SHARED ${gmac_SRC})
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
+set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h)
+
+
 # GMAC is a DLL
 add_definitions(-DGMAC_DLL)
 # Compiling GMAC
@@ -186,3 +186,4 @@ install(TARGETS gmac
 
 configure_gmac_groups()
 
+include(CPack)
