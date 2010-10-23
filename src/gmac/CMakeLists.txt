@@ -1,0 +1,15 @@
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	add_subdirectory(stdc)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+add_subdirectory(${OS_DIR})
+if(DEFINED THREAD_DIR)
+    add_subdirectory(${THREAD_DIR})
+endif(DEFINED THREAD_DIR)
+
+set(gmac_lib_SRC
+    gmac.cpp
+    paraver.h
+    init.h init.cpp)
+add_gmac_sources(${gmac_lib_SRC})
+
+
