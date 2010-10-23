@@ -34,20 +34,20 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
 #define GMAC_UTIL_POSIX_TEST_LOCK_H_
 
-#include "config/common.h"
-#include "test/types.h"
-#include "util/posix/Lock.h"
-
 #include <sys/types.h>
 #include <pthread.h>
 
 #include <set>
 
+#include "config/common.h"
+#include "test/types.h"
+#include "util/posix/Lock.h"
+
 namespace gmac { namespace util { 
 
 class GMAC_LOCAL LockTest :
     public gmac::util::LockImpl,
-    public gmac::test::Contract {
+    public virtual gmac::test::Contract {
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
@@ -63,7 +63,7 @@ public:
 
 class GMAC_LOCAL RWLockTest :
     public gmac::util::RWLockImpl,
-    public gmac::test::Contract {
+    public virtual gmac::test::Contract {
 protected:
     mutable enum { Idle, Read, Write } state_;
     mutable pthread_mutex_t internal_;
@@ -78,6 +78,6 @@ public:
     TESTABLE void unlock() const;
 };
 
-} }
+}}
 
 #endif

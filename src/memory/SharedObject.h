@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_SHAREDOBJECT_H_
 
 #include "config/common.h"
+#include "core/IOBuffer.h"
 #include "core/Mode.h"
 #include "memory/Block.h"
 #include "memory/StateObject.h"
@@ -42,34 +43,34 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SharedObject : public StateObject<T> {
+class GMAC_LOCAL SharedObjectImpl : public StateObject<T> {
 protected:
     Mode *owner_;
     AcceleratorBlock *accBlock_;
 public:
-    SharedObject(size_t size, T init);
-    virtual ~SharedObject();
+    SharedObjectImpl(size_t size, T init);
+    virtual ~SharedObjectImpl();
 
-    void init();
-    void fini();
+    TESTABLE void init();
+    TESTABLE void fini();
 
     // To host functions
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toHost(Block &block) const;
+    TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
+    TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
+    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toAccelerator(Block &block) const;
+    TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     void *getAcceleratorAddr(void *addr) const;
-    inline Mode &owner() const { return *owner_; }
+    TESTABLE inline Mode &owner() const { return *owner_; }
 
     gmacError_t free();
-    gmacError_t realloc(Mode &mode);
+    TESTABLE gmacError_t realloc(Mode &mode);
 
     bool isLocal() const;
     bool isInAccelerator() const;
@@ -78,5 +79,18 @@ public:
 }}
 
 #include "SharedObject.ipp"
+
+#ifdef DEBUG
+#include "test/SharedObject.h"
+#endif
+
+namespace gmac { namespace memory {
+#ifdef DEBUG
+#define SharedObject SharedObjectTest
+#else
+#define SharedObject SharedObjectImpl
+#endif
+}}
+
 
 #endif

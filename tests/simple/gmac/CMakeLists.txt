@@ -41,3 +41,8 @@ cuda_compile(matrixMul gmacMatrixMul.cu)
 add_executable(gmacMatrixMul ${matrixMul} ${common_SRC})
 target_link_libraries(gmacMatrixMul gmac)
 
+# gmacMemcpy
+cuda_compile(memcpy gmacMemcpy.cu)
+add_executable(gmacMemcpy ${memcpy} ${common_SRC})
+target_link_libraries(gmacMemcpy gmac)
+

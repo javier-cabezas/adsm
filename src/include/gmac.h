@@ -70,16 +70,14 @@ extern "C"
 #endif
 
 /*!
-	\brief Returns the number of available accelerators
-
+	Returns the number of available accelerators.
     This number can be used to perform a manual context distribution among accelerators
 */
 size_t gmacAccs() GMAC_API;
 
 
 /*!
-	\brief Migrates the GPU execution mode of a thread to a concrete accelerator
-
+	Migrates the GPU execution mode of a thread to a concrete accelerator.
     Sets the affinity of a thread to a concrete accelerator. Valid values are 0 ... gmacAccs() - 1.
     Currently only works if this is the first gmac call in the thread.
 	\param acc index of the preferred accelerator
@@ -88,8 +86,6 @@ gmacError_t gmacMigrate(int acc) GMAC_API;
 
 
 /*!
-	\brief Allocates memory at the GPU
-
 	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
 	use the same addresses for this memory.
 	\param devPtr memory address to store the address for the allocated memory
@@ -99,37 +95,37 @@ gmacError_t gmacMalloc(void **devPtr, size_t count) GMAC_API;
 
 
 /*!
-	\brief Allocates global memory at all GPUS
+	Allocates global memory at all GPUS
 */
 #define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
 gmacError_t __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...) GMAC_API;
 
 /*!
-	\brief Gets a GPU address
+	Gets a GPU address
 	\param cpuPtr memory address at the CPU
 */
 void *gmacPtr(void *cpuPtr) GMAC_API;
 
 /*!
-	\brief Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
-	\param cpuAddr Memory address to free. This address must have been returned
+	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
+	\param cpuPtr Memory address to free. This address must have been returned
 	by a previous call to gmacMalloc() or gmacSafeMalloc()
 */
-gmacError_t gmacFree(void *) GMAC_API;
+gmacError_t gmacFree(void *cpuPtr) GMAC_API;
 
 /*!
-	\brief Launches a kernel execution
+	Launches a kernel execution
 	\param k Handler of the kernel to be executed at the GPU
 */
 gmacError_t gmacLaunch(gmacKernel_t k) GMAC_API;
 
 /*!
-	\brief Waits until all previous GPU requests have finished
+	Waits until all previous GPU requests have finished
 */
 gmacError_t gmacThreadSynchronize(void) GMAC_API;
 
 /*!
-	\brief Sets up an argument to be used by the following call to gmacLaunch()
+	Sets up an argument to be used by the following call to gmacLaunch()
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
 	\param offset Offset, in bytes, of the argument in the argument list
