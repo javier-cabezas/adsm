@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_MODE_H_
 #define GMAC_API_CUDA_MODE_H_
 
-#include <stdint.h>
 #include <cuda.h>
 #include <vector_types.h>
 

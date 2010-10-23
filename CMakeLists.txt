@@ -2,14 +2,19 @@ project(gmac)
 cmake_minimum_required(VERSION 2.8)
 
 include(gmac.cmake)
+include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
+    message(STATUS "Using POSIX threads")
     add_definitions(-DHAVE_PTHREADS)
     set(gmac_LIBS ${gmac_LIBS} ${CMAKE_THREAD_LIBS_INIT})
     set(THREAD_DIR "pthreads")
+elseif(CMAKE_USE_WIN32_THREADS_INIT)
+    message(STATUS "Using Windows threads")
+    add_definitions(/DHAVE_WINTHREADS)
 endif(CMAKE_USE_PTHREADS_INIT)
 
 # Identify operating system being used
@@ -129,20 +134,28 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Configure compiler flags for different configurations
-set(CMAKE_C_FLAGS "-Wall -Werror -Wno-unused-variable")
-set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_C_FLAGS "-Wall -Werror -Wno-unused-variable")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
+elseif(MSVC)
+        set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd")
+endif(CMAKE_COMPILER_IS_GNUCC)
 
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
-
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
+set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
+
+# Check for header files
+check_include_file("stdint.h" HAS_STDINT)
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")
     message(STATUS "Compiling for POSIX")
     add_definitions(-DPOSIX)
-    find_library(dl_LIB "libdl.so")
+    find_library(dl_LIB "${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}")
     set(gmac_LIBS ${gmac_LIBS} ${dl_LIB})
     check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
 endif(${OS_DIR} MATCHES "posix")

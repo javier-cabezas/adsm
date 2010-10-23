@@ -49,7 +49,7 @@ public:
     inline void init() {};
     inline void fini() {};
 
-    inline virtual void *getAcceleratorAddr(void *addr) const {
+    inline virtual void *getAcceleratorAddr(void *) const {
         Fatal("Trying to get device address from orphan object");
         return NULL;
     }

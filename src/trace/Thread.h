@@ -36,8 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
+#include "include/gmac-types.h"
 #include "config/common.h"
-#include "config/threads.h"
 #include "gmac/paraver.h"
 
 namespace gmac { namespace trace {
@@ -56,18 +56,18 @@ protected:
 #endif
 public:
     static void start();
-    static void start(THREAD_ID tid);
-    static void end(THREAD_ID tid);
+    static void start(THREAD_T tid);
+    static void end(THREAD_T tid);
 
     static void run();
-    static void run(THREAD_ID tid);
+    static void run(THREAD_T tid);
 
-    static void init(THREAD_ID tid);
+    static void init(THREAD_T tid);
     static void io();
-    static void io(THREAD_ID tid);
+    static void io(THREAD_T tid);
 
     static void resume();
-    static void resume(THREAD_ID tid);
+    static void resume(THREAD_T tid);
 };
 
 }}

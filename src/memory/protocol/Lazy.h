@@ -123,6 +123,7 @@ public:
     Entry(const StateObject<Lazy::State> &object,
             SystemBlock<Lazy::State> *block) :
         object(object), block(block) {};
+		Entry &operator =(const Entry &) {gmac::util::Logger::Fatal("Assigment of protocol entries is not supported");}
 
 
     inline void lock() const { block->lock(); }

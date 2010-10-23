@@ -35,6 +35,21 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CONFIG_COMMON_H_
 #define GMAC_CONFIG_COMMON_H_
 
+#ifdef HAS_STDINT
+#include <stdint.h>
+#else
+typedef unsigned char uint8_t;
+typedef char int8_t;
+typedef unsigned short uint16_t;
+typedef short int16_t;
+typedef unsigned int uint32_t;
+typedef int int32_t;
+#endif
+
+#ifndef _MSC_VER
+#define UNREFERENCED_PARAMETER(a)
+#endif
+
 #include "include/visibility.h"
 
 #endif

@@ -2,6 +2,8 @@
 #include <util/Logger.h>
 #include <cassert>
 
+
+
 namespace gmac { namespace trace {
 #ifdef PARAVER
 const char *Thread::initName = "Init";
@@ -32,8 +34,9 @@ void Thread::start()
 #endif
 }
 
-void Thread::start(THREAD_ID tid)
+void Thread::start(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__addThread(tid + offset);
@@ -41,8 +44,9 @@ void Thread::start(THREAD_ID tid)
 #endif
 }
 
-void Thread::end(THREAD_ID tid)
+void Thread::end(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__pushState(*paraver::Idle, tid + offset);
@@ -57,16 +61,18 @@ void Thread::run()
 #endif
 }
 
-void Thread::run(THREAD_ID tid)
+void Thread::run(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__pushState(*paraver::Running, tid + offset);
 #endif
 }
 
-void Thread::init(THREAD_ID tid)
+void Thread::init(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__pushState(*initState, tid + offset);
@@ -81,8 +87,9 @@ void Thread::io()
 #endif
 }
 
-void Thread::io(THREAD_ID tid)
+void Thread::io(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__pushState(*ioState, tid + offset);
@@ -97,8 +104,9 @@ void Thread::resume()
 #endif
 }
 
-void Thread::resume(THREAD_ID tid)
+void Thread::resume(THREAD_T tid)
 {
+	UNREFERENCED_PARAMETER(tid);
 #ifdef PARAVER
     if(sanityChecks() == false) return;
     paraver::trace->__popState((uint32_t)tid + offset);

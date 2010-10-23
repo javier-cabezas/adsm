@@ -82,19 +82,19 @@ public:
     size_t remove(Mode &mode);
 };
 
-class GMAC_LOCAL QueueMap : private std::map<THREAD_ID, ThreadQueue *>, public util::RWLock
+class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, public util::RWLock
 {
 private:
-    typedef std::map<THREAD_ID, ThreadQueue *> Parent;
+    typedef std::map<THREAD_T, ThreadQueue *> Parent;
 public:
     QueueMap();
 
     typedef Parent::iterator iterator;
 
     void cleanup();
-    std::pair<iterator, bool> insert(THREAD_ID, ThreadQueue *);
-    iterator find(THREAD_ID);
-    void erase(THREAD_ID id);
+    std::pair<iterator, bool> insert(THREAD_T, ThreadQueue *);
+    iterator find(THREAD_T);
+    void erase(THREAD_T id);
 
     iterator end();
 };
@@ -143,10 +143,10 @@ public:
     }
 
     /* Context management functions */
-    void send(THREAD_ID id);
+    void send(THREAD_T id);
     void receive();
-    void sendReceive(THREAD_ID id);
-    void copy(THREAD_ID id);
+    void sendReceive(THREAD_T id);
+    void copy(THREAD_T id);
     gmacError_t migrate(Mode &mode, int acc);
 
     void addAccelerator(Accelerator *acc);

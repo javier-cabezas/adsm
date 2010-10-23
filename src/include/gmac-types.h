@@ -35,6 +35,27 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_ERROR_H_
 #define GMAC_ERROR_H_
 
+#ifdef HAVE_PTHREADS
+#include <pthread.h>
+typedef pthread_t THREAD_T;
+#define SELF() pthread_self()
+#if defined(__LP64__) 
+#	define FMT_TID "0x%lx"
+#else
+#	if defined(DARWIN)
+#		define FMT_TID "%p"
+#	else
+#		define FMT_TID "0x%lx"
+#	endif
+#endif
+typedef 
+#elif _MSC_VER
+#	include <windows.h>
+	typedef DWORD THREAD_T;
+#	define SELF() GetCurrentThreadId()
+#	define FMT_TID "0x%lx"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

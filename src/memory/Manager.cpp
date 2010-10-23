@@ -1,4 +1,8 @@
+#if defined(__GNUC__)
 #include <strings.h>
+#elif defined(_MSC_VER)
+#define strcasecmp _stricmp
+#endif
 
 #include "core/IOBuffer.h"
 #include "core/Process.h"
@@ -21,10 +25,10 @@ Manager::Manager()
     trace("Memory manager starts");
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        protocol_ = new protocol::Lazy(paramRollSize);
+        protocol_ = new protocol::Lazy((unsigned)paramRollSize);
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        protocol_ = new protocol::Lazy(-1);
+        protocol_ = new protocol::Lazy((unsigned)-1);
     }
     else {
         Fatal("Memory Coherence Protocol not defined");
@@ -37,7 +41,6 @@ gmacError_t Manager::alloc(void ** addr, size_t size)
     // For integrated devices we want to use Centralized objects to avoid memory transfers
     if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
-    gmacError_t ret;
     // Create new shared object
     Object *object = protocol_->createObject(size);
     *addr = object->addr();
@@ -59,7 +62,6 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
     Mode &mode = gmac::Mode::current();
 
     if (proc.allIntegrated()) hint = GMAC_GLOBAL_MALLOC_CENTRALIZED;
-    gmacError_t ret;
     if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
         Object *object = protocol_->createReplicatedObject(size);
         *addr = object->addr();
@@ -70,7 +72,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
 
         mode.addReplicatedObject(*object);
     }
-    else if (GMAC_GLOBAL_MALLOC_CENTRALIZED) {
+    else /*if (GMAC_GLOBAL_MALLOC_CENTRALIZED)*/ {
         Object *object = protocol_->createCentralizedObject(size);
         *addr = object->addr();
         if(*addr == NULL) {
@@ -79,8 +81,10 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
         }
 
         mode.addCentralizedObject(*object);
+#if 0
     } else {
         return gmacErrorInvalidValue;
+#endif
     }
 
     return gmacSuccess;
@@ -189,7 +193,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
         size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
-        unsigned objOff = ptr - obj->addr();
+        unsigned objOff = (unsigned)(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
         if (!obj->isInAccelerator()) {
             ::memcpy(buffer.addr() + off, ptr + off, c);
@@ -198,7 +202,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
             if(ret != gmacSuccess) return ret;
         }
         mode->putObject(*obj);
-        off += objCount;
+        off += (unsigned)objCount;
         trace("Copying from obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
@@ -220,7 +224,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
         size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
-        unsigned objOff = ptr - obj->addr();
+        unsigned objOff = (unsigned)(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
         if (!obj->isInAccelerator()) {
             ::memcpy(ptr + off, buffer.addr() + off, c);
@@ -229,7 +233,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
             if(ret != gmacSuccess) return ret;
         }
         mode->putObject(*obj);
-        off += objCount;
+        off += (unsigned)objCount;
         trace("Copying to obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
@@ -327,25 +331,25 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 
     gmacError_t err = gmacSuccess;
     if (dstMode == NULL) {	    // From device
-		err = protocol_->toPointer(dst, *srcObj, (uint8_t *)src - srcObj->addr(), n);
+		err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
-		err = protocol_->fromPointer(*dstObj, (uint8_t *)dst - dstObj->addr(), src, n);
+		err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
     }
     else {
         if (!srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
             ::memcpy(dst, src, n);
         } else if (srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
-            err = protocol_->toPointer(dst, *srcObj, (uint8_t *)src - srcObj->addr(), n);
+            err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         } else if (!srcObj->isInAccelerator() && dstObj->isInAccelerator()) {
-            err = protocol_->fromPointer(*dstObj, (uint8_t *)dst - dstObj->addr(), src, n);
+            err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         } else {
-            err = protocol_->copy(*dstObj, (uint8_t *)dst - dstObj->addr(),
-                                  *srcObj, (uint8_t *)src - srcObj->addr(), n);
+            err = protocol_->copy(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()),
+                                  *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
             gmac::util::Logger::ASSERTION(err == gmacSuccess);
         }
 	}
@@ -396,7 +400,7 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
 
     const Object * obj = mode->getObjectRead(s);
     gmacError_t ret;
-    ret = protocol_->memset(*obj, (uint8_t *)s - obj->addr(), c, n);
+    ret = protocol_->memset(*obj, (unsigned)((uint8_t *)s - obj->addr()), c, n);
     mode->putObject(*obj);
     return ret;
 }

@@ -50,7 +50,7 @@ void QueueMap::cleanup()
 }
 
 std::pair<QueueMap::iterator, bool>
-QueueMap::insert(THREAD_ID tid, ThreadQueue *q)
+QueueMap::insert(THREAD_T tid, ThreadQueue *q)
 {
     lockWrite();
     std::pair<iterator, bool> ret =
@@ -59,7 +59,7 @@ QueueMap::insert(THREAD_ID tid, ThreadQueue *q)
     return ret;
 }
 
-QueueMap::iterator QueueMap::find(THREAD_ID id)
+QueueMap::iterator QueueMap::find(THREAD_T id)
 {
     lockRead();
     iterator q = Parent::find(id);
@@ -67,7 +67,7 @@ QueueMap::iterator QueueMap::find(THREAD_ID id)
     return q;
 }
 
-void QueueMap::erase(THREAD_ID id)
+void QueueMap::erase(THREAD_T id)
 {
     lockWrite();
     iterator i = Parent::find(id);
@@ -196,7 +196,7 @@ Mode *Process::createMode(int acc)
 }
 
 #ifndef USE_MMAP
-gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t size)
+gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t /*size*/)
 {
     gmacError_t ret;
     ModeMap::iterator i;
@@ -299,7 +299,7 @@ void *Process::translate(void *addr)
     return ptr;
 }
 
-void Process::send(THREAD_ID id)
+void Process::send(THREAD_T id)
 {
     Mode &mode = Mode::current();
     QueueMap::iterator q = queues_.find(id);
@@ -319,7 +319,7 @@ void Process::receive()
     q->second->queue->pop()->attach();
 }
 
-void Process::sendReceive(THREAD_ID id)
+void Process::sendReceive(THREAD_T id)
 {
     Mode &mode = Mode::current();
     QueueMap::iterator q = queues_.find(id);
@@ -331,7 +331,7 @@ void Process::sendReceive(THREAD_ID id)
     q->second->queue->pop()->attach();
 }
 
-void Process::copy(THREAD_ID id)
+void Process::copy(THREAD_T id)
 {
     Mode &mode = Mode::current();
     QueueMap::iterator q = queues_.find(id);

@@ -16,7 +16,7 @@
 
 using gmac::cuda::Switch;
 
-static inline size_t __getChannelSize(CUarray_format format)
+static inline int __getChannelSize(CUarray_format format)
 {
 	switch(format) {
 		case CU_AD_FORMAT_SIGNED_INT8:
@@ -292,7 +292,7 @@ cudaError_t cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 #if CUDART_VERSION >= 3010
 cudaError_t cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
-		size_t height, unsigned int flags)
+		size_t height, unsigned int /*flags*/)
 #else
 cudaError_t cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
@@ -434,7 +434,7 @@ extern "C" {
 using gmac::cuda::Texture;
 
 cudaError_t cudaBindTextureToArray(const struct textureReference *texref,
-		const struct cudaArray *array, const struct cudaChannelFormatDesc *desc)
+		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	gmac::enterGmac();
     Mode &mode = gmac::cuda::Mode::current();
@@ -488,7 +488,7 @@ cudaError_t cudaUnbindTexture(const struct textureReference *texref)
 	return __getCUDAError(r);
 }
 
-void CUDARTAPI __cudaTextureFetch(const void *tex, void *index, int integer, void *val)
+void CUDARTAPI __cudaTextureFetch(const void * /*tex*/, void * /*index*/, int /*integer*/, void * /*val*/)
 {
 	gmac::util::Logger::ASSERTION(0);
 }
@@ -499,7 +499,7 @@ int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
     return 0;
 }
 
-void CUDARTAPI __cudaMutexOperation(int lock)
+void CUDARTAPI __cudaMutexOperation(int /*lock*/)
 {
 	gmac::util::Logger::ASSERTION(0);
 }
@@ -534,7 +534,7 @@ cudaError_t cudaEventQuery(cudaEvent_t event)
     return __getCUDAError(ret);
 }
 
-cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream)
+cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t /*stream*/)
 {
     CUresult ret = cuEventRecord((CUevent) event, gmac::cuda::Mode::current().eventStream());
     return __getCUDAError(ret);

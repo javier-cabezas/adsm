@@ -5,7 +5,7 @@
 
 namespace gmac {
 
-void memoryInit(const char *managerName, const char *allocatorName)
+void memoryInit(const char *, const char *)
 {
 	util::Logger::TRACE("Initializing Memory Subsystem");
     memory::Manager::create<memory::Manager>();

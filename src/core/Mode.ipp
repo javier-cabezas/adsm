@@ -5,14 +5,14 @@
 
 namespace gmac {
 
-inline void ContextMap::add(THREAD_ID id, Context *ctx)
+inline void ContextMap::add(THREAD_T id, Context *ctx)
 {
     lockWrite();
     Parent::insert(Parent::value_type(id, ctx));
     unlock();
 }
 
-inline Context *ContextMap::find(THREAD_ID id)
+inline Context *ContextMap::find(THREAD_T id)
 {
     lockRead();
     Parent::iterator i = Parent::find(id);
@@ -22,7 +22,7 @@ inline Context *ContextMap::find(THREAD_ID id)
     return ret;
 }
 
-inline void ContextMap::remove(THREAD_ID id)
+inline void ContextMap::remove(THREAD_T id)
 {
     lockWrite();
     Parent::erase(id);

@@ -51,9 +51,9 @@ void __cudaUnregisterFatBinary(void **fatCubinHandle)
 }
 
 void __cudaRegisterFunction(
-		void **fatCubinHandle, const char *hostFun, char *devFun,
-		const char *devName, int threadLimit, uint3 *tid, uint3 *bid,
-		dim3 *bDim, dim3 *gDim)
+		void **fatCubinHandle, const char *hostFun, char * /*devFun*/,
+		const char *devName, int /*threadLimit*/, uint3 * /*tid*/, uint3 * /*bid*/,
+		dim3 * /*bDim*/, dim3 * /*gDim*/)
 {
     gmac::util::Logger::TRACE("CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
@@ -65,20 +65,20 @@ void __cudaRegisterFunction(
 }
 
 void __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
-		char *deviceAddress, const char *deviceName, int ext, int size,
-		int constant, int global)
+		char * /*deviceAddress*/, const char *deviceName, int /*ext*/, int /*size*/,
+		int constant, int /*global*/)
 {
     gmac::util::Logger::TRACE("CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	gmac::util::Logger::ASSERTION(mod != NULL);
 	gmac::enterGmac();
-    VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant));
+    VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant != 0));
     mod->add(v);
 	gmac::exitGmac();
 }
 
 void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
-		const void **deviceAddress, const char *deviceName, int dim, int norm, int ext)
+		const void ** /*deviceAddress*/, const char *deviceName, int /*dim*/, int /*norm*/, int /*ext*/)
 {
     gmac::util::Logger::TRACE("CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
@@ -89,12 +89,12 @@ void __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference 
 	gmac::exitGmac();
 }
 
-void __cudaRegisterShared(void **fatCubinHandle, void **devicePtr)
+void __cudaRegisterShared(void ** /*fatCubinHandle*/, void ** /*devicePtr*/)
 {
 }
 
-void __cudaRegisterSharedVar(void **fatCubinHandle, void **devicePtr,
-		size_t size, size_t alignment, int storage)
+void __cudaRegisterSharedVar(void ** /*fatCubinHandle*/, void ** /*devicePtr*/,
+		size_t /*size*/, size_t /*alignment*/, int /*storage*/)
 {
 }
 
@@ -112,7 +112,7 @@ cudaError_t cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	gmac::enterGmac();
     Mode &mode = gmac::cuda::Mode::current();
-	mode.argument(arg, count, offset);
+	mode.argument(arg, count, (off_t)offset);
 	gmac::exitGmac();
 	return cudaSuccess;
 }

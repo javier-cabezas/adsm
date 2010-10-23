@@ -35,8 +35,8 @@ WITH THE SOFTWARE.  */
 #define GMAC_GMAC_INIT_H_
 
 #include "config/common.h"
+#include "util/Lock.h"
 #include "util/Private.h"
-#include "util/Logger.h"
 
 namespace gmac {
 

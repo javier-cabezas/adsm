@@ -25,7 +25,7 @@ Arena::~Arena()
 {
     util::Logger::CFatal(_objects.size() == size, "Destroying non-full Arena");
     _objects.clear();
-    gmacError_t ret = Manager::getInstance().free(ptr);
+	Manager::getInstance().free(ptr);
 }
 
 

@@ -13,7 +13,6 @@ Cache &Slab::createCache(CacheMap &map, long key, size_t size)
 
 Cache &Slab::get(long key, size_t size)
 {
-    Cache *cache = NULL;
     ModeMap::iterator i;
     modes.lockRead();
     Mode *mode = &Mode::current();
@@ -54,7 +53,7 @@ void Slab::cleanup()
 
 void *Slab::alloc(size_t size, void *addr)
 {
-    Cache &cache = get((unsigned long)addr ^ size, size);
+    Cache &cache = get((unsigned long)addr ^ (unsigned long)size, size);
     trace("Using cache %p", &cache);
     void *ret = cache.get();
     addresses.lockWrite();

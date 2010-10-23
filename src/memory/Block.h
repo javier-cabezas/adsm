@@ -68,6 +68,8 @@ protected:
 public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
+	AcceleratorBlock &operator =(const AcceleratorBlock &) {Fatal("Assigment of accelerator blocks is not supported");}
+
 
 #if 0
     gmacError_t toDevice(off_t off, Block &block);

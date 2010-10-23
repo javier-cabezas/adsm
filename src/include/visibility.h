@@ -26,6 +26,8 @@
 #  define GMAC_DLL_IMPORT __declspec(dllimport)
 #  define GMAC_DLL_EXPORT __declspec(dllexport)
 #  define GMAC_DLL_LOCAL
+#  define CONSTRUCTOR
+#  define DESTRUCTOR
 #else
 #  if __GNUC__ >= 4
 #    define GMAC_DLL_IMPORT __attribute__ ((visibility("default")))
@@ -36,6 +38,8 @@
 #    define GMAC_DLL_EXPORT
 #    define GMAC_DLL_LOCAL
 #  endif
+#  define CONSTRUCTOR __attribute__((constructor))
+#  define DESTRUCTOR  __attribute__((destructor))
 #endif
 
 /* Now we use the generic helper definitions above to define GMAC_API and
@@ -45,7 +49,7 @@
  * GMAC_LOCAL is used for non-api symbols.
  */
 
-#if defined(GMAC_DLL) && not defined(DEBUG)
+#if defined(GMAC_DLL) && !defined(DEBUG)
 /* compiled as a non-debug shared library */
 #  ifdef GMAC_DLL_EXPORTS           /* defined if we're building the library
                                     * instead of using it                     */

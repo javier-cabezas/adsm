@@ -4,7 +4,6 @@
 
 #include "config/config.h"
 #include "config/order.h"
-#include "config/threads.h"
 
 #include "util/Logger.h"
 
@@ -21,6 +20,22 @@
 
 #include "init.h"
 
+#if defined(__GNUC__)
+#define RETURN_ADDRESS __builtin_return_address(0)
+#elif defined(_MSC_VER)
+extern "C" void * _ReturnAddress(void);
+#pragma intrinsic(_ReturnAddress)
+#define RETURN_ADDRESS _ReturnAddress()
+static long getpagesize (void) {
+    static long pagesize = 0;
+    if(pagesize == 0) {
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        pagesize = systemInfo.dwPageSize;
+    }
+    return pagesize;
+}
+#endif
 
 #if 0
 gmacError_t
@@ -111,7 +126,7 @@ gmacMalloc(void **cpuPtr, size_t count)
     gmac::trace::Function::start("GMAC","gmacMalloc");
     gmac::memory::Allocator &allocator = gmac::memory::Allocator::getInstance();
     if(count < (paramPageSize / 2)) {
-        *cpuPtr = allocator.alloc(count, __builtin_return_address(0));
+        *cpuPtr = allocator.alloc(count, RETURN_ADDRESS);
     }
     else {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
@@ -243,8 +258,6 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::enterGmac();
 	void *ret = dst;
 
-    gmacError_t err;
-
 	// Locate memory regions (if any)
     gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(dst);
@@ -258,11 +271,11 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 }
 
 void
-gmacSend(pthread_t id)
+gmacSend(THREAD_T id)
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
-    proc.send((THREAD_ID)id);
+    proc.send((THREAD_T)id);
     gmac::exitGmac();
 }
 
@@ -276,19 +289,19 @@ gmacReceive()
 }
 
 void
-gmacSendReceive(pthread_t id)
+gmacSendReceive(THREAD_T id)
 {
 	gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
-	proc.sendReceive((THREAD_ID)id);
+	proc.sendReceive((THREAD_T)id);
 	gmac::exitGmac();
 }
 
 void
-gmacCopy(pthread_t id)
+gmacCopy(THREAD_T id)
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
-    proc.copy((THREAD_ID)id);
+    proc.copy((THREAD_T)id);
     gmac::exitGmac();
 }

@@ -2,7 +2,19 @@
 #define __PARAMS_IPP_
 
 #include <cstdio>
-#include <stdint.h>
+
+#if defined(__GNUC__)
+#	define GETENV getenv
+#elif defined(_MSC_VER)
+#	define GETENV gmac_getenv
+static inline const char *gmac_getenv(const char *name)
+{
+	static char buffer[512];
+	size_t size = 0;
+	if(getenv_s(&size, buffer, 512, name) != 0) return NULL;
+	return (const char *)buffer;
+}
+#endif
 
 namespace gmac { namespace util {
 
@@ -13,7 +25,7 @@ T convert(const char * str);
 template <>
 inline bool convert<bool>(const char * str)
 {
-    return bool(atoi(str));
+    return bool(atoi(str) != 0);
 }
 
 template <>
@@ -25,7 +37,7 @@ inline int convert<int>(const char * str)
 template <>
 inline float convert<float>(const char * str)
 {
-    return atof(str);
+    return (float)atof(str);
 }
 
 template <>
@@ -57,7 +69,7 @@ inline Parameter<T>::Parameter(T *address, const char *name,
 {
     const char *tmp = NULL;
     if(envVar != NULL &&
-        (tmp = getenv(envVar)) != NULL) {
+        (tmp = GETENV(envVar)) != NULL) {
         *value = convert<T>(tmp);
 
         if (flags & PARAM_NONZERO &&

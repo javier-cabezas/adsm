@@ -2,8 +2,6 @@
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
-#include "util/FileLock.h"
-
 #include "trace/Function.h"
 
 #include "init.h"
@@ -31,8 +29,7 @@ char _gmacInit = 0;
 #endif
 #endif
 
-static void __attribute__((constructor))
-init(void)
+static void CONSTRUCTOR init(void)
 {
 	util::Private<const char>::init(_inGmac);
     _inGmacLock = new GMACLock();
@@ -69,8 +66,7 @@ init(void)
     exitGmac();
 }
 
-static void __attribute__((destructor))
-fini(void)
+static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
     gmac::util::Logger::TRACE("Cleaning GMAC");
@@ -82,6 +78,26 @@ fini(void)
 
 } // namespace gmac
 
+#if defined(_WIN32)
+#include <windows.h>
+ 
+// DLL entry function (called on load, unload, ...)
+BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
+{
+	switch(dwReason) {
+		case DLL_PROCESS_ATTACH:
+			gmac::init();
+			break;
+		case DLL_PROCESS_DETACH:
+			gmac::fini();
+			break;
+		case DLL_THREAD_ATTACH:
+			// TODO: Handle thread creation -- Should be similar to pthread_create()
+			break;
+	};
+    return TRUE;
+}
+#endif
 
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

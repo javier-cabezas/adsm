@@ -44,12 +44,17 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
-#include "config/threads.h"
+#include "include/gmac-types.h"
 
 #include "util/Lock.h"
 #include "util/Parameter.h"
 
+#if defined(__GNUC__)
 #define LOCATION_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
+#elif defined(_MSC_VER)
+#define LOCATION_STRING " in function %s [%s:%d]", __FUNCTION__, __FILE__, __LINE__
+#endif
+
 #define assertion(c, ...) __assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #define ASSERTION(c, ...) __Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 
@@ -74,10 +79,17 @@ public:
 
 class GMAC_LOCAL Logger {
 
-#define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
-#define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#if defined(__GNUC__)
+#	define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#	define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#elif defined(_MSC_VER)
+#	define trace(fmt, ...) __trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __FUNCTION__, \
+		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#	define TRACE(fmt, ...) __Trace("("FMT_TID":%s) [%s:%d] " fmt, SELF(), __FUNCTION__, \
+		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#endif
 
 #define WARNING(fmt, ...) __Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
 

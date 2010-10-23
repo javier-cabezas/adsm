@@ -1,4 +1,6 @@
-add_subdirectory(stdc)
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	add_subdirectory(stdc)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 add_subdirectory(${OS_DIR})
 if(DEFINED THREAD_DIR)
     add_subdirectory(${THREAD_DIR})

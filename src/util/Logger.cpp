@@ -7,9 +7,52 @@
 #include <cassert>
 
 #include <typeinfo>
+#if defined(__GNUC__)
 #include <cxxabi.h>
+#define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
+#elif defined(_MSC_VER)
+#include <Dbghelp.h>
+static char *demangle(const char *name)
+{
+	char *ret = NULL;
+	ret = (char *)malloc(strlen(name));
+	if(UnDecorateSymbolName(name, ret, (DWORD)strlen(name), UNDNAME_COMPLETE))
+		return ret;
+	free(free);
+	return NULL;
+}
+#endif
+
+#if defined(__GNUC__)
+#include <strings.h>
+#define STRTOK strtok_r
+#define VSNPRINTF vsnprintf
+#elif defined(_MSC_VER)
+#define STRTOK strtok_s
+#define VSNPRINTF(str, size, format, ap) vsnprintf_s(str, size, size - 1, format, ap)
+static char *strcasestr(const char *haystack, const char *needle)
+{
+	const char *p, *startn = 0, *np = 0;
+	for(p = haystack; *p; p++) {
+		if(np) {
+			if(toupper(*p) == toupper(*np)) {
+				if(!*++np) return (char *)startn;
+			}
+			else {
+				np = 0;
+			}
+		} else if (toupper(*p) == toupper(*needle)) {
+			np = needle + 1;
+			startn = p;
+		}
+	}
+	return 0;
+}
+#endif
 
 namespace gmac { namespace util {
+
+
 
 char Logger::Buffer_[Logger::BufferSize_];
 LoggerLock Logger::Lock_;
@@ -51,10 +94,11 @@ void Logger::init()
             "Logger::DebugString_", "none", "GMAC_DEBUG");
         char *tmp = new char[strlen(DebugString_) + 1];
         memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
-        char *tag = strtok(tmp, ", ");
+		char *next = NULL;
+		char *tag = STRTOK(tmp, ", ", &next);
         while(tag != NULL) {
             Tags_->push_back(std::string(tag));
-            tag = strtok(NULL, ", ");
+            tag = STRTOK(tmp, ", ", &next);
         }
         delete[] tmp;
     }
@@ -78,11 +122,8 @@ bool Logger::check(const char *name) const
 void Logger::log(const char *tag, const char *fmt, va_list list) const
 {
     char *name = NULL;
-    int status = 0;
-    if(name_ == NULL) name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, &status);
+    if(name_ == NULL) name  = demangle(typeid(*this).name());
     else name = (char *)name_;
-
-    if(status != 0) return;
 
     if(active_ == false && check(name) == false) {
         if(name_ == NULL && name != NULL ) free(name);
@@ -98,10 +139,11 @@ void Logger::log(const char *tag, const char *fmt, va_list list) const
 void Logger::__print(const char *tag, const char *fmt, va_list list)  const
 {
     const char *name = NULL;
-    if(name_ == NULL) name  = abi::__cxa_demangle(typeid(*this).name(), NULL, 0, NULL);
+    if(name_ == NULL) name  = demangle(typeid(*this).name());
     else name = name_;
 
-    vsnprintf(Buffer_, BufferSize_, fmt, list);
+    
+	VSNPRINTF(Buffer_, BufferSize_, fmt, list);
     *out_ << tag << " [" << name << "]: " << Buffer_ << std::endl;
 }
 

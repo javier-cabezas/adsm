@@ -34,12 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef __PARAMS_H_
 #define __PARAMS_H_
 
-#include <stdint.h>
-
 #include <cstdlib>
 #include <map>
-
-#include <stdint.h>
 
 #include "config/common.h"
 #include "config/order.h"

@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define GMAC_API_CUDA_CONTEXT_H_
 
 #include <cuda.h>
-#include <stdint.h>
 #include <vector_types.h>
 
 #include <map>

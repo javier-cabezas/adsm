@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_KERNEL_ALLOCATOR_BUDDY_H
 #define GMAC_KERNEL_ALLOCATOR_BUDDY_H
 
-#include <stdint.h>
-
 #include <list>
 #include <map>
 

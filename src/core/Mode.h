@@ -59,14 +59,14 @@ class IOBuffer;
 class KernelLaunch;
 class Process;
 
-class GMAC_LOCAL ContextMap : protected std::map<THREAD_ID, Context *>, util::RWLock {
+class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, util::RWLock {
 protected:
-    typedef std::map<THREAD_ID, Context *> Parent;
+    typedef std::map<THREAD_T, Context *> Parent;
 public:
     ContextMap() : util::RWLock("ContextMap") {};
-    void add(THREAD_ID id, Context *ctx);
-    Context *find(THREAD_ID id);
-    void remove(THREAD_ID id);
+    void add(THREAD_T id, Context *ctx);
+    Context *find(THREAD_T id);
+    void remove(THREAD_T id);
     void clean();
 
     gmacError_t sync();
@@ -107,6 +107,7 @@ protected:
 public:
     Mode(Process &proc, Accelerator &acc);
     ~Mode();
+	Mode &operator =(const Mode &) {Fatal("Assigment of modes is not supported");}
     void release();
 
     static void init();

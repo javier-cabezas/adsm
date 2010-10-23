@@ -55,6 +55,7 @@ public:
     IOBuffer(Mode &mode, void *addr, size_t size) :
         util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(mode) {}
     inline virtual ~IOBuffer() {};
+	IOBuffer &operator =(const IOBuffer &) {Fatal("Assigment of I/O buffers is not supported");}
 
     inline uint8_t *addr() const { return (uint8_t *) addr_; }
     inline uint8_t *end() const { return addr() + size_; }

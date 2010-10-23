@@ -59,9 +59,6 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
-// TODO: add define to check for Windows
-#include <pthread.h>
-typedef pthread_t THREAD_T;
 
 
 #include "gmac-types.h"
