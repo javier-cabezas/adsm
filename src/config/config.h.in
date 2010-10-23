@@ -43,6 +43,9 @@ WITH THE SOFTWARE.  */
 #define ACC_USE_LAUNCH_ARGS symbol
 #endif
 
+#cmakedefine HAVE_STDINT
+#cmakedefine HAVE_POSIX_MEMALIGN
+
 #define CBREAK(e, ...) \
         if (!(e)) {      \
             __VA_ARGS__; \

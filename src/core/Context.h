@@ -57,7 +57,10 @@ protected:
 	Context(Accelerator &acc, unsigned id);
 public:
 	virtual ~Context();
-	Context &operator =(const Context &) {Fatal("Assigment of contexts is not supported");}
+	Context &operator =(const Context &) {
+        Fatal("Assigment of contexts is not supported");
+        return *this;
+    }
 
     static void init();
 

@@ -2,7 +2,6 @@
 #define GMAC_UTIL_POSIX_LOCK_IPP_
 
 #include "config/debug.h"
-#include "config/threads.h"
 
 #include <cassert>
 #include <cstdio>

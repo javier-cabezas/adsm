@@ -51,7 +51,10 @@ protected:
     CUfunction _f;
 
     KernelLaunch(const Kernel & k, const KernelConfig & c);
-	KernelLaunch &operator =(const KernelLaunch &) {Fatal("Assigment of kernel launch is not supported");}
+	KernelLaunch &operator =(const KernelLaunch &) {
+        Fatal("Assigment of kernel launch is not supported");
+        return *this;
+    }
 public:
 
     gmacError_t execute();
