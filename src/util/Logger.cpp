@@ -98,7 +98,7 @@ void Logger::init()
 		char *tag = STRTOK(tmp, ", ", &next);
         while(tag != NULL) {
             Tags_->push_back(std::string(tag));
-            tag = STRTOK(tmp, ", ", &next);
+            tag = STRTOK(NULL, ", ", &next);
         }
         delete[] tmp;
     }
