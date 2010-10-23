@@ -71,7 +71,10 @@ protected:
 public:
     Map(const char *name, Mode &parent) : ObjectMap(name), parent_(parent) {}
     virtual ~Map();
-	Map &operator =(const Map &) {Fatal("Assigment of memory maps is not supported");}
+	Map &operator =(const Map &) {
+        Fatal("Assigment of memory maps is not supported");
+        return *this;
+    }
 
     void insert(Object &obj);
     void remove(Object &obj);

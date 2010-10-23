@@ -35,7 +35,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CONFIG_COMMON_H_
 #define GMAC_CONFIG_COMMON_H_
 
-#ifdef HAS_STDINT
+#include "config/config.h"
+
+#ifdef HAVE_STDINT
 #include <stdint.h>
 #else
 typedef unsigned char uint8_t;

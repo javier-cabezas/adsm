@@ -157,7 +157,7 @@ set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
-check_include_file("stdint.h" HAS_STDINT)
+check_include_file("stdint.h" HAVE_STDINT)
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")
