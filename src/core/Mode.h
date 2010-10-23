@@ -107,7 +107,10 @@ protected:
 public:
     Mode(Process &proc, Accelerator &acc);
     ~Mode();
-	Mode &operator =(const Mode &) {Fatal("Assigment of modes is not supported");}
+	Mode &operator =(const Mode &) {
+        Fatal("Assigment of modes is not supported");
+        return *this;
+    }
     void release();
 
     static void init();

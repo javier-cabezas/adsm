@@ -54,7 +54,10 @@ protected:
 public:
     IOBuffer(Mode &mode, void *addr, size_t size);
     virtual ~IOBuffer();
-	IOBuffer &operator =(const IOBuffer &) {Fatal("Assigment of I/O buffers is not supported");}
+	IOBuffer &operator =(const IOBuffer &) {
+        Fatal("Assigment of I/O buffers is not supported");
+        return *this;
+    }
 
     uint8_t *addr() const;
     uint8_t *end() const;

@@ -141,7 +141,10 @@ public:
     Entry(const StateObject<LazyImpl::State> &object,
             SystemBlock<LazyImpl::State> *block) :
         object(object), block(block) {};
-		Entry &operator =(const Entry &) {gmac::util::Logger::Fatal("Assigment of protocol entries is not supported");}
+		Entry &operator =(const Entry &) {
+            gmac::util::Logger::Fatal("Assigment of protocol entries is not supported");
+            return *this;
+        }
 
 
     inline void lock() const { block->lock(); }
