@@ -48,7 +48,6 @@ typedef pthread_t THREAD_T;
 #		define FMT_TID "0x%lx"
 #	endif
 #endif
-typedef 
 #elif _MSC_VER
 #	include <windows.h>
 	typedef DWORD THREAD_T;

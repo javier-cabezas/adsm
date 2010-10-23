@@ -12,12 +12,12 @@ Context::Context(Accelerator &acc, unsigned id) :
     acc_(acc),
     id_(id)
 {
-    gmac::trace::Thread::start(id);
+    gmac::trace::Thread::start((THREAD_T)id);
 }
 
 Context::~Context()
 { 
-    gmac::trace::Thread::end(id_);
+    gmac::trace::Thread::end((THREAD_T)id_);
 }
 
 

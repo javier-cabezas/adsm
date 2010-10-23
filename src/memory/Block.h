@@ -68,7 +68,10 @@ protected:
 public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
-	AcceleratorBlock &operator =(const AcceleratorBlock &) {Fatal("Assigment of accelerator blocks is not supported");}
+	AcceleratorBlock &operator =(const AcceleratorBlock &) {
+        Fatal("Assigment of accelerator blocks is not supported");
+        return *this;
+    }
 
 
 #if 0
