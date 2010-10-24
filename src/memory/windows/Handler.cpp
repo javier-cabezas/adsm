@@ -11,28 +11,23 @@ namespace gmac { namespace memory {
 
 
 unsigned Handler::Count_ = 0;
-#if 0
-struct sigaction defaultAction;
-#if defined(LINUX)
-int Handler::Signum_ = SIGSEGV;
-#elif defined(DARWIN)
-int Handler::Signum_ = SIGBUS;
-#endif
 
-static void segvHandler(int s, siginfo_t *info, void *ctx)
+static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 {
+	/* Check that we are getting an access violation exception */
+	if(ex->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
+		return EXCEPTION_CONTINUE_SEARCH;
+
 	enterGmac();
 	trace::Function::start("GMAC", "gmacSignal");
-	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
+	
+	bool writeAccess = false;
+	if(ex->ExceptionRecord->ExceptionInformation[0] == 1) writeAccess = true;
+	else if(ex->ExceptionRecord->ExceptionInformation[0] != 0) { exitGmac(); return EXCEPTION_CONTINUE_SEARCH; }
+	
+	void *addr = (void *)ex->ExceptionRecord->ExceptionInformation[1];
 
-#if defined(LINUX)
-	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
-#elif defined(DARWIN)
-	unsigned long writeAccess = (*mCtx)->__es.__err & 0x2;
-#endif
-    void * addr = info->si_addr;
-
-	if(!writeAccess) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
+	if(writeAccess == false) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
 	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
@@ -43,43 +38,30 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
 		abort();
-		// TODO: set the signal mask and other stuff
-		if(defaultAction.sa_flags & SA_SIGINFO) 
-			return defaultAction.sa_sigaction(s, info, ctx);
-		return defaultAction.sa_handler(s);
+		exitGmac();
+		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
 	trace::Function::end("GMAC");
 	exitGmac();
+
+	return EXCEPTION_CONTINUE_EXECUTION;
 }
-#endif
 
 void Handler::setHandler() 
 {
-#if 0
-	struct sigaction segvAction;
-	memset(&segvAction, 0, sizeof(segvAction));
-	segvAction.sa_sigaction = segvHandler;
-	segvAction.sa_flags = SA_SIGINFO | SA_RESTART;
-    sigemptyset(&segvAction.sa_mask);
-
-	if(sigaction(Signum_, &segvAction, &defaultAction) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+	AddVectoredExceptionHandler(1, segvHandler);
 
 	Handler_ = this;
 	gmac::util::Logger::TRACE("New signal handler programmed");
-#endif
 }
 
 void Handler::restoreHandler()
 {
-#if 0
-	if(sigaction(Signum_, &defaultAction, NULL) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+	RemoveVectoredExceptionHandler(segvHandler);
 
 	Handler_ = NULL;
 	gmac::util::Logger::TRACE("Old signal handler restored");
-#endif
 }
 
 
