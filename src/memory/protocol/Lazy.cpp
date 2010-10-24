@@ -326,16 +326,17 @@ LazyImpl::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, un
 }
 
 gmacError_t
-LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n)
+LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count)
 {
     assertion(objectOff < obj.size());
     assertion(bufferOff < buffer.size());
-    assertion(n <= buffer.size());
+    assertion(count <= buffer.size());
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
+    off_t n = (off_t)count;
     off_t off = 0;
     uint8_t * addr = object.addr() + objectOff;
     i = object.getBlockIterator(addr);
