@@ -126,9 +126,9 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
-
-# Set default configuration to RELEASE
-option(CMAKE_BUILD_TYPE "Build configuration" "Release")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif(NOT CMAKE_BUILD_TYPE)
 
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
