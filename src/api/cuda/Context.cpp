@@ -33,7 +33,6 @@ Context::~Context()
 
 void Context::setupCUstreams()
 {
-    CUresult ret;
     streamLaunch_   = accelerator().createCUstream();
     streamToAccelerator_ = accelerator().createCUstream();
     streamToHost_   = accelerator().createCUstream();
@@ -42,7 +41,6 @@ void Context::setupCUstreams()
 
 void Context::cleanCUstreams()
 {
-    CUresult ret;
     accelerator().destroyCUstream(streamLaunch_);
     accelerator().destroyCUstream(streamToAccelerator_);
     accelerator().destroyCUstream(streamToHost_);

@@ -155,7 +155,9 @@ if(${OS_DIR} MATCHES "posix")
     find_library(dl_LIB "${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}")
     set(gmac_LIBS ${gmac_LIBS} ${dl_LIB})
     check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+elseif(${OS_DIR} MATCHES "windows")
 endif(${OS_DIR} MATCHES "posix")
+
 
 # Add subdirectories
 add_subdirectory(src)

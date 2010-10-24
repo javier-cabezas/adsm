@@ -93,7 +93,7 @@ void RWLockTest::unlock() const
         writer_ = 0;
     }
     else {
-        REQUIRES(readers_.erase(pthread_self()) == 1);
+        REQUIRES(readers_.erase(GetCurrentThreadId()) == 1);
         REQUIRES(state_ == Read);
         if(readers_.empty() == true) state_ = Idle;
     }

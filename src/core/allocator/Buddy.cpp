@@ -6,7 +6,7 @@ namespace gmac { namespace kernel { namespace allocator {
 
 Buddy::Buddy(size_t size) :
     util::Lock("Buddy"),
-    size_(round(size)),
+    size_(round((uint32_t)size)),
     index_(index(size_))
 {
     initMemory();
@@ -43,7 +43,7 @@ uint8_t Buddy::index(register uint32_t x) const
     x |= (x >> 4);
     x |= (x >> 8);
     x |= (x >> 16);
-    return(ones(x >> 1) - y);
+    return (uint8_t)(ones(x >> 1) - y);
 }
 
 uint32_t Buddy::round(register uint32_t x) const
@@ -110,9 +110,9 @@ void Buddy::putToList(off_t addr, uint8_t i)
 
 void *Buddy::get(size_t &size)
 {
-    uint8_t i = index(size);
-    size = 1 << i;
-    trace("Request for %d bytes of I/O memory", size);
+    uint8_t i = index((uint32_t)size);
+    uint32_t realSize = (uint32_t) 1 << i;
+    trace("Request for %d bytes of I/O memory", realSize);
     lock();
     off_t off = getFromList(i);
     unlock();
@@ -123,8 +123,8 @@ void *Buddy::get(size_t &size)
 
 void Buddy::put(void *addr, size_t size)
 {
-    uint8_t i = index(size);
-    off_t off = (uint8_t *)addr - (uint8_t *)addr_;
+    uint8_t i = index((uint32_t)size);
+    off_t off = (off_t)((uint8_t *)addr - (uint8_t *)addr_);
     trace("Releasing %d bytes at offset %d of I/O memory", size, off);
     lock();
     putToList(off, i);
