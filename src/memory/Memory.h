@@ -31,10 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_POSIX_MEMORY_H_
-#define __MEMORY_POSIX_MEMORY_H_
-
-#include <sys/mman.h>
+#ifndef __MEMORY_MEMORY_H_
+#define __MEMORY_MEMORY_H_
 
 #include "config/common.h"
 #include "util/Logger.h"
@@ -42,19 +40,16 @@ WITH THE SOFTWARE.  */
 namespace gmac { namespace memory {
 
 class GMAC_LOCAL Memory {
-private:
-#ifdef USE_MMAP
-#ifdef ARCH_32BIT
-    static const size_t mmSize = 0;
-#else
-	static const size_t mmSize = 0x10000000000;
-#endif
-#endif
-
 public:
-	static int protect(void *addr, size_t count, int prot);
-	static void *map(void *addr, size_t count, int prot = 0);
-	static void *remap(void *addr, void *to, size_t count, int prot = 0);
+	typedef enum {
+		None =0 , 
+		Read, 
+		Write, 
+		ReadWrite 
+	} Protection;
+	static int protect(void *addr, size_t count, Protection prot);
+	static void *map(void *addr, size_t count, Protection prot = None);
+	static void *remap(void *addr, void *to, size_t count, Protection prot = None);
 	static void unmap(void *addr, size_t count);
 };
 

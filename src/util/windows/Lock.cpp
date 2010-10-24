@@ -5,8 +5,7 @@
 namespace gmac { namespace util {
 
 LockImpl::LockImpl(const char *name) :
-    ParaverLock(name),
-	owner_(0)
+    ParaverLock(name)
 {
     InitializeCriticalSection(&mutex_);
 }

@@ -5,7 +5,7 @@ add_subdirectory(allocator)
 add_subdirectory(${OS_DIR})
 
 set(memory_SRC
-    memory.cpp
+    memory.cpp Memory.h
     Bitmap.h Bitmap.ipp Bitmap.cpp
     Block.h Block.ipp
     Object.h Object.ipp Object.cpp

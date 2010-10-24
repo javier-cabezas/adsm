@@ -39,7 +39,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 {
 }
 
-KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens) :
+KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/) :
     gmac::KernelConfig(),
     _grid(grid),
     _block(block),
@@ -74,7 +74,7 @@ KernelLaunch::execute()
 #endif
 
 	// Set-up shared size
-	if((ret = cuFuncSetSharedSize(_f, shared())) != CUDA_SUCCESS) {
+	if((ret = cuFuncSetSharedSize(_f, (unsigned int)shared())) != CUDA_SUCCESS) {
         goto exit;
 	}
 

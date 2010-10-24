@@ -31,61 +31,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAMS_H_
-#define __PARAMS_H_
-
-#include <cstdlib>
-#include <map>
+#ifndef __MEMORY_WINDOWS_FILEMAP_H_
+#define __MEMORY_WINDOWS_FILEMAP_H_
 
 #include "config/common.h"
-#include "config/order.h"
+#include "util/Logger.h"
+#include "util/Lock.h"
 
-#include <iostream>
-#include <vector>
+namespace gmac { namespace memory {
 
-enum GMAC_LOCAL ParamFlags {
-    PARAM_NONZERO = 0x1
-};
-
-namespace gmac { namespace util {
-class GMAC_LOCAL __Parameter {
-public:
-    virtual ~__Parameter() {};
-    virtual void print() const = 0;
-};
-
-template<typename T>
-class GMAC_LOCAL Parameter : public __Parameter {
+class GMAC_LOCAL FileMapEntry {
 protected:
-    T *value;
-    T def;
-
-    const char *name;
-    const char *envVar;
-    uint32_t flags;
-    bool envSet;
-
+	HANDLE handle_;
+	void *address_;
+	size_t size_;
 public:
-    virtual ~Parameter() {};
-    Parameter(T *address, const char *name, T def, const char *envVar,
-        uint32_t flags = 0);
+	inline FileMapEntry(HANDLE handle, void *address, size_t size) :
+	handle_(handle), address_(address), size_(size) {};
+	virtual ~FileMapEntry() {};
 
-    void print() const;
+	inline HANDLE handle() const { return handle_; }
+	inline void *address() const { return address_; }
+	inline size_t size() const { return size_; }
 };
 
-} }
+class GMAC_LOCAL FileMap :
+	protected std::map<void *, FileMapEntry>,
+	public util::RWLock
+{
+protected:
+	typedef std::map<void *, FileMapEntry> Parent;
+public:
+	FileMap();
+	virtual ~FileMap();
 
+	bool insert(HANDLE handle, void *address, size_t size);
+	bool remove(void *address);
+	const FileMapEntry find(void *address) const;
+};
 
-typedef struct GMAC_LOCAL {
-    gmac::util::__Parameter *(*ctor)(void);
-    gmac::util::__Parameter *param;
-} ParameterCtor;
-
-extern ParameterCtor ParamCtorList[];
-
-#define PARAM(v, t, d, ...)  extern t v;
-#include "Parameter-def.h"
-
-#include "Parameter.ipp"
+}}
 
 #endif

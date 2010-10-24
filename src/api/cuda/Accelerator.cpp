@@ -46,7 +46,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     busDevId_ = val;
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
-    integrated_ = val;
+    integrated_ = (val != 0);
 
     ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
@@ -239,10 +239,11 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
         ret = cuMemsetD32(gpuAddr(addr), seed, size);
     }
     else if(size % 16) {
-        short seed = c | (c << 8);
+		short s = (short) c & 0xffff;
+        short seed = s | (s << 8);
         ret = cuMemsetD16(gpuAddr(addr), seed, size);
     }
-    else ret = cuMemsetD8(gpuAddr(addr), c, size);
+    else ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
