@@ -68,16 +68,14 @@ LoggerLock::LoggerLock() :
 
 Logger::Logger(const char *name) :
     name_(name),
-    active_(false),
-    out_(&std::clog)
+    active_(false)
 {
     init();
 }
 
 Logger::Logger() :
     name_(NULL),
-    active_(false),
-    out_(&std::clog)
+    active_(false)
 {
     init();
 }
@@ -141,7 +139,7 @@ void Logger::__print(const char *tag, const char *fmt, va_list list)  const
 
     
 	VSNPRINTF(Buffer_, BufferSize_, fmt, list);
-    *out_ << tag << " [" << name << "]: " << Buffer_ << std::endl;
+    fprintf(stderr,"%s [%s]: %s\n", tag, name, Buffer_);
 }
 
 void Logger::print(const char *tag, const char *fmt, va_list list)  const
