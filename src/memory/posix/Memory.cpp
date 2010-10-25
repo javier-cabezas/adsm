@@ -17,7 +17,6 @@ int ProtBits[] = {
     PROT_READ | PROT_WRITE
 };
 
-static unsigned n = 0;
 static FileMap Files;
 
 int Memory::protect(void *addr, size_t count, Protection prot)
@@ -34,17 +33,13 @@ void *Memory::map(void *addr, size_t count, Protection prot)
     char tmp[FILENAME_MAX];
 
     // Create new shared memory file
-    int fd = -1;
-    unsigned id = 0;
-    while(fd < 0) {
-        id = n++;
-        snprintf(tmp, FILENAME_MAX, "/gmac%d", id);
-        fd = shm_open(tmp, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG);
-        if(errno != EEXIST) return NULL;
-    }
+    snprintf(tmp, FILENAME_MAX, ".gmacXXXXXX");
+    int fd = mkstemp(tmp);
+    if(fd < 0) return NULL;
+
     if(ftruncate(fd, count) < 0) {
         close(fd);
-        shm_unlink(tmp);
+        unlink(tmp);
         return NULL;
     }
 
@@ -55,16 +50,16 @@ void *Memory::map(void *addr, size_t count, Protection prot)
         cpuAddr = addr;
         if(mmap(cpuAddr, count, ProtBits[prot], MAP_SHARED | MAP_FIXED, fd, 0) != cpuAddr) {
             close(fd);
-            shm_unlink(tmp);
+            unlink(tmp);
             return NULL;
         }
         util::Logger::TRACE("Getting fixed map: %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
     }
 
-    if(Files.insert(fd, cpuAddr, count, id) == false) {
+    if(Files.insert(fd, cpuAddr, count, tmp) == false) {
         munmap(cpuAddr, count);
         close(fd);
-        shm_unlink(tmp);
+        unlink(tmp);
         return NULL;
     }
 
@@ -93,8 +88,7 @@ void Memory::unmap(void *addr, size_t count)
     if(Files.remove(addr) == false) return;
     munmap(addr, count);
     close(entry.fd());
-    snprintf(tmp, FILENAME_MAX, "/gmac%d", entry.id());
-    shm_unlink(tmp);
+    unlink(entry.name());
 }
 
 }}
