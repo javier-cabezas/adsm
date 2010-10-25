@@ -87,6 +87,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, const void *host, siz
     trace("Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
+    assertion(ret == CUDA_SUCCESS);
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -189,7 +190,6 @@ gmacError_t Accelerator::syncCUstream(CUstream stream)
 inline
 void Accelerator::pushContext() const
 {
-    trace("Push context");
     CUresult ret;
 #ifdef USE_MULTI_CONTEXT
     ret = cuCtxPushCurrent(*Accelerator::_Ctx.get());
@@ -203,7 +203,6 @@ void Accelerator::pushContext() const
 inline
 void Accelerator::popContext() const
 {
-    trace("Pop context");
     CUresult ret;
     CUcontext tmp;
     ret = cuCtxPopCurrent(&tmp);
