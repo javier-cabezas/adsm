@@ -109,7 +109,7 @@ public:
     TESTABLE gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t count);
     TESTABLE gmacError_t fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count);
 
-    gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
+    TESTABLE gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
     gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 
     gmacError_t moveTo(Object &obj, Mode &mode);

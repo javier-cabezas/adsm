@@ -2,6 +2,7 @@
 #define __PARAMS_IPP_
 
 #include <cstdio>
+#include <cstdlib>
 
 #if defined(__GNUC__)
 #	define GETENV getenv

@@ -99,6 +99,9 @@ gmacError_t Manager::free(void * addr)
     Mode &mode = Mode::current();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
+        if (object->isInAccelerator()) {
+            protocol_->deleteObject(*object);
+        }
         mode.removeObject(*object);
         mode.putObject(*object);
         object->fini();
@@ -112,7 +115,9 @@ gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
     Mode &mode = Mode::current();
-    if (mode.releasedObjects() == false) { return gmacSuccess; }
+    if (mode.releasedObjects() == false) {
+        return gmacSuccess;
+    }
 
     const Map &map = mode.objects();
     map.lockRead();
