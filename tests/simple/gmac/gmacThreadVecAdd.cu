@@ -34,10 +34,10 @@ void *addVector(void *ptr)
 {
 	float *a, *b;
 	float **c = (float **)ptr;
-	struct timeval s, t;
+	gmactime_t s, t;
 	gmacError_t ret = gmacSuccess;
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
@@ -49,25 +49,25 @@ void *addVector(void *ptr)
 	// Alloc output data
 	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	float error = 0;
 	for(unsigned i = 0; i < vecSize; i++) {
 		error += (*c)[i] - (a[i] + b[i]);
 	}
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 {
 	pthread_t *nThread;
 	unsigned n = 0;
-	struct timeval st, en;
+	gmactime_t st, en;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
 
-	gettimeofday(&st, NULL);
+	getTime(&st);
 	for(n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, addVector, &s[n]);
 	}
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 		pthread_join(nThread[n], NULL);
 	}
 
-	gettimeofday(&en, NULL);
+	getTime(&en);
 	printTime(&st, &en, "Total: ", "\n");
 
 	free(s);

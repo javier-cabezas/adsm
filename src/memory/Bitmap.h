@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BITMAP_H_
 #define GMAC_MEMORY_BITMAP_H_
 
-#include <stdint.h>
 #include <stddef.h>
 
 #include "config/common.h"

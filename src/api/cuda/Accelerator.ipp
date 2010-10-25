@@ -1,6 +1,8 @@
 #ifndef CUDA_API_CUDA_ACCELERATOR_IPP_
 #define CUDA_API_CUDA_ACCELERATOR_IPP_
 
+#include <cuda.h>
+
 namespace gmac { namespace cuda {
 
 #if 0
@@ -29,7 +31,7 @@ void Accelerator::switchOut()
 inline
 CUdeviceptr Accelerator::gpuAddr(void *addr)
 {
-#if CUDART_VERSION <= 3010
+#if CUDA_VERSION <= 3010
     unsigned long a = (unsigned long)addr;
     return (CUdeviceptr)(a & 0xffffffff);
 #else
@@ -40,7 +42,7 @@ CUdeviceptr Accelerator::gpuAddr(void *addr)
 inline
 CUdeviceptr Accelerator::gpuAddr(const void *addr)
 {
-#if CUDART_VERSION <= 3010
+#if CUDA_VERSION <= 3010
     unsigned long a = (unsigned long)addr;
     return (CUdeviceptr)(a & 0xffffffff);
 #else

@@ -31,33 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_POSIX_MEMORY_H_
-#define __MEMORY_POSIX_MEMORY_H_
+#ifndef __UTIL_WINDOWS_SEMAPHORE_H_
+#define __UTIL_WINDOWS_SEMAPHORE_H_
 
-#include <sys/mman.h>
+#include <windows.h>
 
 #include "config/common.h"
-#include "util/Logger.h"
+#include "config/config.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace util {
 
-class GMAC_LOCAL Memory {
-private:
-#ifdef USE_MMAP
-#ifdef ARCH_32BIT
-    static const size_t mmSize = 0;
-#else
-	static const size_t mmSize = 0x10000000000;
-#endif
-#endif
-
+class GMAC_LOCAL Semaphore {
+protected:
+	int val_;
+    CONDITION_VARIABLE cond_;
+    CRITICAL_SECTION mutex_;
 public:
-	static int protect(void *addr, size_t count, int prot);
-	static void *map(void *addr, size_t count, int prot = 0);
-	static void *remap(void *addr, void *to, size_t count, int prot = 0);
-	static void unmap(void *addr, size_t count);
+	Semaphore(unsigned v);
+	~Semaphore();
+
+	void post();
+	void wait();
 };
 
-}}
+#include "Semaphore.ipp"
 
+}}
 #endif

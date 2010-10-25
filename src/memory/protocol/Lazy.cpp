@@ -9,14 +9,15 @@
 #include "memory/StateObject.h"
 #include "memory/SharedObject.h"
 #include "memory/ReplicatedObject.h"
-
-#if defined(POSIX)
-#include "memory/posix/Memory.h"
-#elif defined(WINDOWS)
-#include "memory/windows/Memory.h"
-#endif
+#include "memory/Memory.h"
 
 #include "trace/Function.h"
+
+#if defined(__GNUC__)
+#define MIN std::min
+#elif defined(_MSC_VER)
+#define MIN min
+#endif
 
 namespace gmac { namespace memory { namespace protocol {
 
@@ -112,7 +113,7 @@ gmacError_t LazyImpl::acquire(const Object &obj)
         switch(block->state()) {
             case Invalid:
             case ReadOnly:
-                if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
+				if(Memory::protect(block->addr(), block->size(), Memory::None) < 0)
                     Fatal("Unable to set memory permissions");
                 block->state(Invalid);
                 break;
@@ -161,7 +162,7 @@ gmacError_t LazyImpl::release(const StateObject<State> &object, SystemBlock<Stat
         case Dirty:
             ret = object.toAccelerator(block);
             if(ret != gmacSuccess) return ret;
-            if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+			if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
             block.state(ReadOnly);
             break;
@@ -226,7 +227,7 @@ gmacError_t LazyImpl::toHost(const Object &obj)
         block.lock();
         switch(block.state()) {
             case Invalid:
-                if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toHost(block);
                 if(ret != gmacSuccess) { block.unlock(); return ret; }
@@ -258,7 +259,7 @@ gmacError_t LazyImpl::toDevice(const Object &obj)
             case Dirty:
                 ret = object.toAccelerator(block);
                 if(ret != gmacSuccess) { block.unlock(); return ret; }
-                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
                 block.state(ReadOnly);
             break;
@@ -304,7 +305,7 @@ LazyImpl::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, un
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), addr, n);
-        unsigned blockOff = addr + off - block.addr();
+        unsigned blockOff = (unsigned)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -320,7 +321,7 @@ LazyImpl::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, un
                 }
                 break;
         }
-        off += count;
+        off += (unsigned)count;
         block.unlock();
         i++;
     } while (off < n);
@@ -339,7 +340,8 @@ LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
-    unsigned off = 0;
+    off_t n = (off_t)count;
+    off_t off = 0;
     uint8_t * addr = object.addr() + objectOff;
     i = object.getBlockIterator(addr);
     assertion(i != map.end());
@@ -349,7 +351,7 @@ LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, 
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), addr, n);
-        unsigned blockOff = addr + off - block.addr();
+        unsigned blockOff = (unsigned)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -357,10 +359,10 @@ LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, 
                 break;
 
             case ReadOnly:
-                if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memcpy(addr + off,  buffer.addr() + off, count);
-                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -373,7 +375,7 @@ LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, 
                 }
                 break;
         }           
-        off += count;
+        off += (off_t)count;
         block.unlock();
         i++;
     } while (off < n);
@@ -403,7 +405,7 @@ LazyImpl::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), src, n);
-        unsigned blockOff = src + off - block.addr();
+        unsigned blockOff = (unsigned)(src + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -420,7 +422,7 @@ LazyImpl::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t
 
                 break;
         }
-        off += count;
+        off += (unsigned)count;
         block.unlock();
         i++;
     } while (off < n);
@@ -450,7 +452,7 @@ LazyImpl::fromPointer(const Object &objDst, unsigned objectOff, const void *_src
         block.lock();
 
         size_t count = blockRemainder(block.addr(), block.size(), dst, n);
-        unsigned blockOff = dst + off - block.addr();
+        unsigned blockOff = (unsigned)(dst + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -458,10 +460,10 @@ LazyImpl::fromPointer(const Object &objDst, unsigned objectOff, const void *_src
                 break;
 
             case ReadOnly:
-                if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memcpy(dst + off, src + off, count);
-                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -474,7 +476,7 @@ LazyImpl::fromPointer(const Object &objDst, unsigned objectOff, const void *_src
                }
                 break;
         }           
-        off += count;
+        off += (unsigned)count;
         block.unlock();
         i++;
     } while (off < n);
@@ -486,8 +488,8 @@ exit_func:
 
 inline
 gmacError_t
-LazyImpl::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                      const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+LazyImpl::copyHostToDirty(const StateObject<State> &/*objectDst*/, Block &blockDst, unsigned blockOffDst,
+                      const StateObject<State> &/*objectSrc*/, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to host memory
     ::memcpy(blockDst.addr() + blockOffDst,
@@ -496,11 +498,11 @@ LazyImpl::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, 
 }
 
 gmacError_t
-LazyImpl::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+LazyImpl::copyHostToReadOnly(const StateObject<State> &/*objectDst*/, Block &blockDst, unsigned blockOffDst,
+                         const StateObject<State> &/*objectSrc*/, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to host memory AND accelerator memory
-    uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
+	uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), Memory::ReadWrite);
     if (tmp == NULL) {
         return gmacErrorInvalidValue;
     }
@@ -514,7 +516,7 @@ LazyImpl::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDs
                  blockDst.addr() + blockOffDst + count,
                  blockDst.end() - (blockDst.addr() + blockOffDst + count));
     }
-    if(Memory::protect(tmp, blockDst.size(), PROT_READ) < 0)
+	if(Memory::protect(tmp, blockDst.size(), Memory::Read) < 0)
         Fatal("Unable to set memory permissions");
 
     uint8_t *old = (uint8_t *)Memory::remap(tmp, blockDst.addr(), blockDst.size());
@@ -527,7 +529,7 @@ LazyImpl::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDs
 inline
 gmacError_t
 LazyImpl::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                        const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+                        const StateObject<State> &/*objectSrc*/, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to accelerator memory
     return objectDst.toAcceleratorFromPointer(blockDst, blockOffDst, blockSrc.addr() + blockOffSrc, count);
@@ -535,7 +537,7 @@ LazyImpl::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst
 
 
 gmacError_t
-LazyImpl::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+LazyImpl::copyAcceleratorToDirty(const StateObject<State> &/*objectDst*/, Block &/*blockDst*/, unsigned /*blockOffDst*/,
                              const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Accelerator memory to host memory
@@ -546,7 +548,7 @@ gmacError_t
 LazyImpl::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                 const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
-    uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), PROT_READ | PROT_WRITE);
+	uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), Memory::ReadWrite);
     if (tmp == NULL) {
         return gmacErrorInvalidValue;
     }
@@ -563,7 +565,7 @@ LazyImpl::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &
                  blockDst.addr() + blockOffDst + count,
                  blockDst.end() - (blockDst.addr() + blockOffDst + count));
     }
-    if(Memory::protect(tmp, blockDst.size(), PROT_READ) < 0)
+	if(Memory::protect(tmp, blockDst.size(), Memory::Read) < 0)
         Fatal("Unable to set memory permissions");
 
     void *old = Memory::remap(tmp, blockDst.addr(), blockDst.size());
@@ -582,7 +584,7 @@ LazyImpl::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &b
     Process &p = Process::getInstance();
     IOBuffer *buffer = p.createIOBuffer(count); 
     if (!buffer) {
-        void *tmp = Memory::map(NULL, count, PROT_READ | PROT_WRITE);
+		void *tmp = Memory::map(NULL, count, Memory::ReadWrite);
         CFatal(tmp != NULL, "Unable to set memory permissions");
        gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp, count);
        if (ret != gmacSuccess) return ret;
@@ -615,9 +617,6 @@ LazyImpl::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsi
     const StateObject<State>::SystemMap &mapSrc = objectSrc.blocks();
     unsigned off = 0;
 
-    gmac::IOBuffer *toHostBuffer = NULL;
-    gmac::IOBuffer *toDeviceBuffer = NULL;
-
     uint8_t * dst = objectDst.addr() + offDst;
     uint8_t * src = objectSrc.addr() + offSrc;
 
@@ -634,14 +633,12 @@ LazyImpl::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsi
         size_t countDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, n);
         size_t countSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, n);
 
-        size_t count = countSrc != countDst? std::min(countSrc, countDst): countSrc;
+        size_t count = countSrc != countDst? MIN(countSrc, countDst): countSrc;
 
-        unsigned blockOffDst = dst + off - blockDst.addr();
-        unsigned blockOffSrc = src + off - blockSrc.addr();
+        unsigned blockOffDst = (unsigned)(dst + off - blockDst.addr());
+        unsigned blockOffSrc = (unsigned)(src + off - blockSrc.addr());
 
         switch(blockSrc.state()) {
-            uint8_t * tmp;
-            uint8_t * old;
             // Source location present in host memory
             case Dirty:
             case ReadOnly:
@@ -686,7 +683,7 @@ LazyImpl::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsi
         if(ret != gmacSuccess) {
             goto exit_func;
         }
-        off += count;
+        off += (unsigned)count;
         if (blockDst.addr() + countDst == blockDst.end()) {
             iDst++;
         }
@@ -727,10 +724,10 @@ LazyImpl::memset(const Object &obj, unsigned objectOff, int c, size_t n)
 
             case ReadOnly:
                 ret = obj.owner().memset(s + off, c, count);
-                if(Memory::protect(block.addr(), block.size(), PROT_WRITE) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memset(s + off, c, count);
-                if(Memory::protect(block.addr(), block.size(), PROT_READ) < 0)
+				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -744,7 +741,7 @@ LazyImpl::memset(const Object &obj, unsigned objectOff, int c, size_t n)
                 break;
         }           
         block.unlock();
-        off += count;
+        off += (unsigned)count;
         i++;
     } while (off < n);
 
@@ -786,7 +783,7 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-        tmp = Memory::map(NULL, block->size(), PROT_WRITE);
+		tmp = Memory::map(NULL, block->size(), Memory::ReadWrite);
         if (tmp == NULL) {
             ret = gmacErrorInvalidValue;
             goto exit_func;
@@ -822,7 +819,6 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
     void *old;
     gmacError_t ret = gmacSuccess;
     block->lock();
-    Mode &mode = Mode::current();
     switch (block->state()) {
         case Dirty:
             // Somebody already fixed it
@@ -833,7 +829,7 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
             vm::Bitmap &bitmap = mode.dirtyBitmap();
             if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-                tmp = Memory::map(NULL, block->size(), PROT_READ | PROT_WRITE);
+				tmp = Memory::map(NULL, block->size(), Memory::ReadWrite);
                 if (tmp == NULL) {
                     ret = gmacErrorInvalidValue;
                     goto exit_func;
@@ -854,7 +850,7 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
             }
             break;
         case ReadOnly:
-            Memory::protect(block->addr(), block->size(), PROT_READ | PROT_WRITE);
+			Memory::protect(block->addr(), block->size(), Memory::ReadWrite);
             break;
     }
     block->state(Dirty);

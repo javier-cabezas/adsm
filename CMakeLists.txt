@@ -6,6 +6,14 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
+# Set the configuration being built
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif(NOT CMAKE_BUILD_TYPE)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
@@ -58,8 +66,6 @@ else(USE_OPENCL)
         message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
     endif(EXISTS ${NVCC})
 endif(USE_OPENCL)
-
-
 
 
 # Setup configuration options
@@ -126,17 +132,13 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
-
-# Set default configuration to RELEASE
-option(CMAKE_BUILD_TYPE "Build configuration" "Release")
-
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "-Wall -Werror -Wno-unused-variable")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
 elseif(MSVC)
-        set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
+    set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd")
 endif(CMAKE_COMPILER_IS_GNUCC)
@@ -146,7 +148,8 @@ set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
-check_include_files("stdint.h" HAVE_STDINT)
+check_include_file("stdint.h" HAVE_STDINT)
+check_function_exists(llabs HAVE_LLABS)
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")
@@ -155,7 +158,9 @@ if(${OS_DIR} MATCHES "posix")
     find_library(dl_LIB "${CMAKE_SHARED_LIBRARY_PREFIX}dl${CMAKE_SHARED_LIBRARY_SUFFIX}")
     set(gmac_LIBS ${gmac_LIBS} ${dl_LIB})
     check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+elseif(${OS_DIR} MATCHES "windows")
 endif(${OS_DIR} MATCHES "posix")
+
 
 # Add subdirectories
 add_subdirectory(src)

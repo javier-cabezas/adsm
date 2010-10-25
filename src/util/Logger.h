@@ -106,7 +106,6 @@ protected:
 
     const char *name_;
     bool active_;
-    std::ostream *out_;
 
     static const size_t BufferSize_ = 1024;
     static char Buffer_[BufferSize_];
