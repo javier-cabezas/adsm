@@ -11,18 +11,12 @@
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
 #elif defined(_MSC_VER)
-//#include <Dbghelp.h>
 static char *demangle(const char *name)
 {
-	return (char *)name;
-#if 0
 	char *ret = NULL;
-	ret = (char *)malloc(strlen(name));
-	if(UnDecorateSymbolName(name, ret, (DWORD)strlen(name), UNDNAME_COMPLETE))
-		return ret;
-	free(free);
-	return NULL;
-#endif 
+	ret = (char *)malloc(strlen(name) + 1);
+	memcpy(ret, name, strlen(name) + 1);
+	return ret;
 }
 #endif
 

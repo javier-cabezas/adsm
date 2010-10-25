@@ -16,7 +16,8 @@ LockImpl::~LockImpl()
 }
 
 RWLockImpl::RWLockImpl(const char *name) :
-    ParaverLock(name)
+    ParaverLock(name),
+	owner_(0)
 {
     InitializeSRWLock(&lock_);
 }

@@ -129,33 +129,37 @@ void Map::remove(Object &obj)
     ObjectMap &shared = proc.shared();
     shared.lockWrite();
     i = shared.find(obj.end());
-    if (i != shared.end()) {
+	bool done = (i != shared.end());
+    if(done) {
         trace("Removing Shared Object %p", obj.addr());
         shared.erase(i);
     }
     shared.unlock();
-    if (i != shared.end()) return;
+    if(done) return;
 
     // Replicated object
     ObjectMap &replicated = proc.replicated();
     replicated.lockWrite();
     i = replicated.find(obj.end());
-    if (i != replicated.end()) {
+	done = (i != replicated.end());
+    if(done) {
         trace("Removing Replicated Object %p", obj.addr());
         replicated.erase(i);
     }
     replicated.unlock();
-    if (i != replicated.end()) return;
+    if(done) return;
 
     // Centralized object
     ObjectMap &centralized = proc.centralized();
     centralized.lockWrite();
     i = centralized.find(obj.end());
-    if (i != centralized.end()) {
+	done = (i != centralized.end());
+    if(done) {
         trace("Removing Centralized Object %p", obj.addr());
         centralized.erase(i);
     }
     centralized.unlock();
+	if(done) return;
 
     // Orphan object
     ObjectMap &orphans = proc.orphans();

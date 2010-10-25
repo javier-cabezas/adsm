@@ -12,6 +12,7 @@ static inline const char *gmac_getenv(const char *name)
 	static char buffer[512];
 	size_t size = 0;
 	if(getenv_s(&size, buffer, 512, name) != 0) return NULL;
+	if(strlen(buffer) == 0) return NULL;
 	return (const char *)buffer;
 }
 #endif
