@@ -86,9 +86,21 @@ LazyTest::fromPointer(const Object &objDst, unsigned objectOff, const void *src,
     // PRECONDITIONS
     REQUIRES(count > 0);
     REQUIRES(objectOff + count <= objDst.size());
-
     // CALL IMPLEMENTATION
     gmacError_t ret = LazyImpl::fromPointer(objDst, objectOff, src, count);
+    // POSTCONDITIONS
+    return ret;
+}
+
+gmacError_t
+LazyTest::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(count > 0);
+    REQUIRES(offDst + count <= objDst.size());
+    REQUIRES(offSrc + count <= objSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = LazyImpl::copy(objDst, offDst, objSrc, offSrc, count);
     // POSTCONDITIONS
     return ret;
 }
