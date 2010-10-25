@@ -129,7 +129,7 @@ matrixMulThread(void * ptr)
 	struct param *p = (struct param *) ptr;
 
     // timers
-    struct timeval s, t;
+    gmactime_t s, t;
 
     if (gmacMalloc((void**) &p->ptr, sizeC) != gmacSuccess) {
         fprintf(stderr, "Error allocating C");
@@ -137,12 +137,12 @@ matrixMulThread(void * ptr)
     }
 
     // Call the kernel
-	gettimeofday(&s, NULL);
+	getTime(&s);
     dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid(WC / threads.x, (HC / nIter) / threads.y);
     matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * elemsC);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
     return NULL;
@@ -153,17 +153,17 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     pthread_t * threads = new pthread_t[nIter];
 	param * params = new param[nIter];
 
-    struct timeval s, t;
+    gmactime_t s, t;
 
     // allocate memory for matrices A and B
-	gettimeofday(&s, NULL);
+	getTime(&s);
 
     // initialize matricesmatrices
     valueInit(A, 100.f, elemsA);
     valueInit(B, 100.f, elemsB);
 
 	// Alloc output data
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Init: ", "\n");
 
     for (unsigned n = 0; n < nIter; n++) {
@@ -176,7 +176,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
 	}
 
     // compute reference solution
-	gettimeofday(&s, NULL);
+	getTime(&s);
     // check result
     float err = 0;
     printf("Computing host matrix mul. Please wait...\n");
@@ -187,7 +187,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
     }
 
-    gettimeofday(&t, NULL);
+    getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
     fprintf(stderr, "Error: %f\n", err);
@@ -244,14 +244,14 @@ main(int argc, char** argv)
     fprintf(stderr, "Size B: %d\n", sizeB);
     fprintf(stderr, "Size C: %d\n", sizeC);
 
-    struct timeval s, t;
+    gmactime_t s, t;
 
     /////////////////////
     // CENTRALIZED OBJECT
     /////////////////////
     fprintf(stderr, "CENTRALIZED OBJECTS\n");
     // allocate memory for matrices A and B
-	gettimeofday(&s, NULL);
+	getTime(&s);
     if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
@@ -262,7 +262,7 @@ main(int argc, char** argv)
     }
 
     float err = doTest(A, B, elemsA, elemsB, elemsC);
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Total: ", "\n");
 
     assert(gmacFree(A) == gmacSuccess);
@@ -273,7 +273,7 @@ main(int argc, char** argv)
     ////////////////////
     fprintf(stderr, "REPLICATED OBJECTS\n");
     // allocate memory for matrices A and B
-	gettimeofday(&s, NULL);
+	getTime(&s);
     if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
@@ -284,7 +284,7 @@ main(int argc, char** argv)
     }
 
     float err2 = doTest(A, B, elemsA, elemsB, elemsC);
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Total: ", "\n");
 
     assert(gmacFree(A) == gmacSuccess);
