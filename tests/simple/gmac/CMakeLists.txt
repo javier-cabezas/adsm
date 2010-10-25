@@ -22,8 +22,6 @@ set(common_SRC ${common_SRC} ${common_os_SRC})
 string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR})
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
-message(STATUS "Common group ${common_GROUP}")
-message(STATUS "Current group ${current_GROUP}")
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
