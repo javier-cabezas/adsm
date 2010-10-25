@@ -742,7 +742,6 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
     trace::Function::start("Lazy", "signalRead");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
-    void *old;
     block->lock();
     gmacError_t ret = gmacSuccess;
 
@@ -784,7 +783,6 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
     trace::Function::start("Lazy", "signalWrite");
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
-    void *old;
     gmacError_t ret = gmacSuccess;
     block->lock();
     switch (block->state()) {
