@@ -136,7 +136,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
 elseif(MSVC)
-        set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
+    set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd")
 endif(CMAKE_COMPILER_IS_GNUCC)
@@ -147,6 +147,7 @@ set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
 check_include_file("stdint.h" HAVE_STDINT)
+check_function_exists(llabs HAVE_LLABS)
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")
