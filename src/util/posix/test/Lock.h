@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
 #define GMAC_UTIL_POSIX_TEST_LOCK_H_
 
-#include <sys/types.h>
 #include <pthread.h>
 
 #include <set>
