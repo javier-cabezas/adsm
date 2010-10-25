@@ -332,7 +332,7 @@ exit_func:
 }
 
 gmacError_t
-LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n)
+LazyImpl::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count)
 {
     trace::Function::start("Lazy", "fromIOBuffer");
     gmacError_t ret = gmacSuccess;
@@ -798,7 +798,7 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
 #ifdef USE_VM
     }
 #endif
-    Memory::protect(tmp, block->size(), PROT_READ);
+	Memory::protect(tmp, block->size(), Memory::Read);
     old = Memory::remap(tmp, block->addr(), block->size());
     if (old != block->addr()) {
         ret = gmacErrorInvalidValue;
