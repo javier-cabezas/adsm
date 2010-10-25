@@ -5,8 +5,6 @@
 
 #include <trace/Thread.h>
 
-#include <cuda_runtime_api.h>
-
 namespace gmac { namespace cuda {
 
 Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :

@@ -3,7 +3,7 @@
 
 #include <cuda.h>
 #include <driver_types.h>
-#include <cuda_runtime_api.h>
+#include <vector_types.h>
 
 #include "config/common.h"
 #include "core/Kernel.h"

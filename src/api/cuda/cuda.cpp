@@ -11,8 +11,6 @@
 #include <string>
 #include <list>
 
-#include <cuda_runtime_api.h>
-
 namespace gmac {
 
 static bool initialized = false;
@@ -38,7 +36,6 @@ void apiInit(void)
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
-		int attr;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			util::Logger::Fatal("Unable to access CUDA device");
 #if CUDART_VERSION >= 2020

@@ -49,7 +49,7 @@
  * GMAC_LOCAL is used for non-api symbols.
  */
 
-#if defined(GMAC_DLL) && !defined(DEBUG)
+#if defined(GMAC_DLL)
 /* compiled as a non-debug shared library */
 #  ifdef GMAC_DLL_EXPORTS           /* defined if we're building the library
                                     * instead of using it                     */
