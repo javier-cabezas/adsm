@@ -1,6 +1,6 @@
 set(common_ROOT ${CMAKE_SOURCE_DIR}/tests/common)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/include ${common_ROOT})
+include_directories(${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${common_ROOT})
 
 include(FindCUDA)
 

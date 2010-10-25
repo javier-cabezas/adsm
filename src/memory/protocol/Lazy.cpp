@@ -139,11 +139,11 @@ gmacError_t LazyImpl::acquireWithBitmap(const Object &obj)
         SystemBlock<State> *block = i->second;
         block->lock();
         if (bitmap.check(obj.device(block->addr()))) {
-            if(Memory::protect(block->addr(), block->size(), PROT_NONE) < 0)
+            if(Memory::protect(block->addr(), block->size(), Memory::None) < 0)
                 Fatal("Unable to set memory permissions");
             block->state(Invalid);
         } else {
-            if(Memory::protect(block->addr(), block->size(), PROT_READ) < 0)
+            if(Memory::protect(block->addr(), block->size(), Memory::Read) < 0)
                 Fatal("Unable to set memory permissions");
             block->state(ReadOnly);
         }
@@ -502,27 +502,12 @@ LazyImpl::copyHostToReadOnly(const StateObject<State> &/*objectDst*/, Block &blo
                          const StateObject<State> &/*objectSrc*/, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
     // Host memory to host memory AND accelerator memory
-	uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), Memory::ReadWrite);
+	uint8_t *tmp = (uint8_t *)Memory::shadow(blockDst.addr(), blockDst.size());
     if (tmp == NULL) {
         return gmacErrorInvalidValue;
     }
-
-    if (blockOffDst > 0) {
-        ::memcpy(tmp, blockDst.addr(), blockOffDst);
-    }
     ::memcpy(tmp + blockOffDst, blockSrc.addr() + blockOffSrc, count);
-    if (blockDst.addr() + blockOffDst + count < blockDst.end() - 1) {
-        ::memcpy(tmp + blockOffDst + count,
-                 blockDst.addr() + blockOffDst + count,
-                 blockDst.end() - (blockDst.addr() + blockOffDst + count));
-    }
-	if(Memory::protect(tmp, blockDst.size(), Memory::Read) < 0)
-        Fatal("Unable to set memory permissions");
-
-    uint8_t *old = (uint8_t *)Memory::remap(tmp, blockDst.addr(), blockDst.size());
-    if (old != blockDst.addr()) {
-        return gmacErrorInvalidValue;
-    }
+	Memory::unshadow(tmp, blockDst.size());
     return gmacSuccess;
 }
 
@@ -548,30 +533,17 @@ gmacError_t
 LazyImpl::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                 const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
-	uint8_t *tmp = (uint8_t *)Memory::map(NULL, blockDst.size(), Memory::ReadWrite);
+	uint8_t *tmp = (uint8_t *)Memory::shadow(blockDst.addr(), blockDst.size());
     if (tmp == NULL) {
         return gmacErrorInvalidValue;
     }
 
-    if (blockOffDst > 0) {
-        ::memcpy(tmp, blockDst.addr(), blockOffDst);
-    }
-    gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp + blockOffSrc, count);
-    if(ret != gmacSuccess) {
-        blockDst.unlock();
-    }
-    if (blockDst.addr() + blockOffDst + count < blockDst.end() - 1) {
-        ::memcpy(tmp + blockOffDst + count,
-                 blockDst.addr() + blockOffDst + count,
-                 blockDst.end() - (blockDst.addr() + blockOffDst + count));
-    }
-	if(Memory::protect(tmp, blockDst.size(), Memory::Read) < 0)
-        Fatal("Unable to set memory permissions");
-
-    void *old = Memory::remap(tmp, blockDst.addr(), blockDst.size());
-    if (old != blockDst.addr()) {
+    gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp + blockOffDst, count);
+    if (ret != gmacSuccess) {
         return gmacErrorInvalidValue;
     }
+
+    Memory::unshadow(tmp, blockDst.size());
 
     ret = objectDst.toAccelerator(blockDst, blockOffDst, count);
     return ret;
@@ -584,22 +556,23 @@ LazyImpl::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &b
     Process &p = Process::getInstance();
     IOBuffer *buffer = p.createIOBuffer(count); 
     if (!buffer) {
-		void *tmp = Memory::map(NULL, count, Memory::ReadWrite);
+        void *tmp = Memory::map(NULL, count, Memory::ReadWrite);
         CFatal(tmp != NULL, "Unable to set memory permissions");
-       gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp, count);
-       if (ret != gmacSuccess) return ret;
-       ret = objectDst.toAcceleratorFromPointer(blockDst, blockOffDst, tmp, count);
-       if (ret != gmacSuccess) return ret;
+        gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp, count);
+        if (ret != gmacSuccess) return ret;
+        ret = objectDst.toAcceleratorFromPointer(blockDst, blockOffDst, tmp, count);
+        if (ret != gmacSuccess) return ret;
+        Memory::unmap(tmp, count);
     } else {
-       gmacError_t ret = objectSrc.toHostBuffer(blockSrc, blockOffSrc, *buffer, 0, count);
-       if (ret != gmacSuccess) return ret;
-       ret = buffer->wait();
-       if (ret != gmacSuccess) return ret;
-       ret = objectDst.toAcceleratorFromBuffer(blockDst, blockOffDst, *buffer, 0, count);
-       if (ret != gmacSuccess) return ret;
-       ret = buffer->wait();
-       if (ret != gmacSuccess) return ret;
-       p.destroyIOBuffer(buffer);
+        gmacError_t ret = objectSrc.toHostBuffer(blockSrc, blockOffSrc, *buffer, 0, count);
+        if (ret != gmacSuccess) return ret;
+        ret = buffer->wait();
+        if (ret != gmacSuccess) return ret;
+        ret = objectDst.toAcceleratorFromBuffer(blockDst, blockOffDst, *buffer, 0, count);
+        if (ret != gmacSuccess) return ret;
+        ret = buffer->wait();
+        if (ret != gmacSuccess) return ret;
+        p.destroyIOBuffer(buffer);
     }
     return gmacSuccess;
 }
@@ -783,28 +756,22 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-		tmp = Memory::map(NULL, block->size(), Memory::ReadWrite);
+		tmp = Memory::shadow(block->addr(), block->size());
         if (tmp == NULL) {
             ret = gmacErrorInvalidValue;
             goto exit_func;
         }
 
         ret = object.toHostPointer(*block, 0, tmp, block->size());
+        Memory::unshadow(tmp, block->size());
         if(ret != gmacSuccess) {
-            Memory::unmap(tmp, block->size());
             goto exit_func;
         }
             
 #ifdef USE_VM
     }
 #endif
-	Memory::protect(tmp, block->size(), Memory::Read);
-    old = Memory::remap(tmp, block->addr(), block->size());
-    if (old != block->addr()) {
-        ret = gmacErrorInvalidValue;
-    } else {
-        block->state(ReadOnly);
-    }
+    block->state(ReadOnly);
 exit_func:
     block->unlock();
     trace::Function::end("Lazy");
@@ -829,25 +796,20 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
             vm::Bitmap &bitmap = mode.dirtyBitmap();
             if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
-				tmp = Memory::map(NULL, block->size(), Memory::ReadWrite);
+				tmp = Memory::shadow(block->addr(), block->size());
                 if (tmp == NULL) {
                     ret = gmacErrorInvalidValue;
                     goto exit_func;
                 }
 
                 ret = object.toHostPointer(*block, 0, tmp, block->size());
+                Memory::unshadow(tmp, block->size());
                 if(ret != gmacSuccess) {
-                    Memory::unmap(tmp, block->size());
                     goto exit_func;
                 }
 #ifdef USE_VM
             }
 #endif
-            old = Memory::remap(tmp, block->addr(), block->size());
-            if (old != block->addr()) {
-                ret = gmacErrorInvalidValue;
-                goto exit_func;
-            }
             break;
         case ReadOnly:
 			Memory::protect(block->addr(), block->size(), Memory::ReadWrite);
