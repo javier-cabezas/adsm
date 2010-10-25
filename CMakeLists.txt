@@ -68,8 +68,6 @@ else(USE_OPENCL)
 endif(USE_OPENCL)
 
 
-
-
 # Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)

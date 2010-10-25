@@ -2,6 +2,7 @@
 #define __TIME_H_
 
 #include <stdio.h>
+#include "config/config.h"
 
 #if defined(HAVE_STDINT)
 #include <stdint.h>
