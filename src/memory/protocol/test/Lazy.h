@@ -54,6 +54,8 @@ public:
 
     gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
     gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
+
+    gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
 };
 
 }}}

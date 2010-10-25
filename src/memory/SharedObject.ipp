@@ -74,7 +74,7 @@ inline void SharedObjectImpl<T>::fini()
 template<typename T>
 inline void *SharedObjectImpl<T>::getAcceleratorAddr(void *addr) const
 {
-    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
+    unsigned offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     void *ret = accBlock_->addr() + offset;
     return ret;
 }
@@ -82,16 +82,16 @@ inline void *SharedObjectImpl<T>::getAcceleratorAddr(void *addr) const
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toHost(Block &block) const
 {
-    off_t off = block.addr() - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToHost(block.addr(), accBlock_->addr() + off, block.size());
+    unsigned offset = block.addr() - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(block.addr(), accBlock_->addr() + offset, block.size());
     return ret;
 }
 
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toHost(Block &block, unsigned blockOff, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToHost(block.addr() + blockOff, accBlock_->addr() + off, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(block.addr() + blockOff, accBlock_->addr() + offset, count);
 
     return ret;
 }
@@ -99,8 +99,8 @@ inline gmacError_t SharedObjectImpl<T>::toHost(Block &block, unsigned blockOff, 
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toHostPointer(Block &block, unsigned blockOff, void * ptr, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToHost(ptr, accBlock_->addr() + off, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToHost(ptr, accBlock_->addr() + offset, count);
 
     return ret;
 }
@@ -108,8 +108,8 @@ inline gmacError_t SharedObjectImpl<T>::toHostPointer(Block &block, unsigned blo
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + off, bufferOff, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + offset, bufferOff, count);
 
     return ret;
 }
@@ -117,24 +117,24 @@ inline gmacError_t SharedObjectImpl<T>::toHostBuffer(Block &block, unsigned bloc
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block) const
 {
-    off_t off = block.addr() - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr(), block.size());
+    unsigned offset = block.addr() - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + offset, block.addr(), block.size());
     return ret;
 }
 
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr() + blockOff, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + offset, block.addr() + blockOff, count);
     return ret;
 }
 
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void * ptr, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, ptr, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + offset, ptr, count);
 
     return ret;
 }
@@ -142,8 +142,8 @@ inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromPointer(Block &block, u
 template<typename T>
 inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
-    gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, bufferOff, count);
+    unsigned offset = block.addr() + blockOff - StateObject<T>::addr();
+    gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + offset, buffer, bufferOff, count);
 
     return ret;
 }

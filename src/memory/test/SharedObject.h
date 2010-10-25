@@ -28,7 +28,9 @@ public:
     gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
     gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
+    void *getAcceleratorAddr(void *addr) const;
     Mode &owner() const;
+    gmacError_t free();
     gmacError_t realloc(Mode &mode);
 };
 

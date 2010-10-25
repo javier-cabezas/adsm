@@ -66,10 +66,10 @@ public:
     TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
     TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
-    void *getAcceleratorAddr(void *addr) const;
+    TESTABLE void *getAcceleratorAddr(void *addr) const;
     TESTABLE inline Mode &owner() const { return *owner_; }
 
-    gmacError_t free();
+    TESTABLE gmacError_t free();
     TESTABLE gmacError_t realloc(Mode &mode);
 
     bool isLocal() const;
