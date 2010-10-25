@@ -42,13 +42,18 @@ void *Memory::map(void *addr, size_t count, Protection prot)
         fd = shm_open(tmp, O_RDWR | O_CREAT | O_EXCL, S_IRWXU | S_IRWXG);
         if(errno != EEXIST) return NULL;
     }
+    if(ftruncate(fd, count) < 0) {
+        close(fd);
+        shm_unlink(tmp);
+        return NULL;
+    }
 
     if (addr == NULL) {
-        cpuAddr = mmap(addr, count, ProtBits[prot], MAP_PRIVATE, fd, 0);
+        cpuAddr = mmap(addr, count, ProtBits[prot], MAP_SHARED, fd, 0);
         util::Logger::TRACE("Getting map: %d @ %p - %p", prot, cpuAddr, (uint8_t *)addr + count);
     } else {
         cpuAddr = addr;
-        if(mmap(cpuAddr, count, ProtBits[prot], MAP_PRIVATE | MAP_FIXED, fd, 0) != cpuAddr) {
+        if(mmap(cpuAddr, count, ProtBits[prot], MAP_SHARED | MAP_FIXED, fd, 0) != cpuAddr) {
             close(fd);
             shm_unlink(tmp);
             return NULL;
@@ -72,7 +77,7 @@ void *Memory::shadow(void *addr, size_t count)
     FileMapEntry entry = Files.find(addr);
     if(entry.fd() == -1) return NULL;
     off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());
-    void *ret = mmap(NULL, count, ProtBits[ReadWrite], MAP_PRIVATE, entry.fd(), offset);
+    void *ret = mmap(NULL, count, ProtBits[ReadWrite], MAP_SHARED, entry.fd(), offset);
     return ret;
 } 
 

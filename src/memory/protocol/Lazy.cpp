@@ -768,6 +768,7 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
             goto exit_func;
         }
             
+        Memory::protect(block->addr(), block->size(), Memory::Read);
 #ifdef USE_VM
     }
 #endif
@@ -810,7 +811,6 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
 #ifdef USE_VM
             }
 #endif
-            break;
         case ReadOnly:
 			Memory::protect(block->addr(), block->size(), Memory::ReadWrite);
             break;
