@@ -148,7 +148,7 @@ set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
-check_include_file("stdint.h" HAVE_STDINT)
+check_include_files("stdint.h" HAVE_STDINT)
 check_function_exists(llabs HAVE_LLABS)
 
 # Setup extra libraries needed by GMAC
@@ -166,7 +166,7 @@ endif(${OS_DIR} MATCHES "posix")
 add_subdirectory(src)
 
 # Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src PEDO)
 get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
 add_library(gmac SHARED ${gmac_SRC})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)

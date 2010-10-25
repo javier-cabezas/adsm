@@ -23,7 +23,7 @@ bool FileMap::remove(void *address)
 {
 	bool ret = true;
 	lockWrite();
-	Parent::const_iterator i = Parent::upper_bound(address);
+	Parent::iterator i = Parent::upper_bound(address);
 	if(i != Parent::end()) Parent::erase(i);
 	else ret = false;
 	unlock();

@@ -1,7 +1,9 @@
-#ifndef __TIME_H_
-#define __TIME_H_
+#ifndef GMAC_TESTS_COMMON_UTILS_H_
+#define GMAC_TESTS_COMMON_UTILS_H_
 
 #include <stdio.h>
+#include "config/config.h"
+
 #include "config/config.h"
 
 #if defined(HAVE_STDINT)
