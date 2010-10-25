@@ -49,7 +49,8 @@ public:
 	} Protection;
 	static int protect(void *addr, size_t count, Protection prot);
 	static void *map(void *addr, size_t count, Protection prot = None);
-	static void *remap(void *addr, void *to, size_t count, Protection prot = None);
+	static void *shadow(void *addr, size_t count);
+	static void unshadow(void *addr, size_t count);
 	static void unmap(void *addr, size_t count);
 };
 

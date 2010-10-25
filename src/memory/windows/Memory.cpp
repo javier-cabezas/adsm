@@ -59,22 +59,22 @@ void *Memory::map(void *addr, size_t count, Protection prot)
     return cpuAddr;
 }
 
-void *Memory::remap(void *addr, void *to, size_t count, Protection prot)
+void *Memory::shadow(void *addr, size_t count)
 {
-    util::Logger::TRACE("Getting fixed remap: %d @ %p -> %p", prot, addr, to);
-	FileMapEntry entry = Files.find(to);
+	util::Logger::TRACE("Getting shadow mapping for %p (%zd bytes)", addr, count);
+	FileMapEntry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
-	off_t offset = (off_t)((uint8_t *)to - (uint8_t *)entry.address());
-	void *tmp = MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
-	if(tmp == NULL) return NULL;
-	memcpy(tmp, addr, count);
-	BOOL ret = UnmapViewOfFile(tmp);
-	util::Logger::ASSERTION(ret == TRUE);
-	DWORD dummy;
-	ret = VirtualProtect(to, count, ProtBits[prot], &dummy);
-	util::Logger::ASSERTION(ret == TRUE);
-	return to;
+	off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());
+	void *ret = MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
+	return ret;
 }
+
+void Memory::unshadow(void *addr, size_t /*count*/)
+{
+	BOOL ret = UnmapViewOfFile(addr);
+	util::Logger::ASSERTION(ret == TRUE);
+}
+
 
 void Memory::unmap(void *addr, size_t /*count*/)
 {
