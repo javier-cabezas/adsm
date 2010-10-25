@@ -32,6 +32,7 @@ RWLockImpl::lockWrite() const
 {
     enter();
     AcquireSRWLockExclusive(&lock_);
+	owner_ = GetCurrentThreadId();
     locked();
 }
 

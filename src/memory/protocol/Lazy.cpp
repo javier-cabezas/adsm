@@ -777,13 +777,14 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
 #ifdef USE_VM
     }
 #endif
-	Memory::protect(tmp, block->size(), Memory::Read);
+	
     void *old = Memory::remap(tmp, block->addr(), block->size());
     if (old != block->addr()) {
         block->unlock();
         trace::Function::end("LazyImpl");
         return gmacErrorInvalidValue;
     }
+	Memory::protect(block->addr(), block->size(), Memory::Read);
     block->state(ReadOnly);
     block->unlock();
     trace::Function::end("LazyImpl");

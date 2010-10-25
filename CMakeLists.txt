@@ -6,6 +6,14 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
+# Set the configuration being built
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif(NOT CMAKE_BUILD_TYPE)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
@@ -125,10 +133,6 @@ if(MAKE_DOC)
     message(STATUS "Generate GMAC documentation")
     add_subdirectory(doc)
 endif(MAKE_DOC)
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
-endif(NOT CMAKE_BUILD_TYPE)
 
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)

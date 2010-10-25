@@ -27,6 +27,7 @@ void *Memory::map(void *addr, size_t count, Protection prot)
 {
     void *cpuAddr = NULL;
 
+#if 0
     if (addr == NULL) {
         cpuAddr = VirtualAlloc(NULL, count, MEM_RESERVE, ProtBits[prot]);
         util::Logger::TRACE("Getting map: %d @ %p - %p", prot, cpuAddr, (uint8_t *)addr + count);
@@ -36,24 +37,25 @@ void *Memory::map(void *addr, size_t count, Protection prot)
 			return NULL;
         util::Logger::TRACE("Getting fixed map: %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
     }
+#endif
 
 	// Create anonymous file to be mapped
 	HANDLE handle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)count, NULL);
 	if(handle == NULL) return NULL;
-	if(Files.insert(handle, addr, count) == false) {
+	
+	// Create a view of the file in the previously allocated virtual memory range
+	if((cpuAddr = MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, addr)) == NULL) {
 		CloseHandle(handle);
 		return NULL;
 	}
-	// Create a view of the file in the previously allocated virtual memory range
-	if(MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, cpuAddr) != cpuAddr) {
-		Files.remove(addr);
+
+	if(Files.insert(handle, cpuAddr, count) == false) {
 		CloseHandle(handle);
-		VirtualFree(cpuAddr, count, MEM_RELEASE);
 		return NULL;
 	}
 
 	// Make sure that the range has the requested virtual protection bits
-	protect(addr, count, prot);
+	protect(cpuAddr, count, prot);
     return cpuAddr;
 }
 
@@ -62,7 +64,7 @@ void *Memory::remap(void *addr, void *to, size_t count, Protection prot)
     util::Logger::TRACE("Getting fixed remap: %d @ %p -> %p", prot, addr, to);
 	FileMapEntry entry = Files.find(to);
 	if(entry.handle() == NULL) return NULL;
-	off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());
+	off_t offset = (off_t)((uint8_t *)to - (uint8_t *)entry.address());
 	void *tmp = MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
 	if(tmp == NULL) return NULL;
 	memcpy(tmp, addr, count);
@@ -74,14 +76,12 @@ void *Memory::remap(void *addr, void *to, size_t count, Protection prot)
 	return to;
 }
 
-void Memory::unmap(void *addr, size_t count)
+void Memory::unmap(void *addr, size_t /*count*/)
 {
-	util::Logger::ASSERTION(VirtualFree(addr, count, MEM_RELEASE) == TRUE);
 	FileMapEntry entry = Files.find(addr);
 	if(Files.remove(addr) == false) return;
 	UnmapViewOfFile(entry.address());
 	CloseHandle(entry.handle());
-	VirtualFree(entry.address(), entry.size(), MEM_RELEASE);
 }
 
 }}

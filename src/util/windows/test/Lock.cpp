@@ -71,6 +71,7 @@ void RWLockTest::lockWrite() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
+	REQUIRES(writer_ == 0);
     LeaveCriticalSection(&internal_);
 
     RWLockImpl::lockWrite();
