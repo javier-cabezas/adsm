@@ -118,11 +118,16 @@ if(USE_PARAVER)
     endif()
 endif(USE_PARAVER)
 
+# Make sure we compile the necessary libraries
+add_subdirectory(lib)
+import_gmac_libraries()
+
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)
     message(STATUS "Compile GMAC tests")
     add_subdirectory(tests)
+    # Add libraries used in testing
 endif(MAKE_TESTS)
 
 # Check if doc must be generated
@@ -139,8 +144,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
 elseif(MSVC)
     set(CMAKE_C_FLAGS " /W4 /WX /EHsc")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MT")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MTd")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
@@ -169,6 +174,7 @@ endif(${OS_DIR} MATCHES "posix")
 
 # Add subdirectories
 add_subdirectory(src)
+
 
 # Setup GMAC as main target
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src PEDO)
