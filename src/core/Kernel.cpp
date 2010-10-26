@@ -1,10 +1,5 @@
 #include "Kernel.h"
 
-#if 0
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#endif
-
 #include <cstring>
 #include <algorithm>
 
