@@ -44,10 +44,8 @@ GMAC_API void **__cudaRegisterFatBinary(void *fatCubin)
 
 GMAC_API void __cudaUnregisterFatBinary(void **fatCubinHandle)
 {
-	gmac::enterGmac();
     ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
     delete mod;
-	gmac::exitGmac();
 }
 
 GMAC_API void __cudaRegisterFunction(
