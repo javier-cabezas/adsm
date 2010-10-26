@@ -45,17 +45,14 @@ protected:
     int fd_;
 	void *address_;
 	size_t size_;
-    char *name_;
 public:
-	FileMapEntry(int fd, void *address, size_t size, const char *name);
-    FileMapEntry(const FileMapEntry &e);
-	virtual ~FileMapEntry();
-    FileMapEntry & operator=(const FileMapEntry &e);
+	FileMapEntry(int fd, void *address, size_t size) :
+	    fd_(fd), address_(address), size_(size) {};
+	virtual ~FileMapEntry() {};
 
 	inline int fd() const { return fd_; }
 	inline void *address() const { return address_; }
 	inline size_t size() const { return size_; }
-    const char *name() const { return name_; }
 };
 
 class GMAC_LOCAL FileMap :
@@ -68,7 +65,7 @@ public:
 	FileMap();
 	virtual ~FileMap();
 
-	bool insert(int fd, void *address, size_t size, const char *name);
+	bool insert(int fd, void *address, size_t size);
 	bool remove(void *address);
 	const FileMapEntry find(void *address) const;
 };
