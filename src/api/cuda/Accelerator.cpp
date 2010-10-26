@@ -42,8 +42,8 @@ Accelerator::Accelerator(int n, CUdevice device) :
     trace("Host mapped memory not supported by the HW");
 #endif
 
-#if CUDA_VERSION > 3000
     int val;
+#if CUDA_VERSION > 3000
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busId_ = val;
