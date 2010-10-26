@@ -22,7 +22,11 @@ void Switch::out()
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), device_(device)
 {
+#if CUDA_VERSION > 3000
     size_t size = 0;
+#else
+    unsigned int size = 0;
+#endif
     CUresult ret = cuDeviceTotalMem(&size, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, device_);
@@ -37,6 +41,8 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
+
+#if CUDA_VERSION > 3000
     int val;
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
@@ -47,6 +53,9 @@ Accelerator::Accelerator(int n, CUdevice device) :
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     integrated_ = (val != 0);
+#else
+    integrated_ = false;
+#endif
 
     ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
@@ -303,7 +312,11 @@ void Accelerator::memInfo(size_t *free, size_t *total) const
     if (!free)  free  = &fakeFree;
     if (!total) total = &fakeTotal;
 
+#if CUDA_VERSION > 3000
     CUresult ret = cuMemGetInfo(free, total);
+#else
+    CUresult ret = cuMemGetInfo((unsigned int *)free, (unsigned int *)total);
+#endif
     CFatal(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();
 }
