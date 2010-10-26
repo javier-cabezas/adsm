@@ -121,25 +121,25 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES:
             return cudaErrorLaunchOutOfResources;
         case CUDA_ERROR_NO_DEVICE:
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
             return cudaErrorNoDevice;
 #endif
-#if CUDART_VERSION >= 3000
+#if CUDA_VERSION >= 3000
         case CUDA_ERROR_ECC_UNCORRECTABLE:
             return cudaErrorECCUncorrectable;
-#if CUDART_VERSION <= 3010
+#if CUDA_VERSION <= 3010
         case CUDA_ERROR_POINTER_IS_64BIT:
         case CUDA_ERROR_SIZE_IS_64BIT:
 #endif
         case CUDA_ERROR_NOT_MAPPED_AS_ARRAY:
         case CUDA_ERROR_NOT_MAPPED_AS_POINTER:
 #endif
-#if CUDART_VERSION >= 3010
+#if CUDA_VERSION >= 3010
         case CUDA_ERROR_UNSUPPORTED_LIMIT:
         case CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND:
         case CUDA_ERROR_SHARED_OBJECT_INIT_FAILED:
 #endif
-#if CUDART_VERSION >= 3020
+#if CUDA_VERSION >= 3020
         case CUDA_ERROR_OPERATING_SYSTEM:
 #endif
         case CUDA_ERROR_ARRAY_IS_MAPPED:
@@ -289,7 +289,7 @@ cudaError_t CUDARTAPI cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 
 // CUDA Array related functions
 
-#if CUDART_VERSION >= 3010
+#if CUDA_VERSION >= 3010
 cudaError_t CUDARTAPI cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
 		size_t height, unsigned int /*flags*/)
@@ -508,7 +508,7 @@ void CUDARTAPI __cudaMutexOperation(int /*lock*/)
 // Events and other stuff needed by CUDA Wrapper
 cudaError_t CUDARTAPI cudaEventCreate(cudaEvent_t *event)
 {
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     CUresult ret = cuEventCreate((CUevent *)event, CU_EVENT_DEFAULT);
 #else
     CUresult ret = cuEventCreate((CUevent *)event, 0);

@@ -135,6 +135,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
         if((size - offset) < buffer_->size()) len = size - offset;
         buffer_->toHost();
         ret = accelerator().copyToHostAsync(buffer_->addr(), (uint8_t *)accAddr + offset, len, streamToHost_);
+        assertion(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         ret = buffer_->wait();
         if(ret != gmacSuccess) break;
