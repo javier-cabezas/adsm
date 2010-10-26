@@ -93,10 +93,9 @@ public:
 
     void cleanup();
     std::pair<iterator, bool> insert(THREAD_T, ThreadQueue *);
-    iterator find(THREAD_T);
+    void push(THREAD_T id, Mode &mode);
+    void attach(THREAD_T id);
     void erase(THREAD_T id);
-
-    iterator end();
 };
 
 class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {

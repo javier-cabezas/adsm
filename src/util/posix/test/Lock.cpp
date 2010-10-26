@@ -17,6 +17,10 @@ LockTest::~LockTest()
 
 void LockTest::lock() const
 {
+    //pthread_mutex_lock(&internal_);
+    //REQUIRES(owner_ != pthread_self());
+    //pthread_mutex_unlock(&internal_);
+
     LockImpl::lock();
 
     pthread_mutex_lock(&internal_);
@@ -31,7 +35,7 @@ void LockTest::unlock() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(locked_ == true);
-    EXPECTS(owner_ == pthread_self());
+    REQUIRES(owner_ == pthread_self());
     owner_ = NULL;
     locked_ = false;
 

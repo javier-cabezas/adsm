@@ -14,6 +14,7 @@ inline ReplicatedObjectImpl<T>::ReplicatedObjectImpl(size_t size, T init) :
     // the current thread has an execution mode attached
     Process &proc = gmac::Process::getInstance();
     Mode &mode = gmac::Mode::current(); 
+	UNREFERENCED_PARAMETER(mode);
     trace("Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
     if(proc.globalMalloc(*this, size) != gmacSuccess) {
         Object::Fatal("Unable to create replicated object");
@@ -154,7 +155,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromBuffer(Block &block
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
-        gmacError_t tmp = accBlock.owner().bufferToAccelerator(accBlock.addr() + off, buffer, bufferOff, count);
+        gmacError_t tmp = accBlock.owner().bufferToAccelerator(accBlock.addr() + off, buffer, count, bufferOff);
         if(tmp != gmacSuccess) ret = tmp;
     }
     return ret;
@@ -165,7 +166,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::addOwner(Mode &mode)
 {
     void *accAddr = NULL;
     gmacError_t ret;
-    ret = mode.malloc(&accAddr, StateObject<T>::size_, paramPageSize);
+    ret = mode.malloc(&accAddr, StateObject<T>::size_, (unsigned)paramPageSize);
     Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
 
     AcceleratorBlock *acc = new AcceleratorBlock(mode, accAddr, StateObject<T>::size_);
@@ -174,7 +175,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::addOwner(Mode &mode)
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {
         SystemBlock<T> &block = *i->second;
         if(mode.requireUpdate(block) == false) continue;
-        off_t off = block.addr() - StateObject<T>::addr();
+        off_t off = (off_t)(block.addr() - StateObject<T>::addr());
         gmacError_t tmp = acc->owner().copyToAccelerator(acc->addr() + off, block.addr(), block.size());
     }
 #ifdef USE_VM
