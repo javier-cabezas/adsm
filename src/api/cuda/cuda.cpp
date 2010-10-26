@@ -38,7 +38,8 @@ void apiInit(void)
 		CUdevice cuDev;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
 			util::Logger::Fatal("Unable to access CUDA device");
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
+        int attr = 0;
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			util::Logger::Fatal("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {

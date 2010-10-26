@@ -32,7 +32,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
     unsigned int flags = 0;
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     trace("Host mapped memory not supported by the HW");
@@ -116,7 +116,7 @@ Accelerator::createCUcontext()
     gmac::trace::Function::start("Accelerator","creaceCUContext");
     CUcontext ctx, tmp;
     unsigned int flags = 0;
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     trace("Host mapped memory not supported by the HW");
@@ -263,7 +263,7 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 {
     gmac::trace::Function::start("Accelerator","hostAlloc");
     pushContext();
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
 #else
     CUresult ret = cuMemAllocHost(addr, size);

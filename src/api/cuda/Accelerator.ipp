@@ -112,6 +112,7 @@ gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t siz
     trace("Async copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
+    assertion(ret == CUDA_SUCCESS);
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);

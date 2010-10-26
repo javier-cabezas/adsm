@@ -21,7 +21,7 @@ FileMapEntry::FileMapEntry(const FileMapEntry &e) :
 
 FileMapEntry::~FileMapEntry()
 {
-    if(name_ != NULL) delete name_;
+    if(name_ != NULL) delete[] name_;
 }
 
 

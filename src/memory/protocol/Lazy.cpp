@@ -764,6 +764,7 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
         ret = object.toHostPointer(*block, 0, tmp, block->size());
         Memory::unshadow(tmp, block->size());
         if(ret != gmacSuccess) {
+            fprintf(stderr,"CAGONTOT\n");
             goto exit_func;
         }
             
@@ -775,7 +776,7 @@ gmacError_t LazyImpl::signalRead(const Object &obj, void *addr)
 exit_func:
     block->unlock();
     trace::Function::end("Lazy");
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
