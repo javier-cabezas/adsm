@@ -284,8 +284,8 @@ bool Manager::read(void *addr)
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
     trace("Read access for object %p", obj->addr());
-    gmacError_t err;
-    assertion((err = protocol_->signalRead(*obj, addr)) == gmacSuccess);
+	gmacError_t err = protocol_->signalRead(*obj, addr);
+    assertion(err == gmacSuccess);
     mode.putObject(*obj);
     return ret;
 }

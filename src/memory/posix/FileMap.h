@@ -31,31 +31,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_POSIX_MEMORY_H_
-#define __MEMORY_POSIX_MEMORY_H_
-
-#include <sys/mman.h>
+#ifndef __MEMORY_POSIX_FILEMAP_H_
+#define __MEMORY_POSIX_FILEMAP_H_
 
 #include "config/common.h"
 #include "util/Logger.h"
+#include "util/Lock.h"
 
 namespace gmac { namespace memory {
 
-class GMAC_LOCAL Memory {
-private:
-#ifdef USE_MMAP
-#ifdef ARCH_32BIT
-    static const size_t mmSize = 0;
-#else
-	static const size_t mmSize = 0x10000000000;
-#endif
-#endif
-
+class GMAC_LOCAL FileMapEntry {
+protected:
+    int fd_;
+	void *address_;
+	size_t size_;
 public:
-	static int protect(void *addr, size_t count, int prot);
-	static void *map(void *addr, size_t count, int prot = 0);
-	static void *remap(void *addr, void *to, size_t count, int prot = 0);
-	static void unmap(void *addr, size_t count);
+	FileMapEntry(int fd, void *address, size_t size) :
+	    fd_(fd), address_(address), size_(size) {};
+	virtual ~FileMapEntry() {};
+
+	inline int fd() const { return fd_; }
+	inline void *address() const { return address_; }
+	inline size_t size() const { return size_; }
+};
+
+class GMAC_LOCAL FileMap :
+	protected std::map<void *, FileMapEntry>,
+	public util::RWLock
+{
+protected:
+	typedef std::map<void *, FileMapEntry> Parent;
+public:
+	FileMap();
+	virtual ~FileMap();
+
+	bool insert(int fd, void *address, size_t size);
+	bool remove(void *address);
+	const FileMapEntry find(void *address) const;
 };
 
 }}

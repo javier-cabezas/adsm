@@ -82,7 +82,7 @@ typedef struct GMAC_LOCAL {
 extern ParameterCtor ParamCtorList[];
 
 #define PARAM(v, t, d, ...)  extern t v;
-#include "Parameter.def"
+#include "Parameter-def.h"
 
 #include "Parameter.ipp"
 

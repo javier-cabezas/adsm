@@ -54,7 +54,7 @@ protected:
     Object(void *addr, size_t size);
 
     static void *map(void *addr, size_t size);
-    static void unmap(void *addr, size_t size);
+    static void unmap(void *addr, size_t count);
 public:
     virtual ~Object();
 

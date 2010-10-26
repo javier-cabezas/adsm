@@ -20,6 +20,7 @@ void LockTest::lock() const
     LockImpl::lock();
 
     pthread_mutex_lock(&internal_);
+    ENSURES(owner_ == 0);
     ENSURES(locked_ == false);
     locked_ = true;
     owner_ = pthread_self();
@@ -71,6 +72,7 @@ void RWLockTest::lockWrite() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(readers_.find(pthread_self()) == readers_.end());
+    REQUIRES(writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
     RWLockImpl::lockWrite();

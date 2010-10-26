@@ -13,7 +13,7 @@
         __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
         return __##v;\
     }
-#include "Parameter.def"
+#include "Parameter-def.h"
 
 // This CPP directives will create the constructor table for all
 // parameters defined by the programmer
@@ -21,7 +21,7 @@
 #define PARAM(v, t, d, ...) \
     { __init__##v, __##v },
 ParameterCtor ParamCtorList[] = {
-#include "Parameter.def"
+#include "Parameter-def.h"
     {NULL, NULL}
 };
 

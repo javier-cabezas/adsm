@@ -31,94 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_BITMAP_H_
-#define GMAC_MEMORY_BITMAP_H_
-
-#include <stddef.h>
+#ifndef __MEMORY_MEMORY_H_
+#define __MEMORY_MEMORY_H_
 
 #include "config/common.h"
 #include "util/Logger.h"
 
-#ifdef USE_VM
-namespace gmac { namespace memory  { namespace vm {
+namespace gmac { namespace memory {
 
-class GMAC_LOCAL Bitmap : public util::Logger {
-private:
-#ifdef BITMAP_WORD
-    uint32_t *bitmap_;
-#else
-#ifdef BITMAP_BYTE
-    uint8_t *bitmap_;
-#else
-#ifdef BITMAP_BIT
-    uint32_t *bitmap_;
-#else
-#error "Bitmap granularity not defined"
-#endif
-#endif
-#endif
-    bool dirty_;
-    bool synced_;
-
-    void *device_;
-
-    const void *_minAddr, *_maxAddr;
-
-    size_t _shiftPage;
-#ifdef BITMAP_BIT
-    size_t _shiftEntry;
-    uint32_t _bitMask;
-#endif
-    size_t size_;
-
-    void allocate();
-
-    template <bool check, bool clear, bool set>
-    bool CheckClearSet(const void *addr);
-
-    off_t offset(const void *addr) const;
+class GMAC_LOCAL Memory {
 public:
-    Bitmap(unsigned bits = 32);
-    virtual ~Bitmap();
-
-    void *device();
-    void *deviceBase();
-    void *host() const;
-
-    const size_t size() const;
-
-    const size_t shiftPage() const;
-#ifdef BITMAP_BIT
-    const size_t shiftEntry() const;
-#endif
-
-    bool check(const void *);
-    bool checkAndClear(const void *);
-    bool checkAndSet(const void *);
-    void clear(const void *);
-    void set(const void *);
-
-    void newRange(const void * ptr, size_t count);
-    void removeRange(const void * ptr, size_t count);
-
-    bool clean() const;
-
-    void syncHost();
-    void syncDevice();
-    void reset();
-
-#ifdef DEBUG_BITMAP
-    void dump();
-#endif
-
-    bool synced() const;
-    void synced(bool s);
+	typedef enum {
+		None =0 , 
+		Read, 
+		Write, 
+		ReadWrite 
+	} Protection;
+	static int protect(void *addr, size_t count, Protection prot);
+	static void *map(void *addr, size_t count, Protection prot = None);
+	static void *shadow(void *addr, size_t count);
+	static void unshadow(void *addr, size_t count);
+	static void unmap(void *addr, size_t count);
 };
 
-}}}
-
-#include "Bitmap.ipp"
-
-#endif
+}}
 
 #endif

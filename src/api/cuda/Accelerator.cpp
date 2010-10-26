@@ -22,7 +22,11 @@ void Switch::out()
 Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), device_(device)
 {
+#if CUDA_VERSION > 3000
     size_t size = 0;
+#else
+    unsigned int size = 0;
+#endif
     CUresult ret = cuDeviceTotalMem(&size, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, device_);
@@ -32,21 +36,25 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
     unsigned int flags = 0;
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     trace("Host mapped memory not supported by the HW");
 #endif
+
     int val;
+#if CUDA_VERSION > 3000
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busId_ = val;
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busDevId_ = val;
+#endif
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
-    integrated_ = val;
+    integrated_ = (val != 0);
+
 
     ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
@@ -116,7 +124,7 @@ Accelerator::createCUcontext()
     gmac::trace::Function::start("Accelerator","creaceCUContext");
     CUcontext ctx, tmp;
     unsigned int flags = 0;
-#if CUDART_VERSION >= 2020
+#if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     trace("Host mapped memory not supported by the HW");
@@ -239,10 +247,11 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
         ret = cuMemsetD32(gpuAddr(addr), seed, size);
     }
     else if(size % 16) {
-        short seed = c | (c << 8);
+		short s = (short) c & 0xffff;
+        short seed = s | (s << 8);
         ret = cuMemsetD16(gpuAddr(addr), seed, size);
     }
-    else ret = cuMemsetD8(gpuAddr(addr), c, size);
+    else ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -260,14 +269,14 @@ gmacError_t Accelerator::sync()
 
 gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 {
-    gmac::trace::Function::start("Accelerator","hostAlloc");
+	gmac::trace::Function::start("Accelerator","hostAlloc");
+#if CUDA_VERSION >= 2020
     pushContext();
-#if CUDART_VERSION >= 2020
     CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
-#else
-    CUresult ret = cuMemAllocHost(addr, size);
-#endif
     popContext();
+#else
+	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
@@ -275,9 +284,13 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 gmacError_t Accelerator::hostFree(void *addr)
 {
     gmac::trace::Function::start("Accelerator","hostFree");
+#if CUDA_VERSION >= 2020
     pushContext();
     CUresult r = cuMemFreeHost(addr);
     popContext();
+#else
+	CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     gmac::trace::Function::end("Accelerator");
     return error(r);
 }
@@ -285,10 +298,14 @@ gmacError_t Accelerator::hostFree(void *addr)
 void *Accelerator::hostMap(void *addr)
 {
     gmac::trace::Function::start("Accelerator","hostMap");
+#if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
+#else
+	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     if(ret != CUDA_SUCCESS) device = 0;
     gmac::trace::Function::end("Accelerator");
     return (void *)device;
@@ -302,7 +319,11 @@ void Accelerator::memInfo(size_t *free, size_t *total) const
     if (!free)  free  = &fakeFree;
     if (!total) total = &fakeTotal;
 
+#if CUDA_VERSION > 3000
     CUresult ret = cuMemGetInfo(free, total);
+#else
+    CUresult ret = cuMemGetInfo((unsigned int *)free, (unsigned int *)total);
+#endif
     CFatal(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();
 }

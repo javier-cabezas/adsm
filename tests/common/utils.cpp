@@ -1,25 +1,25 @@
 #include "utils.h"
 
-void printTime(struct timeval *start, struct timeval *end, const char *pre, const char *post)
+void printTime(gmactime_t *start, gmactime_t *end, const char *pre, const char *post)
 {
 	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
+	s = 1e6 * start->sec + (start->usec);
+	e = 1e6 * end->sec + (end->usec);
 	printf("%s%f%s", pre, (e - s) / 1e6, post);
 }
 
-void printAvgTime(struct timeval *start, struct timeval *end, const char *pre, const char *post, unsigned rounds)
+void printAvgTime(gmactime_t *start, gmactime_t *end, const char *pre, const char *post, unsigned rounds)
 {
 	double s, e;
-	s = 1e6 * start->tv_sec + (start->tv_usec);
-	e = 1e6 * end->tv_sec + (end->tv_usec);
+	s = 1e6 * start->sec + (start->usec);
+	e = 1e6 * end->sec + (end->usec);
 	printf("%s%f%s", pre, (e - s) / 1e6 / rounds, post);
 }
 
 void randInit(float *a, size_t size)
 {
 	for(unsigned i = 0; i < size; i++) {
-		a[i] = 1.0 * rand();
+		a[i] = 1.0f * rand();
 	}
 }
 
@@ -37,10 +37,18 @@ void valueInit(float *a, float v, size_t size)
 	}
 }
 
-void utils_init() __attribute__ ((constructor));
+#if defined(__GNUC__)
+	void utils_init(void) __attribute__ ((constructor));
+#	define CTOR
+#elif defined(_MSC_VER)
+#	pragma section(".CRT$XCU",read)
+	static void __cdecl utils_init(void); 
+	__declspec(allocate(".CRT$XCU")) void (__cdecl*utils_init_)(void) = utils_init;
+#	define CTOR __cdecl
+#endif
 
 #include <ctime>
-void utils_init()
+void CTOR utils_init()
 {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 }

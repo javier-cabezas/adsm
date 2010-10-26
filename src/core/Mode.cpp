@@ -18,6 +18,9 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     id_(++next),
     proc_(proc),
     acc_(&acc),
+#if defined(_MSC_VER)
+#	pragma warning( disable : 4355 )
+#endif
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM

@@ -11,15 +11,12 @@
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
 #elif defined(_MSC_VER)
-#include <Dbghelp.h>
 static char *demangle(const char *name)
 {
 	char *ret = NULL;
-	ret = (char *)malloc(strlen(name));
-	if(UnDecorateSymbolName(name, ret, (DWORD)strlen(name), UNDNAME_COMPLETE))
-		return ret;
-	free(free);
-	return NULL;
+	ret = (char *)malloc(strlen(name) + 1);
+	memcpy(ret, name, strlen(name) + 1);
+	return ret;
 }
 #endif
 
@@ -71,16 +68,14 @@ LoggerLock::LoggerLock() :
 
 Logger::Logger(const char *name) :
     name_(name),
-    active_(false),
-    out_(&std::clog)
+    active_(false)
 {
     init();
 }
 
 Logger::Logger() :
     name_(NULL),
-    active_(false),
-    out_(&std::clog)
+    active_(false)
 {
     init();
 }
@@ -144,7 +139,7 @@ void Logger::__print(const char *tag, const char *fmt, va_list list)  const
 
     
 	VSNPRINTF(Buffer_, BufferSize_, fmt, list);
-    *out_ << tag << " [" << name << "]: " << Buffer_ << std::endl;
+    fprintf(stderr,"%s [%s]: %s\n", tag, name, Buffer_);
 }
 
 void Logger::print(const char *tag, const char *fmt, va_list list)  const

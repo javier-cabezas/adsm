@@ -38,7 +38,7 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 
 void *addVector(void *ptr)
 {
-	struct timeval s, t;
+	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
 	gmacError_t ret = gmacSuccess;
 
@@ -50,19 +50,19 @@ void *addVector(void *ptr)
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	 vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	float error = 0;
 	for(unsigned i = 0; i < vecSize; i++) {
 		error += p->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
 		//error += (a[i] - b[i]);
 	}
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	pthread_t *nThread;
 	unsigned n = 0;
 	gmacError_t ret = gmacSuccess;
-	struct timeval s, t;
+	gmactime_t s, t;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	param = (struct param *)malloc(nIter * sizeof(struct param));
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	// Alloc & init input data
 	ret = gmacGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	valueInit(b, 1.0, nIter * vecSize);
 
 	// Alloc output data
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	for(n = 0; n < nIter; n++) {
