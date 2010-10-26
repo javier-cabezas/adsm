@@ -17,6 +17,6 @@ void getTime(gmactime_t *out)
 	tmp -= DELTA_EPOCH_IN_MICROSECS;
 	tmp /= 10;
 
-	out->usec = (unsigned)(tmp / 1000000UL);
-	out->sec = (unsigned)(tmp % 1000000UL);
+	out->sec = (unsigned)(tmp / 1000000UL);
+	out->usec = (unsigned)(tmp % 1000000UL);
 }

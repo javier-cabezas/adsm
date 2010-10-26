@@ -50,12 +50,11 @@ Accelerator::Accelerator(int n, CUdevice device) :
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busDevId_ = val;
+#endif
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
     CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     integrated_ = (val != 0);
-#else
-    integrated_ = false;
-#endif
+
 
     ret = cuCtxCreate(&_ctx, flags, device_);
     CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
@@ -270,14 +269,14 @@ gmacError_t Accelerator::sync()
 
 gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 {
-    gmac::trace::Function::start("Accelerator","hostAlloc");
-    pushContext();
+	gmac::trace::Function::start("Accelerator","hostAlloc");
 #if CUDA_VERSION >= 2020
+    pushContext();
     CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
-#else
-    CUresult ret = cuMemAllocHost(addr, size);
-#endif
     popContext();
+#else
+	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
@@ -285,9 +284,13 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 gmacError_t Accelerator::hostFree(void *addr)
 {
     gmac::trace::Function::start("Accelerator","hostFree");
+#if CUDA_VERSION >= 2020
     pushContext();
     CUresult r = cuMemFreeHost(addr);
     popContext();
+#else
+	CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     gmac::trace::Function::end("Accelerator");
     return error(r);
 }
@@ -295,10 +298,14 @@ gmacError_t Accelerator::hostFree(void *addr)
 void *Accelerator::hostMap(void *addr)
 {
     gmac::trace::Function::start("Accelerator","hostMap");
+#if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
+#else
+	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+#endif
     if(ret != CUDA_SUCCESS) device = 0;
     gmac::trace::Function::end("Accelerator");
     return (void *)device;
