@@ -46,6 +46,7 @@ WITH THE SOFTWARE.  */
 
 #include <cuda.h>
 #include <driver_types.h>
+#include <texture_types.h>
 
 namespace gmac { namespace cuda {
 

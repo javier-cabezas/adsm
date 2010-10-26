@@ -348,7 +348,8 @@ cudaError_t CUDARTAPI cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 				height);
     }
     else {
-        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)proc.translate(src), spitch, width,
+        unsigned long dummy = (unsigned long)proc.translate(src);
+        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width,
 				height);
     }
 	gmac::exitGmac();
