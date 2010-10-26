@@ -69,12 +69,12 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     float error = 0;
-    float sum2 = 0;
+    float check = 0;
     for(unsigned i = 0; i < vecSize; i++) {
         error += c[i] - (a[i] + b[i]);
-        sum2 += a[i] + b[i];
+        check += a[i] + b[i];
     }
-    assert(sum == sum2);
+    assert(sum == check);
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
