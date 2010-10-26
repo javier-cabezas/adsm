@@ -46,7 +46,6 @@ static void *gmac_pthread(void *arg)
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     gmac::Process &proc = gmac::Process::getInstance();
     proc.initThread();
-	pLock->unlock();
     gmac::trace::Thread::run();
 	gmac::exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
@@ -70,10 +69,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
 	gthread->__arg = __arg;
-	pLock->lock();
 	ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
-	pLock->lock();
-	pLock->unlock();
 	gmac::exitGmac();
 	return ret;
 }

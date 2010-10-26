@@ -41,3 +41,23 @@ function(configure_gmac_groups)
         source_group(${__group} FILES ${__files})
     endforeach()
 endfunction(configure_gmac_groups)
+
+
+function(add_gmac_test_include)
+    get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
+    set(gmac_test_INCLUDE ${gmac_test_INCLUDE} ${ARGV})
+    set_property(GLOBAL PROPERTY gmac_test_INCLUDE ${gmac_test_INCLUDE})
+endfunction(add_gmac_test_include)
+
+
+function(add_gmac_test_library)
+    get_property(gmac_test_LIB GLOBAL PROPERTY gmac_test_LIB)
+    set(gmac_test_LIB ${gmac_test_LIB} ${ARGV})
+    set_property(GLOBAL PROPERTY gmac_test_LIB ${gmac_test_LIB})
+endfunction(add_gmac_test_library)
+
+macro(import_gmac_libraries)
+    get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
+    get_property(gmac_test_LIB GLOBAL PROPERTY gmac_test_LIB)
+endmacro(import_gmac_libraries)
+

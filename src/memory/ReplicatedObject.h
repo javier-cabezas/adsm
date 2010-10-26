@@ -46,42 +46,55 @@ namespace gmac { namespace memory {
 
 #ifndef USE_MMAP
 template<typename T>
-class GMAC_LOCAL ReplicatedObject : public StateObject<T>, public DistributedObject {
+class GMAC_LOCAL ReplicatedObjectImpl : public StateObject<T>, public DistributedObject {
 protected:
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
-    AcceleratorMap accelerator;
+    AcceleratorMap accelerators_;
 public:
-    ReplicatedObject(size_t size, T init);
-    virtual ~ReplicatedObject();
+    ReplicatedObjectImpl(size_t size, T init);
+    virtual ~ReplicatedObjectImpl();
 
-    void init();
-    void fini();
+    TESTABLE void init();
+    TESTABLE void fini();
 
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    // To host functions
+    TESTABLE gmacError_t toHost(Block &block) const;
+    TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
+    TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
+    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toAccelerator(Block &block) const;
+    TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
-    void *getAcceleratorAddr(void *addr) const;
-    inline Mode &owner() const { return gmac::Mode::current(); }
+    TESTABLE void *getAcceleratorAddr(void *addr) const;
+    TESTABLE Mode &owner() const;
 
-    gmacError_t addOwner(Mode &mode);
-    gmacError_t removeOwner(Mode &mode);
+    TESTABLE gmacError_t addOwner(Mode &mode);
+    TESTABLE gmacError_t removeOwner(Mode &mode);
 
-    inline bool isLocal() const { return false; }
-    inline bool isInAccelerator() const { return true; }
+    bool isLocal() const;
+    bool isInAccelerator() const;
 };
 #endif
 
 } }
 
 #include "ReplicatedObject.ipp"
+
+#ifdef DEBUG
+#include "test/ReplicatedObject.h"
+#endif
+
+namespace gmac { namespace memory {
+#ifdef DEBUG
+#define ReplicatedObject ReplicatedObjectTest
+#else
+#define ReplicatedObject ReplicatedObjectImpl
+#endif
+}}
 
 #endif

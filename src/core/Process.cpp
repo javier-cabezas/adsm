@@ -59,12 +59,24 @@ QueueMap::insert(THREAD_T tid, ThreadQueue *q)
     return ret;
 }
 
-QueueMap::iterator QueueMap::find(THREAD_T id)
+
+void QueueMap::push(THREAD_T id, Mode &mode)
 {
     lockRead();
-    iterator q = Parent::find(id);
+    iterator i = Parent::find(id);
+    if(i != Parent::end()) {
+        i->second->queue->push(&mode);
+    }
     unlock();
-    return q;
+}
+
+void QueueMap::attach(THREAD_T id)
+{
+    lockRead();
+    iterator q = Parent::find(SELF());
+    if(q != Parent::end())
+        q->second->queue->pop()->attach();
+    unlock();
 }
 
 void QueueMap::erase(THREAD_T id)
@@ -76,14 +88,6 @@ void QueueMap::erase(THREAD_T id)
         Parent::erase(i);
     }
     unlock();
-}
-
-QueueMap::iterator QueueMap::end()
-{
-    lockRead();
-    iterator ret = Parent::end();
-    unlock();
-    return ret;
 }
 
 
@@ -302,9 +306,7 @@ void *Process::translate(void *addr)
 void Process::send(THREAD_T id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = queues_.find(id);
-    assertion(q != queues_.end());
-    q->second->queue->push(&mode);
+    queues_.push(id, mode);
     mode.inc();
     mode.detach();
 }
@@ -314,30 +316,22 @@ void Process::receive()
     // Get current context and destroy (if necessary)
     Mode::current().detach();
     // Get a fresh context
-    QueueMap::iterator q = queues_.find(SELF());
-    assertion(q != queues_.end());
-    q->second->queue->pop()->attach();
+    queues_.attach(SELF());
 }
 
 void Process::sendReceive(THREAD_T id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = queues_.find(id);
-    assertion(q != queues_.end());
-    q->second->queue->push(&mode);
+    queues_.push(id, mode);
     Mode::initThread();
-    q = queues_.find(SELF());
-    assertion(q != queues_.end());
-    q->second->queue->pop()->attach();
+    queues_.attach(SELF());
 }
 
 void Process::copy(THREAD_T id)
 {
     Mode &mode = Mode::current();
-    QueueMap::iterator q = queues_.find(id);
-    assertion(q != queues_.end());
+    queues_.push(id, mode);
     mode.inc();
-    q->second->queue->push(&mode);
 }
 
 Mode *Process::owner(const void *addr) const
