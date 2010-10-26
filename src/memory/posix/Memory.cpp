@@ -36,10 +36,10 @@ void *Memory::map(void *addr, size_t count, Protection prot)
     snprintf(tmp, FILENAME_MAX, ".gmacXXXXXX");
     int fd = mkstemp(tmp);
     if(fd < 0) return NULL;
+    unlink(tmp);
 
     if(ftruncate(fd, count) < 0) {
         close(fd);
-        unlink(tmp);
         return NULL;
     }
 
@@ -50,16 +50,14 @@ void *Memory::map(void *addr, size_t count, Protection prot)
         cpuAddr = addr;
         if(mmap(cpuAddr, count, ProtBits[prot], MAP_SHARED | MAP_FIXED, fd, 0) != cpuAddr) {
             close(fd);
-            unlink(tmp);
             return NULL;
         }
         util::Logger::TRACE("Getting fixed map: %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
     }
 
-    if(Files.insert(fd, cpuAddr, count, tmp) == false) {
+    if(Files.insert(fd, cpuAddr, count) == false) {
         munmap(cpuAddr, count);
         close(fd);
-        unlink(tmp);
         return NULL;
     }
 
@@ -88,7 +86,6 @@ void Memory::unmap(void *addr, size_t count)
     if(Files.remove(addr) == false) return;
     munmap(addr, count);
     close(entry.fd());
-    unlink(entry.name());
 }
 
 }}
