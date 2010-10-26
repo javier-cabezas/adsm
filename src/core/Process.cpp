@@ -70,7 +70,7 @@ void QueueMap::push(THREAD_T id, Mode &mode)
     unlock();
 }
 
-void QueueMap::attach(THREAD_T id)
+void QueueMap::attach()
 {
     lockRead();
     iterator q = Parent::find(SELF());
@@ -316,7 +316,7 @@ void Process::receive()
     // Get current context and destroy (if necessary)
     Mode::current().detach();
     // Get a fresh context
-    queues_.attach(SELF());
+    queues_.attach();
 }
 
 void Process::sendReceive(THREAD_T id)
@@ -324,7 +324,7 @@ void Process::sendReceive(THREAD_T id)
     Mode &mode = Mode::current();
     queues_.push(id, mode);
     Mode::initThread();
-    queues_.attach(SELF());
+    queues_.attach();
 }
 
 void Process::copy(THREAD_T id)
