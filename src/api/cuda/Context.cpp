@@ -33,7 +33,6 @@ Context::~Context()
 
 void Context::setupCUstreams()
 {
-    CUresult ret;
     streamLaunch_   = accelerator().createCUstream();
     streamToAccelerator_ = accelerator().createCUstream();
     streamToHost_   = accelerator().createCUstream();
@@ -42,7 +41,6 @@ void Context::setupCUstreams()
 
 void Context::cleanCUstreams()
 {
-    CUresult ret;
     accelerator().destroyCUstream(streamLaunch_);
     accelerator().destroyCUstream(streamToAccelerator_);
     accelerator().destroyCUstream(streamToHost_);
@@ -137,6 +135,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
         if((size - offset) < buffer_->size()) len = size - offset;
         buffer_->toHost();
         ret = accelerator().copyToHostAsync(buffer_->addr(), (uint8_t *)accAddr + offset, len, streamToHost_);
+        assertion(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         ret = buffer_->wait();
         if(ret != gmacSuccess) break;
@@ -168,7 +167,7 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
 gmac::KernelLaunch &Context::launch(gmac::Kernel &kernel)
 {
     trace::Function::start("Context", "launch");
-    gmac::trace::Thread::run(id_);
+    gmac::trace::Thread::run((THREAD_T)id_);
     gmac::KernelLaunch *ret = kernel.launch(call_);
     assertion(ret != NULL);
     trace::Function::end("Context");
@@ -183,7 +182,7 @@ gmacError_t Context::sync()
         waitForBuffer(*buffer_);
     }
     ret = syncCUstream(streamLaunch_);
-    gmac::trace::Thread::resume(id_);
+    gmac::trace::Thread::resume((THREAD_T)id_);
     trace::Function::end("Context");
     return ret;
 }

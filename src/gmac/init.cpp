@@ -51,9 +51,11 @@ static void CONSTRUCTOR init(void)
     trace::Function::init();
 
     /* Call initialization of interpose libraries */
+#if defined(POSIX)
     osInit();
     threadInit();
     stdcInit();
+#endif
 
     util::Logger::TRACE("Using %s memory manager", paramProtocol);
     util::Logger::TRACE("Using %s memory allocator", paramAllocator);

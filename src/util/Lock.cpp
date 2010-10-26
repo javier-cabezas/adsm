@@ -14,6 +14,7 @@ paraver::StateName *ParaverLock::exclusive = NULL;
 
 ParaverLock::ParaverLock(const char *name) 
 {
+	UNREFERENCED_PARAMETER(name);
 #ifdef PARAVER
     if(event == NULL)
         event = paraver::Factory<paraver::EventName>::create(eventName);

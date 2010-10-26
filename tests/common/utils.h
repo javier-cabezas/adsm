@@ -1,16 +1,43 @@
-#ifndef __TIME_H_
-#define __TIME_H_
+#ifndef GMAC_TESTS_COMMON_UTILS_H_
+#define GMAC_TESTS_COMMON_UTILS_H_
 
 #include <stdio.h>
-#include <sys/time.h>
+#include "config/config.h"
+
+#include "config/config.h"
+
+#if defined(HAVE_STDINT)
+#include <stdint.h>
+#elif defined(_MSC_VER)
+typedef unsigned __int8 uint8_t;
+typedef __int8 int8_t;
+typedef unsigned __int16 uint16_t;
+typedef __int16 int16_t;
+typedef unsigned __int32 uint32_t;
+typedef __int32 int32_t;
+typedef unsigned __int64 uint64_t;
+typedef __int64 int64_t;
+#endif
+
+#if !defined(HAVE_LLABS) && defined(_MSC_VER)
+#	define llabs _abs64
+#endif
 
 /* Timing functions */
 #ifdef __cplusplus
 extern "C" {
 #endif
-void printTime(struct timeval *, struct timeval *, const char *, const char *);
 
-void printAvgTime(struct timeval *, struct timeval *, const char *, const char *, unsigned);
+typedef struct {
+	unsigned long sec;
+	unsigned long usec;
+} gmactime_t;
+
+void getTime(gmactime_t *);
+
+void printTime(gmactime_t *, gmactime_t *, const char *, const char *);
+
+void printAvgTime(gmactime_t *, gmactime_t *, const char *, const char *, unsigned);
 
 void randInit(float *a, size_t size);
 
@@ -35,7 +62,6 @@ void setParam(T *param, const char *str, const T def)
 	else              *param = def;
 }
 
-#include <stdint.h>
 #include <cmath>
 
 template<typename T>

@@ -4,6 +4,7 @@ function(add_gmac_sources)
     get_property(gmac_GROUPS GLOBAL PROPERTY gmac_GROUPS)
     string(REPLACE ${CMAKE_SOURCE_DIR} "" __group "${CMAKE_CURRENT_SOURCE_DIR}")
     string(REGEX REPLACE "^/" "" __group "${__group}")
+    string(REPLACE "/" "\\\\" __group "${__group}")
     set(gmac_GROUPS ${gmac_GROUPS} ${__group})
     set_property(GLOBAL PROPERTY gmac_GROUPS ${gmac_GROUPS})
 
