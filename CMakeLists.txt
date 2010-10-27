@@ -19,6 +19,7 @@ if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
     add_definitions(-DHAVE_PTHREADS)
     set(gmac_LIBS ${gmac_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    add_gmac_test_library(${CMAKE_THREAD_LIBS_INIT})
     set(THREAD_DIR "pthreads")
 elseif(CMAKE_USE_WIN32_THREADS_INIT)
     message(STATUS "Using Windows threads")
@@ -122,21 +123,6 @@ endif(USE_PARAVER)
 add_subdirectory(lib)
 import_gmac_libraries()
 
-# Check if tests must be compiled
-option(MAKE_TESTS "Compile GMAC tests" OFF)
-if(MAKE_TESTS)
-    message(STATUS "Compile GMAC tests")
-    add_subdirectory(tests)
-    # Add libraries used in testing
-endif(MAKE_TESTS)
-
-# Check if doc must be generated
-option(MAKE_DOC "Generate GMAC documentation" OFF)
-if(MAKE_DOC)
-    message(STATUS "Generate GMAC documentation")
-    add_subdirectory(doc)
-endif(MAKE_DOC)
-
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "-Wall -Werror -Wno-unused-variable")
@@ -172,12 +158,32 @@ elseif(${OS_DIR} MATCHES "windows")
 endif(${OS_DIR} MATCHES "posix")
 
 
+# Check if tests must be compiled
+option(MAKE_TESTS "Compile GMAC tests" OFF)
+if(MAKE_TESTS)
+    message(STATUS "Compile GMAC tests")
+    add_subdirectory(tests)
+    # Add libraries used in testing
+endif(MAKE_TESTS)
+
+# Check if doc must be generated
+option(MAKE_DOC "Generate GMAC documentation" OFF)
+if(MAKE_DOC)
+    message(STATUS "Generate GMAC documentation")
+    add_subdirectory(doc)
+endif(MAKE_DOC)
+
+
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-DUSE_DBC)
+endif(CMAKE_BUILD_TYPE MATCHES "Debug")
+
 # Add subdirectories
 add_subdirectory(src)
 
-
 # Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src PEDO)
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
 add_library(gmac SHARED ${gmac_SRC})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
