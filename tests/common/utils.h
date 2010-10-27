@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include "config/config.h"
 
-#include "config/config.h"
-
 #if defined(HAVE_STDINT)
 #include <stdint.h>
 #elif defined(_MSC_VER)
@@ -17,6 +15,8 @@ typedef unsigned __int32 uint32_t;
 typedef __int32 int32_t;
 typedef unsigned __int64 uint64_t;
 typedef __int64 int64_t;
+#else
+#error "std types not defined!"
 #endif
 
 #if !defined(HAVE_LLABS) && defined(_MSC_VER)

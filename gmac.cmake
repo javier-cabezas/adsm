@@ -50,7 +50,7 @@ function(add_gmac_groups)
         string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
         source_group(${group_LABEL} FILES ${__file})
     endforeach()
-endfunction(add_gmac_group)
+endfunction(add_gmac_groups)
 
 function(add_gmac_test_include)
     get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
