@@ -50,6 +50,8 @@ function(add_gmac_groups)
         string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
         source_group(${group_LABEL} FILES ${__file})
     endforeach()
+    #message(STATUS "Group: ${current_GROUP}: ${group_FILES}")
+    source_group(${current_GROUP} FILES ${group_FILES})
 endfunction(add_gmac_group)
 
 function(add_gmac_test_include)
