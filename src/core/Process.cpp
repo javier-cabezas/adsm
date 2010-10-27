@@ -257,8 +257,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     return ret;
 }
 
-// TODO when is this function called
-void Process::remove(Mode &mode)
+void Process::removeMode(Mode &mode)
 {
     trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
