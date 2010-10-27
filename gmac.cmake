@@ -42,15 +42,14 @@ function(configure_gmac_groups)
     endforeach()
 endfunction(configure_gmac_groups)
 
-function(add_gmac_group)
-    # Create group name
-    string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR})
-    string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
-    string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
-    # Filter out files not in current directory
-    string(REGEX MATCHALL "${CMAKE_CURRENT_SOURCE_DIR}.*;*" group_FILES ${ARGV})
-    #message(STATUS "Group: ${current_GROUP}: ${group_FILES}")
-    source_group(${current_GROUP} FILES ${group_FILES})
+function(add_gmac_groups)
+    foreach(__file ${ARGV})
+        # Create group name
+        string(REGEX REPLACE "/[^/]+$" "" file_DIR ${__file})
+        string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
+        string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
+        source_group(${group_LABEL} FILES ${__file})
+    endforeach()
 endfunction(add_gmac_group)
 
 function(add_gmac_test_include)
