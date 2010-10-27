@@ -1,5 +1,6 @@
-macro(add_gmac_sources)
-    foreach(__file ${ARGV})
+macro(add_gmac_sources label)
+    set(__sources "")
+    foreach(__file ${ARGN})
         set(__source __source-NOTFOUND)
         find_file(__source ${__file} ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
         if(EXISTS ${__source})
@@ -15,7 +16,7 @@ macro(add_gmac_sources)
 
     # Add the source files to the global list
 
-    set(gmac_SRC ${gmac_SRC} ${__sources} PARENT_SCOPE)
+    set(${label}_SRC ${${label}_SRC} ${__sources} PARENT_SCOPE)
 endmacro(add_gmac_sources)
 
 function(add_gmac_groups)
