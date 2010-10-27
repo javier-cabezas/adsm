@@ -10,6 +10,7 @@
 
 #include <pthread.h>
 
+#if 0
 class GMAC_LOCAL ThreadLock : public gmac::util::Lock {
 public:
     ThreadLock() : gmac::util::Lock("Thread") {};
@@ -19,18 +20,23 @@ public:
 };
 
 static ThreadLock *pLock;
+#endif
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
 {
+#if 0
 	pLock = new ThreadLock;
+#endif
 	LOAD_SYM(__pthread_create, pthread_create);
 }
 
 static void __attribute__((destructor())) gmacPthreadFini(void)
 {
+#if 0
 	delete pLock;
+#endif
 }
 
 struct gmac_thread_t {
