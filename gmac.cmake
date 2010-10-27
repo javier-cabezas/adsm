@@ -42,13 +42,22 @@ function(configure_gmac_groups)
     endforeach()
 endfunction(configure_gmac_groups)
 
+function(add_gmac_group)
+    # Create group name
+    string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR})
+    string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
+    string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
+    # Filter out files not in current directory
+    string(REGEX MATCHALL "${CMAKE_CURRENT_SOURCE_DIR}.*;*" group_FILES ${ARGV})
+    #message(STATUS "Group: ${current_GROUP}: ${group_FILES}")
+    source_group(${current_GROUP} FILES ${group_FILES})
+endfunction(add_gmac_group)
 
 function(add_gmac_test_include)
     get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
     set(gmac_test_INCLUDE ${gmac_test_INCLUDE} ${ARGV})
     set_property(GLOBAL PROPERTY gmac_test_INCLUDE ${gmac_test_INCLUDE})
 endfunction(add_gmac_test_include)
-
 
 function(add_gmac_test_library)
     get_property(gmac_test_LIB GLOBAL PROPERTY gmac_test_LIB)
