@@ -181,10 +181,10 @@ endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
 # Add subdirectories
 add_subdirectory(src)
+add_gmac_groups(${gmac_SRC})
 
 # Setup GMAC as main target
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
-get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
 add_library(gmac SHARED ${gmac_SRC})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
 set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h)
@@ -205,7 +205,5 @@ install(TARGETS gmac
      RUNTIME DESTINATION bin
      PUBLIC_HEADER DESTINATION include
      PRIVATE_HEADER DESTINATION include/gmac)
-
-configure_gmac_groups()
 
 include(CPack)
