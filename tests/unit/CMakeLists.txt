@@ -26,5 +26,8 @@ set(lock_SRC
 
 add_subdirectory(memory)
 
-add_executable(UnitTests UnitTests.cpp ${unit_SRC} ${lock_SRC})
+set(all_SRC ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp ${unit_SRC} ${lock_SRC})
+add_gmac_groups(${all_SRC})
+
+add_executable(UnitTests ${all_SRC})
 target_link_libraries(UnitTests ${gmac_test_LIB})

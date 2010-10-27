@@ -42,13 +42,21 @@ function(configure_gmac_groups)
     endforeach()
 endfunction(configure_gmac_groups)
 
+function(add_gmac_groups)
+    foreach(__file ${ARGV})
+        # Create group name
+        string(REGEX REPLACE "/[^/]+$" "" file_DIR ${__file})
+        string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
+        string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
+        source_group(${group_LABEL} FILES ${__file})
+    endforeach()
+endfunction(add_gmac_group)
 
 function(add_gmac_test_include)
     get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
     set(gmac_test_INCLUDE ${gmac_test_INCLUDE} ${ARGV})
     set_property(GLOBAL PROPERTY gmac_test_INCLUDE ${gmac_test_INCLUDE})
 endfunction(add_gmac_test_include)
-
 
 function(add_gmac_test_library)
     get_property(gmac_test_LIB GLOBAL PROPERTY gmac_test_LIB)
