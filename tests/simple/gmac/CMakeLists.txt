@@ -30,7 +30,7 @@ else()
     set(CUDA_64_BIT_DEVICE_CODE OFF)
 endif()
 
-# gmacVeacAdd
+# gmacVecAdd
 source_group(${current_GROUP} FILES gmacVecAdd.cu)
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd} ${common_SRC} gmacVecAdd.cu)
