@@ -1,13 +1,4 @@
-function(add_gmac_sources)
-
-    # Add the VC group to the list
-    get_property(gmac_GROUPS GLOBAL PROPERTY gmac_GROUPS)
-    string(REPLACE ${CMAKE_SOURCE_DIR} "" __group "${CMAKE_CURRENT_SOURCE_DIR}")
-    string(REGEX REPLACE "^/" "" __group "${__group}")
-    string(REPLACE "/" "\\\\" __group "${__group}")
-    set(gmac_GROUPS ${gmac_GROUPS} ${__group})
-    set_property(GLOBAL PROPERTY gmac_GROUPS ${gmac_GROUPS})
-
+macro(add_gmac_sources)
     foreach(__file ${ARGV})
         set(__source __source-NOTFOUND)
         find_file(__source ${__file} ${CMAKE_CURRENT_SOURCE_DIR} NO_DEFAULT_PATH)
@@ -23,30 +14,19 @@ function(add_gmac_sources)
     endforeach()
 
     # Add the source files to the global list
-    get_property(gmac_SRC GLOBAL PROPERTY gmac_SRC)
-    set(gmac_SRC ${gmac_SRC} ${__sources})
-    set_property(GLOBAL PROPERTY gmac_SRC ${gmac_SRC})
 
-    # Bind source files to the group
-    string(REPLACE "/" "_" __group_name "${__group}")
-    set_property(GLOBAL PROPERTY gmac_GROUP${__group_name} ${__sources})
-endfunction(add_gmac_sources)
-
-function(configure_gmac_groups)
-    get_property(gmac_GROUPS GLOBAL PROPERTY gmac_GROUPS)
-
-    foreach(__group ${gmac_GROUPS})
-        string(REPLACE "/" "_" __group_name "${__group}")
-        get_property(__files GLOBAL PROPERTY gmac_GROUP${__group_name})
-        source_group(${__group} FILES ${__files})
-    endforeach()
-endfunction(configure_gmac_groups)
+    set(gmac_SRC ${gmac_SRC} ${__sources} PARENT_SCOPE)
+endmacro(add_gmac_sources)
 
 function(add_gmac_groups)
     foreach(__file ${ARGV})
         # Create group name
         string(REGEX REPLACE "/[^/]+$" "" file_DIR ${__file})
-        string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
+        if(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+            string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
+        elseif(${file_DIR} MATCHES ${CMAKE_BINARY_DIR})
+            string(REPLACE "${CMAKE_BINARY_DIR}" "" group_DIR ${file_DIR})
+        endif(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
         string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
         source_group(${group_LABEL} FILES ${__file})
     endforeach()
