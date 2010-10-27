@@ -79,16 +79,12 @@ public:
 
 namespace gmac { namespace util {
 
-#ifdef DEBUG
-class LockTest;
-typedef LockTest Lock;
-class RWLockTest;
-typedef RWLockTest RWLock;
+#ifdef USE_DBC
+#   define Lock LockTest
+#   define RWLock RWLockTest
 #else
-class LockImpl;
-typedef LockImpl Lock;
-class RWLockImpl;
-typedef RWLockImpl RWLock;
+#   define Lock LockImpl
+#   define RWLock RWLockImpl
 #endif
 
 } }
