@@ -12,6 +12,6 @@ if(MAKE_TESTS)
 
     include_directories(${gtest_DIR}/include ${gtest_DIR})
     add_library(gtest STATIC ${gtest_SRC})
-    add_gmac_test_include(${gtest_DIR}/include) 
+    add_gmac_test_include(${CMAKE_CURRENT_SOURCE_DIR}/${gtest_DIR}/include) 
     add_gmac_test_library(gtest)
 endif(MAKE_TESTS)

@@ -21,7 +21,7 @@ void init(long *ptr, int s, long v)
 int check(long *ptr, int s)
 {
 	int a = 0;
-	for(int i = 0; i < size; i++)
+	for(size_t i = 0; i < size; i++)
 		a += ptr[i];
 	return a - s;
 }

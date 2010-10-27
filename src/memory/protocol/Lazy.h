@@ -117,19 +117,12 @@ public:
 
 }}}
 
-#ifdef DEBUG
+#ifdef USE_DBC
 #include "test/Lazy.h"
-#endif
-
-namespace gmac { namespace memory { namespace protocol {
-
-#ifdef DEBUG
 #define Lazy LazyTest
 #else
 #define Lazy LazyImpl
 #endif
-
-}}}
 
 namespace gmac { namespace memory { namespace protocol {
 
