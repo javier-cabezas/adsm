@@ -3,5 +3,5 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
         SharedObject.h SharedObject.ipp
         ReplicatedObject.h ReplicatedObject.ipp)
 
-    add_gmac_sources(${memory_test_SRC})
+    add_gmac_sources(gmac ${memory_test_SRC})
 endif(CMAKE_BUILD_TYPE MATCHES "Debug")

@@ -3,31 +3,15 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src)
 
-# Some really common sources
-set(parameter_SRC
-    ${CMAKE_SOURCE_DIR}/src/util/Parameter.h
-    ${CMAKE_SOURCE_DIR}/src/util/Parameter-def.h
-    ${CMAKE_SOURCE_DIR}/src/util/Parameter.ipp
-    ${CMAKE_SOURCE_DIR}/src/util/Parameter.cpp)
-
-set(logger_SRC
-    ${parameter_SRC}
-    ${CMAKE_SOURCE_DIR}/src/util/Logger.h
-    ${CMAKE_SOURCE_DIR}/src/util/Logger.cpp)
-
-set(lock_SRC
-    ${logger_SRC}
-    ${CMAKE_SOURCE_DIR}/src/util/Lock.h
-    ${CMAKE_SOURCE_DIR}/src/util/Lock.cpp
-    ${CMAKE_SOURCE_DIR}/src/util/${OS_DIR}/Lock.h
-    ${CMAKE_SOURCE_DIR}/src/util/${OS_DIR}/Lock.ipp
-    ${CMAKE_SOURCE_DIR}/src/util/${OS_DIR}/Lock.cpp)
-
-
 add_subdirectory(memory)
+add_subdirectory(api)
 
-set(all_SRC ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp ${unit_SRC} ${lock_SRC})
+set(all_SRC ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp ${unit_SRC})
 add_gmac_groups(${all_SRC})
 
 add_executable(UnitTests ${all_SRC})
-target_link_libraries(UnitTests ${gmac_test_LIB})
+target_link_libraries(UnitTests gmac-static ${gmac_test_LIB})
+
+add_gmac_groups(${gmac_SRC})
+add_library(gmac-static STATIC ${gmac_SRC})
+target_link_libraries(gmac-static ${gmac_LIBS})

@@ -113,6 +113,7 @@ public:
     gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 
     gmacError_t moveTo(Object &obj, Mode &mode);
+    gmacError_t removeMode(Mode &mode);
 };
 
 }}}

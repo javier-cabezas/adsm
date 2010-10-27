@@ -84,6 +84,8 @@ public:
 
     virtual gmacError_t moveTo(Object &obj, Mode &mode) = 0;
 
+    virtual gmacError_t removeMode(Mode &mode) = 0;
+
     //virtual gmacError_t toHost(Object &obj) = 0;
 };
 

@@ -161,7 +161,7 @@ gmacError_t LazyImpl::release(const StateObject<State> &object, SystemBlock<Stat
     switch(block.state()) {
         case Dirty:
             ret = object.toAccelerator(block);
-            if(ret != gmacSuccess) return ret;
+            if(ret != gmacSuccess) goto exit_func;
 			if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
             block.state(ReadOnly);
@@ -171,6 +171,7 @@ gmacError_t LazyImpl::release(const StateObject<State> &object, SystemBlock<Stat
         case ReadOnly:
             break;
     }
+exit_func:
     block.unlock();
     return ret;
 }
@@ -232,12 +233,14 @@ gmacError_t LazyImpl::toHost(const Object &obj)
                 ret = object.toHost(block);
                 if(ret != gmacSuccess) { block.unlock(); return ret; }
                 block.state(Dirty);
+                // TODO helgrind error lock order block dirty_list
                 ret = addDirty(object, block, false);
                 break;
 
             case Dirty:
                 break;
             case ReadOnly:
+                // TODO helgrind error lock order block dirty_list
                 ret = addDirty(object, block, false);
                 break;
         }
@@ -258,7 +261,10 @@ gmacError_t LazyImpl::toDevice(const Object &obj)
         switch(block.state()) {
             case Dirty:
                 ret = object.toAccelerator(block);
-                if(ret != gmacSuccess) { block.unlock(); return ret; }
+                if(ret != gmacSuccess) {
+                    block.unlock();
+                    return ret;
+                }
 				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
                     Fatal("Unable to set memory permissions");
                 block.state(ReadOnly);
@@ -815,6 +821,7 @@ gmacError_t LazyImpl::signalWrite(const Object &obj, void *addr)
     }
     block->state(Dirty);
     trace("Setting block %p to dirty state", block->addr());
+    // TODO helgrind error lock order block dirty_list
     ret = addDirty(object, *block);
 exit_func:
     block->unlock();
@@ -894,5 +901,18 @@ bool LazyImpl::requireUpdate(Block &b)
 }
 
 #endif
+
+gmacError_t
+LazyImpl::removeMode(Mode &mode)
+{
+    lockWrite();
+    iterator i = find(&mode);
+    if(i != end()) {
+        delete i->second;
+        erase(i);
+    }
+    unlock();
+    return gmacSuccess;
+}
 
 }}}

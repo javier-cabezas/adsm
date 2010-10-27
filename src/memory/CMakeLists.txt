@@ -21,4 +21,5 @@ set(memory_SRC
     Handler.h Handler.cpp
     Allocator.h)
 
-add_gmac_sources(${memory_SRC})
+add_gmac_sources(gmac ${memory_SRC})
+add_gmac_sources(gmac-lib ${memory_lib_SRC})
