@@ -72,28 +72,28 @@ inline Mode &ReplicatedObjectImpl<T>::owner() const
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &block) const
+inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &) const
 {
     Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &block, unsigned blockOff, size_t count) const
+inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &, unsigned, size_t) const
 {
     Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const
+inline gmacError_t ReplicatedObjectImpl<T>::toHostPointer(Block &, unsigned, void *, size_t) const
 {
     Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t ReplicatedObjectImpl<T>::toHostBuffer(Block &, unsigned, IOBuffer &, unsigned, size_t) const
 {
     Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
     return gmacErrorInvalidValue;
@@ -104,7 +104,7 @@ template<typename T>
 inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block) const
 {
     gmacError_t ret = gmacSuccess;
-    off_t off = block.addr() - StateObject<T>::addr();
+    off_t off = (off_t)(block.addr() - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
@@ -120,7 +120,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block, unsigned
 {
     assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
@@ -135,7 +135,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromPointer(Block &bloc
 {
     assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
@@ -151,7 +151,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromBuffer(Block &block
     assertion(block.addr() + blockOff + count <= block.end());
     assertion(buffer.addr() + bufferOff + count <= buffer.end());
     gmacError_t ret = gmacSuccess;
-    off_t off = block.addr() + blockOff - StateObject<T>::addr();
+    off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
@@ -177,6 +177,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::addOwner(Mode &mode)
         if(mode.requireUpdate(block) == false) continue;
         off_t off = (off_t)(block.addr() - StateObject<T>::addr());
         gmacError_t tmp = acc->owner().copyToAccelerator(acc->addr() + off, block.addr(), block.size());
+		if(tmp != gmacSuccess) return tmp;
     }
 #ifdef USE_VM
     vm::Bitmap & bitmap = mode.dirtyBitmap();
