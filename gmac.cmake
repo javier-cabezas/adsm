@@ -52,7 +52,7 @@ function(add_gmac_groups)
     endforeach()
     #message(STATUS "Group: ${current_GROUP}: ${group_FILES}")
     source_group(${current_GROUP} FILES ${group_FILES})
-endfunction(add_gmac_group)
+endfunction(add_gmac_groups)
 
 function(add_gmac_test_include)
     get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)
