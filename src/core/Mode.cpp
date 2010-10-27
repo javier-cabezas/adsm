@@ -51,7 +51,9 @@ void Mode::finiThread()
         manager.protocol().toHost(object);
     }
     mode->map_.makeOrphans();
-    Process::getInstance().remove(*mode);
+    Process::getInstance().removeMode(*mode);
+
+    memory::Manager::getInstance().removeMode(*mode);
     delete mode;
 }
 

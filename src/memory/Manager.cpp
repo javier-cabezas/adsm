@@ -410,6 +410,13 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
     return ret;
 }
 
+gmacError_t
+Manager::removeMode(Mode &mode)
+{
+    gmacError_t ret = protocol_->removeMode(mode);
+    return ret;
+}
+
 gmacError_t Manager::moveTo(void * addr, Mode &mode)
 {
     Object * obj = mode.getObjectWrite(addr);
