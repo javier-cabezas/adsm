@@ -94,7 +94,7 @@ public:
     void cleanup();
     std::pair<iterator, bool> insert(THREAD_T, ThreadQueue *);
     void push(THREAD_T id, Mode &mode);
-    void attach(THREAD_T id);
+    void attach();
     void erase(THREAD_T id);
 };
 
