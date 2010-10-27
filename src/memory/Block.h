@@ -54,12 +54,12 @@ protected:
 public:
     virtual ~Block() {};
 
-    inline uint8_t *addr() const { return (uint8_t *) addr_; }
-    inline uint8_t *end() const { return addr() + size_; }
-    inline size_t size() const { return size_; }
+    uint8_t *addr() const;
+    uint8_t *end() const;
+    size_t size() const;
 
-    inline void lock() const { return util::Lock::lock(); }
-    inline void unlock() const { return util::Lock::unlock(); }
+    void lock() const;
+    void unlock() const;
 };
 
 class GMAC_LOCAL AcceleratorBlock : public Block {
@@ -68,17 +68,7 @@ protected:
 public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
     ~AcceleratorBlock();
-	AcceleratorBlock &operator =(const AcceleratorBlock &) {
-        Fatal("Assigment of accelerator blocks is not supported");
-        return *this;
-    }
-
-
-#if 0
-    gmacError_t toDevice(off_t off, Block &block);
-    gmacError_t toHost(off_t off, Block &block);
-    gmacError_t toHost(off_t off, void *hostAddr, size_t count);
-#endif
+	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
     Mode &owner() { return owner_; }
 };

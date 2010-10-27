@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_INIT_H_
 #define GMAC_GMAC_INIT_H_
 
+#if defined(GMAC_DLL)
 #include "config/common.h"
 #include "util/Lock.h"
 #include "util/Private.h"
@@ -102,5 +103,14 @@ inline char inGmac() {
     return 0;
 }
 
+
 }
+
+#else
+#   define enterGmac()
+#   define enterGmacExclusive()
+#   define exitGmac()
+#   define inGmac()
+#endif
+
 #endif

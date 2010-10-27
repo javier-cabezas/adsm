@@ -1,4 +1,4 @@
 set(api_allocator_SRC
     Buddy.cpp)
 
-add_gmac_sources(${api_allocator_SRC})
+add_gmac_sources(gmac ${api_allocator_SRC})
