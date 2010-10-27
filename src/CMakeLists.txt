@@ -13,3 +13,5 @@ add_subdirectory(os)
 add_subdirectory(api)
 
 add_subdirectory(gmac)
+
+add_gmac_sources()
