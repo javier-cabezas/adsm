@@ -126,7 +126,7 @@ public:
     void finiThread();
 #define ACC_AUTO_BIND -1
     Mode * createMode(int acc = ACC_AUTO_BIND);
-    void remove(Mode &mode);
+    void removeMode(Mode &mode);
 
 #ifndef USE_MMAP
     gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
