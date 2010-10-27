@@ -80,17 +80,12 @@ public:
 
 #include "SharedObject.ipp"
 
-#ifdef DEBUG
+#ifdef USE_DBC
 #include "test/SharedObject.h"
-#endif
-
-namespace gmac { namespace memory {
-#ifdef DEBUG
 #define SharedObject SharedObjectTest
 #else
 #define SharedObject SharedObjectImpl
 #endif
-}}
 
 
 #endif

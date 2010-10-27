@@ -85,16 +85,11 @@ public:
 
 #include "ReplicatedObject.ipp"
 
-#ifdef DEBUG
+#ifdef USE_DBC
 #include "test/ReplicatedObject.h"
-#endif
-
-namespace gmac { namespace memory {
-#ifdef DEBUG
 #define ReplicatedObject ReplicatedObjectTest
 #else
 #define ReplicatedObject ReplicatedObjectImpl
 #endif
-}}
 
 #endif
