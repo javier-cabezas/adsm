@@ -68,6 +68,7 @@ public:
 class GMAC_LOCAL Function {
 protected:
 #ifdef DEBUG
+    static bool Init_;
     static util::Private<std::list<std::string> > Funcs_;
 #endif
 #ifdef PARAVER

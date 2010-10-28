@@ -8,6 +8,7 @@
 namespace gmac { namespace trace {
 
 #ifdef DEBUG
+bool Function::Init_ = false;
 util::Private<std::list<std::string> > Function::Funcs_;
 #endif
 
@@ -40,6 +41,7 @@ FunctionMap &ModuleMap::get(const char *module)
 void Function::init()
 {
 #ifdef DEBUG
+    Init_ = true;
     util::Private<std::list<std::string> >::init(Funcs_);
     Funcs_.set(NULL);
 #endif
@@ -59,7 +61,10 @@ void Function::start(const char *module, const char *name)
 {
 #ifdef DEBUG
     gmac::util::Logger::TRACE("FUNCTION START %s:%s", module, name);
-    Funcs_.get()->push_back(std::string(name));
+    if(Init_) {
+        std::list<std::string> *list = Funcs_.get();
+        if(list != NULL) list->push_back(std::string(name));
+    }
 #endif
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
@@ -88,9 +93,12 @@ void Function::end(const char *module)
     paraver::trace->__pushEvent(function.event(), 0);
 #endif
 #ifdef DEBUG
-    gmac::util::Logger::ASSERTION(Funcs_.get()->size() > 0);
-    gmac::util::Logger::TRACE("FUNCTION END %s:%s", module, Funcs_.get()->back().c_str());
-    Funcs_.get()->pop_back();
+    if(Init_ == false) return;
+    std::list<std::string> *list = Funcs_.get();
+    if(list == NULL) return;
+    gmac::util::Logger::ASSERTION(list->empty() == false);
+    gmac::util::Logger::TRACE("FUNCTION END %s:%s", module, list->back().c_str());
+    list->pop_back();
 #endif
 }
 
