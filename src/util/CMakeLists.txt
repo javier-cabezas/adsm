@@ -11,4 +11,5 @@ set(util_SRC
     Singleton.h Singleton.ipp
     FileLock.h)
 
-add_gmac_sources(${util_SRC})
+add_gmac_sources(gmac ${util_SRC})
+add_gmac_sources(gmac-dbc)

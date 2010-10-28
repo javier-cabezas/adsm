@@ -1,4 +1,4 @@
-#ifdef DEBUG
+#ifdef USE_DBC
 #include "Contract.h"
 
 #include <iostream>

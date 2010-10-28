@@ -72,7 +72,7 @@ protected:
 
 #include "Lock.ipp"
 
-#ifdef DEBUG
+#ifdef USE_DBC
 #include "test/Lock.h"
 #endif
 

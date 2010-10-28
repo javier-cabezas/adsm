@@ -157,6 +157,11 @@ if(${OS_DIR} MATCHES "posix")
 elseif(${OS_DIR} MATCHES "windows")
 endif(${OS_DIR} MATCHES "posix")
 
+# Add subdirectories
+add_subdirectory(src)
+add_gmac_groups(${gmac_SRC})
+
+
 
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
@@ -175,25 +180,27 @@ endif(MAKE_DOC)
 
 
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_definitions(-DUSE_DBC)
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
-# Add subdirectories
-add_subdirectory(src)
 add_gmac_groups(${gmac_SRC})
 
 # Setup GMAC as main target
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
-add_library(gmac SHARED ${gmac_SRC})
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
-set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h)
-
-
 # GMAC is a DLL
 add_definitions(-DGMAC_DLL)
 # Compiling GMAC
 add_definitions(-DGMAC_DLL_EXPORTS)
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_definitions(-DUSE_DBC)
+    set(gmac_SOURCES ${gmac_SOURCES} ${gmac-dbc_SRC})
+endif(CMAKE_BUILD_TYPE MATCHES "Debug")
+set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC})
+
+add_gmac_groups(${gmac_SOURCES})
+add_library(gmac SHARED ${gmac_SOURCES})
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
+set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h)
+
 
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})

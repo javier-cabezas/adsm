@@ -18,7 +18,9 @@
 
 #include "trace/Function.h"
 
+#if defined(GMAC_DLL)
 #include "init.h"
+#endif
 
 #if defined(__GNUC__)
 #define RETURN_ADDRESS __builtin_return_address(0)
