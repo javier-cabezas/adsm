@@ -5,3 +5,4 @@ set(util_os_SRC
     Private.h Private.ipp)
 
 add_gmac_sources(gmac ${util_os_SRC})
+add_gmac_sources(gmac-dbc)
