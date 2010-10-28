@@ -10,4 +10,4 @@ set(core_SRC
     Context.h Context.cpp
     Queue.h Queue.ipp Queue.cpp)
 
-add_gmac_sources(${core_SRC})
+add_gmac_sources(gmac ${core_SRC})

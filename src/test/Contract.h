@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#ifdef DEBUG
+#ifdef USE_DBC
 
 #define ENSURES(a) test::Contract::Ensures(__FILE__, __LINE__, #a, a)
 #define REQUIRES(a) test::Contract::Requires(__FILE__, __LINE__, #a, a)

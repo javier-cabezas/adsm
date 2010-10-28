@@ -1,6 +1,4 @@
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(memory_protocol_test_SRC
-        Lazy.h Lazy.cpp)
+set(memory_protocol_test_SRC
+    Lazy.h Lazy.cpp)
 
-    add_gmac_sources(${memory_protocol_test_SRC})
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
+add_gmac_sources(gmac-dbc ${memory_protocol_test_SRC})

@@ -5,28 +5,6 @@
 
 namespace gmac { namespace cuda {
 
-#if 0
-inline
-void Accelerator::switchIn()
-{
-#ifndef USE_MULTI_CONTEXT
-    _mutex.lock();
-    CUresult ret = cuCtxPushCurrent(_ctx);
-    cfatal(ret == CUDA_SUCCESS, "Unable to switch to CUDA mode [%d]", ret);
-#endif
-}
-
-inline
-void Accelerator::switchOut()
-{
-#ifndef USE_MULTI_CONTEXT
-    CUcontext tmp;
-    CUresult ret = cuCtxPopCurrent(&tmp);
-    _mutex.unlock();
-    cfatal(ret == CUDA_SUCCESS, "Unable to switch back from CUDA mode [%d]", ret);
-#endif
-}
-#endif
 
 inline
 CUdeviceptr Accelerator::gpuAddr(void *addr)

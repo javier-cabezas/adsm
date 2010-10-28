@@ -5,4 +5,5 @@ set(util_os_SRC
     Semaphore.h Semaphore.ipp Semaphore.cpp
     Private.h Private.ipp)
 
-add_gmac_sources(${util_os_SRC})
+add_gmac_sources(gmac ${util_os_SRC})
+add_gmac_sources(gmac-dbc)

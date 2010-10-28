@@ -1,4 +1,4 @@
 set(core_allocator_SRC
     Buddy.h Buddy.cpp)
 
-add_gmac_sources(${core_allocator_SRC})
+add_gmac_sources(gmac ${core_allocator_SRC})
