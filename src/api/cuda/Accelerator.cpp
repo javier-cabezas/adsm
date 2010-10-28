@@ -242,14 +242,14 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
     gmac::trace::Function::start("Accelerator","memset");
     CUresult ret = CUDA_SUCCESS;
     pushContext();
-    if(size % 32 == 0) {
+    if(size % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
-        ret = cuMemsetD32(gpuAddr(addr), seed, size);
+        ret = cuMemsetD32(gpuAddr(addr), seed, size / 4);
     }
-    else if(size % 16) {
+    else if(size % 2) {
 		short s = (short) c & 0xffff;
         short seed = s | (s << 8);
-        ret = cuMemsetD16(gpuAddr(addr), seed, size);
+        ret = cuMemsetD16(gpuAddr(addr), seed, size / 2);
     }
     else ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
     popContext();
