@@ -12,3 +12,4 @@ set(util_SRC
     FileLock.h)
 
 add_gmac_sources(gmac ${util_SRC})
+add_gmac_sources(gmac-dbc)

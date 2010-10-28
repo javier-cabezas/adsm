@@ -8,7 +8,6 @@ add_subdirectory(api)
 
 set(all_SRC ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp ${unit_SRC})
 add_gmac_groups(${all_SRC})
-
 add_executable(UnitTests ${all_SRC})
 target_link_libraries(UnitTests gmac-static ${gmac_test_LIB})
 
