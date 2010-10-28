@@ -31,34 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TEST_CONTRACT_H
-#define GMAC_TEST_CONTRACT_H
+#ifndef __UTIL_WINDOWS_PRIVATE_H_
+#define __UTIL_WINDOWS_PRIVATE_H_
 
 #include "config/common.h"
 
-#ifdef USE_DBC
+#include <windows.h>
 
-#define ENSURES(a) test::Contract::Ensures(__FILE__, __LINE__, #a, a)
-#define REQUIRES(a) test::Contract::Requires(__FILE__, __LINE__, #a, a)
-#define EXPECTS(a) test::Contract::Expects(__FILE__, __LINE__, #a, a)
-#define ASSERT(a) test::Contract::Assert(__FILE__, __LINE__, #a, a)
+namespace gmac { namespace util {
 
-#define ISVALID() isValid(__FILE__, __LINE__)
-
-namespace gmac { namespace test {
-
-class GMAC_LOCAL Contract {
-private:
-    static void Preamble(const char *file, const int line);
+template <typename T = void>
+class GMAC_LOCAL Private {
 protected:
-    static void Ensures(const char *file, const int line, const char *clause, bool b);
-    static void Requires(const char *file, const int line, const char *clause, bool b);
-    static void Expects(const char *file, const int line, const char *clause, bool b);
-    static void Assert(const char *file, const int line, const char *clause, bool b);
+    DWORD key_;
+    
+public:
+	virtual ~Private();
+    static void init(Private &var);
+
+    void set(const void *value);
+    T * get();
 };
 
-} }
-#endif
+}}
 
+#include "Private.ipp"
 
 #endif
