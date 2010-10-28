@@ -55,7 +55,7 @@ protected:
 public:
     LockTest(const char *name);
     VIRTUAL ~LockTest();
-
+protected:
     TESTABLE void lock() const;
     TESTABLE void unlock() const;
 };
@@ -71,7 +71,7 @@ protected:
 public:
     RWLockTest(const char *name);
     VIRTUAL ~RWLockTest();
-
+protected:
     TESTABLE void lockRead() const;
     TESTABLE void lockWrite() const;
     TESTABLE void unlock() const;
