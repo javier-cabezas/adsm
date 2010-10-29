@@ -1,4 +1,4 @@
-add_subdirectory(test)
+add_subdirectory(dbc)
 set(util_os_SRC
     Lock.h Lock.ipp Lock.cpp
     Semaphore.h Semaphore.ipp Semaphore.cpp

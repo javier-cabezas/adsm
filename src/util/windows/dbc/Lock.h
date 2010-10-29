@@ -35,48 +35,49 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_WINDOWS_TEST_LOCK_H_
 
 #include "config/common.h"
-#include "test/types.h"
+#include "dbc/types.h"
+#include "dbc/Contract.h"
 #include "util/windows/Lock.h"
 
 #include <windows.h>
 
 #include <set>
 
-namespace gmac { namespace util { 
+namespace gmac { namespace util { namespace __dbc {
 
-class GMAC_LOCAL LockTest :
-    public gmac::util::LockImpl,
-    public gmac::test::Contract {
+class GMAC_LOCAL Lock :
+	public __impl::Lock,
+    public gmac::dbc::Contract {
 protected:
     mutable CRITICAL_SECTION internal_;
     mutable bool locked_;
     mutable DWORD owner_;
 
 public:
-    LockTest(const char *name);
-    VIRTUAL ~LockTest();
+    Lock(const char *name);
+    VIRTUAL ~Lock();
 protected:
     TESTABLE void lock() const;
     TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLockTest :
-    public gmac::util::RWLockImpl,
-    public gmac::test::Contract {
+class GMAC_LOCAL RWLock :
+    public __impl::RWLock,
+    public gmac::dbc::Contract {
 protected:
     mutable enum { Idle, Read, Write } state_;
     mutable CRITICAL_SECTION internal_;
     mutable std::set<DWORD> readers_;
     mutable DWORD writer_;
 public:
-    RWLockTest(const char *name);
-    VIRTUAL ~RWLockTest();
+    RWLock(const char *name);
+    VIRTUAL ~RWLock();
 protected:
     TESTABLE void lockRead() const;
     TESTABLE void lockWrite() const;
     TESTABLE void unlock() const;
 };
 
-} }
+}}}
 
 #endif
