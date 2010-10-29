@@ -31,34 +31,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TEST_CONTRACT_H
-#define GMAC_TEST_CONTRACT_H
+#ifndef GMAC_UTIL_WINDOWS_TEST_LOCK_H_
+#define GMAC_UTIL_WINDOWS_TEST_LOCK_H_
 
 #include "config/common.h"
+#include "test/types.h"
+#include "util/windows/Lock.h"
 
-#ifdef USE_DBC
+#include <windows.h>
 
-#define ENSURES(a) gmac::dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
-#define REQUIRES(a) gmac::dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
-#define EXPECTS(a) gmac::dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
-#define ASSERT(a) gmac::dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
+#include <set>
 
-#define ISVALID() isValid(__FILE__, __LINE__)
+namespace gmac { namespace util { 
 
-namespace gmac { namespace dbc {
-
-class GMAC_LOCAL Contract {
-private:
-    static void Preamble(const char *file, const int line);
+class GMAC_LOCAL LockTest :
+    public gmac::util::LockImpl,
+    public gmac::test::Contract {
 protected:
-    static void Ensures(const char *file, const int line, const char *clause, bool b);
-    static void Requires(const char *file, const int line, const char *clause, bool b);
-    static void Expects(const char *file, const int line, const char *clause, bool b);
-    static void Assert(const char *file, const int line, const char *clause, bool b);
+    mutable CRITICAL_SECTION internal_;
+    mutable bool locked_;
+    mutable DWORD owner_;
+
+public:
+    LockTest(const char *name);
+    VIRTUAL ~LockTest();
+protected:
+    TESTABLE void lock() const;
+    TESTABLE void unlock() const;
+};
+
+class GMAC_LOCAL RWLockTest :
+    public gmac::util::RWLockImpl,
+    public gmac::test::Contract {
+protected:
+    mutable enum { Idle, Read, Write } state_;
+    mutable CRITICAL_SECTION internal_;
+    mutable std::set<DWORD> readers_;
+    mutable DWORD writer_;
+public:
+    RWLockTest(const char *name);
+    VIRTUAL ~RWLockTest();
+protected:
+    TESTABLE void lockRead() const;
+    TESTABLE void lockWrite() const;
+    TESTABLE void unlock() const;
 };
 
 } }
-#endif
-
 
 #endif

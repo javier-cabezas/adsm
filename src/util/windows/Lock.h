@@ -31,34 +31,51 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TEST_CONTRACT_H
-#define GMAC_TEST_CONTRACT_H
+#ifndef GMAC_UTIL_WINDOWS_LOCK_H_
+#define GMAC_UTIL_WINDOWS_LOCK_H_
 
 #include "config/common.h"
+#include "test/types.h"
+#include "util/Lock.h"
 
-#ifdef USE_DBC
+#include <windows.h>
 
-#define ENSURES(a) gmac::dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
-#define REQUIRES(a) gmac::dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
-#define EXPECTS(a) gmac::dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
-#define ASSERT(a) gmac::dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
+namespace gmac { namespace util {
 
-#define ISVALID() isValid(__FILE__, __LINE__)
-
-namespace gmac { namespace dbc {
-
-class GMAC_LOCAL Contract {
-private:
-    static void Preamble(const char *file, const int line);
+class GMAC_LOCAL LockImpl : public ParaverLock {
 protected:
-    static void Ensures(const char *file, const int line, const char *clause, bool b);
-    static void Requires(const char *file, const int line, const char *clause, bool b);
-    static void Expects(const char *file, const int line, const char *clause, bool b);
-    static void Assert(const char *file, const int line, const char *clause, bool b);
+	mutable CRITICAL_SECTION mutex_;
+public:
+	LockImpl(const char *name);
+	VIRTUAL ~LockImpl();
+
+protected:
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
 };
 
-} }
+class GMAC_LOCAL RWLockImpl : public ParaverLock {
+protected:
+	mutable SRWLOCK lock_;
+	mutable DWORD owner_;
+public:
+	RWLockImpl(const char *name);
+	VIRTUAL ~RWLockImpl();
+
+protected:
+	TESTABLE void lockRead() const;
+	TESTABLE void lockWrite() const;
+	TESTABLE void unlock() const;
+};
+
+}}
+
+#include "Lock.ipp"
+
+#ifdef USE_DBC
+#include "test/Lock.h"
 #endif
+
 
 
 #endif
