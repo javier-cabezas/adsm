@@ -2,7 +2,7 @@ add_subdirectory(config)
 
 add_subdirectory(include)
 
-add_subdirectory(test)
+add_subdirectory(dbc)
 add_subdirectory(util)
 add_subdirectory(trace)
 

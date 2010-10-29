@@ -35,7 +35,6 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_LOCK_H_
 
 #include "config/common.h"
-#include "test/Contract.h"
 #include "gmac/paraver.h"
 
 
@@ -76,18 +75,6 @@ public:
 #elif defined(WINDOWS)
 #include "util/windows/Lock.h"
 #endif
-
-namespace gmac { namespace util {
-
-#ifdef USE_DBC
-#   define Lock LockTest
-#   define RWLock RWLockTest
-#else
-#   define Lock LockImpl
-#   define RWLock RWLockImpl
-#endif
-
-} }
 
 #include "Lock.ipp"
 

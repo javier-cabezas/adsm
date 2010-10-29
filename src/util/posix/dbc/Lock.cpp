@@ -1,27 +1,27 @@
 #include "Lock.h"
 
-namespace gmac { namespace util {
+namespace gmac { namespace util { namespace __dbc {
 
-LockTest::LockTest(const char *name) :
-    LockImpl(name),
+Lock::Lock(const char *name) :
+    __impl::Lock(name),
     locked_(false),
     owner_(NULL)
 {
     pthread_mutex_init(&internal_, NULL);
 }
 
-LockTest::~LockTest()
+Lock::~Lock()
 {
     pthread_mutex_destroy(&internal_);
 }
 
-void LockTest::lock() const
+void Lock::lock() const
 {
     //pthread_mutex_lock(&internal_);
     //REQUIRES(owner_ != pthread_self());
     //pthread_mutex_unlock(&internal_);
 
-    LockImpl::lock();
+    __impl::Lock::lock();
 
     pthread_mutex_lock(&internal_);
     ENSURES(owner_ == 0);
@@ -31,7 +31,7 @@ void LockTest::lock() const
     pthread_mutex_unlock(&internal_);
 }
 
-void LockTest::unlock() const
+void Lock::unlock() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(locked_ == true);
@@ -39,31 +39,31 @@ void LockTest::unlock() const
     owner_ = NULL;
     locked_ = false;
 
-    LockImpl::unlock();
+    __impl::Lock::unlock();
 
     pthread_mutex_unlock(&internal_);
 }
 
-RWLockTest::RWLockTest(const char *name) :
-    RWLockImpl(name),
+RWLock::RWLock(const char *name) :
+    __impl::RWLock(name),
     state_(Idle),
     writer_(NULL)
 {
     pthread_mutex_init(&internal_, NULL);
 }
 
-RWLockTest::~RWLockTest()
+RWLock::~RWLock()
 {
     pthread_mutex_destroy(&internal_);
 }
 
-void RWLockTest::lockRead() const
+void RWLock::lockRead() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(readers_.find(pthread_self()) == readers_.end());
     pthread_mutex_unlock(&internal_);
 
-    RWLockImpl::lockRead();
+    __impl::RWLock::lockRead();
 
     pthread_mutex_lock(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -72,14 +72,14 @@ void RWLockTest::lockRead() const
     pthread_mutex_unlock(&internal_);
 }
 
-void RWLockTest::lockWrite() const
+void RWLock::lockWrite() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(readers_.find(pthread_self()) == readers_.end());
     REQUIRES(writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
-    RWLockImpl::lockWrite();
+    __impl::RWLock::lockWrite();
 
     pthread_mutex_lock(&internal_);
     ENSURES(readers_.empty() == true);
@@ -89,7 +89,7 @@ void RWLockTest::lockWrite() const
     pthread_mutex_unlock(&internal_);
 }
 
-void RWLockTest::unlock() const
+void RWLock::unlock() const
 {
     pthread_mutex_lock(&internal_);
     if(writer_ == pthread_self()) {
@@ -104,9 +104,9 @@ void RWLockTest::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    RWLockImpl::unlock();
+    __impl::RWLock::unlock();
 
     pthread_mutex_unlock(&internal_);
 }
 
-} }
+}}}

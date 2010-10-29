@@ -1,4 +1,4 @@
-add_subdirectory(test)
+add_subdirectory(dbc)
 
 add_subdirectory(protocol)
 add_subdirectory(allocator)

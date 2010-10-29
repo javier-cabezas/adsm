@@ -63,4 +63,6 @@
 #  define GMAC_LOCAL
 #endif  /* GMAC_DLL */
 
+
+
 #endif  /* GMAC_CONFIG_VISIBILITY_H */

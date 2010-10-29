@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,52 +31,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
-#define GMAC_UTIL_POSIX_TEST_LOCK_H_
+#ifndef GMAC_MEMORY_TEST_SHAREDOBJECT_H_
+#define GMAC_MEMORY_TEST_SHAREDOBJECT_H_
 
-#include <pthread.h>
+#include "memory/SharedObject.h"
 
-#include <set>
+namespace gmac { namespace memory { namespace __dbc {
 
-#include "config/common.h"
-#include "test/types.h"
-#include "util/posix/Lock.h"
-
-namespace gmac { namespace util { 
-
-class GMAC_LOCAL LockTest :
-    public gmac::util::LockImpl,
-    public virtual gmac::test::Contract {
-protected:
-    mutable pthread_mutex_t internal_;
-    mutable bool locked_;
-    mutable pthread_t owner_;
-
+template<typename T>
+class GMAC_LOCAL SharedObject :
+    public __impl::SharedObject<T>,
+    public virtual gmac::dbc::Contract {
 public:
-    LockTest(const char *name);
-    VIRTUAL ~LockTest();
-protected:
-    TESTABLE void lock() const;
-    TESTABLE void unlock() const;
+    SharedObject(size_t size, T init);
+    virtual ~SharedObject();
+
+    void init();
+    void fini();
+
+    // To host functions
+    gmacError_t toHost(Block &block) const;
+    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
+    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+
+    // To accelerator functions
+    gmacError_t toAccelerator(Block &block) const;
+    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
+    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+
+    void *getAcceleratorAddr(void *addr) const;
+    Mode &owner() const;
+    gmacError_t free();
+    gmacError_t realloc(Mode &mode);
 };
 
-class GMAC_LOCAL RWLockTest :
-    public gmac::util::RWLockImpl,
-    public virtual gmac::test::Contract {
-protected:
-    mutable enum { Idle, Read, Write } state_;
-    mutable pthread_mutex_t internal_;
-    mutable std::set<pthread_t> readers_;
-    mutable pthread_t writer_;
-public:
-    RWLockTest(const char *name);
-    VIRTUAL ~RWLockTest();
-protected:
-    TESTABLE void lockRead() const;
-    TESTABLE void lockWrite() const;
-    TESTABLE void unlock() const;
-};
+}}}
 
-}}
+#include "SharedObject.ipp"
 
 #endif

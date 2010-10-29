@@ -41,31 +41,31 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/common.h"
-#include "test/types.h"
+#include "dbc/types.h"
 #include "util/Lock.h"
 
 
-namespace gmac { namespace util {
+namespace gmac { namespace util { namespace __impl {
 
-class GMAC_LOCAL LockImpl : public ParaverLock {
+class GMAC_LOCAL Lock : public ParaverLock {
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
-	LockImpl(const char *name);
-	VIRTUAL ~LockImpl();
+	Lock(const char *name);
+	VIRTUAL ~Lock();
 
 protected:
 	TESTABLE void lock() const;
 	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLockImpl : public ParaverLock {
+class GMAC_LOCAL RWLock : public ParaverLock {
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
 public:
-	RWLockImpl(const char *name);
-	VIRTUAL ~RWLockImpl();
+	RWLock(const char *name);
+	VIRTUAL ~RWLock();
 
 protected:
 	TESTABLE void lockRead() const;
@@ -73,12 +73,12 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-}}
+}}}
 
 #include "Lock.ipp"
 
 #ifdef USE_DBC
-#include "test/Lock.h"
+#include "dbc/Lock.h"
 #endif
 
 #endif

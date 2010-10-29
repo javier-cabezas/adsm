@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,46 +31,53 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
-#define GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
+#ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
+#define GMAC_UTIL_POSIX_TEST_LOCK_H_
 
-#include "memory/ReplicatedObject.h"
+#include <pthread.h>
 
-namespace gmac { namespace memory {
+#include <set>
 
-template<typename T>
-class GMAC_LOCAL ReplicatedObjectTest :
-    public ReplicatedObjectImpl<T>,
-    public virtual gmac::test::Contract {
+#include "config/common.h"
+#include "dbc/Contract.h"
+#include "dbc/types.h"
+#include "util/posix/Lock.h"
+
+namespace gmac { namespace util { namespace __dbc {
+
+class GMAC_LOCAL Lock :
+    public __impl::Lock,
+    public virtual gmac::dbc::Contract {
+protected:
+    mutable pthread_mutex_t internal_;
+    mutable bool locked_;
+    mutable pthread_t owner_;
+
 public:
-    ReplicatedObjectTest(size_t size, T init);
-    virtual ~ReplicatedObjectTest();
-
-    void init();
-    void fini();
-
-    // To host functions
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
-
-    gmacError_t addOwner(Mode &mode);
-    gmacError_t removeOwner(Mode &mode);
-
+    Lock(const char *name);
+    virtual ~Lock();
+protected:
+    void lock() const;
+    void unlock() const;
 };
 
-}}
+class GMAC_LOCAL RWLock :
+    public __impl::RWLock,
+    public virtual gmac::dbc::Contract {
+protected:
+    mutable enum { Idle, Read, Write } state_;
+    mutable pthread_mutex_t internal_;
+    mutable std::set<pthread_t> readers_;
+    mutable pthread_t writer_;
+public:
+    RWLock(const char *name);
+    virtual ~RWLock();
+protected:
+    void lockRead() const;
+    void lockWrite() const;
+    void unlock() const;
+};
 
-#include "ReplicatedObject.ipp"
+}}}
 
 #endif

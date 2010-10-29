@@ -3,11 +3,11 @@
 
 #include "core/Process.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 #ifndef USE_MMAP
 template<typename T>
-inline ReplicatedObjectImpl<T>::ReplicatedObjectImpl(size_t size, T init) :
+inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     StateObject<T>(size, init)
 {
     // This line might seem useless, but we first need to make sure that
@@ -28,7 +28,7 @@ inline ReplicatedObjectImpl<T>::ReplicatedObjectImpl(size_t size, T init) :
 
 
 template<typename T>
-inline ReplicatedObjectImpl<T>::~ReplicatedObjectImpl()
+inline ReplicatedObject<T>::~ReplicatedObject()
 {
     if(StateObject<T>::addr_ == NULL) { return; }
     Process &proc = gmac::Process::getInstance();
@@ -37,7 +37,7 @@ inline ReplicatedObjectImpl<T>::~ReplicatedObjectImpl()
 }
 
 template<typename T>
-inline void ReplicatedObjectImpl<T>::init()
+inline void ReplicatedObject<T>::init()
 {
     StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
     if(StateObject<T>::addr_ == NULL) {
@@ -49,14 +49,14 @@ inline void ReplicatedObjectImpl<T>::init()
 }
 
 template<typename T>
-inline void ReplicatedObjectImpl<T>::fini()
+inline void ReplicatedObject<T>::fini()
 {
     StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
 }
 
 
 template<typename T>
-inline void *ReplicatedObjectImpl<T>::getAcceleratorAddr(void *addr) const
+inline void *ReplicatedObject<T>::getAcceleratorAddr(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     typename AcceleratorMap::const_iterator i = accelerators_.find(&gmac::Mode::current());
@@ -66,42 +66,42 @@ inline void *ReplicatedObjectImpl<T>::getAcceleratorAddr(void *addr) const
 }
 
 template<typename T>
-inline Mode &ReplicatedObjectImpl<T>::owner() const
+inline Mode &ReplicatedObject<T>::owner() const
 {
     return gmac::Mode::current();
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &) const
+inline gmacError_t ReplicatedObject<T>::toHost(Block &) const
 {
-    Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHost(Block &, unsigned, size_t) const
+inline gmacError_t ReplicatedObject<T>::toHost(Block &, unsigned, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHostPointer(Block &, unsigned, void *, size_t) const
+inline gmacError_t ReplicatedObject<T>::toHostPointer(Block &, unsigned, void *, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toHostBuffer(Block &, unsigned, IOBuffer &, unsigned, size_t) const
+inline gmacError_t ReplicatedObject<T>::toHostBuffer(Block &, unsigned, IOBuffer &, unsigned, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjectImpls in the accelerator are forbidden");
+    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block) const
+inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block) const
 {
     gmacError_t ret = gmacSuccess;
     off_t off = (off_t)(block.addr() - StateObject<T>::addr());
@@ -116,7 +116,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block) const
 
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
     assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
@@ -131,7 +131,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAccelerator(Block &block, unsigned
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
+inline gmacError_t ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
 {
     assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
@@ -146,7 +146,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromPointer(Block &bloc
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     assertion(block.addr() + blockOff + count <= block.end());
     assertion(buffer.addr() + bufferOff + count <= buffer.end());
@@ -162,7 +162,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::toAcceleratorFromBuffer(Block &block
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::addOwner(Mode &mode)
+inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 {
     util::RWLock::lockWrite();
     void *accAddr = NULL;
@@ -194,7 +194,7 @@ inline gmacError_t ReplicatedObjectImpl<T>::addOwner(Mode &mode)
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObjectImpl<T>::removeOwner(Mode &mode)
+inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
 {
     util::RWLock::lockWrite();
     typename AcceleratorMap::iterator i = accelerators_.find(&mode);
@@ -215,18 +215,18 @@ inline gmacError_t ReplicatedObjectImpl<T>::removeOwner(Mode &mode)
 
 template <typename T>
 inline bool
-ReplicatedObjectImpl<T>::isLocal() const
+ReplicatedObject<T>::isLocal() const
 {
     return false;
 }
 
 template <typename T>
 inline bool
-ReplicatedObjectImpl<T>::isInAccelerator() const
+ReplicatedObject<T>::isInAccelerator() const
 {
     return true;
 }
 
-}}
+}}}
 
 #endif

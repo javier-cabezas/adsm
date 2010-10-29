@@ -1,4 +1,4 @@
-add_subdirectory(test)
+add_subdirectory(dbc)
 
 set(memory_protocol_SRC
     Lazy.h Lazy.cpp)

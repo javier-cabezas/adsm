@@ -12,7 +12,7 @@
 #include "Map.h"
 #include "Object.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 Manager::~Manager()
 {
@@ -438,4 +438,4 @@ gmacError_t Manager::moveTo(void * addr, Mode &mode)
     return gmacSuccess;
 }
 
-}}
+}}}
