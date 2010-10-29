@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cassert>
 
-namespace gmac { namespace test {
+namespace gmac { namespace dbc {
 
 void Contract::Preamble(const char *file, const int line)
 {

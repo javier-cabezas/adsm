@@ -3,53 +3,53 @@
 
 #include "SharedObject.h"
 
-namespace gmac { namespace memory{
+namespace gmac { namespace memory { namespace __dbc {
 
 template <typename T>
-SharedObjectTest<T>::SharedObjectTest(size_t size, T init)
-    : SharedObjectImpl<T>(size, init)
+SharedObject<T>::SharedObject(size_t size, T init)
+    : __impl::SharedObject<T>(size, init)
 {
     REQUIRES(size > 0);
 }
 
 template <typename T>
-SharedObjectTest<T>::~SharedObjectTest()
+SharedObject<T>::~SharedObject()
 {
 }
 
 template<typename T>
 void
-SharedObjectTest<T>::init()
+SharedObject<T>::init()
 {
     // PRECONDITIONS
     ENSURES(StateObject<T>::addr() == NULL);
 
     // CALL IMPLEMENTATION
-    SharedObjectImpl<T>::init();
+    __impl::SharedObject<T>::init();
     // POSTCONDITIONS
     ENSURES(StateObject<T>::addr() != NULL);
 }
 
 template<typename T>
 void
-SharedObjectTest<T>::fini()
+SharedObject<T>::fini()
 {
     // PRECONDITIONS
     REQUIRES(StateObject<T>::addr() != NULL);
     // CALL IMPLEMENTATION
-    SharedObjectImpl<T>::fini();
+    __impl::SharedObject<T>::fini();
     // POSTCONDITIONS
 }
 
 template<typename T>
 inline void *
-SharedObjectTest<T>::getAcceleratorAddr(void *addr) const
+SharedObject<T>::getAcceleratorAddr(void *addr) const
 {
     // PRECONDITIONS
     REQUIRES(addr >= StateObject<T>::addr());
     REQUIRES(addr <  StateObject<T>::end());
     // CALL IMPLEMENTATION
-    void *ret = SharedObjectImpl<T>::getAcceleratorAddr(addr);
+    void *ret = __impl::SharedObject<T>::getAcceleratorAddr(addr);
     // POSTCONDITIONS
     return ret;
 }
@@ -58,37 +58,20 @@ SharedObjectTest<T>::getAcceleratorAddr(void *addr) const
 
 template <typename T>
 gmacError_t
-SharedObjectTest<T>::toHost(Block &block) const
+SharedObject<T>::toHost(Block &block) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
     REQUIRES(block.end() <= StateObject<T>::end());
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toHost(block);
+    gmacError_t ret = __impl::SharedObject<T>::toHost(block);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-SharedObjectTest<T>::toHost(Block &block, unsigned blockOff, size_t count) const
-{
-    // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
-    REQUIRES(count > 0);
-    REQUIRES(blockOff < block.size());
-    REQUIRES(blockOff + count <= block.size());
-
-    // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toHost(block, blockOff, count);
-    // POSTCONDITIONS
-    return ret;
-}
-
-template <typename T>
-gmacError_t
-SharedObjectTest<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const
+SharedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
@@ -98,45 +81,14 @@ SharedObjectTest<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, s
     REQUIRES(blockOff + count <= block.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toHostPointer(block, blockOff, ptr, count);
+    gmacError_t ret = __impl::SharedObject<T>::toHost(block, blockOff, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-SharedObjectTest<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
-{
-    // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
-    REQUIRES(count > 0);
-    REQUIRES(blockOff < block.size());
-    REQUIRES(blockOff + count <= block.size());
-    REQUIRES(bufferOff + count <= buffer.size());
-
-    // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toHostBuffer(block, blockOff, buffer, bufferOff, count);
-    // POSTCONDITIONS
-    return ret;
-}
-
-template <typename T>
-gmacError_t
-SharedObjectTest<T>::toAccelerator(Block &block) const
-{
-    // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toAccelerator(block);
-    // POSTCONDITIONS
-    return ret;
-}
-
-template <typename T>
-gmacError_t
-SharedObjectTest<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+SharedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
@@ -146,31 +98,14 @@ SharedObjectTest<T>::toAccelerator(Block &block, unsigned blockOff, size_t count
     REQUIRES(blockOff + count <= block.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toAccelerator(block, blockOff, count);
+    gmacError_t ret = __impl::SharedObject<T>::toHostPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-SharedObjectTest<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
-{
-    // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
-    REQUIRES(count > 0);
-    REQUIRES(blockOff < block.size());
-    REQUIRES(blockOff + count <= block.size());
-
-    // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
-    // POSTCONDITIONS
-    return ret;
-}
-
-template <typename T>
-gmacError_t
-SharedObjectTest<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
@@ -181,51 +116,116 @@ SharedObjectTest<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IO
     REQUIRES(bufferOff + count <= buffer.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
+    gmacError_t ret = __impl::SharedObject<T>::toHostBuffer(block, blockOff, buffer, bufferOff, count);
+    // POSTCONDITIONS
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+SharedObject<T>::toAccelerator(Block &block) const
+{
+    // PRECONDITIONS
+    REQUIRES(block.addr() >= StateObject<T>::addr());
+    REQUIRES(block.end() <= StateObject<T>::end());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::SharedObject<T>::toAccelerator(block);
+    // POSTCONDITIONS
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+SharedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+{
+    // PRECONDITIONS
+    REQUIRES(block.addr() >= StateObject<T>::addr());
+    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(count > 0);
+    REQUIRES(blockOff < block.size());
+    REQUIRES(blockOff + count <= block.size());
+
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::SharedObject<T>::toAccelerator(block, blockOff, count);
+    // POSTCONDITIONS
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
+{
+    // PRECONDITIONS
+    REQUIRES(block.addr() >= StateObject<T>::addr());
+    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(count > 0);
+    REQUIRES(blockOff < block.size());
+    REQUIRES(blockOff + count <= block.size());
+
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::SharedObject<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
+    // POSTCONDITIONS
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+{
+    // PRECONDITIONS
+    REQUIRES(block.addr() >= StateObject<T>::addr());
+    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(count > 0);
+    REQUIRES(blockOff < block.size());
+    REQUIRES(blockOff + count <= block.size());
+    REQUIRES(bufferOff + count <= buffer.size());
+
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::SharedObject<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template<typename T>
 Mode &
-SharedObjectTest<T>::owner() const
+SharedObject<T>::owner() const
 {
     // PRECONDITIONS
-    REQUIRES(SharedObjectImpl<T>::owner_ != NULL);
+    REQUIRES(__impl::SharedObject<T>::owner_ != NULL);
 
     // CALL IMPLEMENTATION
-    Mode &ret = SharedObjectImpl<T>::owner();
+    Mode &ret = __impl::SharedObject<T>::owner();
     // POSTCONDITIONS
     return ret;
 }
 
 template<typename T>
 gmacError_t
-SharedObjectTest<T>::free()
+SharedObject<T>::free()
 {
     // PRECONDITIONS
-    REQUIRES(SharedObjectImpl<T>::accBlock_ != NULL);
+    REQUIRES(__impl::SharedObject<T>::accBlock_ != NULL);
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::free();
+    gmacError_t ret = __impl::SharedObject<T>::free();
     // POSTCONDITIONS
-    ENSURES(SharedObjectImpl<T>::accBlock_ == NULL);
+    ENSURES(__impl::SharedObject<T>::accBlock_ == NULL);
     return ret;
 }
 
 template<typename T>
 gmacError_t
-SharedObjectTest<T>::realloc(Mode &mode)
+SharedObject<T>::realloc(Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(mode.id() != owner().id());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = SharedObjectImpl<T>::realloc(mode);
+    gmacError_t ret = __impl::SharedObject<T>::realloc(mode);
     // POSTCONDITIONS
     ENSURES(mode.id() == owner().id());
     return ret;
 }
 
-}}
+}}}
 
 #endif

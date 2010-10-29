@@ -52,6 +52,29 @@ typedef signed int int32_t;
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
+#ifdef USE_DBC
+#include "dbc.h"
+#else
+namespace gmac {
+    namespace memory {
+        namespace protocol {
+           namespace __impl { }
+        using namespace __impl;
+        }
+ 
+        namespace __impl { }
+
+    using namespace __impl;
+    }
+
+    namespace util {
+        namespace __impl { }
+    using namespace __impl;
+    }
+}
+#endif
+
+
 #include "include/visibility.h"
 
 #endif

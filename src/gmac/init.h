@@ -45,7 +45,6 @@ class Process;
 class Context;
 
 namespace memory {
-class Manager;
 class Allocator;
 }
 

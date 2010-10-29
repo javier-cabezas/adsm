@@ -73,7 +73,7 @@ public:
 };
 
 class GMAC_LOCAL Mode : public gmac::util::Logger {
-    friend class gmac::memory::Manager;
+    friend class memory::Manager;
 protected:
     static gmac::util::Private<Mode> key;
     static unsigned next;

@@ -42,18 +42,18 @@ WITH THE SOFTWARE.  */
 #include "memory/DistributedObject.h"
 #include "memory/StateObject.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 #ifndef USE_MMAP
 template<typename T>
-class GMAC_LOCAL ReplicatedObjectImpl : public StateObject<T>, public DistributedObject {
+class GMAC_LOCAL ReplicatedObject : public StateObject<T>, public DistributedObject {
 protected:
     typedef std::map<Mode *, AcceleratorBlock *> AcceleratorMap;
 
     AcceleratorMap accelerators_;
 public:
-    ReplicatedObjectImpl(size_t size, T init);
-    virtual ~ReplicatedObjectImpl();
+    ReplicatedObject(size_t size, T init);
+    virtual ~ReplicatedObject();
 
     TESTABLE void init();
     TESTABLE void fini();
@@ -81,15 +81,12 @@ public:
 };
 #endif
 
-} }
+}}}
 
 #include "ReplicatedObject.ipp"
 
 #ifdef USE_DBC
-#include "test/ReplicatedObject.h"
-#define ReplicatedObject ReplicatedObjectTest
-#else
-#define ReplicatedObject ReplicatedObjectImpl
+#include "memory/dbc/ReplicatedObject.h"
 #endif
 
 #endif

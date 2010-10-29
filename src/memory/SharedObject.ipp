@@ -1,14 +1,14 @@
 #ifndef __MEMORY_SHAREDOBJECT_IPP
 #define __MEMORY_SHAREDOBJECT_IPP
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 #ifdef USE_VM
 #include "Bitmap.h"
 #endif
 
 template<typename T>
-inline SharedObjectImpl<T>::SharedObjectImpl(size_t size, T init) :
+inline SharedObject<T>::SharedObject(size_t size, T init) :
     StateObject<T>(size, init),
     owner_(&Mode::current()),
     accBlock_(NULL)
@@ -32,7 +32,7 @@ inline SharedObjectImpl<T>::SharedObjectImpl(size_t size, T init) :
 
 
 template<typename T>
-inline SharedObjectImpl<T>::~SharedObjectImpl()
+inline SharedObject<T>::~SharedObject()
 {
     if(StateObject<T>::addr_ == NULL) { return; }
     void *devAddr = accBlock_->addr();
@@ -47,7 +47,7 @@ inline SharedObjectImpl<T>::~SharedObjectImpl()
 }
 
 template<typename T>
-inline void SharedObjectImpl<T>::init()
+inline void SharedObject<T>::init()
 {
 
 #ifdef USE_MMAP
@@ -65,14 +65,14 @@ inline void SharedObjectImpl<T>::init()
 }
 
 template<typename T>
-inline void SharedObjectImpl<T>::fini()
+inline void SharedObject<T>::fini()
 {
     StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
 }
 
 
 template<typename T>
-inline void *SharedObjectImpl<T>::getAcceleratorAddr(void *addr) const
+inline void *SharedObject<T>::getAcceleratorAddr(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     void *ret = accBlock_->addr() + offset;
@@ -80,7 +80,7 @@ inline void *SharedObjectImpl<T>::getAcceleratorAddr(void *addr) const
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toHost(Block &block) const
+inline gmacError_t SharedObject<T>::toHost(Block &block) const
 {
     off_t off = (off_t)(block.addr() - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToHost(block.addr(), accBlock_->addr() + off, block.size());
@@ -88,7 +88,7 @@ inline gmacError_t SharedObjectImpl<T>::toHost(Block &block) const
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toHost(Block &block, unsigned blockOff, size_t count) const
+inline gmacError_t SharedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToHost(block.addr() + blockOff, accBlock_->addr() + off, count);
@@ -97,7 +97,7 @@ inline gmacError_t SharedObjectImpl<T>::toHost(Block &block, unsigned blockOff, 
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toHostPointer(Block &block, unsigned blockOff, void * ptr, size_t count) const
+inline gmacError_t SharedObject<T>::toHostPointer(Block &block, unsigned blockOff, void * ptr, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToHost(ptr, accBlock_->addr() + off, count);
@@ -106,7 +106,7 @@ inline gmacError_t SharedObjectImpl<T>::toHostPointer(Block &block, unsigned blo
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + off, count, bufferOff);
@@ -115,7 +115,7 @@ inline gmacError_t SharedObjectImpl<T>::toHostBuffer(Block &block, unsigned bloc
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block) const
+inline gmacError_t SharedObject<T>::toAccelerator(Block &block) const
 {
     off_t off = (off_t)(block.addr() - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr(), block.size());
@@ -123,7 +123,7 @@ inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block) const
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+inline gmacError_t SharedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr() + blockOff, count);
@@ -131,7 +131,7 @@ inline gmacError_t SharedObjectImpl<T>::toAccelerator(Block &block, unsigned blo
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void * ptr, size_t count) const
+inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void * ptr, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, ptr, count);
@@ -140,7 +140,7 @@ inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromPointer(Block &block, u
 }
 
 template<typename T>
-inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, count, bufferOff);
@@ -150,7 +150,7 @@ inline gmacError_t SharedObjectImpl<T>::toAcceleratorFromBuffer(Block &block, un
 
 
 template<typename T>
-gmacError_t SharedObjectImpl<T>::free()
+gmacError_t SharedObject<T>::free()
 {
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
@@ -164,7 +164,7 @@ gmacError_t SharedObjectImpl<T>::free()
 }
 
 template<typename T>
-gmacError_t SharedObjectImpl<T>::realloc(Mode &mode)
+gmacError_t SharedObject<T>::realloc(Mode &mode)
 {
     void *device = NULL;
     // Allocate device and host memory
@@ -186,17 +186,17 @@ gmacError_t SharedObjectImpl<T>::realloc(Mode &mode)
 }
 
 template<typename T>
-bool SharedObjectImpl<T>::isLocal() const
+bool SharedObject<T>::isLocal() const
 {
     return true;
 }
 
 template<typename T>
-bool SharedObjectImpl<T>::isInAccelerator() const
+bool SharedObject<T>::isInAccelerator() const
 {
     return true;
 }
 
-}}
+}}}
 
 #endif

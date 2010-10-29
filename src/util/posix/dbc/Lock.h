@@ -31,9 +31,53 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __CONFIG_DEBUG_H
-#define __CONFIG_DEBUG_H
+#ifndef GMAC_UTIL_POSIX_TEST_LOCK_H_
+#define GMAC_UTIL_POSIX_TEST_LOCK_H_
 
-#include "config/config.h"
+#include <pthread.h>
+
+#include <set>
+
+#include "config/common.h"
+#include "dbc/Contract.h"
+#include "dbc/types.h"
+#include "util/posix/Lock.h"
+
+namespace gmac { namespace util { namespace __dbc {
+
+class GMAC_LOCAL Lock :
+    public __impl::Lock,
+    public virtual gmac::dbc::Contract {
+protected:
+    mutable pthread_mutex_t internal_;
+    mutable bool locked_;
+    mutable pthread_t owner_;
+
+public:
+    Lock(const char *name);
+    virtual ~Lock();
+protected:
+    void lock() const;
+    void unlock() const;
+};
+
+class GMAC_LOCAL RWLock :
+    public __impl::RWLock,
+    public virtual gmac::dbc::Contract {
+protected:
+    mutable enum { Idle, Read, Write } state_;
+    mutable pthread_mutex_t internal_;
+    mutable std::set<pthread_t> readers_;
+    mutable pthread_t writer_;
+public:
+    RWLock(const char *name);
+    virtual ~RWLock();
+protected:
+    void lockRead() const;
+    void lockWrite() const;
+    void unlock() const;
+};
+
+}}}
 
 #endif
