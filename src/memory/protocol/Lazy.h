@@ -46,11 +46,12 @@ namespace gmac {
 
 class IOBuffer;
 
-namespace memory { namespace protocol {
+namespace memory { namespace protocol {  namespace __impl {
 
 class List;
 
-class GMAC_LOCAL LazyImpl : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
+
+class GMAC_LOCAL Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -80,8 +81,8 @@ protected:
     gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
 public:
-    LazyImpl(unsigned limit);
-    virtual ~LazyImpl();
+    Lazy(unsigned limit);
+    virtual ~Lazy();
 
     // Protocol Interface
     Object *createObject(size_t size);
@@ -116,24 +117,14 @@ public:
     gmacError_t removeMode(Mode &mode);
 };
 
-}}}
-
-#ifdef USE_DBC
-#include "test/Lazy.h"
-#define Lazy LazyTest
-#else
-#define Lazy LazyImpl
-#endif
-
-namespace gmac { namespace memory { namespace protocol {
 
 class GMAC_LOCAL Entry {
 public:
-    const StateObject<LazyImpl::State> &object;
-    SystemBlock<LazyImpl::State> *block;
+    const StateObject<Lazy::State> &object;
+    SystemBlock<Lazy::State> *block;
 
-    Entry(const StateObject<LazyImpl::State> &object,
-            SystemBlock<LazyImpl::State> *block) :
+    Entry(const StateObject<Lazy::State> &object,
+            SystemBlock<Lazy::State> *block) :
         object(object), block(block) {};
 		Entry &operator =(const Entry &) {
             gmac::util::Logger::Fatal("Assigment of protocol entries is not supported");
@@ -146,13 +137,13 @@ public:
 };
 
 class GMAC_LOCAL List : protected std::list<Entry>, util::RWLock {
-    friend class LazyImpl;
+    friend class Lazy;
 public:
     List() : util::RWLock("List") {};
 
-    void purge(const StateObject<LazyImpl::State> &object);
-    void push(const StateObject<LazyImpl::State> &object,
-            SystemBlock<LazyImpl::State> *block);
+    void purge(const StateObject<Lazy::State> &object);
+    void push(const StateObject<Lazy::State> &object,
+            SystemBlock<Lazy::State> *block);
     Entry pop();
 
     bool empty() const;
@@ -160,6 +151,11 @@ public:
 };
 
 
-}}}
+}}}}
+
+#ifdef USE_DBC
+#include "dbc/Lazy.h"
+#endif
+
 
 #endif

@@ -40,16 +40,16 @@ WITH THE SOFTWARE.  */
 #include "memory/Block.h"
 #include "memory/StateObject.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 template<typename T>
-class GMAC_LOCAL SharedObjectImpl : public StateObject<T> {
+class GMAC_LOCAL SharedObject : public StateObject<T> {
 protected:
     Mode *owner_;
     AcceleratorBlock *accBlock_;
 public:
-    SharedObjectImpl(size_t size, T init);
-    virtual ~SharedObjectImpl();
+    SharedObject(size_t size, T init);
+    virtual ~SharedObject();
 
     TESTABLE void init();
     TESTABLE void fini();
@@ -76,15 +76,12 @@ public:
     bool isInAccelerator() const;
 };
 
-}}
+}}}
 
 #include "SharedObject.ipp"
 
 #ifdef USE_DBC
-#include "test/SharedObject.h"
-#define SharedObject SharedObjectTest
-#else
-#define SharedObject SharedObjectImpl
+#include "memory/dbc/SharedObject.h"
 #endif
 
 

@@ -47,10 +47,12 @@ class Mode;
 namespace memory {
 class Object;
 
+namespace __impl { class Manager; }
+
 class GMAC_LOCAL ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
 protected:
     friend class Map;
-    friend class Manager;
+    friend class memory::__impl::Manager;
     Object *mapFind(const void *addr) const;
 
 public:

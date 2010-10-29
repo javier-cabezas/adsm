@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,46 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
-#define GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
+#ifndef GMAC_TEST_CONTRACT_H
+#define GMAC_TEST_CONTRACT_H
 
-#include "memory/ReplicatedObject.h"
+#include "config/common.h"
 
-namespace gmac { namespace memory {
+#ifdef DEBUG
 
-template<typename T>
-class GMAC_LOCAL ReplicatedObjectTest :
-    public ReplicatedObjectImpl<T>,
-    public virtual gmac::test::Contract {
-public:
-    ReplicatedObjectTest(size_t size, T init);
-    virtual ~ReplicatedObjectTest();
+#define ENSURES(a) gmac::dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
+#define REQUIRES(a) gmac::dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
+#define EXPECTS(a) gmac::dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
+#define ASSERT(a) gmac::dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
 
-    void init();
-    void fini();
+#define ISVALID() isValid(__FILE__, __LINE__)
 
-    // To host functions
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+namespace gmac { namespace dbc {
 
-    // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
-
-    gmacError_t addOwner(Mode &mode);
-    gmacError_t removeOwner(Mode &mode);
-
+class GMAC_LOCAL Contract {
+private:
+    static void Preamble(const char *file, const int line);
+protected:
+    static void Ensures(const char *file, const int line, const char *clause, bool b);
+    static void Requires(const char *file, const int line, const char *clause, bool b);
+    static void Expects(const char *file, const int line, const char *clause, bool b);
+    static void Assert(const char *file, const int line, const char *clause, bool b);
 };
 
-}}
+} }
+#endif
 
-#include "ReplicatedObject.ipp"
 
 #endif

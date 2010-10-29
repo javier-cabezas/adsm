@@ -31,44 +31,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_SHAREDOBJECT_H_
-#define GMAC_MEMORY_TEST_SHAREDOBJECT_H_
+#ifndef GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
+#define GMAC_MEMORY_PROTOCOL_TEST_LAZY_H_
 
-#include "memory/SharedObject.h"
+#include "memory/protocol/Lazy.h"
+#include "dbc/types.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace protocol { namespace __dbc {
 
-template<typename T>
-class GMAC_LOCAL SharedObjectTest :
-    public SharedObjectImpl<T>,
-    public virtual gmac::test::Contract {
+class GMAC_LOCAL Lazy :
+    public __impl::Lazy,
+    public virtual gmac::dbc::Contract {
 public:
-    SharedObjectTest(size_t size, T init);
-    virtual ~SharedObjectTest();
+    Lazy(unsigned limit);
+    virtual ~Lazy();
 
-    void init();
-    void fini();
+    gmacError_t signalRead(const Object &obj, void *addr);
+    gmacError_t signalWrite(const Object &obj, void *addr);
 
-    // To host functions
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
+    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
 
-    // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
+    gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
 
-    void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
-    gmacError_t free();
-    gmacError_t realloc(Mode &mode);
+    gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
 };
 
-}}
-
-#include "SharedObject.ipp"
+}}}}
 
 #endif

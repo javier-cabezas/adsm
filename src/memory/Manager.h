@@ -42,20 +42,22 @@ WITH THE SOFTWARE.  */
 namespace gmac {
 class IOBuffer;
 class Mode;
-}
 
-namespace gmac { namespace memory {
 
+namespace memory {
 class Block;
 class Protocol;
 
+namespace __impl {
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class GMAC_LOCAL Manager : public util::Logger, public util::Singleton<Manager> {
+class GMAC_LOCAL Manager :
+    public util::Logger,
+    public util::Singleton<memory::Manager> {
 	// Needed to let Singleton call the protected constructor
-	friend class util::Singleton<Manager>;
+	friend class util::Singleton<memory::Manager>;
 private:
 #ifdef USE_VM
     void checkBitmapToHost();
@@ -63,7 +65,7 @@ private:
 #endif
 protected:
     // TODO should we allow per-object protocol?
-    Protocol *protocol_;
+    memory::Protocol *protocol_;
 
     Manager();
     ~Manager();
@@ -74,7 +76,7 @@ public:
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    bool requireUpdate(Block &block);
+    bool requireUpdate(gmac::memory::Block &block);
 #endif
     gmacError_t free(void *addr);
 
@@ -110,11 +112,13 @@ public:
     ///////////////////////////////////////////////////
     // Direct access to protocol for internal functions
     ///////////////////////////////////////////////////
-    Protocol &protocol() const;
+    gmac::memory::Protocol &protocol() const;
 };
 
-}}
+}}}
 
 #include "Manager.ipp"
+
+#include "memory/dbc/Manager.h"
 
 #endif

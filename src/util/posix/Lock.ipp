@@ -1,15 +1,13 @@
 #ifndef GMAC_UTIL_POSIX_LOCK_IPP_
 #define GMAC_UTIL_POSIX_LOCK_IPP_
 
-#include "config/debug.h"
-
 #include <cassert>
 #include <cstdio>
 
-namespace gmac { namespace util {
+namespace gmac { namespace util { namespace __impl {
 
 inline void
-LockImpl::lock() const
+Lock::lock() const
 {
     enter();
     pthread_mutex_lock(&mutex_);
@@ -17,14 +15,14 @@ LockImpl::lock() const
 }
 
 inline void
-LockImpl::unlock() const
+Lock::unlock() const
 {
     exit();
     pthread_mutex_unlock(&mutex_);
 }
 
 inline void
-RWLockImpl::lockRead() const
+RWLock::lockRead() const
 {
     enter();
     pthread_rwlock_rdlock(&lock_);
@@ -32,7 +30,7 @@ RWLockImpl::lockRead() const
 }
 
 inline void
-RWLockImpl::lockWrite() const
+RWLock::lockWrite() const
 {
     enter();
     pthread_rwlock_wrlock(&lock_);
@@ -40,12 +38,12 @@ RWLockImpl::lockWrite() const
 }
 
 inline void
-RWLockImpl::unlock() const
+RWLock::unlock() const
 {
     exit();
     pthread_rwlock_unlock(&lock_);
 }
 
-}}
+}}}
 
 #endif
