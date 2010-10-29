@@ -1,23 +1,23 @@
 #include "Lock.h"
 
-namespace gmac { namespace util {
+namespace gmac { namespace util { namespace __dbc {
 
-LockTest::LockTest(const char *name) :
-    LockImpl(name),
+Lock::Lock(const char *name) :
+    __impl::Lock(name),
     locked_(false),
     owner_(0)
 {
 	InitializeCriticalSection(&internal_);
 }
 
-LockTest::~LockTest()
+Lock::~Lock()
 {
     DeleteCriticalSection(&internal_);
 }
 
-void LockTest::lock() const
+void Lock::lock() const
 {
-    LockImpl::lock();
+    __impl::Lock::lock();
 
     EnterCriticalSection(&internal_);
     ENSURES(locked_ == false);
@@ -26,7 +26,7 @@ void LockTest::lock() const
     LeaveCriticalSection(&internal_);
 }
 
-void LockTest::unlock() const
+void Lock::unlock() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(locked_ == true);
@@ -34,31 +34,31 @@ void LockTest::unlock() const
     owner_ = 0;
     locked_ = false;
 
-    LockImpl::unlock();
+    __impl::Lock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
-RWLockTest::RWLockTest(const char *name) :
-    RWLockImpl(name),
+RWLock::RWLock(const char *name) :
+    __impl::RWLock(name),
     state_(Idle),
     writer_(0)
 {
     InitializeCriticalSection(&internal_);
 }
 
-RWLockTest::~RWLockTest()
+RWLock::~RWLock()
 {
     DeleteCriticalSection(&internal_);
 }
 
-void RWLockTest::lockRead() const
+void RWLock::lockRead() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
     LeaveCriticalSection(&internal_);
 
-    RWLockImpl::lockRead();
+    __impl::RWLock::lockRead();
 
     EnterCriticalSection(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -67,14 +67,14 @@ void RWLockTest::lockRead() const
     LeaveCriticalSection(&internal_);
 }
 
-void RWLockTest::lockWrite() const
+void RWLock::lockWrite() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
 	REQUIRES(writer_ == 0);
     LeaveCriticalSection(&internal_);
 
-    RWLockImpl::lockWrite();
+    __impl::RWLock::lockWrite();
 
     EnterCriticalSection(&internal_);
     ENSURES(readers_.empty() == true);
@@ -84,7 +84,7 @@ void RWLockTest::lockWrite() const
     LeaveCriticalSection(&internal_);
 }
 
-void RWLockTest::unlock() const
+void RWLock::unlock() const
 {
     EnterCriticalSection(&internal_);
     if(writer_ == GetCurrentThreadId()) {
@@ -99,9 +99,9 @@ void RWLockTest::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    RWLockImpl::unlock();
+    __impl::RWLock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
-} }
+}}}

@@ -2,10 +2,10 @@
 #define __UTIL_WINDOWS_LOCK_IPP_
 
 
-namespace gmac { namespace util {
+namespace gmac { namespace util { namespace __impl {
 
 inline void
-LockImpl::lock() const
+Lock::lock() const
 {
     enter();
     EnterCriticalSection(&mutex_);
@@ -13,14 +13,14 @@ LockImpl::lock() const
 }
 
 inline void
-LockImpl::unlock() const
+Lock::unlock() const
 {
     exit();
     LeaveCriticalSection(&mutex_);
 }
 
 inline void
-RWLockImpl::lockRead() const
+RWLock::lockRead() const
 {
     enter();
     AcquireSRWLockShared(&lock_);
@@ -28,7 +28,7 @@ RWLockImpl::lockRead() const
 }
 
 inline void
-RWLockImpl::lockWrite() const
+RWLock::lockWrite() const
 {
     enter();
     AcquireSRWLockExclusive(&lock_);
@@ -37,7 +37,7 @@ RWLockImpl::lockWrite() const
 }
 
 inline void
-RWLockImpl::unlock() const
+RWLock::unlock() const
 {
     exit();
     if(owner_ == 0) ReleaseSRWLockShared(&lock_);
@@ -47,6 +47,6 @@ RWLockImpl::unlock() const
 	}
 }
 
-}}
+}}}
 
 #endif
