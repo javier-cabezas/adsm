@@ -1,4 +1,5 @@
 set(memory_test_SRC
+    Manager.h
     SharedObject.h SharedObject.ipp
     ReplicatedObject.h ReplicatedObject.ipp)
 
