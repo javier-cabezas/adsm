@@ -53,7 +53,7 @@ void Function::init()
 void Function::initThread()
 {
 #ifdef DEBUG
-    Funcs_.set(new std::list<std::string>());
+//    Funcs_.set(new std::list<std::string>());
 #endif
 }
 

@@ -104,6 +104,7 @@ Process::Process() :
     current_(0),
     ioMemory_(NULL)
 {
+    memoryInit(paramProtocol, paramAllocator);
 	// Create the private per-thread variables for the implicit thread
     Mode::init();
 	initThread();

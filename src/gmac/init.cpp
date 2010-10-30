@@ -63,7 +63,6 @@ static void CONSTRUCTOR init(void)
     util::Logger::TRACE("Initializing process");
     Process::create<Process>();
     apiInit();
-    memoryInit(paramProtocol, paramAllocator);
 
     exitGmac();
 }
