@@ -20,7 +20,8 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	gmac::Accelerator(n), device_(device)
+	gmac::Accelerator(n), device_(device),
+    _ctx(NULL)
 {
 #if CUDA_VERSION > 3000
     size_t size = 0;
