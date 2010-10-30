@@ -31,59 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_FUNCTION_H_
-#define __PARAVER_FUNCTION_H_
+#ifndef TEST_UNIT_INIT_H_
+#define TEST_UNIT_INIT_H_
 
-#include <map>
-
-#include "config/common.h"
-#include "gmac/paraver.h"
-#include "util/Lock.h"
-#include "util/Private.h"
-
-#include <list>
-
-namespace gmac { namespace trace {
-
-#if PARAVER
-class GMAC_LOCAL FunctionMap : public std::map<std::string, unsigned> {
-protected:
-    paraver::EventName *_event;
-    unsigned id_;
-    static const unsigned _stride = 64;
-public:
-    FunctionMap(unsigned, const char *);
-    unsigned id() const { return id_; }
-    paraver::EventName &event() { return *_event; }
-};
-
-class GMAC_LOCAL ModuleMap : protected std::map<std::string, FunctionMap *>,
-                protected util::Lock {
-protected:
-    friend class Function;
-public:
-    ModuleMap() : util::Lock("Paraver") {};
-    FunctionMap &get(const char *name);
-};
-#endif
-
-class GMAC_LOCAL Function {
-protected:
-#ifdef DEBUG
-    static bool Init_;
-    static util::Private<std::list<std::string> > Funcs_;
-#endif
-#ifdef PARAVER
-    static ModuleMap *map;
-    static FunctionMap &getFunctionMap(const char *module);
-#endif
-public:
-    static void init();
-    static void initThread();
-    static void start(const char *module, const char *name);
-    static void end(const char *module);
-};
-
-}}
+void InitProcess();
+void FiniProcess();
 
 #endif
