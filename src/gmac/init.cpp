@@ -96,6 +96,9 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 		case DLL_THREAD_ATTACH:
 			// TODO: Handle thread creation -- Should be similar to pthread_create()
 			break;
+		case DLL_THREAD_DETACH:
+			// TODO: Handle thread destruction -- Should be similar to pthread_create()
+			break;
 	};
     return TRUE;
 }
