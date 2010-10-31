@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#ifdef DEBUG
+#ifdef USE_DBC
 
 #define ENSURES(a) gmac::dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
 #define REQUIRES(a) gmac::dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
