@@ -5,6 +5,7 @@ include_directories(
     ${CMAKE_BINARY_DIR}/src)
 
 add_subdirectory(memory)
+add_subdirectory(core)
 add_subdirectory(api)
 
 set(all_SRC
