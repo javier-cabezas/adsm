@@ -22,6 +22,14 @@ set(common_SRC ${common_SRC} ${common_os_SRC})
 string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR})
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
+source_group(${current_GROUP} FILES
+    gmacVecAdd.cu
+    gmacThreadVecAdd.cu
+    gmacSharedVecAdd.cu
+    gmacFileVecAdd.cu
+    gmacMatrixMul.cu
+    gmacMemcpy.cu
+)
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -31,41 +39,35 @@ else()
 endif()
 
 # gmacVecAdd
-source_group(${current_GROUP} FILES gmacVecAdd.cu)
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd} ${common_SRC} gmacVecAdd.cu)
 target_link_libraries(gmacVecAdd gmac)
 
 # gmacThreadVecAdd
-source_group(${current_GROUP} FILES gmacThreadVecAdd.cu)
 cuda_compile(threadVecAdd gmacThreadVecAdd.cu)
-add_executable(gmacThreadVecAdd ${threadVecAdd} ${common_SRC})
+add_executable(gmacThreadVecAdd ${threadVecAdd} ${common_SRC} gmacThreadVecAdd.cu)
 target_link_libraries(gmacThreadVecAdd gmac)
 
 # gmacSharedVecAdd
-source_group(${current_GROUP} FILES gmacSharedVecAdd.cu)
 cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
-add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC})
+add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC} gmacSharedVecAdd.cu)
 target_link_libraries(gmacSharedVecAdd gmac)
 configure_file(../input/vectorA ${CMAKE_CURRENT_BINARY_DIR}/input/vectorA COPYONLY)
 configure_file(../input/vectorB ${CMAKE_CURRENT_BINARY_DIR}/input/vectorB COPYONLY)
 configure_file(../input/vectorC ${CMAKE_CURRENT_BINARY_DIR}/input/vectorC COPYONLY)
 
 # gmacFileVecAdd
-source_group(${current_GROUP} FILES gmacFileVecAdd.cu)
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
-add_executable(gmacFileVecAdd ${fileVecAdd} ${common_SRC})
+add_executable(gmacFileVecAdd ${fileVecAdd} ${common_SRC} gmacFileVecAdd.cu)
 target_link_libraries(gmacFileVecAdd gmac)
 
 # gmacMatrixMul
-source_group(${current_GROUP} FILES gmacMatrixMul.cu)
 cuda_compile(matrixMul gmacMatrixMul.cu)
-add_executable(gmacMatrixMul ${matrixMul} ${common_SRC})
+add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMul.cu)
 target_link_libraries(gmacMatrixMul gmac)
 
 # gmacMemcpy
-source_group(${current_GROUP} FILES gmacMemcpy.cu)
 cuda_compile(memcpy gmacMemcpy.cu)
-add_executable(gmacMemcpy ${memcpy} ${common_SRC})
+add_executable(gmacMemcpy ${memcpy} ${common_SRC} gmacMemcpy.cu)
 target_link_libraries(gmacMemcpy gmac)
 

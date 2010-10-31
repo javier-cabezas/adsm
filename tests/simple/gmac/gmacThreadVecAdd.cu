@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include <gmac.h>
 
@@ -52,7 +51,7 @@ void *addVector(void *ptr)
 
 	// Call the kernel
 	dim3 Db(blockSize);
-	dim3 Dg(vecSize / blockSize);
+	dim3 Dg((unsigned int)vecSize / blockSize);
 	if(vecSize % blockSize) Dg.x++;
 	getTime(&s);
 	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b), vecSize);
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;
 
-	nThread = (pthread_t *)malloc(nIter * sizeof(thread_t));
+	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
 
 	getTime(&st);
