@@ -3,8 +3,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <pthread.h>
-
 #include <gmac.h>
 
 #include "utils.h"
@@ -74,7 +72,7 @@ void *addVector(void *ptr)
 
 int main(int argc, char *argv[])
 {
-	pthread_t *nThread;
+	thread_t *nThread;
 	unsigned n = 0;
 	gmacError_t ret = gmacSuccess;
 	gmactime_t s, t;
@@ -85,7 +83,7 @@ int main(int argc, char *argv[])
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;
 
-	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
+	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
 	param = (struct param *)malloc(nIter * sizeof(struct param));
 
 	getTime(&s);
@@ -103,11 +101,11 @@ int main(int argc, char *argv[])
 
 	for(n = 0; n < nIter; n++) {
 		param[n].i = n;
-		pthread_create(&nThread[n], NULL, addVector, &(param[n]));
+		nThread[n] = thread_create(addVector, &(param[n]));
 	}
 
 	for(n = 0; n < nIter; n++) {
-		pthread_join(nThread[n], NULL);
+		thread_wait(nThread[n]);
 	}
 
 	gmacFree(a);
