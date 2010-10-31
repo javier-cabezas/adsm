@@ -178,10 +178,6 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
-
-
-
-
 # Setup GMAC as main target
 include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
 # GMAC is a DLL

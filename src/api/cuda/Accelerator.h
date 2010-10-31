@@ -57,9 +57,9 @@ public:
 };
 
 typedef CUstream Stream;
-
-class GMAC_LOCAL AcceleratorLock : public util::Lock {
-    friend class Accelerator;
+class Accelerator;
+class GMAC_LOCAL AcceleratorLock : protected util::Lock {
+	friend class Accelerator;
 public:
     AcceleratorLock() : util::Lock("Accelerator") {}
 };
