@@ -20,3 +20,15 @@ void getTime(gmactime_t *out)
 	out->sec = (unsigned)(tmp / 1000000UL);
 	out->usec = (unsigned)(tmp % 1000000UL);
 }
+
+thread_t thread_create(thread_routine rtn, void *arg)
+{
+	thread_t ret = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)rtn, arg, 0, NULL);
+	return ret;
+}
+
+void thread_wait(thread_t id)
+{
+	WaitForSingleObject(id, INFINITE);
+	CloseHandle(id);
+}

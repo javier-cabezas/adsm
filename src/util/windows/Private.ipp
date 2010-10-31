@@ -1,7 +1,7 @@
 #ifndef __UTIL_WINDOWS_PRIVATE_IPP_
 #define __UTIL_WINDOWS_PRIVATE_IPP_
 
-#include <cassert>
+#include "util/Logger.h"
 
 namespace gmac { namespace util {
 
@@ -16,7 +16,7 @@ template <typename T>
 inline
 void Private<T>::init(Private &var)
 {
-	assert((var.key_ = TlsAlloc()) != TLS_OUT_OF_INDEXES);
+	gmac::util::Logger::ASSERTION((var.key_ = TlsAlloc()) != TLS_OUT_OF_INDEXES);
 }
 
 template <typename T>
@@ -30,7 +30,9 @@ template <typename T>
 inline
 T *Private<T>::get()
 {
-    return static_cast<T *>(TlsGetValue(key_));
+    T* ret = static_cast<T *>(TlsGetValue(key_));
+	gmac::util::Logger::ASSERTION(GetLastError() == ERROR_SUCCESS);
+	return ret;
 }
 
 }}

@@ -49,6 +49,7 @@ void valueInit(float *a, float f, size_t size);
 #include <pthread.h>
 typedef pthread_t thread_t;
 #elif _MSC_VER
+#include <windows.h>
 typedef HANDLE thread_t;
 #else
 #error "No thread support found"
