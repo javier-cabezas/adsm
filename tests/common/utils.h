@@ -45,6 +45,19 @@ void randInitMax(float *a, float maxVal, size_t size);
 
 void valueInit(float *a, float f, size_t size);
 
+#if HAVE_PTHREADS
+#include <pthread.h>
+typedef pthread_t thread_t;
+#elif _MSC_VER
+typedef HANDLE thread_t;
+#else
+#error "No thread support found"
+#endif
+typedef void*(*thread_routine)(void *);
+thread_t thread_create(thread_routine rtn, void *arg);
+void thread_wait(thread_t id);
+
+
 #ifdef __cplusplus
 }
 #endif

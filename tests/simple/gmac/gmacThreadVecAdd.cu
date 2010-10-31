@@ -82,7 +82,7 @@ void *addVector(void *ptr)
 
 int main(int argc, char *argv[])
 {
-	pthread_t *nThread;
+	thread_t *nThread;
 	unsigned n = 0;
 	gmactime_t st, en;
 
@@ -92,16 +92,16 @@ int main(int argc, char *argv[])
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;
 
-	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
+	nThread = (pthread_t *)malloc(nIter * sizeof(thread_t));
 	s = (float **)malloc(nIter * sizeof(float **));
 
 	getTime(&st);
 	for(n = 0; n < nIter; n++) {
-		pthread_create(&nThread[n], NULL, addVector, &s[n]);
+		nThread[n] = thread_create(addVector, &s[n]);
 	}
 
 	for(n = 0; n < nIter; n++) {
-		pthread_join(nThread[n], NULL);
+		thread_wait(nThread[n]);
 	}
 
 	getTime(&en);
