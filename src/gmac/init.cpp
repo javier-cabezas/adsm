@@ -3,6 +3,7 @@
 #include "util/Private.h"
 #include "util/Logger.h"
 #include "trace/Function.h"
+#include "trace/Thread.h"
 
 #include "init.h"
 
@@ -81,7 +82,27 @@ static void DESTRUCTOR fini(void)
 
 #if defined(_WIN32)
 #include <windows.h>
- 
+
+static void InitThread()
+{
+	gmac::trace::Thread::start();
+	gmac::enterGmac();
+	gmac::Process &proc = gmac::Process::getInstance();
+	proc.initThread();
+	gmac::trace::Thread::run();
+	gmac::exitGmac();
+}
+
+static void FiniThread()
+{
+	gmac::enterGmac();
+	gmac::trace::Thread::resume();
+	// Modes and Contexts already destroyed in Process destructor
+	gmac::Process &proc = gmac::Process::getInstance();
+	proc.finiThread();
+	gmac::exitGmac();
+}
+
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
@@ -93,14 +114,16 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 			gmac::fini();
 			break;
 		case DLL_THREAD_ATTACH:
-			// TODO: Handle thread creation -- Should be similar to pthread_create()
+			InitThread();
 			break;
-		case DLL_THREAD_DETACH:
-			// TODO: Handle thread destruction -- Should be similar to pthread_create()
+		case DLL_THREAD_DETACH:			
+			FiniThread();
 			break;
 	};
     return TRUE;
 }
+
+
 #endif
 
 
