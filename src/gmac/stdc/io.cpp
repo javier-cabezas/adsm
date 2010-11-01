@@ -1,6 +1,7 @@
 #if defined(POSIX)
 #include "os/posix/loader.h"
 #elif defined(WINDOWS)
+#include "os/windows/loader.h"
 #endif
 
 #include "gmac/paraver.h"
@@ -13,10 +14,7 @@
 #include "trace/Thread.h"
 #include "util/Logger.h"
 
-#include <unistd.h>
 #include <cstdio>
-#include <stdint.h>
-#include <dlfcn.h>
 
 #include <errno.h>
 
@@ -69,7 +67,7 @@ size_t fread(void *buf, size_t size, size_t nmemb, FILE *stream)
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
         left -= bytes;
-        off  += bytes;
+        off  += (off_t)bytes;
     }
     proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
@@ -115,11 +113,11 @@ size_t fwrite(const void *buf, size_t size, size_t nmemb, FILE *stream)
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
-        int __ret = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
+        size_t __ret = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
         ret += __ret;
         
         left -= bytes;
-        off  += bytes;
+        off  += (off_t) bytes;
     }
     proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();

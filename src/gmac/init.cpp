@@ -55,8 +55,9 @@ static void CONSTRUCTOR init(void)
 #if defined(POSIX)
     osInit();
     threadInit();
-    stdcInit();
 #endif
+    stdcInit();
+
 
     util::Logger::TRACE("Using %s memory manager", paramProtocol);
     util::Logger::TRACE("Using %s memory allocator", paramAllocator);
