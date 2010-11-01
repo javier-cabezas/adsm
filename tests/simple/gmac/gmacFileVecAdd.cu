@@ -79,7 +79,6 @@ int main(int argc, char *argv[])
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
     fread(orig, sizeof(float), vecSize, fO);
-	fprintf(stderr,"Orig %f\n", orig[512 * 1024]);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
