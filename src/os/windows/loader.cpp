@@ -8,9 +8,10 @@
 namespace gmac { namespace loader {
 
 static const char *ImportSection_ = ".idata";
+static const char *GmacDll_ = "gmac.dll";
 static std::set<HMODULE> Modules_;
 
-PVOID PatchModuleSymbol(HMODULE module, DWORD symbol, const char *name)
+PVOID PatchModuleSymbol(HMODULE module, PVOID symbol, const char *name)
 {
 	PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)module;
 	PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)PtrFromRva(dosHeader, dosHeader->e_lfanew);
@@ -44,7 +45,7 @@ PVOID PatchModuleSymbol(HMODULE module, DWORD symbol, const char *name)
 			if(original->u1.Ordinal & IMAGE_ORDINAL_FLAG) continue; 
 			PIMAGE_IMPORT_BY_NAME import = (PIMAGE_IMPORT_BY_NAME) PtrFromRva(dosHeader,
 				original->u1.AddressOfData);
-			if(strncmp((const char *)import, name, strlen(name)) != 0)
+			if(strncmp((const char *)import->Name, name, strlen(name)) != 0)
 				continue; // No luck, check next name
 			// So... finally, this module is importing the symbol from some DLL. Go and patch
 			MEMORY_BASIC_INFORMATION memoryInfo;
@@ -54,9 +55,9 @@ PVOID PatchModuleSymbol(HMODULE module, DWORD symbol, const char *name)
 				PAGE_READWRITE, &memoryInfo.Protect) == 0) continue;
 			ret = (PVOID)(DWORD_PTR)thunk->u1.Function;
 #ifdef _WIN32
-			thunk->u1.Function = (DWORD)(DWORD_PTR) symbol;
+			thunk->u1.Function = (DWORD_PTR) symbol;
 #else
-			thunk->u1.Function = (ULONGLONG)(DWORD_PTR) symbol;			
+			thunk->u1.Function = (DWORD_PTR) symbol;			
 #endif
 			DWORD dummy;
 			VirtualProtect(memoryInfo.BaseAddress, memoryInfo.RegionSize,
@@ -68,7 +69,7 @@ PVOID PatchModuleSymbol(HMODULE module, DWORD symbol, const char *name)
 	return ret;
 }
 
-PVOID PatchModule(HMODULE module, DWORD symbol, const char *name)
+PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 {
 	if(module == NULL) {
 		module = GetModuleHandle(NULL);
@@ -97,17 +98,18 @@ PVOID PatchModule(HMODULE module, DWORD symbol, const char *name)
 	if(dlls == NULL) return false;
 	for(int i = 0; dlls[i].Name != NULL; i++) {
 		const char *dllName = (const char *)PtrFromRva(dosHeader, dlls[i].Name);
+		if(_stricmp(dllName, GmacDll_) == 0) continue;
 		HMODULE module = GetModuleHandle(dllName);
 		if(module == NULL) continue;
 		if(Modules_.insert(module).second == false) continue;
 		PVOID second = PatchModule(module, symbol, name);
-		if(ret != NULL && second != ret)
+		if(ret != NULL && second != NULL && ret != second)
 			gmac::util::Logger::Fatal("Duplicated symbol %s", name);
 	}
 	return ret;
 }
 
-void LoadSymbol(PVOID *symbol, DWORD hook, const char *name)
+void LoadSymbol(PVOID *symbol, PVOID hook, const char *name)
 {
 	// Patch the symbol in all IATs
 	
