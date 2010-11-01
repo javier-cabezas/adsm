@@ -52,14 +52,15 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     off_t  off  = 0;
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
-        ret += __libc_fread(buffer->addr(), size, bytes/size, stream);
-        err = manager.fromIOBuffer((char *)buf + off, *buffer,  bytes);
+        size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
+		ret += elems;
+        err = manager.fromIOBuffer((char *)buf + off, *buffer,  size * elems);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
-        left -= bytes;
-        off  += (off_t)bytes;
+        left -= (size * elems);
+        off  += (off_t)(size * elems);
     }
     proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
