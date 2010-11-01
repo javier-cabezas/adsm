@@ -337,6 +337,7 @@ void Process::copy(THREAD_T id)
 Mode *Process::owner(const void *addr) const
 {
     const memory::Object *object = shared_.getObjectRead(addr);
+	if(object == NULL) object = replicated_.getObjectRead(addr);
     if(object == NULL) return NULL;
     Mode & ret = object->owner();
     shared_.putObject(*object);

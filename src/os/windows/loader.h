@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 
 #define SYM(ret, symbol, ...)	\
-	typedef ret (*symbol##_t)(__VA_ARGS__);	\
+	typedef ret (__cdecl *symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 
 #define LOAD_SYM(symbol, name)	\

@@ -35,8 +35,8 @@ float doTest(float *a, float *b, float *c, float *orig)
 {
 	gmactime_t s, t;
 
-    FILE * fA = fopen(VECTORA, "r");
-    FILE * fB = fopen(VECTORB, "r");
+    FILE * fA = fopen(VECTORA, "rb");
+    FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
     fread(a, sizeof(float), vecSize, fA);
     fread(b, sizeof(float), vecSize, fB);
@@ -77,8 +77,9 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
-    FILE * fO = fopen(VECTORC, "r");
+    FILE * fO = fopen(VECTORC, "rb");
     fread(orig, sizeof(float), vecSize, fO);
+	fprintf(stderr,"Orig %f\n", orig[512 * 1024]);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
 
     error1 = doTest(a, b, c, orig);
 
-    FILE * fC = fopen("vectorC_shared", "w");
+    FILE * fC = fopen("vectorC_shared", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 
