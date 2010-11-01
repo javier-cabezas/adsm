@@ -7,6 +7,15 @@
 #include "utils.h"
 #include "debug.h"
 
+#ifdef _MSC_VER
+#define VECTORA "inputset\\vectorA"
+#define VECTORB "inputset\\vectorB"
+#define VECTORC "inputset\\vectorC"
+#else
+#define VECTORA "inputset/vectorA"
+#define VECTORB "inputset/vectorB"
+#define VECTORC "inputset/vectorC"
+#endif
 
 const size_t vecSize = 1024 * 1024;
 const size_t blockSize = 512;
@@ -26,8 +35,8 @@ float doTest(float *a, float *b, float *c, float *orig)
 {
 	gmactime_t s, t;
 
-    FILE * fA = fopen("inputset/vectorA", "r");
-    FILE * fB = fopen("inputset/vectorB", "r");
+    FILE * fA = fopen(VECTORA, "r");
+    FILE * fB = fopen(VECTORB, "r");
     getTime(&s);
     fread(a, sizeof(float), vecSize, fA);
     fread(b, sizeof(float), vecSize, fB);
@@ -68,7 +77,7 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
-    FILE * fO = fopen("inputset/vectorC", "r");
+    FILE * fO = fopen(VECTORC, "r");
     fread(orig, sizeof(float), vecSize, fO);
 
     // Alloc output data

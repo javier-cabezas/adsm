@@ -52,9 +52,9 @@ target_link_libraries(gmacThreadVecAdd gmac)
 cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
 add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC} gmacSharedVecAdd.cu)
 target_link_libraries(gmacSharedVecAdd gmac)
-configure_file(../input/vectorA ${CMAKE_CURRENT_BINARY_DIR}/input/vectorA COPYONLY)
-configure_file(../input/vectorB ${CMAKE_CURRENT_BINARY_DIR}/input/vectorB COPYONLY)
-configure_file(../input/vectorC ${CMAKE_CURRENT_BINARY_DIR}/input/vectorC COPYONLY)
+configure_file(../input/vectorA ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorA COPYONLY)
+configure_file(../input/vectorB ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorB COPYONLY)
+configure_file(../input/vectorC ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorC COPYONLY)
 
 # gmacFileVecAdd
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
