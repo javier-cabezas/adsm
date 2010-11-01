@@ -228,7 +228,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
-        size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
+        size_t c = objCount <= buffer.size() - off ? objCount: buffer.size() - off;
         unsigned objOff = (unsigned)(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
         if (!obj->isInAccelerator()) {
