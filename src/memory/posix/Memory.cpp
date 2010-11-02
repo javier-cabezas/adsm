@@ -33,7 +33,7 @@ void *Memory::map(void *addr, size_t count, GmacProtection prot)
     char tmp[FILENAME_MAX];
 
     // Create new shared memory file
-    snprintf(tmp, FILENAME_MAX, ".gmacXXXXXX");
+    snprintf(tmp, FILENAME_MAX, "/tmp/gmacXXXXXX");
     int fd = mkstemp(tmp);
     if(fd < 0) return NULL;
     unlink(tmp);
