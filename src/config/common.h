@@ -62,7 +62,9 @@ namespace gmac {
         using namespace __impl;
         }
  
-        namespace __impl { }
+        namespace __impl { 
+            class Block;
+        }
 
     using namespace __impl;
     }

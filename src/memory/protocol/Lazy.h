@@ -62,7 +62,7 @@ protected:
     static List GlobalCache_;
     unsigned _maxListSize;
 
-    gmacError_t addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow = true);
+    gmacError_t addDirty(const StateObject<State> &object, memory::SystemBlock<State> &block, bool checkOverflow = true);
 
     gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
 
@@ -85,10 +85,10 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot);
+    memory::Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot);
     void deleteObject(const Object &obj);
 #ifndef USE_MMAP
-    Object *createReplicatedObject(size_t size);
+    memory::Object *createReplicatedObject(size_t size);
     bool requireUpdate(Block &block);
 #endif
 

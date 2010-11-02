@@ -38,7 +38,8 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "Object.h"
+#include "memory/Object.h"
+#include "memory/SystemBlock.h"
 
 namespace gmac { namespace memory {
 

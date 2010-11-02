@@ -47,6 +47,9 @@ namespace memory {
 class Protocol;
 
 namespace __impl {
+
+class Block;
+
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
@@ -76,7 +79,7 @@ public:
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    bool requireUpdate(gmac::memory::Block &block);
+    bool requireUpdate(memory::Block &block);
 #endif
     gmacError_t free(void *addr);
 

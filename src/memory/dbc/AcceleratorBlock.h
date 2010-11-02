@@ -31,58 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_SHAREDOBJECT_H_
-#define GMAC_MEMORY_SHAREDOBJECT_H_
+#ifndef GMAC_MEMORY_TEST_ACCELEATORBLOCK_H_
+#define GMAC_MEMORY_TEST_ACCELERATORBLOCK_H_
 
-#include "config/common.h"
-#include "core/IOBuffer.h"
-#include "core/Mode.h"
 #include "memory/AcceleratorBlock.h"
-#include "memory/StateObject.h"
 
-namespace gmac { namespace memory { namespace __impl {
+namespace gmac { namespace memory { namespace __dbc {
 
-template<typename T>
-class GMAC_LOCAL SharedObject : public StateObject<T> {
-protected:
-    Mode *owner_;
-    bool mapped_;
-    AcceleratorBlock *accBlock_;
+class GMAC_LOCAL AcceleratorBlock :
+    public __impl::AcceleratorBlock,
+    public virtual gmac::dbc::Contract {
 public:
-    SharedObject(size_t size, void *cpuPtr, T init);
-    virtual ~SharedObject();
+    AcceleratorBlock(Mode &owner, void *addr, size_t size) :
+        __impl::AcceleratorBlock(owner, addr, size) {}
 
-    TESTABLE void init();
-    TESTABLE void fini();
-
-    // To host functions
-    TESTABLE gmacError_t toHost(Block &block) const;
-    TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    // To accelerator functions
-    TESTABLE gmacError_t toAccelerator(Block &block) const;
-    TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE Mode &owner() const;
-
-    TESTABLE gmacError_t free();
-    TESTABLE gmacError_t realloc(Mode &mode);
-
-    bool isLocal() const;
-    bool isInAccelerator() const;
+    virtual ~AcceleratorBlock() {}
 };
 
 }}}
 
-#include "SharedObject.ipp"
-
-#ifdef USE_DBC
-#include "memory/dbc/SharedObject.h"
 #endif
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

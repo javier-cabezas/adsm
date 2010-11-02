@@ -40,7 +40,8 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-#include "Block.h"
+#include "memory/Block.h"
+#include "core/Mode.h"
 
 namespace gmac { namespace memory {
 

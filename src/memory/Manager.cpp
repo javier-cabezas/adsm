@@ -351,7 +351,7 @@ bool Manager::write(void *addr)
 }
 
 #ifndef USE_MMAP
-bool Manager::requireUpdate(Block &block)
+bool Manager::requireUpdate(memory::Block &block)
 {
     return protocol_->requireUpdate(block);
 }

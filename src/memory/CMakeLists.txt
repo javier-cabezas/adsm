@@ -8,6 +8,8 @@ set(memory_SRC
     memory.cpp Memory.h
     Bitmap.h Bitmap.ipp Bitmap.cpp
     Block.h Block.ipp
+    AcceleratorBlock.h AcceleratorBlock.ipp
+    SystemBlock.h SystemBlock.ipp
     Object.h Object.ipp Object.cpp
     ObjectSet.h
     StateObject.h StateObject.ipp

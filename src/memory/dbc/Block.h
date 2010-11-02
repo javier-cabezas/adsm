@@ -41,31 +41,10 @@ namespace gmac { namespace memory { namespace __dbc {
 class GMAC_LOCAL Block :
     public __impl::Block,
     public virtual gmac::dbc::Contract {
+protected:
     Block(void *addr, size_t size) : __impl::Block(addr, size) {}
 public:
     virtual ~Block() {}
-};
-
-class GMAC_LOCAL AcceleratorBlock :
-    public __impl::AcceleratorBlock,
-    public virtual gmac::dbc::Contract {
-public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size) :
-        __impl::AcceleratorBlock(owner, addr, size) {}
-
-    virtual ~AcceleratorBlock() {}
-};
-
-
-template<typename T>
-class GMAC_LOCAL SystemBlock :
-    public __impl::SystemBlock<T>,
-    public virtual gmac::dbc::Contract {
-public:
-    SystemBlock(void *addr, size_t size, T state) :
-        __impl::SystemBlock<T>(addr, size, state)
-        {}
-    virtual ~SystemBlock() {}
 };
 
 }}}
