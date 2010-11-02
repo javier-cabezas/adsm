@@ -31,7 +31,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_ACCELEATORBLOCK_H_
+#ifndef GMAC_MEMORY_TEST_ACCELERATORBLOCK_H_
 #define GMAC_MEMORY_TEST_ACCELERATORBLOCK_H_
 
 #include "memory/AcceleratorBlock.h"
@@ -42,13 +42,14 @@ class GMAC_LOCAL AcceleratorBlock :
     public __impl::AcceleratorBlock,
     public virtual gmac::dbc::Contract {
 public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size) :
-        __impl::AcceleratorBlock(owner, addr, size) {}
+    AcceleratorBlock(Mode &owner, void *addr, size_t size);
 
-    virtual ~AcceleratorBlock() {}
+    virtual ~AcceleratorBlock();
 };
 
 }}}
+
+#include "AcceleratorBlock.ipp"
 
 #endif
 

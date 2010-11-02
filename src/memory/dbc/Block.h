@@ -42,12 +42,14 @@ class GMAC_LOCAL Block :
     public __impl::Block,
     public virtual gmac::dbc::Contract {
 protected:
-    Block(void *addr, size_t size) : __impl::Block(addr, size) {}
+    Block(void *addr, size_t size);
 public:
-    virtual ~Block() {}
+    virtual ~Block();
 };
 
 }}}
+
+#include "Block.ipp"
 
 #endif
 
