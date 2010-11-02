@@ -68,6 +68,7 @@ typedef enum {
 	gmacErrorInvalidValue,
 	gmacErrorInvalidAccelerator,
 	gmacErrorInvalidAcceleratorFunction,
+	gmacErrorInvalidSize,
     gmacErrorAlreadyBound,
 	gmacErrorApiFailureBase,
     gmacErrorFeatureNotSupported,
@@ -86,6 +87,7 @@ static const char *error[] = {
 	"Invalid value",
 	"Invalid accelerator",
 	"Invalid accelerator function",
+	"Invalid size",
 	"GMAC general failure",
     "Feature not supported with the current configure configuration",
     "Insufficient memory in the accelerator",
@@ -95,6 +97,13 @@ static const char *error[] = {
 enum GmacGlobalMallocType {
     GMAC_GLOBAL_MALLOC_REPLICATED  = 0,
     GMAC_GLOBAL_MALLOC_CENTRALIZED = 1
+};
+
+enum GmacProtection {
+    GMAC_PROT_NONE = 0, 
+    GMAC_PROT_READ, 
+    GMAC_PROT_WRITE, 
+    GMAC_PROT_READWRITE 
 };
 
 
