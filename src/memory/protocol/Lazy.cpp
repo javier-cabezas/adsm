@@ -71,10 +71,28 @@ Lazy::~Lazy()
     unlock();
 }
 
-Object *Lazy::createObject(size_t size)
+Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtection prot)
 {
-    Object *ret = new SharedObject<Lazy::State>(size, ReadOnly);
-    ret->init();
+    Object *ret = new SharedObject<Lazy::State>(size, cpuPtr, ReadOnly);
+    if (ret != NULL) {
+        ret->init();
+        if (ret->addr() == NULL) {
+            delete ret;
+        } else {
+            const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(*ret);
+            const StateObject<State>::SystemMap &map = object.blocks();
+            StateObject<State>::SystemMap::const_iterator i;
+            for(i = map.begin(); i != map.end(); i++) {
+                SystemBlock<State> *block = i->second;
+                block->lock();
+                // TODO helgrind error lock order block dirty_list
+                block->state(Dirty);
+                gmacError_t err = addDirty(object, *block);
+                block->unlock();
+            }
+
+        }
+    }
     return ret;
 }
 
@@ -114,7 +132,7 @@ gmacError_t Lazy::acquire(const Object &obj)
         switch(block->state()) {
             case Invalid:
             case ReadOnly:
-				if(Memory::protect(block->addr(), block->size(), Memory::None) < 0)
+				if(Memory::protect(block->addr(), block->size(), GMAC_PROT_NONE) < 0)
                     Fatal("Unable to set memory permissions");
                 block->state(Invalid);
                 break;
@@ -140,11 +158,11 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
         SystemBlock<State> *block = i->second;
         block->lock();
         if (bitmap.check(obj.device(block->addr()))) {
-            if(Memory::protect(block->addr(), block->size(), Memory::None) < 0)
+            if(Memory::protect(block->addr(), block->size(), GMAC_PROT_NONE) < 0)
                 Fatal("Unable to set memory permissions");
             block->state(Invalid);
         } else {
-            if(Memory::protect(block->addr(), block->size(), Memory::Read) < 0)
+            if(Memory::protect(block->addr(), block->size(), GMAC_PROT_READ) < 0)
                 Fatal("Unable to set memory permissions");
             block->state(ReadOnly);
         }
@@ -163,7 +181,7 @@ gmacError_t Lazy::release(const StateObject<State> &object, SystemBlock<State> &
         case Dirty:
             ret = object.toAccelerator(block);
             if(ret != gmacSuccess) goto exit_func;
-			if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
+			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
             block.state(ReadOnly);
             break;
@@ -229,20 +247,15 @@ gmacError_t Lazy::toHost(const Object &obj)
         block.lock();
         switch(block.state()) {
             case Invalid:
-				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toHost(block);
                 if(ret != gmacSuccess) { block.unlock(); return ret; }
-                block.state(Dirty);
-                // TODO helgrind error lock order block dirty_list
-                ret = addDirty(object, block, false);
+                block.state(ReadOnly);
                 break;
 
             case Dirty:
-                break;
             case ReadOnly:
-                // TODO helgrind error lock order block dirty_list
-                ret = addDirty(object, block, false);
                 break;
         }
         block.unlock();
@@ -266,7 +279,7 @@ gmacError_t Lazy::toDevice(const Object &obj)
                     block.unlock();
                     return ret;
                 }
-				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 block.state(ReadOnly);
             break;
@@ -366,10 +379,10 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
                 break;
 
             case ReadOnly:
-				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memcpy(addr + off,  buffer.addr() + off, count);
-				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -467,10 +480,10 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
                 break;
 
             case ReadOnly:
-				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memcpy(dst + off, src + off, count);
-				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -563,7 +576,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
     Process &p = Process::getInstance();
     IOBuffer *buffer = p.createIOBuffer(count); 
     if (!buffer) {
-        void *tmp = Memory::map(NULL, count, Memory::ReadWrite);
+        void *tmp = Memory::map(NULL, count, GMAC_PROT_READWRITE);
         CFatal(tmp != NULL, "Unable to set memory permissions");
         gmacError_t ret = objectSrc.toHostPointer(blockSrc, blockOffSrc, tmp, count);
         if (ret != gmacSuccess) return ret;
@@ -704,10 +717,10 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
 
             case ReadOnly:
                 ret = obj.owner().memset(s + off, c, count);
-				if(Memory::protect(block.addr(), block.size(), Memory::ReadWrite) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memset(s + off, c, count);
-				if(Memory::protect(block.addr(), block.size(), Memory::Read) < 0)
+				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
@@ -774,7 +787,7 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
             goto exit_func;
         }
             
-        Memory::protect(block->addr(), block->size(), Memory::Read);
+        Memory::protect(block->addr(), block->size(), GMAC_PROT_READ);
 #ifdef USE_VM
     }
 #endif
@@ -817,7 +830,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
             }
 #endif
         case ReadOnly:
-			Memory::protect(block->addr(), block->size(), Memory::ReadWrite);
+			Memory::protect(block->addr(), block->size(), GMAC_PROT_READWRITE);
             break;
     }
     block->state(Dirty);
@@ -872,6 +885,7 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
             // Release dirty blocks
             while(GlobalCache_.size() > _maxListSize) {
                 Entry e = GlobalCache_.pop();
+                // TODO Perform this transfer out of the lock
                 gmacError_t ret = release(e.object, *e.block);
                 if(ret != gmacSuccess) {
                     GlobalCache_.unlock();

@@ -71,3 +71,9 @@ cuda_compile(memcpy gmacMemcpy.cu)
 add_executable(gmacMemcpy ${memcpy} ${common_SRC} gmacMemcpy.cu)
 target_link_libraries(gmacMemcpy gmac)
 
+# gmacMap
+source_group(${current_GROUP} FILES gmacMap.cu)
+cuda_compile(map gmacMap.cu)
+add_executable(gmacMap ${map} ${common_SRC})
+target_link_libraries(gmacMap gmac)
+

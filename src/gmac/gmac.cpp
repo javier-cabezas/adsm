@@ -117,6 +117,50 @@ gmacMigrate(int acc)
 }
 
 gmacError_t
+gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
+{
+#ifndef USE_MMAP
+    gmacError_t ret = gmacSuccess;
+    if (count == 0) {
+        return ret;
+    }
+	gmac::enterGmac();
+    gmac::trace::Function::start("GMAC","gmacMap");
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    // TODO Remove alignment constraints
+    count = (int(count) < getpagesize())? getpagesize(): count;
+    ret = manager.map(cpuPtr, count, prot);
+    gmac::trace::Function::end("GMAC");
+	gmac::exitGmac();
+    return ret;
+#else
+    return gmacErrorFeatureNotSupported;
+#endif
+}
+
+gmacError_t
+gmacUnmap(void *cpuPtr, size_t count)
+{
+#ifndef USE_MMAP
+    gmacError_t ret = gmacSuccess;
+    if (count == 0) {
+        return ret;
+    }
+	gmac::enterGmac();
+    gmac::trace::Function::start("GMAC","gmacUnmap");
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    // TODO Remove alignment constraints
+    count = (int(count) < getpagesize())? getpagesize(): count;
+    ret = manager.unmap(cpuPtr, count);
+    gmac::trace::Function::end("GMAC");
+	gmac::exitGmac();
+    return ret;
+#else
+    return gmacErrorFeatureNotSupported;
+#endif
+}
+
+gmacError_t
 gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;

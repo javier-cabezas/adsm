@@ -43,7 +43,7 @@ class GMAC_LOCAL SharedObject :
     public __impl::SharedObject<T>,
     public virtual gmac::dbc::Contract {
 public:
-    SharedObject(size_t size, T init);
+    SharedObject(size_t size, void *cpuPtr, T init);
     virtual ~SharedObject();
 
     void init();
