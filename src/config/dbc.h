@@ -26,18 +26,19 @@ namespace gmac {
 
         namespace protocol {
             namespace __dbc { }
-        using namespace __dbc;
+            using namespace __dbc;
         }
         namespace __dbc { 
+            class Block;
             class Manager;
         }
 
-    using namespace __dbc;
+        using namespace __dbc;
     }
 
     namespace util {
         namespace __dbc { }
-    using namespace __dbc;
+        using namespace __dbc;
     }
 }
 

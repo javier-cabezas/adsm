@@ -85,5 +85,4 @@ public:
 #include "memory/dbc/SharedObject.h"
 #endif
 
-
 #endif

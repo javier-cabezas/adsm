@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 class GMAC_LOCAL Block : public util::Lock, public util::Logger {
 protected:
@@ -50,9 +50,9 @@ protected:
     size_t size_;
 
     Block(void *addr, size_t size);
-    inline void *mirrorAddress(void *src) const;
+    void *mirrorAddress(void *src) const;
 public:
-    virtual ~Block() {};
+    virtual ~Block();
 
     uint8_t *addr() const;
     uint8_t *end() const;
@@ -67,10 +67,10 @@ protected:
     Mode &owner_;
 public:
     AcceleratorBlock(Mode &owner, void *addr, size_t size);
-    ~AcceleratorBlock();
+    virtual ~AcceleratorBlock();
 	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
-    Mode &owner() { return owner_; }
+    Mode &owner();
 };
 
 template<typename T>
@@ -80,7 +80,7 @@ protected:
 
 public:
     SystemBlock(void *addr, size_t size, T state);
-    ~SystemBlock();
+    virtual ~SystemBlock();
 
     gmacError_t update(off_t off, Block *block);
 
@@ -88,8 +88,12 @@ public:
     void state(T s);
 };
 
-}}
+}}}
 
 #include "Block.ipp"
+
+#ifdef USE_DBC
+#include "memory/dbc/Block.h"
+#endif
 
 #endif

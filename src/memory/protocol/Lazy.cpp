@@ -13,6 +13,8 @@
 
 #include "trace/Function.h"
 
+#include "memory/Block.h"
+
 #if defined(__GNUC__)
 #define MIN std::min
 #elif defined(_MSC_VER)

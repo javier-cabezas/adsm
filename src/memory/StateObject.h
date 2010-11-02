@@ -38,7 +38,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "Block.h"
 #include "Object.h"
 
 namespace gmac { namespace memory {
@@ -56,16 +55,16 @@ public:
     virtual ~StateObject();
 
     // To host functions
-    virtual gmacError_t toHost(Block &block) const = 0;
-    virtual gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
-    virtual gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+    virtual gmacError_t toHost(gmac::memory::Block &block) const = 0;
+    virtual gmacError_t toHost(gmac::memory::Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toHostPointer(gmac::memory::Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
+    virtual gmacError_t toHostBuffer(gmac::memory::Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
 
     // To accelerator functions
-    virtual gmacError_t toAccelerator(Block &block) const = 0;
-    virtual gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+    virtual gmacError_t toAccelerator(gmac::memory::Block &block) const = 0;
+    virtual gmacError_t toAccelerator(gmac::memory::Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromPointer(gmac::memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromBuffer(gmac::memory::Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
 
     SystemBlock<T> *findBlock(const void *addr) const;
     typename SystemMap::iterator getBlockIterator(const void *addr);
