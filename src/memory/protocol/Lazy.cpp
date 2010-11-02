@@ -73,7 +73,7 @@ Lazy::~Lazy()
     unlock();
 }
 
-Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtection prot)
+memory::Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtection prot)
 {
     Object *ret = new SharedObject<Lazy::State>(size, cpuPtr, ReadOnly);
     if (ret != NULL) {
@@ -114,7 +114,7 @@ void Lazy::deleteObject(const Object &obj)
 }
 
 #ifndef USE_MMAP
-Object *Lazy::createReplicatedObject(size_t size)
+memory::Object *Lazy::createReplicatedObject(size_t size)
 {
     Object *ret = new ReplicatedObject<Lazy::State>(size, ReadOnly);
     ret->init();

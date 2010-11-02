@@ -31,58 +31,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_SHAREDOBJECT_H_
-#define GMAC_MEMORY_SHAREDOBJECT_H_
+#ifndef GMAC_MEMORY_SYSTEMBLOCK_H_
+#define GMAC_MEMORY_SYSTEMBLOCK_H_
 
 #include "config/common.h"
-#include "core/IOBuffer.h"
-#include "core/Mode.h"
-#include "memory/AcceleratorBlock.h"
-#include "memory/StateObject.h"
+#include "config/config.h"
+
+#include "include/gmac-types.h"
+#include "memory/SystemBlock.h"
 
 namespace gmac { namespace memory { namespace __impl {
 
+
 template<typename T>
-class GMAC_LOCAL SharedObject : public StateObject<T> {
+class GMAC_LOCAL SystemBlock : public memory::Block {
 protected:
-    Mode *owner_;
-    bool mapped_;
-    AcceleratorBlock *accBlock_;
+    T state_;
+
 public:
-    SharedObject(size_t size, void *cpuPtr, T init);
-    virtual ~SharedObject();
+    SystemBlock(void *addr, size_t size, T state);
+    virtual ~SystemBlock();
 
-    TESTABLE void init();
-    TESTABLE void fini();
+    gmacError_t update(off_t off, Block *block);
 
-    // To host functions
-    TESTABLE gmacError_t toHost(Block &block) const;
-    TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    // To accelerator functions
-    TESTABLE gmacError_t toAccelerator(Block &block) const;
-    TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE Mode &owner() const;
-
-    TESTABLE gmacError_t free();
-    TESTABLE gmacError_t realloc(Mode &mode);
-
-    bool isLocal() const;
-    bool isInAccelerator() const;
+    T state() const;
+    void state(T s);
 };
 
 }}}
 
-#include "SharedObject.ipp"
+#include "SystemBlock.ipp"
 
 #ifdef USE_DBC
-#include "memory/dbc/SharedObject.h"
+#include "memory/dbc/SystemBlock.h"
 #endif
 
 #endif

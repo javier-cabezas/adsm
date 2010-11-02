@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "core/Mode.h"
 #include "include/gmac-types.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
@@ -62,31 +61,6 @@ public:
     void unlock() const;
 };
 
-class GMAC_LOCAL AcceleratorBlock : public Block {
-protected:
-    Mode &owner_;
-public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size);
-    virtual ~AcceleratorBlock();
-	AcceleratorBlock &operator =(const AcceleratorBlock &);
-
-    Mode &owner();
-};
-
-template<typename T>
-class GMAC_LOCAL SystemBlock : public Block {
-protected:
-    T state_;
-
-public:
-    SystemBlock(void *addr, size_t size, T state);
-    virtual ~SystemBlock();
-
-    gmacError_t update(off_t off, Block *block);
-
-    T state() const;
-    void state(T s);
-};
 
 }}}
 
