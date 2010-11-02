@@ -92,6 +92,7 @@ memory::Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtecti
                 gmacError_t err = addDirty(object, *block);
                 block->unlock();
             }
+            Memory::protect(ret->addr(), ret->size(), GMAC_PROT_READWRITE);
 
         }
     }
