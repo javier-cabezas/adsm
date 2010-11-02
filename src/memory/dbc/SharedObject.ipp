@@ -18,14 +18,17 @@ SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-void
+gmacError_t
 SharedObject<T>::init()
 {
     // PRECONDITIONS
     // CALL IMPLEMENTATION
-    __impl::SharedObject<T>::init();
+    gmacError_t ret = __impl::SharedObject<T>::init();
     // POSTCONDITIONS
-    ENSURES(StateObject<T>::addr() != NULL);
+    ENSURES(ret == gmacErrorMemoryAllocation ||
+            StateObject<T>::addr() != NULL);
+
+    return ret;
 }
 
 template<typename T>

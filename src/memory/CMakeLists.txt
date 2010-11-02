@@ -6,17 +6,18 @@ add_subdirectory(${OS_DIR})
 
 set(memory_SRC
     memory.cpp Memory.h
+    AcceleratorBlock.h AcceleratorBlock.ipp
     Bitmap.h Bitmap.ipp Bitmap.cpp
     Block.h Block.ipp
-    AcceleratorBlock.h AcceleratorBlock.ipp
     SystemBlock.h SystemBlock.ipp
     Object.h Object.ipp Object.cpp
+    OrphanObject.h OrphanObject.ipp
     ObjectSet.h
     StateObject.h StateObject.ipp
     SharedObject.h SharedObject.ipp
     DistributedObject.h
     ReplicatedObject.h ReplicatedObject.ipp
-    CentralizedObject.h
+    CentralizedObject.h CentralizedObject.ipp
     Map.h Map.cpp
     Protocol.h Protocol.cpp
     Manager.h Manager.cpp Manager.ipp

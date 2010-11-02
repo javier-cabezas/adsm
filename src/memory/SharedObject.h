@@ -52,7 +52,7 @@ public:
     SharedObject(size_t size, void *cpuPtr, T init);
     virtual ~SharedObject();
 
-    TESTABLE void init();
+    TESTABLE gmacError_t init();
     TESTABLE void fini();
 
     // To host functions

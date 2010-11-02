@@ -37,15 +37,16 @@ inline ReplicatedObject<T>::~ReplicatedObject()
 }
 
 template<typename T>
-inline void ReplicatedObject<T>::init()
+inline gmacError_t ReplicatedObject<T>::init()
 {
     StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
     if(StateObject<T>::addr_ == NULL) {
-        return;
+        return gmacErrorMemoryAllocation;
     }
 
     StateObject<T>::setupSystem();
 
+    return gmacSuccess;
 }
 
 template<typename T>

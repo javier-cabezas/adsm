@@ -61,10 +61,11 @@ inline SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-inline void SharedObject<T>::init()
+inline gmacError_t
+SharedObject<T>::init()
 {
     if(accBlock_ == NULL) {
-        return;
+        return gmacErrorMemoryAllocation;
     }
 
     if (StateObject<T>::addr_ == NULL) {
@@ -76,11 +77,13 @@ inline void SharedObject<T>::init()
     }
 
     if(StateObject<T>::addr_ == NULL) {
-        return;
+        return gmacErrorMemoryAllocation;
     }
 
     trace("Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
     StateObject<T>::setupSystem();
+
+    return gmacSuccess;
 }
 
 template<typename T>

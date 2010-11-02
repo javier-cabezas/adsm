@@ -293,7 +293,7 @@ gmacError_t Lazy::toDevice(const Object &obj)
     return ret;
 }
 
-static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const uint8_t * ptr, size_t n)
+static unsigned blockRemainder(const uint8_t * blockAddr, size_t blockSize, const uint8_t * ptr, size_t n)
 {
     if (ptr >= blockAddr && ptr + n <  blockAddr + blockSize) {
         return n;
@@ -307,7 +307,7 @@ static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const 
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n)
+Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
 {
     trace::Function::start("Lazy", "toIOBuffer");
     gmacError_t ret = gmacSuccess;
@@ -324,27 +324,27 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t count = blockRemainder(block.addr(), block.size(), addr, n);
+        unsigned bytes = blockRemainder(block.addr(), block.size(), addr, count);
         unsigned blockOff = (unsigned)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
             case ReadOnly:
-                ::memcpy(buffer.addr() + bufferOff + off, addr + off, count);
+                ::memcpy(buffer.addr() + bufferOff + off, addr + off, bytes);
                 break;
 
             case Invalid:
-                ret = object.toHostBuffer(block, blockOff, buffer, bufferOff + off, count);
+                ret = object.toHostBuffer(block, blockOff, buffer, bufferOff + off, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
                 }
                 break;
         }
-        off += (unsigned)count;
+        off += bytes;
         block.unlock();
         i++;
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");
@@ -360,8 +360,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
-    off_t n = (off_t)count;
-    off_t off = 0;
+    unsigned off = 0;
     uint8_t * addr = object.addr() + objectOff;
     i = object.getBlockIterator(addr);
     assertion(i != map.end());
@@ -370,35 +369,35 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t count = blockRemainder(block.addr(), block.size(), addr, n);
+        unsigned bytes = blockRemainder(block.addr(), block.size(), addr, count);
         unsigned blockOff = (unsigned)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
-                ::memcpy(addr + off, buffer.addr() + bufferOff + off, count);
+                ::memcpy(addr + off, buffer.addr() + bufferOff + off, bytes);
                 break;
 
             case ReadOnly:
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
-                ::memcpy(addr + off,  buffer.addr() + off, count);
+                ::memcpy(addr + off,  buffer.addr() + off, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
-                ret = object.toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff + off, count);
+                ret = object.toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff + off, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
                 }
                 break;
         }           
-        off += (off_t)count;
+        off += bytes;
         block.unlock();
         i++;
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");
@@ -406,7 +405,7 @@ exit_func:
 }
 
 gmacError_t
-Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
+Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t count)
 {
     trace::Function::start("Lazy", "toPointer");
     gmacError_t ret = gmacSuccess;
@@ -424,17 +423,17 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t count = blockRemainder(block.addr(), block.size(), src, n);
+        unsigned bytes = blockRemainder(block.addr(), block.size(), src, count);
         unsigned blockOff = (unsigned)(src + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
             case ReadOnly:
-                ::memcpy(dst + off, src + off, count);
+                ::memcpy(dst + off, src + off, bytes);
                 break;
 
             case Invalid:
-                ret = object.toHostPointer(block, blockOff, dst + off, count);
+                ret = object.toHostPointer(block, blockOff, dst + off, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
@@ -442,10 +441,10 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t n)
 
                 break;
         }
-        off += (unsigned)count;
+        off += (unsigned)bytes;
         block.unlock();
         i++;
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");
@@ -453,7 +452,7 @@ exit_func:
 }
 
 gmacError_t
-Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t n)
+Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t count)
 {
     trace::Function::start("Lazy", "fromPointer");
     gmacError_t ret = gmacSuccess;
@@ -471,35 +470,35 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t count = blockRemainder(block.addr(), block.size(), dst, n);
+        unsigned bytes = blockRemainder(block.addr(), block.size(), dst, count);
         unsigned blockOff = (unsigned)(dst + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
-                ::memcpy(dst + off, src + off, count);
+                ::memcpy(dst + off, src + off, bytes);
                 break;
 
             case ReadOnly:
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
-                ::memcpy(dst + off, src + off, count);
+                ::memcpy(dst + off, src + off, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
-                ret = object.toAcceleratorFromPointer(block, blockOff, src + off, count);
+                ret = object.toAcceleratorFromPointer(block, blockOff, src + off, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
                }
                 break;
         }           
-        off += (unsigned)count;
+        off += bytes;
         block.unlock();
         i++;
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");
@@ -598,7 +597,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
 }
 
 gmacError_t
-Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t n)
+Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count)
 {
     trace::Function::start("Lazy", "copy");
     gmacError_t ret = gmacSuccess;
@@ -623,10 +622,10 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
         blockDst.lock();
         blockSrc.lock();
 
-        size_t countDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, n);
-        size_t countSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, n);
+        unsigned bytesDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, count);
+        unsigned bytesSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, count);
 
-        size_t count = countSrc != countDst? MIN(countSrc, countDst): countSrc;
+        unsigned bytes = bytesSrc != bytesDst? MIN(bytesSrc, bytesDst): bytesSrc;
 
         unsigned blockOffDst = (unsigned)(dst + off - blockDst.addr());
         unsigned blockOffSrc = (unsigned)(src + off - blockSrc.addr());
@@ -638,15 +637,15 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
                 switch(blockDst.state()) {
                     case Dirty:
                         ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
-                                              objectSrc, blockSrc, blockOffSrc, count);
+                                              objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     case ReadOnly:
                         ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
-                                                 objectSrc, blockSrc, blockOffSrc, count);
+                                                 objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     case Invalid:
                         ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
-                                                objectSrc, blockSrc, blockOffSrc, count);
+                                                objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                 }
                 break;
@@ -656,17 +655,17 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
                 switch(blockDst.state()) {
                     case Dirty:
                         ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
-                                              objectSrc, blockSrc, blockOffSrc, count);
+                                              objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Accelerator memory to host memory AND accelerator memory
                     case ReadOnly:
                         ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
-                                                 objectSrc, blockSrc, blockOffSrc, count);
+                                                 objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Host memory to accelerator memory
                     case Invalid:
                         ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
-                                                objectSrc, blockSrc, blockOffSrc, count);
+                                                objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                 }
                 break;
@@ -676,14 +675,14 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
         if(ret != gmacSuccess) {
             goto exit_func;
         }
-        off += (unsigned)count;
-        if (blockDst.addr() + countDst == blockDst.end()) {
+        off += bytes;
+        if (blockDst.addr() + bytesDst == blockDst.end()) {
             iDst++;
         }
-        if (blockSrc.addr() + countSrc == blockSrc.end()) {
+        if (blockSrc.addr() + bytesSrc == blockSrc.end()) {
             iSrc++;
         }
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");
@@ -691,7 +690,7 @@ exit_func:
 }
 
 gmacError_t
-Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
+Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
 {
     trace::Function::start("Lazy", "memset");
     gmacError_t ret = gmacSuccess;
@@ -708,25 +707,25 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t count = blockRemainder(block.addr(), block.size(), s, n);
+        size_t bytes = blockRemainder(block.addr(), block.size(), s, count);
 
         switch(block.state()) {
             case Dirty:
-                ::memset(s + off, c, count);
+                ::memset(s + off, c, bytes);
                 break;
 
             case ReadOnly:
-                ret = obj.owner().memset(s + off, c, count);
+                ret = obj.owner().memset(s + off, c, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
-                ::memset(s + off, c, count);
+                ::memset(s + off, c, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
                 ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
-                ret = obj.owner().memset(s + off, c, count);
+                ret = obj.owner().memset(s + off, c, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
@@ -734,9 +733,9 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t n)
                 break;
         }           
         block.unlock();
-        off += (unsigned)count;
+        off += bytes;
         i++;
-    } while (off < n);
+    } while (off < count);
 
 exit_func:
     trace::Function::end("Lazy");

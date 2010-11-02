@@ -56,8 +56,8 @@ protected:
     Object *mapFind(const void *addr) const;
 
 public:
-    ObjectMap(const char *name) : util::RWLock(name) {};
-    virtual ~ObjectMap() {};
+    ObjectMap(const char *name);
+    virtual ~ObjectMap();
 
     virtual const Object *getObjectRead(const void *addr) const;
     virtual Object *getObjectWrite(const void *addr) const;
@@ -71,12 +71,11 @@ protected:
     Mode &parent_;
 
 public:
-    Map(const char *name, Mode &parent) : ObjectMap(name), parent_(parent) {}
+    Map(const char *name, Mode &parent);
     virtual ~Map();
-	Map &operator =(const Map &) {
-        Fatal("Assigment of memory maps is not supported");
-        return *this;
-    }
+    
+    // Do not allow to copy memory maps
+	Map &operator =(const Map &);
 
     void insert(Object &obj);
     void remove(Object &obj);

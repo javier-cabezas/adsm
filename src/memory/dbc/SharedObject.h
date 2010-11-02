@@ -46,7 +46,7 @@ public:
     SharedObject(size_t size, void *cpuPtr, T init);
     virtual ~SharedObject();
 
-    void init();
+    gmacError_t init();
     void fini();
 
     // To host functions

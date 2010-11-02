@@ -46,17 +46,19 @@ public:
     CentralizedObject(size_t size);
     virtual ~CentralizedObject();
 
-    void init();
+    gmacError_t init();
     void fini();
 
     void *getAcceleratorAddr(void *addr) const;
-    inline Mode &owner() const { return gmac::Mode::current(); }
+    Mode &owner() const;
 
-    inline bool isLocal() const { return false; }
-    inline bool isInAccelerator() const { return false; }
+    bool isLocal() const;
+    bool isInAccelerator() const;
 };
 #endif
 
 }}
+
+#include "CentralizedObject.ipp"
 
 #endif
