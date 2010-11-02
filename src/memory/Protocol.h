@@ -45,7 +45,6 @@ class Mode;
 
 namespace gmac { namespace memory {
 
-class Block;
 class Object;
 
 class GMAC_LOCAL Protocol : public util::Logger {
@@ -56,8 +55,7 @@ public:
     virtual void deleteObject(const Object &obj) = 0;
 #ifndef USE_MMAP
     virtual Object *createReplicatedObject(size_t size) = 0;
-    virtual Object *createCentralizedObject(size_t size)
-;
+    virtual Object *createCentralizedObject(size_t size) = 0;
     virtual bool requireUpdate(Block &block) = 0;
 #endif
 

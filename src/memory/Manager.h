@@ -43,9 +43,7 @@ namespace gmac {
 class IOBuffer;
 class Mode;
 
-
 namespace memory {
-class Block;
 class Protocol;
 
 namespace __impl {
