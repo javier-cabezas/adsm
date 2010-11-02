@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "memory/SystemBlock.h"
 
 namespace gmac { namespace memory { namespace __impl {

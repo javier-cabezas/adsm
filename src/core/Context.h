@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 #include "util/Private.h"
 

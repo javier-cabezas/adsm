@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "config/common.h"
 #include "gmac/paraver.h"
 

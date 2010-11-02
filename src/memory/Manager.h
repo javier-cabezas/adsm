@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_MANAGER_H_
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 #include "util/Singleton.h"
 
