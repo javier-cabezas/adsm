@@ -1,5 +1,5 @@
-#ifndef GMAC_MEMORY_REPLICATEDOBJECT_IPP
-#define GMAC_MEMORY_REPLICATEDOBJECT_IPP
+#ifndef GMAC_MEMORY_REPLICATEDOBJECT_IPP_
+#define GMAC_MEMORY_REPLICATEDOBJECT_IPP_
 
 #include "core/Process.h"
 
@@ -118,7 +118,6 @@ inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block) const
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
-    assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
@@ -133,7 +132,6 @@ inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block, unsigned blo
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
 {
-    assertion(block.addr() + blockOff + count <= block.end());
     gmacError_t ret = gmacSuccess;
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
@@ -148,8 +146,6 @@ inline gmacError_t ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, u
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    assertion(block.addr() + blockOff + count <= block.end());
-    assertion(buffer.addr() + bufferOff + count <= buffer.end());
     gmacError_t ret = gmacSuccess;
     off_t off = (off_t)(block.addr() + blockOff - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;

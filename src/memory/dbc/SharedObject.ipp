@@ -6,8 +6,8 @@
 namespace gmac { namespace memory { namespace __dbc {
 
 template <typename T>
-SharedObject<T>::SharedObject(size_t size, T init)
-    : __impl::SharedObject<T>(size, init)
+SharedObject<T>::SharedObject(size_t size, void *cpuPtr, T init)
+    : __impl::SharedObject<T>(size, cpuPtr, init)
 {
     REQUIRES(size > 0);
 }
@@ -22,8 +22,6 @@ void
 SharedObject<T>::init()
 {
     // PRECONDITIONS
-    ENSURES(StateObject<T>::addr() == NULL);
-
     // CALL IMPLEMENTATION
     __impl::SharedObject<T>::init();
     // POSTCONDITIONS

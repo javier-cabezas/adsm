@@ -84,9 +84,24 @@ GMAC_API size_t gmacAccs();
 */
 GMAC_API gmacError_t gmacMigrate(int acc);
 
+/*!
+	Maps a range of CPU memory on the GPU. Both, GPU and CPU,
+	use the same addresses for this memory.
+	\param cpuPtr CPU memory address to be mapped on the GPU
+	\param count  bytes to be allocated
+*/
+GMAC_API gmacError_t gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
 /*!
-	Allocates a range of memory at the GPU and the CPU. Both, GPU and CPU,
+	Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
+	use the same addresses for this memory.
+	\param cpuPtr memory address to be unmapped from the GPU
+	\param count  bytes to be allocated
+*/
+GMAC_API gmacError_t gmacUnmap(void *cpuPtr, size_t count);
+
+/*!
+	Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
 	use the same addresses for this memory.
 	\param devPtr memory address to store the address for the allocated memory
 	\param count  bytes to be allocated
