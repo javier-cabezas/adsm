@@ -78,9 +78,8 @@ memory::Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtecti
     Object *ret = new SharedObject<Lazy::State>(size, cpuPtr, ReadOnly);
     if (ret != NULL) {
         ret->init();
-        if (ret->addr() == NULL) {
-            delete ret;
-        } else {
+        if (cpuPtr != NULL) {
+            Memory::protect(ret->addr(), ret->size(), GMAC_PROT_READWRITE);
             const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(*ret);
             const StateObject<State>::SystemMap &map = object.blocks();
             StateObject<State>::SystemMap::const_iterator i;
@@ -92,8 +91,6 @@ memory::Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtecti
                 gmacError_t err = addDirty(object, *block);
                 block->unlock();
             }
-            Memory::protect(ret->addr(), ret->size(), GMAC_PROT_READWRITE);
-
         }
     }
     return ret;
