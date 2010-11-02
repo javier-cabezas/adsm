@@ -61,8 +61,8 @@ WITH THE SOFTWARE.  */
 
 
 
-#include "gmac-types.h"
-#include "visibility.h"
+#include "gmac/types.h"
+#include "gmac/visibility.h"
 
 #ifdef __cplusplus
 extern "C"

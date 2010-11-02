@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_PROTOCOL_H_
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 
 namespace gmac {
