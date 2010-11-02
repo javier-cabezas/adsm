@@ -43,13 +43,13 @@ class GMAC_LOCAL SystemBlock :
     public __impl::SystemBlock<T>,
     public virtual gmac::dbc::Contract {
 public:
-    SystemBlock(void *addr, size_t size, T state) :
-        __impl::SystemBlock<T>(addr, size, state)
-        {}
-    virtual ~SystemBlock() {}
+    SystemBlock(void *addr, size_t size, T state);
+    virtual ~SystemBlock();
 };
 
 }}}
+
+#include "SystemBlock.ipp"
 
 #endif
 
