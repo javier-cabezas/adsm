@@ -77,7 +77,7 @@ namespace gmac {
 #endif
 
 
-#include "include/visibility.h"
+#include "include/gmac/visibility.h"
 
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_STATEOBJECT_IPP_
 #define GMAC_MEMORY_STATEOBJECT_IPP_
 
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 
 namespace gmac { namespace memory {
 

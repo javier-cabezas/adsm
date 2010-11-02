@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #include <vector>
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "memory/Map.h"
 #include "util/Logger.h"
 #include "util/Singleton.h"

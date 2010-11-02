@@ -23,6 +23,8 @@ if(CMAKE_USE_PTHREADS_INIT)
     set(THREAD_DIR "pthreads")
 elseif(CMAKE_USE_WIN32_THREADS_INIT)
     message(STATUS "Using Windows threads")
+else(CMAKE_USE_PTHREADS_INIT)
+    message(FATAL "Your thread package (if any) is not supported")
 endif(CMAKE_USE_PTHREADS_INIT)
 
 # Identify operating system being used
@@ -194,7 +196,11 @@ set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC})
 add_gmac_groups(${gmac_SOURCES})
 add_library(gmac SHARED ${gmac_SOURCES})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
-set_property(TARGET gmac PROPERTY PRIVATE_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h)
+set_property(TARGET gmac PROPERTY PRIVATE_HEADER
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
+)
 
 
 target_link_libraries(gmac ${gmac_LIBS})

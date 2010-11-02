@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #if defined(USE_DBC)
 
 #include "config/common.h"
-#include "include/gmac-types.h"
 #include "dbc/Contract.h"
 
 

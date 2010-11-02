@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_IOBUFFER_H_
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Lock.h"
 
 #include "Mode.h"
