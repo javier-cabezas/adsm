@@ -85,7 +85,7 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    Object *createObject(size_t size);
+    Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot);
     void deleteObject(const Object &obj);
 #ifndef USE_MMAP
     Object *createReplicatedObject(size_t size);

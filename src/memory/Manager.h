@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_MEMMANAGER_H_
-#define GMAC_MEMORY_MEMMANAGER_H_
+#ifndef GMAC_MEMORY_MANAGER_H_
+#define GMAC_MEMORY_MANAGER_H_
 
 #include "config/common.h"
 #include "include/gmac-types.h"
@@ -73,6 +73,8 @@ public:
     //////////////////////////////
     // Memory management functions
     //////////////////////////////
+    gmacError_t map(void *addr, size_t size, GmacProtection prot);
+    gmacError_t unmap(void *addr, size_t size);
     gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
