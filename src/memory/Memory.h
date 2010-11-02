@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MEMORY_H_
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 
 namespace gmac { namespace memory {

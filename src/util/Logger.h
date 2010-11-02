@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 
 #include "util/Lock.h"
 #include "util/Parameter.h"
