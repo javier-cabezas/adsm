@@ -440,7 +440,8 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     return err;
 }
 
-gmacError_t Manager::memset(void *s, int c, size_t n)
+gmacError_t
+Manager::memset(void *s, int c, size_t n)
 {
     gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *mode = proc.owner(s);
@@ -450,8 +451,13 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
     }
 
     const Object * obj = mode->getObjectRead(s);
+    assertion(obj != NULL);
+	if (obj->isInAccelerator() == false) {
+        ::memset(s, c, n);
+        return gmacSuccess;
+    }
     gmacError_t ret;
-    ret = protocol_->memset(*obj, (unsigned)((uint8_t *)s - obj->addr()), c, n);
+    ret = protocol_->memset(*obj, unsigned((uint8_t *)s - obj->addr()), c, n);
     mode->putObject(*obj);
     return ret;
 }

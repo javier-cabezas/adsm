@@ -76,6 +76,8 @@ public:
     TESTABLE gmacError_t addOwner(Mode &mode);
     TESTABLE gmacError_t removeOwner(Mode &mode);
 
+    gmacError_t memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const;
+
     bool isLocal() const;
     bool isInAccelerator() const;
 };

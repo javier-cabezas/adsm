@@ -627,8 +627,8 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
 
         unsigned bytes = bytesSrc != bytesDst? MIN(bytesSrc, bytesDst): bytesSrc;
 
-        unsigned blockOffDst = (unsigned)(dst + off - blockDst.addr());
-        unsigned blockOffSrc = (unsigned)(src + off - blockSrc.addr());
+        unsigned blockOffDst = unsigned(dst + off - blockDst.addr());
+        unsigned blockOffSrc = unsigned(src + off - blockSrc.addr());
 
         switch(blockSrc.state()) {
             // Source location present in host memory
@@ -715,7 +715,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
 
             case ReadOnly:
-                ret = obj.owner().memset(s + off, c, bytes);
+                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memset(s + off, c, bytes);
@@ -725,7 +725,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
 
             case Invalid:
-                ret = obj.owner().memset(s + off, c, bytes);
+                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
