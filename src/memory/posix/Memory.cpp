@@ -19,7 +19,7 @@ int ProtBits[] = {
 
 static FileMap Files;
 
-int Memory::protect(void *addr, size_t count, Protection prot)
+int Memory::protect(void *addr, size_t count, GmacProtection prot)
 {
     util::Logger::TRACE("Setting memory permisions to %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
     int ret = mprotect(addr, count, ProtBits[prot]);
@@ -27,13 +27,13 @@ int Memory::protect(void *addr, size_t count, Protection prot)
     return 0;
 }
 
-void *Memory::map(void *addr, size_t count, Protection prot)
+void *Memory::map(void *addr, size_t count, GmacProtection prot)
 {
     void *cpuAddr = NULL;
     char tmp[FILENAME_MAX];
 
     // Create new shared memory file
-    snprintf(tmp, FILENAME_MAX, ".gmacXXXXXX");
+    snprintf(tmp, FILENAME_MAX, "/tmp/gmacXXXXXX");
     int fd = mkstemp(tmp);
     if(fd < 0) return NULL;
     unlink(tmp);
@@ -70,7 +70,7 @@ void *Memory::shadow(void *addr, size_t count)
     FileMapEntry entry = Files.find(addr);
     if(entry.fd() == -1) return NULL;
     off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());
-    void *ret = mmap(NULL, count, ProtBits[ReadWrite], MAP_SHARED, entry.fd(), offset);
+    void *ret = mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED, entry.fd(), offset);
     return ret;
 } 
 

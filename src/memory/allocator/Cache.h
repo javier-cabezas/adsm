@@ -46,7 +46,8 @@ namespace gmac { namespace memory { namespace allocator {
 
 typedef std::list<void *> ObjectList;
 
-class GMAC_LOCAL Arena : public util::Logger {
+class GMAC_LOCAL Arena :
+    public util::Logger {
 protected:
     void *ptr;
     size_t size;
@@ -69,7 +70,9 @@ public:
 };
 
 
-class GMAC_LOCAL Cache : public util::Logger, protected util::Lock {
+class GMAC_LOCAL Cache :
+    public util::Logger,
+    protected util::Lock {
 protected:
     size_t objectSize;
     size_t arenaSize;

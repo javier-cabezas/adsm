@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_SHAREDOBJECT_H_
-#define GMAC_MEMORY_TEST_SHAREDOBJECT_H_
+#ifndef GMAC_MEMORY_DBC_SHAREDOBJECT_H_
+#define GMAC_MEMORY_DBC_SHAREDOBJECT_H_
 
 #include "memory/SharedObject.h"
 
@@ -43,10 +43,10 @@ class GMAC_LOCAL SharedObject :
     public __impl::SharedObject<T>,
     public virtual gmac::dbc::Contract {
 public:
-    SharedObject(size_t size, T init);
+    SharedObject(size_t size, void *cpuPtr, T init);
     virtual ~SharedObject();
 
-    void init();
+    gmacError_t init();
     void fini();
 
     // To host functions

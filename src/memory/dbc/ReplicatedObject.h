@@ -46,7 +46,7 @@ public:
     ReplicatedObject(size_t size, T init);
     virtual ~ReplicatedObject();
 
-    void init();
+    gmacError_t init();
     void fini();
 
     // To host functions

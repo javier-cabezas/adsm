@@ -11,7 +11,7 @@ TEST(MemoryTest, MemoryShadowing) {
     int *addr_ = NULL;
     int *shadow_ = NULL;
 
-    addr_ = (int *)Memory::map(NULL, Size_ * sizeof(int), Memory::ReadWrite);
+    addr_ = (int *)Memory::map(NULL, Size_ * sizeof(int), GMAC_PROT_READWRITE);
     ASSERT_TRUE(addr_ != NULL);
 
     shadow_ = (int *)Memory::shadow(addr_, Size_ * sizeof(int));

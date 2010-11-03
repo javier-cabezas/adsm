@@ -20,6 +20,14 @@ Object * ObjectMap::mapFind(const void *addr) const
     return ret;
 }
 
+ObjectMap::ObjectMap(const char *name) :
+    util::RWLock(name)
+{
+}
+
+ObjectMap::~ObjectMap()
+{
+}
 
 const Object *ObjectMap::getObjectRead(const void *addr) const
 {
@@ -37,11 +45,17 @@ Object *ObjectMap::getObjectWrite(const void *addr) const
     return ret;
 }
 
-void ObjectMap::putObject(const Object &obj) const
+inline
+void
+ObjectMap::putObject(const Object &obj) const
 {
     obj.unlock();
 }
 
+Map::Map(const char *name, Mode &parent) :
+    ObjectMap(name), parent_(parent)
+{
+}
 
 Map::~Map()
 {
@@ -49,6 +63,12 @@ Map::~Map()
     clean();
 }
 
+Map &
+Map::operator =(const Map &)
+{
+    Fatal("Assigment of memory maps is not supported");
+    return *this;
+}
 
 const Object *Map::getObjectRead(const void *addr) const
 {

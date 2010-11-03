@@ -42,6 +42,21 @@ namespace gmac { namespace memory { namespace protocol { namespace __dbc {
 class GMAC_LOCAL Lazy :
     public __impl::Lazy,
     public virtual gmac::dbc::Contract {
+
+protected:
+    gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                   const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                  const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+
+    gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                       const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
@@ -56,6 +71,7 @@ public:
     gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
 
     gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
+    gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 };
 
 }}}}

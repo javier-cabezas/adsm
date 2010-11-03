@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,78 +31,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+#ifndef GMAC_MEMORY_SYSTEMBLOCK_H_
+#define GMAC_MEMORY_SYSTEMBLOCK_H_
 
-#ifndef GMAC_ERROR_H_
-#define GMAC_ERROR_H_
+#include "config/common.h"
+#include "config/config.h"
 
-#ifdef HAVE_PTHREADS
-#include <pthread.h>
-typedef pthread_t THREAD_T;
-#define SELF() pthread_self()
-#if defined(__LP64__) 
-#	define FMT_TID "0x%lx"
-#else
-#	if defined(DARWIN)
-#		define FMT_TID "%p"
-#	else
-#		define FMT_TID "0x%lx"
-#	endif
-#endif
-#elif _MSC_VER
-#	include <windows.h>
-	typedef DWORD THREAD_T;
-#	define SELF() GetCurrentThreadId()
-#	define FMT_TID "0x%lx"
-#endif
+#include "include/gmac/types.h"
+#include "memory/SystemBlock.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace gmac { namespace memory { namespace __impl {
 
-typedef enum {
-	gmacSuccess = 0,
-	gmacErrorMemoryAllocation,
-	gmacErrorLaunchFailure,
-	gmacErrorNotReady,
-	gmacErrorNoAccelerator,
-	gmacErrorInvalidValue,
-	gmacErrorInvalidAccelerator,
-	gmacErrorInvalidAcceleratorFunction,
-    gmacErrorAlreadyBound,
-	gmacErrorApiFailureBase,
-    gmacErrorFeatureNotSupported,
-    gmacErrorInsufficientAcceleratorMemory,
-	gmacErrorUnknown
-} gmacError_t;
 
-typedef const char * gmacKernel_t;
+template<typename T>
+class GMAC_LOCAL SystemBlock : public memory::Block {
+protected:
+    T state_;
 
-static const char *error[] = {
-	"No error",
-	"Memory allocation",
-	"Launch failure",
-	"Accelerator is not ready",
-	"Accelerator is not present",
-	"Invalid value",
-	"Invalid accelerator",
-	"Invalid accelerator function",
-	"GMAC general failure",
-    "Feature not supported with the current configure configuration",
-    "Insufficient memory in the accelerator",
-	"Uknown error"
+public:
+    SystemBlock(void *addr, size_t size, T state);
+    virtual ~SystemBlock();
+
+    gmacError_t update(off_t off, Block *block);
+
+    T state() const;
+    void state(T s);
 };
 
-enum GmacGlobalMallocType {
-    GMAC_GLOBAL_MALLOC_REPLICATED  = 0,
-    GMAC_GLOBAL_MALLOC_CENTRALIZED = 1
-};
+}}}
 
+#include "SystemBlock.ipp"
 
-#ifdef __cplusplus
-};
+#ifdef USE_DBC
+#include "memory/dbc/SystemBlock.h"
 #endif
 
-
-#endif /* GMAC_ERROR_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif

@@ -113,7 +113,8 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
-    if(ioMemory_ != NULL) delete ioMemory_;
+    if(ioMemory_ != NULL && modes_.empty() == false)
+        delete ioMemory_;
     ioMemory_ = NULL;
 
     memory::ObjectMap::iterator i;

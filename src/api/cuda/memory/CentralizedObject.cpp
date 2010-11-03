@@ -14,14 +14,16 @@ CentralizedObject::CentralizedObject(size_t size) :
 
 CentralizedObject::~CentralizedObject() {}
 
-void CentralizedObject::init()
+gmacError_t CentralizedObject::init()
 {
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
     if(mode.hostAlloc(&addr_, size_) != gmacSuccess) {
         addr_ = NULL;
-        return;
+        return gmacErrorMemoryAllocation;
     }
     trace("Centralized Object @ %p initialized", getAcceleratorAddr(addr_));
+
+    return gmacSuccess;
 }
 
 void CentralizedObject::fini()

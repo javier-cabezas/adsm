@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_PROTOCOL_H_
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 
 namespace gmac {
@@ -45,19 +45,17 @@ class Mode;
 
 namespace gmac { namespace memory {
 
-class Block;
 class Object;
 
 class GMAC_LOCAL Protocol : public util::Logger {
 public:
-    virtual ~Protocol() {};
+    virtual ~Protocol();
 
-    virtual Object *createObject(size_t size) = 0;
+    virtual Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
     virtual void deleteObject(const Object &obj) = 0;
 #ifndef USE_MMAP
     virtual Object *createReplicatedObject(size_t size) = 0;
-    virtual Object *createCentralizedObject(size_t size)
-;
+    virtual Object *createCentralizedObject(size_t size);
     virtual bool requireUpdate(Block &block) = 0;
 #endif
 
