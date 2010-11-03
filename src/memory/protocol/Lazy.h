@@ -67,19 +67,19 @@ protected:
     gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
 
 
-    gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                   const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                  const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-
-    gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                       const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+    TESTABLE gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                          const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    TESTABLE gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                            const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    TESTABLE gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                           const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+
+    TESTABLE gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    TESTABLE gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                                   const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+    TESTABLE gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                                  const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
@@ -111,7 +111,7 @@ public:
     TESTABLE gmacError_t fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count);
 
     TESTABLE gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
-    gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
+    TESTABLE gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 
     gmacError_t moveTo(Object &obj, Mode &mode);
     gmacError_t removeMode(Mode &mode);

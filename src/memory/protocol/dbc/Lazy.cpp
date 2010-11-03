@@ -4,6 +4,96 @@
 
 namespace gmac { namespace memory { namespace protocol { namespace __dbc {
 
+gmacError_t
+Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                      const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyHostToDirty(objectDst, blockDst, blockOffDst,
+                                                    objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
+gmacError_t
+Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyHostToReadOnly(objectDst, blockDst, blockOffDst,
+                                                       objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
+gmacError_t
+Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                        const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyHostToInvalid(objectDst, blockDst, blockOffDst,
+                                                      objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
+gmacError_t
+Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                             const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyAcceleratorToDirty(objectDst, blockDst, blockOffDst,
+                                                           objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
+gmacError_t
+Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyAcceleratorToReadOnly(objectDst, blockDst, blockOffDst,
+                                                              objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
+gmacError_t
+Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
+                               const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(blockOffDst + count <= blockDst.size());
+    REQUIRES(blockOffSrc + count <= blockSrc.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::copyAcceleratorToInvalid(objectDst, blockDst, blockOffDst,
+                                                             objectSrc, blockSrc, blockOffSrc, count);
+    // POSTCONDITIONS
+
+    return ret;
+}
+
 Lazy::Lazy(unsigned limit) :
     __impl::Lazy(limit)
 {
@@ -101,6 +191,18 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
     REQUIRES(offSrc + count <= objSrc.size());
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::Lazy::copy(objDst, offDst, objSrc, offSrc, count);
+    // POSTCONDITIONS
+    return ret;
+}
+
+gmacError_t
+Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
+{
+    // PRECONDITIONS
+    REQUIRES(count > 0);
+    REQUIRES(objectOff + count <= obj.size());
+    // CALL IMPLEMENTATION
+    gmacError_t ret = __impl::Lazy::memset(obj, objectOff, c, count);
     // POSTCONDITIONS
     return ret;
 }

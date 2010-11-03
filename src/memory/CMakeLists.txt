@@ -15,14 +15,14 @@ set(memory_SRC
     ObjectSet.h
     StateObject.h StateObject.ipp
     SharedObject.h SharedObject.ipp
-    DistributedObject.h
+    DistributedObject.h DistributedObject.cpp
     ReplicatedObject.h ReplicatedObject.ipp
     CentralizedObject.h CentralizedObject.ipp
     Map.h Map.cpp
     Protocol.h Protocol.cpp
     Manager.h Manager.cpp Manager.ipp
     Handler.h Handler.cpp
-    Allocator.h)
+    Allocator.h Allocator.cpp)
 
 add_gmac_sources(gmac ${memory_SRC})
 add_gmac_sources(gmac-lib ${memory_lib_SRC})
