@@ -44,13 +44,15 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace memory {
 
-class GMAC_LOCAL Allocator : public util::Logger, public util::Singleton<Allocator> {
+class GMAC_LOCAL Allocator :
+    public util::Logger,
+    public util::Singleton<Allocator> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Allocator>;
 protected:
-    Allocator() {}
+    Allocator();
 public:
-    virtual ~Allocator() {}
+    virtual ~Allocator();
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
     virtual bool free(void *addr) = 0;
 };
