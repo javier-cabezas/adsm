@@ -14,12 +14,6 @@
 
 namespace gmac { namespace memory { namespace __impl {
 
-Manager::~Manager()
-{
-    trace("Memory manager finishes");
-    delete protocol_;
-}
-
 Manager::Manager()
 {
     trace("Memory manager starts");
@@ -35,7 +29,14 @@ Manager::Manager()
     }
 }
 
-gmacError_t Manager::map(void *addr, size_t size, GmacProtection prot)
+Manager::~Manager()
+{
+    trace("Memory manager finishes");
+    delete protocol_;
+}
+
+gmacError_t
+Manager::map(void *addr, size_t size, GmacProtection prot)
 {
     Mode &mode = Mode::current();
 

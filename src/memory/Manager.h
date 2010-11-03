@@ -69,19 +69,19 @@ protected:
     memory::Protocol *protocol_;
 
     Manager();
-    ~Manager();
+    TESTABLE ~Manager();
 public:
     //////////////////////////////
     // Memory management functions
     //////////////////////////////
-    gmacError_t map(void *addr, size_t size, GmacProtection prot);
-    gmacError_t unmap(void *addr, size_t size);
-    gmacError_t alloc(void **addr, size_t size);
+    TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
+    TESTABLE gmacError_t unmap(void *addr, size_t size);
+    TESTABLE gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
-    gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
     bool requireUpdate(memory::Block &block);
 #endif
-    gmacError_t free(void *addr);
+    TESTABLE gmacError_t free(void *addr);
 
     ///////////////////////////////
     // Coherence protocol interface
@@ -90,22 +90,22 @@ public:
     gmacError_t release();
     gmacError_t invalidate();
 
-    bool read(void *addr);
-    bool write(void *addr);
+    TESTABLE bool read(void *addr);
+    TESTABLE bool write(void *addr);
 
     /////////////////////////
     // Memory bulk operations
     /////////////////////////
-    gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
-    gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
+    TESTABLE gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
+    TESTABLE gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
 
-    gmacError_t memcpy(void * dst, const void * src, size_t n);
-    gmacError_t memset(void * dst, int c, size_t n);
+    TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
+    TESTABLE gmacError_t memset(void *dst, int c, size_t n);
 
     ///////////////////
     // Object migration
     ///////////////////
-    gmacError_t moveTo(void * addr, Mode &mode);
+    gmacError_t moveTo(void *addr, Mode &mode);
 
     //////////////////
     // Mode management
@@ -122,6 +122,8 @@ public:
 
 #include "Manager.ipp"
 
+#ifdef USE_DBC
 #include "memory/dbc/Manager.h"
+#endif
 
 #endif

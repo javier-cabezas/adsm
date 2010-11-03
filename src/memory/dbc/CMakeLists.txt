@@ -1,5 +1,5 @@
 set(memory_test_SRC
-    Manager.h
+    Manager.h Manager.cpp
     SharedObject.h SharedObject.ipp
     ReplicatedObject.h ReplicatedObject.ipp
     Block.h Block.ipp

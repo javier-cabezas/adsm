@@ -34,11 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_DBC_MANAGER_H_
 #define GMAC_MEMORY_DBC_MANAGER_H_
 
-#if defined(USE_DBC)
-
-#include "config/common.h"
-#include "dbc/Contract.h"
-
+#include "memory/Manager.h"
 
 namespace gmac { namespace memory { namespace __dbc {
 
@@ -46,14 +42,30 @@ namespace gmac { namespace memory { namespace __dbc {
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class GMAC_LOCAL Manager : public __impl::Manager, public gmac::dbc::Contract {
+class GMAC_LOCAL Manager :
+    public __impl::Manager,
+    public virtual gmac::dbc::Contract {
+public:
+    Manager();
+    ~Manager();
+
+    gmacError_t map(void *addr, size_t size, GmacProtection prot);
+    gmacError_t unmap(void *addr, size_t size);
+    gmacError_t alloc(void **addr, size_t size);
+
+    gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+    gmacError_t free(void *addr);
+
+    bool read(void *addr);
+    bool write(void *addr);
+
+    gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
+    gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
+
+    gmacError_t memcpy(void * dst, const void * src, size_t n);
+    gmacError_t memset(void * dst, int c, size_t n);
 };
 
-}
-
-
-}}
-
-#endif
+}}}
 
 #endif
