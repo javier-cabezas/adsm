@@ -62,7 +62,9 @@ namespace gmac {
         using namespace __impl;
         }
  
-        namespace __impl { }
+        namespace __impl { 
+            class Block;
+        }
 
     using namespace __impl;
     }
@@ -75,7 +77,7 @@ namespace gmac {
 #endif
 
 
-#include "include/visibility.h"
+#include "include/gmac/visibility.h"
 
 #endif
 

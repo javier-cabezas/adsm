@@ -35,20 +35,15 @@ WITH THE SOFTWARE.  */
 #define __MEMORY_MEMORY_H_
 
 #include "config/common.h"
+#include "include/gmac/types.h"
 #include "util/Logger.h"
 
 namespace gmac { namespace memory {
 
 class GMAC_LOCAL Memory {
 public:
-	typedef enum {
-		None =0 , 
-		Read, 
-		Write, 
-		ReadWrite 
-	} Protection;
-	static int protect(void *addr, size_t count, Protection prot);
-	static void *map(void *addr, size_t count, Protection prot = None);
+	static int protect(void *addr, size_t count, GmacProtection prot);
+	static void *map(void *addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
 	static void *shadow(void *addr, size_t count);
 	static void unshadow(void *addr, size_t count);
 	static void unmap(void *addr, size_t count);

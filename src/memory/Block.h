@@ -37,12 +37,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "core/Mode.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-namespace gmac { namespace memory {
+namespace gmac { namespace memory { namespace __impl {
 
 class GMAC_LOCAL Block : public util::Lock, public util::Logger {
 protected:
@@ -50,9 +49,9 @@ protected:
     size_t size_;
 
     Block(void *addr, size_t size);
-    inline void *mirrorAddress(void *src) const;
+    void *mirrorAddress(void *src) const;
 public:
-    virtual ~Block() {};
+    virtual ~Block();
 
     uint8_t *addr() const;
     uint8_t *end() const;
@@ -62,34 +61,13 @@ public:
     void unlock() const;
 };
 
-class GMAC_LOCAL AcceleratorBlock : public Block {
-protected:
-    Mode &owner_;
-public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size);
-    ~AcceleratorBlock();
-	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
-    Mode &owner() { return owner_; }
-};
-
-template<typename T>
-class GMAC_LOCAL SystemBlock : public Block {
-protected:
-    T state_;
-
-public:
-    SystemBlock(void *addr, size_t size, T state);
-    ~SystemBlock();
-
-    gmacError_t update(off_t off, Block *block);
-
-    T state() const;
-    void state(T s);
-};
-
-}}
+}}}
 
 #include "Block.ipp"
+
+#ifdef USE_DBC
+#include "memory/dbc/Block.h"
+#endif
 
 #endif

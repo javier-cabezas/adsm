@@ -18,16 +18,19 @@ ReplicatedObject<T>::~ReplicatedObject()
 }
 
 template<typename T>
-void
+gmacError_t
 ReplicatedObject<T>::init()
 {
     // PRECONDITIONS
     ENSURES(StateObject<T>::addr() == NULL);
 
     // CALL IMPLEMENTATION
-    __impl::ReplicatedObject<T>::init();
+    gmacError_t ret = __impl::ReplicatedObject<T>::init();
     // POSTCONDITIONS
-    ENSURES(StateObject<T>::addr() != NULL);
+    ENSURES(gmacErrorMemoryAllocation ||
+            StateObject<T>::addr() != NULL);
+
+    return ret;
 }
 
 template<typename T>

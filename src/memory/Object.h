@@ -40,7 +40,8 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-#include "Block.h"
+#include "memory/Block.h"
+#include "core/Mode.h"
 
 namespace gmac { namespace memory {
 
@@ -65,7 +66,7 @@ public:
     virtual Mode &owner() const = 0;
     virtual void *getAcceleratorAddr(void *addr) const = 0;
 
-    virtual void init() = 0;
+    virtual gmacError_t init() = 0;
     virtual void fini() = 0;
 
     virtual gmacError_t free();

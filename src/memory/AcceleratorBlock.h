@@ -31,34 +31,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_CENTRALIZEDOBJECT_H_
-#define GMAC_MEMORY_CENTRALIZEDOBJECT_H_
+#ifndef GMAC_MEMORY_ACCELERATORBLOCK_H_
+#define GMAC_MEMORY_ACCELERATORBLOCK_H_
 
 #include "config/common.h"
+#include "config/config.h"
+
+#include "include/gmac/types.h"
 #include "core/Mode.h"
 #include "memory/Block.h"
-#include "memory/Object.h"
 
-namespace gmac { namespace memory {
-#ifndef USE_MMAP
-class GMAC_LOCAL CentralizedObject : public Object {
+namespace gmac { namespace memory { namespace __impl {
+
+class GMAC_LOCAL AcceleratorBlock : public memory::Block {
+protected:
+    Mode &owner_;
 public:
-    CentralizedObject(size_t size);
-    virtual ~CentralizedObject();
+    AcceleratorBlock(Mode &owner, void *addr, size_t size);
+    virtual ~AcceleratorBlock();
+	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
-    gmacError_t init();
-    void fini();
-
-    void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
-
-    bool isLocal() const;
-    bool isInAccelerator() const;
+    Mode &owner();
 };
+
+}}}
+
+#include "AcceleratorBlock.ipp"
+
+#ifdef USE_DBC
+#include "memory/dbc/AcceleratorBlock.h"
 #endif
-
-}}
-
-#include "CentralizedObject.ipp"
 
 #endif

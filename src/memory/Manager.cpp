@@ -14,12 +14,6 @@
 
 namespace gmac { namespace memory { namespace __impl {
 
-Manager::~Manager()
-{
-    trace("Memory manager finishes");
-    delete protocol_;
-}
-
 Manager::Manager()
 {
     trace("Memory manager starts");
@@ -35,14 +29,66 @@ Manager::Manager()
     }
 }
 
-gmacError_t Manager::alloc(void ** addr, size_t size)
+Manager::~Manager()
+{
+    trace("Memory manager finishes");
+    delete protocol_;
+}
+
+gmacError_t
+Manager::map(void *addr, size_t size, GmacProtection prot)
+{
+    Mode &mode = Mode::current();
+
+    // Create new shared object
+    Object *object = protocol_->createSharedObject(size, addr, prot);
+    if(object == NULL) {
+        return gmacErrorMemoryAllocation;
+    }
+
+    // Insert object into memory maps
+    mode.addObject(*object);
+
+    return gmacSuccess;
+}
+
+gmacError_t Manager::unmap(void *addr, size_t size)
+{
+    // TODO implement partial unmapping
+    gmacError_t ret = gmacSuccess;
+    Mode &mode = Mode::current();
+    Object *object = mode.getObjectWrite(addr);
+    if(object != NULL)  {
+        if (object->isInAccelerator()) {
+            ret = protocol_->toHost(*object);
+            if (ret != gmacSuccess) { 
+                mode.putObject(*object);
+                return ret;
+            }
+            protocol_->deleteObject(*object);
+            if (ret != gmacSuccess) { 
+                mode.putObject(*object);
+                return ret;
+            }
+        }
+        // TODO capture all the possible errors
+        mode.removeObject(*object);
+        mode.putObject(*object);
+        object->fini();
+        delete object;
+    }
+    else ret = gmacErrorInvalidValue;
+    return ret;
+}
+
+gmacError_t Manager::alloc(void **addr, size_t size)
 {
     Mode &mode = Mode::current();
     // For integrated devices we want to use Centralized objects to avoid memory transfers
     if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
     // Create new shared object
-    Object *object = protocol_->createObject(size);
+    Object *object = protocol_->createSharedObject(size, NULL, GMAC_PROT_READWRITE);
     *addr = object->addr();
     if(*addr == NULL) {
         delete object;
@@ -184,7 +230,7 @@ gmacError_t Manager::invalidate()
 
 gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count)
 {
-    assertion(count <= buffer.size());
+    if (count > buffer.size()) return gmacErrorInvalidSize;
     gmac::Process &proc = gmac::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     const uint8_t *ptr = (const uint8_t *)addr;
@@ -215,7 +261,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
 
 gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
 {
-    assertion(count <= buffer.size());
+    if (count > buffer.size()) return gmacErrorInvalidSize;
     gmac::Process &proc = gmac::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
@@ -306,7 +352,7 @@ bool Manager::write(void *addr)
 }
 
 #ifndef USE_MMAP
-bool Manager::requireUpdate(Block &block)
+bool Manager::requireUpdate(memory::Block &block)
 {
     return protocol_->requireUpdate(block);
 }

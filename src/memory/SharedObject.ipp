@@ -1,14 +1,16 @@
-#ifndef __MEMORY_SHAREDOBJECT_IPP
-#define __MEMORY_SHAREDOBJECT_IPP
+#ifndef GMAC_MEMORY_SHAREDOBJECT_IPP_
+#define GMAC_MEMORY_SHAREDOBJECT_IPP_
 
-namespace gmac { namespace memory { namespace __impl {
+#include "Memory.h"
 
 #ifdef USE_VM
 #include "Bitmap.h"
 #endif
 
+namespace gmac { namespace memory { namespace __impl {
+
 template<typename T>
-inline SharedObject<T>::SharedObject(size_t size, T init) :
+inline SharedObject<T>::SharedObject(size_t size, void *cpuPtr, T init) :
     StateObject<T>(size, init),
     owner_(&Mode::current()),
     accBlock_(NULL)
@@ -18,8 +20,14 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
     // Allocate accelerator and host memory
     ret = owner_->malloc(&accAddr, size, (unsigned)paramPageSize);
     if(ret != gmacSuccess) {
-        StateObject<T>::addr_ = NULL;
+        accBlock_ = NULL;
         return;
+    }
+    StateObject<T>::addr_ = cpuPtr;
+    if (cpuPtr != NULL) {
+        mapped_ = true;
+    } else {
+        mapped_ = false;
     }
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
@@ -27,14 +35,16 @@ inline SharedObject<T>::SharedObject(size_t size, T init) :
 #endif
     // Create memory blocks
     accBlock_ = new AcceleratorBlock(*owner_, accAddr, StateObject<T>::size_);
-
 }
 
 
 template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
-    if(StateObject<T>::addr_ == NULL) { return; }
+    // TODO Shouldn't this be forbidden?
+    if(StateObject<T>::addr_ == NULL) {
+        return;
+    }
     void *devAddr = accBlock_->addr();
     delete accBlock_;
     owner_->free(devAddr);
@@ -43,31 +53,48 @@ inline SharedObject<T>::~SharedObject()
     bitmap.removeRange(devAddr, StateObject<T>::size_);
 #endif
 
-    trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+    if (mapped_) {
+        trace("Unmapping Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+    } else {
+        trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+    }
 }
 
 template<typename T>
-inline void SharedObject<T>::init()
+inline gmacError_t
+SharedObject<T>::init()
 {
+    if(accBlock_ == NULL) {
+        return gmacErrorMemoryAllocation;
+    }
 
+    if (StateObject<T>::addr_ == NULL) {
 #ifdef USE_MMAP
-    StateObject<T>::addr_ = StateObject<T>::map(device, StateObject<T>::size_);
+        StateObject<T>::addr_ = StateObject<T>::map(device, StateObject<T>::size_);
 #else
-    StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
+        StateObject<T>::addr_ = StateObject<T>::map(NULL, StateObject<T>::size_);
 #endif
+    }
 
     if(StateObject<T>::addr_ == NULL) {
-        return;
+        return gmacErrorMemoryAllocation;
     }
 
     trace("Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
     StateObject<T>::setupSystem();
+
+    return gmacSuccess;
 }
 
 template<typename T>
 inline void SharedObject<T>::fini()
 {
-    StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
+    if (mapped_ == false) {
+        StateObject<T>::unmap(StateObject<T>::addr_, StateObject<T>::size_);
+    } else {
+        // TODO Always R/W?
+        Memory::protect(StateObject<T>::addr_, StateObject<T>::size_, GMAC_PROT_READWRITE);
+    }
 }
 
 
@@ -77,6 +104,12 @@ inline void *SharedObject<T>::getAcceleratorAddr(void *addr) const
     off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
     void *ret = accBlock_->addr() + offset;
     return ret;
+}
+
+template<typename T>
+inline Mode &SharedObject<T>::owner() const
+{
+    return *owner_;
 }
 
 template<typename T>

@@ -46,21 +46,14 @@ public:
     OrphanObject(const Object &obj);
     virtual ~OrphanObject();
 
-    inline void init() {};
-    inline void fini() {};
+    gmacError_t init();
+    void fini();
 
-    inline virtual void *getAcceleratorAddr(void *) const {
-        Fatal("Trying to get device address from orphan object");
-        return NULL;
-    }
+    void *getAcceleratorAddr(void *) const;
+    Mode &owner() const;
 
-    inline virtual Mode &owner() const { 
-        Fatal("Trying to get owner from orphan object");
-        return gmac::Mode::current();
-    }
-
-    inline bool isLocal() const { return false; }
-    inline bool isInAccelerator() const { return false; }
+    bool isLocal() const;
+    bool isInAccelerator() const;
 };
 
 }}

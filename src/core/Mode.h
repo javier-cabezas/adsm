@@ -52,7 +52,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-namespace memory { class Map; class Object; class Block; }
+namespace memory { class Map; class Object; }
 
 class Context;
 class IOBuffer;

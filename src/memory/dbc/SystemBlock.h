@@ -31,34 +31,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_CENTRALIZEDOBJECT_H_
-#define GMAC_MEMORY_CENTRALIZEDOBJECT_H_
+#ifndef GMAC_MEMORY_TEST_SYSTEMBLOCK_H_
+#define GMAC_MEMORY_TEST_SYSTEMBLOCK_H_
 
-#include "config/common.h"
-#include "core/Mode.h"
-#include "memory/Block.h"
-#include "memory/Object.h"
+#include "memory/SystemBlock.h"
 
-namespace gmac { namespace memory {
-#ifndef USE_MMAP
-class GMAC_LOCAL CentralizedObject : public Object {
+namespace gmac { namespace memory { namespace __dbc {
+
+template<typename T>
+class GMAC_LOCAL SystemBlock :
+    public __impl::SystemBlock<T>,
+    public virtual gmac::dbc::Contract {
 public:
-    CentralizedObject(size_t size);
-    virtual ~CentralizedObject();
-
-    gmacError_t init();
-    void fini();
-
-    void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
-
-    bool isLocal() const;
-    bool isInAccelerator() const;
+    SystemBlock(void *addr, size_t size, T state);
+    virtual ~SystemBlock();
 };
+
+}}}
+
+#include "SystemBlock.ipp"
+
 #endif
 
-}}
-
-#include "CentralizedObject.ipp"
-
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

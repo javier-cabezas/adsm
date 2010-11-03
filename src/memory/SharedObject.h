@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "core/IOBuffer.h"
 #include "core/Mode.h"
-#include "memory/Block.h"
+#include "memory/AcceleratorBlock.h"
 #include "memory/StateObject.h"
 
 namespace gmac { namespace memory { namespace __impl {
@@ -46,12 +46,13 @@ template<typename T>
 class GMAC_LOCAL SharedObject : public StateObject<T> {
 protected:
     Mode *owner_;
+    bool mapped_;
     AcceleratorBlock *accBlock_;
 public:
-    SharedObject(size_t size, T init);
+    SharedObject(size_t size, void *cpuPtr, T init);
     virtual ~SharedObject();
 
-    TESTABLE void init();
+    TESTABLE gmacError_t init();
     TESTABLE void fini();
 
     // To host functions
@@ -67,7 +68,7 @@ public:
     TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE inline Mode &owner() const { return *owner_; }
+    TESTABLE Mode &owner() const;
 
     TESTABLE gmacError_t free();
     TESTABLE gmacError_t realloc(Mode &mode);
@@ -83,6 +84,5 @@ public:
 #ifdef USE_DBC
 #include "memory/dbc/SharedObject.h"
 #endif
-
 
 #endif

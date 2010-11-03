@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 
 #include "config/common.h"
-#include "include/gmac-types.h"
+#include "include/gmac/types.h"
 #include "memory/ObjectSet.h"
 #include "util/Logger.h"
 #include "util/ReusableObject.h"
