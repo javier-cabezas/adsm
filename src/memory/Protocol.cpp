@@ -3,6 +3,10 @@
 
 namespace gmac { namespace memory {
 
+Protocol::~Protocol()
+{
+}
+
 #ifndef USE_MMAP
 Object *Protocol::createCentralizedObject(size_t size)
 {
