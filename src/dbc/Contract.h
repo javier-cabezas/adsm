@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TEST_CONTRACT_H
-#define GMAC_TEST_CONTRACT_H
+#ifndef GMAC_TEST_CONTRACT_H_
+#define GMAC_TEST_CONTRACT_H_
 
 #include "config/common.h"
 
@@ -57,7 +57,7 @@ protected:
     static void Assert(const char *file, const int line, const char *clause, bool b);
 };
 
-} }
+}}
 #endif
 
 
