@@ -49,7 +49,7 @@ class Object;
 
 class GMAC_LOCAL Protocol : public util::Logger {
 public:
-    virtual ~Protocol() {};
+    virtual ~Protocol();
 
     virtual Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
     virtual void deleteObject(const Object &obj) = 0;
