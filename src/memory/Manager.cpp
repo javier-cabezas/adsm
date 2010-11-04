@@ -4,6 +4,8 @@
 #define strcasecmp _stricmp
 #endif
 
+#include <algorithm>
+
 #include "core/IOBuffer.h"
 #include "core/Process.h"
 #include "protocol/Lazy.h"
@@ -440,7 +442,8 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     return err;
 }
 
-gmacError_t Manager::memset(void *s, int c, size_t n)
+gmacError_t
+Manager::memset(void *s, int c, size_t n)
 {
     gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *mode = proc.owner(s);
