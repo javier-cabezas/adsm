@@ -59,7 +59,7 @@ inline void ReplicatedObject<T>::fini()
 template<typename T>
 inline void *ReplicatedObject<T>::getAcceleratorAddr(void *addr) const
 {
-    off_t offset = (unsigned long)addr - (unsigned long)StateObject<T>::addr_;
+    unsigned offset = unsigned((uint8_t *) addr - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i = accelerators_.find(&gmac::Mode::current());
     Object::assertion(i != accelerators_.end());
     void *ret = i->second->addr() + offset;
@@ -105,7 +105,7 @@ template<typename T>
 inline gmacError_t ReplicatedObject<T>::toAccelerator(Block &block) const
 {
     gmacError_t ret = gmacSuccess;
-    off_t off = (off_t)(block.addr() - StateObject<T>::addr());
+    unsigned off = unsigned(block.addr() - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i;
     for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
         AcceleratorBlock &accBlock = *i->second;
@@ -209,6 +209,23 @@ inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
 }
 
 #endif
+
+
+template <typename T>
+gmacError_t
+ReplicatedObject<T>::memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const
+{
+    gmacError_t ret = gmacSuccess;
+    unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
+    typename AcceleratorMap::const_iterator i;
+    for(i = accelerators_.begin(); i != accelerators_.end(); i++) {
+        AcceleratorBlock &accBlock = *i->second;
+        gmacError_t tmp = accBlock.owner().memset(accBlock.addr() + off, c, count);
+        if(tmp != gmacSuccess) ret = tmp;
+    }
+    return ret;
+
+}
 
 template <typename T>
 inline bool

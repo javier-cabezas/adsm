@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_ERROR_H_
 #define GMAC_ERROR_H_
 
-#ifdef HAVE_PTHREADS
+#ifdef __GNUC__
 #include <pthread.h>
 typedef pthread_t THREAD_T;
 #define SELF() pthread_self()

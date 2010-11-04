@@ -1,3 +1,5 @@
+#include "core/IOBuffer.h"
+
 #include "Manager.h"
 
 namespace gmac { namespace memory { namespace __dbc {
@@ -102,6 +104,7 @@ Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
+    REQUIRES(size <= buffer.size());
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::Manager::toIOBuffer(buffer, addr, size);
     // POSTCONDITIONS
@@ -115,8 +118,9 @@ Manager::fromIOBuffer(void *addr, IOBuffer &buffer, size_t size)
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
+    REQUIRES(size <= buffer.size());
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::Manager::toIOBuffer(buffer, addr, size);
+    gmacError_t ret = __impl::Manager::fromIOBuffer(addr, buffer, size);
     // POSTCONDITIONS
 
     return ret;

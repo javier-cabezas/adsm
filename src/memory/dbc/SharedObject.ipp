@@ -67,6 +67,7 @@ SharedObject<T>::toHost(Block &block) const
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toHost(block);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -84,6 +85,7 @@ SharedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toHost(block, blockOff, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -101,6 +103,7 @@ SharedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toHostPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -119,6 +122,7 @@ SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer,
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toHostBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -132,6 +136,7 @@ SharedObject<T>::toAccelerator(Block &block) const
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toAccelerator(block);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -149,6 +154,7 @@ SharedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) co
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toAccelerator(block, blockOff, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -166,6 +172,7 @@ SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
@@ -184,6 +191,7 @@ SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuff
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::SharedObject<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
+    ENSURES(ret == gmacSuccess);
     return ret;
 }
 
