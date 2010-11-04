@@ -4,6 +4,8 @@
 #define strcasecmp _stricmp
 #endif
 
+#include <algorithm>
+
 #include "core/IOBuffer.h"
 #include "core/Process.h"
 #include "protocol/Lazy.h"
@@ -243,17 +245,17 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
-        size_t c = objCount <= buffer.size() - off? objCount: buffer.size() - off;
-        unsigned objOff = (unsigned)(ptr - obj->addr());
+        size_t c = objCount <= count - off? objCount: count - off;
+        unsigned objOff = unsigned(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
-        if (!obj->isInAccelerator()) {
+        if (obj->isInAccelerator() == false) {
             ::memcpy(buffer.addr() + off, ptr + off, c);
         } else { // Handle objects with memory in the accelerator
             ret = protocol_->toIOBuffer(buffer, off, *obj, objOff, c);
             if(ret != gmacSuccess) return ret;
         }
         mode->putObject(*obj);
-        off += (unsigned)objCount;
+        off += unsigned(objCount);
         trace("Copying from obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
@@ -274,8 +276,8 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
-        size_t c = objCount <= buffer.size() - off ? objCount: buffer.size() - off;
-        unsigned objOff = (unsigned)(ptr - obj->addr());
+        size_t c = objCount <= count - off? objCount: count - off;
+        unsigned objOff = unsigned(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
         if (!obj->isInAccelerator()) {
             ::memcpy(ptr + off, buffer.addr() + off, c);
@@ -284,7 +286,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
             if(ret != gmacSuccess) return ret;
         }
         mode->putObject(*obj);
-        off += (unsigned)objCount;
+        off += unsigned(objCount);
         trace("Copying to obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
