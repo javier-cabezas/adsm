@@ -54,6 +54,20 @@ inline typename StateObject<T>::SystemMap::const_iterator StateObject<T>::getBlo
 }
 
 template<typename T>
+inline typename StateObject<T>::SystemMap &
+StateObject<T>::blocks()
+{
+    return systemMap;
+}
+
+template<typename T>
+inline const typename StateObject<T>::SystemMap &
+StateObject<T>::blocks() const
+{
+    return systemMap;
+}
+
+template<typename T>
 inline void StateObject<T>::state(T s)
 {
     trace("Setting state of %p to %d", addr_, s);

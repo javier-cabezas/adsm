@@ -70,10 +70,11 @@ public:
     SystemBlock<T> *findBlock(const void *addr) const;
     typename SystemMap::iterator getBlockIterator(const void *addr);
     typename SystemMap::const_iterator getBlockIterator(const void *addr) const;
-    inline SystemMap &blocks() { return systemMap; }
-    inline const SystemMap &blocks() const { return systemMap; }
+    inline SystemMap &blocks();
+    inline const SystemMap &blocks() const;
 
     virtual void state(T s);
+    virtual gmacError_t memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const = 0;
 };
 
 } }

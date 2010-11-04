@@ -293,7 +293,7 @@ gmacError_t Lazy::toDevice(const Object &obj)
     return ret;
 }
 
-static unsigned blockRemainder(const uint8_t * blockAddr, size_t blockSize, const uint8_t * ptr, size_t n)
+static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const uint8_t * ptr, size_t n)
 {
     if (ptr >= blockAddr && ptr + n <  blockAddr + blockSize) {
         return n;
@@ -315,7 +315,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
-    unsigned off = 0;
+    off_t off = 0;
     uint8_t * addr = object.addr() + objectOff;
     i = object.getBlockIterator(addr);
     assertion(i != map.end());
@@ -324,8 +324,8 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = blockRemainder(block.addr(), block.size(), addr, count);
-        unsigned blockOff = (unsigned)(addr + off - block.addr());
+        size_t bytes = blockRemainder(block.addr(), block.size(), addr, count);
+        off_t blockOff = (off_t)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -341,7 +341,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
                 }
                 break;
         }
-        off += bytes;
+        off += (off_t)bytes;
         block.unlock();
         i++;
     } while (off < count);
@@ -369,8 +369,8 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = blockRemainder(block.addr(), block.size(), addr, count);
-        unsigned blockOff = (unsigned)(addr + off - block.addr());
+        size_t bytes = blockRemainder(block.addr(), block.size(), addr, count);
+        off_t blockOff = (off_t)(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -394,7 +394,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
                 }
                 break;
         }           
-        off += bytes;
+        off += (off_t)bytes;
         block.unlock();
         i++;
     } while (off < count);
@@ -413,7 +413,7 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t cou
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objSrc);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
-    unsigned off = 0;
+    off_t off = 0;
     uint8_t * dst = (uint8_t *)_dst;
     const uint8_t * src = (const uint8_t *) object.addr() + objectOff;
     i = object.getBlockIterator(src);
@@ -423,8 +423,8 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t cou
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = blockRemainder(block.addr(), block.size(), src, count);
-        unsigned blockOff = (unsigned)(src + off - block.addr());
+        size_t bytes = blockRemainder(block.addr(), block.size(), src, count);
+        off_t blockOff = (off_t)(src + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -441,7 +441,7 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t cou
 
                 break;
         }
-        off += (unsigned)bytes;
+        off += (off_t)bytes;
         block.unlock();
         i++;
     } while (off < count);
@@ -460,7 +460,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objDst);
     const StateObject<State>::SystemMap &map = object.blocks();
     StateObject<State>::SystemMap::const_iterator i;
-    unsigned off = 0;
+    off_t off = 0;
     uint8_t * dst = object.addr() + objectOff;
     const uint8_t * src = (const uint8_t *) _src;
     i = object.getBlockIterator(dst);
@@ -470,8 +470,8 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = blockRemainder(block.addr(), block.size(), dst, count);
-        unsigned blockOff = (unsigned)(dst + off - block.addr());
+        size_t bytes = blockRemainder(block.addr(), block.size(), dst, count);
+        off_t blockOff = (unsigned)(dst + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -495,7 +495,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
                }
                 break;
         }           
-        off += bytes;
+        off += (off_t)bytes;
         block.unlock();
         i++;
     } while (off < count);
@@ -607,7 +607,7 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
 
     const StateObject<State>::SystemMap &mapDst = objectDst.blocks();
     const StateObject<State>::SystemMap &mapSrc = objectSrc.blocks();
-    unsigned off = 0;
+    off_t off = 0;
 
     uint8_t * dst = objectDst.addr() + offDst;
     uint8_t * src = objectSrc.addr() + offSrc;
@@ -622,13 +622,13 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
         blockDst.lock();
         blockSrc.lock();
 
-        unsigned bytesDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, count);
-        unsigned bytesSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, count);
+        size_t bytesDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, count);
+        size_t bytesSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, count);
 
-        unsigned bytes = bytesSrc != bytesDst? MIN(bytesSrc, bytesDst): bytesSrc;
+        size_t bytes = bytesSrc != bytesDst? MIN(bytesSrc, bytesDst): bytesSrc;
 
-        unsigned blockOffDst = (unsigned)(dst + off - blockDst.addr());
-        unsigned blockOffSrc = (unsigned)(src + off - blockSrc.addr());
+        off_t blockOffDst = (unsigned)(dst + off - blockDst.addr());
+        off_t blockOffSrc = (unsigned)(src + off - blockSrc.addr());
 
         switch(blockSrc.state()) {
             // Source location present in host memory
@@ -675,7 +675,7 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
         if(ret != gmacSuccess) {
             goto exit_func;
         }
-        off += bytes;
+        off += (off_t)bytes;
         if (blockDst.addr() + bytesDst == blockDst.end()) {
             iDst++;
         }
@@ -715,7 +715,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
 
             case ReadOnly:
-                ret = obj.owner().memset(s + off, c, bytes);
+                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     Fatal("Unable to set memory permissions");
                 ::memset(s + off, c, bytes);
@@ -725,7 +725,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
 
             case Invalid:
-                ret = obj.owner().memset(s + off, c, bytes);
+                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
@@ -733,7 +733,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
         }           
         block.unlock();
-        off += bytes;
+        off += (off_t)bytes;
         i++;
     } while (off < count);
 

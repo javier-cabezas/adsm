@@ -14,7 +14,7 @@ static DWORD ProtBits[] = {
 
 static FileMap Files;
 
-int Memory::protect(void *addr, size_t count, Protection prot)
+int Memory::protect(void *addr, size_t count, GmacProtection prot)
 {
     util::Logger::TRACE("Setting memory permisions to %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
 	DWORD old = 0;
@@ -23,21 +23,9 @@ int Memory::protect(void *addr, size_t count, Protection prot)
     return 0;
 }
 
-void *Memory::map(void *addr, size_t count, Protection prot)
+void *Memory::map(void *addr, size_t count, GmacProtection prot)
 {
     void *cpuAddr = NULL;
-
-#if 0
-    if (addr == NULL) {
-        cpuAddr = VirtualAlloc(NULL, count, MEM_RESERVE, ProtBits[prot]);
-        util::Logger::TRACE("Getting map: %d @ %p - %p", prot, cpuAddr, (uint8_t *)addr + count);
-    } else {
-        cpuAddr = addr;
-		if(VirtualAlloc(cpuAddr, count, MEM_RESERVE, ProtBits[prot]) != cpuAddr)
-			return NULL;
-        util::Logger::TRACE("Getting fixed map: %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
-    }
-#endif
 
 	// Create anonymous file to be mapped
 	HANDLE handle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)count, NULL);
