@@ -296,13 +296,13 @@ gmacError_t Lazy::toDevice(const Object &obj)
 static unsigned blockRemainder(const uint8_t * blockAddr, size_t blockSize, const uint8_t * ptr, size_t n)
 {
     if (ptr >= blockAddr && ptr + n <  blockAddr + blockSize) {
-        return n;
+        return unsigned(n);
     } else if (ptr <  blockAddr && ptr + n < blockAddr + blockSize) {
-        return ptr + n - blockAddr;
+        return unsigned(ptr + n - blockAddr);
     } else if (ptr <  blockAddr && ptr + n >= blockAddr + blockSize) {
-        return blockSize;
+        return unsigned(blockSize);
     } else { // if (ptr >= blockAddr && ptr + n >= blockAddr + blockSize) {
-        return blockAddr + blockSize - ptr;
+        return unsigned(blockAddr + blockSize - ptr);
     }
 }
 
@@ -702,12 +702,12 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
     uint8_t * s = object.addr() + objectOff;
     i = object.getBlockIterator(s);
     assert(i != map.end());
-    
+    uint8_t *tmp = NULL;
     do {
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        size_t bytes = blockRemainder(block.addr(), block.size(), s, count);
+        unsigned bytes = blockRemainder(block.addr(), block.size(), s, count);
 
         switch(block.state()) {
             case Dirty:
@@ -715,17 +715,17 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
 
             case ReadOnly:
-                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
-				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
-                    Fatal("Unable to set memory permissions");
-                ::memset(s + off, c, bytes);
-				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
-                    Fatal("Unable to set memory permissions");
+                ret = object.memsetAccelerator(block, unsigned(s + off - block.addr()), c, bytes);
+				tmp = (uint8_t *)Memory::shadow(block.addr(), block.size());
+				if(tmp == NULL)
+                    Fatal("Unable to create shadow memory copy");
+                ::memset(tmp + objectOff + off, c, bytes);
+				Memory::unshadow(tmp, block.size());
                 ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
-                ret = object.memsetAccelerator(block, s + off - block.addr(), c, bytes);
+                ret = object.memsetAccelerator(block, unsigned(s + off - block.addr()), c, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
