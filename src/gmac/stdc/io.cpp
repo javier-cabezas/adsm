@@ -31,36 +31,39 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fread == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
-    size_t n = size * nmemb;
 
-    gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
     gmac::Mode *dstMode = proc.owner(buf);
 
-    if(dstMode == NULL) {
-        gmac::exitGmac();
-        return  __libc_fread(buf, size, nmemb, stream);
-    }
+    if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
+
+    gmac::enterGmac();
 	
     gmac::trace::Thread::io();
     gmacError_t err;
+    size_t n = size * nmemb;
     size_t ret = 0;
-    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
+
+    unsigned off = 0;
+    size_t bufferSize = paramPageSize > size ? paramPageSize : size;
+    gmac::IOBuffer *buffer = proc.createIOBuffer(bufferSize);
+
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
     size_t left = n;
-    off_t  off  = 0;
+    buffer->lock();
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
 		ret += elems;
-        err = manager.fromIOBuffer((char *)buf + off, *buffer,  size * elems);
+        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer,  size * elems);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
         left -= (size * elems);
-        off  += (off_t)(size * elems);
+        off  += unsigned(size * elems);
+        gmac::util::Logger::TRACE("%zd bytes read", elems * size);
     }
     proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
@@ -90,7 +93,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
     size_t ret = 0;
 
-    off_t  off  = 0;
+    unsigned off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
     gmac::IOBuffer *buffer = proc.createIOBuffer(bufferSize);
 
@@ -99,18 +102,19 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
     buffer->lock();
     while (left != 0) {
-        size_t bytes = left < bufferSize ? left : bufferSize;
-        gmac::util::Logger::TRACE("Filling I/O buffer from device %p with %zd bytes (%zd)", (const char *)buf + off, bytes, size);
-        err = manager.toIOBuffer(*buffer, (const char *)buf + off, bytes);
+        size_t bytes = left < buffer->size()? left : buffer->size();
+        err = manager.toIOBuffer(*buffer, (const uint8_t *)buf + off, bytes);
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
-        size_t __ret = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
-        ret += __ret;
+        size_t elems = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
+        ret += elems;
         
-        left -= bytes;
-        off  += (off_t) bytes;
+        left -= size * elems;
+        off  += unsigned(size * elems);
+
+        gmac::util::Logger::TRACE("%zd bytes written", elems * size);
     }
     proc.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();

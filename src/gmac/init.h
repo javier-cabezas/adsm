@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #if defined(GMAC_DLL)
 #include "config/common.h"
 #include "util/Lock.h"
+#include "util/Logger.h"
 #include "util/Private.h"
 
 namespace gmac {
@@ -74,6 +75,7 @@ inline void enterGmac()
 {
     _inGmacLock->lockRead();
     _inGmac.set(&_gmacCode);
+    util::Logger::TRACE("enterGMAC");
 }
 
 void enterGmacExclusive() GMAC_LOCAL;
@@ -82,12 +84,14 @@ inline void enterGmacExclusive()
 {
     _inGmacLock->lockWrite();
     _inGmac.set(&_gmacCode);
+    util::Logger::TRACE("enterGMAC exclusive");
 }
 
 void exitGmac() GMAC_LOCAL;
 
 inline void exitGmac()
 {
+    gmac::util::Logger::TRACE("exitGMAC exclusive");
     _inGmac.set(&_userCode);
     _inGmacLock->unlock();
 }
