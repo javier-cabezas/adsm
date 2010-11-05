@@ -118,6 +118,7 @@ void *Buddy::get(size_t &size)
     unlock();
     if(off < 0) return NULL;
     trace("Returning address at offset %d", off);
+    size = realSize;
     return (uint8_t *)addr_ + off;
 }
 
