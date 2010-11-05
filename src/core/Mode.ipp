@@ -78,7 +78,9 @@ inline void Mode::inc()
 inline void Mode::destroy()
 {
     count_--;
-    if(count_ == 0) delete this;
+    if(count_ == 0) {
+        delete this;
+    }
 }
 
 inline unsigned Mode::id() const

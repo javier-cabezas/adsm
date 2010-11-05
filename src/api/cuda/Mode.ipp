@@ -34,6 +34,23 @@ Mode::execute(gmac::KernelLaunch & launch)
 }
 
 inline
+IOBuffer *Mode::createIOBuffer(size_t size)
+{
+    if(ioMemory_ == NULL) return NULL;
+    void *addr = ioMemory_->get(size);
+    if(addr == NULL) return NULL;
+    return new IOBuffer(*this, addr, size);
+}
+
+inline
+void Mode::destroyIOBuffer(IOBuffer *buffer)
+{
+    assertion(ioMemory_ != NULL);
+    ioMemory_->put(buffer->addr(), buffer->size());
+    delete buffer;
+}
+
+inline
 gmacError_t Mode::bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
 {
     util::Logger::trace("Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);

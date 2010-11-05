@@ -117,8 +117,6 @@ protected:
     static size_t TotalMemory_;
 
     Process();
-    core::allocator::Buddy *ioMemory_;
-
 public:
     virtual ~Process();
 
@@ -126,15 +124,12 @@ public:
     void finiThread();
 #define ACC_AUTO_BIND -1
     Mode * createMode(int acc = ACC_AUTO_BIND);
-    void removeMode(Mode &mode);
+    void removeMode(Mode *mode);
 
 #ifndef USE_MMAP
     gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
     gmacError_t globalFree(memory::DistributedObject &object);
 #endif
-
-    IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(IOBuffer *buffer);
 
     void *translate(void *addr);
     inline const void *translate(const void *addr) {

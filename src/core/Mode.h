@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "core/Accelerator.h"
 #include "core/Context.h"
+#include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
 #include "memory/Bitmap.h"
@@ -86,6 +87,8 @@ protected:
 
     memory::Map map_;
 
+    core::allocator::Buddy *ioMemory_;
+
     bool releasedObjects_;
 #ifdef USE_VM
     memory::vm::Bitmap *_bitmap;
@@ -104,13 +107,16 @@ protected:
     virtual Context &getContext() = 0;
 
 	gmacError_t error_;
+
+    void cleanUpContexts();
 public:
     Mode(Process &proc, Accelerator &acc);
-    ~Mode();
 	Mode &operator =(const Mode &) {
         Fatal("Assigment of modes is not supported");
         return *this;
     }
+    virtual ~Mode();
+
     void release();
 
     static void init();
@@ -170,6 +176,8 @@ public:
 	/*!  \brief Waits for kernel execution */
 	gmacError_t sync();
 
+    virtual IOBuffer *createIOBuffer(size_t size) = 0;
+    virtual void destroyIOBuffer(IOBuffer *) = 0;
     virtual gmacError_t bufferToAccelerator(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
 
