@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 
 
-namespace gmac { namespace kernel { namespace allocator {
+namespace gmac { namespace core { namespace allocator {
 
 class GMAC_LOCAL Buddy : public util::Logger, protected util::Lock  {
 protected:

@@ -196,7 +196,7 @@ Mode *Process::createMode(int acc)
 
     lockWrite();
     if(ioMemory_ == NULL)
-        ioMemory_ = new kernel::allocator::Buddy(accs_.size() * paramIOMemory);
+        ioMemory_ = new core::allocator::Buddy(accs_.size() * paramIOMemory);
     unlock();
     return mode;
 }

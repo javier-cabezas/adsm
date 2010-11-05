@@ -117,7 +117,7 @@ protected:
     static size_t TotalMemory_;
 
     Process();
-    kernel::allocator::Buddy *ioMemory_;
+    core::allocator::Buddy *ioMemory_;
 
 public:
     virtual ~Process();
