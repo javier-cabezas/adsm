@@ -23,7 +23,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 	gmac::Accelerator(n), device_(device),
     _ctx(NULL)
 {
-#if CUDA_VERSION > 3000
+#if CUDA_VERSION > 3010
     size_t size = 0;
 #else
     unsigned int size = 0;
@@ -320,7 +320,7 @@ void Accelerator::memInfo(size_t *free, size_t *total) const
     if (!free)  free  = &fakeFree;
     if (!total) total = &fakeTotal;
 
-#if CUDA_VERSION > 3000
+#if CUDA_VERSION > 3010
     CUresult ret = cuMemGetInfo(free, total);
 #else
     CUresult ret = cuMemGetInfo((unsigned int *)free, (unsigned int *)total);
