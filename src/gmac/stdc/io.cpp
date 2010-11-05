@@ -44,7 +44,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
     size_t ret = 0;
 
-    unsigned off = 0;
+    off_t off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
     gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(bufferSize);
 
@@ -62,8 +62,8 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         gmac::util::Logger::ASSERTION(err == gmacSuccess);
 
         left -= (size * elems);
-        off  += unsigned(size * elems);
-        gmac::util::Logger::TRACE("%zd bytes read", elems * size);
+        off  += (off_t)(size * elems);
+		gmac::util::Logger::TRACE("%zd bytes read", elems * size);
     }
     gmac::Mode::current().destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
@@ -93,7 +93,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t n = size * nmemb;
     size_t ret = 0;
 
-    unsigned off = 0;
+    off_t  off  = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
     gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(bufferSize);
 
@@ -112,9 +112,8 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         ret += elems;
         
         left -= size * elems;
-        off  += unsigned(size * elems);
-
-        gmac::util::Logger::TRACE("%zd bytes written", elems * size);
+        off  += (off_t) (size * elems);
+		gmac::util::Logger::TRACE("%zd bytes written", elems * size);
     }
     gmac::Mode::current().destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
