@@ -26,7 +26,6 @@ Context::init()
 {
 }
 
-
 gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 {
     trace::Function::start("Context", "copyToAccelerator");

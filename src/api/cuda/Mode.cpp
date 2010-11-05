@@ -30,17 +30,30 @@ Mode::Mode(Process &proc, Accelerator &acc) :
         }
 #endif
     }
+
+    void *addr = NULL;
+    gmacError_t ret = hostAlloc(&addr, paramIOMemory);
+    if(ret == gmacSuccess)
+        ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
+
     switchOut();
 }
 
 Mode::~Mode()
 {
+    // We need to ensure that contexts are destroyed before the Mode
+    cleanUpContexts();
+
     ModuleVector::const_iterator m;
     switchIn();
 #ifdef USE_MULTI_CONTEXT
     accelerator().destroyModules(modules);
     modules.clear();
 #endif
+    if(ioMemory_ != NULL) {
+        hostFree(ioMemory_->addr());
+        delete ioMemory_;
+    }
     switchOut();
 }
 

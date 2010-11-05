@@ -1,5 +1,4 @@
 add_subdirectory(memory)
-add_subdirectory(allocator)
 
 set(api_lib_SRC
     cuda.cpp driver.cpp compat.cpp)

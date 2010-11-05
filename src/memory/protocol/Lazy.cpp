@@ -572,8 +572,7 @@ gmacError_t
 Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
-    Process &p = Process::getInstance();
-    IOBuffer *buffer = p.createIOBuffer(count); 
+    IOBuffer *buffer = Mode::current().createIOBuffer(count); 
     if (!buffer) {
         void *tmp = Memory::map(NULL, count, GMAC_PROT_READWRITE);
         CFatal(tmp != NULL, "Unable to set memory permissions");
@@ -591,7 +590,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
         if (ret != gmacSuccess) return ret;
         ret = buffer->wait();
         if (ret != gmacSuccess) return ret;
-        p.destroyIOBuffer(buffer);
+        Mode::current().destroyIOBuffer(buffer);
     }
     return gmacSuccess;
 }

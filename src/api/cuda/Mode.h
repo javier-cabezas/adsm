@@ -94,6 +94,8 @@ public:
 
 	gmacError_t execute(gmac::KernelLaunch &launch);
 
+    IOBuffer *createIOBuffer(size_t size);
+    void destroyIOBuffer(IOBuffer *buffer);
     gmacError_t bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
     gmacError_t acceleratorToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
 

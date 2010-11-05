@@ -54,9 +54,6 @@ protected:
     uint8_t index(register uint32_t x) const;
     uint32_t round(register uint32_t x) const;
 
-    void initMemory();
-    void finiMemory();
-
     typedef std::list<off_t> List;
     typedef std::map<uint8_t, List> Tree;
 
@@ -64,9 +61,10 @@ protected:
     off_t getFromList(uint8_t i);
     void putToList(off_t addr, uint8_t i);
 public:
-    Buddy(size_t size);
+    Buddy(void *addr, size_t size);
     ~Buddy();
 
+    inline void *addr() const { return addr_; }
     void *get(size_t &size);
     void put(void *addr, size_t size);
 };

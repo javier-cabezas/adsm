@@ -4,17 +4,17 @@
 
 namespace gmac { namespace core { namespace allocator {
 
-Buddy::Buddy(size_t size) :
+Buddy::Buddy(void *addr, size_t size) :
     util::Lock("Buddy"),
+    addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))
 {
-    initMemory();
+    _tree[index_].push_back(0);
 }
 
 Buddy::~Buddy()
 {
-    finiMemory();
     _tree.clear();
 }
 
