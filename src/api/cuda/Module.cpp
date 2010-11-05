@@ -24,7 +24,7 @@ VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, boo
 Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
     VariableDescriptor(v.name(), v.key(), v.constant())
 {
-#if CUDA_VERSION > 3000
+#if CUDA_VERSION > 3010
     size_t tmp;
 #else
     unsigned int tmp;
