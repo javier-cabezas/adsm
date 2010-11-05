@@ -2,7 +2,7 @@
 
 #include <util/Logger.h>
 
-namespace gmac { namespace kernel { namespace allocator {
+namespace gmac { namespace core { namespace allocator {
 
 Buddy::Buddy(size_t size) :
     util::Lock("Buddy"),
