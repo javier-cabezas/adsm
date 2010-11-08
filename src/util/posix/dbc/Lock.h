@@ -52,7 +52,6 @@ protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
     mutable pthread_t owner_;
-
 public:
     Lock(const char *name);
     virtual ~Lock();
@@ -69,6 +68,8 @@ protected:
     mutable pthread_mutex_t internal_;
     mutable std::set<pthread_t> readers_;
     mutable pthread_t writer_;
+
+    mutable unsigned magic_;
 public:
     RWLock(const char *name);
     virtual ~RWLock();
