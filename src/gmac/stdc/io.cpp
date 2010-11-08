@@ -52,7 +52,6 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
     size_t left = n;
-    buffer->lock();
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
@@ -103,7 +102,6 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
     size_t left = n;
-    buffer->lock();
     while (left != 0) {
         size_t bytes = left < buffer->size()? left : buffer->size();
         err = manager.toIOBuffer(*buffer, (const uint8_t *)buf + off, bytes);
