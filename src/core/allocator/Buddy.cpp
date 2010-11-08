@@ -2,19 +2,19 @@
 
 #include <util/Logger.h>
 
-namespace gmac { namespace kernel { namespace allocator {
+namespace gmac { namespace core { namespace allocator {
 
-Buddy::Buddy(size_t size) :
+Buddy::Buddy(void *addr, size_t size) :
     util::Lock("Buddy"),
+    addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))
 {
-    initMemory();
+    _tree[index_].push_back(0);
 }
 
 Buddy::~Buddy()
 {
-    finiMemory();
     _tree.clear();
 }
 
@@ -118,6 +118,7 @@ void *Buddy::get(size_t &size)
     unlock();
     if(off < 0) return NULL;
     trace("Returning address at offset %d", off);
+    size = realSize;
     return (uint8_t *)addr_ + off;
 }
 

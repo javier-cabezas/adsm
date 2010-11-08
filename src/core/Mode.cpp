@@ -40,6 +40,11 @@ Mode::~Mode()
     contextMap_.clean();
 }
 
+void Mode::cleanUpContexts()
+{
+    contextMap_.clean();
+}
+
 void Mode::finiThread()
 {
     Mode *mode = key.get();
@@ -51,10 +56,9 @@ void Mode::finiThread()
         manager.protocol().toHost(object);
     }
     mode->map_.makeOrphans();
-    Process::getInstance().removeMode(*mode);
 
     memory::Manager::getInstance().removeMode(*mode);
-    delete mode;
+    Process::getInstance().removeMode(mode);
 }
 
 

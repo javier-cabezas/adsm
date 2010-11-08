@@ -69,6 +69,7 @@ protected:
     CUstream streamToHost_;
     CUstream streamAccelerator_;
 
+    Mode &mode_;
     IOBuffer *buffer_;
 
     KernelConfig call_;

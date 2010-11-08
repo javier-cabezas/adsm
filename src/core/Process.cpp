@@ -101,8 +101,7 @@ Process::Process() :
     centralized_("CentralizedMemoryMap"),
     replicated_("ReplicatedMemoryMap"),
     orphans_("OrhpanMemoryMap"),
-    current_(0),
-    ioMemory_(NULL)
+    current_(0)
 {
     memoryInit(paramProtocol, paramAllocator);
 	// Create the private per-thread variables for the implicit thread
@@ -113,9 +112,6 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
-    if(ioMemory_ != NULL && modes_.empty() == false)
-        delete ioMemory_;
-    ioMemory_ = NULL;
 
     memory::ObjectMap::iterator i;
     for(i = orphans_.begin(); i != orphans_.end(); i++) delete i->second;
@@ -194,10 +190,6 @@ Mode *Process::createMode(int acc)
     }
     unlock();
 
-    lockWrite();
-    if(ioMemory_ == NULL)
-        ioMemory_ = new kernel::allocator::Buddy(accs_.size() * paramIOMemory);
-    unlock();
     return mode;
 }
 
@@ -259,37 +251,24 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     return ret;
 }
 
-void Process::removeMode(Mode &mode)
+void Process::removeMode(Mode *mode)
 {
     trace("Adding %zd replicated memory objects", replicated_.size());
     memory::Map::iterator i;
     for(i = replicated_.begin(); i != replicated_.end(); i++) {
         memory::DistributedObject *obj =
                 dynamic_cast<memory::DistributedObject *>(i->second);
-        obj->removeOwner(mode);
+        obj->removeOwner(*mode);
     }
     lockWrite();
-    modes_.remove(mode);
+    modes_.remove(*mode);
+    delete mode;
     unlock();
 }
 
 void Process::addAccelerator(Accelerator *acc)
 {
     accs_.push_back(acc);
-}
-
-IOBuffer *Process::createIOBuffer(size_t size)
-{
-    assertion(ioMemory_ != NULL);
-    void *addr = ioMemory_->get(size);
-    if(addr == NULL) return NULL;
-    return new IOBuffer(Mode::current(), addr, size);
-}
-
-void Process::destroyIOBuffer(IOBuffer *buffer)
-{
-    if(ioMemory_ != NULL) ioMemory_->put(buffer->addr(), buffer->size());
-    delete buffer;
 }
 
 

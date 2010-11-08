@@ -52,7 +52,7 @@ ssize_t read(int fd, void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -67,7 +67,7 @@ ssize_t read(int fd, void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    proc.destroyIOBuffer(buffer);
+    gmac::Mode::current().destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 
@@ -97,7 +97,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = proc.createIOBuffer(paramPageSize);
+    gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -111,7 +111,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         left -= bytes;
         off  += bytes;
     }
-    proc.destroyIOBuffer(buffer);
+    gmac::Mode::current().destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
 	gmac::exitGmac();
 
