@@ -12,6 +12,7 @@ void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
     gmac::Context(acc, mode.id()),
+    mode_(mode),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL)
 {
@@ -20,12 +21,11 @@ Context::Context(Accelerator &acc, Mode &mode) :
 }
 
 Context::~Context()
-{
+{ 
 	// Destroy context's private IOBuffer (if any)
     if(buffer_ != NULL) {
         trace("Destroying I/O buffer");
-    	gmac::Process &proc = gmac::Process::getInstance();
-    	proc.destroyIOBuffer(buffer_);
+    	mode_.destroyIOBuffer(buffer_);
     }
 
     cleanCUstreams();
@@ -85,8 +85,7 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
     trace::Function::start("Context", "copyToAccelerator");
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    gmac::Process &proc = gmac::Process::getInstance();
-    if(buffer_ == NULL) buffer_ = proc.createIOBuffer(paramPageSize);
+    if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);
     if(buffer_ == NULL) {
         trace("Not using pinned memory for transfer");
         trace::Function::end("Context");
@@ -119,8 +118,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
     trace("Transferring %zd bytes from accelerator %p to host %p", size, accAddr, host);
     trace::Function::start("Context", "copyToHost");
     if(size == 0) return gmacSuccess;
-    gmac::Process &proc = gmac::Process::getInstance();
-    if(buffer_ == NULL) buffer_ = proc.createIOBuffer(paramPageSize);
+    if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);
     if(buffer_ == NULL) {
         trace::Function::end("Context");
         return gmac::Context::copyToHost(host, accAddr, size);
