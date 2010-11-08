@@ -50,11 +50,7 @@ void Mode::finiThread()
     Mode *mode = key.get();
     if(mode == NULL) return;
     memory::Manager &manager = memory::Manager::getInstance();
-    memory::Map::iterator i;
-    for(i = mode->map_.begin(); i != mode->map_.end(); i++) {
-        gmac::memory::Object &object = *i->second;
-        manager.protocol().toHost(object);
-    }
+    mode->map_.forEach(manager.protocol(), &gmac::memory::Protocol::toHost);
     mode->map_.makeOrphans();
 
     memory::Manager::getInstance().removeMode(*mode);
@@ -197,13 +193,8 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
-    size_t needed = 0;
+    size_t needed = map_.memorySize();
     acc_->memInfo(&free, NULL);
-    gmac::memory::Map::const_iterator i;
-    for(i = map_.begin(); i != map_.end(); i++) {
-        gmac::memory::Object &object = *i->second;
-        needed += object.size();
-    }
 
     if (needed > free) {
         return gmacErrorInsufficientAcceleratorMemory;
@@ -211,11 +202,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     trace("Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    for(i = map_.begin(); i != map_.end(); i++) {
-        gmac::memory::Object &object = *i->second;
-        manager.protocol().toHost(object);
-        object.free();
-    }
+    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
 
     trace("Cleaning contexts");
     contextMap_.clean();
@@ -226,10 +213,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     acc_->registerMode(*this);
     
     trace("Reallocating objects");
-    for(i = map_.begin(); i != map_.end(); i++) {
-        gmac::memory::Object &object = *i->second;
-        object.realloc(*this);
-    }
+    map_.reallocObjects(*this);
 
     trace("Reloading mode");
     reload();
