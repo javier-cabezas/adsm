@@ -708,12 +708,12 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = unsigned(blockRemainder(block.addr(), block.size(), s + off, count));
-		unsigned blockOff = block.addr() < (s + off) ? unsigned(s - block.addr()) : 0;
+        unsigned bytes = unsigned(blockRemainder(block.addr(), block.size(), s, count));
+        unsigned blockOff = unsigned(s + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
-                ::memset(block.addr() + blockOff, c, bytes);
+                ::memset(s + off, c, bytes);
                 break;
 
             case ReadOnly:
