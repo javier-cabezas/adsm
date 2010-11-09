@@ -370,7 +370,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
         block.lock();
 
         size_t bytes = blockRemainder(block.addr(), block.size(), addr, count);
-        off_t blockOff = (off_t)(addr + off - block.addr());
+        unsigned blockOff = unsigned(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -394,7 +394,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
                 }
                 break;
         }           
-        off += (off_t)bytes;
+        off += unsigned(bytes);
         block.unlock();
         i++;
     } while (off < count);
@@ -721,7 +721,6 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 ::memset(s + off, c, bytes);
 				if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     Fatal("Unable to set memory permissions");
-                ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
