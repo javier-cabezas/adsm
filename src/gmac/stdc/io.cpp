@@ -23,7 +23,6 @@
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
-
 #ifdef __cplusplus
 extern "C"
 #endif

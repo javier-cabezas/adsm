@@ -50,9 +50,9 @@ protected:
     size_t size_;
 
     State state_;
-    Mode &mode_;
+    Mode *mode_;
 public:
-    IOBuffer(Mode &mode, void *addr, size_t size);
+    IOBuffer(void *addr, size_t size);
     virtual ~IOBuffer();
 	IOBuffer &operator =(const IOBuffer &) {
         Fatal("Assigment of I/O buffers is not supported");
@@ -67,8 +67,8 @@ public:
     void unlock();
 
     State state() const;
-    void toHost();
-    void toAccelerator();
+    void toHost(Mode &mode);
+    void toAccelerator(Mode &mode);
 
     gmacError_t wait();
 };

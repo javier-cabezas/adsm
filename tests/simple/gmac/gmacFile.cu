@@ -51,12 +51,21 @@ __global__ void vecMove(float *a, const float *b, size_t size)
 pthread_barrier_t ioAfter;
 pthread_barrier_t ioBefore;
 
+static void
+writeFile(float *v, unsigned nmemb, int it);
+static void
+readFile(float *v, unsigned nmemb, int it);
+
 float *a, *b, *c;
 
 float error1, error2;
 
 void *doTest(void *)
 {
+	gmactime_t s, t;
+    dim3 Db(blockSize);
+    dim3 Dg(vecSize / blockSize);
+
     // Alloc & init input data
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
@@ -70,9 +79,6 @@ void *doTest(void *)
 
     pthread_barrier_wait(&ioBefore);
 
-	gmactime_t s, t;
-    dim3 Db(blockSize);
-    dim3 Dg(vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
 
     for (int i = 0; i < ITERATIONS; i++) {
@@ -87,9 +93,10 @@ void *doTest(void *)
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         pthread_barrier_wait(&ioBefore);
+        pthread_barrier_wait(&ioAfter);
+        //readFile(a, vecSize, i);
         vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
-        pthread_barrier_wait(&ioAfter);
     }
 
 
@@ -105,38 +112,55 @@ void *doTest(void *)
     return &error1;
 }
 
+static void
+setPath(char *name, size_t len, int it)
+{
+    static const char path_base[] = "/tmp/_gmac_file_";
+    memset(name, '\0', len);
+    sprintf(name, "%s%d", path_base, it);
+}
+
+static void
+writeFile(float *v, unsigned nmemb, int it)
+{
+    char path[256];
+    setPath(path, 256, it);
+
+    FILE * f = fopen(path, "wb");
+    assert(f != NULL);
+    assert(fwrite(v, sizeof(float), nmemb, f) == nmemb);
+    fclose(f);
+}
+
+static void
+readFile(float *v, unsigned nmemb, int it)
+{
+    char path[256];
+    setPath(path, 256, it);
+
+    FILE * f = fopen(path, "rb");
+    assert(f != NULL);
+    assert(fread(v, sizeof(float), nmemb, f) == nmemb);
+    fclose(f);
+}
+
 void *doTestIO(void *)
 {
 	gmactime_t s, t;
-    char path_base[] = "/tmp/_gmac_file_";
-    char path[256];
 
     pthread_barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
         pthread_barrier_wait(&ioAfter);
         pthread_barrier_wait(&ioBefore);
-        memset(path, 0, 256);
-        sprintf(path, "%s%d", path_base, i);
-
-        FILE * f = fopen(path, "wb");
-        assert(f != NULL);
-        assert(fwrite(c, sizeof(float), vecSize, f) == vecSize);
-        fclose(f);
+        writeFile(c, vecSize, i);
     }
 
     pthread_barrier_wait(&ioBefore);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
-        memset(path, 0, 256);
-        sprintf(path, "%s%d", path_base, i);
-
-        FILE * f = fopen(path, "rb");
-        assert(f != NULL);
-        assert(fread(a, sizeof(float), vecSize, f) == vecSize);
-        fclose(f);
-
         pthread_barrier_wait(&ioBefore);
+        readFile(a, vecSize, i);
         pthread_barrier_wait(&ioAfter);
     }
 
@@ -164,54 +188,4 @@ int main(int argc, char *argv[])
     pthread_barrier_destroy(&ioBefore);
 
     return *error != 0.f;
-
-#if 0
-    //////////////////////////
-    // Test replicated objects
-    //////////////////////////
-    fprintf(stderr,"REPLICATED OBJECTS\n");
-    getTime(&s);
-    // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
-        CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
-        CUFATAL();
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-    error2 = doTest(a, b, c, orig);
-
-    fC = fopen("vectorC_replicated", "w");
-    fwrite(c, sizeof(float), vecSize, fC);
-    fclose(fC);
-
-    gmacFree(a);
-    gmacFree(b);
-
-    ///////////////////////////
-    // Test centralized objects
-    ///////////////////////////
-    fprintf(stderr,"CENTRALIZED OBJECTS\n");
-    getTime(&s);
-    // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
-        CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
-        CUFATAL();
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-    error3 = doTest(a, b, c, orig);
-
-    fC = fopen("vectorC_centralized", "w");
-    fwrite(c, sizeof(float), vecSize, fC);
-    fclose(fC);
-
-    gmacFree(a);
-    gmacFree(b);
-
-    gmacFree(c);
-    free(orig);
-    return error1 != 0.f && error2 != 0.f && error3 != 0.f;
-#endif
 }
