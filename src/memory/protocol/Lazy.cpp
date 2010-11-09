@@ -495,7 +495,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
                }
                 break;
         }           
-        off += bytes;
+        off += unsigned(bytes);
         block.unlock();
         i++;
     } while (off < count);
@@ -674,7 +674,7 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
         if(ret != gmacSuccess) {
             goto exit_func;
         }
-        off += bytes;
+        off += unsigned(bytes);
         if (blockDst.addr() + bytesDst == blockDst.end()) {
             iDst++;
         }
@@ -706,7 +706,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = blockRemainder(block.addr(), block.size(), s, count);
+        unsigned bytes = unsigned(blockRemainder(block.addr(), block.size(), s, count));
 
         switch(block.state()) {
             case Dirty:
@@ -718,7 +718,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
 				tmp = (uint8_t *)Memory::shadow(block.addr(), block.size());
 				if(tmp == NULL)
                     Fatal("Unable to create shadow memory copy");
-                ::memset(tmp + objectOff + off, c, bytes);
+                ::memset(tmp + objectOff, c, bytes);
 				Memory::unshadow(tmp, block.size());
                 ret = object.toAccelerator(block);
                 break;

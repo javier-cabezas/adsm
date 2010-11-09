@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include <gmac.h>
 
@@ -45,7 +44,7 @@ void *addVector(void *ptr)
 
 	// Call the kernel
 	dim3 Db(blockSize);
-	dim3 Dg(vecSize / blockSize);
+	dim3 Dg(int(vecSize / blockSize));
 	if(vecSize % blockSize) Dg.x++;
 
 	getTime(&s);
