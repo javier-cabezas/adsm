@@ -619,8 +619,8 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
     do {
         SystemBlock<State> &blockDst = *iDst->second;
         SystemBlock<State> &blockSrc = *iSrc->second;
-        blockDst.lock();
         blockSrc.lock();
+        blockDst.lock();
 
         size_t bytesDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, count);
         size_t bytesSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, count);
@@ -654,18 +654,18 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
             case Invalid:
                 switch(blockDst.state()) {
                     case Dirty:
-                        ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
-                                              objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToDirty(objectDst, blockDst, blockOffDst,
+                                                     objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Accelerator memory to host memory AND accelerator memory
                     case ReadOnly:
-                        ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
-                                                 objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToReadOnly(objectDst, blockDst, blockOffDst,
+                                                        objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Host memory to accelerator memory
                     case Invalid:
-                        ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
-                                                objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToInvalid(objectDst, blockDst, blockOffDst,
+                                                       objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                 }
                 break;
