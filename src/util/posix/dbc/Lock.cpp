@@ -49,12 +49,12 @@ RWLock::RWLock(const char *name) :
     state_(Idle),
     writer_(NULL)
 {
-    pthread_mutex_init(&internal_, NULL);
+    ENSURES(pthread_mutex_init(&internal_, NULL) == 0);
 }
 
 RWLock::~RWLock()
 {
-    pthread_mutex_destroy(&internal_);
+    ENSURES(pthread_mutex_destroy(&internal_) == 0);
 }
 
 void RWLock::lockRead() const

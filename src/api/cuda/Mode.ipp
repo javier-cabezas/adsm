@@ -39,7 +39,7 @@ IOBuffer *Mode::createIOBuffer(size_t size)
     if(ioMemory_ == NULL) return NULL;
     void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
-    return new IOBuffer(*this, addr, size);
+    return new IOBuffer(addr, size);
 }
 
 inline

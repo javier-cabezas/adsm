@@ -43,14 +43,20 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 class Mode;
+class Process;
 
 namespace memory {
 class Object;
+class Protocol;
 
 namespace __impl { class Manager; }
 
-class GMAC_LOCAL ObjectMap : protected util::RWLock, public std::map<const void *, Object *> {
+class GMAC_LOCAL ObjectMap : protected util::RWLock, protected std::map<const void *, Object *> {
+public:
+    typedef gmacError_t(Protocol::*ProtocolOp)(const Object &);
 protected:
+    typedef std::map<const void *, Object *> Parent;
+
     friend class Map;
     friend class memory::__impl::Manager;
     Object *mapFind(const void *addr) const;
@@ -58,11 +64,19 @@ protected:
 public:
     ObjectMap(const char *name);
     virtual ~ObjectMap();
+    size_t size() const;
 
     virtual const Object *getObjectRead(const void *addr) const;
     virtual Object *getObjectWrite(const void *addr) const;
 
     virtual void putObject(const Object &obj) const;
+
+    size_t memorySize() const;
+    void forEach(Protocol &p, ProtocolOp op);
+    void freeObjects(Protocol &p, ProtocolOp op);
+    void reallocObjects(Mode &mode);
+    
+    virtual void cleanAndDestroy();
 };
  
 class GMAC_LOCAL Map : public ObjectMap, public util::Logger {
@@ -82,6 +96,8 @@ public:
 #ifndef USE_MMAP
     void insertReplicated(Object &obj);
     void insertCentralized(Object &obj);
+    static void addOwner(gmac::Process &proc, Mode &mode);
+    static void removeOwner(gmac::Process &proc, Mode &mode);
 #endif
 
     const Object *getObjectRead(const void *addr) const;

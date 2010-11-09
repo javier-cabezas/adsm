@@ -370,7 +370,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
         block.lock();
 
         size_t bytes = blockRemainder(block.addr(), block.size(), addr, count);
-        off_t blockOff = (off_t)(addr + off - block.addr());
+        unsigned blockOff = unsigned(addr + off - block.addr());
 
         switch(block.state()) {
             case Dirty:
@@ -394,7 +394,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
                 }
                 break;
         }           
-        off += (off_t)bytes;
+        off += unsigned(bytes);
         block.unlock();
         i++;
     } while (off < count);
@@ -495,7 +495,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
                }
                 break;
         }           
-        off += unsigned(bytes);
+        off += bytes;
         block.unlock();
         i++;
     } while (off < count);
@@ -572,7 +572,8 @@ gmacError_t
 Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
-    IOBuffer *buffer = Mode::current().createIOBuffer(count); 
+    Mode &mode = Mode::current();
+    IOBuffer *buffer = mode.createIOBuffer(count); 
     if (!buffer) {
         void *tmp = Memory::map(NULL, count, GMAC_PROT_READWRITE);
         CFatal(tmp != NULL, "Unable to set memory permissions");
@@ -590,7 +591,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
         if (ret != gmacSuccess) return ret;
         ret = buffer->wait();
         if (ret != gmacSuccess) return ret;
-        Mode::current().destroyIOBuffer(buffer);
+        mode.destroyIOBuffer(buffer);
     }
     return gmacSuccess;
 }
@@ -618,8 +619,8 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
     do {
         SystemBlock<State> &blockDst = *iDst->second;
         SystemBlock<State> &blockSrc = *iSrc->second;
-        blockDst.lock();
         blockSrc.lock();
+        blockDst.lock();
 
         size_t bytesDst = blockRemainder(blockDst.addr(), blockDst.size(), dst, count);
         size_t bytesSrc = blockRemainder(blockSrc.addr(), blockSrc.size(), src, count);
@@ -653,18 +654,18 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
             case Invalid:
                 switch(blockDst.state()) {
                     case Dirty:
-                        ret = copyHostToDirty(objectDst, blockDst, blockOffDst,
-                                              objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToDirty(objectDst, blockDst, blockOffDst,
+                                                     objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Accelerator memory to host memory AND accelerator memory
                     case ReadOnly:
-                        ret = copyHostToReadOnly(objectDst, blockDst, blockOffDst,
-                                                 objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToReadOnly(objectDst, blockDst, blockOffDst,
+                                                        objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                     // Host memory to accelerator memory
                     case Invalid:
-                        ret = copyHostToInvalid(objectDst, blockDst, blockOffDst,
-                                                objectSrc, blockSrc, blockOffSrc, bytes);
+                        ret = copyAcceleratorToInvalid(objectDst, blockDst, blockOffDst,
+                                                       objectSrc, blockSrc, blockOffSrc, bytes);
                         break;
                 }
                 break;
@@ -701,7 +702,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
     uint8_t * s = object.addr() + objectOff;
     i = object.getBlockIterator(s);
     assert(i != map.end());
-    uint8_t *tmp = NULL;
+    
     do {
         SystemBlock<State> &block = *i->second;
         block.lock();

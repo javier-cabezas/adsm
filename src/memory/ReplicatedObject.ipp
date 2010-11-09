@@ -161,7 +161,6 @@ inline gmacError_t ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, un
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 {
-    util::RWLock::lockWrite();
     void *accAddr = NULL;
     gmacError_t ret;
     ret = mode.malloc(&accAddr, StateObject<T>::size_, (unsigned)paramPageSize);
@@ -186,14 +185,12 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 #endif
 
     trace("Adding replicated object @ %p to mode %p", accAddr, &mode);
-    util::RWLock::unlock();
     return ret;
 }
 
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
 {
-    util::RWLock::lockWrite();
     typename AcceleratorMap::iterator i = accelerators_.find(&mode);
     Object::assertion(i != accelerators_.end());
     AcceleratorBlock *acc = i->second;
@@ -204,7 +201,6 @@ inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
     bitmap.removeRange(acc->addr(), StateObject<T>::size_);
 #endif
     delete acc;
-    util::RWLock::unlock();
     return ret;
 }
 

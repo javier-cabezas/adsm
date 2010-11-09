@@ -4,7 +4,9 @@
 
 #include "Map.h"
 #include "Object.h"
+#include "DistributedObject.h"
 #include "OrphanObject.h"
+#include "Protocol.h"
 
 namespace gmac { namespace memory {
 
@@ -29,6 +31,14 @@ ObjectMap::~ObjectMap()
 {
 }
 
+size_t ObjectMap::size() const
+{
+    lockRead();
+    size_t ret = Parent::size();
+    unlock();
+    return ret;
+}
+
 const Object *ObjectMap::getObjectRead(const void *addr) const
 {
     const Object *ret = NULL;
@@ -45,12 +55,59 @@ Object *ObjectMap::getObjectWrite(const void *addr) const
     return ret;
 }
 
-inline
-void
-ObjectMap::putObject(const Object &obj) const
+void ObjectMap::putObject(const Object &obj) const
 {
     obj.unlock();
 }
+
+size_t ObjectMap::memorySize() const
+{
+    size_t total = 0;
+    const_iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) total += i->second->size();
+    unlock();
+    return total;
+}
+
+void ObjectMap::forEach(Protocol &p, ProtocolOp op)
+{
+    iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) (p.*op)(*i->second);
+    unlock();
+}
+
+void ObjectMap::freeObjects(Protocol &p, ProtocolOp op)
+{
+    iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        (p.*op)(*i->second);
+        i->second->free();
+    }
+    unlock();
+}
+
+void ObjectMap::reallocObjects(Mode &mode)
+{
+    iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) i->second->realloc(mode);
+    unlock();
+}
+
+
+void ObjectMap::cleanAndDestroy()
+{
+    lockWrite();
+    for(iterator i = begin(); i != end(); i++) {
+        delete i->second;
+    }
+    clear();
+    unlock();
+}
+
 
 Map::Map(const char *name, Mode &parent) :
     ObjectMap(name), parent_(parent)
@@ -215,6 +272,37 @@ void Map::insertCentralized(Object &obj)
     centralized.unlock();
     util::Logger::TRACE("Added centralized object @ %p", obj.addr());
 }
+
+void Map::addOwner(gmac::Process &proc, Mode &mode)
+{
+    ObjectMap &replicated = proc.replicated();
+    iterator i;
+    replicated.lockWrite();
+    for(i = replicated.begin(); i != replicated.end(); i++) {
+        i->second->lockWrite();
+        memory::DistributedObject *obj =
+                dynamic_cast<memory::DistributedObject *>(i->second);
+        obj->addOwner(mode);
+        i->second->unlock();
+    }
+    replicated.unlock();
+}
+
+
+void Map::removeOwner(gmac::Process &proc, Mode &mode)
+{
+    ObjectMap &replicated = proc.replicated();
+    iterator i;
+    replicated.lockWrite();
+    for(i = replicated.begin(); i != replicated.end(); i++) {
+        i->second->lockWrite();
+        memory::DistributedObject *obj =
+                dynamic_cast<memory::DistributedObject *>(i->second);
+        obj->removeOwner(mode);
+        i->second->unlock();
+    }
+    replicated.unlock();
+}
 #endif
 
 void Map::makeOrphans()
@@ -233,5 +321,6 @@ void Map::makeOrphans()
 
     clean();
 }
+
 
 }}

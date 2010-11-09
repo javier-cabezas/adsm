@@ -29,7 +29,7 @@ uint8_t Buddy::ones(register uint32_t x) const
     x = (((x >> 4) + x) & 0x0f0f0f0f);
     x += (x >> 8);
     x += (x >> 16);
-    return(x & 0x0000003f);
+    return (x & 0x0000003f);
 }
 
 uint8_t Buddy::index(register uint32_t x) const
@@ -43,7 +43,7 @@ uint8_t Buddy::index(register uint32_t x) const
     x |= (x >> 4);
     x |= (x >> 8);
     x |= (x >> 16);
-    return (uint8_t)(ones(x >> 1) - y);
+    return uint8_t(ones(x >> 1) - y);
 }
 
 uint32_t Buddy::round(register uint32_t x) const

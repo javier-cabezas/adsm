@@ -29,6 +29,7 @@ source_group(${current_GROUP} FILES
     gmacFileVecAdd.cu
     gmacMatrixMul.cu
     gmacMemcpy.cu
+    gmacFile.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -71,9 +72,15 @@ cuda_compile(memcpy gmacMemcpy.cu)
 add_executable(gmacMemcpy ${memcpy} ${common_SRC} gmacMemcpy.cu)
 target_link_libraries(gmacMemcpy gmac)
 
+# gmacFile
+cuda_compile(gfile gmacFile.cu)
+add_executable(gmacFile ${gfile} ${common_SRC})
+target_link_libraries(gmacFile gmac)
+
 # gmacMap
 source_group(${current_GROUP} FILES gmacMap.cu)
 cuda_compile(map gmacMap.cu)
 add_executable(gmacMap ${map} ${common_SRC})
 target_link_libraries(gmacMap gmac)
+
 

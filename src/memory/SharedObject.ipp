@@ -150,7 +150,7 @@ inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff
 template<typename T>
 inline gmacError_t SharedObject<T>::toAccelerator(Block &block) const
 {
-    unsigned off = (unsigned)(block.addr() - StateObject<T>::addr());
+    unsigned off = unsigned(block.addr() - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr(), block.size());
     return ret;
 }
@@ -158,7 +158,7 @@ inline gmacError_t SharedObject<T>::toAccelerator(Block &block) const
 template<typename T>
 inline gmacError_t SharedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
-    unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
+    unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, block.addr() + blockOff, count);
     return ret;
 }
@@ -166,7 +166,7 @@ inline gmacError_t SharedObject<T>::toAccelerator(Block &block, unsigned blockOf
 template<typename T>
 inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void * ptr, size_t count) const
 {
-    unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
+    unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().copyToAccelerator(accBlock_->addr() + off, ptr, count);
 
     return ret;
@@ -175,7 +175,7 @@ inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsig
 template<typename T>
 inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
+    unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, count, bufferOff);
 
     return ret;
