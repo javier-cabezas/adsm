@@ -495,7 +495,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
                }
                 break;
         }           
-        off += bytes;
+        off += unsigned(bytes);
         block.unlock();
         i++;
     } while (off < count);
@@ -702,30 +702,31 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
     uint8_t * s = object.addr() + objectOff;
     i = object.getBlockIterator(s);
     assert(i != map.end());
+	uint8_t *tmp = NULL;
     
     do {
         SystemBlock<State> &block = *i->second;
         block.lock();
 
-        unsigned bytes = unsigned(blockRemainder(block.addr(), block.size(), s, count));
+        unsigned bytes = unsigned(blockRemainder(block.addr(), block.size(), s + off, count));
+		unsigned blockOff = block.addr() < (s + off) ? unsigned(s - block.addr()) : 0;
 
         switch(block.state()) {
             case Dirty:
-                ::memset(s + off, c, bytes);
+                ::memset(block.addr() + blockOff, c, bytes);
                 break;
 
             case ReadOnly:
-                ret = object.memsetAccelerator(block, unsigned(s + off - block.addr()), c, bytes);
+                ret = object.memsetAccelerator(block, blockOff, c, bytes);
 				tmp = (uint8_t *)Memory::shadow(block.addr(), block.size());
 				if(tmp == NULL)
                     Fatal("Unable to create shadow memory copy");
-                ::memset(tmp + objectOff, c, bytes);
+                ::memset(tmp + blockOff, c, bytes);
 				Memory::unshadow(tmp, block.size());
-                ret = object.toAccelerator(block);
                 break;
 
             case Invalid:
-                ret = object.memsetAccelerator(block, unsigned(s + off - block.addr()), c, bytes);
+                ret = object.memsetAccelerator(block, blockOff, c, bytes);
                 if(ret != gmacSuccess) {
                     block.unlock();
                     goto exit_func;
@@ -733,7 +734,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
         }           
         block.unlock();
-        off += (off_t)bytes;
+        off += (off_t)bytes;		
         i++;
     } while (off < count);
 
