@@ -14,7 +14,7 @@ __global__ void reset(long *a, long v)
 int check(long *ptr, int s)
 {
 	int a = 0;
-	for(int i = 0; i < size; i++)
+	for(unsigned i = 0; i < size; i++)
 		a += ptr[i];
 	return a - s;
 }
