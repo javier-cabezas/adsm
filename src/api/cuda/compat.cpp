@@ -185,7 +185,7 @@ static inline CUmemorytype __getMemoryTo(cudaMemcpyKind kind)
 	}
 }
 
-GMAC_API cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
+static cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 		size_t hOffset, const void *src, size_t count)
 {
 	CUDA_ARRAY_DESCRIPTOR desc;
@@ -198,7 +198,7 @@ GMAC_API cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 	return __getCUDAError(r);
 }
 
-cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
+static cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		const void *src, size_t spitch, size_t width, size_t height)
 {
 	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
@@ -225,7 +225,7 @@ cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 
 }
 
-cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
+static cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		CUdeviceptr src, size_t spitch, size_t width, size_t height)
 {
 	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
@@ -258,7 +258,7 @@ extern "C" {
 
 // CUDA Channel related functions
 
-struct cudaChannelFormatDesc CUDARTAPI cudaCreateChannelDesc(int x, int y, int z,
+struct cudaChannelFormatDesc APICALL cudaCreateChannelDesc(int x, int y, int z,
 		int w, enum cudaChannelFormatKind kind)
 {
 	struct cudaChannelFormatDesc desc;
@@ -267,7 +267,7 @@ struct cudaChannelFormatDesc CUDARTAPI cudaCreateChannelDesc(int x, int y, int z
 	return desc;
 }
 
-cudaError_t CUDARTAPI cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
+cudaError_t APICALL cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 		const struct cudaArray *array)
 {
 	gmac::enterGmac();
@@ -290,11 +290,11 @@ cudaError_t CUDARTAPI cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 // CUDA Array related functions
 
 #if CUDA_VERSION >= 3010
-cudaError_t CUDARTAPI cudaMallocArray(struct cudaArray **array,
+cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
 		size_t height, unsigned int /*flags*/)
 #else
-GMAC_API cudaError_t cudaMallocArray(struct cudaArray **array,
+GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 		const struct cudaChannelFormatDesc *desc, size_t width,
 		size_t height)
 #endif
@@ -313,7 +313,7 @@ GMAC_API cudaError_t cudaMallocArray(struct cudaArray **array,
 	return __getCUDAError(r);
 }
 
-cudaError_t CUDARTAPI cudaFreeArray(struct cudaArray *array)
+cudaError_t APICALL cudaFreeArray(struct cudaArray *array)
 {
 	gmac::enterGmac();
     Switch::in();
@@ -323,7 +323,7 @@ cudaError_t CUDARTAPI cudaFreeArray(struct cudaArray *array)
 	return __getCUDAError(r);
 }
 
-cudaError_t CUDARTAPI cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
+cudaError_t APICALL cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t count,
 		enum cudaMemcpyKind kind)
 {
@@ -334,7 +334,7 @@ cudaError_t CUDARTAPI cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 	return ret;
 }
 
-cudaError_t CUDARTAPI cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
+cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t spitch, size_t width,
 		size_t height, enum cudaMemcpyKind kind)
 {
@@ -371,7 +371,7 @@ using gmac::cuda::Mode;
 using gmac::cuda::Module;
 using gmac::cuda::Variable;
 
-cudaError_t CUDARTAPI cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
+cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *src, size_t count,
 		size_t offset, enum cudaMemcpyKind kind)
 {
 	gmac::enterGmac();
@@ -434,7 +434,7 @@ extern "C" {
 #endif
 using gmac::cuda::Texture;
 
-cudaError_t CUDARTAPI cudaBindTextureToArray(const struct textureReference *texref,
+cudaError_t APICALL cudaBindTextureToArray(const struct textureReference *texref,
 		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	gmac::enterGmac();
@@ -477,7 +477,7 @@ cudaError_t CUDARTAPI cudaBindTextureToArray(const struct textureReference *texr
 	return __getCUDAError(r);
 }
 
-cudaError_t CUDARTAPI cudaUnbindTexture(const struct textureReference *texref)
+cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 {
 	gmac::enterGmac();
     Mode &mode = gmac::cuda::Mode::current();
@@ -489,25 +489,25 @@ cudaError_t CUDARTAPI cudaUnbindTexture(const struct textureReference *texref)
 	return __getCUDAError(r);
 }
 
-void CUDARTAPI __cudaTextureFetch(const void * /*tex*/, void * /*index*/, int /*integer*/, void * /*val*/)
+void APICALL __cudaTextureFetch(const void * /*tex*/, void * /*index*/, int /*integer*/, void * /*val*/)
 {
 	gmac::util::Logger::ASSERTION(0);
 }
 
-int CUDARTAPI __cudaSynchronizeThreads(void**, void*)
+int APICALL __cudaSynchronizeThreads(void**, void*)
 {
 	gmac::util::Logger::ASSERTION(0);
     return 0;
 }
 
-void CUDARTAPI __cudaMutexOperation(int /*lock*/)
+void APICALL __cudaMutexOperation(int /*lock*/)
 {
 	gmac::util::Logger::ASSERTION(0);
 }
 
 
 // Events and other stuff needed by CUDA Wrapper
-cudaError_t CUDARTAPI cudaEventCreate(cudaEvent_t *event)
+cudaError_t APICALL cudaEventCreate(cudaEvent_t *event)
 {
 #if CUDA_VERSION >= 2020
     CUresult ret = cuEventCreate((CUevent *)event, CU_EVENT_DEFAULT);
@@ -517,25 +517,25 @@ cudaError_t CUDARTAPI cudaEventCreate(cudaEvent_t *event)
     return __getCUDAError(ret);
 }
 
-cudaError_t CUDARTAPI cudaEventDestroy(cudaEvent_t event)
+cudaError_t APICALL cudaEventDestroy(cudaEvent_t event)
 {
     CUresult ret = cuEventDestroy((CUevent) event);
     return __getCUDAError(ret);
 }
 
-cudaError_t CUDARTAPI cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end)
+cudaError_t APICALL cudaEventElapsedTime(float *ms, cudaEvent_t start, cudaEvent_t end)
 {
     CUresult ret = cuEventElapsedTime(ms, (CUevent)start, (CUevent)end);
     return __getCUDAError(ret);
 }
 
-cudaError_t CUDARTAPI cudaEventQuery(cudaEvent_t event)
+cudaError_t APICALL cudaEventQuery(cudaEvent_t event)
 {
     CUresult ret = cuEventQuery((CUevent) event);
     return __getCUDAError(ret);
 }
 
-cudaError_t CUDARTAPI cudaEventRecord(cudaEvent_t event, cudaStream_t /*stream*/)
+cudaError_t APICALL cudaEventRecord(cudaEvent_t event, cudaStream_t /*stream*/)
 {
     CUresult ret = cuEventRecord((CUevent) event, gmac::cuda::Mode::current().eventStream());
     return __getCUDAError(ret);

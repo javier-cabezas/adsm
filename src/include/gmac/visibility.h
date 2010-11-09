@@ -28,6 +28,7 @@
 #  define GMAC_DLL_LOCAL
 #  define CONSTRUCTOR
 #  define DESTRUCTOR
+#  define APICALL __stdcall
 #else
 #  if __GNUC__ >= 4
 #    define GMAC_DLL_IMPORT __attribute__ ((visibility("default")))
@@ -40,6 +41,7 @@
 #  endif
 #  define CONSTRUCTOR __attribute__((constructor))
 #  define DESTRUCTOR  __attribute__((destructor))
+#  define APICALL
 #endif
 
 /* Now we use the generic helper definitions above to define GMAC_API and

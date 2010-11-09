@@ -84,8 +84,7 @@ gmacUnbind(void * obj, gmacKernel_t k)
 }
 #endif
 
-size_t
-gmacAccs()
+size_t APICALL gmacAccs()
 {
     size_t ret;
 	gmac::enterGmac();
@@ -97,8 +96,7 @@ gmacAccs()
 	return ret;
 }
 
-gmacError_t
-gmacMigrate(int acc)
+gmacError_t APICALL gmacMigrate(int acc)
 {
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
@@ -116,8 +114,7 @@ gmacMigrate(int acc)
 	return ret;
 }
 
-gmacError_t
-gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
+gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
 {
 #ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
@@ -138,8 +135,7 @@ gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
 #endif
 }
 
-gmacError_t
-gmacUnmap(void *cpuPtr, size_t count)
+gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count)
 {
 #ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
@@ -160,8 +156,7 @@ gmacUnmap(void *cpuPtr, size_t count)
 #endif
 }
 
-gmacError_t
-gmacMalloc(void **cpuPtr, size_t count)
+gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
@@ -184,8 +179,7 @@ gmacMalloc(void **cpuPtr, size_t count)
 	return ret;
 }
 
-gmacError_t
-__gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
+gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
 {
 #ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
@@ -205,8 +199,7 @@ __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
 #endif
 }
 
-gmacError_t
-gmacFree(void *cpuPtr)
+gmacError_t APICALL gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
 	gmac::enterGmac();
@@ -221,8 +214,7 @@ gmacFree(void *cpuPtr)
 	return ret;
 }
 
-void *
-gmacPtr(void *ptr)
+void * APICALL gmacPtr(void *ptr)
 {
     void *ret = NULL;
     gmac::enterGmac();
@@ -232,8 +224,7 @@ gmacPtr(void *ptr)
     return ret;
 }
 
-gmacError_t
-gmacLaunch(gmacKernel_t k)
+gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 {
     gmac::enterGmac();
     gmac::Mode &mode = gmac::Mode::current();
@@ -262,8 +253,7 @@ gmacLaunch(gmacKernel_t k)
     return ret;
 }
 
-gmacError_t
-gmacThreadSynchronize()
+gmacError_t APICALL gmacThreadSynchronize()
 {
 	gmac::enterGmac();
     gmac::trace::Function::start("GMAC", "gmacSync");
@@ -278,8 +268,7 @@ gmacThreadSynchronize()
 	return ret;
 }
 
-gmacError_t
-gmacGetLastError()
+gmacError_t APICALL gmacGetLastError()
 {
 	gmac::enterGmac();
 	gmacError_t ret = gmac::Mode::current().error();
@@ -287,8 +276,7 @@ gmacGetLastError()
 	return ret;
 }
 
-void *
-gmacMemset(void *s, int c, size_t n)
+void * APICALL gmacMemset(void *s, int c, size_t n)
 {
     gmac::enterGmac();
     void *ret = s;
@@ -298,8 +286,7 @@ gmacMemset(void *s, int c, size_t n)
     return ret;
 }
 
-void *
-gmacMemcpy(void *dst, const void *src, size_t n)
+void * APICALL gmacMemcpy(void *dst, const void *src, size_t n)
 {
 	gmac::enterGmac();
 	void *ret = dst;
@@ -316,8 +303,7 @@ gmacMemcpy(void *dst, const void *src, size_t n)
 	return ret;
 }
 
-void
-gmacSend(THREAD_T id)
+void APICALL gmacSend(THREAD_T id)
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
@@ -325,8 +311,7 @@ gmacSend(THREAD_T id)
     gmac::exitGmac();
 }
 
-void
-gmacReceive()
+void APICALL gmacReceive()
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
@@ -334,8 +319,7 @@ gmacReceive()
     gmac::exitGmac();
 }
 
-void
-gmacSendReceive(THREAD_T id)
+void APICALL gmacSendReceive(THREAD_T id)
 {
 	gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
@@ -343,8 +327,7 @@ gmacSendReceive(THREAD_T id)
 	gmac::exitGmac();
 }
 
-void
-gmacCopy(THREAD_T id)
+void APICALL gmacCopy(THREAD_T id)
 {
     gmac::enterGmac();
     gmac::Process &proc = gmac::Process::getInstance();
