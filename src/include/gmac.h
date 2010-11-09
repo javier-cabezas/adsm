@@ -73,7 +73,7 @@ extern "C"
 	Returns the number of available accelerators.
     This number can be used to perform a manual context distribution among accelerators
 */
-GMAC_API size_t gmacAccs();
+GMAC_API size_t APICALL gmacAccs();
 
 
 /*!
@@ -82,7 +82,7 @@ GMAC_API size_t gmacAccs();
     Currently only works if this is the first gmac call in the thread.
 	\param acc index of the preferred accelerator
 */
-GMAC_API gmacError_t gmacMigrate(int acc);
+GMAC_API gmacError_t APICALL gmacMigrate(int acc);
 
 /*!
 	Maps a range of CPU memory on the GPU. Both, GPU and CPU,
@@ -90,7 +90,7 @@ GMAC_API gmacError_t gmacMigrate(int acc);
 	\param cpuPtr CPU memory address to be mapped on the GPU
 	\param count  bytes to be allocated
 */
-GMAC_API gmacError_t gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
+GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
 /*!
 	Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
@@ -98,7 +98,7 @@ GMAC_API gmacError_t gmacMap(void *cpuPtr, size_t count, enum GmacProtection pro
 	\param cpuPtr memory address to be unmapped from the GPU
 	\param count  bytes to be allocated
 */
-GMAC_API gmacError_t gmacUnmap(void *cpuPtr, size_t count);
+GMAC_API gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count);
 
 /*!
 	Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
@@ -106,38 +106,38 @@ GMAC_API gmacError_t gmacUnmap(void *cpuPtr, size_t count);
 	\param devPtr memory address to store the address for the allocated memory
 	\param count  bytes to be allocated
 */
-GMAC_API gmacError_t gmacMalloc(void **devPtr, size_t count);
+GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
 
 
 /*!
 	Allocates global memory at all GPUS
 */
 #define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
-GMAC_API gmacError_t __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
+GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
 
 /*!
 	Gets a GPU address
 	\param cpuPtr memory address at the CPU
 */
-GMAC_API void *gmacPtr(void *cpuPtr);
+GMAC_API void * APICALL gmacPtr(void *cpuPtr);
 
 /*!
 	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
 	\param cpuPtr Memory address to free. This address must have been returned
 	by a previous call to gmacMalloc() or gmacSafeMalloc()
 */
-GMAC_API gmacError_t gmacFree(void *cpuPtr);
+GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr);
 
 /*!
 	Launches a kernel execution
 	\param k Handler of the kernel to be executed at the GPU
 */
-GMAC_API gmacError_t gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
 
 /*!
 	Waits until all previous GPU requests have finished
 */
-GMAC_API gmacError_t gmacThreadSynchronize(void);
+GMAC_API gmacError_t APICALL gmacThreadSynchronize(void);
 
 /*!
 	Sets up an argument to be used by the following call to gmacLaunch()
@@ -145,17 +145,17 @@ GMAC_API gmacError_t gmacThreadSynchronize(void);
 	\param size Size, in bytes, of the argument
 	\param offset Offset, in bytes, of the argument in the argument list
 */
-GMAC_API gmacError_t gmacSetupArgument(void *addr, size_t size, size_t offset);
+GMAC_API gmacError_t APICALL gmacSetupArgument(void *addr, size_t size, size_t offset);
 
-GMAC_API gmacError_t gmacGetLastError(void);
+GMAC_API gmacError_t APICALL gmacGetLastError(void);
 
-GMAC_API void *gmacMemset(void *, int, size_t);
-GMAC_API void *gmacMemcpy(void *, const void *, size_t);
+GMAC_API void * APICALL gmacMemset(void *, int, size_t);
+GMAC_API void * APICALL gmacMemcpy(void *, const void *, size_t);
 
-GMAC_API void gmacSend(THREAD_T);
-GMAC_API void gmacReceive(void);
-GMAC_API void gmacSendReceive(THREAD_T);
-GMAC_API void gmacCopy(THREAD_T);
+GMAC_API void APICALL gmacSend(THREAD_T);
+GMAC_API void APICALL gmacReceive(void);
+GMAC_API void APICALL gmacSendReceive(THREAD_T);
+GMAC_API void APICALL gmacCopy(THREAD_T);
 
 #ifdef __cplusplus
 #include <cassert>
@@ -181,9 +181,9 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
 
 #ifdef __cplusplus
 template<typename T> 
-GMAC_API inline T *gmacPtr(T *devPtr);
+inline T * gmacPtr(T *devPtr);
 
-template<typename T> inline T *gmacPtr(T *devPtr) {
+template<typename T> inline T * gmacPtr(T *devPtr) {
 	return (T *)gmacPtr((void *)devPtr);
 }
 #endif

@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 
+#include <ctime>
 #include <cstdlib>
 #include <list>
 
@@ -66,7 +67,7 @@ TEST_F(BuddyTest, RandomAllocations) {
 
     typedef std::map<void *, size_t> AllocMap;
     AllocMap map;
-    srand(time(NULL));
+    srand(unsigned(time(NULL)));
     for(int i = 0; i < Allocations; i++) {
         // Generate a random size to be allocated
         size_t s = 0;
@@ -84,11 +85,11 @@ TEST_F(BuddyTest, RandomAllocations) {
         if(freeMemory > MinMemory) continue;
 
         int n = int(map.size() * rand() / (RAND_MAX + 1.0));
-        AllocMap::iterator i = map.begin();
-        for(; n > 0; n--, i++);
-        buddy.put(i->first, i->second);
-        freeMemory += i->second;
-        map.erase(i);
+        AllocMap::iterator b = map.begin();
+        for(; n > 0; n--, b++);
+        buddy.put(b->first, b->second);
+        freeMemory += b->second;
+        map.erase(b);
     }
 
 }

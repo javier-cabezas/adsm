@@ -1,3 +1,4 @@
+add_subdirectory(gmac)
 set(gmac_config_SRC
     gmac.h)
 
