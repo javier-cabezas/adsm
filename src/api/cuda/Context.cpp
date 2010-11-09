@@ -103,7 +103,7 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
         memcpy(buffer_->addr(), (uint8_t *)host + offset, len);
         trace::Function::end("Context");
         assertion(len <= paramPageSize);
-        buffer_->toAccelerator();
+        buffer_->toAccelerator(mode_);
         ret = accelerator().copyToAcceleratorAsync((uint8_t *)dev + offset, buffer_->addr(), len, streamToAccelerator_);
         assertion(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
@@ -131,7 +131,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
     while(offset < size) {
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
-        buffer_->toHost();
+        buffer_->toHost(mode_);
         ret = accelerator().copyToHostAsync(buffer_->addr(), (uint8_t *)accAddr + offset, len, streamToHost_);
         assertion(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
@@ -191,7 +191,7 @@ gmacError_t Context::bufferToAccelerator(void * dst, IOBuffer &buffer, size_t le
     gmacError_t ret = waitForBuffer(buffer);
     if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
-    buffer.toAccelerator();
+    buffer.toAccelerator(mode_);
     ret = accelerator().copyToAcceleratorAsync(dst, (char *) buffer.addr() + off, bytes, streamToAccelerator_);
     trace::Function::end("Context");
     return ret;
@@ -202,10 +202,9 @@ gmacError_t Context::acceleratorToBuffer(IOBuffer &buffer, const void * src, siz
     trace::Function::start("Context", "acceleratorToBuffer");
     gmacError_t ret = waitForBuffer(buffer);
     if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
-    buffer.toHost();
+    buffer.toHost(mode_);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
     ret = accelerator().copyToHostAsync((char *) buffer.addr() + off, src, bytes, streamToHost_);
-    if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
     trace::Function::end("Context");
     return ret;
 }
