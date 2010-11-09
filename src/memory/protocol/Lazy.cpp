@@ -734,7 +734,7 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
                 break;
         }           
         block.unlock();
-        off += (off_t)bytes;		
+        off += unsigned(bytes);		
         i++;
     } while (off < count);
 
