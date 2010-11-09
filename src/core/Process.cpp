@@ -112,10 +112,7 @@ Process::Process() :
 Process::~Process()
 {
     trace("Cleaning process");
-
-    memory::ObjectMap::iterator i;
-    for(i = orphans_.begin(); i != orphans_.end(); i++) delete i->second;
-    orphans_.clear();
+    orphans_.cleanAndDestroy();
 
     // TODO: Why is this lock necessary?
     std::list<Mode *>::iterator c;
@@ -182,12 +179,8 @@ Mode *Process::createMode(int acc)
     mode->attach();
 
     trace("Adding %zd replicated memory objects", replicated_.size());
-    memory::Map::iterator i;
-    for(i = replicated_.begin(); i != replicated_.end(); i++) {
-        memory::DistributedObject *obj =
-                dynamic_cast<memory::DistributedObject *>(i->second);
-        obj->addOwner(*mode);
-    }
+    memory::Map::addOwner(*this, *mode);
+
     unlock();
 
     return mode;
@@ -254,12 +247,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
 void Process::removeMode(Mode *mode)
 {
     trace("Adding %zd replicated memory objects", replicated_.size());
-    memory::Map::iterator i;
-    for(i = replicated_.begin(); i != replicated_.end(); i++) {
-        memory::DistributedObject *obj =
-                dynamic_cast<memory::DistributedObject *>(i->second);
-        obj->removeOwner(*mode);
-    }
+    memory::Map::removeOwner(*this, *mode);
     lockWrite();
     modes_.remove(*mode);
     delete mode;
