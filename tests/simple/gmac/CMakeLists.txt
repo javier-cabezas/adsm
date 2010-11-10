@@ -72,6 +72,11 @@ cuda_compile(memcpy gmacMemcpy.cu)
 add_executable(gmacMemcpy ${memcpy} ${common_SRC} gmacMemcpy.cu)
 target_link_libraries(gmacMemcpy gmac)
 
+# gmacMemset
+cuda_compile(memset gmacMemset.cu)
+add_executable(gmacMemset ${memset} ${common_SRC} gmacMemset.cu)
+target_link_libraries(gmacMemset gmac)
+
 # gmacFile
 cuda_compile(gfile gmacFile.cu)
 add_executable(gmacFile ${gfile} ${common_SRC})
