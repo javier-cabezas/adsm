@@ -51,10 +51,6 @@
 #include <cstring>
 #include <cmath>
 
-extern "C" {
-#include <pthread.h>
-}
-
 // includes, project
 #include <gmac.h>
 
@@ -72,17 +68,17 @@ const char * HAStr = "GMAC_HA";
 const char * WBStr = "GMAC_WB";
 const char * HBStr = "GMAC_HB";
 
-const size_t nIterDefault = 4;
-const size_t WADefault = (40 * BLOCK_SIZE); // Matrix A width
-const size_t HADefault = (40 * BLOCK_SIZE); // Matrix A height
-const size_t WBDefault = (40 * BLOCK_SIZE); // Matrix B width
-const size_t HBDefault = (40 * BLOCK_SIZE); // Matrix B height
+const int nIterDefault = 4;
+const int WADefault = (40 * BLOCK_SIZE); // Matrix A width
+const int HADefault = (40 * BLOCK_SIZE); // Matrix A height
+const int WBDefault = (40 * BLOCK_SIZE); // Matrix B width
+const int HBDefault = (40 * BLOCK_SIZE); // Matrix B height
 
-static size_t nIter = 0;
-static size_t WA = 0; // Matrix A width
-static size_t HA = 0; // Matrix A height
-static size_t WB = 0; // Matrix B width
-static size_t HB = 0; // Matrix B height
+static int nIter = 0;
+static int WA = 0; // Matrix A width
+static int HA = 0; // Matrix A height
+static int WB = 0; // Matrix B width
+static int HB = 0; // Matrix B height
 
 #define WC WB  // Matrix C width 
 #define HC HA  // Matrix C height
@@ -150,7 +146,7 @@ matrixMulThread(void * ptr)
 
 float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned elemsC)
 {
-    pthread_t * threads = new pthread_t[nIter];
+    thread_t * threads = new thread_t[nIter];
 	param * params = new param[nIter];
 
     gmactime_t s, t;
@@ -166,13 +162,13 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
 	getTime(&t);
 	printTime(&s, &t, "Init: ", "\n");
 
-    for (unsigned n = 0; n < nIter; n++) {
+    for (int n = 0; n < nIter; n++) {
 		params[n].i = n;
-		pthread_create(&threads[n], NULL, matrixMulThread, &(params[n]));
+		threads[n] = thread_create(matrixMulThread, &(params[n]));
 	}
 
-	for (unsigned n = 0; n < nIter; n++) {
-		pthread_join(threads[n], NULL);
+	for (int n = 0; n < nIter; n++) {
+		thread_wait(threads[n]);
 	}
 
     // compute reference solution
@@ -183,7 +179,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     float* reference = (float *) malloc(sizeC * nIter);
     computeGold(reference, A, B, HA, WA, WB);
 
-    for (unsigned n = 0; n < nIter; n++) {
+    for (int n = 0; n < nIter; n++) {
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
     }
 
@@ -195,7 +191,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     // clean up memory
     free(reference);
 
-    for (unsigned n = 0; n < nIter; n++) {
+    for (int n = 0; n < nIter; n++) {
         assert(gmacFree(params[n].ptr) == gmacSuccess);
     }
 
@@ -211,11 +207,11 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
 int
 main(int argc, char** argv)
 {
-	setParam<size_t>(&nIter, nIterStr, nIterDefault);
-	setParam<size_t>(&WA, WAStr, WADefault);
-	setParam<size_t>(&HA, HAStr, HADefault);
-	setParam<size_t>(&WB, WBStr, WBDefault);
-	setParam<size_t>(&HB, HBStr, HBDefault);
+	setParam<int>(&nIter, nIterStr, nIterDefault);
+	setParam<int>(&WA, WAStr, WADefault);
+	setParam<int>(&HA, HAStr, HADefault);
+	setParam<int>(&WB, WBStr, WBDefault);
+	setParam<int>(&HB, HBStr, HBDefault);
 
     if (nIter == 0) {
         fprintf(stderr, "Error: nIter should be greater than 0\n");
