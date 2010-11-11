@@ -39,6 +39,8 @@ else()
     set(CUDA_64_BIT_DEVICE_CODE OFF)
 endif()
 
+set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd} ${common_SRC} gmacVecAdd.cu)
