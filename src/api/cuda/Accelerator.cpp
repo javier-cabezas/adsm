@@ -192,7 +192,11 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     gmac::trace::Function::start("Accelerator","malloc");
     assertion(addr != NULL);
     *addr = NULL;
+#if CUDA_VERSION >= 3020
     size_t gpuSize = size;
+#else
+	unsigned gpuSize = unsigned(size);
+#endif
     if(align > 1) {
         gpuSize += align;
     }
@@ -245,14 +249,26 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
     pushContext();
     if(size % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
-        ret = cuMemsetD32(gpuAddr(addr), seed, size / 4);
-    }
-    else if(size % 2) {
+#if CUDA_VERSION >= 3020
+		ret = cuMemsetD32(gpuAddr(addr), seed, size / 4);
+#else
+		ret = cuMemsetD32(gpuAddr(addr), seed, unsigned(size / 4));
+#endif
+    } else if(size % 2) {
 		short s = (short) c & 0xffff;
         short seed = s | (s << 8);
+#if CUDA_VERSION >= 3020
         ret = cuMemsetD16(gpuAddr(addr), seed, size / 2);
-    }
-    else ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
+#else
+		ret = cuMemsetD16(gpuAddr(addr), seed, unsigned(size / 2));
+#endif
+    } else {
+#if CUDA_VERSION >= 3020
+		ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
+#else
+		ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), unsigned(size));
+#endif
+	}
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);

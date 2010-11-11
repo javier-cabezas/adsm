@@ -185,21 +185,36 @@ static inline CUmemorytype __getMemoryTo(cudaMemcpyKind kind)
 	}
 }
 
+#if CUDA_VERSION >= 3020
 static cudaError_t __cudaMemcpyToArray(CUarray array, size_t wOffset,
 		size_t hOffset, const void *src, size_t count)
+#else
+static cudaError_t __cudaMemcpyToArray(CUarray array, unsigned wOffset,
+		unsigned hOffset, const void *src, unsigned count)
+#endif
 {
 	CUDA_ARRAY_DESCRIPTOR desc;
     Switch::in();
 	CUresult r = cuArrayGetDescriptor(&desc, array);
 	if(r != CUDA_SUCCESS) return __getCUDAError(r);
-	size_t offset = hOffset * desc.Width + wOffset;
+#if CUDA_VERSION >= 3020
+	size_t
+#else
+	unsigned
+#endif
+		offset = hOffset * desc.Width + wOffset;
 	r = cuMemcpyHtoA(array, offset, src, count);
     Switch::out();
 	return __getCUDAError(r);
 }
 
+#if CUDA_VERSION >= 3020
 static cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		const void *src, size_t spitch, size_t width, size_t height)
+#else
+static cudaError_t __cudaMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffset,
+		const void *src, unsigned spitch, unsigned width, unsigned height)
+#endif
 {
 	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
@@ -225,8 +240,13 @@ static cudaError_t __cudaMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 
 }
 
+#if CUDA_VERSION >= 3020
 static cudaError_t __cudaInternalMemcpy2D(CUarray dst, size_t wOffset, size_t hOffset,
 		CUdeviceptr src, size_t spitch, size_t width, size_t height)
+#else
+static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffset,
+		CUdeviceptr src, unsigned spitch, unsigned width, unsigned height)
+#endif
 {
 	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
@@ -300,7 +320,13 @@ GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 #endif
 {
 	CUDA_ARRAY_DESCRIPTOR cuDesc;
-	cuDesc.Width = width; cuDesc.Height = height;
+#if CUDA_VERSION >= 3020
+	cuDesc.Width = width;
+	cuDesc.Height = height;
+#else
+	cuDesc.Width = unsigned(width);
+	cuDesc.Height = unsigned(height);
+#endif
 	cuDesc.Format = __getChannelFormatKind(desc);
 	cuDesc.NumChannels = __getNumberOfChannels(desc);
 	gmac::util::Logger::TRACE("cudaMallocArray: %zd %zd with format 0x%x and %u channels",
@@ -329,7 +355,12 @@ cudaError_t APICALL cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 {
 	gmac::util::Logger::ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
+#if CUDA_VERSION >= 3020
 	cudaError_t ret = __cudaMemcpyToArray((CUarray)dst, wOffset, hOffset, src, count);
+#else
+	cudaError_t ret = __cudaMemcpyToArray((CUarray)dst, unsigned(wOffset),
+                                                        unsigned(hOffset), src, unsigned(count));
+#endif
 	gmac::exitGmac();
 	return ret;
 }
@@ -344,13 +375,22 @@ cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
     gmac::Process &proc = gmac::Process::getInstance();
     gmac::cuda::Mode *mode = dynamic_cast<gmac::cuda::Mode *>(proc.owner(src));
     if(mode == NULL) {
-        __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width,
-				height);
+#if CUDA_VERSION >= 3020
+        __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width, height);
+#else
+        __cudaMemcpy2D((CUarray)dst, unsigned(wOffset), unsigned(hOffset), src,
+                                     unsigned(spitch),  unsigned(width),
+                                     unsigned(height));
+#endif
     }
     else {
         unsigned long dummy = (unsigned long)proc.translate(src);
-        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width,
-				height);
+#if CUDA_VERSION >= 3020
+        __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
+#else
+        __cudaInternalMemcpy2D((CUarray)dst, unsigned(wOffset), unsigned(hOffset), (CUdeviceptr)(dummy),
+                                             unsigned(spitch),  unsigned(width), unsigned(height));
+#endif
     }
 	gmac::exitGmac();
 	return ret;
@@ -381,14 +421,18 @@ cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *src, size
 	gmac::util::Logger::ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
 	gmac::util::Logger::ASSERTION(variable->size() >= (count + offset));
-	CUdeviceptr ptr = variable->devPtr() + offset;
+	CUdeviceptr ptr = CUdeviceptr(variable->devPtr() + offset);
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
 			gmac::util::Logger::TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
             Switch::in();
-			r = cuMemcpyHtoD(ptr, src, count);
+#if CUDA_VERSION >= 3020
+            r = cuMemcpyHtoD(ptr, src, count);
+#else
+            r = cuMemcpyHtoD(ptr, src, unsigned(count));
+#endif
             Switch::out();
-			ret = __getCUDAError(r);
+            ret = __getCUDAError(r);
             break;
 
 		default:
