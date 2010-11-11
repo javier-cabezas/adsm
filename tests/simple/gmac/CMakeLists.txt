@@ -39,7 +39,9 @@ else()
     set(CUDA_64_BIT_DEVICE_CODE OFF)
 endif()
 
-set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
