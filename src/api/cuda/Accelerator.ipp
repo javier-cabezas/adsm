@@ -52,7 +52,11 @@ gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t s
     gmac::trace::Function::start("Accelerator","copyToAccelerator");
     trace("Copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
+#if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+#else
+	CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, unsigned(size));
+#endif
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -64,7 +68,12 @@ gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, const void *host, siz
     gmac::trace::Function::start("Accelerator","copyToAcceleratorAsync");
     trace("Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
+
+#if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, size, stream);
+#else
+    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, unsigned(size), stream);
+#endif
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -76,7 +85,11 @@ gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
     gmac::trace::Function::start("Accelerator","copyToHost");
     trace("Copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
-    CUresult ret =cuMemcpyDtoH(host, gpuAddr(dev), size);
+#if CUDA_VERSION >= 3020
+    CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+#else
+	CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), unsigned(size));
+#endif
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -88,7 +101,11 @@ gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t siz
     gmac::trace::Function::start("Accelerator","copyToHostAsync");
     trace("Async copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
+#if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
+#else
+	CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), unsigned(size), stream);
+#endif
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
@@ -100,7 +117,11 @@ gmacError_t Accelerator::copyAccelerator(void *dst, const void *src, size_t size
     gmac::trace::Function::start("Accelerator","copyAccelerator");
     trace("Copy accelerator-accelerator: %p -> %p (%zd)", src, dst, size);
     pushContext();
+#if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+#else
+	CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), unsigned(size));
+#endif
     popContext();
     gmac::trace::Function::end("Accelerator");
     return error(ret);
