@@ -79,13 +79,13 @@ target_link_libraries(gmacMemset gmac)
 
 # gmacFile
 cuda_compile(gfile gmacFile.cu)
-add_executable(gmacFile ${gfile} ${common_SRC})
+add_executable(gmacFile ${gfile} ${common_SRC} gmacFile.cu)
 target_link_libraries(gmacFile gmac)
 
 # gmacMap
 source_group(${current_GROUP} FILES gmacMap.cu)
 cuda_compile(map gmacMap.cu)
-add_executable(gmacMap ${map} ${common_SRC})
+add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
 target_link_libraries(gmacMap gmac)
 
 
