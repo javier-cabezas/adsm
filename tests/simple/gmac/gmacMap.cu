@@ -4,12 +4,16 @@
 
 #include <gmac.h>
 
-#if !defined(HAVE_MEMALIGN) && !defined(_MSC_VER)
-#include <sys/mman.h>
-#endif
-
 #include "utils.h"
 #include "debug.h"
+
+#if !defined(_MSC_VER)
+#include <sys/mman.h>
+#include <map>
+
+static std::map<void *, size_t> allocMap;
+#endif
+
 
 const char *vecSizeStr = "GMAC_VECSIZE";
 const size_t vecSizeDefault = 4 * 1024 * 1024;
@@ -34,27 +38,27 @@ __global__ void vecAdd(float *c, const float *a, const float *b, size_t size)
 
 static void *aligned_malloc(size_t size)
 {
-#if defined(HAVE_MEMALIGN)	
-	void *ret = NULL
-	if(posix_memalign(&ret, getpagesize(), size) != 0) return NULL;
-	return ret;
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	return _aligned_malloc(size, info.dwPageSize);
 #else
-	addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS, -1, 0);
+	void *addr = mmap(NULL, size + sizeof(void *), PROT_READ | PROT_WRITE, MAP_ANONYMOUS, -1, 0);
+    if(addr != NULL) allocMap[addr] = size;
+    return addr;
 #endif
 }
 
 static void aligned_free(void *addr)
 {
-#if defined(HAVE_MEMALIGN)
-	free(addr);
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 	_aligned_free(addr);
 #else
-	munmap(addr);
+    std::map<void *, size_t>::iterator i;
+    i = allocMap.find(addr);
+    assert(i != allocMap.end());
+	munmap(addr, i->second);
+    allocMap.erase(i);
 #endif
 }
 
