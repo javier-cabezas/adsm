@@ -4,9 +4,12 @@
 
 #include <gmac.h>
 
+#if !defined(HAVE_MEMALIGN) && !defined(_MSC_VER)
+#include <sys/mman.h>
+#endif
+
 #include "utils.h"
 #include "debug.h"
-
 
 const char *vecSizeStr = "GMAC_VECSIZE";
 const size_t vecSizeDefault = 4 * 1024 * 1024;
@@ -29,6 +32,31 @@ __global__ void vecAdd(float *c, const float *a, const float *b, size_t size)
     c[i] = a[i] + b[i];
 }
 
+static void *aligned_malloc(size_t size)
+{
+#if defined(HAVE_MEMALIGN)	
+	void *ret = NULL
+	if(posix_memalign(&ret, getpagesize(), size) != 0) return NULL;
+	return ret;
+#elif defined(_MSC_VER)
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	return _aligned_malloc(size, info.dwPageSize);
+#else
+	addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS, -1, 0);
+#endif
+}
+
+static void aligned_free(void *addr)
+{
+#if defined(HAVE_MEMALIGN)
+	free(addr);
+#elif defined(_MSC_VER)
+	_aligned_free(addr);
+#else
+	munmap(addr);
+#endif
+}
 
 int main(int argc, char *argv[])
 {
@@ -47,9 +75,9 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc host data
-    assert((a = (float *)valloc(vecBytes)) != NULL);
-    assert((b = (float *)valloc(vecBytes)) != NULL);
-    assert((c = (float *)valloc(vecBytes)) != NULL);
+    assert((a = (float *)aligned_malloc(vecBytes)) != NULL);
+    assert((b = (float *)aligned_malloc(vecBytes)) != NULL);
+    assert((c = (float *)aligned_malloc(vecBytes)) != NULL);
     getTime(&t);
     printTime(&s, &t, "Host alloc: ", "\n");
 
@@ -110,9 +138,9 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "Error: %f\n", error);
 
-    free(a);
-	free(b);
-	free(c);
+    aligned_free(a);
+	aligned_free(b);
+	aligned_free(c);
 
     return error != 0;
 }
