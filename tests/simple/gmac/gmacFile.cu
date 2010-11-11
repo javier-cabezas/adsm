@@ -62,7 +62,6 @@ float error1, error2;
 
 void *doTest(void *)
 {
-	gmactime_t s, t;
     dim3 Db(blockSize);
     dim3 Dg(vecSize / blockSize);
 
@@ -146,8 +145,6 @@ readFile(float *v, unsigned nmemb, int it)
 
 void *doTestIO(void *)
 {
-	gmactime_t s, t;
-
     pthread_barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
@@ -169,7 +166,6 @@ void *doTestIO(void *)
 
 int main(int argc, char *argv[])
 {
-	gmactime_t s, t;
     pthread_t tid, tidIO;
     float *error;
 
