@@ -22,28 +22,28 @@ const size_t blockSize = 512;
 
 const char *msg = "Done!";
 
-__global__ void vecSet(float *a, size_t size, float val)
+__global__ void vecSet(float *_a, size_t size, float val)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     if(i >= size) return;
 
-    a[i] = float(val);
+    _a[i] = val;
 }
 
-__global__ void vecAccum(float *b, const float *a, size_t size)
+__global__ void vecAccum(float *_b, const float *_a, size_t size)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     if(i >= size) return;
 
-    b[i] += a[i];
+    _b[i] += _a[i];
 }
 
-__global__ void vecMove(float *a, const float *b, size_t size)
+__global__ void vecMove(float *_a, const float *_b, size_t size)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     if(i >= size) return;
 
-    a[i] = b[i];
+    _a[i] = _b[i];
 }
 
 #define ITERATIONS 250
