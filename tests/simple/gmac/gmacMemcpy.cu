@@ -56,6 +56,11 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
     return (ret1 != 0 || ret2 != 0 || ret3 != 0);
 }
 
+static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
+{
+	return gmacMemcpy(dst, src, size);
+}
+
 int main(int argc, char *argv[])
 {
 	long *ptr;
@@ -71,7 +76,7 @@ int main(int argc, char *argv[])
 
     // gmacMemcpy
 	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
-    int res2 = doTest(host, ptr, gmacMemcpy);
+    int res2 = doTest(host, ptr, gmacMemcpyWrapper);
     if (res2 != 0) fprintf(stderr, "Failed!\n");
 	gmacFree(ptr);
 

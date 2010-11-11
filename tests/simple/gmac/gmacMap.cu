@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <sys/mman.h>
-
 #include <gmac.h>
 
 #include "utils.h"
@@ -49,9 +47,9 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc host data
-    assert((a = (float *) mmap(NULL, vecBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)) != NULL);
-    assert((b = (float *) mmap(NULL, vecBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)) != NULL);
-    assert((c = (float *) mmap(NULL, vecBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)) != NULL);
+    assert((a = (float *)valloc(vecBytes)) != NULL);
+    assert((b = (float *)valloc(vecBytes)) != NULL);
+    assert((c = (float *)valloc(vecBytes)) != NULL);
     getTime(&t);
     printTime(&s, &t, "Host alloc: ", "\n");
 
@@ -112,9 +110,9 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "Error: %f\n", error);
 
-    assert(munmap(a, vecBytes) == 0);
-    assert(munmap(b, vecBytes) == 0);
-    assert(munmap(c, vecBytes) == 0);
+    free(a);
+	free(b);
+	free(c);
 
     return error != 0;
 }
