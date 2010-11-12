@@ -31,22 +31,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef TEST_UNIT_INIT_H_
-#define TEST_UNIT_INIT_H_
+#ifndef TEST_UNIT_CORE_ACCELERATOR_H_
+#define TEST_UNIT_CORE_ACCELERATOR_H_
 
-namespace gmac {
-class Accelerator;
-}
+#include "unit/init.h"
+#include "gtest/gtest.h"
 
-extern gmac::Accelerator *Accelerator_;
+class AcceleratorTest : public testing::Test {
+protected:
+    static const int Size_ = 4 * 1024 * 1024;
 
-void InitTrace();
+    static void TearDownTestCase() {
+        FiniAccelerator();
+    }
 
-void InitAccelerator();
-gmac::Accelerator &GetAccelerator();
-void FiniAccelerator();
-
-void InitProcess();
-void FiniProcess();
+	void SetUp() {
+		ASSERT_NO_FATAL_FAILURE(InitAccelerator());
+	}
+};
 
 #endif
