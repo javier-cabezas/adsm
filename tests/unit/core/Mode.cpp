@@ -47,3 +47,17 @@ TEST_F(ModeTest, MemoryCopy) {
     delete[] dst;
     delete[] src;
 }
+
+TEST_F(ModeTest, MemorySet) {
+    void *addr = NULL;
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_ * sizeof(int)));
+    ASSERT_TRUE(addr != NULL);
+    ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5a, Size_ * sizeof(int)));
+
+    int *dst = new int[Size_];
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(dst, addr, Size_ * sizeof(int)));
+    for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
+
+    ASSERT_EQ(gmacSuccess, Mode_->free(addr));
+    delete[] dst;
+}

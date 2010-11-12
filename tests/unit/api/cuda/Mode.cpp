@@ -13,17 +13,4 @@ TEST_F(ModeTest, ModeHostMemory) {
     ASSERT_EQ(gmacSuccess, mode.hostFree(addr));
 }
 
-TEST_F(ModeTest, MemorySet) {
-	Mode &mode = dynamic_cast<Mode &>(*Mode_);
-    void *addr = NULL;
-    ASSERT_EQ(gmacSuccess, mode.malloc(&addr, Size_ * sizeof(int)));
-    ASSERT_TRUE(addr != NULL);
-    ASSERT_EQ(gmacSuccess, mode.memset(addr, 0x5a, Size_ * sizeof(int)));
 
-    int *dst = new int[Size_];
-    ASSERT_EQ(gmacSuccess, mode.copyToHost(dst, addr, Size_ * sizeof(int)));
-    for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
-
-    ASSERT_EQ(gmacSuccess, mode.free(addr));
-    delete[] dst;
-}
