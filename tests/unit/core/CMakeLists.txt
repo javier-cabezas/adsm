@@ -1,5 +1,10 @@
 add_subdirectory(allocator)
 set(core_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/init.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Accelerator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Accelerator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mode.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IOBuffer.cpp)
 
 # Export tests one level up

@@ -129,7 +129,6 @@ Process::~Process()
     for(a = accs_.begin(); a != accs_.end(); a++)
         delete *a;
     accs_.clear();
-    // TODO: Free buddy allocator
     queues_.cleanup();
     memoryFini();
 }
