@@ -47,9 +47,7 @@ public:
 
     const static size_t Size_ = 4 * 1024 * 1024;
 
-    static void SetUpTestCase() {
-        InitProcess();
-    }
+    static void SetUpTestCase();
 
     static void TearDownTestCase() {
         FiniProcess();
