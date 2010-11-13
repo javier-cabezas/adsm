@@ -11,11 +11,14 @@ using gmac::Mode;
 
 Mode *ModeTest::Mode_ = NULL;
 
-TEST_F(ModeTest, ModeCreation) {
+void ModeTest::SetUpTestCase() {
+    InitProcess();
+    if(Mode_ != NULL) return;
     Mode_ = dynamic_cast<Mode *>(Process::getInstance().createMode(0));
     ASSERT_TRUE(Mode_ != NULL);
     Mode_->initThread();
 }
+
 
 TEST_F(ModeTest, ModeCurrent) {
     Mode_->attach();
