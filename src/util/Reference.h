@@ -43,14 +43,14 @@ namespace gmac { namespace util {
 template<typename T>
 class GMAC_LOCAL Reference {
 private:
-    Atomic ref_;
-    unsigned count_;
+    mutable Atomic ref_;
 
 protected:
     Reference();
-
-public:
     virtual ~Reference();
+public:
+    void use() const;
+    void release();
 };
 
 } }
