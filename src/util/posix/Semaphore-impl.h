@@ -1,5 +1,5 @@
-#ifndef __SEMAPHORE_IPP_
-#define __SEMAPHORE_IPP_
+#ifndef GMAC_UTIL_POSIX_SEMAPHORE_IMPL_H_
+#define GMAC_UTIL_POSIX_SEMAPHORE_IMPL_H_
     
 inline void
 Semaphore::post()

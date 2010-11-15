@@ -58,6 +58,6 @@ public:
 
 }}
 
-#include "FileLock.ipp"
+#include "FileLock-impl.h"
 
 #endif

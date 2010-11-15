@@ -1,5 +1,5 @@
-#ifndef GMAC_UTIL_POSIX_PRIVATE_IPP_
-#define GMAC_UTIL_POSIX_PRIVATE_IPP_
+#ifndef GMAC_UTIL_POSIX_PRIVATE_IMPL_H_
+#define GMAC_UTIL_POSIX_PRIVATE_IMPL_H_
 
 #include <cassert>
 
@@ -12,14 +12,6 @@ void Private<T>::init(Private &var)
     assert(pthread_key_create(&var.key_, NULL) == 0);
 }
 
-#if 0
-template <typename T>
-inline
-Private<T>::Private()
-{
-    pthread_key_create(&key_, NULL);
-}
-#endif
 
 template <typename T>
 inline
