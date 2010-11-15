@@ -1,5 +1,5 @@
-#ifndef __UTIL_WINDOWS_SEMAPHORE_IPP_
-#define __UTIL_WINDOWS_SEMAPHORE_IPP_
+#ifndef GMAC_UTIL_WINDOWS_SEMAPHORE_IMPL_H_
+#define GMAC_UTIL_WINDOWS_SEMAPHORE_IMPL_H_
     
 inline void
 Semaphore::post()
