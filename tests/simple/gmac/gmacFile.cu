@@ -5,6 +5,7 @@
 #include <gmac.h>
 
 #include "utils.h"
+#include "barrier.h"
 #include "debug.h"
 
 #ifdef _MSC_VER
@@ -48,8 +49,8 @@ __global__ void vecMove(float *_a, const float *_b, size_t size)
 
 #define ITERATIONS 250
 
-pthread_barrier_t ioAfter;
-pthread_barrier_t ioBefore;
+barrier_t ioAfter;
+barrier_t ioBefore;
 
 static void
 writeFile(float *v, unsigned nmemb, int it);
@@ -76,23 +77,23 @@ void *doTest(void *)
     gmacMemset(a, 0, vecSize * sizeof(float));
     gmacMemset(b, 0, vecSize * sizeof(float));
 
-    pthread_barrier_wait(&ioBefore);
+    barrier_wait(&ioBefore);
 
     if(vecSize % blockSize) Dg.x++;
 
     for (int i = 0; i < ITERATIONS; i++) {
         vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
-        pthread_barrier_wait(&ioAfter);
+        barrier_wait(&ioAfter);
         vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
-        pthread_barrier_wait(&ioBefore);
+        barrier_wait(&ioBefore);
     }
 
-    pthread_barrier_wait(&ioBefore);
+    barrier_wait(&ioBefore);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
-        pthread_barrier_wait(&ioBefore);
-        pthread_barrier_wait(&ioAfter);
+        barrier_wait(&ioBefore);
+        barrier_wait(&ioAfter);
         //readFile(a, vecSize, i);
         vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
@@ -114,7 +115,7 @@ void *doTest(void *)
 static void
 setPath(char *name, size_t len, int it)
 {
-    static const char path_base[] = "/tmp/_gmac_file_";
+    static const char path_base[] = "_gmac_file_";
     memset(name, '\0', len);
     sprintf(name, "%s%d", path_base, it);
 }
@@ -145,20 +146,20 @@ readFile(float *v, unsigned nmemb, int it)
 
 void *doTestIO(void *)
 {
-    pthread_barrier_wait(&ioBefore);
+    barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
-        pthread_barrier_wait(&ioAfter);
-        pthread_barrier_wait(&ioBefore);
+        barrier_wait(&ioAfter);
+        barrier_wait(&ioBefore);
         writeFile(c, vecSize, i);
     }
 
-    pthread_barrier_wait(&ioBefore);
+    barrier_wait(&ioBefore);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
-        pthread_barrier_wait(&ioBefore);
+        barrier_wait(&ioBefore);
         readFile(a, vecSize, i);
-        pthread_barrier_wait(&ioAfter);
+        barrier_wait(&ioAfter);
     }
 
     return &error2;
@@ -166,22 +167,21 @@ void *doTestIO(void *)
 
 int main(int argc, char *argv[])
 {
-    pthread_t tid, tidIO;
-    float *error;
+    thread_t tid, tidIO;
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-    pthread_barrier_init(&ioAfter,  NULL, 2);
-    pthread_barrier_init(&ioBefore, NULL, 2);
+    barrier_init(&ioAfter,2);
+    barrier_init(&ioBefore, 2);
 
-    pthread_create(&tid, NULL, doTest, NULL);
-    pthread_create(&tidIO, NULL, doTestIO, NULL);
+    tid = thread_create(doTest, NULL);
+    tidIO = thread_create(doTestIO, NULL);
 
-    pthread_join(tid, (void **) &error);
-    pthread_join(tidIO, NULL);
+    thread_wait(tid);
+    thread_wait(tidIO);
 
-    pthread_barrier_destroy(&ioAfter);
-    pthread_barrier_destroy(&ioBefore);
+    barrier_destroy(&ioAfter);
+    barrier_destroy(&ioBefore);
 
-    return *error != 0.f;
+    return error2 != 0.f;
 }

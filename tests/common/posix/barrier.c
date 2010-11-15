@@ -1,20 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-
-#include <assert.h>
-#include <errno.h>
-
-
 #include "barrier.h"
-
-#ifndef SEM_R
-#define SEM_R S_IRUSR
-#endif
-
-#ifndef SEM_A
-#define SEM_A S_IWUSR
-#endif
-
 
 void barrier_init(barrier_t *barrier, int value)
 {

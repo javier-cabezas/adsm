@@ -86,7 +86,7 @@ template<typename T>
 static
 void vecAdd(T * c, const T * a, const T * b, uint32_t elems);
 
-#include "utils.ipp"
+#include "utils-impl.h"
 
 inline
 float
