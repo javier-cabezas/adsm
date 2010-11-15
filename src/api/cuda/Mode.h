@@ -124,6 +124,6 @@ public:
 
 }}
 
-#include "Mode.ipp"
+#include "Mode-impl.h"
 
 #endif

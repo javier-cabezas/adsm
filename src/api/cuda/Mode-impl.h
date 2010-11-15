@@ -1,5 +1,5 @@
-#ifndef GMAC_API_CUDA_MODE_IPP_H_
-#define GMAC_API_CUDA_MODE_IPP_H_
+#ifndef GMAC_API_CUDA_MODE_IMPL_H_
+#define GMAC_API_CUDA_MODE_IMPL_H_
 
 #include "core/Process.h"
 

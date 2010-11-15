@@ -106,6 +106,6 @@ public:
 
 }}
 
-#include "Context.ipp"
+#include "Context-impl.h"
 
 #endif

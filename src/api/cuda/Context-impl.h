@@ -1,5 +1,5 @@
-#ifndef GMAC_API_CUDA_CONTEXT_IPP_
-#define GMAC_API_CUDA_CONTEXT_IPP_
+#ifndef GMAC_API_CUDA_CONTEXT_IMPL_H_
+#define GMAC_API_CUDA_CONTEXT_IMPL_H_
 
 #include "Accelerator.h"
 #include "Kernel.h"

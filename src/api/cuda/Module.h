@@ -171,6 +171,6 @@ public:
 
 }}
 
-#include "Module.ipp"
+#include "Module-impl.h"
 
 #endif
