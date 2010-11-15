@@ -1,18 +1,15 @@
-#ifndef __BARRIER_H_
-#define __BARRIER_H_
+#ifndef GMAC_TESTS_COMMON_BARRIER_H_
+#define GMAC_TESTS_COMMON_BARRIER_H_
 
-#include <pthread.h>
+#if defined(POSIX)
+#include "posix/barrier.h"
+#elif defined(WINDOWS)
+#include "windows/barrier.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-    int value;
-    int counter;
-    pthread_cond_t cond;
-    pthread_mutex_t mutex;
-} barrier_t;
 
 void barrier_init(barrier_t *, int);
 void barrier_wait(barrier_t *);
