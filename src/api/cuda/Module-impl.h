@@ -1,5 +1,5 @@
-#ifndef GMAC_API_CUDA_MODULE_IPP_
-#define GMAC_API_CUDA_MODULE_IPP_
+#ifndef GMAC_API_CUDA_MODULE_IMPL_H_
+#define GMAC_API_CUDA_MODULE_IMPL_H_
 
 namespace gmac { namespace cuda {
 
