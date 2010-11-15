@@ -1,14 +1,14 @@
 add_subdirectory(${OS_DIR})
 
 set(util_SRC
-    Lock.h Lock.ipp Lock.cpp
+    Lock.h Lock-impl.h Lock.cpp
     Semaphore.h
     Private.h
-    Parameter.h Parameter.ipp Parameter.cpp Parameter-def.h
-    Logger.h Logger.ipp Logger.cpp
+    Parameter.h Parameter-impl.h Parameter.cpp Parameter-def.h
+    Logger.h Logger-impl.h Logger.cpp
     ReusableObject.h
-    Reference.h
-    Singleton.h Singleton.ipp
+    Reference.h Reference-impl.h
+    Singleton.h Singleton-impl.h
     FileLock.h)
 
 add_gmac_sources(gmac ${util_SRC})

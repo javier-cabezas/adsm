@@ -138,6 +138,6 @@ public:
 
 }}
 
-#include "Logger.ipp"
+#include "Logger-impl.h"
 
 #endif

@@ -31,52 +31,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_LOCK_H_
-#define GMAC_UTIL_LOCK_H_
+#ifndef GMAC_UTIL_ATOMICS_H_
+#define GMAC_UTIL_ATOMICS_H_
 
-#include "config/common.h"
-#include "gmac/paraver.h"
-
-
-namespace gmac { namespace util {
-
-class GMAC_LOCAL ParaverLock {
-protected:
-#ifdef PARAVER
-    static const char *eventName;
-    static const char *exclusiveName;
-
-
-    typedef std::map<std::string, unsigned> LockMap;
-    static unsigned count;
-    static LockMap *map;
-    unsigned id;
-
-    static paraver::EventName *event;
-    static paraver::StateName *exclusive;
-
-    mutable bool exclusive_;
-
-    void setup();
+#if defined(__GNUC__)
+typedef volatile int Atomic;
+#   define AtomicInc(v) __sync_add_and_fetch(&v, 1)
+#   define AtomicDec(v) __sync_sub_and_fetch(&v, 1)
+#elif defined(_MSC_VER)
+typedef volatile LONG Atomic;
+#   define AtomicInc(v) InterlockedIncrement(&v)
+#   define AtonicsDec(v) InterlockedDecrement(&v)
 #endif
-public:
-    ParaverLock(const char *name);
-
-    void enter() const;
-    void locked() const;
-    void done() const;
-    void exit() const;
-};
-
-} }
-
-#if defined(POSIX)
-#include "util/posix/Lock.h"
-#elif defined(WINDOWS)
-#include "util/windows/Lock.h"
-#endif
-
-#include "Lock-impl.h"
-
 
 #endif
