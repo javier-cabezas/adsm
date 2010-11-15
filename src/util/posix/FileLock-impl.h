@@ -1,5 +1,5 @@
-#ifndef __UTIL_POSIX_FILE_LOCK_IPP_
-#define __UTIL_POSIX_FILE_LOCK_IPP_
+#ifndef __UTIL_POSIX_FILE_LOCK_IMPL_H_
+#define __UTIL_POSIX_FILE_LOCK_IMPL_H
 
 #include <sys/file.h>
 #include <errno.h>

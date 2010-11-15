@@ -47,7 +47,6 @@ protected:
     
 public:
     static void init(Private &var);
-    //Private();
 
     void set(const void *value);
     T * get();
@@ -55,6 +54,6 @@ public:
 
 }}
 
-#include "Private.ipp"
+#include "Private-impl.h"
 
 #endif

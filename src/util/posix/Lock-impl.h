@@ -1,5 +1,5 @@
-#ifndef GMAC_UTIL_POSIX_LOCK_IPP_
-#define GMAC_UTIL_POSIX_LOCK_IPP_
+#ifndef GMAC_UTIL_POSIX_LOCK_IMPL_H_
+#define GMAC_UTIL_POSIX_LOCK_IMPL_H_
 
 #include <cassert>
 #include <cstdio>

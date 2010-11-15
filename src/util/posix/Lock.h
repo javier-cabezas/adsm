@@ -75,7 +75,7 @@ protected:
 
 }}}
 
-#include "Lock.ipp"
+#include "Lock-impl.h"
 
 #ifdef USE_DBC
 #include "dbc/Lock.h"
