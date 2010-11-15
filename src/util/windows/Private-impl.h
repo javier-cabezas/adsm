@@ -1,5 +1,5 @@
-#ifndef __UTIL_WINDOWS_PRIVATE_IPP_
-#define __UTIL_WINDOWS_PRIVATE_IPP_
+#ifndef GMAC_UTIL_WINDOWS_PRIVATE_IMPL_H_
+#define GMAC_UTIL_WINDOWS_PRIVATE_IMPL_H_
 
 #include "util/Logger.h"
 
