@@ -32,6 +32,6 @@ public:
 
 }}
 
-#include "Singleton.ipp"
+#include "Singleton-impl.h"
 
 #endif /* SINGLETON_H_ */

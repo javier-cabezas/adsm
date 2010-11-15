@@ -1,5 +1,5 @@
-#ifndef __PARAMS_IPP_
-#define __PARAMS_IPP_
+#ifndef GMAC_UTIL_PARAMETER_IMPL_H_
+#define GMAC_UTIL_PARAMETER_IMPL_H_
 
 #include <cstdio>
 #include <cstdlib>

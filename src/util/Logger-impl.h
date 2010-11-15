@@ -1,5 +1,5 @@
-#ifndef GMAC_UTIL_LOGGER_IPP_
-#define GMAC_UTIL_LOGGER_IPP_
+#ifndef GMAC_UTIL_LOGGER_IMPL_H_
+#define GMAC_UTIL_LOGGER_IMPL_H_
 
 namespace gmac { namespace util {
 

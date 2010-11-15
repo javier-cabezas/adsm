@@ -1,9 +1,5 @@
-/*
- * Singleton.cpp
- *
- *  Created on: Oct 2, 2010
- *      Author: jcabezas
- */
+#ifndef GMAC_UTIL_SINGLETON_IMPL_H_
+#define GMAC_UTIL_SINGLETON_IMPL_H_
 
 #include "Singleton.h"
 
@@ -45,3 +41,5 @@ T& Singleton<T>::getInstance()
 }
 
 }}
+
+#endif
