@@ -4,6 +4,8 @@
 #include <sys/file.h>
 #include <errno.h>
 
+#include "util/Logger.h"
+
 namespace gmac { namespace util {
 
 inline void
@@ -12,7 +14,7 @@ FileLock::lock()
     int ret;
     enter();
     ret = flock(_fd, LOCK_EX);
-    assertion(ret == 0, "Error locking file: %s", strerr(errno));
+    ASSERTION(ret == 0, "Error locking file: %s", strerr(errno));
     locked();
 }
 
@@ -22,7 +24,7 @@ FileLock::unlock()
     int ret;
     exit();
     ret = flock(_fd, LOCK_UN);
-    assertion(ret == 0, "Error unlocking file: %s", strerr(errno));
+    ASSERTION(ret == 0, "Error unlocking file: %s", strerr(errno));
 }
 
 

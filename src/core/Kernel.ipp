@@ -4,7 +4,7 @@
 namespace gmac {
 
 inline
-Argument::Argument(void * ptr, size_t size, off_t offset) :
+Argument::Argument(void * ptr, size_t size, unsigned offset) :
     ptr_(ptr), size_(size), offset_(offset)
 {
 }
@@ -22,7 +22,7 @@ KernelConfig::~KernelConfig()
 }
 
 
-inline off_t
+inline unsigned
 KernelConfig::argsSize() const
 {
     return argsSize_;

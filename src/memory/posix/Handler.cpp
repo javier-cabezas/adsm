@@ -30,8 +30,8 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 #endif
     void * addr = info->si_addr;
 
-	if(!writeAccess) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
-	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
+	if(!writeAccess) TRACE(GLOBAL, "Read SIGSEGV for %p", addr);
+	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	Manager &manager = Manager::getInstance();
@@ -61,19 +61,19 @@ void Handler::setHandler()
     sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(Signum_, &segvAction, &defaultAction) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+		FATAL("sigaction: %s", strerror(errno));
 
 	Handler_ = this;
-	gmac::util::Logger::TRACE("New signal handler programmed");
+	TRACE(GLOBAL, "New signal handler programmed");
 }
 
 void Handler::restoreHandler()
 {
 	if(sigaction(Signum_, &defaultAction, NULL) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+		FATAL("sigaction: %s", strerror(errno));
 
 	Handler_ = NULL;
-	gmac::util::Logger::TRACE("Old signal handler restored");
+	TRACE(GLOBAL, "Old signal handler restored");
 }
 
 

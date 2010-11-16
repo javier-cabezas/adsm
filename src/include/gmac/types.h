@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include <pthread.h>
 typedef pthread_t THREAD_T;
 #define SELF() pthread_self()
+#define FMT_SIZE	   "%zd"
 #if defined(__LP64__) 
 #	define FMT_TID "0x%lx"
 #else
@@ -47,7 +48,6 @@ typedef pthread_t THREAD_T;
 #	else
 #		define FMT_TID "0x%lx"
 #	endif
-#	define FMT_SIZE	   "%zd"
 #endif
 #elif _MSC_VER
 #	include <windows.h>

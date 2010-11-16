@@ -34,10 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_LOGGER_H_
 #define GMAC_UTIL_LOGGER_H_
 
+#include <stdlib.h>
+#include <string.h>
+
 #include <list>
 #include <string>
 #include <cstdarg>
 #include <cassert>
+#include <typeinfo>
 
 #include "config/common.h"
 #include "config/config.h"
@@ -48,6 +52,7 @@ WITH THE SOFTWARE.  */
 #	include <strings.h>
 #	define STRTOK strtok_r
 #	define VSNPRINTF vsnprintf
+#   define VFPRINTF vfprintf
 #	define LOCATION_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #elif defined(_MSC_VER)
 #	define STRTOK strtok_s
@@ -66,16 +71,21 @@ inline static const char *__extract_file_name(const char *file) {
 #define GLOBAL "GMAC"
 #define LOCAL typeid(*this).name()
 
-#if defined(__GNUC__)
-#	define TRACE(name, fmt, ...) gmac::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
-		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
-#elif defined(_MSC_VER)
-#	define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __FUNCTION__, \
-		__extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#if defined(DEBUG)
+#   if defined(__GNUC__)
+#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#   elif defined(_MSC_VER)
+#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __FUNCTION__, \
+		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#   endif
+#   define ASSERTION(c, ...) gmac::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
+#else
+#   define TRACE(...)
+#   define ASSERTION(...)
 #endif
 
 #define WARNING(fmt, ...) gmac::util::Logger::__Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
-#define ASSERTION(c, ...) gmac::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #define FATAL(fmt, ...) gmac::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) gmac::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
@@ -97,10 +107,6 @@ private:
 
     static bool Check(const char *name);
 	static void Log(const char *name, const char *tag, const char *fmt, va_list list);
-
-	Logger();
-	virtual inline ~Logger();
-
     static void Print(const char *tag, const char *name, const char *fmt, va_list list);
 #endif
 public:
@@ -108,8 +114,8 @@ public:
 #ifdef DEBUG
     static void __Trace(const char *name, const char *fmt, ...);  
     static void __Assertion(bool c, const char * cStr, const char *fmt, ...);
-    static void __Warning(const char *fmt, ...);
 #endif
+    static void __Warning(const char *fmt, ...);
     static void __Fatal(const char *fmt, ...);
     static void __CFatal(bool c, const char * cStr, const char *fmt, ...);
 

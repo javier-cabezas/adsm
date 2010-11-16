@@ -15,7 +15,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     }
 }
 
-void KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
+void KernelConfig::pushArgument(const void *arg, size_t size, unsigned offset)
 {
 #if 0
 	if (size == 4) {
@@ -30,7 +30,7 @@ void KernelConfig::pushArgument(const void *arg, size_t size, off_t offset)
     ASSERTION(offset + size < KernelConfig::StackSize_);
 
     memcpy(&stack_[offset], arg, size);
-    argsSize_ = (off_t)(offset + size);
+    argsSize_ = (unsigned)(offset + size);
     push_back(Argument(&stack_[offset], size, offset));
 }
 

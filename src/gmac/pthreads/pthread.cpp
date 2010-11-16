@@ -10,33 +10,16 @@
 
 #include <pthread.h>
 
-#if 0
-class GMAC_LOCAL ThreadLock : public gmac::util::Lock {
-public:
-    ThreadLock() : gmac::util::Lock("Thread") {};
-
-    void lock() { gmac::util::Lock::lock(); }
-    void unlock() { gmac::util::Lock::unlock(); }
-};
-
-static ThreadLock *pLock;
-#endif
 
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
 {
-#if 0
-	pLock = new ThreadLock;
-#endif
 	LOAD_SYM(__pthread_create, pthread_create);
 }
 
 static void __attribute__((destructor())) gmacPthreadFini(void)
 {
-#if 0
-	delete pLock;
-#endif
 }
 
 struct gmac_thread_t {
@@ -44,7 +27,6 @@ struct gmac_thread_t {
 	void *__arg;
 };
 
-//static gmac_thread_t gthread;
 static void *gmac_pthread(void *arg)
 {
     gmac::trace::Thread::start();
@@ -71,7 +53,7 @@ int pthread_create(pthread_t *__restrict __newthread,
 {
 	int ret = 0;
 	gmac::enterGmac();
-    gmac::util::Logger::TRACE("New POSIX thread");
+    TRACE(GLOBAL, "New POSIX thread");
 	gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
 	gthread->__start_routine = __start_routine;
 	gthread->__arg = __arg;
