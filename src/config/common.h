@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_CONFIG_COMMON_H_
 
 #include "config/config.h"
+#include "dbc/types.h"
 
 #ifdef HAVE_STDINT
 #include <stdint.h>
@@ -70,7 +71,8 @@ namespace gmac {
     }
 
     namespace util {
-        namespace __impl { }
+        namespace __impl { 
+		}
     using namespace __impl;
     }
 }

@@ -16,10 +16,10 @@ static FileMap Files;
 
 int Memory::protect(void *addr, size_t count, GmacProtection prot)
 {
-    util::Logger::TRACE("Setting memory permisions to %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
+    TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, (uint8_t *)addr + count);
 	DWORD old = 0;
     BOOL ret = VirtualProtect(addr, count, ProtBits[prot], &old);
-    util::Logger::ASSERTION(ret == TRUE);
+    ASSERTION(ret == TRUE);
     return 0;
 }
 
@@ -49,7 +49,7 @@ void *Memory::map(void *addr, size_t count, GmacProtection prot)
 
 void *Memory::shadow(void *addr, size_t count)
 {
-	util::Logger::TRACE("Getting shadow mapping for %p (%zd bytes)", addr, count);
+	TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", addr, count);
 	FileMapEntry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
 	off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());
@@ -60,7 +60,7 @@ void *Memory::shadow(void *addr, size_t count)
 void Memory::unshadow(void *addr, size_t /*count*/)
 {
 	BOOL ret = UnmapViewOfFile(addr);
-	util::Logger::ASSERTION(ret == TRUE);
+	ASSERTION(ret == TRUE);
 }
 
 

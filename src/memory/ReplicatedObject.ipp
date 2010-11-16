@@ -15,14 +15,14 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     Process &proc = gmac::Process::getInstance();
     Mode &mode = gmac::Mode::current(); 
 	UNREFERENCED_PARAMETER(mode);
-    trace("Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
+    TRACE(LOCAL,"Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
     if(proc.globalMalloc(*this, size) != gmacSuccess) {
-        Object::Fatal("Unable to create replicated object");
+        FATAL("Unable to create replicated object");
         StateObject<T>::addr_ = NULL;
         return;
     }
 
-    trace("Replicated object create @ %p", StateObject<T>::addr_);
+    TRACE(LOCAL,"Replicated object create @ %p", StateObject<T>::addr_);
 }
 
 
@@ -61,7 +61,7 @@ inline void *ReplicatedObject<T>::getAcceleratorAddr(void *addr) const
 {
     unsigned offset = unsigned((uint8_t *) addr - StateObject<T>::addr());
     typename AcceleratorMap::const_iterator i = accelerators_.find(&gmac::Mode::current());
-    Object::assertion(i != accelerators_.end());
+    ASSERTION(i != accelerators_.end());
     void *ret = i->second->addr() + offset;
     return ret;
 }
@@ -75,28 +75,28 @@ inline Mode &ReplicatedObject<T>::owner() const
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toHost(Block &) const
 {
-    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    FATAL("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toHost(Block &, unsigned, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    FATAL("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toHostPointer(Block &, unsigned, void *, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    FATAL("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
 template<typename T>
 inline gmacError_t ReplicatedObject<T>::toHostBuffer(Block &, unsigned, IOBuffer &, unsigned, size_t) const
 {
-    Object::Fatal("Modifications to ReplicatedObjects in the accelerator are forbidden");
+    FATAL("Modifications to ReplicatedObjects in the accelerator are forbidden");
     return gmacErrorInvalidValue;
 }
 
@@ -164,7 +164,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
     void *accAddr = NULL;
     gmacError_t ret;
     ret = mode.malloc(&accAddr, StateObject<T>::size_, (unsigned)paramPageSize);
-    Object::CFatal(ret == gmacSuccess, "Unable to replicate Object");
+    CFATAL(ret == gmacSuccess, "Unable to replicate Object");
 
     AcceleratorBlock *acc = new AcceleratorBlock(mode, accAddr, StateObject<T>::size_);
     accelerators_.insert(typename AcceleratorMap::value_type(&mode, acc));
@@ -184,7 +184,7 @@ inline gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
     bitmap.newRange(accAddr, StateObject<T>::size_);
 #endif
 
-    trace("Adding replicated object @ %p to mode %p", accAddr, &mode);
+    TRACE(LOCAL,"Adding replicated object @ %p to mode %p", accAddr, &mode);
     return ret;
 }
 
@@ -192,7 +192,7 @@ template<typename T>
 inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
 {
     typename AcceleratorMap::iterator i = accelerators_.find(&mode);
-    Object::assertion(i != accelerators_.end());
+    ASSERTION(i != accelerators_.end());
     AcceleratorBlock *acc = i->second;
     accelerators_.erase(i);
     gmacError_t ret = mode.free(acc->addr());

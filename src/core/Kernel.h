@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "memory/ObjectSet.h"
-#include "util/Logger.h"
+
 #include "util/ReusableObject.h"
 
 #include "Descriptor.h"
@@ -59,7 +59,7 @@ public:
 typedef std::vector<Argument> ArgVector;
 
 /// \todo create a pool of objects to avoid mallocs/frees
-class GMAC_LOCAL KernelConfig : public ArgVector, public util::Logger {
+class GMAC_LOCAL KernelConfig : public ArgVector {
 protected:
     static const unsigned StackSize_ = 4096;
 

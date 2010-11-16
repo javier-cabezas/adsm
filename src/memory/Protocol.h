@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "util/Logger.h"
 
 namespace gmac {
 class IOBuffer;
@@ -47,7 +46,7 @@ namespace gmac { namespace memory {
 
 class Object;
 
-class GMAC_LOCAL Protocol : public util::Logger {
+class GMAC_LOCAL Protocol {
 public:
     virtual ~Protocol();
 

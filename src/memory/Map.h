@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Lock.h"
-#include "util/Logger.h"
+
 
 namespace gmac {
 class Mode;
@@ -79,7 +79,7 @@ public:
     virtual void cleanAndDestroy();
 };
  
-class GMAC_LOCAL Map : public ObjectMap, public util::Logger {
+class GMAC_LOCAL Map : public ObjectMap {
 protected:
     void clean();
     Mode &parent_;

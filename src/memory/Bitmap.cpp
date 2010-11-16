@@ -31,8 +31,8 @@ Bitmap::Bitmap(unsigned bits) :
 #endif
     size_ = (1 << (bits - shiftPage_)) * sizeof(T);
 
-    trace("Shift page: %u", shiftPage_);
-    trace("Pages: %u", size_ / sizeof(T));
+    TRACE(LOCAL,"Shift page: %u", shiftPage_);
+    TRACE(LOCAL,"Pages: %u", size_ / sizeof(T));
 
 #ifndef USE_HOSTMAP_VM
     bitmap_ = new T[size_ / sizeof(T)];

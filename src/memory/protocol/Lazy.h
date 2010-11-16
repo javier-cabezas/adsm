@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Protocol.h"
 #include "memory/StateObject.h"
 
-#include "util/Logger.h"
+
 
 namespace gmac {
 
@@ -127,7 +127,7 @@ public:
             SystemBlock<Lazy::State> *block) :
         object(object), block(block) {};
 		Entry &operator =(const Entry &) {
-            gmac::util::Logger::Fatal("Assigment of protocol entries is not supported");
+            FATAL("Assigment of protocol entries is not supported");
             return *this;
         }
 

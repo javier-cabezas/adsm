@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/Lock.h"
 #include "util/Semaphore.h"
-#include "util/Logger.h"
+
 
 namespace gmac {
 
@@ -49,7 +49,7 @@ class Mode;
 /*!
 	\brief Communication Queue
 */
-class GMAC_LOCAL Queue : public util::Logger, public util::Lock {
+class GMAC_LOCAL Queue : public util::Lock {
 protected:
 	typedef std::list<Mode *> Fifo;
 

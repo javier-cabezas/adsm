@@ -17,7 +17,7 @@ inline
 AcceleratorBlock &
 AcceleratorBlock::operator =(const AcceleratorBlock &)
 {
-    Fatal("Assigment of accelerator blocks is not supported");
+    FATAL("Assigment of accelerator blocks is not supported");
     return *this;
 }
 

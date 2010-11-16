@@ -111,7 +111,7 @@ Process::Process() :
 
 Process::~Process()
 {
-    trace("Cleaning process");
+    TRACE(LOCAL,"Cleaning process");
     orphans_.cleanAndDestroy();
 
     // TODO: Why is this lock necessary?
@@ -154,7 +154,7 @@ Mode *Process::createMode(int acc)
     unsigned usedAcc;
 
     if (acc != ACC_AUTO_BIND) {
-        assertion(acc < int(accs_.size()));
+        ASSERTION(acc < int(accs_.size()));
         usedAcc = acc;
     }
     else {
@@ -168,7 +168,7 @@ Mode *Process::createMode(int acc)
         }
     }
 
-    trace("Creatintg Execution Mode on Acc#%d", usedAcc);
+    TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
     Mode *mode = accs_[usedAcc]->createMode(*this);
@@ -177,7 +177,7 @@ Mode *Process::createMode(int acc)
 
     mode->attach();
 
-    trace("Adding %zd replicated memory objects", replicated_.size());
+    TRACE(LOCAL,"Adding %zd replicated memory objects", replicated_.size());
     memory::Map::addOwner(*this, *mode);
 
     unlock();
@@ -225,7 +225,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
 {
     if (acc >= int(accs_.size())) return gmacErrorInvalidValue;
     gmacError_t ret = gmacSuccess;
-    trace("Migrating execution mode");
+    TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
     if (int(mode.accId()) != acc) {
         // Create a new context in the requested accelerator
@@ -237,15 +237,15 @@ gmacError_t Process::migrate(Mode &mode, int acc)
         }
     }
 #else
-    Fatal("Migration not implemented when using mmap");
+    FATAL("Migration not implemented when using mmap");
 #endif
-    trace("Context migrated");
+    TRACE(LOCAL,"Context migrated");
     return ret;
 }
 
 void Process::removeMode(Mode *mode)
 {
-    trace("Adding %zd replicated memory objects", replicated_.size());
+    TRACE(LOCAL,"Adding %zd replicated memory objects", replicated_.size());
     memory::Map::removeOwner(*this, *mode);
     lockWrite();
     modes_.remove(*mode);

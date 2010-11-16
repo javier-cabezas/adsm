@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "memory/Map.h"
-#include "util/Logger.h"
+
 #include "util/Singleton.h"
 
 #include "Queue.h"
@@ -98,7 +98,7 @@ public:
     void erase(THREAD_T id);
 };
 
-class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {
+class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Process>;
 	//friend class Accelerator;

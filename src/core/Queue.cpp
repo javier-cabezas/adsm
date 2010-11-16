@@ -1,7 +1,8 @@
-
 #include "Queue.h"
+#include "util/Logger.h"
 
 namespace gmac {
+
 Queue::Queue(const char *name) :
     util::Lock(name), sem(0)
 {}
@@ -18,7 +19,7 @@ Mode * Queue::pop()
 {
     sem.wait();
     lock();
-    assertion(_queue.empty() == false);
+    ASSERTION(_queue.empty() == false);
     Mode *ret = _queue.front();
     _queue.pop_front();
     unlock();

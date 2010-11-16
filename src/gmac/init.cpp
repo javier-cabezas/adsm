@@ -38,8 +38,8 @@ static void CONSTRUCTOR init(void)
 	enterGmac();
     _gmacInit = 1;
 
-    util::Logger::Create("GMAC");
-    util::Logger::TRACE("Initialiazing GMAC");
+	gmac::util::Logger::Init();
+    TRACE(GLOBAL, "Initialiazing GMAC");
 
 #ifdef PARAVER
     paraver::init = 1;
@@ -59,10 +59,10 @@ static void CONSTRUCTOR init(void)
     stdcInit();
 
 
-    util::Logger::TRACE("Using %s memory manager", paramProtocol);
-    util::Logger::TRACE("Using %s memory allocator", paramAllocator);
+    TRACE(GLOBAL, "Using %s memory manager", paramProtocol);
+    TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
-    util::Logger::TRACE("Initializing process");
+    TRACE(GLOBAL, "Initializing process");
     Process::create<Process>();
     apiInit();
 
@@ -72,11 +72,10 @@ static void CONSTRUCTOR init(void)
 static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
-    gmac::util::Logger::TRACE("Cleaning GMAC");
+    TRACE(GLOBAL, "Cleaning GMAC");
     gmac::Process::destroy();
     delete _inGmacLock;
-    // We do not exitGmac to allow proper stdc function handling
-    gmac::util::Logger::Destroy();
+	// TODO: Clean-up logger
 }
 
 } // namespace gmac

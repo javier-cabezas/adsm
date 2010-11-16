@@ -1,5 +1,5 @@
 #include "Logger.h"
-#include "Lock.h"
+#include "Private.h"
 
 #include <fstream>
 #include <cstring>
@@ -20,93 +20,68 @@ static char *demangle(const char *name)
 }
 #endif
 
-#if defined(__GNUC__)
-#include <strings.h>
-#define STRTOK strtok_r
-#define VSNPRINTF vsnprintf
-#elif defined(_MSC_VER)
-#define STRTOK strtok_s
-#define VSNPRINTF(str, size, format, ap) vsnprintf_s(str, size, size - 1, format, ap)
-static char *strcasestr(const char *haystack, const char *needle)
-{
-	const char *p, *startn = 0, *np = 0;
-	for(p = haystack; *p; p++) {
-		if(np) {
-			if(toupper(*p) == toupper(*np)) {
-				if(!*++np) return (char *)startn;
+#if defined(_MSC_VER)
+	static char *strcasestr(const char *haystack, const char *needle)
+	{
+		const char *p, *startn = 0, *np = 0;
+		for(p = haystack; *p; p++) {
+			if(np) {
+				if(toupper(*p) == toupper(*np)) {
+					if(!*++np) return (char *)startn;
+				}
+				else {
+					np = 0;
+				}
+			} else if (toupper(*p) == toupper(*needle)) {
+				np = needle + 1;
+				startn = p;
 			}
-			else {
-				np = 0;
-			}
-		} else if (toupper(*p) == toupper(*needle)) {
-			np = needle + 1;
-			startn = p;
 		}
+		return 0;
 	}
-	return 0;
-}
 #endif
 
 namespace gmac { namespace util {
 
-
-
-char Logger::Buffer_[Logger::BufferSize_];
-LoggerLock Logger::Lock_;
-
-Logger *Logger::Logger_ = NULL;
-
 #ifdef DEBUG
+bool Logger::Ready_ = false;
 Parameter<const char *> *Logger::Level_ = NULL;
 const char *Logger::DebugString_;
 std::list<std::string> *Logger::Tags_ = NULL;
+Private<char> Logger::Buffer_;    
 #endif
 
-LoggerLock::LoggerLock() :
-    Lock("Logger")
-{}
+Logger::Logger() {}
 
-Logger::Logger(const char *name) :
-    name_(name),
-    active_(false)
-{
-    init();
-}
+Logger::~Logger() {}
 
-Logger::Logger() :
-    name_(NULL),
-    active_(false)
-{
-    init();
-}
-
-void Logger::init()
+void Logger::Init()
 {
 #ifdef DEBUG
-    if(Tags_ == NULL) Tags_ = new std::list<std::string>();
-    if(Level_ == NULL) {
-        Level_ = new Parameter<const char *>(&Logger::DebugString_,
-            "Logger::DebugString_", "none", "GMAC_DEBUG");
-        char *tmp = new char[strlen(DebugString_) + 1];
-        memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
-		char *next = NULL;
-		char *tag = STRTOK(tmp, ", ", &next);
-        while(tag != NULL) {
-            Tags_->push_back(std::string(tag));
-            tag = STRTOK(NULL, ", ", &next);
-        }
-        delete[] tmp;
+	Private<char>::init(Buffer_);
+	Buffer_.set(new char[BufferSize_]);
+
+    Tags_ = new std::list<std::string>();
+    Level_ = new Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
+    char *tmp = new char[strlen(DebugString_) + 1];
+    memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
+	char *next = NULL;
+	char *tag = STRTOK(tmp, ", ", &next);
+    while(tag != NULL) {
+        Tags_->push_back(std::string(tag));
+        tag = STRTOK(NULL, ", ", &next);
     }
+    delete[] tmp;
 
-    if(DebugString_ != NULL && strcasestr(DebugString_, "__all") != NULL)
-        active_ = true;
+	Ready_ = true;
 #endif
 }
 
 #ifdef DEBUG
-bool Logger::check(const char *name) const
+bool Logger::Check(const char *name)
 {
-    if(Tags_ == NULL) return false;
+    if(Ready_ == false) return false;
+	if(name == NULL) return true;
     std::list<std::string>::const_iterator i;
     for(i = Tags_->begin(); i != Tags_->end(); i++) {
         if(strstr(name, i->c_str()) != NULL) return true;
@@ -114,39 +89,24 @@ bool Logger::check(const char *name) const
     return false;
 }
 
-void Logger::log(const char *tag, const char *fmt, va_list list) const
+void Logger::Log(const char *name, const char *tag, const char *fmt, va_list list)
 {
-    char *name = NULL;
-    if(name_ == NULL) name  = demangle(typeid(*this).name());
-    else name = (char *)name_;
-
-    if(active_ == false && check(name) == false) {
-        if(name_ == NULL && name != NULL ) free(name);
-        return;
-    }
-
-    print(tag, fmt, list);
-
-    if(name_ == NULL && name != NULL ) free(name);
+    if(Check(name) == false) return;
+    Print(tag, name, fmt, list);
 }
 #endif
 
-void Logger::__print(const char *tag, const char *fmt, va_list list)  const
+void Logger::Print(const char *tag, const char *name, const char *fmt, va_list list)
 {
-    const char *name = NULL;
-    if(name_ == NULL) name  = demangle(typeid(*this).name());
-    else name = name_;
-
-    
-	VSNPRINTF(Buffer_, BufferSize_, fmt, list);
-    fprintf(stderr,"%s [%s]: %s\n", tag, name, Buffer_);
-}
-
-void Logger::print(const char *tag, const char *fmt, va_list list)  const
-{
-    Lock_.lock();
-    __print(tag, fmt, list);
-    Lock_.unlock();
+	char *buffer = Buffer_.get();
+	if(buffer == NULL) {
+		buffer = new char[BufferSize_];
+		Buffer_.set(buffer);
+	}
+	
+	VSNPRINTF(buffer, BufferSize_, fmt, list);
+	if(name != NULL) fprintf(stderr,"%s [%s]: %s\n", tag, name, buffer);
+	else fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 
 }}

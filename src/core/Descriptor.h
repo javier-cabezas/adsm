@@ -35,12 +35,12 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_DESCRIPTOR_H_
 
 #include "config/common.h"
-#include "util/Logger.h"
+
 
 namespace gmac {
 
 template <typename K>
-class GMAC_LOCAL Descriptor : public util::Logger {
+class GMAC_LOCAL Descriptor {
 protected:
     K key_;
     const char * name_;

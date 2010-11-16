@@ -16,7 +16,7 @@ namespace gmac { namespace memory { namespace __impl {
 
 Manager::Manager()
 {
-    trace("Memory manager starts");
+    TRACE(LOCAL,"Memory manager starts");
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
         protocol_ = new protocol::Lazy((unsigned)paramRollSize);
@@ -25,13 +25,13 @@ Manager::Manager()
         protocol_ = new protocol::Lazy((unsigned)-1);
     }
     else {
-        Fatal("Memory Coherence Protocol not defined");
+        FATAL("Memory Coherence Protocol not defined");
     }
 }
 
 Manager::~Manager()
 {
-    trace("Memory manager finishes");
+    TRACE(LOCAL,"Memory manager finishes");
     delete protocol_;
 }
 
@@ -185,7 +185,7 @@ gmacError_t Manager::release()
     checkBitmapToDevice();
 #endif
     Mode &mode = Mode::current();
-    trace("Releasing Objects");
+    TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
     protocol_->release();
 
@@ -254,7 +254,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
         }
         mode->putObject(*obj);
         off += unsigned(objCount);
-        trace("Copying from obj %p: %zd of %zd", obj->addr(), c, count);
+        TRACE(LOCAL,"Copying from obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
 }
@@ -285,7 +285,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
         }
         mode->putObject(*obj);
         off += unsigned(objCount);
-        trace("Copying to obj %p: %zd of %zd", obj->addr(), c, count);
+        TRACE(LOCAL,"Copying to obj %p: %zd of %zd", obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
 }
@@ -304,7 +304,7 @@ void Manager::checkBitmapToHost()
         for(i = map.begin(); i != map.end(); i++) {
             Object &object = *i->second;
             gmacError_t ret = protocol_->acquireWithBitmap(object);
-            assertion(ret == gmacSuccess);
+            ASSERTION(ret == gmacSuccess);
         }
         map.unlock();
     }
@@ -329,9 +329,9 @@ bool Manager::read(void *addr)
     bool ret = true;
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
-    trace("Read access for object %p", obj->addr());
+    TRACE(LOCAL,"Read access for object %p", obj->addr());
 	gmacError_t err = protocol_->signalRead(*obj, addr);
-    assertion(err == gmacSuccess);
+    ASSERTION(err == gmacSuccess);
     mode.putObject(*obj);
     return ret;
 }
@@ -345,7 +345,7 @@ bool Manager::write(void *addr)
     bool ret = true;
     const Object *obj = mode.getObjectRead(addr);
     if(obj == NULL) return false;
-    trace("Write access for object %p", obj->addr());
+    TRACE(LOCAL,"Write access for object %p", obj->addr());
     if(protocol_->signalWrite(*obj, addr) != gmacSuccess) ret = false;
     mode.putObject(*obj);
     return ret;
@@ -373,35 +373,35 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     const Object *srcObj = NULL;
 	if (dstMode != NULL) {
         dstObj = dstMode->getObjectRead(dst);
-        assertion(dstObj != NULL);
+        ASSERTION(dstObj != NULL);
     }
     if (srcMode != NULL) {
         srcObj = srcMode->getObjectRead(src);
-        assertion(srcObj != NULL);
+        ASSERTION(srcObj != NULL);
     }
 
     gmacError_t err = gmacSuccess;
     if (dstMode == NULL) {	    // From device
 		err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        ASSERTION(err == gmacSuccess);
 	}
     else if(srcMode == NULL) {   // To device
 		err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        ASSERTION(err == gmacSuccess);
     }
     else {
         if (!srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
             ::memcpy(dst, src, n);
         } else if (srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
             err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+            ASSERTION(err == gmacSuccess);
         } else if (!srcObj->isInAccelerator() && dstObj->isInAccelerator()) {
             err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+            ASSERTION(err == gmacSuccess);
         } else {
             err = protocol_->copy(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()),
                                   *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+            ASSERTION(err == gmacSuccess);
         }
 	}
 
@@ -414,7 +414,7 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 #if 0
 	else { // dstCtx != srcCtx
         gmac::Mode *mode = gmac::Mode::current();
-        gmac::util::Logger::ASSERTION(mode != NULL);
+        ASSERTION(mode != NULL);
 
         manager->release((void *)src, n);
         manager->invalidate(dst, n);
@@ -426,10 +426,10 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
         while (left != 0) {
             size_t bytes = left < buffer->size() ? left : buffer->size();
             err = srcMode->bufferToHost(buffer, proc->translate((char *)src + off), bytes);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+            ASSERTION(err == gmacSuccess);
 
             err = dstMode->bufferToDevice(buffer, proc->translate((char *)dst + off), bytes);
-            gmac::util::Logger::ASSERTION(err == gmacSuccess);
+            ASSERTION(err == gmacSuccess);
 
             left -= bytes;
             off  += bytes;
@@ -450,7 +450,7 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
     }
 
     const Object * obj = mode->getObjectRead(s);
-    assertion(obj != NULL);
+    ASSERTION(obj != NULL);
 	if (obj->isInAccelerator() == false) {
         ::memset(s, c, n);
         return gmacSuccess;

@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Map.h"
 
 #include "util/Lock.h"
-#include "util/Logger.h"
+
 #include "util/Private.h"
 
 namespace gmac {
@@ -73,7 +73,7 @@ public:
     gmacError_t sync();
 };
 
-class GMAC_LOCAL Mode : public gmac::util::Logger {
+class GMAC_LOCAL Mode {
     friend class memory::Manager;
 protected:
     static gmac::util::Private<Mode> key;
@@ -112,7 +112,7 @@ protected:
 public:
     Mode(Process &proc, Accelerator &acc);
 	Mode &operator =(const Mode &) {
-        Fatal("Assigment of modes is not supported");
+        FATAL("Assigment of modes is not supported");
         return *this;
     }
     virtual ~Mode();

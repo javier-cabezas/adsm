@@ -37,12 +37,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "util/Logger.h"
-
 #include "Kernel.h"
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include <cuda.h>
 #include <driver_types.h>
@@ -86,7 +85,7 @@ public:
 class Module;
 typedef std::vector<Module *> ModuleVector;
 
-class GMAC_LOCAL ModuleDescriptor : public util::Logger {
+class GMAC_LOCAL ModuleDescriptor {
 	friend class Module;
 
 protected:
@@ -124,7 +123,7 @@ public:
 
 };
 
-class GMAC_LOCAL Module : public util::Logger {
+class GMAC_LOCAL Module {
 protected:
 
 	CUmodule mod_;

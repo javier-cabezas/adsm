@@ -1,120 +1,58 @@
 #ifndef GMAC_UTIL_LOGGER_IMPL_H_
 #define GMAC_UTIL_LOGGER_IMPL_H_
 
+
 namespace gmac { namespace util {
-
-inline
-void Logger::__trace(const char *fmt, ...) const
-{
 #ifdef DEBUG
-    va_list list;
-    va_start(list, fmt);
-    log("TRACE", fmt, list);
-    va_end(list);
-#endif
-}
-
-inline
-void Logger::warning(const char *fmt, ...) const
+inline void Logger::__Trace(const char *name, const char *fmt, ...)
 {
+    if(Ready_ == false) return;
+
     va_list list;
     va_start(list, fmt);
-    print("WARNING", fmt, list);
+    Log(name, "TRACE", fmt, list);
     va_end(list);
 }
 
-
-inline
-void Logger::__assertion(unsigned c, const char *cStr, const char *fmt, ...) const
+inline void Logger::__Assertion(bool c, const char *cStr, const char *fmt, ...)
 {
-#ifdef DEBUG
-    if(c) return;
+    if(c == true || Ready_ == false) return;
     va_list list;
     va_start(list, fmt);
-    Logger_->print(cStr, fmt, list);
+    Print(cStr, NULL, fmt, list);
     va_end(list);
     abort();
-#endif
 }
-
-inline
-void Logger::Create(const char *name)
-{
-    if(Logger_ != NULL) return;
-    Logger_ = new Logger(name);
-}
-
-inline
-void Logger::Destroy()
-{
-#ifdef DEBUG
-    if(Tags_ != NULL) delete Tags_;
-    Tags_ = NULL;
 #endif
 
-    if(Logger_ == NULL) return;
-    delete Logger_;
-    Logger_ = NULL;
-}
-
-inline
-void Logger::__Trace(const char *fmt, ...)
+inline void Logger::__Warning(const char *fmt, ...)
 {
-#ifdef DEBUG
-    if(Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    Logger_->log("TRACE", fmt, list);
-    va_end(list);
-#endif
-}
-
-inline
-void Logger::__Assertion(unsigned c, const char *cStr, const char *fmt, ...)
-{
-#ifdef DEBUG
-    if(c || Logger_ == NULL) return;
-    va_list list;
-    va_start(list, fmt);
-    Logger_->print(cStr, fmt, list);
-    va_end(list);
-    abort();
-#endif
-}
-
-inline
-void Logger::__Warning(const char *fmt, ...)
-{
-    if(Logger_ == NULL) return;
-    va_list list;
-    va_start(list, fmt);
-    Logger_->print("WARNING", fmt, list);
+	VFPRINTF(stderr, fmt, list);
     va_end(list);
 }
 
 
-inline
-void Logger::Fatal(const char *fmt, ...)
+inline void Logger::__Fatal(const char *fmt, ...)
 {
-    if(Logger_ == NULL) return;
     va_list list;
     va_start(list, fmt);
-    Logger_->print("FATAL", fmt, list);
+	VFPRINTF(stderr, fmt, list);
     va_end(list);
     abort();
 }
 
 
-inline
-void Logger::__CFatal(unsigned c, const char *cStr, const char *fmt, ...)
+inline void Logger::__CFatal(bool c, const char *cStr, const char *fmt, ...)
 {
-    if(c || Logger_ == NULL) return;
+    if(c == true) return;
     va_list list;
     va_start(list, fmt);
-    Logger_->print(cStr, fmt, list);
+    VFPRINTF(stderr, fmt, list);
     va_end(list);
     abort();
 }
-
 }}
+
 #endif

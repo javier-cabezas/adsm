@@ -99,7 +99,7 @@ gmac::Context &Mode::getContext()
     gmac::Context *context = contextMap_.find(SELF());
     if(context != NULL) return *context;
     context = new Context(accelerator(), *this);
-    CFatal(context != NULL, "Error creating new context");
+    CFATAL(context != NULL, "Error creating new context");
     contextMap_.add(SELF(), context);
     return *context;
 }

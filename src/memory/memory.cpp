@@ -7,14 +7,14 @@ namespace gmac {
 
 void memoryInit(const char *, const char *)
 {
-	util::Logger::TRACE("Initializing Memory Subsystem");
+	TRACE(GLOBAL, "Initializing Memory Subsystem");
     memory::Manager::create<memory::Manager>();
     memory::Allocator::create<memory::allocator::Slab>();
 }
 
 void memoryFini(void)
 {
-	util::Logger::TRACE("Cleaning Memory Subsystem");
+	TRACE(GLOBAL, "Cleaning Memory Subsystem");
     memory::Allocator::destroy();
     memory::Manager::destroy();
 }

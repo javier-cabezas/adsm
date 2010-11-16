@@ -8,7 +8,7 @@ namespace gmac { namespace memory {
 CentralizedObject::CentralizedObject(size_t size) :
     Object(NULL, size)
 {
-    trace("Creating Centralized Object (%zd bytes)", size_);
+    TRACE(LOCAL,"Creating Centralized Object (%zd bytes)", size_);
 }
 
 
@@ -21,7 +21,7 @@ gmacError_t CentralizedObject::init()
         addr_ = NULL;
         return gmacErrorMemoryAllocation;
     }
-    trace("Centralized Object @ %p initialized", getAcceleratorAddr(addr_));
+    TRACE(LOCAL,"Centralized Object @ %p initialized", getAcceleratorAddr(addr_));
 
     return gmacSuccess;
 }
@@ -29,7 +29,7 @@ gmacError_t CentralizedObject::init()
 void CentralizedObject::fini()
 {
     if(addr_ == NULL) return;
-    trace("Centralized Object @ %p finalized", getAcceleratorAddr(addr_));
+    TRACE(LOCAL,"Centralized Object @ %p finalized", getAcceleratorAddr(addr_));
     gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
     mode.hostFree(addr_);
 }

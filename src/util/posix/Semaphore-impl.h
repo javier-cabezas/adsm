@@ -19,7 +19,7 @@ Semaphore::wait()
     pthread_mutex_lock(&_mutex);
 
     _val--;
-    if(_val < 0)
+    while(_val < 0)
         pthread_cond_wait(&_cond, &_mutex);
 
     pthread_mutex_unlock(&_mutex);

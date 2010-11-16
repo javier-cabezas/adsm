@@ -233,16 +233,16 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     gmac::KernelLaunch &launch = mode.launch(k);
 
     gmacError_t ret = gmacSuccess;
-    gmac::util::Logger::TRACE("Flush the memory used in the kernel");
-    gmac::util::Logger::CFatal(manager.release() == gmacSuccess, "Error releasing objects");
+    TRACE(GLOBAL, "Flush the memory used in the kernel");
+    CFATAL(manager.release() == gmacSuccess, "Error releasing objects");
 
     // Wait for pending transfers
     mode.sync();
-    gmac::util::Logger::TRACE("Kernel Launch");
+    TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
     if(paramAcquireOnWrite) {
-        gmac::util::Logger::TRACE("Invalidate the memory used in the kernel");
+        TRACE(GLOBAL, "Invalidate the memory used in the kernel");
         //manager.invalidate();
     }
 
@@ -259,7 +259,7 @@ gmacError_t APICALL gmacThreadSynchronize()
     gmac::trace::Function::start("GMAC", "gmacSync");
 
 	gmacError_t ret = gmac::Mode::current().sync();
-    gmac::util::Logger::TRACE("Memory Sync");
+    TRACE(GLOBAL, "Memory Sync");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     manager.acquire();
 

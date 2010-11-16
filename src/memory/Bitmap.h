@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include <stddef.h>
 
 #include "config/common.h"
-#include "util/Logger.h"
+
 
 #ifdef USE_VM
 namespace gmac { namespace memory  { namespace vm {

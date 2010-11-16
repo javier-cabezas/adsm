@@ -19,7 +19,7 @@ Semaphore::wait()
     EnterCriticalSection(&mutex_);
 
     val_--;
-    if(val_ < 0)
+    while(val_ < 0)
 		SleepConditionVariableCS(&cond_, &mutex_, INFINITE);
 
     LeaveCriticalSection(&mutex_);

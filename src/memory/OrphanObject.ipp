@@ -31,14 +31,14 @@ inline
 void *
 OrphanObject::getAcceleratorAddr(void *) const
 {
-    Fatal("Trying to get device address from orphan object");
+    FATAL("Trying to get device address from orphan object");
     return NULL;
 }
 
 inline Mode &
 OrphanObject::owner() const
 { 
-    Fatal("Trying to get owner from orphan object");
+    FATAL("Trying to get owner from orphan object");
     return gmac::Mode::current();
 }
 

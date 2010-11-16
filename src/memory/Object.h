@@ -38,14 +38,14 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Lock.h"
-#include "util/Logger.h"
+
 
 #include "memory/Block.h"
 #include "core/Mode.h"
 
 namespace gmac { namespace memory {
 
-class GMAC_LOCAL Object: protected util::RWLock, public util::Logger {
+class GMAC_LOCAL Object: protected util::RWLock {
     friend class Map;
     friend class ObjectMap;
 protected:
