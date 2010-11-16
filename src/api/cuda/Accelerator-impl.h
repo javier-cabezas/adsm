@@ -1,6 +1,8 @@
 #ifndef CUDA_API_CUDA_ACCELERATOR_IMPL_H_
 #define CUDA_API_CUDA_ACCELERATOR_IMPL_H_
 
+#include "util/Logger.h"
+
 #include <cuda.h>
 
 namespace gmac { namespace cuda {

@@ -51,10 +51,6 @@ std::list<std::string> *Logger::Tags_ = NULL;
 Private<char> Logger::Buffer_;    
 #endif
 
-Logger::Logger() {}
-
-Logger::~Logger() {}
-
 void Logger::Init()
 {
 #ifdef DEBUG
@@ -94,7 +90,6 @@ void Logger::Log(const char *name, const char *tag, const char *fmt, va_list lis
     if(Check(name) == false) return;
     Print(tag, name, fmt, list);
 }
-#endif
 
 void Logger::Print(const char *tag, const char *name, const char *fmt, va_list list)
 {
@@ -108,5 +103,7 @@ void Logger::Print(const char *tag, const char *name, const char *fmt, va_list l
 	if(name != NULL) fprintf(stderr,"%s [%s]: %s\n", tag, name, buffer);
 	else fprintf(stderr,"%s: %s\n", tag, buffer);
 }
+
+#endif
 
 }}

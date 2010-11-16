@@ -52,8 +52,8 @@ class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 public:
     void * ptr_;
     size_t size_;
-    off_t  offset_;
-    Argument(void * ptr, size_t size, off_t offset);
+    unsigned  offset_;
+    Argument(void * ptr, size_t size, unsigned offset);
 };
 
 typedef std::vector<Argument> ArgVector;
@@ -64,7 +64,7 @@ protected:
     static const unsigned StackSize_ = 4096;
 
     uint8_t stack_[StackSize_];
-    off_t argsSize_;
+    unsigned argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
@@ -72,8 +72,8 @@ public:
     KernelConfig();
     virtual ~KernelConfig();
 
-    void pushArgument(const void * arg, size_t size, off_t offset);
-    off_t argsSize() const;
+    void pushArgument(const void * arg, size_t size, unsigned offset);
+    unsigned argsSize() const;
 
     uint8_t *argsArray();
 };

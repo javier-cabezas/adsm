@@ -20,6 +20,11 @@ Context::~Context()
     gmac::trace::Thread::end((THREAD_T)id_);
 }
 
+Context &Context::operator =(const Context &)
+{
+    FATAL("Assigment of contexts is not supported");
+    return *this;
+}
 
 void
 Context::init()

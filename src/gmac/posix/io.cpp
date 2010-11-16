@@ -20,7 +20,7 @@ SYM(ssize_t, __libc_write, int, const void *, size_t);
 
 void posixIoInit(void)
 {
-	gmac::util::Logger::TRACE("Overloading I/O POSIX functions");
+	TRACE(GLOBAL, "Overloading I/O POSIX functions");
 	LOAD_SYM(__libc_read, read);
 	LOAD_SYM(__libc_write, write);
 }
@@ -62,7 +62,7 @@ ssize_t read(int fd, void *buf, size_t count)
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
         ret = manager.fromIOBuffer((char *)buf + off, *buffer, bytes);
-        gmac::util::Logger::ASSERTION(ret == gmacSuccess);
+        ASSERTION(ret == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
@@ -105,7 +105,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     while (left != 0) {
         size_t bytes = left < buffer->size() ? left : buffer->size();
         err = manager.toIOBuffer(*buffer, (char *)buf + off, bytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, buffer->addr(), bytes);
 
         left -= bytes;

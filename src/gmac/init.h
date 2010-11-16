@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 
 #include "util/Private.h"
+#include "util/Logger.h"
 
 namespace gmac {
 
