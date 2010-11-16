@@ -34,16 +34,16 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_INIT_H_
 #define TEST_UNIT_INIT_H_
 
-namespace gmac {
+namespace gmac { namespace core {
 class Accelerator;
-}
+} }
 
-extern gmac::Accelerator *Accelerator_;
+extern gmac::core::Accelerator *Accelerator_;
 
 void InitTrace();
 
 void InitAccelerator();
-gmac::Accelerator &GetAccelerator();
+gmac::core::Accelerator &GetAccelerator();
 void FiniAccelerator();
 
 void InitProcess();
