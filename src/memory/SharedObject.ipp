@@ -54,9 +54,9 @@ inline SharedObject<T>::~SharedObject()
 #endif
 
     if (mapped_) {
-        TRACE(LOCAL,"Unmapping Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+        TRACE(LOCAL,"Unmapping Shared Object %p ("FMT_SIZE" bytes)", StateObject<T>::addr_);
     } else {
-        TRACE(LOCAL,"Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+        TRACE(LOCAL,"Destroying Shared Object %p ("FMT_SIZE" bytes)", StateObject<T>::addr_);
     }
 }
 
@@ -80,7 +80,7 @@ SharedObject<T>::init()
         return gmacErrorMemoryAllocation;
     }
 
-    TRACE(LOCAL,"Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
+    TRACE(LOCAL,"Shared Object %p ("FMT_SIZE" bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
     StateObject<T>::setupSystem();
 
     return gmacSuccess;

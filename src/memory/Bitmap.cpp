@@ -50,10 +50,8 @@ void Bitmap::dump()
     static int idx = 0;
     char path[256];
     sprintf(path, "_bitmap__%d", idx++);
-    //printf("Writing %p - %zd\n", bitmap_, _size);
     FILE * file = fopen(path, "w");
-    fwrite(bitmap_, 1, size_, file);
-    //memset(bitmap_, 0, _size);
+    fwrite(bitmap_, 1, size_, file);    
     fclose(file);
 }
 #endif

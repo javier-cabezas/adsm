@@ -50,7 +50,7 @@ inline
 gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyToAccelerator");
-    TRACE(LOCAL,"Copy to accelerator: %p -> %p (%zd)", host, dev, size);
+	TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, dev, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
@@ -66,7 +66,7 @@ inline
 gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, const void *host, size_t size, CUstream stream)
 {
     gmac::trace::Function::start("Accelerator","copyToAcceleratorAsync");
-    TRACE(LOCAL,"Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
+    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, dev, size);
     pushContext();
 
 #if CUDA_VERSION >= 3020
@@ -83,7 +83,7 @@ inline
 gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyToHost");
-    TRACE(LOCAL,"Copy to host: %p -> %p (%zd)", dev, host, size);
+    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", dev, host, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
@@ -99,7 +99,7 @@ inline
 gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream)
 {
     gmac::trace::Function::start("Accelerator","copyToHostAsync");
-    TRACE(LOCAL,"Async copy to host: %p -> %p (%zd)", dev, host, size);
+    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", dev, host, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
@@ -115,7 +115,7 @@ inline
 gmacError_t Accelerator::copyAccelerator(void *dst, const void *src, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyAccelerator");
-    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p (%zd)", src, dst, size);
+    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", src, dst, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);

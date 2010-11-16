@@ -126,7 +126,7 @@ gmacError_t Mode::free(void *addr)
 
 gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to device %p (%zd bytes)", host, dev, size);
+    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", host, dev, size);
     switchIn();
     error_ = getContext().copyToAccelerator(dev, host, size);
     switchOut();
@@ -135,7 +135,7 @@ gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
 
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to host %p (%zd bytes)", dev , host, size);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", dev , host, size);
     switchIn();
     error_ = getContext().copyToHost(host, dev, size);
     switchOut();

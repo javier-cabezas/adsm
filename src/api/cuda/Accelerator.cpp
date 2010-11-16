@@ -216,7 +216,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
-    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - %zd (originally %zd) bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
     gmac::trace::Function::end("Accelerator");
     return error(ret);
 }

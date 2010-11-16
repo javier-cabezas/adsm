@@ -8,7 +8,7 @@ inline SystemBlock<T>::SystemBlock(void *addr, size_t size, T state) :
     Block(addr, size),
     state_(state)
 {
-    TRACE(LOCAL,"Creating system block @ %p with %zd bytes", addr, size);
+    TRACE(LOCAL,"Creating system block @ %p with "FMT_SIZE" bytes", addr, size);
 }
 
 template<typename T>

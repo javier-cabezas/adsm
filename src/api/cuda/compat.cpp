@@ -216,7 +216,7 @@ static cudaError_t __cudaMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffse
 		const void *src, unsigned spitch, unsigned width, unsigned height)
 #endif
 {
-	TRACE(GLOBAL, "cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	TRACE(GLOBAL, "cudaMemcpy2DToArray ("FMT_SIZE" "FMT_SIZE" "FMT_SIZE ")", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -248,7 +248,7 @@ static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigne
 		CUdeviceptr src, unsigned spitch, unsigned width, unsigned height)
 #endif
 {
-	TRACE(GLOBAL, "cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	TRACE(GLOBAL, "cudaMemcpy2DToArray ("FMT_SIZE" "FMT_SIZE " "FMT_SIZE")", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -329,7 +329,7 @@ GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 #endif
 	cuDesc.Format = __getChannelFormatKind(desc);
 	cuDesc.NumChannels = __getNumberOfChannels(desc);
-	TRACE(GLOBAL, "cudaMallocArray: %zd %zd with format 0x%x and %u channels",
+	TRACE(GLOBAL, "cudaMallocArray: "FMT_SIZE" "FMT_SIZE" with format 0x%x and %u channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	gmac::enterGmac();
     Switch::in();
@@ -424,7 +424,7 @@ cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *src, size
 	CUdeviceptr ptr = CUdeviceptr(variable->devPtr() + offset);
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
-			TRACE(GLOBAL, "cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
+			TRACE(GLOBAL, "cudaMemcpyToSymbol HostToDevice %p to 0x%x ("FMT_SIZE" bytes)", src, ptr, count);
             Switch::in();
 #if CUDA_VERSION >= 3020
             r = cuMemcpyHtoD(ptr, src, count);

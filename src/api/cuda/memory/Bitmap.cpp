@@ -35,7 +35,7 @@ Bitmap::syncHost()
     Mode * mode = Mode::current();
 
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
+    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: "FMT_SIZE, (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
     gmacError_t ret;
     //printf("Bitmap toHost\n");
     ret = mode->copyToHost(bitmap.host(), bitmap.device(), bitmap.size());
@@ -52,7 +52,7 @@ Bitmap::syncDevice()
     gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
 
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    TRACE(LOCAL,"Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
+    TRACE(LOCAL,"Setting dirty bitmap on device: %p -> %p (0x%lx): "FMT_SIZE, (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
     gmacError_t ret;
     ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &device_, sizeof(void *));
     cfatal(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode->dirtyBitmapDevPtr());

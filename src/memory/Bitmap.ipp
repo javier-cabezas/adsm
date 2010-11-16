@@ -184,7 +184,7 @@ void Bitmap::newRange(const void * ptr, size_t count)
     } else if (((uint8_t *) ptr) + count > maxAddr_) {
         maxAddr_ = ((uint8_t *) ptr) + count - 1;
     }
-    TRACE(LOCAL,"ptr: %p (%zd) minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
+    TRACE(LOCAL,"ptr: %p ("FMT_SIZE") minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
 }
 
 inline

@@ -63,7 +63,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
         left -= (size * elems);
         off  += unsigned(size * elems);
-        TRACE(GLOBAL, "%zd of %zd bytes read", elems * size, nmemb * size);
+        TRACE(GLOBAL, FMT_SIZE" of %zd bytes read", elems * size, nmemb * size);
     }
     mode.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
@@ -115,7 +115,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         left -= size * elems;
         off  += unsigned(size * elems);
 
-        TRACE(GLOBAL, "%zd of %zd bytes written", elems * size, nmemb * size);
+        TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes written", elems * size, nmemb * size);
     }
     mode.destroyIOBuffer(buffer);
     gmac::trace::Thread::resume();
