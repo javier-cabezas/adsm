@@ -5,9 +5,9 @@
 
 #include "gtest/gtest.h"
 
-using gmac::Process;
+using gmac::core::Process;
 using gmac::trace::Function;
-using gmac::Accelerator;
+using gmac::core::Accelerator;
 
 Accelerator *Accelerator_ = NULL;
 static bool Trace_ = false;
@@ -19,7 +19,7 @@ void InitTrace(void)
 	Function::init();
 }
 
-gmac::Accelerator &GetAccelerator()
+gmac::core::Accelerator &GetAccelerator()
 {
 	return *Accelerator_;
 }
