@@ -8,16 +8,16 @@ namespace gmac { namespace memory { namespace vm {
 
 void Bitmap::allocate()
 {
-    assertion(device_ == NULL);
+    ASSERTION(device_ == NULL);
     gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
 #ifdef USE_HOSTMAP_VM
     mode->hostAlloc((void **)&_bitmap, size_);
     device_ = mode->hostMap(_bitmap);
     memset(_bitmap, 0, size());
-    trace("Allocating dirty bitmap (%zu bytes)", size());
+    TRACE(LOCAL,"Allocating dirty bitmap (%zu bytes)", size());
 #else
     mode->malloc((void **)&device_, size_);
-    trace("Allocating dirty bitmap %p -> %p (%zu bytes)", _bitmap, device_, size_);
+    TRACE(LOCAL,"Allocating dirty bitmap %p -> %p (%zu bytes)", _bitmap, device_, size_);
 #endif
 }
 
@@ -31,11 +31,11 @@ void
 Bitmap::syncHost()
 {
 #ifndef USE_HOSTMAP_VM
-    trace("Syncing Bitmap");
+    TRACE(LOCAL,"Syncing Bitmap");
     Mode * mode = Mode::current();
 
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    trace("Setting dirty bitmap on host: %p -> %p: %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
+    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
     gmacError_t ret;
     //printf("Bitmap toHost\n");
     ret = mode->copyToHost(bitmap.host(), bitmap.device(), bitmap.size());
@@ -48,11 +48,11 @@ void
 Bitmap::syncDevice()
 {
 #ifndef USE_HOSTMAP_VM
-    trace("Syncing Bitmap");
+    TRACE(LOCAL,"Syncing Bitmap");
     gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
 
     gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    trace("Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
+    TRACE(LOCAL,"Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
     gmacError_t ret;
     ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &device_, sizeof(void *));
     cfatal(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode->dirtyBitmapDevPtr());

@@ -70,7 +70,7 @@ StateObject<T>::blocks() const
 template<typename T>
 inline void StateObject<T>::state(T s)
 {
-    trace("Setting state of %p to %d", addr_, s);
+    TRACE(LOCAL,"Setting state of %p to %d", addr_, s);
     typename SystemMap::const_iterator i;
     for(i = systemMap.begin(); i != systemMap.end(); i++)
         i->second->state(s);

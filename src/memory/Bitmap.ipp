@@ -25,9 +25,9 @@ bool Bitmap::CheckClearSet(const void * addr)
     }
     bool ret = false;
     size_t entry = offset(addr);
-    trace("Bitmap check for %p -> entry %zu", addr, entry);
+    TRACE(LOCAL,"Bitmap check for %p -> entry %zu", addr, entry);
     if (__clear || __set) {
-        trace("Bitmap entry before: 0x%x", bitmap_[entry]);
+        TRACE(LOCAL,"Bitmap entry before: 0x%x", bitmap_[entry]);
     }
 #ifdef BITMAP_BIT
     uint32_t val = 1 << ((to32bit(addr) >> shiftEntry_) & bitMask_);
@@ -50,9 +50,9 @@ bool Bitmap::CheckClearSet(const void * addr)
     }
 #endif
     if (__clear || __set) {
-        trace("Bitmap entry after: 0x%x", bitmap_[entry]);
+        TRACE(LOCAL,"Bitmap entry after: 0x%x", bitmap_[entry]);
     } else {
-        trace("Bitmap entry: 0x%x", bitmap_[entry]);
+        TRACE(LOCAL,"Bitmap entry: 0x%x", bitmap_[entry]);
     }
     return ret;
 }
@@ -96,7 +96,7 @@ void *Bitmap::device()
 {
     if (device_ == NULL) allocate();
     if (minAddr_ != NULL) {
-        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
         return ((uint8_t *)device_) + offset(minAddr_);
     } else {
         return device_;
@@ -114,7 +114,7 @@ inline
 void *Bitmap::host() const
 {
     if (minAddr_ != NULL) {
-        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
         return ((uint8_t *)bitmap_) + offset(minAddr_);
     } else {
         return bitmap_;
@@ -125,7 +125,7 @@ inline
 const size_t Bitmap::size() const
 {
     if (minAddr_ != NULL) {
-        assertion(maxAddr_ != NULL && maxAddr_ > minAddr_);
+        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
         return (offset(maxAddr_) - offset(minAddr_) + 1) * sizeof(bitmap_[0]);
     } else {
         return size_;
@@ -184,7 +184,7 @@ void Bitmap::newRange(const void * ptr, size_t count)
     } else if (((uint8_t *) ptr) + count > maxAddr_) {
         maxAddr_ = ((uint8_t *) ptr) + count - 1;
     }
-    trace("ptr: %p (%zd) minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
+    TRACE(LOCAL,"ptr: %p (%zd) minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
 }
 
 inline
@@ -200,7 +200,7 @@ void Bitmap::removeRange(const void * ptr, size_t count)
     } else if (((uint8_t *) ptr) + count == maxAddr_) {
         maxAddr_ = ptr;
     }
-    trace("minAddr: %p maxAddr: %p", minAddr_, maxAddr_);
+    TRACE(LOCAL,"minAddr: %p maxAddr: %p", minAddr_, maxAddr_);
 }
 
 }}}

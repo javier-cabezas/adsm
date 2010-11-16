@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "util/Logger.h"
 #include "util/Singleton.h"
 
 namespace gmac {
@@ -55,7 +54,6 @@ class Block;
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class GMAC_LOCAL Manager :
-    public util::Logger,
     public util::Singleton<memory::Manager> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<memory::Manager>;
@@ -69,7 +67,7 @@ protected:
     memory::Protocol *protocol_;
 
     Manager();
-    TESTABLE ~Manager();
+    virtual ~Manager();
 public:
     //////////////////////////////
     // Memory management functions

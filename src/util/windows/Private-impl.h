@@ -16,7 +16,7 @@ template <typename T>
 inline
 void Private<T>::init(Private &var)
 {
-	gmac::util::Logger::ASSERTION((var.key_ = TlsAlloc()) != TLS_OUT_OF_INDEXES);
+	ASSERTION((var.key_ = TlsAlloc()) != TLS_OUT_OF_INDEXES);
 }
 
 template <typename T>
@@ -31,7 +31,7 @@ inline
 T *Private<T>::get()
 {
     T* ret = static_cast<T *>(TlsGetValue(key_));
-	gmac::util::Logger::ASSERTION(GetLastError() == ERROR_SUCCESS);
+	ASSERTION(GetLastError() == ERROR_SUCCESS);
 	return ret;
 }
 

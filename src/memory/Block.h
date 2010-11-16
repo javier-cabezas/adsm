@@ -39,11 +39,11 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "util/Lock.h"
-#include "util/Logger.h"
+
 
 namespace gmac { namespace memory { namespace __impl {
 
-class GMAC_LOCAL Block : public util::Lock, public util::Logger {
+class GMAC_LOCAL Block : public util::Lock {
 protected:
     void *addr_;
     size_t size_;

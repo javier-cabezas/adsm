@@ -29,9 +29,9 @@ Accelerator::Accelerator(int n, CUdevice device) :
     unsigned int size = 0;
 #endif
     CUresult ret = cuDeviceTotalMem(&size, device_);
-    CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&_major, &_minor, device_);
-    CFatal(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     memory_ = size;
 
 #ifndef USE_MULTI_CONTEXT
@@ -40,27 +40,27 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
-    trace("Host mapped memory not supported by the HW");
+    TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
 
     int val;
 #if CUDA_VERSION > 3000
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
-    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busId_ = val;
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, n);
-    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busDevId_ = val;
 #endif
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
-    CFatal(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     integrated_ = (val != 0);
 
 
     ret = cuCtxCreate(&_ctx, flags, device_);
-    CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
-    CFatal(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
 #else
 #endif
 }
@@ -75,7 +75,7 @@ Accelerator::~Accelerator()
     }
     _modules.clear();
     popContext();
-    assertion(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    ASSERTION(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
 #endif
 }
 
@@ -91,14 +91,14 @@ gmac::Mode *Accelerator::createMode(gmac::Process &proc)
     gmac::trace::Function::start("Accelerator","createMode");
 	Mode *mode = new Mode(proc, *this);
     gmac::trace::Function::end("Accelerator");
-	trace("Creating Execution Mode %p to Accelerator", mode);
+	TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
     return mode;
 }
 
 void Accelerator::registerMode(gmac::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
-	trace("Registering Execution Mode %p to Accelerator", &_mode);
+	TRACE(LOCAL,"Registering Execution Mode %p to Accelerator", &_mode);
     gmac::trace::Function::start("Accelerator","registerMode");
 	_queue.insert(&_mode);
     load_++;
@@ -108,10 +108,10 @@ void Accelerator::registerMode(gmac::Mode &mode)
 void Accelerator::unregisterMode(gmac::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
-	trace("Unregistering Execution Mode %p", &_mode);
+	TRACE(LOCAL,"Unregistering Execution Mode %p", &_mode);
     gmac::trace::Function::start("Accelerator","unregisterMode");
 	std::set<Mode *>::iterator c = _queue.find(&_mode);
-	assertion(c != _queue.end());
+	ASSERTION(c != _queue.end());
 	_queue.erase(c);
     load_--;
     gmac::trace::Function::end("Accelerator");
@@ -128,13 +128,13 @@ Accelerator::createCUcontext()
 #if CUDA_VERSION >= 2020
     if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
-    trace("Host mapped memory not supported by the HW");
+    TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
     CUresult ret = cuCtxCreate(&ctx, flags, device_);
     if(ret != CUDA_SUCCESS)
-        Fatal("Unable to create CUDA context %d", ret);
+        FATAL("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
-    assertion(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
     gmac::trace::Function::end("Accelerator");
     return ctx;
 }
@@ -143,7 +143,7 @@ void
 Accelerator::destroyCUcontext(CUcontext ctx)
 {
     gmac::trace::Function::start("Accelerator","destroyCUContext");
-    CFatal(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
+    CFATAL(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
     gmac::trace::Function::end("Accelerator");
 }
 
@@ -190,7 +190,7 @@ ModuleVector *Accelerator::createModules()
 gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
 {
     gmac::trace::Function::start("Accelerator","malloc");
-    assertion(addr != NULL);
+    ASSERTION(addr != NULL);
     *addr = NULL;
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
@@ -216,7 +216,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
-    trace("Allocating device memory: %p (originally %p) - %zd (originally %zd) bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - %zd (originally %zd) bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
     gmac::trace::Function::end("Accelerator");
     return error(ret);
 }
@@ -224,7 +224,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
 gmacError_t Accelerator::free(void *addr)
 {
     gmac::trace::Function::start("Accelerator","free");
-    assertion(addr != NULL);
+    ASSERTION(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
     _alignMap.lockRead();
@@ -341,7 +341,7 @@ void Accelerator::memInfo(size_t *free, size_t *total) const
 #else
     CUresult ret = cuMemGetInfo((unsigned int *)free, (unsigned int *)total);
 #endif
-    CFatal(ret == CUDA_SUCCESS, "Error getting memory info");
+    CFATAL(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();
 }
 

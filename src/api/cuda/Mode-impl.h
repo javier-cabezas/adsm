@@ -45,7 +45,7 @@ IOBuffer *Mode::createIOBuffer(size_t size)
 inline
 void Mode::destroyIOBuffer(IOBuffer *buffer)
 {
-    assertion(ioMemory_ != NULL);
+    ASSERTION(ioMemory_ != NULL);
     ioMemory_->put(buffer->addr(), buffer->size());
     delete buffer;
 }
@@ -53,7 +53,7 @@ void Mode::destroyIOBuffer(IOBuffer *buffer)
 inline
 gmacError_t Mode::bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
 {
-    util::Logger::trace("Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);
+    TRACE(LOCAL,"Copy %p to device %p (%zd bytes)", buffer.addr(), dst, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
     gmacError_t ret = ctx.bufferToAccelerator(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
@@ -64,7 +64,7 @@ gmacError_t Mode::bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t 
 inline
 gmacError_t Mode::acceleratorToBuffer(gmac::IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
-    util::Logger::trace("Copy %p to host %p (%zd bytes)", src, buffer.addr(), len);
+    TRACE(LOCAL,"Copy %p to host %p (%zd bytes)", src, buffer.addr(), len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
     gmacError_t ret = ctx.acceleratorToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);

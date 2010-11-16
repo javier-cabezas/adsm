@@ -50,7 +50,7 @@ inline
 gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyToAccelerator");
-    trace("Copy to accelerator: %p -> %p (%zd)", host, dev, size);
+    TRACE(LOCAL,"Copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
@@ -66,7 +66,7 @@ inline
 gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, const void *host, size_t size, CUstream stream)
 {
     gmac::trace::Function::start("Accelerator","copyToAcceleratorAsync");
-    trace("Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
+    TRACE(LOCAL,"Async copy to accelerator: %p -> %p (%zd)", host, dev, size);
     pushContext();
 
 #if CUDA_VERSION >= 3020
@@ -83,7 +83,7 @@ inline
 gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyToHost");
-    trace("Copy to host: %p -> %p (%zd)", dev, host, size);
+    TRACE(LOCAL,"Copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
@@ -99,7 +99,7 @@ inline
 gmacError_t Accelerator::copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream)
 {
     gmac::trace::Function::start("Accelerator","copyToHostAsync");
-    trace("Async copy to host: %p -> %p (%zd)", dev, host, size);
+    TRACE(LOCAL,"Async copy to host: %p -> %p (%zd)", dev, host, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), size, stream);
@@ -115,7 +115,7 @@ inline
 gmacError_t Accelerator::copyAccelerator(void *dst, const void *src, size_t size)
 {
     gmac::trace::Function::start("Accelerator","copyAccelerator");
-    trace("Copy accelerator-accelerator: %p -> %p (%zd)", src, dst, size);
+    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p (%zd)", src, dst, size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
@@ -131,7 +131,7 @@ inline
 gmacError_t Accelerator::execute(KernelLaunch &launch)
 {
     gmac::trace::Function::start("Accelerator","execute");
-    trace("Executing KernelLaunch");
+    TRACE(LOCAL,"Executing KernelLaunch");
     pushContext();
     gmacError_t ret = launch.execute();
     popContext();
@@ -147,7 +147,7 @@ CUstream Accelerator::createCUstream()
     pushContext();
     CUresult ret = cuStreamCreate(&stream, 0);
     popContext();
-    CFatal(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
+    CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
     gmac::trace::Function::end("Accelerator");
     return stream;
 }
@@ -159,7 +159,7 @@ void Accelerator::destroyCUstream(CUstream stream)
     pushContext();
     CUresult ret = cuStreamDestroy(stream);
     popContext();
-    CFatal(ret == CUDA_SUCCESS, "Unable to destroy CUDA stream");
+    CFATAL(ret == CUDA_SUCCESS, "Unable to destroy CUDA stream");
     gmac::trace::Function::end("Accelerator");
 }
 
@@ -195,7 +195,7 @@ void Accelerator::pushContext() const
     _mutex.lock();
     ret = cuCtxPushCurrent(_ctx);
 #endif
-    CFatal(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
 }
 
 inline
@@ -207,7 +207,7 @@ void Accelerator::popContext() const
 #ifndef USE_MULTI_CONTEXT
     _mutex.unlock();
 #endif
-    CFatal(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
 }
 
 #ifdef USE_MULTI_CONTEXT

@@ -54,9 +54,9 @@ inline SharedObject<T>::~SharedObject()
 #endif
 
     if (mapped_) {
-        trace("Unmapping Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+        TRACE(LOCAL,"Unmapping Shared Object %p (%zd bytes)", StateObject<T>::addr_);
     } else {
-        trace("Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
+        TRACE(LOCAL,"Destroying Shared Object %p (%zd bytes)", StateObject<T>::addr_);
     }
 }
 
@@ -80,7 +80,7 @@ SharedObject<T>::init()
         return gmacErrorMemoryAllocation;
     }
 
-    trace("Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
+    TRACE(LOCAL,"Shared Object %p (%zd bytes) @ %p initialized", StateObject<T>::addr_, StateObject<T>::size_, accBlock_->addr());
     StateObject<T>::setupSystem();
 
     return gmacSuccess;
@@ -207,7 +207,7 @@ gmacError_t SharedObject<T>::realloc(Mode &mode)
         return gmacErrorInsufficientAcceleratorMemory;
     }
 
-    trace("Reallocating object %p -> %p\n", accBlock_->addr(), device);
+    TRACE(LOCAL,"Reallocating object %p -> %p\n", accBlock_->addr(), device);
 
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();

@@ -14,9 +14,9 @@ Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     //! \todo Calculate this dynamically
 #if CUDA_VERSION >= 3000 && LINUX
     ret = cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
-    assertion(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
 #endif
-    assertion(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
 }
 
 gmac::KernelLaunch *
@@ -54,14 +54,20 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 {
 }
 
+KernelLaunch &KernelLaunch::operator =(const KernelLaunch &)
+{
+    FATAL("Assigment of kernel launch is not supported");
+    return *this;
+}
+
 gmacError_t
 KernelLaunch::execute()
 {
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    CFatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
-	assertion(ret == CUDA_SUCCESS);
+	ASSERTION(ret == CUDA_SUCCESS);
 
 #if 0
 	// Set-up textures

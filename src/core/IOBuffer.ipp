@@ -55,21 +55,21 @@ IOBuffer::state() const
 inline void
 IOBuffer::toHost(Mode &mode)
 {
-    assertion(mode_  == NULL);
+    ASSERTION(mode_  == NULL);
 
     mode_  = &mode;
     state_ = ToHost;
-    trace("Buffer %p goes toHost", this); 
+    TRACE(LOCAL,"Buffer %p goes toHost", this); 
 }
 
 inline void
 IOBuffer::toAccelerator(Mode &mode)
 {
-    assertion(mode_  == NULL);
+    ASSERTION(mode_  == NULL);
 
     mode_  = &mode;
     state_ = ToAccelerator;
-    trace("Buffer %p goes toAccelerator", this);
+    TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
 }
 
 inline gmacError_t
@@ -78,13 +78,13 @@ IOBuffer::wait()
     gmacError_t ret = gmacSuccess;
 
     if (state_ != Idle) {
-        assertion(mode_ != NULL);
+        ASSERTION(mode_ != NULL);
         ret = mode_->waitForBuffer(*this);
-        trace("Buffer %p goes Idle", this);
+        TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;
     } else {
-        assertion(mode_ == NULL);
+        ASSERTION(mode_ == NULL);
     }
 
     return ret;

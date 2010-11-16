@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_WINDOWS_LOADER_H_
 #define GMAC_WINDOWS_LOADER_H_
 
-#pragma warning(disable : 4273)
+#include <windows.h>
 
-#include "util/Logger.h"
+#pragma warning(disable : 4273)
 
 #define SYM(ret, symbol, ...)	\
 	typedef ret (__cdecl *symbol##_t)(__VA_ARGS__);	\

@@ -60,7 +60,7 @@ void Function::initThread()
 void Function::start(const char *module, const char *name)
 {
 #ifdef DEBUG
-    gmac::util::Logger::TRACE("FUNCTION START %s:%s", module, name);
+    TRACE(GLOBAL, "FUNCTION START %s:%s", module, name);
     if(Init_) {
         std::list<std::string> *list = Funcs_.get();
         if(list != NULL) list->push_back(std::string(name));
@@ -96,8 +96,8 @@ void Function::end(const char *module)
     if(Init_ == false) return;
     std::list<std::string> *list = Funcs_.get();
     if(list == NULL) return;
-    gmac::util::Logger::ASSERTION(list->empty() == false);
-    gmac::util::Logger::TRACE("FUNCTION END %s:%s", module, list->back().c_str());
+    ASSERTION(list->empty() == false);
+    TRACE(GLOBAL, "FUNCTION END %s:%s", module, list->back().c_str());
     list->pop_back();
 #endif
 }

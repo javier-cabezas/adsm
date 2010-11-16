@@ -62,7 +62,7 @@ static inline unsigned int __getNumberOfChannels(const struct cudaChannelFormatD
 	if(desc->y != 0) n++;
 	if(desc->z != 0) n++;
 	if(desc->w != 0) n++;
-	gmac::util::Logger::ASSERTION(n != 3);
+	ASSERTION(n != 3);
 	return n;
 }
 
@@ -216,7 +216,7 @@ static cudaError_t __cudaMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffse
 		const void *src, unsigned spitch, unsigned width, unsigned height)
 #endif
 {
-	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	TRACE(GLOBAL, "cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -235,7 +235,7 @@ static cudaError_t __cudaMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffse
     Switch::in();
 	CUresult r = cuMemcpy2D(&cuCopy);
     Switch::out();
-	gmac::util::Logger::ASSERTION(r == CUDA_SUCCESS);
+	ASSERTION(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
 }
@@ -248,7 +248,7 @@ static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigne
 		CUdeviceptr src, unsigned spitch, unsigned width, unsigned height)
 #endif
 {
-	gmac::util::Logger::TRACE("cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
+	TRACE(GLOBAL, "cudaMemcpy2DToArray (%zd %zd %zd)", spitch, width, height);
 	CUDA_MEMCPY2D cuCopy;
 	memset(&cuCopy, 0, sizeof(cuCopy));
 
@@ -267,7 +267,7 @@ static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigne
     Switch::in();
 	CUresult r = cuMemcpy2DUnaligned(&cuCopy);
     Switch::out();
-	gmac::util::Logger::ASSERTION(r == CUDA_SUCCESS);
+	ASSERTION(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
 }
@@ -301,7 +301,7 @@ cudaError_t APICALL cudaGetChannelDesc(struct cudaChannelFormatDesc *desc,
 	}
 	desc->f = __getCUDAChannelFormatKind(cuDesc.Format);
 	__setNumberOfChannels(desc, cuDesc.NumChannels, __getChannelSize(cuDesc.Format));
-	gmac::util::Logger::TRACE("cudaGetChannelDesc %d %d %d %d %d", desc->x, desc->y, desc->z,
+	TRACE(GLOBAL, "cudaGetChannelDesc %d %d %d %d %d", desc->x, desc->y, desc->z,
 		desc->w, desc->f);
 	gmac::exitGmac();
 	return cudaSuccess;
@@ -329,7 +329,7 @@ GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 #endif
 	cuDesc.Format = __getChannelFormatKind(desc);
 	cuDesc.NumChannels = __getNumberOfChannels(desc);
-	gmac::util::Logger::TRACE("cudaMallocArray: %zd %zd with format 0x%x and %u channels",
+	TRACE(GLOBAL, "cudaMallocArray: %zd %zd with format 0x%x and %u channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	gmac::enterGmac();
     Switch::in();
@@ -353,7 +353,7 @@ cudaError_t APICALL cudaMemcpyToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t count,
 		enum cudaMemcpyKind kind)
 {
-	gmac::util::Logger::ASSERTION(kind == cudaMemcpyHostToDevice);
+	ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
 #if CUDA_VERSION >= 3020
 	cudaError_t ret = __cudaMemcpyToArray((CUarray)dst, wOffset, hOffset, src, count);
@@ -369,7 +369,7 @@ cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 		size_t hOffset, const void *src, size_t spitch, size_t width,
 		size_t height, enum cudaMemcpyKind kind)
 {
-	gmac::util::Logger::ASSERTION(kind == cudaMemcpyHostToDevice);
+	ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
 	cudaError_t ret = cudaSuccess;
     gmac::Process &proc = gmac::Process::getInstance();
@@ -418,13 +418,13 @@ cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *src, size
 	cudaError_t ret = cudaSuccess;
     Mode &mode = gmac::cuda::Mode::current();
 	const Variable *variable = mode.constant(symbol);
-	gmac::util::Logger::ASSERTION(variable != NULL);
+	ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
-	gmac::util::Logger::ASSERTION(variable->size() >= (count + offset));
+	ASSERTION(variable->size() >= (count + offset));
 	CUdeviceptr ptr = CUdeviceptr(variable->devPtr() + offset);
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
-			gmac::util::Logger::TRACE("cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
+			TRACE(GLOBAL, "cudaMemcpyToSymbol HostToDevice %p to 0x%x (%zd bytes)", src, ptr, count);
             Switch::in();
 #if CUDA_VERSION >= 3020
             r = cuMemcpyHtoD(ptr, src, count);
@@ -535,18 +535,18 @@ cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 
 void APICALL __cudaTextureFetch(const void * /*tex*/, void * /*index*/, int /*integer*/, void * /*val*/)
 {
-	gmac::util::Logger::ASSERTION(0);
+	ASSERTION(0);
 }
 
 int APICALL __cudaSynchronizeThreads(void**, void*)
 {
-	gmac::util::Logger::ASSERTION(0);
+	ASSERTION(0);
     return 0;
 }
 
 void APICALL __cudaMutexOperation(int /*lock*/)
 {
-	gmac::util::Logger::ASSERTION(0);
+	ASSERTION(0);
 }
 
 

@@ -33,8 +33,8 @@ using gmac::cuda::VariableDescriptor;
 GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
     gmac::Process &proc = gmac::Process::getInstance();
-    gmac::util::Logger::TRACE("CUDA Fat binary: %p", fatCubin);
-    gmac::util::Logger::ASSERTION(proc.nAccelerators() > 0);
+    TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
+    ASSERTION(proc.nAccelerators() > 0);
     gmac::enterGmac();
     // Use the first GPU to load the fat binary
     void **ret = (void **) new ModuleDescriptor(fatCubin);
@@ -53,9 +53,9 @@ GMAC_API void APICALL __cudaRegisterFunction(
 		const char *devName, int /*threadLimit*/, uint3 * /*tid*/, uint3 * /*bid*/,
 		dim3 * /*bDim*/, dim3 * /*gDim*/)
 {
-    gmac::util::Logger::TRACE("CUDA Function");
+    TRACE(GLOBAL, "CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
+	ASSERTION(mod != NULL);
 	gmac::enterGmac();
     KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
@@ -66,9 +66,9 @@ GMAC_API void APICALL __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char * /*deviceAddress*/, const char *deviceName, int /*ext*/, int /*size*/,
 		int constant, int /*global*/)
 {
-    gmac::util::Logger::TRACE("CUDA Variable %s", deviceName);
+    TRACE(GLOBAL, "CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
+	ASSERTION(mod != NULL);
 	gmac::enterGmac();
     VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant != 0));
     mod->add(v);
@@ -78,9 +78,9 @@ GMAC_API void APICALL __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 GMAC_API void APICALL __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
 		const void ** /*deviceAddress*/, const char *deviceName, int /*dim*/, int /*norm*/, int /*ext*/)
 {
-    gmac::util::Logger::TRACE("CUDA Texture");
+    TRACE(GLOBAL, "CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
+	ASSERTION(mod != NULL);
 	gmac::enterGmac();
     TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
 	mod->add(t);

@@ -27,8 +27,8 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	
 	void *addr = (void *)ex->ExceptionRecord->ExceptionInformation[1];
 
-	if(writeAccess == false) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
-	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
+	if(writeAccess == false) TRACE(GLOBAL, "Read SIGSEGV for %p", addr);
+	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	Manager &manager = Manager::getInstance();
@@ -53,7 +53,7 @@ void Handler::setHandler()
 	AddVectoredExceptionHandler(1, segvHandler);
 
 	Handler_ = this;
-	gmac::util::Logger::TRACE("New signal handler programmed");
+	TRACE(GLOBAL, "New signal handler programmed");
 }
 
 void Handler::restoreHandler()
@@ -61,7 +61,7 @@ void Handler::restoreHandler()
 	RemoveVectoredExceptionHandler(segvHandler);
 
 	Handler_ = NULL;
-	gmac::util::Logger::TRACE("Old signal handler restored");
+	TRACE(GLOBAL, "Old signal handler restored");
 }
 
 

@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class GMAC_LOCAL IOBuffer : public util::Lock, util::Logger {
+class GMAC_LOCAL IOBuffer : public util::Lock {
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:
@@ -55,7 +55,7 @@ public:
     IOBuffer(void *addr, size_t size);
     virtual ~IOBuffer();
 	IOBuffer &operator =(const IOBuffer &) {
-        Fatal("Assigment of I/O buffers is not supported");
+        FATAL("Assigment of I/O buffers is not supported");
         return *this;
     }
 

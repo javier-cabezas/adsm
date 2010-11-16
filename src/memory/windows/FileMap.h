@@ -35,8 +35,9 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_WINDOWS_FILEMAP_H_
 
 #include "config/common.h"
-#include "util/Logger.h"
 #include "util/Lock.h"
+
+#include <map>
 
 namespace gmac { namespace memory {
 

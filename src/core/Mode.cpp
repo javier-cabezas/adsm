@@ -28,14 +28,14 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
     , count_(0)
 {
-    trace("Creating new memory map");
+    TRACE(LOCAL,"Creating new memory map");
 }
 
 Mode::~Mode()
 {
     count_--;
     if(count_ > 0)
-        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count_);
+        WARNING("Deleting in-use Execution Mode (%d)", count_);
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
 }
@@ -68,10 +68,10 @@ void Mode::release()
 }
 void Mode::kernel(gmacKernel_t k, Kernel &kernel)
 {
-    trace("CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
+    TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
     KernelMap::iterator i;
     i = kernels_.find(k);
-    assertion(i == kernels_.end());
+    ASSERTION(i == kernels_.end());
     kernels_[k] = &kernel;
 }
 
@@ -82,7 +82,7 @@ Mode &Mode::current()
         Process &proc = Process::getInstance();
         mode = proc.createMode();
     }
-    gmac::util::Logger::ASSERTION(mode != NULL);
+    ASSERTION(mode != NULL);
     return *mode;
 }
 
@@ -126,7 +126,7 @@ gmacError_t Mode::free(void *addr)
 
 gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
+    TRACE(LOCAL,"Copy %p to device %p (%zd bytes)", host, dev, size);
     switchIn();
     error_ = getContext().copyToAccelerator(dev, host, size);
     switchOut();
@@ -135,7 +135,7 @@ gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
 
 gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
 {
-    util::Logger::trace("Copy %p to host %p (%zd bytes)", dev , host, size);
+    TRACE(LOCAL,"Copy %p to host %p (%zd bytes)", dev , host, size);
     switchIn();
     error_ = getContext().copyToHost(host, dev, size);
     switchOut();
@@ -189,7 +189,7 @@ bool Mode::requireUpdate(memory::Block &block)
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    trace("Moving mode from acc %d to %d", acc_->id(), acc.id());
+    TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
@@ -200,22 +200,22 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         return gmacErrorInsufficientAcceleratorMemory;
     }
 
-    trace("Releasing object memory in accelerator");
+    TRACE(LOCAL,"Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
 
-    trace("Cleaning contexts");
+    TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
 
-    trace("Registering mode in new accelerator");
+    TRACE(LOCAL,"Registering mode in new accelerator");
     acc_->unregisterMode(*this);
     acc_ = &acc;
     acc_->registerMode(*this);
     
-    trace("Reallocating objects");
+    TRACE(LOCAL,"Reallocating objects");
     map_.reallocObjects(*this);
 
-    trace("Reloading mode");
+    TRACE(LOCAL,"Reloading mode");
     reload();
 
     //

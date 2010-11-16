@@ -37,7 +37,9 @@ namespace gmac {
     }
 
     namespace util {
-        namespace __dbc { }
+        namespace __dbc { 
+			class RWLock;
+		}
         using namespace __dbc;
     }
 }

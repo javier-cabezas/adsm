@@ -37,7 +37,8 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #include "include/gmac/types.h"
-#include "util/Logger.h"
+
+#include "util/Lock.h"
 #include "util/Private.h"
 
 namespace gmac {
@@ -49,7 +50,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class GMAC_LOCAL Context : public util::RWLock, public util::Logger {
+class GMAC_LOCAL Context : public util::RWLock {
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -58,7 +59,7 @@ protected:
 public:
 	virtual ~Context();
 	Context &operator =(const Context &) {
-        Fatal("Assigment of contexts is not supported");
+        FATAL("Assigment of contexts is not supported");
         return *this;
     }
 

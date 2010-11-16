@@ -37,9 +37,7 @@ WITH THE SOFTWARE.  */
 #include "unit/init.h"
 #include "gtest/gtest.h"
 
-namespace gmac {
-class Mode;
-}
+#include "core/Mode.h"
 
 class ModeTest : public testing::Test {
 public:
@@ -50,6 +48,7 @@ public:
     static void SetUpTestCase();
 
     static void TearDownTestCase() {
+		Mode_->detach();
         FiniProcess();
     }
 };
