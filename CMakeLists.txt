@@ -187,13 +187,9 @@ add_definitions(-DGMAC_DLL)
 # Compiling GMAC
 add_definitions(-DGMAC_DLL_EXPORTS)
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_definitions(-DUSE_DBC)
-    set(gmac_SOURCES ${gmac_SOURCES} ${gmac-dbc_SRC})
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC})
+set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
 
-add_gmac_groups(${gmac_SOURCES})
+add_gmac_groups(${gmac_SOURCES} ${gmac-dbc_SRC})
 add_library(gmac SHARED ${gmac_SOURCES})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
 set_property(TARGET gmac PROPERTY PRIVATE_HEADER
@@ -205,7 +201,9 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
 
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
-set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
+set_target_properties(gmac PROPERTIES
+    COMPILE_DEFINITIONS_DEBUG USE_DBC
+    VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac 
      LIBRARY DESTINATION lib
