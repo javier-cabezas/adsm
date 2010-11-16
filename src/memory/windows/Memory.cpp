@@ -49,7 +49,7 @@ void *Memory::map(void *addr, size_t count, GmacProtection prot)
 
 void *Memory::shadow(void *addr, size_t count)
 {
-	TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", addr, count);
+	TRACE(GLOBAL, "Getting shadow mapping for %p ("FMT_SIZE" bytes)", addr, count);
 	FileMapEntry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
 	off_t offset = (off_t)((uint8_t *)addr - (uint8_t *)entry.address());

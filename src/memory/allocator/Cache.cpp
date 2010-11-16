@@ -16,7 +16,7 @@ Arena::Arena(size_t objSize) :
     gmacError_t ret = Manager::getInstance().alloc(&ptr, paramPageSize);
     CFATAL(ret == gmacSuccess, "Unable to allocate memory in the device");
     for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
-        TRACE(LOCAL,"Arena %p pushes %p (%zd bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
+        TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
         _objects.push_back((void *)((uint8_t *)ptr + s));
     }
 }

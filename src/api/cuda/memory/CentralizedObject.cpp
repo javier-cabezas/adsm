@@ -8,7 +8,7 @@ namespace gmac { namespace memory {
 CentralizedObject::CentralizedObject(size_t size) :
     Object(NULL, size)
 {
-    TRACE(LOCAL,"Creating Centralized Object (%zd bytes)", size_);
+    TRACE(LOCAL,"Creating Centralized Object ("FMT_SIZE" bytes)", size_);
 }
 
 

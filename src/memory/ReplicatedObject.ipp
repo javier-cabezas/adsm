@@ -15,7 +15,7 @@ inline ReplicatedObject<T>::ReplicatedObject(size_t size, T init) :
     Process &proc = gmac::Process::getInstance();
     Mode &mode = gmac::Mode::current(); 
 	UNREFERENCED_PARAMETER(mode);
-    TRACE(LOCAL,"Creating Replicated Object (%zd bytes)", StateObject<T>::size_);
+    TRACE(LOCAL,"Creating Replicated Object ("FMT_SIZE" bytes)", StateObject<T>::size_);
     if(proc.globalMalloc(*this, size) != gmacSuccess) {
         FATAL("Unable to create replicated object");
         StateObject<T>::addr_ = NULL;

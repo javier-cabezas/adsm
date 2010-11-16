@@ -33,7 +33,7 @@ void *Arena::get()
     ASSERTION(_objects.empty() == false);
     void *ret = _objects.front();
     _objects.pop_front();
-    TRACE(LOCAL,"Arena %p has %zd available objects", this, _objects.size());
+    TRACE(LOCAL,"Arena %p has "FMT_SIZE" available objects", this, _objects.size());
     return ret;
 }
 

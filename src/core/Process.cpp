@@ -177,7 +177,7 @@ Mode *Process::createMode(int acc)
 
     mode->attach();
 
-    TRACE(LOCAL,"Adding %zd replicated memory objects", replicated_.size());
+    TRACE(LOCAL,"Adding "FMT_SIZE" replicated memory objects", replicated_.size());
     memory::Map::addOwner(*this, *mode);
 
     unlock();
@@ -245,7 +245,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
 
 void Process::removeMode(Mode *mode)
 {
-    TRACE(LOCAL,"Adding %zd replicated memory objects", replicated_.size());
+    TRACE(LOCAL,"Adding "FMT_SIZE" replicated memory objects", replicated_.size());
     memory::Map::removeOwner(*this, *mode);
     lockWrite();
     modes_.remove(*mode);

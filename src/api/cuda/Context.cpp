@@ -81,7 +81,7 @@ gmacError_t Context::waitForBuffer(IOBuffer &buffer)
 
 gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    TRACE(LOCAL,"Transferring %zd bytes from host %p to accelerator %p", size, host, dev);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, dev);
     trace::Function::start("Context", "copyToAccelerator");
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
@@ -115,7 +115,7 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 
 gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
 {
-    TRACE(LOCAL,"Transferring %zd bytes from accelerator %p to host %p", size, accAddr, host);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, accAddr, host);
     trace::Function::start("Context", "copyToHost");
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);

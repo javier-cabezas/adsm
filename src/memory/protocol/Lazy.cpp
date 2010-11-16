@@ -221,7 +221,7 @@ gmacError_t Lazy::release()
     unlock();
 
     list.lockWrite();
-    TRACE(LOCAL,"Cache contains %zd elements\n", list.size());
+    TRACE(LOCAL,"Cache contains "FMT_SIZE" elements\n", list.size());
     // Release dirty blocks
     while(list.empty() == false) {
         Entry e = list.pop();
@@ -862,7 +862,7 @@ Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool
         list.lockWrite();
         list.push(object, &block);
 
-        TRACE(LOCAL,"Adding %p to dirty list %p (%zd)", block.addr(), &list, list.size());
+        TRACE(LOCAL,"Adding %p to dirty list %p ("FMT_SIZE")", block.addr(), &list, list.size());
 
         if (checkOverflow) {
             // Release dirty blocks

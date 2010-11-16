@@ -254,7 +254,7 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
         }
         mode->putObject(*obj);
         off += unsigned(objCount);
-        TRACE(LOCAL,"Copying from obj %p: %zd of %zd", obj->addr(), c, count);
+        TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
 }
@@ -285,7 +285,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
         }
         mode->putObject(*obj);
         off += unsigned(objCount);
-        TRACE(LOCAL,"Copying to obj %p: %zd of %zd", obj->addr(), c, count);
+        TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(ptr + off < ptr + count);
     return ret;
 }

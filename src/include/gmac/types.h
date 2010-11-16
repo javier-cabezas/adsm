@@ -47,12 +47,14 @@ typedef pthread_t THREAD_T;
 #	else
 #		define FMT_TID "0x%lx"
 #	endif
+#	define FMT_SIZE	   "%zd"
 #endif
 #elif _MSC_VER
 #	include <windows.h>
 	typedef DWORD THREAD_T;
 #	define SELF() GetCurrentThreadId()
 #	define FMT_TID "0x%lx"
+#	define FMT_SIZE "%Id"
 #endif
 
 #ifdef __cplusplus
