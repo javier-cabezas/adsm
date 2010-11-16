@@ -12,7 +12,7 @@ namespace gmac { namespace memory { namespace __impl {
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, void *cpuPtr, T init) :
     StateObject<T>(size, init),
-    owner_(&Mode::current()),
+    owner_(&gmac::core::Mode::current()),
     accBlock_(NULL)
 {
     gmacError_t ret = gmacSuccess;
@@ -107,7 +107,7 @@ inline void *SharedObject<T>::getAcceleratorAddr(void *addr) const
 }
 
 template<typename T>
-inline Mode &SharedObject<T>::owner() const
+inline gmac::core::Mode &SharedObject<T>::owner() const
 {
     return *owner_;
 }
@@ -139,7 +139,7 @@ inline gmacError_t SharedObject<T>::toHostPointer(Block &block, unsigned blockOf
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + off, count, bufferOff);
@@ -173,7 +173,7 @@ inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsig
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, count, bufferOff);
@@ -197,7 +197,7 @@ gmacError_t SharedObject<T>::free()
 }
 
 template<typename T>
-gmacError_t SharedObject<T>::realloc(Mode &mode)
+gmacError_t SharedObject<T>::realloc(gmac::core::Mode &mode)
 {
     void *device = NULL;
     // Allocate device and host memory

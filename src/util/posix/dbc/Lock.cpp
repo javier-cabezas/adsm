@@ -1,3 +1,5 @@
+#ifdef USE_DBC
+
 #include "Lock.h"
 
 namespace gmac { namespace util { namespace __dbc {
@@ -110,3 +112,5 @@ void RWLock::unlock() const
 }
 
 }}}
+
+#endif

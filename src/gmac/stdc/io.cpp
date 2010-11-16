@@ -31,8 +31,8 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fread == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
 
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *dstMode = proc.owner(buf);
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    gmac::core::Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
 
@@ -45,8 +45,8 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     unsigned off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    gmac::Mode &mode = gmac::Mode::current();
-    gmac::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    gmac::core::Mode &mode = gmac::core::Mode::current();
+    gmac::core::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
@@ -81,8 +81,8 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fwrite == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *srcMode = proc.owner(buf);
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    gmac::core::Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
@@ -95,8 +95,8 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     unsigned off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    gmac::Mode &mode = gmac::Mode::current();
-    gmac::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    gmac::core::Mode &mode = gmac::core::Mode::current();
+    gmac::core::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 

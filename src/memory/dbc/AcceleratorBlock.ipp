@@ -4,7 +4,7 @@
 namespace gmac { namespace memory { namespace __dbc {
 
 inline
-AcceleratorBlock::AcceleratorBlock(Mode &owner, void *addr, size_t size) :
+AcceleratorBlock::AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size) :
     __impl::AcceleratorBlock(owner, addr, size)
 {
     REQUIRES(size > 0);

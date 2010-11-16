@@ -50,13 +50,15 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class IOBuffer;
+namespace core {
+    class IOBuffer;
+}
 
 namespace cuda {
 
 class Accelerator;
 
-class GMAC_LOCAL Context : public gmac::Context {
+class GMAC_LOCAL Context : public gmac::core::Context {
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;
@@ -70,7 +72,7 @@ protected:
     CUstream streamAccelerator_;
 
     Mode &mode_;
-    IOBuffer *buffer_;
+    gmac::core::IOBuffer *buffer_;
 
     KernelConfig call_;
 
@@ -88,11 +90,11 @@ public:
 
     gmacError_t memset(void *addr, int c, size_t size);
 
-    gmac::KernelLaunch &launch(gmac::Kernel &kernel);
+    gmac::core::KernelLaunch &launch(gmac::core::Kernel &kernel);
     gmacError_t sync();
 
-    gmacError_t bufferToAccelerator(void *dst, IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(void *dst, gmac::core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
     gmacError_t waitAccelerator();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
@@ -101,7 +103,7 @@ public:
     const CUstream eventStream() const;
 
     Accelerator & accelerator();
-    gmacError_t waitForBuffer(IOBuffer &buffer);
+    gmacError_t waitForBuffer(gmac::core::IOBuffer &buffer);
 };
 
 }}

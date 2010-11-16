@@ -5,7 +5,7 @@
 #include "Accelerator.h"
 #include "Context.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 Context::Context(Accelerator &acc, unsigned id) :
     util::RWLock("Context"),
@@ -55,4 +55,4 @@ gmacError_t Context::copyAccelerator(void *dst, const void *src, size_t size)
     return ret;
 }
 
-}
+}}

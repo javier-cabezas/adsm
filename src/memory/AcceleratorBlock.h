@@ -45,13 +45,13 @@ namespace gmac { namespace memory { namespace __impl {
 
 class GMAC_LOCAL AcceleratorBlock : public memory::Block {
 protected:
-    Mode &owner_;
+    gmac::core::Mode &owner_;
 public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size);
+    AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size);
     virtual ~AcceleratorBlock();
 	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
-    Mode &owner();
+    gmac::core::Mode &owner();
 };
 
 }}}

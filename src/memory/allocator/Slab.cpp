@@ -15,7 +15,7 @@ Cache &Slab::get(long key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    Mode *mode = &Mode::current();
+    gmac::core::Mode *mode = &gmac::core::Mode::current();
     i = modes.find(mode);
     modes.unlock();
     if(i == modes.end()) {
@@ -38,7 +38,7 @@ void Slab::cleanup()
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(&Mode::current());
+    i = modes.find(&gmac::core::Mode::current());
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;

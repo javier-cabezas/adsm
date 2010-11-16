@@ -3,7 +3,7 @@
 
 #include "memory/Map.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 inline void ContextMap::add(THREAD_T id, Context *ctx)
 {
@@ -201,6 +201,6 @@ Mode::process() const
     return proc_;
 }
 
-}
+}}
 
 #endif

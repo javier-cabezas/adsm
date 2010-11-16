@@ -35,11 +35,11 @@ OrphanObject::getAcceleratorAddr(void *) const
     return NULL;
 }
 
-inline Mode &
+inline gmac::core::Mode &
 OrphanObject::owner() const
 { 
     FATAL("Trying to get owner from orphan object");
-    return gmac::Mode::current();
+    return gmac::core::Mode::current();
 }
 
 inline bool

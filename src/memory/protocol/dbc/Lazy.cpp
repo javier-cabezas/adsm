@@ -1,3 +1,5 @@
+#ifdef USE_DBC
+
 #include "core/IOBuffer.h"
 
 #include "Lazy.h"
@@ -130,7 +132,7 @@ Lazy::signalWrite(const Object &obj, void *addr)
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
+Lazy::toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -144,7 +146,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
 }
 
 gmacError_t
-Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count)
+Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -208,3 +210,5 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
 }
 
 }}}}
+
+#endif

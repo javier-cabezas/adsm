@@ -3,7 +3,7 @@
 
 #include "trace/Function.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 inline
 IOBuffer::IOBuffer(void *addr, size_t size) :
@@ -90,6 +90,6 @@ IOBuffer::wait()
     return ret;
 }
 
-}
+}}
 
 #endif

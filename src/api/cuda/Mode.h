@@ -56,7 +56,7 @@ public:
 class Texture;
 class Accelerator;
 
-class GMAC_LOCAL Mode : public gmac::Mode {
+class GMAC_LOCAL Mode : public gmac::core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
@@ -65,7 +65,7 @@ protected:
     void switchIn();
     void switchOut();
 
-    gmac::Context &getContext();
+    gmac::core::Context &getContext();
 
 #ifdef USE_VM
     CUdeviceptr bitmapDevPtr_;
@@ -85,19 +85,19 @@ protected:
     void reload();
 
 public:
-    Mode(Process &proc, Accelerator &acc);
+    Mode(gmac::core::Process &proc, Accelerator &acc);
     ~Mode();
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
     void *hostMap(void *addr);
 
-	gmacError_t execute(gmac::KernelLaunch &launch);
+	gmacError_t execute(gmac::core::KernelLaunch &launch);
 
-    IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(IOBuffer *buffer);
-    gmacError_t bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
+    gmac::core::IOBuffer *createIOBuffer(size_t size);
+    void destroyIOBuffer(gmac::core::IOBuffer *buffer);
+    gmacError_t bufferToAccelerator(void *dst, gmac::core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
@@ -119,7 +119,7 @@ public:
 #endif
 #endif
 
-    gmacError_t waitForBuffer(IOBuffer &buffer);
+    gmacError_t waitForBuffer(gmac::core::IOBuffer &buffer);
 };
 
 }}

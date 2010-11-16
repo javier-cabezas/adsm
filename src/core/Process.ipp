@@ -1,7 +1,7 @@
 #ifndef GMAC_CORE_MODE_IPP_
 #define GMAC_CORE_MODE_IPP_
 
-namespace gmac {
+namespace gmac { namespace core { 
 
 inline size_t
 Process::totalMemory()
@@ -63,6 +63,6 @@ Process::orphans() const
     return orphans_;
 }
 
-}
+}}
 
 #endif

@@ -50,7 +50,7 @@ public:
     void fini();
 
     void *getAcceleratorAddr(void *addr) const;
-    Mode &owner() const;
+    gmac::core::Mode &owner() const;
 
     bool isLocal() const;
     bool isInAccelerator() const;

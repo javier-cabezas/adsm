@@ -1,7 +1,7 @@
 #include "Queue.h"
 #include "util/Logger.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 Queue::Queue(const char *name) :
     util::Lock(name), sem(0)
@@ -36,5 +36,4 @@ ThreadQueue::~ThreadQueue()
     delete queue;
 }
 
-
-}
+}}

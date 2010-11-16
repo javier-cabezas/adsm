@@ -32,7 +32,7 @@ static void *gmac_pthread(void *arg)
     gmac::trace::Thread::start();
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
     proc.initThread();
     gmac::trace::Thread::run();
 	gmac::exitGmac();

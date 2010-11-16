@@ -1,7 +1,7 @@
 #ifndef GMAC_CORE_DESCRIPTOR_IPP_
 #define GMAC_CORE_DESCRIPTOR_IPP_
 
-namespace gmac {
+namespace gmac { namespace core {
 
 template <typename K>
 inline
@@ -24,6 +24,6 @@ Descriptor<K>::key() const
     return key_;
 }
 
-}
+}}
 
 #endif

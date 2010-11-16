@@ -109,7 +109,7 @@ SharedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_
 
 template <typename T>
 gmacError_t
-SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
@@ -178,7 +178,7 @@ SharedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const
 
 template <typename T>
 gmacError_t
-SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
@@ -196,14 +196,14 @@ SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuff
 }
 
 template<typename T>
-Mode &
+gmac::core::Mode &
 SharedObject<T>::owner() const
 {
     // PRECONDITIONS
     REQUIRES(__impl::SharedObject<T>::owner_ != NULL);
 
     // CALL IMPLEMENTATION
-    Mode &ret = __impl::SharedObject<T>::owner();
+    gmac::core::Mode &ret = __impl::SharedObject<T>::owner();
     // POSTCONDITIONS
     return ret;
 }
@@ -223,7 +223,7 @@ SharedObject<T>::free()
 
 template<typename T>
 gmacError_t
-SharedObject<T>::realloc(Mode &mode)
+SharedObject<T>::realloc(gmac::core::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(mode.id() != owner().id());

@@ -1,10 +1,11 @@
-#include "Kernel.h"
-#include "util/Logger.h"
-
 #include <cstring>
 #include <algorithm>
 
-namespace gmac {
+#include "util/Logger.h"
+
+#include "Kernel.h"
+
+namespace gmac { namespace core {
 
 KernelConfig::KernelConfig(const KernelConfig & c) :
     argsSize_(0)
@@ -35,5 +36,4 @@ void KernelConfig::pushArgument(const void *arg, size_t size, unsigned offset)
 }
 
 
-}
-
+}}

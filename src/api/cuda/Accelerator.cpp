@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	gmac::Accelerator(n), device_(device),
+	gmac::core::Accelerator(n), device_(device),
     _ctx(NULL)
 {
 #if CUDA_VERSION > 3010
@@ -86,7 +86,7 @@ void Accelerator::init()
 #endif
 }
 
-gmac::Mode *Accelerator::createMode(gmac::Process &proc)
+gmac::core::Mode *Accelerator::createMode(gmac::core::Process &proc)
 {
     gmac::trace::Function::start("Accelerator","createMode");
 	Mode *mode = new Mode(proc, *this);
@@ -95,7 +95,7 @@ gmac::Mode *Accelerator::createMode(gmac::Process &proc)
     return mode;
 }
 
-void Accelerator::registerMode(gmac::Mode &mode)
+void Accelerator::registerMode(gmac::core::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
 	TRACE(LOCAL,"Registering Execution Mode %p to Accelerator", &_mode);
@@ -105,7 +105,7 @@ void Accelerator::registerMode(gmac::Mode &mode)
     gmac::trace::Function::end("Accelerator");
 }
 
-void Accelerator::unregisterMode(gmac::Mode &mode)
+void Accelerator::unregisterMode(gmac::core::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
 	TRACE(LOCAL,"Unregistering Execution Mode %p", &_mode);

@@ -3,7 +3,7 @@
 
 #include "allocator/Slab.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 void memoryInit(const char *, const char *)
 {
@@ -20,4 +20,4 @@ void memoryFini(void)
 }
 
 
-}
+}}

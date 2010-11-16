@@ -372,7 +372,7 @@ cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 	ASSERTION(kind == cudaMemcpyHostToDevice);
 	gmac::enterGmac();
 	cudaError_t ret = cudaSuccess;
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
     gmac::cuda::Mode *mode = dynamic_cast<gmac::cuda::Mode *>(proc.owner(src));
     if(mode == NULL) {
 #if CUDA_VERSION >= 3020

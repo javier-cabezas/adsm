@@ -4,8 +4,8 @@
 
 namespace gmac { namespace cuda {
 
-Mode::Mode(Process &proc, Accelerator &acc) :
-    gmac::Mode(proc, acc)
+Mode::Mode(gmac::core::Process &proc, Accelerator &acc) :
+    gmac::core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
     cudaCtx_ = accelerator().createCUContext::current();
@@ -94,9 +94,9 @@ void Mode::reload()
     load();
 }
 
-gmac::Context &Mode::getContext()
+gmac::core::Context &Mode::getContext()
 {
-    gmac::Context *context = contextMap_.find(SELF());
+    gmac::core::Context *context = contextMap_.find(SELF());
     if(context != NULL) return *context;
     context = new Context(accelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
@@ -176,7 +176,7 @@ CUstream Mode::eventStream()
     return ctx.eventStream();
 }
 
-gmacError_t Mode::waitForBuffer(IOBuffer &buffer)
+gmacError_t Mode::waitForBuffer(gmac::core::IOBuffer &buffer)
 {
 	switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());

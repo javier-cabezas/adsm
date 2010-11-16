@@ -95,7 +95,7 @@ ReplicatedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, s
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+ReplicatedObject<T>::toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     // Function not valid for Replicated Objects
     // PRECONDITIONS
@@ -160,7 +160,7 @@ ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, c
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const
+ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     trace::Function::start("ReplicatedObject", "toAcceleratorFromBuffer");
     // PRECONDITIONS
@@ -179,20 +179,20 @@ ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, IO
 }
 
 template<typename T>
-Mode &
+gmac::core::Mode &
 ReplicatedObject<T>::owner() const
 {
     // PRECONDITIONS
 
     // CALL IMPLEMENTATION
-    Mode &ret = __impl::ReplicatedObject<T>::owner();
+    gmac::core::Mode &ret = __impl::ReplicatedObject<T>::owner();
     // POSTCONDITIONS
     ENSURES(&ret != NULL);
     return ret;
 }
 
 template<typename T>
-gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
+gmacError_t ReplicatedObject<T>::addOwner(gmac::core::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) == __impl::ReplicatedObject<T>::accelerators_.end());
@@ -204,7 +204,7 @@ gmacError_t ReplicatedObject<T>::addOwner(Mode &mode)
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::removeOwner(Mode &mode)
+inline gmacError_t ReplicatedObject<T>::removeOwner(gmac::core::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) != __impl::ReplicatedObject<T>::accelerators_.end());

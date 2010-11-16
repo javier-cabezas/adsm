@@ -11,7 +11,7 @@ Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::Context(acc, mode.id()),
+    gmac::core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL)
@@ -64,15 +64,15 @@ gmacError_t Context::syncCUstream(CUstream _stream)
     return Accelerator::error(ret);
 }
 
-gmacError_t Context::waitForBuffer(IOBuffer &buffer)
+gmacError_t Context::waitForBuffer(gmac::core::IOBuffer &buffer)
 {
     gmacError_t ret = gmacErrorUnknown;
     switch(buffer.state()) {
-        case IOBuffer::Idle: return gmacSuccess;
-        case IOBuffer::ToAccelerator:
+        case gmac::core::IOBuffer::Idle: return gmacSuccess;
+        case gmac::core::IOBuffer::ToAccelerator:
             ret = syncCUstream(streamToAccelerator_);
             break;
-        case IOBuffer::ToHost:
+        case gmac::core::IOBuffer::ToHost:
             ret = syncCUstream(streamToHost_);
             break;
     }
@@ -89,7 +89,7 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
     if(buffer_ == NULL) {
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::Function::end("Context");
-        return gmac::Context::copyToAccelerator(dev, host, size);
+        return gmac::core::Context::copyToAccelerator(dev, host, size);
     }
     buffer_->wait();
     gmacError_t ret = gmacSuccess;
@@ -121,7 +121,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
     if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);
     if(buffer_ == NULL) {
         trace::Function::end("Context");
-        return gmac::Context::copyToHost(host, accAddr, size);
+        return gmac::core::Context::copyToHost(host, accAddr, size);
     }
 
     gmacError_t ret = buffer_->wait();
@@ -162,11 +162,11 @@ gmacError_t Context::memset(void *addr, int c, size_t size)
     return ret;
 }
 
-gmac::KernelLaunch &Context::launch(gmac::Kernel &kernel)
+gmac::core::KernelLaunch &Context::launch(gmac::core::Kernel &kernel)
 {
     trace::Function::start("Context", "launch");
     gmac::trace::Thread::run((THREAD_T)id_);
-    gmac::KernelLaunch *ret = kernel.launch(call_);
+    gmac::core::KernelLaunch *ret = kernel.launch(call_);
     ASSERTION(ret != NULL);
     trace::Function::end("Context");
     return *ret;
@@ -185,7 +185,7 @@ gmacError_t Context::sync()
     return ret;
 }
 
-gmacError_t Context::bufferToAccelerator(void * dst, IOBuffer &buffer, size_t len, off_t off)
+gmacError_t Context::bufferToAccelerator(void * dst, gmac::core::IOBuffer &buffer, size_t len, off_t off)
 {
     trace::Function::start("Context", "bufferToAccelerator");
     gmacError_t ret = waitForBuffer(buffer);
@@ -197,7 +197,7 @@ gmacError_t Context::bufferToAccelerator(void * dst, IOBuffer &buffer, size_t le
     return ret;
 }
 
-gmacError_t Context::acceleratorToBuffer(IOBuffer &buffer, const void * src, size_t len, off_t off)
+gmacError_t Context::acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
     trace::Function::start("Context", "acceleratorToBuffer");
     gmacError_t ret = waitForBuffer(buffer);

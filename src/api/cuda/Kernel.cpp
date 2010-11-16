@@ -7,8 +7,8 @@
 
 namespace gmac { namespace cuda {
 
-Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
-    gmac::Kernel(k)
+Kernel::Kernel(const gmac::core::KernelDescriptor & k, CUmodule mod) :
+    gmac::core::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, name_);
     //! \todo Calculate this dynamically
@@ -19,8 +19,8 @@ Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
-gmac::KernelLaunch *
-Kernel::launch(gmac::KernelConfig & _c)
+gmac::core::KernelLaunch *
+Kernel::launch(gmac::core::KernelConfig & _c)
 {
     KernelConfig & c = static_cast<KernelConfig &>(_c);
 
@@ -29,7 +29,7 @@ Kernel::launch(gmac::KernelConfig & _c)
 }
 
 KernelConfig::KernelConfig(const KernelConfig & c) :
-    gmac::KernelConfig(c),
+    gmac::core::KernelConfig(c),
     _grid(c._grid),
     _block(c._block),
     _shared(c._shared),
@@ -38,7 +38,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 }
 
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/) :
-    gmac::KernelConfig(),
+    gmac::core::KernelConfig(),
     _grid(grid),
     _block(block),
     _shared(shared),
@@ -47,7 +47,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    gmac::KernelLaunch(),
+    gmac::core::KernelLaunch(),
     KernelConfig(c),
     _kernel(k),
     _f(k._f)

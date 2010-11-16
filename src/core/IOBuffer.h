@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include "Mode.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 class GMAC_LOCAL IOBuffer : public util::Lock {
 public:
@@ -73,7 +73,7 @@ public:
     gmacError_t wait();
 };
 
-}
+}}
 
 #include "IOBuffer.ipp"
 

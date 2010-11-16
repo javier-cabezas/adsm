@@ -25,7 +25,7 @@ void Mode::switchOut()
 }
 
 inline gmacError_t
-Mode::execute(gmac::KernelLaunch & launch)
+Mode::execute(gmac::core::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = accelerator().execute(dynamic_cast<KernelLaunch &>(launch));
@@ -34,16 +34,16 @@ Mode::execute(gmac::KernelLaunch & launch)
 }
 
 inline
-IOBuffer *Mode::createIOBuffer(size_t size)
+gmac::core::IOBuffer *Mode::createIOBuffer(size_t size)
 {
     if(ioMemory_ == NULL) return NULL;
     void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
-    return new IOBuffer(addr, size);
+    return new gmac::core::IOBuffer(addr, size);
 }
 
 inline
-void Mode::destroyIOBuffer(IOBuffer *buffer)
+void Mode::destroyIOBuffer(gmac::core::IOBuffer *buffer)
 {
     ASSERTION(ioMemory_ != NULL);
     ioMemory_->put(buffer->addr(), buffer->size());
@@ -51,23 +51,23 @@ void Mode::destroyIOBuffer(IOBuffer *buffer)
 }
 
 inline
-gmacError_t Mode::bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t len, off_t off)
+gmacError_t Mode::bufferToAccelerator(void *dst, gmac::core::IOBuffer &buffer, size_t len, off_t off)
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    gmacError_t ret = ctx.bufferToAccelerator(dst, dynamic_cast<IOBuffer &>(buffer), len, off);
+    gmacError_t ret = ctx.bufferToAccelerator(dst, dynamic_cast<gmac::core::IOBuffer &>(buffer), len, off);
     switchOut();
     return ret;
 }
 
 inline
-gmacError_t Mode::acceleratorToBuffer(gmac::IOBuffer &buffer, const void * src, size_t len, off_t off)
+gmacError_t Mode::acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void * src, size_t len, off_t off)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src, buffer.addr(), len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    gmacError_t ret = ctx.acceleratorToBuffer(dynamic_cast<IOBuffer &>(buffer), src, len, off);
+    gmacError_t ret = ctx.acceleratorToBuffer(dynamic_cast<gmac::core::IOBuffer &>(buffer), src, len, off);
     switchOut();
     return ret;
 }
@@ -93,7 +93,7 @@ void Mode::argument(const void *arg, size_t size, off_t offset)
 inline Mode &
 Mode::current()
 {
-    return static_cast<Mode &>(gmac::Mode::current());
+    return static_cast<Mode &>(gmac::core::Mode::current());
 }
 
 #ifdef USE_VM

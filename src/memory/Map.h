@@ -42,8 +42,11 @@ WITH THE SOFTWARE.  */
 
 
 namespace gmac {
+
+namespace core {
 class Mode;
 class Process;
+}
 
 namespace memory {
 class Object;
@@ -74,7 +77,7 @@ public:
     size_t memorySize() const;
     void forEach(Protocol &p, ProtocolOp op);
     void freeObjects(Protocol &p, ProtocolOp op);
-    void reallocObjects(Mode &mode);
+    void reallocObjects(gmac::core::Mode &mode);
     
     virtual void cleanAndDestroy();
 };
@@ -82,10 +85,10 @@ public:
 class GMAC_LOCAL Map : public ObjectMap {
 protected:
     void clean();
-    Mode &parent_;
+    gmac::core::Mode &parent_;
 
 public:
-    Map(const char *name, Mode &parent);
+    Map(const char *name, gmac::core::Mode &parent);
     virtual ~Map();
     
     // Do not allow to copy memory maps
@@ -96,8 +99,8 @@ public:
 #ifndef USE_MMAP
     void insertReplicated(Object &obj);
     void insertCentralized(Object &obj);
-    static void addOwner(gmac::Process &proc, Mode &mode);
-    static void removeOwner(gmac::Process &proc, Mode &mode);
+    static void addOwner(gmac::core::Process &proc, gmac::core::Mode &mode);
+    static void removeOwner(gmac::core::Process &proc, gmac::core::Mode &mode);
 #endif
 
     const Object *getObjectRead(const void *addr) const;

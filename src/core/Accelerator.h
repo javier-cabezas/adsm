@@ -41,7 +41,7 @@
 #include "include/gmac/types.h"
 
 
-namespace gmac {
+namespace gmac { namespace core {
 
 class KernelLaunch;
 class Mode;
@@ -100,7 +100,7 @@ public:
 	bool integrated() const;
 };
 
-}
+}}
 
 #include "Accelerator.ipp"
 

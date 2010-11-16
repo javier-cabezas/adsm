@@ -63,8 +63,8 @@ static void CONSTRUCTOR init(void)
     TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    Process::create<Process>();
-    apiInit();
+    gmac::core::Process::create<gmac::core::Process>();
+    gmac::core::apiInit();
 
     exitGmac();
 }
@@ -73,7 +73,7 @@ static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
     TRACE(GLOBAL, "Cleaning GMAC");
-    gmac::Process::destroy();
+    gmac::core::Process::destroy();
     delete _inGmacLock;
 	// TODO: Clean-up logger
 }
@@ -87,7 +87,7 @@ static void InitThread()
 {
 	gmac::trace::Thread::start();
 	gmac::enterGmac();
-	gmac::Process &proc = gmac::Process::getInstance();
+	gmac::core::Process &proc = gmac::core::Process::getInstance();
 	proc.initThread();
 	gmac::trace::Thread::run();
 	gmac::exitGmac();
@@ -98,7 +98,7 @@ static void FiniThread()
 	gmac::enterGmac();
 	gmac::trace::Thread::resume();
 	// Modes and Contexts already destroyed in Process destructor
-	gmac::Process &proc = gmac::Process::getInstance();
+	gmac::core::Process &proc = gmac::core::Process::getInstance();
 	proc.finiThread();
 	gmac::exitGmac();
 }
