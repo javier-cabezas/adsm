@@ -48,7 +48,8 @@ WITH THE SOFTWARE.  */
 #include "allocator/Buddy.h"
 
 
-namespace gmac {
+namespace gmac { namespace core {
+
 class Accelerator;
 class IOBuffer;
 class Mode;
@@ -59,12 +60,13 @@ void apiInit(void);
 void contextInit(void);
 void memoryInit(const char *manager = NULL, const char *allocator = NULL);
 void memoryFini(void);
-}
+}}
 
 namespace gmac {
 
 namespace memory { class DistributedObject; }
 
+namespace core {
 
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
 {
@@ -161,7 +163,7 @@ public:
     Mode *owner(const void *addr) const;
 };
 
-}
+}}
 
 #include "Process.ipp"
 

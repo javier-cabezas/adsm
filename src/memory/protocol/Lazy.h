@@ -44,14 +44,16 @@ WITH THE SOFTWARE.  */
 
 namespace gmac {
 
-class IOBuffer;
+namespace core {
+    class IOBuffer;
+}
 
 namespace memory { namespace protocol {  namespace __impl {
 
 class List;
 
 
-class GMAC_LOCAL Lazy : public Protocol, Handler, protected std::map<Mode *, List *>, util::RWLock {
+class GMAC_LOCAL Lazy : public Protocol, Handler, protected std::map<gmac::core::Mode *, List *>, util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -104,8 +106,8 @@ public:
     gmacError_t toHost(const Object &obj);
     gmacError_t toDevice(const Object &obj);
 
-    TESTABLE gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count);
-    TESTABLE gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count);
+    TESTABLE gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count);
+    TESTABLE gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count);
 
     TESTABLE gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t count);
     TESTABLE gmacError_t fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count);
@@ -113,8 +115,8 @@ public:
     TESTABLE gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
     TESTABLE gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 
-    gmacError_t moveTo(Object &obj, Mode &mode);
-    gmacError_t removeMode(Mode &mode);
+    gmacError_t moveTo(Object &obj, gmac::core::Mode &mode);
+    gmacError_t removeMode(gmac::core::Mode &mode);
 };
 
 

@@ -55,6 +55,8 @@ namespace gmac {
 
 namespace memory { class Map; class Object; }
 
+namespace core {
+
 class Context;
 class IOBuffer;
 class KernelLaunch;
@@ -209,7 +211,7 @@ public:
     virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
-}
+}}
 
 #include "Mode.ipp"
 

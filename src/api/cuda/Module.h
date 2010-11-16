@@ -52,9 +52,9 @@ namespace gmac { namespace cuda {
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
-typedef Descriptor<gmacTexture_t> TextureDescriptor;
+typedef gmac::core::Descriptor<gmacTexture_t> TextureDescriptor;
 
-class GMAC_LOCAL VariableDescriptor : public Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public gmac::core::Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -93,7 +93,7 @@ protected:
     static ModuleDescriptorVector Modules_;
 	const void * fatBin_;
 
-    typedef std::vector<gmac::KernelDescriptor> KernelVector;
+    typedef std::vector<gmac::core::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
 	typedef std::vector<TextureDescriptor>      TextureVector;
 
@@ -114,7 +114,7 @@ public:
     ModuleDescriptor(const void * fatBin);
     ~ModuleDescriptor();
 
-    void add(gmac::KernelDescriptor & k);
+    void add(gmac::core::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 

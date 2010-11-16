@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Private.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 class Accelerator;
 class Kernel;
@@ -68,10 +68,10 @@ public:
 
     virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
 
-    virtual gmac::KernelLaunch &launch(gmac::Kernel &kernel) = 0;
+    virtual gmac::core::KernelLaunch &launch(gmac::core::Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;
 };
 
-}
+}}
 
 #endif

@@ -42,8 +42,8 @@ namespace gmac { namespace memory {
 class GMAC_LOCAL DistributedObject {
 public:
     virtual ~DistributedObject();
-    virtual gmacError_t addOwner(Mode &mode) = 0;
-    virtual gmacError_t removeOwner(Mode &mode) = 0;
+    virtual gmacError_t addOwner(gmac::core::Mode &mode) = 0;
+    virtual gmacError_t removeOwner(gmac::core::Mode &mode) = 0;
 };
 
 }}

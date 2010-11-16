@@ -63,14 +63,14 @@ public:
     uint8_t *end() const;
     size_t size() const;
 
-    virtual Mode &owner() const = 0;
+    virtual gmac::core::Mode &owner() const = 0;
     virtual void *getAcceleratorAddr(void *addr) const = 0;
 
     virtual gmacError_t init() = 0;
     virtual void fini() = 0;
 
     virtual gmacError_t free();
-    virtual gmacError_t realloc(Mode &mode);
+    virtual gmacError_t realloc(gmac::core::Mode &mode);
 
     virtual bool isLocal() const = 0;
     virtual bool isInAccelerator() const = 0;

@@ -39,8 +39,11 @@ WITH THE SOFTWARE.  */
 #include "util/Singleton.h"
 
 namespace gmac {
-class IOBuffer;
-class Mode;
+
+namespace core {
+    class IOBuffer;
+    class Mode;
+}
 
 namespace memory {
 class Protocol;
@@ -94,8 +97,8 @@ public:
     /////////////////////////
     // Memory bulk operations
     /////////////////////////
-    TESTABLE gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
-    TESTABLE gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
+    TESTABLE gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t size);
+    TESTABLE gmacError_t fromIOBuffer(void *addr, gmac::core::IOBuffer &buffer, size_t size);
 
     TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
     TESTABLE gmacError_t memset(void *dst, int c, size_t n);
@@ -103,12 +106,12 @@ public:
     ///////////////////
     // Object migration
     ///////////////////
-    gmacError_t moveTo(void *addr, Mode &mode);
+    gmacError_t moveTo(void *addr, gmac::core::Mode &mode);
 
     //////////////////
     // Mode management
     //////////////////
-    gmacError_t removeMode(Mode &mode);
+    gmacError_t removeMode(gmac::core::Mode &mode);
 
     ///////////////////////////////////////////////////
     // Direct access to protocol for internal functions

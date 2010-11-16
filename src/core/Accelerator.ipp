@@ -2,7 +2,7 @@
 #ifndef GMAC_CORE_ACCELERATOR_IPP_
 #define GMAC_CORE_ACCELERATOR_IPP_
 
-namespace gmac {
+namespace gmac { namespace core {
 
 inline unsigned
 Accelerator::id() const
@@ -28,6 +28,6 @@ Accelerator::integrated() const
 	return integrated_;
 }
 
-}
+}}
 
 #endif

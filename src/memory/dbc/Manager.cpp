@@ -1,3 +1,5 @@
+#ifdef USE_DBC
+
 #include "core/IOBuffer.h"
 
 #include "Manager.h"
@@ -99,7 +101,7 @@ Manager::write(void *addr)
 }
 
 gmacError_t
-Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
+Manager::toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -113,7 +115,7 @@ Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t size)
 }
 
 gmacError_t
-Manager::fromIOBuffer(void *addr, IOBuffer &buffer, size_t size)
+Manager::fromIOBuffer(void *addr, gmac::core::IOBuffer &buffer, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -154,3 +156,5 @@ Manager::memset(void * dst, int c, size_t n)
 }
 
 }}}
+
+#endif

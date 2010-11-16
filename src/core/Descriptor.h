@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 
-namespace gmac {
+namespace gmac { namespace core {
 
 template <typename K>
 class GMAC_LOCAL Descriptor {
@@ -51,7 +51,7 @@ public:
     K key() const;
 };
 
-}
+}}
 
 
 #include "Descriptor.ipp"

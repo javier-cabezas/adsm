@@ -11,13 +11,13 @@
 #include <string>
 #include <list>
 
-namespace gmac {
+namespace gmac { namespace core {
 
 static bool initialized = false;
 
 void apiInit(void)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
 	if(initialized)
 		FATAL("GMAC double initialization not allowed");
 
@@ -61,4 +61,4 @@ void apiInit(void)
 	initialized = true;
 }
 
-}
+}}

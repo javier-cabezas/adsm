@@ -16,7 +16,7 @@ const char *Module::ShiftEntrySymbol_  = "__SHIFT_ENTRY";
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
-    Descriptor<gmacVariable_t>(name, key),
+    gmac::core::Descriptor<gmacVariable_t>(name, key),
     constant_(constant)
 {
 }

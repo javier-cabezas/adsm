@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Semaphore.h"
 
 
-namespace gmac {
+namespace gmac { namespace core {
 
 class Mode;
 
@@ -70,6 +70,6 @@ public:
     Queue *queue;
 };
 
-}
+}}
 
 #endif

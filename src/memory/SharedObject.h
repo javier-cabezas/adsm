@@ -45,7 +45,7 @@ namespace gmac { namespace memory { namespace __impl {
 template<typename T>
 class GMAC_LOCAL SharedObject : public StateObject<T> {
 protected:
-    Mode *owner_;
+    gmac::core::Mode *owner_;
     bool mapped_;
     AcceleratorBlock *accBlock_;
 public:
@@ -59,19 +59,19 @@ public:
     TESTABLE gmacError_t toHost(Block &block) const;
     TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
     TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     // To accelerator functions
     TESTABLE gmacError_t toAccelerator(Block &block) const;
     TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
     TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE Mode &owner() const;
+    TESTABLE gmac::core::Mode &owner() const;
 
     TESTABLE gmacError_t free();
-    TESTABLE gmacError_t realloc(Mode &mode);
+    TESTABLE gmacError_t realloc(gmac::core::Mode &mode);
 
     gmacError_t memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const;
 

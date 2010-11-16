@@ -71,7 +71,7 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public gmac::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -100,9 +100,9 @@ public:
 
     static void init();
 
-	gmac::Mode *createMode(gmac::Process &proc);
-    void registerMode(gmac::Mode &mode);
-    void unregisterMode(gmac::Mode &mode);
+	gmac::core::Mode *createMode(gmac::core::Process &proc);
+    void registerMode(gmac::core::Mode &mode);
+    void unregisterMode(gmac::core::Mode &mode);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();

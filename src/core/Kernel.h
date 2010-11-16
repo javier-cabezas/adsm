@@ -45,7 +45,7 @@ WITH THE SOFTWARE.  */
 
 #include "Descriptor.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
@@ -97,7 +97,7 @@ public:
     virtual gmacError_t execute() = 0;
 };
 
-}
+}}
 
 #include "Kernel.ipp"
 

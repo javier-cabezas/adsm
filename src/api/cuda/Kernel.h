@@ -15,17 +15,17 @@ class Mode;
 class KernelLaunch;
 class KernelConfig;
 
-class GMAC_LOCAL Kernel : public gmac::Kernel {
+class GMAC_LOCAL Kernel : public gmac::core::Kernel {
     friend class KernelLaunch;
 protected:
     CUfunction _f;
 
 public:
-    Kernel(const gmac::KernelDescriptor & k, CUmodule mod);
-    gmac::KernelLaunch * launch(gmac::KernelConfig & c);
+    Kernel(const gmac::core::KernelDescriptor & k, CUmodule mod);
+    gmac::core::KernelLaunch * launch(gmac::core::KernelConfig & c);
 };
 
-class GMAC_LOCAL KernelConfig : public gmac::KernelConfig {
+class GMAC_LOCAL KernelConfig : public gmac::core::KernelConfig {
 protected:
     dim3 _grid;
     dim3 _block;
@@ -44,7 +44,7 @@ public:
     size_t shared() const { return _shared; }
 };
 
-class GMAC_LOCAL KernelLaunch : public gmac::KernelLaunch, public KernelConfig {
+class GMAC_LOCAL KernelLaunch : public gmac::core::KernelLaunch, public KernelConfig {
 protected:
     // \todo Is this really necessary?
     const Kernel & _kernel;

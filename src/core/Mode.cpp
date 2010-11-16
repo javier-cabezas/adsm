@@ -8,7 +8,7 @@
 #include "Mode.h"
 #include "Process.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 gmac::util::Private<Mode> Mode::key;
 
@@ -158,13 +158,13 @@ gmacError_t Mode::memset(void *addr, int c, size_t size)
     return error_;
 }
 
-gmac::KernelLaunch &Mode::launch(const char *kernel)
+gmac::core::KernelLaunch &Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     assert(i != kernels_.end());
-    gmac::Kernel * k = i->second;
+    gmac::core::Kernel * k = i->second;
     switchIn();
-    gmac::KernelLaunch &l = getContext().launch(*k);
+    gmac::core::KernelLaunch &l = getContext().launch(*k);
     switchOut();
 
     return l;
@@ -233,4 +233,4 @@ void Mode::memInfo(size_t *free, size_t *total)
     switchOut();
 }
 
-}
+}}

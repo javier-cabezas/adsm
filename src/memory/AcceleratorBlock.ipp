@@ -3,7 +3,7 @@
 
 namespace gmac { namespace memory { namespace __impl {
 
-inline AcceleratorBlock::AcceleratorBlock(Mode &owner, void *addr, size_t size) :
+inline AcceleratorBlock::AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size) :
     Block(addr, size),
     owner_(owner)
 {
@@ -23,7 +23,7 @@ AcceleratorBlock::operator =(const AcceleratorBlock &)
 
 
 inline
-Mode &
+gmac::core::Mode &
 AcceleratorBlock::owner()
 {
     return owner_;

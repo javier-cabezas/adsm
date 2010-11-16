@@ -29,7 +29,7 @@ Texture::texRef() const
 
 inline
 void
-ModuleDescriptor::add(gmac::KernelDescriptor & k)
+ModuleDescriptor::add(gmac::core::KernelDescriptor & k)
 {
     kernels_.push_back(k);
 }

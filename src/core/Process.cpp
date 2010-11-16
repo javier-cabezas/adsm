@@ -12,7 +12,7 @@
 #include "trace/Function.h"
 #include "trace/Thread.h"
 
-namespace gmac {
+namespace gmac { namespace core {
 
 ModeMap::ModeMap() :
     util::RWLock("ModeMap")
@@ -321,4 +321,4 @@ bool Process::allIntegrated()
     return ret;
 }
 
-}
+}}

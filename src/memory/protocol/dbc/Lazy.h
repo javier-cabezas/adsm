@@ -64,8 +64,8 @@ public:
     gmacError_t signalRead(const Object &obj, void *addr);
     gmacError_t signalWrite(const Object &obj, void *addr);
 
-    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
-    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
+    gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
+    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t n);
 
     gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
     gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);

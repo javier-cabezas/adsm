@@ -20,9 +20,10 @@
 extern "C" {
 #endif
 
+using gmac::core::KernelDescriptor;
+
 using gmac::cuda::Accelerator;
 using gmac::cuda::Mode;
-using gmac::KernelDescriptor;
 using gmac::cuda::ModuleDescriptor;
 using gmac::cuda::TextureDescriptor;
 using gmac::cuda::VariableDescriptor;
@@ -32,7 +33,7 @@ using gmac::cuda::VariableDescriptor;
  */
 GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
     TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
     ASSERTION(proc.nAccelerators() > 0);
     gmac::enterGmac();

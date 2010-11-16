@@ -61,8 +61,8 @@ public:
     bool read(void *addr);
     bool write(void *addr);
 
-    gmacError_t toIOBuffer(IOBuffer &buffer, const void *addr, size_t size);
-    gmacError_t fromIOBuffer(void *addr, IOBuffer &buffer, size_t size);
+    gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t size);
+    gmacError_t fromIOBuffer(void *addr, gmac::core::IOBuffer &buffer, size_t size);
 
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);

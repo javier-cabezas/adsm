@@ -38,7 +38,7 @@ Manager::~Manager()
 gmacError_t
 Manager::map(void *addr, size_t size, GmacProtection prot)
 {
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
 
     // Create new shared object
     Object *object = protocol_->createSharedObject(size, addr, prot);
@@ -56,7 +56,7 @@ gmacError_t Manager::unmap(void *addr, size_t size)
 {
     // TODO implement partial unmapping
     gmacError_t ret = gmacSuccess;
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
         if (object->isInAccelerator()) {
@@ -83,7 +83,7 @@ gmacError_t Manager::unmap(void *addr, size_t size)
 
 gmacError_t Manager::alloc(void **addr, size_t size)
 {
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     // For integrated devices we want to use Centralized objects to avoid memory transfers
     if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
@@ -104,8 +104,8 @@ gmacError_t Manager::alloc(void **addr, size_t size)
 #ifndef USE_MMAP
 gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
-    Mode &mode = gmac::Mode::current();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
 
     if (proc.allIntegrated()) hint = GMAC_GLOBAL_MALLOC_CENTRALIZED;
     if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
@@ -142,7 +142,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
 gmacError_t Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
         if (object->isInAccelerator()) {
@@ -160,7 +160,7 @@ gmacError_t Manager::free(void * addr)
 gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     if (mode.releasedObjects() == false) {
         return gmacSuccess;
     }
@@ -184,7 +184,7 @@ gmacError_t Manager::release()
 #ifdef USE_VM
     checkBitmapToDevice();
 #endif
-    Mode &mode = Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
     protocol_->release();
@@ -228,16 +228,16 @@ gmacError_t Manager::invalidate()
 }
 #endif
 
-gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count)
+gmacError_t Manager::toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t count)
 {
     if (count > buffer.size()) return gmacErrorInvalidSize;
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     const uint8_t *ptr = (const uint8_t *)addr;
     unsigned off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        Mode * mode = proc.owner(ptr + off);
+        gmac::core::Mode * mode = proc.owner(ptr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
         const Object *obj = mode->getObjectRead(ptr + off);
         if (!obj) return gmacErrorInvalidValue;
@@ -259,16 +259,16 @@ gmacError_t Manager::toIOBuffer(IOBuffer &buffer, const void *addr, size_t count
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
+gmacError_t Manager::fromIOBuffer(void * addr, gmac::core::IOBuffer &buffer, size_t count)
 {
     if (count > buffer.size()) return gmacErrorInvalidSize;
-    gmac::Process &proc = gmac::Process::getInstance();
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     uint8_t *ptr = (uint8_t *)addr;
     unsigned off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        Mode *mode = proc.owner(ptr + off);
+        gmac::core::Mode *mode = proc.owner(ptr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
         const Object *obj = mode->getObjectRead(ptr + off);
         if (!obj) return gmacErrorInvalidValue;
@@ -293,7 +293,7 @@ gmacError_t Manager::fromIOBuffer(void * addr, IOBuffer &buffer, size_t count)
 #ifdef USE_VM
 void Manager::checkBitmapToHost()
 {
-    Mode *mode = gmac::Mode::current();
+    gmac::core::Mode *mode = gmac::core::Mode::current();
     vm::Bitmap &bitmap = mode->dirtyBitmap();
     if (!bitmap.synced()) {
         bitmap.syncHost();
@@ -312,7 +312,7 @@ void Manager::checkBitmapToHost()
 
 void Manager::checkBitmapToDevice()
 {
-    Mode &mode = gmac::Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (!bitmap.clean()) {
         bitmap.syncDevice();
@@ -322,7 +322,7 @@ void Manager::checkBitmapToDevice()
 
 bool Manager::read(void *addr)
 {
-    Mode &mode = gmac::Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
@@ -338,7 +338,7 @@ bool Manager::read(void *addr)
 
 bool Manager::write(void *addr)
 {
-    Mode &mode = gmac::Mode::current();
+    gmac::core::Mode &mode = gmac::core::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
@@ -360,9 +360,9 @@ bool Manager::requireUpdate(memory::Block &block)
 
 gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *dstMode = proc.owner(dst);
-    gmac::Mode *srcMode = proc.owner(src);
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    gmac::core::Mode *dstMode = proc.owner(dst);
+    gmac::core::Mode *srcMode = proc.owner(src);
 
 	if (dstMode == NULL && srcMode == NULL) {
         ::memcpy(dst, src, n);
@@ -413,14 +413,14 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
     }
 #if 0
 	else { // dstCtx != srcCtx
-        gmac::Mode *mode = gmac::Mode::current();
+        gmac::core::Mode *mode = gmac::core::Mode::current();
         ASSERTION(mode != NULL);
 
         manager->release((void *)src, n);
         manager->invalidate(dst, n);
 
         off_t off = 0;
-        gmac::IOBuffer *buffer = gmac::Mode::current()->getIOBuffer();
+        gmac::IOBuffer *buffer = gmac::core::Mode::current()->getIOBuffer();
 
         size_t left = n;
         while (left != 0) {
@@ -442,8 +442,8 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 
 gmacError_t Manager::memset(void *s, int c, size_t n)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *mode = proc.owner(s);
+    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    gmac::core::Mode *mode = proc.owner(s);
 	if (mode == NULL) {
         ::memset(s, c, n);
         return gmacSuccess;
@@ -462,13 +462,13 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
 }
 
 gmacError_t
-Manager::removeMode(Mode &mode)
+Manager::removeMode(gmac::core::Mode &mode)
 {
     gmacError_t ret = protocol_->removeMode(mode);
     return ret;
 }
 
-gmacError_t Manager::moveTo(void * addr, Mode &mode)
+gmacError_t Manager::moveTo(void * addr, gmac::core::Mode &mode)
 {
     Object * obj = mode.getObjectWrite(addr);
     if(obj == NULL) return gmacErrorInvalidValue;

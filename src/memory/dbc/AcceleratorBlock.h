@@ -42,7 +42,7 @@ class GMAC_LOCAL AcceleratorBlock :
     public __impl::AcceleratorBlock,
     public virtual gmac::dbc::Contract {
 public:
-    AcceleratorBlock(Mode &owner, void *addr, size_t size);
+    AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size);
 
     virtual ~AcceleratorBlock();
 };

@@ -3,10 +3,10 @@
 
 namespace gmac { namespace memory {
 
-inline Mode &
+inline gmac::core::Mode &
 CentralizedObject::owner() const
 {
-    return gmac::Mode::current();
+    return gmac::core::Mode::current();
 }
 
 inline bool
