@@ -1,3 +1,4 @@
+#if defined(USE_TRACE)
 #include "trace/Tracer.h"
 
 #include <sys/time.h>
@@ -11,3 +12,4 @@ uint64_t Tracer::timeMark() const
 	return tm - base_;
 }
 }}
+#endif

@@ -3,7 +3,7 @@
 #include "core/Context.h"
 #include "gmac/init.h"
 #include "os/posix/loader.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 #include "util/Lock.h"
 
 #include "config/order.h"
@@ -29,19 +29,19 @@ struct gmac_thread_t {
 
 static void *gmac_pthread(void *arg)
 {
-    gmac::trace::Thread::start();
+    gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     gmac::core::Process &proc = gmac::core::Process::getInstance();
     proc.initThread();
-    gmac::trace::Thread::run();
+    gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 	void *ret = gthread->__start_routine(gthread->__arg);
 	gmac::enterGmac();
-    gmac::trace::Thread::resume();
     // Modes and Contexts already destroyed in Process destructor
     proc.finiThread();
 	free(gthread);
+    gmac::trace::SetThreadState(gmac::trace::Idle);
 	gmac::exitGmac();
 	return ret;
 }

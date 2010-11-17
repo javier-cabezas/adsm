@@ -4,7 +4,7 @@
 #include "gmac/init.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
 namespace gmac { namespace memory {
 
@@ -20,7 +20,7 @@ int Handler::Signum_ = SIGBUS;
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	enterGmac();
-	trace::Function::start("GMAC", "gmacSignal");
+    trace::EnterCurrentFunction();
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
 #if defined(LINUX)
@@ -47,7 +47,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 		return defaultAction.sa_handler(s);
 	}
 
-	trace::Function::end("GMAC");
+    trace::ExitCurrentFunction();
 	exitGmac();
 }
 
