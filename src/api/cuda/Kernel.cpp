@@ -3,7 +3,7 @@
 #include "Mode.h"
 #include "Accelerator.h"
 
-#include <trace/Thread.h>
+#include "trace/Tracer.h"
 
 namespace gmac { namespace cuda {
 

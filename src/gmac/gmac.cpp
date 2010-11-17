@@ -16,7 +16,7 @@
 #include "memory/Manager.h"
 #include "memory/Allocator.h"
 
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
 #if defined(GMAC_DLL)
 #include "init.h"
@@ -88,10 +88,10 @@ size_t APICALL gmacAccs()
 {
     size_t ret;
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC", "gmacAccs");
+    gmac::trace::EnterCurrentFunction();
     gmac::core::Process &proc = gmac::core::Process::getInstance();
     ret = proc.nAccelerators();
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
@@ -100,7 +100,7 @@ gmacError_t APICALL gmacMigrate(int acc)
 {
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
-    gmac::trace::Function::start("GMAC", "gmacMigrate");
+    gmac::trace::EnterCurrentFunction();
     gmac::core::Process &proc = gmac::core::Process::getInstance();
     if (gmac::core::Mode::hasCurrent()) {
         ret = proc.migrate(gmac::core::Mode::current(), acc);
@@ -109,7 +109,7 @@ gmacError_t APICALL gmacMigrate(int acc)
             ret = gmacErrorUnknown;
         } 
     }
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
@@ -122,12 +122,12 @@ gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
         return ret;
     }
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC","gmacMap");
+    gmac::trace::EnterCurrentFunction();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     // TODO Remove alignment constraints
     count = (int(count) < getpagesize())? getpagesize(): count;
     ret = manager.map(cpuPtr, count, prot);
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
     return ret;
 #else
@@ -143,12 +143,12 @@ gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count)
         return ret;
     }
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC","gmacUnmap");
+    gmac::trace::EnterCurrentFunction();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     // TODO Remove alignment constraints
     count = (int(count) < getpagesize())? getpagesize(): count;
     ret = manager.unmap(cpuPtr, count);
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
     return ret;
 #else
@@ -164,7 +164,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
         return ret;
     }
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC","gmacMalloc");
+    gmac::trace::EnterCurrentFunction();
     gmac::memory::Allocator &allocator = gmac::memory::Allocator::getInstance();
     if(count < (paramPageSize / 2)) {
         *cpuPtr = allocator.alloc(count, RETURN_ADDRESS);
@@ -174,7 +174,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	    count = (int(count) < getpagesize())? getpagesize(): count;
 	    ret = manager.alloc(cpuPtr, count);
     }
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
@@ -188,10 +188,10 @@ gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMa
         return ret;
     }
     gmac::enterGmac();
-    gmac::trace::Function::start("GMAC", "gmacGlobalMalloc");
+    gmac::trace::EnterCurrentFunction();
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
 	ret = gmac::memory::Manager::getInstance().globalAlloc(cpuPtr, count, hint);
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
     return ret;
 #else
@@ -203,13 +203,13 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC", "gmacFree");
+    gmac::trace::EnterCurrentFunction();
     gmac::memory::Allocator &allocator = gmac::memory::Allocator::getInstance();
     if (allocator.free(cpuPtr) == false) {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
         ret = manager.free(cpuPtr);
     }
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
@@ -229,7 +229,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     gmac::enterGmac();
     gmac::core::Mode &mode = gmac::core::Mode::current();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    gmac::trace::Function::start("GMAC", "gmacLaunch");
+    gmac::trace::EnterCurrentFunction();
     gmac::core::KernelLaunch &launch = mode.launch(k);
 
     gmacError_t ret = gmacSuccess;
@@ -247,7 +247,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     }
 
     delete &launch;
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
 
     return ret;
@@ -256,14 +256,14 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 gmacError_t APICALL gmacThreadSynchronize()
 {
 	gmac::enterGmac();
-    gmac::trace::Function::start("GMAC", "gmacSync");
+    gmac::trace::EnterCurrentFunction();
 
 	gmacError_t ret = gmac::core::Mode::current().sync();
     TRACE(GLOBAL, "Memory Sync");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     manager.acquire();
 
-    gmac::trace::Function::end("GMAC");
+    gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }

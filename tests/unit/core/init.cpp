@@ -1,12 +1,11 @@
 #include "unit/init.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 #include "core/Process.h"
 #include "core/Accelerator.h"
 
 #include "gtest/gtest.h"
 
 using gmac::core::Process;
-using gmac::trace::Function;
 using gmac::core::Accelerator;
 
 Accelerator *Accelerator_ = NULL;
@@ -16,7 +15,14 @@ void InitTrace(void)
 {
 	if(Trace_ == true) return;
 	Trace_ = true;
-	Function::init();
+	gmac::trace::InitTracer();
+}
+
+void FiniTrace(void)
+{
+	if(Trace_ == false) return;
+	Trace_ = false;
+	gmac::trace::FiniTracer();
 }
 
 gmac::core::Accelerator &GetAccelerator()
@@ -47,5 +53,6 @@ void FiniProcess()
 	ASSERT_TRUE(Accelerator_ != NULL);
 	Accelerator_ = NULL;
     Process::destroy();
+	FiniTrace();
 }
 

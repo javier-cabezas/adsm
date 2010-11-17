@@ -54,13 +54,14 @@ typedef enum {
 	Locked,
 	IO
 } State;
-	
-
+#if defined(USE_TRACE)
 class GMAC_LOCAL Tracer {
 protected:
 	uint64_t timeMark() const;
+	uint64_t base_;
 public:
-	virtual void startThread(THREAD_T tid) = 0;
+	Tracer();
+	virtual void startThread(THREAD_T tid, const char *name) = 0;
 	virtual void endThread(THREAD_T tid) = 0;
 
 	virtual void enterFunction(THREAD_T tid, const char *name) = 0;
@@ -68,12 +69,12 @@ public:
 
 	virtual void setThreadState(THREAD_T tid, const State state) = 0;
 };
-
+#endif
 void InitTracer();
 void FiniTracer();
 
-void StartThread(THREAD_T tid);
-void StartThread();
+void StartThread(THREAD_T tid, const char *name);
+void StartThread(const char *name);
 
 void EndThread(THREAD_T tid);
 void EndThread();

@@ -11,7 +11,7 @@
 #include "memory/ReplicatedObject.h"
 #include "memory/Memory.h"
 
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
 #include "memory/Block.h"
 
@@ -309,7 +309,7 @@ static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const 
 gmacError_t
 Lazy::toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
 {
-    trace::Function::start("Lazy", "toIOBuffer");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -347,14 +347,14 @@ Lazy::toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object 
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count)
 {
-    trace::Function::start("Lazy", "fromIOBuffer");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -400,14 +400,14 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t count)
 {
-    trace::Function::start("Lazy", "toPointer");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objSrc);
@@ -447,14 +447,14 @@ Lazy::toPointer(void *_dst, const Object &objSrc, unsigned objectOff, size_t cou
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, size_t count)
 {
-    trace::Function::start("Lazy", "fromPointer");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(objDst);
@@ -501,7 +501,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *_src, si
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 } 
 
@@ -599,7 +599,7 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
 gmacError_t
 Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count)
 {
-    trace::Function::start("Lazy", "copy");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     
     const StateObject<State> &objectDst = dynamic_cast<const StateObject<State> &>(objDst);
@@ -685,14 +685,14 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
 {
-    trace::Function::start("Lazy", "memset");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
@@ -739,27 +739,27 @@ Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
     } while (off < count);
 
 exit_func:
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Lazy::moveTo(Object &obj, gmac::core::Mode &mode)
 {
-    trace::Function::start("Lazy", "moveTo");
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     ret = toHost(obj);
     if (ret == gmacSuccess) {
         StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
         ret = object.realloc(mode);
     }
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Lazy::signalRead(const Object &obj, void *addr)
 {
-    trace::Function::start("Lazy", "signalRead");
+    trace::EnterCurrentFunction();
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     block->lock();
@@ -794,13 +794,13 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
     block->state(ReadOnly);
 exit_func:
     block->unlock();
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
 {
-    trace::Function::start("Lazy", "signalWrite");
+    trace::EnterCurrentFunction();
     const StateObject<State> &object = dynamic_cast<const StateObject<State> &>(obj);
     SystemBlock<State> *block = object.findBlock(addr);
     gmacError_t ret = gmacSuccess;
@@ -839,7 +839,7 @@ gmacError_t Lazy::signalWrite(const Object &obj, void *addr)
     ret = addDirty(object, *block);
 exit_func:
     block->unlock();
-    trace::Function::end("Lazy");
+    trace::ExitCurrentFunction();
     return ret;
 }
 

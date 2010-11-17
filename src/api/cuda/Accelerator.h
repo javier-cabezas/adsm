@@ -38,7 +38,6 @@ WITH THE SOFTWARE.
 #include "config/common.h"
 #include "core/Accelerator.h"
 #include "util/Lock.h"
-#include "trace/Function.h"
 
 #include "Module.h"
 

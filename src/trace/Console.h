@@ -49,7 +49,7 @@ public:
 	Console();
 	~Console();
 
-	void startThread(THREAD_T tid);
+	void startThread(THREAD_T tid, const char *name);
 	void endThread(THREAD_T tid);
 
 	void enterFunction(THREAD_T tid, const char *name);

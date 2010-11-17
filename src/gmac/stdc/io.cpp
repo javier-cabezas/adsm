@@ -11,7 +11,7 @@
 #include "core/IOBuffer.h"
 #include "core/Process.h"
 #include "core/Mode.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 #include "util/Logger.h"
 
 #include <cstdio>
@@ -38,7 +38,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     gmac::enterGmac();
 	
-    gmac::trace::Thread::io();
+	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
     size_t n = size * nmemb;
     size_t ret = 0;
@@ -66,7 +66,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         TRACE(GLOBAL, FMT_SIZE" of %zd bytes read", elems * size, nmemb * size);
     }
     mode.destroyIOBuffer(buffer);
-    gmac::trace::Thread::resume();
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
     return ret;
@@ -88,7 +88,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
 	gmac::enterGmac();
 
-    gmac::trace::Thread::io();
+	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
     size_t n = size * nmemb;
     size_t ret = 0;
@@ -118,7 +118,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes written", elems * size, nmemb * size);
     }
     mode.destroyIOBuffer(buffer);
-    gmac::trace::Thread::resume();
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
     return ret;

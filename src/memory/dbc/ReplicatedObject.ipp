@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_TEST_REPLICATEDOBJECT_IPP_
 #define GMAC_MEMORY_TEST_REPLICATEDOBJECT_IPP_
 
-#include "ReplicatedObject.h"
+#include "trace/Tracer.h"
 
 namespace gmac { namespace memory { namespace __dbc {
 
@@ -109,14 +109,14 @@ template <typename T>
 gmacError_t
 ReplicatedObject<T>::toAccelerator(Block &block) const
 {
-    trace::Function::start("ReplicatedObject", "toAccelerator");
+    trace::EnterCurrentFunction();
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
     REQUIRES(block.end() <= StateObject<T>::end());
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::ReplicatedObject<T>::toAccelerator(block);
     // POSTCONDITIONS
-    trace::Function::end("ReplicatedObject");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -124,7 +124,7 @@ template <typename T>
 gmacError_t
 ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
 {
-    trace::Function::start("ReplicatedObject", "toAccelerator");
+    trace::EnterCurrentFunction();
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
     REQUIRES(block.end() <= StateObject<T>::end());
@@ -135,7 +135,7 @@ ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::ReplicatedObject<T>::toAccelerator(block, blockOff, count);
     // POSTCONDITIONS
-    trace::Function::end("ReplicatedObject");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -143,7 +143,7 @@ template <typename T>
 gmacError_t
 ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
 {
-    trace::Function::start("ReplicatedObject", "toAcceleratorFromPointer");
+    trace::EnterCurrentFunction();
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
     REQUIRES(block.end() <= StateObject<T>::end());
@@ -154,7 +154,7 @@ ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, c
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::ReplicatedObject<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
-    trace::Function::end("ReplicatedObject");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -162,7 +162,7 @@ template <typename T>
 gmacError_t
 ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    trace::Function::start("ReplicatedObject", "toAcceleratorFromBuffer");
+    trace::EnterCurrentFunction();
     // PRECONDITIONS
     REQUIRES(block.addr() >= StateObject<T>::addr());
     REQUIRES(block.end() <= StateObject<T>::end());
@@ -174,7 +174,7 @@ ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gm
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::ReplicatedObject<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
-    trace::Function::end("ReplicatedObject");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
