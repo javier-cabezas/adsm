@@ -1,4 +1,4 @@
-#if defined(ENABLE_TRACE_CONSOLE)
+#if defined(USE_TRACE_CONSOLE)
 #include "Console.h"
 
 #include <iostream>
@@ -15,7 +15,7 @@ void FiniApiTracer()
 }
 
 Console::Console() :
-	of(std::cerr)
+	os(std::cerr)
 {}
 
 Console::~Console()
@@ -31,12 +31,12 @@ void Console::endThread(THREAD_T tid)
 	os << "@THREAD : END : " << timeMark() << " : " << tid << "@" << std::endl;
 }
 
-void Console::startFunction(THREAD_T tid, const char *name)
+void Console::enterFunction(THREAD_T tid, const char *name)
 {
 	os << "@FUNCTION : START : " << timeMark() << " : " << tid << " : " << name << "@" << std::endl;
 }
 
-void Console::endFunction(THREAD_T tid, const char *name)
+void Console::exitFunction(THREAD_T tid, const char *name)
 {
 	os << "@FUNCTION : END : " << timeMark() << " : " << tid << " : " << name << "@" << std::endl;
 }

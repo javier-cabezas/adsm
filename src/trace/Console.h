@@ -34,16 +34,17 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_TRACE_CONSOLE_H_
 #define GMAC_TRACE_CONSOLE_H_
 
-#if defined(ENABLE_TRACE_CONSOLE)
+#if defined(USE_TRACE_CONSOLE)
 #include "Tracer.h"
 #include "config/common.h"
+
+#include <iostream>
 
 namespace gmac { namespace trace {
 	
 class GMAC_LOCAL Console : public Tracer {
 protected:
-	uint64_t timeMark();
-	std::ofstream out;
+	std::ostream &os;
 public:
 	Console();
 	~Console();

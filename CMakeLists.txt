@@ -70,6 +70,11 @@ else(USE_OPENCL)
     endif(EXISTS ${NVCC})
 endif(USE_OPENCL)
 
+# Check for Tracing
+option(USE_TRACE_CONSOLE "Enable producing traces in the consoloe" OFF)
+if(USE_TRACE_CONSOLE)
+    add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+endif(USE_TRACE_CONSOLE)
 
 # Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
