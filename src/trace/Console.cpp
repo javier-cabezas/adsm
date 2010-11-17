@@ -43,7 +43,7 @@ void Console::exitFunction(THREAD_T tid, const char *name)
 
 void Console::setThreadState(THREAD_T tid, State state)
 {
-	os << "@STATE:END:" << timeMark() << ":" << tid << ":" << state << "@" << std::endl;
+	os << "@STATE:" << timeMark() << ":" << tid << ":" << state << "@" << std::endl;
 }
 
 }}

@@ -42,22 +42,8 @@ namespace gmac { namespace util {
 
 class GMAC_LOCAL __Lock {
 protected:
-#ifdef PARAVER
-    static const char *eventName;
-    static const char *exclusiveName;
-
-
-    typedef std::map<std::string, unsigned> LockMap;
-    static unsigned count;
-    static LockMap *map;
-    unsigned id;
-
-    static paraver::EventName *event;
-    static paraver::StateName *exclusive;
-
-    mutable bool exclusive_;
-
-    void setup();
+#if defined(USE_TRACE)
+	mutable bool exclusive_;
 #endif
 public:
     __Lock(const char *name);
