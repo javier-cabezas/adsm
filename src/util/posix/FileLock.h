@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
-class GMAC_LOCAL FileLock : public ParaverLock, public Logger {
+class GMAC_LOCAL FileLock : public __Lock {
 protected:
     FILE * _file;
     int _fd;

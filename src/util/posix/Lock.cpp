@@ -5,7 +5,7 @@
 namespace gmac { namespace util { namespace __impl {
 
 Lock::Lock(const char *name) :
-    ParaverLock(name)
+    __Lock(name)
 {
     pthread_mutex_init(&mutex_, NULL);
 }
@@ -16,7 +16,7 @@ Lock::~Lock()
 }
 
 RWLock::RWLock(const char *name) :
-    ParaverLock(name)
+    __Lock(name)
 {
     pthread_rwlock_init(&lock_, NULL);
 }

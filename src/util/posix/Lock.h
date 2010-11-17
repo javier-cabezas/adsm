@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util { namespace __impl {
 
-class GMAC_LOCAL Lock : public ParaverLock {
+class GMAC_LOCAL Lock : public __Lock {
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
@@ -59,7 +59,7 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public ParaverLock {
+class GMAC_LOCAL RWLock : public __Lock {
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
