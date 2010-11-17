@@ -11,6 +11,12 @@ extern Tracer *tracer;
 void InitApiTracer();
 void FiniApiTracer();
 
+inline
+Tracer::Tracer() : base_(0)
+{
+	base_ = timeMark();
+}
+
 #endif
 
 inline void InitTracer()
@@ -27,17 +33,20 @@ inline void FiniTracer()
 #endif
 }
 
-inline void StartThread(THREAD_T tid)
+inline void StartThread(THREAD_T tid, const char *name)
 {
 #if defined(USE_TRACE)
-	if(tracer != NULL) tracer->startThread(tid);
+	if(tracer != NULL) {		
+		tracer->startThread(tid, name);
+		tracer->setThreadState(tid, Init);
+	}
 #endif
 }
 
-inline void StartThread()
+inline void StartThread(const char *name)
 {
 #if defined(USE_TRACE)
-	return StartThread(util::GetThreadId());
+	return StartThread(util::GetThreadId(), name);
 #endif
 }
 

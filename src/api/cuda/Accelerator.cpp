@@ -88,9 +88,9 @@ void Accelerator::init()
 
 gmac::core::Mode *Accelerator::createMode(gmac::core::Process &proc)
 {
-    gmac::trace::Function::start("Accelerator","createMode");
+    gmac::trace::EnterCurrentFunction();
 	Mode *mode = new Mode(proc, *this);
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
 	TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
     return mode;
 }
@@ -99,22 +99,22 @@ void Accelerator::registerMode(gmac::core::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
 	TRACE(LOCAL,"Registering Execution Mode %p to Accelerator", &_mode);
-    gmac::trace::Function::start("Accelerator","registerMode");
+    gmac::trace::EnterCurrentFunction();
 	_queue.insert(&_mode);
     load_++;
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
 }
 
 void Accelerator::unregisterMode(gmac::core::Mode &mode)
 {
     Mode &_mode = static_cast<Mode &>(mode);
 	TRACE(LOCAL,"Unregistering Execution Mode %p", &_mode);
-    gmac::trace::Function::start("Accelerator","unregisterMode");
+    gmac::trace::EnterCurrentFunction();
 	std::set<Mode *>::iterator c = _queue.find(&_mode);
 	ASSERTION(c != _queue.end());
 	_queue.erase(c);
     load_--;
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
 }
 
 
@@ -122,7 +122,7 @@ void Accelerator::unregisterMode(gmac::core::Mode &mode)
 CUcontext
 Accelerator::createCUcontext()
 {
-    gmac::trace::Function::start("Accelerator","creaceCUContext");
+    gmac::trace::EnterCurrentFunction();
     CUcontext ctx, tmp;
     unsigned int flags = 0;
 #if CUDA_VERSION >= 2020
@@ -135,16 +135,16 @@ Accelerator::createCUcontext()
         FATAL("Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     ASSERTION(ret == CUDA_SUCCESS);
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return ctx;
 }
 
 void
 Accelerator::destroyCUcontext(CUcontext ctx)
 {
-    gmac::trace::Function::start("Accelerator","destroyCUContext");
+    gmac::trace::EnterCurrentFunction();
     CFATAL(cuCtxDestroy(ctx) == CUDA_SUCCESS, "Error destroying CUDA context");
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
 }
 
 #endif
@@ -152,44 +152,44 @@ Accelerator::destroyCUcontext(CUcontext ctx)
 #ifdef USE_MULTI_CONTEXT
 ModuleVector Accelerator::createModules()
 {
-    gmac::trace::Function::start("Accelerator","createModules");
+    gmac::trace::EnterCurrentFunction();
     pushContext();
     ModuleVector modules = ModuleDescriptor::createModules();
     popContext();
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return modules;
 }
 
 void
 Accelerator::destroyModules(ModuleVector & modules)
 {
-    gmac::trace::Function::start("Accelerator","destroyModules");
+    gmac::trace::EnterCurrentFunction();
     pushContext();
     ModuleVector::iterator i;
     for(i = modules.begin(); i != modules.end(); i++)
         delete *i;
     modules.clear();
     popContext();
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
 }
 
 #else
 ModuleVector *Accelerator::createModules()
 {
-    gmac::trace::Function::start("Accelerator","createModules");
+    gmac::trace::EnterCurrentFunction();
     if(_modules.empty()) {
         pushContext();
         _modules = ModuleDescriptor::createModules();
         popContext();
     }
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return &_modules;
 }
 #endif
 
 gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
 {
-    gmac::trace::Function::start("Accelerator","malloc");
+    gmac::trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
     *addr = NULL;
 #if CUDA_VERSION >= 3020
@@ -205,7 +205,7 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     CUresult ret = cuMemAlloc(&ptr, gpuSize);
     popContext();
     if(ret != CUDA_SUCCESS) {
-        gmac::trace::Function::end("Accelerator");
+        gmac::trace::ExitCurrentFunction();
         return error(ret);
     }
     CUdeviceptr gpuPtr = ptr;
@@ -217,13 +217,13 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
     TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(ret);
 }
 
 gmacError_t Accelerator::free(void *addr)
 {
-    gmac::trace::Function::start("Accelerator","free");
+    gmac::trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
     AlignmentMap::const_iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
@@ -231,20 +231,20 @@ gmacError_t Accelerator::free(void *addr)
     i = _alignMap.find(gpuPtr);
     if (i == _alignMap.end()) {
         _alignMap.unlock();
-        gmac::trace::Function::end("Accelerator");
+        gmac::trace::ExitCurrentFunction();
         return gmacErrorInvalidValue;
     }
     _alignMap.unlock();
     pushContext();
     CUresult ret = cuMemFree(i->second);
     popContext();
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(ret);
 }
 
 gmacError_t Accelerator::memset(void *addr, int c, size_t size)
 {
-    gmac::trace::Function::start("Accelerator","memset");
+    gmac::trace::EnterCurrentFunction();
     CUresult ret = CUDA_SUCCESS;
     pushContext();
     if(size % 4 == 0) {
@@ -270,23 +270,23 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
 #endif
 	}
     popContext();
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(ret);
 }
 
 gmacError_t Accelerator::sync()
 {
-    gmac::trace::Function::start("Accelerator","sync");
+    gmac::trace::EnterCurrentFunction();
     pushContext();
     CUresult ret = cuCtxSynchronize();
     popContext();
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(ret);
 }
 
 gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 {
-	gmac::trace::Function::start("Accelerator","hostAlloc");
+	gmac::trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     pushContext();
     CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
@@ -294,13 +294,13 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
 #else
 	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(ret);
 }
 
 gmacError_t Accelerator::hostFree(void *addr)
 {
-    gmac::trace::Function::start("Accelerator","hostFree");
+    gmac::trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     pushContext();
     CUresult r = cuMemFreeHost(addr);
@@ -308,13 +308,13 @@ gmacError_t Accelerator::hostFree(void *addr)
 #else
 	CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return error(r);
 }
 
 void *Accelerator::hostMap(void *addr)
 {
-    gmac::trace::Function::start("Accelerator","hostMap");
+    gmac::trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
@@ -324,7 +324,7 @@ void *Accelerator::hostMap(void *addr)
 	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
     if(ret != CUDA_SUCCESS) device = 0;
-    gmac::trace::Function::end("Accelerator");
+    gmac::trace::ExitCurrentFunction();
     return (void *)device;
 }
 

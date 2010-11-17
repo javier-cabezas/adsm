@@ -4,7 +4,7 @@
 #include "gmac/init.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
 namespace gmac { namespace memory {
 
@@ -19,7 +19,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	enterGmac();
-	trace::Function::start("GMAC", "gmacSignal");
+	trace::EnterCurrentFunction();
 	
 	bool writeAccess = false;
 	if(ex->ExceptionRecord->ExceptionInformation[0] == 1) writeAccess = true;
@@ -42,7 +42,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	trace::Function::end("GMAC");
+	trace::ExitCurrentFunction();
 	exitGmac();
 
 	return EXCEPTION_CONTINUE_EXECUTION;

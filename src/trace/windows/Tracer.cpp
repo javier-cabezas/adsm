@@ -16,7 +16,7 @@ uint64_t Tracer::timeMark() const
 	ret |= ft.dwLowDateTime;
 	ret -= DELTA_EPOCH_IN_MICROSECS;
 	ret /= 10;
-	return ret;
+	return ret - base_;
 }
 
 }}

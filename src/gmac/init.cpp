@@ -2,8 +2,7 @@
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
-#include "trace/Function.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 
 #include "init.h"
 
@@ -49,7 +48,8 @@ static void CONSTRUCTOR init(void)
     //FILE * lockSystem;
 
     paramInit();
-    trace::Function::init();
+    //trace::Function::init();
+	gmac::trace::InitTracer();	
 
     /* Call initialization of interpose libraries */
 #if defined(POSIX)
@@ -85,18 +85,18 @@ static void DESTRUCTOR fini(void)
 
 static void InitThread()
 {
-	gmac::trace::Thread::start();
+	gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
 	gmac::core::Process &proc = gmac::core::Process::getInstance();
 	proc.initThread();
-	gmac::trace::Thread::run();
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 }
 
 static void FiniThread()
 {
 	gmac::enterGmac();
-	gmac::trace::Thread::resume();
+	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
 	gmac::core::Process &proc = gmac::core::Process::getInstance();
 	proc.finiThread();

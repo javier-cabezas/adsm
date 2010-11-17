@@ -1,8 +1,6 @@
 #ifndef GMAC_CORE_IOBUFFER_IPP_
 #define GMAC_CORE_IOBUFFER_IPP_
 
-#include "trace/Function.h"
-
 namespace gmac { namespace core {
 
 inline

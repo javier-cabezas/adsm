@@ -1,6 +1,5 @@
 #include "memory/Manager.h"
-#include "trace/Thread.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
 #include "Accelerator.h"
 #include "Context.h"
@@ -12,12 +11,12 @@ Context::Context(Accelerator &acc, unsigned id) :
     acc_(acc),
     id_(id)
 {
-    gmac::trace::Thread::start((THREAD_T)id);
+	trace::StartThread(THREAD_T(id_), "GPU");
 }
 
 Context::~Context()
 { 
-    gmac::trace::Thread::end((THREAD_T)id_);
+	trace::EndThread(THREAD_T(id_));
 }
 
 Context &Context::operator =(const Context &)
@@ -33,25 +32,25 @@ Context::init()
 
 gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    trace::Function::start("Context", "copyToAccelerator");
+    trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyToAccelerator(dev, host, size);
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Context::copyToHost(void *host, const void *dev, size_t size)
 {
-    trace::Function::start("Context", "copyToHost");
+    trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyToHost(host, dev, size);
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Context::copyAccelerator(void *dst, const void *src, size_t size)
 {
-    trace::Function::start("Context", "copyAccelerator");
+    trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyAccelerator(dst, src, size);
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 

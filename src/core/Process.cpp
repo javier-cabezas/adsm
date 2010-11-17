@@ -9,8 +9,7 @@
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/DistributedObject.h"
-#include "trace/Function.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 
 namespace gmac { namespace core {
 
@@ -139,7 +138,7 @@ void Process::initThread()
 	queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
-    trace::Function::initThread();
+    //trace::Function::initThread();
 }
 
 void Process::finiThread()
