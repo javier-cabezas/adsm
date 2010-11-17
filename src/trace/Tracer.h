@@ -38,11 +38,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #if defined(__GNUC__)
-#define EnterCurrentFunction() EnterFunction(#__func__)
-#define ExitCurrentFunction()  ExitFunction(#__func__)
+#define EnterCurrentFunction() EnterFunction(__func__)
+#define ExitCurrentFunction()  ExitFunction(__func__)
 #elif defined(_MSC_VER)
-#define EnterCurrentFunction() EnterFunction(#__FUNCTION__)
-#define ExitCurrentFunction()  ExitFunction(#__FUNCTION__)
+#define EnterCurrentFunction() EnterFunction(__FUNCTION__)
+#define ExitCurrentFunction()  ExitFunction(__FUNCTION__)
 #endif
 
 namespace gmac { namespace trace {
