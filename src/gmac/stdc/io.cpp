@@ -4,8 +4,6 @@
 #include "os/windows/loader.h"
 #endif
 
-#include "gmac/paraver.h"
-
 #include "gmac/init.h"
 #include "memory/Manager.h"
 #include "core/IOBuffer.h"

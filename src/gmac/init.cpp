@@ -6,12 +6,6 @@
 
 #include "init.h"
 
-#ifdef PARAVER
-namespace paraver {
-extern int init;
-}
-#endif
-
 namespace gmac {
 gmac::util::Private<const char> _inGmac;
 GMACLock * _inGmacLock;
@@ -40,15 +34,7 @@ static void CONSTRUCTOR init(void)
 	gmac::util::Logger::Init();
     TRACE(GLOBAL, "Initialiazing GMAC");
 
-#ifdef PARAVER
-    paraver::init = 1;
-#endif
-    //util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
-
-    //FILE * lockSystem;
-
     paramInit();
-    //trace::Function::init();
 	gmac::trace::InitTracer();	
 
     /* Call initialization of interpose libraries */

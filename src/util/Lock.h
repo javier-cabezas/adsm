@@ -35,8 +35,6 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_LOCK_H_
 
 #include "config/common.h"
-#include "gmac/paraver.h"
-
 
 namespace gmac { namespace util {
 
