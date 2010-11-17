@@ -31,65 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TRACE_TRACER_H_
-#define GMAC_TRACE_TRACER_H_
+#ifndef GMAC_TRACE_CONSOLE_H_
+#define GMAC_TRACE_CONSOLE_H_
 
-#include "include/gmac/types.h"
+#if defined(ENABLE_TRACE_CONSOLE)
+#include "Tracer.h"
 #include "config/common.h"
 
-#if defined(__GNUC__)
-#define EnterCurrentFunction() EnterFunction(#__func__)
-#define ExitCurrentFunction()  ExitFunction(#__func__)
-#elif defined(_MSC_VER)
-#define EnterCurrentFunction() EnterFunction(#__FUNCTION__)
-#define ExitCurrentFunction()  ExitFunction(#__FUNCTION__)
-#endif
-
 namespace gmac { namespace trace {
-
-typedef enum {
-	Idle,
-	Init,
-	Running,
-	Locked,
-	IO
-} State;
 	
-
-class GMAC_LOCAL Tracer {
+class GMAC_LOCAL Console : public Tracer {
 protected:
-	uint64_t timeMark() const;
+	uint64_t timeMark();
+	std::ofstream out;
 public:
-	virtual void startThread(THREAD_T tid) = 0;
-	virtual void endThread(THREAD_T tid) = 0;
+	Console();
+	~Console();
 
-	virtual void enterFunction(THREAD_T tid, const char *name) = 0;
-	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
+	void startThread(THREAD_T tid);
+	void endThread(THREAD_T tid);
 
-	virtual void setThreadState(THREAD_T tid, const State state) = 0;
+	void enterFunction(THREAD_T tid, const char *name);
+	void exitFunction(THREAD_T tid, const char *name);
+
+	void setThreadState(THREAD_T tid, const State state);
 };
 
-void InitTracer();
-void FiniTracer();
-
-void StartThread(THREAD_T tid);
-void StartThread();
-
-void EndThread(THREAD_T tid);
-void EndThread();
-
-void EnterFunction(THREAD_T tid, const char *name);
-void EnterFunction(const char *name);
-
-void ExitFunction(THREAD_T tid, const char *name);
-void ExitFunction(const char *name);
-
-void SetThreadState(THREAD_T tid, const State &state);
-void SetThreadState(const State &state);
-
-
 }}
-
-#include "Tracer-impl.h"
-
+#endif
 #endif
