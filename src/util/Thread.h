@@ -31,51 +31,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_WINDOWS_LOCK_H_
-#define GMAC_UTIL_WINDOWS_LOCK_H_
+#ifndef GMAC_UTIL_THREAD_H_
+#define GMAC_UTIL_THREAD_H_
 
-#include "config/common.h"
-#include "dbc/types.h"
-#include "util/Lock.h"
+#include "include/gmac/types.h"
 
-#include <windows.h>
+namespace gmac { namespace util {
 
-namespace gmac { namespace util { namespace __impl {
+THREAD_T GetThreadId();
+PROCESS_T GetProcessId();
 
-class GMAC_LOCAL Lock : public __Lock {
-protected:
-	mutable CRITICAL_SECTION mutex_;
-public:
-	Lock(const char *name);
-	VIRTUAL ~Lock();
+} }
 
-protected:
-	TESTABLE void lock() const;
-	TESTABLE void unlock() const;
-};
-
-class GMAC_LOCAL RWLock : public __Lock {
-protected:
-	mutable SRWLOCK lock_;
-	mutable DWORD owner_;
-public:
-	RWLock(const char *name);
-	VIRTUAL ~RWLock();
-
-protected:
-	TESTABLE void lockRead() const;
-	TESTABLE void lockWrite() const;
-	TESTABLE void unlock() const;
-};
-
-}}}
-
-#include "Lock-impl.h"
-
-#ifdef USE_DBC
-#include "dbc/Lock.h"
+#if defined(POSIX)
+#include "util/posix/Thread-impl.h"
+#elif defined(WINDOWS)
+#include "util/windows/Thread-impl.h"
 #endif
-
-
 
 #endif

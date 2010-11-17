@@ -12,7 +12,7 @@ paraver::EventName *ParaverLock::event = NULL;
 paraver::StateName *ParaverLock::exclusive = NULL;
 #endif
 
-ParaverLock::ParaverLock(const char *name) 
+__Lock::__Lock(const char *name) 
 {
 	UNREFERENCED_PARAMETER(name);
 #ifdef PARAVER

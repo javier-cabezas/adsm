@@ -32,27 +32,28 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
 
-#ifndef GMAC_ERROR_H_
-#define GMAC_ERROR_H_
+#ifndef GMAC_INCLUDE_TYPES_H_
+#define GMAC_INCLUDE_TYPES_H_
 
-#ifdef __GNUC__
-#include <pthread.h>
-typedef pthread_t THREAD_T;
-#define SELF() pthread_self()
-#define FMT_SIZE	   "%zd"
-#if defined(__LP64__) 
-#	define FMT_TID "0x%lx"
-#else
-#	if defined(DARWIN)
-#		define FMT_TID "%p"
-#	else
+#if defined(__GNUC__)
+#	include <pthread.h>
+#	include <sys/types.h>
+	typedef pthread_t THREAD_T;
+	typedef pid_t     PROCESS_T;
+#	define FMT_SIZE	   "%zd"
+#	if defined(__LP64__) 
 #		define FMT_TID "0x%lx"
+#	else
+#		if defined(DARWIN)
+#			define FMT_TID "%p"
+#		else
+#			define FMT_TID "0x%lx"
+#		endif
 #	endif
-#endif
-#elif _MSC_VER
+#elif defined(_MSC_VER)
 #	include <windows.h>
 	typedef DWORD THREAD_T;
-#	define SELF() GetCurrentThreadId()
+	typedef DWORD PROCESS_T;
 #	define FMT_TID "0x%lx"
 #	define FMT_SIZE "%Id"
 #endif

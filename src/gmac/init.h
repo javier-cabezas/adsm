@@ -37,14 +37,11 @@ WITH THE SOFTWARE.  */
 #if defined(GMAC_DLL)
 #include "config/common.h"
 #include "util/Lock.h"
-
+#include "util/Thread.h"
 #include "util/Private.h"
 #include "util/Logger.h"
 
 namespace gmac {
-
-class Process;
-class Context;
 
 namespace memory {
 class Allocator;

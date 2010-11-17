@@ -1,5 +1,5 @@
-#ifndef __UTIL_WINDOWS_LOCK_IPP_
-#define __UTIL_WINDOWS_LOCK_IPP_
+#ifndef __UTIL_WINDOWS_LOCK_IMPL_H_
+#define __UTIL_WINDOWS_LOCK_IMPL_H_
 
 
 namespace gmac { namespace util { namespace __impl {

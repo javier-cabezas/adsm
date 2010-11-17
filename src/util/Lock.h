@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 namespace gmac { namespace util {
 
-class GMAC_LOCAL ParaverLock {
+class GMAC_LOCAL __Lock {
 protected:
 #ifdef PARAVER
     static const char *eventName;
@@ -60,7 +60,7 @@ protected:
     void setup();
 #endif
 public:
-    ParaverLock(const char *name);
+    __Lock(const char *name);
 
     void enter() const;
     void locked() const;
