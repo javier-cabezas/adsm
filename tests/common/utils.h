@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "config/config.h"
 
-#if defined(HAVE_STDINT)
+#if defined(__GNUC__)
 #include <stdint.h>
 #elif defined(_MSC_VER)
 typedef unsigned __int8 uint8_t;
