@@ -5,7 +5,7 @@
 namespace gmac { namespace util { namespace __impl {
 
 Lock::Lock(const char *name) :
-    ParaverLock(name)
+    __Lock(name)
 {
     InitializeCriticalSection(&mutex_);
 }
@@ -16,7 +16,7 @@ Lock::~Lock()
 }
 
 RWLock::RWLock(const char *name) :
-    ParaverLock(name),
+    __Lock(name),
 	owner_(0)
 {
     InitializeSRWLock(&lock_);

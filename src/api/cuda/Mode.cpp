@@ -96,11 +96,11 @@ void Mode::reload()
 
 gmac::core::Context &Mode::getContext()
 {
-    gmac::core::Context *context = contextMap_.find(SELF());
+	gmac::core::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
     context = new Context(accelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
-    contextMap_.add(SELF(), context);
+	contextMap_.add(util::GetThreadId(), context);
     return *context;
 }
 

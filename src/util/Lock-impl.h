@@ -4,7 +4,7 @@
 namespace gmac { namespace util {
 
 inline
-void ParaverLock::enter() const
+void __Lock::enter() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
@@ -13,7 +13,7 @@ void ParaverLock::enter() const
 }
 
 inline
-void ParaverLock::locked() const
+void __Lock::locked() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
@@ -24,7 +24,7 @@ void ParaverLock::locked() const
 }
 
 inline
-void ParaverLock::done() const
+void __Lock::done() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;
@@ -35,7 +35,7 @@ void ParaverLock::done() const
 
 
 inline
-void ParaverLock::exit() const
+void __Lock::exit() const
 {
 #ifdef PARAVER
     if(paraver::trace == NULL) return;

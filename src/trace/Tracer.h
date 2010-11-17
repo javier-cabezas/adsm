@@ -31,51 +31,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_WINDOWS_LOCK_H_
-#define GMAC_UTIL_WINDOWS_LOCK_H_
+#ifndef GMAC_TRACE_TRACER_H_
+#define GMAC_TRACE_TRACER_H_
 
-#include "config/common.h"
-#include "dbc/types.h"
-#include "util/Lock.h"
-
-#include <windows.h>
-
-namespace gmac { namespace util { namespace __impl {
-
-class GMAC_LOCAL Lock : public __Lock {
-protected:
-	mutable CRITICAL_SECTION mutex_;
-public:
-	Lock(const char *name);
-	VIRTUAL ~Lock();
-
-protected:
-	TESTABLE void lock() const;
-	TESTABLE void unlock() const;
-};
-
-class GMAC_LOCAL RWLock : public __Lock {
-protected:
-	mutable SRWLOCK lock_;
-	mutable DWORD owner_;
-public:
-	RWLock(const char *name);
-	VIRTUAL ~RWLock();
-
-protected:
-	TESTABLE void lockRead() const;
-	TESTABLE void lockWrite() const;
-	TESTABLE void unlock() const;
-};
-
-}}}
-
-#include "Lock-impl.h"
-
-#ifdef USE_DBC
-#include "dbc/Lock.h"
+#if defined(__GNUC__)
+#define EnterCurrentFunction() EnterFunction(#__func__)
+#define ExitCurrentFunction()  ExitFunction(#__func__)
+#elif defined(_MSC_VER)
+#define EnterCurrentFunction() EnterFunction(#__FUNCTION__)
+#define ExitCurrentFunction()  ExitFunction(#__FUNCTION__)
 #endif
 
+namespace gmac { namespace trace {
 
+typedef enum {
+	Idle,
+	Init,
+	Running,
+	Locked,
+	IO
+} State;
+	
+
+class GMAC_LOCAL Tracer {
+protected:
+public:
+	void startThread(THREAD_T tid) = 0;
+	void endThread(THREAD_T tid) = 0;
+
+	void enterFunction(THREAD_T tid, const char *name) = 0;
+	void exitFunction(THREAD_T tid, const char *name) = 0;
+
+	void setThreadState(THREAD_T tid, const State state) = 0;
+};
+
+void InitTracer();
+void FiniTracer();
+
+
+
+void StartThread(THREAD_T tid);
+void StartThread();
+
+void EndThread(THREAD_T tid);
+void EndThread();
+
+void EnterFunction(THREAD_T tid, const char *name);
+void EnterFunction(const char *name);
+
+void ExitFunction(THREAD_T tid, const char *name);
+void ExitFunction(const char *name);
+
+void SetThreadState(THREAD_T tid, const State &state);
+void SetThreadState(const State &state);
+
+
+}}
+
+#include "Tracer-impl.h"
 
 #endif

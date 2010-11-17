@@ -73,7 +73,7 @@ void QueueMap::push(THREAD_T id, Mode &mode)
 void QueueMap::attach()
 {
     lockRead();
-    iterator q = Parent::find(SELF());
+	iterator q = Parent::find(util::GetThreadId());
     if(q != Parent::end())
         q->second->queue->pop()->attach();
     unlock();
@@ -136,7 +136,7 @@ Process::~Process()
 void Process::initThread()
 {
     ThreadQueue * q = new ThreadQueue();
-    queues_.insert(SELF(), q);
+	queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
     trace::Function::initThread();
@@ -144,7 +144,7 @@ void Process::initThread()
 
 void Process::finiThread()
 {
-    queues_.erase(SELF());
+	queues_.erase(util::GetThreadId());
     Mode::finiThread();
 }
 

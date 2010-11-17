@@ -1,7 +1,7 @@
 add_subdirectory(${OS_DIR})
 
 set(util_SRC
-    Atomics.h
+    Atomics.h Thread.h
     Lock.h Lock-impl.h Lock.cpp
     Semaphore.h
     Private.h

@@ -46,6 +46,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 #include "include/gmac/types.h"
+#include "util/Thread.h"
 
 
 #if defined(__GNUC__)
@@ -73,10 +74,10 @@ inline static const char *__extract_file_name(const char *file) {
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
-#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __func__, \
+#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, gmac::util::GetThreadId(), __func__, \
 		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #   elif defined(_MSC_VER)
-#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, SELF(), __FUNCTION__, \
+#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, gmac::util::GetThreadId(), __FUNCTION__, \
 		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #   endif
 #   define ASSERTION(c, ...) gmac::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
@@ -85,7 +86,7 @@ inline static const char *__extract_file_name(const char *file) {
 #   define ASSERTION(...)
 #endif
 
-#define WARNING(fmt, ...) gmac::util::Logger::__Warning("("FMT_TID")" fmt, SELF(), ##__VA_ARGS__)
+#define WARNING(fmt, ...) gmac::util::Logger::__Warning("("FMT_TID")" fmt, gmac::util::GetThreadId(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) gmac::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) gmac::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
