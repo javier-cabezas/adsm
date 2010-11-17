@@ -52,6 +52,7 @@ typedef enum {
 	Init,
 	Running,
 	Locked,
+	Exclusive,
 	IO
 } State;
 #if defined(USE_TRACE)
