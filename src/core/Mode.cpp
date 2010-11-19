@@ -27,7 +27,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     , _bitmap(new memory::vm::Bitmap())
 #endif
 {
-    TRACE(LOCAL,"Creating new memory map");
+    TRACE(LOCAL,"Creating Execution Mode %p", this);
 }
 
 Mode::~Mode()
@@ -39,17 +39,10 @@ Mode::~Mode()
     delete _bitmap;
 #endif
     Process::getInstance().removeMode(*this);
+    TRACE(LOCAL,"Destroying Execution Mode %p", this);
 }
 
-void Mode::cleanUp() const
-{
-    map_.forEach(*this, &memory::Object::removeOwner);
-}
 
-void Mode::cleanUpContexts()
-{
-    contextMap_.clean();
-}
 
 void Mode::finiThread()
 {

@@ -2,6 +2,7 @@
 #define GMAC_CORE_MODE_IPP
 
 #include "memory/Map.h"
+#include "memory/Object.h"
 
 namespace __impl { namespace core {
 
@@ -52,6 +53,16 @@ inline gmacError_t ContextMap::sync()
     }
     unlock();
     return ret;
+}
+
+inline void Mode::cleanUp() const
+{
+    map_.forEach(*this, &memory::Object::removeOwner);
+}
+
+inline void Mode::cleanUpContexts()
+{
+    contextMap_.clean();
 }
 
 inline void Mode::init()
