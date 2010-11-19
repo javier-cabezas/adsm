@@ -41,7 +41,6 @@ WITH THE SOFTWARE.  */
 
 #include "Block.h"
 #include "StateBlock.h"
-#include "OwnerMap.h"
 
 namespace __impl { 
 
@@ -52,7 +51,7 @@ namespace core {
 namespace memory {
 
 template<typename T>
-class GMAC_LOCAL DistributedBlock : public StateBlock<T>, public OwnerMap<uint8_t *> {
+class GMAC_LOCAL DistributedBlock : public StateBlock<T> {
 protected:
 	typedef std::map<core::Mode *, uint8_t *> DeviceMap;
 	DeviceMap deviceAddr_;

@@ -6,17 +6,13 @@ add_subdirectory(${OS_DIR})
 
 set(memory_SRC
     memory.cpp Memory.h
-    OwnerMap.h OwnerMap-impl.h
     Bitmap.h Bitmap.ipp Bitmap.cpp
     Block.h Block-impl.h
     StateBlock.h StateBlock-impl.h
     SharedBlock.h SharedBlock-impl.h
     DistributedBlock.h DistributedBlock-impl.h
-    HostBlock.h HostBlock-impl.h
     Object.h Object-impl.h Object.cpp
     SharedObject.h SharedObject-impl.h
-    HostObject.h HostObject-impl.h
-    SharedObject.h SharedObject.ipp
     DistributedObject.h DistributedObject-impl.h
     Map.h Map.cpp
     Protocol.h Protocol.cpp
