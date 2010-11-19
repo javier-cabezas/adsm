@@ -45,18 +45,18 @@ WITH THE SOFTWARE.  */
 #include "core/Mode.h"
 #include "core/IOBuffer.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
-class GMAC_LOCAL ContextLock : public util::Lock {
+class GMAC_LOCAL ContextLock : public gmac::util::Lock {
     friend class Mode;
 public:
-    ContextLock() : util::Lock("Context") {};
+    ContextLock() : gmac::util::Lock("Context") {}
 };
 
 class Texture;
 class Accelerator;
 
-class GMAC_LOCAL Mode : public gmac::core::Mode {
+class GMAC_LOCAL Mode : public __impl::core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
@@ -65,7 +65,7 @@ protected:
     void switchIn();
     void switchOut();
 
-    gmac::core::Context &getContext();
+    core::Context &getContext();
 
 #ifdef USE_VM
     CUdeviceptr bitmapDevPtr_;
@@ -85,19 +85,19 @@ protected:
     void reload();
 
 public:
-    Mode(gmac::core::Process &proc, Accelerator &acc);
+    Mode(core::Process &proc, Accelerator &acc);
     ~Mode();
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
     void *hostMap(void *addr);
 
-	gmacError_t execute(gmac::core::KernelLaunch &launch);
+	gmacError_t execute(core::KernelLaunch &launch);
 
-    gmac::core::IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(gmac::core::IOBuffer *buffer);
-    gmacError_t bufferToAccelerator(void *dst, gmac::core::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
+    core::IOBuffer *createIOBuffer(size_t size);
+    void destroyIOBuffer(core::IOBuffer *buffer);
+    gmacError_t bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
@@ -119,7 +119,7 @@ public:
 #endif
 #endif
 
-    gmacError_t waitForBuffer(gmac::core::IOBuffer &buffer);
+    gmacError_t waitForBuffer(core::IOBuffer &buffer);
 };
 
 }}

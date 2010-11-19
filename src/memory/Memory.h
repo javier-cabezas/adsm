@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL Memory {
 public:

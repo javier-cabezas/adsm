@@ -4,19 +4,19 @@
 #include "Accelerator.h"
 #include "Context.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 Context::Context(Accelerator &acc, unsigned id) :
-    util::RWLock("Context"),
+    gmac::util::RWLock("Context"),
     acc_(acc),
     id_(id)
 {
-	trace::StartThread(THREAD_T(id_), "GPU");
+    trace::StartThread(THREAD_T(id_), "GPU");
 }
 
 Context::~Context()
 { 
-	trace::EndThread(THREAD_T(id_));
+    trace::EndThread(THREAD_T(id_));
 }
 
 Context &Context::operator =(const Context &)

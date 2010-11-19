@@ -43,9 +43,9 @@ WITH THE SOFTWARE.  */
 #include "memory/Block.h"
 #include "core/Mode.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL Object: protected util::RWLock {
+class GMAC_LOCAL Object: protected gmac::util::RWLock {
     friend class Map;
     friend class ObjectMap;
 protected:
@@ -63,14 +63,14 @@ public:
     uint8_t *end() const;
     size_t size() const;
 
-    virtual gmac::core::Mode &owner() const = 0;
+    virtual core::Mode &owner() const = 0;
     virtual void *getAcceleratorAddr(void *addr) const = 0;
 
     virtual gmacError_t init() = 0;
     virtual void fini() = 0;
 
     virtual gmacError_t free();
-    virtual gmacError_t realloc(gmac::core::Mode &mode);
+    virtual gmacError_t realloc(core::Mode &mode);
 
     virtual bool isLocal() const = 0;
     virtual bool isInAccelerator() const = 0;

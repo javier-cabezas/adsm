@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_SYSTEMBLOCK_IPP_
 #define GMAC_MEMORY_SYSTEMBLOCK_IPP_
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
 template<typename T>
 inline SystemBlock<T>::SystemBlock(void *addr, size_t size, T state) :
@@ -29,6 +29,6 @@ inline void SystemBlock<T>::state(T s)
     state_ = s;
 }
 
-}}}
+}}
 
 #endif

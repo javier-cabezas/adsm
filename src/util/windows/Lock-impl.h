@@ -2,7 +2,7 @@
 #define __UTIL_WINDOWS_LOCK_IMPL_H_
 
 
-namespace gmac { namespace util { namespace __impl {
+namespace __impl { namespace util {
 
 inline void
 Lock::lock() const
@@ -47,6 +47,6 @@ RWLock::unlock() const
 	}
 }
 
-}}}
+}}
 
 #endif

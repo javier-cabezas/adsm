@@ -1,7 +1,7 @@
 #ifndef GMAC_CORE_MODE_IPP_
 #define GMAC_CORE_MODE_IPP_
 
-namespace gmac { namespace core { 
+namespace __impl { namespace core { 
 
 inline size_t
 Process::totalMemory()

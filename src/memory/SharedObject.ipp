@@ -7,12 +7,12 @@
 #include "Bitmap.h"
 #endif
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
 template<typename T>
 inline SharedObject<T>::SharedObject(size_t size, void *cpuPtr, T init) :
     StateObject<T>(size, init),
-    owner_(&gmac::core::Mode::current()),
+    owner_(&core::Mode::current()),
     accBlock_(NULL)
 {
     gmacError_t ret = gmacSuccess;
@@ -34,7 +34,7 @@ inline SharedObject<T>::SharedObject(size_t size, void *cpuPtr, T init) :
     bitmap.newRange(accAddr, size);
 #endif
     // Create memory blocks
-    accBlock_ = new AcceleratorBlock(*owner_, accAddr, StateObject<T>::size_);
+    accBlock_ = new gmac::memory::AcceleratorBlock(*owner_, accAddr, StateObject<T>::size_);
 }
 
 
@@ -107,7 +107,7 @@ inline void *SharedObject<T>::getAcceleratorAddr(void *addr) const
 }
 
 template<typename T>
-inline gmac::core::Mode &SharedObject<T>::owner() const
+inline core::Mode &SharedObject<T>::owner() const
 {
     return *owner_;
 }
@@ -139,7 +139,7 @@ inline gmacError_t SharedObject<T>::toHostPointer(Block &block, unsigned blockOf
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toHostBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().acceleratorToBuffer(buffer, accBlock_->addr() + off, count, bufferOff);
@@ -173,7 +173,7 @@ inline gmacError_t SharedObject<T>::toAcceleratorFromPointer(Block &block, unsig
 }
 
 template<typename T>
-inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
+inline gmacError_t SharedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     unsigned off = unsigned(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = accBlock_->owner().bufferToAccelerator(accBlock_->addr() + off, buffer, count, bufferOff);
@@ -197,7 +197,7 @@ gmacError_t SharedObject<T>::free()
 }
 
 template<typename T>
-gmacError_t SharedObject<T>::realloc(gmac::core::Mode &mode)
+gmacError_t SharedObject<T>::realloc(core::Mode &mode)
 {
     void *device = NULL;
     // Allocate device and host memory
@@ -214,13 +214,13 @@ gmacError_t SharedObject<T>::realloc(gmac::core::Mode &mode)
     bitmap.newRange(device, StateObject<T>::size_);
 #endif
     owner_ = &mode;
-    accBlock_ = new AcceleratorBlock(mode, device, StateObject<T>::size_);
+    accBlock_ = new gmac::memory::AcceleratorBlock(mode, device, StateObject<T>::size_);
     return gmacSuccess;
 }
 
 template<typename T>
 gmacError_t
-SharedObject<T>::memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const
+SharedObject<T>::memsetAccelerator(memory::Block &block, unsigned blockOff, int c, size_t count) const
 {
     unsigned off = (unsigned)(block.addr() + blockOff - StateObject<T>::addr());
     gmacError_t ret = owner_->memset(accBlock_->addr() + off, c, count);
@@ -239,6 +239,6 @@ bool SharedObject<T>::isInAccelerator() const
     return true;
 }
 
-}}}
+}}
 
 #endif

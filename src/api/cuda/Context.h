@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 
 #include "Kernel.h"
 
-namespace gmac {
+namespace __impl {
 
 namespace core {
     class IOBuffer;
@@ -58,7 +58,7 @@ namespace cuda {
 
 class Accelerator;
 
-class GMAC_LOCAL Context : public gmac::core::Context {
+class GMAC_LOCAL Context : public __impl::core::Context {
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;
@@ -72,7 +72,7 @@ protected:
     CUstream streamAccelerator_;
 
     Mode &mode_;
-    gmac::core::IOBuffer *buffer_;
+    core::IOBuffer *buffer_;
 
     KernelConfig call_;
 
@@ -90,11 +90,11 @@ public:
 
     gmacError_t memset(void *addr, int c, size_t size);
 
-    gmac::core::KernelLaunch &launch(gmac::core::Kernel &kernel);
+    core::KernelLaunch &launch(core::Kernel &kernel);
     gmacError_t sync();
 
-    gmacError_t bufferToAccelerator(void *dst, gmac::core::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(gmac::core::IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
     gmacError_t waitAccelerator();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
@@ -103,7 +103,7 @@ public:
     const CUstream eventStream() const;
 
     Accelerator & accelerator();
-    gmacError_t waitForBuffer(gmac::core::IOBuffer &buffer);
+    gmacError_t waitForBuffer(core::IOBuffer &buffer);
 };
 
 }}

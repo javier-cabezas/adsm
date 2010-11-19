@@ -38,28 +38,25 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 #include "util/Singleton.h"
 
-namespace gmac {
+namespace __impl {
 
 namespace core {
-    class IOBuffer;
-    class Mode;
+class IOBuffer;
+class Mode;
 }
 
 namespace memory {
-class Protocol;
-
-namespace __impl {
 
 class Block;
+class Protocol;
 
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class GMAC_LOCAL Manager :
-    public util::Singleton<memory::Manager> {
+class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
 	// Needed to let Singleton call the protected constructor
-	friend class util::Singleton<memory::Manager>;
+	friend class util::Singleton<Manager>;
 private:
 #ifdef USE_VM
     void checkBitmapToHost();
@@ -67,7 +64,7 @@ private:
 #endif
 protected:
     // TODO should we allow per-object protocol?
-    memory::Protocol *protocol_;
+    Protocol *protocol_;
 
     Manager();
     virtual ~Manager();
@@ -80,7 +77,7 @@ public:
     TESTABLE gmacError_t alloc(void **addr, size_t size);
 #ifndef USE_MMAP
     TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    bool requireUpdate(memory::Block &block);
+    bool requireUpdate(Block &block);
 #endif
     TESTABLE gmacError_t free(void *addr);
 
@@ -97,8 +94,8 @@ public:
     /////////////////////////
     // Memory bulk operations
     /////////////////////////
-    TESTABLE gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t size);
-    TESTABLE gmacError_t fromIOBuffer(void *addr, gmac::core::IOBuffer &buffer, size_t size);
+    TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
+    TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
 
     TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
     TESTABLE gmacError_t memset(void *dst, int c, size_t n);
@@ -106,20 +103,20 @@ public:
     ///////////////////
     // Object migration
     ///////////////////
-    gmacError_t moveTo(void *addr, gmac::core::Mode &mode);
+    gmacError_t moveTo(void *addr, __impl::core::Mode &mode);
 
     //////////////////
     // Mode management
     //////////////////
-    gmacError_t removeMode(gmac::core::Mode &mode);
+    gmacError_t removeMode(__impl::core::Mode &mode);
 
     ///////////////////////////////////////////////////
     // Direct access to protocol for internal functions
     ///////////////////////////////////////////////////
-    gmac::memory::Protocol &protocol() const;
+    Protocol &protocol() const;
 };
 
-}}}
+}}
 
 #include "Manager.ipp"
 

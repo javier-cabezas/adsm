@@ -8,9 +8,9 @@
 #undef PARAM
 #define PARAM(v, t, d, ...) \
     t v = d; \
-    gmac::util::Parameter<t> *__##v = NULL; \
-    gmac::util::__Parameter *__init__##v() { \
-        __##v = new gmac::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
+    __impl::util::Parameter<t> *__##v = NULL; \
+    __impl::util::__Parameter *__init__##v() { \
+        __##v = new __impl::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
         return __##v;\
     }
 #include "Parameter-def.h"

@@ -1,6 +1,6 @@
 #include "memory/posix/FileMap.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 FileMap::FileMap() :
 	util::RWLock("FileMap")

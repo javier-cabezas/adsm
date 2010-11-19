@@ -5,10 +5,10 @@
 
 #include "trace/Tracer.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
-Kernel::Kernel(const gmac::core::KernelDescriptor & k, CUmodule mod) :
-    gmac::core::Kernel(k)
+Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
+    __impl::core::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, name_);
     //! \todo Calculate this dynamically
@@ -19,17 +19,17 @@ Kernel::Kernel(const gmac::core::KernelDescriptor & k, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
-gmac::core::KernelLaunch *
-Kernel::launch(gmac::core::KernelConfig & _c)
+core::KernelLaunch *
+Kernel::launch(core::KernelConfig & _c)
 {
     KernelConfig & c = static_cast<KernelConfig &>(_c);
 
-    KernelLaunch * l = new KernelLaunch(*this, c);
+    KernelLaunch * l = new __impl::cuda::KernelLaunch(*this, c);
     return l;
 }
 
 KernelConfig::KernelConfig(const KernelConfig & c) :
-    gmac::core::KernelConfig(c),
+    __impl::core::KernelConfig(c),
     _grid(c._grid),
     _block(c._block),
     _shared(c._shared),
@@ -38,7 +38,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 }
 
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/) :
-    gmac::core::KernelConfig(),
+    __impl::core::KernelConfig(),
     _grid(grid),
     _block(block),
     _shared(shared),
@@ -47,8 +47,8 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    gmac::core::KernelLaunch(),
-    KernelConfig(c),
+    __impl::core::KernelLaunch(),
+    __impl::cuda::KernelConfig(c),
     _kernel(k),
     _f(k._f)
 {

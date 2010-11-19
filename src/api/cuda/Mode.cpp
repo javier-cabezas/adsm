@@ -2,10 +2,10 @@
 #include "Context.h"
 #include "Accelerator.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
-Mode::Mode(gmac::core::Process &proc, Accelerator &acc) :
-    gmac::core::Mode(proc, acc)
+Mode::Mode(core::Process &proc, Accelerator &acc) :
+    __impl::core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
     cudaCtx_ = accelerator().createCUContext::current();
@@ -34,7 +34,7 @@ Mode::Mode(gmac::core::Process &proc, Accelerator &acc) :
     void *addr = NULL;
     gmacError_t ret = hostAlloc(&addr, paramIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
+        ioMemory_ = new __impl::core::allocator::Buddy(addr, paramIOMemory);
 
     switchOut();
 }
@@ -94,11 +94,11 @@ void Mode::reload()
     load();
 }
 
-gmac::core::Context &Mode::getContext()
+core::Context &Mode::getContext()
 {
-	gmac::core::Context *context = contextMap_.find(util::GetThreadId());
+	core::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new Context(accelerator(), *this);
+    context = new __impl::cuda::Context(accelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -176,7 +176,7 @@ CUstream Mode::eventStream()
     return ctx.eventStream();
 }
 
-gmacError_t Mode::waitForBuffer(gmac::core::IOBuffer &buffer)
+gmacError_t Mode::waitForBuffer(core::IOBuffer &buffer)
 {
 	switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());

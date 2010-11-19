@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/Lock.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL FileMapEntry {
 protected:

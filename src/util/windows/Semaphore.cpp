@@ -1,9 +1,7 @@
 #include "Semaphore.h"
 #include <cassert>
 
-
-
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 Semaphore::Semaphore(unsigned v)
 {

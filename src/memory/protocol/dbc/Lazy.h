@@ -37,11 +37,17 @@ WITH THE SOFTWARE.  */
 #include "memory/protocol/Lazy.h"
 #include "dbc/types.h"
 
-namespace gmac { namespace memory { namespace protocol { namespace __dbc {
+namespace __dbc { namespace memory { namespace protocol {
+
+using __impl::core::IOBuffer;
+
+using __impl::memory::Block;
+using __impl::memory::Object;
+using __impl::memory::StateObject;
 
 class GMAC_LOCAL Lazy :
-    public __impl::Lazy,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::protocol::Lazy,
+    public virtual Contract {
 
 protected:
     gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
@@ -64,8 +70,8 @@ public:
     gmacError_t signalRead(const Object &obj, void *addr);
     gmacError_t signalWrite(const Object &obj, void *addr);
 
-    gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
-    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t n);
+    gmacError_t toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n);
+    gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t n);
 
     gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t n);
     gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n);
@@ -74,6 +80,6 @@ public:
     gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 };
 
-}}}}
+}}}
 
 #endif

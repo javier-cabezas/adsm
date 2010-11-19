@@ -40,11 +40,10 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 #include "memory/SystemBlock.h"
 
-namespace gmac { namespace memory { namespace __impl {
-
+namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SystemBlock : public memory::Block {
+class GMAC_LOCAL SystemBlock : public __impl::memory::Block {
 protected:
     T state_;
 
@@ -58,7 +57,7 @@ public:
     void state(T s);
 };
 
-}}}
+}}
 
 #include "SystemBlock.ipp"
 

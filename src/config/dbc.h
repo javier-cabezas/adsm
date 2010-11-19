@@ -21,27 +21,40 @@
 #ifndef GMAC_CONFIG_DBC_H_
 #define GMAC_CONFIG_DBC_H_
 
+#if 0
 namespace gmac {
-    namespace memory {
-
-        namespace protocol {
-            namespace __dbc { }
-            using namespace __dbc;
-        }
-        namespace __dbc { 
+    namespace __impl {
+        namespace memory {
             class Block;
-            class Manager;
+
+            namespace protocol {
+            }
         }
+        namespace util {
+            class Lock;
+        }
+    }
+    namespace __dbc {
+        namespace memory {
+            class Block;
 
-        using namespace __dbc;
+            namespace protocol {
+            }
+        }
+        namespace util {
+            class Lock;
+        }
     }
 
+    namespace memory {
+        using namespace gmac::__dbc::memory;
+    }
     namespace util {
-        namespace __dbc { 
-			class RWLock;
-		}
-        using namespace __dbc;
+        using namespace gmac::__dbc::util;
     }
+    
+    using namespace __dbc;
 }
+#endif
 
 #endif  /* GMAC_CONFIG_VISIBILITY_H */

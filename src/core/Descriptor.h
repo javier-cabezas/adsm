@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 template <typename K>
 class GMAC_LOCAL Descriptor {

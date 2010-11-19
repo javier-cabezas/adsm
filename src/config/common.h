@@ -55,29 +55,50 @@ typedef signed __int64 int64_t;
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
-#ifdef USE_DBC
-#include "dbc.h"
-#else
-namespace gmac {
+namespace __impl {
+#if defined(GMAC_DLL)
+    void enterGmac();
+    void enterGmacExclusive();
+    void exitGmac();
+    char inGmac();
+#endif
+
+    namespace cuda {}
+    namespace core {}
+    namespace util {}
     namespace memory {
-        namespace protocol {
-           namespace __impl { }
-        using namespace __impl;
-        }
- 
-        namespace __impl { 
-            class Block;
-        }
-
-    using namespace __impl;
+        namespace protocol {}
     }
-
-    namespace util {
-        namespace __impl { 
-		}
-    using namespace __impl;
-    }
+    namespace trace {}
 }
+
+#ifdef USE_DBC
+namespace __dbc {
+#if defined(GMAC_DLL)
+    using __impl::enterGmac;
+    using __impl::enterGmacExclusive;
+    using __impl::exitGmac;
+    using __impl::inGmac;
+#endif
+
+    namespace cuda {}
+    namespace core {
+        // Singleton classes need to be predeclared
+        class Process;
+    }
+    namespace util {}
+    namespace memory {
+        // Singleton classes need to be predeclared
+        class Manager;
+        namespace protocol {}
+    }
+    namespace trace = __impl::trace;
+}
+#endif
+#ifdef USE_DBC
+namespace gmac = __dbc;
+#else
+namespace gmac = __impl;
 #endif
 
 

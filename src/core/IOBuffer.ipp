@@ -1,11 +1,11 @@
 #ifndef GMAC_CORE_IOBUFFER_IPP_
 #define GMAC_CORE_IOBUFFER_IPP_
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 inline
 IOBuffer::IOBuffer(void *addr, size_t size) :
-        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(NULL)
+        gmac::util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(NULL)
 {
 }
 
@@ -35,13 +35,13 @@ IOBuffer::size() const
 inline void
 IOBuffer::lock()
 {
-    util::Lock::lock();
+    gmac::util::Lock::lock();
 }
 
 inline void
 IOBuffer::unlock()
 {
-    util::Lock::unlock();
+    gmac::util::Lock::unlock();
 }
 
 inline IOBuffer::State

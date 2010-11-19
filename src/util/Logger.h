@@ -74,26 +74,26 @@ inline static const char *__extract_file_name(const char *file) {
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
-#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, gmac::util::GetThreadId(), __func__, \
+#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, __impl::util::GetThreadId(), __func__, \
 		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #   elif defined(_MSC_VER)
-#	    define TRACE(name, fmt, ...) gmac::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, gmac::util::GetThreadId(), __FUNCTION__, \
+#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, __impl::util::GetThreadId(), __FUNCTION__, \
 		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
 #   endif
-#   define ASSERTION(c, ...) gmac::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
+#   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #else
 #   define TRACE(...)
 #   define ASSERTION(...)
 #endif
 
-#define WARNING(fmt, ...) gmac::util::Logger::__Warning("("FMT_TID")" fmt, gmac::util::GetThreadId(), ##__VA_ARGS__)
-#define FATAL(fmt, ...) gmac::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
-#define CFATAL(c, ...) gmac::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
+#define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
+#define FATAL(fmt, ...) __impl::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
+#define CFATAL(c, ...) __impl::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
 #include "util/Parameter.h"
 #include "util/Private.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 class GMAC_LOCAL Logger {
 private:    

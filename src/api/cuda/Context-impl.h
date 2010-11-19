@@ -4,7 +4,7 @@
 #include "Accelerator.h"
 #include "Kernel.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 inline void
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)

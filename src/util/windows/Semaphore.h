@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 class GMAC_LOCAL Semaphore {
 protected:

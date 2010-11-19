@@ -1,11 +1,11 @@
 #ifndef GMAC_MEMORY_OBJECT_IPP_
 #define GMAC_MEMORY_OBJECT_IPP_
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 inline
 Object::Object(void *addr, size_t size) :
-    util::RWLock("memory::Object"), addr_(addr), size_(size)
+    gmac::util::RWLock("memory::Object"), addr_(addr), size_(size)
 {
 }
 
@@ -39,7 +39,7 @@ Object::free()
 }
 
 inline gmacError_t
-Object::realloc(gmac::core::Mode &/*mode*/)
+Object::realloc(core::Mode &/*mode*/)
 {
     return gmacSuccess;
 }

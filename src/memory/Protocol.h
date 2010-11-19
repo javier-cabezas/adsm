@@ -37,14 +37,18 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
-namespace gmac {
+
+
+namespace __impl {
+
 namespace core {
 class IOBuffer;
 class Mode;
-}}
+}
+    
+namespace memory {
 
-namespace gmac { namespace memory {
-
+class Block;
 class Object;
 
 class GMAC_LOCAL Protocol {
@@ -71,8 +75,8 @@ public:
     virtual gmacError_t toHost(const Object &obj) = 0;
     virtual gmacError_t toDevice(const Object &obj) = 0;
 
-    virtual gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n) = 0;
-    virtual gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t n) = 0;
+    virtual gmacError_t toIOBuffer(core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n) = 0;
+    virtual gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, core::IOBuffer &buffer, unsigned bufferOff, size_t n) = 0;
 
     virtual gmacError_t toPointer(void *dst, const Object &srcObj, unsigned objectOff, size_t n) = 0;
     virtual gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n) = 0;
@@ -80,9 +84,9 @@ public:
     virtual gmacError_t copy(const Object &dstObj, unsigned dstOff, const Object &srcObj, unsigned srcOff, size_t n) = 0;
     virtual gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t n) = 0;
 
-    virtual gmacError_t moveTo(Object &obj, gmac::core::Mode &mode) = 0;
+    virtual gmacError_t moveTo(Object &obj, core::Mode &mode) = 0;
 
-    virtual gmacError_t removeMode(gmac::core::Mode &mode) = 0;
+    virtual gmacError_t removeMode(core::Mode &mode) = 0;
 
     //virtual gmacError_t toHost(Object &obj) = 0;
 };

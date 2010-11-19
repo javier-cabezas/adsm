@@ -2,7 +2,7 @@
 
 #include "../Mode.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 #ifndef USE_MMAP
 CentralizedObject::CentralizedObject(size_t size) :
@@ -16,7 +16,7 @@ CentralizedObject::~CentralizedObject() {}
 
 gmacError_t CentralizedObject::init()
 {
-    gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
+    cuda::Mode &mode = cuda::Mode::current();
     if(mode.hostAlloc(&addr_, size_) != gmacSuccess) {
         addr_ = NULL;
         return gmacErrorMemoryAllocation;
@@ -30,14 +30,14 @@ void CentralizedObject::fini()
 {
     if(addr_ == NULL) return;
     TRACE(LOCAL,"Centralized Object @ %p finalized", getAcceleratorAddr(addr_));
-    gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
+    cuda::Mode &mode = cuda::Mode::current();
     mode.hostFree(addr_);
 }
 
 void *CentralizedObject::getAcceleratorAddr(void *addr) const
 {
     off_t offset = (unsigned long)addr - (unsigned long)addr_;
-    gmac::cuda::Mode &mode = gmac::cuda::Mode::current();
+    cuda::Mode &mode = cuda::Mode::current();
     return (uint8_t *)mode.hostMap(addr_) + offset;
 }
 #endif

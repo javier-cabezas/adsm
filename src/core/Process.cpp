@@ -11,10 +11,10 @@
 #include "memory/DistributedObject.h"
 #include "trace/Tracer.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 ModeMap::ModeMap() :
-    util::RWLock("ModeMap")
+    gmac::util::RWLock("ModeMap")
 {}
 
 std::pair<ModeMap::iterator, bool>
@@ -35,7 +35,7 @@ size_t ModeMap::remove(Mode &mode)
 }
 
 QueueMap::QueueMap() :
-    util::RWLock("QueueMap")
+    gmac::util::RWLock("QueueMap")
 {}
 
 void QueueMap::cleanup()
@@ -94,8 +94,8 @@ size_t Process::TotalMemory_ = 0;
 
 
 Process::Process() :
-	util::Singleton<Process>(),
-    util::RWLock("Process"),
+	__impl::util::Singleton<Process>(),
+    gmac::util::RWLock("Process"),
     shared_("SharedMemoryMap"),
     centralized_("CentralizedMemoryMap"),
     replicated_("ReplicatedMemoryMap"),
@@ -134,7 +134,7 @@ Process::~Process()
 
 void Process::initThread()
 {
-    ThreadQueue * q = new ThreadQueue();
+    ThreadQueue * q = new __impl::core::ThreadQueue();
 	queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();

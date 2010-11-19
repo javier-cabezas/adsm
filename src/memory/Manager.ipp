@@ -1,14 +1,14 @@
 #ifndef GMAC_MEMORY_MANAGER_IPP_
 #define GMAC_MEMORY_MANAGER_IPP_
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
-inline memory::Protocol &
+inline Protocol &
 Manager::protocol() const
 {
     return *protocol_;
 }
 
-}}}
+}}
 
 #endif

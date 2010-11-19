@@ -6,7 +6,7 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 struct sigaction defaultAction;
 unsigned Handler::Count_ = 0;

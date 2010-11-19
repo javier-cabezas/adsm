@@ -2,7 +2,7 @@
 #ifndef GMAC_CORE_ACCELERATOR_IPP_
 #define GMAC_CORE_ACCELERATOR_IPP_
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 inline unsigned
 Accelerator::id() const

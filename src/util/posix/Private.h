@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T = void>
 class GMAC_LOCAL Private {

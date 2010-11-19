@@ -3,11 +3,11 @@
 
 #include "trace/Tracer.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory {
 
 template <typename T>
 ReplicatedObject<T>::ReplicatedObject(size_t size, T init)
-    : __impl::ReplicatedObject<T>(size, init)
+    : __impl::memory::ReplicatedObject<T>(size, init)
 {
     REQUIRES(size > 0);
 }
@@ -22,13 +22,13 @@ gmacError_t
 ReplicatedObject<T>::init()
 {
     // PRECONDITIONS
-    ENSURES(StateObject<T>::addr() == NULL);
+    ENSURES(__impl::memory::StateObject<T>::addr() == NULL);
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::init();
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::init();
     // POSTCONDITIONS
     ENSURES(gmacErrorMemoryAllocation ||
-            StateObject<T>::addr() != NULL);
+            __impl::memory::StateObject<T>::addr() != NULL);
 
     return ret;
 }
@@ -38,9 +38,9 @@ void
 ReplicatedObject<T>::fini()
 {
     // PRECONDITIONS
-    REQUIRES(StateObject<T>::addr() != NULL);
+    REQUIRES(__impl::memory::StateObject<T>::addr() != NULL);
     // CALL IMPLEMENTATION
-    __impl::ReplicatedObject<T>::fini();
+    __impl::memory::ReplicatedObject<T>::fini();
     // POSTCONDITIONS
 }
 
@@ -49,173 +49,169 @@ inline void *
 ReplicatedObject<T>::getAcceleratorAddr(void *addr) const
 {
     // PRECONDITIONS
-    REQUIRES(addr >= StateObject<T>::addr());
-    REQUIRES(addr <  StateObject<T>::end());
+    REQUIRES(addr >= __impl::memory::StateObject<T>::addr());
+    REQUIRES(addr <  __impl::memory::StateObject<T>::end());
     // CALL IMPLEMENTATION
-    void *ret = __impl::ReplicatedObject<T>::getAcceleratorAddr(addr);
+    void *ret = __impl::memory::ReplicatedObject<T>::getAcceleratorAddr(addr);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toHost(Block &block) const
+ReplicatedObject<T>::toHost(__impl::memory::Block &block) const
 {
     // Function not valid for Replicated Objects
     // PRECONDITIONS
     REQUIRES(0);
-    gmacError_t ret = __impl::ReplicatedObject<T>::toHost(block);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toHost(block);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toHost(Block &block, unsigned blockOff, size_t count) const
+ReplicatedObject<T>::toHost(__impl::memory::Block &block, unsigned blockOff, size_t count) const
 {
     // Function not valid for Replicated Objects
     // PRECONDITIONS
     REQUIRES(0);
-    gmacError_t ret = __impl::ReplicatedObject<T>::toHost(block, blockOff, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toHost(block, blockOff, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const
+ReplicatedObject<T>::toHostPointer(__impl::memory::Block &block, unsigned blockOff, void *ptr, size_t count) const
 {
     // Function not valid for Replicated Objects
     // PRECONDITIONS
     REQUIRES(0);
-    gmacError_t ret = __impl::ReplicatedObject<T>::toHostPointer(block, blockOff, ptr, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toHostPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
+ReplicatedObject<T>::toHostBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
     // Function not valid for Replicated Objects
     // PRECONDITIONS
     REQUIRES(0);
-    gmacError_t ret = __impl::ReplicatedObject<T>::toHostBuffer(block, blockOff, buffer, bufferOff, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toHostBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toAccelerator(Block &block) const
+ReplicatedObject<T>::toAccelerator(__impl::memory::Block &block) const
 {
-    trace::EnterCurrentFunction();
     // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(block.addr() >= __impl::memory::StateObject<T>::addr());
+    REQUIRES(block.end() <= __impl::memory::StateObject<T>::end());
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::toAccelerator(block);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toAccelerator(block);
     // POSTCONDITIONS
-    trace::ExitCurrentFunction();
+
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toAccelerator(Block &block, unsigned blockOff, size_t count) const
+ReplicatedObject<T>::toAccelerator(__impl::memory::Block &block, unsigned blockOff, size_t count) const
 {
-    trace::EnterCurrentFunction();
     // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(block.addr() >= __impl::memory::StateObject<T>::addr());
+    REQUIRES(block.end() <= __impl::memory::StateObject<T>::end());
     REQUIRES(count > 0);
     REQUIRES(blockOff < block.size());
     REQUIRES(blockOff + count <= block.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::toAccelerator(block, blockOff, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toAccelerator(block, blockOff, count);
     // POSTCONDITIONS
-    trace::ExitCurrentFunction();
+
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const
+ReplicatedObject<T>::toAcceleratorFromPointer(__impl::memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const
 {
-    trace::EnterCurrentFunction();
     // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(block.addr() >= __impl::memory::StateObject<T>::addr());
+    REQUIRES(block.end() <= __impl::memory::StateObject<T>::end());
     REQUIRES(count > 0);
     REQUIRES(blockOff < block.size());
     REQUIRES(blockOff + count <= block.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toAcceleratorFromPointer(block, blockOff, ptr, count);
     // POSTCONDITIONS
-    trace::ExitCurrentFunction();
+
     return ret;
 }
 
 template <typename T>
 gmacError_t
-ReplicatedObject<T>::toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
+ReplicatedObject<T>::toAcceleratorFromBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const
 {
-    trace::EnterCurrentFunction();
     // PRECONDITIONS
-    REQUIRES(block.addr() >= StateObject<T>::addr());
-    REQUIRES(block.end() <= StateObject<T>::end());
+    REQUIRES(block.addr() >= __impl::memory::StateObject<T>::addr());
+    REQUIRES(block.end() <= __impl::memory::StateObject<T>::end());
     REQUIRES(count > 0);
     REQUIRES(blockOff < block.size());
     REQUIRES(blockOff + count <= block.size());
     REQUIRES(bufferOff + count <= buffer.size());
 
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::toAcceleratorFromBuffer(block, blockOff, buffer, bufferOff, count);
     // POSTCONDITIONS
-    trace::ExitCurrentFunction();
+
     return ret;
 }
 
 template<typename T>
-gmac::core::Mode &
+__impl::core::Mode &
 ReplicatedObject<T>::owner() const
 {
     // PRECONDITIONS
 
     // CALL IMPLEMENTATION
-    gmac::core::Mode &ret = __impl::ReplicatedObject<T>::owner();
+    __impl::core::Mode &ret = __impl::memory::ReplicatedObject<T>::owner();
     // POSTCONDITIONS
     ENSURES(&ret != NULL);
     return ret;
 }
 
 template<typename T>
-gmacError_t ReplicatedObject<T>::addOwner(gmac::core::Mode &mode)
+gmacError_t ReplicatedObject<T>::addOwner(__impl::core::Mode &mode)
 {
     // PRECONDITIONS
-    REQUIRES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) == __impl::ReplicatedObject<T>::accelerators_.end());
+    REQUIRES(__impl::memory::ReplicatedObject<T>::accelerators_.find(&mode) == __impl::memory::ReplicatedObject<T>::accelerators_.end());
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::addOwner(mode);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::addOwner(mode);
     // POSTCONDITIONS
-    ENSURES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) != __impl::ReplicatedObject<T>::accelerators_.end());
+    ENSURES(__impl::memory::ReplicatedObject<T>::accelerators_.find(&mode) != __impl::memory::ReplicatedObject<T>::accelerators_.end());
     return ret;
 }
 
 template<typename T>
-inline gmacError_t ReplicatedObject<T>::removeOwner(gmac::core::Mode &mode)
+inline gmacError_t ReplicatedObject<T>::removeOwner(__impl::core::Mode &mode)
 {
     // PRECONDITIONS
-    REQUIRES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) != __impl::ReplicatedObject<T>::accelerators_.end());
+    REQUIRES(__impl::memory::ReplicatedObject<T>::accelerators_.find(&mode) != __impl::memory::ReplicatedObject<T>::accelerators_.end());
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::ReplicatedObject<T>::removeOwner(mode);
+    gmacError_t ret = __impl::memory::ReplicatedObject<T>::removeOwner(mode);
     // POSTCONDITIONS
-    ENSURES(__impl::ReplicatedObject<T>::accelerators_.find(&mode) == __impl::ReplicatedObject<T>::accelerators_.end());
+    ENSURES(__impl::memory::ReplicatedObject<T>::accelerators_.find(&mode) == __impl::memory::ReplicatedObject<T>::accelerators_.end());
     return ret;
 
 }
 
-}}}
+}}
 
 #endif

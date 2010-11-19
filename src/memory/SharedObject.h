@@ -40,12 +40,12 @@ WITH THE SOFTWARE.  */
 #include "memory/AcceleratorBlock.h"
 #include "memory/StateObject.h"
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SharedObject : public StateObject<T> {
+class GMAC_LOCAL SharedObject : public __impl::memory::StateObject<T> {
 protected:
-    gmac::core::Mode *owner_;
+    core::Mode *owner_;
     bool mapped_;
     AcceleratorBlock *accBlock_;
 public:
@@ -59,27 +59,27 @@ public:
     TESTABLE gmacError_t toHost(Block &block) const;
     TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
     TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     // To accelerator functions
     TESTABLE gmacError_t toAccelerator(Block &block) const;
     TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
     TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE gmac::core::Mode &owner() const;
+    TESTABLE core::Mode &owner() const;
 
     TESTABLE gmacError_t free();
-    TESTABLE gmacError_t realloc(gmac::core::Mode &mode);
+    TESTABLE gmacError_t realloc(core::Mode &mode);
 
-    gmacError_t memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const;
+    gmacError_t memsetAccelerator(Block &block, unsigned blockOff, int c, size_t count) const;
 
     bool isLocal() const;
     bool isInAccelerator() const;
 };
 
-}}}
+}}
 
 #include "SharedObject.ipp"
 

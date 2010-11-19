@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_TABLE_IPP_
 #define GMAC_MEMORY_TABLE_IPP_
 
-namespace gmac { namespace memory  { namespace vm {
+namespace __impl { namespace memory  { namespace vm {
 
 template<typename T>
 T *

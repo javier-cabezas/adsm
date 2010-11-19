@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "Atomics.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template<typename T>
 class GMAC_LOCAL Reference {

@@ -1,6 +1,6 @@
 #include "DistributedObject.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 DistributedObject::~DistributedObject()
 {

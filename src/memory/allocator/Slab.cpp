@@ -2,11 +2,11 @@
 
 #include "core/Mode.h"
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 Cache &Slab::createCache(CacheMap &map, long key, size_t size)
 {
-    Cache *cache = new Cache(size);
+    Cache *cache = new __impl::memory::allocator::Cache(size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }
@@ -15,7 +15,7 @@ Cache &Slab::get(long key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    gmac::core::Mode *mode = &gmac::core::Mode::current();
+    core::Mode *mode = &core::Mode::current();
     i = modes.find(mode);
     modes.unlock();
     if(i == modes.end()) {
@@ -38,7 +38,7 @@ void Slab::cleanup()
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(&gmac::core::Mode::current());
+    i = modes.find(&core::Mode::current());
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;

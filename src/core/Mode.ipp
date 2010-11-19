@@ -3,7 +3,7 @@
 
 #include "memory/Map.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 inline void ContextMap::add(THREAD_T id, Context *ctx)
 {
@@ -56,7 +56,7 @@ inline gmacError_t ContextMap::sync()
 
 inline void Mode::init()
 {
-    gmac::util::Private<Mode>::init(key);
+    util::Private<Mode>::init(key);
 }
 
 inline void Mode::initThread()
@@ -158,13 +158,13 @@ Mode::error(gmacError_t err)
 }
 
 #ifdef USE_VM
-inline memory::vm::Bitmap &
+inline gmac::memory::vm::Bitmap &
 Mode::dirtyBitmap()
 {
     return *_bitmap;
 }
 
-inline const memory::vm::Bitmap &
+inline const gmac::memory::vm::Bitmap &
 Mode::dirtyBitmap() const
 {
     return *_bitmap;

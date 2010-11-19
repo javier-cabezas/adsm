@@ -21,7 +21,7 @@
 #define MIN min
 #endif
 
-namespace gmac { namespace memory { namespace protocol { namespace __impl {
+namespace __impl { namespace memory { namespace protocol {
 
 List Lazy::GlobalCache_;
 
@@ -61,7 +61,7 @@ Entry List::pop()
 
 
 Lazy::Lazy(unsigned limit)
-    : util::RWLock("Lazy"), _maxListSize(limit)
+    : gmac::util::RWLock("Lazy"), _maxListSize(limit)
 {
 }
 
@@ -75,7 +75,7 @@ Lazy::~Lazy()
 
 memory::Object *Lazy::createSharedObject(size_t size, void *cpuPtr, GmacProtection prot)
 {
-    Object *ret = new SharedObject<Lazy::State>(size, cpuPtr, ReadOnly);
+    Object *ret = new gmac::memory::SharedObject<Lazy::State>(size, cpuPtr, ReadOnly);
     if (ret != NULL) {
         ret->init();
         if (cpuPtr != NULL) {
@@ -114,7 +114,7 @@ void Lazy::deleteObject(const Object &obj)
 #ifndef USE_MMAP
 memory::Object *Lazy::createReplicatedObject(size_t size)
 {
-    Object *ret = new ReplicatedObject<Lazy::State>(size, ReadOnly);
+    Object *ret = new gmac::memory::ReplicatedObject<Lazy::State>(size, ReadOnly);
     ret->init();
     return ret;
 }
@@ -148,7 +148,7 @@ gmacError_t Lazy::acquire(const Object &obj)
 #ifdef USE_VM
 gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 {
-    gmac::core::Mode &mode = gmac::core::Mode::current();
+    core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     gmacError_t ret = gmacSuccess;
     StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
@@ -212,7 +212,7 @@ gmacError_t Lazy::release()
 
     // Get the dirty list for the current mode
     lockRead();
-    iterator i = find(&gmac::core::Mode::current());
+    iterator i = find(&core::Mode::current());
     if(i == end()) {
         unlock();
         return gmacSuccess;
@@ -307,7 +307,7 @@ static size_t blockRemainder(const uint8_t * blockAddr, size_t blockSize, const 
 }
 
 gmacError_t
-Lazy::toIOBuffer(gmac::core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
+Lazy::toIOBuffer(core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -352,7 +352,7 @@ exit_func:
 }
 
 gmacError_t
-Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count)
+Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -572,8 +572,8 @@ gmacError_t
 Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
 {
-    gmac::core::Mode &mode = gmac::core::Mode::current();
-    gmac::core::IOBuffer *buffer = mode.createIOBuffer(count); 
+    core::Mode &mode = core::Mode::current();
+    core::IOBuffer *buffer = mode.createIOBuffer(count); 
     if (!buffer) {
         void *tmp = Memory::map(NULL, count, GMAC_PROT_READWRITE);
         CFATAL(tmp != NULL, "Unable to set memory permissions");
@@ -744,7 +744,7 @@ exit_func:
 }
 
 gmacError_t
-Lazy::moveTo(Object &obj, gmac::core::Mode &mode)
+Lazy::moveTo(Object &obj, core::Mode &mode)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -771,7 +771,7 @@ gmacError_t Lazy::signalRead(const Object &obj, void *addr)
     }
     void * tmp;
 #ifdef USE_VM
-    gmac::core::Mode &mode = gmac::core::Mode::current();
+    core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (bitmap.checkAndClear(obj.device(block->addr()))) {
 #endif
@@ -846,14 +846,14 @@ exit_func:
 gmacError_t
 Lazy::addDirty(const StateObject<State> &object, SystemBlock<State> &block, bool checkOverflow)
 {
-    gmac::core::Mode &mode = object.owner();
+    core::Mode &mode = object.owner();
 
     // Handle local mode allocations
     if (object.isLocal()) {
         lockWrite();
         iterator i = find(&mode);
         if(i == end()) {
-            i = insert(value_type(&mode, new List())).first;
+            i = insert(value_type(&mode, new __impl::memory::protocol::List())).first;
         }
         ASSERTION(i != end());
         List &list = *i->second;
@@ -918,7 +918,7 @@ bool Lazy::requireUpdate(Block &b)
 #endif
 
 gmacError_t
-Lazy::removeMode(gmac::core::Mode &mode)
+Lazy::removeMode(core::Mode &mode)
 {
     lockWrite();
     iterator i = find(&mode);
@@ -930,4 +930,4 @@ Lazy::removeMode(gmac::core::Mode &mode)
     return gmacSuccess;
 }
 
-}}}}
+}}}

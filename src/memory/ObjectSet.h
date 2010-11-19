@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class Object;
 typedef std::set<Object *> ObjectSet;

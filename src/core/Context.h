@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Private.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 class Accelerator;
 class Kernel;
@@ -50,7 +50,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class GMAC_LOCAL Context : public util::RWLock {
+class GMAC_LOCAL Context : public gmac::util::RWLock {
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -68,7 +68,7 @@ public:
 
     virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
 
-    virtual gmac::core::KernelLaunch &launch(gmac::core::Kernel &kernel) = 0;
+    virtual KernelLaunch &launch(Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;
 };
 

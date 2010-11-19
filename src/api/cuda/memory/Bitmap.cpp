@@ -4,12 +4,12 @@
 #include "memory/Bitmap.h"
 
 #ifdef USE_VM
-namespace gmac { namespace memory { namespace vm {
+namespace __impl { namespace memory { namespace vm {
 
 void Bitmap::allocate()
 {
     ASSERTION(device_ == NULL);
-    gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
+    cuda::Mode * mode = cuda::Mode::current();
 #ifdef USE_HOSTMAP_VM
     mode->hostAlloc((void **)&_bitmap, size_);
     device_ = mode->hostMap(_bitmap);

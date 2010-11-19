@@ -1,10 +1,10 @@
 #include "Queue.h"
 #include "util/Logger.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 Queue::Queue(const char *name) :
-    util::Lock(name), sem(0)
+    gmac::util::Lock(name), sem(0)
 {}
 
 void Queue::push(Mode *mode)
@@ -28,7 +28,7 @@ Mode * Queue::pop()
 
 ThreadQueue::ThreadQueue()
 {
-    queue = new Queue("ThreadQueue");
+    queue = new __impl::core::Queue("ThreadQueue");
 }
 
 ThreadQueue::~ThreadQueue()

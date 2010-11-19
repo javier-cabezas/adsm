@@ -45,13 +45,13 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/Parameter.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 //! Page Table 
 
 //! Software Virtual Memory Table to keep translation from
 // CPU to accelerator memory addresses
-class GMAC_LOCAL PageTable : public util::Logger {
+class GMAC_LOCAL PageTable : public __impl::util::Logger {
 private:
 	static const unsigned long dirShift = 30;
 	static const unsigned long rootShift = 39;

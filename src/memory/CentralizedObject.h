@@ -39,9 +39,9 @@ WITH THE SOFTWARE.  */
 #include "memory/Block.h"
 #include "memory/Object.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 #ifndef USE_MMAP
-class GMAC_LOCAL CentralizedObject : public Object {
+class GMAC_LOCAL CentralizedObject : public __impl::memory::Object {
 public:
     CentralizedObject(size_t size);
     virtual ~CentralizedObject();
@@ -50,7 +50,7 @@ public:
     void fini();
 
     void *getAcceleratorAddr(void *addr) const;
-    gmac::core::Mode &owner() const;
+    core::Mode &owner() const;
 
     bool isLocal() const;
     bool isInAccelerator() const;

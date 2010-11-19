@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL FileMapEntry {
 protected:
@@ -56,9 +56,7 @@ public:
 	inline size_t size() const { return size_; }
 };
 
-class GMAC_LOCAL FileMap :
-	protected std::map<void *, FileMapEntry>,
-	public util::RWLock
+class GMAC_LOCAL FileMap : protected std::map<void *, FileMapEntry>, public gmac::util::RWLock
 {
 protected:
 	typedef std::map<void *, FileMapEntry> Parent;

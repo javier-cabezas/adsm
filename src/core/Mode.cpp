@@ -8,9 +8,9 @@
 #include "Mode.h"
 #include "Process.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
-gmac::util::Private<Mode> Mode::key;
+__impl::util::Private<Mode> Mode::key;
 
 unsigned Mode::next = 0;
 
@@ -24,7 +24,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , _bitmap(new memory::vm::Bitmap())
+    , _bitmap(new __impl::memory::vm::Bitmap())
 #endif
     , count_(0)
 {
@@ -50,7 +50,7 @@ void Mode::finiThread()
     Mode *mode = key.get();
     if(mode == NULL) return;
     memory::Manager &manager = memory::Manager::getInstance();
-    mode->map_.forEach(manager.protocol(), &gmac::memory::Protocol::toHost);
+    mode->map_.forEach(manager.protocol(), &memory::Protocol::toHost);
     mode->map_.makeOrphans();
 
     memory::Manager::getInstance().removeMode(*mode);
@@ -158,13 +158,13 @@ gmacError_t Mode::memset(void *addr, int c, size_t size)
     return error_;
 }
 
-gmac::core::KernelLaunch &Mode::launch(const char *kernel)
+core::KernelLaunch &Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     assert(i != kernels_.end());
-    gmac::core::Kernel * k = i->second;
+    core::Kernel * k = i->second;
     switchIn();
-    gmac::core::KernelLaunch &l = getContext().launch(*k);
+    core::KernelLaunch &l = getContext().launch(*k);
     switchOut();
 
     return l;
@@ -181,7 +181,7 @@ gmacError_t Mode::sync()
 #ifndef USE_MMAP
 bool Mode::requireUpdate(memory::Block &block)
 {
-	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+	memory::Manager &manager = memory::Manager::getInstance();
     return manager.requireUpdate(block);
 }
 #endif
@@ -201,8 +201,8 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
+    memory::Manager &manager = memory::Manager::getInstance();
+    map_.freeObjects(manager.protocol(), &memory::Protocol::toHost);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();

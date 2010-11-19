@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-namespace gmac { namespace trace {
+namespace __impl { namespace trace {
 
 void InitApiTracer()
 {
-	tracer = new Console();
+	tracer = new __impl::trace::Console();
 }
 void FiniApiTracer()
 {

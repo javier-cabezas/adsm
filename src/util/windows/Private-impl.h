@@ -3,7 +3,7 @@
 
 #include "util/Logger.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template<typename T>
 inline Private<T>::~Private()

@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T>
 inline

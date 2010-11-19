@@ -11,13 +11,13 @@
 #include <string>
 #include <list>
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 static bool initialized = false;
 
 void apiInit(void)
 {
-    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    core::Process &proc = core::Process::getInstance();
 	if(initialized)
 		FATAL("GMAC double initialization not allowed");
 
@@ -43,11 +43,11 @@ void apiInit(void)
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
 			FATAL("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
-			proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+			proc.addAccelerator(new __impl::cuda::Accelerator(i, cuDev));
 			devRealCount++;
 		}
 #else
-        proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+        proc.addAccelerator(new __impl::cuda::Accelerator(i, cuDev));
         devRealCount++;
 #endif
 	}
@@ -56,7 +56,7 @@ void apiInit(void)
 		FATAL("No CUDA-enabled devices found");
 
     // Initialize the private per-thread variables
-    gmac::cuda::Accelerator::init();
+    cuda::Accelerator::init();
 
 	initialized = true;
 }

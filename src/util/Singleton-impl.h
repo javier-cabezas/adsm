@@ -4,7 +4,7 @@
 #include "Singleton.h"
 #include "util/Logger.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template<typename T> T *Singleton<T>::Singleton_ = NULL;
 

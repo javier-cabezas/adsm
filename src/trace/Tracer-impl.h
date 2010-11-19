@@ -3,7 +3,7 @@
 
 #include "util/Thread.h"
 
-namespace gmac { namespace trace {
+namespace __impl { namespace trace {
 
 #if defined(USE_TRACE)
 extern Tracer *tracer;

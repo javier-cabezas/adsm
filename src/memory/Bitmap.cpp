@@ -6,7 +6,7 @@
 #include "core/Mode.h"
 
 #ifdef USE_VM
-namespace gmac { namespace memory { namespace vm {
+namespace __impl { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
     bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minAddr_(NULL), maxAddr_(NULL)
@@ -44,7 +44,7 @@ Bitmap::Bitmap(unsigned bits) :
 #ifdef DEBUG_BITMAP
 void Bitmap::dump()
 {
-    gmac::Context * ctx = Mode::current()->context();
+    core::Context * ctx = Mode::current()->context();
     ctx->invalidate();
 
     static int idx = 0;

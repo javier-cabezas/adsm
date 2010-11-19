@@ -5,7 +5,7 @@
 
 #include "Kernel.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 KernelConfig::KernelConfig(const KernelConfig & c) :
     argsSize_(0)
