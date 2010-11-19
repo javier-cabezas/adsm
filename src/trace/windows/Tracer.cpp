@@ -1,9 +1,10 @@
-#include "trace/Tracer.h"
 #include <windows.h>
+
+#include "trace/Tracer.h"
 
 #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
 
-namespace gmac { namespace trace {
+namespace __impl { namespace trace {
 
 uint64_t Tracer::timeMark() const
 {

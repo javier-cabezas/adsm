@@ -1,7 +1,7 @@
 #ifndef GMAC_API_CUDA_MODULE_IMPL_H_
 #define GMAC_API_CUDA_MODULE_IMPL_H_
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 inline bool
 VariableDescriptor::constant() const
@@ -29,7 +29,7 @@ Texture::texRef() const
 
 inline
 void
-ModuleDescriptor::add(gmac::core::KernelDescriptor & k)
+ModuleDescriptor::add(core::KernelDescriptor & k)
 {
     kernels_.push_back(k);
 }

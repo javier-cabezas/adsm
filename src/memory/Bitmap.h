@@ -40,9 +40,9 @@ WITH THE SOFTWARE.  */
 
 
 #ifdef USE_VM
-namespace gmac { namespace memory  { namespace vm {
+namespace __impl { namespace memory  { namespace vm {
 
-class GMAC_LOCAL Bitmap : public util::Logger {
+class GMAC_LOCAL Bitmap : public gmac::util::Logger {
 private:
 #ifdef BITMAP_WORD
     uint32_t *bitmap_;

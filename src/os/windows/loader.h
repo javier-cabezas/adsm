@@ -43,11 +43,11 @@ WITH THE SOFTWARE.  */
 	symbol##_t symbol = NULL
 
 #define LOAD_SYM(symbol, name)	\
-	gmac::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
+	__impl::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
 
 #define SYMBOL(name) __gmac_##name
 
-namespace gmac { namespace loader {
+namespace __impl { namespace loader {
 extern void LoadSymbol(PVOID *symbol, PVOID hook, const char *name);
 }}
 

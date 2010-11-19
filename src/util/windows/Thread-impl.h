@@ -1,7 +1,7 @@
-#ifndef __UTIL_WINDOWS_THREAD_IMPL_H_
-#define __UTIL_WINDOWS_THREAD_IMPL_H_
+#ifndef GMAC_UTIL_WINDOWS_THREAD_IMPL_H_
+#define GMAC_UTIL_WINDOWS_THREAD_IMPL_H_
 
-namespace gmac { namespace util { 
+namespace __impl { namespace util { 
 
 inline THREAD_T GetThreadId()
 {

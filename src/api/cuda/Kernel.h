@@ -8,24 +8,24 @@
 #include "config/common.h"
 #include "core/Kernel.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 class Mode;
 
 class KernelLaunch;
 class KernelConfig;
 
-class GMAC_LOCAL Kernel : public gmac::core::Kernel {
+class GMAC_LOCAL Kernel : public __impl::core::Kernel {
     friend class KernelLaunch;
 protected:
     CUfunction _f;
 
 public:
-    Kernel(const gmac::core::KernelDescriptor & k, CUmodule mod);
-    gmac::core::KernelLaunch * launch(gmac::core::KernelConfig & c);
+    Kernel(const core::KernelDescriptor & k, CUmodule mod);
+    core::KernelLaunch * launch(core::KernelConfig & c);
 };
 
-class GMAC_LOCAL KernelConfig : public gmac::core::KernelConfig {
+class GMAC_LOCAL KernelConfig : public __impl::core::KernelConfig {
 protected:
     dim3 _grid;
     dim3 _block;
@@ -44,7 +44,7 @@ public:
     size_t shared() const { return _shared; }
 };
 
-class GMAC_LOCAL KernelLaunch : public gmac::core::KernelLaunch, public KernelConfig {
+class GMAC_LOCAL KernelLaunch : public __impl::core::KernelLaunch, public __impl::cuda::KernelConfig {
 protected:
     // \todo Is this really necessary?
     const Kernel & _kernel;

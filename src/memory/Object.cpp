@@ -3,7 +3,7 @@
 #include "Object.h"
 #include "memory/Memory.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 void *Object::map(void *addr, size_t count)
 {

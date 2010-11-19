@@ -40,9 +40,9 @@ WITH THE SOFTWARE.  */
 
 #include "Mode.h"
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : public util::Lock {
+class GMAC_LOCAL IOBuffer : public gmac::util::Lock {
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:

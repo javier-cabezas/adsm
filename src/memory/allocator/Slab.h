@@ -39,11 +39,12 @@ WITH THE SOFTWARE.  */
 
 #include "Cache.h"
 
-namespace gmac { namespace core { class Mode; }}
+namespace __impl {
+namespace core { class Mode; }
 
-namespace gmac { namespace memory { namespace allocator {
+namespace memory { namespace allocator {
 
-class GMAC_LOCAL Slab : public Allocator {
+class GMAC_LOCAL Slab : public __impl::memory::Allocator {
 protected:
     class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, util::RWLock {
     protected:
@@ -54,7 +55,7 @@ protected:
 
     typedef std::map<long, Cache *> CacheMap;
 
-    class GMAC_LOCAL ModeMap : public std::map<gmac::core::Mode *, CacheMap>, util::RWLock {
+    class GMAC_LOCAL ModeMap : public std::map<core::Mode *, CacheMap>, util::RWLock {
         friend class Slab;
     public:
         ModeMap() : util::RWLock("memory::Slab") {};

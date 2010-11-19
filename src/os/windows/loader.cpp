@@ -1,12 +1,12 @@
-#include "loader.h"
-#include "util/Logger.h"
-
 #include <windows.h>
 #include <set>
 
+#include "loader.h"
+#include "util/Logger.h"
+
 #define PtrFromRva(base, rva) (((PBYTE)base) + rva)
 
-namespace gmac { namespace loader {
+namespace __impl { namespace loader {
 
 static const char *ImportSection_ = ".idata";
 static const char *GmacDll_ = "gmac.dll";

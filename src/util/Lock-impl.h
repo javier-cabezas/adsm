@@ -3,13 +3,13 @@
 
 #include "trace/Tracer.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 inline
 void __Lock::enter() const
 {
 #if defined(USE_TRACE)
-	trace::SetThreadState(trace::Locked);
+    trace::SetThreadState(trace::Locked);
 #endif
 }
 
@@ -17,7 +17,7 @@ inline
 void __Lock::locked() const
 {
 #if defined(USE_TRACE)
-	trace::SetThreadState(trace::Exclusive);
+    trace::SetThreadState(trace::Exclusive);
 #endif
 }
 
@@ -25,7 +25,7 @@ inline
 void __Lock::done() const
 {
 #if defined(USE_TRACE)
-	trace::SetThreadState(trace::Running);
+    trace::SetThreadState(trace::Running);
     exclusive_ = false;
 #endif
 }
@@ -35,7 +35,7 @@ inline
 void __Lock::exit() const
 {
 #if defined(USE_TRACE)
-	if(exclusive_) trace::SetThreadState(trace::Running);
+    if(exclusive_) trace::SetThreadState(trace::Running);
 #endif
 }
 

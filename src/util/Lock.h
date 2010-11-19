@@ -36,12 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 class GMAC_LOCAL __Lock {
 protected:
 #if defined(USE_TRACE)
-	mutable bool exclusive_;
+    mutable bool exclusive_;
 #endif
 public:
     __Lock(const char *name);
@@ -52,7 +52,7 @@ public:
     void exit() const;
 };
 
-} }
+}}
 
 #if defined(POSIX)
 #include "util/posix/Lock.h"

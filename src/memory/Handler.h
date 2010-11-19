@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 //! Handler for Read/Write faults
 class GMAC_LOCAL Handler {

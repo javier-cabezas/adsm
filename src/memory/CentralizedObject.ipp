@@ -1,12 +1,12 @@
 #ifndef GMAC_MEMORY_CENTRALIZEDOBJECT_IPP_
 #define GMAC_MEMORY_CENTRALIZEDOBJECT_IPP_
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-inline gmac::core::Mode &
+inline core::Mode &
 CentralizedObject::owner() const
 {
-    return gmac::core::Mode::current();
+    return core::Mode::current();
 }
 
 inline bool

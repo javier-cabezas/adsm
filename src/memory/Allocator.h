@@ -42,10 +42,9 @@ WITH THE SOFTWARE.  */
 
 #include "Manager.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL Allocator :
-    public util::Singleton<Allocator> {
+class GMAC_LOCAL Allocator : public __impl::util::Singleton<Allocator> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Allocator>;
 protected:

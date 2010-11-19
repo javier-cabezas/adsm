@@ -36,18 +36,18 @@ WITH THE SOFTWARE.  */
 
 #include "memory/SystemBlock.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory {
 
 template<typename T>
 class GMAC_LOCAL SystemBlock :
-    public __impl::SystemBlock<T>,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::SystemBlock<T>,
+    public virtual Contract {
 public:
     SystemBlock(void *addr, size_t size, T state);
     virtual ~SystemBlock();
 };
 
-}}}
+}}
 
 #include "SystemBlock.ipp"
 

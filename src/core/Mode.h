@@ -51,7 +51,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/Private.h"
 
-namespace gmac {
+namespace __impl {
 
 namespace memory { class Map; class Object; }
 
@@ -62,11 +62,11 @@ class IOBuffer;
 class KernelLaunch;
 class Process;
 
-class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, util::RWLock {
+class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, gmac::util::RWLock {
 protected:
     typedef std::map<THREAD_T, Context *> Parent;
 public:
-    ContextMap() : util::RWLock("ContextMap") {};
+    ContextMap() : gmac::util::RWLock("ContextMap") {}
     void add(THREAD_T id, Context *ctx);
     Context *find(THREAD_T id);
     void remove(THREAD_T id);
@@ -76,9 +76,9 @@ public:
 };
 
 class GMAC_LOCAL Mode {
-    friend class memory::Manager;
+    // friend class gmac::memory::Manager;
 protected:
-    static gmac::util::Private<Mode> key;
+    static util::Private<Mode> key;
     static unsigned next;
 
     unsigned id_;
@@ -89,11 +89,11 @@ protected:
 
     memory::Map map_;
 
-    core::allocator::Buddy *ioMemory_;
+    allocator::Buddy *ioMemory_;
 
     bool releasedObjects_;
 #ifdef USE_VM
-    memory::vm::Bitmap *_bitmap;
+    gmac::memory::vm::Bitmap *_bitmap;
 #endif
     unsigned count_;
 

@@ -13,7 +13,7 @@
 /*
  *
  */
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T>
 class GMAC_LOCAL Singleton {

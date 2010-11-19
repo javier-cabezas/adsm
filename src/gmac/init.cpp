@@ -6,8 +6,8 @@
 
 #include "init.h"
 
-namespace gmac {
-gmac::util::Private<const char> _inGmac;
+namespace __impl {
+util::Private<const char> _inGmac;
 GMACLock * _inGmacLock;
 
 const char _gmacCode = 1;
@@ -31,7 +31,7 @@ static void CONSTRUCTOR init(void)
 	enterGmac();
     _gmacInit = 1;
 
-	gmac::util::Logger::Init();
+	util::Logger::Init();
     TRACE(GLOBAL, "Initialiazing GMAC");
 
     paramInit();
@@ -49,8 +49,8 @@ static void CONSTRUCTOR init(void)
     TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    gmac::core::Process::create<gmac::core::Process>();
-    gmac::core::apiInit();
+    core::Process::create<__impl::core::Process>();
+    core::apiInit();
 
     exitGmac();
 }
@@ -59,12 +59,12 @@ static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
     TRACE(GLOBAL, "Cleaning GMAC");
-    gmac::core::Process::destroy();
+    core::Process::destroy();
     delete _inGmacLock;
 	// TODO: Clean-up logger
 }
 
-} // namespace gmac
+}
 
 #if defined(_WIN32)
 #include <windows.h>

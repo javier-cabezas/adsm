@@ -3,7 +3,7 @@
 #include "core/Context.h"
 
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 size_t PageTable::tableShift;
 

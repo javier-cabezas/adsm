@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_POSIX_FILE_LOCK_H_
-#define __UTIL_POSIX_FILE_LOCK_H_
+#ifndef GMAC_UTIL_POSIX_FILE_LOCK_H_
+#define GMAC_UTIL_POSIX_FILE_LOCK_H_
 
 #include <cstdio>
 
@@ -40,9 +40,9 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
-class GMAC_LOCAL FileLock : public __Lock {
+class GMAC_LOCAL FileLock : public __impl::util::__Lock {
 protected:
     FILE * _file;
     int _fd;

@@ -27,12 +27,14 @@ struct gmac_thread_t {
 	void *__arg;
 };
 
+using __impl::core::Process;
+
 static void *gmac_pthread(void *arg)
 {
     gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    gmac::core::Process &proc = gmac::core::Process::getInstance();
+    Process &proc = Process::getInstance();
     proc.initThread();
     gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();

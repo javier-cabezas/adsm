@@ -2,7 +2,7 @@
 #include "memory/windows/FileMap.h"
 #include "core/Mode.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 static DWORD ProtBits[] = {
 	PAGE_NOACCESS,

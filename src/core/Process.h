@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 #include "allocator/Buddy.h"
 
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 class Accelerator;
 class IOBuffer;
@@ -62,13 +62,14 @@ void memoryInit(const char *manager = NULL, const char *allocator = NULL);
 void memoryFini(void);
 }}
 
-namespace gmac {
+
+namespace __impl {
 
 namespace memory { class DistributedObject; }
 
 namespace core {
 
-class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
+class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
 {
 private:
     typedef std::map<Mode *, Accelerator *> Parent;
@@ -84,7 +85,7 @@ public:
     size_t remove(Mode &mode);
 };
 
-class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, public util::RWLock
+class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock
 {
 private:
     typedef std::map<THREAD_T, ThreadQueue *> Parent;
@@ -100,7 +101,7 @@ public:
     void erase(THREAD_T id);
 };
 
-class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock {
+class GMAC_LOCAL Process : public __impl::util::Singleton<__impl::core::Process>, gmac::util::RWLock {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Process>;
 	//friend class Accelerator;
@@ -109,10 +110,10 @@ protected:
     ModeMap modes_;
 
     QueueMap queues_;
-    memory::ObjectMap shared_;
-    memory::ObjectMap centralized_;
-    memory::ObjectMap replicated_;
-    memory::ObjectMap orphans_;
+    __impl::memory::ObjectMap shared_;
+    __impl::memory::ObjectMap centralized_;
+    __impl::memory::ObjectMap replicated_;
+    __impl::memory::ObjectMap orphans_;
 
     unsigned current_;
 

@@ -8,7 +8,7 @@
 #include "OrphanObject.h"
 #include "Protocol.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 Object * ObjectMap::mapFind(const void *addr) const
 {
@@ -23,7 +23,7 @@ Object * ObjectMap::mapFind(const void *addr) const
 }
 
 ObjectMap::ObjectMap(const char *name) :
-    util::RWLock(name)
+    gmac::util::RWLock(name)
 {
 }
 
@@ -89,7 +89,7 @@ void ObjectMap::freeObjects(Protocol &p, ProtocolOp op)
     unlock();
 }
 
-void ObjectMap::reallocObjects(gmac::core::Mode &mode)
+void ObjectMap::reallocObjects(core::Mode &mode)
 {
     iterator i;
     lockRead();
@@ -109,7 +109,7 @@ void ObjectMap::cleanAndDestroy()
 }
 
 
-Map::Map(const char *name, gmac::core::Mode &parent) :
+Map::Map(const char *name, core::Mode &parent) :
     ObjectMap(name), parent_(parent)
 {
 }
@@ -129,7 +129,7 @@ Map::operator =(const Map &)
 
 const Object *Map::getObjectRead(const void *addr) const
 {
-    const gmac::core::Process &proc = parent_.process();
+    const core::Process &proc = parent_.process();
     Object *ret = NULL;
     ret = mapFind(addr);
     if(ret == NULL)  ret = proc.shared().mapFind(addr);
@@ -144,7 +144,7 @@ const Object *Map::getObjectRead(const void *addr) const
 
 Object *Map::getObjectWrite(const void *addr) const
 {
-    const gmac::core::Process &proc = parent_.process();
+    const core::Process &proc = parent_.process();
     Object *ret = NULL;
     ret = mapFind(addr);
     if(ret == NULL)  ret = proc.shared().mapFind(addr);
@@ -159,7 +159,7 @@ Object *Map::getObjectWrite(const void *addr) const
 
 void Map::clean()
 {
-    gmac::core::Process &proc = parent_.process();
+    core::Process &proc = parent_.process();
 	ObjectMap::iterator i;
     ObjectMap &global = proc.shared();
 	lockWrite();
@@ -180,7 +180,7 @@ void Map::insert(Object &obj)
     unlock();
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
 
-    gmac::core::Process &proc = parent_.process();
+    core::Process &proc = parent_.process();
     ObjectMap &shared = proc.shared();
     shared.lockWrite();
     shared.insert(value_type(obj.end(), &obj));
@@ -202,7 +202,7 @@ void Map::remove(Object &obj)
     unlock();
 
     // Shared object
-    gmac::core::Process &proc = parent_.process();
+    core::Process &proc = parent_.process();
     ObjectMap &shared = proc.shared();
     shared.lockWrite();
     i = shared.find(obj.end());
@@ -254,7 +254,7 @@ void Map::remove(Object &obj)
 void Map::insertReplicated(Object &obj)
 {
     TRACE(LOCAL,"Adding Replicated Object %p", obj.addr());
-    gmac::core::Process &proc = parent_.process();
+    core::Process &proc = parent_.process();
     ObjectMap &replicated = proc.replicated();
     replicated.lockWrite();
     replicated.insert(value_type(obj.end(), &obj));
@@ -265,7 +265,7 @@ void Map::insertReplicated(Object &obj)
 void Map::insertCentralized(Object &obj)
 {
     TRACE(LOCAL,"Adding Centralized Object %p", obj.addr());
-    gmac::core::Process &proc = parent_.process();
+    core::Process &proc = parent_.process();
     ObjectMap &centralized = proc.centralized();
     centralized.lockWrite();
     centralized.insert(value_type(obj.end(), &obj));
@@ -273,7 +273,7 @@ void Map::insertCentralized(Object &obj)
     TRACE(LOCAL, "Added centralized object @ %p", obj.addr());
 }
 
-void Map::addOwner(gmac::core::Process &proc, gmac::core::Mode &mode)
+void Map::addOwner(core::Process &proc, core::Mode &mode)
 {
     ObjectMap &replicated = proc.replicated();
     iterator i;
@@ -289,7 +289,7 @@ void Map::addOwner(gmac::core::Process &proc, gmac::core::Mode &mode)
 }
 
 
-void Map::removeOwner(gmac::core::Process &proc, gmac::core::Mode &mode)
+void Map::removeOwner(core::Process &proc, core::Mode &mode)
 {
     ObjectMap &replicated = proc.replicated();
     iterator i;
@@ -312,7 +312,7 @@ void Map::makeOrphans()
     orphans.lockWrite();
     lockWrite();
     for(iterator i = begin(); i != end(); i++) {
-        OrphanObject *orphan = new OrphanObject(*i->second);
+        OrphanObject *orphan = new __impl::memory::OrphanObject(*i->second);
         orphans.insert(value_type(orphan->end(), orphan));
         delete i->second;
     }

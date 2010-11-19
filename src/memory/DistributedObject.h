@@ -37,13 +37,13 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "core/Mode.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL DistributedObject {
 public:
     virtual ~DistributedObject();
-    virtual gmacError_t addOwner(gmac::core::Mode &mode) = 0;
-    virtual gmacError_t removeOwner(gmac::core::Mode &mode) = 0;
+    virtual gmacError_t addOwner(core::Mode &mode) = 0;
+    virtual gmacError_t removeOwner(core::Mode &mode) = 0;
 };
 
 }}

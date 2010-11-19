@@ -38,15 +38,15 @@ WITH THE SOFTWARE.  */
 #include "dbc/Contract.h"
 #include "memory/Manager.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory {
 
 //! Memory Manager Interface
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class GMAC_LOCAL Manager :
-    public __impl::Manager,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::Manager,
+    public virtual Contract {
 public:
     Manager();
     ~Manager();
@@ -61,13 +61,13 @@ public:
     bool read(void *addr);
     bool write(void *addr);
 
-    gmacError_t toIOBuffer(gmac::core::IOBuffer &buffer, const void *addr, size_t size);
-    gmacError_t fromIOBuffer(void *addr, gmac::core::IOBuffer &buffer, size_t size);
+    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
+    gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
 
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);
 };
 
-}}}
+}}
 
 #endif

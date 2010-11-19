@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Private.h"
 #include "util/Lock.h"
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 typedef std::list<void *> ObjectList;
 

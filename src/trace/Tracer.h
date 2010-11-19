@@ -45,7 +45,7 @@ WITH THE SOFTWARE.  */
 #define ExitCurrentFunction()  ExitFunction(__FUNCTION__)
 #endif
 
-namespace gmac { namespace trace {
+namespace __impl { namespace trace {
 
 typedef enum {
 	Idle,

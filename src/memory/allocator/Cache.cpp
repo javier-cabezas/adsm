@@ -7,7 +7,7 @@
 #include "util/Parameter.h"
 #include "util/Private.h"
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 Arena::Arena(size_t objSize) :
     ptr(NULL),
@@ -49,7 +49,7 @@ void *Cache::get()
         return i->second->get();
     }
     // There are no free objects in any arena
-    Arena *arena = new Arena(objectSize);
+    Arena *arena = new __impl::memory::allocator::Arena(objectSize);
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
     arenas.insert(ArenaMap::value_type(arena->key() , arena));
     void *ptr = arena->get();

@@ -39,9 +39,9 @@ WITH THE SOFTWARE.  */
 #include "memory/Block.h"
 #include "memory/Object.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL OrphanObject : public Object {
+class GMAC_LOCAL OrphanObject : public __impl::memory::Object {
 public:
     OrphanObject(const Object &obj);
     virtual ~OrphanObject();
@@ -50,7 +50,7 @@ public:
     void fini();
 
     void *getAcceleratorAddr(void *) const;
-    gmac::core::Mode &owner() const;
+    core::Mode &owner() const;
 
     bool isLocal() const;
     bool isInAccelerator() const;

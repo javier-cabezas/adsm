@@ -1,7 +1,7 @@
 #ifndef GMAC_UTIL_REFERENCE_IMPL_H_
 #define GMAC_UTIL_REFERENCE_IMPL_H_
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 inline Reference::Reference() : ref_(1) {};
 inline Reference::~Reference() {};

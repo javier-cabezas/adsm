@@ -41,9 +41,9 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory { 
 
-class GMAC_LOCAL Block : public util::Lock {
+class GMAC_LOCAL Block : public gmac::util::Lock {
 protected:
     void *addr_;
     size_t size_;
@@ -62,7 +62,7 @@ public:
 };
 
 
-}}}
+}}
 
 #include "Block.ipp"
 

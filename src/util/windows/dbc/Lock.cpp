@@ -1,9 +1,9 @@
 #include "Lock.h"
 
-namespace gmac { namespace util { namespace __dbc {
+namespace __dbc { namespace util {
 
 Lock::Lock(const char *name) :
-    __impl::Lock(name),
+    __impl::util::Lock(name),
     locked_(false),
     owner_(0)
 {
@@ -34,13 +34,13 @@ void Lock::unlock() const
     owner_ = 0;
     locked_ = false;
 
-    __impl::Lock::unlock();
+    __impl::util::Lock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
 RWLock::RWLock(const char *name) :
-    __impl::RWLock(name),
+    __impl::util::RWLock(name),
     state_(Idle),
     writer_(0)
 {
@@ -58,7 +58,7 @@ void RWLock::lockRead() const
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
     LeaveCriticalSection(&internal_);
 
-    __impl::RWLock::lockRead();
+    __impl::util::RWLock::lockRead();
 
     EnterCriticalSection(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -104,4 +104,4 @@ void RWLock::unlock() const
     LeaveCriticalSection(&internal_);
 }
 
-}}}
+}}

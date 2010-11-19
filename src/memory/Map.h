@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 
 
-namespace gmac {
+namespace __impl {
 
 namespace core {
 class Mode;
@@ -49,19 +49,18 @@ class Process;
 }
 
 namespace memory {
+class Map;
 class Object;
 class Protocol;
 
-namespace __impl { class Manager; }
-
-class GMAC_LOCAL ObjectMap : protected util::RWLock, protected std::map<const void *, Object *> {
+class GMAC_LOCAL ObjectMap : protected gmac::util::RWLock, protected std::map<const void *, Object *> {
 public:
     typedef gmacError_t(Protocol::*ProtocolOp)(const Object &);
 protected:
     typedef std::map<const void *, Object *> Parent;
 
     friend class Map;
-    friend class memory::__impl::Manager;
+    friend class Manager;
     Object *mapFind(const void *addr) const;
 
 public:
@@ -77,18 +76,18 @@ public:
     size_t memorySize() const;
     void forEach(Protocol &p, ProtocolOp op);
     void freeObjects(Protocol &p, ProtocolOp op);
-    void reallocObjects(gmac::core::Mode &mode);
+    void reallocObjects(__impl::core::Mode &mode);
     
     virtual void cleanAndDestroy();
 };
  
-class GMAC_LOCAL Map : public ObjectMap {
+class GMAC_LOCAL Map : public __impl::memory::ObjectMap {
 protected:
     void clean();
-    gmac::core::Mode &parent_;
+    __impl::core::Mode &parent_;
 
 public:
-    Map(const char *name, gmac::core::Mode &parent);
+    Map(const char *name, core::Mode &parent);
     virtual ~Map();
     
     // Do not allow to copy memory maps
@@ -99,8 +98,8 @@ public:
 #ifndef USE_MMAP
     void insertReplicated(Object &obj);
     void insertCentralized(Object &obj);
-    static void addOwner(gmac::core::Process &proc, gmac::core::Mode &mode);
-    static void removeOwner(gmac::core::Process &proc, gmac::core::Mode &mode);
+    static void addOwner(__impl::core::Process &proc, __impl::core::Mode &mode);
+    static void removeOwner(__impl::core::Process &proc, __impl::core::Mode &mode);
 #endif
 
     const Object *getObjectRead(const void *addr) const;

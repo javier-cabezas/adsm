@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_BITMAP_IPP_
 #define GMAC_MEMORY_BITMAP_IPP_
 
-namespace gmac { namespace memory { namespace vm {
+namespace __impl { namespace memory { namespace vm {
 
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 

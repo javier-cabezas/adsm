@@ -36,12 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include "memory/ReplicatedObject.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory {
 
 template<typename T>
 class GMAC_LOCAL ReplicatedObject :
-    public __impl::ReplicatedObject<T>,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::ReplicatedObject<T>,
+    public virtual Contract {
 public:
     ReplicatedObject(size_t size, T init);
     virtual ~ReplicatedObject();
@@ -50,26 +50,26 @@ public:
     void fini();
 
     // To host functions
-    gmacError_t toHost(Block &block) const;
-    gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    gmacError_t toHost(__impl::memory::Block &block) const;
+    gmacError_t toHost(__impl::memory::Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toHostPointer(__impl::memory::Block &block, unsigned blockOff, void *ptr, size_t count) const;
+    gmacError_t toHostBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     // To accelerator functions
-    gmacError_t toAccelerator(Block &block) const;
-    gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
+    gmacError_t toAccelerator(__impl::memory::Block &block) const;
+    gmacError_t toAccelerator(__impl::memory::Block &block, unsigned blockOff, size_t count) const;
+    gmacError_t toAcceleratorFromPointer(__impl::memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const;
+    gmacError_t toAcceleratorFromBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
 
     void *getAcceleratorAddr(void *addr) const;
-    gmac::core::Mode &owner() const;
+    __impl::core::Mode &owner() const;
 
-    gmacError_t addOwner(gmac::core::Mode &mode);
-    gmacError_t removeOwner(gmac::core::Mode &mode);
+    gmacError_t addOwner(__impl::core::Mode &mode);
+    gmacError_t removeOwner(__impl::core::Mode &mode);
 
 };
 
-}}}
+}}
 
 #include "ReplicatedObject.ipp"
 

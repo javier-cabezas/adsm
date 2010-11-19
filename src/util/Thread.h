@@ -36,12 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 THREAD_T GetThreadId();
 PROCESS_T GetProcessId();
 
-} }
+}}
 
 #if defined(POSIX)
 #include "util/posix/Thread-impl.h"

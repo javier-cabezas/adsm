@@ -41,9 +41,9 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 
 
-namespace gmac { namespace core { namespace allocator {
+namespace __impl { namespace core { namespace allocator {
 
-class GMAC_LOCAL Buddy : protected util::Lock  {
+class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
 protected:
     void *addr_;
     uint32_t size_;

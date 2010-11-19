@@ -41,10 +41,10 @@ WITH THE SOFTWARE.  */
 #include "memory/Object.h"
 #include "memory/SystemBlock.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL StateObject: public Object {
+class GMAC_LOCAL StateObject: public __impl::memory::Object {
 public:
     typedef std::map<void *, SystemBlock<T> *> SystemMap;
 protected:
@@ -56,16 +56,16 @@ public:
     virtual ~StateObject();
 
     // To host functions
-    virtual gmacError_t toHost(gmac::memory::Block &block) const = 0;
-    virtual gmacError_t toHost(gmac::memory::Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toHostPointer(gmac::memory::Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
-    virtual gmacError_t toHostBuffer(gmac::memory::Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+    virtual gmacError_t toHost(memory::Block &block) const = 0;
+    virtual gmacError_t toHost(memory::Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toHostPointer(memory::Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
+    virtual gmacError_t toHostBuffer(memory::Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
 
     // To accelerator functions
-    virtual gmacError_t toAccelerator(gmac::memory::Block &block) const = 0;
-    virtual gmacError_t toAccelerator(gmac::memory::Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromPointer(gmac::memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromBuffer(gmac::memory::Block &block, unsigned blockOff, gmac::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+    virtual gmacError_t toAccelerator(memory::Block &block) const = 0;
+    virtual gmacError_t toAccelerator(memory::Block &block, unsigned blockOff, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromPointer(memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
+    virtual gmacError_t toAcceleratorFromBuffer(memory::Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
 
     SystemBlock<T> *findBlock(const void *addr) const;
     typename SystemMap::iterator getBlockIterator(const void *addr);
@@ -74,7 +74,7 @@ public:
     inline const SystemMap &blocks() const;
 
     virtual void state(T s);
-    virtual gmacError_t memsetAccelerator(gmac::memory::Block &block, unsigned blockOff, int c, size_t count) const = 0;
+    virtual gmacError_t memsetAccelerator(memory::Block &block, unsigned blockOff, int c, size_t count) const = 0;
 };
 
 } }

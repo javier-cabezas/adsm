@@ -1,3 +1,6 @@
+#include <cstdio>
+#include <errno.h>
+
 #if defined(POSIX)
 #include "os/posix/loader.h"
 #elif defined(WINDOWS)
@@ -12,11 +15,11 @@
 #include "trace/Tracer.h"
 #include "util/Logger.h"
 
-#include <cstdio>
-
-#include <errno.h>
-
 #include "stdc.h"
+
+using __impl::core::IOBuffer;
+using __impl::core::Mode;
+using __impl::core::Process;
 
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
@@ -29,8 +32,8 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fread == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
 
-    gmac::core::Process &proc = gmac::core::Process::getInstance();
-    gmac::core::Mode *dstMode = proc.owner(buf);
+    Process &proc = Process::getInstance();
+    Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
 
@@ -43,8 +46,8 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     unsigned off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    gmac::core::Mode &mode = gmac::core::Mode::current();
-    gmac::core::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    Mode &mode = Mode::current();
+    IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     
@@ -79,8 +82,8 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(__libc_fwrite == NULL) stdcIoInit();
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
-    gmac::core::Process &proc = gmac::core::Process::getInstance();
-    gmac::core::Mode *srcMode = proc.owner(buf);
+    Process &proc = Process::getInstance();
+    Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
@@ -93,8 +96,8 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     unsigned off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    gmac::core::Mode &mode = gmac::core::Mode::current();
-    gmac::core::IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    Mode &mode = Mode::current();
+    IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 

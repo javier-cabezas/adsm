@@ -36,18 +36,18 @@ WITH THE SOFTWARE.  */
 
 #include "memory/AcceleratorBlock.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory { 
 
 class GMAC_LOCAL AcceleratorBlock :
-    public __impl::AcceleratorBlock,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::AcceleratorBlock,
+    public virtual Contract {
 public:
-    AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size);
+    AcceleratorBlock(__impl::core::Mode &owner, void *addr, size_t size);
 
     virtual ~AcceleratorBlock();
 };
 
-}}}
+}}
 
 #include "AcceleratorBlock.ipp"
 

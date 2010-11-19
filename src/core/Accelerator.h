@@ -41,7 +41,7 @@
 #include "include/gmac/types.h"
 
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 class KernelLaunch;
 class Mode;

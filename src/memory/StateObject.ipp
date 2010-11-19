@@ -3,7 +3,7 @@
 
 #include "include/gmac/types.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 template<typename T>
 inline StateObject<T>::StateObject(size_t size, T init) :
@@ -28,7 +28,7 @@ inline void StateObject<T>::setupSystem()
         size_t blockSize = ((size_ - i) > paramPageSize) ? paramPageSize : (size_ - i);
         systemMap.insert(typename SystemMap::value_type(
             ptr + blockSize,
-            new SystemBlock<T>(ptr, blockSize, init_)));
+            new gmac::memory::SystemBlock<T>(ptr, blockSize, init_)));
     }
 }
 

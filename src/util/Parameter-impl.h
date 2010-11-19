@@ -18,7 +18,7 @@ static inline const char *gmac_getenv(const char *name)
 }
 #endif
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T>
 static

@@ -2,7 +2,7 @@
 #define GMAC_UTIL_LOGGER_IMPL_H_
 
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 #ifdef DEBUG
 inline void Logger::__Trace(const char *name, const char *fmt, ...)
 {

@@ -41,20 +41,20 @@ WITH THE SOFTWARE.  */
 #include "core/Mode.h"
 #include "memory/Block.h"
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL AcceleratorBlock : public memory::Block {
+class GMAC_LOCAL AcceleratorBlock : public gmac::memory::Block {
 protected:
-    gmac::core::Mode &owner_;
+    core::Mode &owner_;
 public:
-    AcceleratorBlock(gmac::core::Mode &owner, void *addr, size_t size);
+    AcceleratorBlock(core::Mode &owner, void *addr, size_t size);
     virtual ~AcceleratorBlock();
 	AcceleratorBlock &operator =(const AcceleratorBlock &);
 
-    gmac::core::Mode &owner();
+    core::Mode &owner();
 };
 
-}}}
+}}
 
 #include "AcceleratorBlock.ipp"
 

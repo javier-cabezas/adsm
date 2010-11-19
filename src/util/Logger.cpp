@@ -41,7 +41,7 @@ static char *demangle(const char *name)
 	}
 #endif
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 #ifdef DEBUG
 bool Logger::Ready_ = false;
@@ -58,7 +58,7 @@ void Logger::Init()
 	Buffer_.set(new char[BufferSize_]);
 
     Tags_ = new std::list<std::string>();
-    Level_ = new Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
+    Level_ = new __impl::util::Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
     char *tmp = new char[strlen(DebugString_) + 1];
     memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
 	char *next = NULL;

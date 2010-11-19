@@ -42,19 +42,19 @@ WITH THE SOFTWARE.  */
 #include "util/Semaphore.h"
 
 
-namespace gmac { namespace core {
+namespace __impl { namespace core {
 
 class Mode;
 
 /*!
 	\brief Communication Queue
 */
-class GMAC_LOCAL Queue : public util::Lock {
+class GMAC_LOCAL Queue : public gmac::util::Lock {
 protected:
 	typedef std::list<Mode *> Fifo;
 
 	Fifo _queue;
-	util::Semaphore sem;
+    __impl::util::Semaphore sem;
 
 public:
 	Queue(const char *name);

@@ -47,14 +47,14 @@ WITH THE SOFTWARE.  */
 #include <driver_types.h>
 #include <texture_types.h>
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
-typedef gmac::core::Descriptor<gmacTexture_t> TextureDescriptor;
+typedef __impl::core::Descriptor<gmacTexture_t> TextureDescriptor;
 
-class GMAC_LOCAL VariableDescriptor : public gmac::core::Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public __impl::core::Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -63,7 +63,7 @@ public:
     bool constant() const;
 };
 
-class GMAC_LOCAL Variable : public VariableDescriptor {
+class GMAC_LOCAL Variable : public __impl::cuda::VariableDescriptor {
 	CUdeviceptr ptr_;
     size_t size_;
 public:
@@ -72,7 +72,7 @@ public:
     CUdeviceptr devPtr() const;
 };
 
-class GMAC_LOCAL Texture : public TextureDescriptor {
+class GMAC_LOCAL Texture : public __impl::cuda::TextureDescriptor {
 protected:
     CUtexref texRef_;
 
@@ -93,7 +93,7 @@ protected:
     static ModuleDescriptorVector Modules_;
 	const void * fatBin_;
 
-    typedef std::vector<gmac::core::KernelDescriptor> KernelVector;
+    typedef std::vector<core::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
 	typedef std::vector<TextureDescriptor>      TextureVector;
 
@@ -114,7 +114,7 @@ public:
     ModuleDescriptor(const void * fatBin);
     ~ModuleDescriptor();
 
-    void add(gmac::core::KernelDescriptor & k);
+    void add(core::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 

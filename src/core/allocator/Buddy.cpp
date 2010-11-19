@@ -2,10 +2,10 @@
 
 #include <util/Logger.h>
 
-namespace gmac { namespace core { namespace allocator {
+namespace __impl { namespace core { namespace allocator {
 
 Buddy::Buddy(void *addr, size_t size) :
-    util::Lock("Buddy"),
+    gmac::util::Lock("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))

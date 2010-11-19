@@ -45,10 +45,10 @@ enum GMAC_LOCAL ParamFlags {
     PARAM_NONZERO = 0x1
 };
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 class GMAC_LOCAL __Parameter {
 public:
-    virtual ~__Parameter() {};
+    virtual ~__Parameter() {}
     virtual void print() const = 0;
 };
 
@@ -64,19 +64,19 @@ protected:
     bool envSet;
 
 public:
-    virtual ~Parameter() {};
+    virtual ~Parameter() {}
     Parameter(T *address, const char *name, T def, const char *envVar,
         uint32_t flags = 0);
 
     void print() const;
 };
 
-} }
+}}
 
 
 typedef struct GMAC_LOCAL {
-    gmac::util::__Parameter *(*ctor)(void);
-    gmac::util::__Parameter *param;
+    __impl::util::__Parameter *(*ctor)(void);
+    __impl::util::__Parameter *param;
 } ParameterCtor;
 
 extern ParameterCtor ParamCtorList[];

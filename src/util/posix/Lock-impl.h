@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cstdio>
 
-namespace gmac { namespace util { namespace __impl {
+namespace __impl { namespace util {
 
 inline void
 Lock::lock() const
@@ -44,6 +44,6 @@ RWLock::unlock() const
     pthread_rwlock_unlock(&lock_);
 }
 
-}}}
+}}
 
 #endif

@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 int ProtBits[] = {
     PROT_NONE,

@@ -35,17 +35,17 @@ WITH THE SOFTWARE.
 #ifndef GMAC_API_CUDA_ACCELERATOR_H_
 #define GMAC_API_CUDA_ACCELERATOR_H_
 
+#include <vector_types.h>
+
+#include <set>
+
 #include "config/common.h"
 #include "core/Accelerator.h"
 #include "util/Lock.h"
 
 #include "Module.h"
 
-#include <vector_types.h>
-
-#include <set>
-
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 class Mode;
 class ModuleDescriptor;
 
@@ -57,20 +57,20 @@ public:
 
 typedef CUstream Stream;
 class Accelerator;
-class GMAC_LOCAL AcceleratorLock : protected util::Lock {
+class GMAC_LOCAL AcceleratorLock : protected gmac::util::Lock {
 	friend class Accelerator;
 public:
-    AcceleratorLock() : util::Lock("Accelerator") {}
+    AcceleratorLock() : gmac::util::Lock("Accelerator") {}
 };
 
-class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
+class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public gmac::util::RWLock { 
     friend class Accelerator;
 public:
-    AlignmentMap() : util::RWLock("Aligment") {}
+    AlignmentMap() : gmac::util::RWLock("Aligment") {}
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
+class GMAC_LOCAL Accelerator : public __impl::core::Accelerator {
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -82,7 +82,7 @@ protected:
     int _minor;
 
 #ifdef USE_MULTI_CONTEXT
-    static gmac::util::Private<CUcontext> _Ctx;
+    static __impl::util::Private<CUcontext> _Ctx;
 #else
     CUcontext _ctx;
     AcceleratorLock _mutex;
@@ -99,9 +99,9 @@ public:
 
     static void init();
 
-	gmac::core::Mode *createMode(gmac::core::Process &proc);
-    void registerMode(gmac::core::Mode &mode);
-    void unregisterMode(gmac::core::Mode &mode);
+	core::Mode *createMode(core::Process &proc);
+    void registerMode(core::Mode &mode);
+    void unregisterMode(core::Mode &mode);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();

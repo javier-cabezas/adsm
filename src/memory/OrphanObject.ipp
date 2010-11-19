@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_ORPHANOBJECT_IPP
 #define GMAC_MEMORY_ORPHANOBJECT_IPP
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 inline
 OrphanObject::OrphanObject(const Object &obj) :
@@ -35,11 +35,11 @@ OrphanObject::getAcceleratorAddr(void *) const
     return NULL;
 }
 
-inline gmac::core::Mode &
+inline core::Mode &
 OrphanObject::owner() const
 { 
     FATAL("Trying to get owner from orphan object");
-    return gmac::core::Mode::current();
+    return core::Mode::current();
 }
 
 inline bool

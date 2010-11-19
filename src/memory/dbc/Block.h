@@ -36,18 +36,18 @@ WITH THE SOFTWARE.  */
 
 #include "memory/Block.h"
 
-namespace gmac { namespace memory { namespace __dbc {
+namespace __dbc { namespace memory {
 
 class GMAC_LOCAL Block :
-    public __impl::Block,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::Block,
+    public virtual Contract {
 protected:
     Block(void *addr, size_t size);
 public:
     virtual ~Block();
 };
 
-}}}
+}}
 
 #include "Block.ipp"
 

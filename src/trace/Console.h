@@ -40,22 +40,22 @@ WITH THE SOFTWARE.  */
 
 #include <iostream>
 
-namespace gmac { namespace trace {
+namespace __impl { namespace trace {
 	
 class GMAC_LOCAL Console : public Tracer {
 protected:
-	std::ostream &os;
+    std::ostream &os;
 public:
-	Console();
-	~Console();
+    Console();
+    ~Console();
 
-	void startThread(THREAD_T tid, const char *name);
-	void endThread(THREAD_T tid);
+    void startThread(THREAD_T tid, const char *name);
+    void endThread(THREAD_T tid);
 
-	void enterFunction(THREAD_T tid, const char *name);
-	void exitFunction(THREAD_T tid, const char *name);
+    void enterFunction(THREAD_T tid, const char *name);
+    void exitFunction(THREAD_T tid, const char *name);
 
-	void setThreadState(THREAD_T tid, const State state);
+    void setThreadState(THREAD_T tid, const State state);
 };
 
 }}

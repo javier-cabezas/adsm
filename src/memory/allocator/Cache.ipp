@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 #define GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 inline
 void *Arena::key() const

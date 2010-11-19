@@ -1,10 +1,10 @@
 #ifndef GMAC_MEMORY_BLOCK_IPP_
 #define GMAC_MEMORY_BLOCK_IPP_
 
-namespace gmac { namespace memory { namespace __impl {
+namespace __impl { namespace memory {
 
 inline Block::Block(void *addr, size_t size) :
-    util::Lock("memory::Block"),
+    gmac::util::Lock("memory::Block"),
     addr_(addr),
     size_(size)
 {}
@@ -43,6 +43,6 @@ Block::unlock() const
     return util::Lock::unlock();
 }
 
-}}}
+}}
 
 #endif

@@ -1,9 +1,9 @@
+#include "gmac/init.h"
+
 #include "Module.h"
 #include "Mode.h"
 
-#include <gmac/init.h>
-
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 
@@ -16,7 +16,7 @@ const char *Module::ShiftEntrySymbol_  = "__SHIFT_ENTRY";
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
-    gmac::core::Descriptor<gmacVariable_t>(name, key),
+    __impl::core::Descriptor<gmacVariable_t>(name, key),
     constant_(constant)
 {
 }
@@ -65,7 +65,7 @@ ModuleDescriptor::createModules()
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules_.begin(); it != Modules_.end(); it++) {
         TRACE(GLOBAL, "Creating module: %p", (*it)->fatBin_);
-        modules.push_back(new Module(*(*it)));
+        modules.push_back(new __impl::cuda::Module(*(*it)));
     }
     return modules;
 }
@@ -80,7 +80,7 @@ Module::Module(const ModuleDescriptor & d) :
 
     ModuleDescriptor::KernelVector::const_iterator k;
     for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
-        Kernel * kernel = new Kernel(*k, mod_);
+        Kernel * kernel = new __impl::cuda::Kernel(*k, mod_);
         kernels_.insert(KernelMap::value_type(k->key(), kernel));
     }
 
