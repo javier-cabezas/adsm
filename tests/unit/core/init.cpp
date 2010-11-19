@@ -5,8 +5,8 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::Process;
 using gmac::core::Accelerator;
+using gmac::core::Process;
 
 Accelerator *Accelerator_ = NULL;
 static bool Trace_ = false;
