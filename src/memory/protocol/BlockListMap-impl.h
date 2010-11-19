@@ -51,14 +51,21 @@ inline BlockListMap::BlockListMap() :
 {}
 
 inline BlockListMap::~BlockListMap()
-{}
+{
+    lockWrite();
+    iterator i;
+    for(i = Parent::begin(); i != Parent::end(); i++)
+        delete i->second;
+    Parent::clear();
+    unlock();
+}
 
 inline const BlockList *BlockListMap::get(core::Mode *mode) const
 {
     const BlockList *ret = NULL;
     lockRead();
     const_iterator i = Parent::find(mode);
-    if(i != Parent::end()) ret = &i->second;
+    if(i != Parent::end()) ret = i->second;
     unlock();
     return ret;
 }
@@ -69,10 +76,10 @@ inline BlockList *BlockListMap::get(core::Mode *mode)
     iterator i = Parent::find(mode);
     if(i == Parent::end()) {
         std::pair<iterator, bool> pair = 
-            Parent::insert(Parent::value_type(mode, BlockList()));
+            Parent::insert(Parent::value_type(mode, new BlockList()));
         i = pair.first;
     }
-    BlockList *ret = &(i->second);
+    BlockList *ret = i->second;
     unlock();
     return ret;
 }

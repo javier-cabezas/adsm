@@ -66,9 +66,9 @@ public:
     Block *pop();
 };
 
-class GMAC_LOCAL BlockListMap : protected std::map<core::Mode *, BlockList>, public gmac::util::RWLock {
+class GMAC_LOCAL BlockListMap : protected std::map<core::Mode *, BlockList *>, public gmac::util::RWLock {
 protected:
-    typedef std::map<core::Mode *, BlockList> Parent;
+    typedef std::map<core::Mode *, BlockList *> Parent;
 
     const BlockList *get(core::Mode *mode) const;
     BlockList *get(core::Mode *mode);
