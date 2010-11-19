@@ -42,6 +42,8 @@ template<typename T>
 class GMAC_LOCAL ReplicatedObject :
     public __impl::memory::ReplicatedObject<T>,
     public virtual Contract {
+    DBC_TESTED(memory_ReplicatedObject)
+
 public:
     ReplicatedObject(size_t size, T init);
     virtual ~ReplicatedObject();

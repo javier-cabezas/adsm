@@ -44,6 +44,7 @@ namespace __impl { namespace memory {
 
 template<typename T>
 class GMAC_LOCAL SharedObject : public __impl::memory::StateObject<T> {
+    DBC_FORCE_TEST(memory_SharedObject)
 protected:
     core::Mode *owner_;
     bool mapped_;

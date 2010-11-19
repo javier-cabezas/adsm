@@ -97,8 +97,14 @@ namespace __dbc {
 #endif
 #ifdef USE_DBC
 namespace gmac = __dbc;
+
+#define DBC_FORCE_TEST(c) virtual void __dbcForceTest_##c() = 0;
+#define DBC_TESTED(c)             void __dbcForceTest_##c() {}
 #else
 namespace gmac = __impl;
+
+#define DBC_FORCE_TEST(c)
+#define DBC_TESTED(c)
 #endif
 
 

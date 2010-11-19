@@ -42,6 +42,8 @@ template<typename T>
 class GMAC_LOCAL SystemBlock :
     public __impl::memory::SystemBlock<T>,
     public virtual Contract {
+    DBC_TESTED(memory_SystemBlock)
+
 public:
     SystemBlock(void *addr, size_t size, T state);
     virtual ~SystemBlock();

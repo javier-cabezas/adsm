@@ -48,6 +48,7 @@ using __impl::memory::StateObject;
 class GMAC_LOCAL Lazy :
     public __impl::memory::protocol::Lazy,
     public virtual Contract {
+    DBC_TESTED(memory_protocol_Lazy)
 
 protected:
     gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,

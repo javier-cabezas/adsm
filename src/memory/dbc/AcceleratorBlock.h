@@ -41,6 +41,8 @@ namespace __dbc { namespace memory {
 class GMAC_LOCAL AcceleratorBlock :
     public __impl::memory::AcceleratorBlock,
     public virtual Contract {
+    DBC_TESTED(memory_AcceleratorBlock)
+
 public:
     AcceleratorBlock(__impl::core::Mode &owner, void *addr, size_t size);
 

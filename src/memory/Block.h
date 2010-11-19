@@ -44,6 +44,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory { 
 
 class GMAC_LOCAL Block : public gmac::util::Lock {
+    DBC_FORCE_TEST(memory_Block)
+
 protected:
     void *addr_;
     size_t size_;

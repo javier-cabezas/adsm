@@ -59,6 +59,8 @@ class GMAC_LOCAL Lazy : public __impl::memory::Protocol,
                         __impl::memory::Handler,
                         protected std::map<core::Mode *, List *>,
                         gmac::util::RWLock {
+    DBC_FORCE_TEST(memory_protocol_Lazy)
+
 public:
     typedef enum {
         Invalid,
