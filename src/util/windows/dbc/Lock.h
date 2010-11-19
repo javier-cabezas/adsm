@@ -62,7 +62,7 @@ protected:
 };
 
 class GMAC_LOCAL RWLock :
-    public __impl:util::RWLock,
+    public __impl::util::RWLock,
     public Contract {
 protected:
     mutable enum { Idle, Read, Write } state_;

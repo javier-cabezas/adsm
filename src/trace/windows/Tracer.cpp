@@ -6,6 +6,7 @@
 
 namespace __impl { namespace trace {
 
+#if defined(USE_TRACE)
 uint64_t Tracer::timeMark() const
 {
 	FILETIME ft;
@@ -19,5 +20,6 @@ uint64_t Tracer::timeMark() const
 	ret /= 10;
 	return ret - base_;
 }
+#endif
 
 }}
