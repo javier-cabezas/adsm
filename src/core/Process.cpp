@@ -112,7 +112,6 @@ Process::~Process()
 {
     TRACE(LOCAL,"Cleaning process");
 
-    
     while(modes_.empty() == false) {
         Mode *mode = modes_.begin()->first;
         mode->release();

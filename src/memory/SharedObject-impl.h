@@ -63,7 +63,7 @@ inline void SharedObject<T>::addOwner(core::Mode &owner)
 }
 
 template<typename T>
-inline void SharedObject<T>::removeOwner(core::Mode &owner)
+inline void SharedObject<T>::removeOwner(const core::Mode &owner)
 {
     if(owner_ != &owner) return;
     TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);

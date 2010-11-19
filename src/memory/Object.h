@@ -78,7 +78,7 @@ public:
 	virtual core::Mode &owner(const void *addr) const = 0;
     
 	virtual void addOwner(core::Mode &owner) = 0;
-	virtual void removeOwner(core::Mode &owner) = 0;
+	virtual void removeOwner(const core::Mode &owner) = 0;
 
 	gmacError_t acquire() const;
 	gmacError_t toHost() const;

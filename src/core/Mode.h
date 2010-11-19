@@ -110,6 +110,7 @@ protected:
 	gmacError_t error_;
 
     void cleanUpContexts();
+    void cleanUp() const;
 public:
     Mode(Process &proc, Accelerator &acc);
 	Mode &operator =(const Mode &) {

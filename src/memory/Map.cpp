@@ -86,7 +86,7 @@ void ObjectMap::forEach(ObjectOp op) const
     unlock();
 }
 
-void ObjectMap::forEach(core::Mode &mode, ModeOp op) const
+void ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
 {
     const_iterator i;
     lockRead();
@@ -150,9 +150,7 @@ bool Map::insert(Object &obj)
 
 bool Map::remove(const Object &obj)
 {
-#if defined(DEBUG)
 	void *addr = obj.addr();
-#endif
 
 	bool ret = ObjectMap::remove(obj);
 	if(ret == false) WARNING("Map did not remove local object %p", addr);
@@ -197,10 +195,8 @@ bool Map::remove(const Object &obj)
 void Map::insertOrphan(Object &obj)
 {
     core::Process &proc = core::Process::getInstance();
-    ObjectMap &orphans = proc.orphans();
-    orphans.lockWrite();
+    ObjectMap &orphans = proc.orphans();    
     orphans.insert(obj);
-    orphans.unlock();
 }
 
 void Map::addOwner(core::Process &proc, core::Mode &mode)
