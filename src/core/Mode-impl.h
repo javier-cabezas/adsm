@@ -104,45 +104,22 @@ Mode::addObject(memory::Object &obj)
     map_.insert(obj);
 }
 
-#ifndef USE_MMAP
-inline void
-Mode::addReplicatedObject(memory::Object &obj)
+inline void 
+Mode::removeObject(const memory::Object &obj)
 {
-    map_.insertReplicated(obj);
+    map_.remove(obj);
 }
-
-inline void
-Mode::addCentralizedObject(memory::Object &obj)
-{
-    map_.insertCentralized(obj);
-}
-
-#endif
 
 inline const memory::Object *
-Mode::getObjectRead(const void *addr) const
+Mode::getObject(const void *addr) const
 {
-    const memory::Object *obj = map_.getObjectRead(addr);
-    return obj;
-}
-
-inline memory::Object *
-Mode::getObjectWrite(const void *addr)
-{
-    memory::Object *obj = map_.getObjectWrite(addr);
-    return obj;
+	return map_.get(addr);
 }
 
 inline void
-Mode::putObject(const memory::Object &obj)
+Mode::forEachObject(memory::ObjectMap::ObjectOp op) const
 {
-    map_.putObject(obj);
-}
-
-inline const memory::Map &
-Mode::objects()
-{
-    return map_;
+	return map_.forEach(op);
 }
 
 inline gmacError_t
@@ -158,13 +135,13 @@ Mode::error(gmacError_t err)
 }
 
 #ifdef USE_VM
-inline gmac::memory::vm::Bitmap &
+inline memory::vm::Bitmap &
 Mode::dirtyBitmap()
 {
     return *_bitmap;
 }
 
-inline const gmac::memory::vm::Bitmap &
+inline const memory::vm::Bitmap &
 Mode::dirtyBitmap() const
 {
     return *_bitmap;

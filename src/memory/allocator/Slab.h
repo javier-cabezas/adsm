@@ -44,7 +44,7 @@ namespace core { class Mode; }
 
 namespace memory { namespace allocator {
 
-class GMAC_LOCAL Slab : public __impl::memory::Allocator {
+class GMAC_LOCAL Slab : public memory::Allocator {
 protected:
     class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, gmac::util::RWLock {
     protected:

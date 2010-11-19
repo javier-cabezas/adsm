@@ -54,7 +54,7 @@ protected:
 	typedef std::list<Mode *> Fifo;
 
 	Fifo _queue;
-    __impl::util::Semaphore sem;
+    util::Semaphore sem;
 
 public:
 	Queue(const char *name);

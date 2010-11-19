@@ -31,27 +31,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_BLOCK_H_
-#define GMAC_MEMORY_TEST_BLOCK_H_
+#ifndef GMAC_MEMORY_HOSTOBJECT_H_
+#define GMAC_MEMORY_HOSTOBJECT_H_
 
-#include "memory/Block.h"
+#include "HostBlock.h"
+#include "Object.h"
 
-namespace __dbc { namespace memory {
-
-class GMAC_LOCAL Block :
-    public __impl::memory::Block,
-    public virtual Contract {
-    DBC_TESTED(memory_Block)
+namespace __impl { namespace memory {
+class GMAC_LOCAL CentralizedObject : public Object {
 protected:
-    Block(void *addr, size_t size);
+	static protocol::Null protocol_;
+	Protocol &protocol();
 public:
-    virtual ~Block();
+    CentralizedObject(size_t size);
+    virtual ~CentralizedObject();
+
+    void *getAcceleratorAddr(void *addr) const;
 };
 
 }}
 
-#include "Block.ipp"
+#include "HostObject-impl.h"
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

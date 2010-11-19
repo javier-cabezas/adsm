@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "memory/ObjectSet.h"
 
 #include "util/ReusableObject.h"
 
@@ -47,7 +46,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core {
 
-class GMAC_LOCAL Argument : public __impl::util::ReusableObject<Argument> {
+class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
 public:
     void * ptr_;
@@ -82,7 +81,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class GMAC_LOCAL Kernel : public __impl::memory::ObjectSet, public KernelDescriptor
+class GMAC_LOCAL Kernel : public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
@@ -91,7 +90,7 @@ public:
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
 };
 
-class GMAC_LOCAL KernelLaunch : public __impl::memory::ObjectSet {
+class GMAC_LOCAL KernelLaunch {
 public:
     virtual ~KernelLaunch();
     virtual gmacError_t execute() = 0;

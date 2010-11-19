@@ -53,7 +53,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace memory { class Map; class Object; }
+namespace memory { class Map; class Object; class Block; }
 
 namespace core {
 
@@ -142,16 +142,11 @@ public:
     void detach();
 
     void addObject(memory::Object &obj);
-#ifndef USE_MMAP
     void addReplicatedObject(memory::Object &obj);
-    void addCentralizedObject(memory::Object &obj);
-    bool requireUpdate(memory::Block &block);
-#endif
-    void removeObject(memory::Object &obj);
-    const memory::Object *getObjectRead(const void *addr) const;
-    memory::Object *getObjectWrite(const void *addr);
-    void putObject(const memory::Object &obj);
-    const memory::Map &objects();
+    //void addCentralizedObject(memory::Object &obj);
+    void removeObject(const memory::Object &obj);
+    const memory::Object *getObject(const void *addr) const;
+	void forEachObject(memory::ObjectMap::ObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */
 	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
@@ -197,7 +192,7 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
-    gmacError_t moveTo(Accelerator &acc);
+    //gmacError_t moveTo(Accelerator &acc);
 
     void memInfo(size_t *free, size_t *total);
 
@@ -213,7 +208,7 @@ public:
 
 }}
 
-#include "Mode.ipp"
+#include "Mode-impl.h"
 
 #endif
 

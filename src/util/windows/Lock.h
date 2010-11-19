@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL Lock : public __impl::util::__Lock {
+class GMAC_LOCAL Lock : public __Lock {
     DBC_FORCE_TEST(util_Lock)
 
 protected:
@@ -56,7 +56,7 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public __impl::util::__Lock {
+class GMAC_LOCAL RWLock : public __Lock {
     DBC_FORCE_TEST(util_RWLock)
 
 protected:

@@ -31,28 +31,60 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_ACCELERATORBLOCK_H_
-#define GMAC_MEMORY_TEST_ACCELERATORBLOCK_H_
+#ifndef GMAC_MEMORY_DISTRIBUTEDBLOCK_H_
+#define GMAC_MEMORY_DISTRIBUTEDBLOCK_H_
 
-#include "memory/AcceleratorBlock.h"
+#include "config/common.h"
+#include "config/config.h"
 
-namespace __dbc { namespace memory { 
+#include "include/gmac/types.h"
 
-class GMAC_LOCAL AcceleratorBlock :
-    public __impl::memory::AcceleratorBlock,
-    public virtual Contract {
-    DBC_TESTED(memory_AcceleratorBlock)
+#include "Block.h"
+#include "StateBlock.h"
+#include "OwnerMap.h"
+
+namespace __impl { 
+
+namespace core {
+	class Mode;
+}
+
+namespace memory {
+
+template<typename T>
+class GMAC_LOCAL DistributedBlock : public StateBlock<T>, public OwnerMap<uint8_t *> {
+protected:
+	typedef std::map<core::Mode *, uint8_t *> DeviceMap;
+	DeviceMap deviceAddr_;
 
 public:
-    AcceleratorBlock(__impl::core::Mode &owner, void *addr, size_t size);
+	DistributedBlock(Protocol &protocol, core::Mode &owner,
+		void *hostAddr, void *deviceAddr, size_t size, T init);
+    virtual ~DistributedBlock();
 
-    virtual ~AcceleratorBlock();
+	void addOwner(core::Mode &owner, uint8_t *value);
+	void removeOwner(core::Mode &owner);
+
+	core::Mode &owner() const;
+	void *deviceAddr(const void *addr) const;
+
+	gmacError_t toHost() const;
+	gmacError_t toDevice() const;
+
+	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	
+	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 };
+
 
 }}
 
-#include "AcceleratorBlock.ipp"
+#include "DistributedBlock-impl.h"
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

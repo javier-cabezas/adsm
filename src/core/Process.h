@@ -64,9 +64,6 @@ void memoryFini(void);
 
 
 namespace __impl {
-
-namespace memory { class DistributedObject; }
-
 namespace core {
 
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
@@ -101,7 +98,7 @@ public:
     void erase(THREAD_T id);
 };
 
-class GMAC_LOCAL Process : public __impl::util::Singleton<__impl::core::Process>, gmac::util::RWLock {
+class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Process>;
 	//friend class Accelerator;
@@ -110,10 +107,14 @@ protected:
     ModeMap modes_;
 
     QueueMap queues_;
-    __impl::memory::ObjectMap shared_;
-    __impl::memory::ObjectMap centralized_;
-    __impl::memory::ObjectMap replicated_;
-    __impl::memory::ObjectMap orphans_;
+    memory::ObjectMap shared_;
+    memory::ObjectMap centralized_;
+    memory::ObjectMap replicated_;
+    memory::ObjectMap orphans_;
+
+
+
+
 
     unsigned current_;
 
@@ -130,8 +131,8 @@ public:
     void removeMode(Mode *mode);
 
 #ifndef USE_MMAP
-    gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
-    gmacError_t globalFree(memory::DistributedObject &object);
+    //gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
+    //gmacError_t globalFree(memory::DistributedObject &object);
 #endif
 
     void *translate(void *addr);
@@ -144,7 +145,7 @@ public:
     void receive();
     void sendReceive(THREAD_T id);
     void copy(THREAD_T id);
-    gmacError_t migrate(Mode &mode, int acc);
+    //gmacError_t migrate(Mode &mode, int acc);
 
     void addAccelerator(Accelerator *acc);
 

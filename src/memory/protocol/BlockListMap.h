@@ -31,37 +31,59 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_ACCELERATORBLOCK_H_
-#define GMAC_MEMORY_ACCELERATORBLOCK_H_
+#ifndef GMAC_MEMORY_PROTOCOL_DBL_H_
+#define GMAC_MEMORY_PROTOCOL_DBL_H_
 
 #include "config/common.h"
-#include "config/config.h"
-
 #include "include/gmac/types.h"
-#include "core/Mode.h"
-#include "memory/Block.h"
 
-namespace __impl { namespace memory {
+#include "util/Lock.h"
 
-class GMAC_LOCAL AcceleratorBlock : public gmac::memory::Block {
-    DBC_FORCE_TEST(memory_AcceleratorBlock)
+#include <list>
+#include <map>
 
+namespace __impl {
+
+namespace core {
+    class Mode;
+}
+    
+namespace memory {
+class Block;
+
+namespace protocol { 
+
+class GMAC_LOCAL BlockList: protected std::list<Block *>, public gmac::util::Lock {
 protected:
-    core::Mode &owner_;
+    typedef std::list<Block *> Parent;
 public:
-    AcceleratorBlock(core::Mode &owner, void *addr, size_t size);
-    virtual ~AcceleratorBlock();
-	AcceleratorBlock &operator =(const AcceleratorBlock &);
+    BlockList();
+    virtual ~BlockList();
 
-    core::Mode &owner();
+    bool empty() const;
+    size_t size() const;
+    void push(Block &block);
+    Block *pop();
 };
 
-}}
+class GMAC_LOCAL BlockListMap : protected std::map<core::Mode *, BlockList>, public gmac::util::RWLock {
+protected:
+    typedef std::map<core::Mode *, BlockList> Parent;
 
-#include "AcceleratorBlock.ipp"
+    const BlockList *get(core::Mode *mode) const;
+    BlockList *get(core::Mode *mode);
+public:
+    BlockListMap();
+    virtual ~BlockListMap();
 
-#ifdef USE_DBC
-#include "memory/dbc/AcceleratorBlock.h"
-#endif
+    bool empty(core::Mode &mode) const;
+    size_t size(core::Mode &mode) const;
+    void push(core::Mode &mode, Block &block);
+    Block *pop(core::Mode &mode);
+};
+
+}}}
+
+#include "BlockListMap-impl.h"
 
 #endif

@@ -39,13 +39,22 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory {
 
-class GMAC_LOCAL DistributedObject {
+template<typename T>
+class GMAC_LOCAL DistributedObject : public Object {
+protected:
+	core::Mode &owner_; // TODO: make this a map or something
+	uint8_t *deviceAddr_; // TODO: maje this part of the above map or something 
 public:
+	DistributedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, 
+		size_t size, T init);
     virtual ~DistributedObject();
-    virtual gmacError_t addOwner(core::Mode &mode) = 0;
-    virtual gmacError_t removeOwner(core::Mode &mode) = 0;
+
+	void addOwner(core::Mode &owner);
+	void removeOwner(core::Mode &owner);
 };
 
 }}
+
+#include "DistributedObject-impl.h"
 
 #endif

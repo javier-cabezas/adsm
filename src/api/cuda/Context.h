@@ -58,7 +58,7 @@ namespace cuda {
 
 class Accelerator;
 
-class GMAC_LOCAL Context : public __impl::core::Context {
+class GMAC_LOCAL Context : public core::Context {
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;

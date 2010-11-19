@@ -35,11 +35,13 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_PROTOCOL_LAZY_H_
 
 #include "config/common.h"
+#include "include/gmac/types.h"
+
 #include "memory/Handler.h"
 #include "memory/Protocol.h"
-#include "memory/StateObject.h"
+#include "util/Lock.h"
 
-
+#include "BlockListMap.h"
 
 namespace __impl {
 
@@ -49,18 +51,13 @@ namespace core {
 }
     
 namespace memory {
-class Object; 
+class Object;
+class Block;
+template<typename T> class StateBlock;
 
-namespace protocol {
+namespace protocol { 
 
-class List;
-
-class GMAC_LOCAL Lazy : public __impl::memory::Protocol,
-                        __impl::memory::Handler,
-                        protected std::map<core::Mode *, List *>,
-                        gmac::util::RWLock {
-    DBC_FORCE_TEST(memory_protocol_Lazy)
-
+class GMAC_LOCAL Lazy : public Protocol, Handler, gmac::util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -68,102 +65,46 @@ public:
         Dirty
     } State;
 protected:
-    static List GlobalCache_;
-    unsigned _maxListSize;
+	State state(GmacProtection prot) const;
 
-    gmacError_t addDirty(const StateObject<State> &object, memory::SystemBlock<State> &block, bool checkOverflow = true);
+    int limit_;
+    BlockListMap dbl_;
 
-    gmacError_t release(const StateObject<State> &object, SystemBlock<State> &block);
-
-
-    TESTABLE gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    TESTABLE gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                            const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    TESTABLE gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                           const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-
-    TESTABLE gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    TESTABLE gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                                   const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
-    TESTABLE gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                                  const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count);
+	gmacError_t release(StateBlock<State> &block);
+    void addDirty(Block &block);
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot);
-    void deleteObject(const Object &obj);
-#ifndef USE_MMAP
-    memory::Object *createReplicatedObject(size_t size);
-    bool requireUpdate(Block &block);
-#endif
+    memory::Object *createObject(size_t size, void *cpuPtr, GmacProtection prot);
+	memory::Object *createGlobalObject(size_t size, void *cpuPtr, GmacProtection prot);
+	void deleteObject(Object &obj);
 
-    TESTABLE gmacError_t signalRead(const Object &obj, void *addr);
-    TESTABLE gmacError_t signalWrite(const Object &obj, void *addr);
+    gmacError_t signalRead(Block &block);
+    gmacError_t signalWrite(Block &block);
 
-    gmacError_t acquire(const Object &obj);
+    gmacError_t acquire(Block &obj);
 #ifdef USE_VM
     gmacError_t acquireWithBitmap(const Object &obj);
 #endif
-    virtual gmacError_t release();
+    gmacError_t release();
 
-    gmacError_t toHost(const Object &obj);
-    gmacError_t toDevice(const Object &obj);
+	gmacError_t toHost(Block &block);
+    gmacError_t toDevice(Block &block);
 
-    TESTABLE gmacError_t toIOBuffer(core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count);
-    TESTABLE gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count);
+	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset, unsigned objectOffset) const;
+	
+	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+		unsigned bufferOffset, unsigned objectOffset) const;
 
-    TESTABLE gmacError_t toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t count);
-    TESTABLE gmacError_t fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count);
-
-    TESTABLE gmacError_t copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count);
-    TESTABLE gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
-
-    gmacError_t moveTo(Object &obj, core::Mode &mode);
-    gmacError_t removeMode(core::Mode &mode);
 };
-
-
-class GMAC_LOCAL Entry {
-public:
-    const StateObject<Lazy::State> &object;
-    SystemBlock<Lazy::State> *block;
-
-    Entry(const StateObject<Lazy::State> &object,
-            SystemBlock<Lazy::State> *block) :
-        object(object), block(block) {};
-		Entry &operator =(const Entry &) {
-            FATAL("Assigment of protocol entries is not supported");
-            return *this;
-        }
-
-
-    inline void lock() const { block->lock(); }
-    inline void unlock() const { block->unlock(); }
-};
-
-class GMAC_LOCAL List : protected std::list<Entry>, gmac::util::RWLock {
-    friend class Lazy;
-public:
-    List() : gmac::util::RWLock("List") {}
-
-    void purge(const StateObject<Lazy::State> &object);
-    void push(const StateObject<Lazy::State> &object,
-            SystemBlock<Lazy::State> *block);
-    Entry pop();
-
-    bool empty() const;
-    size_t size() const;
-};
-
 
 }}}
 
 #ifdef USE_DBC
-#include "dbc/Lazy.h"
+//#include "dbc/Lazy.h"
 #endif
 
 #endif

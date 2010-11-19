@@ -31,54 +31,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_STATEOBJECT_H_
-#define GMAC_MEMORY_STATEOBJECT_H_
-
-#include <map>
+#ifndef GMAC_MEMORY_SHAREDBLOCK_H_
+#define GMAC_MEMORY_SHAREDBLOCK_H_
 
 #include "config/common.h"
+#include "config/config.h"
 
-#include "memory/Object.h"
-#include "memory/SystemBlock.h"
+#include "include/gmac/types.h"
 
-namespace __impl { namespace memory {
+#include "Block.h"
+#include "StateBlock.h"
+
+namespace __impl { 
+
+namespace core {
+	class Mode;
+}
+
+namespace memory { 
 
 template<typename T>
-class GMAC_LOCAL StateObject: public __impl::memory::Object {
-public:
-    typedef std::map<void *, SystemBlock<T> *> SystemMap;
+class GMAC_LOCAL SharedBlock : public StateBlock<T> {
 protected:
-    T init_;
-    SystemMap systemMap;
-    void setupSystem();
+	core::Mode &owner_;
+	uint8_t *deviceAddr_;
+
 public:
-    StateObject(size_t size, T init);
-    virtual ~StateObject();
+	SharedBlock(Protocol &protocol, core::Mode &owner, 
+		void *hostAddr, void *deviceAddr, size_t size, T init);
+    virtual ~SharedBlock();
 
-    // To host functions
-    virtual gmacError_t toHost(memory::Block &block) const = 0;
-    virtual gmacError_t toHost(memory::Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toHostPointer(memory::Block &block, unsigned blockOff, void *ptr, size_t count) const = 0;
-    virtual gmacError_t toHostBuffer(memory::Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+	core::Mode &owner() const;
+	void *deviceAddr(const void *addr) const;
 
-    // To accelerator functions
-    virtual gmacError_t toAccelerator(memory::Block &block) const = 0;
-    virtual gmacError_t toAccelerator(memory::Block &block, unsigned blockOff, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromPointer(memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const = 0;
-    virtual gmacError_t toAcceleratorFromBuffer(memory::Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const = 0;
+	gmacError_t toHost() const;
+	gmacError_t toDevice() const;
 
-    SystemBlock<T> *findBlock(const void *addr) const;
-    typename SystemMap::iterator getBlockIterator(const void *addr);
-    typename SystemMap::const_iterator getBlockIterator(const void *addr) const;
-    inline SystemMap &blocks();
-    inline const SystemMap &blocks() const;
-
-    virtual void state(T s);
-    virtual gmacError_t memsetAccelerator(memory::Block &block, unsigned blockOff, int c, size_t count) const = 0;
+	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	
+	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 };
 
-} }
 
-#include "StateObject.ipp"
+}}
+
+#include "SharedBlock-impl.h"
 
 #endif

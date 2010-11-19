@@ -10,7 +10,7 @@
 
 namespace __impl { namespace core {
 
-__impl::util::Private<Mode> Mode::key;
+util::Private<Mode> Mode::key;
 
 unsigned Mode::next = 0;
 
@@ -24,7 +24,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , _bitmap(new __impl::memory::vm::Bitmap())
+    , _bitmap(new memory::vm::Bitmap())
 #endif
     , count_(0)
 {
@@ -50,10 +50,10 @@ void Mode::finiThread()
     Mode *mode = key.get();
     if(mode == NULL) return;
     memory::Manager &manager = memory::Manager::getInstance();
-    mode->map_.forEach(manager.protocol(), &memory::Protocol::toHost);
-    mode->map_.makeOrphans();
+//    mode->map_.forEach(manager.protocol(), &gmac::memory::Protocol::toHost);
+//    mode->map_.makeOrphans();
 
-    memory::Manager::getInstance().removeMode(*mode);
+//    memory::Manager::getInstance().removeMode(*mode);
     Process::getInstance().removeMode(mode);
 }
 
@@ -102,10 +102,7 @@ void Mode::detach()
     key.set(NULL);
 }
 
-void Mode::removeObject(memory::Object &obj)
-{
-    map_.remove(obj);
-}
+
 
 
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
@@ -178,13 +175,13 @@ gmacError_t Mode::sync()
     return error_;
 }
 
-#ifndef USE_MMAP
+#if 0
 bool Mode::requireUpdate(memory::Block &block)
 {
 	memory::Manager &manager = memory::Manager::getInstance();
     return manager.requireUpdate(block);
 }
-#endif
+
 
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
@@ -201,8 +198,8 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
-    memory::Manager &manager = memory::Manager::getInstance();
-    map_.freeObjects(manager.protocol(), &memory::Protocol::toHost);
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+//    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
@@ -225,7 +222,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     return ret;
 }
-
+#endif
 void Mode::memInfo(size_t *free, size_t *total)
 {
     switchIn();

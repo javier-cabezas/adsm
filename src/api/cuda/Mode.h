@@ -56,7 +56,7 @@ public:
 class Texture;
 class Accelerator;
 
-class GMAC_LOCAL Mode : public __impl::core::Mode {
+class GMAC_LOCAL Mode : public core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT

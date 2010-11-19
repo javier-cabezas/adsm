@@ -19,10 +19,10 @@ Manager::Manager()
     TRACE(LOCAL,"Memory manager starts");
     // Create protocol
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        protocol_ = new gmac::memory::protocol::Lazy((unsigned)paramRollSize);
+        protocol_ = new protocol::Lazy((unsigned)paramRollSize);
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        protocol_ = new gmac::memory::protocol::Lazy((unsigned)-1);
+        protocol_ = new protocol::Lazy((unsigned)-1);
     }
     else {
         FATAL("Memory Coherence Protocol not defined");
@@ -35,6 +35,7 @@ Manager::~Manager()
     delete protocol_;
 }
 
+#if 0
 gmacError_t
 Manager::map(void *addr, size_t size, GmacProtection prot)
 {
@@ -80,28 +81,28 @@ gmacError_t Manager::unmap(void *addr, size_t size)
     else ret = gmacErrorInvalidValue;
     return ret;
 }
-
+#endif
 gmacError_t Manager::alloc(void **addr, size_t size)
 {
     core::Mode &mode = core::Mode::current();
     // For integrated devices we want to use Centralized objects to avoid memory transfers
-    if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
+    //if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
     // Create new shared object
-    Object *object = protocol_->createSharedObject(size, NULL, GMAC_PROT_READWRITE);
+    Object *object = protocol_->createObject(size, NULL, GMAC_PROT_READ);
     *addr = object->addr();
     if(*addr == NULL) {
-        delete object;
+		object->release();
         return gmacErrorMemoryAllocation;
     }
 
     // Insert object into memory maps
     mode.addObject(*object);
-
+	object->release();
     return gmacSuccess;
 }
 
-#ifndef USE_MMAP
+#if 0
 gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
@@ -143,15 +144,16 @@ gmacError_t Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
-    Object *object = mode.getObjectWrite(addr);
+    const Object *object = mode.getObject(addr);
     if(object != NULL)  {
-        if (object->isInAccelerator()) {
-            protocol_->deleteObject(*object);
-        }
-        mode.removeObject(*object);
-        mode.putObject(*object);
-        object->fini();
-        delete object;
+//        if (object->isInAccelerator()) {
+//            protocol_->deleteObject(*object);
+//        }
+          mode.removeObject(*object);
+//        mode.putObject(*object);
+//        object->fini();
+//        delete object;
+		object->release();
     }
     else ret = gmacErrorInvalidValue;
     return ret;
@@ -164,18 +166,8 @@ gmacError_t Manager::acquire()
     if (mode.releasedObjects() == false) {
         return gmacSuccess;
     }
-
-    const Map &map = mode.objects();
-    map.lockRead();
-    Map::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        Object &object = *i->second;
-        ret = protocol_->acquire(object);
-        if(ret != gmacSuccess) return ret;
-    }
-    map.unlock();
+	mode.forEachObject(&Object::acquire);
     mode.releaseObjects();
-
     return ret;
 }
 
@@ -187,46 +179,12 @@ gmacError_t Manager::release()
     core::Mode &mode = core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    protocol_->release();
+    ret = protocol_->release();
 
     mode.releaseObjects();
-#if 0
-    Mode * mode = Mode::current();
-    const Map &map = mode->objects();
-    map.lockRead();
-    Map::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        Object &object = *i->second;
-        ret = protocol_->release(object);
-        if(ret != gmacSuccess) return ret;
-    }
-    const ObjectMap &shared = proc->shared();
-    ObjectMap::const_iterator j;
-    for(j = shared.begin(); j != shared.end(); j++) {
-        Object &object = *j->second;
-        ret = protocol_->toDevice(object);
-        if(ret != gmacSuccess) return ret;
-    }
-    map.unlock();
-#endif
     return ret;
 }
 
-#if 0
-gmacError_t Manager::invalidate()
-{
-    abort();
-    gmacError_t ret = gmacSuccess;
-    const Map &map = Mode::current()->objects();
-    Map::const_iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        Object &object = *i->second;
-        ret = protocol_->invalidate(object);
-        if(ret != gmacSuccess) return ret;
-    }
-    return ret;
-}
-#endif
 
 gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const void *addr, size_t count)
 {
@@ -239,20 +197,16 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const void *addr, size_t
         // Check if the address range belongs to one GMAC object
         core::Mode * mode = proc.owner(ptr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObjectRead(ptr + off);
+        const Object *obj = mode->getObject(ptr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         unsigned objOff = unsigned(ptr - obj->addr());
         // Handle objects with no memory in the accelerator
-        if (obj->isInAccelerator() == false) {
-            ::memcpy(buffer.addr() + off, ptr + off, c);
-        } else { // Handle objects with memory in the accelerator
-            ret = protocol_->toIOBuffer(buffer, off, *obj, objOff, c);
-            if(ret != gmacSuccess) return ret;
-        }
-        mode->putObject(*obj);
+		ret = obj->copyToBuffer(buffer, c, off, objOff);
+		obj->release();
+        if(ret != gmacSuccess) return ret;
         off += unsigned(objCount);
         TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(ptr + off < ptr + count);
@@ -270,20 +224,15 @@ gmacError_t Manager::fromIOBuffer(void * addr, core::IOBuffer &buffer, size_t co
         // Check if the address range belongs to one GMAC object
         core::Mode *mode = proc.owner(ptr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObjectRead(ptr + off);
+        const Object *obj = mode->getObject(ptr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (ptr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         unsigned objOff = unsigned(ptr - obj->addr());
-        // Handle objects with no memory in the accelerator
-        if (!obj->isInAccelerator()) {
-            ::memcpy(ptr + off, buffer.addr() + off, c);
-        } else { // Handle objects with memory in the accelerator
-            ret = protocol_->fromIOBuffer(*obj, objOff, buffer, off, c);
-            if(ret != gmacSuccess) return ret;
-        }
-        mode->putObject(*obj);
+		ret = obj->copyFromBuffer(buffer, c, off, objOff);
+		obj->release();        
+        if(ret != gmacSuccess) return ret;
         off += unsigned(objCount);
         TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(ptr + off < ptr + count);
@@ -327,12 +276,12 @@ bool Manager::read(void *addr)
     checkBitmapToHost();
 #endif
     bool ret = true;
-    const Object *obj = mode.getObjectRead(addr);
+    const Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
     TRACE(LOCAL,"Read access for object %p", obj->addr());
-	gmacError_t err = protocol_->signalRead(*obj, addr);
+	gmacError_t err = obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
-    mode.putObject(*obj);
+	obj->release();
     return ret;
 }
 
@@ -343,21 +292,14 @@ bool Manager::write(void *addr)
     checkBitmapToHost();
 #endif
     bool ret = true;
-    const Object *obj = mode.getObjectRead(addr);
+    const Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
     TRACE(LOCAL,"Write access for object %p", obj->addr());
-    if(protocol_->signalWrite(*obj, addr) != gmacSuccess) ret = false;
-    mode.putObject(*obj);
+	if(obj->signalWrite(addr) != gmacSuccess) ret = false;
+	obj->release();
     return ret;
 }
-
-#ifndef USE_MMAP
-bool Manager::requireUpdate(memory::Block &block)
-{
-    return protocol_->requireUpdate(block);
-}
-#endif
-
+#if 0
 gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 {
     core::Process &proc = core::Process::getInstance();
@@ -488,5 +430,5 @@ gmacError_t Manager::moveTo(void * addr, core::Mode &mode)
 #endif
     return gmacSuccess;
 }
-
+#endif
 }}

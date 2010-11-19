@@ -6,7 +6,7 @@ set(core_SRC
     Descriptor.h Descriptor.ipp
     Kernel.h Kernel.ipp Kernel.cpp
     IOBuffer.h IOBuffer.ipp
-    Mode.h Mode.ipp Mode.cpp
+    Mode.h Mode-impl.h Mode.cpp
     Context.h Context.cpp
     Queue.h Queue.ipp Queue.cpp)
 

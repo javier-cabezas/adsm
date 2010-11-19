@@ -50,45 +50,44 @@ namespace memory {
 
 class Block;
 class Object;
+class Block;
 
 class GMAC_LOCAL Protocol {
 public:
     virtual ~Protocol();
 
-    virtual Object *createSharedObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
-    virtual void deleteObject(const Object &obj) = 0;
-#ifndef USE_MMAP
-    virtual Object *createReplicatedObject(size_t size) = 0;
-    virtual Object *createCentralizedObject(size_t size);
-    virtual bool requireUpdate(Block &block) = 0;
-#endif
+    virtual Object *createObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
+    virtual void deleteObject(Object &obj) = 0;
 
-    virtual gmacError_t signalRead(const Object &obj, void *addr) = 0;
-    virtual gmacError_t signalWrite(const Object &obj, void *addr) = 0;
+    virtual gmacError_t signalRead(Block &block) = 0;
+    virtual gmacError_t signalWrite(Block &block) = 0;
 
-    virtual gmacError_t acquire(const Object &obj) = 0;
+    virtual gmacError_t acquire(Block &block) = 0;
 #ifdef USE_VM
-    virtual gmacError_t acquireWithBitmap(const Object &obj) = 0;
+    virtual gmacError_t acquireWithBitmap(const Block &block) = 0;
 #endif
     virtual gmacError_t release() = 0;
 
-    virtual gmacError_t toHost(const Object &obj) = 0;
-    virtual gmacError_t toDevice(const Object &obj) = 0;
+    virtual gmacError_t toHost(Block &block) = 0;
+    virtual gmacError_t toDevice(Block &block) = 0;
 
-    virtual gmacError_t toIOBuffer(core::IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t n) = 0;
-    virtual gmacError_t fromIOBuffer(const Object &obj, unsigned objectOff, core::IOBuffer &buffer, unsigned bufferOff, size_t n) = 0;
+	virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffet, unsigned objectOffset) const = 0;
+	
+	virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+		unsigned bufferOffet, unsigned objectOffset) const = 0;
 
-    virtual gmacError_t toPointer(void *dst, const Object &srcObj, unsigned objectOff, size_t n) = 0;
-    virtual gmacError_t fromPointer(const Object &dstObj, unsigned objectOff, const void *src, size_t n) = 0;
-
+#if 0
     virtual gmacError_t copy(const Object &dstObj, unsigned dstOff, const Object &srcObj, unsigned srcOff, size_t n) = 0;
     virtual gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t n) = 0;
 
     virtual gmacError_t moveTo(Object &obj, core::Mode &mode) = 0;
 
     virtual gmacError_t removeMode(core::Mode &mode) = 0;
+#endif
 
-    //virtual gmacError_t toHost(Object &obj) = 0;
+	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
+	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, unsigned, unsigned) const;
 };
 
 }}

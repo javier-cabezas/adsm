@@ -38,38 +38,62 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "include/gmac/types.h"
-#include "util/Lock.h"
+#include "memory/Protocol.h"
 
+namespace __impl { 
 
-namespace __impl { namespace memory { 
+namespace core {
+	class Mode;
+	class IOBuffer;
+}
+
+namespace memory {
 
 class GMAC_LOCAL Block : public gmac::util::Lock {
-    DBC_FORCE_TEST(memory_Block)
-
 protected:
-    void *addr_;
-    size_t size_;
+	Protocol &protocol_;
 
-    Block(void *addr, size_t size);
-    void *mirrorAddress(void *src) const;
+	size_t size_;
+	uint8_t *addr_;
+	uint8_t *shadow_;
+
+	Block(Protocol &protocol, uint8_t *addr, size_t size);
 public:
     virtual ~Block();
 
     uint8_t *addr() const;
-    uint8_t *end() const;
-    size_t size() const;
+	size_t size() const;
 
-    void lock() const;
-    void unlock() const;
+	gmacError_t signalRead();
+	gmacError_t signalWrite();
+	gmacError_t coherenceOp(Protocol::CoherenceOp op);
+	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset, unsigned blockOffset);
+
+	virtual core::Mode &owner() const = 0;
+	virtual void *deviceAddr(const void *addr) const = 0;
+
+	virtual gmacError_t toHost() const = 0;
+	virtual gmacError_t toDevice() const = 0;
+
+	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+	virtual gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+	
+	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+	virtual gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 };
 
 
 }}
 
-#include "Block.ipp"
+#include "Block-impl.h"
 
 #ifdef USE_DBC
-#include "memory/dbc/Block.h"
+//#include "memory/dbc/Block.h"
 #endif
 
 #endif

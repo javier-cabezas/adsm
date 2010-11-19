@@ -1,3 +1,5 @@
+#if defined(USE_TRACE)
+#include "trace/Tracer.h"
 #include <windows.h>
 
 #include "trace/Tracer.h"
@@ -23,3 +25,4 @@ uint64_t Tracer::timeMark() const
 #endif
 
 }}
+#endif

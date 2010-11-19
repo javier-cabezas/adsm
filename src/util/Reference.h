@@ -40,21 +40,19 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-template<typename T>
 class GMAC_LOCAL Reference {
 private:
-    mutable Atomic ref_;
-
+    mutable Atomic ref_;	
 protected:
-    Reference();
-    virtual ~Reference();
+    Reference(); 
+	virtual ~Reference();
 public:
     void use() const;
-    void release();
+    void release() const;
 };
 
 } }
 
-#include "Refrence-impl.h"
+#include "Reference-impl.h"
 
 #endif

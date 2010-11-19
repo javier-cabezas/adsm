@@ -34,50 +34,67 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_OBJECT_H_
 #define GMAC_MEMORY_OBJECT_H_
 
-#include <set>
+#include <map>
 
 #include "config/common.h"
+#include "include/gmac/types.h"
+
 #include "util/Lock.h"
+#include "util/Reference.h"
+#include "memory/Protocol.h"
 
+namespace __impl { 
 
-#include "memory/Block.h"
-#include "core/Mode.h"
+namespace core {
+	class Mode;
+}
 
-namespace __impl { namespace memory {
+namespace memory {
 
-class GMAC_LOCAL Object: protected gmac::util::RWLock {
-    friend class Map;
-    friend class ObjectMap;
+class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
 protected:
-    void *addr_;
+    uint8_t *addr_;
     size_t size_;
 
-    Object(void *addr, size_t size);
+	bool valid_;
 
-    static void *map(void *addr, size_t size);
-    static void unmap(void *addr, size_t count);
+	typedef std::map<uint8_t *, Block *> BlockMap;
+	BlockMap blocks_;
+
+	gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
+	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset, unsigned objectOffset) const;
+
+	Object(void *addr, size_t size);
+	virtual ~Object();
 public:
-    virtual ~Object();
 
     uint8_t *addr() const;
     uint8_t *end() const;
     size_t size() const;
+	bool valid() const;
 
-    virtual core::Mode &owner() const = 0;
-    virtual void *getAcceleratorAddr(void *addr) const = 0;
+    virtual void *deviceAddr(const void *addr) const;
+	core::Mode &owner(const void *addr) const;
+    
+	virtual void addOwner(core::Mode &owner) = 0;
+	virtual void removeOwner(core::Mode &owner) = 0;
 
-    virtual gmacError_t init() = 0;
-    virtual void fini() = 0;
+	gmacError_t acquire() const;
+	gmacError_t toHost() const;
+	gmacError_t toDevice() const;
 
-    virtual gmacError_t free();
-    virtual gmacError_t realloc(core::Mode &mode);
+	gmacError_t signalRead(void *addr) const;
+	gmacError_t signalWrite(void *addr) const;
 
-    virtual bool isLocal() const = 0;
-    virtual bool isInAccelerator() const = 0;
+	gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;	
+	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
+		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
 };
 
 }}
 
-#include "Object.ipp"
+#include "Object-impl.h"
 
 #endif
