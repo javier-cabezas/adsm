@@ -207,7 +207,7 @@ void Lazy::addDirty(Block &block)
     core::Mode &mode = core::Mode::current();
     dbl_.push(mode, block);
     if(limit_ < 0) return;
-    while(dbl_.size(mode) > limit_) {
+    while(int(dbl_.size(mode)) > limit_) {
         Block *b = dbl_.pop(mode);
         release(dynamic_cast<StateBlock<State> &>(*b));
     }
