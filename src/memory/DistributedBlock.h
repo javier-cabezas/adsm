@@ -58,8 +58,8 @@ protected:
 	DeviceMap deviceAddr_;
 
 public:
-	DistributedBlock(Protocol &protocol, core::Mode &owner,
-		void *hostAddr, void *deviceAddr, size_t size, T init);
+	DistributedBlock(Protocol &protocol, core::Mode &owner, uint8_t *shadowAddr,
+		uint8_t *hostAddr, uint8_t *deviceAddr, size_t size, T init);
     virtual ~DistributedBlock();
 
 	void addOwner(core::Mode &owner, uint8_t *value);

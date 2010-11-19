@@ -64,12 +64,14 @@ public:
     size_t size() const;
     void push(Block &block);
     Block *pop();
+    void remove(Block &block);
 };
 
 class GMAC_LOCAL BlockListMap : protected std::map<core::Mode *, BlockList *>, public gmac::util::RWLock {
 protected:
     typedef std::map<core::Mode *, BlockList *> Parent;
 
+    BlockList *create(core::Mode *mode);
     const BlockList *get(core::Mode *mode) const;
     BlockList *get(core::Mode *mode);
 public:
@@ -80,6 +82,7 @@ public:
     size_t size(core::Mode &mode) const;
     void push(core::Mode &mode, Block &block);
     Block *pop(core::Mode &mode);
+    void remove(core::Mode &mode, Block &block);
 };
 
 }}}

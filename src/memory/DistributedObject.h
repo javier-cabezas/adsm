@@ -49,6 +49,9 @@ public:
 		size_t size, T init);
     virtual ~DistributedObject();
 
+    void *deviceAddr(const void *addr) const;
+	core::Mode &owner(const void *addr) const;
+
 	void addOwner(core::Mode &owner);
 	void removeOwner(core::Mode &owner);
 };

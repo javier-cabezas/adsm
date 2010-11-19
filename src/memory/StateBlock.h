@@ -46,7 +46,7 @@ class GMAC_LOCAL StateBlock : public Block {
 protected:
 	T state_;    
 public:
-	StateBlock(Protocol &protocol, uint8_t *addr, size_t size, T init);
+	StateBlock(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size, T init);
 	const T &state() const;
 	void state(const T &s);
 };

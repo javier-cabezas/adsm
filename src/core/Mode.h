@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Map.h"
 
 #include "util/Lock.h"
-
+#include "util/Reference.h"
 #include "util/Private.h"
 
 namespace __impl {
@@ -75,7 +75,7 @@ public:
     gmacError_t sync();
 };
 
-class GMAC_LOCAL Mode {
+class GMAC_LOCAL Mode : public util::Reference {
     // friend class gmac::memory::Manager;
 protected:
     static util::Private<Mode> key;
@@ -95,7 +95,6 @@ protected:
 #ifdef USE_VM
     gmac::memory::vm::Bitmap *_bitmap;
 #endif
-    unsigned count_;
 
     ContextMap contextMap_;
 
@@ -119,16 +118,11 @@ public:
     }
     virtual ~Mode();
 
-    void release();
-
     static void init();
     static void initThread();
     static void finiThread();
     static Mode &current();
     static bool hasCurrent();
-
-    void inc();
-    void destroy();
 
     unsigned id() const;
     unsigned accId() const;

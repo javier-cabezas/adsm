@@ -26,18 +26,20 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #ifdef USE_VM
     , _bitmap(new memory::vm::Bitmap())
 #endif
-    , count_(0)
 {
     TRACE(LOCAL,"Creating new memory map");
 }
 
 Mode::~Mode()
-{
-    count_--;
-    if(count_ > 0)
-        WARNING("Deleting in-use Execution Mode (%d)", count_);
+{    
     if(this == key.get()) key.set(NULL);
+    map_.forEach(*this, &memory::Object::removeOwner);
     contextMap_.clean();
+    acc_->unregisterMode(*this); 
+#ifdef USE_VM
+    delete _bitmap;
+#endif
+    Process::getInstance().removeMode(*this);
 }
 
 void Mode::cleanUpContexts()
@@ -49,23 +51,9 @@ void Mode::finiThread()
 {
     Mode *mode = key.get();
     if(mode == NULL) return;
-    memory::Manager &manager = memory::Manager::getInstance();
-//    mode->map_.forEach(manager.protocol(), &gmac::memory::Protocol::toHost);
-//    mode->map_.makeOrphans();
-
-//    memory::Manager::getInstance().removeMode(*mode);
-    Process::getInstance().removeMode(mode);
+    mode->release();
 }
 
-
-
-void Mode::release()
-{
-#ifdef USE_VM
-    delete _bitmap;
-#endif
-    acc_->unregisterMode(*this); 
-}
 void Mode::kernel(gmacKernel_t k, Kernel &kernel)
 {
     TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
@@ -90,20 +78,16 @@ void Mode::attach()
 {
     Mode *mode = Mode::key.get();
     if(mode == this) return;
-    if(mode != NULL) mode->destroy();
+    if(mode != NULL) mode->release();
     key.set(this);
-    count_++;
 }
 
 void Mode::detach()
 {
     Mode *mode = Mode::key.get();
-    if(mode != NULL) mode->destroy();
+    if(mode != NULL) mode->release();
     key.set(NULL);
 }
-
-
-
 
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {

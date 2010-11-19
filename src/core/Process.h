@@ -112,10 +112,6 @@ protected:
     memory::ObjectMap replicated_;
     memory::ObjectMap orphans_;
 
-
-
-
-
     unsigned current_;
 
     static size_t TotalMemory_;
@@ -128,7 +124,7 @@ public:
     void finiThread();
 #define ACC_AUTO_BIND -1
     Mode * createMode(int acc = ACC_AUTO_BIND);
-    void removeMode(Mode *mode);
+    void removeMode(Mode &mode);
 
 #ifndef USE_MMAP
     //gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);

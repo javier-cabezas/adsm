@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "memory/Protocol.h"
+#include "util/Reference.h"
 
 namespace __impl { 
 
@@ -49,7 +50,7 @@ namespace core {
 
 namespace memory {
 
-class GMAC_LOCAL Block : public gmac::util::Lock {
+class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
 protected:
 	Protocol &protocol_;
 
@@ -57,10 +58,9 @@ protected:
 	uint8_t *addr_;
 	uint8_t *shadow_;
 
-	Block(Protocol &protocol, uint8_t *addr, size_t size);
-public:
+	Block(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size);
     virtual ~Block();
-
+public:
     uint8_t *addr() const;
 	size_t size() const;
 

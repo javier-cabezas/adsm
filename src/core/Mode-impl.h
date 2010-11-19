@@ -70,19 +70,6 @@ Mode::hasCurrent()
     return key.get() != NULL;
 }
 
-inline void Mode::inc()
-{
-    count_++;
-}
-
-inline void Mode::destroy()
-{
-    count_--;
-    if(count_ == 0) {
-        delete this;
-    }
-}
-
 inline unsigned Mode::id() const
 {
     return id_;

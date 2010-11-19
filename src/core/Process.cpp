@@ -111,18 +111,12 @@ Process::Process() :
 Process::~Process()
 {
     TRACE(LOCAL,"Cleaning process");
-    //orphans_.cleanAndDestroy();
 
-    // TODO: Why is this lock necessary?
-    std::list<Mode *>::iterator c;
-    modes_.lockWrite();
-    ModeMap::const_iterator j;
-    for(j = modes_.begin(); j != modes_.end(); j++) {
-        j->first->release();
-        delete j->first;
+    
+    while(modes_.empty() == false) {
+        Mode *mode = modes_.begin()->first;
+        mode->release();
     }
-    modes_.clear();
-    modes_.unlock();
 
     std::vector<Accelerator *>::iterator a;
     for(a = accs_.begin(); a != accs_.end(); a++)
@@ -138,7 +132,6 @@ void Process::initThread()
 	queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
-    //trace::Function::initThread();
 }
 
 void Process::finiThread()
@@ -182,6 +175,14 @@ Mode *Process::createMode(int acc)
     unlock();
 
     return mode;
+}
+
+void Process::removeMode(Mode &mode)
+{
+    lockWrite();
+    TRACE(LOCAL, "Removing Execution Mode %p", &mode);
+    modes_.remove(mode);
+    unlock();
 }
 
 #if 0
@@ -243,16 +244,6 @@ gmacError_t Process::migrate(Mode &mode, int acc)
 }
 #endif
 
-void Process::removeMode(Mode *mode)
-{
-    TRACE(LOCAL,"Adding "FMT_SIZE" replicated memory objects", replicated_.size());
-    memory::Map::removeOwner(*this, *mode);
-    lockWrite();
-    modes_.remove(*mode);
-    delete mode;
-    unlock();
-}
-
 void Process::addAccelerator(Accelerator *acc)
 {
     accs_.push_back(acc);
@@ -273,7 +264,7 @@ void Process::send(THREAD_T id)
 {
     Mode &mode = Mode::current();
     queues_.push(id, mode);
-    mode.inc();
+    mode.use();
     mode.detach();
 }
 
@@ -297,7 +288,7 @@ void Process::copy(THREAD_T id)
 {
     Mode &mode = Mode::current();
     queues_.push(id, mode);
-    mode.inc();
+    mode.use();
 }
 
 Mode *Process::owner(const void *addr) const

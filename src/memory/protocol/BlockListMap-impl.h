@@ -1,6 +1,7 @@
 #ifndef GMAC_MEMORY_PROTOCOL_LAZY_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_LAZY_IMPL_H_
 
+#include "memory/Block.h"
 
 namespace __impl { namespace memory { namespace protocol { 
 
@@ -30,6 +31,7 @@ inline size_t BlockList::size() const
 inline void BlockList::push(Block &block)
 {
     lock();
+    block.use();
     Parent::push_back(&block);
     unlock();
 }
@@ -41,9 +43,18 @@ inline Block *BlockList::pop()
     if(Parent::empty() == false) {
         ret = Parent::front();
         Parent::pop_front();
+        ret->release();
     }
     unlock();
     return ret;
+}
+
+inline void BlockList::remove(Block &block)
+{
+    lock();
+    Parent::remove(&block);
+    unlock();
+    return;
 }
 
 inline BlockListMap::BlockListMap() :
@@ -60,6 +71,13 @@ inline BlockListMap::~BlockListMap()
     unlock();
 }
 
+inline BlockList *BlockListMap::create(core::Mode *mode)
+{
+    std::pair<iterator, bool> pair = 
+        Parent::insert(Parent::value_type(mode, new BlockList()));
+    return pair.first->second;
+}
+
 inline const BlockList *BlockListMap::get(core::Mode *mode) const
 {
     const BlockList *ret = NULL;
@@ -72,14 +90,10 @@ inline const BlockList *BlockListMap::get(core::Mode *mode) const
 
 inline BlockList *BlockListMap::get(core::Mode *mode)
 {
+    BlockList *ret = NULL;
     lockWrite();
     iterator i = Parent::find(mode);
-    if(i == Parent::end()) {
-        std::pair<iterator, bool> pair = 
-            Parent::insert(Parent::value_type(mode, new BlockList()));
-        i = pair.first;
-    }
-    BlockList *ret = i->second;
+    if(i != Parent::end()) ret = i->second;
     unlock();
     return ret;
 }
@@ -101,14 +115,23 @@ inline size_t BlockListMap::size(core::Mode &mode) const
 inline void BlockListMap::push(core::Mode &mode, Block &block)
 {
     BlockList *list = get(&mode);
+    if(list == NULL) list = create(&mode);
     return list->push(block);
 }
 
 inline Block *BlockListMap::pop(core::Mode &mode)
 {
+    Block *ret = NULL;
     BlockList *list = get(&mode);
-    if(list == NULL) return NULL;
-    return list->pop();
+    if(list != NULL) ret = list->pop();
+    return ret;
+}
+
+inline void BlockListMap::remove(core::Mode &mode, Block &block)
+{
+    BlockList *list = get(&mode);
+    if(list != NULL) list->remove(block);
+    return;
 }
 
 }}}

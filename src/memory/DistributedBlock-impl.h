@@ -7,12 +7,11 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-inline DistributedBlock<T>::DistributedBlock(Protocol &protocol, core::Mode &owner, 
-											 void *hostAddr, void *deviceAddr, 
-											 size_t size, T init) :
-    StateBlock<T>(protocol, (uint8_t *)hostAddr, size, init)
+inline DistributedBlock<T>::DistributedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
+											 uint8_t *shadowAddr, uint8_t *deviceAddr, size_t size, T init) :
+    StateBlock<T>(protocol, hostAddr, shadowAddr, size, init)
 {
-	deviceAddr_.insert(DeviceMap::value_type(&owner, (uint8_t *)deviceAddr));
+	deviceAddr_.insert(DeviceMap::value_type(&owner, deviceAddr));
 }
 
 template<typename T>

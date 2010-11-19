@@ -57,8 +57,8 @@ protected:
 	uint8_t *deviceAddr_;
 
 public:
-	SharedBlock(Protocol &protocol, core::Mode &owner, 
-		void *hostAddr, void *deviceAddr, size_t size, T init);
+	SharedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
+		uint8_t *shadowAddr, uint8_t *deviceAddr, size_t size, T init);
     virtual ~SharedBlock();
 
 	core::Mode &owner() const;

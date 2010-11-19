@@ -86,6 +86,14 @@ void ObjectMap::forEach(ObjectOp op) const
     unlock();
 }
 
+void ObjectMap::forEach(core::Mode &mode, ModeOp op) const
+{
+    const_iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) (i->second->*op)(mode);
+    unlock();
+}
+
 #if 0
 void ObjectMap::reallocObjects(core::Mode &mode)
 {
@@ -184,6 +192,15 @@ bool Map::remove(const Object &obj)
 	}
     
 	return ret;
+}
+
+void Map::insertOrphan(Object &obj)
+{
+    core::Process &proc = core::Process::getInstance();
+    ObjectMap &orphans = proc.orphans();
+    orphans.lockWrite();
+    orphans.insert(obj);
+    orphans.unlock();
 }
 
 void Map::addOwner(core::Process &proc, core::Mode &mode)
