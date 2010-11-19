@@ -53,7 +53,7 @@ namespace memory {
 
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
 protected:
-    uint8_t *addr_;
+    uint8_t *addr_, *shadow_;
     size_t size_;
 
 	bool valid_;
@@ -74,8 +74,8 @@ public:
     size_t size() const;
 	bool valid() const;
 
-    virtual void *deviceAddr(const void *addr) const;
-	core::Mode &owner(const void *addr) const;
+    virtual void *deviceAddr(const void *addr) const = 0;
+	virtual core::Mode &owner(const void *addr) const = 0;
     
 	virtual void addOwner(core::Mode &owner) = 0;
 	virtual void removeOwner(core::Mode &owner) = 0;

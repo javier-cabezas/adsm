@@ -17,10 +17,13 @@ inline Object::Object(void *addr, size_t size) :
 	// Allocate memory (if necessary)
 	if(addr_ == NULL)
 		addr_ = (uint8_t *)Memory::map(NULL, size, GMAC_PROT_READWRITE);
+    shadow_ = (uint8_t *)Memory::shadow(addr_, size_);
 }
 
 inline Object::~Object()
-{}
+{
+    Memory::unshadow(shadow_, size_);
+}
 
 inline uint8_t *Object::addr() const
 {
@@ -40,28 +43,6 @@ inline size_t Object::size() const
 inline bool Object::valid() const
 {
 	return valid_;
-}
-
-inline void *Object::deviceAddr(const void *addr) const
-{
-	void *ret = NULL;
-	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
-	if(i != blocks_.end()) {
-		ret = i->second->deviceAddr(addr);
-	}
-	unlock();
-	return ret;
-}
-
-inline core::Mode &Object::owner(const void *addr) const
-{
-	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
-	ASSERTION(i != blocks_.end());
-	core::Mode &ret = i->second->owner();
-	unlock();
-	return ret;
 }
 
 inline gmacError_t Object::acquire() const

@@ -25,7 +25,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 		size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
 		mark += blockSize;
 		blocks_.insert(BlockMap::value_type(mark, 
-			new DistributedBlock<T>(protocol, owner_, addr_ + offset, 
+			new DistributedBlock<T>(protocol, owner_, addr_ + offset, shadow_ + offset,
 			deviceAddr_ + offset, blockSize, init)));
 		size -= blockSize;
 		offset += unsigned(blockSize);
@@ -39,6 +39,31 @@ inline DistributedObject<T>::~DistributedObject()
 	// If the object creation failed, this address will be NULL
     if(deviceAddr_ != NULL) owner_.free(deviceAddr_);
 }
+
+template<typename T>
+inline void *DistributedObject<T>::deviceAddr(const void *addr) const
+{
+	void *ret = NULL;
+	lockRead();
+	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	if(i != blocks_.end()) {
+		ret = i->second->deviceAddr(addr);
+	}
+	unlock();
+	return ret;
+}
+
+template<typename T>
+inline core::Mode &DistributedObject<T>::owner(const void *addr) const
+{
+	lockRead();
+	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	ASSERTION(i != blocks_.end());
+	core::Mode &ret = i->second->owner();
+	unlock();
+	return ret;
+}
+
 
 template<typename T>
 inline void DistributedObject<T>::addOwner(core::Mode &mode)

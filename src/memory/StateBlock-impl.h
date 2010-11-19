@@ -4,8 +4,9 @@
 namespace __impl { namespace memory { 
 
 template<typename T>
-inline StateBlock<T>::StateBlock(Protocol &protocol, uint8_t *addr, size_t size, T init) :
-	Block(protocol, addr, size),
+inline StateBlock<T>::StateBlock(Protocol &protocol, uint8_t *addr, 
+                                 uint8_t *shadow, size_t size, T init) :
+	Block(protocol, addr, shadow, size),
 	state_(init)
 {}
 

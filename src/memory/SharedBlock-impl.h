@@ -7,11 +7,11 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-inline SharedBlock<T>::SharedBlock(Protocol &protocol, core::Mode &owner,
-								   void *hostAddr, void *deviceAddr, size_t size, T init) :
-	memory::StateBlock<T>(protocol, (uint8_t *)hostAddr, size, init),
+inline SharedBlock<T>::SharedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
+								   uint8_t *shadowAddr, uint8_t *deviceAddr, size_t size, T init) :
+	memory::StateBlock<T>(protocol, hostAddr, shadowAddr, size, init),
 	owner_(owner),
-	deviceAddr_((uint8_t *)deviceAddr)
+	deviceAddr_(deviceAddr)
 {}
 
 template<typename T>

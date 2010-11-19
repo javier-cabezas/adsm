@@ -62,12 +62,13 @@ public:
     typedef enum {
         Invalid,
         ReadOnly,
-        Dirty
+        Dirty,
+        HostOnly
     } State;
 protected:
 	State state(GmacProtection prot) const;
 
-    int limit_;
+    unsigned limit_;
     BlockListMap dbl_;
 
 	gmacError_t release(StateBlock<State> &block);
@@ -89,6 +90,7 @@ public:
     gmacError_t acquireWithBitmap(const Object &obj);
 #endif
     gmacError_t release();
+    gmacError_t remove(Block &block);
 
 	gmacError_t toHost(Block &block);
     gmacError_t toDevice(Block &block);

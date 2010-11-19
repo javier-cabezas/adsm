@@ -5,19 +5,16 @@
 
 namespace __impl { namespace memory { 
 
-inline Block::Block(Protocol &protocol, uint8_t *addr, size_t size) :
+inline Block::Block(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size) :
 	gmac::util::Lock("Block"),
 	protocol_(protocol),
 	size_(size),
-	addr_(addr) 
-{
-	shadow_ = (uint8_t *)Memory::shadow(addr, size);
-}
+	addr_(addr),
+    shadow_(shadow)
+{ }
 
 inline Block::~Block()
-{
-	Memory::unmap(shadow_, size_);
-}
+{ }
 
 inline uint8_t *Block::addr() const
 {

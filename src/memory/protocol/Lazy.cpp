@@ -202,13 +202,33 @@ gmacError_t Lazy::release(StateBlock<State> &block)
     return ret;
 }
 
+gmacError_t Lazy::remove(Block &b)
+{
+    StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
+    TRACE(LOCAL,"Releasing block %p", block.addr());
+    gmacError_t ret = gmacSuccess;
+    switch(block.state()) {
+        case Dirty:
+        case ReadOnly:
+            break;
+        case Invalid:
+            ret = block.toHost();
+            if(ret != gmacSuccess) break;
+    }
+    if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
+                    FATAL("Unable to set memory permissions");
+    block.state(HostOnly);
+    dbl_.remove(block.owner(), block);
+    return ret;
+}
+
 void Lazy::addDirty(Block &block)
 {
-    core::Mode &mode = core::Mode::current();
-    dbl_.push(mode, block);
-    if(limit_ < 0) return;
-    while(int(dbl_.size(mode)) > limit_) {
-        Block *b = dbl_.pop(mode);
+    // TODO: Handle the case of multi-owned blocks
+    dbl_.push(block.owner(), block);
+    if(limit_ == unsigned(-1)) return;
+    while(dbl_.size(block.owner()) > limit_) {
+        Block *b = dbl_.pop(block.owner());
         release(dynamic_cast<StateBlock<State> &>(*b));
     }
     return;
