@@ -73,7 +73,7 @@ static void InitThread()
 {
 	gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
-	gmac::core::Process &proc = gmac::core::Process::getInstance();
+	__impl::core::Process &proc = __impl::core::Process::getInstance();
 	proc.initThread();
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
@@ -84,7 +84,7 @@ static void FiniThread()
 	gmac::enterGmac();
 	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
-	gmac::core::Process &proc = gmac::core::Process::getInstance();
+	__impl::core::Process &proc = __impl::core::Process::getInstance();
 	proc.finiThread();
 	gmac::exitGmac();
 }
@@ -94,10 +94,10 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch(dwReason) {
 		case DLL_PROCESS_ATTACH:
-			gmac::init();
+            __impl::init();
 			break;
 		case DLL_PROCESS_DETACH:
-			gmac::fini();
+			__impl::fini();
 			break;
 		case DLL_THREAD_ATTACH:
 			InitThread();
@@ -111,6 +111,5 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 
 #endif
-
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -17,7 +17,7 @@ Lock::~Lock()
 
 void Lock::lock() const
 {
-    __impl::Lock::lock();
+    __impl::util::Lock::lock();
 
     EnterCriticalSection(&internal_);
     ENSURES(locked_ == false);
@@ -74,7 +74,7 @@ void RWLock::lockWrite() const
 	REQUIRES(writer_ != GetCurrentThreadId());
     LeaveCriticalSection(&internal_);
 
-    __impl::RWLock::lockWrite();
+    __impl::util::RWLock::lockWrite();
 
     EnterCriticalSection(&internal_);
     ENSURES(readers_.empty() == true);
@@ -99,7 +99,7 @@ void RWLock::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    __impl::RWLock::unlock();
+    __impl::util::RWLock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
