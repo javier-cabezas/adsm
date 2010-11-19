@@ -70,7 +70,7 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public __impl::core::Accelerator {
+class GMAC_LOCAL Accelerator : public core::Accelerator {
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -82,7 +82,7 @@ protected:
     int _minor;
 
 #ifdef USE_MULTI_CONTEXT
-    static __impl::util::Private<CUcontext> _Ctx;
+    static util::Private<CUcontext> _Ctx;
 #else
     CUcontext _ctx;
     AcceleratorLock _mutex;

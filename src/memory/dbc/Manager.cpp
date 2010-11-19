@@ -14,7 +14,7 @@ Manager::Manager() :
 Manager::~Manager()
 {
 }
-
+#if 0
 gmacError_t
 Manager::map(void *addr, size_t size, GmacProtection prot)
 {
@@ -39,7 +39,7 @@ Manager::unmap(void *addr, size_t size)
 
     return ret;
 }
-
+#endif
 gmacError_t
 Manager::alloc(void **addr, size_t size)
 {
@@ -52,6 +52,7 @@ Manager::alloc(void **addr, size_t size)
     return ret;
 }
 
+#if 0
 gmacError_t
 Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
@@ -63,6 +64,7 @@ Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 
     return ret;
 }
+#endif
 
 gmacError_t
 Manager::free(void *addr)
@@ -100,6 +102,7 @@ Manager::write(void *addr)
     return ret;
 }
 
+
 gmacError_t
 Manager::toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size)
 {
@@ -127,7 +130,7 @@ Manager::fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size)
 
     return ret;
 }
-
+#if 0
 gmacError_t
 Manager::memcpy(void * dst, const void * src, size_t n)
 {
@@ -154,7 +157,7 @@ Manager::memset(void * dst, int c, size_t n)
 
     return ret;
 }
-
+#endif
 }}
 
 #endif

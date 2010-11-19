@@ -94,7 +94,7 @@ size_t Process::TotalMemory_ = 0;
 
 
 Process::Process() :
-	__impl::util::Singleton<Process>(),
+	util::Singleton<Process>(),
     gmac::util::RWLock("Process"),
     shared_("SharedMemoryMap"),
     centralized_("CentralizedMemoryMap"),
@@ -111,7 +111,7 @@ Process::Process() :
 Process::~Process()
 {
     TRACE(LOCAL,"Cleaning process");
-    orphans_.cleanAndDestroy();
+    //orphans_.cleanAndDestroy();
 
     // TODO: Why is this lock necessary?
     std::list<Mode *>::iterator c;
@@ -134,7 +134,7 @@ Process::~Process()
 
 void Process::initThread()
 {
-    ThreadQueue * q = new __impl::core::ThreadQueue();
+    ThreadQueue * q = new core::ThreadQueue();
 	queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
@@ -184,7 +184,7 @@ Mode *Process::createMode(int acc)
     return mode;
 }
 
-#ifndef USE_MMAP
+#if 0
 gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t /*size*/)
 {
     gmacError_t ret;
@@ -217,7 +217,7 @@ gmacError_t Process::globalFree(memory::DistributedObject &object)
     unlock();
     return gmacSuccess;
 }
-#endif
+
 
 // This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
@@ -241,6 +241,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     TRACE(LOCAL,"Context migrated");
     return ret;
 }
+#endif
 
 void Process::removeMode(Mode *mode)
 {
@@ -261,11 +262,10 @@ void Process::addAccelerator(Accelerator *acc)
 void *Process::translate(void *addr)
 {
     Mode &mode = Mode::current();
-    const memory::Object *object = mode.getObjectRead(addr);
+    const memory::Object *object = mode.getObject(addr);
     if(object == NULL) return NULL;
-    void * ptr = object->getAcceleratorAddr(addr);
-    mode.putObject(*object);
-
+    void * ptr = object->deviceAddr(addr);
+	object->release();
     return ptr;
 }
 
@@ -302,11 +302,11 @@ void Process::copy(THREAD_T id)
 
 Mode *Process::owner(const void *addr) const
 {
-    const memory::Object *object = shared_.getObjectRead(addr);
-	if(object == NULL) object = replicated_.getObjectRead(addr);
+    const memory::Object *object = shared_.get(addr);
+	if(object == NULL) object = replicated_.get(addr);
     if(object == NULL) return NULL;
-    Mode & ret = object->owner();
-    shared_.putObject(*object);
+    Mode &ret = object->owner(addr);
+	object->release();
     return &ret;
 }
 

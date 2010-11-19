@@ -1,0 +1,5 @@
+#ifndef GMAC_MEMORY_MANAGER_IPP_
+#define GMAC_MEMORY_MANAGER_IPP_
+
+
+#endif

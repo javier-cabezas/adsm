@@ -52,12 +52,13 @@ class GMAC_LOCAL Manager :
 public:
     Manager();
     ~Manager();
-
+#if 0
     gmacError_t map(void *addr, size_t size, GmacProtection prot);
     gmacError_t unmap(void *addr, size_t size);
+#endif
     gmacError_t alloc(void **addr, size_t size);
 
-    gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+    //gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
     gmacError_t free(void *addr);
 
     bool read(void *addr);
@@ -65,9 +66,10 @@ public:
 
     gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
     gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
-
+#if 0
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);
+#endif
 };
 
 }}

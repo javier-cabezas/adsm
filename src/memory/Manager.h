@@ -74,13 +74,10 @@ public:
     //////////////////////////////
     // Memory management functions
     //////////////////////////////
-    TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
-    TESTABLE gmacError_t unmap(void *addr, size_t size);
+    //TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
+    //TESTABLE gmacError_t unmap(void *addr, size_t size);
     TESTABLE gmacError_t alloc(void **addr, size_t size);
-#ifndef USE_MMAP
-    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    bool requireUpdate(Block &block);
-#endif
+    //TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);    
     TESTABLE gmacError_t free(void *addr);
 
     ///////////////////////////////
@@ -96,9 +93,10 @@ public:
     /////////////////////////
     // Memory bulk operations
     /////////////////////////
-    TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
-    TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
 
+	TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
+	TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
+#if 0
     TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
     TESTABLE gmacError_t memset(void *dst, int c, size_t n);
 
@@ -106,21 +104,17 @@ public:
     // Object migration
     ///////////////////
     gmacError_t moveTo(void *addr, __impl::core::Mode &mode);
-
+#endif
     //////////////////
     // Mode management
     //////////////////
-    gmacError_t removeMode(__impl::core::Mode &mode);
+    //gmacError_t removeMode(gmac::core::Mode &mode);
 
-    ///////////////////////////////////////////////////
-    // Direct access to protocol for internal functions
-    ///////////////////////////////////////////////////
-    Protocol &protocol() const;
 };
 
 }}
 
-#include "Manager.ipp"
+#include "Manager-impl.h"
 
 #ifdef USE_DBC
 #include "memory/dbc/Manager.h"

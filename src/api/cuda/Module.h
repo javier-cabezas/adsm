@@ -52,9 +52,9 @@ namespace __impl { namespace cuda {
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
-typedef __impl::core::Descriptor<gmacTexture_t> TextureDescriptor;
+typedef core::Descriptor<gmacTexture_t> TextureDescriptor;
 
-class GMAC_LOCAL VariableDescriptor : public __impl::core::Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public core::Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -63,7 +63,7 @@ public:
     bool constant() const;
 };
 
-class GMAC_LOCAL Variable : public __impl::cuda::VariableDescriptor {
+class GMAC_LOCAL Variable : public cuda::VariableDescriptor {
 	CUdeviceptr ptr_;
     size_t size_;
 public:
@@ -72,7 +72,7 @@ public:
     CUdeviceptr devPtr() const;
 };
 
-class GMAC_LOCAL Texture : public __impl::cuda::TextureDescriptor {
+class GMAC_LOCAL Texture : public cuda::TextureDescriptor {
 protected:
     CUtexref texRef_;
 

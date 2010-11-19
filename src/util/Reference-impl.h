@@ -11,7 +11,7 @@ inline void Reference::use() const
     AtomicInc(ref_);
 }
 
-inline void Reference::release()
+inline void Reference::release() const
 {
     if(AtomicDec(ref_) == 0) delete this;
 }

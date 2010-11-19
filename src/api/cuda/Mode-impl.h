@@ -39,7 +39,7 @@ core::IOBuffer *Mode::createIOBuffer(size_t size)
     if(ioMemory_ == NULL) return NULL;
     void *addr = ioMemory_->get(size);
     if(addr == NULL) return NULL;
-    return new __impl::core::IOBuffer(addr, size);
+    return new core::IOBuffer(addr, size);
 }
 
 inline

@@ -41,7 +41,7 @@ typedef volatile int Atomic;
 #elif defined(_MSC_VER)
 typedef volatile LONG Atomic;
 #   define AtomicInc(v) InterlockedIncrement(&v)
-#   define AtonicsDec(v) InterlockedDecrement(&v)
+#   define AtomicDec(v) InterlockedDecrement(&v)
 #endif
 
 #endif

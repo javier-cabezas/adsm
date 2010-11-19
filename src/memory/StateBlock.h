@@ -31,66 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_REPLICATEDOBJECT_H_
-#define GMAC_MEMORY_REPLICATEDOBJECT_H_
-
-#include <map>
+#ifndef GMAC_MEMORY_STATEBLOCK_H_
+#define GMAC_MEMORY_STATEBLOCK_H_
 
 #include "config/common.h"
-#include "core/Mode.h"
-#include "memory/Block.h"
-#include "memory/DistributedObject.h"
-#include "memory/StateObject.h"
+#include "config/config.h"
+
+#include "include/gmac/types.h"
 
 namespace __impl { namespace memory {
 
-#ifndef USE_MMAP
 template<typename T>
-class GMAC_LOCAL ReplicatedObject : public __impl::memory::StateObject<T>, public __impl::memory::DistributedObject {
-    DBC_FORCE_TEST(memory_ReplicatedObject)
-
+class GMAC_LOCAL StateBlock : public Block {
 protected:
-    typedef std::map<core::Mode *, AcceleratorBlock *> AcceleratorMap;
-
-    AcceleratorMap accelerators_;
+	T state_;    
 public:
-    ReplicatedObject(size_t size, T init);
-    virtual ~ReplicatedObject();
-
-    TESTABLE gmacError_t init();
-    TESTABLE void fini();
-
-    // To host functions
-    TESTABLE gmacError_t toHost(Block &block) const;
-    TESTABLE gmacError_t toHost(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toHostPointer(Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    TESTABLE gmacError_t toHostBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    // To accelerator functions
-    TESTABLE gmacError_t toAccelerator(Block &block) const;
-    TESTABLE gmacError_t toAccelerator(Block &block, unsigned blockOff, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromPointer(Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    TESTABLE gmacError_t toAcceleratorFromBuffer(Block &block, unsigned blockOff, core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    TESTABLE void *getAcceleratorAddr(void *addr) const;
-    TESTABLE core::Mode &owner() const;
-
-    TESTABLE gmacError_t addOwner(core::Mode &mode);
-    TESTABLE gmacError_t removeOwner(core::Mode &mode);
-
-    gmacError_t memsetAccelerator(Block &block, unsigned blockOff, int c, size_t count) const;
-
-    bool isLocal() const;
-    bool isInAccelerator() const;
+	StateBlock(Protocol &protocol, uint8_t *addr, size_t size, T init);
+	const T &state() const;
+	void state(const T &s);
 };
-#endif
 
 }}
 
-#include "ReplicatedObject.ipp"
+#include "StateBlock-impl.h"
 
-#ifdef USE_DBC
-#include "memory/dbc/ReplicatedObject.h"
-#endif
 
 #endif

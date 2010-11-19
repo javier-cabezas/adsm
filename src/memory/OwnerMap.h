@@ -31,48 +31,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
-#define GMAC_MEMORY_TEST_REPLICATEDOBJECT_H_
+#ifndef GMAC_MEMORY_OWNERMAP_H_
+#define GMAC_MEMORY_OWNERMAP_H_
 
-#include "memory/ReplicatedObject.h"
+#include "config/common.h"
+#include "config/config.h"
 
-namespace __dbc { namespace memory {
+#include "include/gmac/types.h"
+
+namespace __impl { 
+
+namespace core {
+	class Mode;
+}
+	
+namespace memory {
 
 template<typename T>
-class GMAC_LOCAL ReplicatedObject :
-    public __impl::memory::ReplicatedObject<T>,
-    public virtual Contract {
-    DBC_TESTED(memory_ReplicatedObject)
-
+class GMAC_LOCAL OwnerMap {
+protected:
+	OwnerMap();   
 public:
-    ReplicatedObject(size_t size, T init);
-    virtual ~ReplicatedObject();
-
-    gmacError_t init();
-    void fini();
-
-    // To host functions
-    gmacError_t toHost(__impl::memory::Block &block) const;
-    gmacError_t toHost(__impl::memory::Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toHostPointer(__impl::memory::Block &block, unsigned blockOff, void *ptr, size_t count) const;
-    gmacError_t toHostBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    // To accelerator functions
-    gmacError_t toAccelerator(__impl::memory::Block &block) const;
-    gmacError_t toAccelerator(__impl::memory::Block &block, unsigned blockOff, size_t count) const;
-    gmacError_t toAcceleratorFromPointer(__impl::memory::Block &block, unsigned blockOff, const void *ptr, size_t count) const;
-    gmacError_t toAcceleratorFromBuffer(__impl::memory::Block &block, unsigned blockOff, __impl::core::IOBuffer &buffer, unsigned bufferOff, size_t count) const;
-
-    void *getAcceleratorAddr(void *addr) const;
-    __impl::core::Mode &owner() const;
-
-    gmacError_t addOwner(__impl::core::Mode &mode);
-    gmacError_t removeOwner(__impl::core::Mode &mode);
-
+	virtual void addOwner(core::Mode &owner, T value) = 0;
+	virtual void removeOwner(core::Mode &owner) = 0;
 };
 
 }}
 
-#include "ReplicatedObject.ipp"
+#include "OwnerMap-impl.h"
 
 #endif

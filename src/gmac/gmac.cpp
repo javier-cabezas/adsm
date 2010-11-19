@@ -46,7 +46,7 @@ gmacClear(gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacClear);
-    gmac::Kernel *kernel = __impl::core::Mode::current()->kernel(k);
+    gmac::Kernel *kernel = core::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else kernel->clear();
     exitFunction();
@@ -60,7 +60,7 @@ gmacBind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacBind);
-    gmac::Kernel *kernel = __impl::core::Mode::current()->kernel(k);
+    gmac::Kernel *kernel = core::Mode::current()->kernel(k);
 
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->bind(obj);
@@ -75,7 +75,7 @@ gmacUnbind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacUnbind);
-    gmac::Kernel  * kernel = __impl::core::Mode::current()->kernel(k);
+    gmac::Kernel  * kernel = core::Mode::current()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->unbind(obj);
 	exitFunction();
@@ -95,7 +95,7 @@ size_t APICALL gmacAccs()
 	gmac::exitGmac();
 	return ret;
 }
-
+#if 0
 gmacError_t APICALL gmacMigrate(int acc)
 {
 	gmacError_t ret = gmacSuccess;
@@ -155,7 +155,7 @@ gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count)
     return gmacErrorFeatureNotSupported;
 #endif
 }
-
+#endif
 gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
@@ -178,7 +178,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	gmac::exitGmac();
 	return ret;
 }
-
+#if 0
 gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
 {
 #ifndef USE_MMAP
@@ -198,7 +198,7 @@ gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMa
     return gmacErrorFeatureNotSupported;
 #endif
 }
-
+#endif
 gmacError_t APICALL gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
@@ -275,7 +275,7 @@ gmacError_t APICALL gmacGetLastError()
 	gmac::exitGmac();
 	return ret;
 }
-
+#if 0
 void * APICALL gmacMemset(void *s, int c, size_t n)
 {
     gmac::enterGmac();
@@ -302,7 +302,7 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::exitGmac();
 	return ret;
 }
-
+#endif
 void APICALL gmacSend(THREAD_T id)
 {
     gmac::enterGmac();

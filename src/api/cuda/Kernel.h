@@ -15,7 +15,7 @@ class Mode;
 class KernelLaunch;
 class KernelConfig;
 
-class GMAC_LOCAL Kernel : public __impl::core::Kernel {
+class GMAC_LOCAL Kernel : public core::Kernel {
     friend class KernelLaunch;
 protected:
     CUfunction _f;
@@ -25,7 +25,7 @@ public:
     core::KernelLaunch * launch(core::KernelConfig & c);
 };
 
-class GMAC_LOCAL KernelConfig : public __impl::core::KernelConfig {
+class GMAC_LOCAL KernelConfig : public core::KernelConfig {
 protected:
     dim3 _grid;
     dim3 _block;
@@ -44,7 +44,7 @@ public:
     size_t shared() const { return _shared; }
 };
 
-class GMAC_LOCAL KernelLaunch : public __impl::core::KernelLaunch, public __impl::cuda::KernelConfig {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig {
 protected:
     // \todo Is this really necessary?
     const Kernel & _kernel;

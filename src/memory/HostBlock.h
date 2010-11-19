@@ -31,40 +31,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_SYSTEMBLOCK_H_
-#define GMAC_MEMORY_SYSTEMBLOCK_H_
+#ifndef GMAC_MEMORY_HOSTBLOCK_H_
+#define GMAC_MEMORY_HOSTBLOCK_H_
 
 #include "config/common.h"
 #include "config/config.h"
 
 #include "include/gmac/types.h"
-#include "memory/SystemBlock.h"
+
+#include "Block.h"
 
 namespace __impl { namespace memory {
 
-template<typename T>
-class GMAC_LOCAL SystemBlock : public gmac::memory::Block {
-    DBC_FORCE_TEST(memory_SystemBlock)
-
+class GMAC_LOCAL SharedBlock : public Block {
 protected:
-    T state_;
 
 public:
-    SystemBlock(void *addr, size_t size, T state);
-    virtual ~SystemBlock();
+	HostBlock(void *hostAddr, size_t size);
+    virtual ~HostBlock();
 
-    gmacError_t update(off_t off, Block *block);
+	gmacError_t toHost();
+	gmacError_t toDevice();
 
-    T state() const;
-    void state(T s);
+	gmacError_t copyToHost(const IOBuffer &buffer, size_t size, unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyToDevice(const IOBuffer &buffer, size_t size, unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	
+	gmacError_t copyFromHost(IOBuffer &buffer, size_t size, unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+	gmacError_t copyFromDevice(IOBuffer &buffer, size_t size, unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 };
+
 
 }}
 
-#include "SystemBlock.ipp"
-
-#ifdef USE_DBC
-#include "memory/dbc/SystemBlock.h"
-#endif
+#include "HostBlock-impl.h"
 
 #endif

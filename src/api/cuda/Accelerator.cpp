@@ -6,7 +6,7 @@
 namespace __impl { namespace cuda {
 
 #ifdef USE_MULTI_CONTEXT
-__impl::util::Private<CUcontext> Accelerator::_Ctx;
+util::Private<CUcontext> Accelerator::_Ctx;
 #endif
 
 void Switch::in()
@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	__impl::core::Accelerator(n), device_(device),
+	core::Accelerator(n), device_(device),
     _ctx(NULL)
 {
 #if CUDA_VERSION > 3010
@@ -89,7 +89,7 @@ void Accelerator::init()
 core::Mode *Accelerator::createMode(core::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::Mode *mode = new __impl::cuda::Mode(proc, *this);
+    core::Mode *mode = new cuda::Mode(proc, *this);
     trace::ExitCurrentFunction();
 
     TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);

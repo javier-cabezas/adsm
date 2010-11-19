@@ -49,42 +49,36 @@ class Process;
 }
 
 namespace memory {
-class Map;
 class Object;
 class Protocol;
 
-class GMAC_LOCAL ObjectMap : protected gmac::util::RWLock, protected std::map<const void *, Object *> {
+class GMAC_LOCAL ObjectMap : 
+	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
 public:
-    typedef gmacError_t(Protocol::*ProtocolOp)(const Object &);
+    typedef gmacError_t(Object::*ObjectOp)(void) const;
 protected:
+	friend class Map;
     typedef std::map<const void *, Object *> Parent;
 
-    friend class Map;
-    friend class Manager;
-    Object *mapFind(const void *addr) const;
-
+    const Object *mapFind(const void *addr) const;
 public:
     ObjectMap(const char *name);
     virtual ~ObjectMap();
     size_t size() const;
 
-    virtual const Object *getObjectRead(const void *addr) const;
-    virtual Object *getObjectWrite(const void *addr) const;
-
-    virtual void putObject(const Object &obj) const;
+	virtual bool insert(Object &obj);
+	virtual bool remove(const Object &obj);
+	virtual const Object *get(const void *addr) const;
 
     size_t memorySize() const;
-    void forEach(Protocol &p, ProtocolOp op);
-    void freeObjects(Protocol &p, ProtocolOp op);
-    void reallocObjects(__impl::core::Mode &mode);
-    
-    virtual void cleanAndDestroy();
+    void forEach(ObjectOp op) const;
+
+    //void reallocObjects(gmac::core::Mode &mode);
 };
  
-class GMAC_LOCAL Map : public __impl::memory::ObjectMap {
+class GMAC_LOCAL Map : public memory::ObjectMap {
 protected:
-    void clean();
-    __impl::core::Mode &parent_;
+    core::Mode &parent_;
 
 public:
     Map(const char *name, core::Mode &parent);
@@ -93,19 +87,14 @@ public:
     // Do not allow to copy memory maps
 	Map &operator =(const Map &);
 
-    void insert(Object &obj);
-    void remove(Object &obj);
-#ifndef USE_MMAP
-    void insertReplicated(Object &obj);
-    void insertCentralized(Object &obj);
-    static void addOwner(__impl::core::Process &proc, __impl::core::Mode &mode);
-    static void removeOwner(__impl::core::Process &proc, __impl::core::Mode &mode);
-#endif
+    bool insert(Object &obj);
+    bool remove(const Object &obj);
+	virtual const Object *get(const void *addr) const;
 
-    const Object *getObjectRead(const void *addr) const;
-    Object *getObjectWrite(const void *addr) const;
+	static void addOwner(core::Process &proc, core::Mode &mode);
+	static void removeOwner(core::Process &proc, core::Mode &mode);
 
-    void makeOrphans();
+    //void makeOrphans();
 };
 
 }}

@@ -28,7 +28,7 @@ Mode * Queue::pop()
 
 ThreadQueue::ThreadQueue()
 {
-    queue = new __impl::core::Queue("ThreadQueue");
+    queue = new Queue("ThreadQueue");
 }
 
 ThreadQueue::~ThreadQueue()
