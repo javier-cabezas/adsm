@@ -98,7 +98,7 @@ gmacError_t Manager::alloc(void **addr, size_t size)
 
     // Insert object into memory maps
     mode.addObject(*object);
-	object->release();
+    object->release();
     return gmacSuccess;
 }
 
@@ -146,13 +146,7 @@ gmacError_t Manager::free(void * addr)
     core::Mode &mode = core::Mode::current();
     const Object *object = mode.getObject(addr);
     if(object != NULL)  {
-//        if (object->isInAccelerator()) {
-//            protocol_->deleteObject(*object);
-//        }
-          mode.removeObject(*object);
-//        mode.putObject(*object);
-//        object->fini();
-//        delete object;
+        mode.removeObject(*object);
 		object->release();
     }
     else ret = gmacErrorInvalidValue;

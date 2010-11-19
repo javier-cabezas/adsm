@@ -56,7 +56,7 @@ class GMAC_LOCAL ObjectMap :
 	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
 public:
     typedef gmacError_t(Object::*ObjectOp)(void) const;
-    typedef void (Object::*ModeOp)(core::Mode &);
+    typedef void (Object::*ModeOp)(const core::Mode &);
 protected:
 	friend class Map;
     typedef std::map<const void *, Object *> Parent;
@@ -73,7 +73,7 @@ public:
 
     size_t memorySize() const;
     void forEach(ObjectOp op) const;
-    void forEach(core::Mode &mode, ModeOp op) const;
+    void forEach(const core::Mode &mode, ModeOp op) const;
 
     //void reallocObjects(gmac::core::Mode &mode);
 };

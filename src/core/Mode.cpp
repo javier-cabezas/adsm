@@ -33,13 +33,17 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 Mode::~Mode()
 {    
     if(this == key.get()) key.set(NULL);
-    map_.forEach(*this, &memory::Object::removeOwner);
     contextMap_.clean();
     acc_->unregisterMode(*this); 
 #ifdef USE_VM
     delete _bitmap;
 #endif
     Process::getInstance().removeMode(*this);
+}
+
+void Mode::cleanUp() const
+{
+    map_.forEach(*this, &memory::Object::removeOwner);
 }
 
 void Mode::cleanUpContexts()

@@ -57,7 +57,7 @@ public:
 	core::Mode &owner(const void *addr) const;
 
 	void addOwner(core::Mode &owner);
-	void removeOwner(core::Mode &owner);
+	void removeOwner(const core::Mode &owner);
 };
 
 }}

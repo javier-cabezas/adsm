@@ -73,7 +73,7 @@ inline void DistributedObject<T>::addOwner(core::Mode &mode)
 }
 
 template<typename T>
-inline void DistributedObject<T>::removeOwner(core::Mode &mode)
+inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
 {
 	// TODO: fill the logic
 	return;

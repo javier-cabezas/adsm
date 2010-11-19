@@ -42,7 +42,8 @@ namespace __impl { namespace util {
 
 class GMAC_LOCAL Reference {
 private:
-    mutable Atomic ref_;	
+    mutable Atomic ref_;
+    virtual void cleanUp() const;
 protected:
     Reference(); 
 	virtual ~Reference();
