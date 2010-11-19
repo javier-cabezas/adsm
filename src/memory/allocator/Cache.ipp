@@ -45,7 +45,7 @@ void Arena::put(void *obj)
 
 inline
 Cache::Cache(size_t size) :
-    util::Lock("Cache"),
+    gmac::util::Lock("Cache"),
     objectSize(size),
     arenaSize(paramPageSize)
 { }

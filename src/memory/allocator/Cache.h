@@ -69,7 +69,7 @@ public:
 };
 
 
-class GMAC_LOCAL Cache : protected util::Lock {
+class GMAC_LOCAL Cache : protected gmac::util::Lock {
 protected:
     size_t objectSize;
     size_t arenaSize;

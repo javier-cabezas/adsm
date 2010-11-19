@@ -43,7 +43,9 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SystemBlock : public __impl::memory::Block {
+class GMAC_LOCAL SystemBlock : public gmac::memory::Block {
+    DBC_FORCE_TEST(memory_SystemBlock)
+
 protected:
     T state_;
 

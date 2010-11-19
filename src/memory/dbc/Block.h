@@ -41,6 +41,7 @@ namespace __dbc { namespace memory {
 class GMAC_LOCAL Block :
     public __impl::memory::Block,
     public virtual Contract {
+    DBC_TESTED(memory_Block)
 protected:
     Block(void *addr, size_t size);
 public:

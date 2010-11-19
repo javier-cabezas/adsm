@@ -44,6 +44,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 class GMAC_LOCAL AcceleratorBlock : public gmac::memory::Block {
+    DBC_FORCE_TEST(memory_AcceleratorBlock)
+
 protected:
     core::Mode &owner_;
 public:

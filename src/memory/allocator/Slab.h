@@ -46,19 +46,19 @@ namespace memory { namespace allocator {
 
 class GMAC_LOCAL Slab : public __impl::memory::Allocator {
 protected:
-    class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, util::RWLock {
+    class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, gmac::util::RWLock {
     protected:
         friend class Slab;
     public:
-        AddressMap() : util::RWLock("memory::Slab") {}
+        AddressMap() : gmac::util::RWLock("memory::Slab") {}
     };
 
     typedef std::map<long, Cache *> CacheMap;
 
-    class GMAC_LOCAL ModeMap : public std::map<core::Mode *, CacheMap>, util::RWLock {
+    class GMAC_LOCAL ModeMap : public std::map<core::Mode *, CacheMap>, gmac::util::RWLock {
         friend class Slab;
     public:
-        ModeMap() : util::RWLock("memory::Slab") {};
+        ModeMap() : gmac::util::RWLock("memory::Slab") {};
     };
 
     AddressMap addresses;

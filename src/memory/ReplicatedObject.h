@@ -47,6 +47,8 @@ namespace __impl { namespace memory {
 #ifndef USE_MMAP
 template<typename T>
 class GMAC_LOCAL ReplicatedObject : public __impl::memory::StateObject<T>, public __impl::memory::DistributedObject {
+    DBC_FORCE_TEST(memory_ReplicatedObject)
+
 protected:
     typedef std::map<core::Mode *, AcceleratorBlock *> AcceleratorMap;
 
