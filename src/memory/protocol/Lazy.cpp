@@ -85,10 +85,16 @@ gmacError_t Lazy::signalRead(Block &b)
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
 
+    if(block.state() == HostOnly) {
+        WARNING("Signal on HostOnly block - Changing protection and continuing");
+        Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
+        goto exit_func;
+    }
+
+
     if (block.state() != Invalid) {
         goto exit_func; // Somebody already fixed it
     }
-    
 #ifdef USE_VM
     gmac::core::Mode &mode = gmac::core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -125,6 +131,8 @@ gmacError_t Lazy::signalWrite(Block &b)
 #ifdef USE_VM
             }
 #endif
+        case HostOnly:
+            WARNING("Signal on HostOnly block - Changing protection and continuing");
         case ReadOnly:
 			Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
             break;
@@ -151,6 +159,8 @@ gmacError_t Lazy::acquire(Block &b)
             break;
         case Dirty:
             FATAL("Block in incongruent state in acquire: %p", block.addr());
+            break;
+        case HostOnly:
             break;
     }
 	return ret;
@@ -197,6 +207,7 @@ gmacError_t Lazy::release(StateBlock<State> &block)
             break;
         case Invalid:
         case ReadOnly:
+        case HostOnly:
             break;
     }
     return ret;
@@ -208,6 +219,7 @@ gmacError_t Lazy::remove(Block &b)
     TRACE(LOCAL,"Releasing block %p", block.addr());
     gmacError_t ret = gmacSuccess;
     switch(block.state()) {
+        case HostOnly:
         case Dirty:
         case ReadOnly:
             break;
@@ -256,9 +268,9 @@ gmacError_t Lazy::toHost(Block &b)
             if(ret != gmacSuccess) break;
             block.state(ReadOnly);
             break;
-
         case Dirty:
         case ReadOnly:
+        case HostOnly:
             break;
     }
     return ret;
@@ -278,6 +290,7 @@ gmacError_t Lazy::toDevice(Block &b)
         break;
     case Invalid:
     case ReadOnly:
+    case HostOnly:
         break;
     }
     return ret;
@@ -294,6 +307,7 @@ gmacError_t Lazy::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t si
 			break;
 		case ReadOnly:
 		case Dirty:
+        case HostOnly:
 			ret = block.copyFromHost(buffer, size, bufferOffset, objectOffset);
 	}
 	return ret;
@@ -314,6 +328,7 @@ gmacError_t Lazy::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t 
 			ret = block.copyToHost(buffer, size, bufferOffset, objectOffset);
 			break;
 		case Dirty:			
+        case HostOnly:
 			ret = block.copyToHost(buffer, size, bufferOffset, objectOffset);
 			break;
 	}
