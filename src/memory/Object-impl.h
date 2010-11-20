@@ -76,6 +76,7 @@ inline gmacError_t Object::toDevice() const
     lockRead();
 	gmacError_t ret = coherenceOp(&Protocol::toDevice);
     unlock();
+    return ret;
 }
 
 inline gmacError_t Object::signalRead(void *addr) const

@@ -23,7 +23,7 @@ inline void DistributedBlock<T>::addOwner(core::Mode &mode, uint8_t *value)
 {
 	StateBlock<T>::lock();
 	deviceAddr_.insert(DeviceMap::value_type(&mode, value));
-    if(protocol_.needUpdate(*this)) {
+    if(StateBlock<T>::protocol_.needUpdate(*this)) {
         mode.copyToAccelerator(value, StateBlock<T>::shadow_, StateBlock<T>::size_);
     }
     StateBlock<T>::unlock();
