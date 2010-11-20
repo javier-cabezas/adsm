@@ -58,8 +58,9 @@ class Process;
 
 void apiInit(void);
 void contextInit(void);
-void memoryInit(const char *manager = NULL, const char *allocator = NULL);
+void memoryInit(void);
 void memoryFini(void);
+memory::Protocol *protocolInit(void);
 }}
 
 
@@ -105,7 +106,7 @@ class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
-
+    memory::Protocol *protocol_;
     QueueMap queues_;
     memory::ObjectMap shared_;
     memory::ObjectMap global_;
@@ -148,6 +149,7 @@ public:
     size_t nAccelerators() const;
     bool allIntegrated();
 
+    memory::Protocol &protocol();
     memory::ObjectMap &shared();
     const memory::ObjectMap &shared() const;
     memory::ObjectMap &global();

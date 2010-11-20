@@ -15,6 +15,12 @@ Process::nAccelerators() const
     return accs_.size();
 }
 
+inline memory::Protocol &
+Process::protocol()
+{
+    return *protocol_;
+}
+
 inline memory::ObjectMap &
 Process::shared()
 {

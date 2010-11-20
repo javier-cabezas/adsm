@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 class GMAC_LOCAL Lock : public __Lock {
-    DBC_FORCE_TEST(util_Lock)
+    DBC_FORCE_TEST(Lock)
 
 protected:
 	mutable CRITICAL_SECTION mutex_;
@@ -57,7 +57,7 @@ protected:
 };
 
 class GMAC_LOCAL RWLock : public __Lock {
-    DBC_FORCE_TEST(util_RWLock)
+    DBC_FORCE_TEST(RWLock)
 
 protected:
 	mutable SRWLOCK lock_;

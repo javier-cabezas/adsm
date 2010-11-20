@@ -8,13 +8,11 @@ namespace __impl { namespace memory {
 gmacError_t Object::coherenceOp(Protocol::CoherenceOp op) const
 {
 	gmacError_t ret = gmacSuccess;
-	lockRead();
 	BlockMap::const_iterator i;
 	for(i = blocks_.begin(); i != blocks_.end(); i++) {
 		ret = i->second->coherenceOp(op);
 		if(ret != gmacSuccess) break;
 	}
-	unlock();
 	return ret;
 }
 
@@ -23,7 +21,6 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 {
 	gmacError_t ret = gmacSuccess;
 	unsigned blockOffset = objectOffset;
-	lockRead();
 	BlockMap::const_iterator i;
 	for(i = blocks_.begin(); i != blocks_.end(); i++) {
 		size_t blockSize = size - blockOffset;
@@ -33,7 +30,6 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 		bufferOffset += unsigned(i->second->size());
 		size -= blockSize;
 	}
-	unlock();
 	return ret;
 }
 

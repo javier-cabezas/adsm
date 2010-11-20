@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include "common.h"
 
 /* Common constructors */
-void paraverInit(void) GMAC_LOCAL;
 void paramInit(void) GMAC_LOCAL;
 
 /* Interposition Constructors */

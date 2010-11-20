@@ -52,7 +52,7 @@ namespace memory {
 class Block;
 
 namespace protocol { 
-
+// We need a locked list becase execution modes might be shared among different threads
 class GMAC_LOCAL BlockList: protected std::list<Block *>, public gmac::util::Lock {
 protected:
     typedef std::list<Block *> Parent;
@@ -67,26 +67,8 @@ public:
     void remove(Block &block);
 };
 
-class GMAC_LOCAL BlockListMap : protected std::map<core::Mode *, BlockList *>, public gmac::util::RWLock {
-protected:
-    typedef std::map<core::Mode *, BlockList *> Parent;
-
-    BlockList *create(core::Mode *mode);
-    const BlockList *get(core::Mode *mode) const;
-    BlockList *get(core::Mode *mode);
-public:
-    BlockListMap();
-    virtual ~BlockListMap();
-
-    bool empty(core::Mode &mode) const;
-    size_t size(core::Mode &mode) const;
-    void push(core::Mode &mode, Block &block);
-    Block *pop(core::Mode &mode);
-    void remove(core::Mode &mode, Block &block);
-};
-
 }}}
 
-#include "BlockListMap-impl.h"
+#include "BlockList-impl.h"
 
 #endif

@@ -46,7 +46,7 @@ WITH THE SOFTWARE.  */
 namespace __dbc { namespace util {
 
 class GMAC_LOCAL Lock : public __impl::util::Lock, public Contract {
-    DBC_TESTED(util_Lock)
+    DBC_TESTED(__impl::util::Lock)
 
 protected:
     mutable CRITICAL_SECTION internal_;
@@ -62,7 +62,7 @@ protected:
 };
 
 class GMAC_LOCAL RWLock : public __impl::util::RWLock, public Contract {
-    DBC_TESTED(util_RWLock)
+    DBC_TESTED(__impl::util::RWLock)
 
 protected:
     mutable enum { Idle, Read, Write } state_;
