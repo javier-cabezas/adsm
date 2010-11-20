@@ -77,7 +77,7 @@ public:
     virtual void *deviceAddr(const void *addr) const = 0;
 	virtual core::Mode &owner(const void *addr) const = 0;
     
-	virtual void addOwner(core::Mode &owner) = 0;
+	virtual bool addOwner(core::Mode &owner) = 0;
 	virtual void removeOwner(const core::Mode &owner) = 0;
 
 	gmacError_t acquire() const;

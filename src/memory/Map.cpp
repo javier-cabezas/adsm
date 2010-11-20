@@ -4,7 +4,6 @@
 
 #include "Map.h"
 #include "Object.h"
-#include "OwnerMap.h"
 #include "Protocol.h"
 
 namespace __impl { namespace memory {
@@ -129,8 +128,7 @@ const Object *Map::get(const void *addr) const
     const Object *ret = NULL;
     ret = mapFind(addr);
     if(ret == NULL)  ret = proc.shared().mapFind(addr);
-    if(ret == NULL)  ret = proc.replicated().mapFind(addr);
-    //if(ret == NULL)  ret = proc.centralized().mapFind(addr);
+    if(ret == NULL)  ret = proc.global().mapFind(addr);
     if(ret == NULL)  ret = proc.orphans().mapFind(addr);
 	if (ret != NULL) ret->use();
     return ret;
@@ -165,10 +163,10 @@ bool Map::remove(const Object &obj)
 	}
 
     // Replicated object
-    ObjectMap &replicated = proc.replicated();
-	ret = replicated.remove(obj);
+    ObjectMap &global = proc.global();
+	ret = global.remove(obj);
 	if(ret == true) {
-		TRACE(LOCAL,"Removed Replicated Object %p", addr);
+		TRACE(LOCAL,"Removed Global Object %p", addr);
 		return true;
 	}
 
@@ -201,25 +199,25 @@ void Map::insertOrphan(Object &obj)
 
 void Map::addOwner(core::Process &proc, core::Mode &mode)
 {
-	ObjectMap &replicated = proc.replicated();
+	ObjectMap &global = proc.global();
     iterator i;
-    replicated.lockWrite();
-    for(i = replicated.begin(); i != replicated.end(); i++) {
+    global.lockWrite();
+    for(i = global.begin(); i != global.end(); i++) {
         i->second->addOwner(mode);
     }
-    replicated.unlock();
+    global.unlock();
 }
 
 
 void Map::removeOwner(core::Process &proc, core::Mode &mode)
 {
-    ObjectMap &replicated = proc.replicated();
+    ObjectMap &global = proc.global();
     iterator i;
-    replicated.lockWrite();
-    for(i = replicated.begin(); i != replicated.end(); i++) {        
+    global.lockWrite();
+    for(i = global.begin(); i != global.end(); i++) {        
         i->second->removeOwner(mode);
     }
-    replicated.unlock();
+    global.unlock();
 }
 
 }}

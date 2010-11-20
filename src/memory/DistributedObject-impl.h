@@ -9,24 +9,26 @@ namespace __impl { namespace memory {
 template<typename T>
 inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &owner,
 											   void *cpuAddr, size_t size, T init) :
-    Object(cpuAddr, size),
-	owner_(owner)
+    Object(cpuAddr, size)
 {
 	if(addr_ == NULL) return;
+
+    uint8_t *deviceAddr = NULL;
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner.malloc((void **)&deviceAddr_, size, (unsigned)paramPageSize);
+		owner.malloc((void **)&deviceAddr, size, (unsigned)paramPageSize);
 	if(ret == gmacSuccess) valid_ = true;
 
 	// Populate the block-set
+    deviceAddr_.insert(DeviceMap::value_type(&owner, deviceAddr));
 	uint8_t *mark = addr_;
 	unsigned offset = 0;
 	while(size > 0) {
 		size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
 		mark += blockSize;
 		blocks_.insert(BlockMap::value_type(mark, 
-			new DistributedBlock<T>(protocol, owner_, addr_ + offset, shadow_ + offset,
-			deviceAddr_ + offset, blockSize, init)));
+			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
+			deviceAddr + offset, blockSize, init)));
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
@@ -36,8 +38,9 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 template<typename T>
 inline DistributedObject<T>::~DistributedObject()
 {
-	// If the object creation failed, this address will be NULL
-    if(deviceAddr_ != NULL) owner_.free(deviceAddr_);
+    DeviceMap::iterator i;
+    for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++)
+        i->first->free(i->second);
 }
 
 template<typename T>
@@ -66,16 +69,45 @@ inline core::Mode &DistributedObject<T>::owner(const void *addr) const
 
 
 template<typename T>
-inline void DistributedObject<T>::addOwner(core::Mode &mode)
+inline bool DistributedObject<T>::addOwner(core::Mode &mode)
 {
-	// TODO: fill the logic
-	return;
+    // Make sure that we do not add the same owner twice
+    lockRead();
+    bool alreadyOwned = (deviceAddr_.find(&mode) != deviceAddr_.end());
+    unlock();
+    if(alreadyOwned) return true;
+
+    uint8_t *deviceAddr = NULL;
+    gmacError_t ret = 
+		mode.malloc((void **)&deviceAddr, size_, (unsigned)paramPageSize);
+    if(ret != gmacSuccess) return false;
+    lockWrite();
+    BlockMap::iterator i;
+    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+        unsigned offset = unsigned(addr_ - i->second->addr());
+        DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
+        block.addOwner(mode, deviceAddr + offset);
+    }
+	unlock();
+	return true;
 }
 
 template<typename T>
 inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
 {
-	// TODO: fill the logic
+	lockWrite();
+    DeviceMap::const_iterator i = deviceAddr_.find((core::Mode *)&mode);
+    if(i != deviceAddr_.end()) {
+        BlockMap::iterator j;
+        for(j = blocks_.begin(); j != blocks_.end(); j++) {
+            DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*j->second);
+            block.removeOwner(*i->first);
+        }
+        i->first->free(i->second);
+        deviceAddr_.erase(i);
+        if(deviceAddr_.empty()) Map::insertOrphan(*this);
+    }
+    unlock();
 	return;
 }
 

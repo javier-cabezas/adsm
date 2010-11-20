@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_MODE_IPP_
-#define GMAC_CORE_MODE_IPP_
+#ifndef GMAC_CORE_MODE_IMPL_H_
+#define GMAC_CORE_MODE_IMPL_H_
 
 namespace __impl { namespace core { 
 
@@ -28,27 +28,15 @@ Process::shared() const
 }
 
 inline memory::ObjectMap &
-Process::replicated()
+Process::global()
 {
-    return replicated_;
+    return global_;
 }
 
 inline const memory::ObjectMap &
-Process::replicated() const
+Process::global() const
 {
-    return replicated_;
-}
-
-inline memory::ObjectMap &
-Process::centralized()
-{
-    return centralized_;
-}
-
-inline const memory::ObjectMap &
-Process::centralized() const
-{
-    return centralized_;
+    return global_;
 }
 
 inline memory::ObjectMap &

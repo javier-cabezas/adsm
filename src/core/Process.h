@@ -108,8 +108,7 @@ protected:
 
     QueueMap queues_;
     memory::ObjectMap shared_;
-    memory::ObjectMap centralized_;
-    memory::ObjectMap replicated_;
+    memory::ObjectMap global_;
     memory::ObjectMap orphans_;
 
     unsigned current_;
@@ -126,10 +125,10 @@ public:
     Mode * createMode(int acc = ACC_AUTO_BIND);
     void removeMode(Mode &mode);
 
-#ifndef USE_MMAP
-    //gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
-    //gmacError_t globalFree(memory::DistributedObject &object);
-#endif
+
+    gmacError_t globalMalloc(memory::Object &object, size_t size);
+    gmacError_t globalFree(memory::Object &object);
+
 
     void *translate(void *addr);
     inline const void *translate(const void *addr) {
@@ -151,10 +150,8 @@ public:
 
     memory::ObjectMap &shared();
     const memory::ObjectMap &shared() const;
-    memory::ObjectMap &replicated();
-    const memory::ObjectMap &replicated() const;
-    memory::ObjectMap &centralized();
-    const memory::ObjectMap &centralized() const;
+    memory::ObjectMap &global();
+    const memory::ObjectMap &global() const;
     memory::ObjectMap &orphans();
     const memory::ObjectMap &orphans() const;
 
@@ -163,6 +160,6 @@ public:
 
 }}
 
-#include "Process.ipp"
+#include "Process-impl.h"
 
 #endif

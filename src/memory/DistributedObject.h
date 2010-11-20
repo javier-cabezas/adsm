@@ -42,8 +42,8 @@ namespace __impl { namespace memory {
 template<typename T>
 class GMAC_LOCAL DistributedObject : public Object {
 protected:
-	core::Mode &owner_; // TODO: make this a map or something
-	uint8_t *deviceAddr_; // TODO: maje this part of the above map or something 
+    typedef std::map<core::Mode *, uint8_t *> DeviceMap;
+    DeviceMap deviceAddr_;
 public:
 	DistributedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, 
 		size_t size, T init);
@@ -52,7 +52,7 @@ public:
     void *deviceAddr(const void *addr) const;
 	core::Mode &owner(const void *addr) const;
 
-	void addOwner(core::Mode &owner);
+	bool addOwner(core::Mode &owner);
 	void removeOwner(const core::Mode &owner);
 };
 
