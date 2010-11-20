@@ -47,7 +47,7 @@ namespace __dbc { namespace memory {
 class GMAC_LOCAL Manager :
     public __impl::memory::Manager,
     public virtual Contract {
-    DBC_TESTED(memory_Manager)
+    DBC_TESTED(__impl::memory::Manager)
 
 public:
     Manager();

@@ -55,7 +55,7 @@ class Protocol;
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
 class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
-    DBC_FORCE_TEST(memory_Manager)
+    DBC_FORCE_TEST(Manager)
 
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Manager>;

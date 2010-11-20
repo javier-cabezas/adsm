@@ -57,7 +57,7 @@ public:
 
 class GMAC_LOCAL FileMap :
 	protected std::map<void *, FileMapEntry>,
-	public util::RWLock
+	public gmac::util::RWLock
 {
 protected:
 	typedef std::map<void *, FileMapEntry> Parent;
