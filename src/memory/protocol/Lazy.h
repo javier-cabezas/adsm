@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Protocol.h"
 #include "util/Lock.h"
 
-#include "BlockListMap.h"
+#include "BlockList.h"
 
 namespace __impl {
 
@@ -69,7 +69,7 @@ protected:
 	State state(GmacProtection prot) const;
 
     unsigned limit_;
-    BlockListMap dbl_;
+    BlockList dbl_;
 
 	gmacError_t release(StateBlock<State> &block);
     void addDirty(Block &block);
@@ -79,8 +79,11 @@ public:
 
     // Protocol Interface
     memory::Object *createObject(size_t size, void *cpuPtr, GmacProtection prot);
-	memory::Object *createGlobalObject(size_t size, void *cpuPtr, GmacProtection prot);
+	memory::Object *createGlobalObject(size_t size, void *cpuPtr, 
+        GmacProtection prot, unsigned flags);
 	void deleteObject(Object &obj);
+
+    bool needUpdate(const Block &block) const;
 
     gmacError_t signalRead(Block &block);
     gmacError_t signalWrite(Block &block);

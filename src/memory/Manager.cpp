@@ -1,12 +1,5 @@
-#if defined(__GNUC__)
-#include <strings.h>
-#elif defined(_MSC_VER)
-#define strcasecmp _stricmp
-#endif
-
 #include "core/IOBuffer.h"
 #include "core/Process.h"
-#include "protocol/Lazy.h"
 
 #include "Manager.h"
 #include "Map.h"
@@ -17,22 +10,11 @@ namespace __impl { namespace memory {
 Manager::Manager()
 {
     TRACE(LOCAL,"Memory manager starts");
-    // Create protocol
-    if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        protocol_ = new protocol::Lazy((unsigned)paramRollSize);
-    }
-    else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        protocol_ = new protocol::Lazy((unsigned)-1);
-    }
-    else {
-        FATAL("Memory Coherence Protocol not defined");
-    }
 }
 
 Manager::~Manager()
 {
     TRACE(LOCAL,"Memory manager finishes");
-    delete protocol_;
 }
 
 #if 0
@@ -89,7 +71,7 @@ gmacError_t Manager::alloc(void **addr, size_t size)
     //if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
     // Create new shared object
-    Object *object = protocol_->createObject(size, NULL, GMAC_PROT_READ);
+    Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ);
     *addr = object->addr();
     if(*addr == NULL) {
 		object->release();
@@ -102,44 +84,23 @@ gmacError_t Manager::alloc(void **addr, size_t size)
     return gmacSuccess;
 }
 
-#if 0
 gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode &mode = core::Mode::current();
 
-    if (proc.allIntegrated()) hint = GMAC_GLOBAL_MALLOC_CENTRALIZED;
-    if(hint == GMAC_GLOBAL_MALLOC_REPLICATED) {
-        Object *object = protocol_->createReplicatedObject(size);
-        *addr = object->addr();
-        if(*addr == NULL) {
-            delete object;
-            return gmacErrorMemoryAllocation;
-        }
-
-        mode.addReplicatedObject(*object);
+    // We ignore hint for now, only create
+    Object *object = proc.protocol().createGlobalObject(size, NULL, GMAC_PROT_READ, 0);
+    *addr = object->addr();
+    if(*addr == NULL) {
+        object->release();
+        return gmacErrorMemoryAllocation;
     }
-    else /*if (GMAC_GLOBAL_MALLOC_CENTRALIZED)*/ {
-        Object *object = protocol_->createCentralizedObject(size);
-        *addr = object->addr();
-        if(*addr == NULL) {
-            delete object;
-            return gmacErrorMemoryAllocation;
-        }
-
-        mode.addCentralizedObject(*object);
-#if 0
-    } else {
-        return gmacErrorInvalidValue;
-#endif
-    }
-
-    return gmacSuccess;
+    gmacError_t ret = proc.globalMalloc(*object, size);
+    object->release();
+    return ret;
 }
-
-
-#endif
-
+    
 gmacError_t Manager::free(void * addr)
 {
     gmacError_t ret = gmacSuccess;
@@ -157,7 +118,7 @@ gmacError_t Manager::acquire()
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
-    if (mode.releasedObjects() == false) {
+    if(mode.releasedObjects() == false) {
         return gmacSuccess;
     }
 	mode.forEachObject(&Object::acquire);
@@ -173,9 +134,11 @@ gmacError_t Manager::release()
     core::Mode &mode = core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    ret = protocol_->release();
-
-    mode.releaseObjects();
+    ret = mode.protocol().release();
+    if(ret == gmacSuccess) {
+        core::Process::getInstance().protocol().release();
+        mode.releaseObjects();
+    }
     return ret;
 }
 

@@ -101,7 +101,8 @@ Process::Process() :
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
-    memoryInit(paramProtocol, paramAllocator);
+    memoryInit();
+    protocol_ = protocolInit();
 	// Create the private per-thread variables for the implicit thread
     Mode::init();
 	initThread();
@@ -110,7 +111,6 @@ Process::Process() :
 Process::~Process()
 {
     TRACE(LOCAL,"Cleaning process");
-
     while(modes_.empty() == false) {
         Mode *mode = modes_.begin()->first;
         mode->release();
@@ -121,6 +121,7 @@ Process::~Process()
         delete *a;
     accs_.clear();
     queues_.cleanup();
+    delete protocol_;
     memoryFini();
 }
 
@@ -192,6 +193,7 @@ gmacError_t Process::globalMalloc(memory::Object &object, size_t /*size*/)
         if(object.addOwner(*i->first) == false) goto cleanup;
     }
     unlock();
+    global_.insert(object);
     return gmacSuccess;
 cleanup:
     ModeMap::iterator j;
@@ -205,6 +207,7 @@ cleanup:
 
 gmacError_t Process::globalFree(memory::Object &object)
 {
+    if(global_.remove(object) == false) return gmacErrorInvalidValue;
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {

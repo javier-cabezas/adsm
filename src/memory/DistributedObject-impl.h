@@ -84,9 +84,10 @@ inline bool DistributedObject<T>::addOwner(core::Mode &mode)
     lockWrite();
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        unsigned offset = unsigned(addr_ - i->second->addr());
+        unsigned offset = unsigned(i->second->addr() - addr_);
         DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
         block.addOwner(mode, deviceAddr + offset);
+        
     }
 	unlock();
 	return true;

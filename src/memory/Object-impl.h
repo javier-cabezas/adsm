@@ -57,17 +57,25 @@ inline bool Object::valid() const
 
 inline gmacError_t Object::acquire() const
 {
-	return coherenceOp(&Protocol::acquire);
+    lockRead();
+	gmacError_t ret = coherenceOp(&Protocol::acquire);
+    unlock();
+    return ret;
 }
 
 inline gmacError_t Object::toHost() const
 {
-	return coherenceOp(&Protocol::toHost);
+	lockRead();
+    gmacError_t ret= coherenceOp(&Protocol::toHost);
+    unlock();
+    return ret;
 }
 
 inline gmacError_t Object::toDevice() const
 {
-	return coherenceOp(&Protocol::toDevice);
+    lockRead();
+	gmacError_t ret = coherenceOp(&Protocol::toDevice);
+    unlock();
 }
 
 inline gmacError_t Object::signalRead(void *addr) const
@@ -97,13 +105,19 @@ inline gmacError_t Object::signalWrite(void *addr) const
 inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size, 
 									  unsigned bufferOffset, unsigned objectOffset) const
 {
-	return memoryOp(&Protocol::copyToBuffer, buffer, size, bufferOffset, objectOffset);
+    lockRead();
+	gmacError_t ret = memoryOp(&Protocol::copyToBuffer, buffer, size, bufferOffset, objectOffset);
+    unlock();
+    return ret;
 }
 
 inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size, 
 										unsigned bufferOffset, unsigned objectOffset) const
 {
-	return memoryOp(&Protocol::copyFromBuffer, buffer, size, bufferOffset, objectOffset);
+    lockRead();
+	gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size, bufferOffset, objectOffset);
+    unlock();
+    return ret;
 }
 
 }}

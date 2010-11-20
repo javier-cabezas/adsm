@@ -88,6 +88,7 @@ protected:
     Accelerator *acc_;
 
     memory::Map map_;
+    memory::Protocol *protocol_;
 
     allocator::Buddy *ioMemory_;
 
@@ -124,6 +125,8 @@ public:
     static void finiThread();
     static Mode &current();
     static bool hasCurrent();
+
+    memory::Protocol &protocol();
 
     unsigned id() const;
     unsigned accId() const;

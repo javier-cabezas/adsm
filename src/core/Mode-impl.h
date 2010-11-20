@@ -81,6 +81,11 @@ Mode::hasCurrent()
     return key.get() != NULL;
 }
 
+inline memory::Protocol &Mode::protocol()
+{
+    return *protocol_;
+}
+
 inline unsigned Mode::id() const
 {
     return id_;

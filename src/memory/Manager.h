@@ -65,9 +65,6 @@ private:
     void checkBitmapToDevice();
 #endif
 protected:
-    // TODO should we allow per-object protocol?
-    Protocol *protocol_;
-
     Manager();
     virtual ~Manager();
 public:
@@ -77,7 +74,7 @@ public:
     //TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
     //TESTABLE gmacError_t unmap(void *addr, size_t size);
     TESTABLE gmacError_t alloc(void **addr, size_t size);
-    //TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);    
+    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);    
     TESTABLE gmacError_t free(void *addr);
 
     ///////////////////////////////

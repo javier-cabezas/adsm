@@ -178,10 +178,9 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	gmac::exitGmac();
 	return ret;
 }
-#if 0
+
 gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
 {
-#ifndef USE_MMAP
     gmacError_t ret = gmacSuccess;
     if(count == 0) {
         *cpuPtr = NULL;
@@ -194,11 +193,8 @@ gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMa
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
     return ret;
-#else
-    return gmacErrorFeatureNotSupported;
-#endif
 }
-#endif
+
 gmacError_t APICALL gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;

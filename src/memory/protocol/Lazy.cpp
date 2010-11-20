@@ -60,9 +60,10 @@ memory::Object *Lazy::createObject(size_t size, void *cpuPtr, GmacProtection pro
 	return ret;
 }
 
-memory::Object *Lazy::createGlobalObject(size_t size, void *cpuPtr, GmacProtection prot)
+memory::Object *Lazy::createGlobalObject(size_t size, void *cpuPtr, 
+                                         GmacProtection prot, unsigned /*flags*/)
 {
-	Object *ret = new DistributedObject<State>(*this, core::Mode::current(), cpuPtr, \
+	Object *ret = new DistributedObject<State>(*this, core::Mode::current(), cpuPtr,
 		size, state(prot));
 	if(ret == NULL) return ret;
 	if(ret->addr() == NULL) {
@@ -77,6 +78,20 @@ void Lazy::deleteObject(Object &obj)
 {
     // TODO: purge blocks in list
     obj.release();
+}
+
+bool Lazy::needUpdate(const Block &b) const
+{
+    const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
+    switch(block.state()) {        
+        case Dirty:
+        case HostOnly:
+            return false;
+        case ReadOnly:
+        case Invalid:
+            return true;
+    }
+    return false;
 }
 
 gmacError_t Lazy::signalRead(Block &b)
@@ -230,17 +245,16 @@ gmacError_t Lazy::remove(Block &b)
     if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
                     FATAL("Unable to set memory permissions");
     block.state(HostOnly);
-    dbl_.remove(block.owner(), block);
+    dbl_.remove(block);
     return ret;
 }
 
 void Lazy::addDirty(Block &block)
 {
-    // TODO: Handle the case of multi-owned blocks
-    dbl_.push(block.owner(), block);
+    dbl_.push(block);
     if(limit_ == unsigned(-1)) return;
-    while(dbl_.size(block.owner()) > limit_) {
-        Block *b = dbl_.pop(block.owner());
+    while(dbl_.size() > limit_) {
+        Block *b = dbl_.pop();
         release(dynamic_cast<StateBlock<State> &>(*b));
     }
     return;
@@ -248,9 +262,8 @@ void Lazy::addDirty(Block &block)
 
 gmacError_t Lazy::release()
 {
-    core::Mode &mode = core::Mode::current();
-    while(dbl_.empty(mode) == false) {
-        Block *b = dbl_.pop(mode);
+    while(dbl_.empty() == false) {
+        Block *b = dbl_.pop();
         release(dynamic_cast<StateBlock<State> &>(*b));
     }
     return gmacSuccess;

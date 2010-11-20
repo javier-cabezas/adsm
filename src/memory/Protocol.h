@@ -57,7 +57,11 @@ public:
     virtual ~Protocol();
 
     virtual Object *createObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
+    virtual Object *createGlobalObject(size_t size, void *cpuPtr, 
+        GmacProtection prot, unsigned flags) = 0;
     virtual void deleteObject(Object &obj) = 0;
+
+    virtual bool needUpdate(const Block &block) const = 0;
 
     virtual gmacError_t signalRead(Block &block) = 0;
     virtual gmacError_t signalWrite(Block &block) = 0;
