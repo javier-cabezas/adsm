@@ -46,14 +46,22 @@ inline SharedObject<T>::~SharedObject()
 template<typename T>
 inline void *SharedObject<T>::deviceAddr(const void *addr) const
 {
-    unsigned offset = unsigned((uint8_t *)addr - addr_);
-    return deviceAddr_ + offset;
+    void *ret = NULL;
+    lockRead();
+    if(deviceAddr_ != NULL) {
+        unsigned offset = unsigned((uint8_t *)addr - addr_);
+        ret = deviceAddr_ + offset;
+    }
+    unlock();
+    return ret;
 }
 
 template<typename T>
 inline core::Mode &SharedObject<T>::owner(const void *addr) const
 {
-    return *owner_;
+    lockRead();
+    core::Mode ret = *owner_;
+    unlock();
 }
 
 template<typename T>
@@ -65,16 +73,19 @@ inline void SharedObject<T>::addOwner(core::Mode &owner)
 template<typename T>
 inline void SharedObject<T>::removeOwner(const core::Mode &owner)
 {
-    if(owner_ != &owner) return;
-    TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
-    if(deviceAddr_ != NULL) {
-        coherenceOp(&Protocol::remove);
-        owner_->free(deviceAddr_);
+    lockWrite();
+    if(owner_ == &owner) {
+        TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
+        if(deviceAddr_ != NULL) {
+            coherenceOp(&Protocol::remove);
+            owner_->free(deviceAddr_);
+        }
+        deviceAddr_ = NULL;
+        owner_ = NULL;
+        // Put myself in the orphan map
+        Map::insertOrphan(*this);
     }
-    deviceAddr_ = NULL;
-    owner_ = NULL;
-    // Put myself in the orphan map
-    Map::insertOrphan(*this);
+    unlock();
 	return;
 }
 

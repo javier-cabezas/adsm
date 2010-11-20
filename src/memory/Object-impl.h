@@ -22,26 +22,36 @@ inline Object::Object(void *addr, size_t size) :
 
 inline Object::~Object()
 {
+    BlockMap::iterator i;
+    lockWrite();
+    for(i = blocks_.begin(); i != blocks_.end(); i++)
+        delete i->second;
+    blocks_.clear();
+    unlock();
     Memory::unshadow(shadow_, size_);
 }
 
 inline uint8_t *Object::addr() const
 {
-    return (uint8_t *) addr_;
+    // No need for lock -- addr_ is never modified
+    return (uint8_t *) addr_;   
 }
 
 inline uint8_t *Object::end() const
 {
-    return addr() + size_;
+    // No need for lock -- addr_ and size_ are never modified
+    return addr_ + size_;
 }
 
 inline size_t Object::size() const
 {
+    // No need for lock -- size_ is never modified
     return size_;
 }
 
 inline bool Object::valid() const
 {
+    // No need for lock -- valid_ is never modified
 	return valid_;
 }
 
