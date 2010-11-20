@@ -96,7 +96,7 @@ template<typename T>
 inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
 {
 	lockWrite();
-    DeviceMap::const_iterator i = deviceAddr_.find((core::Mode *)&mode);
+    DeviceMap::iterator i = deviceAddr_.find((core::Mode *)&mode);
     if(i != deviceAddr_.end()) {
         BlockMap::iterator j;
         for(j = blocks_.begin(); j != blocks_.end(); j++) {
