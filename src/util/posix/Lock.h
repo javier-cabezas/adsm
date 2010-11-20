@@ -48,6 +48,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 class GMAC_LOCAL Lock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(Lock)
+
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
@@ -60,6 +62,8 @@ protected:
 };
 
 class GMAC_LOCAL RWLock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(RWLock)
+
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;

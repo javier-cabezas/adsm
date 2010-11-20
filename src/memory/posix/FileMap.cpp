@@ -3,7 +3,7 @@
 namespace __impl { namespace memory {
 
 FileMap::FileMap() :
-	util::RWLock("FileMap")
+	gmac::util::RWLock("FileMap")
 { }
 
 FileMap::~FileMap()
