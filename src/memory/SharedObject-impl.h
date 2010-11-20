@@ -60,14 +60,15 @@ template<typename T>
 inline core::Mode &SharedObject<T>::owner(const void *addr) const
 {
     lockRead();
-    core::Mode ret = *owner_;
+    core::Mode &ret = *owner_;
     unlock();
+    return ret;
 }
 
 template<typename T>
-inline void SharedObject<T>::addOwner(core::Mode &owner)
+inline bool SharedObject<T>::addOwner(core::Mode &owner)
 {
-	return; // This kind of objects only accepts one owner
+	return false; // This kind of objects only accepts one owner
 }
 
 template<typename T>

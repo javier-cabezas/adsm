@@ -25,7 +25,7 @@ inline Object::~Object()
     BlockMap::iterator i;
     lockWrite();
     for(i = blocks_.begin(); i != blocks_.end(); i++)
-        delete i->second;
+        i->second->release();
     blocks_.clear();
     unlock();
     Memory::unshadow(shadow_, size_);

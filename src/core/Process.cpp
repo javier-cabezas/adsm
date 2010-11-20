@@ -97,8 +97,7 @@ Process::Process() :
 	util::Singleton<Process>(),
     gmac::util::RWLock("Process"),
     shared_("SharedMemoryMap"),
-    centralized_("CentralizedMemoryMap"),
-    replicated_("ReplicatedMemoryMap"),
+    global_("GlobalMemoryMap"),
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
@@ -168,7 +167,7 @@ Mode *Process::createMode(int acc)
 
     mode->attach();
 
-    TRACE(LOCAL,"Adding "FMT_SIZE" replicated memory objects", replicated_.size());
+    TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
     memory::Map::addOwner(*this, *mode);
 
     unlock();
@@ -184,14 +183,13 @@ void Process::removeMode(Mode &mode)
     unlock();
 }
 
-#if 0
-gmacError_t Process::globalMalloc(memory::DistributedObject &object, size_t /*size*/)
+
+gmacError_t Process::globalMalloc(memory::Object &object, size_t /*size*/)
 {
-    gmacError_t ret;
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {
-        if((ret = object.addOwner(*i->first)) != gmacSuccess) goto cleanup;
+        if(object.addOwner(*i->first) == false) goto cleanup;
     }
     unlock();
     return gmacSuccess;
@@ -205,20 +203,18 @@ cleanup:
 
 }
 
-gmacError_t Process::globalFree(memory::DistributedObject &object)
+gmacError_t Process::globalFree(memory::Object &object)
 {
-    gmacError_t ret = gmacSuccess;
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {
-        gmacError_t tmp = object.removeOwner(*i->first);
-        if(tmp != gmacSuccess) ret = tmp;
+        object.removeOwner(*i->first);
     }
     unlock();
     return gmacSuccess;
 }
 
-
+#if 0
 // This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
 {
@@ -293,7 +289,7 @@ void Process::copy(THREAD_T id)
 Mode *Process::owner(const void *addr) const
 {
     const memory::Object *object = shared_.get(addr);
-	if(object == NULL) object = replicated_.get(addr);
+	if(object == NULL) object = global_.get(addr);
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
 	object->release();

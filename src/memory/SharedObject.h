@@ -56,7 +56,7 @@ public:
     void *deviceAddr(const void *addr) const;
 	core::Mode &owner(const void *addr) const;
 
-	void addOwner(core::Mode &owner);
+	bool addOwner(core::Mode &owner);
 	void removeOwner(const core::Mode &owner);
 };
 

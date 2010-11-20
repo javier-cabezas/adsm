@@ -1,7 +1,7 @@
 add_subdirectory(allocator)
 
 set(core_SRC
-    Process.h Process.ipp Process.cpp
+    Process.h Process-impl.h Process.cpp
     Accelerator.h Accelerator.ipp Accelerator.cpp
     Descriptor.h Descriptor.ipp
     Kernel.h Kernel.ipp Kernel.cpp
