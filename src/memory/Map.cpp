@@ -151,7 +151,6 @@ bool Map::remove(const Object &obj)
 	void *addr = obj.addr();
 
 	bool ret = ObjectMap::remove(obj);
-	if(ret == false) WARNING("Map did not remove local object %p", addr);
 	
     // Shared object
     core::Process &proc = parent_.process();
