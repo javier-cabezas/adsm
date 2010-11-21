@@ -19,7 +19,7 @@ template<typename T>
 inline memory::Object *Lazy<T>::createObject(size_t size, void *cpuPtr, 
                                              GmacProtection prot, unsigned flags)
 {
-    typename Object *ret = new T(*this, core::Mode::current(), cpuPtr, 
+    Object *ret = new T(*this, core::Mode::current(), cpuPtr, 
 		size, state(prot));
 	if(ret == NULL) return ret;
 	if(ret->addr() == NULL) {
