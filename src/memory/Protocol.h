@@ -56,9 +56,12 @@ class GMAC_LOCAL Protocol {
 public:
     virtual ~Protocol();
 
-    virtual Object *createObject(size_t size, void *cpuPtr, GmacProtection prot) = 0;
+    virtual Object *createObject(size_t size, void *cpuPtr, 
+        GmacProtection prot, unsigned flags) = 0;
+#if 0
     virtual Object *createGlobalObject(size_t size, void *cpuPtr, 
         GmacProtection prot, unsigned flags) = 0;
+#endif
     virtual void deleteObject(Object &obj) = 0;
 
     virtual bool needUpdate(const Block &block) const = 0;

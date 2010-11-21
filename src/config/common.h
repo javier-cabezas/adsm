@@ -108,6 +108,8 @@ namespace gmac = __impl;
 #endif
 
 
+
+
 #include "include/gmac/visibility.h"
 
 #endif

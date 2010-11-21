@@ -3,6 +3,8 @@
 
 #include "allocator/Slab.h"
 
+#include "memory/SharedObject.h"
+#include "memory/DistributedObject.h"
 #include "protocol/Lazy.h"
 
 #if defined(__GNUC__)
@@ -11,7 +13,9 @@
 #define strcasecmp _stricmp
 #endif
 
-namespace __impl { namespace core {
+namespace __impl { 
+
+namespace core {
 
 void memoryInit(void)
 {
@@ -20,15 +24,33 @@ void memoryInit(void)
     memory::Allocator::create<__impl::memory::allocator::Slab>();
 }
 
-memory::Protocol *protocolInit(void)
+memory::Protocol *protocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
     memory::Protocol *ret = NULL;
     if(strcasecmp(paramProtocol, "Rolling") == 0) {
-        ret = new memory::protocol::Lazy((unsigned)paramRollSize);
+        if(0 != (flags & 0x1)) {
+            ret = new memory::protocol::Lazy<
+                memory::DistributedObject<memory::protocol::LazyBase::State> >(
+                (unsigned)paramRollSize);
+        }
+        else {
+            ret = new memory::protocol::Lazy<
+                memory::SharedObject<memory::protocol::LazyBase::State> >(
+                (unsigned)paramRollSize);
+        }
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
-        ret = new memory::protocol::Lazy((unsigned)-1);
+        if(0 != (flags & 0x1)) {
+            ret = new memory::protocol::Lazy<
+                memory::DistributedObject<memory::protocol::LazyBase::State> >(
+                (unsigned)-1);
+        }
+        else {
+            ret = new memory::protocol::Lazy<
+                memory::SharedObject<memory::protocol::LazyBase::State> >(
+                (unsigned)-1);
+        }
     }
     else {
         FATAL("Memory Coherence Protocol not defined");

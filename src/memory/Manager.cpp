@@ -71,7 +71,7 @@ gmacError_t Manager::alloc(void **addr, size_t size)
     //if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
 
     // Create new shared object
-    Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ);
+    Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
     if(*addr == NULL) {
 		object->release();
@@ -90,7 +90,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
     core::Mode &mode = core::Mode::current();
 
     // We ignore hint for now, only create
-    Object *object = proc.protocol().createGlobalObject(size, NULL, GMAC_PROT_READ, 0);
+    Object *object = proc.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->release();

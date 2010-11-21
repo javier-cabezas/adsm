@@ -44,5 +44,26 @@ void osInit(void) GMAC_LOCAL;
 void threadInit(void) GMAC_LOCAL;
 void stdcInit(void) GMAC_LOCAL;
 
+#ifdef __cplusplus
+namespace __impl { 
 
+namespace memory { class Protocol; }
+
+namespace core {
+class Accelerator;
+class IOBuffer;
+class Mode;
+class Context;
+class Process;
+
+void apiInit(void);
+void contextInit(void);
+void memoryInit(void);
+void memoryFini(void);
+
+
+#define GLOBAL_PROTOCOL 0x1
+memory::Protocol *protocolInit(unsigned flags);
+}}
+#endif
 #endif

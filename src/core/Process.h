@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include <vector>
 
 #include "config/common.h"
+#include "config/order.h"
 #include "include/gmac/types.h"
 #include "memory/Map.h"
 
@@ -46,23 +47,6 @@ WITH THE SOFTWARE.  */
 
 #include "Queue.h"
 #include "allocator/Buddy.h"
-
-
-namespace __impl { namespace core {
-
-class Accelerator;
-class IOBuffer;
-class Mode;
-class Context;
-class Process;
-
-void apiInit(void);
-void contextInit(void);
-void memoryInit(void);
-void memoryFini(void);
-memory::Protocol *protocolInit(void);
-}}
-
 
 namespace __impl {
 namespace core {
