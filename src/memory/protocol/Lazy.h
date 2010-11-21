@@ -57,7 +57,7 @@ template<typename T> class StateBlock;
 
 namespace protocol { 
 
-class GMAC_LOCAL Lazy : public Protocol, Handler, gmac::util::RWLock {
+class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::RWLock {
 public:
     typedef enum {
         Invalid,
@@ -73,14 +73,10 @@ protected:
 
 	gmacError_t release(StateBlock<State> &block);
     void addDirty(Block &block);
-public:
-    Lazy(unsigned limit);
-    virtual ~Lazy();
+    LazyBase(unsigned limit);
+    virtual ~LazyBase();
 
     // Protocol Interface
-    memory::Object *createObject(size_t size, void *cpuPtr, GmacProtection prot);
-	memory::Object *createGlobalObject(size_t size, void *cpuPtr, 
-        GmacProtection prot, unsigned flags);
 	void deleteObject(Object &obj);
 
     bool needUpdate(const Block &block) const;
@@ -103,10 +99,22 @@ public:
 	
 	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
 		unsigned bufferOffset, unsigned objectOffset) const;
+};
 
+template<typename T>
+class GMAC_LOCAL Lazy : public LazyBase {
+public:
+    Lazy(unsigned limit);
+    virtual ~Lazy();
+
+    // Protocol Interface
+    memory::Object *createObject(size_t size, void *cpuPtr, 
+        GmacProtection prot, unsigned flags);
 };
 
 }}}
+
+#include "Lazy-impl.h"
 
 #ifdef USE_DBC
 //#include "dbc/Lazy.h"

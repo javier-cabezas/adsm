@@ -5,9 +5,6 @@
 #include "config/config.h"
 
 #include "memory/Memory.h"
-#include "memory/SharedObject.h"
-#include "memory/DistributedObject.h"
-
 #include "memory/StateBlock.h"
 
 #include "trace/Tracer.h"
@@ -22,18 +19,18 @@
 namespace __impl { namespace memory { namespace protocol {
 
 
-Lazy::Lazy(unsigned limit) :
+LazyBase::LazyBase(unsigned limit) :
     gmac::util::RWLock("Lazy"),
     limit_(limit)
 {
 }
 
-Lazy::~Lazy()
+LazyBase::~LazyBase()
 {
 
 }
 
-Lazy::State Lazy::state(GmacProtection prot) const
+LazyBase::State LazyBase::state(GmacProtection prot) const
 {
 	switch(prot) {
 		case GMAC_PROT_NONE: 
@@ -47,40 +44,14 @@ Lazy::State Lazy::state(GmacProtection prot) const
 	return Dirty;
 }
 
-memory::Object *Lazy::createObject(size_t size, void *cpuPtr, GmacProtection prot)
-{
-	Object *ret = new SharedObject<State>(*this, core::Mode::current(), cpuPtr, 
-		size, state(prot));
-	if(ret == NULL) return ret;
-	if(ret->addr() == NULL) {
-		ret->release();
-		return NULL;
-	}
-	Memory::protect(ret->addr(), ret->size(), prot);
-	return ret;
-}
 
-memory::Object *Lazy::createGlobalObject(size_t size, void *cpuPtr, 
-                                         GmacProtection prot, unsigned /*flags*/)
-{
-	Object *ret = new DistributedObject<State>(*this, core::Mode::current(), cpuPtr,
-		size, state(prot));
-	if(ret == NULL) return ret;
-	if(ret->addr() == NULL) {
-		ret->release();
-		return NULL;
-	}
-	Memory::protect(ret->addr(), ret->size(), prot);
-	return ret;
-}
-
-void Lazy::deleteObject(Object &obj)
+void LazyBase::deleteObject(Object &obj)
 {
     // TODO: purge blocks in list
     obj.release();
 }
 
-bool Lazy::needUpdate(const Block &b) const
+bool LazyBase::needUpdate(const Block &b) const
 {
     const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
     switch(block.state()) {        
@@ -94,7 +65,7 @@ bool Lazy::needUpdate(const Block &b) const
     return false;
 }
 
-gmacError_t Lazy::signalRead(Block &b)
+gmacError_t LazyBase::signalRead(Block &b)
 {
     trace::EnterCurrentFunction();
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -128,7 +99,7 @@ exit_func:
     return ret;
 }
 
-gmacError_t Lazy::signalWrite(Block &b)
+gmacError_t LazyBase::signalWrite(Block &b)
 {
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -161,7 +132,7 @@ exit_func:
     return ret;
 }
 
-gmacError_t Lazy::acquire(Block &b)
+gmacError_t LazyBase::acquire(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -182,7 +153,7 @@ gmacError_t Lazy::acquire(Block &b)
 }
 
 #ifdef USE_VM
-gmacError_t Lazy::acquireWithBitmap(const Object &obj)
+gmacError_t LazyBase::acquireWithBitmap(const Object &obj)
 {
     core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -208,7 +179,7 @@ gmacError_t Lazy::acquireWithBitmap(const Object &obj)
 }
 #endif
 
-gmacError_t Lazy::release(StateBlock<State> &block)
+gmacError_t LazyBase::release(StateBlock<State> &block)
 {
     TRACE(LOCAL,"Releasing block %p", block.addr());
     gmacError_t ret = gmacSuccess;
@@ -228,7 +199,7 @@ gmacError_t Lazy::release(StateBlock<State> &block)
     return ret;
 }
 
-gmacError_t Lazy::remove(Block &b)
+gmacError_t LazyBase::remove(Block &b)
 {
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     TRACE(LOCAL,"Releasing block %p", block.addr());
@@ -249,7 +220,7 @@ gmacError_t Lazy::remove(Block &b)
     return ret;
 }
 
-void Lazy::addDirty(Block &block)
+void LazyBase::addDirty(Block &block)
 {
     dbl_.push(block);
     if(limit_ == unsigned(-1)) return;
@@ -260,7 +231,7 @@ void Lazy::addDirty(Block &block)
     return;
 }
 
-gmacError_t Lazy::release()
+gmacError_t LazyBase::release()
 {
     while(dbl_.empty() == false) {
         Block *b = dbl_.pop();
@@ -269,7 +240,7 @@ gmacError_t Lazy::release()
     return gmacSuccess;
 }
 
-gmacError_t Lazy::toHost(Block &b)
+gmacError_t LazyBase::toHost(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -289,7 +260,7 @@ gmacError_t Lazy::toHost(Block &b)
     return ret;
 }
 
-gmacError_t Lazy::toDevice(Block &b)
+gmacError_t LazyBase::toDevice(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -309,7 +280,7 @@ gmacError_t Lazy::toDevice(Block &b)
     return ret;
 }
 
-gmacError_t Lazy::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t size,
+gmacError_t LazyBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t size,
 							   unsigned bufferOffset, unsigned objectOffset) const
 {
 	gmacError_t ret = gmacSuccess;
@@ -326,7 +297,7 @@ gmacError_t Lazy::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t si
 	return ret;
 }
 
-gmacError_t Lazy::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t size, 
+gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t size, 
 							   unsigned bufferOffset, unsigned objectOffset) const
 {
 	gmacError_t ret = gmacSuccess;

@@ -102,7 +102,7 @@ Process::Process() :
     current_(0)
 {
     memoryInit();
-    protocol_ = protocolInit();
+    protocol_ = protocolInit(GLOBAL_PROTOCOL);
 	// Create the private per-thread variables for the implicit thread
     Mode::init();
 	initThread();
