@@ -248,7 +248,7 @@ void Process::addAccelerator(Accelerator *acc)
 }
 
 
-void *Process::translate(void *addr)
+void *Process::translate(const void *addr)
 {
     Mode &mode = Mode::current();
     const memory::Object *object = mode.getObject(addr);

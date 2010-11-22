@@ -47,6 +47,7 @@ namespace memory {
 template<typename T>
 class GMAC_LOCAL SharedObject : public Object {
 protected:
+    uint8_t *shadow_;
 	uint8_t *deviceAddr_;
 	core::Mode *owner_;
 public:

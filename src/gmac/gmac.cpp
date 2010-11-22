@@ -210,12 +210,11 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	return ret;
 }
 
-void * APICALL gmacPtr(void *ptr)
+void * APICALL gmacPtr(const void *ptr)
 {
     void *ret = NULL;
     gmac::enterGmac();
-    __impl::core::Process &proc = __impl::core::Process::getInstance();
-    ret = proc.translate(ptr);
+    ret = __impl::memory::Manager::getInstance().translate(ptr);
     gmac::exitGmac();
     return ret;
 }

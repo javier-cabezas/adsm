@@ -13,12 +13,7 @@ inline Object::Object(void *addr, size_t size) :
 	addr_((uint8_t *)addr),
 	size_(size),
 	valid_(false)
-{
-	// Allocate memory (if necessary)
-	if(addr_ == NULL)
-		addr_ = (uint8_t *)Memory::map(NULL, size, GMAC_PROT_READWRITE);
-    shadow_ = (uint8_t *)Memory::shadow(addr_, size_);
-}
+{}
 
 inline Object::~Object()
 {
@@ -28,7 +23,7 @@ inline Object::~Object()
         i->second->release();
     blocks_.clear();
     unlock();
-    Memory::unshadow(shadow_, size_);
+    
 }
 
 inline uint8_t *Object::addr() const

@@ -14,6 +14,7 @@ set(memory_SRC
     Object.h Object-impl.h Object.cpp
     SharedObject.h SharedObject-impl.h
     DistributedObject.h DistributedObject-impl.h
+    HostMappedObject.h HostMappedObject-impl.h HostMappedObject.cpp
     Map.h Map.cpp
     Protocol.h Protocol.cpp
     Manager.h Manager-impl.h Manager.cpp

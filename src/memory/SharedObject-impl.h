@@ -10,7 +10,14 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
     Object(cpuAddr, size),
 	owner_(&owner)
 {
-	if(addr_ == NULL) return;
+	// Allocate memory (if necessary)
+	if(addr_ == NULL)
+		addr_ = (uint8_t *)Memory::map(NULL, size, GMAC_PROT_READWRITE);
+    if(addr_ == NULL) return;
+
+    // Create a shadow mapping for the host memory
+    shadow_ = (uint8_t *)Memory::shadow(addr_, size_);
+
     // Allocate accelerator memory
     gmacError_t ret = 
 		owner_->malloc((void **)&deviceAddr_, size, (unsigned)paramPageSize);
@@ -27,7 +34,8 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
-    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : device @ %p) ", addr_, shadow_, deviceAddr_);
+    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : device @ %p) ", 
+        addr_, shadow_, deviceAddr_);
 }
 
 
@@ -35,7 +43,8 @@ template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
 	// If the object creation failed, this address will be NULL
-    if(deviceAddr_ != NULL) owner_->free(deviceAddr_);	
+    if(deviceAddr_ != NULL) owner_->free(deviceAddr_);
+    Memory::unshadow(shadow_, size_);
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
     bitmap.removeRange(devAddr, StateObject<T>::size_);
