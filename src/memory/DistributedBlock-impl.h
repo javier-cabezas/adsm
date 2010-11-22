@@ -22,9 +22,12 @@ template<typename T>
 inline void DistributedBlock<T>::addOwner(core::Mode &mode, uint8_t *value)
 {
 	StateBlock<T>::lock();
-	deviceAddr_.insert(DeviceMap::value_type(&mode, value));
-    if(StateBlock<T>::protocol_.needUpdate(*this)) {
-        mode.copyToAccelerator(value, StateBlock<T>::shadow_, StateBlock<T>::size_);
+	std::pair<DeviceMap::iterator, bool> pair = 
+        deviceAddr_.insert(DeviceMap::value_type(&mode, value));
+    ASSERTION(pair.second == true);
+    if(StateBlock<T>::protocol_.needUpdate(*this) == true) {
+        gmacError_t ret = mode.copyToAccelerator(value, StateBlock<T>::shadow_, StateBlock<T>::size_);
+        ASSERTION(ret == gmacSuccess);
     }
     StateBlock<T>::unlock();
 }

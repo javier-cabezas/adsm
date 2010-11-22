@@ -38,8 +38,8 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
-    TRACE(LOCAL, "Creating Distributed Object @ %p : shadow @ %p : device @ %p) ", 
-        addr_, shadow_, deviceAddr_);
+    TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : device @ %p) ", 
+        addr_, shadow_, deviceAddr);
 }
 
 
@@ -50,7 +50,7 @@ inline DistributedObject<T>::~DistributedObject()
     for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++)
         i->first->free(i->second);
     Memory::unshadow(shadow_, size_);
-    TRACE(LOCAL, "Destroying Distributed Object @ %p", addr_);
+    TRACE(GLOBAL, "Destroying Distributed Object @ %p", addr_);
 }
 
 template<typename T>
@@ -91,7 +91,7 @@ inline bool DistributedObject<T>::addOwner(core::Mode &mode)
     gmacError_t ret = 
 		mode.malloc((void **)&deviceAddr, size_, (unsigned)paramPageSize);
     if(ret != gmacSuccess) return false;
-    lockWrite();
+    lockRead();
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         unsigned offset = unsigned(i->second->addr() - addr_);
