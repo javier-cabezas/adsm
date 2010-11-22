@@ -115,10 +115,7 @@ public:
     gmacError_t globalFree(memory::Object &object);
 
 
-    void *translate(void *addr);
-    inline const void *translate(const void *addr) {
-        return (const void *)translate((void *)addr);
-    }
+    void *translate(const void *addr);
 
     /* Context management functions */
     void send(THREAD_T id);

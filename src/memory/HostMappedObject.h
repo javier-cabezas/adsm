@@ -31,34 +31,62 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
-#define GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
+#ifndef GMAC_MEMORY_HOSTMAPPEDOBJECT_H_
+#define GMAC_MEMORY_HOSTMAPPEDOBJECT_H_
 
-#include "config/common.h"
-#include "core/Mode.h"
+#include "util/Lock.h"
+#include "util/Reference.h"
+#include <map>
 
-namespace __impl { namespace memory {
+namespace __impl { 
 
-template<typename T>
-class GMAC_LOCAL DistributedObject : public Object {
+namespace core {
+	class Mode;
+}
+
+namespace memory {
+
+void *HostMappedAlloc(size_t size);
+void HostMappedFree(void *addr);
+void *HostMappedPtr(const void *addr);
+
+class HostMappedObject;
+
+class GMAC_LOCAL HostMappedSet : protected std::map<void *, HostMappedObject *>, 
+    public gmac::util::RWLock {
 protected:
-    uint8_t *shadow_;
-    typedef std::map<core::Mode *, uint8_t *> DeviceMap;
-    DeviceMap deviceAddr_;
+    friend class HostMappedObject;
+
+    typedef std::map<void *, HostMappedObject *> Parent;
+    bool insert(HostMappedObject *object);
+    HostMappedObject *get(void *addr) const;
 public:
-	DistributedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, 
-		size_t size, T init);
-    virtual ~DistributedObject();
+    HostMappedSet();
+    ~HostMappedSet();
+    bool remove(void *addr);
+};
 
+class GMAC_LOCAL HostMappedObject : public util::Reference {
+protected:
+    uint8_t *addr_;
+    size_t size_;
+
+    static HostMappedSet set_;    
+public:
+	HostMappedObject(size_t size);
+    virtual ~HostMappedObject();
+    
+    void *addr() const;
+    size_t size() const;
     void *deviceAddr(const void *addr) const;
-	core::Mode &owner(const void *addr) const;
 
-	bool addOwner(core::Mode &owner);
-	void removeOwner(const core::Mode &owner);
+    static void remove(void *addr);
+    static HostMappedObject *get(const void *addr);
 };
 
 }}
 
-#include "DistributedObject-impl.h"
+#include "HostMappedObject-impl.h"
+
 
 #endif

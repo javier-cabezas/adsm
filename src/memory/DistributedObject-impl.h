@@ -11,7 +11,13 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 											   void *cpuAddr, size_t size, T init) :
     Object(cpuAddr, size)
 {
-	if(addr_ == NULL) return;
+    // Allocate memory (if necessary)
+	if(addr_ == NULL)
+		addr_ = (uint8_t *)Memory::map(NULL, size, GMAC_PROT_READWRITE);
+    if(addr_ == NULL) return;
+
+    // Create a shadow mapping for the host memory
+    shadow_ = (uint8_t *)Memory::shadow(addr_, size_);
 
     uint8_t *deviceAddr = NULL;
     // Allocate accelerator memory
@@ -32,6 +38,8 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
+    TRACE(LOCAL, "Creating Distributed Object @ %p : shadow @ %p : device @ %p) ", 
+        addr_, shadow_, deviceAddr_);
 }
 
 
@@ -41,6 +49,8 @@ inline DistributedObject<T>::~DistributedObject()
     DeviceMap::iterator i;
     for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++)
         i->first->free(i->second);
+    Memory::unshadow(shadow_, size_);
+    TRACE(LOCAL, "Destroying Distributed Object @ %p", addr_);
 }
 
 template<typename T>

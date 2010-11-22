@@ -120,7 +120,7 @@ gmacError_t Mode::hostFree(void *addr)
     return ret;
 }
 
-void *Mode::hostMap(void *addr)
+void *Mode::hostMap(const void *addr)
 {
     switchIn();
     void *ret = accelerator().hostMap(addr);

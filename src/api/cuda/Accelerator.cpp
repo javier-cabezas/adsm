@@ -313,13 +313,13 @@ gmacError_t Accelerator::hostFree(void *addr)
     return error(r);
 }
 
-void *Accelerator::hostMap(void *addr)
+void *Accelerator::hostMap(const void *addr)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
-    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
+    CUresult ret = cuMemHostGetDevicePointer(&device, (void *)addr, 0);
     popContext();
 #else
 	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;

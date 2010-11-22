@@ -90,7 +90,7 @@ public:
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
-    void *hostMap(void *addr);
+    void *hostMap(const void *addr);
 
 	gmacError_t execute(core::KernelLaunch &launch);
 

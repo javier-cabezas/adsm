@@ -4,6 +4,7 @@
 #include "Manager.h"
 #include "Map.h"
 #include "Object.h"
+#include "HostMappedObject.h"
 
 namespace __impl { namespace memory {
 
@@ -84,17 +85,34 @@ gmacError_t Manager::alloc(void **addr, size_t size)
     return gmacSuccess;
 }
 
+gmacError_t Manager::hostMappedAlloc(void **addr, size_t size)
+{
+    gmacError_t ret = gmacSuccess;
+    HostMappedObject *object = new HostMappedObject(size);
+    *addr = object->addr();
+    if(*addr == NULL) {
+        delete object;
+        return gmacErrorMemoryAllocation;
+    }
+    return gmacSuccess;
+}
+
 gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode &mode = core::Mode::current();
 
-    // We ignore hint for now, only create
+    // If a centralized object is requested, try creating it
+    if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
+        gmacError_t ret = hostMappedAlloc(addr, size);
+        if(ret == gmacSuccess) return ret;
+    }
+
     Object *object = proc.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->release();
-        return gmacErrorMemoryAllocation;
+        return hostMappedAlloc(addr, size); // Try using a host mapped object
     }
     gmacError_t ret = proc.globalMalloc(*object, size);
     object->release();
@@ -110,7 +128,22 @@ gmacError_t Manager::free(void * addr)
         mode.removeObject(*object);
 		object->release();
     }
-    else ret = gmacErrorInvalidValue;
+    else {
+        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        if(hostMappedObject == NULL) return gmacErrorInvalidValue;
+        delete hostMappedObject;
+    }
+    return ret;
+}
+
+void *Manager::translate(const void *addr)
+{
+    __impl::core::Process &proc = __impl::core::Process::getInstance();
+    void *ret = proc.translate(addr);
+    if(ret == NULL) {   
+        HostMappedObject *object = HostMappedObject::get(addr);
+        if(object != NULL) ret = object->deviceAddr(addr);
+    }
     return ret;
 }
 

@@ -65,6 +65,9 @@ private:
     void checkBitmapToDevice();
 #endif
 protected:
+
+    gmacError_t hostMappedAlloc(void **addr, size_t size);
+
     Manager();
     virtual ~Manager();
 public:
@@ -76,6 +79,7 @@ public:
     TESTABLE gmacError_t alloc(void **addr, size_t size);
     TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);    
     TESTABLE gmacError_t free(void *addr);
+    TESTABLE void *translate(const void *addr);
 
     ///////////////////////////////
     // Coherence protocol interface

@@ -53,7 +53,7 @@ namespace memory {
 
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
 protected:
-    uint8_t *addr_, *shadow_;
+    uint8_t *addr_;
     size_t size_;
 
 	bool valid_;
