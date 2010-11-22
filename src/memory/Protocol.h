@@ -73,6 +73,7 @@ public:
 #ifdef USE_VM
     virtual gmacError_t acquireWithBitmap(const Block &block) = 0;
 #endif
+    virtual gmacError_t release(Block &block) = 0;
     virtual gmacError_t release() = 0;
     virtual gmacError_t remove(Block &block) = 0;
 
