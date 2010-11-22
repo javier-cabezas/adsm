@@ -71,7 +71,7 @@ protected:
     unsigned limit_;
     BlockList dbl_;
 
-	gmacError_t release(StateBlock<State> &block);
+	
     void addDirty(Block &block);
     LazyBase(unsigned limit);
     virtual ~LazyBase();
@@ -89,6 +89,7 @@ protected:
     gmacError_t acquireWithBitmap(const Object &obj);
 #endif
     gmacError_t release();
+    gmacError_t release(Block &block);
     gmacError_t remove(Block &block);
 
 	gmacError_t toHost(Block &block);

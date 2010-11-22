@@ -72,12 +72,10 @@ inline gmacError_t DistributedBlock<T>::toDevice() const
 {
 	gmacError_t ret = gmacSuccess;
 	DeviceMap::const_iterator i;
-	StateBlock<T>::lock();
 	for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++) {
 		ret = i->first->copyToAccelerator(i->second, StateBlock<T>::shadow_, StateBlock<T>::size_);
 		if(ret != gmacSuccess) break;
 	}
-	StateBlock<T>::unlock();
 	return ret;
 }
 
@@ -95,12 +93,10 @@ inline gmacError_t DistributedBlock<T>::copyToDevice(core::IOBuffer &buffer, siz
 {
 	gmacError_t ret = gmacSuccess;
 	DeviceMap::const_iterator i;
-	StateBlock<T>::lock();
 	for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++) {
 		ret = i->first->bufferToAccelerator(i->second + blockOffset, buffer, size, bufferOffset);
 		if(ret != gmacSuccess) return ret;
 	}
-	StateBlock<T>::unlock();
 	return ret;
 }
 
