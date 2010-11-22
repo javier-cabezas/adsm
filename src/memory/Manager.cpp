@@ -131,7 +131,7 @@ gmacError_t Manager::free(void * addr)
     else {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
         if(hostMappedObject == NULL) return gmacErrorInvalidValue;
-        delete hostMappedObject;
+        hostMappedObject->release();
     }
     return ret;
 }

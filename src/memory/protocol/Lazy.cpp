@@ -47,7 +47,6 @@ LazyBase::State LazyBase::state(GmacProtection prot) const
 
 void LazyBase::deleteObject(Object &obj)
 {
-    // TODO: purge blocks in list
     obj.release();
 }
 

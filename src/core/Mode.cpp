@@ -140,7 +140,7 @@ gmacError_t Mode::memset(void *addr, int c, size_t size)
 core::KernelLaunch &Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
-    assert(i != kernels_.end());
+    ASSERTION(i != kernels_.end());
     core::Kernel * k = i->second;
     switchIn();
     core::KernelLaunch &l = getContext().launch(*k);
