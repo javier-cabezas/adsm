@@ -59,6 +59,14 @@ inline gmacError_t Block::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer
 	return ret;
 }
 
+inline gmacError_t Block::memset(int v, size_t size, unsigned blockOffset) const
+{
+    lock();
+    gmacError_t ret = protocol_.memset(*this, v, size, blockOffset);
+    unlock();
+    return ret;
+}
+
 }}
 
 #endif

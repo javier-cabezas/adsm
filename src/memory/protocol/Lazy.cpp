@@ -283,44 +283,64 @@ gmacError_t LazyBase::toDevice(Block &b)
 }
 
 gmacError_t LazyBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t size,
-							   unsigned bufferOffset, unsigned objectOffset) const
+							   unsigned bufferOffset, unsigned blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
-			ret = block.copyFromDevice(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyFromDevice(buffer, size, bufferOffset, blockOffset);
 			break;
 		case ReadOnly:
 		case Dirty:
         case HostOnly:
-			ret = block.copyFromHost(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyFromHost(buffer, size, bufferOffset, blockOffset);
 	}
 	return ret;
 }
 
 gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t size, 
-							   unsigned bufferOffset, unsigned objectOffset) const
+							   unsigned bufferOffset, unsigned blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
-			ret = block.copyToDevice(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyToDevice(buffer, size, bufferOffset, blockOffset);
 			break;
 		case ReadOnly:
-			ret = block.copyToDevice(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyToDevice(buffer, size, bufferOffset, blockOffset);
 			if(ret != gmacSuccess) break;
-			ret = block.copyToHost(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset);
 			break;
 		case Dirty:			
         case HostOnly:
-			ret = block.copyToHost(buffer, size, bufferOffset, objectOffset);
+			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset);
 			break;
 	}
 	return ret;
 }
 
+gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockOffset) const
+{
+    	gmacError_t ret = gmacSuccess;
+	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
+	switch(block.state()) {
+		case Invalid:
+            ret = b.deviceMemset(v, size, blockOffset);
+			break;
+		case ReadOnly:
+			ret = b.deviceMemset(v, size, blockOffset);
+			if(ret != gmacSuccess) break;
+			ret = b.hostMemset(v, size, blockOffset);
+			break;
+		case Dirty:			
+        case HostOnly:
+			ret = b.hostMemset(v, size, blockOffset);
+			break;
+	}
+	return ret;
+}
 
 
 }}}

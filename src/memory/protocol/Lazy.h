@@ -96,10 +96,13 @@ protected:
     gmacError_t toDevice(Block &block);
 
 	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned objectOffset) const;
+		unsigned bufferOffset, unsigned blockOffset) const;
 	
 	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffset, unsigned objectOffset) const;
+		unsigned bufferOffset, unsigned blockOffset) const;
+
+    gmacError_t memset(const Block &block, int v, size_t size, 
+        unsigned blockOffset) const;
 };
 
 template<typename T>

@@ -81,10 +81,13 @@ public:
     virtual gmacError_t toDevice(Block &block) = 0;
 
 	virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffet, unsigned objectOffset) const = 0;
+		unsigned bufferOffet, unsigned blockOffset) const = 0;
 	
 	virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffet, unsigned objectOffset) const = 0;
+		unsigned bufferOffet, unsigned blockOffset) const = 0;
+
+    virtual gmacError_t memset(const Block &block, int v, size_t size, 
+        unsigned blockOffset) const = 0;
 
 #if 0
     virtual gmacError_t copy(const Object &dstObj, unsigned dstOff, const Object &srcObj, unsigned srcOff, size_t n) = 0;

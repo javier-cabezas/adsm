@@ -69,6 +69,7 @@ public:
 	gmacError_t coherenceOp(Protocol::CoherenceOp op);
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset, unsigned blockOffset);
+    gmacError_t memset(int v, size_t size, unsigned blockOffset = 0) const;
 
 	virtual core::Mode &owner() const = 0;
 	virtual void *deviceAddr(const void *addr) const = 0;
@@ -85,6 +86,13 @@ public:
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 	virtual gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+    
+    virtual gmacError_t hostMemset(int v, size_t size,
+        unsigned blockOffset = 0) const = 0;
+    virtual gmacError_t deviceMemset(int v, size_t size, 
+        unsigned blockOffset = 0) const = 0;
+    
+    
 };
 
 
