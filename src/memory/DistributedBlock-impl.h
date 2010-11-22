@@ -116,6 +116,24 @@ inline gmacError_t DistributedBlock<T>::copyFromDevice(core::IOBuffer &buffer, s
 	return gmacSuccess;
 }
 
+template<typename T>
+inline gmacError_t DistributedBlock<T>::hostMemset(int v, size_t size, unsigned blockOffset) const
+{
+    ::memset(StateBlock<T>::shadow_ + blockOffset, v, size);
+    return gmacSuccess;
+}
+
+template<typename T>
+inline gmacError_t DistributedBlock<T>::deviceMemset(int v, size_t size, unsigned blockOffset) const
+{
+    gmacError_t ret = gmacSuccess;
+	DeviceMap::const_iterator i;
+	for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++) {
+        ret = i->first->memset(i->second + blockOffset, v, size);
+		if(ret != gmacSuccess) break;
+	}
+	return ret;
+}
 
 }}
 

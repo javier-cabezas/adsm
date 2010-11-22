@@ -61,6 +61,8 @@ protected:
 	typedef std::map<uint8_t *, Block *> BlockMap;
 	BlockMap blocks_;
 
+    BlockMap::const_iterator firstBlock(unsigned &objectOffset) const;
+
 	gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset, unsigned objectOffset) const;
@@ -91,6 +93,8 @@ public:
 		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;	
 	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
+
+    gmacError_t memset(void *dst, int v, size_t size) const;
 };
 
 }}

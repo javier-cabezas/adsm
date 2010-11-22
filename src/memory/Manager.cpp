@@ -289,6 +289,23 @@ bool Manager::write(void *addr)
 	obj->release();
     return ret;
 }
+
+gmacError_t Manager::memset(void *s, int c, size_t n)
+{
+    core::Process &proc = core::Process::getInstance();
+    core::Mode *mode = proc.owner(s);
+	if (mode == NULL) {
+        ::memset(s, c, n);
+        return gmacSuccess;
+    }
+
+    const Object * obj = mode->getObject(s);
+    ASSERTION(obj != NULL);
+    gmacError_t ret = obj->memset(s, c, n);    
+    obj->release();
+    return ret;
+}
+
 #if 0
 gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 {
@@ -370,27 +387,6 @@ gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
 	}
 #endif
     return err;
-}
-
-gmacError_t Manager::memset(void *s, int c, size_t n)
-{
-    core::Process &proc = core::Process::getInstance();
-    core::Mode *mode = proc.owner(s);
-	if (mode == NULL) {
-        ::memset(s, c, n);
-        return gmacSuccess;
-    }
-
-    const Object * obj = mode->getObjectRead(s);
-    ASSERTION(obj != NULL);
-	if (obj->isInAccelerator() == false) {
-        ::memset(s, c, n);
-        return gmacSuccess;
-    }
-    gmacError_t ret;
-    ret = protocol_->memset(*obj, unsigned((uint8_t *)s - obj->addr()), c, n);
-    mode->putObject(*obj);
-    return ret;
 }
 
 gmacError_t

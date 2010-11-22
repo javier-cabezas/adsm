@@ -5,6 +5,18 @@
 
 namespace __impl { namespace memory {
 
+Object::BlockMap::const_iterator Object::firstBlock(unsigned &objectOffset) const
+{
+    BlockMap::const_iterator i = blocks_.begin();
+    if(i == blocks_.end()) return i;
+    while(objectOffset >= i->second->size()) {
+        objectOffset -= unsigned(i->second->size());
+        i++;
+        if(i == blocks_.end()) return i;
+    }
+    return i;
+}
+
 gmacError_t Object::coherenceOp(Protocol::CoherenceOp op) const
 {
 	gmacError_t ret = gmacSuccess;
@@ -20,15 +32,7 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 							 unsigned bufferOffset, unsigned objectOffset) const
 {
 	gmacError_t ret = gmacSuccess;
-	// Skip blocks at the begining of the object until we reach 
-    // the block where the operation has to be applied for the
-    // first time
-	BlockMap::const_iterator i = blocks_.begin();
-    while(objectOffset >= i->second->size()) {
-        objectOffset -= unsigned(i->second->size());
-        i++;
-        ASSERTION(i != blocks_.end());
-    }
+	BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
     unsigned blockOffset = objectOffset;
 	for(; i != blocks_.end(); i++) {
 		size_t blockSize = size - blockOffset;
@@ -36,6 +40,23 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 		ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
 		blockOffset = 0;
 		bufferOffset += unsigned(i->second->size());
+		size -= blockSize;
+        if(size == 0) break;
+	}
+	return ret;
+}
+
+gmacError_t Object::memset(void *dst, int v, size_t size) const
+{
+    gmacError_t ret = gmacSuccess;
+    unsigned objectOffset = unsigned((uint8_t *)dst - addr_);
+    BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
+    unsigned blockOffset = objectOffset;
+	for(; i != blocks_.end(); i++) {
+		size_t blockSize = size - blockOffset;
+		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();
+		ret = i->second->memset(v, blockSize, blockOffset);
+		blockOffset = 0;
 		size -= blockSize;
         if(size == 0) break;
 	}

@@ -79,6 +79,11 @@ public:
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+
+    gmacError_t hostMemset(int v, size_t size, 
+        unsigned blockOffset = 0) const;
+    gmacError_t deviceMemset(int v, size_t size,
+        unsigned blockOffset = 0) const;
 };
 
 

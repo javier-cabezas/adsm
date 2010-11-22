@@ -73,6 +73,18 @@ inline gmacError_t SharedBlock<T>::copyFromDevice(core::IOBuffer &buffer, size_t
 	return owner_.acceleratorToBuffer(buffer, StateBlock<T>::shadow_ + blockOffset, size, bufferOffset);
 }
 
+template<typename T>
+inline gmacError_t SharedBlock<T>::hostMemset(int v, size_t size, unsigned blockOffset) const
+{
+    ::memset(StateBlock<T>::shadow_ + blockOffset, v, size);
+    return gmacSuccess;
+}
+
+template<typename T>
+inline gmacError_t SharedBlock<T>::deviceMemset(int v, size_t size, unsigned blockOffset) const
+{
+    return owner_.memset(deviceAddr_ + blockOffset, v, size);
+}
 
 }}
 
