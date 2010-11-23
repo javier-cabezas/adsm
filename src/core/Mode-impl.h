@@ -4,6 +4,8 @@
 #include "memory/Map.h"
 #include "memory/Object.h"
 
+#include "core/Process.h"
+
 namespace __impl { namespace core {
 
 inline void ContextMap::add(THREAD_T id, Context *ctx)
@@ -58,6 +60,7 @@ inline gmacError_t ContextMap::sync()
 inline void Mode::cleanUp() const
 {
     map_.forEach(*this, &memory::Object::removeOwner);
+    memory::Map::removeOwner(Process::getInstance(), *this);
 }
 
 inline void Mode::cleanUpContexts()
@@ -114,9 +117,9 @@ Mode::removeObject(const memory::Object &obj)
 }
 
 inline const memory::Object *
-Mode::getObject(const void *addr) const
+Mode::getObject(const void *addr, size_t size) const
 {
-	return map_.get(addr);
+	return map_.get(addr, size);
 }
 
 inline void

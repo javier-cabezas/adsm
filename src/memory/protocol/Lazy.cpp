@@ -20,7 +20,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 LazyBase::LazyBase(unsigned limit) :
-    gmac::util::RWLock("Lazy"),
+    gmac::util::Lock("Lazy"),
     limit_(limit)
 {
 }
@@ -226,10 +226,14 @@ void LazyBase::addDirty(Block &block)
 
 gmacError_t LazyBase::releaseObjects()
 {
+    // We need to make sure that this operations is done before we
+    // let other modes to proceed
+    lock(); 
     while(dbl_.empty() == false) {
         Block *b = dbl_.pop();
         b->coherenceOp(&Protocol::release);
     }
+    unlock();
     return gmacSuccess;
 }
 

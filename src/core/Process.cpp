@@ -291,8 +291,8 @@ void Process::copy(THREAD_T id)
 
 Mode *Process::owner(const void *addr) const
 {
-    const memory::Object *object = shared_.get(addr);
-	if(object == NULL) object = global_.get(addr);
+    const memory::Object *object = shared_.get(addr, 0);
+	if(object == NULL) object = global_.get(addr, 0);
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
 	object->release();

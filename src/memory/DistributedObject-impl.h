@@ -91,7 +91,9 @@ inline bool DistributedObject<T>::addOwner(core::Mode &mode)
     gmacError_t ret = 
 		mode.malloc((void **)&deviceAddr, size_, (unsigned)paramPageSize);
     if(ret != gmacSuccess) return false;
-    lockRead();
+
+    lockWrite();
+    deviceAddr_.insert(DeviceMap::value_type(&mode, deviceAddr));
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         unsigned offset = unsigned(i->second->addr() - addr_);
