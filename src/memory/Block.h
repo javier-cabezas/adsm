@@ -51,6 +51,19 @@ namespace core {
 
 namespace memory {
 
+
+//! Memory block
+/*!
+    A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.
+    Each memory block has an unique host memory address, used by applications to access the shared data in the CPU code,
+    and a shadow host memory address used by GMAC to update the contents of the block. Upon creation, a memory block also
+    has one or more device memory addresses, used by the application to access the data from the device, and owners which
+    are those execution modes allowed to access the memory block from the device. However, a memory block might lose its
+    owner and memory addresses (e.g., when the execution mode owning the memory block dies) and stil be accessible from the
+    CPU.
+
+    Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
+*/
 class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
 protected:
     //! Memory coherence protocol used by the block
@@ -119,7 +132,7 @@ public:
         \warning This method should be only called from a Protcol class
         \sa copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa copyToDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyFromHost(core::IOBuffer &, size_t, unsigned, unsigend) const
+        \sa copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa copyFromDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa __impl::memory::Protocol
     */
@@ -165,7 +178,7 @@ public:
 
     //! Get memory block owner
     /*!
-        \param Returns the owner of the memory block
+        \return Owner of the memory block
     */
 	virtual core::Mode &owner() const = 0;
 
@@ -187,7 +200,7 @@ public:
     */
 	virtual gmacError_t toDevice() const = 0;
 
-    // Copy the data from a host memory location to the block host memory
+    //! Copy the data from a host memory location to the block host memory
     /*!
         \param src Source host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied
@@ -211,7 +224,7 @@ public:
 	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 
-    // Copy the data from a host memory location to the block device memory
+    //! Copy the data from a host memory location to the block device memory
     /*!
         \param src Source host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied
@@ -236,7 +249,7 @@ public:
 	virtual gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 	
-    // Copy the data from the block host memory to a host memory location
+    //! Copy the data from the block host memory to a host memory location
     /*!
         \param dst Destination host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied
@@ -261,7 +274,7 @@ public:
 	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 
-    // Copy the data from the block device memory to a host memory location
+    //! Copy the data from the block device memory to a host memory location
     /*!
         \param dst Destination host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied

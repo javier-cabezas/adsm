@@ -63,6 +63,7 @@ public:
     //! Default construcutor
     /*!
         \param protocol Memory coherence protocol used by the block
+        \param owner Owner of the memory block
         \param hostAddr Host memory address for applications to accesss the block
         \param shadowAddr Shadow host memory mapping that is always read/write
         \param deviceAddr Device memory address for applications to accesss the block
@@ -87,48 +88,36 @@ public:
     */
 	void *deviceAddr(const void *addr) const;
 
-    //! \sa __impl::memory::Block::toHost()
 	gmacError_t toHost() const;
 
-    //! \sa __impl::memory::Block::toDevice()
 	gmacError_t toDevice() const;
 
-    //! \sa __impl::memory::Block::copyToHost(const void *, size_t unsigned) const
     gmacError_t copyToHost(const void *src, size_t size, 
         unsigned blockOffset = 0) const;
     
-    //! \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::copyToDevice(const void *, size_t unsigned) const
     gmacError_t copyToDevice(const void *src, size_t size, 
         unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::copyToDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
 	gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	
-    //! \sa __impl::memory::Block::copyFromHost(const void *, size_t unsigned) const
     gmacError_t copyFromHost(void *dst, size_t size,
         unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::copyFromDevice(const void *, size_t unsigned) const
     gmacError_t copyFromDevice(void *dst, size_t size,
         unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::copyFromDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
 	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::hostMemset(int, size_t, unsigned) const
     gmacError_t hostMemset(int v, size_t size, unsigned blockOffset = 0) const;
 
-    //! \sa __impl::memory::Block::deviceMemset(int, size_t, unsigned) const
     gmacError_t deviceMemset(int v, size_t size, unsigned blockOffset = 0) const;
 };
 
