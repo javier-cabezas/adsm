@@ -3,10 +3,18 @@
 
 namespace __impl { namespace util {
 
-inline Reference::Reference() : ref_(1) {};
-inline Reference::~Reference() {};
+inline Reference::Reference() :
+    ref_(1)
+{
+}
 
-inline void Reference::cleanUp() const {};
+inline Reference::~Reference()
+{
+}
+
+inline void Reference::cleanUp() const
+{
+}
 
 inline void Reference::use() const
 {
@@ -15,7 +23,7 @@ inline void Reference::use() const
 
 inline void Reference::release() const
 {
-    if(AtomicDec(ref_) == 0) {
+    if (AtomicDec(ref_) == 0) {
         cleanUp();
         delete this;
     }

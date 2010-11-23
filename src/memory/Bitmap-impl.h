@@ -1,5 +1,5 @@
-#ifndef GMAC_MEMORY_BITMAP_IPP_
-#define GMAC_MEMORY_BITMAP_IPP_
+#ifndef GMAC_MEMORY_BITMAP_H_IMPL_
+#define GMAC_MEMORY_BITMAP_H_IMPL_
 
 namespace __impl { namespace memory { namespace vm {
 
@@ -20,7 +20,7 @@ template <bool __check, bool __clear, bool __set>
 inline
 bool Bitmap::CheckClearSet(const void * addr)
 {
-    if (!_synced) {
+    if (!synced_) {
         syncHost();
     }
     bool ret = false;
@@ -149,7 +149,7 @@ const size_t Bitmap::shiftEntry() const
 inline
 bool Bitmap::clean() const
 {
-    return !_dirty;
+    return !dirty_;
 }
 
 

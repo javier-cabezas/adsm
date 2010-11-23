@@ -229,7 +229,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 
     gmacError_t ret = gmacSuccess;
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    CFATAL(manager.release() == gmacSuccess, "Error releasing objects");
+    CFATAL(manager.releaseObjects() == gmacSuccess, "Error releasing objects");
 
     // Wait for pending transfers
     mode.sync();
@@ -256,7 +256,7 @@ gmacError_t APICALL gmacThreadSynchronize()
 	gmacError_t ret = __impl::core::Mode::current().sync();
     TRACE(GLOBAL, "Memory Sync");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.acquire();
+    manager.acquireObjects();
 
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();

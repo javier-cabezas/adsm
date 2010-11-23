@@ -5,6 +5,21 @@
 namespace __impl { namespace util {
 
 inline void
+SpinLock::lock() const
+{
+    enter();
+    while (InterlockedExchangeAcquire(&spinlock_, 1) == 1);
+    locked();
+}
+
+inline void
+SpinLock::unlock() const
+{
+    exit();
+    InterlockedExchangeAcquire(&spinlock_, 0); 
+}
+
+inline void
 Lock::lock() const
 {
     enter();

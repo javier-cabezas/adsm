@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 #include "util/Reference.h"
 #include "memory/Protocol.h"
 
-namespace __impl { 
+namespace __impl {
 
 namespace core {
 	class Mode;

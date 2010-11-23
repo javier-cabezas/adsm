@@ -4,6 +4,15 @@
 
 namespace __impl { namespace util {
 
+SpinLock::SpinLock(const char *name) :
+    __Lock(name), spinlock_(0)
+{
+}
+
+SpinLock::~SpinLock()
+{
+}
+
 Lock::Lock(const char *name) :
     __Lock(name)
 {

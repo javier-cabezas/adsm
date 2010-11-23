@@ -7,6 +7,21 @@
 namespace __impl { namespace util {
 
 inline void
+SpinLock::lock() const
+{
+    enter();
+    pthread_spin_lock(&spinlock_);
+    locked();
+}
+
+inline void
+SpinLock::unlock() const
+{
+    exit();
+    pthread_spin_unlock(&spinlock_);
+}
+
+inline void
 Lock::lock() const
 {
     enter();

@@ -94,7 +94,7 @@ protected:
 
     bool releasedObjects_;
 #ifdef USE_VM
-    gmac::memory::vm::Bitmap *_bitmap;
+    __impl::memory::vm::Bitmap *_bitmap;
 #endif
 
     ContextMap contextMap_;

@@ -2,6 +2,44 @@
 
 namespace __dbc { namespace util {
 
+SpinLock::SpinLock(const char *name) :
+    __impl::util::SpinLock(name),
+    locked_(false),
+    owner_(0)
+{
+	InitializeCriticalSection(&internal_);
+}
+
+SpinLock::~SpinLock()
+{
+    DeleteCriticalSection(&internal_);
+}
+
+void SpinLock::lock() const
+{
+    __impl::util::SpinLock::lock();
+
+    EnterCriticalSection(&internal_);
+    ENSURES(locked_ == false);
+    locked_ = true;
+    owner_ = GetCurrentThreadId();
+    LeaveCriticalSection(&internal_);
+}
+
+void SpinLock::unlock() const
+{
+    EnterCriticalSection(&internal_);
+    REQUIRES(locked_ == true);
+    EXPECTS(owner_ == GetCurrentThreadId());
+    owner_ = 0;
+    locked_ = false;
+
+    __impl::util::SpinLock::unlock();
+
+    LeaveCriticalSection(&internal_);
+}
+
+
 Lock::Lock(const char *name) :
     __impl::util::Lock(name),
     locked_(false),

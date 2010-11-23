@@ -87,9 +87,9 @@ public:
 
     gmacError_t acquire(Block &obj);
 #ifdef USE_VM
-    gmacError_t acquireWithBitmap(const Object &obj);
+    gmacError_t acquireWithBitmap(Block &obj);
 #endif
-    gmacError_t release();
+    gmacError_t releaseObjects();
     gmacError_t release(Block &block);
     gmacError_t remove(Block &block);
 

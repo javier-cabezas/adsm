@@ -9,7 +9,7 @@
 namespace __impl { namespace memory { namespace vm {
 
 Bitmap::Bitmap(unsigned bits) :
-    bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minAddr_(NULL), maxAddr_(NULL)
+    RWLock("Bitmap"), bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minAddr_(NULL), maxAddr_(NULL)
 {
     shiftPage_ = int(log2(paramPageSize));
     if (paramBitmapChunksPerPage > 1) {
