@@ -122,7 +122,7 @@ inline gmacError_t DistributedBlock<T>::copyToDevice(core::IOBuffer &buffer, siz
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyFromHost(void *dst, size_t size, unsigned blockOffset) const
 {
-    ::memcpy(dst, StateBlock::shadow_ + blockOffset, size);
+    ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
 }
 
@@ -137,7 +137,7 @@ inline gmacError_t DistributedBlock<T>::copyFromHost(core::IOBuffer &buffer, siz
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyFromDevice(void *dst, size_t size, unsigned blockOffset) const
 {
-    ::memcpy(dst, StateBlock::shadow_ + blockOffset, size);
+    ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
 }
 

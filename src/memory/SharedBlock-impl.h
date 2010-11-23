@@ -74,7 +74,7 @@ inline gmacError_t SharedBlock<T>::copyToDevice(core::IOBuffer &buffer, size_t s
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromHost(void *dst, size_t size, unsigned blockOffset) const
 {
-    ::memcpy(dst, StateBlock::shadow_ + blockOffset, size);
+    ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
 }
 
