@@ -103,20 +103,20 @@ Mode::current()
 inline CUdeviceptr
 Mode::dirtyBitmapDevPtr() const
 {
-    return _bitmapDevPtr;
+    return bitmapDevPtr_;
 }
 
 inline CUdeviceptr
 Mode::dirtyBitmapShiftPageDevPtr() const
 {
-    return _bitmapShiftPageDevPtr;
+    return bitmapShiftPageDevPtr_;
 }
 
 #ifdef BITMAP_BIT
 inline CUdeviceptr
 Mode::dirtyBitmapShiftEntryDevPtr() const
 {
-    return _bitmapShiftEntryDevPtr;
+    return bitmapShiftEntryDevPtr_;
 }
 #endif
 #endif

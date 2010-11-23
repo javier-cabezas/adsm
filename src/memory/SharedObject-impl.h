@@ -21,7 +21,13 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
     // Allocate accelerator memory
     gmacError_t ret = 
 		owner_->malloc((void **)&deviceAddr_, size, (unsigned)paramPageSize);
-	if(ret == gmacSuccess) valid_ = true;
+	if(ret == gmacSuccess) {
+#ifdef USE_VM
+        vm::Bitmap &bitmap = owner_->dirtyBitmap();
+        bitmap.newRange(deviceAddr_, size_);
+#endif
+        valid_ = true;
+    }
 
 	// Populate the block-set
 	uint8_t *mark = addr_;
@@ -47,7 +53,7 @@ inline SharedObject<T>::~SharedObject()
     Memory::unshadow(shadow_, size_);
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
-    bitmap.removeRange(devAddr, StateObject<T>::size_);
+    bitmap.removeRange(deviceAddr_, size_);
 #endif
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }

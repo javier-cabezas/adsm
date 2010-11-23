@@ -206,9 +206,9 @@ do_stencil(void * ptr)
     JobDescriptor * descr = (JobDescriptor *) ptr;
 
 	float * v = NULL;
-	struct timeval s, t;
+	gmactime_t s, t;
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
 	if(gmacMalloc((void **)&descr->u2, descr->size()) != gmacSuccess)
@@ -221,21 +221,21 @@ do_stencil(void * ptr)
     if(gmacMalloc((void **) &v, descr->realSize()) != gmacSuccess)
 		CUFATAL();
 
-    for (int k = 0; k < descr->slices; k++) {        
-        for (int j = 0; j < descr->dimRealElems; j++) {        
-            for (int i = 0; i < descr->dimRealElems; i++) {        
+    for (unsigned k = 0; k < descr->slices; k++) {        
+        for (unsigned j = 0; j < descr->dimRealElems; j++) {        
+            for (unsigned i = 0; i < descr->dimRealElems; i++) {        
                 int iter = k * descr->sliceRealElems() + j * descr->dimRealElems + i;
                 v[iter] = VELOCITY;
             }
         }
     }
 
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	dim3 Db(32, 8);
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
-	gettimeofday(&s, NULL);
+	getTime(&s);
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         if (i % 10 == 0)
             printf("Iteration: %d\n", i);
@@ -279,7 +279,7 @@ do_stencil(void * ptr)
         barrier_wait(&barrier);
     }
 
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
 	gmacFree(descr->u2);

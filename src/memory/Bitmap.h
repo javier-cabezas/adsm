@@ -34,15 +34,18 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BITMAP_H_
 #define GMAC_MEMORY_BITMAP_H_
 
-#include <stddef.h>
-
 #include "config/common.h"
+
+#include "util/Lock.h"
+#include "util/Logger.h"
 
 
 #ifdef USE_VM
 namespace __impl { namespace memory  { namespace vm {
 
-class GMAC_LOCAL Bitmap : public gmac::util::Logger {
+class GMAC_LOCAL Bitmap :
+    public __impl::util::Logger,
+    protected gmac::util::RWLock {
 private:
 #ifdef BITMAP_WORD
     uint32_t *bitmap_;
@@ -62,12 +65,12 @@ private:
 
     void *device_;
 
-    const void *_minAddr, *_maxAddr;
+    const void *minAddr_, *maxAddr_;
 
-    size_t _shiftPage;
+    size_t shiftPage_;
 #ifdef BITMAP_BIT
-    size_t _shiftEntry;
-    uint32_t _bitMask;
+    size_t shiftEntry_;
+    uint32_t bitMask_;
 #endif
     size_t size_;
 
@@ -117,7 +120,7 @@ public:
 
 }}}
 
-#include "Bitmap.ipp"
+#include "Bitmap-impl.h"
 
 #endif
 

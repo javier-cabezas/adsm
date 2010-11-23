@@ -72,20 +72,23 @@ gmacError_t LazyBase::signalRead(Block &b)
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
 
+#ifdef USE_VM
+    core::Mode &mode = __impl::core::Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
+#endif
+
     if(block.state() == HostOnly) {
         WARNING("Signal on HostOnly block - Changing protection and continuing");
         Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
         goto exit_func;
     }
 
-
     if (block.state() != Invalid) {
         goto exit_func; // Somebody already fixed it
     }
+
 #ifdef USE_VM
-    gmac::core::Mode &mode = gmac::core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    if (bitmap.checkAndClear(obj.device(block->addr()))) {
+    if (bitmap.checkAndClear(block.deviceAddr(block.addr()))) {
 #endif
         ret = block.toHost();
         if(ret != gmacSuccess) goto exit_func;
@@ -105,19 +108,25 @@ gmacError_t LazyBase::signalWrite(Block &b)
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
+
+#ifdef USE_VM
+    core::Mode &mode = __impl::core::Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
+#endif
+
     switch(block.state()) {
         case Dirty:            
             goto exit_func; // Somebody already fixed it
         case Invalid:          
 #ifdef USE_VM
-            vm::Bitmap &bitmap = mode.dirtyBitmap();
-            if (bitmap.checkAndClear(obj.device(block->addr()))) {
+            if (bitmap.checkAndClear(block.deviceAddr(block.addr()))) {
 #endif
                 ret = block.toHost();
                 if(ret != gmacSuccess) goto exit_func;
 #ifdef USE_VM
             }
 #endif
+            break;
         case HostOnly:
             WARNING("Signal on HostOnly block - Changing protection and continuing");
         case ReadOnly:
@@ -154,35 +163,38 @@ gmacError_t LazyBase::acquire(Block &b)
 }
 
 #ifdef USE_VM
-gmacError_t LazyBase::acquireWithBitmap(const Object &obj)
+gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
+    gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
-    gmacError_t ret = gmacSuccess;
-    StateObject<State> &object = dynamic_cast<StateObject<State> &>(obj);
-    StateObject<State>::SystemMap &map = object.blocks();
-    StateObject<State>::SystemMap::iterator i;
-    for(i = map.begin(); i != map.end(); i++) {
-        SystemBlock<State> *block = i->second;
-        block->lock();
-        if (bitmap.check(obj.device(block->addr()))) {
-            if(Memory::protect(block->addr(), block->size(), GMAC_PROT_NONE) < 0)
-                FATAL("Unable to set memory permissions");
-            block->state(Invalid);
-        } else {
-            if(Memory::protect(block->addr(), block->size(), GMAC_PROT_READ) < 0)
-                FATAL("Unable to set memory permissions");
-            block->state(ReadOnly);
-        }
-        block->unlock();
+    StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
+    switch(block.state()) {
+        case Invalid:
+        case ReadOnly:
+            if (bitmap.check(block.deviceAddr(block.addr()))) {
+                if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
+                    FATAL("Unable to set memory permissions");
+                block.state(Invalid);
+            } else {
+                if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+                    FATAL("Unable to set memory permissions");
+                block.state(ReadOnly);
+            }
+            break;
+        case Dirty:
+            FATAL("Block in incongruent state in acquire: %p", block.addr());
+            break;
+        case HostOnly:
+            break;
     }
-    return ret;
+	return ret;
 }
 #endif
 
 gmacError_t LazyBase::remove(Block &b)
 {
-    StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
+    memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
     TRACE(LOCAL,"Releasing block %p", block.addr());
     gmacError_t ret = gmacSuccess;
     switch(block.state()) {
@@ -195,7 +207,7 @@ gmacError_t LazyBase::remove(Block &b)
             if(ret != gmacSuccess) break;
     }
     if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
-                    FATAL("Unable to set memory permissions");
+        FATAL("Unable to set memory permissions");
     block.state(HostOnly);
     dbl_.remove(block);
     return ret;
@@ -212,7 +224,7 @@ void LazyBase::addDirty(Block &block)
     return;
 }
 
-gmacError_t LazyBase::release()
+gmacError_t LazyBase::releaseObjects()
 {
     while(dbl_.empty() == false) {
         Block *b = dbl_.pop();

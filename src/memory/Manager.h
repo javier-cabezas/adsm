@@ -84,8 +84,8 @@ public:
     ///////////////////////////////
     // Coherence protocol interface
     ///////////////////////////////
-    gmacError_t acquire();
-    gmacError_t release();
+    gmacError_t acquireObjects();
+    gmacError_t releaseObjects();
     gmacError_t invalidate();
 
     TESTABLE bool read(void *addr);

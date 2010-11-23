@@ -47,6 +47,20 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
+class GMAC_LOCAL SpinLock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(SpinLock)
+
+protected:
+	mutable pthread_spinlock_t spinlock_;
+public:
+	SpinLock(const char *name);
+	VIRTUAL ~SpinLock();
+
+protected:
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
+};
+
 class GMAC_LOCAL Lock : public __impl::util::__Lock {
     DBC_FORCE_TEST(Lock)
 

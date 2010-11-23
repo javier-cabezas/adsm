@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 
     if (dimRealElems % 32 != 0) {
-        fprintf(stderr, "Error: wrong dimension %d\n", dimRealElems);
+        fprintf(stderr, "Error: wrong dimension %zd\n", dimRealElems);
         abort();
     }
 

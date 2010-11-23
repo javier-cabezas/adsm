@@ -4,6 +4,17 @@
 
 namespace __impl { namespace util {
 
+SpinLock::SpinLock(const char *name) :
+    __impl::util::__Lock(name)
+{
+    pthread_spin_init(&spinlock_, PTHREAD_PROCESS_PRIVATE);
+}
+
+SpinLock::~SpinLock()
+{
+    pthread_spin_destroy(&spinlock_);
+}
+
 Lock::Lock(const char *name) :
     __impl::util::__Lock(name)
 {

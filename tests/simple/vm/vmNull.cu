@@ -23,11 +23,11 @@ __global__ void null()
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
-	struct timeval s, t;
+	gmactime_t s, t;
 
 	const char *vecStr = getenv("VECTORSIZE");
 	if(vecStr != NULL) vecSize = atoi(vecStr) * 1024 * 1024;
-	fprintf(stderr,"Vector %dMB\n", vecSize);
+	fprintf(stderr,"Vector %zdMB\n", vecSize);
 	// Alloc & init input data
 	if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
 		CUFATAL();
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	randInit(a, vecSize);
 	randInit(b, vecSize);
 
@@ -46,17 +46,17 @@ int main(int argc, char *argv[])
 	dim3 Dg(vecSize / blockSize);
 	if(vecSize % blockSize) Db.x++;
 	null<<<Dg, Db>>>();
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "", " ");
 
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	float error = 0;
-	for(int i = 0; i < vecSize; i++) {
+	for (unsigned i = 0; i < vecSize; i++) {
 		error += (a[i] - b[i]);
 	}
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "", "\n");
 
 	fprintf(stderr,"Error: %f\n", error);

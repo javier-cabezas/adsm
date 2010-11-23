@@ -147,7 +147,7 @@ void *Manager::translate(const void *addr)
     return ret;
 }
 
-gmacError_t Manager::acquire()
+gmacError_t Manager::acquireObjects()
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
@@ -155,11 +155,11 @@ gmacError_t Manager::acquire()
         return gmacSuccess;
     }
 	mode.forEachObject(&Object::acquire);
-    mode.releaseObjects();
+    mode.acquireObjects();
     return ret;
 }
 
-gmacError_t Manager::release()
+gmacError_t Manager::releaseObjects()
 {
 #ifdef USE_VM
     checkBitmapToDevice();
@@ -167,9 +167,11 @@ gmacError_t Manager::release()
     core::Mode &mode = core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    ret = mode.protocol().release();
+    // Release per-mode objects
+    ret = mode.protocol().releaseObjects();
     if(ret == gmacSuccess) {
-        core::Process::getInstance().protocol().release();
+        // Release global per-process objects
+        core::Process::getInstance().protocol().releaseObjects();
         mode.releaseObjects();
     }
     return ret;
@@ -232,20 +234,11 @@ gmacError_t Manager::fromIOBuffer(void * addr, core::IOBuffer &buffer, size_t co
 #ifdef USE_VM
 void Manager::checkBitmapToHost()
 {
-    core::Mode *mode = core::Mode::current();
-    vm::Bitmap &bitmap = mode->dirtyBitmap();
+    core::Mode &mode = core::Mode::current();
+    vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (!bitmap.synced()) {
         bitmap.syncHost();
-
-        const Map &map = mode->objects();
-        map.lockRead();
-        Map::const_iterator i;
-        for(i = map.begin(); i != map.end(); i++) {
-            Object &object = *i->second;
-            gmacError_t ret = protocol_->acquireWithBitmap(object);
-            ASSERTION(ret == gmacSuccess);
-        }
-        map.unlock();
+        mode.forEachObject(&Object::acquire);
     }
 }
 
