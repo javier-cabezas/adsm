@@ -56,7 +56,7 @@ protected:
         \param init Initial block state
     */
 	StateBlock(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size, T init);
-
+public:
     //! Get block state
     /*!
         \return Block state
