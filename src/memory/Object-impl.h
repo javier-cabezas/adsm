@@ -19,8 +19,11 @@ inline Object::~Object()
 {
     BlockMap::iterator i;
     lockWrite();
-    for(i = blocks_.begin(); i != blocks_.end(); i++)
+    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+    ASSERTION(ret == gmacSuccess);
+    for(i = blocks_.begin(); i != blocks_.end(); i++) {
         i->second->release();
+    }
     blocks_.clear();
     unlock();
     

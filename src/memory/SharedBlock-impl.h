@@ -44,11 +44,24 @@ inline gmacError_t SharedBlock<T>::toDevice() const
 }
 
 template<typename T>
+inline gmacError_t SharedBlock<T>::copyToHost(const void *src, size_t size, unsigned blockOffset) const
+{
+    ::memcpy(StateBlock<T>::shadow_ + blockOffset, src, size);
+    return gmacSuccess;
+}
+
+template<typename T>
 inline gmacError_t SharedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t size, 
 											  unsigned bufferOffset, unsigned blockOffset) const
 {
 	::memcpy(StateBlock<T>::shadow_ + blockOffset, (uint8_t *)buffer.addr() + bufferOffset, size);
 	return gmacSuccess;
+}
+
+template<typename T>
+inline gmacError_t SharedBlock<T>::copyToDevice(const void *src, size_t size,  unsigned blockOffset) const
+{
+    return owner_.copyToAccelerator(deviceAddr_ + blockOffset, src, size);
 }
 
 template<typename T>
@@ -59,11 +72,24 @@ inline gmacError_t SharedBlock<T>::copyToDevice(core::IOBuffer &buffer, size_t s
 }
 
 template<typename T>
+inline gmacError_t SharedBlock<T>::copyFromHost(void *dst, size_t size, unsigned blockOffset) const
+{
+    ::memcpy(dst, StateBlock::shadow_ + blockOffset, size);
+    return gmacSuccess;
+}
+
+template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t size, 
 												unsigned bufferOffset, unsigned blockOffset) const
 {
 	::memcpy((uint8_t *)buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
 	return gmacSuccess;
+}
+
+template<typename T>
+inline gmacError_t SharedBlock<T>::copyFromDevice(void *dst, size_t size, unsigned blockOffset) const
+{
+    return owner_.copyToHost(dst, StateBlock<T>::shadow_ + blockOffset, size);
 }
 
 template<typename T>

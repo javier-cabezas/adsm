@@ -280,7 +280,7 @@ void * APICALL gmacMemset(void *s, int c, size_t n)
 	gmac::exitGmac();
     return ret;
 }
-#if 0
+
 void * APICALL gmacMemcpy(void *dst, const void *src, size_t n)
 {
 	gmac::enterGmac();
@@ -297,7 +297,7 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t n)
 	gmac::exitGmac();
 	return ret;
 }
-#endif
+
 void APICALL gmacSend(THREAD_T id)
 {
     gmac::enterGmac();

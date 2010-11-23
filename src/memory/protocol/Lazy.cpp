@@ -50,6 +50,8 @@ void LazyBase::deleteObject(Object &obj)
     obj.release();
 }
 
+
+
 bool LazyBase::needUpdate(const Block &b) const
 {
     const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
@@ -178,8 +180,6 @@ gmacError_t LazyBase::acquireWithBitmap(const Object &obj)
 }
 #endif
 
-
-
 gmacError_t LazyBase::remove(Block &b)
 {
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -242,13 +242,19 @@ gmacError_t LazyBase::release(Block &b)
     return ret;
 }
 
+gmacError_t LazyBase::deleteBlock(Block &block)
+{
+    dbl_.remove(dynamic_cast<StateBlock<State> &>(block));
+    return gmacSuccess;
+}
+
 gmacError_t LazyBase::toHost(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Invalid:
-			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
+			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             ret = block.toHost();
             if(ret != gmacSuccess) break;
@@ -323,7 +329,7 @@ gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, siz
 
 gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockOffset) const
 {
-    	gmacError_t ret = gmacSuccess;
+    gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
@@ -342,5 +348,48 @@ gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockO
 	return ret;
 }
 
+gmacError_t LazyBase::copyFromMemory(const Block &b, const void *src, size_t size, unsigned blockOffset) const
+{
+    gmacError_t ret = gmacSuccess;
+	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
+	switch(block.state()) {
+		case Invalid:
+            ret = b.copyToDevice(src, size, blockOffset);
+			break;
+		case ReadOnly:
+			ret = b.copyToDevice(src, size, blockOffset);
+			if(ret != gmacSuccess) break;
+			ret = b.copyToHost(src, size, blockOffset);
+			break;
+		case Dirty:			
+        case HostOnly:
+			ret = b.copyToHost(src, size, blockOffset);
+			break;
+	}
+	return ret;
+}
+
+gmacError_t LazyBase::copyFromObject(const Block &block, const Object &object, 
+                                     size_t size, unsigned blockOffset) const
+{
+    return gmacSuccess;
+}
+
+gmacError_t LazyBase::copyToMemory(const Block &b, void *dst, size_t size, unsigned blockOffset) const
+{
+    gmacError_t ret = gmacSuccess;
+	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
+	switch(block.state()) {
+		case Invalid:
+            ret = b.copyFromDevice(dst, size, blockOffset);
+			break;
+		case ReadOnly:
+		case Dirty:			
+        case HostOnly:
+			ret = b.copyFromHost(dst, size, blockOffset);
+			break;
+	}
+	return ret;
+}
 
 }}}

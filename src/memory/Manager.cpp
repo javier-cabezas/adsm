@@ -298,7 +298,7 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
         ::memset(s, c, n);
         return gmacSuccess;
     }
-
+    // TODO: deal with the case of several objects being affected
     const Object * obj = mode->getObject(s);
     ASSERTION(obj != NULL);
     gmacError_t ret = obj->memset(s, c, n);    
@@ -306,89 +306,47 @@ gmacError_t Manager::memset(void *s, int c, size_t n)
     return ret;
 }
 
-#if 0
-gmacError_t Manager::memcpy(void * dst, const void * src, size_t n)
+
+gmacError_t Manager::memcpy(void *dst, const void *src, size_t n)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *dstMode = proc.owner(dst);
     core::Mode *srcMode = proc.owner(src);
 
-	if (dstMode == NULL && srcMode == NULL) {
+    if(dstMode == NULL && srcMode == NULL) {
         ::memcpy(dst, src, n);
         return gmacSuccess;
     }
-
-    const Object *dstObj = NULL;
-    const Object *srcObj = NULL;
-	if (dstMode != NULL) {
-        dstObj = dstMode->getObjectRead(dst);
-        ASSERTION(dstObj != NULL);
-    }
-    if (srcMode != NULL) {
-        srcObj = srcMode->getObjectRead(src);
-        ASSERTION(srcObj != NULL);
+    // TODO: consider the case of a memcpy not starting on an object
+    const Object *dstObject = NULL;
+    const Object *srcObject = NULL;
+	if(dstMode != NULL) {
+        dstObject = dstMode->getObject(dst);
+        ASSERTION(dstObject != NULL);
     }
 
-    gmacError_t err = gmacSuccess;
-    if (dstMode == NULL) {	    // From device
-		err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-        ASSERTION(err == gmacSuccess);
-	}
-    else if(srcMode == NULL) {   // To device
-		err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
-        ASSERTION(err == gmacSuccess);
+    if(srcMode != NULL) {
+        srcObject = srcMode->getObject(src);
+        ASSERTION(srcObject != NULL);
     }
-    else {
-        if (!srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
-            ::memcpy(dst, src, n);
-        } else if (srcObj->isInAccelerator() && !dstObj->isInAccelerator()) {
-            err = protocol_->toPointer(dst, *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-            ASSERTION(err == gmacSuccess);
-        } else if (!srcObj->isInAccelerator() && dstObj->isInAccelerator()) {
-            err = protocol_->fromPointer(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()), src, n);
-            ASSERTION(err == gmacSuccess);
-        } else {
-            err = protocol_->copy(*dstObj, (unsigned)((uint8_t *)dst - dstObj->addr()),
-                                  *srcObj, (unsigned)((uint8_t *)src - srcObj->addr()), n);
-            ASSERTION(err == gmacSuccess);
+
+    gmacError_t ret = gmacSuccess;
+    if(dstObject != NULL) {
+        if(srcObject == NULL) ret = dstObject->memcpyFromMemory(dst, src, n);
+        else {
+            unsigned objectOffset = unsigned((uint8_t *)srcObject->addr() - (uint8_t *)src);
+            ret = dstObject->memcpyFromObject(dst, *srcObject, n, objectOffset);
         }
-	}
-
-    if (dstMode != NULL) {
-        dstMode->putObject(*dstObj);
     }
-    if (srcMode != NULL) {
-        srcMode->putObject(*srcObj);
-    }
-#if 0
-	else { // dstCtx != srcCtx
-        core::Mode *mode = core::Mode::current();
-        ASSERTION(mode != NULL);
+    else ret = srcObject->memcpyToMemory(dst, src, n);
 
-        manager->release((void *)src, n);
-        manager->invalidate(dst, n);
-
-        off_t off = 0;
-        core::IOBuffer *buffer = core::Mode::current()->getIOBuffer();
-
-        size_t left = n;
-        while (left != 0) {
-            size_t bytes = left < buffer->size() ? left : buffer->size();
-            err = srcMode->bufferToHost(buffer, proc->translate((char *)src + off), bytes);
-            ASSERTION(err == gmacSuccess);
-
-            err = dstMode->bufferToDevice(buffer, proc->translate((char *)dst + off), bytes);
-            ASSERTION(err == gmacSuccess);
-
-            left -= bytes;
-            off  += bytes;
-        }
-
-	}
-#endif
-    return err;
+    if(dstObject != NULL) dstObject->release();
+    if(srcObject != NULL) srcObject->release();
+    
+    return ret;
 }
 
+#if 0
 gmacError_t
 Manager::removeMode(core::Mode &mode)
 {

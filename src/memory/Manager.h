@@ -99,10 +99,8 @@ public:
 	TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
 
     TESTABLE gmacError_t memset(void *dst, int c, size_t n);
-#if 0
-    
     TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
-
+#if 0
     ///////////////////
     // Object migration
     ///////////////////
