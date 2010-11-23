@@ -61,7 +61,7 @@ protected:
 	friend class Map;
     typedef std::map<const void *, Object *> Parent;
 
-    const Object *mapFind(const void *addr) const;
+    const Object *mapFind(const void *addr, size_t size) const;
 public:
     ObjectMap(const char *name);
     virtual ~ObjectMap();
@@ -69,7 +69,7 @@ public:
 
 	virtual bool insert(Object &obj);
 	virtual bool remove(const Object &obj);
-	virtual const Object *get(const void *addr) const;
+	virtual const Object *get(const void *addr, size_t size) const;
 
     size_t memorySize() const;
     void forEach(ObjectOp op) const;
@@ -82,6 +82,8 @@ class GMAC_LOCAL Map : public memory::ObjectMap {
 protected:
     core::Mode &parent_;
 
+    const Object *get(const ObjectMap &map, const uint8_t *&base, 
+        const void *addr, size_t size) const;
 public:
     Map(const char *name, core::Mode &parent);
     virtual ~Map();
@@ -91,12 +93,12 @@ public:
 
     bool insert(Object &obj);
     bool remove(const Object &obj);
-	virtual const Object *get(const void *addr) const;
+	virtual const Object *get(const void *addr, size_t size) const;
 
     static void insertOrphan(Object &obj);
 
 	static void addOwner(core::Process &proc, core::Mode &mode);
-	static void removeOwner(core::Process &proc, core::Mode &mode);
+	static void removeOwner(core::Process &proc, const core::Mode &mode);
 
     //void makeOrphans();
 };

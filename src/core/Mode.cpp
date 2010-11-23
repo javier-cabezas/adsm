@@ -43,8 +43,6 @@ Mode::~Mode()
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
 }
 
-
-
 void Mode::finiThread()
 {
     Mode *mode = key.get();
@@ -158,13 +156,6 @@ gmacError_t Mode::sync()
 }
 
 #if 0
-bool Mode::requireUpdate(memory::Block &block)
-{
-	memory::Manager &manager = memory::Manager::getInstance();
-    return manager.requireUpdate(block);
-}
-
-
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {

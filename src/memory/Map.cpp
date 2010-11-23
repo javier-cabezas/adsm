@@ -8,14 +8,14 @@
 
 namespace __impl { namespace memory {
 
-const Object *ObjectMap::mapFind(const void *addr) const
+const Object *ObjectMap::mapFind(const void *addr, size_t size) const
 {
     ObjectMap::const_iterator i;
     const Object *ret = NULL;
     lockRead();
+    const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
-    if(i != end() && i->second->addr() <= addr)
-        ret = i->second;
+    if(i != end() && i->second->addr() <= limit) ret = i->second;
     unlock();
     return ret;
 }
@@ -59,10 +59,10 @@ bool ObjectMap::remove(const Object &obj)
 	return ret;
 }
 
-const Object *ObjectMap::get(const void *addr) const
+const Object *ObjectMap::get(const void *addr, size_t size) const
 {
     const Object *ret = NULL;
-    ret = mapFind(addr);
+    ret = mapFind(addr, size);
 	if(ret != NULL) ret->use();
     return ret;
 }
@@ -122,15 +122,39 @@ Map::operator =(const Map &)
     return *this;
 }
 
-const Object *Map::get(const void *addr) const
+const Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
 {
-    const core::Process &proc = parent_.process();
+    const Object *ret = map.mapFind(addr, size);
+    if(ret == NULL) return ret;
+    if(base == NULL || ret->addr() < base) {
+        base = ret->addr();
+        return ret;
+    }
+    return NULL;
+}
+
+const Object *Map::get(const void *addr, size_t size) const
+{    
     const Object *ret = NULL;
-    ret = mapFind(addr);
-    if(ret == NULL)  ret = proc.shared().mapFind(addr);
-    if(ret == NULL)  ret = proc.global().mapFind(addr);
-    if(ret == NULL)  ret = proc.orphans().mapFind(addr);
-	if (ret != NULL) ret->use();
+    const uint8_t *base = NULL;
+    // Lookup in the current map
+    ret = get(*this, base, addr, size);
+    if(base == addr) goto exit_func;
+
+    // Check global maps
+    const core::Process &proc = parent_.process();
+    const Object *obj = NULL;
+    obj = get(proc.shared(), base, addr, size);
+    if(obj != NULL) ret = obj;
+    if(base == addr) goto exit_func;
+    obj = get(proc.global(), base, addr, size);
+    if(obj != NULL) ret = obj;
+    if(base == addr) goto exit_func;
+    obj = get(proc.orphans(), base, addr, size);
+    if(obj != NULL) ret = obj;
+
+exit_func:
+    if(ret != NULL) ret->use();
     return ret;
 }
 
@@ -169,16 +193,6 @@ bool Map::remove(const Object &obj)
 		return true;
 	}
 
-#if 0
-    // Centralized object
-    ObjectMap &centralized = proc.centralized();
-	ret = centralized.remove(obj);
-	if(ret == true) {
-		TRACE(LOCAL,"Removed Centralized Object %p", addr);
-		return true;
-	}
-#endif
-
     // Orphan object
     ObjectMap &orphans = proc.orphans();
 	ret = orphans.remove(obj);
@@ -208,7 +222,7 @@ void Map::addOwner(core::Process &proc, core::Mode &mode)
 }
 
 
-void Map::removeOwner(core::Process &proc, core::Mode &mode)
+void Map::removeOwner(core::Process &proc, const core::Mode &mode)
 {
     ObjectMap &global = proc.global();
     iterator i;

@@ -99,7 +99,7 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
         trace::EnterCurrentFunction();
-        memcpy(buffer_->addr(), (uint8_t *)host + offset, len);
+        ::memcpy(buffer_->addr(), (uint8_t *)host + offset, len);
         trace::ExitCurrentFunction();
         ASSERTION(len <= paramPageSize);
         buffer_->toAccelerator(mode_);
@@ -137,7 +137,7 @@ gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
         ret = buffer_->wait();
         if(ret != gmacSuccess) break;
         trace::EnterCurrentFunction();
-        memcpy((uint8_t *)host + offset, buffer_->addr(), len);
+        ::memcpy((uint8_t *)host + offset, buffer_->addr(), len);
         trace::ExitCurrentFunction();
         offset += len;
     }

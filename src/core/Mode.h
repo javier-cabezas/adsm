@@ -143,7 +143,7 @@ public:
     void addReplicatedObject(memory::Object &obj);
     //void addCentralizedObject(memory::Object &obj);
     void removeObject(const memory::Object &obj);
-    const memory::Object *getObject(const void *addr) const;
+    const memory::Object *getObject(const void *addr, size_t size = 0) const;
 	void forEachObject(memory::ObjectMap::ObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */

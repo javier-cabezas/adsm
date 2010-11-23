@@ -57,7 +57,7 @@ template<typename T> class StateBlock;
 
 namespace protocol { 
 
-class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::RWLock {
+class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
     typedef enum {
         Invalid,
