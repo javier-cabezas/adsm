@@ -44,10 +44,29 @@ namespace __impl { namespace memory {
 template<typename T>
 class GMAC_LOCAL StateBlock : public Block {
 protected:
+    //! Block state
 	T state_;    
-public:
+
+    //! Default construcutor
+    /*!
+        \param protocol Memory coherence protocol used by the block
+        \param addr Host memory address for applications to accesss the block
+        \param shaodw Shadow host memory mapping that is always read/write
+        \param size Size (in bytes) of the memory block
+        \param init Initial block state
+    */
 	StateBlock(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size, T init);
+
+    //! Get block state
+    /*!
+        \return Block state
+    */
 	const T &state() const;
+
+    //! Set block state
+    /*!
+        \param s New block state
+    */
 	void state(const T &s);
 };
 
