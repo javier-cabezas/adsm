@@ -46,10 +46,10 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 	return ret;
 }
 
-gmacError_t Object::memset(void *dst, int v, size_t size) const
+gmacError_t Object::memset(void *addr, int v, size_t size) const
 {
     gmacError_t ret = gmacSuccess;
-    unsigned objectOffset = unsigned((uint8_t *)dst - addr_);
+    unsigned objectOffset = unsigned((uint8_t *)addr - addr_);
     BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
     unsigned blockOffset = objectOffset;
 	for(; i != blocks_.end(); i++) {
@@ -61,6 +61,61 @@ gmacError_t Object::memset(void *dst, int v, size_t size) const
         if(size == 0) break;
 	}
 	return ret;
+}
+
+gmacError_t Object::memcpyFromMemory(void *dst, const void *src, size_t size) const
+{
+    gmacError_t ret = gmacSuccess;
+    unsigned objectOffset = unsigned((uint8_t *)dst - addr_);
+    BlockMap::const_iterator i = firstBlock(objectOffset);
+    unsigned blockOffset = objectOffset;
+    for(; i != blocks_.end(); i++) {
+		size_t blockSize = size - blockOffset;
+		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();
+		ret = i->second->memcpyFromMemory(src, blockSize, blockOffset);
+		blockOffset = 0;
+		size -= blockSize;
+        if(size == 0) break;
+    }
+    return ret;
+}
+
+gmacError_t Object::memcpyFromObject(void *dst, const Object &src, size_t size,
+                                     unsigned objectOffset) const
+{
+    gmacError_t ret = gmacSuccess;
+    unsigned dstObjectOffset = unsigned((uint8_t *)dst - addr_);
+    BlockMap::const_iterator i = firstBlock(dstObjectOffset);
+    unsigned blockOffset = dstObjectOffset;
+    for(; i != blocks_.end(); i++) {
+		size_t blockSize = size - blockOffset;
+		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();
+		ret = i->second->memcpyFromObject(src, blockSize, blockOffset, objectOffset);
+		blockOffset = 0;
+        objectOffset += unsigned(blockSize);
+		size -= blockSize;
+        if(size == 0) break;
+    }
+    return ret;
+}
+
+gmacError_t Object::memcpyToMemory(void *dst, const void *src, size_t size) const
+{
+    gmacError_t ret = gmacSuccess;
+    unsigned objectOffset = unsigned((uint8_t *)src - addr_);
+    BlockMap::const_iterator i = firstBlock(objectOffset);
+    unsigned blockOffset = objectOffset;
+    unsigned memOffset = 0;
+    for(; i != blocks_.end(); i++) {
+		size_t blockSize = size - blockOffset;
+		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();
+		ret = i->second->memcpyToMemory((void *)((uint8_t *)dst + memOffset), blockSize, blockOffset);
+		blockOffset = 0;
+		size -= blockSize;
+        memOffset += unsigned(blockSize);
+        if(size == 0) break;
+    }
+    return ret;
 }
 
 }}

@@ -94,7 +94,11 @@ public:
 	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
 
-    gmacError_t memset(void *dst, int v, size_t size) const;
+    gmacError_t memset(void *addr, int v, size_t size) const;
+    gmacError_t memcpyFromMemory(void *dst, const void *src, size_t size) const;
+    gmacError_t memcpyFromObject(void *dst, const Object &src, 
+        size_t size, unsigned objectOffset = 0) const;
+    gmacError_t memcpyToMemory(void *dst, const void *src, size_t size) const;
 };
 
 }}

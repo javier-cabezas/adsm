@@ -70,13 +70,21 @@ public:
 	gmacError_t toHost() const;
 	gmacError_t toDevice() const;
 
+    gmacError_t copyToHost(const void *src, size_t size, 
+        unsigned blockOffset = 0) const;
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+    gmacError_t copyToDevice(const void *src, size_t size, 
+        unsigned blockOffset = 0) const;
 	gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	
+    gmacError_t copyFromHost(void *dst, size_t size,
+        unsigned blockOffset = 0) const;
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+    gmacError_t copyFromDevice(void *dst, size_t size,
+        unsigned blockOffset = 0) const;
 	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 

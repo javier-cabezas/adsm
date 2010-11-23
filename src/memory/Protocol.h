@@ -77,6 +77,8 @@ public:
     virtual gmacError_t release() = 0;
     virtual gmacError_t remove(Block &block) = 0;
 
+    virtual gmacError_t deleteBlock(Block &block) = 0;
+
     virtual gmacError_t toHost(Block &block) = 0;
     virtual gmacError_t toDevice(Block &block) = 0;
 
@@ -87,6 +89,13 @@ public:
 		unsigned bufferOffet, unsigned blockOffset) const = 0;
 
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
+        unsigned blockOffset) const = 0;
+
+    virtual gmacError_t copyFromMemory(const Block &block, const void *src, size_t size,
+        unsigned blockOffset) const = 0;
+    virtual gmacError_t copyFromObject(const Block &block, const Object &object, size_t size,
+        unsigned blockOffset) const = 0;
+    virtual gmacError_t copyToMemory(const Block &block, void *dst, size_t size,
         unsigned blockOffset) const = 0;
 
 #if 0

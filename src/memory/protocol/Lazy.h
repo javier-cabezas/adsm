@@ -71,14 +71,15 @@ protected:
     unsigned limit_;
     BlockList dbl_;
 
-	
+
     void addDirty(Block &block);
     LazyBase(unsigned limit);
     virtual ~LazyBase();
 
+public:
     // Protocol Interface
 	void deleteObject(Object &obj);
-
+    
     bool needUpdate(const Block &block) const;
 
     gmacError_t signalRead(Block &block);
@@ -92,6 +93,8 @@ protected:
     gmacError_t release(Block &block);
     gmacError_t remove(Block &block);
 
+    gmacError_t deleteBlock(Block &block);
+
 	gmacError_t toHost(Block &block);
     gmacError_t toDevice(Block &block);
 
@@ -102,6 +105,13 @@ protected:
 		unsigned bufferOffset, unsigned blockOffset) const;
 
     gmacError_t memset(const Block &block, int v, size_t size, 
+        unsigned blockOffset) const;
+
+    gmacError_t copyFromMemory(const Block &block, const void *src, size_t size,
+        unsigned blockOffset) const;
+    gmacError_t copyFromObject(const Block &block, const Object &object, size_t size,
+        unsigned blockOffset) const;
+    gmacError_t copyToMemory(const Block &block, void *dst, size_t size,
         unsigned blockOffset) const;
 };
 

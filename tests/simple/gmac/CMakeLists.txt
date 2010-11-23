@@ -87,10 +87,10 @@ add_executable(gmacFile ${gfile} ${common_SRC} gmacFile.cu)
 target_link_libraries(gmacFile gmac)
 
 # gmacMap
-source_group(${current_GROUP} FILES gmacMap.cu)
-cuda_compile(map gmacMap.cu)
-add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
-target_link_libraries(gmacMap gmac)
+# source_group(${current_GROUP} FILES gmacMap.cu)
+# cuda_compile(map gmacMap.cu)
+# add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
+# target_link_libraries(gmacMap gmac)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_custom_target(InputSets ALL

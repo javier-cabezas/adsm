@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 #include "memory/Protocol.h"
 #include "util/Reference.h"
+#include "util/Lock.h"
 
 namespace __impl { 
 
@@ -70,6 +71,10 @@ public:
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset, unsigned blockOffset);
     gmacError_t memset(int v, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t memcpyFromMemory(const void *src, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t memcpyFromObject(const Object &object, size_t size, 
+        unsigned blockOffset = 0, unsigned objectOffset = 0);
+    gmacError_t memcpyToMemory(void *dst, size_t size, unsigned blockOffset = 0) const;
 
 	virtual core::Mode &owner() const = 0;
 	virtual void *deviceAddr(const void *addr) const = 0;
@@ -77,13 +82,21 @@ public:
 	virtual gmacError_t toHost() const = 0;
 	virtual gmacError_t toDevice() const = 0;
 
+    virtual gmacError_t copyToHost(const void *src, size_t size, 
+        unsigned blockOffset = 0) const = 0;
 	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+    virtual gmacError_t copyToDevice(const void *src, size_t size,
+        unsigned blockOffset = 0) const = 0;
 	virtual gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 	
+    virtual gmacError_t copyFromHost(void *dst, size_t size,
+        unsigned blockOffset = 0) const = 0;
 	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+    virtual gmacError_t copyFromDevice(void *dst, size_t size,
+        unsigned bufferOffset = 0) const = 0;
 	virtual gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
     
