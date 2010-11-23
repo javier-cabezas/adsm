@@ -51,7 +51,7 @@ protected:
     /*!
         \param protocol Memory coherence protocol used by the block
         \param addr Host memory address for applications to accesss the block
-        \param shaodw Shadow host memory mapping that is always read/write
+        \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */

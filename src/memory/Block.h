@@ -163,13 +163,13 @@ public:
     */
     gmacError_t memcpyToMemory(void *dst, size_t size, unsigned blockOffset = 0) const;
 
-    //! Memory block owner
+    //! Get memory block owner
     /*!
         \param Returns the owner of the memory block
     */
 	virtual core::Mode &owner() const = 0;
 
-    //! Memory block address at the device
+    //! Get memory block address at the device
     /*!
         \return Device memory address of the block
     */
@@ -181,7 +181,7 @@ public:
     */
 	virtual gmacError_t toHost() const = 0;
 
-    //! Ensures that the device memory has a valid and accessible copy of the data
+    //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
         \return Error code
     */
