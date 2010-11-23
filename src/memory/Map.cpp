@@ -139,11 +139,13 @@ const Object *Map::get(const void *addr, size_t size) const
     const uint8_t *base = NULL;
     // Lookup in the current map
     ret = get(*this, base, addr, size);
-    if(base == addr) goto exit_func;
 
-    // Check global maps
+        // Check global maps
     const core::Process &proc = parent_.process();
     const Object *obj = NULL;
+
+    if(base == addr) goto exit_func;
+
     obj = get(proc.shared(), base, addr, size);
     if(obj != NULL) ret = obj;
     if(base == addr) goto exit_func;
