@@ -271,28 +271,28 @@ gmacError_t APICALL gmacGetLastError()
 	return ret;
 }
 
-void * APICALL gmacMemset(void *s, int c, size_t n)
+void * APICALL gmacMemset(void *s, int c, size_t size)
 {
     gmac::enterGmac();
     void *ret = s;
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memset(s, c, n);
+    manager.memset(s, c, size);
 	gmac::exitGmac();
     return ret;
 }
 
-void * APICALL gmacMemcpy(void *dst, const void *src, size_t n)
+void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
 {
 	gmac::enterGmac();
 	void *ret = dst;
 
 	// Locate memory regions (if any)
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    __impl::core::Mode *dstMode = proc.owner(dst);
-    __impl::core::Mode *srcMode = proc.owner(src);
-	if (dstMode == NULL && srcMode == NULL) return memcpy(dst, src, n);
+    __impl::core::Mode *dstMode = proc.owner(dst, size);
+    __impl::core::Mode *srcMode = proc.owner(src, size);
+    if (dstMode == NULL && srcMode == NULL) return ::memcpy(dst, src, size);
 	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memcpy(dst, src, n);
+    manager.memcpy(dst, src, size);
 
 	gmac::exitGmac();
 	return ret;

@@ -33,7 +33,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
-    Mode *dstMode = proc.owner(buf);
+    Mode *dstMode = proc.owner(buf, size);
 
     if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
 
@@ -83,7 +83,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
-    Mode *srcMode = proc.owner(buf);
+    Mode *srcMode = proc.owner(buf, size);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 

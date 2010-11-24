@@ -140,7 +140,7 @@ const Object *Map::get(const void *addr, size_t size) const
     // Lookup in the current map
     ret = get(*this, base, addr, size);
 
-        // Check global maps
+    // Check global maps
     const core::Process &proc = parent_.process();
     const Object *obj = NULL;
 
