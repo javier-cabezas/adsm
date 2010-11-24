@@ -138,7 +138,7 @@ public:
     memory::ObjectMap &orphans();
     const memory::ObjectMap &orphans() const;
 
-    Mode *owner(const void *addr) const;
+    Mode *owner(const void *addr, size_t size = 0) const;
 };
 
 }}

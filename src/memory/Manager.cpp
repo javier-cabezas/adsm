@@ -65,11 +65,12 @@ gmacError_t Manager::unmap(void *addr, size_t size)
     return ret;
 }
 #endif
+
 gmacError_t Manager::alloc(void **addr, size_t size)
 {
     core::Mode &mode = core::Mode::current();
     // For integrated devices we want to use Centralized objects to avoid memory transfers
-    //if (mode.integrated()) return globalAlloc(addr, size, GMAC_GLOBAL_MALLOC_CENTRALIZED);
+    if (mode.integrated()) return hostMappedAlloc(addr, size);
 
     // Create new shared object
     Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
@@ -283,31 +284,31 @@ bool Manager::write(void *addr)
     return ret;
 }
 
-gmacError_t Manager::memset(void *s, int c, size_t n)
+gmacError_t Manager::memset(void *s, int c, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *mode = proc.owner(s);
 	if (mode == NULL) {
-        ::memset(s, c, n);
+        ::memset(s, c, size);
         return gmacSuccess;
     }
     // TODO: deal with the case of several objects being affected
     const Object * obj = mode->getObject(s);
     ASSERTION(obj != NULL);
-    gmacError_t ret = obj->memset(s, c, n);    
+    gmacError_t ret = obj->memset(s, c, size);    
     obj->release();
     return ret;
 }
 
 
-gmacError_t Manager::memcpy(void *dst, const void *src, size_t n)
+gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *dstMode = proc.owner(dst);
     core::Mode *srcMode = proc.owner(src);
 
     if(dstMode == NULL && srcMode == NULL) {
-        ::memcpy(dst, src, n);
+        ::memcpy(dst, src, size);
         return gmacSuccess;
     }
     // TODO: consider the case of a memcpy not starting on an object
@@ -325,13 +326,13 @@ gmacError_t Manager::memcpy(void *dst, const void *src, size_t n)
 
     gmacError_t ret = gmacSuccess;
     if(dstObject != NULL) {
-        if(srcObject == NULL) ret = dstObject->memcpyFromMemory(dst, src, n);
+        if(srcObject == NULL) ret = dstObject->memcpyFromMemory(dst, src, size);
         else {
             unsigned objectOffset = unsigned((uint8_t *)srcObject->addr() - (uint8_t *)src);
-            ret = dstObject->memcpyFromObject(dst, *srcObject, n, objectOffset);
+            ret = dstObject->memcpyFromObject(dst, *srcObject, size, objectOffset);
         }
     }
-    else ret = srcObject->memcpyToMemory(dst, src, n);
+    else ret = srcObject->memcpyToMemory(dst, src, size);
 
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();

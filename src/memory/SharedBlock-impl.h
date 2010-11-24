@@ -89,14 +89,14 @@ inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t s
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromDevice(void *dst, size_t size, unsigned blockOffset) const
 {
-    return owner_.copyToHost(dst, StateBlock<T>::shadow_ + blockOffset, size);
+    return owner_.copyToHost(dst, deviceAddr_ + blockOffset, size);
 }
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromDevice(core::IOBuffer &buffer, size_t size, 
 												  unsigned bufferOffset, unsigned blockOffset) const
 {
-	return owner_.acceleratorToBuffer(buffer, StateBlock<T>::shadow_ + blockOffset, size, bufferOffset);
+	return owner_.acceleratorToBuffer(buffer, deviceAddr_ + blockOffset, size, bufferOffset);
 }
 
 template<typename T>
