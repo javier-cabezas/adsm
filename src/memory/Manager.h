@@ -115,33 +115,76 @@ public:
     */
     TESTABLE void *translate(const void *addr);
 
-    
+    //! Get the CPU ownership of all objects bound to the current execution mode
+    /*!
+        \return Error code
+    */
     gmacError_t acquireObjects();
+
+    //! Release the CPU ownership of all objects bound to the current execution mode
+    /*!
+        \return Error code
+    */
     gmacError_t releaseObjects();
+
+    //! Invalidate the host memory of all objects bound to the current execution mode
+    /*!
+        \return Error code
+    */
     gmacError_t invalidate();
 
+    //! Notify a memory fault caused by a load operation
+    /*!
+        \param addr Host memory address causing the memory fault
+        \return True if the Manager was able to fix the fault condition
+    */
     TESTABLE bool read(void *addr);
+
+    //! Notify a memory fault caused by a store operation
+    /*!
+        \param addr Host memory address causing the memory fault
+        \return True if the Manager was able to fix the fault condition
+    */
     TESTABLE bool write(void *addr);
 
-    /////////////////////////
-    // Memory bulk operations
-    /////////////////////////
-
+    //! Copy data from a memory address of a memory object to an I/O buffer
+    /*!
+        \param buffer Destionation I/O buffer to copy the data to
+        \param addr Host memory address corresponding to a memory object to copy data from
+        \param size Size (in bytes) of the data to be copied
+        \return Error code
+    */
 	TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
+
+    //! Copy data from an I/O buffer to a host memory address of a memory object
+    /*!
+        \param buffer Source I/O buffer to copy the data from
+        \param addr Host memory address corresponding to a memory object to copy data to
+        \param size Size (in bytes) of the data to be copied
+        \return Error code
+    */
 	TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
 
-    TESTABLE gmacError_t memset(void *dst, int c, size_t n);
-    TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t n);
+    //! Initialize to a given value the contents of a host address of a memory object
+    /*!
+        \param dst Host memory address corresponding to a memory object to set the memory contents
+        \param c Value used to initialize memory
+        \param size Size (in bytes) of the memory to initialize
+        \return Error code
+    */
+    TESTABLE gmacError_t memset(void *dst, int c, size_t size);
+
+    //! Copy data from and/or to host memory addresses of memory objects
+    /*!
+        \param dst Destination host memory addrees of a memory objec to copy the data to
+        \param src Source host memory address that might or might not correspond to a memory object
+        \param size Size (in bytes) of the amoun of data to be copied
+    */
+    TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t size);
+
 #if 0
-    ///////////////////
-    // Object migration
-    ///////////////////
     gmacError_t moveTo(void *addr, __impl::core::Mode &mode);
 #endif
-    //////////////////
-    // Mode management
-    //////////////////
-    //gmacError_t removeMode(gmac::core::Mode &mode);
 
 };
 
