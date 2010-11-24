@@ -56,24 +56,46 @@ class Block;
 template<typename T> class StateBlock;
 
 namespace protocol { 
-
+//! A lazy memory coherence protocol
+/*! This protocol eagerly transfer data from host to device memory if the user
+    sets up a limit, otherwise data is transferred when the use requests a
+    release operation. Data is transferred from device memory to host memory
+    lazily, whenever it is needed by the application
+*/
 class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
+    //! Protocol states
     typedef enum {
-        Invalid,
-        ReadOnly,
-        Dirty,
-        HostOnly
+        Invalid, /*!< Valid copy of the data in device memory */
+        ReadOnly, /*!< Valid copy of the data in both host and device memory */
+        Dirty, /*!< Valid copy of the data in host memory */
+        HostOnly /*< Data only allowed in host memory */
     } State;
 protected:
+    //! Return the state corresponding to a memory protection
+    /*!
+        \param prot Memory protection
+        \return Protocol state
+    */
 	State state(GmacProtection prot) const;
 
+    //! Maximum number of blocks in dirty state
     unsigned limit_;
+
+    //! Dirty block list
+    //! List of all memory blocks in Dirty state
     BlockList dbl_;
 
-
+    //! Add a new block to the Dirty Block List
     void addDirty(Block &block);
+
+    //! Default constructor
+    /*!
+        \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
+    */
     LazyBase(unsigned limit);
+
+    //! Default destructor
     virtual ~LazyBase();
 
 public:
@@ -83,19 +105,25 @@ public:
     bool needUpdate(const Block &block) const;
 
     gmacError_t signalRead(Block &block);
+
     gmacError_t signalWrite(Block &block);
 
     gmacError_t acquire(Block &obj);
+
 #ifdef USE_VM
     gmacError_t acquireWithBitmap(Block &obj);
 #endif
+
     gmacError_t releaseObjects();
+
     gmacError_t release(Block &block);
+
     gmacError_t remove(Block &block);
 
     gmacError_t deleteBlock(Block &block);
 
 	gmacError_t toHost(Block &block);
+
     gmacError_t toDevice(Block &block);
 
 	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
@@ -109,8 +137,10 @@ public:
 
     gmacError_t copyFromMemory(const Block &block, const void *src, size_t size,
         unsigned blockOffset) const;
+
     gmacError_t copyFromObject(const Block &block, const Object &object, size_t size,
         unsigned blockOffset) const;
+
     gmacError_t copyToMemory(const Block &block, void *dst, size_t size,
         unsigned blockOffset) const;
 };
@@ -118,7 +148,13 @@ public:
 template<typename T>
 class GMAC_LOCAL Lazy : public LazyBase {
 public:
+    //! Default constructor
+    /*!
+        \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
+    */
     Lazy(unsigned limit);
+
+    //! Default destructor
     virtual ~Lazy();
 
     // Protocol Interface
