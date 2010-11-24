@@ -287,16 +287,61 @@ bool Manager::write(void *addr)
 gmacError_t Manager::memset(void *s, int c, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
-    core::Mode *mode = proc.owner(s);
+    core::Mode *mode = proc.owner(s, size);
 	if (mode == NULL) {
         ::memset(s, c, size);
         return gmacSuccess;
     }
-    // TODO: deal with the case of several objects being affected
-    const Object * obj = mode->getObject(s);
+
+    gmacError_t ret = gmacSuccess;
+    uint8_t *ptr = (uint8_t *)s;
+
+    const Object *obj = mode->getObject(s);
     ASSERTION(obj != NULL);
-    gmacError_t ret = obj->memset(s, c, size);    
-    obj->release();
+    // Check for a fast path -- probably the user is just
+    // initializing a single object or a portion of an object
+    if(obj->addr() <= ptr && obj->end() >= (ptr + size)) {
+        size_t objSize = (size < obj->size()) ? size : obj->size();
+        ret = obj->memset(s, c, objSize);
+        obj->release();
+        return ret;
+    }
+
+    // This code handles the case of the user initializing a portion of
+    // memory that includes host memory and GMAC objects.
+    size_t left = size;
+    while(left > 0) {        
+        // If there is no object, initialize the remaining host memory
+        if(obj == NULL) {
+            ::memset(ptr, c, left);
+            left = 0; // This will finish the loop
+        }
+        else {
+            // Check if there is a memory gap of host memory at the begining of the
+            // memory range that remains to be initialized
+            int gap = int(obj->addr() - ptr);
+            if(gap > 0) { // If there is gap, initialize and advance the pointer
+                ::memset(ptr, c, gap);
+                left -= gap;
+                ptr += gap;
+                gap = 0;
+            }
+            // Check the size of the memory range from the current pointer to the end of the object
+            // We add the gap, because if the ptr is within the object, its value will be negative
+            size_t objSize = obj->size() + gap;
+            // If the remaining memory in the object is larger than the remaining memory range, adjust
+            // the size of the memory range to be initialized by the object
+            objSize = (objSize < left) ? objSize : left;
+            ret = obj->memset(ptr, c, objSize);
+            if(ret != gmacSuccess) break;
+            left -= objSize; // Account for the bytes initialized by the object
+            ptr += objSize;  // Advance the pointer
+            obj->release();  // Release the object (it will not be needed anymore)
+        }
+        // Get the next object in the memory range that remains to be initialized
+        obj = mode->getObject(ptr);
+    }
+
     return ret;
 }
 
