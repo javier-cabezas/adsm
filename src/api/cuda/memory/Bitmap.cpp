@@ -23,8 +23,12 @@ void Bitmap::allocate()
 
 Bitmap::~Bitmap()
 {
+#ifdef USE_HOSTMAP_VM
     cuda::Mode &mode = __impl::cuda::Mode::current();
     if(device_ != NULL) mode.hostFree(bitmap_);
+#else
+    delete [] bitmap_;
+#endif
 }
 
 void
@@ -47,7 +51,6 @@ Bitmap::syncHost()
 void
 Bitmap::syncDevice()
 {
-#ifndef USE_HOSTMAP_VM
     TRACE(LOCAL,"Syncing Bitmap");
     cuda::Mode &mode = cuda::Mode::current();
 
@@ -63,6 +66,7 @@ Bitmap::syncDevice()
     CFATAL(ret == gmacSuccess, "Unable to set shift entry in the device %p", (void *) mode.dirtyBitmapShiftEntryDevPtr());
 #endif
 
+#ifndef USE_HOSTMAP_VM
     //printf("Bitmap toHost\n");
     ret = mode.copyToAccelerator(bitmap.device(), bitmap.host(), bitmap.size());
     CFATAL(ret == gmacSuccess, "Unable to copy dirty bitmap to device");

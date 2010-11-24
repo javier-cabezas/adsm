@@ -77,7 +77,7 @@ public:
     */
     size_t size() const;
 
-    /*! Add a block to the end of list
+    //! Add a block to the end of list
     /*!
         \param block Block to be addded to the end of list
     */

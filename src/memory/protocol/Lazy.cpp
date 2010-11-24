@@ -92,10 +92,10 @@ gmacError_t LazyBase::signalRead(Block &b)
 #endif
         ret = block.toHost();
         if(ret != gmacSuccess) goto exit_func;
-        Memory::protect(block.addr(), block.size(), GMAC_PROT_READ);
 #ifdef USE_VM
     }
 #endif
+    Memory::protect(block.addr(), block.size(), GMAC_PROT_READ);
     block.state(ReadOnly);
 
 exit_func:
