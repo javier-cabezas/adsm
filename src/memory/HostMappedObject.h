@@ -51,36 +51,96 @@ void HostMappedFree(void *addr);
 void *HostMappedPtr(const void *addr);
 
 class HostMappedObject;
-
+//! A set of Host-mapped memory blocks
+/*! This class is actually a map, because we need to easily locate blocks
+    using host memory addresses
+*/
 class GMAC_LOCAL HostMappedSet : protected std::map<void *, HostMappedObject *>, 
     public gmac::util::RWLock {
 protected:
     friend class HostMappedObject;
 
     typedef std::map<void *, HostMappedObject *> Parent;
+
+    //! Inster a host mapped object in the set
+    /*!
+        \param object Host  mapped object to be inserted
+        \return True if the block was inserted
+    */
     bool insert(HostMappedObject *object);
+
+    //! Find a host mapped object that contains a memory address
+    /*!
+        \param addr Host memory address within the host mapped object
+        \return Host mapped object containing the memory address. NULL if not found
+    */
     HostMappedObject *get(void *addr) const;
 public:
+    //! Default constructor
     HostMappedSet();
+
+    //! Default destructor
     ~HostMappedSet();
+
+    //! Remove a block from the list that contains a given host memory address
+    /*!
+        \param addr Memory address within the block to be removed
+        \return True if an object was removed
+    */
     bool remove(void *addr);
 };
 
+//! A memory object that only resides in host memory, but that is accessible from the accelerator
 class GMAC_LOCAL HostMappedObject : public util::Reference {
 protected:
+    //! Starting host memory address of the object
     uint8_t *addr_;
+
+    //! Size (in bytes) of the object
     size_t size_;
 
-    static HostMappedSet set_;    
+    //! Set of all host mapped memory objects
+    static HostMappedSet set_;
 public:
+    //! Default constructor
+    /*!
+        \param size Size (in bytes) of the object being created
+    */
 	HostMappedObject(size_t size);
+
+    //! Default destructor
     virtual ~HostMappedObject();
     
+    //! Get the starting host memory address of the object
+    /*!
+        \return Starting host memory address of the object
+    */
     void *addr() const;
+
+    //! Get the size (in bytes) of the object
+    /*!
+        \return Size (in bytes) of the object
+    */
     size_t size() const;
+
+    //! Get an accelerator address where a host address within the object can be accessed
+    /*!
+        \param addr Host memory address within the object
+        \return Accelerator memory address where the requested host memory address is mapped
+    */
     void *deviceAddr(const void *addr) const;
 
+    //! Remove a host mapped object from the list of all present host mapped object
+    /*!
+        \param addr Host memory address within the object to be removed
+    */
     static void remove(void *addr);
+
+    //! Get the host mapped memory object that contains a given host memory address
+    /*!
+        \param addr Host memory address within the object
+        \return Host mapped object cotainig the host memory address. NULL if not found
+    */
     static HostMappedObject *get(const void *addr);
 };
 

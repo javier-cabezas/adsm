@@ -43,19 +43,31 @@ namespace __impl { namespace memory {
 //! Handler for Read/Write faults
 class GMAC_LOCAL Handler {
 private:
+    //! Activate the fault handler
 	void setHandler(void);
+
+    //! Deactivate the fault handler
 	void restoreHandler(void);
 
+    //! Signal number to bind the handler to
     static int Signum_;
+
+    //! Number of request to activate the handler
 	static unsigned Count_;
+
+    //! Active handler
 	static Handler *Handler_;
 	
 public:
-	Handler() {
+
+    //! Default constructor
+	inline Handler() {
 		if(Count_ == 0) setHandler();
 		Count_++;
 	}
-	virtual ~Handler() { 
+
+    //! Default destructor
+	virtual inline ~Handler() { 
 		if(--Count_ == 0) restoreHandler();
 	}
 

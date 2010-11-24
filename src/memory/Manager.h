@@ -52,8 +52,7 @@ class Protocol;
 
 //! Memory Manager Interface
 
-//! Memory Managers implement a policy to move data from/to
-//! the CPU memory to/from the accelerator memory.
+//! Memory Managers orchestate the data transfers between host and device memories
 class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
 
@@ -65,25 +64,58 @@ private:
     void checkBitmapToDevice();
 #endif
 protected:
-
+    //! Allocated a host mapped memory
+    /*!
+        \param Pointer to the variable that will store the begining of the allocated memory
+        \param Size (in bytes) of the memory to be allocated
+        \return Error core
+    */
     gmacError_t hostMappedAlloc(void **addr, size_t size);
 
+    //! Default constructor
     Manager();
+
+    //! Default destructor
     virtual ~Manager();
 public:
-    //////////////////////////////
-    // Memory management functions
-    //////////////////////////////
     //TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
     //TESTABLE gmacError_t unmap(void *addr, size_t size);
+
+    //! Allocate private shared memory 
+    //! Memory allocated with this call is only accessible by the accelerator associated to 
+    //! the execution thread requesting the allocation
+    /*!
+        \param addr Memory address of a pointer to store the host address of the allocated memory
+        \param size Size (in bytes) of shared memory to be allocated
+        \return Error code
+    */         
     TESTABLE gmacError_t alloc(void **addr, size_t size);
-    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);    
+
+    //! Allocate public shared read-only memory
+    //! Memory allocated with this call is accessible (read-only) from any accelerator
+    /*!
+        \param addr Memory address of a pointer to store the host address of the allocated memory
+        \param size Size (in bytes) of shared memory to be allocated
+        \param hint Type of memory (distributed or hostmapped) to be allocated
+        \return Error code
+    */
+    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+
+    //! Release shared memory
+    /*!
+        \param addr Memory address of the shared memory chunk to be released
+        \return Error code
+    */
     TESTABLE gmacError_t free(void *addr);
+
+    //! Get the device address associated to a shared memory address
+    /*!
+        \param addr Host shared memory address
+        \param Accelerator memory address
+    */
     TESTABLE void *translate(const void *addr);
 
-    ///////////////////////////////
-    // Coherence protocol interface
-    ///////////////////////////////
+    
     gmacError_t acquireObjects();
     gmacError_t releaseObjects();
     gmacError_t invalidate();

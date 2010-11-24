@@ -52,18 +52,47 @@ namespace memory {
 class Block;
 
 namespace protocol { 
-// We need a locked list becase execution modes might be shared among different threads
+
+//! FIFO list of blocks
 class GMAC_LOCAL BlockList: protected std::list<Block *>, public gmac::util::Lock {
+// We need a locked list becase execution modes might be shared among different threads
 protected:
     typedef std::list<Block *> Parent;
 public:
+    //! Default constructor
     BlockList();
+
+    //! Default destructor
     virtual ~BlockList();
 
+    //! Whether the list is empty or not
+    /*!
+        \return True if the list is empty
+    */
     bool empty() const;
+
+    //! Size of the list
+    /*!
+        \return Number of blocks in the list
+    */
     size_t size() const;
+
+    /*! Add a block to the end of list
+    /*!
+        \param block Block to be addded to the end of list
+    */
     void push(Block &block);
+
+    //! Extract a block from the list
+    /*!
+        \return Block from extracted from the begining of the list
+    */
     Block *pop();
+
+    //! Remove a block from the list
+    /*!
+        \param block Block to be removed from the list
+    */
     void remove(Block &block);
 };
 
