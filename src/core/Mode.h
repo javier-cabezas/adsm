@@ -94,7 +94,7 @@ protected:
 
     bool releasedObjects_;
 #ifdef USE_VM
-    __impl::memory::vm::Bitmap *_bitmap;
+    __impl::memory::vm::Bitmap bitmap_;
 #endif
 
     ContextMap contextMap_;

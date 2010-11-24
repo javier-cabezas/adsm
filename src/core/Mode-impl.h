@@ -144,13 +144,13 @@ Mode::error(gmacError_t err)
 inline memory::vm::Bitmap &
 Mode::dirtyBitmap()
 {
-    return *_bitmap;
+    return bitmap_;
 }
 
 inline const memory::vm::Bitmap &
 Mode::dirtyBitmap() const
 {
-    return *_bitmap;
+    return bitmap_;
 }
 #endif
 

@@ -254,10 +254,10 @@ void Manager::checkBitmapToDevice()
 
 bool Manager::read(void *addr)
 {
-    core::Mode &mode = core::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
+    core::Mode &mode = core::Mode::current();
     bool ret = true;
     const Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -270,10 +270,10 @@ bool Manager::read(void *addr)
 
 bool Manager::write(void *addr)
 {
-    core::Mode &mode = core::Mode::current();
 #ifdef USE_VM
     checkBitmapToHost();
 #endif
+    core::Mode &mode = core::Mode::current();
     bool ret = true;
     const Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;

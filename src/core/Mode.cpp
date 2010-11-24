@@ -24,7 +24,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , _bitmap(new memory::vm::Bitmap())
+    , bitmap_(memory::vm::Bitmap())
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
@@ -33,12 +33,10 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 
 Mode::~Mode()
 {    
+    delete protocol_;
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
     acc_->unregisterMode(*this); 
-#ifdef USE_VM
-    delete _bitmap;
-#endif
     Process::getInstance().removeMode(*this);
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
 }
