@@ -364,48 +364,4 @@ gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockO
 	return ret;
 }
 
-gmacError_t LazyBase::copyFromMemory(const Block &b, const void *src, size_t size, unsigned blockOffset) const
-{
-    gmacError_t ret = gmacSuccess;
-	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
-	switch(block.state()) {
-		case Invalid:
-            ret = b.copyToDevice(src, size, blockOffset);
-			break;
-		case ReadOnly:
-			ret = b.copyToDevice(src, size, blockOffset);
-			if(ret != gmacSuccess) break;
-			ret = b.copyToHost(src, size, blockOffset);
-			break;
-		case Dirty:			
-        case HostOnly:
-			ret = b.copyToHost(src, size, blockOffset);
-			break;
-	}
-	return ret;
-}
-
-gmacError_t LazyBase::copyFromObject(const Block &block, const Object &object, 
-                                     size_t size, unsigned blockOffset) const
-{
-    return gmacSuccess;
-}
-
-gmacError_t LazyBase::copyToMemory(const Block &b, void *dst, size_t size, unsigned blockOffset) const
-{
-    gmacError_t ret = gmacSuccess;
-	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
-	switch(block.state()) {
-		case Invalid:
-            ret = b.copyFromDevice(dst, size, blockOffset);
-			break;
-		case ReadOnly:
-		case Dirty:			
-        case HostOnly:
-			ret = b.copyFromHost(dst, size, blockOffset);
-			break;
-	}
-	return ret;
-}
-
 }}}

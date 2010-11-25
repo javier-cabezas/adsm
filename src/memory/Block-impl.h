@@ -67,24 +67,6 @@ inline gmacError_t Block::memset(int v, size_t size, unsigned blockOffset) const
     return ret;
 }
 
-inline gmacError_t Block::memcpyFromMemory(const void *src, size_t size, unsigned blockOffset) const
-{
-    lock();
-    gmacError_t ret = protocol_.copyFromMemory(*this, src, size, blockOffset);
-    unlock();
-    return ret;
-}
-
-
-
-inline gmacError_t Block::memcpyToMemory(void *dst, size_t size, unsigned blockOffset) const
-{
-    lock();
-    gmacError_t ret = protocol_.copyToMemory(*this, dst, size, blockOffset);
-    unlock();
-    return ret;
-}
-
 }}
 
 #endif

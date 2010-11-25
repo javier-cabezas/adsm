@@ -134,15 +134,6 @@ public:
 
     gmacError_t memset(const Block &block, int v, size_t size, 
         unsigned blockOffset) const;
-
-    gmacError_t copyFromMemory(const Block &block, const void *src, size_t size,
-        unsigned blockOffset) const;
-
-    gmacError_t copyFromObject(const Block &block, const Object &object, size_t size,
-        unsigned blockOffset) const;
-
-    gmacError_t copyToMemory(const Block &block, void *dst, size_t size,
-        unsigned blockOffset) const;
 };
 
 template<typename T>

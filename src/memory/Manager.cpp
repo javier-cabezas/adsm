@@ -346,6 +346,165 @@ gmacError_t Manager::memset(void *s, int c, size_t size)
 }
 
 
+gmacError_t Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
+                                    unsigned objOffset)
+{
+    gmacError_t ret = gmacSuccess;
+
+    // We need to I/O buffers to double-buffer the copy
+    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+
+    // Control variables
+    unsigned left = unsigned(size);
+    uint8_t *ptr = (uint8_t *)src;
+
+    unsigned copySize = unsigned(active->size());
+    // Adjust the first copy to fit in a block
+    unsigned aligment = objOffset % paramPageSize;
+    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+    // Copy the data to the first block
+    ::memcpy(active->addr(), ptr, copySize);
+    while(left > 0) {
+        // We do not need for the active buffer to be full because ::memcpy() is
+        // a synchronous call
+        ret = obj.copyFromBuffer(*active, copySize, 0, objOffset);
+        if(ret != gmacSuccess) return ret;
+        left -= copySize;
+        ptr += copySize;
+        objOffset += copySize;
+        if(left > 0) {
+            // Start copying data from host memory to de passive I/O buffer
+            copySize = (left < passive->size()) ? left : unsigned(passive->size());
+            passive->wait(); // Avoid overwritten a buffer that is already in use
+            ::memcpy(passive->addr(), ptr, copySize);
+        }
+        // Swap buffers
+        core::IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
+    }
+    // Clean up buffers after they are idle
+    passive->wait();
+    delete passive;
+    active->wait();
+    delete active;
+    
+
+    return ret;
+}
+
+gmacError_t Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
+                                    unsigned dstOffset, unsigned srcOffset)
+{
+    gmacError_t ret = gmacSuccess;
+
+    // We need to I/O buffers to double-buffer the copy
+    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+
+    // Control variables
+    unsigned left = unsigned(size);
+    unsigned copySize = unsigned(active->size());
+    // Adjust the first copy to fit in a block
+    unsigned aligment = dstOffset % paramPageSize;
+    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+    // Adjust the size to only cover one block in the source object
+    aligment = srcOffset % paramPageSize;
+    if(aligment + copySize > paramPageSize) 
+        copySize = unsigned(paramPageSize - aligment);
+    // Copy first chunk of data
+    srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
+    while(left > 0) {
+        active->wait(); // Wait for the active buffer to be full
+        ret = dstObj.copyFromBuffer(*active, copySize, 0, dstOffset);
+        if(ret != gmacSuccess) return ret;
+        left -= copySize;
+        srcOffset += copySize;
+        dstOffset += copySize;
+        if(left > 0) {
+            // We need to recalculate the object size to avoid crossing blocks in the
+            // destination and source objects
+            copySize = unsigned(passive->size());
+            aligment = dstOffset % paramPageSize;
+            if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+            // Adjust the size to only cover one block in the source object
+            aligment = srcOffset % paramPageSize;
+            if(aligment + copySize > paramPageSize) 
+                copySize = unsigned(paramPageSize - aligment);
+            // Avoid overwritting a buffer that is already in use
+            passive->wait();
+            // Request the next copy
+            ret = srcObj.copyToBuffer(*passive, copySize, 0, srcOffset);
+            if(ret != gmacSuccess) return ret;
+        }
+        // Swap buffers
+        core::IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
+    }
+    // Clean up buffers after they are idle
+    passive->wait();
+    delete passive;
+    active->wait();
+    delete active;
+    
+    return ret;
+}
+
+gmacError_t Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
+                                      unsigned objOffset)
+{
+    gmacError_t ret = gmacSuccess;
+
+    // We need to I/O buffers to double-buffer the copy
+    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+
+    // Control variables
+    unsigned left = unsigned(size);
+    uint8_t *ptr = (uint8_t *)dst;
+
+    unsigned copySize = unsigned(active->size());
+    // Adjust the first copy to fit in a block
+    unsigned aligment = objOffset % paramPageSize;
+    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+
+    // Copy the data to the first block
+    ret = obj.copyToBuffer(*active, copySize, 0, objOffset);
+    if(ret != gmacSuccess) return ret;
+    while(left > 0) {
+        // Save values to use when copying the buffer to host memory
+        unsigned previousObjOffset = objOffset;
+        unsigned previousCopySize = copySize;
+        left -= copySize;
+        objOffset += copySize;        
+        if(left > 0) {
+            // Start copying data from host memory to de passive I/O buffer
+            copySize = (left < passive->size()) ? left : unsigned(passive->size());
+            // No need to wait for the buffer, because ::memcpy is a
+            // synchronous call
+            ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
+            if(ret != gmacSuccess) return ret;
+        }        
+        // Wait for the active buffer to be full
+        active->wait();
+        // Copy the active buffer to host
+        ::memcpy(ptr, obj.addr() + previousObjOffset, previousCopySize);
+        ptr += previousCopySize;
+
+        // Swap buffers
+        core::IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
+    }
+    // No need to wait for the buffers because we waited for them before ::memcpy
+    delete passive;
+    delete active;
+    
+    return ret;
+}
+
 gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
@@ -356,6 +515,7 @@ gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
         ::memcpy(dst, src, size);
         return gmacSuccess;
     }
+
     // TODO: consider the case of a memcpy not starting on an object
     const Object *dstObject = NULL;
     const Object *srcObject = NULL;
@@ -371,14 +531,21 @@ gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
 
     gmacError_t ret = gmacSuccess;
     if(dstObject != NULL) {
-        if(srcObject == NULL) ret = dstObject->memcpyFromMemory(dst, src, size);
+        if(srcObject == NULL) {
+            ret = memcpyToObject(*dstObject, src, size, 
+                unsigned((uint8_t *)dst - dstObject->addr()));
+        }
         else {
-            unsigned objectOffset = unsigned((uint8_t *)srcObject->addr() - (uint8_t *)src);
-            ret = dstObject->memcpyFromObject(dst, *srcObject, size, objectOffset);
+            unsigned srcOffset = unsigned((uint8_t *)srcObject->addr() - (uint8_t *)src);
+            ret = memcpyToObject(*dstObject, *srcObject, size, 
+                unsigned((uint8_t *)dst - dstObject->addr()), srcOffset);
         }
     }
-    else ret = srcObject->memcpyToMemory(dst, src, size);
-
+    else {
+        ret = memcpyFromObject(dst, *srcObject, size, 
+            unsigned(srcObject->addr() - (uint8_t *)src));
+    }
+ 
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();
     
@@ -386,13 +553,6 @@ gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
 }
 
 #if 0
-gmacError_t
-Manager::removeMode(core::Mode &mode)
-{
-    gmacError_t ret = protocol_->removeMode(mode);
-    return ret;
-}
-
 gmacError_t Manager::moveTo(void * addr, core::Mode &mode)
 {
     Object * obj = mode.getObjectWrite(addr);
