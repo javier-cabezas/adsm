@@ -105,9 +105,6 @@ protected:
 #ifdef USE_VM
     VariableDescriptor * dirtyBitmap_;
     VariableDescriptor * shiftPage_;
-#ifdef BITMAP_BIT
-    VariableDescriptor * shiftEntry_;
-#endif
 #endif
 
 public:
@@ -143,10 +140,6 @@ protected:
     static const char *ShiftPageSymbol_;
 	Variable *dirtyBitmap_;
 	Variable *shiftPage_;
-#ifdef BITMAP_BIT
-    static const char *ShiftEntrySymbol_;
-	Variable *shiftEntry_;
-#endif
 #endif
 
 public:
@@ -162,9 +155,6 @@ public:
 #ifdef USE_VM
     const Variable *dirtyBitmap() const;
     const Variable *dirtyBitmapShiftPage() const;
-#ifdef BITMAP_BIT
-    const Variable *dirtyBitmapShiftEntry() const;
-#endif
 #endif
 };
 

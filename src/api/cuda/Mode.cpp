@@ -24,9 +24,6 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
         if((*i)->dirtyBitmap() != NULL) {
             bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
             bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-#ifdef BITMAP_BIT
-            bitmapShiftEntryDevPtr_ = (*i)->dirtyBitmapShiftEntry()->devPtr();
-#endif
         }
 #endif
     }
@@ -75,9 +72,6 @@ void Mode::load()
         if((*i)->dirtyBitmap() != NULL) {
             bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
             bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-#ifdef BITMAP_BIT
-            bitmapShiftEntryDevPtr_ = (*i)->dirtyBitmapShiftEntry()->devPtr();
-#endif
         }
 #endif
     }

@@ -70,9 +70,6 @@ protected:
 #ifdef USE_VM
     CUdeviceptr bitmapDevPtr_;
     CUdeviceptr bitmapShiftPageDevPtr_;
-#ifdef BITMAP_BIT
-    CUdeviceptr bitmapShiftEntryDevPtr_;
-#endif
 #endif
 
 #ifdef USE_MULTI_CONTEXT
@@ -114,9 +111,6 @@ public:
 #ifdef USE_VM
     CUdeviceptr dirtyBitmapDevPtr() const;
     CUdeviceptr dirtyBitmapShiftPageDevPtr() const;
-#ifdef BITMAP_BIT
-    CUdeviceptr dirtyBitmapShiftEntryDevPtr() const;
-#endif
 #endif
 
     gmacError_t waitForBuffer(core::IOBuffer &buffer);

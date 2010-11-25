@@ -8,36 +8,31 @@
 #ifdef USE_VM
 namespace __impl { namespace memory { namespace vm {
 
+#ifdef BITMAP_BIT
+const unsigned Bitmap::entriesPerByte = 8;
+#else // BITMAP_BYTE
+const unsigned Bitmap::entriesPerByte = 1;
+#endif
+
 Bitmap::Bitmap(unsigned bits) :
-    RWLock("Bitmap"), bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minAddr_(NULL), maxAddr_(NULL)
+    RWLock("Bitmap"), bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minEntry_(-1), maxEntry_(-1)
 {
     shiftPage_ = int(log2(paramPageSize));
     if (paramBitmapChunksPerPage > 1) {
         shiftPage_ -= int(log2(paramBitmapChunksPerPage));
     }
-#ifdef BITMAP_BIT
-    bitMask_ = (1 << 5) - 1;
-    size_ = (1 << (bits - shiftPage_)) / 8;
-    bitmap_ = new uint32_t[size_ / sizeof(uint32_t)];
-#else
-#ifdef BITMAP_BYTE
-    typedef uint8_t T;
-#else
-#ifdef BITMAP_WORD
-    typedef uint32_t T;
-#else
-#error "Bitmap granularity not defined"
-#endif
-#endif
-    size_ = (1 << (bits - shiftPage_)) * sizeof(T);
 
-    TRACE(LOCAL,"Shift page: %u", shiftPage_);
-    TRACE(LOCAL,"Pages: %u", size_ / sizeof(T));
+    size_    = (1 << (bits - shiftPage_)) / entriesPerByte;
+#ifdef BITMAP_BIT
+    bitMask_ = (1 << 3) - 1;
+#endif
+
+    TRACE(LOCAL, "Pages: %u", 1 << (bits - shiftPage_));
+    TRACE(LOCAL,"Size : %u", size_);
+
 
 #ifndef USE_HOSTMAP_VM
-    bitmap_ = new T[size_ / sizeof(T)];
-    memset(bitmap_, 0, size_);
-#endif
+    bitmap_ = new T[size_];
 #endif
 }
 
