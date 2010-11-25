@@ -47,7 +47,7 @@ class Mode;
 
 namespace memory {
 
-class Block;
+class Object;
 class Protocol;
 
 //! Memory Manager Interface
@@ -71,6 +71,40 @@ protected:
         \return Error core
     */
     gmacError_t hostMappedAlloc(void **addr, size_t size);
+
+    //! Copy data from host memory to an object
+    /*!
+        \param obj Destination object
+        \param src Source host memory address
+        \param size Size (in bytes) of the data to be copied
+        \param objOffset Offset (in bytes) from the begining of the object to copy the data to
+        \return Error code
+    */
+    gmacError_t memcpyToObject(const Object &obj, const void *src, 
+        size_t size, unsigned objOffset);
+
+    //! Copy data from object to object
+    /*!
+        \param dstObj Destination object
+        \param srcObj Source object
+        \param size Size (in bytes) of the data to be copied
+        \param dstOffset Offset (in bytes) from the begining of the destination object to copy data to
+        \param srcOffset Offset (in bytes) from the begining og the source object to copy data from
+        \return Error code
+    */
+    gmacError_t memcpyToObject(const Object &dstObj, const Object &srcObj,
+        size_t size, unsigned dstOffset, unsigned srcOffset);
+
+    //! Copy data from an object to host memory
+    /*!
+        \param dst Destination object
+        \param src Source host memory address
+        \param size Size (in bytes) of the data to be copied
+        \param objOffset Offset (in bytes) from the begining of the destination object to copy data to
+        \return Error code
+    */
+    gmacError_t memcpyFromObject(void *dst, const Object &obj, size_t size,
+        unsigned objOffset);
 
     //! Default constructor
     Manager();

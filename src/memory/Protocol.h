@@ -198,42 +198,6 @@ public:
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
         unsigned blockOffset) const = 0;
 
-    //! Copy data from host memory to a memory block
-    /*!
-        \param block Memory block where data is being copied to
-        \param src Source host memory address to copy the data from
-        \param size Size (in bytes) of the data to be copied
-        \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
-        \return Error code
-        \warning This method assumes that the block is not modified during its execution
-    */
-    virtual gmacError_t copyFromMemory(const Block &block, const void *src, size_t size,
-        unsigned blockOffset) const = 0;
-
-    //! Copy data from a GMAC object to a memory block
-    /*!
-        \param block Memory block where the data is being copied to
-        \param object GMAC memory object to copy data from
-        \param size Size (in bytes) of the data to be copied
-        \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
-        \return Error code
-        \warning This method assumes that the block is not modified during its execution
-    */
-    virtual gmacError_t copyFromObject(const Block &block, const Object &object, size_t size,
-        unsigned blockOffset) const = 0;
-
-    //! Copy data from a memory block to host memory
-    /*!
-        \param block Memory block from where data is being copied
-        \param dst Destination host memory address to copy the data to
-        \param size Size (in bytes) of the data to be copied
-        \param blockOffset Offset (in bytes) from the begining of the block to start copying data from
-        \return Error code
-        \warning This method assumes that the block is not modified during its execution
-    */
-    virtual gmacError_t copyToMemory(const Block &block, void *dst, size_t size,
-        unsigned blockOffset) const = 0;
-
 	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
 	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, unsigned, unsigned) const;
 };

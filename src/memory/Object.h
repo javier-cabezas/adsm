@@ -220,35 +220,6 @@ public:
         \return Error code
     */
     gmacError_t memset(void *addr, int v, size_t size) const;
-
-    //! Copy data from host memory to the object
-    /*!
-        \param dst Destination host memory address within the object to copy the data to
-        \param src Source host memory address to copy the data from
-        \param size Size (in bytes) of the data to be copied
-        \return Error code
-    */
-    gmacError_t memcpyFromMemory(void *dst, const void *src, size_t size) const;
-
-    //! Copy data from an object to the object
-    /*!
-        \param dst Destination host memory address within the object to copy the data from
-        \param src Source object to copy the data from
-        \param size Size (in bytes) of the data to be copied
-        \param objectOffset Offset (in bytes) within the source object to copy the data from
-        \return Error code
-    */
-    gmacError_t memcpyFromObject(void *dst, const Object &src, 
-        size_t size, unsigned objectOffset = 0) const;
-
-    //! Copy data from the object to host memory 
-    /*!
-        \param dst Destination host memory address to copy the data to
-        \param src Source host memory address within the object to copy the data from
-        \param size Size (in bytes) of the data to be copied
-        \return Error code
-    */
-    gmacError_t memcpyToMemory(void *dst, const void *src, size_t size) const;
 };
 
 }}
