@@ -10,9 +10,6 @@ ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 #ifdef USE_VM
 const char *Module::DirtyBitmapSymbol_ = "__dirtyBitmap";
 const char *Module::ShiftPageSymbol_   = "__SHIFT_PAGE";
-#ifdef BITMAP_BIT
-const char *Module::ShiftEntrySymbol_  = "__SHIFT_ENTRY";
-#endif
 #endif
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
@@ -99,13 +96,6 @@ Module::Module(const ModuleDescriptor & d) :
             shiftPage_ = &constants_.find(v->key())->second;
             TRACE(LOCAL,"Found constant to set __SHIFT_PAGE");
         }
-
-#ifdef BITMAP_BIT
-        else if(strncmp(v->name(), ShiftEntrySymbol_, strlen(ShiftEntrySymbol_)) == 0) {
-            _shiftEntry = &constants_.find(v->key())->second;
-            TRACE(LOCAL,"Found constant to set __SHIFT_ENTRY");
-        }
-#endif
 #endif
     }
 

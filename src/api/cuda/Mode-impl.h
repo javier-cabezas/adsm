@@ -112,13 +112,6 @@ Mode::dirtyBitmapShiftPageDevPtr() const
     return bitmapShiftPageDevPtr_;
 }
 
-#ifdef BITMAP_BIT
-inline CUdeviceptr
-Mode::dirtyBitmapShiftEntryDevPtr() const
-{
-    return bitmapShiftEntryDevPtr_;
-}
-#endif
 #endif
 
 inline Accelerator &

@@ -41,35 +41,33 @@ WITH THE SOFTWARE.  */
 
 
 #ifdef USE_VM
+
+#ifdef BITMAP_BYTE
+#else
+#ifdef BITMAP_BIT
+#else
+#error "ERROR: Bitmap granularity not defined!"
+#endif
+#endif
+
+
 namespace __impl { namespace memory  { namespace vm {
 
 class GMAC_LOCAL Bitmap :
     public __impl::util::Logger,
     protected gmac::util::RWLock {
 private:
-#ifdef BITMAP_WORD
-    uint32_t *bitmap_;
-#else
-#ifdef BITMAP_BYTE
+    typedef uint8_t T;
     uint8_t *bitmap_;
-#else
-#ifdef BITMAP_BIT
-    uint32_t *bitmap_;
-#else
-#error "Bitmap granularity not defined"
-#endif
-#endif
-#endif
+
     bool dirty_;
     bool synced_;
 
-    void *device_;
+    uint8_t *device_;
 
-    const void *minAddr_, *maxAddr_;
-
+    static const unsigned entriesPerByte;
     size_t shiftPage_;
 #ifdef BITMAP_BIT
-    size_t shiftEntry_;
     uint32_t bitMask_;
 #endif
     size_t size_;
@@ -78,22 +76,20 @@ private:
 
     template <bool check, bool clear, bool set>
     bool CheckClearSet(const void *addr);
+    int minEntry_;
+    int maxEntry_;
 
-    off_t offset(const void *addr) const;
+    void updateMaxMin(unsigned entry);
+
+    unsigned offset(const void *addr) const;
 public:
     Bitmap(unsigned bits = 32);
     virtual ~Bitmap();
 
     void *device();
-    void *deviceBase();
     void *host() const;
 
     const size_t size() const;
-
-    const size_t shiftPage() const;
-#ifdef BITMAP_BIT
-    const size_t shiftEntry() const;
-#endif
 
     bool check(const void *);
     bool checkAndClear(const void *);

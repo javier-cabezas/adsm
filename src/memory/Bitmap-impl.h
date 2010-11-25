@@ -6,55 +6,73 @@ namespace __impl { namespace memory { namespace vm {
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 inline
-off_t Bitmap::offset(const void *addr) const
+unsigned Bitmap::offset(const void *addr) const
 {
 #ifdef BITMAP_BIT
-    off_t entry = to32bit(addr) >> (shiftEntry_ + 5);
-#else
+    off_t entry = to32bit(addr) >> (shiftPage_ + 3);
+#else // BITMAP_BYTE
     off_t entry = to32bit(addr) >> shiftPage_;
 #endif
     return entry;
 }
 
 template <bool __check, bool __clear, bool __set>
-inline
-bool Bitmap::CheckClearSet(const void * addr)
+bool
+Bitmap::CheckClearSet(const void * addr)
 {
-    if (!synced_) {
-        syncHost();
-    }
     bool ret = false;
     size_t entry = offset(addr);
+    
+#ifdef BITMAP_BIT
+    uint8_t val = 1 << ((to32bit(addr) >> shiftPage_) & bitMask_);
+    if (__check && (bitmap_[entry] & val) != 0) ret = true;
+#else // BITMAP_BYTE
+    if (__check && bitmap_[entry] != 0) ret = true;
+#endif
+
+#ifdef BITMAP_BIT
+    TRACE(LOCAL,"Bitmap check for %p -> entry %zu, offset %zu", addr, entry, (to32bit(addr) >> shiftPage_) & bitMask_);
+#else // BITMAP_BYTE
     TRACE(LOCAL,"Bitmap check for %p -> entry %zu", addr, entry);
+#endif
     if (__clear || __set) {
         TRACE(LOCAL,"Bitmap entry before: 0x%x", bitmap_[entry]);
     }
-#ifdef BITMAP_BIT
-    uint32_t val = 1 << ((to32bit(addr) >> shiftEntry_) & bitMask_);
-    if(__check && (bitmap_[entry] & val) != 0) ret = true;
-    if(__clear) {
-        bitmap_[entry] &= ~val;
-        dirty_ = true;
-    }
-#else
-    if(__check && bitmap_[entry] != 0) {
-        ret = true;
-    }
+
     if (__clear) {
+#ifdef BITMAP_BIT
+        bitmap_[entry] &= ~val;
+#else // BITMAP_BYTE
         bitmap_[entry] = 0;
+#endif
         dirty_ = true;
     }
     if (__set) {
+#ifdef BITMAP_BIT
+        FATAL(0, "Operation not supported by bit implementation");
+#endif
         bitmap_[entry] = 2;
         dirty_ = true;
     }
-#endif
     if (__clear || __set) {
         TRACE(LOCAL,"Bitmap entry after: 0x%x", bitmap_[entry]);
     } else {
         TRACE(LOCAL,"Bitmap entry: 0x%x", bitmap_[entry]);
     }
     return ret;
+}
+
+inline void
+Bitmap::updateMaxMin(unsigned entry)
+{
+    if (minEntry_ == -1) {
+        minEntry_ = entry;
+        maxEntry_ = entry;
+    } else if (entry < unsigned(minEntry_)) {
+        minEntry_ = entry;
+    } else if (entry > unsigned(maxEntry_)) {
+        maxEntry_ = entry;
+    }
 }
 
 inline
@@ -95,27 +113,18 @@ inline
 void *Bitmap::device() 
 {
     if (device_ == NULL) allocate();
-    if (minAddr_ != NULL) {
-        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
-        return ((uint8_t *)device_) + offset(minAddr_);
-    } else {
-        return device_;
+    if (minEntry_ != -1) {
+        return device_ + minEntry_;
     }
-}
 
-inline
-void *Bitmap::deviceBase() 
-{
-    if (device_ == NULL) allocate();
     return device_;
 }
 
 inline
 void *Bitmap::host() const
 {
-    if (minAddr_ != NULL) {
-        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
-        return ((uint8_t *)bitmap_) + offset(minAddr_);
+    if (minEntry_ != -1) {
+        return bitmap_ + minEntry_;
     } else {
         return bitmap_;
     }
@@ -124,34 +133,18 @@ void *Bitmap::host() const
 inline
 const size_t Bitmap::size() const
 {
-    if (minAddr_ != NULL) {
-        ASSERTION(maxAddr_ != NULL && maxAddr_ > minAddr_);
-        return (offset(maxAddr_) - offset(minAddr_) + 1) * sizeof(bitmap_[0]);
+    if (minEntry_ != -1) {
+        return maxEntry_ - minEntry_ + 1;
     } else {
-        return size_;
+        return 0;
     }
 }
-
-inline
-const size_t Bitmap::shiftPage() const
-{
-    return shiftPage_;
-}
-
-#ifdef BITMAP_BIT
-inline
-const size_t Bitmap::shiftEntry() const
-{
-    return shiftEntry_;
-}
-#endif
 
 inline
 bool Bitmap::clean() const
 {
     return !dirty_;
 }
-
 
 inline
 void Bitmap::reset()
@@ -175,32 +168,25 @@ void Bitmap::synced(bool s)
 inline
 void Bitmap::newRange(const void * ptr, size_t count)
 {
-    if (device_ == NULL) allocate();
-    if (minAddr_ == NULL) {
-        minAddr_ = ptr;
-        maxAddr_ = ((uint8_t *) ptr) + count - 1;
-    } else if (ptr < minAddr_) {
-        minAddr_ = ptr;
-    } else if (((uint8_t *) ptr) + count > maxAddr_) {
-        maxAddr_ = ((uint8_t *) ptr) + count - 1;
-    }
-    TRACE(LOCAL,"ptr: %p ("FMT_SIZE") minAddr: %p maxAddr: %p", ptr, count, minAddr_, maxAddr_);
+#ifdef BITMAP_BYTE
+    uint8_t *start = bitmap_ + offset(ptr);
+    uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);
+    ::memset(start, 0, end - start + 1);
+#else // BITMAP_BIT
+    uint8_t *start = bitmap_ + offset(ptr);
+    uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);
+    ::memset(start, 0, end - start + 1);
+#endif
+    updateMaxMin(offset(ptr));
+    updateMaxMin(offset(static_cast<const uint8_t *>(ptr) + count - 1));
+    TRACE(LOCAL,"ptr: %p ("FMT_SIZE")", ptr, count);
 }
 
 inline
 void Bitmap::removeRange(const void * ptr, size_t count)
 {
-    if (ptr == minAddr_) {
-        if (((uint8_t *) ptr) + count == maxAddr_) {
-            maxAddr_ = NULL;
-            minAddr_ = NULL;
-        } else {
-            minAddr_ = ((uint8_t *) ptr) + count;
-        }
-    } else if (((uint8_t *) ptr) + count == maxAddr_) {
-        maxAddr_ = ptr;
-    }
-    TRACE(LOCAL,"minAddr: %p maxAddr: %p", minAddr_, maxAddr_);
+    // TODO implement smarter range handling for more efficient transfers
+
 }
 
 }}}
