@@ -30,7 +30,6 @@ Bitmap::Bitmap(unsigned bits) :
     TRACE(LOCAL, "Pages: %u", 1 << (bits - shiftPage_));
     TRACE(LOCAL,"Size : %u", size_);
 
-
 #ifndef USE_HOSTMAP_VM
     bitmap_ = new T[size_];
 #endif

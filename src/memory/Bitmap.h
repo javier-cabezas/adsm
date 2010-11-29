@@ -86,6 +86,8 @@ public:
     Bitmap(unsigned bits = 32);
     virtual ~Bitmap();
 
+    void cleanUp();
+
     void *device();
     void *host() const;
 

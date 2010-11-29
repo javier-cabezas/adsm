@@ -168,6 +168,10 @@ void Bitmap::synced(bool s)
 inline
 void Bitmap::newRange(const void * ptr, size_t count)
 {
+#ifdef USE_HOSTMAP_VM
+    if (device_ == NULL) allocate();
+#endif
+
 #ifdef BITMAP_BYTE
     uint8_t *start = bitmap_ + offset(ptr);
     uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);

@@ -57,10 +57,13 @@ inline gmacError_t ContextMap::sync()
     return ret;
 }
 
-inline void Mode::cleanUp() const
+inline void Mode::cleanUp()
 {
     map_.forEach(*this, &memory::Object::removeOwner);
     memory::Map::removeOwner(Process::getInstance(), *this);
+#ifdef USE_VM
+    bitmap_.cleanUp();
+#endif
 }
 
 inline void Mode::cleanUpContexts()

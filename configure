@@ -24,6 +24,9 @@ do
     --enable-vm)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_VM=ON"
         ;;
+    --enable-vm-hostmap)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_HOSTMAP_VM=ON"
+        ;;
     --enable-paraver)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_PARAVER=ON"
         ;;
@@ -31,7 +34,7 @@ do
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DVM_BITMAP=${size}"
         ;;
-    esac
+        esac
 done
 
 CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
