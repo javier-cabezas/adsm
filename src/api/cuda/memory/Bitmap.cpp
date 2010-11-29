@@ -12,7 +12,7 @@ void Bitmap::allocate()
     cuda::Mode &mode = cuda::Mode::current();
 #ifdef USE_HOSTMAP_VM
     mode.hostAlloc((void **)&bitmap_, size_);
-    device_ = mode->hostMap(bitmap_);
+    device_ = (uint8_t *) mode.hostMap(bitmap_);
     memset(bitmap_, 0, size());
     TRACE(LOCAL,"Allocating dirty bitmap (%zu bytes)", size());
 #else
@@ -22,6 +22,11 @@ void Bitmap::allocate()
 }
 
 Bitmap::~Bitmap()
+{
+}
+
+void
+Bitmap::cleanUp()
 {
 #ifdef USE_HOSTMAP_VM
     cuda::Mode &mode = __impl::cuda::Mode::current();
@@ -54,17 +59,12 @@ Bitmap::syncDevice()
     TRACE(LOCAL,"Syncing Bitmap");
     cuda::Mode &mode = cuda::Mode::current();
 
-#ifdef BITMAP_BIT
-    unsigned shift = shiftPage_;
-#else // BITMAP_BYTE
-    unsigned shift = shiftPage_;
-#endif
     memory::vm::Bitmap &bitmap = mode.dirtyBitmap();
-    TRACE(LOCAL,"Setting dirty bitmap on device: %p -> %p (0x%lx): "FMT_SIZE" ShiftPage: %d", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode.dirtyBitmapDevPtr(), bitmap.size(), shift);
+    TRACE(LOCAL,"Setting dirty bitmap on device: %p -> %p (0x%lx): "FMT_SIZE" ShiftPage: %d", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode.dirtyBitmapDevPtr(), bitmap.size(), shiftPage_);
     gmacError_t ret;
     ret = mode.copyToAccelerator((void *) mode.dirtyBitmapDevPtr(), &device_, sizeof(void *));
     CFATAL(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode.dirtyBitmapDevPtr());
-    ret = mode.copyToAccelerator((void *) mode.dirtyBitmapShiftPageDevPtr(), &shift, sizeof(int));
+    ret = mode.copyToAccelerator((void *) mode.dirtyBitmapShiftPageDevPtr(), &shiftPage_, sizeof(int));
     CFATAL(ret == gmacSuccess, "Unable to set shift page in the device %p", (void *) mode.dirtyBitmapShiftPageDevPtr());
 
 #ifndef USE_HOSTMAP_VM

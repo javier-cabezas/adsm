@@ -88,6 +88,10 @@ if(USE_VM)
         message(STATUS "Using 'byte' bitmap implementation")
         add_definitions(-DBITMAP_BYTE)
     endif(VM_BITMAP MATCHES "bit")
+
+    if(USE_HOSTMAP_VM)
+        add_definitions(-DUSE_HOSTMAP_VM)
+    endif(USE_HOSTMAP_VM)
 endif(USE_VM)
 
 
