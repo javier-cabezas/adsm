@@ -106,6 +106,15 @@ protected:
     gmacError_t memcpyFromObject(void *dst, const Object &obj, size_t size,
         unsigned objOffset);
 
+    //! Get the number of bytes at the begining of a range that are in host memory
+    /*!
+        \param addr Starting address of the memory range
+        \param size Size (in bytes) of the memory range
+        \param obj First object within the range
+        \return Number of bytes at the beginning of the range that are in host memory
+    */
+    size_t hostMemory(void *addr, size_t size, const Object *obj) const;
+
     //! Default constructor
     Manager();
 
