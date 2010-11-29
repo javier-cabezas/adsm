@@ -505,47 +505,88 @@ gmacError_t Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
     return ret;
 }
 
+size_t Manager::hostMemory(void *addr, size_t size, const Object *obj) const
+{
+    // There is no object, so everything is in host memory
+    if(obj == NULL) return size; 
+
+    // The object starts after the memory range, return the difference
+    if((uint8_t *)addr < obj->addr()) return unsigned(obj->addr() - (uint8_t *)addr);
+
+    ASSERTION(obj->end() > (uint8_t *)addr); // Sanity check
+
+    return 0;
+}
+
+
 gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
-    core::Mode *dstMode = proc.owner(dst);
-    core::Mode *srcMode = proc.owner(src);
+    core::Mode *dstMode = proc.owner(dst, size);
+    core::Mode *srcMode = proc.owner(src, size);
 
     if(dstMode == NULL && srcMode == NULL) {
         ::memcpy(dst, src, size);
         return gmacSuccess;
     }
 
-    // TODO: consider the case of a memcpy not starting on an object
     const Object *dstObject = NULL;
     const Object *srcObject = NULL;
-	if(dstMode != NULL) {
-        dstObject = dstMode->getObject(dst);
-        ASSERTION(dstObject != NULL);
-    }
 
-    if(srcMode != NULL) {
-        srcObject = srcMode->getObject(src);
-        ASSERTION(srcObject != NULL);
-    }
+    // Get initial objects
+    if(dstMode != NULL) dstObject = dstMode->getObject(dst, size);
+    if(srcMode != NULL) srcObject = srcMode->getObject(src, size);
 
     gmacError_t ret = gmacSuccess;
-    if(dstObject != NULL) {
-        if(srcObject == NULL) {
-            ret = memcpyToObject(*dstObject, src, size, 
-                unsigned((uint8_t *)dst - dstObject->addr()));
+    size_t left = size;
+    size_t offset = 0;
+    size_t copySize = 0;
+    while(left > 0) {
+        // Get next objects involved, if necessary
+        if(dstMode != NULL && dstObject != NULL && dstObject->end() < ((uint8_t *)dst + offset)) {
+            dstObject->release();
+            dstObject = dstMode->getObject((uint8_t *)dst + offset, left);
         }
-        else {
-            unsigned srcOffset = unsigned((uint8_t *)srcObject->addr() - (uint8_t *)src);
-            ret = memcpyToObject(*dstObject, *srcObject, size, 
-                unsigned((uint8_t *)dst - dstObject->addr()), srcOffset);
+        if(srcMode != NULL && srcObject != NULL && srcObject->end() < ((uint8_t *)src + offset)) {
+            srcObject->release();
+            srcObject = srcMode->getObject((uint8_t *)src + offset, left);
         }
+
+        // Get the number of host-to-host memory we have to copy
+        size_t dstHostMemory = hostMemory((uint8_t *)dst + offset, left, dstObject);
+        size_t srcHostMemory = hostMemory((uint8_t *)src + offset, left, srcObject);
+
+        if(dstHostMemory != 0 && srcHostMemory != 0) { // Host-to-host memory copy
+            copySize = (dstHostMemory < srcHostMemory) ? dstHostMemory : srcHostMemory;
+            ::memcpy((uint8_t *)dst + offset, (uint8_t *)src + offset, copySize);
+            ret = gmacSuccess;
+        }
+        else if(dstHostMemory != 0) { // Object-to-host memory copy
+            size_t srcCopySize = size_t(srcObject->end() - (uint8_t *)src - offset);
+            copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
+            unsigned srcObjectOffset = unsigned((uint8_t *)src + offset - srcObject->addr());
+            ret = memcpyFromObject((uint8_t *)dst + offset, *srcObject, copySize, srcObjectOffset);
+        }
+        else if(srcHostMemory != 0) { // Host-to-object memory copy
+            size_t dstCopySize = size_t(dstObject->end() - (uint8_t *)dst - offset);
+            copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
+            unsigned dstObjectOffset = unsigned((uint8_t *)dst + offset - dstObject->addr());
+            ret = memcpyToObject(*dstObject, (uint8_t *)src + offset, copySize, dstObjectOffset);
+        }
+        else { // Object-to-object memory copy
+            size_t srcCopySize = size_t(srcObject->end() - (uint8_t *)src - offset);
+            size_t dstCopySize = size_t(dstObject->end() - (uint8_t *)dst - offset);
+            copySize = (srcCopySize < dstCopySize) ? srcCopySize : dstCopySize;
+            copySize = (copySize < left) ? copySize : left;
+            unsigned srcObjectOffset = unsigned((uint8_t *)src + offset - srcObject->addr());
+            unsigned dstObjectOffset = unsigned((uint8_t *)dst + offset - dstObject->addr());
+            ret = memcpyToObject(*dstObject, *srcObject, copySize, dstObjectOffset, srcObjectOffset);
+        }
+
+        offset += copySize;
+        left -= copySize;
     }
-    else {
-        ret = memcpyFromObject(dst, *srcObject, size, 
-            unsigned(srcObject->addr() - (uint8_t *)src));
-    }
- 
+     
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();
     

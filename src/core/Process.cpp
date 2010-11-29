@@ -291,16 +291,10 @@ void Process::copy(THREAD_T id)
 
 Mode *Process::owner(const void *addr, size_t size) const
 {
+    // We do not consider global objects for ownership,
+    // since memory operations over them are performed
+    // as if they were regular host memory
     const memory::Object *object = shared_.get(addr, size);
-
-    const uint8_t *base = (const uint8_t *)addr;
-    if(object == NULL || base < object->addr()) {        
-        const memory::Object *tmp = global_.get(addr, size);
-        if(tmp != NULL) {
-            if(object == NULL || tmp->addr() < object->addr())
-                object = tmp;
-        }
-    }
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
 	object->release();
