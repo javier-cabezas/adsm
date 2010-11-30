@@ -1,6 +1,7 @@
-#include "Mode.h"
-#include "Context.h"
 #include "Accelerator.h"
+#include "Context.h"
+#include "IOBuffer.h"
+#include "Mode.h"
 
 namespace __impl { namespace cuda {
 
@@ -53,6 +54,25 @@ Mode::~Mode()
     }
     switchOut();
 }
+
+inline
+core::IOBuffer *Mode::createIOBuffer(size_t size)
+{
+    if(ioMemory_ == NULL) return NULL;
+    void *addr = ioMemory_->get(size);
+    if(addr == NULL) return NULL;
+    return new IOBuffer(addr, size);
+}
+
+inline
+void Mode::destroyIOBuffer(core::IOBuffer *buffer)
+{
+    ASSERTION(ioMemory_ != NULL);
+    ioMemory_->put(buffer->addr(), buffer->size());
+    delete buffer;
+}
+
+
 
 void Mode::load()
 {
@@ -170,13 +190,19 @@ CUstream Mode::eventStream()
     return ctx.eventStream();
 }
 
-gmacError_t Mode::waitForBuffer(core::IOBuffer &buffer)
+gmacError_t Mode::waitForEvent(CUevent event)
 {
 	switchIn();
-    Context &ctx = dynamic_cast<Context &>(getContext());
-	error_ = ctx.waitForBuffer(buffer);
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    CUresult ret;
+    while ((ret = acc.queryCUevent(event)) == CUDA_ERROR_NOT_READY) {
+        // TODO: add delay here
+    }
+
 	switchOut();
-	return error_;
+
+    return Accelerator::error(ret);
 }
 
 }}

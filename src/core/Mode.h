@@ -198,8 +198,6 @@ public:
 
     Process &process();
     const Process &process() const;
-
-    virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
 }}

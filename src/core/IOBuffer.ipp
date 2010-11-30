@@ -5,7 +5,7 @@ namespace __impl { namespace core {
 
 inline
 IOBuffer::IOBuffer(void *addr, size_t size) :
-        gmac::util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(NULL)
+        gmac::util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle)
 {
 }
 
@@ -48,44 +48,6 @@ inline IOBuffer::State
 IOBuffer::state() const
 {
     return state_;
-}
-
-inline void
-IOBuffer::toHost(Mode &mode)
-{
-    ASSERTION(mode_  == NULL);
-
-    mode_  = &mode;
-    state_ = ToHost;
-    TRACE(LOCAL,"Buffer %p goes toHost", this); 
-}
-
-inline void
-IOBuffer::toAccelerator(Mode &mode)
-{
-    ASSERTION(mode_  == NULL);
-
-    mode_  = &mode;
-    state_ = ToAccelerator;
-    TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
-}
-
-inline gmacError_t
-IOBuffer::wait()
-{
-    gmacError_t ret = gmacSuccess;
-
-    if (state_ != Idle) {
-        ASSERTION(mode_ != NULL);
-        ret = mode_->waitForBuffer(*this);
-        TRACE(LOCAL,"Buffer %p goes Idle", this);
-        state_ = Idle;
-        mode_  = NULL;
-    } else {
-        ASSERTION(mode_ == NULL);
-    }
-
-    return ret;
 }
 
 }}

@@ -55,7 +55,7 @@ void
 Bitmap::syncDevice()
 {
     cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
-    cuda::Accelerator &acc = mode.getAccelerator();
+    cuda::Accelerator &acc = dynamic_cast<cuda::Accelerator &>(mode.getAccelerator());
 
 #ifndef USE_MULTI_CONTEXT
     cuda::Mode *last = acc.getLastMode();

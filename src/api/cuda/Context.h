@@ -51,12 +51,13 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-    class IOBuffer;
+class IOBuffer;
 }
 
 namespace cuda {
 
 class Accelerator;
+class IOBuffer;
 
 class GMAC_LOCAL Context : public core::Context {
 protected:
@@ -72,7 +73,7 @@ protected:
     CUstream streamAccelerator_;
 
     Mode &mode_;
-    core::IOBuffer *buffer_;
+    IOBuffer *buffer_;
 
     KernelConfig call_;
 
@@ -103,7 +104,7 @@ public:
     const CUstream eventStream() const;
 
     Accelerator & accelerator();
-    gmacError_t waitForBuffer(core::IOBuffer &buffer);
+    gmacError_t waitForEvent(CUevent e);
 };
 
 }}

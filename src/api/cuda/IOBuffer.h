@@ -31,47 +31,42 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_IOBUFFER_H_
-#define GMAC_CORE_IOBUFFER_H_
+#ifndef GMAC_API_CUDA_IOBUFFER_H_
+#define GMAC_API_CUDA_IOBUFFER_H_
 
-#include "config/common.h"
-#include "include/gmac/types.h"
-#include "util/Lock.h"
+#include <cuda.h>
 
 #include "Mode.h"
 
-namespace __impl { namespace core {
+#include "core/IOBuffer.h"
 
-class GMAC_LOCAL IOBuffer : public gmac::util::Lock {
-public:
-    typedef enum { Idle, ToHost, ToAccelerator } State;
+namespace __impl { namespace cuda {
+
+class GMAC_LOCAL IOBuffer : public core::IOBuffer {
 protected:
-    void *addr_;
-    size_t size_;
+    CUevent start_;
+    CUevent end_;
+    CUstream stream_;
+    Mode *mode_;
+    bool created_;
 
-    State state_;
-    IOBuffer(void *addr, size_t size);
 public:
-    virtual ~IOBuffer();
-	IOBuffer &operator =(const IOBuffer &) {
-        FATAL("Assigment of I/O buffers is not supported");
-        return *this;
+    IOBuffer(void *addr, size_t size) :
+        core::IOBuffer(addr, size), mode_(NULL), created_(false)
+    {
     }
 
-    uint8_t *addr() const;
-    uint8_t *end() const;
-    size_t size() const;
+    void toHost(Mode &mode, CUstream s);
+    void toAccelerator(Mode &mode, CUstream s);
 
-    void lock();
-    void unlock();
+    void started();
 
-    State state() const;
-    virtual gmacError_t wait() = 0;
+    gmacError_t wait();
 };
 
 }}
 
-#include "IOBuffer.ipp"
+#include "IOBuffer-impl.h"
 
 #endif
 

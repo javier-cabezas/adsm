@@ -46,6 +46,7 @@ WITH THE SOFTWARE.
 #include "Module.h"
 
 namespace __impl { namespace cuda {
+class IOBuffer;
 class Mode;
 class ModuleDescriptor;
 
@@ -140,12 +141,14 @@ public:
 	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(void *dec, const void *host, size_t size, CUstream stream);
-    gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream);
+    gmacError_t copyToAcceleratorAsync(void *dev, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *dev, size_t count, Mode &mode, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
     gmacError_t syncCUstream(CUstream stream);
+    CUresult queryCUevent(CUevent event);
+    gmacError_t syncCUevent(CUevent event);
 
     gmacError_t execute(KernelLaunch &launch);
 
