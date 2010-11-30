@@ -57,17 +57,17 @@ template<typename T> class StateBlock;
 
 namespace protocol { 
 //! A lazy memory coherence protocol
-/*! This protocol eagerly transfer data from host to device memory if the user
+/*! This protocol eagerly transfer data from host to accelerator memory if the user
     sets up a limit, otherwise data is transferred when the use requests a
-    release operation. Data is transferred from device memory to host memory
+    release operation. Data is transferred from accelerator memory to host memory
     lazily, whenever it is needed by the application
 */
 class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
     //! Protocol states
     typedef enum {
-        Invalid, /*!< Valid copy of the data in device memory */
-        ReadOnly, /*!< Valid copy of the data in both host and device memory */
+        Invalid, /*!< Valid copy of the data in accelerator memory */
+        ReadOnly, /*!< Valid copy of the data in both host and accelerator memory */
         Dirty, /*!< Valid copy of the data in host memory */
         HostOnly /*< Data only allowed in host memory */
     } State;
@@ -124,7 +124,7 @@ public:
 
 	gmacError_t toHost(Block &block);
 
-    gmacError_t toDevice(Block &block);
+    gmacError_t toAccelerator(Block &block);
 
 	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset, unsigned blockOffset) const;

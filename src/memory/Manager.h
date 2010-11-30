@@ -52,7 +52,7 @@ class Protocol;
 
 //! Memory Manager Interface
 
-//! Memory Managers orchestate the data transfers between host and device memories
+//! Memory Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
 
@@ -61,7 +61,7 @@ class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager>
 private:
 #ifdef USE_VM
     void checkBitmapToHost();
-    void checkBitmapToDevice();
+    void checkBitmapToAccelerator();
 #endif
 protected:
     //! Allocated a host mapped memory
@@ -151,7 +151,7 @@ public:
     */
     TESTABLE gmacError_t free(void *addr);
 
-    //! Get the device address associated to a shared memory address
+    //! Get the accelerator address associated to a shared memory address
     /*!
         \param addr Host shared memory address
         \param Accelerator memory address

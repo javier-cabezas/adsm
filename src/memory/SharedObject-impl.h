@@ -20,11 +20,11 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
 
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner_->malloc((void **)&deviceAddr_, size, (unsigned)paramPageSize);
+		owner_->malloc((void **)&acceleratorAddr_, size, (unsigned)paramPageSize);
 	if(ret == gmacSuccess) {
 #ifdef USE_VM
         vm::Bitmap &bitmap = owner_->dirtyBitmap();
-        bitmap.newRange(deviceAddr_, size_);
+        bitmap.newRange(acceleratorAddr_, size_);
 #endif
         valid_ = true;
     }
@@ -36,12 +36,12 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
 		size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
 		mark += blockSize;
 		blocks_.insert(BlockMap::value_type(mark, 
-			new SharedBlock<T>(protocol, *owner_, addr_ + offset, shadow_ + offset, deviceAddr_ + offset, blockSize, init)));
+			new SharedBlock<T>(protocol, *owner_, addr_ + offset, shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
-    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : device @ %p) ", 
-        addr_, shadow_, deviceAddr_);
+    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", 
+        addr_, shadow_, acceleratorAddr_);
 }
 
 
@@ -49,23 +49,23 @@ template<typename T>
 inline SharedObject<T>::~SharedObject()
 {
 	// If the object creation failed, this address will be NULL
-    if(deviceAddr_ != NULL) owner_->free(deviceAddr_);
+    if(acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
     Memory::unshadow(shadow_, size_);
 #ifdef USE_VM
     vm::Bitmap &bitmap = owner_->dirtyBitmap();
-    bitmap.removeRange(deviceAddr_, size_);
+    bitmap.removeRange(acceleratorAddr_, size_);
 #endif
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
 
 template<typename T>
-inline void *SharedObject<T>::deviceAddr(const void *addr) const
+inline void *SharedObject<T>::acceleratorAddr(const void *addr) const
 {
     void *ret = NULL;
     lockRead();
-    if(deviceAddr_ != NULL) {
+    if(acceleratorAddr_ != NULL) {
         unsigned offset = unsigned((uint8_t *)addr - addr_);
-        ret = deviceAddr_ + offset;
+        ret = acceleratorAddr_ + offset;
     }
     unlock();
     return ret;
@@ -92,11 +92,11 @@ inline void SharedObject<T>::removeOwner(const core::Mode &owner)
     lockWrite();
     if(owner_ == &owner) {
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
-        if(deviceAddr_ != NULL) {
+        if(acceleratorAddr_ != NULL) {
             coherenceOp(&Protocol::remove);
-            owner_->free(deviceAddr_);
+            owner_->free(acceleratorAddr_);
         }
-        deviceAddr_ = NULL;
+        acceleratorAddr_ = NULL;
         owner_ = NULL;
         // Put myself in the orphan map
         Map::insertOrphan(*this);

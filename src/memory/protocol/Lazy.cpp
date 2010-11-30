@@ -88,7 +88,7 @@ gmacError_t LazyBase::signalRead(Block &b)
     }
 
 #ifdef USE_VM
-    if (bitmap.checkAndClear(block.deviceAddr(block.addr()))) {
+    if (bitmap.checkAndClear(block.acceleratorAddr(block.addr()))) {
 #endif
         ret = block.toHost();
         if(ret != gmacSuccess) goto exit_func;
@@ -119,7 +119,7 @@ gmacError_t LazyBase::signalWrite(Block &b)
             goto exit_func; // Somebody already fixed it
         case Invalid:          
 #ifdef USE_VM
-            if (bitmap.checkAndClear(block.deviceAddr(block.addr()))) {
+            if (bitmap.checkAndClear(block.acceleratorAddr(block.addr()))) {
 #endif
                 ret = block.toHost();
                 if(ret != gmacSuccess) goto exit_func;
@@ -172,7 +172,7 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
     switch(block.state()) {
         case Invalid:
         case ReadOnly:
-            if (bitmap.check(block.deviceAddr(block.addr()))) {
+            if (bitmap.check(block.acceleratorAddr(block.addr()))) {
                 if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(Invalid);
@@ -244,7 +244,7 @@ gmacError_t LazyBase::release(Block &b)
     gmacError_t ret = gmacSuccess;
     switch(block.state()) {
         case Dirty:
-            ret = block.toDevice();
+            ret = block.toAccelerator();
             if(ret != gmacSuccess) break;
 			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     FATAL("Unable to set memory permissions");
@@ -284,13 +284,13 @@ gmacError_t LazyBase::toHost(Block &b)
     return ret;
 }
 
-gmacError_t LazyBase::toDevice(Block &b)
+gmacError_t LazyBase::toAccelerator(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Dirty:
-            ret = block.toDevice();
+            ret = block.toAccelerator();
             if(ret != gmacSuccess) break;
 			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
@@ -311,7 +311,7 @@ gmacError_t LazyBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
-			ret = block.copyFromDevice(buffer, size, bufferOffset, blockOffset);
+			ret = block.copyFromAccelerator(buffer, size, bufferOffset, blockOffset);
 			break;
 		case ReadOnly:
 		case Dirty:
@@ -328,10 +328,10 @@ gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, siz
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
-			ret = block.copyToDevice(buffer, size, bufferOffset, blockOffset);
+			ret = block.copyToAccelerator(buffer, size, bufferOffset, blockOffset);
 			break;
 		case ReadOnly:
-			ret = block.copyToDevice(buffer, size, bufferOffset, blockOffset);
+			ret = block.copyToAccelerator(buffer, size, bufferOffset, blockOffset);
 			if(ret != gmacSuccess) break;
 			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset);
 			break;
@@ -349,10 +349,10 @@ gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockO
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
 	switch(block.state()) {
 		case Invalid:
-            ret = b.deviceMemset(v, size, blockOffset);
+            ret = b.acceleratorMemset(v, size, blockOffset);
 			break;
 		case ReadOnly:
-			ret = b.deviceMemset(v, size, blockOffset);
+			ret = b.acceleratorMemset(v, size, blockOffset);
 			if(ret != gmacSuccess) break;
 			ret = b.hostMemset(v, size, blockOffset);
 			break;

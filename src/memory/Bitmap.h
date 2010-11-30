@@ -69,7 +69,7 @@ private:
     bool dirty_;
     bool synced_;
 
-    uint8_t *device_;
+    uint8_t *accelerator_;
 
     static const unsigned entriesPerByte;
     size_t shiftPage_;
@@ -94,7 +94,7 @@ public:
 
     void cleanUp();
 
-    void *device();
+    void *accelerator();
     void *host() const;
 
     const size_t size() const;
@@ -111,7 +111,7 @@ public:
     bool clean() const;
 
     void syncHost();
-    void syncDevice();
+    void syncAccelerator();
     void reset();
 
 #ifdef DEBUG_BITMAP

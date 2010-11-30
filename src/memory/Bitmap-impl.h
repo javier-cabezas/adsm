@@ -110,14 +110,14 @@ void Bitmap::set(const void *addr)
 }
 
 inline
-void *Bitmap::device() 
+void *Bitmap::accelerator() 
 {
-    if (device_ == NULL) allocate();
+    if (accelerator_ == NULL) allocate();
     if (minEntry_ != -1) {
-        return device_ + minEntry_;
+        return accelerator_ + minEntry_;
     }
 
-    return device_;
+    return accelerator_;
 }
 
 inline
@@ -169,7 +169,7 @@ inline
 void Bitmap::newRange(const void * ptr, size_t count)
 {
 #ifdef USE_HOSTMAP_VM
-    if (device_ == NULL) allocate();
+    if (accelerator_ == NULL) allocate();
 #endif
 
 #ifdef BITMAP_BYTE

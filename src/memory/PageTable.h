@@ -83,7 +83,7 @@ public:
 	PageTable();
 	virtual ~PageTable();
 
-	void insert(void *host, void *dev);
+	void insert(void *host, void *acc);
 	void remove(void *host);
 	const void *translate(const void *host);
 	void *translate(void *host);

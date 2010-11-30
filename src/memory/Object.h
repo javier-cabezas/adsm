@@ -78,7 +78,7 @@ protected:
         \param op Coherence operation to be performed
         \return Error code
         \sa __impl::memory::Block::toHost
-        \sa __impl::memory::Block::toDevice
+        \sa __impl::memory::Block::toAccelerator
     */
 	gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
 
@@ -91,9 +91,9 @@ protected:
         \param objectOffset Offset (in bytes) from the beginning of the block to start performing the operation
         \return Error code
         \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyToDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa __impl::memory::Block::copyToAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyFromDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
     */
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset, unsigned objectOffset) const;
@@ -132,12 +132,12 @@ public:
     */
 	bool valid() const;
 
-    //! Get the device memory address where a host memory address from the object is mapped
+    //! Get the accelerator memory address where a host memory address from the object is mapped
     /*!
         \param addr Host memory address within the object
-        \return Device memory address within the object
+        \return Accelerator memory address within the object
     */
-    virtual void *deviceAddr(const void *addr) const = 0;
+    virtual void *acceleratorAddr(const void *addr) const = 0;
 
     //! Get the owner of the object
     /*!
@@ -170,11 +170,11 @@ public:
     */
 	gmacError_t toHost() const;
 
-    //! Ensures that the object device memory contains an updated copy of the data
+    //! Ensures that the object accelerator memory contains an updated copy of the data
     /*!
         \return Error code
     */
-	gmacError_t toDevice() const;
+	gmacError_t toAccelerator() const;
 
     //! Signal handler for faults caused due to memory reads
     /*!

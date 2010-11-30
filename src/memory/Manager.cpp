@@ -69,7 +69,7 @@ gmacError_t Manager::unmap(void *addr, size_t size)
 gmacError_t Manager::alloc(void **addr, size_t size)
 {
     core::Mode &mode = core::Mode::current();
-    // For integrated devices we want to use Centralized objects to avoid memory transfers
+    // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
     // Create new shared object
@@ -143,7 +143,7 @@ void *Manager::translate(const void *addr)
     void *ret = proc.translate(addr);
     if(ret == NULL) {   
         HostMappedObject *object = HostMappedObject::get(addr);
-        if(object != NULL) ret = object->deviceAddr(addr);
+        if(object != NULL) ret = object->acceleratorAddr(addr);
     }
     return ret;
 }
@@ -163,7 +163,7 @@ gmacError_t Manager::acquireObjects()
 gmacError_t Manager::releaseObjects()
 {
 #ifdef USE_VM
-    checkBitmapToDevice();
+    checkBitmapToAccelerator();
 #endif
     core::Mode &mode = core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
@@ -245,12 +245,12 @@ Manager::checkBitmapToHost()
 }
 
 void
-Manager::checkBitmapToDevice()
+Manager::checkBitmapToAccelerator()
 {
     core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
     if (!bitmap.clean()) {
-        bitmap.syncDevice();
+        bitmap.syncAccelerator();
     }
 }
 #endif
@@ -360,6 +360,8 @@ Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
     core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    ASSERTION(active  != NULL);
+    ASSERTION(passive != NULL);
 
     // Control variables
     unsigned left = unsigned(size);
@@ -380,7 +382,7 @@ Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
         ptr += copySize;
         objOffset += copySize;
         if(left > 0) {
-            // Start copying data from host memory to de passive I/O buffer
+            // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : unsigned(passive->size());
             passive->wait(); // Avoid overwritten a buffer that is already in use
             ::memcpy(passive->addr(), ptr, copySize);
@@ -409,6 +411,8 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
     core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    ASSERTION(active  != NULL);
+    ASSERTION(passive != NULL);
 
     // Control variables
     unsigned left = unsigned(size);
@@ -468,6 +472,8 @@ Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
     core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    ASSERTION(active  != NULL);
+    ASSERTION(passive != NULL);
 
     // Control variables
     unsigned left = unsigned(size);
@@ -488,7 +494,7 @@ Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
         left -= copySize;
         objOffset += copySize;        
         if(left > 0) {
-            // Start copying data from host memory to de passive I/O buffer
+            // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : unsigned(passive->size());
             // No need to wait for the buffer, because ::memcpy is a
             // synchronous call

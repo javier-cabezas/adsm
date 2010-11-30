@@ -136,13 +136,13 @@ public:
 	gmacError_t free(void *addr);
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *acc, size_t size);
 	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(void *dev, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *dev, size_t count, Mode &mode, CUstream stream);
+    gmacError_t copyToAcceleratorAsync(void *acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *acc, size_t count, Mode &mode, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);

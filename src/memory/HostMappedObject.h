@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_HOSTMAPPEDOBJECT_H_
 #define GMAC_MEMORY_HOSTMAPPEDOBJECT_H_
 
+#include <map>
+
 #include "util/Lock.h"
 #include "util/Reference.h"
-#include <map>
 
 namespace __impl { 
 
@@ -128,7 +129,7 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address where the requested host memory address is mapped
     */
-    void *deviceAddr(const void *addr) const;
+    void *acceleratorAddr(const void *addr) const;
 
     //! Remove a host mapped object from the list of all present host mapped object
     /*!

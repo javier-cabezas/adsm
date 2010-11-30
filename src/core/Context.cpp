@@ -30,18 +30,18 @@ Context::init()
 {
 }
 
-gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
+gmacError_t Context::copyToAccelerator(void *acc, const void *host, size_t size)
 {
     trace::EnterCurrentFunction();
-    gmacError_t ret = acc_.copyToAccelerator(dev, host, size);
+    gmacError_t ret = acc_.copyToAccelerator(acc, host, size);
     trace::ExitCurrentFunction();
     return ret;
 }
 
-gmacError_t Context::copyToHost(void *host, const void *dev, size_t size)
+gmacError_t Context::copyToHost(void *host, const void *acc, size_t size)
 {
     trace::EnterCurrentFunction();
-    gmacError_t ret = acc_.copyToHost(host, dev, size);
+    gmacError_t ret = acc_.copyToHost(host, acc, size);
     trace::ExitCurrentFunction();
     return ret;
 }

@@ -74,10 +74,10 @@ public:
     */
     virtual void deleteObject(Object &obj) = 0;
 
-    //! Checks if a memory block has an updated copy of the data in the device memory
+    //! Checks if a memory block has an updated copy of the data in the accelerator memory
     /*!
         \param block Memory block to check
-        \return Whether the device memory of the block has an updated copy of the data or not
+        \return Whether the accelerator memory of the block has an updated copy of the data or not
         \warning This method assumes that the block is not modified during its execution
     */
     virtual bool needUpdate(const Block &block) const = 0;
@@ -126,7 +126,7 @@ public:
     //! Removes a block from the coherence domain.
     /*!
         This method ensures that the block host memory contains an updated copy of the
-        data, and then matks the block to not use the device memory any more. After calling
+        data, and then matks the block to not use the accelerator memory any more. After calling
         this method a memory block will always remain in host memory
         \param block Memory block to remove from the coherence domain
         \return Error code
@@ -152,13 +152,13 @@ public:
     */
     virtual gmacError_t toHost(Block &block) = 0;
 
-    //! Ensures that the device memory of a block contains an updated copy of the data
+    //! Ensures that the accelerator memory of a block contains an updated copy of the data
     /*!
-        \param block Memory block whose device memory is being updated
+        \param block Memory block whose accelerator memory is being updated
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t toDevice(Block &block) = 0;
+    virtual gmacError_t toAccelerator(Block &block) = 0;
 
     //! Copy the contents of a memory block to an I/O buffer
     /*!

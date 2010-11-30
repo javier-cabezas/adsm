@@ -19,14 +19,14 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     // Create a shadow mapping for the host memory
     shadow_ = (uint8_t *)Memory::shadow(addr_, size_);
 
-    uint8_t *deviceAddr = NULL;
+    uint8_t *acceleratorAddr = NULL;
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner.malloc((void **)&deviceAddr, size, (unsigned)paramPageSize);
+		owner.malloc((void **)&acceleratorAddr, size, (unsigned)paramPageSize);
 	if(ret == gmacSuccess) valid_ = true;
 
 	// Populate the block-set
-    deviceAddr_.insert(DeviceMap::value_type(&owner, deviceAddr));
+    acceleratorAddr_.insert(AcceleratorMap::value_type(&owner, acceleratorAddr));
 	uint8_t *mark = addr_;
 	unsigned offset = 0;
 	while(size > 0) {
@@ -34,33 +34,33 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 		mark += blockSize;
 		blocks_.insert(BlockMap::value_type(mark, 
 			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
-			deviceAddr + offset, blockSize, init)));
+			acceleratorAddr + offset, blockSize, init)));
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
-    TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : device @ %p) ", 
-        addr_, shadow_, deviceAddr);
+    TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : accelerator @ %p) ", 
+        addr_, shadow_, acceleratorAddr);
 }
 
 
 template<typename T>
 inline DistributedObject<T>::~DistributedObject()
 {
-    DeviceMap::iterator i;
-    for(i = deviceAddr_.begin(); i != deviceAddr_.end(); i++)
+    AcceleratorMap::iterator i;
+    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++)
         i->first->free(i->second);
     Memory::unshadow(shadow_, size_);
     TRACE(GLOBAL, "Destroying Distributed Object @ %p", addr_);
 }
 
 template<typename T>
-inline void *DistributedObject<T>::deviceAddr(const void *addr) const
+inline void *DistributedObject<T>::acceleratorAddr(const void *addr) const
 {
 	void *ret = NULL;
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
 	if(i != blocks_.end()) {
-		ret = i->second->deviceAddr(addr);
+		ret = i->second->acceleratorAddr(addr);
 	}
 	unlock();
 	return ret;
@@ -83,22 +83,22 @@ inline bool DistributedObject<T>::addOwner(core::Mode &mode)
 {
     // Make sure that we do not add the same owner twice
     lockRead();
-    bool alreadyOwned = (deviceAddr_.find(&mode) != deviceAddr_.end());
+    bool alreadyOwned = (acceleratorAddr_.find(&mode) != acceleratorAddr_.end());
     unlock();
     if(alreadyOwned) return true;
 
-    uint8_t *deviceAddr = NULL;
+    uint8_t *acceleratorAddr = NULL;
     gmacError_t ret = 
-		mode.malloc((void **)&deviceAddr, size_, (unsigned)paramPageSize);
+		mode.malloc((void **)&acceleratorAddr, size_, (unsigned)paramPageSize);
     if(ret != gmacSuccess) return false;
 
     lockWrite();
-    deviceAddr_.insert(DeviceMap::value_type(&mode, deviceAddr));
+    acceleratorAddr_.insert(AcceleratorMap::value_type(&mode, acceleratorAddr));
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         unsigned offset = unsigned(i->second->addr() - addr_);
         DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
-        block.addOwner(mode, deviceAddr + offset);
+        block.addOwner(mode, acceleratorAddr + offset);
         
     }
 	unlock();
@@ -109,16 +109,16 @@ template<typename T>
 inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
 {
 	lockWrite();
-    DeviceMap::iterator i = deviceAddr_.find((core::Mode *)&mode);
-    if(i != deviceAddr_.end()) {
+    AcceleratorMap::iterator i = acceleratorAddr_.find((core::Mode *)&mode);
+    if(i != acceleratorAddr_.end()) {
         BlockMap::iterator j;
         for(j = blocks_.begin(); j != blocks_.end(); j++) {
             DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*j->second);
             block.removeOwner(*i->first);
         }
         i->first->free(i->second);
-        deviceAddr_.erase(i);
-        if(deviceAddr_.empty()) Map::insertOrphan(*this);
+        acceleratorAddr_.erase(i);
+        if(acceleratorAddr_.empty()) Map::insertOrphan(*this);
     }
     unlock();
 	return;

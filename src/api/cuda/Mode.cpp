@@ -9,10 +9,10 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = accelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUContext::current();
 #endif
     switchIn();
-    modules = accelerator().createModules();
+    modules = getAccelerator().createModules();
 
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
@@ -23,8 +23,8 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
         (*i)->registerKernels(*this);
 #ifdef USE_VM
         if((*i)->dirtyBitmap() != NULL) {
-            bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
+            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
+            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
         }
 #endif
     }
@@ -45,7 +45,7 @@ Mode::~Mode()
     ModuleVector::const_iterator m;
     switchIn();
 #ifdef USE_MULTI_CONTEXT
-    accelerator().destroyModules(modules);
+    getAccelerator().destroyModules(modules);
     modules.clear();
 #endif
     if(ioMemory_ != NULL) {
@@ -77,10 +77,10 @@ void Mode::destroyIOBuffer(core::IOBuffer *buffer)
 void Mode::load()
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = accelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUContext::current();
 #endif
 
-    modules = accelerator().createModules();
+    modules = getAccelerator().createModules();
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
     for(i = modules.begin(); i != modules.end(); i++) {
@@ -90,8 +90,8 @@ void Mode::load()
         (*i)->registerKernels(*this);
 #ifdef USE_VM
         if((*i)->dirtyBitmap() != NULL) {
-            bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
+            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
+            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
         }
 #endif
     }
@@ -101,7 +101,7 @@ void Mode::load()
 void Mode::reload()
 {
 #ifdef USE_MULTI_CONTEXT
-    accelerator().destroyModules(modules);
+    getAccelerator().destroyModules(modules);
     modules.clear();
 #endif
     kernels_.clear();
@@ -112,7 +112,7 @@ core::Context &Mode::getContext()
 {
 	core::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new cuda::Context(accelerator(), *this);
+    context = new cuda::Context(getAccelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -121,7 +121,7 @@ core::Context &Mode::getContext()
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
 {
     switchIn();
-    gmacError_t ret = accelerator().hostAlloc(addr, size);
+    gmacError_t ret = getAccelerator().hostAlloc(addr, size);
     switchOut();
     return ret;
 }
@@ -129,7 +129,7 @@ gmacError_t Mode::hostAlloc(void **addr, size_t size)
 gmacError_t Mode::hostFree(void *addr)
 {
     switchIn();
-    gmacError_t ret = accelerator().hostFree(addr);
+    gmacError_t ret = getAccelerator().hostFree(addr);
     switchOut();
     return ret;
 }
@@ -137,7 +137,7 @@ gmacError_t Mode::hostFree(void *addr)
 void *Mode::hostMap(const void *addr)
 {
     switchIn();
-    void *ret = accelerator().hostMap(addr);
+    void *ret = getAccelerator().hostMap(addr);
     switchOut();
     return ret;
 }

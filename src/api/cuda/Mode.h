@@ -74,8 +74,8 @@ protected:
     core::Context &getContext();
 
 #ifdef USE_VM
-    CUdeviceptr bitmapDevPtr_;
-    CUdeviceptr bitmapShiftPageDevPtr_;
+    CUdeviceptr bitmapAccPtr_;
+    CUdeviceptr bitmapShiftPageAccPtr_;
 #endif
 
 #ifdef USE_MULTI_CONTEXT
@@ -112,11 +112,11 @@ public:
     CUstream eventStream();
 
     static Mode & current();
-    Accelerator &accelerator();
+    Accelerator &getAccelerator();
 
 #ifdef USE_VM
-    CUdeviceptr dirtyBitmapDevPtr() const;
-    CUdeviceptr dirtyBitmapShiftPageDevPtr() const;
+    CUdeviceptr dirtyBitmapAccPtr() const;
+    CUdeviceptr dirtyBitmapShiftPageAccPtr() const;
 #endif
 
     gmacError_t waitForEvent(CUevent event);
