@@ -97,14 +97,11 @@ inline unsigned Mode::id() const
     return id_;
 }
 
-inline unsigned Mode::accId() const
+inline
+Accelerator &
+Mode::getAccelerator() const
 {
-    return acc_->id();
-}
-
-inline bool Mode::integrated() const
-{
-    return acc_->integrated();
+    return *acc_;
 }
 
 inline void

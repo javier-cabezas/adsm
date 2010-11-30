@@ -129,9 +129,7 @@ public:
     memory::Protocol &protocol();
 
     unsigned id() const;
-    unsigned accId() const;
-
-    bool integrated() const;
+    Accelerator &getAccelerator() const;
 
     /*! \brief Attaches the execution mode to the current thread */
     void attach();

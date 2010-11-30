@@ -9,6 +9,13 @@
 namespace __impl { namespace cuda {
 
 inline
+Accelerator &
+Mode::getAccelerator() const
+{
+    return dynamic_cast<Accelerator &>(*acc_);
+}
+
+inline
 void Mode::switchIn()
 {
 #ifdef USE_MULTI_CONTEXT

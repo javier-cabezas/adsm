@@ -40,13 +40,13 @@ Accelerator::device() const
 inline
 int Accelerator::major() const
 {
-    return _major;
+    return major_;
 }
 
 inline 
 int Accelerator::minor() const
 {
-    return _minor;
+    return minor_;
 }
 
 inline
@@ -212,6 +212,26 @@ void Accelerator::popContext() const
 #endif
     CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
 }
+
+#ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+inline
+cuda::Mode *
+Accelerator::getLastMode()
+{
+    return lastMode_;
+}
+
+inline
+void
+Accelerator::setLastMode(cuda::Mode &mode)
+{
+    lastMode_ = &mode;
+}
+#endif
+#endif
+
+
 
 #ifdef USE_MULTI_CONTEXT
 inline void

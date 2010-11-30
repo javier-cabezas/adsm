@@ -70,7 +70,7 @@ gmacError_t Manager::alloc(void **addr, size_t size)
 {
     core::Mode &mode = core::Mode::current();
     // For integrated devices we want to use Centralized objects to avoid memory transfers
-    if (mode.integrated()) return hostMappedAlloc(addr, size);
+    if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
     // Create new shared object
     Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
@@ -233,7 +233,8 @@ gmacError_t Manager::fromIOBuffer(void * addr, core::IOBuffer &buffer, size_t co
 }
 
 #ifdef USE_VM
-void Manager::checkBitmapToHost()
+void
+Manager::checkBitmapToHost()
 {
     core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -243,7 +244,8 @@ void Manager::checkBitmapToHost()
     }
 }
 
-void Manager::checkBitmapToDevice()
+void
+Manager::checkBitmapToDevice()
 {
     core::Mode &mode = core::Mode::current();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -253,7 +255,8 @@ void Manager::checkBitmapToDevice()
 }
 #endif
 
-bool Manager::read(void *addr)
+bool
+Manager::read(void *addr)
 {
 #ifdef USE_VM
     checkBitmapToHost();
@@ -269,7 +272,8 @@ bool Manager::read(void *addr)
     return ret;
 }
 
-bool Manager::write(void *addr)
+bool
+Manager::write(void *addr)
 {
 #ifdef USE_VM
     checkBitmapToHost();
@@ -284,7 +288,8 @@ bool Manager::write(void *addr)
     return ret;
 }
 
-gmacError_t Manager::memset(void *s, int c, size_t size)
+gmacError_t
+Manager::memset(void *s, int c, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *mode = proc.owner(s, size);
@@ -346,8 +351,9 @@ gmacError_t Manager::memset(void *s, int c, size_t size)
 }
 
 
-gmacError_t Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
-                                    unsigned objOffset)
+gmacError_t
+Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
+                        unsigned objOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -394,8 +400,9 @@ gmacError_t Manager::memcpyToObject(const Object &obj, const void *src, size_t s
     return ret;
 }
 
-gmacError_t Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
-                                    unsigned dstOffset, unsigned srcOffset)
+gmacError_t
+Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
+                        unsigned dstOffset, unsigned srcOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -452,8 +459,9 @@ gmacError_t Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, 
     return ret;
 }
 
-gmacError_t Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
-                                      unsigned objOffset)
+gmacError_t
+Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
+                          unsigned objOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -505,7 +513,8 @@ gmacError_t Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
     return ret;
 }
 
-size_t Manager::hostMemory(void *addr, size_t size, const Object *obj) const
+size_t
+Manager::hostMemory(void *addr, size_t size, const Object *obj) const
 {
     // There is no object, so everything is in host memory
     if(obj == NULL) return size; 
@@ -518,8 +527,8 @@ size_t Manager::hostMemory(void *addr, size_t size, const Object *obj) const
     return 0;
 }
 
-
-gmacError_t Manager::memcpy(void *dst, const void *src, size_t size)
+gmacError_t
+Manager::memcpy(void *dst, const void *src, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *dstMode = proc.owner(dst, size);

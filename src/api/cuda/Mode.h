@@ -85,6 +85,8 @@ public:
     Mode(core::Process &proc, Accelerator &acc);
     ~Mode();
 
+    Accelerator &getAccelerator() const;
+
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
     void *hostMap(const void *addr);

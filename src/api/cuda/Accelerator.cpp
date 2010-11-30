@@ -21,6 +21,11 @@ void Switch::out()
 
 Accelerator::Accelerator(int n, CUdevice device) :
 	core::Accelerator(n), device_(device),
+#ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+    lastMode_(NULL),
+#endif
+#endif
     _ctx(NULL)
 {
 #if CUDA_VERSION > 3010
@@ -30,7 +35,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #endif
     CUresult ret = cuDeviceTotalMem(&size, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    ret = cuDeviceComputeCapability(&_major, &_minor, device_);
+    ret = cuDeviceComputeCapability(&major_, &minor_, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     memory_ = size;
 
@@ -38,7 +43,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CUcontext tmp;
     unsigned int flags = 0;
 #if CUDA_VERSION >= 2020
-    if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
+    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
@@ -127,7 +132,7 @@ Accelerator::createCUcontext()
     CUcontext ctx, tmp;
     unsigned int flags = 0;
 #if CUDA_VERSION >= 2020
-    if(_major >= 2 || (_major == 1 && _minor >= 1)) flags |= CU_CTX_MAP_HOST;
+    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
