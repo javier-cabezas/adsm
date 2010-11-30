@@ -39,16 +39,25 @@ WITH THE SOFTWARE.  */
 #include "Atomics.h"
 
 namespace __impl { namespace util {
-
+//! A class that is shared by multiple threads
 class GMAC_LOCAL Reference {
 private:
+    //! Number of threads using the object
     mutable Atomic ref_;
+
+    //! Method called to clean up the class before being destroyed
     virtual void cleanUp() const;
 protected:
+    //! Default constructor
     Reference(); 
+
+    //! Default destructor
 	virtual ~Reference();
 public:
+    //! Increment the use count
     void use() const;
+
+    //! Decrement the use count and destroy the object if it reaches zero
     void release() const;
 };
 

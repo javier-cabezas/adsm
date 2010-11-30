@@ -38,7 +38,16 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
+//! Return the current thread ID
+/*
+    \return ID of the calling thread
+*/
 THREAD_T GetThreadId();
+
+//! Return the current process ID
+/*
+    \return ID of the calling process
+*/
 PROCESS_T GetProcessId();
 
 }}
