@@ -51,12 +51,18 @@ WITH THE SOFTWARE.  */
 #endif
 
 
-namespace __impl { namespace memory  { namespace vm {
+namespace __impl {
+    namespace core {
+        class Mode;
+    }
+    
+    namespace memory  { namespace vm {
 
 class GMAC_LOCAL Bitmap :
     public __impl::util::Logger,
     protected gmac::util::RWLock {
 private:
+    core::Mode &mode_;
     typedef uint8_t T;
     uint8_t *bitmap_;
 
@@ -83,7 +89,7 @@ private:
 
     unsigned offset(const void *addr) const;
 public:
-    Bitmap(unsigned bits = 32);
+    Bitmap(core::Mode &mode, unsigned bits = 32);
     virtual ~Bitmap();
 
     void cleanUp();

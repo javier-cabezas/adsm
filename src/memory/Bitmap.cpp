@@ -14,8 +14,8 @@ const unsigned Bitmap::entriesPerByte = 8;
 const unsigned Bitmap::entriesPerByte = 1;
 #endif
 
-Bitmap::Bitmap(unsigned bits) :
-    RWLock("Bitmap"), bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minEntry_(-1), maxEntry_(-1)
+Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
+    RWLock("Bitmap"), mode_(mode), bitmap_(NULL), dirty_(true), synced_(true), device_(NULL), minEntry_(-1), maxEntry_(-1)
 {
     shiftPage_ = int(log2(paramPageSize));
     if (paramBitmapChunksPerPage > 1) {

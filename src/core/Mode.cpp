@@ -24,7 +24,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , bitmap_(memory::vm::Bitmap())
+    , bitmap_(*this)
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);

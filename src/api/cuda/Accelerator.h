@@ -78,8 +78,14 @@ protected:
 	std::set<Mode *> _queue;
     AlignmentMap _alignMap;
 
-    int _major;
-    int _minor;
+    int major_;
+    int minor_;
+
+#ifdef USE_VM
+#ifndef USE_MULTI_CONTEXT
+    Mode *lastMode_;
+#endif
+#endif
 
 #ifdef USE_MULTI_CONTEXT
     static util::Private<CUcontext> _Ctx;
@@ -95,6 +101,14 @@ protected:
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
+
+#ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+    cuda::Mode *getLastMode();
+    void setLastMode(cuda::Mode &mode);
+#endif
+#endif
+
 	CUdevice device() const;
 
     static void init();
