@@ -1,13 +1,11 @@
 #ifndef GMAC_CORE_IOBUFFER_IPP_
 #define GMAC_CORE_IOBUFFER_IPP_
 
-#include "trace/Function.h"
-
-namespace gmac {
+namespace __impl { namespace core {
 
 inline
 IOBuffer::IOBuffer(void *addr, size_t size) :
-        util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle), mode_(NULL)
+        gmac::util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle)
 {
 }
 
@@ -37,13 +35,13 @@ IOBuffer::size() const
 inline void
 IOBuffer::lock()
 {
-    util::Lock::lock();
+    gmac::util::Lock::lock();
 }
 
 inline void
 IOBuffer::unlock()
 {
-    util::Lock::unlock();
+    gmac::util::Lock::unlock();
 }
 
 inline IOBuffer::State
@@ -52,44 +50,6 @@ IOBuffer::state() const
     return state_;
 }
 
-inline void
-IOBuffer::toHost(Mode &mode)
-{
-    assertion(mode_  == NULL);
-
-    mode_  = &mode;
-    state_ = ToHost;
-    trace("Buffer %p goes toHost", this); 
-}
-
-inline void
-IOBuffer::toAccelerator(Mode &mode)
-{
-    assertion(mode_  == NULL);
-
-    mode_  = &mode;
-    state_ = ToAccelerator;
-    trace("Buffer %p goes toAccelerator", this);
-}
-
-inline gmacError_t
-IOBuffer::wait()
-{
-    gmacError_t ret = gmacSuccess;
-
-    if (state_ != Idle) {
-        assertion(mode_ != NULL);
-        ret = mode_->waitForBuffer(*this);
-        trace("Buffer %p goes Idle", this);
-        state_ = Idle;
-        mode_  = NULL;
-    } else {
-        assertion(mode_ == NULL);
-    }
-
-    return ret;
-}
-
-}
+}}
 
 #endif

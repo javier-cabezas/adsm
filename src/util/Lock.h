@@ -35,40 +35,36 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_LOCK_H_
 
 #include "config/common.h"
-#include "gmac/paraver.h"
 
+namespace __impl { namespace util {
 
-namespace gmac { namespace util {
-
-class GMAC_LOCAL ParaverLock {
+class GMAC_LOCAL __Lock {
 protected:
-#ifdef PARAVER
-    static const char *eventName;
-    static const char *exclusiveName;
-
-
-    typedef std::map<std::string, unsigned> LockMap;
-    static unsigned count;
-    static LockMap *map;
-    unsigned id;
-
-    static paraver::EventName *event;
-    static paraver::StateName *exclusive;
-
+#if defined(USE_TRACE)
+    //! Signal that the lock is exclusive, e.g., due to a lock-write
     mutable bool exclusive_;
-
-    void setup();
 #endif
 public:
-    ParaverLock(const char *name);
+    //! Default constructor
+    /*!
+        \param name Lock name for tracing purposes
+    */
+    __Lock(const char *name);
 
+    //! The thread requests the lock
     void enter() const;
+    
+    //! The thread gets an exclusive lock
     void locked() const;
+
+    //! The thread gets a shared lock
     void done() const;
+
+    //! The thread releases a lock
     void exit() const;
 };
 
-} }
+}}
 
 #if defined(POSIX)
 #include "util/posix/Lock.h"
@@ -76,7 +72,7 @@ public:
 #include "util/windows/Lock.h"
 #endif
 
-#include "Lock.ipp"
+#include "Lock-impl.h"
 
 
 #endif

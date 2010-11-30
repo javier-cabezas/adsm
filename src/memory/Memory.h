@@ -36,9 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "util/Logger.h"
 
-namespace gmac { namespace memory {
+
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL Memory {
 public:

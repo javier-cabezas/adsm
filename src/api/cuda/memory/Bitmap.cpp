@@ -4,70 +4,96 @@
 #include "memory/Bitmap.h"
 
 #ifdef USE_VM
-namespace gmac { namespace memory { namespace vm {
+namespace __impl { namespace memory { namespace vm {
 
 void Bitmap::allocate()
 {
-    assertion(device_ == NULL);
-    gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
+    ASSERTION(accelerator_ == NULL);
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
 #ifdef USE_HOSTMAP_VM
-    mode->hostAlloc((void **)&_bitmap, size_);
-    device_ = mode->hostMap(_bitmap);
-    memset(_bitmap, 0, size());
-    trace("Allocating dirty bitmap (%zu bytes)", size());
+    mode.hostAlloc((void **)&bitmap_, size_);
+    accelerator_ = (uint8_t *) mode.hostMap(bitmap_);
+    memset(bitmap_, 0, size());
+    TRACE(LOCAL,"Allocating dirty bitmap (%zu bytes)", size());
 #else
-    mode->malloc((void **)&device_, size_);
-    trace("Allocating dirty bitmap %p -> %p (%zu bytes)", _bitmap, device_, size_);
+    mode.malloc((void **)&accelerator_, size_);
+    TRACE(LOCAL,"Allocating dirty bitmap %p -> %p (%zu bytes)", bitmap_, accelerator_, size_);
 #endif
 }
 
 Bitmap::~Bitmap()
 {
-    gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
-    if(device_ != NULL) mode->hostFree(_bitmap);
+}
+
+void
+Bitmap::cleanUp()
+{
+#ifdef USE_HOSTMAP_VM
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+    if(accelerator_ != NULL) mode.hostFree(bitmap_);
+#else
+    delete [] bitmap_;
+#endif
 }
 
 void
 Bitmap::syncHost()
 {
 #ifndef USE_HOSTMAP_VM
-    trace("Syncing Bitmap");
-    Mode * mode = Mode::current();
-
-    gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    trace("Setting dirty bitmap on host: %p -> %p: %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), bitmap.size());
+    TRACE(LOCAL,"Syncing Bitmap");
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: "FMT_SIZE, (void *) cuda::Accelerator::gpuAddr(accelerator()), host(), size());
     gmacError_t ret;
     //printf("Bitmap toHost\n");
-    ret = mode->copyToHost(bitmap.host(), bitmap.device(), bitmap.size());
-    cfatal(ret == gmacSuccess, "Unable to copy back dirty bitmap");
-    bitmap.reset();
+    ret = mode.copyToHost(host(), accelerator(), size());
+    CFATAL(ret == gmacSuccess, "Unable to copy back dirty bitmap");
+    reset();
 #endif
 }
 
 void
-Bitmap::syncDevice()
+Bitmap::syncAccelerator()
 {
-#ifndef USE_HOSTMAP_VM
-    trace("Syncing Bitmap");
-    gmac::cuda::Mode * mode = gmac::cuda::Mode::current();
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+    cuda::Accelerator &acc = dynamic_cast<cuda::Accelerator &>(mode.getAccelerator());
 
-    gmac::memory::vm::Bitmap & bitmap = mode->dirtyBitmap();
-    trace("Setting dirty bitmap on device: %p -> %p (0x%lx): %zd", (void *) cuda::Accelerator::gpuAddr(bitmap.device()), bitmap.host(), mode->dirtyBitmapDevPtr(), bitmap.size());
-    gmacError_t ret;
-    ret = mode->copyToDevice((void *) mode->dirtyBitmapDevPtr(), &device_, sizeof(void *));
-    cfatal(ret == gmacSuccess, "Unable to set the pointer in the device %p", (void *) mode->dirtyBitmapDevPtr());
-    ret = mode->copyToDevice((void *) mode->dirtyBitmapShiftPageDevPtr(), &_shiftPage, sizeof(int));
-    cfatal(ret == gmacSuccess, "Unable to set shift page in the device %p", (void *) mode->dirtyBitmapShiftPageDevPtr());
-#ifdef BITMAP_BIT
-    ret = mode->copyToDevice((void *) mode->dirtyBitmapShiftEntryDevPtr(), &_shiftEntry, sizeof(int));
-    cfatal(ret == gmacSuccess, "Unable to set shift entry in the device %p", (void *) mode->dirtyBitmapShiftEntryDevPtr());
+#ifndef USE_MULTI_CONTEXT
+    cuda::Mode *last = acc.getLastMode();
+
+    if (last != &mode_) {
+        if (last != NULL) {
+            Bitmap &lastBitmap = last->dirtyBitmap();
+            if (!lastBitmap.synced()) {
+                lastBitmap.syncHost();
+            }
+        }
+#endif
+        TRACE(LOCAL, "Syncing Bitmap pointers");
+        TRACE(LOCAL, "%p -> %p (0x%lx)", host(), (void *) cuda::Accelerator::gpuAddr(accelerator()), mode.dirtyBitmapAccPtr());
+        gmacError_t ret;
+        ret = mode.copyToAccelerator((void *) mode.dirtyBitmapAccPtr(), &accelerator_, sizeof(void *));
+        CFATAL(ret == gmacSuccess, "Unable to set the pointer in the accelerator %p", (void *) mode.dirtyBitmapAccPtr());
+        ret = mode.copyToAccelerator((void *) mode.dirtyBitmapShiftPageAccPtr(), &shiftPage_, sizeof(int));
+        CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
+
+#ifndef USE_MULTI_CONTEXT
+    }
 #endif
 
-    //printf("Bitmap toHost\n");
-    ret = mode->copyToDevice(bitmap.device(), bitmap.host(), bitmap.size());
-    cfatal(ret == gmacSuccess, "Unable to copy dirty bitmap to device");
+#ifndef USE_HOSTMAP_VM
+    if (dirty_) {
+        TRACE(LOCAL, "Syncing Bitmap");
+        TRACE(LOCAL, "Copying "FMT_SIZE" bytes. ShiftPage: %d", size(), shiftPage_);
+        gmacError_t ret;
+        ret = mode.copyToAccelerator(accelerator(), host(), size());
+        CFATAL(ret == gmacSuccess, "Unable to copy dirty bitmap to accelerator");
+    }
 
-    _synced = false;
+    synced_ = false;
+#endif
+
+#ifndef USE_MULTI_CONTEXT
+    acc.setLastMode(mode);
 #endif
 }
 

@@ -3,7 +3,7 @@
 #include "core/Context.h"
 
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 size_t PageTable::tableShift;
 
@@ -48,14 +48,14 @@ void PageTable::sync()
 #ifdef USE_VM
 	if(_valid == true) return;
 	enterFunction(FuncVmSync);
-    //TODO: copy dirtyBitmap back from device
+    //TODO: copy dirtyBitmap back from accelerator
 	_valid = true;
 	exitFunction();
 #endif
 }
 
 
-void PageTable::insert(void *host, void *dev)
+void PageTable::insert(void *host, void *acc)
 {
 #ifndef USE_MMAP
 	sync();
@@ -80,10 +80,10 @@ void PageTable::insert(void *host, void *dev)
 	Table &table = dir.get(entry(host, dirShift, dir.size()));
 
 	unsigned e = entry(host, tableShift, table.size());
-	assertion(table.present(e) == false || (uint8_t *)table.value(e) == dev);
+	assertion(table.present(e) == false || (uint8_t *)table.value(e) == acc);
 
-	table.insert(entry(host, tableShift, table.size()), dev);
-	trace("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), dev);
+	table.insert(entry(host, tableShift, table.size()), acc);
+	trace("PT inserts: 0x%x -> %p", entry(host, tableShift, table.size()), acc);
 	lock.unlock();
 	exitFunction();
 #endif

@@ -11,54 +11,54 @@
 #include <string>
 #include <list>
 
-namespace gmac {
+namespace __impl { namespace core {
 
 static bool initialized = false;
 
 void apiInit(void)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
+    core::Process &proc = core::Process::getInstance();
 	if(initialized)
-		util::Logger::Fatal("GMAC double initialization not allowed");
+		FATAL("GMAC double initialization not allowed");
 
-	util::Logger::TRACE("Initializing CUDA Driver API");
+	TRACE(GLOBAL, "Initializing CUDA Driver API");
 	if(cuInit(0) != CUDA_SUCCESS)
-		util::Logger::Fatal("Unable to init CUDA");
+		FATAL("Unable to init CUDA");
 
 	int devCount = 0;
 	int devRealCount = 0;
 
 	if(cuDeviceGetCount(&devCount) != CUDA_SUCCESS)
-		util::Logger::Fatal("Error getting CUDA-enabled devices");
+		FATAL("Error getting CUDA-enabled devices");
 
-    util::Logger::TRACE("Found %d CUDA capable devices", devCount);
+    TRACE(GLOBAL, "Found %d CUDA capable devices", devCount);
 
 	// Add accelerators to the system
 	for(int i = 0; i < devCount; i++) {
 		CUdevice cuDev;
 		if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
-			util::Logger::Fatal("Unable to access CUDA device");
+			FATAL("Unable to access CUDA device");
 #if CUDA_VERSION >= 2020
         int attr = 0;
 		if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
-			util::Logger::Fatal("Unable to access CUDA device");
+			FATAL("Unable to access CUDA device");
 		if(attr != CU_COMPUTEMODE_PROHIBITED) {
-			proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+			proc.addAccelerator(new cuda::Accelerator(i, cuDev));
 			devRealCount++;
 		}
 #else
-        proc.addAccelerator(new gmac::cuda::Accelerator(i, cuDev));
+        proc.addAccelerator(new cuda::Accelerator(i, cuDev));
         devRealCount++;
 #endif
 	}
 
 	if(devRealCount == 0)
-		util::Logger::Fatal("No CUDA-enabled devices found");
+		FATAL("No CUDA-enabled devices found");
 
     // Initialize the private per-thread variables
-    gmac::cuda::Accelerator::init();
+    cuda::Accelerator::init();
 
 	initialized = true;
 }
 
-}
+}}

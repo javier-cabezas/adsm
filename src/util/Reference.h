@@ -31,49 +31,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_REFERENCE_H_
-#define __UTIL_REFERENCE_H_
+#ifndef GMAC_UTIL_REFERENCE_H_
+#define GMAC_UTIL_REFERENCE_H_
 
 #include "config/common.h"
-#include "util/Lock.h"
 
-namespace gmac { namespace util {
+#include "Atomics.h"
 
-class GMAC_LOCAL ReferenceLock : public Lock {
-protected:
-    friend class Reference;
-public:
-    ReferenceLock() : Lock(LockReference) {};
-};
-
+namespace __impl { namespace util {
+//! A class that is shared by multiple threads
 class GMAC_LOCAL Reference {
 private:
-    unsigned __count;
-    ReferenceLock __lock;
+    //! Number of threads using the object
+    mutable Atomic ref_;
 
+    //! Method called to clean up the class before being destroyed
+    virtual void cleanUp() const;
 protected:
+    //! Default constructor
+    Reference(); 
 
-    virtual void cleanup() {};
-    virtual ~Reference() {};
-
+    //! Default destructor
+	virtual ~Reference();
 public:
-    Reference() : __count(1) { };
-    inline void inc() {
-        __lock.lock();
-        __count++;
-        __lock.unlock();
-    }
-    inline void destroy() {
-        __lock.lock();
-        __count--;
-        bool dead = __count == 0;
-        __lock.unlock();
-        if(dead == false) return;
-        cleanup();
-        delete this;
-    }
+    //! Increment the use count
+    void use() const;
+
+    //! Decrement the use count and destroy the object if it reaches zero
+    void release() const;
 };
 
-}}
+} }
+
+#include "Reference-impl.h"
 
 #endif

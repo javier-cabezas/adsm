@@ -35,18 +35,18 @@ WITH THE SOFTWARE.
 #ifndef GMAC_API_CUDA_ACCELERATOR_H_
 #define GMAC_API_CUDA_ACCELERATOR_H_
 
-#include "config/common.h"
-#include "core/Accelerator.h"
-#include "util/Lock.h"
-#include "trace/Function.h"
-
-#include "Module.h"
-
 #include <vector_types.h>
 
 #include <set>
 
-namespace gmac { namespace cuda {
+#include "config/common.h"
+#include "core/Accelerator.h"
+#include "util/Lock.h"
+
+#include "Module.h"
+
+namespace __impl { namespace cuda {
+class IOBuffer;
 class Mode;
 class ModuleDescriptor;
 
@@ -58,20 +58,20 @@ public:
 
 typedef CUstream Stream;
 class Accelerator;
-class GMAC_LOCAL AcceleratorLock : protected util::Lock {
+class GMAC_LOCAL AcceleratorLock : protected gmac::util::Lock {
 	friend class Accelerator;
 public:
-    AcceleratorLock() : util::Lock("Accelerator") {}
+    AcceleratorLock() : gmac::util::Lock("Accelerator") {}
 };
 
-class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public util::RWLock { 
+class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public gmac::util::RWLock { 
     friend class Accelerator;
 public:
-    AlignmentMap() : util::RWLock("Aligment") {}
+    AlignmentMap() : gmac::util::RWLock("Aligment") {}
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public gmac::Accelerator {
+class GMAC_LOCAL Accelerator : public core::Accelerator {
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -79,11 +79,17 @@ protected:
 	std::set<Mode *> _queue;
     AlignmentMap _alignMap;
 
-    int _major;
-    int _minor;
+    int major_;
+    int minor_;
+
+#ifdef USE_VM
+#ifndef USE_MULTI_CONTEXT
+    Mode *lastMode_;
+#endif
+#endif
 
 #ifdef USE_MULTI_CONTEXT
-    static gmac::util::Private<CUcontext> _Ctx;
+    static util::Private<CUcontext> _Ctx;
 #else
     CUcontext _ctx;
     AcceleratorLock _mutex;
@@ -96,13 +102,21 @@ protected:
 public:
 	Accelerator(int n, CUdevice device);
 	~Accelerator();
+
+#ifndef USE_MULTI_CONTEXT
+#ifdef USE_VM
+    cuda::Mode *getLastMode();
+    void setLastMode(cuda::Mode &mode);
+#endif
+#endif
+
 	CUdevice device() const;
 
     static void init();
 
-	gmac::Mode *createMode(gmac::Process &proc);
-    void registerMode(gmac::Mode &mode);
-    void unregisterMode(gmac::Mode &mode);
+	core::Mode *createMode(core::Process &proc);
+    void registerMode(core::Mode &mode);
+    void unregisterMode(core::Mode &mode);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();
@@ -122,17 +136,19 @@ public:
 	gmacError_t free(void *addr);
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
+	gmacError_t copyToHost(void *host, const void *acc, size_t size);
 	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(void *dec, const void *host, size_t size, CUstream stream);
-    gmacError_t copyToHostAsync(void *host, const void *dev, size_t size, CUstream stream);
+    gmacError_t copyToAcceleratorAsync(void *acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *acc, size_t count, Mode &mode, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
     gmacError_t syncCUstream(CUstream stream);
+    CUresult queryCUevent(CUevent event);
+    gmacError_t syncCUevent(CUevent event);
 
     gmacError_t execute(KernelLaunch &launch);
 
@@ -142,7 +158,7 @@ public:
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
-    void *hostMap(void *addr);
+    void *hostMap(const void *addr);
 
     static gmacError_t error(CUresult r);
     static CUdeviceptr gpuAddr(void *addr);
@@ -153,6 +169,6 @@ public:
 
 }}
 
-#include "Accelerator.ipp"
+#include "Accelerator-impl.h"
 
 #endif

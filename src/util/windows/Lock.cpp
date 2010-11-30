@@ -2,10 +2,19 @@
 
 #include "Lock.h"
 
-namespace gmac { namespace util { namespace __impl {
+namespace __impl { namespace util {
+
+SpinLock::SpinLock(const char *name) :
+    __Lock(name), spinlock_(0)
+{
+}
+
+SpinLock::~SpinLock()
+{
+}
 
 Lock::Lock(const char *name) :
-    ParaverLock(name)
+    __Lock(name)
 {
     InitializeCriticalSection(&mutex_);
 }
@@ -16,7 +25,7 @@ Lock::~Lock()
 }
 
 RWLock::RWLock(const char *name) :
-    ParaverLock(name),
+    __Lock(name),
 	owner_(0)
 {
     InitializeSRWLock(&lock_);
@@ -26,4 +35,4 @@ RWLock::~RWLock()
 {
 }
 
-}}}
+}}

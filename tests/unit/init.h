@@ -34,6 +34,18 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_INIT_H_
 #define TEST_UNIT_INIT_H_
 
+namespace __impl { namespace core {
+    class Accelerator;
+}}
+
+extern __impl::core::Accelerator *Accelerator_;
+
+void InitTrace();
+
+void InitAccelerator();
+__impl::core::Accelerator &GetAccelerator();
+void FiniAccelerator();
+
 void InitProcess();
 void FiniProcess();
 

@@ -38,22 +38,36 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "util/Logger.h"
+
 
 #include "Manager.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL Allocator :
-    public util::Logger,
-    public util::Singleton<Allocator> {
+//! Class that allocates small chunks of shared memory
+class GMAC_LOCAL Allocator : public __impl::util::Singleton<Allocator> {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Allocator>;
 protected:
+    //! Default constructor
     Allocator();
 public:
+    //! Degault destructor
     virtual ~Allocator();
+
+    //! Alloc shared memory
+    /*!
+        \param size Size (in bytes) of the memory to be allocated
+        \param addr Host memory address where the memory should be allocated. 
+        NULL to let the allocator choose the host memory address.
+        \return Host memory address where the data was allocated
+    */
     virtual void *alloc(size_t size, void *addr = NULL) = 0;
+
+    //! Release shared memory
+    /*!
+        \param addr Host memory address of the chunk of data to be release
+    */
     virtual bool free(void *addr) = 0;
 };
 

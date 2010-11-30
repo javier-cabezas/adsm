@@ -35,10 +35,11 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_WINDOWS_FILEMAP_H_
 
 #include "config/common.h"
-#include "util/Logger.h"
 #include "util/Lock.h"
 
-namespace gmac { namespace memory {
+#include <map>
+
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL FileMapEntry {
 protected:
@@ -55,9 +56,7 @@ public:
 	inline size_t size() const { return size_; }
 };
 
-class GMAC_LOCAL FileMap :
-	protected std::map<void *, FileMapEntry>,
-	public util::RWLock
+class GMAC_LOCAL FileMap : protected std::map<void *, FileMapEntry>, public gmac::util::RWLock
 {
 protected:
 	typedef std::map<void *, FileMapEntry> Parent;

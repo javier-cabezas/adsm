@@ -1,9 +1,47 @@
 #include "Lock.h"
 
-namespace gmac { namespace util { namespace __dbc {
+namespace __dbc { namespace util {
+
+SpinLock::SpinLock(const char *name) :
+    __impl::util::SpinLock(name),
+    locked_(false),
+    owner_(0)
+{
+	InitializeCriticalSection(&internal_);
+}
+
+SpinLock::~SpinLock()
+{
+    DeleteCriticalSection(&internal_);
+}
+
+void SpinLock::lock() const
+{
+    __impl::util::SpinLock::lock();
+
+    EnterCriticalSection(&internal_);
+    ENSURES(locked_ == false);
+    locked_ = true;
+    owner_ = GetCurrentThreadId();
+    LeaveCriticalSection(&internal_);
+}
+
+void SpinLock::unlock() const
+{
+    EnterCriticalSection(&internal_);
+    REQUIRES(locked_ == true);
+    EXPECTS(owner_ == GetCurrentThreadId());
+    owner_ = 0;
+    locked_ = false;
+
+    __impl::util::SpinLock::unlock();
+
+    LeaveCriticalSection(&internal_);
+}
+
 
 Lock::Lock(const char *name) :
-    __impl::Lock(name),
+    __impl::util::Lock(name),
     locked_(false),
     owner_(0)
 {
@@ -17,7 +55,7 @@ Lock::~Lock()
 
 void Lock::lock() const
 {
-    __impl::Lock::lock();
+    __impl::util::Lock::lock();
 
     EnterCriticalSection(&internal_);
     ENSURES(locked_ == false);
@@ -34,13 +72,13 @@ void Lock::unlock() const
     owner_ = 0;
     locked_ = false;
 
-    __impl::Lock::unlock();
+    __impl::util::Lock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
 RWLock::RWLock(const char *name) :
-    __impl::RWLock(name),
+    __impl::util::RWLock(name),
     state_(Idle),
     writer_(0)
 {
@@ -58,7 +96,7 @@ void RWLock::lockRead() const
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
     LeaveCriticalSection(&internal_);
 
-    __impl::RWLock::lockRead();
+    __impl::util::RWLock::lockRead();
 
     EnterCriticalSection(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -74,7 +112,7 @@ void RWLock::lockWrite() const
 	REQUIRES(writer_ != GetCurrentThreadId());
     LeaveCriticalSection(&internal_);
 
-    __impl::RWLock::lockWrite();
+    __impl::util::RWLock::lockWrite();
 
     EnterCriticalSection(&internal_);
     ENSURES(readers_.empty() == true);
@@ -99,9 +137,9 @@ void RWLock::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    __impl::RWLock::unlock();
+    __impl::util::RWLock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
-}}}
+}}

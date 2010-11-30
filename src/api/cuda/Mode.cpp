@@ -1,17 +1,18 @@
-#include "Mode.h"
-#include "Context.h"
 #include "Accelerator.h"
+#include "Context.h"
+#include "IOBuffer.h"
+#include "Mode.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
-Mode::Mode(Process &proc, Accelerator &acc) :
-    gmac::Mode(proc, acc)
+Mode::Mode(core::Process &proc, Accelerator &acc) :
+    core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = accelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUContext::current();
 #endif
     switchIn();
-    modules = accelerator().createModules();
+    modules = getAccelerator().createModules();
 
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
@@ -22,11 +23,8 @@ Mode::Mode(Process &proc, Accelerator &acc) :
         (*i)->registerKernels(*this);
 #ifdef USE_VM
         if((*i)->dirtyBitmap() != NULL) {
-            bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-#ifdef BITMAP_BIT
-            bitmapShiftEntryDevPtr_ = (*i)->dirtyBitmapShiftEntry()->devPtr();
-#endif
+            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
+            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
         }
 #endif
     }
@@ -47,7 +45,7 @@ Mode::~Mode()
     ModuleVector::const_iterator m;
     switchIn();
 #ifdef USE_MULTI_CONTEXT
-    accelerator().destroyModules(modules);
+    getAccelerator().destroyModules(modules);
     modules.clear();
 #endif
     if(ioMemory_ != NULL) {
@@ -57,13 +55,32 @@ Mode::~Mode()
     switchOut();
 }
 
+inline
+core::IOBuffer *Mode::createIOBuffer(size_t size)
+{
+    if(ioMemory_ == NULL) return NULL;
+    void *addr = ioMemory_->get(size);
+    if(addr == NULL) return NULL;
+    return new IOBuffer(addr, size);
+}
+
+inline
+void Mode::destroyIOBuffer(core::IOBuffer *buffer)
+{
+    ASSERTION(ioMemory_ != NULL);
+    ioMemory_->put(buffer->addr(), buffer->size());
+    delete buffer;
+}
+
+
+
 void Mode::load()
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = accelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUContext::current();
 #endif
 
-    modules = accelerator().createModules();
+    modules = getAccelerator().createModules();
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
     for(i = modules.begin(); i != modules.end(); i++) {
@@ -73,11 +90,8 @@ void Mode::load()
         (*i)->registerKernels(*this);
 #ifdef USE_VM
         if((*i)->dirtyBitmap() != NULL) {
-            bitmapDevPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageDevPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-#ifdef BITMAP_BIT
-            bitmapShiftEntryDevPtr_ = (*i)->dirtyBitmapShiftEntry()->devPtr();
-#endif
+            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
+            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
         }
 #endif
     }
@@ -87,27 +101,27 @@ void Mode::load()
 void Mode::reload()
 {
 #ifdef USE_MULTI_CONTEXT
-    accelerator().destroyModules(modules);
+    getAccelerator().destroyModules(modules);
     modules.clear();
 #endif
     kernels_.clear();
     load();
 }
 
-gmac::Context &Mode::getContext()
+core::Context &Mode::getContext()
 {
-    gmac::Context *context = contextMap_.find(SELF());
+	core::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new Context(accelerator(), *this);
-    CFatal(context != NULL, "Error creating new context");
-    contextMap_.add(SELF(), context);
+    context = new cuda::Context(getAccelerator(), *this);
+    CFATAL(context != NULL, "Error creating new context");
+	contextMap_.add(util::GetThreadId(), context);
     return *context;
 }
 
 gmacError_t Mode::hostAlloc(void **addr, size_t size)
 {
     switchIn();
-    gmacError_t ret = accelerator().hostAlloc(addr, size);
+    gmacError_t ret = getAccelerator().hostAlloc(addr, size);
     switchOut();
     return ret;
 }
@@ -115,15 +129,15 @@ gmacError_t Mode::hostAlloc(void **addr, size_t size)
 gmacError_t Mode::hostFree(void *addr)
 {
     switchIn();
-    gmacError_t ret = accelerator().hostFree(addr);
+    gmacError_t ret = getAccelerator().hostFree(addr);
     switchOut();
     return ret;
 }
 
-void *Mode::hostMap(void *addr)
+void *Mode::hostMap(const void *addr)
 {
     switchIn();
-    void *ret = accelerator().hostMap(addr);
+    void *ret = getAccelerator().hostMap(addr);
     switchOut();
     return ret;
 }
@@ -176,13 +190,19 @@ CUstream Mode::eventStream()
     return ctx.eventStream();
 }
 
-gmacError_t Mode::waitForBuffer(IOBuffer &buffer)
+gmacError_t Mode::waitForEvent(CUevent event)
 {
 	switchIn();
-    Context &ctx = dynamic_cast<Context &>(getContext());
-	error_ = ctx.waitForBuffer(buffer);
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    CUresult ret;
+    while ((ret = acc.queryCUevent(event)) == CUDA_ERROR_NOT_READY) {
+        // TODO: add delay here
+    }
+
 	switchOut();
-	return error_;
+
+    return Accelerator::error(ret);
 }
 
 }}

@@ -13,7 +13,7 @@
 /*
  *
  */
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T>
 class GMAC_LOCAL Singleton {
@@ -32,6 +32,6 @@ public:
 
 }}
 
-#include "Singleton.ipp"
+#include "Singleton-impl.h"
 
 #endif /* SINGLETON_H_ */

@@ -39,32 +39,31 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "memory/ObjectSet.h"
-#include "util/Logger.h"
+
 #include "util/ReusableObject.h"
 
 #include "Descriptor.h"
 
-namespace gmac {
+namespace __impl { namespace core {
 
 class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
 public:
     void * ptr_;
     size_t size_;
-    off_t  offset_;
-    Argument(void * ptr, size_t size, off_t offset);
+    unsigned  offset_;
+    Argument(void * ptr, size_t size, unsigned offset);
 };
 
 typedef std::vector<Argument> ArgVector;
 
 /// \todo create a pool of objects to avoid mallocs/frees
-class GMAC_LOCAL KernelConfig : public ArgVector, public util::Logger {
+class GMAC_LOCAL KernelConfig : public ArgVector {
 protected:
     static const unsigned StackSize_ = 4096;
 
     uint8_t stack_[StackSize_];
-    off_t argsSize_;
+    unsigned argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
@@ -72,8 +71,8 @@ public:
     KernelConfig();
     virtual ~KernelConfig();
 
-    void pushArgument(const void * arg, size_t size, off_t offset);
-    off_t argsSize() const;
+    void pushArgument(const void * arg, size_t size, unsigned offset);
+    unsigned argsSize() const;
 
     uint8_t *argsArray();
 };
@@ -82,7 +81,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class GMAC_LOCAL Kernel : public memory::ObjectSet, public KernelDescriptor
+class GMAC_LOCAL Kernel : public KernelDescriptor
 {
 public:
     Kernel(const KernelDescriptor & k);
@@ -91,13 +90,13 @@ public:
     virtual KernelLaunch * launch(KernelConfig & c) = 0;
 };
 
-class GMAC_LOCAL KernelLaunch : public memory::ObjectSet {
+class GMAC_LOCAL KernelLaunch {
 public:
     virtual ~KernelLaunch();
     virtual gmacError_t execute() = 0;
 };
 
-}
+}}
 
 #include "Kernel.ipp"
 

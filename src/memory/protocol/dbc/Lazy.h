@@ -37,11 +37,18 @@ WITH THE SOFTWARE.  */
 #include "memory/protocol/Lazy.h"
 #include "dbc/types.h"
 
-namespace gmac { namespace memory { namespace protocol { namespace __dbc {
+namespace __dbc { namespace memory { namespace protocol {
+
+using __impl::core::IOBuffer;
+
+using __impl::memory::Block;
+using __impl::memory::Object;
+using __impl::memory::StateObject;
 
 class GMAC_LOCAL Lazy :
-    public __impl::Lazy,
-    public virtual gmac::dbc::Contract {
+    public __impl::memory::protocol::Lazy,
+    public virtual Contract {
+    DBC_TESTED(memory_protocol_Lazy)
 
 protected:
     gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
@@ -74,6 +81,6 @@ public:
     gmacError_t memset(const Object &obj, unsigned objectOff, int c, size_t count);
 };
 
-}}}}
+}}}
 
 #endif

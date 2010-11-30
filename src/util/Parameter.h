@@ -45,38 +45,63 @@ enum GMAC_LOCAL ParamFlags {
     PARAM_NONZERO = 0x1
 };
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
+//! Base abstract class to allow generic calls
 class GMAC_LOCAL __Parameter {
 public:
-    virtual ~__Parameter() {};
+    //! Default destructor
+    virtual ~__Parameter() {}
+
+    //! Print the parameter name and value in the screen
     virtual void print() const = 0;
 };
 
+//! A parameter whose value is taken from environment variables
 template<typename T>
 class GMAC_LOCAL Parameter : public __Parameter {
 protected:
-    T *value;
-    T def;
+    //! Parameter value
+    T *value_;
 
-    const char *name;
-    const char *envVar;
-    uint32_t flags;
-    bool envSet;
+    //! Default parameter value
+    T def_;
+
+    //! Parameter name
+    const char *name_;
+
+    //! Environment variable to get the parameter from
+    const char *envVar_;
+
+    //! Parameter flags (e.g. not null value)
+    uint32_t flags_;
+
+    //! Wheather there is an environment variable setting this parameter or not
+    bool envSet_;
 
 public:
-    virtual ~Parameter() {};
+    //! Default destructor
+    virtual ~Parameter() {}
+
+    //! Default constructor
+    /*!
+        \param address 
+        \param name Parameter name
+        \param def Default parameter value
+        \param envVar Environment variable that sets this parameter
+        \param flags Parameter flags
+    */
     Parameter(T *address, const char *name, T def, const char *envVar,
         uint32_t flags = 0);
 
     void print() const;
 };
 
-} }
+}}
 
 
 typedef struct GMAC_LOCAL {
-    gmac::util::__Parameter *(*ctor)(void);
-    gmac::util::__Parameter *param;
+    __impl::util::__Parameter *(*ctor)(void);
+    __impl::util::__Parameter *param;
 } ParameterCtor;
 
 extern ParameterCtor ParamCtorList[];
@@ -84,6 +109,6 @@ extern ParameterCtor ParamCtorList[];
 #define PARAM(v, t, d, ...)  extern t v;
 #include "Parameter-def.h"
 
-#include "Parameter.ipp"
+#include "Parameter-impl.h"
 
 #endif

@@ -4,9 +4,9 @@
 #include "gmac/init.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 struct sigaction defaultAction;
 unsigned Handler::Count_ = 0;
@@ -20,7 +20,7 @@ int Handler::Signum_ = SIGBUS;
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
 	enterGmac();
-	trace::Function::start("GMAC", "gmacSignal");
+    trace::EnterCurrentFunction();
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
 #if defined(LINUX)
@@ -30,8 +30,8 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 #endif
     void * addr = info->si_addr;
 
-	if(!writeAccess) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
-	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
+	if(!writeAccess) TRACE(GLOBAL, "Read SIGSEGV for %p", addr);
+	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	Manager &manager = Manager::getInstance();
@@ -47,7 +47,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 		return defaultAction.sa_handler(s);
 	}
 
-	trace::Function::end("GMAC");
+    trace::ExitCurrentFunction();
 	exitGmac();
 }
 
@@ -61,19 +61,19 @@ void Handler::setHandler()
     sigemptyset(&segvAction.sa_mask);
 
 	if(sigaction(Signum_, &segvAction, &defaultAction) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+		FATAL("sigaction: %s", strerror(errno));
 
 	Handler_ = this;
-	gmac::util::Logger::TRACE("New signal handler programmed");
+	TRACE(GLOBAL, "New signal handler programmed");
 }
 
 void Handler::restoreHandler()
 {
 	if(sigaction(Signum_, &defaultAction, NULL) < 0)
-		gmac::util::Logger::Fatal("sigaction: %s", strerror(errno));
+		FATAL("sigaction: %s", strerror(errno));
 
 	Handler_ = NULL;
-	gmac::util::Logger::TRACE("Old signal handler restored");
+	TRACE(GLOBAL, "Old signal handler restored");
 }
 
 

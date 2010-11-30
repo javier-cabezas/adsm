@@ -39,34 +39,19 @@ WITH THE SOFTWARE.  */
 #include <vector>
 
 #include "config/common.h"
+#include "config/order.h"
 #include "include/gmac/types.h"
 #include "memory/Map.h"
-#include "util/Logger.h"
+
 #include "util/Singleton.h"
 
 #include "Queue.h"
 #include "allocator/Buddy.h"
 
+namespace __impl {
+namespace core {
 
-namespace gmac {
-class Accelerator;
-class IOBuffer;
-class Mode;
-class Context;
-class Process;
-
-void apiInit(void);
-void contextInit(void);
-void memoryInit(const char *manager = NULL, const char *allocator = NULL);
-void memoryFini(void);
-}
-
-namespace gmac {
-
-namespace memory { class DistributedObject; }
-
-
-class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, public util::RWLock
+class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
 {
 private:
     typedef std::map<Mode *, Accelerator *> Parent;
@@ -82,7 +67,7 @@ public:
     size_t remove(Mode &mode);
 };
 
-class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, public util::RWLock
+class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock
 {
 private:
     typedef std::map<THREAD_T, ThreadQueue *> Parent;
@@ -98,18 +83,17 @@ public:
     void erase(THREAD_T id);
 };
 
-class GMAC_LOCAL Process : public util::Singleton<Process>, public util::RWLock, public util::Logger {
+class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
 	// Needed to let Singleton call the protected constructor
 	friend class util::Singleton<Process>;
 	//friend class Accelerator;
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
-
+    memory::Protocol *protocol_;
     QueueMap queues_;
     memory::ObjectMap shared_;
-    memory::ObjectMap centralized_;
-    memory::ObjectMap replicated_;
+    memory::ObjectMap global_;
     memory::ObjectMap orphans_;
 
     unsigned current_;
@@ -124,24 +108,21 @@ public:
     void finiThread();
 #define ACC_AUTO_BIND -1
     Mode * createMode(int acc = ACC_AUTO_BIND);
-    void removeMode(Mode *mode);
+    void removeMode(Mode &mode);
 
-#ifndef USE_MMAP
-    gmacError_t globalMalloc(memory::DistributedObject &object, size_t size);
-    gmacError_t globalFree(memory::DistributedObject &object);
-#endif
 
-    void *translate(void *addr);
-    inline const void *translate(const void *addr) {
-        return (const void *)translate((void *)addr);
-    }
+    gmacError_t globalMalloc(memory::Object &object, size_t size);
+    gmacError_t globalFree(memory::Object &object);
+
+
+    void *translate(const void *addr);
 
     /* Context management functions */
     void send(THREAD_T id);
     void receive();
     void sendReceive(THREAD_T id);
     void copy(THREAD_T id);
-    gmacError_t migrate(Mode &mode, int acc);
+    //gmacError_t migrate(Mode &mode, int acc);
 
     void addAccelerator(Accelerator *acc);
 
@@ -149,20 +130,19 @@ public:
     size_t nAccelerators() const;
     bool allIntegrated();
 
+    memory::Protocol &protocol();
     memory::ObjectMap &shared();
     const memory::ObjectMap &shared() const;
-    memory::ObjectMap &replicated();
-    const memory::ObjectMap &replicated() const;
-    memory::ObjectMap &centralized();
-    const memory::ObjectMap &centralized() const;
+    memory::ObjectMap &global();
+    const memory::ObjectMap &global() const;
     memory::ObjectMap &orphans();
     const memory::ObjectMap &orphans() const;
 
-    Mode *owner(const void *addr) const;
+    Mode *owner(const void *addr, size_t size = 0) const;
 };
 
-}
+}}
 
-#include "Process.ipp"
+#include "Process-impl.h"
 
 #endif

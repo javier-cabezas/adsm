@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 #define LOAD_SYM(symbol, name)	\
 	if((symbol = (symbol##_t)dlsym(RTLD_NEXT, #name)) == NULL)	\
-		gmac::util::Logger::Fatal("Unable to locate "#name);
+		FATAL("Unable to locate "#name);
 
 #define SYMBOL(name) name
 

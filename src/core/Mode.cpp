@@ -8,9 +8,9 @@
 #include "Mode.h"
 #include "Process.h"
 
-namespace gmac {
+namespace __impl { namespace core {
 
-gmac::util::Private<Mode> Mode::key;
+util::Private<Mode> Mode::key;
 
 unsigned Mode::next = 0;
 
@@ -24,54 +24,36 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , _bitmap(new memory::vm::Bitmap())
+    , bitmap_(*this)
 #endif
-    , count_(0)
 {
-    trace("Creating new memory map");
+    TRACE(LOCAL,"Creating Execution Mode %p", this);
+    protocol_ = protocolInit(0);
 }
 
 Mode::~Mode()
-{
-    count_--;
-    if(count_ > 0)
-        gmac::util::Logger::WARNING("Deleting in-use Execution Mode (%d)", count_);
+{    
+    delete protocol_;
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
-}
-
-void Mode::cleanUpContexts()
-{
-    contextMap_.clean();
+    acc_->unregisterMode(*this); 
+    Process::getInstance().removeMode(*this);
+    TRACE(LOCAL,"Destroying Execution Mode %p", this);
 }
 
 void Mode::finiThread()
 {
     Mode *mode = key.get();
     if(mode == NULL) return;
-    memory::Manager &manager = memory::Manager::getInstance();
-    mode->map_.forEach(manager.protocol(), &gmac::memory::Protocol::toHost);
-    mode->map_.makeOrphans();
-
-    memory::Manager::getInstance().removeMode(*mode);
-    Process::getInstance().removeMode(mode);
+    mode->release();
 }
 
-
-
-void Mode::release()
-{
-#ifdef USE_VM
-    delete _bitmap;
-#endif
-    acc_->unregisterMode(*this); 
-}
 void Mode::kernel(gmacKernel_t k, Kernel &kernel)
 {
-    trace("CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
+    TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
     KernelMap::iterator i;
     i = kernels_.find(k);
-    assertion(i == kernels_.end());
+    ASSERTION(i == kernels_.end());
     kernels_[k] = &kernel;
 }
 
@@ -82,7 +64,7 @@ Mode &Mode::current()
         Process &proc = Process::getInstance();
         mode = proc.createMode();
     }
-    gmac::util::Logger::ASSERTION(mode != NULL);
+    ASSERTION(mode != NULL);
     return *mode;
 }
 
@@ -90,23 +72,16 @@ void Mode::attach()
 {
     Mode *mode = Mode::key.get();
     if(mode == this) return;
-    if(mode != NULL) mode->destroy();
+    if(mode != NULL) mode->release();
     key.set(this);
-    count_++;
 }
 
 void Mode::detach()
 {
     Mode *mode = Mode::key.get();
-    if(mode != NULL) mode->destroy();
+    if(mode != NULL) mode->release();
     key.set(NULL);
 }
-
-void Mode::removeObject(memory::Object &obj)
-{
-    map_.remove(obj);
-}
-
 
 gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
 {
@@ -124,20 +99,20 @@ gmacError_t Mode::free(void *addr)
     return error_;
 }
 
-gmacError_t Mode::copyToAccelerator(void *dev, const void *host, size_t size)
+gmacError_t Mode::copyToAccelerator(void *acc, const void *host, size_t size)
 {
-    util::Logger::trace("Copy %p to device %p (%zd bytes)", host, dev, size);
+    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc, size);
     switchIn();
-    error_ = getContext().copyToAccelerator(dev, host, size);
+    error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyToHost(void *host, const void *dev, size_t size)
+gmacError_t Mode::copyToHost(void *host, const void *acc, size_t size)
 {
-    util::Logger::trace("Copy %p to host %p (%zd bytes)", dev , host, size);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc , host, size);
     switchIn();
-    error_ = getContext().copyToHost(host, dev, size);
+    error_ = getContext().copyToHost(host, acc, size);
     switchOut();
     return error_;
 }
@@ -158,13 +133,13 @@ gmacError_t Mode::memset(void *addr, int c, size_t size)
     return error_;
 }
 
-gmac::KernelLaunch &Mode::launch(const char *kernel)
+core::KernelLaunch &Mode::launch(const char *kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
-    assert(i != kernels_.end());
-    gmac::Kernel * k = i->second;
+    ASSERTION(i != kernels_.end());
+    core::Kernel * k = i->second;
     switchIn();
-    gmac::KernelLaunch &l = getContext().launch(*k);
+    core::KernelLaunch &l = getContext().launch(*k);
     switchOut();
 
     return l;
@@ -178,18 +153,11 @@ gmacError_t Mode::sync()
     return error_;
 }
 
-#ifndef USE_MMAP
-bool Mode::requireUpdate(memory::Block &block)
-{
-	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    return manager.requireUpdate(block);
-}
-#endif
-
+#if 0
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
-    trace("Moving mode from acc %d to %d", acc_->id(), acc.id());
+    TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
     gmacError_t ret = gmacSuccess;
     size_t free;
@@ -200,22 +168,22 @@ gmacError_t Mode::moveTo(Accelerator &acc)
         return gmacErrorInsufficientAcceleratorMemory;
     }
 
-    trace("Releasing object memory in accelerator");
+    TRACE(LOCAL,"Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
+//    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
 
-    trace("Cleaning contexts");
+    TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
 
-    trace("Registering mode in new accelerator");
+    TRACE(LOCAL,"Registering mode in new accelerator");
     acc_->unregisterMode(*this);
     acc_ = &acc;
     acc_->registerMode(*this);
     
-    trace("Reallocating objects");
+    TRACE(LOCAL,"Reallocating objects");
     map_.reallocObjects(*this);
 
-    trace("Reloading mode");
+    TRACE(LOCAL,"Reloading mode");
     reload();
 
     //
@@ -225,7 +193,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     return ret;
 }
-
+#endif
 void Mode::memInfo(size_t *free, size_t *total)
 {
     switchIn();
@@ -233,4 +201,4 @@ void Mode::memInfo(size_t *free, size_t *total)
     switchOut();
 }
 
-}
+}}

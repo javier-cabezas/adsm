@@ -37,25 +37,24 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "util/Logger.h"
-
 #include "Kernel.h"
 
 #include <list>
 #include <vector>
+#include <map>
 
 #include <cuda.h>
 #include <driver_types.h>
 #include <texture_types.h>
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 typedef const char * gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
-typedef Descriptor<gmacTexture_t> TextureDescriptor;
+typedef core::Descriptor<gmacTexture_t> TextureDescriptor;
 
-class GMAC_LOCAL VariableDescriptor : public Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public core::Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -64,7 +63,7 @@ public:
     bool constant() const;
 };
 
-class GMAC_LOCAL Variable : public VariableDescriptor {
+class GMAC_LOCAL Variable : public cuda::VariableDescriptor {
 	CUdeviceptr ptr_;
     size_t size_;
 public:
@@ -73,7 +72,7 @@ public:
     CUdeviceptr devPtr() const;
 };
 
-class GMAC_LOCAL Texture : public TextureDescriptor {
+class GMAC_LOCAL Texture : public cuda::TextureDescriptor {
 protected:
     CUtexref texRef_;
 
@@ -86,7 +85,7 @@ public:
 class Module;
 typedef std::vector<Module *> ModuleVector;
 
-class GMAC_LOCAL ModuleDescriptor : public util::Logger {
+class GMAC_LOCAL ModuleDescriptor {
 	friend class Module;
 
 protected:
@@ -94,7 +93,7 @@ protected:
     static ModuleDescriptorVector Modules_;
 	const void * fatBin_;
 
-    typedef std::vector<gmac::KernelDescriptor> KernelVector;
+    typedef std::vector<core::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
 	typedef std::vector<TextureDescriptor>      TextureVector;
 
@@ -106,16 +105,13 @@ protected:
 #ifdef USE_VM
     VariableDescriptor * dirtyBitmap_;
     VariableDescriptor * shiftPage_;
-#ifdef BITMAP_BIT
-    VariableDescriptor * shiftEntry_;
-#endif
 #endif
 
 public:
     ModuleDescriptor(const void * fatBin);
     ~ModuleDescriptor();
 
-    void add(gmac::KernelDescriptor & k);
+    void add(core::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
@@ -124,7 +120,7 @@ public:
 
 };
 
-class GMAC_LOCAL Module : public util::Logger {
+class GMAC_LOCAL Module {
 protected:
 
 	CUmodule mod_;
@@ -144,10 +140,6 @@ protected:
     static const char *ShiftPageSymbol_;
 	Variable *dirtyBitmap_;
 	Variable *shiftPage_;
-#ifdef BITMAP_BIT
-    static const char *ShiftEntrySymbol_;
-	Variable *shiftEntry_;
-#endif
 #endif
 
 public:
@@ -163,14 +155,11 @@ public:
 #ifdef USE_VM
     const Variable *dirtyBitmap() const;
     const Variable *dirtyBitmapShiftPage() const;
-#ifdef BITMAP_BIT
-    const Variable *dirtyBitmapShiftEntry() const;
-#endif
 #endif
 };
 
 }}
 
-#include "Module.ipp"
+#include "Module-impl.h"
 
 #endif

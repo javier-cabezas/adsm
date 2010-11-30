@@ -45,9 +45,25 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 
 
-namespace gmac { namespace util { namespace __impl {
+namespace __impl { namespace util {
 
-class GMAC_LOCAL Lock : public ParaverLock {
+class GMAC_LOCAL SpinLock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(SpinLock)
+
+protected:
+	mutable pthread_spinlock_t spinlock_;
+public:
+	SpinLock(const char *name);
+	VIRTUAL ~SpinLock();
+
+protected:
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
+};
+
+class GMAC_LOCAL Lock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(Lock)
+
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
@@ -59,7 +75,9 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public ParaverLock {
+class GMAC_LOCAL RWLock : public __impl::util::__Lock {
+    DBC_FORCE_TEST(RWLock)
+
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
@@ -73,9 +91,9 @@ protected:
 	TESTABLE void unlock() const;
 };
 
-}}}
+}}
 
-#include "Lock.ipp"
+#include "Lock-impl.h"
 
 #ifdef USE_DBC
 #include "dbc/Lock.h"

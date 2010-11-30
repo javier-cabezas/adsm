@@ -31,30 +31,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_WINDOWS_SEMAPHORE_H_
-#define __UTIL_WINDOWS_SEMAPHORE_H_
+#ifndef GMAC_UTIL_WINDOWS_SEMAPHORE_H_
+#define GMAC_UTIL_WINDOWS_SEMAPHORE_H_
 
 #include <windows.h>
 
 #include "config/common.h"
 #include "config/config.h"
 
-namespace gmac { namespace util {
-
+namespace __impl { namespace util {
+//! A Semaphore
 class GMAC_LOCAL Semaphore {
 protected:
+    //! Semaphore value
 	int val_;
+
+    //! Contidion variable to signal semaphore increments
     CONDITION_VARIABLE cond_;
+
+    //! Mutex to protect the semaphore value
     CRITICAL_SECTION mutex_;
 public:
+    //! Default constructor
+    /*!
+        \param v Initial semaphore value
+    */
 	Semaphore(unsigned v);
+
+    //! Default destructor
 	~Semaphore();
 
+    //! Increment semaphore value
 	void post();
+
+    //! Decrement semaphore value
 	void wait();
 };
 
-#include "Semaphore.ipp"
+#include "Semaphore-impl.h"
 
 }}
 #endif

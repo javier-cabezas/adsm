@@ -4,11 +4,9 @@
 #include "gmac/init.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
-#include "trace/Function.h"
+#include "trace/Tracer.h"
 
-namespace gmac { namespace memory {
-
-
+namespace __impl { namespace memory {
 
 unsigned Handler::Count_ = 0;
 
@@ -19,7 +17,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	enterGmac();
-	trace::Function::start("GMAC", "gmacSignal");
+	trace::EnterCurrentFunction();
 	
 	bool writeAccess = false;
 	if(ex->ExceptionRecord->ExceptionInformation[0] == 1) writeAccess = true;
@@ -27,8 +25,8 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	
 	void *addr = (void *)ex->ExceptionRecord->ExceptionInformation[1];
 
-	if(writeAccess == false) gmac::util::Logger::TRACE("Read SIGSEGV for %p", addr);
-	else gmac::util::Logger::TRACE("Write SIGSEGV for %p", addr);
+	if(writeAccess == false) TRACE(GLOBAL, "Read SIGSEGV for %p", addr);
+	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
 	Manager &manager = Manager::getInstance();
@@ -42,7 +40,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	trace::Function::end("GMAC");
+	trace::ExitCurrentFunction();
 	exitGmac();
 
 	return EXCEPTION_CONTINUE_EXECUTION;
@@ -53,7 +51,7 @@ void Handler::setHandler()
 	AddVectoredExceptionHandler(1, segvHandler);
 
 	Handler_ = this;
-	gmac::util::Logger::TRACE("New signal handler programmed");
+	TRACE(GLOBAL, "New signal handler programmed");
 }
 
 void Handler::restoreHandler()
@@ -61,7 +59,7 @@ void Handler::restoreHandler()
 	RemoveVectoredExceptionHandler(segvHandler);
 
 	Handler_ = NULL;
-	gmac::util::Logger::TRACE("Old signal handler restored");
+	TRACE(GLOBAL, "Old signal handler restored");
 }
 
 

@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 #define GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 inline
 void *Arena::key() const
@@ -30,10 +30,10 @@ bool Arena::empty() const
 inline
 void *Arena::get()
 {
-    assertion(_objects.empty() == false);
+    ASSERTION(_objects.empty() == false);
     void *ret = _objects.front();
     _objects.pop_front();
-    trace("Arena %p has %zd available objects", this, _objects.size());
+    TRACE(LOCAL,"Arena %p has "FMT_SIZE" available objects", this, _objects.size());
     return ret;
 }
 
@@ -45,7 +45,7 @@ void Arena::put(void *obj)
 
 inline
 Cache::Cache(size_t size) :
-    util::Lock("Cache"),
+    gmac::util::Lock("Cache"),
     objectSize(size),
     arenaSize(paramPageSize)
 { }
@@ -57,8 +57,8 @@ void Cache::put(void *obj)
     lock();
     ArenaMap::iterator i;
     i = arenas.upper_bound(obj);
-    CFatal(i != arenas.end(), "Address for invalid arena: %p", obj);
-    CFatal(i->second->address() <= obj, "Address for invalid arena: %p", obj);
+    CFATAL(i != arenas.end(), "Address for invalid arena: %p", obj);
+    CFATAL(i->second->address() <= obj, "Address for invalid arena: %p", obj);
     i->second->put(obj);
     if(i->second->full()) {
         delete i->second;

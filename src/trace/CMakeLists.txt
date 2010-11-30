@@ -1,5 +1,6 @@
+add_subdirectory(${OS_DIR})
 set(trace_SRC
-    Function.h Function.cpp
-    Thread.h Thread.cpp)
+    Tracer.h Tracer-impl.h Tracer.cpp
+    Console.h Console.cpp)
 
 add_gmac_sources(gmac ${trace_SRC})
