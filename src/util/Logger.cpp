@@ -46,7 +46,7 @@ namespace __impl { namespace util {
 #ifdef DEBUG
 bool Logger::Ready_ = false;
 Parameter<const char *> *Logger::Level_ = NULL;
-const char *Logger::DebugString_;
+const char *Logger::DebugString_ = NULL;
 std::list<std::string> *Logger::Tags_ = NULL;
 Private<char> Logger::Buffer_;    
 #endif
