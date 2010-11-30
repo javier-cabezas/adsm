@@ -64,17 +64,17 @@ template<typename T>
 inline Parameter<T>::Parameter(T *value, const char *name,
         T def, const char *envVar, uint32_t flags) :
     value_(value),
-    def_(def_),
-    name_(name_),
-    envVar_(envVar_),
-    flags_(flags_)
+    def_(def),
+    name_(name),
+    envVar_(envVar),
+    flags_(flags)
 {
     const char *tmp = NULL;
     if(envVar_ != NULL &&
         (tmp = GETENV(envVar_)) != NULL) {
         *value_ = convert<T>(tmp);
 
-        if (flags_ & PARAM_NONZERO && *value == 0) {
+        if (flags_ & PARAM_NONZERO && *value_ == 0) {
             *value_ = def_;
         } else {
             envSet_ = true;
