@@ -2,18 +2,11 @@
 #define GMAC_API_CUDA_MODE_IMPL_H_
 
 #include "core/Process.h"
+#include "core/IOBuffer.h"
 
-#include "Accelerator.h"
 #include "Context.h"
 
 namespace __impl { namespace cuda {
-
-inline
-Accelerator &
-Mode::getAccelerator() const
-{
-    return dynamic_cast<Accelerator &>(*acc_);
-}
 
 inline
 void Mode::switchIn()
@@ -41,30 +34,13 @@ Mode::execute(core::KernelLaunch & launch)
 }
 
 inline
-core::IOBuffer *Mode::createIOBuffer(size_t size)
-{
-    if(ioMemory_ == NULL) return NULL;
-    void *addr = ioMemory_->get(size);
-    if(addr == NULL) return NULL;
-    return new core::IOBuffer(addr, size);
-}
-
-inline
-void Mode::destroyIOBuffer(core::IOBuffer *buffer)
-{
-    ASSERTION(ioMemory_ != NULL);
-    ioMemory_->put(buffer->addr(), buffer->size());
-    delete buffer;
-}
-
-inline
 gmacError_t Mode::bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t len, off_t off)
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
     // TODO What is this cast for?
-    gmacError_t ret = ctx.bufferToAccelerator(dst, dynamic_cast<core::IOBuffer &>(buffer), len, off);
+    gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
     switchOut();
     return ret;
 }
@@ -77,7 +53,7 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const void * src, 
     // Implement a function to remove these casts
     Context &ctx = dynamic_cast<Context &>(getContext());
     // TODO What is this cast for?
-    gmacError_t ret = ctx.acceleratorToBuffer(dynamic_cast<core::IOBuffer &>(buffer), src, len, off);
+    gmacError_t ret = ctx.acceleratorToBuffer(buffer, src, len, off);
     switchOut();
     return ret;
 }

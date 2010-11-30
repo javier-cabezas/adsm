@@ -39,13 +39,19 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
-
-#include "Context.h"
-
 #include "core/Mode.h"
-#include "core/IOBuffer.h"
 
-namespace __impl { namespace cuda {
+#include "Module.h"
+
+namespace __impl {
+    
+namespace core {
+class IOBuffer;
+}
+
+namespace cuda {
+
+class Context;
 
 class GMAC_LOCAL ContextLock : public gmac::util::Lock {
     friend class Mode;
@@ -85,8 +91,6 @@ public:
     Mode(core::Process &proc, Accelerator &acc);
     ~Mode();
 
-    Accelerator &getAccelerator() const;
-
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
     void *hostMap(const void *addr);
@@ -115,7 +119,7 @@ public:
     CUdeviceptr dirtyBitmapShiftPageDevPtr() const;
 #endif
 
-    gmacError_t waitForBuffer(core::IOBuffer &buffer);
+    gmacError_t waitForEvent(CUevent event);
 };
 
 }}
