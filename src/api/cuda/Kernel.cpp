@@ -3,33 +3,33 @@
 #include "Mode.h"
 #include "Accelerator.h"
 
-#include <trace/Thread.h>
+#include "trace/Tracer.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
-Kernel::Kernel(const gmac::KernelDescriptor & k, CUmodule mod) :
-    gmac::Kernel(k)
+Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
+    core::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&_f, mod, name_);
     //! \todo Calculate this dynamically
 #if CUDA_VERSION >= 3000 && LINUX
     ret = cuFuncSetCacheConfig(_f, CU_FUNC_CACHE_PREFER_L1);
-    assertion(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
 #endif
-    assertion(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
 }
 
-gmac::KernelLaunch *
-Kernel::launch(gmac::KernelConfig & _c)
+core::KernelLaunch *
+Kernel::launch(core::KernelConfig & _c)
 {
     KernelConfig & c = static_cast<KernelConfig &>(_c);
 
-    KernelLaunch * l = new KernelLaunch(*this, c);
+    KernelLaunch * l = new cuda::KernelLaunch(*this, c);
     return l;
 }
 
 KernelConfig::KernelConfig(const KernelConfig & c) :
-    gmac::KernelConfig(c),
+    core::KernelConfig(c),
     _grid(c._grid),
     _block(c._block),
     _shared(c._shared),
@@ -38,7 +38,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 }
 
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/) :
-    gmac::KernelConfig(),
+    core::KernelConfig(),
     _grid(grid),
     _block(block),
     _shared(shared),
@@ -47,11 +47,17 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    gmac::KernelLaunch(),
-    KernelConfig(c),
+    core::KernelLaunch(),
+    cuda::KernelConfig(c),
     _kernel(k),
     _f(k._f)
 {
+}
+
+KernelLaunch &KernelLaunch::operator =(const KernelLaunch &)
+{
+    FATAL("Assigment of kernel launch is not supported");
+    return *this;
 }
 
 gmacError_t
@@ -59,9 +65,9 @@ KernelLaunch::execute()
 {
 	// Set-up parameters
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
-    CFatal(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
-	assertion(ret == CUDA_SUCCESS);
+	ASSERTION(ret == CUDA_SUCCESS);
 
 #if 0
 	// Set-up textures

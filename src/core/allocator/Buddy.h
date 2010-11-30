@@ -39,12 +39,11 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Lock.h"
-#include "util/Logger.h"
 
 
-namespace gmac { namespace core { namespace allocator {
+namespace __impl { namespace core { namespace allocator {
 
-class GMAC_LOCAL Buddy : public util::Logger, protected util::Lock  {
+class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
 protected:
     void *addr_;
     uint32_t size_;

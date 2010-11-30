@@ -6,10 +6,13 @@ include(FindCUDA)
 
 set(common_SRC
      ${common_ROOT}/debug.h
-     ${common_ROOT}/utils.cpp ${common_ROOT}/utils.ipp ${common_ROOT}/utils.h 
+     ${common_ROOT}/utils.h ${common_ROOT}/utils-impl.h ${common_ROOT}/utils.cpp 
+     ${common_ROOT}/barrier.h
      ${common_ROOT}/cycle.h)
 set(common_os_SRC
-        ${common_ROOT}/${OS_DIR}/utils.cpp)
+        ${common_ROOT}/${OS_DIR}/utils.cpp
+        ${common_ROOT}/${OS_DIR}/barrier.h
+        ${common_ROOT}/${OS_DIR}/barrier.c)
 # Set source group for common files
 string(REPLACE "${CMAKE_SOURCE_DIR}" "" common_GROUP ${common_ROOT})
 string(REGEX REPLACE "^/" "" common_GROUP ${common_GROUP})
@@ -39,6 +42,10 @@ else()
     set(CUDA_64_BIT_DEVICE_CODE OFF)
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd} ${common_SRC} gmacVecAdd.cu)
@@ -53,9 +60,6 @@ target_link_libraries(gmacThreadVecAdd gmac)
 cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
 add_executable(gmacSharedVecAdd ${sharedVecAdd} ${common_SRC} gmacSharedVecAdd.cu)
 target_link_libraries(gmacSharedVecAdd gmac)
-configure_file(../input/vectorA ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorA COPYONLY)
-configure_file(../input/vectorB ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorB COPYONLY)
-configure_file(../input/vectorC ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/inputset/vectorC COPYONLY)
 
 # gmacFileVecAdd
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
@@ -83,9 +87,13 @@ add_executable(gmacFile ${gfile} ${common_SRC} gmacFile.cu)
 target_link_libraries(gmacFile gmac)
 
 # gmacMap
-source_group(${current_GROUP} FILES gmacMap.cu)
-cuda_compile(map gmacMap.cu)
-add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
-target_link_libraries(gmacMap gmac)
+# source_group(${current_GROUP} FILES gmacMap.cu)
+# cuda_compile(map gmacMap.cu)
+# add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
+# target_link_libraries(gmacMap gmac)
 
-
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+add_custom_target(InputSets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../input
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
+endif(CMAKE_SYSTEM_NAME MATCHES "Windows")

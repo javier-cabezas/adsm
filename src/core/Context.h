@@ -37,10 +37,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #include "include/gmac/types.h"
-#include "util/Logger.h"
+
+#include "util/Lock.h"
 #include "util/Private.h"
 
-namespace gmac {
+namespace __impl { namespace core {
 
 class Accelerator;
 class Kernel;
@@ -49,7 +50,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class GMAC_LOCAL Context : public util::RWLock, public util::Logger {
+class GMAC_LOCAL Context : public gmac::util::RWLock {
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -57,23 +58,20 @@ protected:
 	Context(Accelerator &acc, unsigned id);
 public:
 	virtual ~Context();
-	Context &operator =(const Context &) {
-        Fatal("Assigment of contexts is not supported");
-        return *this;
-    }
+	Context &operator =(const Context &);
 
     static void init();
 
-	virtual gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
-	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	virtual gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
+	virtual gmacError_t copyToHost(void *host, const void *acc, size_t size);
 	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
 
     virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
 
-    virtual gmac::KernelLaunch &launch(gmac::Kernel &kernel) = 0;
+    virtual KernelLaunch &launch(Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;
 };
 
-}
+}}
 
 #endif

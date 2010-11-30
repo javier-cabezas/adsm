@@ -1,10 +1,10 @@
 #ifndef GMAC_CORE_KERNEL_IPP_
 #define GMAC_CORE_KERNEL_IPP_
 
-namespace gmac {
+namespace __impl { namespace core {
 
 inline
-Argument::Argument(void * ptr, size_t size, off_t offset) :
+Argument::Argument(void * ptr, size_t size, unsigned offset) :
     ptr_(ptr), size_(size), offset_(offset)
 {
 }
@@ -22,7 +22,7 @@ KernelConfig::~KernelConfig()
 }
 
 
-inline off_t
+inline unsigned
 KernelConfig::argsSize() const
 {
     return argsSize_;
@@ -51,6 +51,6 @@ KernelLaunch::~KernelLaunch()
 {
 }
 
-}
+}}
 
 #endif

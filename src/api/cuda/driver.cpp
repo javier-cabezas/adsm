@@ -20,25 +20,29 @@
 extern "C" {
 #endif
 
-using gmac::cuda::Accelerator;
-using gmac::cuda::Mode;
-using gmac::KernelDescriptor;
-using gmac::cuda::ModuleDescriptor;
-using gmac::cuda::TextureDescriptor;
-using gmac::cuda::VariableDescriptor;
+using __impl::enterGmac;
+using __impl::exitGmac;
+
+using __impl::core::KernelDescriptor;
+using __impl::core::Process;
+
+using __impl::cuda::Mode;
+using __impl::cuda::ModuleDescriptor;
+using __impl::cuda::TextureDescriptor;
+using __impl::cuda::VariableDescriptor;
 
 /*!
  * @returns Module **
  */
 GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::util::Logger::TRACE("CUDA Fat binary: %p", fatCubin);
-    gmac::util::Logger::ASSERTION(proc.nAccelerators() > 0);
-    gmac::enterGmac();
+    Process &proc = Process::getInstance();
+    TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
+    ASSERTION(proc.nAccelerators() > 0);
+    enterGmac();
     // Use the first GPU to load the fat binary
-    void **ret = (void **) new ModuleDescriptor(fatCubin);
-	gmac::exitGmac();
+    void **ret = (void **) new __impl::cuda::ModuleDescriptor(fatCubin);
+	exitGmac();
 	return ret;
 }
 
@@ -53,38 +57,38 @@ GMAC_API void APICALL __cudaRegisterFunction(
 		const char *devName, int /*threadLimit*/, uint3 * /*tid*/, uint3 * /*bid*/,
 		dim3 * /*bDim*/, dim3 * /*gDim*/)
 {
-    gmac::util::Logger::TRACE("CUDA Function");
+    TRACE(GLOBAL, "CUDA Function");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
-	gmac::enterGmac();
-    KernelDescriptor k = KernelDescriptor(devName, (gmacKernel_t) hostFun);
+	ASSERTION(mod != NULL);
+	enterGmac();
+    KernelDescriptor k = __impl::core::KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
-	gmac::exitGmac();
+	exitGmac();
 }
 
 GMAC_API void APICALL __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 		char * /*deviceAddress*/, const char *deviceName, int /*ext*/, int /*size*/,
 		int constant, int /*global*/)
 {
-    gmac::util::Logger::TRACE("CUDA Variable %s", deviceName);
+    TRACE(GLOBAL, "CUDA Variable %s", deviceName);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
-	gmac::enterGmac();
-    VariableDescriptor v = VariableDescriptor(deviceName, hostVar, bool(constant != 0));
+	ASSERTION(mod != NULL);
+	enterGmac();
+    VariableDescriptor v = __impl::cuda::VariableDescriptor(deviceName, hostVar, bool(constant != 0));
     mod->add(v);
-	gmac::exitGmac();
+	exitGmac();
 }
 
 GMAC_API void APICALL __cudaRegisterTexture(void **fatCubinHandle, const struct textureReference *hostVar,
 		const void ** /*deviceAddress*/, const char *deviceName, int /*dim*/, int /*norm*/, int /*ext*/)
 {
-    gmac::util::Logger::TRACE("CUDA Texture");
+    TRACE(GLOBAL, "CUDA Texture");
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
-	gmac::util::Logger::ASSERTION(mod != NULL);
-	gmac::enterGmac();
-    TextureDescriptor t = TextureDescriptor(deviceName, hostVar);
+	ASSERTION(mod != NULL);
+	enterGmac();
+    TextureDescriptor t = __impl::cuda::TextureDescriptor(deviceName, hostVar);
 	mod->add(t);
-	gmac::exitGmac();
+	exitGmac();
 }
 
 GMAC_API void APICALL __cudaRegisterShared(void ** /*fatCubinHandle*/, void ** /*devicePtr*/)
@@ -99,19 +103,19 @@ GMAC_API void APICALL __cudaRegisterSharedVar(void ** /*fatCubinHandle*/, void *
 GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
-	gmac::enterGmac();
-    Mode &mode = gmac::cuda::Mode::current();
+	enterGmac();
+    Mode &mode = Mode::current();
 	mode.call(gridDim, blockDim, sharedMem, tokens);
-	gmac::exitGmac();
+	exitGmac();
 	return cudaSuccess;
 }
 
 GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
-	gmac::enterGmac();
-    Mode &mode = gmac::cuda::Mode::current();
+	enterGmac();
+    Mode &mode = Mode::current();
 	mode.argument(arg, count, (off_t)offset);
-	gmac::exitGmac();
+	exitGmac();
 	return cudaSuccess;
 }
 

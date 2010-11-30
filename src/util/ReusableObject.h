@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 /*! \todo Delete ? */
 template <typename Type>

@@ -2,11 +2,11 @@
 
 #include "core/Mode.h"
 
-namespace gmac { namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 Cache &Slab::createCache(CacheMap &map, long key, size_t size)
 {
-    Cache *cache = new Cache(size);
+    Cache *cache = new __impl::memory::allocator::Cache(size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }
@@ -15,7 +15,7 @@ Cache &Slab::get(long key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    Mode *mode = &Mode::current();
+    core::Mode *mode = &core::Mode::current();
     i = modes.find(mode);
     modes.unlock();
     if(i == modes.end()) {
@@ -38,7 +38,7 @@ void Slab::cleanup()
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(&Mode::current());
+    i = modes.find(&core::Mode::current());
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;
@@ -54,12 +54,12 @@ void Slab::cleanup()
 void *Slab::alloc(size_t size, void *addr)
 {
     Cache &cache = get((unsigned long)addr ^ (unsigned long)size, size);
-    trace("Using cache %p", &cache);
+    TRACE(LOCAL,"Using cache %p", &cache);
     void *ret = cache.get();
     addresses.lockWrite();
     addresses.insert(AddressMap::value_type(ret, &cache));
     addresses.unlock();
-    trace("Retuning address %p", ret);
+    TRACE(LOCAL,"Retuning address %p", ret);
     return ret;
 }
 
@@ -69,10 +69,10 @@ bool Slab::free(void *addr)
     AddressMap::iterator i = addresses.find(addr);
     if(i == addresses.end()) {
         addresses.unlock();
-        trace("%p was not delivered by slab allocator", addr); 
+        TRACE(LOCAL,"%p was not delivered by slab allocator", addr); 
         return false;
     }
-    trace("Inserting %p in cache %p", addr, i->second);
+    TRACE(LOCAL,"Inserting %p in cache %p", addr, i->second);
     i->second->put(addr);
     addresses.erase(i);
     addresses.unlock();

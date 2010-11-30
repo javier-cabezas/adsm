@@ -48,23 +48,25 @@ WITH THE SOFTWARE.  */
 #include "memory/Map.h"
 
 #include "util/Lock.h"
-#include "util/Logger.h"
+#include "util/Reference.h"
 #include "util/Private.h"
 
-namespace gmac {
+namespace __impl {
 
-namespace memory { class Map; class Object; }
+namespace memory { class Map; class Object; class Block; }
+
+namespace core {
 
 class Context;
 class IOBuffer;
 class KernelLaunch;
 class Process;
 
-class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, util::RWLock {
+class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, gmac::util::RWLock {
 protected:
     typedef std::map<THREAD_T, Context *> Parent;
 public:
-    ContextMap() : util::RWLock("ContextMap") {};
+    ContextMap() : gmac::util::RWLock("ContextMap") {}
     void add(THREAD_T id, Context *ctx);
     Context *find(THREAD_T id);
     void remove(THREAD_T id);
@@ -73,10 +75,10 @@ public:
     gmacError_t sync();
 };
 
-class GMAC_LOCAL Mode : public gmac::util::Logger {
-    friend class memory::Manager;
+class GMAC_LOCAL Mode : public util::Reference {
+    // friend class gmac::memory::Manager;
 protected:
-    static gmac::util::Private<Mode> key;
+    static util::Private<Mode> key;
     static unsigned next;
 
     unsigned id_;
@@ -86,14 +88,14 @@ protected:
     Accelerator *acc_;
 
     memory::Map map_;
+    memory::Protocol *protocol_;
 
-    core::allocator::Buddy *ioMemory_;
+    allocator::Buddy *ioMemory_;
 
     bool releasedObjects_;
 #ifdef USE_VM
-    memory::vm::Bitmap *_bitmap;
+    __impl::memory::vm::Bitmap bitmap_;
 #endif
-    unsigned count_;
 
     ContextMap contextMap_;
 
@@ -109,15 +111,14 @@ protected:
 	gmacError_t error_;
 
     void cleanUpContexts();
+    void cleanUp();
 public:
     Mode(Process &proc, Accelerator &acc);
 	Mode &operator =(const Mode &) {
-        Fatal("Assigment of modes is not supported");
+        FATAL("Assigment of modes is not supported");
         return *this;
     }
     virtual ~Mode();
-
-    void release();
 
     static void init();
     static void initThread();
@@ -125,13 +126,10 @@ public:
     static Mode &current();
     static bool hasCurrent();
 
-    void inc();
-    void destroy();
+    memory::Protocol &protocol();
 
     unsigned id() const;
-    unsigned accId() const;
-
-    bool integrated() const;
+    Accelerator &getAccelerator() const;
 
     /*! \brief Attaches the execution mode to the current thread */
     void attach();
@@ -140,16 +138,11 @@ public:
     void detach();
 
     void addObject(memory::Object &obj);
-#ifndef USE_MMAP
     void addReplicatedObject(memory::Object &obj);
-    void addCentralizedObject(memory::Object &obj);
-    bool requireUpdate(memory::Block &block);
-#endif
-    void removeObject(memory::Object &obj);
-    const memory::Object *getObjectRead(const void *addr) const;
-    memory::Object *getObjectWrite(const void *addr);
-    void putObject(const memory::Object &obj);
-    const memory::Map &objects();
+    //void addCentralizedObject(memory::Object &obj);
+    void removeObject(const memory::Object &obj);
+    const memory::Object *getObject(const void *addr, size_t size = 0) const;
+	void forEachObject(memory::ObjectMap::ObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */
 	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
@@ -158,10 +151,10 @@ public:
 	gmacError_t free(void *addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
-	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
+	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyToHost(void *host, const void *acc, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
@@ -195,7 +188,7 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
-    gmacError_t moveTo(Accelerator &acc);
+    //gmacError_t moveTo(Accelerator &acc);
 
     void memInfo(size_t *free, size_t *total);
 
@@ -205,13 +198,11 @@ public:
 
     Process &process();
     const Process &process() const;
-
-    virtual gmacError_t waitForBuffer(IOBuffer &buffer) = 0;
 };
 
-}
+}}
 
-#include "Mode.ipp"
+#include "Mode-impl.h"
 
 #endif
 

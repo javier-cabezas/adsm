@@ -2,10 +2,10 @@
 
 #include <util/Logger.h>
 
-namespace gmac { namespace core { namespace allocator {
+namespace __impl { namespace core { namespace allocator {
 
 Buddy::Buddy(void *addr, size_t size) :
-    util::Lock("Buddy"),
+    gmac::util::Lock("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))
@@ -62,23 +62,23 @@ uint32_t Buddy::round(register uint32_t x) const
 off_t Buddy::getFromList(uint8_t i)
 {
     if(i > index_) {
-        trace("Requested size (%d) larger than available I/O memory", 1 << i);
+        TRACE(LOCAL,"Requested size (%d) larger than available I/O memory", 1 << i);
         return -1;
     }
     /* Check for spare chunks of the requested size */
     List &list = _tree[i];
     if(list.empty() == false) {
-        trace("Returning chunk of %d bytes", 1 << i);
+        TRACE(LOCAL,"Returning chunk of %d bytes", 1 << i);
         off_t ret = list.front();
         list.pop_front();
         return ret;
     }
 
     /* No spare chunks, try splitting a bigger one */
-    trace("Asking for chunk of %d bytes (%d)", 1 << (i + 1), i + 1);
+    TRACE(LOCAL,"Asking for chunk of %d bytes (%d)", 1 << (i + 1), i + 1);
     off_t larger = getFromList(i + 1);
     if(larger == -1) return -1; /* Not enough memory */
-    trace("Spliting chunk 0x%x from size %d into two halves", larger, (1 << (i + 1)));
+    TRACE(LOCAL,"Spliting chunk 0x%x from size %d into two halves", larger, (1 << (i + 1)));
     off_t mid = larger + (1 << i);
     list.push_back(mid);
     return larger;
@@ -98,11 +98,11 @@ void Buddy::putToList(off_t addr, uint8_t i)
     for(buddy = list.begin(); buddy != list.end(); buddy++) {
         if((*buddy & mask) != (addr & mask))
             continue;
-        trace("Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));
+        TRACE(LOCAL,"Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));
         list.erase(buddy);
         return putToList((addr & mask), i + 1);        
     }
-    trace("Inserting 0x%x into %d chunk list", addr, 1 << i);
+    TRACE(LOCAL,"Inserting 0x%x into %d chunk list", addr, 1 << i);
     list.push_back(addr);
     return;
 
@@ -112,12 +112,12 @@ void *Buddy::get(size_t &size)
 {
     uint8_t i = index((uint32_t)size);
     uint32_t realSize = (uint32_t) 1 << i;
-    trace("Request for %d bytes of I/O memory", realSize);
+    TRACE(LOCAL,"Request for %d bytes of I/O memory", realSize);
     lock();
     off_t off = getFromList(i);
     unlock();
     if(off < 0) return NULL;
-    trace("Returning address at offset %d", off);
+    TRACE(LOCAL,"Returning address at offset %d", off);
     size = realSize;
     return (uint8_t *)addr_ + off;
 }
@@ -126,7 +126,7 @@ void Buddy::put(void *addr, size_t size)
 {
     uint8_t i = index((uint32_t)size);
     off_t off = (off_t)((uint8_t *)addr - (uint8_t *)addr_);
-    trace("Releasing %d bytes at offset %d of I/O memory", size, off);
+    TRACE(LOCAL,"Releasing %d bytes at offset %d of I/O memory", size, off);
     lock();
     putToList(off, i);
     unlock();

@@ -40,9 +40,9 @@ WITH THE SOFTWARE.  */
 
 #include "Mode.h"
 
-namespace gmac {
+namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : public util::Lock, util::Logger {
+class GMAC_LOCAL IOBuffer : public gmac::util::Lock {
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:
@@ -50,12 +50,11 @@ protected:
     size_t size_;
 
     State state_;
-    Mode *mode_;
-public:
     IOBuffer(void *addr, size_t size);
+public:
     virtual ~IOBuffer();
 	IOBuffer &operator =(const IOBuffer &) {
-        Fatal("Assigment of I/O buffers is not supported");
+        FATAL("Assigment of I/O buffers is not supported");
         return *this;
     }
 
@@ -67,13 +66,10 @@ public:
     void unlock();
 
     State state() const;
-    void toHost(Mode &mode);
-    void toAccelerator(Mode &mode);
-
-    gmacError_t wait();
+    virtual gmacError_t wait() = 0;
 };
 
-}
+}}
 
 #include "IOBuffer.ipp"
 

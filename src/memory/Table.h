@@ -47,13 +47,13 @@ WITH THE SOFTWARE.  */
 // Compiler check to ensure that defines set by configure script
 // are consistent
 
-namespace gmac { namespace memory  { namespace vm {
+namespace __impl { namespace memory  { namespace vm {
 
 typedef unsigned long addr_t;
 
 
 template<typename T>
-class GMAC_LOCAL Table : public util::Logger {
+class GMAC_LOCAL Table : public __impl::util::Logger {
 protected:
 	static const size_t defaultSize = 512;
 	size_t nEntries;

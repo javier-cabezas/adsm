@@ -43,11 +43,13 @@ WITH THE SOFTWARE.  */
 #include "dbc/types.h"
 #include "util/posix/Lock.h"
 
-namespace gmac { namespace util { namespace __dbc {
+namespace __dbc { namespace util {
 
 class GMAC_LOCAL Lock :
-    public __impl::Lock,
-    public virtual gmac::dbc::Contract {
+    public __impl::util::Lock,
+    public virtual Contract {
+    DBC_TESTED(__impl::util::Lock)
+
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
@@ -61,8 +63,10 @@ protected:
 };
 
 class GMAC_LOCAL RWLock :
-    public __impl::RWLock,
-    public virtual gmac::dbc::Contract {
+    public __impl::util::RWLock,
+    public virtual Contract {
+    DBC_TESTED(__impl::util::RWLock)
+
 protected:
     mutable enum { Idle, Read, Write } state_;
     mutable pthread_mutex_t internal_;
@@ -79,6 +83,6 @@ protected:
     void unlock() const;
 };
 
-}}}
+}}
 
 #endif

@@ -35,35 +35,31 @@ WITH THE SOFTWARE.  */
 #define GMAC_GMAC_INIT_H_
 
 #if defined(GMAC_DLL)
+
+#include <cstdio>
+
 #include "config/common.h"
 #include "util/Lock.h"
-#include "util/Logger.h"
+#include "util/Thread.h"
 #include "util/Private.h"
+#include "util/Logger.h"
 
-namespace gmac {
-
-class Process;
-class Context;
+namespace __impl {
 
 namespace memory {
 class Allocator;
 }
 
-}
-
-#include <cstdio>
-namespace gmac {
-
-class GMAC_LOCAL GMACLock : public util::RWLock {
+class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
 public:
-    GMACLock() : util::RWLock("Process") {}
+    GMACLock() : gmac::util::RWLock("Process") {}
 
-    void lockRead()  const { util::RWLock::lockRead();  }
-    void lockWrite() const { util::RWLock::lockWrite(); }
-    void unlock()    const { util::RWLock::unlock();   }
+    void lockRead()  const { gmac::util::RWLock::lockRead();  }
+    void lockWrite() const { gmac::util::RWLock::lockWrite(); }
+    void unlock()    const { gmac::util::RWLock::unlock();   }
 };
 
-extern util::Private<const char> _inGmac;
+extern __impl::util::Private<const char> _inGmac;
 extern GMACLock * _inGmacLock;
 extern const char _gmacCode;
 extern const char _userCode;
@@ -75,7 +71,7 @@ inline void enterGmac()
 {
     _inGmacLock->lockRead();
     _inGmac.set(&_gmacCode);
-    util::Logger::TRACE("enterGMAC");
+    TRACE(GLOBAL, "enterGMAC");
 }
 
 void enterGmacExclusive() GMAC_LOCAL;
@@ -84,14 +80,14 @@ inline void enterGmacExclusive()
 {
     _inGmacLock->lockWrite();
     _inGmac.set(&_gmacCode);
-    util::Logger::TRACE("enterGMAC exclusive");
+    TRACE(GLOBAL, "enterGMAC exclusive");
 }
 
 void exitGmac() GMAC_LOCAL;
 
 inline void exitGmac()
 {
-    gmac::util::Logger::TRACE("exitGMAC exclusive");
+    TRACE(GLOBAL, "exitGMAC exclusive");
     _inGmac.set(&_userCode);
     _inGmacLock->unlock();
 }

@@ -1,11 +1,12 @@
-#include "loader.h"
-
 #include <windows.h>
 #include <set>
 
+#include "loader.h"
+#include "util/Logger.h"
+
 #define PtrFromRva(base, rva) (((PBYTE)base) + rva)
 
-namespace gmac { namespace loader {
+namespace __impl { namespace loader {
 
 static const char *ImportSection_ = ".idata";
 static const char *GmacDll_ = "gmac.dll";
@@ -104,7 +105,7 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 		if(Modules_.insert(module).second == false) continue;
 		PVOID second = PatchModule(module, symbol, name);
 		if(ret != NULL && second != NULL && ret != second)
-			gmac::util::Logger::Fatal("Duplicated symbol %s", name);
+			FATAL("Duplicated symbol %s", name);
 	}
 	return ret;
 }

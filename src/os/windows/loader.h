@@ -34,20 +34,20 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_WINDOWS_LOADER_H_
 #define GMAC_WINDOWS_LOADER_H_
 
-#pragma warning(disable : 4273)
+#include <windows.h>
 
-#include "util/Logger.h"
+#pragma warning(disable : 4273)
 
 #define SYM(ret, symbol, ...)	\
 	typedef ret (__cdecl *symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 
 #define LOAD_SYM(symbol, name)	\
-	gmac::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
+	__impl::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
 
 #define SYMBOL(name) __gmac_##name
 
-namespace gmac { namespace loader {
+namespace __impl { namespace loader {
 extern void LoadSymbol(PVOID *symbol, PVOID hook, const char *name);
 }}
 

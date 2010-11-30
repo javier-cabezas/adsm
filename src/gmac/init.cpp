@@ -2,19 +2,12 @@
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
-#include "trace/Function.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 
 #include "init.h"
 
-#ifdef PARAVER
-namespace paraver {
-extern int init;
-}
-#endif
-
-namespace gmac {
-gmac::util::Private<const char> _inGmac;
+namespace __impl {
+util::Private<const char> _inGmac;
 GMACLock * _inGmacLock;
 
 const char _gmacCode = 1;
@@ -38,18 +31,11 @@ static void CONSTRUCTOR init(void)
 	enterGmac();
     _gmacInit = 1;
 
-    util::Logger::Create("GMAC");
-    util::Logger::TRACE("Initialiazing GMAC");
-
-#ifdef PARAVER
-    paraver::init = 1;
-#endif
-    //util::FileLock(GLOBAL_FILE_LOCK, trace::LockSystem);
-
-    //FILE * lockSystem;
+	util::Logger::Init();
+    TRACE(GLOBAL, "Initialiazing GMAC");
 
     paramInit();
-    trace::Function::init();
+	gmac::trace::InitTracer();	
 
     /* Call initialization of interpose libraries */
 #if defined(POSIX)
@@ -59,12 +45,12 @@ static void CONSTRUCTOR init(void)
     stdcInit();
 
 
-    util::Logger::TRACE("Using %s memory manager", paramProtocol);
-    util::Logger::TRACE("Using %s memory allocator", paramAllocator);
+    TRACE(GLOBAL, "Using %s memory manager", paramProtocol);
+    TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
-    util::Logger::TRACE("Initializing process");
-    Process::create<Process>();
-    apiInit();
+    TRACE(GLOBAL, "Initializing process");
+    core::Process::create<__impl::core::Process>();
+    core::apiInit();
 
     exitGmac();
 }
@@ -72,34 +58,33 @@ static void CONSTRUCTOR init(void)
 static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
-    gmac::util::Logger::TRACE("Cleaning GMAC");
-    gmac::Process::destroy();
+    TRACE(GLOBAL, "Cleaning GMAC");
+    core::Process::destroy();
     delete _inGmacLock;
-    // We do not exitGmac to allow proper stdc function handling
-    gmac::util::Logger::Destroy();
+	// TODO: Clean-up logger
 }
 
-} // namespace gmac
+}
 
 #if defined(_WIN32)
 #include <windows.h>
 
 static void InitThread()
 {
-	gmac::trace::Thread::start();
+	gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
-	gmac::Process &proc = gmac::Process::getInstance();
+	__impl::core::Process &proc = __impl::core::Process::getInstance();
 	proc.initThread();
-	gmac::trace::Thread::run();
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 }
 
 static void FiniThread()
 {
 	gmac::enterGmac();
-	gmac::trace::Thread::resume();
+	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
-	gmac::Process &proc = gmac::Process::getInstance();
+	__impl::core::Process &proc = __impl::core::Process::getInstance();
 	proc.finiThread();
 	gmac::exitGmac();
 }
@@ -109,10 +94,10 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch(dwReason) {
 		case DLL_PROCESS_ATTACH:
-			gmac::init();
+            __impl::init();
 			break;
 		case DLL_PROCESS_DETACH:
-			gmac::fini();
+			__impl::fini();
 			break;
 		case DLL_THREAD_ATTACH:
 			InitThread();
@@ -126,6 +111,5 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 
 #endif
-
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

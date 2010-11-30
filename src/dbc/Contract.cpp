@@ -1,10 +1,11 @@
 #ifdef USE_DBC
-#include "Contract.h"
 
 #include <iostream>
 #include <cassert>
 
-namespace gmac { namespace dbc {
+#include "Contract.h"
+
+namespace __dbc {
 
 void Contract::Preamble(const char *file, const int line)
 {
@@ -48,6 +49,6 @@ void Contract::Assert(const char *file, const int line,
     assert(0);
 }
 
+}
 
-} }
 #endif

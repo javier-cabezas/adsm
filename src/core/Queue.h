@@ -40,21 +40,21 @@ WITH THE SOFTWARE.  */
 
 #include "util/Lock.h"
 #include "util/Semaphore.h"
-#include "util/Logger.h"
 
-namespace gmac {
+
+namespace __impl { namespace core {
 
 class Mode;
 
 /*!
 	\brief Communication Queue
 */
-class GMAC_LOCAL Queue : public util::Logger, public util::Lock {
+class GMAC_LOCAL Queue : public gmac::util::Lock {
 protected:
 	typedef std::list<Mode *> Fifo;
 
 	Fifo _queue;
-	util::Semaphore sem;
+    util::Semaphore sem;
 
 public:
 	Queue(const char *name);
@@ -70,6 +70,6 @@ public:
     Queue *queue;
 };
 
-}
+}}
 
 #endif

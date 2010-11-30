@@ -37,15 +37,28 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "core/Mode.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
-class GMAC_LOCAL DistributedObject {
+template<typename T>
+class GMAC_LOCAL DistributedObject : public Object {
+protected:
+    uint8_t *shadow_;
+    typedef std::map<core::Mode *, uint8_t *> AcceleratorMap;
+    AcceleratorMap acceleratorAddr_;
 public:
+	DistributedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, 
+		size_t size, T init);
     virtual ~DistributedObject();
-    virtual gmacError_t addOwner(Mode &mode) = 0;
-    virtual gmacError_t removeOwner(Mode &mode) = 0;
+
+    void *acceleratorAddr(const void *addr) const;
+	core::Mode &owner(const void *addr) const;
+
+	bool addOwner(core::Mode &owner);
+	void removeOwner(const core::Mode &owner);
 };
 
 }}
+
+#include "DistributedObject-impl.h"
 
 #endif

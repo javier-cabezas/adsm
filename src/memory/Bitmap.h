@@ -34,40 +34,47 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BITMAP_H_
 #define GMAC_MEMORY_BITMAP_H_
 
-#include <stddef.h>
-
 #include "config/common.h"
+
+#include "util/Lock.h"
 #include "util/Logger.h"
 
-#ifdef USE_VM
-namespace gmac { namespace memory  { namespace vm {
 
-class GMAC_LOCAL Bitmap : public util::Logger {
-private:
-#ifdef BITMAP_WORD
-    uint32_t *bitmap_;
-#else
+#ifdef USE_VM
+
 #ifdef BITMAP_BYTE
-    uint8_t *bitmap_;
 #else
 #ifdef BITMAP_BIT
-    uint32_t *bitmap_;
 #else
-#error "Bitmap granularity not defined"
+#error "ERROR: Bitmap granularity not defined!"
 #endif
 #endif
-#endif
+
+
+namespace __impl {
+    namespace core {
+        class Mode;
+    }
+    
+    namespace memory  { namespace vm {
+
+class GMAC_LOCAL Bitmap :
+    public __impl::util::Logger,
+    protected gmac::util::RWLock {
+private:
+    core::Mode &mode_;
+    typedef uint8_t T;
+    uint8_t *bitmap_;
+
     bool dirty_;
     bool synced_;
 
-    void *device_;
+    uint8_t *accelerator_;
 
-    const void *_minAddr, *_maxAddr;
-
-    size_t _shiftPage;
+    static const unsigned entriesPerByte;
+    size_t shiftPage_;
 #ifdef BITMAP_BIT
-    size_t _shiftEntry;
-    uint32_t _bitMask;
+    uint32_t bitMask_;
 #endif
     size_t size_;
 
@@ -75,22 +82,22 @@ private:
 
     template <bool check, bool clear, bool set>
     bool CheckClearSet(const void *addr);
+    int minEntry_;
+    int maxEntry_;
 
-    off_t offset(const void *addr) const;
+    void updateMaxMin(unsigned entry);
+
+    unsigned offset(const void *addr) const;
 public:
-    Bitmap(unsigned bits = 32);
+    Bitmap(core::Mode &mode, unsigned bits = 32);
     virtual ~Bitmap();
 
-    void *device();
-    void *deviceBase();
+    void cleanUp();
+
+    void *accelerator();
     void *host() const;
 
     const size_t size() const;
-
-    const size_t shiftPage() const;
-#ifdef BITMAP_BIT
-    const size_t shiftEntry() const;
-#endif
 
     bool check(const void *);
     bool checkAndClear(const void *);
@@ -104,7 +111,7 @@ public:
     bool clean() const;
 
     void syncHost();
-    void syncDevice();
+    void syncAccelerator();
     void reset();
 
 #ifdef DEBUG_BITMAP
@@ -117,7 +124,7 @@ public:
 
 }}}
 
-#include "Bitmap.ipp"
+#include "Bitmap-impl.h"
 
 #endif
 

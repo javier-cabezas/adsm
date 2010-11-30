@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "config/config.h"
 
-#if defined(HAVE_STDINT)
+#if defined(__GNUC__)
 #include <stdint.h>
 #elif defined(_MSC_VER)
 typedef unsigned __int8 uint8_t;
@@ -86,7 +86,7 @@ template<typename T>
 static
 void vecAdd(T * c, const T * a, const T * b, uint32_t elems);
 
-#include "utils.ipp"
+#include "utils-impl.h"
 
 inline
 float

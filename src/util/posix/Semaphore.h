@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __UTIL_POSIX_SEMAPHORE_H_
-#define __UTIL_POSIX_SEMAPHORE_H_
+#ifndef GMAC_UTIL_POSIX_SEMAPHORE_H_
+#define GMAC_UTIL_POSIX_SEMAPHORE_H_
 
 #include <pthread.h>
 
@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 class GMAC_LOCAL Semaphore {
 protected:
@@ -56,7 +56,7 @@ public:
 	void wait();
 };
 
-#include "Semaphore.ipp"
+#include "Semaphore-impl.h"
 
 }}
 #endif

@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace gmac { namespace util {
+namespace __impl { namespace util {
 
 template <typename T = void>
 class GMAC_LOCAL Private {
@@ -47,7 +47,6 @@ protected:
     
 public:
     static void init(Private &var);
-    //Private();
 
     void set(const void *value);
     T * get();
@@ -55,6 +54,6 @@ public:
 
 }}
 
-#include "Private.ipp"
+#include "Private-impl.h"
 
 #endif

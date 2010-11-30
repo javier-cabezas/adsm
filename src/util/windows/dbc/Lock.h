@@ -43,11 +43,27 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-namespace gmac { namespace util { namespace __dbc {
+namespace __dbc { namespace util {
 
-class GMAC_LOCAL Lock :
-	public __impl::Lock,
-    public gmac::dbc::Contract {
+class GMAC_LOCAL SpinLock : public __impl::util::SpinLock, public Contract {
+    DBC_TESTED(__impl::util::SpinLock)
+
+protected:
+    mutable CRITICAL_SECTION internal_;
+    mutable bool locked_;
+    mutable DWORD owner_;
+
+public:
+    SpinLock(const char *name);
+    VIRTUAL ~SpinLock();
+protected:
+    TESTABLE void lock() const;
+    TESTABLE void unlock() const;
+};
+
+class GMAC_LOCAL Lock : public __impl::util::Lock, public Contract {
+    DBC_TESTED(__impl::util::Lock)
+
 protected:
     mutable CRITICAL_SECTION internal_;
     mutable bool locked_;
@@ -61,9 +77,9 @@ protected:
     TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock :
-    public __impl::RWLock,
-    public gmac::dbc::Contract {
+class GMAC_LOCAL RWLock : public __impl::util::RWLock, public Contract {
+    DBC_TESTED(__impl::util::RWLock)
+
 protected:
     mutable enum { Idle, Read, Write } state_;
     mutable CRITICAL_SECTION internal_;
@@ -78,6 +94,6 @@ protected:
     TESTABLE void unlock() const;
 };
 
-}}}
+}}
 
 #endif

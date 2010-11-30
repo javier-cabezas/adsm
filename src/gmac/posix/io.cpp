@@ -4,7 +4,6 @@
 #include "core/IOBuffer.h"
 #include "gmac/init.h"
 #include "memory/Manager.h"
-#include "trace/Thread.h"
 
 #include <unistd.h>
 #include <cstdio>
@@ -15,12 +14,16 @@
 
 #include "posix.h"
 
+using __impl::core::IOBuffer;
+using __impl::core::Mode;
+using __impl::core::Process;
+
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
 void posixIoInit(void)
 {
-	gmac::util::Logger::TRACE("Overloading I/O POSIX functions");
+	TRACE(GLOBAL, "Overloading I/O POSIX functions");
 	LOAD_SYM(__libc_read, read);
 	LOAD_SYM(__libc_write, write);
 }
@@ -39,20 +42,18 @@ ssize_t read(int fd, void *buf, size_t count)
 
 
     gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *dstMode = proc.owner(buf);
+    Process &proc = Process::getInstance();
+    Mode *dstMode = proc.owner(buf);
 
     if(dstMode == NULL) {
         gmac::exitGmac();
         return __libc_read(fd, buf, count);
     }
 
-    gmac::trace::Thread::io();
-
     gmacError_t err;
     size_t ret = 0;
 
-    gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::current().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -62,13 +63,12 @@ ssize_t read(int fd, void *buf, size_t count)
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
         ret = manager.fromIOBuffer((char *)buf + off, *buffer, bytes);
-        gmac::util::Logger::ASSERTION(ret == gmacSuccess);
+        ASSERTION(ret == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
     }
-    gmac::Mode::current().destroyIOBuffer(buffer);
-    gmac::trace::Thread::resume();
+    Mode::current().destroyIOBuffer(buffer);
 	gmac::exitGmac();
 
     return ret;
@@ -83,21 +83,19 @@ ssize_t write(int fd, const void *buf, size_t count)
 	if(gmac::inGmac() == 1) return __libc_write(fd, buf, count);
 
 	gmac::enterGmac();
-    gmac::Process &proc = gmac::Process::getInstance();
-    gmac::Mode *srcMode = proc.owner(buf);
+    Process &proc = Process::getInstance();
+    Mode *srcMode = proc.owner(buf);
 
     if(srcMode == NULL) {
         gmac::exitGmac();
         return __libc_write(fd, buf, count);
     }
 
-    gmac::trace::Thread::io();
-
     gmacError_t err;
     size_t ret = 0;
 
     off_t  off  = 0;
-    gmac::IOBuffer *buffer = gmac::Mode::current().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::current().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -105,14 +103,13 @@ ssize_t write(int fd, const void *buf, size_t count)
     while (left != 0) {
         size_t bytes = left < buffer->size() ? left : buffer->size();
         err = manager.toIOBuffer(*buffer, (char *)buf + off, bytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, buffer->addr(), bytes);
 
         left -= bytes;
         off  += bytes;
     }
-    gmac::Mode::current().destroyIOBuffer(buffer);
-    gmac::trace::Thread::resume();
+    Mode::current().destroyIOBuffer(buffer);
 	gmac::exitGmac();
 
     return ret;

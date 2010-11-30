@@ -1,9 +1,11 @@
+#ifdef USE_DBC
+
 #include "Lock.h"
 
-namespace gmac { namespace util { namespace __dbc {
+namespace __dbc { namespace util {
 
 Lock::Lock(const char *name) :
-    __impl::Lock(name),
+    __impl::util::Lock(name),
     locked_(false),
     owner_(NULL)
 {
@@ -21,7 +23,7 @@ void Lock::lock() const
     //REQUIRES(owner_ != pthread_self());
     //pthread_mutex_unlock(&internal_);
 
-    __impl::Lock::lock();
+    __impl::util::Lock::lock();
 
     pthread_mutex_lock(&internal_);
     ENSURES(owner_ == 0);
@@ -39,13 +41,13 @@ void Lock::unlock() const
     owner_ = NULL;
     locked_ = false;
 
-    __impl::Lock::unlock();
+    __impl::util::Lock::unlock();
 
     pthread_mutex_unlock(&internal_);
 }
 
 RWLock::RWLock(const char *name) :
-    __impl::RWLock(name),
+    __impl::util::RWLock(name),
     state_(Idle),
     writer_(NULL)
 {
@@ -63,7 +65,7 @@ void RWLock::lockRead() const
     REQUIRES(readers_.find(pthread_self()) == readers_.end());
     pthread_mutex_unlock(&internal_);
 
-    __impl::RWLock::lockRead();
+    __impl::util::RWLock::lockRead();
 
     pthread_mutex_lock(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -79,7 +81,7 @@ void RWLock::lockWrite() const
     REQUIRES(writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
-    __impl::RWLock::lockWrite();
+    __impl::util::RWLock::lockWrite();
 
     pthread_mutex_lock(&internal_);
     ENSURES(readers_.empty() == true);
@@ -104,9 +106,11 @@ void RWLock::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    __impl::RWLock::unlock();
+    __impl::util::RWLock::unlock();
 
     pthread_mutex_unlock(&internal_);
 }
 
-}}}
+}}
+
+#endif

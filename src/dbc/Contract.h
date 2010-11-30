@@ -38,14 +38,14 @@ WITH THE SOFTWARE.  */
 
 #ifdef USE_DBC
 
-#define ENSURES(a) gmac::dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
-#define REQUIRES(a) gmac::dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
-#define EXPECTS(a) gmac::dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
-#define ASSERT(a) gmac::dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
+#define ENSURES(a)  __dbc::Contract::Ensures(__FILE__, __LINE__, #a, a)
+#define REQUIRES(a) __dbc::Contract::Requires(__FILE__, __LINE__, #a, a)
+#define EXPECTS(a)  __dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
+#define ASSERT(a)   __dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
 
 #define ISVALID() isValid(__FILE__, __LINE__)
 
-namespace gmac { namespace dbc {
+namespace __dbc {
 
 class GMAC_LOCAL Contract {
 private:
@@ -57,7 +57,7 @@ protected:
     static void Assert(const char *file, const int line, const char *clause, bool b);
 };
 
-}}
+}
 #endif
 
 

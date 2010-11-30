@@ -70,6 +70,11 @@ else(USE_OPENCL)
     endif(EXISTS ${NVCC})
 endif(USE_OPENCL)
 
+# Check for Tracing
+option(USE_TRACE_CONSOLE "Enable producing traces in the consoloe" OFF)
+if(USE_TRACE_CONSOLE)
+    add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+endif(USE_TRACE_CONSOLE)
 
 # Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
@@ -79,47 +84,48 @@ if(USE_VM)
     if(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'bit' bitmap implementation")
         add_definitions(-DBITMAP_BIT)
-    elseif(VM_BITMAP MATCHES "word")
-        message(STATUS "Using 'word' bitmap implementation")
-        add_definitions(-DBITMAP_WORD)
     else(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'byte' bitmap implementation")
         add_definitions(-DBITMAP_BYTE)
     endif(VM_BITMAP MATCHES "bit")
+
+    if(USE_HOSTMAP_VM)
+        add_definitions(-DUSE_HOSTMAP_VM)
+    endif(USE_HOSTMAP_VM)
 endif(USE_VM)
 
 
 # Check if GMAC is buid with Paraver support
-option(USE_PARAVER "Enable production of Paraver traces" OFF)
-if(USE_PARAVER)
-    message(STATUS "Compiling with Paraver support")
-    add_definitions(-DPARAVER)
-    find_library(PARAVER paraver)
-    if(EXISTS ${PARAVER})
-        message(STATUS "Using Paraver library at ${PARAVER}")
-        set(gmac_LIBS ${gmac_LIBS} paraver)
-    else()
-        message(STATUS "Using Paraver library from source code")
-        set(EP_paraver_SRC ${CMAKE_SOURCE_DIR}/lib/libparaver)
-        set(EP_paraver_BIN ${CMAKE_BINARY_DIR}/lib/libparaver)
-        if(CMAKE_BUILD_TYPE MATCHES "Debug")
-            set(PARAVER_CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug)
-        endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-        include(ExternalProject)
-        ExternalProject_Add(EP_paraver
-            DOWNLOAD_COMMAND ""
-            SOURCE_DIR ${EP_paraver_SRC}
-            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} 
-            BINARY_DIR ${EP_paraver_BIN}
-            INSTALL_COMMAND ""
-            )
-        add_dependencies(gmac EP_paraver)
-        include_directories(${EP_paraver_SRC} ${EP_paraver_BIN})
-        set(gmac_LIBS ${gmac_LIBS}
-            ${EP_paraver_BIN}/paraver/${CMAKE_SHARED_LIBRARY_PREFIX}paraver${CMAKE_SHARED_LIBRARY_SUFFIX})
-        install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/libparaver)")
-    endif()
-endif(USE_PARAVER)
+#option(USE_PARAVER "Enable production of Paraver traces" OFF)
+#if(USE_PARAVER)
+#    message(STATUS "Compiling with Paraver support")
+#    add_definitions(-DPARAVER)
+#    find_library(PARAVER paraver)
+#    if(EXISTS ${PARAVER})
+#        message(STATUS "Using Paraver library at ${PARAVER}")
+#        set(gmac_LIBS ${gmac_LIBS} paraver)
+#    else()
+#        message(STATUS "Using Paraver library from source code")
+#        set(EP_paraver_SRC ${CMAKE_SOURCE_DIR}/lib/libparaver)
+#        set(EP_paraver_BIN ${CMAKE_BINARY_DIR}/lib/libparaver)
+#        if(CMAKE_BUILD_TYPE MATCHES "Debug")
+#            set(PARAVER_CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug)
+#        endif(CMAKE_BUILD_TYPE MATCHES "Debug")
+#        include(ExternalProject)
+#        ExternalProject_Add(EP_paraver
+#            DOWNLOAD_COMMAND ""
+#            SOURCE_DIR ${EP_paraver_SRC}
+#            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} 
+#            BINARY_DIR ${EP_paraver_BIN}
+#            INSTALL_COMMAND ""
+#            )
+#        add_dependencies(gmac EP_paraver)
+#        include_directories(${EP_paraver_SRC} ${EP_paraver_BIN})
+#        set(gmac_LIBS ${gmac_LIBS}
+#            ${EP_paraver_BIN}/paraver/${CMAKE_SHARED_LIBRARY_PREFIX}paraver${CMAKE_SHARED_LIBRARY_SUFFIX})
+#        install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/libparaver)")
+#    endif()
+#endif(USE_PARAVER)
 
 # Make sure we compile the necessary libraries
 add_subdirectory(lib)
@@ -141,7 +147,6 @@ set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
-check_include_files("stdint.h" HAVE_STDINT)
 check_function_exists(llabs HAVE_LLABS)
 
 # Setup extra libraries needed by GMAC
@@ -187,13 +192,9 @@ add_definitions(-DGMAC_DLL)
 # Compiling GMAC
 add_definitions(-DGMAC_DLL_EXPORTS)
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_definitions(-DUSE_DBC)
-    set(gmac_SOURCES ${gmac_SOURCES} ${gmac-dbc_SRC})
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC})
+set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
 
-add_gmac_groups(${gmac_SOURCES})
+add_gmac_groups(${gmac_SOURCES} ${gmac-dbc_SRC})
 add_library(gmac SHARED ${gmac_SOURCES})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
 set_property(TARGET gmac PROPERTY PRIVATE_HEADER
@@ -205,7 +206,9 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
 
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
-set_target_properties(gmac PROPERTIES VERSION 0.2.0 SOVERSION 1)
+set_target_properties(gmac PROPERTIES
+    COMPILE_DEFINITIONS_DEBUG USE_DBC
+    VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac 
      LIBRARY DESTINATION lib

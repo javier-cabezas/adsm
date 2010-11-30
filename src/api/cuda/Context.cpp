@@ -3,15 +3,15 @@
 
 #include "gmac/init.h"
 #include "memory/Manager.h"
-#include "trace/Thread.h"
+#include "trace/Tracer.h"
 
-namespace gmac { namespace cuda {
+namespace __impl { namespace cuda {
 
 Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::Context(acc, mode.id()),
+    core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL)
@@ -22,9 +22,9 @@ Context::Context(Accelerator &acc, Mode &mode) :
 
 Context::~Context()
 { 
-	// Destroy context's private IOBuffer (if any)
+    // Destroy context's private IOBuffer (if any)
     if(buffer_ != NULL) {
-        trace("Destroying I/O buffer");
+        TRACE(LOCAL,"Destroying I/O buffer");
     	mode_.destroyIOBuffer(buffer_);
     }
 
@@ -51,45 +51,36 @@ gmacError_t Context::syncCUstream(CUstream _stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
-    gmac::trace::Thread::io();
+    trace::SetThreadState(trace::IO);
     while ((ret = accelerator().queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
-    gmac::trace::Thread::resume();
+    trace::SetThreadState(trace::Running);
 
-
-    if (ret == CUDA_SUCCESS) { trace("Sync: success"); }
-    else { trace("Sync: error: %d", ret); }
+    if (ret == CUDA_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
+    else { TRACE(LOCAL,"Sync: error: %d", ret); }
 
     return Accelerator::error(ret);
 }
 
-gmacError_t Context::waitForBuffer(IOBuffer &buffer)
+gmacError_t Context::waitForEvent(CUevent e)
 {
     gmacError_t ret = gmacErrorUnknown;
-    switch(buffer.state()) {
-        case IOBuffer::Idle: return gmacSuccess;
-        case IOBuffer::ToAccelerator:
-            ret = syncCUstream(streamToAccelerator_);
-            break;
-        case IOBuffer::ToHost:
-            ret = syncCUstream(streamToHost_);
-            break;
-    }
+    ret = accelerator().syncCUevent(e);
     return ret;
 }
 
 gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
 {
-    trace("Transferring %zd bytes from host %p to accelerator %p", size, host, dev);
-    trace::Function::start("Context", "copyToAccelerator");
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, dev);
+    trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
     if(buffer_ == NULL) {
-        trace("Not using pinned memory for transfer");
-        trace::Function::end("Context");
-        return gmac::Context::copyToAccelerator(dev, host, size);
+        TRACE(LOCAL,"Not using pinned memory for transfer");
+        trace::ExitCurrentFunction();
+        return core::Context::copyToAccelerator(dev, host, size);
     }
     buffer_->wait();
     gmacError_t ret = gmacSuccess;
@@ -99,113 +90,113 @@ gmacError_t Context::copyToAccelerator(void *dev, const void *host, size_t size)
         if(ret != gmacSuccess) break;
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
-        trace::Function::start("Context", "memcpyToAccelerator");
-        memcpy(buffer_->addr(), (uint8_t *)host + offset, len);
-        trace::Function::end("Context");
-        assertion(len <= paramPageSize);
-        buffer_->toAccelerator(mode_);
-        ret = accelerator().copyToAcceleratorAsync((uint8_t *)dev + offset, buffer_->addr(), len, streamToAccelerator_);
-        assertion(ret == gmacSuccess);
+        trace::EnterCurrentFunction();
+        ::memcpy(buffer_->addr(), (uint8_t *)host + offset, len);
+        trace::ExitCurrentFunction();
+        ASSERTION(len <= paramPageSize);
+        ret = accelerator().copyToAcceleratorAsync((uint8_t *)dev + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
+        ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         offset += len;
     }
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Context::copyToHost(void *host, const void *accAddr, size_t size)
 {
-    trace("Transferring %zd bytes from accelerator %p to host %p", size, accAddr, host);
-    trace::Function::start("Context", "copyToHost");
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, accAddr, host);
+    trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
-    if(buffer_ == NULL) buffer_ = mode_.createIOBuffer(paramPageSize);
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
     if(buffer_ == NULL) {
-        trace::Function::end("Context");
-        return gmac::Context::copyToHost(host, accAddr, size);
+        trace::ExitCurrentFunction();
+        return core::Context::copyToHost(host, accAddr, size);
     }
 
     gmacError_t ret = buffer_->wait();
     buffer_->wait();
-    if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
+    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     size_t offset = 0;
     while(offset < size) {
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
-        buffer_->toHost(mode_);
-        ret = accelerator().copyToHostAsync(buffer_->addr(), (uint8_t *)accAddr + offset, len, streamToHost_);
-        assertion(ret == gmacSuccess);
+        ret = accelerator().copyToHostAsync(*buffer_, 0, (uint8_t *)accAddr + offset, len, mode_, streamToHost_);
+        ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         ret = buffer_->wait();
         if(ret != gmacSuccess) break;
-        trace::Function::start("Context", "memcpyToHost");
-        memcpy((uint8_t *)host + offset, buffer_->addr(), len);
-        trace::Function::end("Context");
+        trace::EnterCurrentFunction();
+        ::memcpy((uint8_t *)host + offset, buffer_->addr(), len);
+        trace::ExitCurrentFunction();
         offset += len;
     }
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Context::copyAccelerator(void *dst, const void *src, size_t size)
 {
-    trace::Function::start("Context", "copyAccelerator");
+    trace::EnterCurrentFunction();
     gmacError_t ret = accelerator().copyAccelerator(dst, src, size);
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Context::memset(void *addr, int c, size_t size)
 {
-    trace::Function::start("Context", "memset");
+    trace::EnterCurrentFunction();
     gmacError_t ret = accelerator().memset(addr, c, size);
-    trace::Function::end("Context");
+    trace::ExitCurrentFunction();
     return ret;
 }
 
-gmac::KernelLaunch &Context::launch(gmac::Kernel &kernel)
+core::KernelLaunch &Context::launch(core::Kernel &kernel)
 {
-    trace::Function::start("Context", "launch");
-    gmac::trace::Thread::run((THREAD_T)id_);
-    gmac::KernelLaunch *ret = kernel.launch(call_);
-    assertion(ret != NULL);
-    trace::Function::end("Context");
+    trace::EnterCurrentFunction();
+    trace::SetThreadState(THREAD_T(id_), trace::Running);
+    core::KernelLaunch *ret = kernel.launch(call_);
+    ASSERTION(ret != NULL);
+    trace::ExitCurrentFunction();
     return *ret;
 }
 
 gmacError_t Context::sync()
 {
     gmacError_t ret = gmacSuccess;
-    trace::Function::start("Context", "sync");
+    trace::EnterCurrentFunction();	
     if(buffer_ != NULL) {
-        waitForBuffer(*buffer_);
+        buffer_->wait();
     }
     ret = syncCUstream(streamLaunch_);
-    gmac::trace::Thread::resume((THREAD_T)id_);
-    trace::Function::end("Context");
+    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::ExitCurrentFunction();
     return ret;
 }
 
-gmacError_t Context::bufferToAccelerator(void * dst, IOBuffer &buffer, size_t len, off_t off)
+gmacError_t Context::bufferToAccelerator(void * dst, core::IOBuffer &_buffer, size_t len, off_t off)
 {
-    trace::Function::start("Context", "bufferToAccelerator");
-    gmacError_t ret = waitForBuffer(buffer);
-    if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
+    trace::EnterCurrentFunction();
+    IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
+    gmacError_t ret = buffer.wait();
+    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
+    // TODO this should be an error
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
-    buffer.toAccelerator(mode_);
-    ret = accelerator().copyToAcceleratorAsync(dst, (char *) buffer.addr() + off, bytes, streamToAccelerator_);
-    trace::Function::end("Context");
+    ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
+    trace::ExitCurrentFunction();
     return ret;
 }
 
-gmacError_t Context::acceleratorToBuffer(IOBuffer &buffer, const void * src, size_t len, off_t off)
+gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const void * src, size_t len, off_t off)
 {
-    trace::Function::start("Context", "acceleratorToBuffer");
-    gmacError_t ret = waitForBuffer(buffer);
-    if(ret != gmacSuccess) { trace::Function::end("Context"); return ret; }
-    buffer.toHost(mode_);
+    trace::EnterCurrentFunction();
+    IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
+    gmacError_t ret = buffer.wait();
+    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
+    // TODO this should be an error
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
-    ret = accelerator().copyToHostAsync((char *) buffer.addr() + off, src, bytes, streamToHost_);
-    trace::Function::end("Context");
+    ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
+    trace::ExitCurrentFunction();
     return ret;
 }
 

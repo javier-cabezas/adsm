@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/Lock.h"
 
-namespace gmac { namespace memory {
+namespace __impl { namespace memory {
 
 class GMAC_LOCAL FileMapEntry {
 protected:
@@ -57,7 +57,7 @@ public:
 
 class GMAC_LOCAL FileMap :
 	protected std::map<void *, FileMapEntry>,
-	public util::RWLock
+	public gmac::util::RWLock
 {
 protected:
 	typedef std::map<void *, FileMapEntry> Parent;

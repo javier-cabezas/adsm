@@ -119,7 +119,7 @@ GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enu
 	Gets a GPU address
 	\param cpuPtr memory address at the CPU
 */
-GMAC_API void * APICALL gmacPtr(void *cpuPtr);
+GMAC_API void * APICALL gmacPtr(const void *cpuPtr);
 
 /*!
 	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
@@ -181,10 +181,10 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
 
 #ifdef __cplusplus
 template<typename T> 
-inline T * gmacPtr(T *devPtr);
+inline T * gmacPtr(const T *devPtr);
 
-template<typename T> inline T * gmacPtr(T *devPtr) {
-	return (T *)gmacPtr((void *)devPtr);
+template<typename T> inline T * gmacPtr(const T *devPtr) {
+	return (T *)gmacPtr((const void *)devPtr);
 }
 #endif
 

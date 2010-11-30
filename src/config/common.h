@@ -36,45 +36,78 @@ WITH THE SOFTWARE.  */
 #define GMAC_CONFIG_COMMON_H_
 
 #include "config/config.h"
+#include "dbc/types.h"
 
-#ifdef HAVE_STDINT
+#if defined(__GNUC__)
 #include <stdint.h>
-#else
-typedef unsigned char uint8_t;
-typedef signed char int8_t;
-typedef unsigned short uint16_t;
-typedef signed short int16_t;
-typedef unsigned int uint32_t;
-typedef signed int int32_t;
+#elif defined(_MSC_VER)
+typedef unsigned __int8 uint8_t;
+typedef signed __int8 int8_t;
+typedef unsigned __int16 uint16_t;
+typedef signed __int16 int16_t;
+typedef unsigned __int32 uint32_t;
+typedef signed __int32 int32_t;
+typedef unsigned __int64 uint64_t;
+typedef signed __int64 int64_t;
 #endif
 
 #ifndef _MSC_VER
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
-#ifdef USE_DBC
-#include "dbc.h"
-#else
-namespace gmac {
+namespace __impl {
+#if defined(GMAC_DLL)
+    void enterGmac();
+    void enterGmacExclusive();
+    void exitGmac();
+    char inGmac();
+#endif
+
+    namespace cuda {}
+    namespace core {}
+    namespace util {}
     namespace memory {
-        namespace protocol {
-           namespace __impl { }
-        using namespace __impl;
-        }
- 
-        namespace __impl { 
-            class Block;
-        }
-
-    using namespace __impl;
+        namespace protocol {}
     }
+    namespace trace {}
+}
 
-    namespace util {
-        namespace __impl { }
-    using namespace __impl;
+#ifdef USE_DBC
+namespace __dbc {
+#if defined(GMAC_DLL)
+    using __impl::enterGmac;
+    using __impl::enterGmacExclusive;
+    using __impl::exitGmac;
+    using __impl::inGmac;
+#endif
+
+    namespace cuda {}
+    namespace core {
+        // Singleton classes need to be predeclared
+        class Process;
     }
+    namespace util {}
+    namespace memory {
+        // Singleton classes need to be predeclared
+        class Manager;
+        namespace protocol {}
+    }
+    namespace trace = __impl::trace;
 }
 #endif
+#ifdef USE_DBC
+namespace gmac = __dbc;
+
+#define DBC_FORCE_TEST(c) virtual void __dbcForceTest(c &o) = 0;
+#define DBC_TESTED(c)             void __dbcForceTest(c &) {}
+#else
+namespace gmac = __impl;
+
+#define DBC_FORCE_TEST(c)
+#define DBC_TESTED(c)
+#endif
+
+
 
 
 #include "include/gmac/visibility.h"

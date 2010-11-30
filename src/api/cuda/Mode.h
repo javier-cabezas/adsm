@@ -39,24 +39,30 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
-
-#include "Context.h"
-
 #include "core/Mode.h"
-#include "core/IOBuffer.h"
 
-namespace gmac { namespace cuda {
+#include "Module.h"
 
-class GMAC_LOCAL ContextLock : public util::Lock {
+namespace __impl {
+    
+namespace core {
+class IOBuffer;
+}
+
+namespace cuda {
+
+class Context;
+
+class GMAC_LOCAL ContextLock : public gmac::util::Lock {
     friend class Mode;
 public:
-    ContextLock() : util::Lock("Context") {};
+    ContextLock() : gmac::util::Lock("Context") {}
 };
 
 class Texture;
 class Accelerator;
 
-class GMAC_LOCAL Mode : public gmac::Mode {
+class GMAC_LOCAL Mode : public core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
@@ -65,14 +71,11 @@ protected:
     void switchIn();
     void switchOut();
 
-    gmac::Context &getContext();
+    core::Context &getContext();
 
 #ifdef USE_VM
-    CUdeviceptr bitmapDevPtr_;
-    CUdeviceptr bitmapShiftPageDevPtr_;
-#ifdef BITMAP_BIT
-    CUdeviceptr bitmapShiftEntryDevPtr_;
-#endif
+    CUdeviceptr bitmapAccPtr_;
+    CUdeviceptr bitmapShiftPageAccPtr_;
 #endif
 
 #ifdef USE_MULTI_CONTEXT
@@ -85,19 +88,19 @@ protected:
     void reload();
 
 public:
-    Mode(Process &proc, Accelerator &acc);
+    Mode(core::Process &proc, Accelerator &acc);
     ~Mode();
 
     gmacError_t hostAlloc(void **addr, size_t size);
     gmacError_t hostFree(void *addr);
-    void *hostMap(void *addr);
+    void *hostMap(const void *addr);
 
-	gmacError_t execute(gmac::KernelLaunch &launch);
+	gmacError_t execute(core::KernelLaunch &launch);
 
-    IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(IOBuffer *buffer);
-    gmacError_t bufferToAccelerator(void *dst, gmac::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(gmac::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
+    core::IOBuffer *createIOBuffer(size_t size);
+    void destroyIOBuffer(core::IOBuffer *buffer);
+    gmacError_t bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
@@ -109,21 +112,18 @@ public:
     CUstream eventStream();
 
     static Mode & current();
-    Accelerator &accelerator();
+    Accelerator &getAccelerator();
 
 #ifdef USE_VM
-    CUdeviceptr dirtyBitmapDevPtr() const;
-    CUdeviceptr dirtyBitmapShiftPageDevPtr() const;
-#ifdef BITMAP_BIT
-    CUdeviceptr dirtyBitmapShiftEntryDevPtr() const;
-#endif
+    CUdeviceptr dirtyBitmapAccPtr() const;
+    CUdeviceptr dirtyBitmapShiftPageAccPtr() const;
 #endif
 
-    gmacError_t waitForBuffer(IOBuffer &buffer);
+    gmacError_t waitForEvent(CUevent event);
 };
 
 }}
 
-#include "Mode.ipp"
+#include "Mode-impl.h"
 
 #endif

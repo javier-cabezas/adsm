@@ -104,7 +104,7 @@ unsigned sizeC;
 void
 computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned int wA, unsigned int wB)
 {
-    for (unsigned int i = 0; i < hA; ++i)
+    for (unsigned int i = 0; i < hA; ++i) {
         for (unsigned int j = 0; j < wB; ++j) {
             double sum = 0;
             for (unsigned int k = 0; k < wA; ++k) {
@@ -114,6 +114,7 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
             }
             C[i * wB + j] = (float)sum;
         }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,25 +123,25 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
 int
 main(int argc, char** argv)
 {
-	setParam<size_t>(&WA, WAStr, WADefault);
-	setParam<size_t>(&HA, HAStr, HADefault);
-	setParam<size_t>(&WB, WBStr, WBDefault);
-	setParam<size_t>(&HB, HBStr, HBDefault);
-	setParam<bool>(&check, checkStr, checkDefault);
+    setParam<size_t>(&WA, WAStr, WADefault);
+    setParam<size_t>(&HA, HAStr, HADefault);
+    setParam<size_t>(&WB, WBStr, WBDefault);
+    setParam<size_t>(&HB, HBStr, HBDefault);
+    setParam<bool>(&check, checkStr, checkDefault);
 
     if (HB != WA) {
         fprintf(stderr, "Error: WA and HB must be equal\n");
         abort();
     }
 
-    struct timeval s, t;
+    gmactime_t s, t;
 
     unsigned elemsA = WA * HA;
     unsigned elemsB = WB * HB;
-             elemsC = WC * HC;
+    elemsC = WC * HC;
     unsigned sizeA = sizeof(float) * elemsA;
     unsigned sizeB = sizeof(float) * elemsB;
-             sizeC = sizeof(float) * elemsC;
+    sizeC = sizeof(float) * elemsC;
 
     printf("Elems: %d\n", elemsA);
     printf("Elems: %d\n", elemsB);
@@ -148,7 +149,7 @@ main(int argc, char** argv)
 
 
     // allocate memory for matrices A and B
-	gettimeofday(&s, NULL);
+    getTime(&s);
     if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
@@ -166,23 +167,23 @@ main(int argc, char** argv)
     randInitMax(A, 100.f, elemsA);
     randInitMax(B, 100.f, elemsB);
 
-	// Alloc output data
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Alloc: ", "\n");
+    // Alloc output data
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
 
     // Call the kernel
-	gettimeofday(&s, NULL);
-   dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
-   dim3 grid(WC / threads.x, HC / threads.y);
-   matrixMul<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB, 0);
-	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Run: ", "\n");
+    getTime(&s);
+    dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 grid(WC / threads.x, HC / threads.y);
+    matrixMul<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB, 0);
+    if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+    getTime(&t);
+    printTime(&s, &t, "Run: ", "\n");
 
     if (check) {
         // compute reference solution
-        gettimeofday(&s, NULL);
+        getTime(&s);
 
         // check result
         float err;
@@ -190,10 +191,10 @@ main(int argc, char** argv)
         float* reference = (float *) malloc(sizeC);
         computeGold(reference, A, B, HA, WA, WB);
 
-        for (int i = 0; i < elemsC; i++) {
+        for (unsigned i = 0; i < elemsC; i++) {
             err += fabsf(reference[i] - C[i]);
         }
-        gettimeofday(&t, NULL);
+        getTime(&t);
         printTime(&s, &t, "Check: ", "\n");
 
         fprintf(stderr, "Error: %f\n", err);
@@ -201,9 +202,9 @@ main(int argc, char** argv)
         free(reference);
     }
 
-	gmacFree(A);
-	gmacFree(B);
-	gmacFree(C);
+    gmacFree(A);
+    gmacFree(B);
+    gmacFree(C);
 
     return 0;
 }

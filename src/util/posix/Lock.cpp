@@ -2,10 +2,21 @@
 
 #include "Lock.h"
 
-namespace gmac { namespace util { namespace __impl {
+namespace __impl { namespace util {
+
+SpinLock::SpinLock(const char *name) :
+    __impl::util::__Lock(name)
+{
+    pthread_spin_init(&spinlock_, PTHREAD_PROCESS_PRIVATE);
+}
+
+SpinLock::~SpinLock()
+{
+    pthread_spin_destroy(&spinlock_);
+}
 
 Lock::Lock(const char *name) :
-    ParaverLock(name)
+    __impl::util::__Lock(name)
 {
     pthread_mutex_init(&mutex_, NULL);
 }
@@ -16,7 +27,7 @@ Lock::~Lock()
 }
 
 RWLock::RWLock(const char *name) :
-    ParaverLock(name)
+    __impl::util::__Lock(name)
 {
     pthread_rwlock_init(&lock_, NULL);
 }
@@ -26,4 +37,4 @@ RWLock::~RWLock()
     pthread_rwlock_destroy(&lock_);
 }
 
-}}}
+}}
