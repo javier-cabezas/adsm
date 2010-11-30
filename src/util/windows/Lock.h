@@ -41,48 +41,84 @@ WITH THE SOFTWARE.  */
 #include <windows.h>
 
 namespace __impl { namespace util {
-
+//! A spinlock
 class GMAC_LOCAL SpinLock : public __Lock {
     DBC_FORCE_TEST(SpinLock)
 
 protected:
+    //! Spin lock value
 	mutable long spinlock_;
 public:
+    //! Default constructor
+    /*!
+        \param name Name using during tracing
+    */
 	SpinLock(const char *name);
+
+    //! Default destructor
 	VIRTUAL ~SpinLock();
 
 protected:
+    //! Get the lock
 	TESTABLE void lock() const;
+
+    //! Release the lock
 	TESTABLE void unlock() const;
 };
 
+//! A Mutex lock
 class GMAC_LOCAL Lock : public __Lock {
     DBC_FORCE_TEST(Lock)
 
 protected:
+    //! Mutex holding the lock
 	mutable CRITICAL_SECTION mutex_;
 public:
+    //! Default constructor
+    /*
+        \param name Name using during tracing
+    */
 	Lock(const char *name);
+
+    //! Default destructor
 	VIRTUAL ~Lock();
 
 protected:
+    //! Get the lock
 	TESTABLE void lock() const;
+
+    //! Release the lock
 	TESTABLE void unlock() const;
 };
 
+//! A Read/Write lock
 class GMAC_LOCAL RWLock : public __Lock {
     DBC_FORCE_TEST(RWLock)
 
 protected:
+    //! Read/Write lock
 	mutable SRWLOCK lock_;
+
+    //! Thread owning the lock
 	mutable DWORD owner_;
 public:
+    //! Default constructor
+    /*
+        \param name Name using during tracing
+    */
 	RWLock(const char *name);
+    
+    //! Default destructor
 	VIRTUAL ~RWLock();
 
 protected:
+    //! Get shared access to the lock
 	TESTABLE void lockRead() const;
+
+    //! Get exclusive access to the lock
 	TESTABLE void lockWrite() const;
+
+    //! Release the lock
 	TESTABLE void unlock() const;
 };
 

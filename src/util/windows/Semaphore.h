@@ -40,17 +40,31 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 namespace __impl { namespace util {
-
+//! A Semaphore
 class GMAC_LOCAL Semaphore {
 protected:
+    //! Semaphore value
 	int val_;
+
+    //! Contidion variable to signal semaphore increments
     CONDITION_VARIABLE cond_;
+
+    //! Mutex to protect the semaphore value
     CRITICAL_SECTION mutex_;
 public:
+    //! Default constructor
+    /*!
+        \param v Initial semaphore value
+    */
 	Semaphore(unsigned v);
+
+    //! Default destructor
 	~Semaphore();
 
+    //! Increment semaphore value
 	void post();
+
+    //! Decrement semaphore value
 	void wait();
 };
 

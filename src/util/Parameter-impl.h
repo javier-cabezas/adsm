@@ -61,28 +61,27 @@ inline const char * convert<const char *>(const char * str)
 }
 
 template<typename T>
-inline Parameter<T>::Parameter(T *address, const char *name,
+inline Parameter<T>::Parameter(T *value, const char *name,
         T def, const char *envVar, uint32_t flags) :
-    value(address),
-    def(def),
-    name(name),
-    envVar(envVar),
-    flags(flags)
+    value_(value),
+    def_(def_),
+    name_(name_),
+    envVar_(envVar_),
+    flags_(flags_)
 {
     const char *tmp = NULL;
-    if(envVar != NULL &&
-        (tmp = GETENV(envVar)) != NULL) {
-        *value = convert<T>(tmp);
+    if(envVar_ != NULL &&
+        (tmp = GETENV(envVar_)) != NULL) {
+        *value_ = convert<T>(tmp);
 
-        if (flags & PARAM_NONZERO &&
-            *value == 0) {
-            *value = def;
+        if (flags_ & PARAM_NONZERO && *value == 0) {
+            *value_ = def_;
         } else {
-            envSet = true;
+            envSet_ = true;
         }
     }
     else {
-        *value = def;
+        *value_ = def_;
     }
     
 }
@@ -90,12 +89,12 @@ inline Parameter<T>::Parameter(T *address, const char *name,
 template<typename T>
 void Parameter<T>::print() const
 {
-    std::cout << name << std::endl;
-    std::cout << "\tValue: " << *value << std::endl;
-    std::cout << "\tDefault: " << def << std::endl;
-    std::cout << "\tVariable: " << envVar << std::endl;
-    std::cout << "\tFlags: " << flags << std::endl;
-    std::cout << "\tSet: " << envSet << std::endl;
+    std::cout << name_ << std::endl;
+    std::cout << "\tValue: " << *value_ << std::endl;
+    std::cout << "\tDefault: " << def_ << std::endl;
+    std::cout << "\tVariable: " << envVar_ << std::endl;
+    std::cout << "\tFlags: " << flags_ << std::endl;
+    std::cout << "\tSet: " << envSet_ << std::endl;
 }
 
 }}

@@ -41,14 +41,26 @@ namespace __impl { namespace util {
 class GMAC_LOCAL __Lock {
 protected:
 #if defined(USE_TRACE)
+    //! Signal that the lock is exclusive, e.g., due to a lock-write
     mutable bool exclusive_;
 #endif
 public:
+    //! Default constructor
+    /*!
+        \param name Lock name for tracing purposes
+    */
     __Lock(const char *name);
 
+    //! The thread requests the lock
     void enter() const;
+    
+    //! The thread gets an exclusive lock
     void locked() const;
+
+    //! The thread gets a shared lock
     void done() const;
+
+    //! The thread releases a lock
     void exit() const;
 };
 
