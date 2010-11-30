@@ -53,8 +53,8 @@ namespace memory {
 template<typename T>
 class GMAC_LOCAL DistributedBlock : public StateBlock<T> {
 protected:
-	typedef std::map<core::Mode *, uint8_t *> DeviceMap;
-	DeviceMap deviceAddr_;
+	typedef std::map<core::Mode *, uint8_t *> AcceleratorMap;
+	AcceleratorMap acceleratorAddr_;
 
 public:
     //! Default construcutor
@@ -63,12 +63,12 @@ public:
         \param owner Initial ownwer of the memory block
         \param hostAddr Host memory address for applications to accesss the block
         \param shadowAddr Shadow host memory mapping that is always read/write
-        \param deviceAddr Device memory address for applications to accesss the block
+        \param acceleratorAddr Accelerator memory address for applications to accesss the block
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
 	DistributedBlock(Protocol &protocol, core::Mode &owner, uint8_t *shadowAddr,
-		uint8_t *hostAddr, uint8_t *deviceAddr, size_t size, T init);
+		uint8_t *hostAddr, uint8_t *acceleratorAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~DistributedBlock();
@@ -79,11 +79,11 @@ public:
 
 	core::Mode &owner() const;
 
-	void *deviceAddr(const void *addr) const;
+	void *acceleratorAddr(const void *addr) const;
 
 	gmacError_t toHost() const;
 
-	gmacError_t toDevice() const;
+	gmacError_t toAccelerator() const;
 
     gmacError_t copyToHost(const void *src, size_t size, 
         unsigned blockOffset = 0) const;
@@ -91,10 +91,10 @@ public:
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyToDevice(const void *src, size_t size, 
+    gmacError_t copyToAccelerator(const void *src, size_t size, 
         unsigned blockOffset = 0) const;
 
-	gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
+	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	
     gmacError_t copyFromHost(void *dst, size_t size,
@@ -103,16 +103,16 @@ public:
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyFromDevice(void *dst, size_t size,
+    gmacError_t copyFromAccelerator(void *dst, size_t size,
         unsigned blockOffset = 0) const;
 
-	gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
+	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
     gmacError_t hostMemset(int v, size_t size, 
         unsigned blockOffset = 0) const;
 
-    gmacError_t deviceMemset(int v, size_t size,
+    gmacError_t acceleratorMemset(int v, size_t size,
         unsigned blockOffset = 0) const;
 };
 

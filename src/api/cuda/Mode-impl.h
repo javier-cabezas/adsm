@@ -12,7 +12,7 @@ inline
 void Mode::switchIn()
 {
 #ifdef USE_MULTI_CONTEXT
-    accelerator().setCUcontext(&cudaCtx_);
+    getAccelerator().setCUcontext(&cudaCtx_);
 #endif
 }
 
@@ -20,7 +20,7 @@ inline
 void Mode::switchOut()
 {
 #ifdef USE_MULTI_CONTEXT
-    accelerator().setCUcontext(NULL);
+    getAccelerator().setCUcontext(NULL);
 #endif
 }
 
@@ -28,7 +28,7 @@ inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = accelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    gmacError_t ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     switchOut();
     return ret;
 }
@@ -84,21 +84,21 @@ Mode::current()
 
 #ifdef USE_VM
 inline CUdeviceptr
-Mode::dirtyBitmapDevPtr() const
+Mode::dirtyBitmapAccPtr() const
 {
-    return bitmapDevPtr_;
+    return bitmapAccPtr_;
 }
 
 inline CUdeviceptr
-Mode::dirtyBitmapShiftPageDevPtr() const
+Mode::dirtyBitmapShiftPageAccPtr() const
 {
-    return bitmapShiftPageDevPtr_;
+    return bitmapShiftPageAccPtr_;
 }
 
 #endif
 
 inline Accelerator &
-Mode::accelerator()
+Mode::getAccelerator()
 {
     return *static_cast<Accelerator *>(acc_);
 }

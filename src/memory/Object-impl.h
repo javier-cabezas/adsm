@@ -69,10 +69,10 @@ inline gmacError_t Object::toHost() const
     return ret;
 }
 
-inline gmacError_t Object::toDevice() const
+inline gmacError_t Object::toAccelerator() const
 {
     lockRead();
-	gmacError_t ret = coherenceOp(&Protocol::toDevice);
+	gmacError_t ret = coherenceOp(&Protocol::toAccelerator);
     unlock();
     return ret;
 }

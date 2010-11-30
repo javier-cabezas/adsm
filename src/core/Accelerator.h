@@ -57,7 +57,7 @@ protected:
 	size_t memory_;
 	unsigned id_;
 	unsigned busId_;
-	unsigned busDevId_;
+	unsigned busAccId_;
 	bool integrated_;
 
 	unsigned load_;
@@ -84,10 +84,10 @@ public:
 
 	/*!  \brief Copies data from system memory to accelerator memory */
 	virtual gmacError_t
-			copyToAccelerator(void *dev, const void *host, size_t size) = 0;
+			copyToAccelerator(void *acc, const void *host, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	virtual gmacError_t copyToHost(void *host, const void *dev, size_t size) = 0;
+	virtual gmacError_t copyToHost(void *host, const void *acc, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size) = 0;
@@ -96,7 +96,7 @@ public:
 
 	// TODO: use this methods for something useful
 	unsigned busId() const;
-	unsigned busDevId() const;
+	unsigned busAccId() const;
 	bool integrated() const;
 };
 

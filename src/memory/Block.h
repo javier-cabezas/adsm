@@ -54,13 +54,13 @@ namespace memory {
 
 //! Memory block
 /*!
-    A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.
-    Each memory block has an unique host memory address, used by applications to access the shared data in the CPU code,
-    and a shadow host memory address used by GMAC to update the contents of the block. Upon creation, a memory block also
-    has one or more device memory addresses, used by the application to access the data from the device, and owners which
-    are those execution modes allowed to access the memory block from the device. However, a memory block might lose its
-    owner and memory addresses (e.g., when the execution mode owning the memory block dies) and stil be accessible from the
-    CPU.
+    A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
+    memory block has an unique host memory address, used by applications to access the shared data in the CPU code, and
+    a shadow host memory address used by GMAC to update the contents of the block. Upon creation, a memory block also
+    has one or more accelerator memory addresses, used by the application to access the data from the accelerator, and
+    owners which are those execution modes allowed to access the memory block from the accelerator. However, a memory
+    block might lose its owner and memory addresses (e.g., when the execution mode owning the memory block dies) and
+    stil be accessible from the CPU.
 
     Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
 */
@@ -129,11 +129,11 @@ public:
         \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyToDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa copyToAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyFromDevice(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa copyFromAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
         \sa __impl::memory::Protocol
     */
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
@@ -182,11 +182,11 @@ public:
     */
 	virtual core::Mode &owner() const = 0;
 
-    //! Get memory block address at the device
+    //! Get memory block address at the accelerator
     /*!
-        \return Device memory address of the block
+        \return Accelerator memory address of the block
     */
-	virtual void *deviceAddr(const void *addr) const = 0;
+	virtual void *acceleratorAddr(const void *addr) const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
@@ -198,7 +198,7 @@ public:
     /*!
         \return Error code
     */
-	virtual gmacError_t toDevice() const = 0;
+	virtual gmacError_t toAccelerator() const = 0;
 
     //! Copy the data from a host memory location to the block host memory
     /*!
@@ -206,7 +206,7 @@ public:
         \param size Size (in bytes) of the data to be copied
         \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyToHost(const void *src, size_t size, 
@@ -219,34 +219,34 @@ public:
         \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
     */
 	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 
-    //! Copy the data from a host memory location to the block device memory
+    //! Copy the data from a host memory location to the block accelerator memory
     /*!
         \param src Source host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied
         \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyToDevice(const void *src, size_t size,
+    virtual gmacError_t copyToAccelerator(const void *src, size_t size,
         unsigned blockOffset = 0) const = 0;
 
-    //! Copy data from an I/O buffer to the block device memory
+    //! Copy data from an I/O buffer to the block accelerator memory
     /*!
         \param buffer IOBuffer where the operation will be executed
         \param size Size (in bytes) of the memory operation
         \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-	virtual gmacError_t copyToDevice(core::IOBuffer &buffer, size_t size, 
+	virtual gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 	
     //! Copy the data from the block host memory to a host memory location
@@ -255,7 +255,7 @@ public:
         \param size Size (in bytes) of the data to be copied
         \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyFromHost(void *dst, size_t size,
@@ -268,35 +268,35 @@ public:
         \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
 	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
 
-    //! Copy the data from the block device memory to a host memory location
+    //! Copy the data from the block accelerator memory to a host memory location
     /*!
         \param dst Destination host memory address to copy the data from
         \param size Size (in bytes) of the data to be copied
         \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyFromDevice(void *dst, size_t size,
+    virtual gmacError_t copyFromAccelerator(void *dst, size_t size,
         unsigned bufferOffset = 0) const = 0;
 
-    //! Copy data from the block device memory to an I/O buffer
+    //! Copy data from the block accelerator memory to an I/O buffer
     /*!
         \param buffer IOBuffer where the operation will be executed
         \param size Size (in bytes) of the memory operation
         \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-	virtual gmacError_t copyFromDevice(core::IOBuffer &buffer, size_t size, 
+	virtual gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
     
     //! Initializes a memory range within the block host memory to a specific value
@@ -305,22 +305,22 @@ public:
         \param size Size (in bytes) of the memory region to be initialized
         \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t hostMemset(int v, size_t size,
         unsigned blockOffset = 0) const = 0;
 
-    //! Initializes a memory range within the block device memory to a specific value
+    //! Initializes a memory range within the block accelerator memory to a specific value
     /*!
         \param v Value to initialize the memory to
         \param size Size (in bytes) of the memory region to be initialized
         \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
         \return Error code
-        \warning This method should be only called from a Protcol class
+        \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t deviceMemset(int v, size_t size, 
+    virtual gmacError_t acceleratorMemset(int v, size_t size, 
         unsigned blockOffset = 0) const = 0;
     
     

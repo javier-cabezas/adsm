@@ -17,9 +17,9 @@ Accelerator::busId() const
 }
 
 inline unsigned
-Accelerator::busDevId() const
+Accelerator::busAccId() const
 {
-	return busDevId_;
+	return busAccId_;
 }
 
 inline bool

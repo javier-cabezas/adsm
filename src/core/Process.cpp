@@ -253,7 +253,7 @@ void *Process::translate(const void *addr)
     Mode &mode = Mode::current();
     const memory::Object *object = mode.getObject(addr);
     if(object == NULL) return NULL;
-    void * ptr = object->deviceAddr(addr);
+    void * ptr = object->acceleratorAddr(addr);
 	object->release();
     return ptr;
 }

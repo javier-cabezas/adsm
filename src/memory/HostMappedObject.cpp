@@ -61,13 +61,13 @@ HostMappedObject::~HostMappedObject()
 }
 
 
-void *HostMappedObject::deviceAddr(const void *addr) const
+void *HostMappedObject::acceleratorAddr(const void *addr) const
 {
     void *ret = NULL;
     if(addr_ != NULL) {
         unsigned offset = unsigned((uint8_t *)addr - addr_);
-        uint8_t *deviceAddr = (uint8_t *)HostMappedPtr(addr_);
-        ret = deviceAddr + offset;
+        uint8_t *acceleratorAddr = (uint8_t *)HostMappedPtr(addr_);
+        ret = acceleratorAddr + offset;
     }
     return ret;
 }

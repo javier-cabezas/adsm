@@ -11,12 +11,12 @@ util::Private<CUcontext> Accelerator::_Ctx;
 
 void Switch::in()
 {
-    Mode::current().accelerator().pushContext();
+    Mode::current().getAccelerator().pushContext();
 }
 
 void Switch::out()
 {
-    Mode::current().accelerator().popContext();
+    Mode::current().getAccelerator().popContext();
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
@@ -55,7 +55,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     busId_ = val;
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, n);
     CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
-    busDevId_ = val;
+    busAccId_ = val;
 #endif
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
     CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);

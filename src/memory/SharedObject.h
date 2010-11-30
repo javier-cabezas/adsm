@@ -48,13 +48,13 @@ template<typename T>
 class GMAC_LOCAL SharedObject : public Object {
 protected:
     uint8_t *shadow_;
-	uint8_t *deviceAddr_;
+	uint8_t *acceleratorAddr_;
 	core::Mode *owner_;
 public:
 	SharedObject(Protocol &protocol, core::Mode &owner, void *addr, size_t size, T init);
     virtual ~SharedObject();
 
-    void *deviceAddr(const void *addr) const;
+    void *acceleratorAddr(const void *addr) const;
 	core::Mode &owner(const void *addr) const;
 
 	bool addOwner(core::Mode &owner);

@@ -119,7 +119,7 @@ public:
         \param op Memory operation to be executed
         \sa __impl::memory::Object::acquire
         \sa __impl::memory::Object::toHost
-        \sa __impl::memory::Object::toDevice
+        \sa __impl::memory::Object::toAccelerator
     */
     void forEach(ObjectOp op) const;
 

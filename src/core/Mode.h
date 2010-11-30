@@ -151,10 +151,10 @@ public:
 	gmacError_t free(void *addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
-	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
+	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
+	gmacError_t copyToHost(void *host, const void *acc, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
 	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
