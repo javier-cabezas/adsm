@@ -98,7 +98,7 @@ public:
 
 }}
 
-#include "Kernel.ipp"
+#include "Kernel-impl.h"
 
 #endif
 

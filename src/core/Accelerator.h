@@ -102,6 +102,6 @@ public:
 
 }}
 
-#include "Accelerator.ipp"
+#include "Accelerator-impl.h"
 
 #endif

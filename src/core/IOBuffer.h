@@ -68,7 +68,7 @@ public:
 
 }}
 
-#include "IOBuffer.ipp"
+#include "IOBuffer-impl.h"
 
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_KERNEL_IPP_
-#define GMAC_CORE_KERNEL_IPP_
+#ifndef GMAC_CORE_KERNEL_IMPL_H_
+#define GMAC_CORE_KERNEL_IMPL_H_
 
 namespace __impl { namespace core {
 

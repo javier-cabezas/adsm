@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_DESCRIPTOR_IPP_
-#define GMAC_CORE_DESCRIPTOR_IPP_
+#ifndef GMAC_CORE_DESCRIPTOR_IMPL_H_
+#define GMAC_CORE_DESCRIPTOR_IMPL_H_
 
 namespace __impl { namespace core {
 
