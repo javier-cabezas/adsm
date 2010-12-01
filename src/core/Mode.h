@@ -48,6 +48,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Map.h"
 
 #include "util/Lock.h"
+#include "util/NonCopyable.h"
 #include "util/Reference.h"
 #include "util/Private.h"
 
@@ -75,7 +76,7 @@ public:
     gmacError_t sync();
 };
 
-class GMAC_LOCAL Mode : public util::Reference {
+class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
     // friend class gmac::memory::Manager;
 protected:
     static util::Private<Mode> key;
@@ -114,10 +115,6 @@ protected:
     void cleanUp();
 public:
     Mode(Process &proc, Accelerator &acc);
-	Mode &operator =(const Mode &) {
-        FATAL("Assigment of modes is not supported");
-        return *this;
-    }
     virtual ~Mode();
 
     static void init();

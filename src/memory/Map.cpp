@@ -115,13 +115,6 @@ Map::~Map()
 	//TODO: actually clean the memory map
 }
 
-Map &
-Map::operator =(const Map &)
-{
-    FATAL("Assigment of memory maps is not supported");
-    return *this;
-}
-
 const Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
 {
     const Object *ret = map.mapFind(addr, size);

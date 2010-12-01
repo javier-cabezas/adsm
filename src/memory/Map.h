@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Lock.h"
-
+#include "util/NonCopyable.h"
 
 namespace __impl {
 
@@ -134,7 +134,7 @@ public:
 };
  
 //! An object map associated to an execution mode
-class GMAC_LOCAL Map : public memory::ObjectMap {
+class GMAC_LOCAL Map : public memory::ObjectMap, public util::NonCopyable {
 protected:
     //! Execution mode owning this map
     core::Mode &parent_;
@@ -160,9 +160,6 @@ public:
     //! Default destructor
     virtual ~Map();
     
-    //! Null assigment operator to prevent assigment of memory maps
-	Map &operator =(const Map &);
-
     //! Insert an object in the map and the global process map where all objects are registered
     /*!
         \param obj Object to remove from the map

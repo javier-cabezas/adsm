@@ -54,12 +54,6 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 {
 }
 
-KernelLaunch &KernelLaunch::operator =(const KernelLaunch &)
-{
-    FATAL("Assigment of kernel launch is not supported");
-    return *this;
-}
-
 gmacError_t
 KernelLaunch::execute()
 {

@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 #include "util/Lock.h"
+#include "util/NonCopyable.h"
 #include "util/Private.h"
 
 namespace __impl { namespace core {
@@ -50,7 +51,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class GMAC_LOCAL Context : public gmac::util::RWLock {
+class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -58,7 +59,6 @@ protected:
 	Context(Accelerator &acc, unsigned id);
 public:
 	virtual ~Context();
-	Context &operator =(const Context &);
 
     static void init();
 
