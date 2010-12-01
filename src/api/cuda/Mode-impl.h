@@ -39,7 +39,6 @@ gmacError_t Mode::bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t 
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    // TODO What is this cast for?
     gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
     switchOut();
     return ret;
@@ -52,7 +51,6 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const void * src, 
     switchIn();
     // Implement a function to remove these casts
     Context &ctx = dynamic_cast<Context &>(getContext());
-    // TODO What is this cast for?
     gmacError_t ret = ctx.acceleratorToBuffer(buffer, src, len, off);
     switchOut();
     return ret;

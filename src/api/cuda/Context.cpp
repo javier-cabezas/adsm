@@ -180,7 +180,8 @@ gmacError_t Context::bufferToAccelerator(void * dst, core::IOBuffer &_buffer, si
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
     gmacError_t ret = buffer.wait();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
-    // TODO this should be an error
+    ASSERTION(off + len <= buffer.size());
+    ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
     ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
     trace::ExitCurrentFunction();
@@ -193,7 +194,8 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const void * s
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
     gmacError_t ret = buffer.wait();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
-    // TODO this should be an error
+    ASSERTION(off + len <= buffer.size());
+    ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
     ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
     trace::ExitCurrentFunction();
