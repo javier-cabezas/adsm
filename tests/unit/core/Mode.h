@@ -50,6 +50,7 @@ public:
     static void TearDownTestCase() {
 		Mode_->detach();
         FiniProcess();
+        Mode_ = NULL;
     }
 };
 

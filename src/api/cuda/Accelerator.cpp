@@ -231,18 +231,20 @@ gmacError_t Accelerator::free(void *addr)
 {
     trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
-    AlignmentMap::const_iterator i;
+    AlignmentMap::iterator i;
     CUdeviceptr gpuPtr = gpuAddr(addr);
-    _alignMap.lockRead();
+    _alignMap.lockWrite();
     i = _alignMap.find(gpuPtr);
     if (i == _alignMap.end()) {
         _alignMap.unlock();
         trace::ExitCurrentFunction();
         return gmacErrorInvalidValue;
     }
+    CUdeviceptr device = i->second;
+    _alignMap.erase(i);
     _alignMap.unlock();
     pushContext();
-    CUresult ret = cuMemFree(i->second);
+    CUresult ret = cuMemFree(device);
     popContext();
     trace::ExitCurrentFunction();
     return error(ret);

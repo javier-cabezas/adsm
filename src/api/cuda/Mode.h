@@ -62,15 +62,24 @@ public:
 class Texture;
 class Accelerator;
 
+//! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
+    //! Associated CUDA context
     CUcontext cudaCtx_;
 #endif
+    //! Switch to accelerator mode
     void switchIn();
+
+    //! Switch back to CPU mode
     void switchOut();
 
+    //! Get the main mode context
+    /*!
+        \return Main mode context
+    */
     core::Context &getContext();
 
 #ifdef USE_VM
@@ -79,22 +88,57 @@ protected:
 #endif
 
 #ifdef USE_MULTI_CONTEXT
+    //! CUDA modules active on this mode
 	ModuleVector modules;
 #else
+    //! CUDA modules active on this mode
     ModuleVector *modules;
 #endif
 
+    //! Load CUDA modules and kernels
     void load();
+
+    //! Reload CUDA kernels
     void reload();
 
 public:
+    //! Default constructor
+    /*!
+        \param proc Process where the mode is attached
+        \param acc Virtual CUDA accelerator where the mode is executed
+    */
     Mode(core::Process &proc, Accelerator &acc);
+
+    //! Default destructor
     ~Mode();
 
+    //! Allocated GPU-accessible host memory
+    /*!
+        \param addr Memory address of the pointer where the starting host memory address will be stored
+        \param size Size (in bytes) of the host memory to be allocated
+        \return Error code
+    */
     gmacError_t hostAlloc(void **addr, size_t size);
+
+    //! Release GPU-accessible host memory 
+    /*!
+        \param addr Starting address of the host memory to be released
+        \return Error code
+    */
     gmacError_t hostFree(void *addr);
+
+    //! Get the GPU memory address where GPU-accessible host memory is mapped
+    /*!
+        \param addr Host memory address
+        \return Device memory address
+    */
     void *hostMap(const void *addr);
 
+    //! Execute a kernel on the accelerator
+    /*!
+        \param launch Structure defining the kernel to be executed
+        \param return Error code
+    */
 	gmacError_t execute(core::KernelLaunch &launch);
 
     core::IOBuffer *createIOBuffer(size_t size);

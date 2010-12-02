@@ -23,6 +23,7 @@ TEST_F(AcceleratorTest, AcceleratorAligment) {
     for(int n = 1; n < max; n <<= 1) {
         void *device = NULL;
         ASSERT_TRUE(GetAccelerator().malloc((void **)&device, Size_, n) == gmacSuccess);
+        ASSERT_TRUE(device != NULL);
         ASSERT_EQ(0u, (unsigned long)device % n);
         ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
     }
