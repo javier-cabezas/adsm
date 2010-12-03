@@ -84,7 +84,7 @@ inline gmacError_t Object::signalRead(void *addr) const
 	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-	else ret = i->second->signalRead();
+	else ret = i->second->signalRead(addr);
 	unlock();
 	return ret;
 }
@@ -96,7 +96,7 @@ inline gmacError_t Object::signalWrite(void *addr) const
 	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-	else ret = i->second->signalWrite();
+	else ret = i->second->signalWrite(addr);
 	unlock();
 	return ret;
 }

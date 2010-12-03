@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL StateBlock : public Block {
+class GMAC_LOCAL StateBlock : public gmac::memory::Block {
 protected:
     //! Block state
 	T state_;    

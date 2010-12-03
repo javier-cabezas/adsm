@@ -228,7 +228,7 @@ void Accelerator::pushContext() const
     _mutex.lock();
     ret = cuCtxPushCurrent(_ctx);
 #endif
-    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
 }
 
 inline
@@ -240,7 +240,7 @@ void Accelerator::popContext() const
 #ifndef USE_MULTI_CONTEXT
     _mutex.unlock();
 #endif
-    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error poping CUcontext: %d", ret);
 }
 
 #ifndef USE_MULTI_CONTEXT

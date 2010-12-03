@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 #include "memory/Protocol.h"
 #include "util/Reference.h"
 #include "util/Lock.h"
+#include "util/Logger.h"
 
 namespace __impl { 
 
@@ -65,6 +66,8 @@ namespace memory {
     Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
 */
 class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
+    DBC_FORCE_TEST(Block)
+
 protected:
     //! Memory coherence protocol used by the block
 	Protocol &protocol_;
@@ -78,6 +81,17 @@ protected:
     //! Shadow host memory mapping that is always read/write.
 	uint8_t *shadow_;
 
+#ifdef USE_VM
+    //! Last addr
+    unsigned sequentialFaults_;
+    unsigned faults_;
+	unsigned lastSubBlock_;
+    size_t subBlockSize_;
+
+    void resetBitmapStats();
+    void updateBitmapStats(const void *addr, bool write);
+#endif
+
     //! Default construcutor
     /*!
         \param protocol Memory coherence protocol used by the block
@@ -90,6 +104,20 @@ protected:
     //! Default destructor
     virtual ~Block();
 public:
+#ifdef USE_VM
+    bool isSequentialAccess() const;
+    unsigned getFaults() const;
+    unsigned getSequentialFaults() const;
+
+    void *getSubBlockAddr(const void *addr) const;
+    size_t getSubBlockSize() const;
+    unsigned getSubBlocks() const;
+
+    bool isSubBlockPresent(const void *addr) const;
+    void setSubBlockPresent(const void *addr);
+    void setBlockPresent();
+#endif
+
     //! Host memory address where the block starts
     /*!
         \return Starting host memory address of the block
@@ -104,15 +132,17 @@ public:
 
     //! Signal handler for faults caused due to memory reads
     /*!
+        \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalRead();
+	gmacError_t signalRead(void *addr);
 
     //! Signal handler for faults caused due to memory writes
     /*!
+        \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalWrite();
+	gmacError_t signalWrite(void *addr);
 
     //! Request a memory coherence operation
     /*!
@@ -198,7 +228,7 @@ public:
     /*!
         \return Error code
     */
-	virtual gmacError_t toAccelerator() const = 0;
+	virtual gmacError_t toAccelerator() = 0;
 
     //! Copy the data from a host memory location to the block host memory
     /*!
@@ -332,7 +362,7 @@ public:
 #include "Block-impl.h"
 
 #ifdef USE_DBC
-//#include "memory/dbc/Block.h"
+#include "memory/dbc/Block.h"
 #endif
 
 #endif

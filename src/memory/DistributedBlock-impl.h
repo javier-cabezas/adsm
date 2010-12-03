@@ -68,7 +68,7 @@ inline gmacError_t DistributedBlock<T>::toHost() const
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::toAccelerator() const
+inline gmacError_t DistributedBlock<T>::toAccelerator()
 {
 	gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
@@ -76,6 +76,9 @@ inline gmacError_t DistributedBlock<T>::toAccelerator() const
 		ret = i->first->copyToAccelerator(i->second, StateBlock<T>::shadow_, StateBlock<T>::size_);
 		if(ret != gmacSuccess) break;
 	}
+#ifdef USE_VM
+    Block::resetBitmapStats();
+#endif
 	return ret;
 }
 

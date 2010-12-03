@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,52 +31,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+#ifndef GMAC_MEMORY_DBC_BLOCK_H_
+#define GMAC_MEMORY_DBC_BLOCK_H_
 
-#ifndef GMAC_USER_VM_H_
-#define GMAC_USER_VM_H_
+namespace __dbc { namespace memory {
 
-#include <stdint.h>
+class GMAC_LOCAL Block :
+    public __impl::memory::Block,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::Block)
 
-#include <cuda_runtime_api.h>
+protected:
+	Block(__impl::memory::Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size);
+    virtual ~Block();
+public:
+};
 
+}}
 
-template<typename T>
-__device__ inline T __globalLd(T *addr) { return *addr; }
-template<typename T>
-__device__ inline T __globalLd(const T *addr) { return *addr; }
+#include "Block-impl.h"
 
-__constant__ unsigned __SHIFT_PAGE;
+#endif /* BLOCK_H */
 
-#define to32bit(a) ((unsigned long)a & 0xffffffff)
-
-#ifdef BITMAP_BYTE
-__constant__ uint8_t *__dirtyBitmap;
-
-template<typename T>
-__device__ __inline__ T __globalSt(T *addr, T v) {
-    *addr = v;
-    __dirtyBitmap[to32bit(addr) >> __SHIFT_PAGE] = 1;
-    return v;
-}
-#else
-#ifdef BITMAP_BIT
-#define MASK_BITPOS ((1 << 5) - 1)
-#define SHIFT_ENTRY 
-
-__constant__ uint32_t *__dirtyBitmap;
-
-template<typename T>
-__device__ __inline__ T __globalSt(T *addr, T v) {
-    *addr = v;
-    unsigned long entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
-    uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_PAGE) & MASK_BITPOS);
-    atomicOr(&__dirtyBitmap[entry], val);
-    return v;
-}
-#else
-#define __globalSt(a,v) (*(a)=(v))
-#endif
-#endif
-
-
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

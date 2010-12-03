@@ -69,10 +69,15 @@ private:
     bool dirty_;
     bool synced_;
 
+    size_t subBlockSize_;
+    unsigned subBlockMask_;
+    unsigned pageMask_;
+
     uint8_t *accelerator_;
 
     static const unsigned entriesPerByte;
-    size_t shiftPage_;
+    unsigned shiftBlock_;
+    unsigned shiftPage_;
 #ifdef BITMAP_BIT
     uint32_t bitMask_;
 #endif
@@ -88,6 +93,10 @@ private:
     void updateMaxMin(unsigned entry);
 
     unsigned offset(const void *addr) const;
+
+    bool checkAndSet(const void *addr);
+    void clear(const void *addr);
+
 public:
     Bitmap(core::Mode &mode, unsigned bits = 32);
     virtual ~Bitmap();
@@ -97,13 +106,13 @@ public:
     void *accelerator();
     void *host() const;
 
-    const size_t size() const;
+    bool check(const void *addr);
+    bool checkBlock(const void *addr);
+    void set(const void *addr);
+    void setBlock(const void *addr);
+    bool checkAndClear(const void *addr);
 
-    bool check(const void *);
-    bool checkAndClear(const void *);
-    bool checkAndSet(const void *);
-    void clear(const void *);
-    void set(const void *);
+    const size_t size() const;
 
     void newRange(const void * ptr, size_t count);
     void removeRange(const void * ptr, size_t count);
@@ -118,6 +127,9 @@ public:
     void dump();
 #endif
 
+    unsigned getSubBlock(const void *addr) const;
+    size_t getSubBlockSize() const;
+
     bool synced() const;
     void synced(bool s);
 };
@@ -125,6 +137,66 @@ public:
 }}}
 
 #include "Bitmap-impl.h"
+
+enum ModelDirection {
+    MODEL_TOHOST = 0,
+    MODEL_TODEVICE = 1
+};
+
+template <ModelDirection M>
+static inline
+float costTransferCache(const size_t subBlockSize, size_t subBlocks)
+{
+    if (M == MODEL_TOHOST) {
+        if (subBlocks * subBlockSize <= paramModelL1/2) {
+            return paramModelToHostTransferL1;
+        } else if (subBlocks * subBlockSize <= paramModelL2/2) {
+            return paramModelToHostTransferL2;
+        } else {
+            return paramModelToHostTransferMem;
+        }
+    } else {
+        if (subBlocks * subBlockSize <= paramModelL1/2) {
+            return paramModelToDeviceTransferL1;
+        } else if (subBlocks * subBlockSize <= paramModelL2/2) {
+            return paramModelToDeviceTransferL2;
+        } else {
+            return paramModelToDeviceTransferMem;
+        }
+    }
+}
+
+template <ModelDirection M>
+static inline
+float costGaps(const size_t subBlockSize, unsigned gaps, unsigned subBlocks)
+{
+    return costTransferCache<M>(subBlockSize, subBlocks) * gaps * subBlockSize;
+}
+
+template <ModelDirection M>
+static inline
+float costTransfer(const size_t subBlockSize, size_t subBlocks)
+{
+    return costTransferCache<M>(subBlockSize, subBlocks) * subBlocks * subBlockSize;
+}
+
+template <ModelDirection M>
+static inline
+float costConfig()
+{
+    if (M == MODEL_TOHOST) {
+        return paramModelToHostConfig;
+    } else {
+        return paramModelToDeviceConfig;
+    }
+}
+
+template <ModelDirection M>
+static inline
+float cost(const size_t subBlockSize, size_t subBlocks)
+{
+    return costConfig<M>() + costTransfer<M>(subBlockSize, subBlocks);
+}
 
 #endif
 

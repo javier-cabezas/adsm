@@ -186,7 +186,7 @@ main(int argc, char** argv)
         getTime(&s);
 
         // check result
-        float err;
+        float err = 0.0;
         printf("Computing host matrix mul. Please wait...\n");
         float* reference = (float *) malloc(sizeC);
         computeGold(reference, A, B, HA, WA, WB);

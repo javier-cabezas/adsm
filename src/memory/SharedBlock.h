@@ -90,7 +90,7 @@ public:
 
 	gmacError_t toHost() const;
 
-	gmacError_t toAccelerator() const;
+	gmacError_t toAccelerator();
 
     gmacError_t copyToHost(const void *src, size_t size, 
         unsigned blockOffset = 0) const;

@@ -34,13 +34,96 @@ inline void *SharedBlock<T>::acceleratorAddr(const void *addr) const
 template<typename T>
 inline gmacError_t SharedBlock<T>::toHost() const
 {
-	return owner_.copyToHost(StateBlock<T>::shadow_, acceleratorAddr_, StateBlock<T>::size_);
+    gmacError_t ret = gmacSuccess;
+#ifdef USE_VM
+    vm::Bitmap &bitmap = owner_.dirtyBitmap();
+    size_t subBlockSize = Block::getSubBlockSize();
+    bool inSubGroup = false;
+    unsigned groupStart = 0, groupEnd = 0;
+    unsigned gaps = 0;
+    //fprintf(stderr, "TOHOST: SubBlocks %u\n", Block::getSubBlocks());
+    for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
+        if (inSubGroup) {
+            if (bitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+                groupEnd = i;
+            } else {
+                if (costGaps<MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
+                    cost<MODEL_TODEVICE>(subBlockSize, 1)) {
+                    gaps++;
+                } else {
+                    inSubGroup = false;
+
+                    //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
+                    ret = owner_.copyToHost(((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+                                            ((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+                                            (groupEnd - groupStart + 1) * subBlockSize);
+                    if (ret != gmacSuccess) break;
+                }
+            }
+        } else {
+            if (bitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+                groupStart = i; gaps = 0; inSubGroup = true;
+            }
+        }
+    }
+    if (inSubGroup) {
+        //fprintf(stderr, "TOHOST B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
+        ret = owner_.copyToHost(((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+                                ((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+                                (groupEnd - groupStart + 1) * subBlockSize);
+    }
+#else
+    ret = owner_.copyToHost(StateBlock<T>::shadow_, acceleratorAddr_, StateBlock<T>::size_);
+#endif
+    return ret;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::toAccelerator() const
+inline gmacError_t SharedBlock<T>::toAccelerator()
 {
-	return owner_.copyToAccelerator(acceleratorAddr_, StateBlock<T>::shadow_, StateBlock<T>::size_);
+    gmacError_t ret = gmacSuccess;
+#ifdef USE_VM
+    vm::Bitmap &bitmap = owner_.dirtyBitmap();
+    size_t subBlockSize = Block::getSubBlockSize();
+    bool inSubGroup = false;
+    unsigned groupStart = 0, groupEnd = 0;
+    unsigned gaps = 0;
+    //fprintf(stderr, "TODEVICE: SubBlocks %u\n", Block::getSubBlocks());
+    for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
+        if (inSubGroup) {
+            if (bitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+                groupEnd = i;
+            } else {
+                if (costGaps<MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
+                    cost<MODEL_TODEVICE>(subBlockSize, 1)) {
+                    gaps++;
+                } else {
+                    inSubGroup = false;
+                    
+                    //fprintf(stderr, "TODEVICE A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
+                    ret = owner_.copyToAccelerator(((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+                                                   ((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+                                                   (groupEnd - groupStart + 1) * subBlockSize);
+                    if (ret != gmacSuccess) break;
+                }
+            }
+        } else {
+            if (bitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+                groupStart = i; gaps = 0; inSubGroup = true;
+            }
+        }
+    }
+    if (inSubGroup) {
+        //fprintf(stderr, "TODEVICE B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
+        ret = owner_.copyToAccelerator(((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+                                       ((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+                                       (groupEnd - groupStart + 1) * subBlockSize);
+    }
+    Block::resetBitmapStats();
+#else
+    ret = owner_.copyToAccelerator(acceleratorAddr_, StateBlock<T>::shadow_, StateBlock<T>::size_);
+#endif
+	return ret;
 }
 
 template<typename T>

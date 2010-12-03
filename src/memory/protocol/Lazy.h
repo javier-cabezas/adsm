@@ -104,9 +104,9 @@ public:
     
     bool needUpdate(const Block &block) const;
 
-    gmacError_t signalRead(Block &block);
+    gmacError_t signalRead(Block &block, void *addr);
 
-    gmacError_t signalWrite(Block &block);
+    gmacError_t signalWrite(Block &block, void *addr);
 
     gmacError_t acquire(Block &obj);
 

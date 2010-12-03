@@ -66,16 +66,11 @@ bool LazyBase::needUpdate(const Block &b) const
     return false;
 }
 
-gmacError_t LazyBase::signalRead(Block &b)
+gmacError_t LazyBase::signalRead(Block &b, void *addr)
 {
     trace::EnterCurrentFunction();
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
-
-#ifdef USE_VM
-    core::Mode &mode = __impl::core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-#endif
 
     if(block.state() == HostOnly) {
         WARNING("Signal on HostOnly block - Changing protection and continuing");
@@ -87,14 +82,8 @@ gmacError_t LazyBase::signalRead(Block &b)
         goto exit_func; // Somebody already fixed it
     }
 
-#ifdef USE_VM
-    if (bitmap.checkAndClear(block.acceleratorAddr(block.addr()))) {
-#endif
-        ret = block.toHost();
-        if(ret != gmacSuccess) goto exit_func;
-#ifdef USE_VM
-    }
-#endif
+    ret = block.toHost();
+    if(ret != gmacSuccess) goto exit_func;
     Memory::protect(block.addr(), block.size(), GMAC_PROT_READ);
     block.state(ReadOnly);
 
@@ -103,39 +92,63 @@ exit_func:
     return ret;
 }
 
-gmacError_t LazyBase::signalWrite(Block &b)
+gmacError_t LazyBase::signalWrite(Block &b, void *addr)
 {
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
 
-#ifdef USE_VM
-    core::Mode &mode = __impl::core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-#endif
+    void *start  = block.addr();
+    size_t count = block.size();
 
     switch(block.state()) {
         case Dirty:            
+#ifdef USE_VM
+            if (!block.isSequentialAccess()) {
+                start = block.getSubBlockAddr(addr);
+                count = block.getSubBlockSize();
+
+                block.setSubBlockPresent(addr);
+            } else {
+                block.setBlockPresent();
+            }
+            Memory::protect(start, count, GMAC_PROT_READWRITE);
+#endif
             goto exit_func; // Somebody already fixed it
         case Invalid:          
+            ret = block.toHost();
+            if(ret != gmacSuccess) goto exit_func;
 #ifdef USE_VM
-            if (bitmap.checkAndClear(block.acceleratorAddr(block.addr()))) {
-#endif
-                ret = block.toHost();
-                if(ret != gmacSuccess) goto exit_func;
-#ifdef USE_VM
+            if (!block.isSequentialAccess()) {
+                start = block.getSubBlockAddr(addr);
+                count = block.getSubBlockSize();
+
+                block.setSubBlockPresent(addr);
+            } else {
+                block.setBlockPresent();
             }
 #endif
+			Memory::protect(start, count, GMAC_PROT_READWRITE);
             break;
         case HostOnly:
             WARNING("Signal on HostOnly block - Changing protection and continuing");
         case ReadOnly:
-			Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
+#ifdef USE_VM
+            if (!block.isSequentialAccess()) {
+                start = block.getSubBlockAddr(addr);
+                count = block.getSubBlockSize();
+
+                block.setSubBlockPresent(addr);
+            } else {
+                block.setBlockPresent();
+            }
+#endif
+			Memory::protect(start, count, GMAC_PROT_READWRITE);
             break;
     }
     block.state(Dirty);
     addDirty(block);
-    TRACE(LOCAL,"Setting block %p to dirty state", block.addr());
+    TRACE(LOCAL,"Setting block %p to dirty state", start);
     //ret = addDirty(block);
 exit_func:
     trace::ExitCurrentFunction();
@@ -172,7 +185,7 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
     switch(block.state()) {
         case Invalid:
         case ReadOnly:
-            if (bitmap.check(block.acceleratorAddr(block.addr()))) {
+            if (bitmap.checkBlock(block.acceleratorAddr(block.addr()))) {
                 if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(Invalid);

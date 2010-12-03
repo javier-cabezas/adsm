@@ -17,10 +17,12 @@ const unsigned Bitmap::entriesPerByte = 1;
 Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
     RWLock("Bitmap"), mode_(mode), bitmap_(NULL), dirty_(true), synced_(true), accelerator_(NULL), minEntry_(-1), maxEntry_(-1)
 {
-    shiftPage_ = int(log2(paramPageSize));
-    if (paramBitmapChunksPerPage > 1) {
-        shiftPage_ -= int(log2(paramBitmapChunksPerPage));
-    }
+    shiftBlock_ = int(log2(paramPageSize));
+    shiftPage_  = shiftBlock_ - int(log2(paramBitmapChunksPerPage));
+
+    subBlockSize_ = (paramBitmapChunksPerPage) - 1;
+    subBlockMask_ = (paramBitmapChunksPerPage) - 1;
+    pageMask_     = subBlockSize_ - 1;
 
     size_    = (1 << (bits - shiftPage_)) / entriesPerByte;
 #ifdef BITMAP_BIT

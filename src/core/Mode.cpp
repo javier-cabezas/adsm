@@ -186,9 +186,6 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     TRACE(LOCAL,"Reloading mode");
     reload();
 
-    //
-    // \TODO What to do if there are many threads sharing the same mode!!
-    //
     switchOut();
 
     return ret;

@@ -85,18 +85,20 @@ public:
     //! Signal handler for faults caused due to memory reads
     /*!
         \param block Memory block where the fault was triggered
+        \param addr  Faulting address
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalRead(Block &block) = 0;
+    virtual gmacError_t signalRead(Block &block, void *addr) = 0;
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param block Memory block where the fault was triggered
+        \param addr  Faulting address
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalWrite(Block &block) = 0;
+    virtual gmacError_t signalWrite(Block &block, void *addr) = 0;
 
     //! Acquires the ownership of a memory block for the CPU
     /*!

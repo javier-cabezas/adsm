@@ -76,12 +76,38 @@ Bitmap::updateMaxMin(unsigned entry)
 }
 
 inline
+void Bitmap::set(const void *addr)
+{
+    CheckClearSet<false, false, true>(addr);
+}
+
+inline
+void Bitmap::setBlock(const void *_addr)
+{
+    const uint8_t *addr = static_cast<const uint8_t *>(_addr);
+    unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
+    for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
+        set(addr + i * subBlockSize);
+    }
+}
+
+inline
 bool Bitmap::check(const void *addr)
 {
     bool b = CheckClearSet<true, false, false>(addr);
     return b;
 }
 
+inline
+bool Bitmap::checkBlock(const void *_addr)
+{
+    const uint8_t *addr = static_cast<const uint8_t *>(_addr);
+    unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
+    for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
+        if (check(addr + i * subBlockSize)) return true;
+    }
+    return false;
+}
 
 inline
 bool Bitmap::checkAndClear(const void *addr)
@@ -104,15 +130,8 @@ void Bitmap::clear(const void *addr)
 }
 
 inline
-void Bitmap::set(const void *addr)
-{
-    CheckClearSet<false, false, true>(addr);
-}
-
-inline
 void *Bitmap::accelerator() 
 {
-    if (accelerator_ == NULL) allocate();
     if (minEntry_ != -1) {
         return accelerator_ + minEntry_;
     }
@@ -154,6 +173,18 @@ void Bitmap::reset()
 }
 
 inline
+unsigned Bitmap::getSubBlock(const void *addr) const
+{
+    return (to32bit(addr) >> shiftPage_) & subBlockMask_;
+}
+
+inline
+size_t Bitmap::getSubBlockSize() const
+{
+    return subBlockSize_;
+}
+
+inline
 bool Bitmap::synced() const
 {
     return synced_;
@@ -168,10 +199,6 @@ void Bitmap::synced(bool s)
 inline
 void Bitmap::newRange(const void * ptr, size_t count)
 {
-#ifdef USE_HOSTMAP_VM
-    if (accelerator_ == NULL) allocate();
-#endif
-
 #ifdef BITMAP_BYTE
     uint8_t *start = bitmap_ + offset(ptr);
     uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);

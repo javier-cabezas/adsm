@@ -54,6 +54,8 @@ Bitmap::syncHost()
 void
 Bitmap::syncAccelerator()
 {
+    if (accelerator_ == NULL) allocate();
+
     cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
     cuda::Accelerator &acc = dynamic_cast<cuda::Accelerator &>(mode.getAccelerator());
 
@@ -67,24 +69,20 @@ Bitmap::syncAccelerator()
                 lastBitmap.syncHost();
             }
         }
-#endif
         TRACE(LOCAL, "Syncing Bitmap pointers");
         TRACE(LOCAL, "%p -> %p (0x%lx)", host(), (void *) cuda::Accelerator::gpuAddr(accelerator()), mode.dirtyBitmapAccPtr());
-        gmacError_t ret;
+        gmacError_t ret = gmacSuccess;
         ret = mode.copyToAccelerator((void *) mode.dirtyBitmapAccPtr(), &accelerator_, sizeof(void *));
         CFATAL(ret == gmacSuccess, "Unable to set the pointer in the accelerator %p", (void *) mode.dirtyBitmapAccPtr());
-        ret = mode.copyToAccelerator((void *) mode.dirtyBitmapShiftPageAccPtr(), &shiftPage_, sizeof(int));
+        ret = mode.copyToAccelerator((void *) mode.dirtyBitmapShiftPageAccPtr(), &shiftPage_, sizeof(shiftPage_));
         CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
-
-#ifndef USE_MULTI_CONTEXT
     }
-#endif
 
 #ifndef USE_HOSTMAP_VM
     if (dirty_) {
         TRACE(LOCAL, "Syncing Bitmap");
         TRACE(LOCAL, "Copying "FMT_SIZE" bytes. ShiftPage: %d", size(), shiftPage_);
-        gmacError_t ret;
+        gmacError_t ret = gmacSuccess;
         ret = mode.copyToAccelerator(accelerator(), host(), size());
         CFATAL(ret == gmacSuccess, "Unable to copy dirty bitmap to accelerator");
     }
@@ -94,6 +92,7 @@ Bitmap::syncAccelerator()
 
 #ifndef USE_MULTI_CONTEXT
     acc.setLastMode(mode);
+#endif
 #endif
 }
 
