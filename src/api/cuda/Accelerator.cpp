@@ -193,7 +193,7 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align) 
+gmacError_t Accelerator::malloc(accptr_t *addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
@@ -218,23 +218,22 @@ gmacError_t Accelerator::malloc(void **addr, size_t size, unsigned align)
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
     }
-    *addr = (void *)gpuPtr;
+    *addr = gpuPtr;
     _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
-    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", *addr, ptr, gpuSize, size, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) *addr, ptr, gpuSize, size, align);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::free(void *addr)
+gmacError_t Accelerator::free(accptr_t addr)
 {
     trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
     AlignmentMap::iterator i;
-    CUdeviceptr gpuPtr = gpuAddr(addr);
     _alignMap.lockWrite();
-    i = _alignMap.find(gpuPtr);
+    i = _alignMap.find(addr);
     if (i == _alignMap.end()) {
         _alignMap.unlock();
         trace::ExitCurrentFunction();
@@ -250,7 +249,7 @@ gmacError_t Accelerator::free(void *addr)
     return error(ret);
 }
 
-gmacError_t Accelerator::memset(void *addr, int c, size_t size)
+gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 {
     trace::EnterCurrentFunction();
     CUresult ret = CUDA_SUCCESS;
@@ -258,23 +257,23 @@ gmacError_t Accelerator::memset(void *addr, int c, size_t size)
     if(size % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD32(gpuAddr(addr), seed, size / 4);
+        ret = cuMemsetD32(addr, seed, size / 4);
 #else
-        ret = cuMemsetD32(gpuAddr(addr), seed, unsigned(size / 4));
+        ret = cuMemsetD32(addr, seed, unsigned(size / 4));
 #endif
     } else if(size % 2) {
         short s = (short) c & 0xffff;
         short seed = s | (s << 8);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD16(gpuAddr(addr), seed, size / 2);
+        ret = cuMemsetD16(addr, seed, size / 2);
 #else
-        ret = cuMemsetD16(gpuAddr(addr), seed, unsigned(size / 2));
+        ret = cuMemsetD16(addr, seed, unsigned(size / 2));
 #endif
     } else {
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), size);
+        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), size);
 #else
-        ret = cuMemsetD8(gpuAddr(addr), (uint8_t)(c & 0xff), unsigned(size));
+        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), unsigned(size));
 #endif
     }
     popContext();
@@ -292,12 +291,12 @@ gmacError_t Accelerator::sync()
     return error(ret);
 }
 
-gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
+gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     pushContext();
-    CUresult ret = cuMemHostAlloc(addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
+    CUresult ret = cuMemHostAlloc((void **) addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
     popContext();
 #else
 	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
@@ -306,7 +305,7 @@ gmacError_t Accelerator::hostAlloc(void **addr, size_t size)
     return error(ret);
 }
 
-gmacError_t Accelerator::hostFree(void *addr)
+gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
@@ -320,13 +319,13 @@ gmacError_t Accelerator::hostFree(void *addr)
     return error(r);
 }
 
-void *Accelerator::hostMap(const void *addr)
+accptr_t Accelerator::hostMap(const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
-    CUresult ret = cuMemHostGetDevicePointer(&device, (void *)addr, 0);
+    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
 #else
 	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;

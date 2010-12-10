@@ -53,7 +53,7 @@ namespace memory {
 template<typename T>
 class GMAC_LOCAL DistributedBlock : public StateBlock<T> {
 protected:
-	typedef std::map<core::Mode *, uint8_t *> AcceleratorMap;
+	typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
 	AcceleratorMap acceleratorAddr_;
 
 public:
@@ -67,43 +67,43 @@ public:
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	DistributedBlock(Protocol &protocol, core::Mode &owner, uint8_t *shadowAddr,
-		uint8_t *hostAddr, uint8_t *acceleratorAddr, size_t size, T init);
+	DistributedBlock(Protocol &protocol, core::Mode &owner, hostptr_t shadowAddr,
+		hostptr_t hostAddr, accptr_t acceleratorAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~DistributedBlock();
 
-	void addOwner(core::Mode &owner, uint8_t *value);
+	void addOwner(core::Mode &owner, accptr_t addr);
 
 	void removeOwner(core::Mode &owner);
 
 	core::Mode &owner() const;
 
-	void *acceleratorAddr(const void *addr) const;
+	accptr_t acceleratorAddr(const hostptr_t addr) const;
 
 	gmacError_t toHost() const;
 
 	gmacError_t toAccelerator();
 
-    gmacError_t copyToHost(const void *src, size_t size, 
+    gmacError_t copyToHost(const hostptr_t src, size_t size, 
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyToAccelerator(const void *src, size_t size, 
+    gmacError_t copyToAccelerator(const hostptr_t src, size_t size, 
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	
-    gmacError_t copyFromHost(void *dst, size_t size,
+    gmacError_t copyFromHost(hostptr_t dst, size_t size,
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyFromAccelerator(void *dst, size_t size,
+    gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 

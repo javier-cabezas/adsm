@@ -20,7 +20,7 @@ Manager::~Manager()
 
 #if 0
 gmacError_t
-Manager::map(void *addr, size_t size, GmacProtection prot)
+Manager::map(hostptr_t addr, size_t size, GmacProtection prot)
 {
     core::Mode &mode = core::Mode::current();
 
@@ -36,7 +36,7 @@ Manager::map(void *addr, size_t size, GmacProtection prot)
     return gmacSuccess;
 }
 
-gmacError_t Manager::unmap(void *addr, size_t size)
+gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 {
     // TODO implement partial unmapping
     gmacError_t ret = gmacSuccess;
@@ -66,7 +66,7 @@ gmacError_t Manager::unmap(void *addr, size_t size)
 }
 #endif
 
-gmacError_t Manager::alloc(void **addr, size_t size)
+gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 {
     core::Mode &mode = core::Mode::current();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
@@ -86,7 +86,7 @@ gmacError_t Manager::alloc(void **addr, size_t size)
     return gmacSuccess;
 }
 
-gmacError_t Manager::hostMappedAlloc(void **addr, size_t size)
+gmacError_t Manager::hostMappedAlloc(hostptr_t *addr, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     HostMappedObject *object = new HostMappedObject(size);
@@ -98,7 +98,7 @@ gmacError_t Manager::hostMappedAlloc(void **addr, size_t size)
     return gmacSuccess;
 }
 
-gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
+gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode &mode = core::Mode::current();
@@ -120,7 +120,7 @@ gmacError_t Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType 
     return ret;
 }
     
-gmacError_t Manager::free(void * addr)
+gmacError_t Manager::free(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
@@ -137,10 +137,10 @@ gmacError_t Manager::free(void * addr)
     return ret;
 }
 
-void *Manager::translate(const void *addr)
+accptr_t Manager::translate(const hostptr_t addr)
 {
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    void *ret = proc.translate(addr);
+    accptr_t ret = proc.translate(addr);
     if(ret == NULL) {   
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) ret = object->acceleratorAddr(addr);
@@ -179,56 +179,54 @@ gmacError_t Manager::releaseObjects()
 }
 
 
-gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const void *addr, size_t count)
+gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, size_t count)
 {
     if (count > buffer.size()) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
-    const uint8_t *ptr = (const uint8_t *)addr;
     unsigned off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::Mode * mode = proc.owner(ptr + off);
+        core::Mode * mode = proc.owner(addr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObject(ptr + off);
+        const Object *obj = mode->getObject(addr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (ptr + off);
+        size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        unsigned objOff = unsigned(ptr - obj->addr());
+        unsigned objOff = unsigned(addr - obj->addr());
         // Handle objects with no memory in the accelerator
 		ret = obj->copyToBuffer(buffer, c, off, objOff);
 		obj->release();
         if(ret != gmacSuccess) return ret;
         off += unsigned(objCount);
         TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
-    } while(ptr + off < ptr + count);
+    } while(addr + off < addr + count);
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(void * addr, core::IOBuffer &buffer, size_t count)
+gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t count)
 {
     if (count > buffer.size()) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
-    uint8_t *ptr = (uint8_t *)addr;
     unsigned off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::Mode *mode = proc.owner(ptr + off);
+        core::Mode *mode = proc.owner(addr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObject(ptr + off);
+        const Object *obj = mode->getObject(addr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (ptr + off);
+        size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        unsigned objOff = unsigned(ptr - obj->addr());
+        unsigned objOff = unsigned(addr - obj->addr());
 		ret = obj->copyFromBuffer(buffer, c, off, objOff);
 		obj->release();        
         if(ret != gmacSuccess) return ret;
         off += unsigned(objCount);
         TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
-    } while(ptr + off < ptr + count);
+    } while(addr + off < addr + count);
     return ret;
 }
 
@@ -256,7 +254,7 @@ Manager::checkBitmapToAccelerator()
 #endif
 
 bool
-Manager::read(void *addr)
+Manager::read(hostptr_t addr)
 {
 #ifdef USE_VM
     checkBitmapToHost();
@@ -273,7 +271,7 @@ Manager::read(void *addr)
 }
 
 bool
-Manager::write(void *addr)
+Manager::write(hostptr_t addr)
 {
 #ifdef USE_VM
     checkBitmapToHost();
@@ -289,7 +287,7 @@ Manager::write(void *addr)
 }
 
 gmacError_t
-Manager::memset(void *s, int c, size_t size)
+Manager::memset(hostptr_t s, int c, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *mode = proc.owner(s, size);
@@ -352,7 +350,7 @@ Manager::memset(void *s, int c, size_t size)
 
 
 gmacError_t
-Manager::memcpyToObject(const Object &obj, const void *src, size_t size,
+Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
                         unsigned objOffset)
 {
     gmacError_t ret = gmacSuccess;
@@ -464,7 +462,7 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
 }
 
 gmacError_t
-Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
+Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
                           unsigned objOffset)
 {
     gmacError_t ret = gmacSuccess;
@@ -520,7 +518,7 @@ Manager::memcpyFromObject(void *dst, const Object &obj, size_t size,
 }
 
 size_t
-Manager::hostMemory(void *addr, size_t size, const Object *obj) const
+Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
 {
     // There is no object, so everything is in host memory
     if(obj == NULL) return size; 
@@ -534,7 +532,7 @@ Manager::hostMemory(void *addr, size_t size, const Object *obj) const
 }
 
 gmacError_t
-Manager::memcpy(void *dst, const void *src, size_t size)
+Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
 {
     core::Process &proc = core::Process::getInstance();
     core::Mode *dstMode = proc.owner(dst, size);
@@ -609,7 +607,7 @@ Manager::memcpy(void *dst, const void *src, size_t size)
 }
 
 #if 0
-gmacError_t Manager::moveTo(void * addr, core::Mode &mode)
+gmacError_t Manager::moveTo(hostptr_t addr, core::Mode &mode)
 {
     Object * obj = mode.getObjectWrite(addr);
     if(obj == NULL) return gmacErrorInvalidValue;

@@ -75,22 +75,22 @@ public:
 	}
 
 	/*!  \brief Allocates memory on the accelerator memory */
-	virtual gmacError_t malloc(void **addr, size_t size, unsigned align = 1) = 0;
+	virtual gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1) = 0;
 
 	/*!  \brief Releases memory previously allocated by malloc */
-	virtual gmacError_t free(void *addr) = 0;
+	virtual gmacError_t free(accptr_t addr) = 0;
 
 	virtual gmacError_t sync() = 0;
 
 	/*!  \brief Copies data from system memory to accelerator memory */
 	virtual gmacError_t
-			copyToAccelerator(void *acc, const void *host, size_t size) = 0;
+			copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	virtual gmacError_t copyToHost(void *host, const void *acc, size_t size) = 0;
+	virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size) = 0;
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size) = 0;
+	virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
 
 	virtual void memInfo(size_t *free, size_t *total) const = 0;
 

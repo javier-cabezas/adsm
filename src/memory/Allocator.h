@@ -62,13 +62,13 @@ public:
         NULL to let the allocator choose the host memory address.
         \return Host memory address where the data was allocated
     */
-    virtual void *alloc(size_t size, void *addr = NULL) = 0;
+    virtual hostptr_t alloc(size_t size, hostptr_t addr = NULL) = 0;
 
     //! Release shared memory
     /*!
         \param addr Host memory address of the chunk of data to be release
     */
-    virtual bool free(void *addr) = 0;
+    virtual bool free(hostptr_t addr) = 0;
 };
 
 }}

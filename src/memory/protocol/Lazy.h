@@ -104,9 +104,9 @@ public:
     
     bool needUpdate(const Block &block) const;
 
-    gmacError_t signalRead(Block &block, void *addr);
+    gmacError_t signalRead(Block &block, hostptr_t addr);
 
-    gmacError_t signalWrite(Block &block, void *addr);
+    gmacError_t signalWrite(Block &block, hostptr_t addr);
 
     gmacError_t acquire(Block &obj);
 
@@ -149,7 +149,7 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::Object *createObject(size_t size, void *cpuPtr, 
+    memory::Object *createObject(size_t size, hostptr_t cpuPtr, 
         GmacProtection prot, unsigned flags);
 };
 

@@ -6,7 +6,7 @@ using gmac::cuda::Mode;
 
 TEST_F(ModeTest, ModeHostMemory) {
 	Mode &mode = dynamic_cast<Mode &>(*Mode_);
-    void *addr = NULL;
+    hostptr_t addr = NULL;
     ASSERT_EQ(gmacSuccess, mode.hostAlloc(&addr, Size_));
     ASSERT_TRUE(addr != NULL);
 

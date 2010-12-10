@@ -62,11 +62,11 @@ public:
 
     static void init();
 
-	virtual gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
-	virtual gmacError_t copyToHost(void *host, const void *acc, size_t size);
-	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
+	virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+	virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+	virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
-    virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
+    virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
 
     virtual KernelLaunch &launch(Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;

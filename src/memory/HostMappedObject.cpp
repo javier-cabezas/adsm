@@ -17,7 +17,7 @@ bool HostMappedSet::insert(HostMappedObject *object)
     return ret.second;
 }
 
-HostMappedObject *HostMappedSet::get(void *addr) const
+HostMappedObject *HostMappedSet::get(hostptr_t addr) const
 {
     HostMappedObject *object = NULL;
     lockRead();
@@ -31,7 +31,7 @@ HostMappedObject *HostMappedSet::get(void *addr) const
     return object;
 }
 
-bool HostMappedSet::remove(void *addr)
+bool HostMappedSet::remove(hostptr_t addr)
 {
     lockWrite();
     Parent::iterator i = Parent::upper_bound(addr);
@@ -61,7 +61,7 @@ HostMappedObject::~HostMappedObject()
 }
 
 
-void *HostMappedObject::acceleratorAddr(const void *addr) const
+void *HostMappedObject::acceleratorAddr(const hostptr_t addr) const
 {
     void *ret = NULL;
     if(addr_ != NULL) {

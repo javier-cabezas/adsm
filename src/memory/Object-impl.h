@@ -8,9 +8,9 @@
 
 namespace __impl { namespace memory {
 
-inline Object::Object(void *addr, size_t size) :
+inline Object::Object(hostptr_t addr, size_t size) :
 	gmac::util::RWLock("Object"), 
-	addr_((uint8_t *)addr),
+	addr_(addr),
 	size_(size),
 	valid_(false)
 {}
@@ -29,13 +29,13 @@ inline Object::~Object()
     
 }
 
-inline uint8_t *Object::addr() const
+inline hostptr_t Object::addr() const
 {
     // No need for lock -- addr_ is never modified
     return (uint8_t *) addr_;   
 }
 
-inline uint8_t *Object::end() const
+inline hostptr_t Object::end() const
 {
     // No need for lock -- addr_ and size_ are never modified
     return addr_ + size_;
@@ -77,7 +77,7 @@ inline gmacError_t Object::toAccelerator() const
     return ret;
 }
 
-inline gmacError_t Object::signalRead(void *addr) const
+inline gmacError_t Object::signalRead(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();
@@ -89,7 +89,7 @@ inline gmacError_t Object::signalRead(void *addr) const
 	return ret;
 }
 
-inline gmacError_t Object::signalWrite(void *addr) const
+inline gmacError_t Object::signalWrite(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();

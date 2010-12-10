@@ -85,17 +85,17 @@ public:
 	Context(Accelerator &acc, Mode &mode);
 	~Context();
 
-	gmacError_t copyToAccelerator(void *dev, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *dev, size_t size);
-	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
+	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
-    gmacError_t memset(void *addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size);
 
     core::KernelLaunch &launch(core::Kernel &kernel);
     gmacError_t sync();
 
-    gmacError_t bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const void *dst, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, off_t off = 0);
     gmacError_t waitAccelerator();
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);

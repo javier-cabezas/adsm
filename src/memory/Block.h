@@ -89,7 +89,7 @@ protected:
     size_t subBlockSize_;
 
     void resetBitmapStats();
-    void updateBitmapStats(const void *addr, bool write);
+    void updateBitmapStats(const hostptr_t addr, bool write);
 #endif
 
     //! Default construcutor
@@ -109,12 +109,12 @@ public:
     unsigned getFaults() const;
     unsigned getSequentialFaults() const;
 
-    void *getSubBlockAddr(const void *addr) const;
+    hostptr_t getSubBlockAddr(const hostptr_t addr) const;
     size_t getSubBlockSize() const;
     unsigned getSubBlocks() const;
 
-    bool isSubBlockPresent(const void *addr) const;
-    void setSubBlockPresent(const void *addr);
+    bool isSubBlockPresent(const hostptr_t addr) const;
+    void setSubBlockPresent(const hostptr_t addr);
     void setBlockPresent();
 #endif
 
@@ -135,14 +135,14 @@ public:
         \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalRead(void *addr);
+	gmacError_t signalRead(hostptr_t addr);
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalWrite(void *addr);
+	gmacError_t signalWrite(hostptr_t addr);
 
     //! Request a memory coherence operation
     /*!
@@ -185,7 +185,7 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
         \return Error code
     */
-    gmacError_t memcpyFromMemory(const void *src, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, unsigned blockOffset = 0) const;
 
     //! Copy data from a GMAC object to the memory block
     /*!
@@ -204,7 +204,7 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to start copying data from
         \return Error code
     */
-    gmacError_t memcpyToMemory(void *dst, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t memcpyToMemory(hostptr_t dst, size_t size, unsigned blockOffset = 0) const;
 
     //! Get memory block owner
     /*!
@@ -216,7 +216,7 @@ public:
     /*!
         \return Accelerator memory address of the block
     */
-	virtual void *acceleratorAddr(const void *addr) const = 0;
+	virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
@@ -239,7 +239,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyToHost(const void *src, size_t size, 
+    virtual gmacError_t copyToHost(const hostptr_t src, size_t size, 
         unsigned blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block host memory
@@ -263,7 +263,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyToAccelerator(const void *src, size_t size,
+    virtual gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
         unsigned blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block accelerator memory
@@ -288,7 +288,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyFromHost(void *dst, size_t size,
+    virtual gmacError_t copyFromHost(hostptr_t dst, size_t size,
         unsigned blockOffset = 0) const = 0;
 
     //! Copy data from the block host memory to an I/O buffer
@@ -313,8 +313,8 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyFromAccelerator(void *dst, size_t size,
-        unsigned bufferOffset = 0) const = 0;
+    virtual gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
+        unsigned blockOffset = 0) const = 0;
 
     //! Copy data from the block accelerator memory to an I/O buffer
     /*!

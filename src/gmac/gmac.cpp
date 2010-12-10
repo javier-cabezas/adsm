@@ -167,12 +167,12 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
     gmac::trace::EnterCurrentFunction();
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
     if(count < (paramPageSize / 2)) {
-        *cpuPtr = allocator.alloc(count, RETURN_ADDRESS);
+        *cpuPtr = allocator.alloc(count, hostptr_t(RETURN_ADDRESS));
     }
     else {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = manager.alloc(cpuPtr, count);
+	    ret = manager.alloc((hostptr_t *) cpuPtr, count);
     }
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
@@ -189,7 +189,7 @@ gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMa
     gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = gmac::memory::Manager::getInstance().globalAlloc(cpuPtr, count, hint);
+	ret = gmac::memory::Manager::getInstance().globalAlloc((hostptr_t *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
     return ret;
@@ -201,9 +201,9 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if (allocator.free(cpuPtr) == false) {
+    if (allocator.free(hostptr_t(cpuPtr)) == false) {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-        ret = manager.free(cpuPtr);
+        ret = manager.free(hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
@@ -212,11 +212,12 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 
 void * APICALL gmacPtr(const void *ptr)
 {
-    void *ret = NULL;
+    accptr_t ret = NULL;
     gmac::enterGmac();
-    ret = __impl::memory::Manager::getInstance().translate(ptr);
+    ret = __impl::memory::Manager::getInstance().translate(hostptr_t(ptr));
     gmac::exitGmac();
-    return ret;
+    // TODO:FIX this
+    return (void *) ret.ptr_;
 }
 
 gmacError_t APICALL gmacLaunch(gmacKernel_t k)
@@ -276,7 +277,7 @@ void * APICALL gmacMemset(void *s, int c, size_t size)
     gmac::enterGmac();
     void *ret = s;
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memset(s, c, size);
+    manager.memset(hostptr_t(s), c, size);
 	gmac::exitGmac();
     return ret;
 }
@@ -288,11 +289,11 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
 
 	// Locate memory regions (if any)
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    __impl::core::Mode *dstMode = proc.owner(dst, size);
-    __impl::core::Mode *srcMode = proc.owner(src, size);
+    __impl::core::Mode *dstMode = proc.owner(hostptr_t(dst), size);
+    __impl::core::Mode *srcMode = proc.owner(hostptr_t(src), size);
     if (dstMode == NULL && srcMode == NULL) return ::memcpy(dst, src, size);
 	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memcpy(dst, src, size);
+    manager.memcpy(hostptr_t(dst), hostptr_t(src), size);
 
 	gmac::exitGmac();
 	return ret;

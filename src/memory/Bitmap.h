@@ -64,7 +64,7 @@ class GMAC_LOCAL Bitmap :
 private:
     core::Mode &mode_;
     typedef uint8_t T;
-    uint8_t *bitmap_;
+    hostptr_t bitmap_;
 
     bool dirty_;
     bool synced_;
@@ -73,7 +73,7 @@ private:
     unsigned subBlockMask_;
     unsigned pageMask_;
 
-    uint8_t *accelerator_;
+    accptr_t accelerator_;
 
     static const unsigned entriesPerByte;
     unsigned shiftBlock_;
@@ -86,16 +86,16 @@ private:
     void allocate();
 
     template <bool check, bool clear, bool set>
-    bool CheckClearSet(const void *addr);
+    bool CheckClearSet(const accptr_t addr);
     int minEntry_;
     int maxEntry_;
 
     void updateMaxMin(unsigned entry);
 
-    unsigned offset(const void *addr) const;
+    uint32_t offset(const accptr_t addr) const;
 
-    bool checkAndSet(const void *addr);
-    void clear(const void *addr);
+    bool checkAndSet(const accptr_t addr);
+    void clear(const accptr_t addr);
 
 public:
     Bitmap(core::Mode &mode, unsigned bits = 32);
@@ -103,19 +103,19 @@ public:
 
     void cleanUp();
 
-    void *accelerator();
-    void *host() const;
+    accptr_t accelerator();
+    hostptr_t host() const;
 
-    bool check(const void *addr);
-    bool checkBlock(const void *addr);
-    void set(const void *addr);
-    void setBlock(const void *addr);
-    bool checkAndClear(const void *addr);
+    bool check(const accptr_t addr);
+    bool checkBlock(const accptr_t addr);
+    void set(const accptr_t addr);
+    void setBlock(const accptr_t addr);
+    bool checkAndClear(const accptr_t addr);
 
     const size_t size() const;
 
-    void newRange(const void * ptr, size_t count);
-    void removeRange(const void * ptr, size_t count);
+    void newRange(const accptr_t ptr, size_t count);
+    void removeRange(const accptr_t ptr, size_t count);
 
     bool clean() const;
 
@@ -127,7 +127,7 @@ public:
     void dump();
 #endif
 
-    unsigned getSubBlock(const void *addr) const;
+    unsigned getSubBlock(const accptr_t addr) const;
     size_t getSubBlockSize() const;
 
     bool synced() const;

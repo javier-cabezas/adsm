@@ -4,7 +4,7 @@
 
 namespace __impl { namespace core { namespace allocator {
 
-Buddy::Buddy(void *addr, size_t size) :
+Buddy::Buddy(hostptr_t addr, size_t size) :
     gmac::util::Lock("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
@@ -108,7 +108,7 @@ void Buddy::putToList(off_t addr, uint8_t i)
 
 }
 
-void *Buddy::get(size_t &size)
+hostptr_t Buddy::get(size_t &size)
 {
     uint8_t i = index((uint32_t)size);
     uint32_t realSize = (uint32_t) 1 << i;
@@ -119,10 +119,10 @@ void *Buddy::get(size_t &size)
     if(off < 0) return NULL;
     TRACE(LOCAL,"Returning address at offset %d", off);
     size = realSize;
-    return (uint8_t *)addr_ + off;
+    return addr_ + off;
 }
 
-void Buddy::put(void *addr, size_t size)
+void Buddy::put(hostptr_t addr, size_t size)
 {
     uint8_t i = index((uint32_t)size);
     off_t off = (off_t)((uint8_t *)addr - (uint8_t *)addr_);

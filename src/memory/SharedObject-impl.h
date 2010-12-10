@@ -6,13 +6,13 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, size_t size, T init) :
+inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, size_t size, T init) :
     Object(cpuAddr, size),
 	owner_(&owner)
 {
 	// Allocate memory (if necessary)
 	if(addr_ == NULL)
-		addr_ = (uint8_t *)Memory::map(NULL, size, GMAC_PROT_READWRITE);
+		addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
     if(addr_ == NULL) return;
 
     // Create a shadow mapping for the host memory
@@ -20,7 +20,7 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
 
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner_->malloc((void **)&acceleratorAddr_, size, (unsigned)paramPageSize);
+		owner_->malloc(&acceleratorAddr_, size, (unsigned)paramPageSize);
 	if(ret == gmacSuccess) {
 #ifdef USE_VM
         vm::Bitmap &bitmap = owner_->dirtyBitmap();
@@ -40,8 +40,7 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, void
 		size -= blockSize;
 		offset += unsigned(blockSize);
 	}
-    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", 
-        addr_, shadow_, acceleratorAddr_);
+    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", addr_, shadow_, (void *) acceleratorAddr_);
 }
 
 
@@ -59,12 +58,12 @@ inline SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-inline void *SharedObject<T>::acceleratorAddr(const void *addr) const
+inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
 {
-    void *ret = NULL;
+    accptr_t ret = NULL;
     lockRead();
     if(acceleratorAddr_ != NULL) {
-        unsigned offset = unsigned((uint8_t *)addr - addr_);
+        unsigned offset = unsigned(addr - addr_);
         ret = acceleratorAddr_ + offset;
     }
     unlock();
@@ -72,7 +71,7 @@ inline void *SharedObject<T>::acceleratorAddr(const void *addr) const
 }
 
 template<typename T>
-inline core::Mode &SharedObject<T>::owner(const void *addr) const
+inline core::Mode &SharedObject<T>::owner(const hostptr_t addr) const
 {
     lockRead();
     core::Mode &ret = *owner_;

@@ -34,7 +34,7 @@ Block::resetBitmapStats()
 }
 
 inline void
-Block::updateBitmapStats(const void *addr, bool write)
+Block::updateBitmapStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -76,8 +76,8 @@ Block::getSequentialFaults() const
     return sequentialFaults_;
 }
 
-inline void *
-Block::getSubBlockAddr(const void *addr) const
+inline hostptr_t
+Block::getSubBlockAddr(const hostptr_t addr) const
 {
     core::Mode &mode = owner();
     const vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -98,7 +98,7 @@ Block::getSubBlocks() const
 }
 
 inline bool
-Block::isSubBlockPresent(const void *addr) const
+Block::isSubBlockPresent(const hostptr_t addr) const
 {
     core::Mode &mode = owner();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -106,7 +106,7 @@ Block::isSubBlockPresent(const void *addr) const
 }
 
 inline void 
-Block::setSubBlockPresent(const void *addr)
+Block::setSubBlockPresent(const hostptr_t addr)
 {
     core::Mode &mode = owner();
     vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -133,7 +133,7 @@ inline size_t Block::size() const
     return size_;
 }
 
-inline gmacError_t Block::signalRead(void *addr)
+inline gmacError_t Block::signalRead(hostptr_t addr)
 {
     TRACE(LOCAL,"SIGNAL READ on block %p: addr %p", addr_, addr);
 	lock();
@@ -142,7 +142,7 @@ inline gmacError_t Block::signalRead(void *addr)
 	return ret;
 }
 
-inline gmacError_t Block::signalWrite(void *addr)
+inline gmacError_t Block::signalWrite(hostptr_t addr)
 {
     TRACE(LOCAL,"SIGNAL WRITE on block %p: addr %p", addr_, addr);
 	lock();

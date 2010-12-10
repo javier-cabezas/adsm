@@ -43,7 +43,7 @@ ssize_t read(int fd, void *buf, size_t count)
 
     gmac::enterGmac();
     Process &proc = Process::getInstance();
-    Mode *dstMode = proc.owner(buf);
+    Mode *dstMode = proc.owner(hostptr_t(buf));
 
     if(dstMode == NULL) {
         gmac::exitGmac();
@@ -62,7 +62,7 @@ ssize_t read(int fd, void *buf, size_t count)
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
-        ret = manager.fromIOBuffer((char *)buf + off, *buffer, bytes);
+        ret = manager.fromIOBuffer(hostptr_t(buf) + off, *buffer, bytes);
         ASSERTION(ret == gmacSuccess);
 
         left -= bytes;
@@ -84,7 +84,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 
 	gmac::enterGmac();
     Process &proc = Process::getInstance();
-    Mode *srcMode = proc.owner(buf);
+    Mode *srcMode = proc.owner(hostptr_t(buf));
 
     if(srcMode == NULL) {
         gmac::exitGmac();
@@ -102,7 +102,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     size_t left = count;
     while (left != 0) {
         size_t bytes = left < buffer->size() ? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, (char *)buf + off, bytes);
+        err = manager.toIOBuffer(*buffer, hostptr_t(buf) + off, bytes);
         ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, buffer->addr(), bytes);
 

@@ -119,7 +119,7 @@ GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enu
 	Gets a GPU address
 	\param cpuPtr memory address at the CPU
 */
-GMAC_API void * APICALL gmacPtr(const void *cpuPtr);
+GMAC_API void *APICALL gmacPtr(const void *cpuPtr);
 
 /*!
 	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()

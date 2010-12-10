@@ -142,22 +142,22 @@ public:
 	void forEachObject(memory::ObjectMap::ObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */
-	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
+	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
 
 	/*!  \brief Releases memory previously allocated by malloc */
-	gmacError_t free(void *addr);
+	gmacError_t free(accptr_t addr);
 
 	/*!  \brief Copies data from system memory to accelerator memory */
-	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
+	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to system memory */
-	gmacError_t copyToHost(void *host, const void *acc, size_t size);
+	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
 
 	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
+	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /*!  \brief Sets the contents of accelerator memory */
-    gmacError_t memset(void *addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size);
 
 	/*!  \brief Launches the execution of a kernel */
 	KernelLaunch &launch(gmacKernel_t kernel);
@@ -168,8 +168,8 @@ public:
 
     virtual IOBuffer *createIOBuffer(size_t size) = 0;
     virtual void destroyIOBuffer(IOBuffer *) = 0;
-    virtual gmacError_t bufferToAccelerator(void *dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
-    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const void *dst, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, off_t off = 0) = 0;
 
     void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);

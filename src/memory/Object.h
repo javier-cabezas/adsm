@@ -54,7 +54,7 @@ namespace memory {
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
 protected:
     //! Object host memory address
-    uint8_t *addr_;
+    hostptr_t addr_;
 
     //! Object size in bytes
     size_t size_;
@@ -62,7 +62,7 @@ protected:
     //! Mark the object as valid
 	bool valid_;
 
-	typedef std::map<uint8_t *, Block *> BlockMap;
+	typedef std::map<hostptr_t, Block *> BlockMap;
     //! Collection of blocks forming the object
 	BlockMap blocks_;
 
@@ -103,7 +103,7 @@ protected:
         \param addr Host memory address where the object begins
         \param size Size (in bytes) of the memory object
     */
-	Object(void *addr, size_t size);
+	Object(hostptr_t addr, size_t size);
 
     //! Default destructor
 	virtual ~Object();
@@ -112,13 +112,13 @@ public:
     /*!
         \return Starting host memory address of the object
     */
-    uint8_t *addr() const;
+    hostptr_t addr() const;
 
     //! Get the ending host memory address of the object
     /*!
         \return Ending host memory address of the object
     */
-    uint8_t *end() const;
+    hostptr_t end() const;
 
     //! Get the size (in bytes) of the object
     /*!
@@ -137,13 +137,13 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address within the object
     */
-    virtual void *acceleratorAddr(const void *addr) const = 0;
+    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
 
     //! Get the owner of the object
     /*!
         \return The owner of the object
     */
-	virtual core::Mode &owner(const void *addr) const = 0;
+	virtual core::Mode &owner(const hostptr_t addr) const = 0;
     
     //! Add a new owner to the object
     /*!
@@ -181,14 +181,14 @@ public:
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalRead(void *addr) const;
+	gmacError_t signalRead(hostptr_t addr) const;
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalWrite(void *addr) const;
+	gmacError_t signalWrite(hostptr_t addr) const;
 
     //! Copies the data from the object to an I/O buffer
     /*!
@@ -219,7 +219,7 @@ public:
         \param size Size (in bytes) of the memory region to be initialized
         \return Error code
     */
-    gmacError_t memset(void *addr, int v, size_t size) const;
+    gmacError_t memset(hostptr_t addr, int v, size_t size) const;
 };
 
 }}

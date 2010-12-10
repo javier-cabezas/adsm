@@ -47,15 +47,15 @@ namespace memory {
 template<typename T>
 class GMAC_LOCAL SharedObject : public Object {
 protected:
-    uint8_t *shadow_;
-	uint8_t *acceleratorAddr_;
+    hostptr_t shadow_;
+	accptr_t  acceleratorAddr_;
 	core::Mode *owner_;
 public:
-	SharedObject(Protocol &protocol, core::Mode &owner, void *addr, size_t size, T init);
+	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, T init);
     virtual ~SharedObject();
 
-    void *acceleratorAddr(const void *addr) const;
-	core::Mode &owner(const void *addr) const;
+    accptr_t acceleratorAddr(const hostptr_t addr) const;
+	core::Mode &owner(const hostptr_t addr) const;
 
 	bool addOwner(core::Mode &owner);
 	void removeOwner(const core::Mode &owner);

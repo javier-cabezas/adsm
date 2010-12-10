@@ -46,7 +46,7 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 	return ret;
 }
 
-gmacError_t Object::memset(void *addr, int v, size_t size) const
+gmacError_t Object::memset(hostptr_t addr, int v, size_t size) const
 {
     gmacError_t ret = gmacSuccess;
     unsigned objectOffset = unsigned((uint8_t *)addr - addr_);

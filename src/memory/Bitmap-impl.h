@@ -6,19 +6,19 @@ namespace __impl { namespace memory { namespace vm {
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 inline
-unsigned Bitmap::offset(const void *addr) const
+uint32_t Bitmap::offset(const accptr_t addr) const
 {
 #ifdef BITMAP_BIT
-    off_t entry = to32bit(addr) >> (shiftPage_ + 3);
+    uint32_t entry = uint32_t(addr >> (shiftPage_ + 3));
 #else // BITMAP_BYTE
-    off_t entry = to32bit(addr) >> shiftPage_;
+    uint32_t entry = uint32_t(addr >> shiftPage_);
 #endif
     return entry;
 }
 
 template <bool __check, bool __clear, bool __set>
 bool
-Bitmap::CheckClearSet(const void * addr)
+Bitmap::CheckClearSet(const accptr_t addr)
 {
     bool ret = false;
     size_t entry = offset(addr);
@@ -33,7 +33,7 @@ Bitmap::CheckClearSet(const void * addr)
 #ifdef BITMAP_BIT
     TRACE(LOCAL,"Bitmap check for %p -> entry %zu, offset %zu", addr, entry, (to32bit(addr) >> shiftPage_) & bitMask_);
 #else // BITMAP_BYTE
-    TRACE(LOCAL,"Bitmap check for %p -> entry %zu", addr, entry);
+    TRACE(LOCAL,"Bitmap check for %p -> entry %zu", (void *) addr, entry);
 #endif
     if (__clear || __set) {
         TRACE(LOCAL,"Bitmap entry before: 0x%x", bitmap_[entry]);
@@ -76,15 +76,14 @@ Bitmap::updateMaxMin(unsigned entry)
 }
 
 inline
-void Bitmap::set(const void *addr)
+void Bitmap::set(const accptr_t addr)
 {
     CheckClearSet<false, false, true>(addr);
 }
 
 inline
-void Bitmap::setBlock(const void *_addr)
+void Bitmap::setBlock(const accptr_t addr)
 {
-    const uint8_t *addr = static_cast<const uint8_t *>(_addr);
     unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
     for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
         set(addr + i * subBlockSize);
@@ -92,16 +91,15 @@ void Bitmap::setBlock(const void *_addr)
 }
 
 inline
-bool Bitmap::check(const void *addr)
+bool Bitmap::check(const accptr_t addr)
 {
     bool b = CheckClearSet<true, false, false>(addr);
     return b;
 }
 
 inline
-bool Bitmap::checkBlock(const void *_addr)
+bool Bitmap::checkBlock(const accptr_t addr)
 {
-    const uint8_t *addr = static_cast<const uint8_t *>(_addr);
     unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
     for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
         if (check(addr + i * subBlockSize)) return true;
@@ -110,27 +108,27 @@ bool Bitmap::checkBlock(const void *_addr)
 }
 
 inline
-bool Bitmap::checkAndClear(const void *addr)
+bool Bitmap::checkAndClear(const accptr_t addr)
 {
     bool b = CheckClearSet<true, true, false>(addr);
     return b;
 }
 
 inline
-bool Bitmap::checkAndSet(const void *addr)
+bool Bitmap::checkAndSet(const accptr_t addr)
 {
     bool b = CheckClearSet<true, false, true>(addr);
     return b;
 }
 
 inline
-void Bitmap::clear(const void *addr)
+void Bitmap::clear(const accptr_t addr)
 {
     CheckClearSet<false, true, false>(addr);
 }
 
 inline
-void *Bitmap::accelerator() 
+accptr_t Bitmap::accelerator() 
 {
     if (minEntry_ != -1) {
         return accelerator_ + minEntry_;
@@ -140,7 +138,7 @@ void *Bitmap::accelerator()
 }
 
 inline
-void *Bitmap::host() const
+hostptr_t Bitmap::host() const
 {
     if (minEntry_ != -1) {
         return bitmap_ + minEntry_;
@@ -173,9 +171,9 @@ void Bitmap::reset()
 }
 
 inline
-unsigned Bitmap::getSubBlock(const void *addr) const
+unsigned Bitmap::getSubBlock(const accptr_t addr) const
 {
-    return (to32bit(addr) >> shiftPage_) & subBlockMask_;
+    return uint32_t(addr >> shiftPage_) & subBlockMask_;
 }
 
 inline
@@ -197,24 +195,24 @@ void Bitmap::synced(bool s)
 }
 
 inline
-void Bitmap::newRange(const void * ptr, size_t count)
+void Bitmap::newRange(const accptr_t ptr, size_t count)
 {
 #ifdef BITMAP_BYTE
-    uint8_t *start = bitmap_ + offset(ptr);
-    uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);
+    hostptr_t start = bitmap_ + offset(ptr);
+    hostptr_t end   = bitmap_ + offset(ptr + count - 1);
     ::memset(start, 0, end - start + 1);
 #else // BITMAP_BIT
-    uint8_t *start = bitmap_ + offset(ptr);
-    uint8_t *end   = bitmap_ + offset(static_cast<const uint8_t *>(ptr) + count - 1);
+    hostptr_t start = bitmap_ + offset(ptr);
+    hostptr_t end   = bitmap_ + offset(ptr + count - 1);
     ::memset(start, 0, end - start + 1);
 #endif
     updateMaxMin(offset(ptr));
-    updateMaxMin(offset(static_cast<const uint8_t *>(ptr) + count - 1));
-    TRACE(LOCAL,"ptr: %p ("FMT_SIZE")", ptr, count);
+    updateMaxMin(offset(ptr + count - 1));
+    TRACE(LOCAL,"ptr: %p ("FMT_SIZE")", (void *) ptr, count);
 }
 
 inline
-void Bitmap::removeRange(const void * ptr, size_t count)
+void Bitmap::removeRange(const accptr_t ptr, size_t count)
 {
     // TODO implement smarter range handling for more efficient transfers
 

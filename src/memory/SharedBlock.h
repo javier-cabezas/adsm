@@ -57,7 +57,7 @@ protected:
 	core::Mode &owner_;
 
     //! Accelerator memory address of the block
-	uint8_t *acceleratorAddr_;
+	accptr_t acceleratorAddr_;
 
 public:
     //! Default construcutor
@@ -71,7 +71,7 @@ public:
         \param init Initial block state
     */
 	SharedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
-		uint8_t *shadowAddr, uint8_t *acceleratorAddr, size_t size, T init);
+		uint8_t *shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~SharedBlock();
@@ -86,31 +86,31 @@ public:
     /*!
         \return Accelerator memory address of the block
     */
-	void *acceleratorAddr(const void *addr) const;
+	accptr_t acceleratorAddr(const hostptr_t addr) const;
 
 	gmacError_t toHost() const;
 
 	gmacError_t toAccelerator();
 
-    gmacError_t copyToHost(const void *src, size_t size, 
+    gmacError_t copyToHost(const hostptr_t src, size_t size, 
         unsigned blockOffset = 0) const;
     
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyToAccelerator(const void *src, size_t size, 
+    gmacError_t copyToAccelerator(const hostptr_t src, size_t size, 
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 	
-    gmacError_t copyFromHost(void *dst, size_t size,
+    gmacError_t copyFromHost(hostptr_t dst, size_t size,
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
 		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
 
-    gmacError_t copyFromAccelerator(void *dst, size_t size,
+    gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
         unsigned blockOffset = 0) const;
 
 	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 

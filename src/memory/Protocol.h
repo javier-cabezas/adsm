@@ -65,7 +65,7 @@ public:
         \param flags Protocool specific flags
         \return Pointer to the created object
     */
-    virtual Object *createObject(size_t size, void *cpuPtr, 
+    virtual Object *createObject(size_t size, hostptr_t cpuPtr, 
         GmacProtection prot, unsigned flags) = 0;
 
     //! Deletes an object created by this protocol
@@ -89,7 +89,7 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalRead(Block &block, void *addr) = 0;
+    virtual gmacError_t signalRead(Block &block, hostptr_t addr) = 0;
 
     //! Signal handler for faults caused due to memory writes
     /*!
@@ -98,7 +98,7 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalWrite(Block &block, void *addr) = 0;
+    virtual gmacError_t signalWrite(Block &block, hostptr_t addr) = 0;
 
     //! Acquires the ownership of a memory block for the CPU
     /*!

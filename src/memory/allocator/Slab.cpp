@@ -51,11 +51,11 @@ void Slab::cleanup()
     modes.unlock();
 }
 
-void *Slab::alloc(size_t size, void *addr)
+hostptr_t Slab::alloc(size_t size, hostptr_t addr)
 {
     Cache &cache = get((unsigned long)addr ^ (unsigned long)size, size);
     TRACE(LOCAL,"Using cache %p", &cache);
-    void *ret = cache.get();
+    hostptr_t ret = cache.get();
     addresses.lockWrite();
     addresses.insert(AddressMap::value_type(ret, &cache));
     addresses.unlock();
@@ -63,7 +63,7 @@ void *Slab::alloc(size_t size, void *addr)
     return ret;
 }
 
-bool Slab::free(void *addr)
+bool Slab::free(hostptr_t addr)
 {
     addresses.lockRead();
     AddressMap::iterator i = addresses.find(addr);

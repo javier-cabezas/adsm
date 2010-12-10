@@ -43,31 +43,31 @@ namespace __impl { namespace memory {
 class GMAC_LOCAL FileMapEntry {
 protected:
     int fd_;
-	void *address_;
+	hostptr_t address_;
 	size_t size_;
 public:
-	FileMapEntry(int fd, void *address, size_t size) :
+	FileMapEntry(int fd, hostptr_t address, size_t size) :
 	    fd_(fd), address_(address), size_(size) {};
 	virtual ~FileMapEntry() {};
 
 	inline int fd() const { return fd_; }
-	inline void *address() const { return address_; }
+	inline hostptr_t address() const { return address_; }
 	inline size_t size() const { return size_; }
 };
 
 class GMAC_LOCAL FileMap :
-	protected std::map<void *, FileMapEntry>,
+	protected std::map<hostptr_t, FileMapEntry>,
 	public gmac::util::RWLock
 {
 protected:
-	typedef std::map<void *, FileMapEntry> Parent;
+	typedef std::map<hostptr_t, FileMapEntry> Parent;
 public:
 	FileMap();
 	virtual ~FileMap();
 
-	bool insert(int fd, void *address, size_t size);
-	bool remove(void *address);
-	const FileMapEntry find(void *address) const;
+	bool insert(int fd, hostptr_t address, size_t size);
+	bool remove(hostptr_t address);
+	const FileMapEntry find(hostptr_t address) const;
 };
 
 }}

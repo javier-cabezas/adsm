@@ -66,7 +66,7 @@ bool LazyBase::needUpdate(const Block &b) const
     return false;
 }
 
-gmacError_t LazyBase::signalRead(Block &b, void *addr)
+gmacError_t LazyBase::signalRead(Block &b, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -92,13 +92,13 @@ exit_func:
     return ret;
 }
 
-gmacError_t LazyBase::signalWrite(Block &b, void *addr)
+gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
 
-    void *start  = block.addr();
+    hostptr_t start  = block.addr();
     size_t count = block.size();
 
     switch(block.state()) {

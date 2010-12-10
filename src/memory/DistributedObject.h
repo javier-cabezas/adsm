@@ -43,15 +43,15 @@ template<typename T>
 class GMAC_LOCAL DistributedObject : public Object {
 protected:
     uint8_t *shadow_;
-    typedef std::map<core::Mode *, uint8_t *> AcceleratorMap;
+    typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
 public:
-	DistributedObject(Protocol &protocol, core::Mode &owner, void *cpuAddr, 
+	DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, 
 		size_t size, T init);
     virtual ~DistributedObject();
 
-    void *acceleratorAddr(const void *addr) const;
-	core::Mode &owner(const void *addr) const;
+    accptr_t acceleratorAddr(const hostptr_t addr) const;
+	core::Mode &owner(const hostptr_t addr) const;
 
 	bool addOwner(core::Mode &owner);
 	void removeOwner(const core::Mode &owner);

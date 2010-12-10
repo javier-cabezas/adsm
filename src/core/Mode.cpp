@@ -83,7 +83,7 @@ void Mode::detach()
     key.set(NULL);
 }
 
-gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
+gmacError_t Mode::malloc(accptr_t *addr, size_t size, unsigned align)
 {
     switchIn();
     error_ = acc_->malloc(addr, size, align);
@@ -91,7 +91,7 @@ gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
     return error_;
 }
 
-gmacError_t Mode::free(void *addr)
+gmacError_t Mode::free(accptr_t addr)
 {
     switchIn();
     error_ = acc_->free(addr);
@@ -99,25 +99,25 @@ gmacError_t Mode::free(void *addr)
     return error_;
 }
 
-gmacError_t Mode::copyToAccelerator(void *acc, const void *host, size_t size)
+gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc, size);
+    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, (void *) acc, size);
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyToHost(void *host, const void *acc, size_t size)
+gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc , host, size);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) acc, host, size);
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyAccelerator(void *dst, const void *src, size_t size)
+gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     switchIn();
     error_ = getContext().copyAccelerator(dst, src, size);
@@ -125,7 +125,7 @@ gmacError_t Mode::copyAccelerator(void *dst, const void *src, size_t size)
     return error_;
 }
 
-gmacError_t Mode::memset(void *addr, int c, size_t size)
+gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
 {
     switchIn();
     error_ = getContext().memset(addr, c, size);

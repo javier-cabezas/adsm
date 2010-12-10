@@ -4,43 +4,43 @@
 namespace __impl { namespace memory { namespace allocator {
 
 inline
-void *Arena::key() const
+hostptr_t Arena::key() const
 {
-    return (uint8_t *)ptr + paramPageSize;
+    return ptr_ + paramPageSize;
 }
 
 inline
 const ObjectList &Arena::objects() const
 {
-    return _objects;
+    return objects_;
 }
 
 inline
 bool Arena::full() const
 {
-    return _objects.size() == size;
+    return objects_.size() == size_;
 }
 
 inline
 bool Arena::empty() const
 {
-    return _objects.empty();
+    return objects_.empty();
 }
 
 inline
-void *Arena::get()
+hostptr_t Arena::get()
 {
-    ASSERTION(_objects.empty() == false);
-    void *ret = _objects.front();
-    _objects.pop_front();
-    TRACE(LOCAL,"Arena %p has "FMT_SIZE" available objects", this, _objects.size());
+    ASSERTION(objects_.empty() == false);
+    hostptr_t ret = objects_.front();
+    objects_.pop_front();
+    TRACE(LOCAL,"Arena %p has "FMT_SIZE" available objects", this, objects_.size());
     return ret;
 }
 
 inline
-void Arena::put(void *obj)
+void Arena::put(hostptr_t obj)
 {
-    _objects.push_back(obj);
+    objects_.push_back(obj);
 }
 
 inline
@@ -52,7 +52,7 @@ Cache::Cache(size_t size) :
 
 
 inline
-void Cache::put(void *obj)
+void Cache::put(hostptr_t obj)
 {
     lock();
     ArenaMap::iterator i;

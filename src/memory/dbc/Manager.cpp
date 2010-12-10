@@ -41,7 +41,7 @@ Manager::unmap(void *addr, size_t size)
 }
 #endif
 gmacError_t
-Manager::alloc(void **addr, size_t size)
+Manager::alloc(hostptr_t *addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -67,7 +67,7 @@ Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 #endif
 
 gmacError_t
-Manager::free(void *addr)
+Manager::free(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -79,7 +79,7 @@ Manager::free(void *addr)
 }
 
 bool
-Manager::read(void *addr)
+Manager::read(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -91,7 +91,7 @@ Manager::read(void *addr)
 }
 
 bool
-Manager::write(void *addr)
+Manager::write(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -104,7 +104,7 @@ Manager::write(void *addr)
 
 
 gmacError_t
-Manager::toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size)
+Manager::toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -118,7 +118,7 @@ Manager::toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t siz
 }
 
 gmacError_t
-Manager::fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size)
+Manager::fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);

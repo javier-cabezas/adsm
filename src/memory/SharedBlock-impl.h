@@ -7,8 +7,8 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-inline SharedBlock<T>::SharedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
-								   uint8_t *shadowAddr, uint8_t *acceleratorAddr, size_t size, T init) :
+inline SharedBlock<T>::SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
+								   hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, T init) :
 	memory::StateBlock<T>(protocol, hostAddr, shadowAddr, size, init),
 	owner_(owner),
 	acceleratorAddr_(acceleratorAddr)
@@ -25,10 +25,11 @@ inline core::Mode &SharedBlock<T>::owner() const
 }
 
 template<typename T>
-inline void *SharedBlock<T>::acceleratorAddr(const void *addr) const
+inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	unsigned offset = unsigned((uint8_t *)addr - StateBlock<T>::addr_);
-	return (void *)(acceleratorAddr_ + offset);
+	unsigned offset = unsigned(addr - StateBlock<T>::addr_);
+    accptr_t ret = acceleratorAddr_ + offset;
+	return ret;
 }
 
 template<typename T>
@@ -54,8 +55,8 @@ inline gmacError_t SharedBlock<T>::toHost() const
                     inSubGroup = false;
 
                     //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
-                    ret = owner_.copyToHost(((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
-                                            ((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+                    ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * subBlockSize,
+                                            acceleratorAddr_       + groupStart * subBlockSize,
                                             (groupEnd - groupStart + 1) * subBlockSize);
                     if (ret != gmacSuccess) break;
                 }
@@ -68,8 +69,8 @@ inline gmacError_t SharedBlock<T>::toHost() const
     }
     if (inSubGroup) {
         //fprintf(stderr, "TOHOST B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-        ret = owner_.copyToHost(((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
-                                ((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
+        ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * subBlockSize,
+                                acceleratorAddr_       + groupStart * subBlockSize,
                                 (groupEnd - groupStart + 1) * subBlockSize);
     }
 #else
@@ -101,8 +102,8 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
                     inSubGroup = false;
                     
                     //fprintf(stderr, "TODEVICE A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
-                    ret = owner_.copyToAccelerator(((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
-                                                   ((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+                    ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * subBlockSize,
+                                                   StateBlock<T>::shadow_ + groupStart * subBlockSize,
                                                    (groupEnd - groupStart + 1) * subBlockSize);
                     if (ret != gmacSuccess) break;
                 }
@@ -115,8 +116,8 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
     }
     if (inSubGroup) {
         //fprintf(stderr, "TODEVICE B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-        ret = owner_.copyToAccelerator(((uint8_t *) acceleratorAddr_      ) + groupStart * subBlockSize,
-                                       ((uint8_t *) StateBlock<T>::shadow_) + groupStart * subBlockSize,
+        ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * subBlockSize,
+                                       StateBlock<T>::shadow_ + groupStart * subBlockSize,
                                        (groupEnd - groupStart + 1) * subBlockSize);
     }
     Block::resetBitmapStats();
@@ -127,7 +128,7 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyToHost(const void *src, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyToHost(const hostptr_t src, size_t size, unsigned blockOffset) const
 {
     ::memcpy(StateBlock<T>::shadow_ + blockOffset, src, size);
     return gmacSuccess;
@@ -137,12 +138,12 @@ template<typename T>
 inline gmacError_t SharedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t size, 
 											  unsigned bufferOffset, unsigned blockOffset) const
 {
-	::memcpy(StateBlock<T>::shadow_ + blockOffset, (uint8_t *)buffer.addr() + bufferOffset, size);
+	::memcpy(StateBlock<T>::shadow_ + blockOffset, buffer.addr() + bufferOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyToAccelerator(const void *src, size_t size,  unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  unsigned blockOffset) const
 {
     return owner_.copyToAccelerator(acceleratorAddr_ + blockOffset, src, size);
 }
@@ -155,7 +156,7 @@ inline gmacError_t SharedBlock<T>::copyToAccelerator(core::IOBuffer &buffer, siz
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyFromHost(void *dst, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyFromHost(hostptr_t dst, size_t size, unsigned blockOffset) const
 {
     ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
@@ -170,7 +171,7 @@ inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t s
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyFromAccelerator(void *dst, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, unsigned blockOffset) const
 {
     return owner_.copyToHost(dst, acceleratorAddr_ + blockOffset, size);
 }

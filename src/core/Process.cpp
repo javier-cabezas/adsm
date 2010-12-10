@@ -248,12 +248,12 @@ void Process::addAccelerator(Accelerator *acc)
 }
 
 
-void *Process::translate(const void *addr)
+accptr_t Process::translate(const hostptr_t addr)
 {
     Mode &mode = Mode::current();
     const memory::Object *object = mode.getObject(addr);
-    if(object == NULL) return NULL;
-    void * ptr = object->acceleratorAddr(addr);
+    if (object == NULL) return NULL;
+    accptr_t ptr = object->acceleratorAddr(addr);
 	object->release();
     return ptr;
 }
@@ -289,7 +289,7 @@ void Process::copy(THREAD_T id)
     mode.use();
 }
 
-Mode *Process::owner(const void *addr, size_t size) const
+Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
     // We do not consider global objects for ownership,
     // since memory operations over them are performed

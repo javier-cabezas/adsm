@@ -55,9 +55,151 @@ typedef signed __int64 int64_t;
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
+typedef uint8_t *hostptr_t;
+
 #ifdef USE_CUDA
 #include <cuda.h>
-typedef CUdeviceptr accptr_t;
+struct accptr_t {
+    CUdeviceptr ptr_;
+    accptr_t() :
+        ptr_(NULL) {}
+
+    accptr_t(void * ptr) :
+        ptr_(CUdeviceptr(ptr)) {}
+
+    accptr_t(CUdeviceptr ptr) :
+        ptr_(ptr) {}
+
+    accptr_t(long int ptr) :
+        ptr_(ptr) {}
+
+    operator uint32_t()
+    {
+        return uint32_t(ptr_);
+    }
+
+    operator uint64_t()
+    {
+        return uint64_t(ptr_);
+    }
+
+    operator CUdeviceptr()
+    {
+        return ptr_;
+    }
+
+    operator const CUdeviceptr() const
+    {
+        return ptr_;
+    }
+
+    operator void *()
+    {
+        return (void *)(ptr_);
+    }
+
+    operator void *() const
+    {
+        return (void *)(ptr_);
+    }
+};
+
+static inline
+bool operator==(const accptr_t &ptr1, const void *ptr2)
+{
+    return (((const void *)ptr1.ptr_) == ptr2);
+}
+
+static inline
+bool operator==(const accptr_t &ptr1, long int ptr2)
+{
+    return (((long int)ptr1.ptr_) != ptr2);
+}
+
+static inline
+bool operator!=(const accptr_t &ptr1, const void *ptr2)
+{
+    return (((const void *)ptr1.ptr_) != ptr2);
+}
+
+static inline
+bool operator!=(const accptr_t &ptr1, long int ptr2)
+{
+    return (((long int)ptr1.ptr_) != ptr2);
+}
+
+static inline
+accptr_t operator>>(const accptr_t &ptr1, int shift)
+{
+    return accptr_t(ptr1.ptr_>> shift);
+}
+
+static inline
+accptr_t operator>>(const accptr_t &ptr1, unsigned shift)
+{
+    return accptr_t(ptr1.ptr_>> shift);
+}
+
+static inline
+accptr_t operator<<(const accptr_t &ptr1, int shift)
+{
+    return accptr_t(ptr1.ptr_<< shift);
+}
+
+static inline
+accptr_t operator<<(const accptr_t &ptr1, unsigned shift)
+{
+    return accptr_t(ptr1.ptr_<< shift);
+}
+
+static inline
+accptr_t operator+(const accptr_t &ptr1, int add)
+{
+    return accptr_t(ptr1.ptr_ + add);
+}
+
+static inline
+accptr_t operator+(const accptr_t &ptr1, long int add)
+{
+    return accptr_t(ptr1.ptr_ + add);
+}
+
+static inline
+accptr_t operator+(const accptr_t &ptr1, unsigned add)
+{
+    return accptr_t(ptr1.ptr_ + add);
+}
+
+static inline
+accptr_t operator+(const accptr_t &ptr1, size_t add)
+{
+    return accptr_t(ptr1.ptr_ + add);
+}
+
+static inline
+accptr_t operator-(const accptr_t &ptr1, int sub)
+{
+    return accptr_t(ptr1.ptr_ - sub);
+}
+
+static inline
+accptr_t operator-(const accptr_t &ptr1, long int add)
+{
+    return accptr_t(ptr1.ptr_ - add);
+}
+
+static inline
+accptr_t operator-(const accptr_t &ptr1, unsigned sub)
+{
+    return accptr_t(ptr1.ptr_ - sub);
+}
+
+static inline
+accptr_t operator-(const accptr_t &ptr1, size_t sub)
+{
+    return accptr_t(ptr1.ptr_ - sub);
+}
+
 #else
 #ifdef USE_OPENCL
 #include <opencl.h>

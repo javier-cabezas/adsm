@@ -33,7 +33,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
-    Mode *dstMode = proc.owner(buf, size);
+    Mode *dstMode = proc.owner(hostptr_t(buf), size);
 
     if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
 
@@ -83,7 +83,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
-    Mode *srcMode = proc.owner(buf, size);
+    Mode *srcMode = proc.owner(hostptr_t(buf), size);
 
     if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
 
@@ -104,7 +104,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
     while (left != 0) {
         size_t bytes = left < buffer->size()? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, (const uint8_t *)buf + off, bytes);
+        err = manager.toIOBuffer(*buffer, hostptr_t(buf) + off, bytes);
         ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         ASSERTION(err == gmacSuccess);

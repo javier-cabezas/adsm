@@ -118,21 +118,21 @@ public:
         \param size Size (in bytes) of the host memory to be allocated
         \return Error code
     */
-    gmacError_t hostAlloc(void **addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
 
     //! Release GPU-accessible host memory 
     /*!
         \param addr Starting address of the host memory to be released
         \return Error code
     */
-    gmacError_t hostFree(void *addr);
+    gmacError_t hostFree(hostptr_t addr);
 
     //! Get the GPU memory address where GPU-accessible host memory is mapped
     /*!
         \param addr Host memory address
         \return Device memory address
     */
-    void *hostMap(const void *addr);
+    accptr_t hostMap(const hostptr_t addr);
 
     //! Execute a kernel on the accelerator
     /*!
@@ -143,8 +143,8 @@ public:
 
     core::IOBuffer *createIOBuffer(size_t size);
     void destroyIOBuffer(core::IOBuffer *buffer);
-    gmacError_t bufferToAccelerator(void *dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const void *src, size_t size, off_t off = 0);
+    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, off_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, off_t off = 0);
 
     void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	void argument(const void *arg, size_t size, off_t offset);
