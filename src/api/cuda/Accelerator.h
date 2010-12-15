@@ -72,6 +72,8 @@ public:
 };
 
 class GMAC_LOCAL Accelerator : public core::Accelerator {
+    DBC_FORCE_TEST(Accelerator)
+
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -136,13 +138,13 @@ public:
 	gmacError_t free(accptr_t addr);
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
@@ -168,5 +170,9 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Accelerator.h"
+#endif
 
 #endif
