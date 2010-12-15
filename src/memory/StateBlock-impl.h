@@ -4,8 +4,8 @@
 namespace __impl { namespace memory { 
 
 template<typename T>
-inline StateBlock<T>::StateBlock(Protocol &protocol, uint8_t *addr, 
-                                 uint8_t *shadow, size_t size, T init) :
+inline StateBlock<T>::StateBlock(Protocol &protocol, hostptr_t addr, 
+                                 hostptr_t shadow, size_t size, T init) :
 	gmac::memory::Block(protocol, addr, shadow, size),
 	state_(init)
 {}
