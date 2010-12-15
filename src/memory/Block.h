@@ -76,10 +76,10 @@ protected:
 	size_t size_;
 
     //! Host address where for applications to access the block. 
-	uint8_t *addr_;
+	hostptr_t addr_;
 
     //! Shadow host memory mapping that is always read/write.
-	uint8_t *shadow_;
+	hostptr_t shadow_;
 
 #ifdef USE_VM
     //! Last addr
@@ -99,7 +99,7 @@ protected:
         \param shaodw Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
     */
-	Block(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size);
+	Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     //! Default destructor
     virtual ~Block();
@@ -122,7 +122,7 @@ public:
     /*!
         \return Starting host memory address of the block
     */
-    uint8_t *addr() const;
+    hostptr_t addr() const;
 
     //! Block size
     /*!
@@ -353,7 +353,7 @@ public:
     virtual gmacError_t acceleratorMemset(int v, size_t size, 
         unsigned blockOffset = 0) const = 0;
     
-    
+	Protocol &getProtocol();
 };
 
 

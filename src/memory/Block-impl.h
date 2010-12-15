@@ -9,7 +9,7 @@
 
 namespace __impl { namespace memory { 
 
-inline Block::Block(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size) :
+inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
 	gmac::util::Lock("Block"),
 	protocol_(protocol),
 	size_(size),
@@ -123,7 +123,7 @@ Block::setBlockPresent()
 
 #endif
 
-inline uint8_t *Block::addr() const
+inline hostptr_t Block::addr() const
 {
 	return addr_;
 }
@@ -177,6 +177,12 @@ inline gmacError_t Block::memset(int v, size_t size, unsigned blockOffset) const
     gmacError_t ret = protocol_.memset(*this, v, size, blockOffset);
     unlock();
     return ret;
+}
+
+inline
+Protocol &Block::getProtocol()
+{
+    return protocol_;
 }
 
 }}
