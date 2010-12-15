@@ -61,7 +61,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoD(acc, host, size);
 #else
-	CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, unsigned(size));
+	CUresult ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
@@ -80,7 +80,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, 
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
 #else
-    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, unsigned(count), stream);
+    CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
 #endif
     buffer.started();
     popContext();
@@ -97,7 +97,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoH(host, acc, size);
 #else
-	CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), unsigned(size));
+	CUresult ret = cuMemcpyDtoH(host, acc, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
@@ -132,7 +132,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoD(dst, src, size);
 #else
-	CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), unsigned(size));
+	CUresult ret = cuMemcpyDtoD(dst, src, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
