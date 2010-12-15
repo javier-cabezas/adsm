@@ -36,7 +36,7 @@ bool operator==(const accptr_t &ptr1, const void *ptr2)
 static inline
 bool operator==(const accptr_t &ptr1, long int ptr2)
 {
-    return (((long int)ptr1.ptr_) != ptr2);
+    return (((long int)ptr1.ptr_) == ptr2);
 }
 
 static inline

@@ -49,9 +49,9 @@ namespace core {
 
 namespace memory {
 
-void *HostMappedAlloc(size_t size);
+hostptr_t HostMappedAlloc(size_t size);
 void HostMappedFree(hostptr_t addr);
-void *HostMappedPtr(const hostptr_t addr);
+accptr_t HostMappedPtr(const hostptr_t addr);
 
 class HostMappedObject;
 //! A set of Host-mapped memory blocks
@@ -131,7 +131,7 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address where the requested host memory address is mapped
     */
-    void *acceleratorAddr(const hostptr_t addr) const;
+    accptr_t acceleratorAddr(const hostptr_t addr) const;
 
     //! Remove a host mapped object from the list of all present host mapped object
     /*!

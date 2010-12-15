@@ -332,7 +332,7 @@ accptr_t Accelerator::hostMap(const hostptr_t addr)
 #endif
     if(ret != CUDA_SUCCESS) device = 0;
     trace::ExitCurrentFunction();
-    return (void *)device;
+    return accptr_t(device);
 }
 
 void Accelerator::memInfo(size_t *free, size_t *total) const

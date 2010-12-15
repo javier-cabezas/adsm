@@ -1,3 +1,4 @@
+#include "memory/HostMappedObject.h"
 #include "api/cuda/Accelerator.h"
 #include "api/cuda/Mode.h"
 

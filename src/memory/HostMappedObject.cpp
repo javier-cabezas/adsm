@@ -47,7 +47,7 @@ HostMappedObject::HostMappedObject(size_t size) :
     size_(size)
 {
 	// Allocate memory (if necessary)
-    addr_ = (uint8_t *)HostMappedAlloc(size);
+    addr_ = HostMappedAlloc(size);
     if(addr_ == NULL) return; 
     set_.insert(this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_);
@@ -61,12 +61,12 @@ HostMappedObject::~HostMappedObject()
 }
 
 
-void *HostMappedObject::acceleratorAddr(const hostptr_t addr) const
+accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
 {
-    void *ret = NULL;
+    accptr_t ret = NULL;
     if(addr_ != NULL) {
-        unsigned offset = unsigned((uint8_t *)addr - addr_);
-        uint8_t *acceleratorAddr = (uint8_t *)HostMappedPtr(addr_);
+        unsigned offset = unsigned(addr - addr_);
+        accptr_t acceleratorAddr = HostMappedPtr(addr_);
         ret = acceleratorAddr + offset;
     }
     return ret;
