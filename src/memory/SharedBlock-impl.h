@@ -166,7 +166,7 @@ template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t size, 
 												unsigned bufferOffset, unsigned blockOffset) const
 {
-	::memcpy((uint8_t *)buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
+	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 

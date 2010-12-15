@@ -70,8 +70,8 @@ public:
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	SharedBlock(Protocol &protocol, core::Mode &owner, uint8_t *hostAddr,
-		uint8_t *shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
+	SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
+		hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~SharedBlock();
