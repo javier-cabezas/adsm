@@ -297,13 +297,12 @@ Manager::memset(hostptr_t s, int c, size_t size)
     }
 
     gmacError_t ret = gmacSuccess;
-    uint8_t *ptr = (uint8_t *)s;
 
     const Object *obj = mode->getObject(s);
     ASSERTION(obj != NULL);
     // Check for a fast path -- probably the user is just
     // initializing a single object or a portion of an object
-    if(obj->addr() <= ptr && obj->end() >= (ptr + size)) {
+    if(obj->addr() <= s && obj->end() >= (s + size)) {
         size_t objSize = (size < obj->size()) ? size : obj->size();
         ret = obj->memset(s, c, objSize);
         obj->release();
@@ -316,17 +315,17 @@ Manager::memset(hostptr_t s, int c, size_t size)
     while(left > 0) {        
         // If there is no object, initialize the remaining host memory
         if(obj == NULL) {
-            ::memset(ptr, c, left);
+            ::memset(s, c, left);
             left = 0; // This will finish the loop
         }
         else {
             // Check if there is a memory gap of host memory at the begining of the
             // memory range that remains to be initialized
-            int gap = int(obj->addr() - ptr);
+            int gap = int(obj->addr() - s);
             if(gap > 0) { // If there is gap, initialize and advance the pointer
-                ::memset(ptr, c, gap);
+                ::memset(s, c, gap);
                 left -= gap;
-                ptr += gap;
+                s += gap;
                 gap = 0;
             }
             // Check the size of the memory range from the current pointer to the end of the object
@@ -335,14 +334,14 @@ Manager::memset(hostptr_t s, int c, size_t size)
             // If the remaining memory in the object is larger than the remaining memory range, adjust
             // the size of the memory range to be initialized by the object
             objSize = (objSize < left) ? objSize : left;
-            ret = obj->memset(ptr, c, objSize);
+            ret = obj->memset(s, c, objSize);
             if(ret != gmacSuccess) break;
             left -= objSize; // Account for the bytes initialized by the object
-            ptr += objSize;  // Advance the pointer
+            s += objSize;  // Advance the pointer
             obj->release();  // Release the object (it will not be needed anymore)
         }
         // Get the next object in the memory range that remains to be initialized
-        obj = mode->getObject(ptr);
+        obj = mode->getObject(s);
     }
 
     return ret;
@@ -363,14 +362,15 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
 
     // Control variables
     unsigned left = unsigned(size);
-    uint8_t *ptr = (uint8_t *)src;
 
     unsigned copySize = unsigned(active->size());
     // Adjust the first copy to fit in a block
     unsigned aligment = objOffset % paramPageSize;
     if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
     // Copy the data to the first block
-    ::memcpy(active->addr(), ptr, copySize);
+    ::memcpy(active->addr(), src, copySize);
+
+    hostptr_t ptr = src;
     while(left > 0) {
         // We do not need for the active buffer to be full because ::memcpy() is
         // a synchronous call
@@ -475,7 +475,6 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
 
     // Control variables
     unsigned left = unsigned(size);
-    uint8_t *ptr = (uint8_t *)dst;
 
     unsigned copySize = unsigned(active->size());
     // Adjust the first copy to fit in a block
@@ -502,8 +501,8 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
         // Wait for the active buffer to be full
         active->wait();
         // Copy the active buffer to host
-        ::memcpy(ptr, obj.addr() + previousObjOffset, previousCopySize);
-        ptr += previousCopySize;
+        ::memcpy(dst, obj.addr() + previousObjOffset, previousCopySize);
+        dst += previousCopySize;
 
         // Swap buffers
         core::IOBuffer *tmp = active;
@@ -524,9 +523,9 @@ Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
     if(obj == NULL) return size; 
 
     // The object starts after the memory range, return the difference
-    if((uint8_t *)addr < obj->addr()) return unsigned(obj->addr() - (uint8_t *)addr);
+    if(addr < obj->addr()) return unsigned(obj->addr() - addr);
 
-    ASSERTION(obj->end() > (uint8_t *)addr); // Sanity check
+    ASSERTION(obj->end() > addr); // Sanity check
 
     return 0;
 }
@@ -556,43 +555,43 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
     size_t copySize = 0;
     while(left > 0) {
         // Get next objects involved, if necessary
-        if(dstMode != NULL && dstObject != NULL && dstObject->end() < ((uint8_t *)dst + offset)) {
+        if(dstMode != NULL && dstObject != NULL && dstObject->end() < (dst + offset)) {
             dstObject->release();
-            dstObject = dstMode->getObject((uint8_t *)dst + offset, left);
+            dstObject = dstMode->getObject(dst + offset, left);
         }
-        if(srcMode != NULL && srcObject != NULL && srcObject->end() < ((uint8_t *)src + offset)) {
+        if(srcMode != NULL && srcObject != NULL && srcObject->end() < (src + offset)) {
             srcObject->release();
-            srcObject = srcMode->getObject((uint8_t *)src + offset, left);
+            srcObject = srcMode->getObject(src + offset, left);
         }
 
         // Get the number of host-to-host memory we have to copy
-        size_t dstHostMemory = hostMemory((uint8_t *)dst + offset, left, dstObject);
-        size_t srcHostMemory = hostMemory((uint8_t *)src + offset, left, srcObject);
+        size_t dstHostMemory = hostMemory(dst + offset, left, dstObject);
+        size_t srcHostMemory = hostMemory(src + offset, left, srcObject);
 
         if(dstHostMemory != 0 && srcHostMemory != 0) { // Host-to-host memory copy
             copySize = (dstHostMemory < srcHostMemory) ? dstHostMemory : srcHostMemory;
-            ::memcpy((uint8_t *)dst + offset, (uint8_t *)src + offset, copySize);
+            ::memcpy(dst + offset, src + offset, copySize);
             ret = gmacSuccess;
         }
         else if(dstHostMemory != 0) { // Object-to-host memory copy
-            size_t srcCopySize = size_t(srcObject->end() - (uint8_t *)src - offset);
+            size_t srcCopySize = size_t(srcObject->end() - src - offset);
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
-            unsigned srcObjectOffset = unsigned((uint8_t *)src + offset - srcObject->addr());
-            ret = memcpyFromObject((uint8_t *)dst + offset, *srcObject, copySize, srcObjectOffset);
+            unsigned srcObjectOffset = unsigned(src + offset - srcObject->addr());
+            ret = memcpyFromObject(dst + offset, *srcObject, copySize, srcObjectOffset);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
-            size_t dstCopySize = size_t(dstObject->end() - (uint8_t *)dst - offset);
+            size_t dstCopySize = size_t(dstObject->end() - dst - offset);
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
-            unsigned dstObjectOffset = unsigned((uint8_t *)dst + offset - dstObject->addr());
-            ret = memcpyToObject(*dstObject, (uint8_t *)src + offset, copySize, dstObjectOffset);
+            unsigned dstObjectOffset = unsigned(dst + offset - dstObject->addr());
+            ret = memcpyToObject(*dstObject, src + offset, copySize, dstObjectOffset);
         }
         else { // Object-to-object memory copy
-            size_t srcCopySize = size_t(srcObject->end() - (uint8_t *)src - offset);
-            size_t dstCopySize = size_t(dstObject->end() - (uint8_t *)dst - offset);
+            size_t srcCopySize = size_t(srcObject->end() - src - offset);
+            size_t dstCopySize = size_t(dstObject->end() - dst - offset);
             copySize = (srcCopySize < dstCopySize) ? srcCopySize : dstCopySize;
             copySize = (copySize < left) ? copySize : left;
-            unsigned srcObjectOffset = unsigned((uint8_t *)src + offset - srcObject->addr());
-            unsigned dstObjectOffset = unsigned((uint8_t *)dst + offset - dstObject->addr());
+            unsigned srcObjectOffset = unsigned(src + offset - srcObject->addr());
+            unsigned dstObjectOffset = unsigned(dst + offset - dstObject->addr());
             ret = memcpyToObject(*dstObject, *srcObject, copySize, dstObjectOffset, srcObjectOffset);
         }
 
