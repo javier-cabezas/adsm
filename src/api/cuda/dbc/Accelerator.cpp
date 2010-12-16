@@ -1,3 +1,4 @@
+#ifdef USE_DBC
 #include "api/cuda/Accelerator.h"
 
 namespace __dbc { namespace cuda {
@@ -87,5 +88,5 @@ gmacError_t Accelerator::copyToHostAsync(__impl::cuda::IOBuffer &buffer, size_t 
 }
 
 }}
-
+#endif
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

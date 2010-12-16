@@ -1,5 +1,4 @@
-#ifndef GMAC_MEMORY_DBC_BLOCK_IMPL_H_
-#define GMAC_MEMORY_DBC_BLOCK_IMPL_H_
+#ifdef USE_DBC
 
 #include "core/IOBuffer.h"
 #include "memory/Block.h"
@@ -49,6 +48,6 @@ Block::memset(int v, size_t size, size_t blockOffset) const
 
 }}
 
-#endif /* BLOCK_IMPL_H */
+#endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
