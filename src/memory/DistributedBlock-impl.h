@@ -83,7 +83,7 @@ inline gmacError_t DistributedBlock<T>::toAccelerator()
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToHost(const hostptr_t src, size_t size, unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
 {
     ::memcpy(StateBlock<T>::shadow_ + blockOffset, src, size);
     return gmacSuccess;
@@ -91,14 +91,14 @@ inline gmacError_t DistributedBlock<T>::copyToHost(const hostptr_t src, size_t s
 
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t size, 
-												unsigned bufferOffset, unsigned blockOffset) const
+												size_t bufferOffset, size_t blockOffset) const
 {
 	::memcpy(StateBlock<T>::shadow_ + blockOffset, buffer.addr() + bufferOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
@@ -111,7 +111,7 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, s
 
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-												  unsigned bufferOffset, unsigned blockOffset) const
+												  size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
@@ -123,7 +123,7 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(core::IOBuffer &buffer
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromHost(hostptr_t dst, size_t size, unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
 {
     ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
@@ -131,14 +131,14 @@ inline gmacError_t DistributedBlock<T>::copyFromHost(hostptr_t dst, size_t size,
 
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t size, 
-												  unsigned bufferOffset, unsigned blockOffset) const
+												  size_t bufferOffset, size_t blockOffset) const
 {
 	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
 {
     ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
@@ -146,21 +146,21 @@ inline gmacError_t DistributedBlock<T>::copyFromAccelerator(hostptr_t dst, size_
 
 template<typename T>
 inline gmacError_t DistributedBlock<T>::copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-													unsigned bufferOffset, unsigned blockOffset) const
+													size_t bufferOffset, size_t blockOffset) const
 {
 	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::hostMemset(int v, size_t size, unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::hostMemset(int v, size_t size, size_t blockOffset) const
 {
     ::memset(StateBlock<T>::shadow_ + blockOffset, v, size);
     return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t DistributedBlock<T>::acceleratorMemset(int v, size_t size, unsigned blockOffset) const
+inline gmacError_t DistributedBlock<T>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;

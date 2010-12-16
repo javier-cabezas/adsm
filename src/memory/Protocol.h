@@ -184,7 +184,7 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
 	virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffet, unsigned blockOffset) const = 0;
+		size_t bufferOffet, size_t blockOffset) const = 0;
 	
     //! Copy the contents an I/O buffer to a memory block
     /*!
@@ -197,7 +197,7 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
 	virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffet, unsigned blockOffset) const = 0;
+		size_t bufferOffet, size_t blockOffset) const = 0;
 
     //! Initializes a memory range within a memory block to a specific value
     /*!
@@ -209,10 +209,10 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
-        unsigned blockOffset) const = 0;
+        size_t blockOffset) const = 0;
 
 	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
-	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, unsigned, unsigned) const;
+	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, size_t, size_t) const;
 };
 
 }}

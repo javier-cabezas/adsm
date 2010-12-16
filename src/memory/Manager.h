@@ -81,7 +81,7 @@ protected:
         \return Error code
     */
     gmacError_t memcpyToObject(const Object &obj, const hostptr_t src, 
-        size_t size, unsigned objOffset);
+        size_t size, size_t objOffset);
 
     //! Copy data from object to object
     /*!
@@ -93,7 +93,7 @@ protected:
         \return Error code
     */
     gmacError_t memcpyToObject(const Object &dstObj, const Object &srcObj,
-        size_t size, unsigned dstOffset, unsigned srcOffset);
+        size_t size, size_t dstOffset, size_t srcOffset);
 
     //! Copy data from an object to host memory
     /*!
@@ -104,7 +104,7 @@ protected:
         \return Error code
     */
     gmacError_t memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
-        unsigned objOffset);
+        size_t objOffset);
 
     //! Get the number of bytes at the begining of a range that are in host memory
     /*!

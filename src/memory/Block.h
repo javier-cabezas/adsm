@@ -160,14 +160,14 @@ public:
         \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
         \return Error code
         \warning This method should be only called from a Protocol class
-        \sa copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyToAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa copyFromAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa copyToHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa copyToAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Protocol
     */
-	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned blockOffset);
+	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
+		size_t bufferOffset, size_t blockOffset);
     
     //! Initializes a memory range within the block to a specific value
     /*!
@@ -176,7 +176,7 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
         \return Error code
     */
-    gmacError_t memset(int v, size_t size, unsigned blockOffset = 0) const;
+    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0) const;
 
     //! Copy data from host memory to the memory block
     /*!
@@ -185,7 +185,7 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
         \return Error code
     */
-    gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, unsigned blockOffset = 0) const;
+    //TESTABLE gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, size_t blockOffset = 0) const;
 
     //! Copy data from a GMAC object to the memory block
     /*!
@@ -195,7 +195,7 @@ public:
         \return Error code
     */
     gmacError_t memcpyFromObject(const Object &object, size_t size, 
-        unsigned blockOffset = 0, unsigned objectOffset = 0);
+        size_t blockOffset = 0, size_t objectOffset = 0);
 
     //! Copy data from the memory block to host memory
     /*!
@@ -204,7 +204,7 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to start copying data from
         \return Error code
     */
-    gmacError_t memcpyToMemory(hostptr_t dst, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t memcpyToMemory(hostptr_t dst, size_t size, size_t blockOffset = 0) const;
 
     //! Get memory block owner
     /*!
@@ -240,7 +240,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyToHost(const hostptr_t src, size_t size, 
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block host memory
     /*!
@@ -252,7 +252,7 @@ public:
         \warning This method should be only called from a Protocol class
     */
 	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 
     //! Copy the data from a host memory location to the block accelerator memory
     /*!
@@ -264,7 +264,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block accelerator memory
     /*!
@@ -277,7 +277,7 @@ public:
         \sa __impl::memory::Protocol
     */
 	virtual gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 	
     //! Copy the data from the block host memory to a host memory location
     /*!
@@ -289,7 +289,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyFromHost(hostptr_t dst, size_t size,
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
 
     //! Copy data from the block host memory to an I/O buffer
     /*!
@@ -302,7 +302,7 @@ public:
         \sa __impl::memory::Protocol
     */
 	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 
     //! Copy the data from the block accelerator memory to a host memory location
     /*!
@@ -314,7 +314,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
 
     //! Copy data from the block accelerator memory to an I/O buffer
     /*!
@@ -327,7 +327,7 @@ public:
         \sa __impl::memory::Protocol
     */
 	virtual gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const = 0;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
     
     //! Initializes a memory range within the block host memory to a specific value
     /*!
@@ -339,7 +339,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t hostMemset(int v, size_t size,
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
 
     //! Initializes a memory range within the block accelerator memory to a specific value
     /*!
@@ -351,7 +351,7 @@ public:
         \sa __impl::memory::Protocol
     */
     virtual gmacError_t acceleratorMemset(int v, size_t size, 
-        unsigned blockOffset = 0) const = 0;
+        size_t blockOffset = 0) const = 0;
     
 	Protocol &getProtocol();
 };

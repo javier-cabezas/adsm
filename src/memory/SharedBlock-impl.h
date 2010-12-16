@@ -27,7 +27,7 @@ inline core::Mode &SharedBlock<T>::owner() const
 template<typename T>
 inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	unsigned offset = unsigned(addr - StateBlock<T>::addr_);
+	size_t offset = addr - StateBlock<T>::addr_;
     accptr_t ret = acceleratorAddr_ + offset;
 	return ret;
 }
@@ -128,7 +128,7 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyToHost(const hostptr_t src, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
 {
     ::memcpy(StateBlock<T>::shadow_ + blockOffset, src, size);
     return gmacSuccess;
@@ -136,27 +136,27 @@ inline gmacError_t SharedBlock<T>::copyToHost(const hostptr_t src, size_t size, 
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t size, 
-											  unsigned bufferOffset, unsigned blockOffset) const
+											  size_t bufferOffset, size_t blockOffset) const
 {
 	::memcpy(StateBlock<T>::shadow_ + blockOffset, buffer.addr() + bufferOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
 {
     return owner_.copyToAccelerator(acceleratorAddr_ + blockOffset, src, size);
 }
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-												unsigned bufferOffset, unsigned blockOffset) const
+												size_t bufferOffset, size_t blockOffset) const
 {
 	return owner_.bufferToAccelerator(acceleratorAddr_ + blockOffset, buffer, size, bufferOffset);
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyFromHost(hostptr_t dst, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
 {
     ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
     return gmacSuccess;
@@ -164,34 +164,34 @@ inline gmacError_t SharedBlock<T>::copyFromHost(hostptr_t dst, size_t size, unsi
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t size, 
-												unsigned bufferOffset, unsigned blockOffset) const
+												size_t bufferOffset, size_t blockOffset) const
 {
 	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
 {
     return owner_.copyToHost(dst, acceleratorAddr_ + blockOffset, size);
 }
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-												  unsigned bufferOffset, unsigned blockOffset) const
+												  size_t bufferOffset, size_t blockOffset) const
 {
 	return owner_.acceleratorToBuffer(buffer, acceleratorAddr_ + blockOffset, size, bufferOffset);
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::hostMemset(int v, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::hostMemset(int v, size_t size, size_t blockOffset) const
 {
     ::memset(StateBlock<T>::shadow_ + blockOffset, v, size);
     return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::acceleratorMemset(int v, size_t size, unsigned blockOffset) const
+inline gmacError_t SharedBlock<T>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
 {
     return owner_.memset(acceleratorAddr_ + blockOffset, v, size);
 }

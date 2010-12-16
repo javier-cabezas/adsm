@@ -93,32 +93,32 @@ public:
 	gmacError_t toAccelerator();
 
     gmacError_t copyToHost(const hostptr_t src, size_t size, 
-        unsigned blockOffset = 0) const;
+        size_t blockOffset = 0) const;
     
 	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
     gmacError_t copyToAccelerator(const hostptr_t src, size_t size, 
-        unsigned blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
 	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const;
 	
     gmacError_t copyFromHost(hostptr_t dst, size_t size,
-        unsigned blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
 	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
     gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-        unsigned blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
 	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned blockOffset = 0) const;
+		size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
-    gmacError_t hostMemset(int v, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
 
-    gmacError_t acceleratorMemset(int v, size_t size, unsigned blockOffset = 0) const;
+    gmacError_t acceleratorMemset(int v, size_t size, size_t blockOffset = 0) const;
 };
 
 

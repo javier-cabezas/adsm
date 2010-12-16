@@ -32,24 +32,24 @@ memory::Protocol *protocolInit(unsigned flags)
         if(0 != (flags & 0x1)) {
             ret = new memory::protocol::Lazy<
                 memory::DistributedObject<memory::protocol::LazyBase::State> >(
-                (unsigned)paramRollSize);
+                paramRollSize);
         }
         else {
             ret = new memory::protocol::Lazy<
                 memory::SharedObject<memory::protocol::LazyBase::State> >(
-                (unsigned)paramRollSize);
+                paramRollSize);
         }
     }
     else if(strcasecmp(paramProtocol, "Lazy") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new memory::protocol::Lazy<
                 memory::DistributedObject<memory::protocol::LazyBase::State> >(
-                (unsigned)-1);
+                (size_t)-1);
         }
         else {
             ret = new memory::protocol::Lazy<
                 memory::SharedObject<memory::protocol::LazyBase::State> >(
-                (unsigned)-1);
+                (size_t)-1);
         }
     }
     else {

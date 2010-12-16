@@ -10,30 +10,6 @@
 
 namespace __impl { namespace cuda {
 
-#if 0
-inline
-CUdeviceptr Accelerator::gpuAddr(void *addr)
-{
-#if CUDA_VERSION <= 3010
-    unsigned long a = (unsigned long)addr;
-    return (CUdeviceptr)(a & 0xffffffff);
-#else
-    return (CUdeviceptr)addr;
-#endif
-}
-
-inline
-CUdeviceptr Accelerator::gpuAddr(const void *addr)
-{
-#if CUDA_VERSION <= 3010
-    unsigned long a = (unsigned long)addr;
-    return (CUdeviceptr)(a & 0xffffffff);
-#else
-    return (CUdeviceptr)addr;
-#endif
-}
-#endif
-
 inline CUdevice
 Accelerator::device() const
 {
@@ -69,7 +45,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 }
 
 inline
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, Mode &mode, CUstream stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
@@ -105,7 +81,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 }
 
 inline
-gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;

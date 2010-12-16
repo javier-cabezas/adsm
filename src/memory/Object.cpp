@@ -5,12 +5,12 @@
 
 namespace __impl { namespace memory {
 
-Object::BlockMap::const_iterator Object::firstBlock(unsigned &objectOffset) const
+Object::BlockMap::const_iterator Object::firstBlock(size_t &objectOffset) const
 {
     BlockMap::const_iterator i = blocks_.begin();
     if(i == blocks_.end()) return i;
     while(objectOffset >= i->second->size()) {
-        objectOffset -= unsigned(i->second->size());
+        objectOffset -= i->second->size();
         i++;
         if(i == blocks_.end()) return i;
     }
@@ -29,17 +29,17 @@ gmacError_t Object::coherenceOp(Protocol::CoherenceOp op) const
 }
 
 gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-							 unsigned bufferOffset, unsigned objectOffset) const
+							 size_t bufferOffset, size_t objectOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
-    unsigned blockOffset = objectOffset;
+    size_t blockOffset = objectOffset;
 	for(; i != blocks_.end(); i++) {
 		size_t blockSize = size - blockOffset;
 		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();
 		ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
 		blockOffset = 0;
-		bufferOffset += unsigned(i->second->size());
+		bufferOffset += i->second->size();
 		size -= blockSize;
         if(size == 0) break;
 	}
@@ -49,9 +49,9 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 gmacError_t Object::memset(hostptr_t addr, int v, size_t size) const
 {
     gmacError_t ret = gmacSuccess;
-    unsigned objectOffset = unsigned(addr - addr_);
+    size_t objectOffset = size_t(addr - addr_);
     BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
-    unsigned blockOffset = objectOffset;
+    size_t blockOffset = objectOffset;
 	for(; i != blocks_.end(); i++) {
 		size_t blockSize = size - blockOffset;
 		blockSize = (blockSize < i->second->size()) ? blockSize : i->second->size();

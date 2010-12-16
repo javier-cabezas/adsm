@@ -163,7 +163,7 @@ inline gmacError_t Block::coherenceOp(Protocol::CoherenceOp op)
 }
 
 inline gmacError_t Block::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned blockOffset)
+		size_t bufferOffset, size_t blockOffset)
 {
 	lock();
 	gmacError_t ret =(protocol_.*op)(*this, buffer, size, bufferOffset, blockOffset);
@@ -171,7 +171,7 @@ inline gmacError_t Block::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer
 	return ret;
 }
 
-inline gmacError_t Block::memset(int v, size_t size, unsigned blockOffset) const
+inline gmacError_t Block::memset(int v, size_t size, size_t blockOffset) const
 {
     lock();
     gmacError_t ret = protocol_.memset(*this, v, size, blockOffset);

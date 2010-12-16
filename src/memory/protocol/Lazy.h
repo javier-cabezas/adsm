@@ -80,7 +80,7 @@ protected:
 	State state(GmacProtection prot) const;
 
     //! Maximum number of blocks in dirty state
-    unsigned limit_;
+    size_t limit_;
 
     //! Dirty block list
     //! List of all memory blocks in Dirty state
@@ -93,7 +93,7 @@ protected:
     /*!
         \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
     */
-    LazyBase(unsigned limit);
+    LazyBase(size_t limit);
 
     //! Default destructor
     virtual ~LazyBase();
@@ -129,13 +129,13 @@ public:
     gmacError_t toAccelerator(Block &block);
 
 	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned blockOffset) const;
+		size_t bufferOffset, size_t blockOffset) const;
 	
 	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffset, unsigned blockOffset) const;
+		size_t bufferOffset, size_t blockOffset) const;
 
     gmacError_t memset(const Block &block, int v, size_t size, 
-        unsigned blockOffset) const;
+        size_t blockOffset) const;
 };
 
 template<typename T>
@@ -145,7 +145,7 @@ public:
     /*!
         \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
     */
-    Lazy(unsigned limit);
+    Lazy(size_t limit);
 
     //! Default destructor
     virtual ~Lazy();

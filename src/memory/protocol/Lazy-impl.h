@@ -7,7 +7,7 @@
 namespace __impl { namespace memory { namespace protocol {
 
 template<typename T>
-inline Lazy<T>::Lazy(unsigned limit) :
+inline Lazy<T>::Lazy(size_t limit) :
     LazyBase(limit)
 {}
 

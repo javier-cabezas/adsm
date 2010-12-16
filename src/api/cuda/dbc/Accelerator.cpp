@@ -54,7 +54,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     return ret;
 }
 
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBuffer &buffer, unsigned bufferOff, size_t count, __impl::cuda::Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::cuda::Mode &mode, CUstream stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -70,7 +70,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBu
     return ret;
 }
 
-gmacError_t Accelerator::copyToHostAsync(__impl::cuda::IOBuffer &buffer, unsigned bufferOff, const accptr_t acc, size_t count, __impl::cuda::Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToHostAsync(__impl::cuda::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::cuda::Mode &mode, CUstream stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);

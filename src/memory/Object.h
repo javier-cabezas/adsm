@@ -71,7 +71,7 @@ protected:
         \param objectOffset Offset (in bytes) from the begining of the object where the block is located
         \return Constant iterator pointing to the block
     */
-    BlockMap::const_iterator firstBlock(unsigned &objectOffset) const;
+    BlockMap::const_iterator firstBlock(size_t &objectOffset) const;
 
     //! Execute a coherence operation over all the blocks of the object
     /*!
@@ -90,13 +90,13 @@ protected:
         \param bufferOffset Offset (in bytes) from the begining of the buffer to start performing the operation
         \param objectOffset Offset (in bytes) from the beginning of the block to start performing the operation
         \return Error code
-        \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyToAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyToAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
     */
 	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned objectOffset) const;
+		size_t bufferOffset, size_t objectOffset) const;
 
     //! Default constructor
     /*!
@@ -199,7 +199,7 @@ public:
         \return Error code
     */
 	gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
+		size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Copies the data from an I/O buffer to the object
     /*!
@@ -210,7 +210,7 @@ public:
         \return Error code
     */
 	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
+		size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Initializes a memory range within the object to a specific value
     /*!

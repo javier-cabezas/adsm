@@ -101,7 +101,7 @@ inline gmacError_t Object::signalWrite(hostptr_t addr) const
 }
 
 inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size, 
-									  unsigned bufferOffset, unsigned objectOffset) const
+									  size_t bufferOffset, size_t objectOffset) const
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyToBuffer, buffer, size, 
@@ -111,7 +111,7 @@ inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size,
 }
 
 inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-										unsigned bufferOffset, unsigned objectOffset) const
+										size_t bufferOffset, size_t objectOffset) const
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size, 

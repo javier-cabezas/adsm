@@ -12,7 +12,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
     gmacError_t ret = 
-		mode.malloc(&acceleratorAddr, size, (unsigned)paramPageSize);
+		mode.malloc(&acceleratorAddr, size, paramPageSize);
 	if(ret == gmacSuccess) {
 #ifdef USE_VM
         vm::Bitmap &bitmap = mode.dirtyBitmap();
@@ -30,7 +30,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
     hostptr_t mark = addr_;
-    unsigned offset = 0;
+    size_t offset = 0;
     for(BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
         SharedBlock<T> &oldBlock = *dynamic_cast<SharedBlock<T> *>(i->second);
         SharedBlock<T> *newBlock = new SharedBlock<T>(oldBlock.getProtocol(), mode,
@@ -41,7 +41,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 
         i->second = newBlock;
 
-        offset += unsigned(oldBlock.size());
+        offset += oldBlock.size();
 
         // Decrement reference count
         oldBlock.release();
@@ -74,14 +74,14 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, host
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
         // Populate the block-set
         hostptr_t mark = addr_;
-        unsigned offset = 0;
+        size_t offset = 0;
         while(size > 0) {
             size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
             mark += blockSize;
             blocks_.insert(BlockMap::value_type(mark, 
                         new SharedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
             size -= blockSize;
-            offset += unsigned(blockSize);
+            offset += blockSize;
         }
         TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", addr_, shadow_, (void *) acceleratorAddr_);
     }
@@ -107,7 +107,7 @@ inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
     accptr_t ret = NULL;
     lockRead();
     if(acceleratorAddr_ != NULL) {
-        unsigned offset = unsigned(addr - addr_);
+        size_t offset = addr - addr_;
         ret = acceleratorAddr_ + offset;
     }
     unlock();

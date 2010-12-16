@@ -184,7 +184,7 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
     if (count > buffer.size()) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
-    unsigned off = 0;
+    size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
         core::Mode * mode = proc.owner(addr + off);
@@ -194,12 +194,12 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        unsigned objOff = unsigned(addr - obj->addr());
+        size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
 		ret = obj->copyToBuffer(buffer, c, off, objOff);
 		obj->release();
         if(ret != gmacSuccess) return ret;
-        off += unsigned(objCount);
+        off += objCount;
         TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(addr + off < addr + count);
     return ret;
@@ -210,7 +210,7 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
     if (count > buffer.size()) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
-    unsigned off = 0;
+    size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
         core::Mode *mode = proc.owner(addr + off);
@@ -220,11 +220,11 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        unsigned objOff = unsigned(addr - obj->addr());
+        size_t objOff = addr - obj->addr();
 		ret = obj->copyFromBuffer(buffer, c, off, objOff);
 		obj->release();        
         if(ret != gmacSuccess) return ret;
-        off += unsigned(objCount);
+        off += objCount;
         TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(addr + off < addr + count);
     return ret;
@@ -350,7 +350,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
 
 gmacError_t
 Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
-                        unsigned objOffset)
+                        size_t objOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -361,12 +361,12 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
     ASSERTION(passive != NULL);
 
     // Control variables
-    unsigned left = unsigned(size);
+    size_t left = size_t(size);
 
-    unsigned copySize = unsigned(active->size());
+    size_t copySize = active->size();
     // Adjust the first copy to fit in a block
-    unsigned aligment = objOffset % paramPageSize;
-    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+    size_t aligment = objOffset % paramPageSize;
+    if(aligment != 0) copySize = paramPageSize - aligment;
     // Copy the data to the first block
     ::memcpy(active->addr(), src, copySize);
 
@@ -381,7 +381,7 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
         objOffset += copySize;
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
-            copySize = (left < passive->size()) ? left : unsigned(passive->size());
+            copySize = (left < passive->size()) ? left : passive->size();
             passive->wait(); // Avoid overwritten a buffer that is already in use
             ::memcpy(passive->addr(), ptr, copySize);
         }
@@ -402,7 +402,7 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
 
 gmacError_t
 Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
-                        unsigned dstOffset, unsigned srcOffset)
+                        size_t dstOffset, size_t srcOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -413,15 +413,15 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     ASSERTION(passive != NULL);
 
     // Control variables
-    unsigned left = unsigned(size);
-    unsigned copySize = unsigned(active->size());
+    size_t left = size;
+    size_t copySize = active->size();
     // Adjust the first copy to fit in a block
-    unsigned aligment = dstOffset % paramPageSize;
-    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+    size_t aligment = dstOffset % paramPageSize;
+    if(aligment != 0) copySize = paramPageSize - aligment;
     // Adjust the size to only cover one block in the source object
     aligment = srcOffset % paramPageSize;
     if(aligment + copySize > paramPageSize) 
-        copySize = unsigned(paramPageSize - aligment);
+        copySize = paramPageSize - aligment;
     // Copy first chunk of data
     srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
     while(left > 0) {
@@ -434,13 +434,13 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
         if(left > 0) {
             // We need to recalculate the object size to avoid crossing blocks in the
             // destination and source objects
-            copySize = unsigned(passive->size());
+            copySize = passive->size();
             aligment = dstOffset % paramPageSize;
-            if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+            if(aligment != 0) copySize = paramPageSize - aligment;
             // Adjust the size to only cover one block in the source object
             aligment = srcOffset % paramPageSize;
             if(aligment + copySize > paramPageSize) 
-                copySize = unsigned(paramPageSize - aligment);
+                copySize = paramPageSize - aligment;
             // Avoid overwritting a buffer that is already in use
             passive->wait();
             // Request the next copy
@@ -463,7 +463,7 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
 
 gmacError_t
 Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
-                          unsigned objOffset)
+                          size_t objOffset)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -474,25 +474,25 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
     ASSERTION(passive != NULL);
 
     // Control variables
-    unsigned left = unsigned(size);
+    size_t left = size;
 
-    unsigned copySize = unsigned(active->size());
+    size_t copySize = active->size();
     // Adjust the first copy to fit in a block
-    unsigned aligment = objOffset % paramPageSize;
-    if(aligment != 0) copySize = unsigned(paramPageSize - aligment);
+    size_t aligment = objOffset % paramPageSize;
+    if(aligment != 0) copySize = paramPageSize - aligment;
 
     // Copy the data to the first block
     ret = obj.copyToBuffer(*active, copySize, 0, objOffset);
     if(ret != gmacSuccess) return ret;
     while(left > 0) {
         // Save values to use when copying the buffer to host memory
-        unsigned previousObjOffset = objOffset;
-        unsigned previousCopySize = copySize;
+        size_t previousObjOffset = objOffset;
+        size_t previousCopySize = copySize;
         left -= copySize;
         objOffset += copySize;        
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
-            copySize = (left < passive->size()) ? left : unsigned(passive->size());
+            copySize = (left < passive->size()) ? left : passive->size();
             // No need to wait for the buffer, because ::memcpy is a
             // synchronous call
             ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
@@ -523,7 +523,7 @@ Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
     if(obj == NULL) return size; 
 
     // The object starts after the memory range, return the difference
-    if(addr < obj->addr()) return unsigned(obj->addr() - addr);
+    if(addr < obj->addr()) return obj->addr() - addr;
 
     ASSERTION(obj->end() > addr); // Sanity check
 
@@ -574,24 +574,24 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
             ret = gmacSuccess;
         }
         else if(dstHostMemory != 0) { // Object-to-host memory copy
-            size_t srcCopySize = size_t(srcObject->end() - src - offset);
+            size_t srcCopySize = srcObject->end() - src - offset;
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
-            unsigned srcObjectOffset = unsigned(src + offset - srcObject->addr());
+            size_t srcObjectOffset = src + offset - srcObject->addr();
             ret = memcpyFromObject(dst + offset, *srcObject, copySize, srcObjectOffset);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
-            size_t dstCopySize = size_t(dstObject->end() - dst - offset);
+            size_t dstCopySize = dstObject->end() - dst - offset;
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
-            unsigned dstObjectOffset = unsigned(dst + offset - dstObject->addr());
+            size_t dstObjectOffset = dst + offset - dstObject->addr();
             ret = memcpyToObject(*dstObject, src + offset, copySize, dstObjectOffset);
         }
         else { // Object-to-object memory copy
-            size_t srcCopySize = size_t(srcObject->end() - src - offset);
-            size_t dstCopySize = size_t(dstObject->end() - dst - offset);
+            size_t srcCopySize = srcObject->end() - src - offset;
+            size_t dstCopySize = dstObject->end() - dst - offset;
             copySize = (srcCopySize < dstCopySize) ? srcCopySize : dstCopySize;
             copySize = (copySize < left) ? copySize : left;
-            unsigned srcObjectOffset = unsigned(src + offset - srcObject->addr());
-            unsigned dstObjectOffset = unsigned(dst + offset - dstObject->addr());
+            size_t srcObjectOffset = src + offset - srcObject->addr();
+            size_t dstObjectOffset = dst + offset - dstObject->addr();
             ret = memcpyToObject(*dstObject, *srcObject, copySize, dstObjectOffset, srcObjectOffset);
         }
 

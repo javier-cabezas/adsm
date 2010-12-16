@@ -45,11 +45,12 @@ protected:
 	Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
     virtual ~Block();
 public:
+
+	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
+    gmacError_t memset(int v, size_t size, size_t blockOffset = 0) const;
 };
 
 }}
-
-#include "Block-impl.h"
 
 #endif /* BLOCK_H */
 

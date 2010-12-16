@@ -7,8 +7,8 @@
 namespace __dbc { namespace memory { namespace protocol {
 
 gmacError_t
-Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                      const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                      const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -22,8 +22,8 @@ Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, unsi
 }
 
 gmacError_t
-Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                         const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                         const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -37,8 +37,8 @@ Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, u
 }
 
 gmacError_t
-Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                        const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                        const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -52,8 +52,8 @@ Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, un
 }
 
 gmacError_t
-Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                             const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                             const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -67,8 +67,8 @@ Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDs
 }
 
 gmacError_t
-Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                                const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                                const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -82,8 +82,8 @@ Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &bloc
 }
 
 gmacError_t
-Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, unsigned blockOffDst,
-                               const StateObject<State> &objectSrc, Block &blockSrc, unsigned blockOffSrc, size_t count)
+Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
+                               const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(blockOffDst + count <= blockDst.size());
@@ -132,7 +132,7 @@ Lazy::signalWrite(const Object &obj, void *addr)
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsigned objectOff, size_t count)
+Lazy::toIOBuffer(IOBuffer &buffer, size_t bufferOff, const Object &obj, size_t objectOff, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -146,7 +146,7 @@ Lazy::toIOBuffer(IOBuffer &buffer, unsigned bufferOff, const Object &obj, unsign
 }
 
 gmacError_t
-Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsigned bufferOff, size_t count)
+Lazy::fromIOBuffer(const Object &obj, size_t objectOff, IOBuffer &buffer, size_t bufferOff, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -160,7 +160,7 @@ Lazy::fromIOBuffer(const Object &obj, unsigned objectOff, IOBuffer &buffer, unsi
 }
 
 gmacError_t
-Lazy::toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t count)
+Lazy::toPointer(void *dst, const Object &objSrc, size_t objectOff, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -173,7 +173,7 @@ Lazy::toPointer(void *dst, const Object &objSrc, unsigned objectOff, size_t coun
 }
 
 gmacError_t
-Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *src, size_t count)
+Lazy::fromPointer(const Object &objDst, size_t objectOff, const void *src, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -185,7 +185,7 @@ Lazy::fromPointer(const Object &objDst, unsigned objectOff, const void *src, siz
 }
 
 gmacError_t
-Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned offSrc, size_t count)
+Lazy::copy(const Object &objDst, size_t offDst, const Object &objSrc, size_t offSrc, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -198,7 +198,7 @@ Lazy::copy(const Object &objDst, unsigned offDst, const Object &objSrc, unsigned
 }
 
 gmacError_t
-Lazy::memset(const Object &obj, unsigned objectOff, int c, size_t count)
+Lazy::memset(const Object &obj, size_t objectOff, int c, size_t count)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);

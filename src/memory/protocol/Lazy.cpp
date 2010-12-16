@@ -19,7 +19,7 @@
 namespace __impl { namespace memory { namespace protocol {
 
 
-LazyBase::LazyBase(unsigned limit) :
+LazyBase::LazyBase(size_t limit) :
     gmac::util::Lock("Lazy"),
     limit_(limit)
 {
@@ -239,7 +239,7 @@ gmacError_t LazyBase::unmapFromAccelerator(Block &b)
 void LazyBase::addDirty(Block &block)
 {
     dbl_.push(block);
-    if(limit_ == unsigned(-1)) return;
+    if(limit_ == size_t(-1)) return;
     while(dbl_.size() > limit_) {
         Block *b = dbl_.pop();
         b->coherenceOp(&Protocol::release);
@@ -342,7 +342,7 @@ gmacError_t LazyBase::toAccelerator(Block &b)
 }
 
 gmacError_t LazyBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t size,
-							   unsigned bufferOffset, unsigned blockOffset) const
+							   size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
@@ -359,7 +359,7 @@ gmacError_t LazyBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_
 }
 
 gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t size, 
-							   unsigned bufferOffset, unsigned blockOffset) const
+							   size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
@@ -380,7 +380,7 @@ gmacError_t LazyBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, siz
 	return ret;
 }
 
-gmacError_t LazyBase::memset(const Block &b, int v, size_t size, unsigned blockOffset) const
+gmacError_t LazyBase::memset(const Block &b, int v, size_t size, size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
