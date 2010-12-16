@@ -134,7 +134,18 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t remove(Block &block) = 0;
+    virtual gmacError_t unmapFromAccelerator(Block &block) = 0;
+
+    //! Adds a block to the coherence domain.
+    /*!
+        This method ensures that the block host memory contains an updated copy of the
+        data, and then matks the block to not use the accelerator memory any more. After calling
+        this method a memory block will always remain in host memory
+        \param block Memory block to add to the coherence domain
+        \return Error code
+        \warning This method assumes that the block is not modified during its execution
+    */
+    virtual gmacError_t mapToAccelerator(Block &block) = 0;
 
     //! Deletes all references to the block within the protocol
     /*!

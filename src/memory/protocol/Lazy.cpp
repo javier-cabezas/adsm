@@ -205,10 +205,20 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
 }
 #endif
 
-gmacError_t LazyBase::remove(Block &b)
+gmacError_t LazyBase::mapToAccelerator(Block &b)
 {
     memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
-    TRACE(LOCAL,"Releasing block %p", block.addr());
+    ASSERTION(block.state() == HostOnly);
+    TRACE(LOCAL,"Mapping block to accelerator %p", block.addr());
+    block.state(Dirty);
+    addDirty(block);
+    return gmacSuccess;
+}
+
+gmacError_t LazyBase::unmapFromAccelerator(Block &b)
+{
+    memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
+    TRACE(LOCAL,"Unmapping block from accelerator %p", block.addr());
     gmacError_t ret = gmacSuccess;
     switch(block.state()) {
         case HostOnly:
@@ -279,10 +289,12 @@ gmacError_t LazyBase::deleteBlock(Block &block)
 
 gmacError_t LazyBase::toHost(Block &b)
 {
+    TRACE(LOCAL,"Sending block to host: %p", b.addr());
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Invalid:
+            TRACE(LOCAL,"Invalid block");
 			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             ret = block.toHost();
@@ -290,8 +302,13 @@ gmacError_t LazyBase::toHost(Block &b)
             block.state(ReadOnly);
             break;
         case Dirty:
+            TRACE(LOCAL,"Dirty block");
+            break;
         case ReadOnly:
+            TRACE(LOCAL,"ReadOnly block");
+            break;
         case HostOnly:
+            TRACE(LOCAL,"HostOnly block");
             break;
     }
     return ret;
@@ -299,20 +316,27 @@ gmacError_t LazyBase::toHost(Block &b)
 
 gmacError_t LazyBase::toAccelerator(Block &b)
 {
+    TRACE(LOCAL,"Sending block to accelerator: %p", b.addr());
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Dirty:
+            TRACE(LOCAL,"Dirty block");
             ret = block.toAccelerator();
             if(ret != gmacSuccess) break;
-			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+            if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             block.state(ReadOnly);
-        break;
-    case Invalid:
-    case ReadOnly:
-    case HostOnly:
-        break;
+            break;
+        case Invalid:
+            TRACE(LOCAL,"Invalid block");
+            break;
+        case ReadOnly:
+            TRACE(LOCAL,"ReadOnly block");
+            break;
+        case HostOnly:
+            TRACE(LOCAL,"HostOnly block");
+            break;
     }
     return ret;
 }

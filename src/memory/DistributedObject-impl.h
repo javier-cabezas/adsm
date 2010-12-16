@@ -58,7 +58,7 @@ inline accptr_t DistributedObject<T>::acceleratorAddr(const hostptr_t addr) cons
 {
 	accptr_t ret = NULL;
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i != blocks_.end()) {
 		ret = i->second->acceleratorAddr(addr);
 	}
@@ -70,7 +70,7 @@ template<typename T>
 inline core::Mode &DistributedObject<T>::owner(const hostptr_t addr) const
 {
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	ASSERTION(i != blocks_.end());
 	core::Mode &ret = i->second->owner();
 	unlock();
@@ -79,18 +79,18 @@ inline core::Mode &DistributedObject<T>::owner(const hostptr_t addr) const
 
 
 template<typename T>
-inline bool DistributedObject<T>::addOwner(core::Mode &mode)
+inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 {
     // Make sure that we do not add the same owner twice
     lockRead();
     bool alreadyOwned = (acceleratorAddr_.find(&mode) != acceleratorAddr_.end());
     unlock();
-    if(alreadyOwned) return true;
+    if(alreadyOwned) return gmacSuccess;
 
     accptr_t acceleratorAddr = NULL;
     gmacError_t ret = 
 		mode.malloc(&acceleratorAddr, size_, (unsigned)paramPageSize);
-    if(ret != gmacSuccess) return false;
+    if(ret != gmacSuccess) return ret;
 
     lockWrite();
     acceleratorAddr_.insert(AcceleratorMap::value_type(&mode, acceleratorAddr));
@@ -102,11 +102,11 @@ inline bool DistributedObject<T>::addOwner(core::Mode &mode)
         
     }
 	unlock();
-	return true;
+	return gmacSuccess;
 }
 
 template<typename T>
-inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
+inline gmacError_t DistributedObject<T>::removeOwner(const core::Mode &mode)
 {
 	lockWrite();
     AcceleratorMap::iterator i = acceleratorAddr_.find((core::Mode *)&mode);
@@ -121,7 +121,23 @@ inline void DistributedObject<T>::removeOwner(const core::Mode &mode)
         if(acceleratorAddr_.empty()) Map::insertOrphan(*this);
     }
     unlock();
-	return;
+	return gmacSuccess;
+}
+
+template<typename T>
+inline
+gmacError_t DistributedObject<T>::mapToAccelerator()
+{
+    // TODO Fail
+	return gmacSuccess;
+}
+
+template<typename T>
+inline
+gmacError_t DistributedObject<T>::unmapFromAccelerator()
+{
+    // TODO Fail
+	return gmacSuccess;
 }
 
 }}

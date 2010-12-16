@@ -95,7 +95,7 @@ size_t APICALL gmacAccs()
 	gmac::exitGmac();
 	return ret;
 }
-#if 0
+
 gmacError_t APICALL gmacMigrate(int acc)
 {
 	gmacError_t ret = gmacSuccess;
@@ -113,7 +113,7 @@ gmacError_t APICALL gmacMigrate(int acc)
 	gmac::exitGmac();
 	return ret;
 }
-
+#if 0
 gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
 {
 #ifndef USE_MMAP

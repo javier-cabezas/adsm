@@ -50,6 +50,9 @@ protected:
     hostptr_t shadow_;
 	accptr_t  acceleratorAddr_;
 	core::Mode *owner_;
+
+    static accptr_t allocAcceleratorMemory(core::Mode &mode, size_t size);
+    gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
 public:
 	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, T init);
     virtual ~SharedObject();
@@ -57,8 +60,11 @@ public:
     accptr_t acceleratorAddr(const hostptr_t addr) const;
 	core::Mode &owner(const hostptr_t addr) const;
 
-	bool addOwner(core::Mode &owner);
-	void removeOwner(const core::Mode &owner);
+	gmacError_t addOwner(core::Mode &owner);
+	gmacError_t removeOwner(const core::Mode &owner);
+
+    gmacError_t unmapFromAccelerator();
+    gmacError_t mapToAccelerator();
 };
 
 }}

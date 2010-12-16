@@ -121,7 +121,7 @@ public:
     void receive();
     void sendReceive(THREAD_T id);
     void copy(THREAD_T id);
-    //gmacError_t migrate(Mode &mode, int acc);
+    gmacError_t migrate(Mode &mode, int acc);
 
     void addAccelerator(Accelerator *acc);
 

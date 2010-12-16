@@ -57,8 +57,9 @@ class Protocol;
 class GMAC_LOCAL ObjectMap : 
 	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
 public:
-    typedef gmacError_t(Object::*ObjectOp)(void) const;
-    typedef void (Object::*ModeOp)(const core::Mode &);
+    typedef gmacError_t(Object::*ObjectOp)(void);
+    typedef gmacError_t(Object::*ConstObjectOp)(void) const;
+    typedef gmacError_t(Object::*ModeOp)(const core::Mode &);
 protected:
 	friend class Map;
     typedef std::map<const void *, Object *> Parent;
@@ -104,7 +105,7 @@ public:
     /*!
         \param addr Starting address of the memory range where the object is located
         \param size Size (in bytes) of the memory range where the object is located
-        \raturn First object within the memory range. NULL if no object is found
+        \return First object within the memory range. NULL if no object is found
     */
 	virtual const Object *get(const void *addr, size_t size) const;
 
@@ -120,17 +121,29 @@ public:
         \sa __impl::memory::Object::acquire
         \sa __impl::memory::Object::toHost
         \sa __impl::memory::Object::toAccelerator
+        \return Error code
     */
-    void forEach(ObjectOp op) const;
+    gmacError_t forEach(ObjectOp op) const;
 
-    //! Execute a mode operation over all the objects in the map
+    //! Invoke a constant memory operation over all the objects in the map
+    /*!
+        \param op Memory operation to be executed
+        \sa __impl::memory::Object::acquire
+        \sa __impl::memory::Object::toHost
+        \sa __impl::memory::Object::toAccelerator
+        \return Error code
+    */
+    gmacError_t forEach(ConstObjectOp op) const;
+
+
+    //! Execute a mode operation over all the objects in the map without modifying the Mode
     /*!
         \param op Mode operation to be executed        
         \sa __impl::memory::Object::removeOwner
+        \sa __impl::memory::Object::realloc
+        \return Error code
     */
-    void forEach(const core::Mode &mode, ModeOp op) const;
-
-    //void reallocObjects(gmac::core::Mode &mode);
+    gmacError_t forEach(const core::Mode &mode, ModeOp op) const;
 };
  
 //! An object map associated to an execution mode

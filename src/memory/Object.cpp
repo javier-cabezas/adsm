@@ -49,7 +49,7 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 gmacError_t Object::memset(hostptr_t addr, int v, size_t size) const
 {
     gmacError_t ret = gmacSuccess;
-    unsigned objectOffset = unsigned((uint8_t *)addr - addr_);
+    unsigned objectOffset = unsigned(addr - addr_);
     BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
     unsigned blockOffset = objectOffset;
 	for(; i != blocks_.end(); i++) {

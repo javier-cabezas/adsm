@@ -53,8 +53,11 @@ public:
     accptr_t acceleratorAddr(const hostptr_t addr) const;
 	core::Mode &owner(const hostptr_t addr) const;
 
-	bool addOwner(core::Mode &owner);
-	void removeOwner(const core::Mode &owner);
+	gmacError_t addOwner(core::Mode &owner);
+	gmacError_t removeOwner(const core::Mode &owner);
+
+    gmacError_t mapToAccelerator();
+    gmacError_t unmapFromAccelerator();
 };
 
 }}

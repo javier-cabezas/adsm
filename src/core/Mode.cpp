@@ -153,24 +153,29 @@ gmacError_t Mode::sync()
     return error_;
 }
 
-#if 0
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
     TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
+
+    if (acc_ == &acc) {
+        switchOut();
+        return gmacSuccess;
+    }
     gmacError_t ret = gmacSuccess;
     size_t free;
     size_t needed = map_.memorySize();
     acc_->memInfo(&free, NULL);
 
     if (needed > free) {
+        switchOut();
         return gmacErrorInsufficientAcceleratorMemory;
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-//    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
+    map_.forEach(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
@@ -181,7 +186,8 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     acc_->registerMode(*this);
     
     TRACE(LOCAL,"Reallocating objects");
-    map_.reallocObjects(*this);
+    //map_.reallocObjects(*this);
+    map_.forEach(&memory::Object::mapToAccelerator);
 
     TRACE(LOCAL,"Reloading mode");
     reload();
@@ -190,7 +196,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     return ret;
 }
-#endif
+
 void Mode::memInfo(size_t *free, size_t *total)
 {
     switchIn();

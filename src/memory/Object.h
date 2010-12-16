@@ -150,13 +150,13 @@ public:
         \param The new owner of the mode
         \return Wether it was possible to add the owner or not
     */
-	virtual bool addOwner(core::Mode &owner) = 0;
+	virtual gmacError_t addOwner(core::Mode &owner) = 0;
 
     //! Remove an owner from the object
     /*!
         \param owner The owner to be removed
     */
-	virtual void removeOwner(const core::Mode &owner) = 0;
+	virtual gmacError_t removeOwner(const core::Mode &owner) = 0;
 
     //! Acquire the ownership of the object for the CPU
     /*!
@@ -220,6 +220,9 @@ public:
         \return Error code
     */
     gmacError_t memset(hostptr_t addr, int v, size_t size) const;
+
+    virtual gmacError_t mapToAccelerator() = 0;
+    virtual gmacError_t unmapFromAccelerator() = 0;
 };
 
 }}

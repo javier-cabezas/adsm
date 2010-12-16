@@ -112,7 +112,7 @@ protected:
 	gmacError_t error_;
 
     void cleanUpContexts();
-    void cleanUp();
+    gmacError_t cleanUp();
 public:
     Mode(Process &proc, Accelerator &acc);
     virtual ~Mode();
@@ -139,7 +139,7 @@ public:
     //void addCentralizedObject(memory::Object &obj);
     void removeObject(const memory::Object &obj);
     const memory::Object *getObject(const void *addr, size_t size = 0) const;
-	void forEachObject(memory::ObjectMap::ObjectOp op) const;
+	gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */
 	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
@@ -185,7 +185,7 @@ public:
     memory::vm::Bitmap & dirtyBitmap();
     const memory::vm::Bitmap & dirtyBitmap() const;
 #endif
-    //gmacError_t moveTo(Accelerator &acc);
+    gmacError_t moveTo(Accelerator &acc);
 
     void memInfo(size_t *free, size_t *total);
 

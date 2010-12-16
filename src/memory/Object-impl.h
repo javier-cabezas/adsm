@@ -26,13 +26,12 @@ inline Object::~Object()
     }
     blocks_.clear();
     unlock();
-    
 }
 
 inline hostptr_t Object::addr() const
 {
     // No need for lock -- addr_ is never modified
-    return (uint8_t *) addr_;   
+    return addr_;   
 }
 
 inline hostptr_t Object::end() const
@@ -81,7 +80,7 @@ inline gmacError_t Object::signalRead(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
 	else ret = i->second->signalRead(addr);
@@ -93,7 +92,7 @@ inline gmacError_t Object::signalWrite(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
 	else ret = i->second->signalWrite(addr);

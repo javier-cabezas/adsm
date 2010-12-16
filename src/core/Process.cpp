@@ -190,7 +190,7 @@ gmacError_t Process::globalMalloc(memory::Object &object, size_t /*size*/)
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {
-        if(object.addOwner(*i->first) == false) goto cleanup;
+        if(object.addOwner(*i->first) != gmacSuccess) goto cleanup;
     }
     unlock();
     global_.insert(object);
@@ -217,7 +217,6 @@ gmacError_t Process::globalFree(memory::Object &object)
     return gmacSuccess;
 }
 
-#if 0
 // This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
 {
@@ -225,7 +224,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
-    if (int(mode.accId()) != acc) {
+    if (int(mode.getAccelerator().id()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
         ret = mode.moveTo(*accs_[acc]);
@@ -240,7 +239,6 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     TRACE(LOCAL,"Context migrated");
     return ret;
 }
-#endif
 
 void Process::addAccelerator(Accelerator *acc)
 {

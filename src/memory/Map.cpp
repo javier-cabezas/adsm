@@ -77,32 +77,50 @@ size_t ObjectMap::memorySize() const
     return total;
 }
 
-void ObjectMap::forEach(ObjectOp op) const
+gmacError_t ObjectMap::forEach(ObjectOp op) const
 {
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) (i->second->*op)();
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)();
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
 
-void ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
+gmacError_t ObjectMap::forEach(ConstObjectOp op) const
 {
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) (i->second->*op)(mode);
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)();
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
 
-#if 0
-void ObjectMap::reallocObjects(core::Mode &mode)
+gmacError_t ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
 {
-    iterator i;
+    const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) i->second->realloc(mode);
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)(mode);
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
-#endif
-
 
 Map::Map(const char *name, core::Mode &parent) :
     ObjectMap(name), parent_(parent)

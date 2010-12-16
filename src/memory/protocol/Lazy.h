@@ -118,7 +118,9 @@ public:
 
     gmacError_t release(Block &block);
 
-    gmacError_t remove(Block &block);
+    gmacError_t mapToAccelerator(Block &block);
+
+    gmacError_t unmapFromAccelerator(Block &block);
 
     gmacError_t deleteBlock(Block &block);
 
