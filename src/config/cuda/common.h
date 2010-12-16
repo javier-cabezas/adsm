@@ -13,15 +13,17 @@ struct accptr_t {
     accptr_t(CUdeviceptr ptr) :
         ptr_(ptr) {}
 
+    accptr_t(int ptr) :
+        ptr_(ptr) { }
+
     accptr_t(long int ptr) :
         ptr_(ptr) {}
 
 #if CUDA_VERSION < 3020
     operator uint32_t() const { return uint32_t(ptr_); }
 #else
-    operator uint64_t() const { return uint64_t(ptr_); }
     operator CUdeviceptr() { return ptr_; }
-    operator const CUdeviceptr() const { return ptr_; }
+    operator CUdeviceptr() const { return ptr_; }
 #endif
     operator void *() { return (void *)(ptr_); }
     operator void *() const { return (void *)(ptr_); }
@@ -34,6 +36,12 @@ bool operator==(const accptr_t &ptr1, const void *ptr2)
 }
 
 static inline
+bool operator==(const accptr_t &ptr1, int ptr2)
+{
+    return (int)ptr1.ptr_ == ptr2;
+}
+
+static inline
 bool operator==(const accptr_t &ptr1, long int ptr2)
 {
     return (((long int)ptr1.ptr_) == ptr2);
@@ -43,6 +51,12 @@ static inline
 bool operator!=(const accptr_t &ptr1, const void *ptr2)
 {
     return (((const void *)ptr1.ptr_) != ptr2);
+}
+
+static inline
+bool operator!=(const accptr_t &ptr1, int ptr2)
+{
+    return (int)ptr1.ptr_ != ptr2;
 }
 
 static inline

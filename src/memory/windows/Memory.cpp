@@ -32,7 +32,7 @@ hostptr_t Memory::map(hostptr_t addr, size_t count, GmacProtection prot)
 	if(handle == NULL) return NULL;
 	
 	// Create a view of the file in the previously allocated virtual memory range
-	if((cpuAddr = MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, addr)) == NULL) {
+	if((cpuAddr = (hostptr_t)MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, addr)) == NULL) {
 		CloseHandle(handle);
 		return NULL;
 	}
@@ -53,7 +53,7 @@ hostptr_t Memory::shadow(hostptr_t addr, size_t count)
 	FileMapEntry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
 	off_t offset = off_t(addr - entry.address());
-	hostptr_t ret = MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
+	hostptr_t ret = (hostptr_t)MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
 	return ret;
 }
 

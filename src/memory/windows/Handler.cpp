@@ -30,8 +30,8 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 
 	bool resolved = false;
 	Manager &manager = Manager::getInstance();
-	if(!writeAccess) resolved = manager.read(addr);
-	else resolved = manager.write(addr);
+	if(!writeAccess) resolved = manager.read(hostptr_t(addr));
+	else resolved = manager.write(hostptr_t(addr));
 
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);

@@ -55,7 +55,7 @@ inline accptr_t DistributedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 	AcceleratorMap::const_iterator i;
 	i = acceleratorAddr_.find(&core::Mode::current());
 	if(i != acceleratorAddr_.end()) {
-		ret = i->second + (addr - StateBlock<T>::addr_);
+		ret = i->second + int(addr - StateBlock<T>::addr_);
 	}
 	StateBlock<T>::unlock();
 	return ret;

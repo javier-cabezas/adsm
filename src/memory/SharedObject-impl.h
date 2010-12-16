@@ -41,7 +41,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 
         i->second = newBlock;
 
-        offset += oldBlock.size();
+        offset += unsigned(oldBlock.size());
 
         // Decrement reference count
         oldBlock.release();
