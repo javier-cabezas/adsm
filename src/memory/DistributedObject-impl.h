@@ -22,7 +22,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     accptr_t acceleratorAddr = NULL;
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner.malloc(&acceleratorAddr, size, paramPageSize);
+		owner.malloc(&acceleratorAddr, size, unsigned(paramPageSize));
 	if(ret == gmacSuccess) valid_ = true;
 
 	// Populate the block-set
@@ -89,7 +89,7 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 
     accptr_t acceleratorAddr = NULL;
     gmacError_t ret = 
-		mode.malloc(&acceleratorAddr, size_, paramPageSize);
+		mode.malloc(&acceleratorAddr, size_, unsigned(paramPageSize));
     if(ret != gmacSuccess) return ret;
 
     lockWrite();

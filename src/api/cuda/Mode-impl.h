@@ -34,7 +34,7 @@ Mode::execute(core::KernelLaunch & launch)
 }
 
 inline
-gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, off_t off)
+gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), (void *) dst, len);
     switchIn();
@@ -45,7 +45,7 @@ gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size
 }
 
 inline
-gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, off_t off)
+gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) src, buffer.addr(), len);
     switchIn();

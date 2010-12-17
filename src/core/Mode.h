@@ -168,8 +168,8 @@ public:
 
     virtual IOBuffer *createIOBuffer(size_t size) = 0;
     virtual void destroyIOBuffer(IOBuffer *) = 0;
-    virtual gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, off_t off = 0) = 0;
-    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, off_t off = 0) = 0;
+    virtual gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, size_t off = 0) = 0;
+    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
 
     void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);

@@ -174,7 +174,8 @@ gmacError_t Context::sync()
     return ret;
 }
 
-gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer, size_t len, off_t off)
+gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer, 
+                                         size_t len, size_t off)
 {
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
@@ -188,7 +189,8 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer, 
     return ret;
 }
 
-gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t src, size_t len, off_t off)
+gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t src, 
+                                         size_t len, size_t off)
 {
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);

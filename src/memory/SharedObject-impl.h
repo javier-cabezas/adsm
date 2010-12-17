@@ -12,7 +12,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
     gmacError_t ret = 
-		mode.malloc(&acceleratorAddr, size, paramPageSize);
+		mode.malloc(&acceleratorAddr, size, unsigned(paramPageSize));
 	if(ret == gmacSuccess) {
 #ifdef USE_VM
         vm::Bitmap &bitmap = mode.dirtyBitmap();
