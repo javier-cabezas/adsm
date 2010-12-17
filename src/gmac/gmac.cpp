@@ -291,7 +291,10 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
     __impl::core::Process &proc = __impl::core::Process::getInstance();
     __impl::core::Mode *dstMode = proc.owner(hostptr_t(dst), size);
     __impl::core::Mode *srcMode = proc.owner(hostptr_t(src), size);
-    if (dstMode == NULL && srcMode == NULL) return ::memcpy(dst, src, size);
+    if (dstMode == NULL && srcMode == NULL) {
+        gmac::exitGmac();
+        return ::memcpy(dst, src, size);
+    }
 	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     manager.memcpy(hostptr_t(dst), hostptr_t(src), size);
 

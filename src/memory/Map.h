@@ -70,7 +70,7 @@ protected:
         \size Size (in bytes) of the memory range where the object can be found
         \return First object inside the memory range. NULL if no object is found
     */
-    const Object *mapFind(const void *addr, size_t size) const;
+    Object *mapFind(const void *addr, size_t size) const;
 public:
     //! Default constructor
     /*!
@@ -99,7 +99,7 @@ public:
         \param obj Object to remove from the map
         \return True if the object was successfuly removed
     */
-	virtual bool remove(const Object &obj);
+	virtual bool remove(Object &obj);
 
     //! Find the firs object in a memory range
     /*!
@@ -107,7 +107,7 @@ public:
         \param size Size (in bytes) of the memory range where the object is located
         \return First object within the memory range. NULL if no object is found
     */
-	virtual const Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const void *addr, size_t size) const;
 
     //! Get the amount of memory consumed by all objects in the map
     /*!
@@ -160,7 +160,7 @@ protected:
         \param size Size (in bytes) of the memory range to look for objects
         \return First object in the memory range whose starting address is bellow the base
     */
-    const Object *get(const ObjectMap &map, const uint8_t *&base, 
+    Object *get(const ObjectMap &map, const uint8_t *&base, 
         const void *addr, size_t size) const;
 public:
     //! Default constructor
@@ -185,7 +185,7 @@ public:
         \param obj Object to remove from the map
         \return True if the object was successfuly removed
     */
-    bool remove(const Object &obj);
+    bool remove(Object &obj);
 
     //! Find the first object in a memory range in this map or on the global and shared process object maps
     /*!
@@ -193,7 +193,7 @@ public:
         \param size Size (in bytes) of the memory range where the object is located
         \raturn First object within the memory range. NULL if no object is found
     */
-	virtual const Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const void *addr, size_t size) const;
 
     //! Remove object from this map and from the global process map and add that object to the process orphan object map
     /*!

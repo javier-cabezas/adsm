@@ -137,7 +137,8 @@ gmacError_t SharedObject<T>::removeOwner(const core::Mode &owner)
     if(owner_ == &owner) {
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
         if(acceleratorAddr_ != NULL) {
-            coherenceOp(&Protocol::unmapFromAccelerator);
+            gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
+            ASSERTION(ret == gmacSuccess);
             owner_->free(acceleratorAddr_);
         }
         acceleratorAddr_ = NULL;

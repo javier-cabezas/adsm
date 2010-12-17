@@ -137,8 +137,8 @@ public:
     void addObject(memory::Object &obj);
     void addReplicatedObject(memory::Object &obj);
     //void addCentralizedObject(memory::Object &obj);
-    void removeObject(const memory::Object &obj);
-    const memory::Object *getObject(const void *addr, size_t size = 0) const;
+    void removeObject(memory::Object &obj);
+    memory::Object *getObject(const void *addr, size_t size = 0) const;
 	gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
     /*!  \brief Allocates memory on the accelerator memory */

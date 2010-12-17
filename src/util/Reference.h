@@ -46,7 +46,7 @@ private:
     mutable Atomic ref_;
 
     //! Method called to clean up the class before being destroyed
-    virtual void cleanUp() const;
+    virtual gmacError_t cleanUp();
 protected:
     //! Default constructor
     Reference(); 
@@ -58,7 +58,7 @@ public:
     void use() const;
 
     //! Decrement the use count and destroy the object if it reaches zero
-    void release() const;
+    void release();
 };
 
 } }

@@ -40,6 +40,24 @@ inline hostptr_t Object::end() const
     return addr_ + size_;
 }
 
+inline ssize_t Object::blockBase(size_t offset) const
+{
+    return -(offset % blockSize());
+}
+
+inline size_t Object::blockEnd(size_t offset) const
+{
+    if (offset + blockBase(offset) + blockSize() > size_)
+        return size_ - offset;
+    else
+        return blockSize() + blockBase(offset);
+}
+
+inline size_t Object::blockSize() const
+{
+    return paramPageSize;
+}
+
 inline size_t Object::size() const
 {
     // No need for lock -- size_ is never modified

@@ -112,12 +112,12 @@ Mode::addObject(memory::Object &obj)
 }
 
 inline void 
-Mode::removeObject(const memory::Object &obj)
+Mode::removeObject(memory::Object &obj)
 {
     map_.remove(obj);
 }
 
-inline const memory::Object *
+inline memory::Object *
 Mode::getObject(const void *addr, size_t size) const
 {
 	return map_.get(addr, size);

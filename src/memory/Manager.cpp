@@ -124,7 +124,7 @@ gmacError_t Manager::free(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
-    const Object *object = mode.getObject(addr);
+    Object *object = mode.getObject(addr);
     if(object != NULL)  {
         mode.removeObject(*object);
 		object->release();
@@ -189,7 +189,7 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
         // Check if the address range belongs to one GMAC object
         core::Mode * mode = proc.owner(addr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObject(addr + off);
+        Object *obj = mode->getObject(addr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
@@ -215,7 +215,7 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
         // Check if the address range belongs to one GMAC object
         core::Mode *mode = proc.owner(addr + off);
         if (mode == NULL) return gmacErrorInvalidValue;
-        const Object *obj = mode->getObject(addr + off);
+        Object *obj = mode->getObject(addr + off);
         if (!obj) return gmacErrorInvalidValue;
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
@@ -261,7 +261,7 @@ Manager::read(hostptr_t addr)
 #endif
     core::Mode &mode = core::Mode::current();
     bool ret = true;
-    const Object *obj = mode.getObject(addr);
+    Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
     TRACE(LOCAL,"Read access for object %p", obj->addr());
 	gmacError_t err = obj->signalRead(addr);
@@ -278,7 +278,7 @@ Manager::write(hostptr_t addr)
 #endif
     core::Mode &mode = core::Mode::current();
     bool ret = true;
-    const Object *obj = mode.getObject(addr);
+    Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
     TRACE(LOCAL,"Write access for object %p", obj->addr());
 	if(obj->signalWrite(addr) != gmacSuccess) ret = false;
@@ -298,7 +298,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
 
     gmacError_t ret = gmacSuccess;
 
-    const Object *obj = mode->getObject(s);
+    Object *obj = mode->getObject(s);
     ASSERTION(obj != NULL);
     // Check for a fast path -- probably the user is just
     // initializing a single object or a portion of an object
@@ -354,19 +354,20 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
 {
     gmacError_t ret = gmacSuccess;
 
+    core::Mode &mode = core::Mode::current();
+
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
-    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
     ASSERTION(active  != NULL);
     ASSERTION(passive != NULL);
 
     // Control variables
-    size_t left = size_t(size);
+    size_t left = size;
 
-    size_t copySize = active->size();
-    // Adjust the first copy to fit in a block
-    size_t aligment = objOffset % paramPageSize;
-    if(aligment != 0) copySize = paramPageSize - aligment;
+    // Adjust the first copy to deal with a single block
+    size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
+
     // Copy the data to the first block
     ::memcpy(active->addr(), src, copySize);
 
@@ -375,9 +376,10 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
         // We do not need for the active buffer to be full because ::memcpy() is
         // a synchronous call
         ret = obj.copyFromBuffer(*active, copySize, 0, objOffset);
-        if(ret != gmacSuccess) return ret;
-        left -= copySize;
-        ptr += copySize;
+        ASSERTION(ret == gmacSuccess);
+        //if (ret != gmacSuccess) return ret;
+        ptr       += copySize;
+        left      -= copySize;
         objOffset += copySize;
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
@@ -392,10 +394,9 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
     }
     // Clean up buffers after they are idle
     passive->wait();
-    delete passive;
+    mode.destroyIOBuffer(passive);
     active->wait();
-    delete active;
-    
+    mode.destroyIOBuffer(active);
 
     return ret;
 }
@@ -406,24 +407,39 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
 {
     gmacError_t ret = gmacSuccess;
 
+    core::Mode &mode = core::Mode::current();
+
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
-    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *active = mode.createIOBuffer(dstObj.blockSize());
+    core::IOBuffer *passive = mode.createIOBuffer(dstObj.blockSize());
     ASSERTION(active  != NULL);
     ASSERTION(passive != NULL);
 
     // Control variables
     size_t left = size;
-    size_t copySize = active->size();
-    // Adjust the first copy to fit in a block
-    size_t aligment = dstOffset % paramPageSize;
-    if(aligment != 0) copySize = paramPageSize - aligment;
-    // Adjust the size to only cover one block in the source object
-    aligment = srcOffset % paramPageSize;
-    if(aligment + copySize > paramPageSize) 
-        copySize = paramPageSize - aligment;
+
+    // Adjust the first copy to deal with a single block
+    size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+
+    // Single copy from the source to fill the buffer
+    if (copySize <= srcObj.blockEnd(srcOffset)) {
+        ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
+        ASSERTION(ret == gmacSuccess);
+        // if(ret != gmacSuccess) return ret;
+    }
+    else { // Two copies from the source to fill the buffer
+        size_t copySize1 = srcObj.blockEnd(srcOffset);
+        size_t copySize2 = copySize - copySize1;
+
+        ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+        ASSERTION(ret == gmacSuccess);
+        //if(ret != gmacSuccess) return ret;
+        ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+        ASSERTION(ret == gmacSuccess);
+        //if(ret != gmacSuccess) return ret;
+    }
+
     // Copy first chunk of data
-    srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
     while(left > 0) {
         active->wait(); // Wait for the active buffer to be full
         ret = dstObj.copyFromBuffer(*active, copySize, 0, dstOffset);
@@ -432,20 +448,28 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
         srcOffset += copySize;
         dstOffset += copySize;
         if(left > 0) {
-            // We need to recalculate the object size to avoid crossing blocks in the
-            // destination and source objects
-            copySize = passive->size();
-            aligment = dstOffset % paramPageSize;
-            if(aligment != 0) copySize = paramPageSize - aligment;
-            // Adjust the size to only cover one block in the source object
-            aligment = srcOffset % paramPageSize;
-            if(aligment + copySize > paramPageSize) 
-                copySize = paramPageSize - aligment;
+            copySize = left < dstObj.blockSize()? left: dstObj.blockSize();
             // Avoid overwritting a buffer that is already in use
             passive->wait();
+
             // Request the next copy
-            ret = srcObj.copyToBuffer(*passive, copySize, 0, srcOffset);
-            if(ret != gmacSuccess) return ret;
+            // Single copy from the source to fill the buffer
+            if (copySize <= srcObj.blockEnd(srcOffset)) {
+                ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
+                ASSERTION(ret == gmacSuccess);
+                //if(ret != gmacSuccess) return ret;
+            }
+            else { // Two copies from the source to fill the buffer
+                size_t copySize1 = srcObj.blockEnd(srcOffset);
+                size_t copySize2 = copySize - copySize1;
+
+                ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+                ASSERTION(ret == gmacSuccess);
+                //if(ret != gmacSuccess) return ret;
+                ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+                ASSERTION(ret == gmacSuccess);
+                //if(ret != gmacSuccess) return ret;
+            }
         }
         // Swap buffers
         core::IOBuffer *tmp = active;
@@ -454,9 +478,9 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     }
     // Clean up buffers after they are idle
     passive->wait();
-    delete passive;
+    mode.destroyIOBuffer(passive);
     active->wait();
-    delete active;
+    mode.destroyIOBuffer(active);
     
     return ret;
 }
@@ -467,28 +491,27 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
 {
     gmacError_t ret = gmacSuccess;
 
+    core::Mode &mode = core::Mode::current();
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = core::Mode::current().createIOBuffer(paramPageSize);
-    core::IOBuffer *passive = core::Mode::current().createIOBuffer(paramPageSize);
+    core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
     ASSERTION(active  != NULL);
     ASSERTION(passive != NULL);
 
     // Control variables
     size_t left = size;
 
-    size_t copySize = active->size();
-    // Adjust the first copy to fit in a block
-    size_t aligment = objOffset % paramPageSize;
-    if(aligment != 0) copySize = paramPageSize - aligment;
+    // Adjust the first copy to deal with a single block
+    size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
 
     // Copy the data to the first block
     ret = obj.copyToBuffer(*active, copySize, 0, objOffset);
-    if(ret != gmacSuccess) return ret;
+    ASSERTION(ret == gmacSuccess);
+    //if(ret != gmacSuccess) return ret;
     while(left > 0) {
         // Save values to use when copying the buffer to host memory
-        size_t previousObjOffset = objOffset;
         size_t previousCopySize = copySize;
-        left -= copySize;
+        left      -= copySize;
         objOffset += copySize;        
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
@@ -496,12 +519,13 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
             // No need to wait for the buffer, because ::memcpy is a
             // synchronous call
             ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
-            if(ret != gmacSuccess) return ret;
+            ASSERTION(ret == gmacSuccess);
+            //if(ret != gmacSuccess) return ret;
         }        
         // Wait for the active buffer to be full
         active->wait();
         // Copy the active buffer to host
-        ::memcpy(dst, obj.addr() + previousObjOffset, previousCopySize);
+        ::memcpy(dst, active->addr(), previousCopySize);
         dst += previousCopySize;
 
         // Swap buffers
@@ -510,8 +534,8 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
         passive = tmp;
     }
     // No need to wait for the buffers because we waited for them before ::memcpy
-    delete passive;
-    delete active;
+    mode.destroyIOBuffer(passive);
+    mode.destroyIOBuffer(active);
     
     return ret;
 }
@@ -542,8 +566,8 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
         return gmacSuccess;
     }
 
-    const Object *dstObject = NULL;
-    const Object *srcObject = NULL;
+    Object *dstObject = NULL;
+    Object *srcObject = NULL;
 
     // Get initial objects
     if(dstMode != NULL) dstObject = dstMode->getObject(dst, size);

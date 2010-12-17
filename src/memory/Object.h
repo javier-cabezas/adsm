@@ -120,6 +120,12 @@ public:
     */
     hostptr_t end() const;
 
+    ssize_t blockBase(size_t offset) const;
+    size_t blockEnd(size_t offset) const;
+
+    size_t blockSize() const;
+
+
     //! Get the size (in bytes) of the object
     /*!
         \return Size (in bytes) of the object
