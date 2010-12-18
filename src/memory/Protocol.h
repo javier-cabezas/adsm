@@ -128,7 +128,7 @@ public:
     //! Removes a block from the coherence domain.
     /*!
         This method ensures that the block host memory contains an updated copy of the
-        data, and then matks the block to not use the accelerator memory any more. After calling
+        data, and then marks the block to not use the accelerator memory any more. After calling
         this method a memory block will always remain in host memory
         \param block Memory block to remove from the coherence domain
         \return Error code
@@ -138,9 +138,8 @@ public:
 
     //! Adds a block to the coherence domain.
     /*!
-        This method ensures that the block host memory contains an updated copy of the
-        data, and then matks the block to not use the accelerator memory any more. After calling
-        this method a memory block will always remain in host memory
+        This method marks the block to use accelerator memory. After calling
+        this method the block coherency is managed using this protocol
         \param block Memory block to add to the coherence domain
         \return Error code
         \warning This method assumes that the block is not modified during its execution

@@ -52,6 +52,8 @@ namespace core {
 namespace memory {
 
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
+    DBC_FORCE_TEST(Object)
+
 protected:
     //! Object host memory address
     hostptr_t addr_;
@@ -95,7 +97,7 @@ protected:
         \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
     */
-	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
+	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 		size_t bufferOffset, size_t objectOffset) const;
 
     //! Default constructor
@@ -120,11 +122,23 @@ public:
     */
     hostptr_t end() const;
 
-    ssize_t blockBase(size_t offset) const;
-    size_t blockEnd(size_t offset) const;
+    //! Get the offset to the beginning of the block that contains the address
+    /*!
+        \return Offset to the beginning of the block that contains the address
+    */
+    TESTABLE ssize_t blockBase(size_t offset) const;
 
+    //! Get the offset to the end of the block that contains the address
+    /*!
+        \return Offset to the end of the block that contains the address
+    */
+    TESTABLE size_t blockEnd(size_t offset) const;
+
+    //! Get the block size used by the object
+    /*!
+        \return Block size used by the object
+    */
     size_t blockSize() const;
-
 
     //! Get the size (in bytes) of the object
     /*!
@@ -187,14 +201,14 @@ public:
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalRead(hostptr_t addr) const;
+	TESTABLE gmacError_t signalRead(hostptr_t addr) const;
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalWrite(hostptr_t addr) const;
+	TESTABLE gmacError_t signalWrite(hostptr_t addr) const;
 
     //! Copies the data from the object to an I/O buffer
     /*!
@@ -204,8 +218,8 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data from
         \return Error code
     */
-	gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t objectOffset = 0) const;
+	TESTABLE gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Copies the data from an I/O buffer to the object
     /*!
@@ -215,24 +229,43 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data to
         \return Error code
     */
-	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t objectOffset = 0) const;
+	TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Initializes a memory range within the object to a specific value
     /*!
-        \param addr Host memory address within the object to be initialized
+        \param offset Offset within the object of the memory to be set 
         \param v Value to initialize the memory to
         \param size Size (in bytes) of the memory region to be initialized
         \return Error code
     */
-    gmacError_t memset(hostptr_t addr, int v, size_t size) const;
+    TESTABLE gmacError_t memset(size_t offset, int v, size_t size) const;
 
+    //! Adds the object to the coherence domain.
+    /*!
+        This method ensures that the object host memory contains an updated copy of the
+        data, and then marks the object to not use the accelerator memory any more. After calling
+        this method the memory object will always remain in host memory
+        \return Error code
+    */
     virtual gmacError_t mapToAccelerator() = 0;
+
+    //! Removes the object to the coherence domain.
+    /*!
+        This method marks the object to use accelerator memory. After calling
+        this method the object coherency is managed by the library
+        \return Error code
+    */
     virtual gmacError_t unmapFromAccelerator() = 0;
 };
 
 }}
 
 #include "Object-impl.h"
+
+#ifdef USE_DBC
+#include "memory/dbc/Object.h"
+#endif
+
 
 #endif

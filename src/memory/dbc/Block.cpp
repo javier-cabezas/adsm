@@ -8,6 +8,7 @@ namespace __dbc { namespace memory {
 Block::Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
     __impl::memory::Block(protocol, addr, shadow, size)
 {
+    // PRECONDITIONS
     REQUIRES(size > 0);
     REQUIRES(addr != NULL);
     REQUIRES(shadow != NULL);

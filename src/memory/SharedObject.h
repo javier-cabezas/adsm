@@ -45,7 +45,7 @@ namespace core {
 namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SharedObject : public Object {
+class GMAC_LOCAL SharedObject : public gmac::memory::Object {
 protected:
     hostptr_t shadow_;
 	accptr_t  acceleratorAddr_;

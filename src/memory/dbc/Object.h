@@ -31,37 +31,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
-#define GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
+#ifndef GMAC_MEMORY_DBC_OBJECT_H_
+#define GMAC_MEMORY_DBC_OBJECT_H_
 
-#include "config/common.h"
-#include "core/Mode.h"
+namespace __dbc { namespace memory {
 
-namespace __impl { namespace memory {
+class GMAC_LOCAL Object :
+    public __impl::memory::Object,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::Object)
 
-template<typename T>
-class GMAC_LOCAL DistributedObject : public gmac::memory::Object {
 protected:
-    uint8_t *shadow_;
-    typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
-    AcceleratorMap acceleratorAddr_;
+	Object(hostptr_t addr, size_t size);
+    virtual ~Object();
+
+	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, 
+		size_t bufferOffset, size_t objectOffset) const;
 public:
-	DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, 
-		size_t size, T init);
-    virtual ~DistributedObject();
+    ssize_t blockBase(size_t offset) const;
+    size_t blockEnd(size_t offset) const;
 
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
-	core::Mode &owner(const hostptr_t addr) const;
+	gmacError_t signalRead(hostptr_t addr) const;
+    gmacError_t signalWrite(hostptr_t addr) const;
 
-	gmacError_t addOwner(core::Mode &owner);
-	gmacError_t removeOwner(const core::Mode &owner);
+    gmacError_t copyToBuffer(__impl::core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
+    gmacError_t copyFromBuffer(__impl::core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
-    gmacError_t mapToAccelerator();
-    gmacError_t unmapFromAccelerator();
+    gmacError_t memset(size_t offset, int v, size_t size) const;
 };
 
 }}
 
-#include "DistributedObject-impl.h"
+#endif /* OBJECT_H */
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

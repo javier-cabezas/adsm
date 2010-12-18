@@ -304,7 +304,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
     // initializing a single object or a portion of an object
     if(obj->addr() <= s && obj->end() >= (s + size)) {
         size_t objSize = (size < obj->size()) ? size : obj->size();
-        ret = obj->memset(s, c, objSize);
+        ret = obj->memset(s - obj->addr(), c, objSize);
         obj->release();
         return ret;
     }
@@ -334,7 +334,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
             // If the remaining memory in the object is larger than the remaining memory range, adjust
             // the size of the memory range to be initialized by the object
             objSize = (objSize < left) ? objSize : left;
-            ret = obj->memset(s, c, objSize);
+            ret = obj->memset(s - obj->addr(), c, objSize);
             if(ret != gmacSuccess) break;
             left -= objSize; // Account for the bytes initialized by the object
             s += objSize;  // Advance the pointer
