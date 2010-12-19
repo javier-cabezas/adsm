@@ -267,5 +267,4 @@ public:
 #include "memory/dbc/Object.h"
 #endif
 
-
 #endif

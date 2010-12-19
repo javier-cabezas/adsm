@@ -36,7 +36,7 @@ memory::Protocol *protocolInit(unsigned flags)
         }
         else {
             ret = new memory::protocol::Lazy<
-                memory::SharedObject<memory::protocol::LazyBase::State> >(
+                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
                 paramRollSize);
         }
     }
@@ -48,7 +48,7 @@ memory::Protocol *protocolInit(unsigned flags)
         }
         else {
             ret = new memory::protocol::Lazy<
-                memory::SharedObject<memory::protocol::LazyBase::State> >(
+                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
                 (size_t)-1);
         }
     }

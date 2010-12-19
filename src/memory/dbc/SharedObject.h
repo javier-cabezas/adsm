@@ -31,49 +31,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_SHAREDOBJECT_H_
-#define GMAC_MEMORY_SHAREDOBJECT_H_
+#ifndef GMAC_MEMORY_DBC_SHAREDOBJECT_H_
+#define GMAC_MEMORY_DBC_SHAREDOBJECT_H_
 
-#include "memory/Object.h"
-
-namespace __impl { 
-
-namespace core {
-	class Mode;
-}
-
-namespace memory {
+namespace __dbc { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL SharedObject : public gmac::memory::Object {
-    DBC_FORCE_TEST(SharedObject<T>)
-protected:
-    hostptr_t shadow_;
-	accptr_t  acceleratorAddr_;
-	core::Mode *owner_;
+class GMAC_LOCAL SharedObject :
+    public __impl::memory::SharedObject<T>,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::SharedObject<T>)
 
-    static accptr_t allocAcceleratorMemory(core::Mode &mode, size_t size);
-    gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
 public:
-	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, T init);
+	SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, T init);
     virtual ~SharedObject();
-
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
-	core::Mode &owner(const hostptr_t addr) const;
-
-	gmacError_t addOwner(core::Mode &owner);
-	gmacError_t removeOwner(const core::Mode &owner);
-
-    gmacError_t unmapFromAccelerator();
-    gmacError_t mapToAccelerator();
 };
 
 }}
 
 #include "SharedObject-impl.h"
 
-#ifdef USE_DBC
-#include "memory/dbc/SharedObject.h"
-#endif
+#endif /* SHAREDOBJECT_H */
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
