@@ -42,7 +42,7 @@ inline hostptr_t Object::end() const
 
 inline ssize_t Object::blockBase(size_t offset) const
 {
-    return -(offset % blockSize());
+    return -1 * (offset % blockSize());
 }
 
 inline size_t Object::blockEnd(size_t offset) const
