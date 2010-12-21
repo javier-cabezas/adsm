@@ -108,9 +108,9 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
-                block.setSubBlockPresent(addr);
+                block.setSubBlockDirty(addr);
             } else {
-                block.setBlockPresent();
+                block.setBlockDirty();
             }
             Memory::protect(start, count, GMAC_PROT_READWRITE);
 #endif
@@ -123,9 +123,9 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
-                block.setSubBlockPresent(addr);
+                block.setSubBlockDirty(addr);
             } else {
-                block.setBlockPresent();
+                block.setBlockDirty();
             }
 #endif
 			Memory::protect(start, count, GMAC_PROT_READWRITE);
@@ -138,9 +138,9 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
-                block.setSubBlockPresent(addr);
+                block.setSubBlockDirty(addr);
             } else {
-                block.setBlockPresent();
+                block.setBlockDirty();
             }
 #endif
 			Memory::protect(start, count, GMAC_PROT_READWRITE);
@@ -180,12 +180,12 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
+    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Invalid:
         case ReadOnly:
-            if (bitmap.checkBlock(block.acceleratorAddr(block.addr()))) {
+            if (acceleratorBitmap.checkBlock(block.acceleratorAddr(block.addr()))) {
                 if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(Invalid);

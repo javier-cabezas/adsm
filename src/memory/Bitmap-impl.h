@@ -1,6 +1,8 @@
 #ifndef GMAC_MEMORY_BITMAP_H_IMPL_
 #define GMAC_MEMORY_BITMAP_H_IMPL_
 
+#include <cmath>
+
 namespace __impl { namespace memory { namespace vm {
 
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
@@ -9,9 +11,9 @@ inline
 uint32_t Bitmap::offset(const accptr_t addr) const
 {
 #ifdef BITMAP_BIT
-    uint32_t entry = uint32_t(addr >> (shiftPage_ + 3));
+    uint32_t entry = uint32_t((unsigned long)addr >> (shiftPage_ + 3));
 #else // BITMAP_BYTE
-    uint32_t entry = uint32_t(addr >> shiftPage_);
+    uint32_t entry = uint32_t((unsigned)addr >> shiftPage_);
 #endif
     return entry;
 }
@@ -84,8 +86,8 @@ void Bitmap::set(const accptr_t addr)
 inline
 void Bitmap::setBlock(const accptr_t addr)
 {
-    unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
-    for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
+    unsigned subBlockSize = paramPageSize/paramSubBlocks;
+    for (unsigned i = 0; i < paramSubBlocks; i++) {
         set(addr + i * subBlockSize);
     }
 }
@@ -100,8 +102,8 @@ bool Bitmap::check(const accptr_t addr)
 inline
 bool Bitmap::checkBlock(const accptr_t addr)
 {
-    unsigned subBlockSize = paramPageSize/paramBitmapChunksPerPage;
-    for (unsigned i = 0; i < paramBitmapChunksPerPage; i++) {
+    unsigned subBlockSize = paramPageSize/paramSubBlocks;
+    for (unsigned i = 0; i < paramSubBlocks; i++) {
         if (check(addr + i * subBlockSize)) return true;
     }
     return false;
@@ -125,16 +127,6 @@ inline
 void Bitmap::clear(const accptr_t addr)
 {
     CheckClearSet<false, true, false>(addr);
-}
-
-inline
-accptr_t Bitmap::accelerator() 
-{
-    if (minEntry_ != -1) {
-        return accelerator_ + minEntry_;
-    }
-
-    return accelerator_;
 }
 
 inline
@@ -164,34 +156,15 @@ bool Bitmap::clean() const
 }
 
 inline
-void Bitmap::reset()
-{
-    synced_ = true;
-    dirty_ = false;
-}
-
-inline
 unsigned Bitmap::getSubBlock(const accptr_t addr) const
 {
-    return uint32_t(addr >> shiftPage_) & subBlockMask_;
+    return uint32_t((unsigned long)addr >> shiftPage_) & subBlockMask_;
 }
 
 inline
 size_t Bitmap::getSubBlockSize() const
 {
     return subBlockSize_;
-}
-
-inline
-bool Bitmap::synced() const
-{
-    return synced_;
-}
-
-inline
-void Bitmap::synced(bool s)
-{
-    synced_ = s;
 }
 
 inline
@@ -217,6 +190,37 @@ void Bitmap::removeRange(const accptr_t ptr, size_t count)
     // TODO implement smarter range handling for more efficient transfers
 
 }
+
+inline
+accptr_t SharedBitmap::accelerator() 
+{
+    if (minEntry_ != -1) {
+        return accelerator_ + minEntry_;
+    }
+
+    return accelerator_;
+}
+
+inline
+void SharedBitmap::reset()
+{
+    synced_ = true;
+    dirty_ = false;
+}
+
+inline
+bool SharedBitmap::synced() const
+{
+    return synced_;
+}
+
+inline
+void SharedBitmap::synced(bool s)
+{
+    synced_ = s;
+}
+
+
 
 }}}
 

@@ -6,7 +6,6 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-inline 
 accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 {
     accptr_t acceleratorAddr;
@@ -15,8 +14,8 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 		mode.malloc(&acceleratorAddr, size, unsigned(paramPageSize));
 	if(ret == gmacSuccess) {
 #ifdef USE_VM
-        vm::Bitmap &bitmap = mode.dirtyBitmap();
-        bitmap.newRange(acceleratorAddr, size);
+        vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+        acceleratorBitmap.newRange(acceleratorAddr, size);
 #endif
         return acceleratorAddr;
     } else {
@@ -25,7 +24,6 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 }
 
 template<typename T>
-inline 
 gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
@@ -51,7 +49,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 }
 
 template<typename T>
-inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, T init) :
+SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, T init) :
     Object(hostAddr, size),
 	owner_(&owner)
 {
@@ -69,6 +67,11 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, host
     valid_ = (acceleratorAddr_ != NULL);
 
     if (valid_) {
+#ifdef USE_VM
+        vm::Bitmap &hostBitmap = owner.hostDirtyBitmap();
+        hostBitmap.newRange(acceleratorAddr_, size);
+#endif
+
         // Create a shadow mapping for the host memory
         // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
@@ -89,15 +92,18 @@ inline SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, host
 
 
 template<typename T>
-inline SharedObject<T>::~SharedObject()
+SharedObject<T>::~SharedObject()
 {
+#ifdef USE_VM
+    vm::Bitmap &hostBitmap = owner_->hostDirtyBitmap();
+    vm::SharedBitmap &acceleratorBitmap = owner_->acceleratorDirtyBitmap();
+    hostBitmap.removeRange(acceleratorAddr_, size_);
+    acceleratorBitmap.removeRange(acceleratorAddr_, size_);
+#endif
+
 	// If the object creation failed, this address will be NULL
     if(acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
     Memory::unshadow(shadow_, size_);
-#ifdef USE_VM
-    vm::Bitmap &bitmap = owner_->dirtyBitmap();
-    bitmap.removeRange(acceleratorAddr_, size_);
-#endif
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
 

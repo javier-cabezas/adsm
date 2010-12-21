@@ -162,9 +162,6 @@ gmacError_t Manager::acquireObjects()
 
 gmacError_t Manager::releaseObjects()
 {
-#ifdef USE_VM
-    checkBitmapToAccelerator();
-#endif
     core::Mode &mode = core::Mode::current();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
@@ -175,6 +172,9 @@ gmacError_t Manager::releaseObjects()
         core::Process::getInstance().protocol().releaseObjects();
         mode.releaseObjects();
     }
+#ifdef USE_VM
+    checkBitmapToAccelerator();
+#endif
     return ret;
 }
 
@@ -235,9 +235,9 @@ void
 Manager::checkBitmapToHost()
 {
     core::Mode &mode = core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    if (!bitmap.synced()) {
-        bitmap.syncHost();
+    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (!acceleratorBitmap.synced()) {
+        acceleratorBitmap.syncHost();
         mode.forEachObject(&Object::acquire);
     }
 }
@@ -246,9 +246,9 @@ void
 Manager::checkBitmapToAccelerator()
 {
     core::Mode &mode = core::Mode::current();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    if (!bitmap.clean()) {
-        bitmap.syncAccelerator();
+    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (!acceleratorBitmap.clean()) {
+        acceleratorBitmap.syncAccelerator();
     }
 }
 #endif

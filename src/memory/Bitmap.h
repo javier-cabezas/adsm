@@ -61,29 +61,37 @@ namespace __impl {
 class GMAC_LOCAL Bitmap :
     public __impl::util::Logger,
     protected gmac::util::RWLock {
-private:
+protected:
+#if 0
+    class GMAC_LOCAL BitmapRange {
+    protected:
+        T baseAddr; 
+    public:
+        BitmapRange(unsigned bits);
+
+    };
+#endif
+    static const unsigned entriesPerByte;
+
+    unsigned bits_;
+
     core::Mode &mode_;
-    typedef uint8_t T;
+    typedef uint8_t EntryType;
     hostptr_t bitmap_;
 
     bool dirty_;
-    bool synced_;
+
+    unsigned shiftBlock_;
+    unsigned shiftPage_;
 
     size_t subBlockSize_;
     unsigned subBlockMask_;
     unsigned pageMask_;
 
-    accptr_t accelerator_;
-
-    static const unsigned entriesPerByte;
-    unsigned shiftBlock_;
-    unsigned shiftPage_;
 #ifdef BITMAP_BIT
     uint32_t bitMask_;
 #endif
     size_t size_;
-
-    void allocate();
 
     template <bool check, bool clear, bool set>
     bool CheckClearSet(const accptr_t addr);
@@ -99,11 +107,11 @@ private:
 
 public:
     Bitmap(core::Mode &mode, unsigned bits = 32);
+    Bitmap(const Bitmap &base);
     virtual ~Bitmap();
 
-    void cleanUp();
+    virtual void cleanUp();
 
-    accptr_t accelerator();
     hostptr_t host() const;
 
     bool check(const accptr_t addr);
@@ -119,16 +127,38 @@ public:
 
     bool clean() const;
 
-    void syncHost();
-    void syncAccelerator();
-    void reset();
-
 #ifdef DEBUG_BITMAP
     void dump();
 #endif
 
     unsigned getSubBlock(const accptr_t addr) const;
     size_t getSubBlockSize() const;
+};
+
+//typedef Bitmap<hostptr_t> HostBitmap;
+//typedef Bitmap<accptr_t> AcceleratorBitmap;
+
+class GMAC_LOCAL SharedBitmap :
+    public Bitmap {
+private:
+    bool linked_;
+    bool synced_;
+    accptr_t accelerator_;
+
+    void allocate();
+
+public:
+    SharedBitmap(core::Mode &mode, unsigned bits = 32);
+    SharedBitmap(const Bitmap &host);
+    virtual ~SharedBitmap();
+
+    void cleanUp();
+
+    accptr_t accelerator();
+
+    void syncHost();
+    void syncAccelerator();
+    void reset();
 
     bool synced() const;
     void synced(bool s);

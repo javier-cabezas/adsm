@@ -18,7 +18,7 @@ inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t
 {
 #ifdef USE_VM
     resetBitmapStats();
-    subBlockSize_ = paramPageSize/paramBitmapChunksPerPage; 
+    subBlockSize_ = paramPageSize/paramSubBlocks;
 #endif
 }
 
@@ -37,8 +37,8 @@ inline void
 Block::updateBitmapStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    unsigned currentSubBlock = bitmap.getSubBlock(acceleratorAddr(addr));
+    const vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
+    unsigned currentSubBlock = hostBitmap.getSubBlock(acceleratorAddr(addr));
 #if 0
     if (write) {
         bitmap.set(acceleratorAddr(addr));
@@ -80,8 +80,8 @@ inline hostptr_t
 Block::getSubBlockAddr(const hostptr_t addr) const
 {
     core::Mode &mode = owner();
-    const vm::Bitmap &bitmap = mode.dirtyBitmap();
-    unsigned subBlock = bitmap.getSubBlock(acceleratorAddr(addr));
+    const vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
+    unsigned subBlock = hostBitmap.getSubBlock(acceleratorAddr(addr));
     return addr_ + (subBlock * subBlockSize_);
 }
 
@@ -97,28 +97,20 @@ Block::getSubBlocks() const
     return size_/subBlockSize_;
 }
 
-inline bool
-Block::isSubBlockPresent(const hostptr_t addr) const
+inline void 
+Block::setSubBlockDirty(const hostptr_t addr)
 {
     core::Mode &mode = owner();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    return !bitmap.check(acceleratorAddr(addr));
+    vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
+    hostBitmap.set(acceleratorAddr(addr));
 }
 
 inline void 
-Block::setSubBlockPresent(const hostptr_t addr)
+Block::setBlockDirty()
 {
     core::Mode &mode = owner();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    bitmap.set(acceleratorAddr(addr));
-}
-
-inline void 
-Block::setBlockPresent()
-{
-    core::Mode &mode = owner();
-    vm::Bitmap &bitmap = mode.dirtyBitmap();
-    bitmap.setBlock(acceleratorAddr(addr_));
+    vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
+    hostBitmap.setBlock(acceleratorAddr(addr_));
 }
 
 #endif

@@ -113,9 +113,8 @@ public:
     size_t getSubBlockSize() const;
     unsigned getSubBlocks() const;
 
-    bool isSubBlockPresent(const hostptr_t addr) const;
-    void setSubBlockPresent(const hostptr_t addr);
-    void setBlockPresent();
+    void setSubBlockDirty(const hostptr_t addr);
+    void setBlockDirty();
 #endif
 
     //! Host memory address where the block starts
