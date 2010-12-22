@@ -11,7 +11,7 @@ inline HostMappedSet::~HostMappedSet()
 {}
 
 
-inline void *HostMappedObject::addr() const
+inline hostptr_t HostMappedObject::addr() const
 {
     return addr_;
 }
@@ -21,14 +21,14 @@ inline size_t HostMappedObject::size() const
     return size_;
 }
 
-inline void HostMappedObject::remove(void *addr)
+inline void HostMappedObject::remove(hostptr_t addr)
 {
     set_.remove(addr);
 }
 
-inline HostMappedObject *HostMappedObject::get(const void *addr)
+inline HostMappedObject *HostMappedObject::get(const hostptr_t addr)
 {
-    return set_.get((void *)addr);
+    return set_.get(addr);
 }
 
 }}

@@ -27,7 +27,7 @@ TEST_F(ModeTest, ModeCurrent) {
 }
 
 TEST_F(ModeTest, ModeMemory) {
-    void *addr = NULL;
+    accptr_t addr = NULL;
     ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_));
     ASSERT_TRUE(addr != NULL);
 
@@ -40,11 +40,11 @@ TEST_F(ModeTest, MemoryCopy) {
     int *dst = new int[Size_];
     ASSERT_TRUE(dst != NULL);
     memset(src, 0x5a, Size_ * sizeof(int));
-    void *addr = NULL;
+    accptr_t addr = NULL;
     ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_ * sizeof(int)));
     ASSERT_TRUE(addr != NULL);
-    ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, src, Size_ * sizeof(int)));
-    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(dst, addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, hostptr_t(src), Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_ * sizeof(int)));
     for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
     ASSERT_EQ(gmacSuccess, Mode_->free(addr));
     delete[] dst;
@@ -52,13 +52,13 @@ TEST_F(ModeTest, MemoryCopy) {
 }
 
 TEST_F(ModeTest, MemorySet) {
-    void *addr = NULL;
+    accptr_t addr = NULL;
     ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_ * sizeof(int)));
     ASSERT_TRUE(addr != NULL);
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5a, Size_ * sizeof(int)));
 
     int *dst = new int[Size_];
-    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(dst, addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_ * sizeof(int)));
     for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
 
     ASSERT_EQ(gmacSuccess, Mode_->free(addr));

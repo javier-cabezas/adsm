@@ -56,16 +56,16 @@ public:
     gmacError_t map(void *addr, size_t size, GmacProtection prot);
     gmacError_t unmap(void *addr, size_t size);
 #endif
-    gmacError_t alloc(void **addr, size_t size);
+    gmacError_t alloc(hostptr_t *addr, size_t size);
 
     //gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    gmacError_t free(void *addr);
+    gmacError_t free(hostptr_t addr);
 
-    bool read(void *addr);
-    bool write(void *addr);
+    bool read(hostptr_t addr);
+    bool write(hostptr_t addr);
 
-    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
-    gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
+    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size);
+    gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size);
 #if 0
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);

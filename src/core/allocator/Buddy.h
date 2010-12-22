@@ -45,7 +45,7 @@ namespace __impl { namespace core { namespace allocator {
 
 class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
 protected:
-    void *addr_;
+    hostptr_t addr_;
     uint32_t size_;
     uint8_t index_;
 
@@ -60,12 +60,12 @@ protected:
     off_t getFromList(uint8_t i);
     void putToList(off_t addr, uint8_t i);
 public:
-    Buddy(void *addr, size_t size);
+    Buddy(hostptr_t addr, size_t size);
     ~Buddy();
 
-    inline void *addr() const { return addr_; }
-    void *get(size_t &size);
-    void put(void *addr, size_t size);
+    inline hostptr_t addr() const { return addr_; }
+    hostptr_t get(size_t &size);
+    void put(hostptr_t addr, size_t size);
 };
 
 }}}

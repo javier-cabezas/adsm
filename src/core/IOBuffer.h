@@ -37,12 +37,13 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "util/Lock.h"
+#include "util/NonCopyable.h"
 
 #include "Mode.h"
 
 namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : public gmac::util::Lock {
+class GMAC_LOCAL IOBuffer : public gmac::util::Lock, public util::NonCopyable {
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:
@@ -53,10 +54,6 @@ protected:
     IOBuffer(void *addr, size_t size);
 public:
     virtual ~IOBuffer();
-	IOBuffer &operator =(const IOBuffer &) {
-        FATAL("Assigment of I/O buffers is not supported");
-        return *this;
-    }
 
     uint8_t *addr() const;
     uint8_t *end() const;
@@ -71,7 +68,7 @@ public:
 
 }}
 
-#include "IOBuffer.ipp"
+#include "IOBuffer-impl.h"
 
 #endif
 

@@ -4,6 +4,7 @@ set(util_SRC
     Atomics.h Thread.h
     Lock.h Lock-impl.h Lock.cpp
     Semaphore.h
+    NonCopyable.h
     Private.h
     Parameter.h Parameter-impl.h Parameter.cpp Parameter-def.h
     Logger.h Logger-impl.h Logger.cpp

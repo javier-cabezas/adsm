@@ -53,8 +53,6 @@ public:
 
 }}
 
-
-#include "Descriptor.ipp"
-
+#include "Descriptor-impl.h"
 
 #endif

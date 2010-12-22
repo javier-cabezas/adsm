@@ -114,15 +114,14 @@ public:
     gmacError_t globalMalloc(memory::Object &object, size_t size);
     gmacError_t globalFree(memory::Object &object);
 
-
-    void *translate(const void *addr);
+    accptr_t translate(const hostptr_t addr);
 
     /* Context management functions */
     void send(THREAD_T id);
     void receive();
     void sendReceive(THREAD_T id);
     void copy(THREAD_T id);
-    //gmacError_t migrate(Mode &mode, int acc);
+    gmacError_t migrate(Mode &mode, int acc);
 
     void addAccelerator(Accelerator *acc);
 
@@ -138,7 +137,7 @@ public:
     memory::ObjectMap &orphans();
     const memory::ObjectMap &orphans() const;
 
-    Mode *owner(const void *addr, size_t size = 0) const;
+    Mode *owner(const hostptr_t addr, size_t size = 0) const;
 };
 
 }}

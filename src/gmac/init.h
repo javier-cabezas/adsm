@@ -87,7 +87,7 @@ void exitGmac() GMAC_LOCAL;
 
 inline void exitGmac()
 {
-    TRACE(GLOBAL, "exitGMAC exclusive");
+    TRACE(GLOBAL, "exitGMAC");
     _inGmac.set(&_userCode);
     _inGmacLock->unlock();
 }

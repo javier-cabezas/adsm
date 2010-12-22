@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
+#include "config/common.h"
+
 #include "util/Lock.h"
 #include "util/Reference.h"
 
@@ -47,9 +49,9 @@ namespace core {
 
 namespace memory {
 
-void *HostMappedAlloc(size_t size);
-void HostMappedFree(void *addr);
-void *HostMappedPtr(const void *addr);
+hostptr_t HostMappedAlloc(size_t size);
+void HostMappedFree(hostptr_t addr);
+accptr_t HostMappedPtr(const hostptr_t addr);
 
 class HostMappedObject;
 //! A set of Host-mapped memory blocks
@@ -75,7 +77,7 @@ protected:
         \param addr Host memory address within the host mapped object
         \return Host mapped object containing the memory address. NULL if not found
     */
-    HostMappedObject *get(void *addr) const;
+    HostMappedObject *get(hostptr_t addr) const;
 public:
     //! Default constructor
     HostMappedSet();
@@ -88,14 +90,14 @@ public:
         \param addr Memory address within the block to be removed
         \return True if an object was removed
     */
-    bool remove(void *addr);
+    bool remove(hostptr_t addr);
 };
 
 //! A memory object that only resides in host memory, but that is accessible from the accelerator
 class GMAC_LOCAL HostMappedObject : public util::Reference {
 protected:
     //! Starting host memory address of the object
-    uint8_t *addr_;
+    hostptr_t addr_;
 
     //! Size (in bytes) of the object
     size_t size_;
@@ -116,7 +118,7 @@ public:
     /*!
         \return Starting host memory address of the object
     */
-    void *addr() const;
+    hostptr_t addr() const;
 
     //! Get the size (in bytes) of the object
     /*!
@@ -129,20 +131,20 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address where the requested host memory address is mapped
     */
-    void *acceleratorAddr(const void *addr) const;
+    accptr_t acceleratorAddr(const hostptr_t addr) const;
 
     //! Remove a host mapped object from the list of all present host mapped object
     /*!
         \param addr Host memory address within the object to be removed
     */
-    static void remove(void *addr);
+    static void remove(hostptr_t addr);
 
     //! Get the host mapped memory object that contains a given host memory address
     /*!
         \param addr Host memory address within the object
         \return Host mapped object cotainig the host memory address. NULL if not found
     */
-    static HostMappedObject *get(const void *addr);
+    static HostMappedObject *get(const hostptr_t addr);
 };
 
 }}

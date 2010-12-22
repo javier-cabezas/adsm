@@ -72,6 +72,8 @@ public:
 };
 
 class GMAC_LOCAL Accelerator : public core::Accelerator {
+    DBC_FORCE_TEST(Accelerator)
+
     friend class Switch;
 protected:
 	CUdevice device_;
@@ -132,17 +134,17 @@ public:
     int major() const;
     int minor() const;
 
-	gmacError_t malloc(void **addr, size_t size, unsigned align = 1);
-	gmacError_t free(void *addr);
+	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
+	gmacError_t free(accptr_t addr);
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
-	gmacError_t copyToHost(void *host, const void *acc, size_t size);
-	gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(void *acc, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *acc, size_t count, Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream);
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
@@ -152,17 +154,15 @@ public:
 
     gmacError_t execute(KernelLaunch &launch);
 
-    gmacError_t memset(void *addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size);
 
 	gmacError_t sync();
 
-    gmacError_t hostAlloc(void **addr, size_t size);
-    gmacError_t hostFree(void *addr);
-    void *hostMap(const void *addr);
+    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostFree(hostptr_t addr);
+    accptr_t hostMap(const hostptr_t addr);
 
     static gmacError_t error(CUresult r);
-    static CUdeviceptr gpuAddr(void *addr);
-    static CUdeviceptr gpuAddr(const void *addr);
 
     void memInfo(size_t *free, size_t *total) const;
 };
@@ -170,5 +170,9 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Accelerator.h"
+#endif
 
 #endif

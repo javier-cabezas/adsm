@@ -9,9 +9,9 @@ FileMap::FileMap() :
 FileMap::~FileMap()
 { }
 
-bool FileMap::insert(int fd, void *address, size_t size)
+bool FileMap::insert(int fd, hostptr_t address, size_t size)
 {
-	void *key = (uint8_t *)address + size;
+	hostptr_t key = address + size;
 	lockWrite();
 	std::pair<Parent::iterator, bool> ret = Parent::insert(
 		Parent::value_type(key, FileMapEntry(fd, address, size)));
@@ -19,7 +19,7 @@ bool FileMap::insert(int fd, void *address, size_t size)
 	return ret.second;
 }
 
-bool FileMap::remove(void *address)
+bool FileMap::remove(hostptr_t address)
 {
 	bool ret = true;
 	lockWrite();
@@ -30,7 +30,7 @@ bool FileMap::remove(void *address)
 	return ret;
 }
 
-const FileMapEntry FileMap::find(void *address) const
+const FileMapEntry FileMap::find(hostptr_t address) const
 {
 	FileMapEntry ret(-1, NULL, 0);
 	lockRead();

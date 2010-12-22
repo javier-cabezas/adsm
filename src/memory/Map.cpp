@@ -8,10 +8,10 @@
 
 namespace __impl { namespace memory {
 
-const Object *ObjectMap::mapFind(const void *addr, size_t size) const
+Object *ObjectMap::mapFind(const void *addr, size_t size) const
 {
     ObjectMap::const_iterator i;
-    const Object *ret = NULL;
+    Object *ret = NULL;
     lockRead();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
@@ -46,7 +46,7 @@ bool ObjectMap::insert(Object &obj)
 	return ret.second;
 }
 
-bool ObjectMap::remove(const Object &obj)
+bool ObjectMap::remove(Object &obj)
 {
 	lockWrite();
 	iterator i = find(obj.end());
@@ -59,9 +59,9 @@ bool ObjectMap::remove(const Object &obj)
 	return ret;
 }
 
-const Object *ObjectMap::get(const void *addr, size_t size) const
+Object *ObjectMap::get(const void *addr, size_t size) const
 {
-    const Object *ret = NULL;
+    Object *ret = NULL;
     ret = mapFind(addr, size);
 	if(ret != NULL) ret->use();
     return ret;
@@ -77,32 +77,50 @@ size_t ObjectMap::memorySize() const
     return total;
 }
 
-void ObjectMap::forEach(ObjectOp op) const
+gmacError_t ObjectMap::forEach(ObjectOp op) const
 {
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) (i->second->*op)();
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)();
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
 
-void ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
+gmacError_t ObjectMap::forEach(ConstObjectOp op) const
 {
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) (i->second->*op)(mode);
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)();
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
 
-#if 0
-void ObjectMap::reallocObjects(core::Mode &mode)
+gmacError_t ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
 {
-    iterator i;
+    const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) i->second->realloc(mode);
+    for(i = begin(); i != end(); i++) {
+        gmacError_t ret = (i->second->*op)(mode);
+        if(ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
     unlock();
+    return gmacSuccess;
 }
-#endif
-
 
 Map::Map(const char *name, core::Mode &parent) :
     ObjectMap(name), parent_(parent)
@@ -115,16 +133,9 @@ Map::~Map()
 	//TODO: actually clean the memory map
 }
 
-Map &
-Map::operator =(const Map &)
+Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
 {
-    FATAL("Assigment of memory maps is not supported");
-    return *this;
-}
-
-const Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
-{
-    const Object *ret = map.mapFind(addr, size);
+    Object *ret = map.mapFind(addr, size);
     if(ret == NULL) return ret;
     if(base == NULL || ret->addr() < base) {
         base = ret->addr();
@@ -133,16 +144,16 @@ const Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *a
     return NULL;
 }
 
-const Object *Map::get(const void *addr, size_t size) const
+Object *Map::get(const void *addr, size_t size) const
 {    
-    const Object *ret = NULL;
+    Object *ret = NULL;
     const uint8_t *base = NULL;
     // Lookup in the current map
     ret = get(*this, base, addr, size);
 
     // Check global maps
     const core::Process &proc = parent_.process();
-    const Object *obj = NULL;
+    Object *obj = NULL;
 
     if(base == addr) goto exit_func;
 
@@ -172,7 +183,7 @@ bool Map::insert(Object &obj)
 }
 
 
-bool Map::remove(const Object &obj)
+bool Map::remove(Object &obj)
 {
 	void *addr = obj.addr();
 
@@ -233,6 +244,14 @@ void Map::removeOwner(core::Process &proc, const core::Mode &mode)
         i->second->removeOwner(mode);
     }
     global.unlock();
+
+    ObjectMap &shared = proc.shared();
+    iterator j;
+    shared.lockWrite();
+    for(j = shared.begin(); j != shared.end(); j++) {        
+        j->second->removeOwner(mode);
+    }
+    shared.unlock();
 }
 
 }}

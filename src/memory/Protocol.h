@@ -65,7 +65,7 @@ public:
         \param flags Protocool specific flags
         \return Pointer to the created object
     */
-    virtual Object *createObject(size_t size, void *cpuPtr, 
+    virtual Object *createObject(size_t size, hostptr_t cpuPtr, 
         GmacProtection prot, unsigned flags) = 0;
 
     //! Deletes an object created by this protocol
@@ -85,18 +85,20 @@ public:
     //! Signal handler for faults caused due to memory reads
     /*!
         \param block Memory block where the fault was triggered
+        \param addr  Faulting address
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalRead(Block &block) = 0;
+    virtual gmacError_t signalRead(Block &block, hostptr_t addr) = 0;
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param block Memory block where the fault was triggered
+        \param addr  Faulting address
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t signalWrite(Block &block) = 0;
+    virtual gmacError_t signalWrite(Block &block, hostptr_t addr) = 0;
 
     //! Acquires the ownership of a memory block for the CPU
     /*!
@@ -126,13 +128,23 @@ public:
     //! Removes a block from the coherence domain.
     /*!
         This method ensures that the block host memory contains an updated copy of the
-        data, and then matks the block to not use the accelerator memory any more. After calling
+        data, and then marks the block to not use the accelerator memory any more. After calling
         this method a memory block will always remain in host memory
         \param block Memory block to remove from the coherence domain
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t remove(Block &block) = 0;
+    virtual gmacError_t unmapFromAccelerator(Block &block) = 0;
+
+    //! Adds a block to the coherence domain.
+    /*!
+        This method marks the block to use accelerator memory. After calling
+        this method the block coherency is managed using this protocol
+        \param block Memory block to add to the coherence domain
+        \return Error code
+        \warning This method assumes that the block is not modified during its execution
+    */
+    virtual gmacError_t mapToAccelerator(Block &block) = 0;
 
     //! Deletes all references to the block within the protocol
     /*!
@@ -171,7 +183,7 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
 	virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffet, unsigned blockOffset) const = 0;
+		size_t bufferOffet, size_t blockOffset) const = 0;
 	
     //! Copy the contents an I/O buffer to a memory block
     /*!
@@ -184,7 +196,7 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
 	virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffet, unsigned blockOffset) const = 0;
+		size_t bufferOffet, size_t blockOffset) const = 0;
 
     //! Initializes a memory range within a memory block to a specific value
     /*!
@@ -196,10 +208,10 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
-        unsigned blockOffset) const = 0;
+        size_t blockOffset) const = 0;
 
 	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
-	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, unsigned, unsigned) const;
+	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, size_t, size_t) const;
 };
 
 }}

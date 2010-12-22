@@ -19,18 +19,12 @@ Context::~Context()
     trace::EndThread(THREAD_T(id_));
 }
 
-Context &Context::operator =(const Context &)
-{
-    FATAL("Assigment of contexts is not supported");
-    return *this;
-}
-
 void
 Context::init()
 {
 }
 
-gmacError_t Context::copyToAccelerator(void *acc, const void *host, size_t size)
+gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyToAccelerator(acc, host, size);
@@ -38,7 +32,7 @@ gmacError_t Context::copyToAccelerator(void *acc, const void *host, size_t size)
     return ret;
 }
 
-gmacError_t Context::copyToHost(void *host, const void *acc, size_t size)
+gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyToHost(host, acc, size);
@@ -46,7 +40,7 @@ gmacError_t Context::copyToHost(void *host, const void *acc, size_t size)
     return ret;
 }
 
-gmacError_t Context::copyAccelerator(void *dst, const void *src, size_t size)
+gmacError_t Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = acc_.copyAccelerator(dst, src, size);

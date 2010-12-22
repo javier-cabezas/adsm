@@ -80,7 +80,7 @@ protected:
 	State state(GmacProtection prot) const;
 
     //! Maximum number of blocks in dirty state
-    unsigned limit_;
+    size_t limit_;
 
     //! Dirty block list
     //! List of all memory blocks in Dirty state
@@ -93,7 +93,7 @@ protected:
     /*!
         \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
     */
-    LazyBase(unsigned limit);
+    LazyBase(size_t limit);
 
     //! Default destructor
     virtual ~LazyBase();
@@ -104,9 +104,9 @@ public:
     
     bool needUpdate(const Block &block) const;
 
-    gmacError_t signalRead(Block &block);
+    gmacError_t signalRead(Block &block, hostptr_t addr);
 
-    gmacError_t signalWrite(Block &block);
+    gmacError_t signalWrite(Block &block, hostptr_t addr);
 
     gmacError_t acquire(Block &obj);
 
@@ -118,7 +118,9 @@ public:
 
     gmacError_t release(Block &block);
 
-    gmacError_t remove(Block &block);
+    gmacError_t mapToAccelerator(Block &block);
+
+    gmacError_t unmapFromAccelerator(Block &block);
 
     gmacError_t deleteBlock(Block &block);
 
@@ -127,13 +129,13 @@ public:
     gmacError_t toAccelerator(Block &block);
 
 	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned blockOffset) const;
+		size_t bufferOffset, size_t blockOffset) const;
 	
 	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		unsigned bufferOffset, unsigned blockOffset) const;
+		size_t bufferOffset, size_t blockOffset) const;
 
     gmacError_t memset(const Block &block, int v, size_t size, 
-        unsigned blockOffset) const;
+        size_t blockOffset) const;
 };
 
 template<typename T>
@@ -143,13 +145,13 @@ public:
     /*!
         \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
     */
-    Lazy(unsigned limit);
+    Lazy(size_t limit);
 
     //! Default destructor
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::Object *createObject(size_t size, void *cpuPtr, 
+    memory::Object *createObject(size_t size, hostptr_t cpuPtr, 
         GmacProtection prot, unsigned flags);
 };
 

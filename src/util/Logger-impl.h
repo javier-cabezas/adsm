@@ -49,6 +49,7 @@ inline void Logger::__CFatal(bool c, const char *cStr, const char *fmt, ...)
     if(c == true) return;
     va_list list;
     va_start(list, fmt);
+	fprintf(stderr,"%s\n", cStr);
     VFPRINTF(stderr, fmt, list);
     va_end(list);
     abort();
