@@ -45,25 +45,35 @@ WITH THE SOFTWARE.  */
 
 #include "util/Singleton.h"
 
-#include "Queue.h"
 #include "allocator/Buddy.h"
+#include "Queue.h"
 
-namespace __impl {
-namespace core {
+namespace __impl { namespace core {
 
+/** Map that contains in which accelerator resides a mode */
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
 {
+    friend class Process;
+
 private:
     typedef std::map<Mode *, Accelerator *> Parent;
 
-    friend class Process;
 public:
+    /** Constructs the ModeMap */
     ModeMap();
 
     typedef Parent::iterator iterator;
     typedef Parent::const_iterator const_iterator;
 
-    std::pair<iterator, bool> insert(Mode *, Accelerator *);
+    /**
+     * Inserts a mode/accelerator pair in the map
+     * \param mode Mode to be inserted
+     * \param acc Accelerator where the inserted mode resides
+     * \return A pair that contains the position where the items have been
+     * allocated and a boolean that tells if the items have been actually
+     * inserted
+     */
+    std::pair<iterator, bool> insert(Mode *mode, Accelerator *acc);
     size_t remove(Mode &mode);
 };
 
@@ -83,14 +93,14 @@ public:
     void erase(THREAD_T id);
 };
 
+/** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
-	// Needed to let Singleton call the protected constructor
-	friend class util::Singleton<Process>;
-	//friend class Accelerator;
+    // Needed to let Singleton call the protected constructor
+    friend class util::Singleton<Process>;
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
-    memory::Protocol *protocol_;
+    memory::Protocol &protocol_;
     QueueMap queues_;
     memory::ObjectMap shared_;
     memory::ObjectMap global_;
@@ -98,45 +108,181 @@ protected:
 
     unsigned current_;
 
-    static size_t TotalMemory_;
-
+    /**
+     * Constructs the process
+     */
     Process();
 public:
+    /**
+     * Destroys the process and releases the resources used by it
+     */
     virtual ~Process();
 
+    /**
+     * Registers a new thread in the process
+     */
     void initThread();
+
+    /**
+     * Unregisters a thread from the process
+     */
     void finiThread();
+
 #define ACC_AUTO_BIND -1
+    /**
+     * Creates a new Mode in the process for the calling thread and binds it to
+     * the given accelerator
+     * \param acc The accelerator id which the mode will be bound to or
+     * ACC_AUTO_BIND to let the run-time choose
+     * \return A pointer to the newly created mode or NULL if there has been an error
+     */
     Mode * createMode(int acc = ACC_AUTO_BIND);
+
+    /**
+     * Removes a mode from the process
+     * \param mode A reference to the mode to be removed from the process
+     */
     void removeMode(Mode &mode);
 
+    /**
+     * Registers a global object in the process
+     * \param object Reference to the object to be registered
+     * \return Error code
+     */
+    gmacError_t globalMalloc(memory::Object &object);
 
-    gmacError_t globalMalloc(memory::Object &object, size_t size);
+    /**
+     * Unregisters a global object from the process
+     * \param object Reference to the object to be unregistered
+     * \return Error code
+     */
     gmacError_t globalFree(memory::Object &object);
 
+    /**
+     * Translates a host address to an accelerator address
+     * \param addr Host address to be translated
+     * \return Accelerator address
+     */
     accptr_t translate(const hostptr_t addr);
 
-    /* Context management functions */
+    /* Mode management functions */
+    /**
+     * The calling thread sends the ownership of its mode to the given thread
+     * \param id Identifer of the thread that receives the ownership of the mode
+     */
     void send(THREAD_T id);
+
+    /**
+     * The calling thread receives the ownership of a mode sent by another thread
+     */
     void receive();
+
+    /**
+     * The calling thread sends the ownership of its mode to the given thread
+     * and receives the ownership of the mode sent by another thread
+     * \param id Identifer of the thread that receives the ownership of the mode
+     */
     void sendReceive(THREAD_T id);
+
+    /**
+     * The calling thread shares the ownership of its mode with the given thread
+     * \param id Identifer of the thread that shares the ownership of the mode
+     * with the calling thread
+     */
     void copy(THREAD_T id);
+
+    /**
+     * Migrates the given mode to the given accelerator
+     * \param mode Reference to the mode to be migrated
+     * \param acc Identifier of the destination accelerator
+     * \return Error code
+     */
     gmacError_t migrate(Mode &mode, int acc);
 
-    void addAccelerator(Accelerator *acc);
+    /**
+     * Adds an accelerator to the process so it can be used by the threads of the
+     * process
+     * \param acc A reference to the accelerator to be added
+     */
+    void addAccelerator(Accelerator &acc);
 
-    static size_t totalMemory();
-    size_t nAccelerators() const;
+    /**
+     * Gets the number of accelerators available in the process
+     * \return The number of accelerators available in the process
+     */
+    unsigned nAccelerators() const;
+
+    /**
+     * Tells if all the available accelerators in the process are integrated and
+     * therefore share the physical memory with the CPU
+     * \return A boolean that tells if all the available accelerators in the
+     * process are integrated
+     */
     bool allIntegrated();
 
+    /**
+     * Gets the protocol used by the process for the global objects
+     * \return A reference to the protocol used by the process for the global
+     * objects
+     */
     memory::Protocol &protocol();
+
+    /**
+     * Gets the object map that contains all the shared objects allocated in the
+     * process
+     * \return A reference to the object map that contains all the shared
+     * objects allocated in the process
+     */
     memory::ObjectMap &shared();
+
+    /**
+     * Gets the object map that contains all the shared objects allocated in the
+     * process
+     * \return A constant reference to the object map that contains all the shared
+     * objects allocated in the process
+     */
     const memory::ObjectMap &shared() const;
+
+    /**
+     * Gets the object map that contains all the global objects allocated in the
+     * process
+     * \return A reference to the object map that contains all the global
+     * objects allocated in the process
+     */
     memory::ObjectMap &global();
+
+    /**
+     * Gets the object map that contains all the global objects allocated in the
+     * process
+     * \return A constant reference to the object map that contains all the
+     * global objects allocated in the process
+     */
     const memory::ObjectMap &global() const;
+
+    /**
+     * Gets the object map that contains all the objects that have been orphaned
+     * in the process
+     * \return A reference to the object map that contains all the objects that
+     * have been orphaned in the process
+     */
     memory::ObjectMap &orphans();
+
+    /**
+     * Gets the object map that contains all the objects that have been orphaned
+     * in the process
+     * \return A constant reference to the object map that contains all the objects that
+     * have been orphaned in the process
+     */
     const memory::ObjectMap &orphans() const;
 
+    /**
+     * Returns the owner of the object with the smallest address within the
+     * given memory range
+     * \param addr Starting address of the range
+     * \param size Size of the range
+     * \return The owner of the object with the smallest address within the
+     * given memory range
+     */
     Mode *owner(const hostptr_t addr, size_t size = 0) const;
 };
 

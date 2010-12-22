@@ -55,14 +55,14 @@ class Protocol;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL ObjectMap : 
-	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
+	protected gmac::util::RWLock, protected std::map<const hostptr_t, Object *> {
 public:
     typedef gmacError_t(Object::*ObjectOp)(void);
     typedef gmacError_t(Object::*ConstObjectOp)(void) const;
     typedef gmacError_t(Object::*ModeOp)(const core::Mode &);
 protected:
 	friend class Map;
-    typedef std::map<const void *, Object *> Parent;
+    typedef std::map<const hostptr_t, Object *> Parent;
 
     //! Find an object in the map
     /*!
@@ -70,7 +70,7 @@ protected:
         \size Size (in bytes) of the memory range where the object can be found
         \return First object inside the memory range. NULL if no object is found
     */
-    Object *mapFind(const void *addr, size_t size) const;
+    Object *mapFind(const hostptr_t addr, size_t size) const;
 public:
     //! Default constructor
     /*!
@@ -107,7 +107,7 @@ public:
         \param size Size (in bytes) of the memory range where the object is located
         \return First object within the memory range. NULL if no object is found
     */
-	virtual Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const hostptr_t addr, size_t size) const;
 
     //! Get the amount of memory consumed by all objects in the map
     /*!
@@ -161,7 +161,7 @@ protected:
         \return First object in the memory range whose starting address is bellow the base
     */
     Object *get(const ObjectMap &map, const uint8_t *&base, 
-        const void *addr, size_t size) const;
+        const hostptr_t addr, size_t size) const;
 public:
     //! Default constructor
     /*!
@@ -193,7 +193,7 @@ public:
         \param size Size (in bytes) of the memory range where the object is located
         \raturn First object within the memory range. NULL if no object is found
     */
-	virtual Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const hostptr_t addr, size_t size) const;
 
     //! Remove object from this map and from the global process map and add that object to the process orphan object map
     /*!

@@ -72,7 +72,7 @@ void QueueMap::push(THREAD_T id, Mode &mode)
 void QueueMap::attach()
 {
     lockRead();
-	iterator q = Parent::find(util::GetThreadId());
+    iterator q = Parent::find(util::GetThreadId());
     if(q != Parent::end())
         q->second->queue->pop()->attach();
     unlock();
@@ -89,23 +89,19 @@ void QueueMap::erase(THREAD_T id)
     unlock();
 }
 
-
-size_t Process::TotalMemory_ = 0;
-
-
 Process::Process() :
-	util::Singleton<Process>(),
+    util::Singleton<Process>(),
     gmac::util::RWLock("Process"),
+    protocol_(*protocolInit(GLOBAL_PROTOCOL)),
     shared_("SharedMemoryMap"),
     global_("GlobalMemoryMap"),
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
     memoryInit();
-    protocol_ = protocolInit(GLOBAL_PROTOCOL);
-	// Create the private per-thread variables for the implicit thread
+    // Create the private per-thread variables for the implicit thread
     Mode::init();
-	initThread();
+    initThread();
 }
 
 Process::~Process()
@@ -121,21 +117,21 @@ Process::~Process()
         delete *a;
     accs_.clear();
     queues_.cleanup();
-    delete protocol_;
+    delete &protocol_;
     memoryFini();
 }
 
 void Process::initThread()
 {
     ThreadQueue * q = new core::ThreadQueue();
-	queues_.insert(util::GetThreadId(), q);
+    queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
 }
 
 void Process::finiThread()
 {
-	queues_.erase(util::GetThreadId());
+    queues_.erase(util::GetThreadId());
     Mode::finiThread();
 }
 
@@ -163,7 +159,6 @@ Mode *Process::createMode(int acc)
 
     // Initialize the global shared memory for the context
     Mode *mode = accs_[usedAcc]->createMode(*this);
-    accs_[usedAcc]->registerMode(*mode);
     modes_.insert(mode, accs_[usedAcc]);
 
     mode->attach();
@@ -185,7 +180,7 @@ void Process::removeMode(Mode &mode)
 }
 
 
-gmacError_t Process::globalMalloc(memory::Object &object, size_t /*size*/)
+gmacError_t Process::globalMalloc(memory::Object &object)
 {
     ModeMap::iterator i;
     lockRead();
@@ -240,9 +235,9 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     return ret;
 }
 
-void Process::addAccelerator(Accelerator *acc)
+void Process::addAccelerator(Accelerator &acc)
 {
-    accs_.push_back(acc);
+    accs_.push_back(&acc);
 }
 
 
@@ -252,7 +247,7 @@ accptr_t Process::translate(const hostptr_t addr)
     memory::Object *object = mode.getObject(addr);
     if (object == NULL) return NULL;
     accptr_t ptr = object->acceleratorAddr(addr);
-	object->release();
+    object->release();
     return ptr;
 }
 
@@ -295,7 +290,7 @@ Mode *Process::owner(const hostptr_t addr, size_t size) const
     memory::Object *object = shared_.get(addr, size);
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
-	object->release();
+    object->release();
     return &ret;
 }
 

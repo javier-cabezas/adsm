@@ -62,7 +62,8 @@ inline gmacError_t Mode::cleanUp()
     gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
     memory::Map::removeOwner(Process::getInstance(), *this);
 #ifdef USE_VM
-    bitmap_.cleanUp();
+    hostBitmap_.cleanUp();
+    acceleratorBitmap_.cleanUp();
 #endif
     return ret;
 }
@@ -118,7 +119,7 @@ Mode::removeObject(memory::Object &obj)
 }
 
 inline memory::Object *
-Mode::getObject(hostptr_t addr, size_t size) const
+Mode::getObject(const hostptr_t addr, size_t size) const
 {
 	return map_.get(addr, size);
 }
@@ -144,15 +145,27 @@ Mode::error(gmacError_t err)
 
 #ifdef USE_VM
 inline memory::vm::Bitmap &
-Mode::dirtyBitmap()
+Mode::hostDirtyBitmap()
 {
-    return bitmap_;
+    return hostBitmap_;
+}
+
+inline memory::vm::SharedBitmap &
+Mode::acceleratorDirtyBitmap()
+{
+    return acceleratorBitmap_;
 }
 
 inline const memory::vm::Bitmap &
-Mode::dirtyBitmap() const
+Mode::hostDirtyBitmap() const
 {
-    return bitmap_;
+    return hostBitmap_;
+}
+
+inline const memory::vm::SharedBitmap &
+Mode::acceleratorDirtyBitmap() const
+{
+    return acceleratorBitmap_;
 }
 #endif
 

@@ -13,9 +13,6 @@ struct accptr_t {
     accptr_t(CUdeviceptr ptr) :
         ptr_(ptr) {}
 
-    accptr_t(int ptr) :
-        ptr_(ptr) { }
-
     accptr_t(long int ptr) :
         ptr_(ptr) {}
 
@@ -27,6 +24,13 @@ struct accptr_t {
 #endif
     operator void *() { return (void *)(ptr_); }
     operator void *() const { return (void *)(ptr_); }
+
+#if 0
+    uint8_t operator [](const int& b)
+    {
+        return ptr_[b];
+    }
+#endif
 };
 
 static inline
@@ -63,30 +67,6 @@ static inline
 bool operator!=(const accptr_t &ptr1, long int ptr2)
 {
     return (((long int)ptr1.ptr_) != ptr2);
-}
-
-static inline
-accptr_t operator>>(const accptr_t &ptr1, int shift)
-{
-    return accptr_t(ptr1.ptr_>> shift);
-}
-
-static inline
-accptr_t operator>>(const accptr_t &ptr1, unsigned shift)
-{
-    return accptr_t(ptr1.ptr_>> shift);
-}
-
-static inline
-accptr_t operator<<(const accptr_t &ptr1, int shift)
-{
-    return accptr_t(ptr1.ptr_<< shift);
-}
-
-static inline
-accptr_t operator<<(const accptr_t &ptr1, unsigned shift)
-{
-    return accptr_t(ptr1.ptr_<< shift);
 }
 
 static inline

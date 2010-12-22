@@ -8,7 +8,7 @@
 
 namespace __impl { namespace memory {
 
-Object *ObjectMap::mapFind(const void *addr, size_t size) const
+Object *ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 {
     ObjectMap::const_iterator i;
     Object *ret = NULL;
@@ -59,7 +59,7 @@ bool ObjectMap::remove(Object &obj)
 	return ret;
 }
 
-Object *ObjectMap::get(const void *addr, size_t size) const
+Object *ObjectMap::get(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;
     ret = mapFind(addr, size);
@@ -133,7 +133,7 @@ Map::~Map()
 	//TODO: actually clean the memory map
 }
 
-Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
+Object *Map::get(const ObjectMap &map, const uint8_t *&base, const hostptr_t addr, size_t size) const
 {
     Object *ret = map.mapFind(addr, size);
     if(ret == NULL) return ret;
@@ -144,7 +144,7 @@ Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, s
     return NULL;
 }
 
-Object *Map::get(const void *addr, size_t size) const
+Object *Map::get(const hostptr_t addr, size_t size) const
 {    
     Object *ret = NULL;
     const uint8_t *base = NULL;

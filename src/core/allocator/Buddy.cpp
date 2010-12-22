@@ -125,7 +125,7 @@ hostptr_t Buddy::get(size_t &size)
 void Buddy::put(hostptr_t addr, size_t size)
 {
     uint8_t i = index((uint32_t)size);
-    off_t off = (off_t)((uint8_t *)addr - (uint8_t *)addr_);
+    off_t off = off_t(addr - addr_);
     TRACE(LOCAL,"Releasing %d bytes at offset %d of I/O memory", size, off);
     lock();
     putToList(off, i);

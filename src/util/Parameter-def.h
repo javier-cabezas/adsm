@@ -12,7 +12,7 @@ PARAM(paramDebug, const char *, "none", "GMAC_DEBUG")
 PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
 
 // GMAC Bitmap settings
-PARAM(paramBitmapChunksPerPage, size_t, 1, "GMAC_BITMAP_CHUNKS", PARAM_NONZERO)
+PARAM(paramSubBlocks, size_t, 1, "GMAC_SUBBLOCKS", PARAM_NONZERO)
 
 // Rolling Manager specific settings
 PARAM(paramRollSize, size_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)

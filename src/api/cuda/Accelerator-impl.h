@@ -1,3 +1,4 @@
+
 #ifndef CUDA_API_CUDA_ACCELERATOR_IMPL_H_
 #define CUDA_API_CUDA_ACCELERATOR_IMPL_H_
 
@@ -22,7 +23,7 @@ int Accelerator::major() const
     return major_;
 }
 
-inline 
+inline
 int Accelerator::minor() const
 {
     return minor_;

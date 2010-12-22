@@ -175,38 +175,42 @@ public:
      */
     void addObject(memory::Object &obj);
 
-    //! Removes an object from the map of the mode
-    /*! \param obj A reference to the object to be removed
+    /**
+     * Removes an object from the map of the mode
+     * \param obj A reference to the object to be removed
      */
     void removeObject(memory::Object &obj);
 
-    //! Gets the first object that belongs to the memory range
-    /*! \param addr Starting address of the memory range
-        \param size Size of the memory range
-        \return A pointer of the Object that contains the address or NULL if
-                there is no Object at that address
+    /**
+     * Gets the first object that belongs to the memory range
+     * \param addr Starting address of the memory range
+     * \param size Size of the memory range
+     * \return A pointer of the Object that contains the address or NULL if
+     * there is no Object at that address
      */
     memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
-    //! Applies a constant memory operation to all the objects that belong to
-    //! the mode
-    /*! \param op Memory operation to be executed
-        \sa __impl::memory::Object::acquire
-        \sa __impl::memory::Object::toHost
-        \sa __impl::memory::Object::toAccelerator
-        \return Error code
+    /**
+     * Applies a constant memory operation to all the objects that belong to
+     * the mode
+     * \param op Memory operation to be executed
+     *   \sa __impl::memory::Object::acquire
+     *   \sa __impl::memory::Object::toHost
+     *   \sa __impl::memory::Object::toAccelerator
+     * \return Error code
      */
-	gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
+    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
-    /*! Allocates memory on the accelerator memory */
-    /*! \param addr Pointer to a pointer where to store the accelerator address of
-     *              the allocation
-     *  \param size Size of the allocation
-     *  \param align Alignment of the memory allocation. This value must be a
-     *               power of two
-        \return Error code
+    /**
+     * Allocates memory on the accelerator memory
+     * \param addr Reference to a pointer where to store the accelerator
+     * address of the allocation
+     * \param size Size of the allocation
+     * \param align Alignment of the memory allocation. This value must be a
+     * power of two
+     * \return Error code
      */
-	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
+    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
 
 	/*! Releases memory previously allocated by malloc */
     /*! \param addr Accelerator memory allocation to be freed

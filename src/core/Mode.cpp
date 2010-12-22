@@ -84,7 +84,7 @@ void Mode::detach()
     key.set(NULL);
 }
 
-gmacError_t Mode::malloc(accptr_t *addr, size_t size, unsigned align)
+gmacError_t Mode::malloc(accptr_t &addr, size_t size, unsigned align)
 {
     switchIn();
     error_ = acc_->malloc(addr, size, align);
@@ -166,8 +166,9 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
     gmacError_t ret = gmacSuccess;
     size_t free;
+    size_t total;
     size_t needed = map_.memorySize();
-    acc_->memInfo(&free, NULL);
+    acc_->memInfo(free, total);
 
     if (needed > free) {
         switchOut();

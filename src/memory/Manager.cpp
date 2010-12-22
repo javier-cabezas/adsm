@@ -115,11 +115,11 @@ gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocT
         object->release();
         return hostMappedAlloc(addr, size); // Try using a host mapped object
     }
-    gmacError_t ret = proc.globalMalloc(*object, size);
+    gmacError_t ret = proc.globalMalloc(*object);
     object->release();
     return ret;
 }
-    
+
 gmacError_t Manager::free(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
@@ -127,7 +127,7 @@ gmacError_t Manager::free(hostptr_t addr)
     Object *object = mode.getObject(addr);
     if(object != NULL)  {
         mode.removeObject(*object);
-		object->release();
+        object->release();
     }
     else {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
@@ -141,7 +141,7 @@ accptr_t Manager::translate(const hostptr_t addr)
 {
     __impl::core::Process &proc = __impl::core::Process::getInstance();
     accptr_t ret = proc.translate(addr);
-    if(ret == NULL) {   
+    if(ret == NULL) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) ret = object->acceleratorAddr(addr);
     }

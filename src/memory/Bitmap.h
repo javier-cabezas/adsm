@@ -71,13 +71,14 @@ protected:
 
     };
 #endif
-    static const unsigned entriesPerByte;
+    static const unsigned EntriesPerByte_;
 
     unsigned bits_;
 
     core::Mode &mode_;
     typedef uint8_t EntryType;
-    hostptr_t bitmap_;
+    // Root entries of the bitmap
+    hostptr_t *bitmap_;
 
     bool dirty_;
 
@@ -95,10 +96,10 @@ protected:
 
     template <bool check, bool clear, bool set>
     bool CheckClearSet(const accptr_t addr);
-    int minEntry_;
-    int maxEntry_;
+    accptr_t minPtr_;
+    accptr_t maxPtr_;
 
-    void updateMaxMin(unsigned entry);
+    void updateMaxMin(accptr_t ptr, size_t count);
 
     uint32_t offset(const accptr_t addr) const;
 
@@ -111,8 +112,6 @@ public:
     virtual ~Bitmap();
 
     virtual void cleanUp();
-
-    hostptr_t host() const;
 
     bool check(const accptr_t addr);
     bool checkBlock(const accptr_t addr);

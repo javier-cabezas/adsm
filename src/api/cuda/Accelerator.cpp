@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-	core::Accelerator(n), device_(device),
+    core::Accelerator(n), device_(device),
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     lastMode_(NULL),
@@ -37,7 +37,6 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
     ret = cuDeviceComputeCapability(&major_, &minor_, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-    memory_ = size;
 
 #ifndef USE_MULTI_CONTEXT
     CUcontext tmp;
@@ -95,34 +94,14 @@ core::Mode *Accelerator::createMode(core::Process &proc)
 {
     trace::EnterCurrentFunction();
     core::Mode *mode = new cuda::Mode(proc, *this);
+    if (mode != NULL) {
+        registerMode(*mode);
+    }
     trace::ExitCurrentFunction();
 
     TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
     return mode;
 }
-
-void Accelerator::registerMode(core::Mode &mode)
-{
-    Mode &_mode = static_cast<Mode &>(mode);
-    TRACE(LOCAL,"Registering Execution Mode %p to Accelerator", &_mode);
-    trace::EnterCurrentFunction();
-    _queue.insert(&_mode);
-    load_++;
-    trace::ExitCurrentFunction();
-}
-
-void Accelerator::unregisterMode(core::Mode &mode)
-{
-    Mode &_mode = static_cast<Mode &>(mode);
-    TRACE(LOCAL,"Unregistering Execution Mode %p", &_mode);
-    trace::EnterCurrentFunction();
-    std::set<Mode *>::iterator c = _queue.find(&_mode);
-    ASSERTION(c != _queue.end());
-    _queue.erase(c);
-    load_--;
-    trace::ExitCurrentFunction();
-}
-
 
 #ifdef USE_MULTI_CONTEXT
 CUcontext
@@ -193,15 +172,15 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-gmacError_t Accelerator::malloc(accptr_t *addr, size_t size, unsigned align) 
+gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
-    *addr = NULL;
+    addr = NULL;
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
 #else
-	unsigned gpuSize = unsigned(size);
+    unsigned gpuSize = unsigned(size);
 #endif
     if(align > 1) {
         gpuSize += align;
@@ -218,7 +197,7 @@ gmacError_t Accelerator::malloc(accptr_t *addr, size_t size, unsigned align)
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
     }
-    *addr = gpuPtr;
+    addr = gpuPtr;
     _alignMap.lockWrite();
     _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
     _alignMap.unlock();
@@ -313,7 +292,7 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     CUresult r = cuMemFreeHost(addr);
     popContext();
 #else
-	CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
+    CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
     trace::ExitCurrentFunction();
     return error(r);
@@ -328,25 +307,21 @@ accptr_t Accelerator::hostMap(const hostptr_t addr)
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
     popContext();
 #else
-	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+    CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
     if(ret != CUDA_SUCCESS) device = 0;
     trace::ExitCurrentFunction();
     return accptr_t(device);
 }
 
-void Accelerator::memInfo(size_t *free, size_t *total) const
+void Accelerator::memInfo(size_t &free, size_t &total) const
 {
     pushContext();
-    size_t fakeFree;
-    size_t fakeTotal;
-    if (!free)  free  = &fakeFree;
-    if (!total) total = &fakeTotal;
 
 #if CUDA_VERSION > 3010
-    CUresult ret = cuMemGetInfo(free, total);
+    CUresult ret = cuMemGetInfo(&free, &total);
 #else
-    CUresult ret = cuMemGetInfo((unsigned int *)free, (unsigned int *)total);
+    CUresult ret = cuMemGetInfo((unsigned int *) &free, (unsigned int *) &total);
 #endif
     CFATAL(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();

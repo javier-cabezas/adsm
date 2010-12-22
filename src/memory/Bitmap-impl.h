@@ -64,19 +64,6 @@ Bitmap::CheckClearSet(const accptr_t addr)
     return ret;
 }
 
-inline void
-Bitmap::updateMaxMin(unsigned entry)
-{
-    if (minEntry_ == -1) {
-        minEntry_ = entry;
-        maxEntry_ = entry;
-    } else if (entry < unsigned(minEntry_)) {
-        minEntry_ = entry;
-    } else if (entry > unsigned(maxEntry_)) {
-        maxEntry_ = entry;
-    }
-}
-
 inline
 void Bitmap::set(const accptr_t addr)
 {
@@ -130,16 +117,6 @@ void Bitmap::clear(const accptr_t addr)
 }
 
 inline
-hostptr_t Bitmap::host() const
-{
-    if (minEntry_ != -1) {
-        return bitmap_ + minEntry_;
-    } else {
-        return bitmap_;
-    }
-}
-
-inline
 const size_t Bitmap::size() const
 {
     if (minEntry_ != -1) {
@@ -171,16 +148,25 @@ inline
 void Bitmap::newRange(const accptr_t ptr, size_t count)
 {
 #ifdef BITMAP_BYTE
-    hostptr_t start = bitmap_ + offset(ptr);
-    hostptr_t end   = bitmap_ + offset(ptr + count - 1);
-    ::memset(start, 0, end - start + 1);
+    hostptr_t start = ptr;
+    hostptr_t end   = ptr + count;
+
+    unsigned startRootEntry = getRootEntry(start);
+    unsigned endRootEntry   = getRootEntry(end);
+
+    for (unsigned i = startRootEntry; i <= endRootEntry; i++) {
+        // Create the memory ranges if needed
+        if (bitmap_[startRootEntry] == NULL) {
+            bitmap_[startRootEntry] = new EntryType[size_ * EntriesPerByte_];
+            ::memset(&bitmap_[i][startRangeEntry], 0, rangeEntries_);
+        }
+    }
+    allocations_.insert(AllocMap::value_type(ptr, count));
 #else // BITMAP_BIT
     hostptr_t start = bitmap_ + offset(ptr);
     hostptr_t end   = bitmap_ + offset(ptr + count - 1);
     ::memset(start, 0, end - start + 1);
 #endif
-    updateMaxMin(offset(ptr));
-    updateMaxMin(offset(ptr + count - 1));
     TRACE(LOCAL,"ptr: %p ("FMT_SIZE")", (void *) ptr, count);
 }
 

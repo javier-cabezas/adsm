@@ -66,9 +66,9 @@ private:
 protected:
     //! Allocated a host mapped memory
     /*!
-        \param Pointer to the variable that will store the begining of the allocated memory
-        \param Size (in bytes) of the memory to be allocated
-        \return Error core
+        \param addr Pointer to the variable that will store the begining of the allocated memory
+        \param size Size (in bytes) of the memory to be allocated
+        \return Error code
     */
     gmacError_t hostMappedAlloc(hostptr_t *addr, size_t size);
 

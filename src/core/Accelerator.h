@@ -37,6 +37,8 @@
 
 #include <stddef.h>
 
+#include <set>
+
 #include "config/common.h"
 #include "include/gmac/types.h"
 
@@ -47,57 +49,154 @@ class KernelLaunch;
 class Mode;
 class Process;
 
-/*!
- \brief Generic Accelerator Class
- Defines the standard interface all accelerators MUST
- implement
- */
+/** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
 protected:
-	size_t memory_;
-	unsigned id_;
-	unsigned busId_;
-	unsigned busAccId_;
-	bool integrated_;
+    /** Identifier of the accelerator */
+    unsigned id_;
 
-	unsigned load_;
+    /** Identifier of the bus where the accelerator is located */
+    unsigned busId_;
+
+    /** Identifier of the accelerator within the bus where the accelerator is located */
+    unsigned busAccId_;
+
+    /** Value that tells if the accelerator is integrated and therefore shares
+     * the physical memory with the CPU */
+    bool integrated_;
+
+    /** Value that represents the load of the accelerator */
+    unsigned load_;
+
+    /** Set of modes that run on the accelerator */
+    std::set<Mode *> queue_;
 public:
-	Accelerator(int n);
+    /**
+     * Constructs an Accelerator and initializes its information fields
+     * \param n Identifier of the accelerator, must be unique in the system
+     */
+    Accelerator(int n);
 
-	unsigned id() const;
-	virtual ~Accelerator();
+    /**
+     * Releases the generic (non-API dependant) resources of the accelerator
+     */
+    virtual ~Accelerator();
 
-	virtual Mode *createMode(Process &proc) = 0;
-	virtual void registerMode(Mode &) = 0;
-	virtual void unregisterMode(Mode &) = 0;
-	inline virtual unsigned load() const {
-		return load_;
-	}
+    /**
+     * Gets the identifier of the accelerator
+     * @return The identifier of the accelerator
+     */
+    unsigned id() const;
 
-	/*!  \brief Allocates memory on the accelerator memory */
-	virtual gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1) = 0;
+    /**
+     * Creates and returns a mode on the given process and registers it to run
+     * on the accelerator
+     * \param proc Reference to a process which the mode will belong to
+     * \return A pointer to the created mode or NULL if there has been an error
+     */
+    virtual Mode *createMode(Process &proc) = 0;
 
-	/*!  \brief Releases memory previously allocated by malloc */
-	virtual gmacError_t free(accptr_t addr) = 0;
+    /**
+     * Registers a mode to be run on the accelerator. The mode must not be
+     * already registered in the accelerator
+     * \param mode A reference to the mode to be registered
+     */
+    void registerMode(Mode &mode);
 
-	virtual gmacError_t sync() = 0;
+    /**
+     * Unegisters a mode from the accelerator. The mode must be already
+     * registered in the accelerator
+     * \param mode A reference to the mode to be unregistered
+     */
+    void unregisterMode(Mode &mode);
 
-	/*!  \brief Copies data from system memory to accelerator memory */
-	virtual gmacError_t
-			copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size) = 0;
+    /**
+     * Returns a value that indicates the load of the accelerator
+     * \return A value that indicates the load of the accelerator
+     */
+    virtual unsigned load() const;
 
-	/*!  \brief Copies data from accelerator memory to system memory */
-	virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size) = 0;
+    /**
+     * Allocates memory on the accelerator memory
+     * \param addr Reference to a pointer to store the address of the allocated
+     * memory
+     * \param size The number of bytes of the allocation
+     * \param align The alignment of the allocation. This value must be a power
+     * of two
+     * \return Error code
+     */
+    virtual gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1) = 0;
 
-	/*!  \brief Copies data from accelerator memory to accelerator memory */
-	virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
+    /**
+     * Releases memory previously allocated by malloc
+     * \param addr A pointer with the address of the allocation to be freed
+     * \return Error code
+     */
+    virtual gmacError_t free(accptr_t addr) = 0;
 
-	virtual void memInfo(size_t *free, size_t *total) const = 0;
+    /**
+     * Waits for kernel execution and returns the execution return value
+     * \return Error code
+     */
+    virtual gmacError_t sync() = 0;
 
-	// TODO: use this methods for something useful
-	unsigned busId() const;
-	unsigned busAccId() const;
-	bool integrated() const;
+    /**
+     * Copies data from host memory to accelerator memory
+     * \param acc Destination pointer to accelerator memory
+     * \param host Source pointer to host memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t
+        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size) = 0;
+
+    /**
+     * Copies data from accelerator memory to host memory
+     * \param host Destination pointer to host memory
+     * \param acc Source pointer to accelerator memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size) = 0;
+
+    /**
+     * Copies data from accelerator memory to accelerator memory
+     * \param dst Destination pointer to accelerator memory
+     * \param src Source pointer to accelerator memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
+
+    /**
+     * Gets the memory information for the accelerator
+     * \param free A reference to the variable where to store the amount of free
+     * memory in the accelerator
+     * \param total A reference to the variable where to store the total amount
+     * of memory of the accelerator
+     */
+    virtual void memInfo(size_t &free, size_t &total) const = 0;
+
+    // TODO: use this methods for something useful
+    /**
+     * Gets the bus identifier where the accelerator is located
+     * \return The bus identifier where the accelerator is located
+     */
+    unsigned busId() const;
+
+    /**
+     * Gets the accelerator ID within the bus where the accelerator is located
+     * \return The bus identifier where the accelerator is located
+     */
+    unsigned busAccId() const;
+
+    /**
+     * Tells if the accelerator is integrated and therefore shares the physical
+     * memory with the CPU
+     * \return A boolean that tells if the accelerator is integrated and
+     * therefore shares the physical memory with the CPU
+     */
+    bool integrated() const;
 };
 
 }}
