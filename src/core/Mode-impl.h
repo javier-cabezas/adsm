@@ -118,7 +118,7 @@ Mode::removeObject(memory::Object &obj)
 }
 
 inline memory::Object *
-Mode::getObject(const void *addr, size_t size) const
+Mode::getObject(hostptr_t addr, size_t size) const
 {
 	return map_.get(addr, size);
 }
