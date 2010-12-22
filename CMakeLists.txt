@@ -51,8 +51,10 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 # Identify API being used
 option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
+    add_definitions(-DUSE_OPENCL)
     message(FATAL_ERROR "OpenCL still not supported")
 else(USE_OPENCL)
+    add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
     find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
             HINTS ENV "CUDA_BIN_PATH")
@@ -134,8 +136,8 @@ import_gmac_libraries()
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "-Wall -Werror -Wno-unused-variable")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -fomit-frame-pointer")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -DDEBUG -g -O0")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -g -fomit-frame-pointer")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -DDEBUG -O0")
 elseif(MSVC)
     set(CMAKE_C_FLAGS " /W3 /WX /EHsc")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")

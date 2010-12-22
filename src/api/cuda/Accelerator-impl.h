@@ -10,29 +10,6 @@
 
 namespace __impl { namespace cuda {
 
-
-inline
-CUdeviceptr Accelerator::gpuAddr(void *addr)
-{
-#if CUDA_VERSION <= 3010
-    unsigned long a = (unsigned long)addr;
-    return (CUdeviceptr)(a & 0xffffffff);
-#else
-    return (CUdeviceptr)addr;
-#endif
-}
-
-inline
-CUdeviceptr Accelerator::gpuAddr(const void *addr)
-{
-#if CUDA_VERSION <= 3010
-    unsigned long a = (unsigned long)addr;
-    return (CUdeviceptr)(a & 0xffffffff);
-#else
-    return (CUdeviceptr)addr;
-#endif
-}
-
 inline CUdevice
 Accelerator::device() const
 {
@@ -52,15 +29,15 @@ int Accelerator::minor() const
 }
 
 inline
-gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t size)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, dev, size);
+    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, size);
+    CUresult ret = cuMemcpyHtoD(acc, host, size);
 #else
-	CUresult ret = cuMemcpyHtoD(gpuAddr(dev), host, unsigned(size));
+	CUresult ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
@@ -68,18 +45,18 @@ gmacError_t Accelerator::copyToAccelerator(void *dev, const void *host, size_t s
 }
 
 inline
-gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, IOBuffer &buffer, unsigned bufferOff, size_t count, Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, Mode &mode, CUstream stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, dev, count);
+    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
     pushContext();
 
     buffer.toAccelerator(mode, stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, count, stream);
+    CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
 #else
-    CUresult ret = cuMemcpyHtoDAsync(gpuAddr(dev), host, unsigned(count), stream);
+    CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
 #endif
     buffer.started();
     popContext();
@@ -88,15 +65,15 @@ gmacError_t Accelerator::copyToAcceleratorAsync(void *dev, IOBuffer &buffer, uns
 }
 
 inline
-gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", dev, host, size);
+    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), size);
+    CUresult ret = cuMemcpyDtoH(host, acc, size);
 #else
-	CUresult ret = cuMemcpyDtoH(host, gpuAddr(dev), unsigned(size));
+	CUresult ret = cuMemcpyDtoH(host, acc, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
@@ -104,17 +81,17 @@ gmacError_t Accelerator::copyToHost(void *host, const void *dev, size_t size)
 }
 
 inline
-gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, const void *dev, size_t count, Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", dev, host, count);
+    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
     pushContext();
     buffer.toHost(mode, stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), count, stream);
+    CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
 #else
-	CUresult ret = cuMemcpyDtoHAsync(host, gpuAddr(dev), unsigned(count), stream);
+	CUresult ret = cuMemcpyDtoHAsync(host, acc, unsigned(count), stream);
 #endif
     buffer.started();
     popContext();
@@ -123,15 +100,15 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, unsigned bufferOff, c
 }
 
 inline
-gmacError_t Accelerator::copyAccelerator(void *dst, const void *src, size_t size)
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", src, dst, size);
+    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), size);
+    CUresult ret = cuMemcpyDtoD(dst, src, size);
 #else
-	CUresult ret = cuMemcpyDtoD(gpuAddr(dst), gpuAddr(src), unsigned(size));
+	CUresult ret = cuMemcpyDtoD(dst, src, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
@@ -228,7 +205,7 @@ void Accelerator::pushContext() const
     _mutex.lock();
     ret = cuCtxPushCurrent(_ctx);
 #endif
-    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
 }
 
 inline
@@ -240,7 +217,7 @@ void Accelerator::popContext() const
 #ifndef USE_MULTI_CONTEXT
     _mutex.unlock();
 #endif
-    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext");
+    CFATAL(ret == CUDA_SUCCESS, "Error poping CUcontext: %d", ret);
 }
 
 #ifndef USE_MULTI_CONTEXT

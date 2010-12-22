@@ -33,6 +33,7 @@ source_group(${current_GROUP} FILES
     gmacMatrixMul.cu
     gmacMemcpy.cu
     gmacFile.cu
+    gmacMigration.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -85,6 +86,12 @@ target_link_libraries(gmacMemset gmac)
 cuda_compile(gfile gmacFile.cu)
 add_executable(gmacFile ${gfile} ${common_SRC} gmacFile.cu)
 target_link_libraries(gmacFile gmac)
+
+# gmacMigration
+cuda_compile(migration gmacMigration.cu)
+add_executable(gmacMigration ${migration} ${common_SRC} gmacMigration.cu)
+target_link_libraries(gmacMigration gmac)
+
 
 # gmacMap
 # source_group(${current_GROUP} FILES gmacMap.cu)

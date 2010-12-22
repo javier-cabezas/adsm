@@ -7,6 +7,7 @@
 
 #include "config/common.h"
 #include "core/Kernel.h"
+#include "util/NonCopyable.h"
 
 namespace __impl { namespace cuda {
 
@@ -44,14 +45,13 @@ public:
     size_t shared() const { return _shared; }
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig, public util::NonCopyable {
 protected:
     // \todo Is this really necessary?
     const Kernel & _kernel;
     CUfunction _f;
 
     KernelLaunch(const Kernel & k, const KernelConfig & c);
-	KernelLaunch &operator =(const KernelLaunch &);
 public:
 
     gmacError_t execute();

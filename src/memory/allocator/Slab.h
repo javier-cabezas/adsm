@@ -46,7 +46,7 @@ namespace memory { namespace allocator {
 
 class GMAC_LOCAL Slab : public memory::Allocator {
 protected:
-    class GMAC_LOCAL AddressMap : public std::map<void *, Cache *>, gmac::util::RWLock {
+    class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::RWLock {
     protected:
         friend class Slab;
     public:
@@ -72,8 +72,8 @@ public:
     Slab();
     virtual ~Slab();
     
-    virtual void *alloc(size_t size, void *addr);
-    virtual bool free(void *addr);
+    virtual hostptr_t alloc(size_t size, hostptr_t addr);
+    virtual bool free(hostptr_t addr);
 };
 
 }}}

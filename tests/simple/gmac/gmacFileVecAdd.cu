@@ -57,12 +57,12 @@ float doTest(float *a, float *b, float *c, float *orig)
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float error = 0;
+    float error = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
         error += orig[i] - (c[i]);
     }
     getTime(&t);
-    fprintf(stderr,"Error: %f\n", error);
+    fprintf(stderr, "Error: %f\n", error);
     printTime(&s, &t, "Check: ", "\n");
 
     return error;

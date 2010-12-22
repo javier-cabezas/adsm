@@ -379,7 +379,7 @@ cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
     Process &proc = Process::getInstance();
-    __impl::cuda::Mode *mode = dynamic_cast<__impl::cuda::Mode *>(proc.owner(src));
+    __impl::cuda::Mode *mode = dynamic_cast<__impl::cuda::Mode *>(proc.owner(hostptr_t(src)));
     if(mode == NULL) {
 #if CUDA_VERSION >= 3020
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width, height);
@@ -390,7 +390,7 @@ cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t wOffset,
 #endif
     }
     else {
-        unsigned long dummy = (unsigned long)proc.translate(src);
+        unsigned long dummy = (unsigned long)proc.translate(hostptr_t(src));
 #if CUDA_VERSION >= 3020
         __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
 #else

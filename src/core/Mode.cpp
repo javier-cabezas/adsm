@@ -24,7 +24,8 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
 #ifdef USE_VM
-    , bitmap_(*this)
+    , hostBitmap_(*this)
+    , acceleratorBitmap_(hostBitmap_)
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
@@ -83,7 +84,7 @@ void Mode::detach()
     key.set(NULL);
 }
 
-gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
+gmacError_t Mode::malloc(accptr_t *addr, size_t size, unsigned align)
 {
     switchIn();
     error_ = acc_->malloc(addr, size, align);
@@ -91,7 +92,7 @@ gmacError_t Mode::malloc(void **addr, size_t size, unsigned align)
     return error_;
 }
 
-gmacError_t Mode::free(void *addr)
+gmacError_t Mode::free(accptr_t addr)
 {
     switchIn();
     error_ = acc_->free(addr);
@@ -99,25 +100,25 @@ gmacError_t Mode::free(void *addr)
     return error_;
 }
 
-gmacError_t Mode::copyToAccelerator(void *acc, const void *host, size_t size)
+gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc, size);
+    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, (void *) acc, size);
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyToHost(void *host, const void *acc, size_t size)
+gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc , host, size);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) acc, host, size);
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyAccelerator(void *dst, const void *src, size_t size)
+gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     switchIn();
     error_ = getContext().copyAccelerator(dst, src, size);
@@ -125,7 +126,7 @@ gmacError_t Mode::copyAccelerator(void *dst, const void *src, size_t size)
     return error_;
 }
 
-gmacError_t Mode::memset(void *addr, int c, size_t size)
+gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
 {
     switchIn();
     error_ = getContext().memset(addr, c, size);
@@ -153,24 +154,29 @@ gmacError_t Mode::sync()
     return error_;
 }
 
-#if 0
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
     TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
+
+    if (acc_ == &acc) {
+        switchOut();
+        return gmacSuccess;
+    }
     gmacError_t ret = gmacSuccess;
     size_t free;
     size_t needed = map_.memorySize();
     acc_->memInfo(&free, NULL);
 
     if (needed > free) {
+        switchOut();
         return gmacErrorInsufficientAcceleratorMemory;
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-//    map_.freeObjects(manager.protocol(), &gmac::memory::Protocol::toHost);
+    map_.forEach(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
@@ -181,24 +187,15 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     acc_->registerMode(*this);
     
     TRACE(LOCAL,"Reallocating objects");
-    map_.reallocObjects(*this);
+    //map_.reallocObjects(*this);
+    map_.forEach(&memory::Object::mapToAccelerator);
 
     TRACE(LOCAL,"Reloading mode");
     reload();
 
-    //
-    // \TODO What to do if there are many threads sharing the same mode!!
-    //
     switchOut();
 
     return ret;
-}
-#endif
-void Mode::memInfo(size_t *free, size_t *total)
-{
-    switchIn();
-    acc_->memInfo(free, total);
-    switchOut();
 }
 
 }}

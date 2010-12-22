@@ -1,6 +1,5 @@
-
-#ifndef GMAC_CORE_ACCELERATOR_IPP_
-#define GMAC_CORE_ACCELERATOR_IPP_
+#ifndef GMAC_CORE_ACCELERATOR_IMPL_H_
+#define GMAC_CORE_ACCELERATOR_IMPL_H_
 
 namespace __impl { namespace core {
 

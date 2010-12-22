@@ -49,11 +49,25 @@ typedef unsigned __int32 uint32_t;
 typedef signed __int32 int32_t;
 typedef unsigned __int64 uint64_t;
 typedef signed __int64 int64_t;
+typedef signed __int64 ssize_t;
 #endif
 
 #ifndef _MSC_VER
 #define UNREFERENCED_PARAMETER(a)
 #endif
+
+typedef uint8_t *hostptr_t;
+
+#ifdef USE_CUDA
+#include "cuda/common.h"
+#else
+#ifdef USE_OPENCL
+#include "opencl/common.h"
+#else
+#error "No programming model back-end specified"
+#endif
+#endif
+
 
 namespace __impl {
 #if defined(GMAC_DLL)
@@ -106,9 +120,6 @@ namespace gmac = __impl;
 #define DBC_FORCE_TEST(c)
 #define DBC_TESTED(c)
 #endif
-
-
-
 
 #include "include/gmac/visibility.h"
 

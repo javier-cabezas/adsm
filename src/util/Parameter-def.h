@@ -26,3 +26,15 @@ PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
 // OpenCL parameters
 PARAM(paramOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
 PARAM(paramOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
+
+// GMAC parameters for auto-tunning
+PARAM(paramModelToHostConfig, float, 40.0, "GMAC_MODEL_TOHOSTCONFIG")       // DMA configuration costs
+PARAM(paramModelToHostTransferL1, float, 0.0007f, "GMAC_MODEL_TOHOSTTRANSFER_L1") // Transfer costs for data that fits in the L1 cache
+PARAM(paramModelToHostTransferL2, float, 0.0008f, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that fits in the L2 cache
+PARAM(paramModelToHostTransferMem, float, 0.0010f, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
+PARAM(paramModelToDeviceConfig, float, 40.0, "GMAC_MODEL_TODEVICECONFIG")       // DMA configuration costs
+PARAM(paramModelToDeviceTransferL1, float, 0.0007f, "GMAC_MODEL_TODEVICETRANSFER_L1") // Transfer costs for data that fits in the L1 cache
+PARAM(paramModelToDeviceTransferL2, float, 0.0008f, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that fits in the L2 cache
+PARAM(paramModelToDeviceTransferMem, float, 0.0010f, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
+PARAM(paramModelL1, size_t, 32 * 1024, "GMAC_MODEL_L1") // Size of the L1 cache
+PARAM(paramModelL2, size_t, 256 * 1024, "GMAC_MODEL_L2") // Size of the L2 cache

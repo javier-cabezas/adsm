@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Lock.h"
-
+#include "util/NonCopyable.h"
 
 namespace __impl {
 
@@ -57,8 +57,9 @@ class Protocol;
 class GMAC_LOCAL ObjectMap : 
 	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
 public:
-    typedef gmacError_t(Object::*ObjectOp)(void) const;
-    typedef void (Object::*ModeOp)(const core::Mode &);
+    typedef gmacError_t(Object::*ObjectOp)(void);
+    typedef gmacError_t(Object::*ConstObjectOp)(void) const;
+    typedef gmacError_t(Object::*ModeOp)(const core::Mode &);
 protected:
 	friend class Map;
     typedef std::map<const void *, Object *> Parent;
@@ -69,7 +70,7 @@ protected:
         \size Size (in bytes) of the memory range where the object can be found
         \return First object inside the memory range. NULL if no object is found
     */
-    const Object *mapFind(const void *addr, size_t size) const;
+    Object *mapFind(const void *addr, size_t size) const;
 public:
     //! Default constructor
     /*!
@@ -98,15 +99,15 @@ public:
         \param obj Object to remove from the map
         \return True if the object was successfuly removed
     */
-	virtual bool remove(const Object &obj);
+	virtual bool remove(Object &obj);
 
     //! Find the firs object in a memory range
     /*!
         \param addr Starting address of the memory range where the object is located
         \param size Size (in bytes) of the memory range where the object is located
-        \raturn First object within the memory range. NULL if no object is found
+        \return First object within the memory range. NULL if no object is found
     */
-	virtual const Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const void *addr, size_t size) const;
 
     //! Get the amount of memory consumed by all objects in the map
     /*!
@@ -120,21 +121,33 @@ public:
         \sa __impl::memory::Object::acquire
         \sa __impl::memory::Object::toHost
         \sa __impl::memory::Object::toAccelerator
+        \return Error code
     */
-    void forEach(ObjectOp op) const;
+    gmacError_t forEach(ObjectOp op) const;
 
-    //! Execute a mode operation over all the objects in the map
+    //! Invoke a constant memory operation over all the objects in the map
+    /*!
+        \param op Memory operation to be executed
+        \sa __impl::memory::Object::acquire
+        \sa __impl::memory::Object::toHost
+        \sa __impl::memory::Object::toAccelerator
+        \return Error code
+    */
+    gmacError_t forEach(ConstObjectOp op) const;
+
+
+    //! Execute a mode operation over all the objects in the map without modifying the Mode
     /*!
         \param op Mode operation to be executed        
         \sa __impl::memory::Object::removeOwner
+        \sa __impl::memory::Object::realloc
+        \return Error code
     */
-    void forEach(const core::Mode &mode, ModeOp op) const;
-
-    //void reallocObjects(gmac::core::Mode &mode);
+    gmacError_t forEach(const core::Mode &mode, ModeOp op) const;
 };
  
 //! An object map associated to an execution mode
-class GMAC_LOCAL Map : public memory::ObjectMap {
+class GMAC_LOCAL Map : public memory::ObjectMap, public util::NonCopyable {
 protected:
     //! Execution mode owning this map
     core::Mode &parent_;
@@ -147,7 +160,7 @@ protected:
         \param size Size (in bytes) of the memory range to look for objects
         \return First object in the memory range whose starting address is bellow the base
     */
-    const Object *get(const ObjectMap &map, const uint8_t *&base, 
+    Object *get(const ObjectMap &map, const uint8_t *&base, 
         const void *addr, size_t size) const;
 public:
     //! Default constructor
@@ -160,9 +173,6 @@ public:
     //! Default destructor
     virtual ~Map();
     
-    //! Null assigment operator to prevent assigment of memory maps
-	Map &operator =(const Map &);
-
     //! Insert an object in the map and the global process map where all objects are registered
     /*!
         \param obj Object to remove from the map
@@ -175,7 +185,7 @@ public:
         \param obj Object to remove from the map
         \return True if the object was successfuly removed
     */
-    bool remove(const Object &obj);
+    bool remove(Object &obj);
 
     //! Find the first object in a memory range in this map or on the global and shared process object maps
     /*!
@@ -183,7 +193,7 @@ public:
         \param size Size (in bytes) of the memory range where the object is located
         \raturn First object within the memory range. NULL if no object is found
     */
-	virtual const Object *get(const void *addr, size_t size) const;
+	virtual Object *get(const void *addr, size_t size) const;
 
     //! Remove object from this map and from the global process map and add that object to the process orphan object map
     /*!

@@ -10,22 +10,22 @@
 namespace __impl { namespace memory { namespace allocator {
 
 Arena::Arena(size_t objSize) :
-    ptr(NULL),
-    size(0)
+    ptr_(NULL),
+    size_(0)
 {
-    gmacError_t ret = Manager::getInstance().alloc(&ptr, paramPageSize);
+    gmacError_t ret = Manager::getInstance().alloc(&ptr_, paramPageSize);
     CFATAL(ret == gmacSuccess, "Unable to allocate memory in the accelerator");
-    for(size_t s = 0; s < paramPageSize; s += objSize, size++) {
-        TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)((uint8_t *)ptr + s), objSize);
-        _objects.push_back((void *)((uint8_t *)ptr + s));
+    for(size_t s = 0; s < paramPageSize; s += objSize, size_++) {
+        TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
+        objects_.push_back(ptr_ + s);
     }
 }
 
 Arena::~Arena()
 {
-    CFATAL(_objects.size() == size, "Destroying non-full Arena");
-    _objects.clear();
-	Manager::getInstance().free(ptr);
+    CFATAL(objects_.size() == size_, "Destroying non-full Arena");
+    objects_.clear();
+	Manager::getInstance().free(ptr_);
 }
 
 
@@ -38,7 +38,7 @@ Cache::~Cache()
   
 }
 
-void *Cache::get()
+hostptr_t Cache::get()
 {
     ArenaMap::iterator i;
     lock();
@@ -52,7 +52,7 @@ void *Cache::get()
     Arena *arena = new __impl::memory::allocator::Arena(objectSize);
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
     arenas.insert(ArenaMap::value_type(arena->key() , arena));
-    void *ptr = arena->get();
+    hostptr_t ptr = arena->get();
     unlock();
     return ptr;
 }

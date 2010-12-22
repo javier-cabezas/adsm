@@ -57,13 +57,14 @@ inline gmacError_t ContextMap::sync()
     return ret;
 }
 
-inline void Mode::cleanUp()
+inline gmacError_t Mode::cleanUp()
 {
-    map_.forEach(*this, &memory::Object::removeOwner);
+    gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
     memory::Map::removeOwner(Process::getInstance(), *this);
 #ifdef USE_VM
     bitmap_.cleanUp();
 #endif
+    return ret;
 }
 
 inline void Mode::cleanUpContexts()
@@ -111,21 +112,22 @@ Mode::addObject(memory::Object &obj)
 }
 
 inline void 
-Mode::removeObject(const memory::Object &obj)
+Mode::removeObject(memory::Object &obj)
 {
     map_.remove(obj);
 }
 
-inline const memory::Object *
+inline memory::Object *
 Mode::getObject(const void *addr, size_t size) const
 {
 	return map_.get(addr, size);
 }
 
-inline void
-Mode::forEachObject(memory::ObjectMap::ObjectOp op) const
+inline gmacError_t
+Mode::forEachObject(memory::ObjectMap::ConstObjectOp op) const
 {
-	return map_.forEach(op);
+    gmacError_t ret = map_.forEach(op);
+	return ret;
 }
 
 inline gmacError_t

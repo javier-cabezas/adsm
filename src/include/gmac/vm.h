@@ -45,7 +45,7 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
-__constant__ int __SHIFT_PAGE;
+__constant__ unsigned __SHIFT_PAGE;
 
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 

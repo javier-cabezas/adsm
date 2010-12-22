@@ -54,12 +54,6 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
 {
 }
 
-KernelLaunch &KernelLaunch::operator =(const KernelLaunch &)
-{
-    FATAL("Assigment of kernel launch is not supported");
-    return *this;
-}
-
 gmacError_t
 KernelLaunch::execute()
 {
@@ -67,7 +61,7 @@ KernelLaunch::execute()
     CUresult ret = cuParamSetv(_f, 0, argsArray(), argsSize());
     CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(_f, argsSize());
-	ASSERTION(ret == CUDA_SUCCESS);
+	CFATAL(ret == CUDA_SUCCESS);
 
 #if 0
 	// Set-up textures

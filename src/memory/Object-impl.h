@@ -8,9 +8,9 @@
 
 namespace __impl { namespace memory {
 
-inline Object::Object(void *addr, size_t size) :
+inline Object::Object(hostptr_t addr, size_t size) :
 	gmac::util::RWLock("Object"), 
-	addr_((uint8_t *)addr),
+	addr_(addr),
 	size_(size),
 	valid_(false)
 {}
@@ -26,19 +26,36 @@ inline Object::~Object()
     }
     blocks_.clear();
     unlock();
-    
 }
 
-inline uint8_t *Object::addr() const
+inline hostptr_t Object::addr() const
 {
     // No need for lock -- addr_ is never modified
-    return (uint8_t *) addr_;   
+    return addr_;   
 }
 
-inline uint8_t *Object::end() const
+inline hostptr_t Object::end() const
 {
     // No need for lock -- addr_ and size_ are never modified
     return addr_ + size_;
+}
+
+inline ssize_t Object::blockBase(size_t offset) const
+{
+    return -1 * (offset % blockSize());
+}
+
+inline size_t Object::blockEnd(size_t offset) const
+{
+    if (offset + blockBase(offset) + blockSize() > size_)
+        return size_ - offset;
+    else
+        return blockSize() + blockBase(offset);
+}
+
+inline size_t Object::blockSize() const
+{
+    return paramPageSize;
 }
 
 inline size_t Object::size() const
@@ -77,32 +94,32 @@ inline gmacError_t Object::toAccelerator() const
     return ret;
 }
 
-inline gmacError_t Object::signalRead(void *addr) const
+inline gmacError_t Object::signalRead(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-	else ret = i->second->signalRead();
+	else ret = i->second->signalRead(addr);
 	unlock();
 	return ret;
 }
 
-inline gmacError_t Object::signalWrite(void *addr) const
+inline gmacError_t Object::signalWrite(hostptr_t addr) const
 {
 	gmacError_t ret = gmacSuccess;
 	lockRead();
-	BlockMap::const_iterator i = blocks_.upper_bound((uint8_t *)addr);
+	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-	else ret = i->second->signalWrite();
+	else ret = i->second->signalWrite(addr);
 	unlock();
 	return ret;
 }
 
 inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size, 
-									  unsigned bufferOffset, unsigned objectOffset) const
+									  size_t bufferOffset, size_t objectOffset) const
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyToBuffer, buffer, size, 
@@ -112,7 +129,7 @@ inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size,
 }
 
 inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-										unsigned bufferOffset, unsigned objectOffset) const
+										size_t bufferOffset, size_t objectOffset) const
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size, 

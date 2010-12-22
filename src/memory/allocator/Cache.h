@@ -44,28 +44,28 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory { namespace allocator {
 
-typedef std::list<void *> ObjectList;
+typedef std::list<hostptr_t> ObjectList;
 
 class GMAC_LOCAL Arena {
 protected:
-    void *ptr;
-    size_t size;
+    hostptr_t ptr_;
+    size_t size_;
 
-    ObjectList _objects;
+    ObjectList objects_;
 
 public:
     Arena(size_t objSize);
     ~Arena();
 
-    inline void *address() const { return ptr; }
-    void *key() const;
+    inline hostptr_t address() const { return ptr_; }
+    hostptr_t key() const;
     const ObjectList &objects() const;
 
     bool full() const;
     bool empty() const;
 
-    void *get();
-    void put(void *obj);
+    hostptr_t get();
+    void put(hostptr_t obj);
 };
 
 
@@ -74,7 +74,7 @@ protected:
     size_t objectSize;
     size_t arenaSize;
 
-    typedef std::map<void *, Arena *> ArenaMap;
+    typedef std::map<hostptr_t, Arena *> ArenaMap;
     ArenaMap arenas;
 
 public:
@@ -84,8 +84,8 @@ public:
     static Cache &get(long key, size_t size);
     static void cleanup();
 
-    void *get();
-    void put(void *obj);
+    hostptr_t get();
+    void put(hostptr_t obj);
 
 };
 

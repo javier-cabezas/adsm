@@ -52,9 +52,11 @@ namespace core {
 namespace memory {
 
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
+    DBC_FORCE_TEST(Object)
+
 protected:
     //! Object host memory address
-    uint8_t *addr_;
+    hostptr_t addr_;
 
     //! Object size in bytes
     size_t size_;
@@ -62,7 +64,7 @@ protected:
     //! Mark the object as valid
 	bool valid_;
 
-	typedef std::map<uint8_t *, Block *> BlockMap;
+	typedef std::map<hostptr_t, Block *> BlockMap;
     //! Collection of blocks forming the object
 	BlockMap blocks_;
 
@@ -71,7 +73,7 @@ protected:
         \param objectOffset Offset (in bytes) from the begining of the object where the block is located
         \return Constant iterator pointing to the block
     */
-    BlockMap::const_iterator firstBlock(unsigned &objectOffset) const;
+    BlockMap::const_iterator firstBlock(size_t &objectOffset) const;
 
     //! Execute a coherence operation over all the blocks of the object
     /*!
@@ -90,20 +92,20 @@ protected:
         \param bufferOffset Offset (in bytes) from the begining of the buffer to start performing the operation
         \param objectOffset Offset (in bytes) from the beginning of the block to start performing the operation
         \return Error code
-        \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyToAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, unsigned, unsigned) const
-        \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, unsigned, unsigned) const
+        \sa __impl::memory::Block::copyToHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyToAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
+        \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
     */
-	gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset, unsigned objectOffset) const;
+	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
+		size_t bufferOffset, size_t objectOffset) const;
 
     //! Default constructor
     /*!
         \param addr Host memory address where the object begins
         \param size Size (in bytes) of the memory object
     */
-	Object(void *addr, size_t size);
+	Object(hostptr_t addr, size_t size);
 
     //! Default destructor
 	virtual ~Object();
@@ -112,13 +114,31 @@ public:
     /*!
         \return Starting host memory address of the object
     */
-    uint8_t *addr() const;
+    hostptr_t addr() const;
 
     //! Get the ending host memory address of the object
     /*!
         \return Ending host memory address of the object
     */
-    uint8_t *end() const;
+    hostptr_t end() const;
+
+    //! Get the offset to the beginning of the block that contains the address
+    /*!
+        \return Offset to the beginning of the block that contains the address
+    */
+    TESTABLE ssize_t blockBase(size_t offset) const;
+
+    //! Get the offset to the end of the block that contains the address
+    /*!
+        \return Offset to the end of the block that contains the address
+    */
+    TESTABLE size_t blockEnd(size_t offset) const;
+
+    //! Get the block size used by the object
+    /*!
+        \return Block size used by the object
+    */
+    size_t blockSize() const;
 
     //! Get the size (in bytes) of the object
     /*!
@@ -137,26 +157,26 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address within the object
     */
-    virtual void *acceleratorAddr(const void *addr) const = 0;
+    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
 
     //! Get the owner of the object
     /*!
         \return The owner of the object
     */
-	virtual core::Mode &owner(const void *addr) const = 0;
+	virtual core::Mode &owner(const hostptr_t addr) const = 0;
     
     //! Add a new owner to the object
     /*!
         \param The new owner of the mode
         \return Wether it was possible to add the owner or not
     */
-	virtual bool addOwner(core::Mode &owner) = 0;
+	virtual gmacError_t addOwner(core::Mode &owner) = 0;
 
     //! Remove an owner from the object
     /*!
         \param owner The owner to be removed
     */
-	virtual void removeOwner(const core::Mode &owner) = 0;
+	virtual gmacError_t removeOwner(const core::Mode &owner) = 0;
 
     //! Acquire the ownership of the object for the CPU
     /*!
@@ -181,14 +201,14 @@ public:
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalRead(void *addr) const;
+	TESTABLE gmacError_t signalRead(hostptr_t addr) const;
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param addr Host memory address causing the fault
         \return Error code
     */
-	gmacError_t signalWrite(void *addr) const;
+	TESTABLE gmacError_t signalWrite(hostptr_t addr) const;
 
     //! Copies the data from the object to an I/O buffer
     /*!
@@ -198,8 +218,8 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data from
         \return Error code
     */
-	gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
+	TESTABLE gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Copies the data from an I/O buffer to the object
     /*!
@@ -209,21 +229,42 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data to
         \return Error code
     */
-	gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-		unsigned bufferOffset = 0, unsigned objectOffset = 0) const;
+	TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
+            size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Initializes a memory range within the object to a specific value
     /*!
-        \param addr Host memory address within the object to be initialized
+        \param offset Offset within the object of the memory to be set 
         \param v Value to initialize the memory to
         \param size Size (in bytes) of the memory region to be initialized
         \return Error code
     */
-    gmacError_t memset(void *addr, int v, size_t size) const;
+    TESTABLE gmacError_t memset(size_t offset, int v, size_t size) const;
+
+    //! Adds the object to the coherence domain.
+    /*!
+        This method ensures that the object host memory contains an updated copy of the
+        data, and then marks the object to not use the accelerator memory any more. After calling
+        this method the memory object will always remain in host memory
+        \return Error code
+    */
+    virtual gmacError_t mapToAccelerator() = 0;
+
+    //! Removes the object to the coherence domain.
+    /*!
+        This method marks the object to use accelerator memory. After calling
+        this method the object coherency is managed by the library
+        \return Error code
+    */
+    virtual gmacError_t unmapFromAccelerator() = 0;
 };
 
 }}
 
 #include "Object-impl.h"
+
+#ifdef USE_DBC
+#include "memory/dbc/Object.h"
+#endif
 
 #endif

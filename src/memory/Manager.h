@@ -70,7 +70,7 @@ protected:
         \param Size (in bytes) of the memory to be allocated
         \return Error core
     */
-    gmacError_t hostMappedAlloc(void **addr, size_t size);
+    gmacError_t hostMappedAlloc(hostptr_t *addr, size_t size);
 
     //! Copy data from host memory to an object
     /*!
@@ -80,8 +80,8 @@ protected:
         \param objOffset Offset (in bytes) from the begining of the object to copy the data to
         \return Error code
     */
-    gmacError_t memcpyToObject(const Object &obj, const void *src, 
-        size_t size, unsigned objOffset);
+    gmacError_t memcpyToObject(const Object &obj, const hostptr_t src, 
+        size_t size, size_t objOffset);
 
     //! Copy data from object to object
     /*!
@@ -93,7 +93,7 @@ protected:
         \return Error code
     */
     gmacError_t memcpyToObject(const Object &dstObj, const Object &srcObj,
-        size_t size, unsigned dstOffset, unsigned srcOffset);
+        size_t size, size_t dstOffset, size_t srcOffset);
 
     //! Copy data from an object to host memory
     /*!
@@ -103,8 +103,8 @@ protected:
         \param objOffset Offset (in bytes) from the begining of the destination object to copy data to
         \return Error code
     */
-    gmacError_t memcpyFromObject(void *dst, const Object &obj, size_t size,
-        unsigned objOffset);
+    gmacError_t memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
+        size_t objOffset);
 
     //! Get the number of bytes at the begining of a range that are in host memory
     /*!
@@ -113,7 +113,7 @@ protected:
         \param obj First object within the range
         \return Number of bytes at the beginning of the range that are in host memory
     */
-    size_t hostMemory(void *addr, size_t size, const Object *obj) const;
+    size_t hostMemory(hostptr_t addr, size_t size, const Object *obj) const;
 
     //! Default constructor
     Manager();
@@ -132,7 +132,7 @@ public:
         \param size Size (in bytes) of shared memory to be allocated
         \return Error code
     */         
-    TESTABLE gmacError_t alloc(void **addr, size_t size);
+    TESTABLE gmacError_t alloc(hostptr_t *addr, size_t size);
 
     //! Allocate public shared read-only memory
     //! Memory allocated with this call is accessible (read-only) from any accelerator
@@ -142,21 +142,21 @@ public:
         \param hint Type of memory (distributed or hostmapped) to be allocated
         \return Error code
     */
-    TESTABLE gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+    TESTABLE gmacError_t globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocType hint);
 
     //! Release shared memory
     /*!
         \param addr Memory address of the shared memory chunk to be released
         \return Error code
     */
-    TESTABLE gmacError_t free(void *addr);
+    TESTABLE gmacError_t free(hostptr_t addr);
 
     //! Get the accelerator address associated to a shared memory address
     /*!
         \param addr Host shared memory address
         \param Accelerator memory address
     */
-    TESTABLE void *translate(const void *addr);
+    TESTABLE accptr_t translate(hostptr_t addr);
 
     //! Get the CPU ownership of all objects bound to the current execution mode
     /*!
@@ -181,14 +181,14 @@ public:
         \param addr Host memory address causing the memory fault
         \return True if the Manager was able to fix the fault condition
     */
-    TESTABLE bool read(void *addr);
+    TESTABLE bool read(hostptr_t addr);
 
     //! Notify a memory fault caused by a store operation
     /*!
         \param addr Host memory address causing the memory fault
         \return True if the Manager was able to fix the fault condition
     */
-    TESTABLE bool write(void *addr);
+    TESTABLE bool write(hostptr_t addr);
 
     //! Copy data from a memory address of a memory object to an I/O buffer
     /*!
@@ -197,7 +197,7 @@ public:
         \param size Size (in bytes) of the data to be copied
         \return Error code
     */
-	TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const void *addr, size_t size);
+	TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size);
 
     //! Copy data from an I/O buffer to a host memory address of a memory object
     /*!
@@ -206,7 +206,7 @@ public:
         \param size Size (in bytes) of the data to be copied
         \return Error code
     */
-	TESTABLE gmacError_t fromIOBuffer(void *addr, __impl::core::IOBuffer &buffer, size_t size);
+	TESTABLE gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size);
 
     //! Initialize to a given value the contents of a host address of a memory object
     /*!
@@ -215,7 +215,7 @@ public:
         \param size Size (in bytes) of the memory to initialize
         \return Error code
     */
-    TESTABLE gmacError_t memset(void *dst, int c, size_t size);
+    TESTABLE gmacError_t memset(hostptr_t dst, int c, size_t size);
 
     //! Copy data from and/or to host memory addresses of memory objects
     /*!
@@ -223,7 +223,7 @@ public:
         \param src Source host memory address that might or might not correspond to a memory object
         \param size Size (in bytes) of the amoun of data to be copied
     */
-    TESTABLE gmacError_t memcpy(void *dst, const void *src, size_t size);
+    TESTABLE gmacError_t memcpy(hostptr_t dst, const hostptr_t src, size_t size);
 
 #if 0
     gmacError_t moveTo(void *addr, __impl::core::Mode &mode);

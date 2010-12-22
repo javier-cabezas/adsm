@@ -190,7 +190,7 @@ gmacError_t Process::globalMalloc(memory::Object &object, size_t /*size*/)
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {
-        if(object.addOwner(*i->first) == false) goto cleanup;
+        if(object.addOwner(*i->first) != gmacSuccess) goto cleanup;
     }
     unlock();
     global_.insert(object);
@@ -217,7 +217,6 @@ gmacError_t Process::globalFree(memory::Object &object)
     return gmacSuccess;
 }
 
-#if 0
 // This function owns the global lock
 gmacError_t Process::migrate(Mode &mode, int acc)
 {
@@ -225,7 +224,7 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
-    if (int(mode.accId()) != acc) {
+    if (int(mode.getAccelerator().id()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
         ret = mode.moveTo(*accs_[acc]);
@@ -240,7 +239,6 @@ gmacError_t Process::migrate(Mode &mode, int acc)
     TRACE(LOCAL,"Context migrated");
     return ret;
 }
-#endif
 
 void Process::addAccelerator(Accelerator *acc)
 {
@@ -248,12 +246,12 @@ void Process::addAccelerator(Accelerator *acc)
 }
 
 
-void *Process::translate(const void *addr)
+accptr_t Process::translate(const hostptr_t addr)
 {
     Mode &mode = Mode::current();
-    const memory::Object *object = mode.getObject(addr);
-    if(object == NULL) return NULL;
-    void * ptr = object->acceleratorAddr(addr);
+    memory::Object *object = mode.getObject(addr);
+    if (object == NULL) return NULL;
+    accptr_t ptr = object->acceleratorAddr(addr);
 	object->release();
     return ptr;
 }
@@ -289,12 +287,12 @@ void Process::copy(THREAD_T id)
     mode.use();
 }
 
-Mode *Process::owner(const void *addr, size_t size) const
+Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
     // We do not consider global objects for ownership,
     // since memory operations over them are performed
     // as if they were regular host memory
-    const memory::Object *object = shared_.get(addr, size);
+    memory::Object *object = shared_.get(addr, size);
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
 	object->release();

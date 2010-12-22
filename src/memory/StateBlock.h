@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 template<typename T>
-class GMAC_LOCAL StateBlock : public Block {
+class GMAC_LOCAL StateBlock : public gmac::memory::Block {
 protected:
     //! Block state
 	T state_;    
@@ -55,7 +55,7 @@ protected:
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	StateBlock(Protocol &protocol, uint8_t *addr, uint8_t *shadow, size_t size, T init);
+	StateBlock(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, T init);
 public:
     //! Get block state
     /*!

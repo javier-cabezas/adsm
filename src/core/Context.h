@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 #include "util/Lock.h"
+#include "util/NonCopyable.h"
 #include "util/Private.h"
 
 namespace __impl { namespace core {
@@ -50,7 +51,7 @@ class KernelLaunch;
 /*!
 	\brief Generic Context Class
 */
-class GMAC_LOCAL Context : public gmac::util::RWLock {
+class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -58,15 +59,14 @@ protected:
 	Context(Accelerator &acc, unsigned id);
 public:
 	virtual ~Context();
-	Context &operator =(const Context &);
 
     static void init();
 
-	virtual gmacError_t copyToAccelerator(void *acc, const void *host, size_t size);
-	virtual gmacError_t copyToHost(void *host, const void *acc, size_t size);
-	virtual gmacError_t copyAccelerator(void *dst, const void *src, size_t size);
+	virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+	virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+	virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
-    virtual gmacError_t memset(void *addr, int c, size_t size) = 0;
+    virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
 
     virtual KernelLaunch &launch(Kernel &kernel) = 0;
     virtual gmacError_t sync() = 0;

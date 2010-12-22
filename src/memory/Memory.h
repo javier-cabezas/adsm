@@ -37,16 +37,15 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
-
 namespace __impl { namespace memory {
 
 class GMAC_LOCAL Memory {
 public:
-	static int protect(void *addr, size_t count, GmacProtection prot);
-	static void *map(void *addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
-	static void *shadow(void *addr, size_t count);
-	static void unshadow(void *addr, size_t count);
-	static void unmap(void *addr, size_t count);
+	static int protect(hostptr_t addr, size_t count, GmacProtection prot);
+	static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
+	static hostptr_t shadow(hostptr_t addr, size_t count);
+	static void unshadow(hostptr_t addr, size_t count);
+	static void unmap(hostptr_t addr, size_t count);
 };
 
 }}
