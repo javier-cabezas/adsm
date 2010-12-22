@@ -95,7 +95,8 @@ protected:
 
     bool releasedObjects_;
 #ifdef USE_VM
-    __impl::memory::vm::Bitmap bitmap_;
+    __impl::memory::vm::Bitmap hostBitmap_;
+    __impl::memory::vm::SharedBitmap acceleratorBitmap_;
 #endif
 
     ContextMap contextMap_;
@@ -114,87 +115,229 @@ protected:
     void cleanUpContexts();
     gmacError_t cleanUp();
 public:
+    //! Mode constructor
+    /*!
+        \param proc Reference to the process which the mode belongs to
+        \param acc Reference to the accelerator in which the mode will perform
+                   the allocations
+    */
     Mode(Process &proc, Accelerator &acc);
+
+    //! Mode destructor
     virtual ~Mode();
 
+    //! Function called on process initialization to register thread-specific
+    //! variables
     static void init();
+
+    //! Function called on thread creation to initialize thread-specific
+    //! variables
     static void initThread();
+
+    //! Function called on thread destruction to release the Mode resources
     static void finiThread();
+
+    //! Gets the Mode for the calling thread
+    /*! \return A reference to the Mode for the calling thread. If the thread has
+     *          no Mode yet, a new one is created
+     */
     static Mode &current();
+
+    //! Tells if the calling thread already has a Mode assigned
+    /*! \return A boolean that tells if the calling thread already has a Mode
+     *          assigned
+     */
     static bool hasCurrent();
 
+    //! Gets a reference to the memory protocol used by the mode
+    /*! \return A reference to the memory protocol used by the mode
+     */
     memory::Protocol &protocol();
 
+    //! Gets a numeric identifier for the mode. This identifier must be unique.
+    /*! \return A numeric identifier for the mode
+     */
     unsigned id() const;
+
+    //! Gets a reference to the accelerator which the mode belongs to
+    /*! \return A reference to the accelerator which the mode belongs to
+     */
     Accelerator &getAccelerator() const;
 
-    /*! \brief Attaches the execution mode to the current thread */
+    /*! Attaches the execution mode to the current thread */
     void attach();
 
-    /*! \brief Dettaches the execution mode to the current thread */
+    /*! Dettaches the execution mode to the current thread */
     void detach();
 
+    //! Adds an object to the map of the mode
+    /*! \param obj A reference to the object to be added
+     */
     void addObject(memory::Object &obj);
-    void addReplicatedObject(memory::Object &obj);
-    //void addCentralizedObject(memory::Object &obj);
+
+    //! Removes an object from the map of the mode
+    /*! \param obj A reference to the object to be removed
+     */
     void removeObject(memory::Object &obj);
-    memory::Object *getObject(const void *addr, size_t size = 0) const;
+
+    //! Gets the first object that belongs to the memory range
+    /*! \param addr Starting address of the memory range
+        \param size Size of the memory range
+        \return A pointer of the Object that contains the address or NULL if
+                there is no Object at that address
+     */
+    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
+
+    //! Applies a constant memory operation to all the objects that belong to
+    //! the mode
+    /*! \param op Memory operation to be executed
+        \sa __impl::memory::Object::acquire
+        \sa __impl::memory::Object::toHost
+        \sa __impl::memory::Object::toAccelerator
+        \return Error code
+     */
 	gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
-    /*!  \brief Allocates memory on the accelerator memory */
+    /*! Allocates memory on the accelerator memory */
+    /*! \param addr Pointer to a pointer where to store the accelerator address of
+     *              the allocation
+     *  \param size Size of the allocation
+     *  \param align Alignment of the memory allocation. This value must be a
+     *               power of two
+        \return Error code
+     */
 	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
 
-	/*!  \brief Releases memory previously allocated by malloc */
+	/*! Releases memory previously allocated by malloc */
+    /*! \param addr Accelerator memory allocation to be freed
+        \return Error code
+     */
 	gmacError_t free(accptr_t addr);
 
-	/*!  \brief Copies data from system memory to accelerator memory */
+	/*! Copies data from system memory to accelerator memory */
+    /*! \param acc Destination accelerator pointer
+        \param host Source host pointer
+        \param size Number of bytes to be copied
+        \return Error code
+     */
 	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
 
-	/*!  \brief Copies data from accelerator memory to system memory */
+	/*! Copies data from accelerator memory to system memory */
+    /*! \param host Destination host pointer
+        \param acc Source accelerator pointer
+        \param size Number of bytes to be copied
+        \return Error code
+     */
 	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
 
-	/*!  \brief Copies data from accelerator memory to accelerator memory */
+	/*! Copies data from accelerator memory to accelerator memory */
+    /*! \param host Destination accelerator memory
+        \param acc Source accelerator memory
+        \param size Number of bytes to be copied
+        \return Error code
+     */
 	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
-    /*!  \brief Sets the contents of accelerator memory */
+    /*! Sets the contents of accelerator memory */
+    /*! \param addr Pointer to the accelerator memory to be set
+        \param c Value used to fill the memory
+        \param size Number of bytes to be set
+        \return Error code
+     */
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-	/*!  \brief Launches the execution of a kernel */
+    /*! Creates a KernelLaunch object that can be executed by the mode */
+    /*! \param kernel Handler of the kernel to be launched
+        \return Reference to the KernelLaunch object
+     */
 	KernelLaunch &launch(gmacKernel_t kernel);
+
+	/*! Executes a kernel using a KernelLaunch object */
+    /*! \param launch Reference to a KernelLaunch object
+        \return Error code
+     */
 	virtual gmacError_t execute(KernelLaunch &launch) = 0;
 
-	/*!  \brief Waits for kernel execution */
+	/*! Waits for kernel execution */
+    /*! \return Error code
+     */
 	gmacError_t sync();
 
+	/*! Creates an IOBuffer */
+    /*! \param size Minimum size of the buffer
+        \return A pointer to the created IOBuffer or NULL if there is not enough
+     *          memory
+     */
     virtual IOBuffer *createIOBuffer(size_t size) = 0;
-    virtual void destroyIOBuffer(IOBuffer *) = 0;
+
+    /*! Destroys an IOBuffer */
+    /*! \param buffer Pointer to the buffer to be destroyed
+     */
+    virtual void destroyIOBuffer(IOBuffer *buffer) = 0;
+
+    /*! Copies size bytes from an IOBuffer to accelerator memory */
+    /*! \param dst Pointer to accelerator memory
+        \param buffer Reference to the source IOBuffer
+        \param size Number of bytes to be copied
+        \param off Offset within the buffer
+     */
     virtual gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, size_t off = 0) = 0;
+
+    /*! Copies size bytes from accelerator memory to a IOBuffer */
+    /*! \param buffer Reference to the destination buffer
+        \param dst Pointer to accelerator memory
+        \param size Number of bytes to be copied
+        \param off Offset within the buffer
+     */
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
 
     void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);
 
     
-    /*!  \brief Returns the last error code */
+    /*! Returns the last error code */
+    /*! \return The last error code
+     */
     gmacError_t error() const;
 
-    /*!  \brief Sets up the last error code */
+    /*! Sets up the last error code */
+    /*! \param err Error code
+     */
     void error(gmacError_t err);
 
-#ifdef USE_VM
-    memory::vm::Bitmap & dirtyBitmap();
-    const memory::vm::Bitmap & dirtyBitmap() const;
-#endif
+    /*! Moves the mode to accelerator acc */
+    /*! \param acc Accelerator to move the mode to
+        \return Error code
+     */
     gmacError_t moveTo(Accelerator &acc);
 
-    void memInfo(size_t *free, size_t *total);
-
+    /*! Tells if the objects of the mode have been already released to the accelerator */
+    /*! \return Boolean that tells if objects of the mode have been already released to the accelerator */
     bool releasedObjects() const;
+
+    /*! Releases the ownership of the objects of the mode to the accelerator */
     void releaseObjects();
+
+    /*! Acquires the ownership of the objects of the mode from the accelerator */
     void acquireObjects();
 
+    /*! Returns the process which the mode belongs to */
+    /*! \return A reference to the process which the mode belongs to
+     */
     Process &process();
+
+    /*! Returns the process which the mode belongs to */
+    /*! \return A constant reference to the process which the mode belongs to
+     */
     const Process &process() const;
+
+#ifdef USE_VM
+    memory::vm::Bitmap &hostDirtyBitmap();
+    memory::vm::SharedBitmap &acceleratorDirtyBitmap();
+    const memory::vm::Bitmap &hostDirtyBitmap() const;
+    const memory::vm::SharedBitmap &acceleratorDirtyBitmap() const;
+#endif
+
 };
 
 }}
