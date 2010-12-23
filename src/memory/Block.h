@@ -46,8 +46,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { 
 
 namespace core {
-	class Mode;
-	class IOBuffer;
+    class Mode;
+    class IOBuffer;
 }
 
 namespace memory {
@@ -70,22 +70,22 @@ class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
 
 protected:
     //! Memory coherence protocol used by the block
-	Protocol &protocol_;
+    Protocol &protocol_;
 
     //! Block size (in bytes)
-	size_t size_;
+    size_t size_;
 
-    //! Host address where for applications to access the block. 
-	hostptr_t addr_;
+    //! Host address where for applications to access the block.
+    hostptr_t addr_;
 
     //! Shadow host memory mapping that is always read/write.
-	hostptr_t shadow_;
+    hostptr_t shadow_;
 
 #ifdef USE_VM
     //! Last addr
     unsigned sequentialFaults_;
     unsigned faults_;
-	unsigned lastSubBlock_;
+    unsigned lastSubBlock_;
     size_t subBlockSize_;
 
     void resetBitmapStats();
@@ -96,7 +96,7 @@ protected:
     /*!
         \param protocol Memory coherence protocol used by the block
         \param addr Host memory address for applications to accesss the block
-        \param shaodw Shadow host memory mapping that is always read/write
+        \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
     */
 	Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
@@ -127,28 +127,28 @@ public:
     /*!
         \return Size in bytes of the memory block
     */
-	size_t size() const;
+    size_t size() const;
 
     //! Signal handler for faults caused due to memory reads
     /*!
         \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalRead(hostptr_t addr);
+    gmacError_t signalRead(hostptr_t addr);
 
     //! Signal handler for faults caused due to memory writes
     /*!
         \param addr Faulting address
         \return Error code
     */
-	gmacError_t signalWrite(hostptr_t addr);
+    gmacError_t signalWrite(hostptr_t addr);
 
     //! Request a memory coherence operation
     /*!
         \param op Memory coherence operation to be executed
         \return Error code
     */
-	gmacError_t coherenceOp(Protocol::CoherenceOp op);
+    gmacError_t coherenceOp(Protocol::CoherenceOp op);
 
     //! Request a memory operation over an I/O buffer
     /*!
@@ -165,9 +165,9 @@ public:
         \sa copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Protocol
     */
-	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t blockOffset);
-    
+    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size,
+                                  size_t bufferOffset, size_t blockOffset);
+
     //! Initializes a memory range within the block to a specific value
     /*!
         \param v Value to initialize the memory to
@@ -177,6 +177,7 @@ public:
     */
     TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0) const;
 
+    #if 0
     //! Copy data from host memory to the memory block
     /*!
         \param src Source host memory address to copy the data from
@@ -184,16 +185,21 @@ public:
         \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
         \return Error code
     */
-    //TESTABLE gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, size_t blockOffset = 0) const;
+    TESTABLE gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, size_t blockOffset = 0) const;
+    #endif
 
-    //! Copy data from a GMAC object to the memory block
-    /*!
-        \param object GMAC memory object to copy data from
-        \param size Size (in bytes) of the data to be copied
-        \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
-        \return Error code
-    */
-    gmacError_t memcpyFromObject(const Object &object, size_t size, 
+    /**
+     * Copy data from a GMAC object to the memory block
+     *
+     * \param object GMAC memory object to copy data from
+     * \param size Size (in bytes) of the data to be copied
+     * \param blockOffset Offset (in bytes) from the begining of the block to
+     * copy the data to
+     * \param objectOffset Offset (in bytes) from the begining of the object to
+     * copy the data from
+     * \return Error code
+     */
+    gmacError_t memcpyFromObject(const Object &object, size_t size,
         size_t blockOffset = 0, size_t objectOffset = 0);
 
     //! Copy data from the memory block to host memory
@@ -209,25 +215,25 @@ public:
     /*!
         \return Owner of the memory block
     */
-	virtual core::Mode &owner() const = 0;
+    virtual core::Mode &owner() const = 0;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-	virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
+    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
         \return Error code
     */
-	virtual gmacError_t toHost() const = 0;
+    virtual gmacError_t toHost() const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
         \return Error code
     */
-	virtual gmacError_t toAccelerator() = 0;
+    virtual gmacError_t toAccelerator() = 0;
 
     //! Copy the data from a host memory location to the block host memory
     /*!
@@ -250,8 +256,8 @@ public:
         \return Error code
         \warning This method should be only called from a Protocol class
     */
-	virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
+    virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size,
+                                   size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 
     //! Copy the data from a host memory location to the block accelerator memory
     /*!
@@ -275,9 +281,9 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-	virtual gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
-	
+    virtual gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size,
+                                          size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
+
     //! Copy the data from the block host memory to a host memory location
     /*!
         \param dst Destination host memory address to copy the data from
@@ -300,8 +306,8 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-	virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
+    virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size,
+                                     size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 
     //! Copy the data from the block accelerator memory to a host memory location
     /*!
@@ -325,9 +331,9 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-	virtual gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
-    
+    virtual gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size,
+                                            size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
+
     //! Initializes a memory range within the block host memory to a specific value
     /*!
         \param v Value to initialize the memory to
@@ -351,8 +357,8 @@ public:
     */
     virtual gmacError_t acceleratorMemset(int v, size_t size, 
         size_t blockOffset = 0) const = 0;
-    
-	Protocol &getProtocol();
+
+    Protocol &getProtocol();
 };
 
 

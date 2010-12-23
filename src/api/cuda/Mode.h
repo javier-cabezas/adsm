@@ -137,7 +137,7 @@ public:
     //! Execute a kernel on the accelerator
     /*!
         \param launch Structure defining the kernel to be executed
-        \param return Error code
+        \return Error code
     */
 	gmacError_t execute(core::KernelLaunch &launch);
 

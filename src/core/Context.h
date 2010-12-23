@@ -35,9 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_CONTEXT_H_
 
 #include "config/common.h"
-
 #include "include/gmac/types.h"
-
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
 #include "util/Private.h"
@@ -48,27 +46,85 @@ class Accelerator;
 class Kernel;
 class KernelLaunch;
 
-/*!
-	\brief Generic Context Class
-*/
+/**
+ * Generic Context Class.
+ * Represents the per-thread operations' state in the accelerator
+ */
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
 protected:
     Accelerator &acc_;
     unsigned id_;
 
-	Context(Accelerator &acc, unsigned id);
+    /**
+     * Constructs a context for the calling thread on the given accelerator
+     *
+     * \param acc Reference to the accelerator where the thread is going to
+     * perform operations on
+     * \param id Context identifier
+     */
+    Context(Accelerator &acc, unsigned id);
 public:
-	virtual ~Context();
+    /**
+     * Destroys the resources used by the context
+     */
+    virtual ~Context();
 
+    /**
+     * Initialization method called on library initialization
+     */
     static void init();
 
-	virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-	virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-	virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    /**
+     * Copies size bytes from host memory to accelerator memory
+     *
+     * \param acc Destination pointer to accelerator memory
+     * \param host Source pointer to host memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    /**
+     * Copies size bytes from accelerator memory to host memory
+     *
+     * \param host Destination pointer to host memory
+     * \param acc Source pointer to accelerator memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    /**
+     * Copies size bytes from accelerator memory to accelerator memory
+     *
+     * \param dst Destination pointer to accelerator memory
+     * \param src Source pointer to accelerator memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
+    /**
+     * Fills size bytes of accelerator memory with the given value
+     *
+     * \param addr Pointer to accelerator memory
+     * \param c Value to be used to fill the memory
+     * \param size Number of bytes to be filled
+     * \return Error code
+     */
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
 
+    /**
+     * Returns a reference to a KernelLaunch object for the given kernel
+     *
+     * \param kernel Reference to the kernel object to be launched
+     * \return A reference to the KernelLaunch object
+     */
     virtual KernelLaunch &launch(Kernel &kernel) = 0;
+
+    /**
+     * Waits for kernel execution on the accelerator
+     *
+     * \return Error code returned by the kernel
+     */
     virtual gmacError_t sync() = 0;
 };
 

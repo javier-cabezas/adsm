@@ -132,6 +132,7 @@ public:
     /**
      * Creates a new Mode in the process for the calling thread and binds it to
      * the given accelerator
+     *
      * \param acc The accelerator id which the mode will be bound to or
      * ACC_AUTO_BIND to let the run-time choose
      * \return A pointer to the newly created mode or NULL if there has been an error
@@ -140,12 +141,14 @@ public:
 
     /**
      * Removes a mode from the process
+     *
      * \param mode A reference to the mode to be removed from the process
      */
     void removeMode(Mode &mode);
 
     /**
      * Registers a global object in the process
+     *
      * \param object Reference to the object to be registered
      * \return Error code
      */
@@ -153,6 +156,7 @@ public:
 
     /**
      * Unregisters a global object from the process
+     *
      * \param object Reference to the object to be unregistered
      * \return Error code
      */
@@ -160,14 +164,19 @@ public:
 
     /**
      * Translates a host address to an accelerator address
+     *
      * \param addr Host address to be translated
      * \return Accelerator address
      */
     accptr_t translate(const hostptr_t addr);
 
+    /*****************************/
     /* Mode management functions */
+    /*****************************/
+
     /**
      * The calling thread sends the ownership of its mode to the given thread
+     *
      * \param id Identifer of the thread that receives the ownership of the mode
      */
     void send(THREAD_T id);
@@ -180,12 +189,14 @@ public:
     /**
      * The calling thread sends the ownership of its mode to the given thread
      * and receives the ownership of the mode sent by another thread
+     *
      * \param id Identifer of the thread that receives the ownership of the mode
      */
     void sendReceive(THREAD_T id);
 
     /**
      * The calling thread shares the ownership of its mode with the given thread
+     *
      * \param id Identifer of the thread that shares the ownership of the mode
      * with the calling thread
      */
@@ -193,6 +204,7 @@ public:
 
     /**
      * Migrates the given mode to the given accelerator
+     *
      * \param mode Reference to the mode to be migrated
      * \param acc Identifier of the destination accelerator
      * \return Error code
@@ -202,12 +214,14 @@ public:
     /**
      * Adds an accelerator to the process so it can be used by the threads of the
      * process
+     *
      * \param acc A reference to the accelerator to be added
      */
     void addAccelerator(Accelerator &acc);
 
     /**
      * Gets the number of accelerators available in the process
+     *
      * \return The number of accelerators available in the process
      */
     unsigned nAccelerators() const;
@@ -215,6 +229,7 @@ public:
     /**
      * Tells if all the available accelerators in the process are integrated and
      * therefore share the physical memory with the CPU
+     *
      * \return A boolean that tells if all the available accelerators in the
      * process are integrated
      */
@@ -222,6 +237,7 @@ public:
 
     /**
      * Gets the protocol used by the process for the global objects
+     *
      * \return A reference to the protocol used by the process for the global
      * objects
      */
@@ -230,6 +246,7 @@ public:
     /**
      * Gets the object map that contains all the shared objects allocated in the
      * process
+     *
      * \return A reference to the object map that contains all the shared
      * objects allocated in the process
      */
@@ -238,6 +255,7 @@ public:
     /**
      * Gets the object map that contains all the shared objects allocated in the
      * process
+     *
      * \return A constant reference to the object map that contains all the shared
      * objects allocated in the process
      */
@@ -246,6 +264,7 @@ public:
     /**
      * Gets the object map that contains all the global objects allocated in the
      * process
+     *
      * \return A reference to the object map that contains all the global
      * objects allocated in the process
      */
@@ -254,6 +273,7 @@ public:
     /**
      * Gets the object map that contains all the global objects allocated in the
      * process
+     *
      * \return A constant reference to the object map that contains all the
      * global objects allocated in the process
      */
@@ -262,6 +282,7 @@ public:
     /**
      * Gets the object map that contains all the objects that have been orphaned
      * in the process
+     *
      * \return A reference to the object map that contains all the objects that
      * have been orphaned in the process
      */
@@ -270,6 +291,7 @@ public:
     /**
      * Gets the object map that contains all the objects that have been orphaned
      * in the process
+     *
      * \return A constant reference to the object map that contains all the objects that
      * have been orphaned in the process
      */
@@ -278,6 +300,7 @@ public:
     /**
      * Returns the owner of the object with the smallest address within the
      * given memory range
+     *
      * \param addr Starting address of the range
      * \param size Size of the range
      * \return The owner of the object with the smallest address within the

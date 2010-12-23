@@ -13,28 +13,28 @@ static bool Trace_ = false;
 
 void InitTrace(void)
 {
-	if(Trace_ == true) return;
-	Trace_ = true;
-	gmac::trace::InitTracer();
+    if(Trace_ == true) return;
+    Trace_ = true;
+    gmac::trace::InitTracer();
 }
 
 void FiniTrace(void)
 {
-	if(Trace_ == false) return;
-	Trace_ = false;
-	gmac::trace::FiniTracer();
+    if(Trace_ == false) return;
+    Trace_ = false;
+    gmac::trace::FiniTracer();
 }
 
 gmac::core::Accelerator &GetAccelerator()
 {
-	return *Accelerator_;
+    return *Accelerator_;
 }
 
 void FiniAccelerator()
 {
-	if(Accelerator_ == NULL) return;
-	delete Accelerator_;
-	Accelerator_ = NULL;
+    if(Accelerator_ == NULL) return;
+    delete Accelerator_;
+    Accelerator_ = NULL;
 }
 
 void InitProcess()
@@ -42,17 +42,17 @@ void InitProcess()
     InitTrace();
     InitAccelerator();
 
-	Process::create<Process>();
+    Process::create<Process>();
     Process &proc = Process::getInstance();
-    proc.addAccelerator(Accelerator_);
+    proc.addAccelerator(*Accelerator_);
 }
 
 
 void FiniProcess()
 {
-	ASSERT_TRUE(Accelerator_ != NULL);
-	Accelerator_ = NULL;
+    ASSERT_TRUE(Accelerator_ != NULL);
+    Accelerator_ = NULL;
     Process::destroy();
-	FiniTrace();
+    FiniTrace();
 }
 

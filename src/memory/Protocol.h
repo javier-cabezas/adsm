@@ -38,14 +38,13 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 
-
 namespace __impl {
 
 namespace core {
 class IOBuffer;
 class Mode;
 }
-    
+
 namespace memory {
 
 class Block;
@@ -182,9 +181,9 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-	virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffet, size_t blockOffset) const = 0;
-	
+    virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+                                     size_t bufferOffset, size_t blockOffset) const = 0;
+
     //! Copy the contents an I/O buffer to a memory block
     /*!
         \param block Memory block where data is being copied to
@@ -195,8 +194,8 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-	virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		size_t bufferOffet, size_t blockOffset) const = 0;
+    virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+                                       size_t bufferOffset, size_t blockOffset) const = 0;
 
     //! Initializes a memory range within a memory block to a specific value
     /*!

@@ -31,10 +31,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-/*! \mainpage Global Memory for ACcelerators (GMAC)
+/** \mainpage Global Memory for ACcelerators (GMAC)
  *
  * \section intro_sec Code layout
- * 
+ *
  * GMAC is organized in modules. There is an abstract front-end which
  * implements the public API offered to the programmers. These functions
  * use abstract classes that define the Backend API (kernel) and the Memory
@@ -42,12 +42,13 @@ WITH THE SOFTWARE.  */
  * implement the functionality defined in their respective APIs. Currently,
  * the code is organized as follows:
  * \verbatim
- * src/                - GMAC root directory 
+ * src/                - GMAC root directory
  * src/gmac/           - Frontend directory
+ * src/include/        - Instalable include files
  * src/core/           - Backend API base classes
  * src/api/            - Backend root directory
- * src/api/cuda        - CUDA run-time backend (no threading support)
- * src/api/cudadrv     - CUDA driver backend (full-featured)
+ * src/api/cuda        - CUDA run-time backend
+ * src/api/opencl      - OpenCL run-time backend
  * src/memory/         - Memory API base classes
  * src/memory/manager  - Memory Managers
  * tests/              - Tests used to validate GMAC
@@ -59,8 +60,6 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
-
-
 #include "gmac/types.h"
 #include "gmac/visibility.h"
 
@@ -69,27 +68,32 @@ extern "C"
 {
 #endif
 
-/*!
-	Returns the number of available accelerators.
-    This number can be used to perform a manual context distribution among accelerators
-*/
+/**
+ * Returns the number of available accelerators.
+ * This number can be used to perform a manual context distribution among
+ * accelerators
+ */
 GMAC_API size_t APICALL gmacAccs();
 
 
-/*!
-	Migrates the GPU execution mode of a thread to a concrete accelerator.
-    Sets the affinity of a thread to a concrete accelerator. Valid values are 0 ... gmacAccs() - 1.
-    Currently only works if this is the first gmac call in the thread.
-	\param acc index of the preferred accelerator
-*/
+/**
+ * Migrates the GPU execution mode of a thread to a concrete accelerator.
+ * Sets the affinity of a thread to a concrete accelerator. Valid values are 0
+ * ... gmacAccs() - 1.
+ * Currently only works if this is the first gmac call in the thread.
+ *
+ * \param acc index of the preferred accelerator
+ */
 GMAC_API gmacError_t APICALL gmacMigrate(int acc);
 
-/*!
-	Maps a range of CPU memory on the GPU. Both, GPU and CPU,
-	use the same addresses for this memory.
-	\param cpuPtr CPU memory address to be mapped on the GPU
-	\param count  bytes to be allocated
-*/
+/**
+ * Maps a range of CPU memory on the GPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ *
+ * \param cpuPtr CPU memory address to be mapped on the GPU
+ * \param count Number of bytes to be allocated
+ * \param prot The protection to be used in the mapping (currently unused)
+ */
 GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
 /*!
@@ -166,9 +170,9 @@ GMAC_API void APICALL gmacCopy(THREAD_T);
 #endif
 
 static inline const char *gmacGetErrorString(gmacError_t err) {
-	//assert(err <= gmacErrorUnknown);
+    //assert(err <= gmacErrorUnknown);
     if (err <= gmacErrorUnknown)
-	return error[err];
+        return error[err];
     else {
         printf("Error %d\n", err);
         return "WTF Error";
@@ -184,7 +188,7 @@ template<typename T>
 inline T * gmacPtr(const T *devPtr);
 
 template<typename T> inline T * gmacPtr(const T *devPtr) {
-	return (T *)gmacPtr((const void *)devPtr);
+    return (T *)gmacPtr((const void *)devPtr);
 }
 #endif
 
