@@ -208,9 +208,16 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
 
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
-set_target_properties(gmac PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG USE_DBC
-    VERSION 0.2.0 SOVERSION 1)
+
+if(${USE_DBC})
+    set_target_properties(gmac PROPERTIES
+        COMPILE_DEFINITIONS_DEBUG USE_DBC
+        VERSION 0.2.0 SOVERSION 1)
+
+    set_target_properties(gmac PROPERTIES
+        COMPILE_DEFINITIONS_RELEASE USE_DBC
+        VERSION 0.2.0 SOVERSION 1)
+endif(${USE_DBC})
 
 install(TARGETS gmac 
      LIBRARY DESTINATION lib

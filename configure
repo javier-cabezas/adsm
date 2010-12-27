@@ -1,16 +1,26 @@
 #!/bin/bash
 
+set -x
+
 CMAKE=cmake
 CMAKE_HOME=`dirname $0`
 SCRIPT_NAME=`basename $0`
 
 BUILD_TYPE="Release"
+USE_DBC=OFF
 
 for i in $*
 do
     case $i in
     --enable-debug)
         BUILD_TYPE="Debug"
+        USE_DBC=ON
+        ;;
+    --enable-dbc)
+        USE_DBC=ON
+        ;;
+    --disable-dbc)
+        USE_DBC=OFF
         ;;
     --enable-tests)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
@@ -37,7 +47,7 @@ do
         esac
 done
 
-CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+CMAKE_ARGS="${CMAKE_ARGS} -DUSE_DBC=${USE_DBC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
 echo ${COMMAND} > ${SCRIPT_NAME}.log
 ${COMMAND}
