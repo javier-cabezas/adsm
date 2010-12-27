@@ -28,7 +28,7 @@ void Accelerator::unregisterMode(Mode &mode)
     TRACE(LOCAL,"Unregistering Execution Mode %p", &mode);
     trace::EnterCurrentFunction();
     std::set<Mode *>::iterator c = queue_.find(&mode);
-    ASSERTION(c != _queue.end());
+    ASSERTION(c != queue_.end());
     queue_.erase(c);
     load_--;
     trace::ExitCurrentFunction();
