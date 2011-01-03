@@ -175,7 +175,6 @@ ModuleVector *Accelerator::createModules()
 gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
-    ASSERTION(addr != NULL);
     addr = NULL;
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;

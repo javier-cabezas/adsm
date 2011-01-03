@@ -2,6 +2,7 @@
 #define GMAC_CONFIG_CUDA_COMMON_H_
 
 #include <cuda.h>
+
 struct accptr_t {
     CUdeviceptr ptr_;
     accptr_t() :

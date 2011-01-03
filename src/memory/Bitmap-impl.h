@@ -5,6 +5,116 @@
 
 namespace __impl { namespace memory { namespace vm {
 
+TableBase::TableBase(size_t nEntries) :
+    allocated_(false),
+    nEntries_(nEntries),
+    nUsedEntries_(0),
+    firstEntry_(-1),
+    lastEntry_(-1),
+{
+}
+
+bool
+TableBase::isAllocated()
+{
+    return allocated_;
+}
+
+size_t
+TableBase::getNEntries() const
+{
+    return nEntries_;
+}
+
+size_t
+TableBase::getNUsedEntries() const
+{
+    return nUsedEntries_;
+}
+
+long int
+TableBase::firstEntry() const
+{
+    return firstEntry_;
+}
+
+long int
+TableBase::lastEntry() const
+{
+    return lastEntry_;
+}
+
+
+template <typename T>
+void
+NestedBitmap<T>::alloc()
+{
+    assertion(entries_ == NULL);
+    entries_ = new T[nEntries_];
+    allocated_ = true;
+}
+
+template <typename T>
+NestedBitmap<T>::NestedBitmap(size_t nEntries) :
+    TableBase(nEntries), entries_(NULL), dirty_(false)
+{
+}
+
+template <typename T>
+T
+Table<T>::getEntry(unsigned long index)
+{
+    assertion(allocated_ == true);
+
+    if (level < BITMAP_LEVELS - 1) {
+        return ptrs_[index]->getEntry(index);
+    } else {
+        return ptrs_[index];
+    }
+}
+
+template <typename T>
+void
+Table<T>::setEntry(T value, unsigned long index)
+{
+    assertion(index < nEntries);
+    assertion(allocated_ == true);
+
+    return ptrs_[index] = value;
+}
+
+template <typename T>
+bool
+Table<T>::isDirty()
+{
+    return dirty_;
+}
+
+template <typename T>
+inline bool
+Directory<T>::exists(size_t index) const
+{
+    assertion(index < nEntries);
+    return allocated_ && ptrs_[index] != NULL;
+}
+
+template<typename T>
+void
+Directory<T>::create(size_t index, size_t entries)
+{
+    assertion(index < nEntries_);
+    assertion(ptrs_[index] == NULL);
+    setEntry(new T(entries), index);
+}
+
+template<typename T>
+T &
+Directory<T>::getEntry(size_t index) const
+{
+    assertion(index < nEntries_);
+    return *ptrs_[index];
+}
+
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 inline
@@ -178,7 +288,7 @@ void Bitmap::removeRange(const accptr_t ptr, size_t count)
 }
 
 inline
-accptr_t SharedBitmap::accelerator() 
+accptr_t SharedBitmap::accelerator()
 {
     if (minEntry_ != -1) {
         return accelerator_ + minEntry_;

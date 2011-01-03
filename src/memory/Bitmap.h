@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -55,22 +55,122 @@ namespace __impl {
     namespace core {
         class Mode;
     }
-    
+
     namespace memory  { namespace vm {
 
-class GMAC_LOCAL Bitmap :
-    public __impl::util::Logger,
-    protected gmac::util::RWLock {
-protected:
-#if 0
-    class GMAC_LOCAL BitmapRange {
-    protected:
-        T baseAddr; 
-    public:
-        BitmapRange(unsigned bits);
 
+
+class GMAC_LOCAL Bitmap {
+protected:
+    size_t nEntries_;
+    size_t nUsedEntries_;
+
+    long int firstEntry_;
+    long int lastEntry_;
+
+    virtual void alloc() = 0;
+    TableBase(size_t nEntries);
+
+public:
+    enum BitmapState {
+        BITMAP_UNSET    = 0,
+        BITMAP_SET_ACC  = 1,
+        BITMAP_SET_HOST = 2
     };
-#endif
+
+    size_t getNUsedEntries() const;
+    size_t getNEntries() const;
+
+    long int firstEntry() const;
+    long int lastEntry() const;
+
+    virtual BitmapState getEntry() const = 0;
+    virtual void setEntry(BitmapState state) const = 0;
+    virtual void setEntryRange(BitmapState state) = 0;
+};
+
+            class GMAC_LOCAL Bitmap {
+protected:
+    size_t nEntries_;
+    size_t nUsedEntries_;
+
+    long int firstEntry_;
+    long int lastEntry_;
+
+    virtual void alloc() = 0;
+    TableBase(size_t nEntries);
+
+public:
+    enum BitmapState {
+        BITMAP_UNSET    = 0,
+        BITMAP_SET_ACC  = 1,
+        BITMAP_SET_HOST = 2
+    };
+
+    size_t getNUsedEntries() const;
+    size_t getNEntries() const;
+
+    long int firstEntry() const;
+    long int lastEntry() const;
+
+    virtual BitmapState getEntry() const = 0;
+    virtual void setEntry(BitmapState state) const = 0;
+    virtual void setEntryRange(BitmapState state) = 0;
+};
+
+template<typename T>
+class GMAC_LOCAL SharedTable :
+    public Table<T>
+{
+protected:
+    bool synced_;
+    accptr_t accEntries_;
+
+    void alloc();
+
+    SharedTable(size_t nEntries);
+public:
+    void sync();
+    bool isSinced() const;
+};
+
+template<typename T>
+class GMAC_LOCAL Leaf :
+    public Table<T> {
+protected:
+    T *entries_;
+
+    bool allocated_;
+    bool dirty_;
+
+    virtual void alloc();
+    Table(size_t nEntries);
+
+public:
+    T getEntry(unsigned long index);
+    void setEntry(T value, unsigned long index);
+
+    bool isAllocated() const;
+    bool isDirty() const;
+};
+
+template<typename T, typename U>
+class GMAC_LOCAL Directory :
+    public T<U *>,
+    public __impl::util::Logger {
+protected:
+    static const size_t defaultSize = 4096/sizeof(U *);
+
+public:
+    Directory(size_t nEntries = defaultSize);
+    virtual ~Directory();
+
+    bool exists(unsigned long index) const;
+    void create(unsigned long index, size_t size = defaultSize);
+};
+
+class OldBitmap {
+protected:
     static const unsigned EntriesPerByte_;
 
     unsigned bits_;
@@ -132,6 +232,14 @@ public:
 
     unsigned getSubBlock(const accptr_t addr) const;
     size_t getSubBlockSize() const;
+};
+
+template <unsigned LEVELS>
+class GMAC_LOCAL Bitmap {
+protected:
+    TableBase *root_;
+
+public:
 };
 
 //typedef Bitmap<hostptr_t> HostBitmap;
