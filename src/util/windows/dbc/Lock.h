@@ -45,7 +45,9 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util {
 
-class GMAC_LOCAL SpinLock : public __impl::util::SpinLock, public Contract {
+class GMAC_LOCAL SpinLock :
+    public __impl::util::SpinLock,
+    public virtual Contract {
     DBC_TESTED(__impl::util::SpinLock)
 
 protected:

@@ -3,7 +3,7 @@
 
 namespace __impl { namespace core {
 
-inline unsigned
+inline size_t
 Process::nAccelerators() const
 {
     return accs_.size();

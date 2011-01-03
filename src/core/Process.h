@@ -224,7 +224,7 @@ public:
      *
      * \return The number of accelerators available in the process
      */
-    unsigned nAccelerators() const;
+    size_t nAccelerators() const;
 
     /**
      * Tells if all the available accelerators in the process are integrated and

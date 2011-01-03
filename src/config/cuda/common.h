@@ -13,7 +13,13 @@ struct accptr_t {
     accptr_t(CUdeviceptr ptr) :
         ptr_(ptr) {}
 
+    accptr_t(int ptr) :
+        ptr_(ptr) {}
+
     accptr_t(long int ptr) :
+        ptr_(ptr) {}
+
+    accptr_t(unsigned long ptr) :
         ptr_(ptr) {}
 
 #if CUDA_VERSION < 3020
