@@ -171,7 +171,6 @@ add_subdirectory(src)
 add_gmac_groups(${gmac_SRC})
 
 
-
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)
@@ -209,15 +208,9 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
 target_link_libraries(gmac ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
 
-if(${USE_DBC})
-    set_target_properties(gmac PROPERTIES
-        COMPILE_DEFINITIONS_DEBUG USE_DBC
-        VERSION 0.2.0 SOVERSION 1)
-
-    set_target_properties(gmac PROPERTIES
-        COMPILE_DEFINITIONS_RELEASE USE_DBC
-        VERSION 0.2.0 SOVERSION 1)
-endif(${USE_DBC})
+set_target_properties(gmac PROPERTIES
+    COMPILE_DEFINITIONS_DEBUG USE_DBC
+    VERSION 0.2.0 SOVERSION 1)
 
 install(TARGETS gmac 
      LIBRARY DESTINATION lib
