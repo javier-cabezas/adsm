@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     // Call the kernel
     getTime(&s);
     dim3 Db(blockSize);
-    dim3 Dg(vecSize / blockSize);
+    dim3 Dg((unsigned long)vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
 
     for(int i = 0; i < ITER; i++) {
