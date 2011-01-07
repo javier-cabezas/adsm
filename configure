@@ -28,6 +28,10 @@ do
     --enable-opencl)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_OPENCL=ON"
         ;;
+    --with-opencl-include=*)
+        opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_INCLUDE=${opencl_include}"
+        ;;
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
         ;;
@@ -36,9 +40,6 @@ do
         ;;
     --enable-vm-hostmap)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_HOSTMAP_VM=ON"
-        ;;
-    --enable-paraver)
-        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_PARAVER=ON"
         ;;
     --with-vm-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
