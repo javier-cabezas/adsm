@@ -13,7 +13,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
@@ -59,6 +58,8 @@ if(USE_OPENCL)
     message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
     include_directories(${OPENCL_INCLUDE})
     set(API_DIR "opencl")
+    set(API_INCLUDE "#include <CL/cl.h>")
+    set(API_MEM_TYPE "cl_mem")
 else(USE_OPENCL)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
@@ -67,6 +68,7 @@ else(USE_OPENCL)
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
+        set(API_MEM_TYPE "void *")
         set(CUDA_INCLUDE "${NVCC}/../include")
         include_directories(${CUDA_INCLUDE})
         find_library(cuda_LIB
@@ -193,7 +195,9 @@ if(MAKE_DOC)
 endif(MAKE_DOC)
 
 # Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src/include)
 # GMAC is a DLL
 add_definitions(-DGMAC_DLL)
 # Compiling GMAC
@@ -208,6 +212,7 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
+    ${CMAKE_SOURCE_DIR}/src/config/${API_DIR}/common.h
 )
 
 

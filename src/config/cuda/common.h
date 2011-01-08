@@ -5,39 +5,36 @@
 
 struct accptr_t {
     CUdeviceptr ptr_;
-    accptr_t() :
-        ptr_(NULL) {}
 
-    accptr_t(void * ptr) :
-        ptr_(CUdeviceptr((unsigned long )ptr & ((0xff << sizeof(CUdeviceptr)) - 1))) {}
-
-    accptr_t(CUdeviceptr ptr) :
-        ptr_(ptr) {}
-
-    accptr_t(int ptr) :
-        ptr_(ptr) {}
-
-    accptr_t(long int ptr) :
-        ptr_(ptr) {}
-
-    accptr_t(unsigned long ptr) :
-        ptr_(ptr) {}
+    inline accptr_t() :
+        ptr_(NULL)
+    {}
+    inline accptr_t(void * ptr) :
+        ptr_(CUdeviceptr((unsigned long )ptr & ((0xff << sizeof(CUdeviceptr)) - 1)))
+    {}
+    inline accptr_t(CUdeviceptr ptr) :
+        ptr_(ptr)
+    {}
+    inline accptr_t(int ptr) :
+        ptr_(ptr)
+    {}
+    inline accptr_t(long int ptr) :
+        ptr_(ptr)
+    {}
+    inline accptr_t(unsigned long ptr) :
+        ptr_(ptr)
+    {}
 
 #if CUDA_VERSION < 3020
-    operator uint32_t() const { return uint32_t(ptr_); }
+    inline operator uint32_t() const { return uint32_t(ptr_); }
 #else
-    operator CUdeviceptr() { return ptr_; }
-    operator CUdeviceptr() const { return ptr_; }
+    inline operator CUdeviceptr() { return ptr_; }
+    inline operator CUdeviceptr() const { return ptr_; }
 #endif
-    operator void *() { return (void *)(ptr_); }
-    operator void *() const { return (void *)(ptr_); }
+    inline operator void *() { return (void *)(ptr_); }
+    inline operator void *() const { return (void *)(ptr_); }
 
-#if 0
-    uint8_t operator [](const int& b)
-    {
-        return ptr_[b];
-    }
-#endif
+    inline void *get() const { return (void *)(ptr_); }
 };
 
 static inline
