@@ -87,6 +87,14 @@ if(USE_TRACE_CONSOLE)
 endif(USE_TRACE_CONSOLE)
 
 # Setup configuration options
+option(USE_VM "Enable MPI interposition" OFF)
+if(USE_MPI)
+    message(STATUS "Using MPI")
+    add_definitions(-DUSE_MPI)
+endif(USE_MPI)
+
+
+# Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)
     message(STATUS "Compiling with VM support")

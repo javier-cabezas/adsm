@@ -1,13 +1,24 @@
-#include <os/loader.h>
+#ifdef USE_MPI
 
-#include <paraver.h>
-#include "order.h"
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#include "os/windows/loader.h"
+#endif
 
-#include "init.h"
+#include "gmac/init.h"
 #include "memory/Manager.h"
-#include "core/Context.h"
+#include "core/IOBuffer.h"
+#include "core/Process.h"
+#include "core/Mode.h"
 
 #include "mpi_local.h"
+
+using __impl::core::IOBuffer;
+using __impl::core::Mode;
+using __impl::core::Process;
+
+using __impl::memory::Manager;
 
 SYM(int, __MPI_Sendrecv, void *, int, MPI_Datatype, int, int, void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Status *);
 
@@ -20,7 +31,7 @@ SYM(int, __MPI_Recv    , void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Stat
 
 void mpiInit(void)
 {
-	gmac::util::Logger::TRACE("Overloading MPI_Sendrecv");
+	TRACE(GLOBAL, "Overloading MPI_Sendrecv");
 	LOAD_SYM(__MPI_Sendrecv, MPI_Sendrecv);
 
 	LOAD_SYM(__MPI_Send,  MPI_Send);
@@ -36,27 +47,25 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         void *recvbuf, int recvcount, MPI_Datatype recvtype, 
         int source, int recvtag, MPI_Comm comm, MPI_Status *status )
 {
-	if(__inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
+	if(gmac::inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
-	// Locate memory regions (if any)
-	gmac::Context *sendCtx = manager->owner(sendbuf);
-	gmac::Context *recvCtx = manager->owner(recvbuf);
+    Process &proc = Process::getInstance();
+	// Check if GMAC owns any of the buffers to be transferred
+	Mode *srcMode = proc.owner(hostptr_t(sendbuf));
+	Mode *dstMode = proc.owner(hostptr_t(recvbuf));
 
-	if (sendCtx == NULL && recvCtx == NULL) {
+	if (srcMode == NULL && dstMode == NULL) {
         return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     }
 
-    __enterGmac();
+    gmac::enterGmac();
 
-    gmac::Context * ctx = gmac::Context::current();
+    Mode &mode = Mode::current();
+    Manager &manager = Manager::getInstance();
+
     gmacError_t err;
-    int ret;
-
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    uint8_t * buffer  = (uint8_t *) ctx->bufferPageLocked();
-
-    size_t bufferUsed = 0;
+    int ret, ret2;
 
     void * tmpSend = NULL;
     void * tmpRecv = NULL;
@@ -65,56 +74,52 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     bool allocRecv = false;
 
     int typebytes;
+    size_t sendbytes = 0;
+    size_t recvbytes = 0;
+    size_t bufferUsed = 0;
 
-    if(dest != MPI_PROC_NULL && sendCtx != NULL) {
-        size_t sendbytes;
+    ret  = MPI_Type_size(sendtype, &typebytes);
+    sendbytes = sendcount * typebytes;
+    ret2 = MPI_Type_size(recvtype, &typebytes);
+    recvbytes = recvcount * typebytes;
+    IOBuffer *buffer = mode.createIOBuffer(recvcount + sendcount);
 
-        ret = MPI_Type_size(sendtype, &typebytes);
-        if (ret != MPI_SUCCESS) goto exit;
-        sendbytes = sendcount * typebytes;
+    if (ret  != MPI_SUCCESS) goto exit;
+    if (ret2 != MPI_SUCCESS) goto exit;
 
-        //! \todo Why is this?
-		manager->flush(sendbuf, sendbytes);
+    ASSERTION(buffer->size() >= size_t(recvcount + sendcount));
 
-        if (bufferSize >= sendbytes) {
-            tmpSend  = buffer;
-            buffer     += sendbytes;
-            bufferUsed += sendbytes;
-        } else {
+    if(dest != MPI_PROC_NULL && srcMode != NULL) {
+        // Fast path
+        if (buffer->size() >= sendbytes) {
+            tmpSend     = buffer->addr();
+
+            err = manager.toIOBuffer(*buffer, hostptr_t(sendbuf), sendbytes);
+            ASSERTION(err == gmacSuccess);
+            err = buffer->wait();
+            ASSERTION(err == gmacSuccess);
+        } // Slow path
+        else {
             // Alloc buffer
-            err = manager->halloc(ctx, &tmpSend, sendbytes);
-            if (err != gmacSuccess) {
-                //! \todo Do something
-            }
+            tmpSend = malloc(sendbytes);
+            ASSERTION(tmpSend != NULL);
             allocSend = true;
+
+            err = manager.memcpy(hostptr_t(tmpSend), hostptr_t(sendbuf), sendbytes);
+            ASSERTION(err == gmacSuccess);
         }
-
-		err = sendCtx->copyToHostAsync(tmpSend,
-                                       manager->ptr(sendCtx, sendbuf), sendbytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        sendCtx->syncToHost();
-
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	} else {
         tmpSend = sendbuf;
     }
 
-    size_t recvbytes;
-    if(source != MPI_PROC_NULL && recvCtx != NULL) {
-        ret = MPI_Type_size(recvtype, &typebytes);
-        if (ret != MPI_SUCCESS) goto cleanup;
-        recvbytes = recvcount * typebytes;
-
-        manager->invalidate(recvbuf, recvbytes);
-
-        if (bufferSize - bufferUsed >= recvbytes) {
-            tmpRecv = buffer;
+    if(source != MPI_PROC_NULL && dstMode != NULL) {
+        if (buffer->size() - bufferUsed >= recvbytes) {
+            tmpRecv = buffer->addr() + bufferUsed;
         } else {
             // Alloc buffer
-            err = manager->halloc(ctx, &tmpRecv, recvbytes);
-            if (err != gmacSuccess) {
-                //! \todo Do something
-            }
+            tmpRecv = malloc(recvbytes);
+            ASSERTION(tmpRecv != NULL);
+
             allocRecv = true;
         }
     } else {
@@ -123,30 +128,30 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     ret = __MPI_Sendrecv(tmpSend, sendcount, sendtype, dest, sendtag, tmpRecv, recvcount, recvtype, source, recvtag, comm, status);
 
-    if(source != MPI_PROC_NULL && recvCtx != NULL) {
-        err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, recvbuf),
-                                         tmpRecv,
-                                         recvbytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        err = recvCtx->syncToDevice();
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-    }
-
-cleanup:
     if (allocSend) {
         // Free temporal buffer
-        err = manager->hfree(ctx, tmpSend);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        free(tmpSend);
     }
 
-    if (allocRecv) {
-        // Free temporal buffer
-        err = manager->hfree(ctx, tmpRecv);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+    if(source != MPI_PROC_NULL && dstMode != NULL) {
+        if (!allocRecv) {
+            err = manager.fromIOBuffer(hostptr_t(recvbuf), *buffer, recvbytes);
+            ASSERTION(err == gmacSuccess);
+            err = buffer->wait();
+            ASSERTION(err == gmacSuccess);
+        } else {
+            err = manager.memcpy(hostptr_t(recvbuf), hostptr_t(tmpSend), recvbytes);
+            ASSERTION(err == gmacSuccess);
+
+            // Free temporal buffer
+            free(tmpSend);
+        }
     }
+
+    if (buffer != NULL) mode.destroyIOBuffer(buffer);
 
 exit:
-	__exitGmac();
+	gmac::exitGmac();
 
     return ret;
 }
@@ -154,63 +159,54 @@ exit:
 int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm,
     int (*func)(void *, int, MPI_Datatype, int, int, MPI_Comm))
 {
-	if(__inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
+	if(gmac::inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
     if(__MPI_Send == NULL) mpiInit();
 
-	// Locate memory regions (if any)
-	gmac::Context *sendCtx = manager->owner(buf);
+    Process &proc = Process::getInstance();
+	// Check if GMAC owns any of the buffers to be transferred
+	Mode *srcMode = proc.owner(hostptr_t(buf));
 
-	if (sendCtx == NULL) {
+	if (srcMode == NULL) {
         return __MPI_Send(buf, count, datatype, dest, tag, comm);
     }
 
-    __enterGmac();
+    gmac::enterGmac();
 
-    gmac::Context * ctx = gmac::Context::current();
+    Mode &mode = Mode::current();
+    Manager &manager = Manager::getInstance();
+
     gmacError_t err;
     int ret;
-
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    uint8_t * buffer  = (uint8_t *) ctx->bufferPageLocked();
-
-    size_t bufferUsed = 0;
 
     void * tmpSend = NULL;
 
     bool allocSend = false;
 
     int typebytes;
+    size_t sendbytes = 0;
 
-    if(dest != MPI_PROC_NULL && sendCtx != NULL) {
-        size_t sendbytes;
+    ret = MPI_Type_size(datatype, &typebytes);
+    sendbytes = count * typebytes;
+    IOBuffer *buffer = mode.createIOBuffer(sendbytes);
+    if (ret != MPI_SUCCESS) goto exit;
 
-        ret = MPI_Type_size(datatype, &typebytes);
-        if (ret != MPI_SUCCESS) goto exit;
-        sendbytes = count * typebytes;
+    if (dest != MPI_PROC_NULL && srcMode != NULL) {
+        if (buffer->size() >= sendbytes) {
+            tmpSend     = buffer->addr();
 
-        //! \todo Why is this?
-		manager->flush(buf, sendbytes);
-
-        if (bufferSize >= sendbytes) {
-            tmpSend  = buffer;
-            buffer     += sendbytes;
-            bufferUsed += sendbytes;
+            err = manager.toIOBuffer(*buffer, hostptr_t(buf), sendbytes);
+            ASSERTION(err == gmacSuccess);
+            err = buffer->wait();
+            ASSERTION(err == gmacSuccess);
         } else {
             // Alloc buffer
-            err = manager->halloc(ctx, &tmpSend, sendbytes);
-            if (err != gmacSuccess) {
-                //! \todo Do something
-                gmac::util::Logger::fatal("Error in MPI_Send");
-            }
+            tmpSend = malloc(sendbytes);
+            ASSERTION(tmpSend != NULL);
             allocSend = true;
+
+            err = manager.memcpy(hostptr_t(tmpSend), hostptr_t(buf), sendbytes);
+            ASSERTION(err == gmacSuccess);
         }
-
-		err = sendCtx->copyToHostAsync(tmpSend,
-                                       manager->ptr(sendCtx, buf), sendbytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        sendCtx->syncToHost();
-
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
 	} else {
         tmpSend = buf;
     }
@@ -219,12 +215,11 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     if (allocSend) {
         // Free temporal buffer
-        err = manager->hfree(ctx, tmpSend);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        free(tmpSend);
     }
 
 exit:
-	__exitGmac();
+	gmac::exitGmac();
 
     return ret;
 }
@@ -252,50 +247,44 @@ int MPI_Bsend( void *buf, int count, MPI_Datatype datatype, int dest, int tag, M
 
 int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status )
 {
-	if(__inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
+	if(gmac::inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     if(__MPI_Recv == NULL) mpiInit();
 
+    Process &proc = Process::getInstance();
 	// Locate memory regions (if any)
-	gmac::Context *recvCtx = manager->owner(buf);
+	Mode *dstMode = proc.owner(hostptr_t(buf));
 
-	if (recvCtx == NULL) {
+	if (dstMode == NULL) {
         return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     }
 
-    __enterGmac();
+    gmac::enterGmac();
 
-    gmac::Context * ctx = gmac::Context::current();
+    Mode &mode = Mode::current();
+    Manager &manager = Manager::getInstance();
+
     gmacError_t err;
     int ret;
-
-    size_t bufferSize = ctx->bufferPageLockedSize();
-    uint8_t * buffer  = (uint8_t *) ctx->bufferPageLocked();
-
-    size_t bufferUsed = 0;
 
     void * tmpRecv = NULL;
 
     bool allocRecv = false;
 
     int typebytes;
+    size_t recvbytes = 0;
 
-    size_t recvbytes;
-    if(source != MPI_PROC_NULL && recvCtx != NULL) {
-        ret = MPI_Type_size(datatype, &typebytes);
-        if (ret != MPI_SUCCESS) goto cleanup;
-        recvbytes = count * typebytes;
+    ret = MPI_Type_size(datatype, &typebytes);
+    recvbytes = count * typebytes;
+    IOBuffer *buffer = mode.createIOBuffer(recvbytes);
+    if (ret != MPI_SUCCESS) goto exit;
 
-        manager->invalidate(buf, recvbytes);
-
-        if (bufferSize - bufferUsed >= recvbytes) {
-            tmpRecv = buffer;
+    if(source != MPI_PROC_NULL && dstMode != NULL) {
+        if (buffer->size() >= recvbytes) {
+            tmpRecv = buffer->addr();
         } else {
             // Alloc buffer
-            err = manager->halloc(ctx, &tmpRecv, recvbytes);
-            if (err != gmacSuccess) {
-                //! \todo Do something
-                gmac::util::Logger::fatal("Error in MPI_Recv");
-            }
+            tmpRecv = malloc(recvbytes);
+            ASSERTION(tmpRecv != NULL);
             allocRecv = true;
         }
     } else {
@@ -304,23 +293,30 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     ret = __MPI_Recv(tmpRecv, count, datatype, source, tag, comm, status);
 
-    if(source != MPI_PROC_NULL && recvCtx != NULL) {
-        err = recvCtx->copyToDeviceAsync(manager->ptr(recvCtx, buf),
-                                         tmpRecv,
-                                         recvbytes);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
-        err = recvCtx->syncToDevice();
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+    if(source != MPI_PROC_NULL && dstMode != NULL) {
+        if (!allocRecv) {
+            err = manager.fromIOBuffer(hostptr_t(buf), *buffer, recvbytes);
+            ASSERTION(err == gmacSuccess);
+            err = buffer->wait();
+            ASSERTION(err == gmacSuccess);
+        } else {
+            err = manager.memcpy(hostptr_t(buf), hostptr_t(tmpRecv), recvbytes);
+            ASSERTION(err == gmacSuccess);
+
+            // Free temporal buffer
+            free(tmpRecv);
+        }
     }
 
-cleanup:
     if (allocRecv) {
         // Free temporal buffer
-        err = manager->hfree(ctx, tmpRecv);
-        gmac::util::Logger::ASSERTION(err == gmacSuccess);
+        free(tmpRecv);
     }
 
-	__exitGmac();
+exit:
+	gmac::exitGmac();
 
     return ret;
 }
+
+#endif

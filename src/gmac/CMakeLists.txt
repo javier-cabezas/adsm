@@ -1,5 +1,7 @@
 add_subdirectory(stdc)
 add_subdirectory(${OS_DIR})
+add_subdirectory(mpi)
+
 if(DEFINED THREAD_DIR)
     add_subdirectory(${THREAD_DIR})
 endif(DEFINED THREAD_DIR)

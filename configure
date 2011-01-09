@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 CMAKE=cmake
 CMAKE_HOME=`dirname $0`
 SCRIPT_NAME=`basename $0`
@@ -40,6 +38,9 @@ do
         ;;
     --enable-vm-hostmap)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_HOSTMAP_VM=ON"
+        ;;
+    --enable-mpi)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;
     --with-vm-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
