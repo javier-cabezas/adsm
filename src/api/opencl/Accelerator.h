@@ -61,22 +61,22 @@ public:
     void remove(cl_command_queue stream);
     cl_command_queue &front();
 
-    void sync() const;
+    cl_int sync() const;
 };
 
 class GMAC_LOCAL HostMap :
-    protected std::map<hostptr_t *, cl_mem>,
+    protected std::map<hostptr_t, cl_mem>,
     protected util::RWLock {
 protected:
-    typedef std::map<hostptr_t *, cl_mem> Parent;
+    typedef std::map<hostptr_t, cl_mem> Parent;
 public:
     HostMap() : RWLock("HostMap") { }
     virtual ~HostMap();
 
-    void insert(hostptr_t *host, cl_mem acc);
-    void remove(hostptr_t *host);
+    void insert(hostptr_t host, cl_mem acc);
+    void remove(hostptr_t host);
 
-    accptr_t translate(hostptr_t *host) const;
+    cl_mem translate(hostptr_t host) const;
 };
 
 class GMAC_LOCAL Accelerator : public core::Accelerator {

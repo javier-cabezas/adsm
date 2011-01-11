@@ -42,15 +42,17 @@ inline cl_command_queue &CommandList::front()
     return ret;
 }
 
-inline void CommandList::sync() const
+inline cl_int CommandList::sync() const
 {
+    cl_int ret = CL_SUCCESS;
     lockRead();
     Parent::const_iterator i;
-    for(i = Parent::begin(); i != Parent::end(); i++)
-        clFinish(*i);
+    for(i = Parent::begin(); i != Parent::end(); i++) {
+        if((ret = clFinish(*i)) != CL_SUCCESS) break;
+    }
     unlock();
+    return ret;
 }
-
 
 
 inline HostMap::~HostMap()
@@ -65,14 +67,14 @@ inline HostMap::~HostMap()
     unlock();
 }
 
-inline void HostMap::insert(hostptr_t *host, cl_mem acc)
+inline void HostMap::insert(hostptr_t host, cl_mem acc)
 {
     lockWrite();
     Parent::insert(Parent::value_type(host, acc));
     unlock();
 }
 
-inline void HostMap::remove(hostptr_t *host)
+inline void HostMap::remove(hostptr_t host)
 {
     lockWrite();
     Parent::iterator i = Parent::find(host);
@@ -82,12 +84,12 @@ inline void HostMap::remove(hostptr_t *host)
     unlock();
 }
 
-inline accptr_t HostMap::translate(hostptr_t *host) const
+inline cl_mem HostMap::translate(hostptr_t host) const
 {
-    accptr_t ret(NULL);
+    cl_mem ret(NULL);
     lockRead();
     Parent::const_iterator i = Parent::find(host);
-    if(i != Parent::end()) ret.base_ = i->second;
+    if(i != Parent::end()) ret = i->second;
     unlock();
     return ret;
 }

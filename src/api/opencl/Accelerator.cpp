@@ -1,12 +1,12 @@
 #include "Accelerator.h"
-include "Mode.h"
+#include "Mode.h"
 
 #include "core/Process.h"
 
 namespace __impl { namespace opencl {
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    core::Accelerator(n), platform_(platform), device_(device),
+    core::Accelerator(n), platform_(platform), device_(device)
 {
     cl_ulong size = 0;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
@@ -14,20 +14,20 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
 
     cl_bool val = CL_FALSE;
     ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
-        sizeof(val), NULL);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
+        sizeof(val), &val, NULL);
+    CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     integrated_ = (val == CL_TRUE);
 
     cl_context_properties prop[] = {
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform_, NULL };
-    cl_int ret;
+
     ctx_ = clCreateContext(prop, 1, &device_, NULL, NULL, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
 
     cl_command_queue stream;
-    stream = clCreateCommandQueue(ctx_, device_, 0, &error);
+    stream = clCreateCommandQueue(ctx_, device_, 0, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL stream");
-    cmd_.insert(stream);
+    cmd_.add(stream);
 }
 
 Accelerator::~Accelerator()
@@ -56,7 +56,7 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-    addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret)
+    addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
     addr.offset_ = 0;
     trace::ExitCurrentFunction();
     return error(ret);
@@ -75,7 +75,8 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
-    clEnqueueWriteBuffer(cmd_ , acc.base_, CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
+    cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_, CL_TRUE, acc.offset_, size,
+        host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -89,7 +90,8 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
 
     buffer.toAccelerator(mode, stream);
-    clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE, acc.offset_, count, host, 0, NULL, NULL);
+    cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE, acc.offset_, count, host,
+        0, NULL, NULL);
     buffer.started();
     trace::ExitCurrentFunction();
     return error(ret);
@@ -99,7 +101,8 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
-    clEnqueueReadBuffer(cmd_.front(), acc.base_, CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
+    cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_, CL_TRUE, acc.offset_, size,
+        host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -136,11 +139,11 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
 gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 {
     trace::EnterCurrentFunction();
-    void *tmp = malloc(size);
+    void *tmp = ::malloc(size);
     memset(tmp, c, size);
-    cl_int ret = clEnqueueWriteBuffer(cmd_ , addr.base_, CL_TRUE, addr.offset_,
-        size, tmp, 0, NULL, NULL)
-    free(tmp);
+    cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.base_, CL_TRUE, addr.offset_,
+        size, tmp, 0, NULL, NULL);
+    ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -148,7 +151,7 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 gmacError_t Accelerator::sync()
 {
     trace::EnterCurrentFunction();
-    cmd_.sync();
+    cl_int ret = cmd_.sync();
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -206,28 +209,32 @@ gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-    cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_MEM, size, NULL, ret);
-    if(ret == CL_SUCCESS) 
-        *addr = clEnqueueMapBuffer(cmd_.front(), acc, CL_FALSE, CL_MAP_READ | CL_MAP_WRITE, 0, 0,
-            0, NULL, NULL, &ret);
-    map_.insert(addr, acc);
+    cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+        size, NULL, &ret);
+    if(ret == CL_SUCCESS) {
+        *addr = (hostptr_t) clEnqueueMapBuffer(cmd_.front(), acc, CL_FALSE,
+            CL_MAP_READ | CL_MAP_WRITE, 0, 0, 0, NULL, NULL, &ret);
+        map_.insert(*addr, acc);
+    }
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-#if 0
 gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     trace::EnterCurrentFunction();
-#if CUDA_VERSION >= 2020
-    CUresult r = cuMemFreeHost(addr);
-#else
-    CUresult r = CUDA_ERROR_OUT_OF_MEMORY;
-#endif
+    cl_int ret = CL_SUCCESS;
+    cl_mem acc = map_.translate(addr);
+    if(acc != cl_mem(NULL)) {
+        ret = clEnqueueUnmapMemObject(cmd_.front(), acc, addr, 0, NULL, NULL);
+        if(ret == CL_SUCCESS) ret = clReleaseMemObject(acc);
+    }
     trace::ExitCurrentFunction();
-    return error(r);
+    return error(ret);
 }
 
+
+#if 0
 accptr_t Accelerator::hostMap(const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
