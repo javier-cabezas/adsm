@@ -58,11 +58,6 @@ class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager>
 
     // Needed to let Singleton call the protected constructor
     friend class util::Singleton<Manager>;
-private:
-#ifdef USE_VM
-    void checkBitmapToHost();
-    void checkBitmapToAccelerator();
-#endif
 protected:
     /**
      * Allocates a host mapped memory
@@ -223,7 +218,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size);
+    TESTABLE gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
 
     /**
      * Copy data from an I/O buffer to a memory object
@@ -234,7 +229,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size);
+    TESTABLE gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
 
     /**
      * Initialize to a given value the contents of a host address of a memory

@@ -59,7 +59,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
         ASSERTION(elems * size == bytes);
 		ret += elems;
-        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer,  size * elems);
+        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer, 0, size * elems);
         ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         ASSERTION(err == gmacSuccess);
@@ -106,7 +106,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
     while (left != 0) {
         size_t bytes = left < buffer->size()? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, hostptr_t(buf) + off, bytes);
+        err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf) + off, bytes);
         ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         ASSERTION(err == gmacSuccess);

@@ -13,9 +13,14 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     gmacError_t ret = 
         mode.malloc(acceleratorAddr, size, unsigned(paramPageSize));
     if(ret == gmacSuccess) {
+#ifdef USE_SUBBLOCK_TRACKING
+        vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+        bitmap.registerRange(acceleratorAddr, size);
+#else
 #ifdef USE_VM
-        vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-        acceleratorBitmap.newRange(acceleratorAddr, size);
+        vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+        bitmap.registerRange(acceleratorAddr, size);
+#endif
 #endif
         return acceleratorAddr;
     } else {
@@ -67,11 +72,6 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
     valid_ = (acceleratorAddr_ != NULL);
 
     if (valid_) {
-#ifdef USE_VM
-        vm::Bitmap &hostBitmap = owner.hostDirtyBitmap();
-        hostBitmap.newRange(acceleratorAddr_, size);
-#endif
-
         // Create a shadow mapping for the host memory
         // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
@@ -94,11 +94,14 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
 template<typename T>
 SharedObject<T>::~SharedObject()
 {
+#ifdef USE_SUBBLOCK_TRACKING
+    vm::BitmapHost &bitmap= owner_->hostDirtyBitmap();
+    bitmap.unregisterRange(acceleratorAddr_, size_);
+#else
 #ifdef USE_VM
-    vm::Bitmap &hostBitmap = owner_->hostDirtyBitmap();
-    vm::SharedBitmap &acceleratorBitmap = owner_->acceleratorDirtyBitmap();
-    hostBitmap.removeRange(acceleratorAddr_, size_);
-    acceleratorBitmap.removeRange(acceleratorAddr_, size_);
+    vm::BitmapShared &bitmap = owner_->acceleratorDirtyBitmap();
+    bitmap.unregisterRange(acceleratorAddr_, size_);
+#endif
 #endif
 
 	// If the object creation failed, this address will be NULL

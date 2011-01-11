@@ -37,15 +37,7 @@ WITH THE SOFTWARE.  */
 #ifdef USE_MPI
 #include <mpi.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void mpiInit();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // USE_MPI
 

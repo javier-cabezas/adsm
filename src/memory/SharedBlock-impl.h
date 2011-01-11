@@ -37,7 +37,7 @@ inline gmacError_t SharedBlock<T>::toHost() const
 {
     gmacError_t ret = gmacSuccess;
 #ifdef USE_VM
-    vm::SharedBitmap &acceleratorBitmap = owner_.acceleratorDirtyBitmap();
+    vm::BitmapShared &acceleratorBitmap = owner_.acceleratorDirtyBitmap();
     size_t subBlockSize = Block::getSubBlockSize();
     bool inSubGroup = false;
     unsigned groupStart = 0, groupEnd = 0;
@@ -45,11 +45,11 @@ inline gmacError_t SharedBlock<T>::toHost() const
     //fprintf(stderr, "TOHOST: SubBlocks %u\n", Block::getSubBlocks());
     for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
         if (inSubGroup) {
-            if (acceleratorBitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
                 groupEnd = i;
             } else {
-                if (costGaps<MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
-                    cost<MODEL_TODEVICE>(subBlockSize, 1)) {
+                if (vm::costGaps<vm::MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
+                    vm::cost<vm::MODEL_TODEVICE>(subBlockSize, 1)) {
                     gaps++;
                 } else {
                     inSubGroup = false;
@@ -62,7 +62,7 @@ inline gmacError_t SharedBlock<T>::toHost() const
                 }
             }
         } else {
-            if (acceleratorBitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
                 groupStart = i; gaps = 0; inSubGroup = true;
             }
         }
@@ -83,8 +83,14 @@ template<typename T>
 inline gmacError_t SharedBlock<T>::toAccelerator()
 {
     gmacError_t ret = gmacSuccess;
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+#ifdef USE_SUBBLOCK_TRACKING
+    vm::BitmapHost &bitmap = owner_.acceleratorDirtyBitmap();
+#else
 #ifdef USE_VM
-    vm::SharedBitmap &acceleratorBitmap = owner_.acceleratorDirtyBitmap();
+    vm::BitmapShared &bitmap= owner_.acceleratorDirtyBitmap();
+#endif
+#endif
     size_t subBlockSize = Block::getSubBlockSize();
     bool inSubGroup = false;
     unsigned groupStart = 0, groupEnd = 0;
@@ -92,11 +98,11 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
     //fprintf(stderr, "TODEVICE: SubBlocks %u\n", Block::getSubBlocks());
     for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
         if (inSubGroup) {
-            if (acceleratorBitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
                 groupEnd = i;
             } else {
-                if (costGaps<MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
-                    cost<MODEL_TODEVICE>(subBlockSize, 1)) {
+                if (vm::costGaps<vm::MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
+                    vm::cost<vm::MODEL_TODEVICE>(subBlockSize, 1)) {
                     gaps++;
                 } else {
                     inSubGroup = false;
@@ -109,7 +115,7 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
                 }
             }
         } else {
-            if (acceleratorBitmap.checkAndClear(acceleratorAddr_ + i * subBlockSize)) {
+            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
                 groupStart = i; gaps = 0; inSubGroup = true;
             }
         }

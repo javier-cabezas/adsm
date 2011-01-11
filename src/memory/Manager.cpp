@@ -155,7 +155,12 @@ gmacError_t Manager::acquireObjects()
     if(mode.releasedObjects() == false) {
         return gmacSuccess;
     }
+#ifndef USE_VM
 	mode.forEachObject(&Object::acquire);
+#else
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    acceleratorBitmap.acquire();
+#endif
     mode.acquireObjects();
     return ret;
 }
@@ -173,15 +178,16 @@ gmacError_t Manager::releaseObjects()
         mode.releaseObjects();
     }
 #ifdef USE_VM
-    checkBitmapToAccelerator();
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    acceleratorBitmap.release();
 #endif
     return ret;
 }
 
 
-gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, size_t count)
+gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
 {
-    if (count > buffer.size()) return gmacErrorInvalidSize;
+    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
@@ -196,7 +202,7 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
-		ret = obj->copyToBuffer(buffer, c, off, objOff);
+		ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();
         if(ret != gmacSuccess) return ret;
         off += objCount;
@@ -205,9 +211,9 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t count)
+gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t bufferOff, size_t count)
 {
-    if (count > buffer.size()) return gmacErrorInvalidSize;
+    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
@@ -221,7 +227,7 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
-		ret = obj->copyFromBuffer(buffer, c, off, objOff);
+		ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();        
         if(ret != gmacSuccess) return ret;
         off += objCount;
@@ -230,35 +236,9 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
     return ret;
 }
 
-#ifdef USE_VM
-void
-Manager::checkBitmapToHost()
-{
-    core::Mode &mode = core::Mode::current();
-    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (!acceleratorBitmap.synced()) {
-        acceleratorBitmap.syncHost();
-        mode.forEachObject(&Object::acquire);
-    }
-}
-
-void
-Manager::checkBitmapToAccelerator()
-{
-    core::Mode &mode = core::Mode::current();
-    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (!acceleratorBitmap.clean()) {
-        acceleratorBitmap.syncAccelerator();
-    }
-}
-#endif
-
 bool
 Manager::read(hostptr_t addr)
 {
-#ifdef USE_VM
-    checkBitmapToHost();
-#endif
     core::Mode &mode = core::Mode::current();
     bool ret = true;
     Object *obj = mode.getObject(addr);
@@ -273,9 +253,6 @@ Manager::read(hostptr_t addr)
 bool
 Manager::write(hostptr_t addr)
 {
-#ifdef USE_VM
-    checkBitmapToHost();
-#endif
     core::Mode &mode = core::Mode::current();
     bool ret = true;
     Object *obj = mode.getObject(addr);

@@ -61,9 +61,12 @@ inline gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
     memory::Map::removeOwner(Process::getInstance(), *this);
-#ifdef USE_VM
+#ifdef USE_SUBBLOCK_TRACKING
     hostBitmap_.cleanUp();
+#else
+#ifdef USE_VM
     acceleratorBitmap_.cleanUp();
+#endif
 #endif
     return ret;
 }
@@ -143,30 +146,34 @@ Mode::error(gmacError_t err)
     error_ = err;
 }
 
-#ifdef USE_VM
-inline memory::vm::Bitmap &
+#ifdef USE_SUBBLOCK_TRACKING
+inline memory::vm::BitmapHost &
 Mode::hostDirtyBitmap()
 {
     return hostBitmap_;
 }
 
-inline memory::vm::SharedBitmap &
-Mode::acceleratorDirtyBitmap()
-{
-    return acceleratorBitmap_;
-}
-
-inline const memory::vm::Bitmap &
+inline const memory::vm::BitmapHost &
 Mode::hostDirtyBitmap() const
 {
     return hostBitmap_;
 }
 
-inline const memory::vm::SharedBitmap &
+#else
+
+#ifdef USE_VM
+inline memory::vm::BitmapShared &
+Mode::acceleratorDirtyBitmap()
+{
+    return acceleratorBitmap_;
+}
+
+inline const memory::vm::BitmapShared &
 Mode::acceleratorDirtyBitmap() const
 {
     return acceleratorBitmap_;
 }
+#endif
 #endif
 
 inline bool

@@ -6,6 +6,41 @@
 #ifdef USE_VM
 namespace __impl { namespace memory { namespace vm {
 
+template <>
+void
+StoreShared::alloc<Node *>(size_t nEntries)
+{
+    this->entries_ = new Node *[nEntries];
+    this->allocated_ = true;
+    // TODO: implement accelerator memory allocation
+}
+
+template <>
+void
+StoreShared::alloc<uint8_t>(size_t nEntries)
+{
+    this->entries_ = new uint8_t[nEntries];
+    this->allocated_ = true;
+    // TODO: implement accelerator memory allocation
+}
+
+#if 0
+void SharedBitmap::allocate()
+{
+    ASSERTION(accelerator_ == NULL);
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+#ifdef USE_HOSTMAP_VM
+    mode.hostAlloc((void **)&bitmap_, size_);
+    accelerator_ = (uint8_t *) mode.hostMap(bitmap_);
+    memset(bitmap_, 0, size());
+    TRACE(LOCAL,"Allocating dirty bitmap (%zu bytes)", size());
+#else
+    mode.malloc(&accelerator_, size_);
+    TRACE(LOCAL,"Allocating dirty bitmap %p -> %p (%zu bytes)", bitmap_, (void *) accelerator_, size_);
+#endif
+}
+
+
 void SharedBitmap::allocate()
 {
     ASSERTION(accelerator_ == NULL);
@@ -94,6 +129,7 @@ SharedBitmap::syncAccelerator()
 #endif
 #endif
 }
+#endif
 
 }}}
 

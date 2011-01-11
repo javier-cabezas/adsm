@@ -23,9 +23,12 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
     map_("ModeMemoryMap", *this),
     releasedObjects_(true)
-#ifdef USE_VM
+#ifdef USE_SUBBLOCK_TRACKING
     , hostBitmap_(*this)
-    , acceleratorBitmap_(hostBitmap_)
+#else
+#ifdef USE_VM
+    , acceleratorBitmap_(*this)
+#endif
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);

@@ -104,28 +104,28 @@ Manager::write(hostptr_t addr)
 
 
 gmacError_t
-Manager::toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size)
+Manager::toIOBuffer(__impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
-    REQUIRES(size <= buffer.size());
+    REQUIRES(size <= buffer.size() - bufferOff);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::toIOBuffer(buffer, addr, size);
+    gmacError_t ret = __impl::memory::Manager::toIOBuffer(buffer, bufferOff, addr, size);
     // POSTCONDITIONS
 
     return ret;
 }
 
 gmacError_t
-Manager::fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size)
+Manager::fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
-    REQUIRES(size <= buffer.size());
+    REQUIRES(size <= buffer.size() - bufferOff);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::fromIOBuffer(addr, buffer, size);
+    gmacError_t ret = __impl::memory::Manager::fromIOBuffer(addr, buffer, bufferOff, size);
     // POSTCONDITIONS
 
     return ret;

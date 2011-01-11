@@ -98,9 +98,12 @@ protected:
 
     bool releasedObjects_;
 
+#ifdef USE_SUBBLOCK_TRACKING
+    __impl::memory::vm::BitmapHost hostBitmap_;
+#else
 #ifdef USE_VM
-    __impl::memory::vm::Bitmap hostBitmap_;
-    __impl::memory::vm::SharedBitmap acceleratorBitmap_;
+    __impl::memory::vm::BitmapShared acceleratorBitmap_;
+#endif
 #endif
 
     ContextMap contextMap_;
@@ -379,11 +382,14 @@ public:
      */
     const Process &process() const;
 
+#ifdef USE_SUBBLOCK_TRACKING
+    memory::vm::BitmapHost &hostDirtyBitmap();
+    const memory::vm::BitmapHost &hostDirtyBitmap() const;
+#else
 #ifdef USE_VM
-    memory::vm::Bitmap &hostDirtyBitmap();
-    memory::vm::SharedBitmap &acceleratorDirtyBitmap();
-    const memory::vm::Bitmap &hostDirtyBitmap() const;
-    const memory::vm::SharedBitmap &acceleratorDirtyBitmap() const;
+    memory::vm::BitmapShared &acceleratorDirtyBitmap();
+    const memory::vm::BitmapShared &acceleratorDirtyBitmap() const;
+#endif
 #endif
 
 };

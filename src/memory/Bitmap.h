@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BITMAP_H_
 #define GMAC_MEMORY_BITMAP_H_
 
+#include <cmath>
+
 #include "config/common.h"
 
 #include "util/Lock.h"
@@ -52,228 +54,258 @@ WITH THE SOFTWARE.  */
 
 
 namespace __impl {
-    namespace core {
-        class Mode;
-    }
 
-    namespace memory  { namespace vm {
+namespace core {
+class Mode;
+}
 
+namespace memory  { namespace vm {
 
-
-class GMAC_LOCAL Bitmap {
-protected:
-    size_t nEntries_;
-    size_t nUsedEntries_;
-
-    long int firstEntry_;
-    long int lastEntry_;
-
-    virtual void alloc() = 0;
-    TableBase(size_t nEntries);
-
-public:
-    enum BitmapState {
-        BITMAP_UNSET    = 0,
-        BITMAP_SET_ACC  = 1,
-        BITMAP_SET_HOST = 2
-    };
-
-    size_t getNUsedEntries() const;
-    size_t getNEntries() const;
-
-    long int firstEntry() const;
-    long int lastEntry() const;
-
-    virtual BitmapState getEntry() const = 0;
-    virtual void setEntry(BitmapState state) const = 0;
-    virtual void setEntryRange(BitmapState state) = 0;
+enum BitmapState {
+    BITMAP_UNSET    = 0,
+    BITMAP_SET_ACC  = 1,
+    BITMAP_SET_HOST = 2
 };
+typedef uint8_t BitmapType;
 
-            class GMAC_LOCAL Bitmap {
-protected:
-    size_t nEntries_;
-    size_t nUsedEntries_;
 
-    long int firstEntry_;
-    long int lastEntry_;
-
-    virtual void alloc() = 0;
-    TableBase(size_t nEntries);
-
-public:
-    enum BitmapState {
-        BITMAP_UNSET    = 0,
-        BITMAP_SET_ACC  = 1,
-        BITMAP_SET_HOST = 2
-    };
-
-    size_t getNUsedEntries() const;
-    size_t getNEntries() const;
-
-    long int firstEntry() const;
-    long int lastEntry() const;
-
-    virtual BitmapState getEntry() const = 0;
-    virtual void setEntry(BitmapState state) const = 0;
-    virtual void setEntryRange(BitmapState state) = 0;
-};
-
-template<typename T>
-class GMAC_LOCAL SharedTable :
-    public Table<T>
+class GMAC_LOCAL Node
 {
 protected:
-    bool synced_;
+    size_t nEntries_;
+    size_t nUsedEntries_;
+
+    bool dirty_;
+
+    long int firstUsedEntry_;
+    long int lastUsedEntry_;
+
+    long int firstDirtyEntry_;
+    long int lastDirtyEntry_;
+
+    Node(size_t nEntries);
+
+public:
+    virtual BitmapState getEntry(unsigned long index) = 0;
+    virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state) = 0;
+    virtual void setEntry(unsigned long index, BitmapState state) = 0;
+    virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state) = 0;
+};
+
+template<typename S>
+class Bitmap;
+
+class GMAC_LOCAL Store
+{
+protected:
+    void *entries_;
+    bool allocated_;
+
+public:
+    Store();
+};
+
+class GMAC_LOCAL StoreHost : public Store
+{
+protected:
+    bool isSynced() const;
+
+    template <typename T>
+    void alloc(size_t nEntries);
+
+    StoreHost();
+};
+
+class GMAC_LOCAL StoreShared : public Store
+{
+protected:
     accptr_t accEntries_;
 
-    void alloc();
+    Bitmap<StoreShared> &root_;
 
-    SharedTable(size_t nEntries);
-public:
-    void sync();
-    bool isSinced() const;
-};
-
-template<typename T>
-class GMAC_LOCAL Leaf :
-    public Table<T> {
-protected:
-    T *entries_;
-
-    bool allocated_;
-    bool dirty_;
-
-    virtual void alloc();
-    Table(size_t nEntries);
-
-public:
-    T getEntry(unsigned long index);
-    void setEntry(T value, unsigned long index);
-
-    bool isAllocated() const;
-    bool isDirty() const;
-};
-
-template<typename T, typename U>
-class GMAC_LOCAL Directory :
-    public T<U *>,
-    public __impl::util::Logger {
-protected:
-    static const size_t defaultSize = 4096/sizeof(U *);
-
-public:
-    Directory(size_t nEntries = defaultSize);
-    virtual ~Directory();
-
-    bool exists(unsigned long index) const;
-    void create(unsigned long index, size_t size = defaultSize);
-};
-
-class OldBitmap {
-protected:
-    static const unsigned EntriesPerByte_;
-
-    unsigned bits_;
-
-    core::Mode &mode_;
-    typedef uint8_t EntryType;
-    // Root entries of the bitmap
-    hostptr_t *bitmap_;
-
-    bool dirty_;
-
-    unsigned shiftBlock_;
-    unsigned shiftPage_;
-
-    size_t subBlockSize_;
-    unsigned subBlockMask_;
-    unsigned pageMask_;
-
-#ifdef BITMAP_BIT
-    uint32_t bitMask_;
-#endif
-    size_t size_;
-
-    template <bool check, bool clear, bool set>
-    bool CheckClearSet(const accptr_t addr);
-    accptr_t minPtr_;
-    accptr_t maxPtr_;
-
-    void updateMaxMin(accptr_t ptr, size_t count);
-
-    uint32_t offset(const accptr_t addr) const;
-
-    bool checkAndSet(const accptr_t addr);
-    void clear(const accptr_t addr);
-
-public:
-    Bitmap(core::Mode &mode, unsigned bits = 32);
-    Bitmap(const Bitmap &base);
-    virtual ~Bitmap();
-
-    virtual void cleanUp();
-
-    bool check(const accptr_t addr);
-    bool checkBlock(const accptr_t addr);
-    void set(const accptr_t addr);
-    void setBlock(const accptr_t addr);
-    bool checkAndClear(const accptr_t addr);
-
-    const size_t size() const;
-
-    void newRange(const accptr_t ptr, size_t count);
-    void removeRange(const accptr_t ptr, size_t count);
-
-    bool clean() const;
-
-#ifdef DEBUG_BITMAP
-    void dump();
-#endif
-
-    unsigned getSubBlock(const accptr_t addr) const;
-    size_t getSubBlockSize() const;
-};
-
-template <unsigned LEVELS>
-class GMAC_LOCAL Bitmap {
-protected:
-    TableBase *root_;
-
-public:
-};
-
-//typedef Bitmap<hostptr_t> HostBitmap;
-//typedef Bitmap<accptr_t> AcceleratorBitmap;
-
-class GMAC_LOCAL SharedBitmap :
-    public Bitmap {
-private:
-    bool linked_;
     bool synced_;
-    accptr_t accelerator_;
 
-    void allocate();
+    bool isSynced() const;
+    void setSynced(bool synced);
+
+    template <typename T>
+    void alloc(size_t nEntries);
+
+    void syncToHost();
+    void syncToAccelerator();
+
+    StoreShared(Bitmap<StoreShared> &root);
+};
+
+template <typename S>
+class GMAC_LOCAL Directory : public Node, public S
+{
+protected:
+    unsigned long mask_;
+    unsigned shift_;
+
+    std::vector<unsigned> nextEntries_;
+
+    unsigned long getLocalIndex(unsigned long index) const;
+    unsigned long getNextIndex(unsigned long index) const;
+    unsigned long getNextBaseIndex(unsigned long localIndex) const;
+    unsigned long getGlobalOffset() const;
+
+    Node *get(unsigned long index);
+    Node **getAddr(unsigned long index);
 
 public:
-    SharedBitmap(core::Mode &mode, unsigned bits = 32);
-    SharedBitmap(const Bitmap &host);
-    virtual ~SharedBitmap();
+    Directory(Bitmap<S> &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    BitmapState getEntry(unsigned long index);
+    BitmapState getAndSetEntry(unsigned long index, BitmapState state);
+    void setEntry(unsigned long index, BitmapState state);
+    void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+
+    void acquire();
+    void release();
+};
+
+template <typename S>
+class GMAC_LOCAL Leaf : public Node, public S
+{
+    uint8_t get(unsigned long index);
+    uint8_t &getRef(unsigned long index);
+
+public:
+    Leaf(Bitmap<S> &root, size_t nEntries);
+    BitmapState getEntry(unsigned long index);
+    BitmapState getAndSetEntry(unsigned long index, BitmapState state);
+    void setEntry(unsigned long index, BitmapState state);
+    void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+
+    void acquire();
+    void release();
+};
+
+template <typename S>
+class GMAC_LOCAL Bitmap
+{
+protected:
+    /**
+     * Number of levels of the bitmap
+     */
+    static const unsigned &BitmapLevels;
+
+    /**
+     * Number of entries in the first level of the bitmap
+     */
+    static const unsigned &L1Entries;
+
+    /**
+     * Number of entries in the second level of the bitmap
+     */
+    static const unsigned &L2Entries;
+
+    /**
+     * Number of entries in the third level of the bitmap
+     */
+    static const unsigned &L3Entries;
+
+    /**
+     * Size in bytes of a block
+     */
+    static const unsigned &BlockSize;
+
+    /**
+     * Number of subblocks per block
+     */
+    static const unsigned &SubBlocks;
+
+    /**
+     * Mode whose memory is managed by the bitmap
+     */
+    core::Mode &mode_;
+
+    /**
+     * Pointer to the first level (root level) of the bitmap
+     */
+    Directory<S> root_;
+
+    /**
+     * Map of the registered memory ranges
+     */
+    std::map<accptr_t, size_t> ranges_;
+
+public:
+    /**
+     * Constructs a new Bitmap
+     */
+    Bitmap(core::Mode &mode);
 
     void cleanUp();
 
-    accptr_t accelerator();
+    /**
+     * Sets the state of the subblock containing the given address
+     *
+     * \param addr Address of the subblock to be set
+     * \param state State to be set to the block
+     */
+    void setEntry(const accptr_t addr, BitmapState state);
 
-    void syncHost();
-    void syncAccelerator();
-    void reset();
+    /**
+     * Sets the state of the subblocks within the given range
+     *
+     * \param addr Initial address of the subblocks to be set
+     * \param bytes Size in bytes of the range
+     * \param state State to be set to the blocks
+     */
+    void setEntryRange(const accptr_t addr, size_t bytes, BitmapState state);
 
-    bool synced() const;
-    void synced(bool s);
+    unsigned long getSubBlock(const accptr_t addr) const;
+
+    /**
+     * Gets the state of the subblock containing the given address
+     *
+     * \param addr Address of the subblock to retrieve the state from
+     * \return The state of the subblock
+     */
+    BitmapState getEntry(const accptr_t addr) const;
+
+    BitmapState getAndSetEntry(const accptr_t addr, BitmapState state);
+
+    bool isAnyInRange(const accptr_t addr, size_t size, BitmapState state);
+
+    /**
+     * Registers the given memory range to be managed by the Bitmap
+     *
+     * \param addr Initial address of the memory range
+     * \param bytes Size in bytes of the memory range
+     */
+    void registerRange(const accptr_t addr, size_t bytes);
+
+    /**
+     * Unegisters the given memory range from the Bitmap
+     *
+     * \param addr Initial address of the memory range
+     * \param bytes Size in bytes of the memory range
+     */
+    void unregisterRange(const accptr_t addr, size_t bytes);
+
+    void acquire();
+    void release();
 };
 
-}}}
+typedef Bitmap<StoreHost> BitmapHost;
+typedef Bitmap<StoreShared> BitmapShared;
 
-#include "Bitmap-impl.h"
+template <typename S>
+void
+Bitmap<S>::acquire()
+{
+    root_.acquire();
+}
+
+template <typename S>
+void
+Bitmap<S>::release()
+{
+    root_.release();
+}
 
 enum ModelDirection {
     MODEL_TOHOST = 0,
@@ -335,6 +367,10 @@ float cost(const size_t subBlockSize, size_t subBlocks)
     return costConfig<M>() + costTransfer<M>(subBlockSize, subBlocks);
 }
 
-#endif
+}}}
 
+#include "Bitmap-impl.h"
+
+
+#endif
 #endif

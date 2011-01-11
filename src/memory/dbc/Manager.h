@@ -64,8 +64,8 @@ public:
     bool read(hostptr_t addr);
     bool write(hostptr_t addr);
 
-    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, const hostptr_t addr, size_t size);
-    gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t size);
+    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+    gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
 #if 0
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);
