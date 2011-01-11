@@ -5,11 +5,10 @@
 
 #include <assert.h>
 
-class _opencl_ptr_t {
-protected:
+struct _opencl_ptr_t {
     cl_mem base_;
     size_t offset_;
-public:
+
     inline _opencl_ptr_t() :
         base_(0),
         offset_(0)

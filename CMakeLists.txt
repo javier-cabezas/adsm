@@ -49,17 +49,20 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # Identify API being used
 option(OPENCL_INCLUDE "OpenCL Header Files" "/usr/include")
-
+option(OPENCL_LIBRARY "OpenCL Library Files" "/usr/lib")
 option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
     add_definitions(-DUSE_OPENCL)
-    find_library(opencl_LIB
-        ${CMAKE_IMPORT_LIBRARY_PREFIX}opencl${CMAKE_IMPORT_LIBRARY_SUFFIX})
     message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
-    include_directories(${OPENCL_INCLUDE})
     set(API_DIR "opencl")
     set(API_INCLUDE "#include <CL/cl.h>")
     set(API_MEM_TYPE "cl_mem")
+    include_directories(${OPENCL_INCLUDE})
+    find_library(opencl_LIB
+        ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
+        HITS OPENCL_LIBRARY)
+    message(STATUS "OpenCL: ${opencl_LIB}")
+    set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
 else(USE_OPENCL)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA

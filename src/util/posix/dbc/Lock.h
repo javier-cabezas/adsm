@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include <set>
 
-#include "config/common.h"
+#include "config/config.h"
 #include "dbc/Contract.h"
 #include "dbc/types.h"
 #include "util/posix/Lock.h"

@@ -30,6 +30,10 @@ do
         opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_INCLUDE=${opencl_include}"
         ;;
+    --with-opencl-library=*)
+        opencl_library=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_LIBRARY=${opencl_library}"
+        ;;
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
         ;;

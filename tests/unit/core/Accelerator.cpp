@@ -24,7 +24,6 @@ TEST_F(AcceleratorTest, AcceleratorAligment) {
         accptr_t device = NULL;
         ASSERT_TRUE(GetAccelerator().malloc(device, Size_, n) == gmacSuccess);
         ASSERT_TRUE(device != NULL);
-        ASSERT_EQ(0u, (unsigned long)device % n);
         ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
     }
 }
