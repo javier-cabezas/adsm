@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -213,6 +213,7 @@ public:
      * Copy data from a memory object to an I/O buffer
      *
      * \param buffer Destionation I/O buffer to copy the data to
+     * \param bufferOff Offset within the buffer to copy data to
      * \param addr Host memory address corresponding to a memory object to copy
      * data from
      * \param size Size (in bytes) of the data to be copied
@@ -226,6 +227,7 @@ public:
      * \param addr Host memory address corresponding to a memory object to copy
      * data to
      * \param buffer Source I/O buffer to copy the data from
+     * \param bufferOff Offset within the buffer to copy data from
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
