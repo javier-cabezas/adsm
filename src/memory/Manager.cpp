@@ -326,8 +326,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
 
 
 gmacError_t
-Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
-                        size_t objOffset)
+Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src, size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -379,8 +378,8 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
 }
 
 gmacError_t
-Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
-                        size_t dstOffset, size_t srcOffset)
+Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
+                        const Object &srcObj, size_t srcOffset, size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -458,13 +457,13 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     mode.destroyIOBuffer(passive);
     active->wait();
     mode.destroyIOBuffer(active);
-    
+
     return ret;
 }
 
 gmacError_t
-Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
-                          size_t objOffset)
+Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
+                          size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -578,13 +577,13 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
             size_t srcCopySize = srcObject->end() - src - offset;
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
             size_t srcObjectOffset = src + offset - srcObject->addr();
-            ret = memcpyFromObject(dst + offset, *srcObject, copySize, srcObjectOffset);
+            ret = memcpyFromObject(dst + offset, *srcObject, srcObjectOffset, copySize);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
             size_t dstCopySize = dstObject->end() - dst - offset;
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(*dstObject, src + offset, copySize, dstObjectOffset);
+            ret = memcpyToObject(*dstObject, dstObjectOffset, src + offset, copySize);
         }
         else { // Object-to-object memory copy
             size_t srcCopySize = srcObject->end() - src - offset;
@@ -593,16 +592,16 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
             copySize = (copySize < left) ? copySize : left;
             size_t srcObjectOffset = src + offset - srcObject->addr();
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(*dstObject, *srcObject, copySize, dstObjectOffset, srcObjectOffset);
+            ret = memcpyToObject(*dstObject, dstObjectOffset, *srcObject, srcObjectOffset, copySize);
         }
 
         offset += copySize;
         left -= copySize;
     }
-     
+
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();
-    
+
     return ret;
 }
 

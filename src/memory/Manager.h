@@ -73,40 +73,41 @@ protected:
      * Copies data from host memory to an object
      *
      * \param obj Destination object
-     * \param src Source host memory address
-     * \param size Size (in bytes) of the data to be copied
      * \param objOffset Offset (in bytes) from the begining of the object to
      * copy the data to
+     * \param src Source host memory address
+     * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(const Object &obj, const hostptr_t src,
-        size_t size, size_t objOffset);
+    gmacError_t memcpyToObject(const Object &obj, size_t objOffset,
+                               const hostptr_t src, size_t size);
 
     /** Copy data from object to object
      *
      * \param dstObj Destination object
-     * \param srcObj Source object
-     * \param size Size (in bytes) of the data to be copied
      * \param dstOffset Offset (in bytes) from the begining of the destination
      * object to copy data to
+     * \param srcObj Source object
      * \param srcOffset Offset (in bytes) from the begining og the source
      * object to copy data from
+     * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(const Object &dstObj, const Object &srcObj,
-        size_t size, size_t dstOffset, size_t srcOffset);
+    gmacError_t memcpyToObject(const Object &dstObj, size_t dstOffset,
+                               const Object &srcObj, size_t srcOffset,
+                               size_t size);
 
     /**
      * Copies data from an object to host memory
      * \param dst Destination object
      * \param obj Source object
-     * \param size Size (in bytes) of the data to be copied
      * \param objOffset Offset (in bytes) from the begining of the source object
      * to copy data from
+     * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
-        size_t objOffset);
+    gmacError_t memcpyFromObject(hostptr_t dst, const Object &obj,
+                                 size_t objOffset, size_t size);
 
     /**
      * Gets the number of bytes at the begining of a range that are in host memory
