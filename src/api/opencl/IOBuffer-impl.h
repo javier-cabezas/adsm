@@ -6,7 +6,11 @@ namespace __impl { namespace opencl {
 inline void
 IOBuffer::toHost(Mode &mode, cl_command_queue s)
 {
+    cl_int ret = CL_SUCCESS;
+    cl_context ctx;
+    ASSERTION(clGetCommandQueueInfo(s, CL_QUEUE_CONTEXT, sizeof(ctx), &ctx, NULL) == CL_SUCCESS);
     if (!created_) {
+        end_ = clCreateUserEvent(ctx, &ret);
         created_ = true;
     }
 
@@ -33,7 +37,8 @@ inline void
 IOBuffer::started()
 {
     ASSERTION(created_ == true);
-    end_ = clCreateUserEvent(stream_, &ret);
+    cl_int ret = clEnqueueMarker(stream_, &_end);
+    ASSERTION(ret == CL_SUCCESS);
 }
 
 inline gmacError_t

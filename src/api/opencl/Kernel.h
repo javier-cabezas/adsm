@@ -29,21 +29,21 @@ public:
 class GMAC_LOCAL KernelConfig : public core::KernelConfig {
 protected:
     cl_uint work_dim_;
-    size_t *global_work_offset_;
-    size_t *global_work_size_;
-    size_t *local_work_size_;
+    size_t *globalWorkOffset_;
+    size_t *globalWorkSize_;
+    size_t *localWorkSize_;
 
     cl_command_queue stream_;
 public:
     /// \todo Remove this piece of shit
 
-    KernelConfig(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size);
+    KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
     ~KernelConfig();
 
     cl_uint work_dim() const { return work_dim_; }
-    size_t *global_work_offset() const { return global_work_offset_; }
-    size_t *global_work_size() const { return global_work_size__; }
-    size_t *local_work_size() const { return local_work_size_; }
+    size_t *globalWorkOffset() const { return globalWorkOffset_; }
+    size_t *globalWorkSize() const { return globalWorkSize_; }
+    size_t *localWorkSize() const { return localWorkSize_; }
 };
 
 class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig, public util::NonCopyable {

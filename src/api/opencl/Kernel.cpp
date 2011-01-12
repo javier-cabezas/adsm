@@ -24,27 +24,27 @@ Kernel::launch(core::KernelConfig & _c)
     return l;
 }
 
-KernelConfig::KernelConfig(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size, cl_command_queue stream)
+KernelConfig::KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream)
     core::KernelConfig(),
     work_dim_(work_dim_),
     stream_(stream)
 {
-    global_work_offset_ = new size_t[work_dim];
-    global_work_size_ = new size_t[work_dim];
-    local_work_size_ = new size_t[work_dim];
+    globalWorkOffset_ = new size_t[work_dim];
+    globalWorkSize_ = new size_t[work_dim];
+    localWorkSize_ = new size_t[work_dim];
 
     for (unsigned i = 0; i < work_dim; i++) {
-        global_work_offset_[i] = global_work_offset[i];
-        global_work_size_[i] = global_work_size[i];
-        local_work_size_[i] = local_work_size[i];
+        globalWorkOffset_[i] = globalWorkOffset[i];
+        globalWorkSize_[i] = globalWorkSize[i];
+        localWorkSize_[i] = localWorkSize[i];
     }
 }
 
 KernelConfig::~KernelConfig()
 {
-    delete [] global_work_offset_;
-    delete [] global_work_size_;
-    delete [] local_work_size_;
+    delete [] globalWorkOffset_;
+    delete [] globalWorkSize_;
+    delete [] localWorkSize_;
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
@@ -73,8 +73,8 @@ KernelLaunch::execute()
 #endif
 
     // TODO: add support for events
-    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, work_dim_, global_work_offset_,
-            global_work_size_, local_work_size_, 0, NULL, NULL)
+    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, work_dim_, globalWorkOffset_,
+            globalWorkSize_, localWorkSize_, 0, NULL, NULL)
 
 exit:
     return Accelerator::error(ret);

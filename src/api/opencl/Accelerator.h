@@ -50,7 +50,7 @@ class Mode;
 
 class GMAC_LOCAL CommandList :
     protected std::list<cl_command_queue>,
-    protected util::RWLock {
+    protected gmac::util::RWLock {
 protected:
     typedef std::list<cl_command_queue> Parent;
 public:
@@ -66,7 +66,7 @@ public:
 
 class GMAC_LOCAL HostMap :
     protected std::map<hostptr_t, cl_mem>,
-    protected util::RWLock {
+    protected gmac::util::RWLock {
 protected:
     typedef std::map<hostptr_t, cl_mem> Parent;
 public:
