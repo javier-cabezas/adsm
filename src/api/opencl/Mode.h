@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_OPENCL_MODE_H_
 #define GMAC_API_OPENCL_MODE_H_
 
-#include <vector_types.h>
-
 #include "config/common.h"
 #include "config/config.h"
 #include "core/Mode.h"

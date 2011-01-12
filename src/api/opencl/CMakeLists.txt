@@ -4,6 +4,8 @@ set(api_lib_SRC
     opencl.cpp)
 
 set(api_SRC
+    Context.h Context-impl.h Context.cpp
+    Kernel.h Kernel.cpp
     Mode.h Mode-impl.h Mode.cpp
     Accelerator.h Accelerator-impl.h Accelerator.cpp Error.cpp
    )
