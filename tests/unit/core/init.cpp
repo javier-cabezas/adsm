@@ -5,8 +5,8 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::Accelerator;
-using gmac::core::Process;
+using __impl::core::Accelerator;
+using __impl::core::Process;
 
 Accelerator *Accelerator_ = NULL;
 static bool Trace_ = false;
@@ -25,7 +25,7 @@ void FiniTrace(void)
     gmac::trace::FiniTracer();
 }
 
-gmac::core::Accelerator &GetAccelerator()
+__impl::core::Accelerator &GetAccelerator()
 {
     return *Accelerator_;
 }

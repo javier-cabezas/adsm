@@ -34,11 +34,22 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_INIT_H_
 #define TEST_UNIT_INIT_H_
 
-namespace __impl { namespace core {
-    class Accelerator;
-}}
+namespace __impl {
+class GMACLock;
 
+extern GMACLock * _inGmacLock;
+extern const char _gmacCode;
+extern const char _userCode;
+extern char _gmacInit;
+
+    namespace core { class Accelerator; }
+    namespace util { template<typename T> class Private; }
+}
+
+extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
+
+void InitGmac();
 
 void InitTrace();
 

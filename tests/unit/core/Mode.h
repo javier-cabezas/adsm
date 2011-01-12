@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 
 class ModeTest : public testing::Test {
 public:
-	static gmac::core::Mode *Mode_;
+	static __impl::core::Mode *Mode_;
 
     const static size_t Size_ = 4 * 1024 * 1024;
 

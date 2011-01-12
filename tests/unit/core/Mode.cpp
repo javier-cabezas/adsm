@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::Mode;
-using gmac::core::Process;
+using __impl::core::Mode;
+using __impl::core::Process;
 
 Mode *ModeTest::Mode_ = NULL;
 

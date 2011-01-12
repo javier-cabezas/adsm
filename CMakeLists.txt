@@ -214,10 +214,14 @@ add_definitions(-DGMAC_DLL)
 # Compiling GMAC
 add_definitions(-DGMAC_DLL_EXPORTS)
 
-set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
+add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
+add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
+set_target_properties(gmac-base PROPERTIES
+    COMPILE_FLAGS -fPIC
+    COMPILE_DEFINITIONS_DEBUG USE_DBC)
+ 
 
-add_gmac_groups(${gmac_SOURCES} ${gmac-dbc_SRC})
-add_library(gmac SHARED ${gmac_SOURCES})
+add_library(gmac SHARED ${gmac-lib_SRC})
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
 set_property(TARGET gmac PROPERTY PRIVATE_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
@@ -227,7 +231,7 @@ set_property(TARGET gmac PROPERTY PRIVATE_HEADER
 )
 
 
-target_link_libraries(gmac ${gmac_LIBS})
+target_link_libraries(gmac gmac-base ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
 
 set_target_properties(gmac PROPERTIES

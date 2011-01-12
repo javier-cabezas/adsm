@@ -6,7 +6,8 @@
 namespace __impl { namespace opencl {
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    core::Accelerator(n), platform_(platform), device_(device)
+    core::Accelerator(n), platform_(platform), device_(device),
+    busId_(0), busAccId_(0)
 {
     cl_ulong size = 0;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
@@ -234,31 +235,28 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 }
 
 
-#if 0
 accptr_t Accelerator::hostMap(const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
-#if CUDA_VERSION >= 2020
-    CUdeviceptr device;
-    CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
-#else
-    CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
-#endif
-    if(ret != CUDA_SUCCESS) device = 0;
+    cl_mem device = map_.translate(addr);
     trace::ExitCurrentFunction();
-    return accptr_t(device);
+    return accptr_t(device, 0);
 }
+
 
 void Accelerator::memInfo(size_t &free, size_t &total) const
 {
+    cl_int ret = CL_SUCCESS;
+    cl_ulong value = 0;
+    ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
+        sizeof(value), &value, NULL);
+    CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
+    total = value;
 
-#if CUDA_VERSION > 3010
-    CUresult ret = cuMemGetInfo(&free, &total);
-#else
-    CUresult ret = cuMemGetInfo((unsigned int *) &free, (unsigned int *) &total);
-#endif
-    CFATAL(ret == CUDA_SUCCESS, "Error getting memory info");
+    ret = clGetDeviceInfo(device_, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
+        sizeof(value), &value, NULL);
+    CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
+    free = value;
 }
-#endif
 
 }}

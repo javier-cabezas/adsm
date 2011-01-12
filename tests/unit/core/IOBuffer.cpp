@@ -6,9 +6,9 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::IOBuffer;
-using gmac::core::Mode;
-using gmac::core::Process;
+using __impl::core::IOBuffer;
+using __impl::core::Mode;
+using __impl::core::Process;
 
 class IOBufferTest : public testing::Test {
 public:

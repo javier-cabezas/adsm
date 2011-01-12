@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "memory/Memory.h"
 
-using gmac::memory::Memory;
+using __impl::memory::Memory;
 
 static const int Size_ = 1024 * 1024;
 static const int Pattern_ = 0xa5a5a5a5;
