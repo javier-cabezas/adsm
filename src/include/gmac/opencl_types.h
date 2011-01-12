@@ -31,13 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CUDA_H_
-#define GMAC_CUDA_H_
 
-#include "cuda_types.h"
+#ifndef GMAC_INCLUDE_OPENCL_TYPES_H_
+#define GMAC_INCLUDE_OPENCL_TYPES_H_
 
-#include "api.h"
+typedef cl_mem __gmac_accptr_t;
+typedef cl_kernel gmacKernel_t;
 
-#endif /* CUDA_H */
+#endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

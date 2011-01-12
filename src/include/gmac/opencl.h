@@ -35,8 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_OPENCL_H_
 
 #include "CL/cl.h"
-
-typedef cl_mem __gmac_accptr_t;
+#include "opencl_types.h"
 
 #include "api.h"
 

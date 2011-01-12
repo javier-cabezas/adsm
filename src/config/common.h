@@ -164,9 +164,11 @@ typedef uint8_t * hostptr_t;
 
 #ifdef USE_CUDA
 #include "cuda/common.h"
+#include "include/gmac/cuda_types.h"
 #else
 #ifdef USE_OPENCL
 #include "opencl/common.h"
+#include "include/gmac/opencl_types.h"
 #else
 #error "No programming model back-end specified"
 #endif

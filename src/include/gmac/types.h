@@ -79,8 +79,6 @@ typedef enum {
 	gmacErrorUnknown
 } gmacError_t;
 
-typedef const char * gmacKernel_t;
-
 static const char *error[] = {
 	"No error",
 	"Memory allocation",
@@ -108,7 +106,6 @@ enum GmacProtection {
     GMAC_PROT_WRITE, 
     GMAC_PROT_READWRITE 
 };
-
 
 #ifdef __cplusplus
 };
