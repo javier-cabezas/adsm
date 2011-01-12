@@ -67,7 +67,7 @@ protected:
     static const unsigned StackSize_ = 4096;
 
     uint8_t stack_[StackSize_];
-    unsigned argsSize_;
+    size_t argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
@@ -75,8 +75,10 @@ public:
     KernelConfig();
     virtual ~KernelConfig();
 
-    void pushArgument(const void * arg, size_t size, unsigned offset);
-    unsigned argsSize() const;
+    void pushArgument(const void * arg, size_t size, unsigned long offset);
+    void pushArgument(const void * arg, size_t size);
+
+    size_t argsSize() const;
 
     uint8_t *argsArray();
 };

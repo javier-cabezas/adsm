@@ -28,6 +28,11 @@ Kernel::launch(core::KernelConfig & _c)
     return l;
 }
 
+
+KernelConfig::KernelConfig()
+{
+}
+
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/, CUstream stream) :
     core::KernelConfig(),
     grid_(grid),

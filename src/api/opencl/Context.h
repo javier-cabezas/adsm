@@ -96,8 +96,8 @@ public:
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
     gmacError_t waitAccelerator();
 
-    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	void argument(const void *arg, size_t size, off_t offset);
+    void call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size)
+	void argument(const void *arg, size_t size);
 
     const cl_command_queue eventStream() const;
 

@@ -24,27 +24,34 @@ Kernel::launch(core::KernelConfig & _c)
     return l;
 }
 
+KernelConfig::KernelConfig() :
+    globalWorkSize_(NULL),
+    globalWorkOffset_(NULL),
+    localWorkSize_(NULL)
+{
+}
+
 KernelConfig::KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream)
     core::KernelConfig(),
     work_dim_(work_dim_),
     stream_(stream)
 {
-    globalWorkOffset_ = new size_t[work_dim];
-    globalWorkSize_ = new size_t[work_dim];
-    localWorkSize_ = new size_t[work_dim];
+    if (globalWorkOffset) globalWorkOffset_ = new size_t[work_dim];
+    if (globalWorkSize) globalWorkSize_ = new size_t[work_dim];
+    if (localWorkSize) localWorkSize_ = new size_t[work_dim];
 
     for (unsigned i = 0; i < work_dim; i++) {
-        globalWorkOffset_[i] = globalWorkOffset[i];
-        globalWorkSize_[i] = globalWorkSize[i];
-        localWorkSize_[i] = localWorkSize[i];
+        if (globalWorkOffset) globalWorkOffset_[i] = globalWorkOffset[i];
+        if (globalWorkSize) globalWorkSize_[i] = globalWorkSize[i];
+        if (localWorkSize) localWorkSize_[i] = localWorkSize[i];
     }
 }
 
 KernelConfig::~KernelConfig()
 {
-    delete [] globalWorkOffset_;
-    delete [] globalWorkSize_;
-    delete [] localWorkSize_;
+    if (globalWorkOffset_) delete [] globalWorkOffset_;
+    if (globalWorkSize_) delete [] globalWorkSize_;
+    if (localWorkSize_) delete [] localWorkSize_;
 }
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :

@@ -13,11 +13,9 @@ void * Context::FatBin_;
 Context::Context(Accelerator &acc, Mode &mode) :
     core::Context(acc, mode.id()),
     mode_(mode),
-    buffer_(NULL),
-    call_(dim3(0), dim3(0), 0, NULL)
+    buffer_(NULL)
 {
-    setupCUstreams();
-    call_.stream(streamLaunch_);
+    setupCLstreams();
 }
 
 Context::~Context()
@@ -28,31 +26,31 @@ Context::~Context()
     	mode_.destroyIOBuffer(buffer_);
     }
 
-    cleanCUstreams();
+    cleanCLstreams();
 }
 
-void Context::setupCUstreams()
+void Context::setupCLstreams()
 {
-    streamLaunch_   = accelerator().createCUstream();
-    streamToAccelerator_ = accelerator().createCUstream();
-    streamToHost_   = accelerator().createCUstream();
-    streamAccelerator_   = accelerator().createCUstream();
+    streamLaunch_   = accelerator().createCLstream();
+    streamToAccelerator_ = accelerator().createCLstream();
+    streamToHost_   = accelerator().createCLstream();
+    streamAccelerator_   = accelerator().createCLstream();
 }
 
-void Context::cleanCUstreams()
+void Context::cleanCLstreams()
 {
-    accelerator().destroyCUstream(streamLaunch_);
-    accelerator().destroyCUstream(streamToAccelerator_);
-    accelerator().destroyCUstream(streamToHost_);
-    accelerator().destroyCUstream(streamAccelerator_);
+    accelerator().destroyCLstream(streamLaunch_);
+    accelerator().destroyCLstream(streamToAccelerator_);
+    accelerator().destroyCLstream(streamToHost_);
+    accelerator().destroyCLstream(streamAccelerator_);
 }
 
-gmacError_t Context::syncCUstream(CUstream _stream)
+gmacError_t Context::syncCLstream(cl_command_queue stream)
 {
-    CUresult ret = CUDA_SUCCESS;
+    CUresult ret = CL_SUCCESS;
 
     trace::SetThreadState(trace::IO);
-    while ((ret = accelerator().queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
+    while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
     trace::SetThreadState(trace::Running);
@@ -63,10 +61,10 @@ gmacError_t Context::syncCUstream(CUstream _stream)
     return Accelerator::error(ret);
 }
 
-gmacError_t Context::waitForEvent(CUevent e)
+gmacError_t Context::waitForEvent(cl_event e)
 {
     gmacError_t ret = gmacErrorUnknown;
-    ret = accelerator().syncCUevent(e);
+    ret = accelerator().syncCLevent(e);
     return ret;
 }
 
@@ -168,7 +166,7 @@ gmacError_t Context::sync()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
-    ret = syncCUstream(streamLaunch_);
+    ret = syncCLstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Running);    
     trace::ExitCurrentFunction();
     return ret;

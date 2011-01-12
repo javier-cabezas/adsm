@@ -13,9 +13,9 @@ Context::call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_
 }
 
 inline
-void Context::argument(const void *arg, size_t size, off_t offset)
+void Context::argument(const void *arg, size_t size)
 {
-    call_.pushArgument(arg, size, offset);
+    call_.pushArgument(arg, size);
 }
 
 inline const cl_command_queue

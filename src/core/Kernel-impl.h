@@ -22,7 +22,7 @@ KernelConfig::~KernelConfig()
 }
 
 
-inline unsigned
+inline size_t
 KernelConfig::argsSize() const
 {
     return argsSize_;
