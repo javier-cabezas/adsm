@@ -4,6 +4,7 @@ set(api_lib_SRC
     opencl.cpp)
 
 set(api_SRC
+    IOBuffer.h IOBuffer-impl.h
     Context.h Context-impl.h Context.cpp
     Kernel.h Kernel.cpp
     Mode.h Mode-impl.h Mode.cpp

@@ -401,18 +401,15 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     if (copySize <= srcObj.blockEnd(srcOffset)) {
         ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
-        // if(ret != gmacSuccess) return ret;
     }
     else { // Two copies from the source to fill the buffer
-        size_t copySize1 = srcObj.blockEnd(srcOffset);
-        size_t copySize2 = copySize - copySize1;
+        size_t firstCopySize = srcObj.blockEnd(srcOffset);
+        size_t secondCopySize = copySize - firstCopySize;
 
-        ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+        ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
-        //if(ret != gmacSuccess) return ret;
-        ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+        ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
         ASSERTION(ret == gmacSuccess);
-        //if(ret != gmacSuccess) return ret;
     }
 
     // Copy first chunk of data
@@ -424,7 +421,7 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
         srcOffset += copySize;
         dstOffset += copySize;
         if(left > 0) {
-            copySize = left < dstObj.blockSize()? left: dstObj.blockSize();
+            copySize = (left < dstObj.blockSize()) ? left: dstObj.blockSize();
             // Avoid overwritting a buffer that is already in use
             passive->wait();
 
@@ -433,18 +430,15 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
             if (copySize <= srcObj.blockEnd(srcOffset)) {
                 ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
             }
             else { // Two copies from the source to fill the buffer
-                size_t copySize1 = srcObj.blockEnd(srcOffset);
-                size_t copySize2 = copySize - copySize1;
+                size_t firstCopySize = srcObj.blockEnd(srcOffset);
+                size_t secondCopySize = copySize - firstCopySize;
 
-                ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+                ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
-                ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+                ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
             }
         }
         // Swap buffers
@@ -496,7 +490,6 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
             // synchronous call
             ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
             ASSERTION(ret == gmacSuccess);
-            //if(ret != gmacSuccess) return ret;
         }        
         // Wait for the active buffer to be full
         active->wait();
@@ -526,7 +519,6 @@ Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
     if(addr < obj->addr()) return obj->addr() - addr;
 
     ASSERTION(obj->end() > addr); // Sanity check
-
     return 0;
 }
 

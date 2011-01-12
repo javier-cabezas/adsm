@@ -137,7 +137,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     return error_;
 }
 
-core::KernelLaunch &Mode::launch(const char *kernel)
+core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     ASSERTION(i != kernels_.end());

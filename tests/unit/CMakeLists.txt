@@ -18,7 +18,3 @@ add_executable(UnitTests ${all_SRC})
 target_link_libraries(UnitTests gmac-base ${gmac_test_LIB} ${gmac_LIBS})
 set_target_properties(UnitTests PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
-
-#add_gmac_groups(${gmac_SRC} ${gmac-dbc_SRC})
-#add_library(gmac-static STATIC ${gmac_SRC})
-#target_link_libraries(gmac-static ${gmac_LIBS})
