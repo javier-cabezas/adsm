@@ -34,14 +34,13 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 	gmacError_t ret = gmacSuccess;
 	BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
     size_t blockOffset = objectOffset % blockSize();
-	for(; i != blocks_.end(); i++) {
+	for(; i != blocks_.end() && size > 0; i++) {
 		size_t blockSize = i->second->size() - blockOffset;
 		blockSize = size < blockSize? size: blockSize;
 		ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
 		blockOffset = 0;
 		bufferOffset += blockSize;
 		size -= blockSize;
-        if(size == 0) break;
 	}
 	return ret;
 }
@@ -51,13 +50,12 @@ gmacError_t Object::memset(size_t offset, int v, size_t size) const
     gmacError_t ret = gmacSuccess;
     BlockMap::const_iterator i = firstBlock(offset); // offset gets modified
     size_t blockOffset = offset % blockSize();
-	for(; i != blocks_.end(); i++) {
+	for(; i != blocks_.end() && size > 0; i++) {
 		size_t blockSize = i->second->size() - blockOffset;
 		blockSize = size < blockSize? size: blockSize;
 		ret = i->second->memset(v, blockSize, blockOffset);
 		blockOffset = 0;
 		size -= blockSize;
-        if(size == 0) break;
 	}
 	return ret;
 }

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "include/gmac.h"
+#include "include/gmac/cuda.h"
 #include "gmac/init.h"
 
 #include "core/Kernel.h"

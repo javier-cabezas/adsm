@@ -1,6 +1,10 @@
 #include <cstdlib>
 
-#include "include/gmac.h"
+#ifdef USE_CUDA
+#include "include/gmac/cuda.h"
+#else
+#include "include/gmac/opencl.h"
+#endif
 
 #include "config/config.h"
 #include "config/order.h"
@@ -210,7 +214,7 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	return ret;
 }
 
-__gmac_accmem_t APICALL gmacPtr(const void *ptr)
+__gmac_accptr_t APICALL gmacPtr(const void *ptr)
 {
     accptr_t ret = accptr_t(NULL);
     gmac::enterGmac();

@@ -55,14 +55,13 @@ WITH THE SOFTWARE.  */
  * \endverbatim
  */
 
-#ifndef GMAC_H_
-#define GMAC_H_
+#ifndef GMAC_API_H_
+#define GMAC_API_H_
 
 #include <stddef.h>
 
-#include "gmac/types.h"
-#include "gmac/visibility.h"
-#include "gmac/api.h"
+#include "types.h"
+#include "visibility.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -124,7 +123,7 @@ GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enu
 	Gets a GPU address
 	\param cpuPtr memory address at the CPU
 */
-GMAC_API __gmac_accmem_t APICALL gmacPtr(const void *cpuPtr);
+GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *cpuPtr);
 
 /*!
 	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()

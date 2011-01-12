@@ -1,6 +1,7 @@
-#ifndef __DEBUG_H_
-#define __DEBUG_H_
+#ifndef GMAC_TESTS_COMMON_DEBUG_H_
+#define GMAC_TESTS_COMMON_DEBUG_H_
 
+#if 0
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -13,6 +14,7 @@
 #include "gmac.h"
 #endif
 
+#endif
 
 #define FATAL()	\
 	do {	\

@@ -1,4 +1,4 @@
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 #include "utils.h"
 #include "debug.h"

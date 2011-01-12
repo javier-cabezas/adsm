@@ -52,7 +52,7 @@
 #include <cmath>
 
 // includes, project
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 // includes, utils and debug
 #include "debug.h"
