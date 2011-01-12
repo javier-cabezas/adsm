@@ -84,13 +84,13 @@ else(USE_OPENCL)
 endif(USE_OPENCL)
 
 # Check for Tracing
-option(USE_TRACE_CONSOLE "Enable producing traces in the consoloe" OFF)
+option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
 if(USE_TRACE_CONSOLE)
     add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
 endif(USE_TRACE_CONSOLE)
 
 # Setup configuration options
-option(USE_VM "Enable MPI interposition" OFF)
+option(USE_MPI "Enable MPI interposition" OFF)
 if(USE_MPI)
     message(STATUS "Using MPI")
     add_definitions(-DUSE_MPI)

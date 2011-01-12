@@ -35,11 +35,8 @@ protected:
     CUstream stream_;
 public:
     /// \todo Remove this piece of shit
+    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
 
-    KernelConfig(const KernelConfig & c);
-    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
-
-    inline void stream(CUstream s) { stream_ = s; }
     dim3 grid() const { return grid_; }
     dim3 block() const { return block_; }
     size_t shared() const { return shared_; }

@@ -4,7 +4,7 @@
 namespace __impl { namespace core {
 
 inline
-Argument::Argument(void * ptr, size_t size, unsigned offset) :
+Argument::Argument(void * ptr, size_t size, unsigned long offset) :
     ptr_(ptr), size_(size), offset_(offset)
 {
 }

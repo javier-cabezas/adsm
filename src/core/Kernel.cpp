@@ -12,7 +12,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 {
     ArgVector::const_iterator it;
     for (it = c.begin(); it != c.end(); it++) {
-        pushArgument(it->ptr_, it->size_, it->offset_);
+        pushArgument(it->ptr(), it->size(), it->offset());
     }
 }
 

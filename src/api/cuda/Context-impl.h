@@ -9,8 +9,7 @@ namespace __impl { namespace cuda {
 inline void
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
-    call_ = KernelConfig(Dg, Db, shared, tokens);
-    call_.stream(streamLaunch_);
+    call_ = KernelConfig(Dg, Db, shared, tokens, streamLaunch_);
 }
 
 inline

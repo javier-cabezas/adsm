@@ -14,10 +14,10 @@ Context::Context(Accelerator &acc, Mode &mode) :
     core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL),
-    call_(dim3(0), dim3(0), 0, NULL)
+    call_(dim3(0), dim3(0), 0, NULL, NULL)
 {
     setupCUstreams();
-    call_.stream(streamLaunch_);
+    call_ = KernelConfig(dim3(0), dim3(0), 0, NULL, streamLaunch_);
 }
 
 Context::~Context()
