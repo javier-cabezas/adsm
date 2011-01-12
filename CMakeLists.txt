@@ -62,7 +62,7 @@ if(USE_OPENCL)
         ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
         HITS OPENCL_LIBRARY)
     message(STATUS "OpenCL: ${opencl_LIB}")
-    set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
+    set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
 else(USE_OPENCL)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
