@@ -222,12 +222,15 @@ set_target_properties(gmac-base PROPERTIES
  
 
 add_library(gmac SHARED ${gmac-lib_SRC})
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
-set_property(TARGET gmac PROPERTY PRIVATE_HEADER
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
-    ${CMAKE_SOURCE_DIR}/src/config/${API_DIR}/common.h
 )
 
 
@@ -242,7 +245,6 @@ install(TARGETS gmac
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
-     PUBLIC_HEADER DESTINATION include
-     PRIVATE_HEADER DESTINATION include/gmac)
+     PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)
