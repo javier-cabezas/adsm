@@ -5,7 +5,7 @@ namespace __impl { namespace opencl {
 #define __GMAC_ERROR(r, err) case r: error = err; break
 
 gmacError_t
-Accelerator::error(CUresult r)
+Accelerator::error(cl_int r)
 {
 	gmacError_t error = gmacSuccess;
 	switch(r) {

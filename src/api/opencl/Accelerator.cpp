@@ -6,9 +6,12 @@
 namespace __impl { namespace opencl {
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    core::Accelerator(n), platform_(platform), device_(device),
-    busId_(0), busAccId_(0)
+    core::Accelerator(n), platform_(platform), device_(device)
 {
+    // Not used for now
+    busId_ = 0;
+    busAccId_ = 0;
+
     cl_bool val = CL_FALSE;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
         sizeof(val), &val, NULL);

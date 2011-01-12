@@ -37,7 +37,7 @@ inline void
 IOBuffer::started()
 {
     ASSERTION(created_ == true);
-    cl_int ret = clEnqueueMarker(stream_, &_end);
+    cl_int ret = clEnqueueMarker(stream_, &end_);
     ASSERTION(ret == CL_SUCCESS);
 }
 

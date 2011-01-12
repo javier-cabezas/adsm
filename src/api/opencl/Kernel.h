@@ -1,15 +1,13 @@
-#ifndef GMAC_API_CUDA_KERNEL_H_
-#define GMAC_API_CUDA_KERNEL_H_
+#ifndef GMAC_API_OPENCL_KERNEL_H_
+#define GMAC_API_OPENCL_KERNEL_H_
 
-#include <cuda.h>
-#include <driver_types.h>
-#include <vector_types.h>
+#include <CL/cl.h>
 
 #include "config/common.h"
 #include "core/Kernel.h"
 #include "util/NonCopyable.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace opencl {
 
 class Mode;
 
@@ -36,8 +34,8 @@ protected:
     cl_command_queue stream_;
 public:
     /// \todo Remove this piece of shit
-
-    KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
+    KernelConfig();
+    KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream);
     ~KernelConfig();
 
     cl_uint work_dim() const { return work_dim_; }
@@ -46,7 +44,7 @@ public:
     size_t *localWorkSize() const { return localWorkSize_; }
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public opencl::KernelConfig, public util::NonCopyable {
 protected:
     cl_kernel f_;
 

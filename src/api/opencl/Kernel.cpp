@@ -1,11 +1,10 @@
 #include "Kernel.h"
-#include "Module.h"
 #include "Mode.h"
 #include "Accelerator.h"
 
 #include "trace/Tracer.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace opencl {
 
 Kernel::Kernel(const core::KernelDescriptor & k, cl_program program) :
     core::Kernel(k)
@@ -25,13 +24,13 @@ Kernel::launch(core::KernelConfig & _c)
 }
 
 KernelConfig::KernelConfig() :
-    globalWorkSize_(NULL),
     globalWorkOffset_(NULL),
+    globalWorkSize_(NULL),
     localWorkSize_(NULL)
 {
 }
 
-KernelConfig::KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream)
+KernelConfig::KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
     core::KernelConfig(),
     work_dim_(work_dim_),
     stream_(stream)
@@ -56,8 +55,8 @@ KernelConfig::~KernelConfig()
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     core::KernelLaunch(),
-    cuda::KernelConfig(c),
-    f_(k._f)
+    opencl::KernelConfig(c),
+    f_(k.f_)
 {
 }
 
@@ -80,10 +79,8 @@ KernelLaunch::execute()
 #endif
 
     // TODO: add support for events
-    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, work_dim_, globalWorkOffset_,
-            globalWorkSize_, localWorkSize_, 0, NULL, NULL)
+    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, work_dim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, NULL);
 
-exit:
     return Accelerator::error(ret);
 }
 

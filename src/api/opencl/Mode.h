@@ -46,6 +46,7 @@ class IOBuffer;
 
 namespace opencl {
 
+class Accelerator;
 class Context;
 
 class GMAC_LOCAL ContextLock : public gmac::util::Lock {

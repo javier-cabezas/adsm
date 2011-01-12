@@ -46,6 +46,7 @@ WITH THE SOFTWARE.
 
 namespace __impl { namespace opencl {
 class IOBuffer;
+class KernelLaunch;
 class Mode;
 
 class GMAC_LOCAL CommandList :

@@ -57,6 +57,7 @@ namespace opencl {
 
 class Accelerator;
 class IOBuffer;
+class Mode;
 
 class GMAC_LOCAL Context : public core::Context {
 protected:
@@ -65,10 +66,10 @@ protected:
 	typedef std::map<void *, void *> AddressMap;
 	static AddressMap HostMem_;
 
-    cl_command_queue streamLaunch;
-    cl_command_queue streamToAccelerator;
-    cl_command_queue streamToHost;
-    cl_command_queue streamAccelerator;
+    cl_command_queue streamLaunch_;
+    cl_command_queue streamToAccelerator_;
+    cl_command_queue streamToHost_;
+    cl_command_queue streamAccelerator_;
 
     Mode &mode_;
     IOBuffer *buffer_;
@@ -77,7 +78,7 @@ protected:
 
     void setupCLstreams();
     void cleanCLstreams();
-    gmacError_t syncCUstream(CUstream);
+    gmacError_t syncCLstream(cl_command_queue stream);
 
 public:
 	Context(Accelerator &acc, Mode &mode);
@@ -96,13 +97,13 @@ public:
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
     gmacError_t waitAccelerator();
 
-    void call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size)
+    void call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
 	void argument(const void *arg, size_t size);
 
     const cl_command_queue eventStream() const;
 
     Accelerator & accelerator();
-    gmacError_t waitForEvent(CUevent e);
+    gmacError_t waitForEvent(cl_event e);
 };
 
 }}

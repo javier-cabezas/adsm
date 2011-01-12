@@ -5,10 +5,9 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace opencl {
 
 Context::AddressMap Context::HostMem_;
-void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
     core::Context(acc, mode.id()),
@@ -47,15 +46,18 @@ void Context::cleanCLstreams()
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
 {
-    CUresult ret = CL_SUCCESS;
+    cl_int ret = CL_SUCCESS;
 
     trace::SetThreadState(trace::IO);
+    ret = accelerator().syncCLstream(stream);
+#if 0
     while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
+#endif
     trace::SetThreadState(trace::Running);
 
-    if (ret == CUDA_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
+    if (ret == CL_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
 
     return Accelerator::error(ret);

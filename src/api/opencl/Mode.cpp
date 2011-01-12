@@ -57,7 +57,7 @@ core::Context &Mode::getContext()
 {
 	core::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new cuda::Context(getAccelerator(), *this);
+    context = new opencl::Context(getAccelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;

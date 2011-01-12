@@ -4,7 +4,7 @@
 #include "Accelerator.h"
 #include "Kernel.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace opencl {
 
 inline void
 Context::call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size)
