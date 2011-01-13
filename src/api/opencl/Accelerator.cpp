@@ -215,16 +215,16 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
+    *addr = (hostptr_t)::malloc(size);
     cl_int ret = CL_SUCCESS;
     cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-        size, NULL, &ret);
+        size, *addr, &ret);
     if(ret == CL_SUCCESS) {
         // OpenCL works in the opposite way to CUDA, so we need to keep the
         // translation in map_
-        *addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_FALSE,
-            CL_MAP_READ | CL_MAP_WRITE, 0, 0, 0, NULL, NULL, &ret);
         map_.insert(*addr, acc);
     }
+    else ::free(*addr);
     trace::ExitCurrentFunction();
     return error(ret);
 }
