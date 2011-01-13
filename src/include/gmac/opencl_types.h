@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_INCLUDE_OPENCL_TYPES_H_
 
 typedef cl_mem __gmac_accptr_t;
-typedef cl_kernel gmacKernel_t;
+typedef const char * gmacKernel_t;
 
 #endif
 

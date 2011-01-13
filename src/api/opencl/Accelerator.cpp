@@ -163,6 +163,32 @@ gmacError_t Accelerator::sync()
     return error(ret);
 }
 
+gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags, cl_program &program)
+{
+    trace::EnterCurrentFunction();
+    cl_int ret;
+    program = clCreateProgramWithSource(ctx_, 1, &code, NULL, &ret);
+    if (ret == CL_SUCCESS) {
+        // TODO use the callback parameter to allow background code compilation
+        ret = clBuildProgram(program, 1, &device_, flags, NULL, NULL);
+    }
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t size, const char *flags, cl_program &program)
+{
+    trace::EnterCurrentFunction();
+    cl_int ret;
+    program = clCreateProgramWithBinary(ctx_, 1, &device_, &size, &binary, NULL, &ret);
+    if (ret == CL_SUCCESS) {
+        // TODO use the callback parameter to allow background code compilation
+        ret = clBuildProgram(program, 1, &device_, flags, NULL, NULL);
+    }
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
 cl_command_queue Accelerator::createCLstream()
 {
     trace::EnterCurrentFunction();

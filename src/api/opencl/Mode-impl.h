@@ -64,6 +64,48 @@ Mode::getAccelerator()
     return *static_cast<Accelerator *>(acc_);
 }
 
+inline
+gmacError_t Mode::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
+{
+    switchIn();
+    Context &ctx = dynamic_cast<Context &>(getContext());
+    gmacError_t ret = ctx.call(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::argument(const void *arg, size_t size)
+{
+    switchIn();
+    Context &ctx = dynamic_cast<Context &>(getContext());
+    gmacError_t ret = ctx.argument(arg, size);
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::prepareCLCode(const char *code, const char *flags)
+{
+    switchIn();
+    Accelerator &acc = getAccelerator();
+    gmacError_t ret = acc.prepareCLCode(code, flags, program_);
+    switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::prepareCLBinary(const unsigned char *binary, size_t size, const char *flags)
+{
+    switchIn();
+    Accelerator &acc = getAccelerator();
+    gmacError_t ret = acc.prepareCLBinary(binary, size, flags, program_);
+    switchOut();
+    return ret;
+}
+
+
+
 }}
 
 #endif

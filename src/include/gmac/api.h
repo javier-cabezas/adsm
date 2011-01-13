@@ -133,23 +133,10 @@ GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *cpuPtr);
 GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr);
 
 /*!
-	Launches a kernel execution
-	\param k Handler of the kernel to be executed at the GPU
-*/
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
-
-/*!
 	Waits until all previous GPU requests have finished
 */
 GMAC_API gmacError_t APICALL gmacThreadSynchronize(void);
 
-/*!
-	Sets up an argument to be used by the following call to gmacLaunch()
-	\param addr Memory address where the param is stored
-	\param size Size, in bytes, of the argument
-	\param offset Offset, in bytes, of the argument in the argument list
-*/
-GMAC_API gmacError_t APICALL gmacSetupArgument(void *addr, size_t size, size_t offset);
 
 GMAC_API gmacError_t APICALL gmacGetLastError(void);
 

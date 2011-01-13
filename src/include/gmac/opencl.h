@@ -39,6 +39,38 @@ WITH THE SOFTWARE.  */
 
 #include "api.h"
 
+/*!
+	Adds an argument to be used by the following call to gmacLaunch()
+	\param addr Memory address where the param is stored
+	\param size Size, in bytes, of the argument
+*/
+GMAC_API gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size);
+#define __oclPushArgument(a) ({ \
+        typeof(a) __a = a; \
+        __oclPushArgumentWithSize(&(__a), sizeof(__a)); \
+    })
+
+/**
+ * Launches a kernel execution
+ * \param k Handler of the kernel to be executed at the GPU
+ */
+GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k);
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param code Pointer to the NULL-terminated string that contains the code
+ * \param flags Compilation flags or NULL
+ */
+GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags = NULL);
+
+/**
+ * Prepares the OpenCL binary to be used by the applications 
+ * \param binary Pointer to the array that contains the binary code
+ * \param size Size in bytes of the array that contains the binary code
+ * \param flags Compilation flags or NULL
+ */
+GMAC_API gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+
 #endif /* OPENCL_H */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

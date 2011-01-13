@@ -74,6 +74,7 @@ protected:
     */
     core::Context &getContext();
 
+    cl_program program_;
 
 public:
     //! Default constructor
@@ -169,12 +170,17 @@ public:
     */
     static Mode & current();
 
-    //! Get the physical accelerator associated to the mode
-    /*!
-        \return Physical accelerator associated to the mode
-    */
+    /** Get the physical accelerator associated to the mode
+     * 
+     * \return Physical accelerator associated to the mode
+     */
     Accelerator &getAccelerator();
 
+    gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
+	gmacError_t argument(const void *arg, size_t size);
+
+    gmacError_t prepareCLCode(const char *code, const char *flags);
+    gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 };
 
 }}

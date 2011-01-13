@@ -124,6 +124,8 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     gmacError_t sync();
+    gmacError_t prepareCLCode(const char *code, const char *flags, cl_program &program);
+    gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags, cl_program &program);
 
     gmacError_t hostAlloc(hostptr_t *addr, size_t size);
     gmacError_t hostFree(hostptr_t addr);
