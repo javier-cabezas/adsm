@@ -119,7 +119,8 @@ GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, si
 	return cudaSuccess;
 }
 
-extern gmacError_t gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+
 GMAC_API cudaError_t APICALL cudaLaunch(gmacKernel_t k)
 {
 	gmacError_t ret = gmacLaunch(k);

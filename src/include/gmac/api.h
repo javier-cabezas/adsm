@@ -119,6 +119,8 @@ GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
 #define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
 GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
 
+GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+
 /*!
 	Gets a GPU address
 	\param cpuPtr memory address at the CPU

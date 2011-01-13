@@ -224,7 +224,7 @@ __gmac_accptr_t APICALL gmacPtr(const void *ptr)
     return ret.get();
 }
 
-gmacError_t GMAC_LOCAL gmacLaunch(gmacKernel_t k)
+gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 {
     gmac::enterGmac();
     __impl::core::Mode &mode = __impl::core::Mode::current();
