@@ -14,9 +14,9 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
 
     cl_bool val = CL_FALSE;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
-        sizeof(val), &val, NULL);
-    CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    integrated_ = (val == CL_TRUE);
+        sizeof(val), NULL, NULL);
+    if(ret == CL_SUCCESS) integrated_ = (val == CL_TRUE);
+    else integrated_ = false;
 
     cl_context_properties prop[] = {
         CL_CONTEXT_PLATFORM, (cl_context_properties)platform_, NULL };
@@ -55,6 +55,7 @@ core::Mode *Accelerator::createMode(core::Process &proc)
 gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
+    TRACE(LOCAL, "Allocating accelerator memory (%d bytes)", size);
     cl_int ret = CL_SUCCESS;
     addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
     addr.offset_ = 0;

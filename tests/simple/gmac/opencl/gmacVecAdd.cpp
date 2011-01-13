@@ -17,9 +17,9 @@ const size_t blockSize = 512;
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd(float *c, float *a, float *b, size_t size)\
+__kernel void vecAdd(__global float *c, __global float *a, __global float *b, size_t size)\
 {\
-    int i = threadIdx.x + blockIdx.x * blockDim.x;\
+    int i = get_local_id(0);\
     if(i >= size) return;\
 \
     c[i] = a[i] + b[i];\
@@ -61,11 +61,13 @@ int main(int argc, char *argv[])
     
     // Call the kernel
     getTime(&s);
+#if 0
     dim3 Db(blockSize);
     dim3 Dg((unsigned long)vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+#endif
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 

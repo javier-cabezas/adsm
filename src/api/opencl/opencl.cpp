@@ -5,8 +5,6 @@
 
 #include "Accelerator.h"
 
-#include "CL/cl.h"
-
 namespace __impl { namespace core {
 
 static bool initialized = false;

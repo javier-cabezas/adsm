@@ -59,6 +59,10 @@ struct _opencl_ptr_t {
         return tmp;
     }
 
+    inline const bool operator!=(void * addr) const {
+        return base_ != addr;
+    }
+
     inline operator void*() { return (void *)offset_; }
     inline operator void*() const { return (void *)offset_; }
 
