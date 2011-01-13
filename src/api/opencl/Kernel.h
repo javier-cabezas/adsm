@@ -35,6 +35,7 @@ protected:
 public:
     /// \todo Remove this piece of shit
     KernelConfig();
+    KernelConfig(const KernelConfig &config);
     KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream);
     ~KernelConfig();
 

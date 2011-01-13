@@ -9,7 +9,6 @@ namespace __impl { namespace opencl {
 inline gmacError_t
 Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
 {
-    ASSERTION(globalWorkOffset != NULL);
     ASSERTION(globalWorkSize != NULL);
     ASSERTION(localWorkSize != NULL);
     TRACE(LOCAL, "Creating new kernel call");

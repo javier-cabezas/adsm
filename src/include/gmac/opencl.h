@@ -50,6 +50,17 @@ GMAC_API gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size);
         __oclPushArgumentWithSize(&(__a), sizeof(__a)); \
     })
 
+/*!
+    Configures the next call
+    \param workDim
+    \param globalWorkOffset
+    \param globalWorkSize
+    \param localWorkSize
+    \return Error code
+*/
+GMAC_API gmacError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWorkOffset,
+    size_t *globalWorkSize, size_t *localWorkSize);
+
 /**
  * Launches a kernel execution
  * \param k Handler of the kernel to be executed at the GPU

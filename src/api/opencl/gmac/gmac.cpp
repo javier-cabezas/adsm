@@ -17,6 +17,16 @@ gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size)
     return ret;
 }
 
+GMAC_API gmacError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWorkOffset,
+        size_t *globalWorkSize, size_t *localWorkSize)
+{
+    gmac::enterGmac();
+    Mode &mode = Mode::current();
+    gmacError_t ret = mode.call(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    gmac::exitGmac();
+    return ret;
+}
+
 GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k)
 {
     return gmacLaunch(k);

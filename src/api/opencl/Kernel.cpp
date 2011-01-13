@@ -30,6 +30,9 @@ KernelConfig::KernelConfig() :
 KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
     core::KernelConfig(),
     workDim_(workDim),
+    globalWorkOffset_(NULL),
+    globalWorkSize_(NULL),
+    localWorkSize_(NULL),
     stream_(stream)
 {
     if (globalWorkOffset) globalWorkOffset_ = new size_t[workDim];
@@ -41,6 +44,11 @@ KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *gl
         if (globalWorkSize) globalWorkSize_[i] = globalWorkSize[i];
         if (localWorkSize) localWorkSize_[i] = localWorkSize[i];
     }
+}
+
+KernelConfig::KernelConfig(const KernelConfig &config)
+{
+    ASSERTION(0);
 }
 
 KernelConfig::~KernelConfig()
