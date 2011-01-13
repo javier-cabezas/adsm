@@ -7,9 +7,13 @@
 namespace __impl { namespace opencl {
 
 inline gmacError_t
-Context::call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_size, size_t *local_work_size)
+Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
 {
-    call_ = KernelConfig(work_dim, global_work_offset, global_work_size, local_work_size, streamLaunch_);
+    ASSERTION(globalWorkOffset != NULL);
+    ASSERTION(globalWorkSize != NULL);
+    ASSERTION(localWorkSize != NULL);
+    TRACE(LOCAL, "Creating new kernel call");
+    call_ = KernelConfig(workDim, globalWorkOffset, globalWorkSize, localWorkSize, streamLaunch_);
     // TODO: perform some checking
     return gmacSuccess;
 }
@@ -17,6 +21,7 @@ Context::call(cl_uint work_dim, size_t *global_work_offset, size_t *global_work_
 inline gmacError_t
 Context::argument(const void *arg, size_t size)
 {
+    
     call_.pushArgument(arg, size);
     // TODO: perform some checking
     return gmacSuccess;

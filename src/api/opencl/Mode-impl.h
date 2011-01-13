@@ -22,13 +22,13 @@ inline core::KernelLaunch &
 Mode::launch(gmacKernel_t kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
-    core::Kernel * k;
+    core::Kernel *k = NULL;
     if (i == kernels_.end()) {
-        k = acc_->getKernel(kernel);
+        k = dynamic_cast<Accelerator *>(acc_)->getKernel(kernel);
         ASSERTION(k != NULL);
-        kernel(kernel, k);
+        //kernel(kernel, k);
     }
-    core::Kernel * k = i->second;
+    else k = i->second;
     switchIn();
     core::KernelLaunch &l = getContext().launch(*k);
     switchOut();

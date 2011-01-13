@@ -6,12 +6,9 @@
 
 namespace __impl { namespace opencl {
 
-Kernel::Kernel(const core::KernelDescriptor & k, cl_program program) :
-    core::Kernel(k)
+Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
+    core::Kernel(k), f_(kernel)
 {
-    cl_int ret;
-    f_ = clCreateKernel(program, name_, &ret);
-    ASSERTION(ret == CL_SUCCESS);
 }
 
 core::KernelLaunch *
@@ -30,16 +27,16 @@ KernelConfig::KernelConfig() :
 {
 }
 
-KernelConfig::KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
+KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
     core::KernelConfig(),
-    work_dim_(work_dim_),
+    workDim_(workDim),
     stream_(stream)
 {
-    if (globalWorkOffset) globalWorkOffset_ = new size_t[work_dim];
-    if (globalWorkSize) globalWorkSize_ = new size_t[work_dim];
-    if (localWorkSize) localWorkSize_ = new size_t[work_dim];
+    if (globalWorkOffset) globalWorkOffset_ = new size_t[workDim];
+    if (globalWorkSize) globalWorkSize_ = new size_t[workDim];
+    if (localWorkSize) localWorkSize_ = new size_t[workDim];
 
-    for (unsigned i = 0; i < work_dim; i++) {
+    for (unsigned i = 0; i < workDim; i++) {
         if (globalWorkOffset) globalWorkOffset_[i] = globalWorkOffset[i];
         if (globalWorkSize) globalWorkSize_[i] = globalWorkSize[i];
         if (localWorkSize) localWorkSize_[i] = localWorkSize[i];
@@ -66,8 +63,10 @@ KernelLaunch::execute()
 	// Set-up parameters
     unsigned i = 0;
     for (std::vector<core::Argument>::const_iterator it = begin(); it != end(); it++) {
+        TRACE(LOCAL, "Setting param %d @ %p ("FMT_SIZE")", i, it->ptr(), it->size());
         cl_int ret = clSetKernelArg(f_, i, it->size(), it->ptr());
         CFATAL(ret == CL_SUCCESS, "OpenCL Error setting parameters: %d", ret);
+        i++;
     }
 
 #if 0
@@ -79,7 +78,7 @@ KernelLaunch::execute()
 #endif
 
     // TODO: add support for events
-    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, work_dim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, NULL);
+    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, workDim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, NULL);
 
     return Accelerator::error(ret);
 }

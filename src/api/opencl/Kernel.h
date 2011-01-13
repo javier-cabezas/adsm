@@ -20,13 +20,13 @@ protected:
     cl_kernel f_;
 
 public:
-    Kernel(const core::KernelDescriptor & k, cl_program program);
+    Kernel(const core::KernelDescriptor & k, cl_kernel kernel);
     core::KernelLaunch * launch(core::KernelConfig & c);
 };
 
 class GMAC_LOCAL KernelConfig : public core::KernelConfig {
 protected:
-    cl_uint work_dim_;
+    cl_uint workDim_;
     size_t *globalWorkOffset_;
     size_t *globalWorkSize_;
     size_t *localWorkSize_;
@@ -38,7 +38,7 @@ public:
     KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream);
     ~KernelConfig();
 
-    cl_uint work_dim() const { return work_dim_; }
+    cl_uint workDim() const { return workDim_; }
     size_t *globalWorkOffset() const { return globalWorkOffset_; }
     size_t *globalWorkSize() const { return globalWorkSize_; }
     size_t *localWorkSize() const { return localWorkSize_; }

@@ -220,7 +220,7 @@ __gmac_accptr_t APICALL gmacPtr(const void *ptr)
     gmac::enterGmac();
     ret = __impl::memory::Manager::getInstance().translate(hostptr_t(ptr));
     gmac::exitGmac();
-    // TODO:FIX this
+    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get());
     return ret.get();
 }
 

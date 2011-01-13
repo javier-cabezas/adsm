@@ -57,10 +57,10 @@ core::Mode *Accelerator::createMode(core::Process &proc)
 gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Allocating accelerator memory (%d bytes)", size);
     cl_int ret = CL_SUCCESS;
     addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
     addr.offset_ = 0;
+    TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, addr.base_);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -68,6 +68,7 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
 gmacError_t Accelerator::free(accptr_t addr)
 {
     trace::EnterCurrentFunction();
+    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
     cl_int ret = clReleaseMemObject(addr.base_);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -77,7 +78,7 @@ gmacError_t Accelerator::free(accptr_t addr)
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to accelerator: %p ("FMT_SIZE")", host, size);
+    TRACE(LOCAL,"Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
@@ -90,7 +91,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to accelerator: %p ("FMT_SIZE")", host, count);
+    TRACE(LOCAL,"Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     buffer.toAccelerator(mode, stream);
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
@@ -104,7 +105,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to host: %p ("FMT_SIZE")", host, size);
+    TRACE(LOCAL,"Copy to host: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
@@ -116,7 +117,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to host: %p ("FMT_SIZE")", host, count);
+    TRACE(LOCAL,"Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
     buffer.toHost(mode, stream);
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, NULL);
@@ -128,7 +129,8 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy accelerator-accelerator ("FMT_SIZE")", size);
+    TRACE(LOCAL,"Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
+        src.base_, dst.base_);
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
@@ -172,12 +174,20 @@ Accelerator::addAccelerator(Accelerator &acc)
     Accelerators_.insert(pair);
 }
 
-void
+core::Kernel *
 Accelerator::getKernel(gmacKernel_t k)
 {
     std::vector<cl_program> &programs = Accelerators_[this];
     ASSERTION(programs.size() > 0);
 
+    cl_int err = CL_SUCCESS;
+    std::vector<cl_program>::const_iterator i;
+    for(i = programs.begin(); i != programs.end(); i++) {
+        cl_kernel kernel = clCreateKernel(*i, k, &err);
+        if(err != CL_SUCCESS) continue;
+        return new Kernel(__impl::core::KernelDescriptor(k, k), kernel);
+    }
+    return NULL;
 }
 
 gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
