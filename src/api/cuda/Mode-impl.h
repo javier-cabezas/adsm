@@ -24,6 +24,18 @@ void Mode::switchOut()
 #endif
 }
 
+core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
+{
+    KernelMap::iterator i = kernels_.find(kernel);
+    ASSERTION(i != kernels_.end());
+    core::Kernel * k = i->second;
+    switchIn();
+    core::KernelLaunch &l = getContext().launch(*k);
+    switchOut();
+
+    return l;
+}
+
 inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {

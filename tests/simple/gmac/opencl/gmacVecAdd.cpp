@@ -17,7 +17,7 @@ const size_t blockSize = 512;
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global float *a, __global float *b, size_t size)\
+__kernel void vecAdd(__global float *c, __global float *a, __global float *b, unsigned long size)\
 {\
     int i = get_local_id(0);\
     if(i >= size) return;\
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    __oclPrepareCLCode(kernel);
+    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);

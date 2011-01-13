@@ -285,7 +285,7 @@ public:
      * \param kernel Handler of the kernel to be launched
      * \return Reference to the KernelLaunch object
      */
-    KernelLaunch &launch(gmacKernel_t kernel);
+    virtual KernelLaunch &launch(gmacKernel_t kernel) = 0;
 
     /**
      * Executes a kernel using a KernelLaunch object

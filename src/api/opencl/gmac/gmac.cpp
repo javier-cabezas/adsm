@@ -1,8 +1,10 @@
 #include "config/common.h"
 #include "include/gmac/api.h"
 
+#include "api/opencl/Accelerator.h"
 #include "api/opencl/Mode.h"
 
+using __impl::opencl::Accelerator;
 using __impl::opencl::Mode;
 
 gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size)
@@ -15,7 +17,6 @@ gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size)
     return ret;
 }
 
-
 GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k)
 {
     return gmacLaunch(k);
@@ -25,7 +26,7 @@ gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags)
 {
     gmac::enterGmac();
     Mode &mode = Mode::current();
-    gmacError_t ret = mode.prepareCLCode(code, flags);
+    gmacError_t ret = Accelerator::prepareCLCode(code, flags);
     gmac::exitGmac();
 
     return ret;
@@ -35,7 +36,7 @@ gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t siz
 {
     gmac::enterGmac();
     Mode &mode = Mode::current();
-    gmacError_t ret = mode.prepareCLBinary(binary, size, flags);
+    gmacError_t ret = Accelerator::prepareCLBinary(binary, size, flags);
     gmac::exitGmac();
 
     return ret;

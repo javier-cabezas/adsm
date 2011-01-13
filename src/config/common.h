@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/config.h"
 #include "dbc/types.h"
+#include "include/gmac/types.h"
 
 #if defined(__GNUC__)
 #include <stdint.h>

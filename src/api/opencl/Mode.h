@@ -109,6 +109,8 @@ public:
     */
     accptr_t hostMap(const hostptr_t addr);
 
+    core::KernelLaunch &launch(gmacKernel_t kernel);
+
     //! Execute a kernel on the accelerator
     /*!
         \param launch Structure defining the kernel to be executed
@@ -178,9 +180,6 @@ public:
 
     gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
 	gmacError_t argument(const void *arg, size_t size);
-
-    gmacError_t prepareCLCode(const char *code, const char *flags);
-    gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 };
 
 }}

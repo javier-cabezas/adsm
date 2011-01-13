@@ -137,18 +137,6 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     return error_;
 }
 
-core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
-{
-    KernelMap::iterator i = kernels_.find(kernel);
-    ASSERTION(i != kernels_.end());
-    core::Kernel * k = i->second;
-    switchIn();
-    core::KernelLaunch &l = getContext().launch(*k);
-    switchOut();
-
-    return l;
-}
-
 gmacError_t Mode::sync()
 {
     switchIn();

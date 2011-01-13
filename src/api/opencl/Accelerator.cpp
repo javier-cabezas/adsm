@@ -5,6 +5,8 @@
 
 namespace __impl { namespace opencl {
 
+Accelerator::AcceleratorMap Accelerator::Accelerators_;
+
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     core::Accelerator(n), platform_(platform), device_(device)
 {
@@ -163,27 +165,61 @@ gmacError_t Accelerator::sync()
     return error(ret);
 }
 
-gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags, cl_program &program)
+void
+Accelerator::addAccelerator(Accelerator &acc)
+{
+    std::pair<Accelerator *, std::vector<cl_program> > pair(&acc, std::vector<cl_program>());
+    Accelerators_.insert(pair);
+}
+
+void
+Accelerator::getKernel(gmacKernel_t k)
+{
+    std::vector<cl_program> &programs = Accelerators_[this];
+    ASSERTION(programs.size() > 0);
+
+}
+
+gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
 {
     trace::EnterCurrentFunction();
+
     cl_int ret;
-    program = clCreateProgramWithSource(ctx_, 1, &code, NULL, &ret);
-    if (ret == CL_SUCCESS) {
-        // TODO use the callback parameter to allow background code compilation
-        ret = clBuildProgram(program, 1, &device_, flags, NULL, NULL);
+    AcceleratorMap::iterator it;
+    for (it = Accelerators_.begin(); it != Accelerators_.end(); it++) {
+        cl_program program = clCreateProgramWithSource(it->first->ctx_, 1, &code, NULL, &ret);
+        if (ret == CL_SUCCESS) {
+            // TODO use the callback parameter to allow background code compilation
+            ret = clBuildProgram(program, 1, &it->first->device_, flags, NULL, NULL);
+        }
+        if (ret == CL_SUCCESS) {
+            it->second.push_back(program);
+        } else {
+            break;
+        }
     }
+
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t size, const char *flags, cl_program &program)
+gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t size, const char *flags)
 {
     trace::EnterCurrentFunction();
+
     cl_int ret;
-    program = clCreateProgramWithBinary(ctx_, 1, &device_, &size, &binary, NULL, &ret);
-    if (ret == CL_SUCCESS) {
-        // TODO use the callback parameter to allow background code compilation
-        ret = clBuildProgram(program, 1, &device_, flags, NULL, NULL);
+    AcceleratorMap::iterator it;
+    for (it = Accelerators_.begin(); it != Accelerators_.end(); it++) {
+        cl_program program = clCreateProgramWithBinary(it->first->ctx_, 1, &it->first->device_, &size, &binary, NULL, &ret);
+        if (ret == CL_SUCCESS) {
+            // TODO use the callback parameter to allow background code compilation
+            ret = clBuildProgram(program, 1, &it->first->device_, flags, NULL, NULL);
+        }
+        if (ret == CL_SUCCESS) {
+            it->second.push_back(program);
+        } else {
+            break;
+        }
     }
     trace::ExitCurrentFunction();
     return error(ret);

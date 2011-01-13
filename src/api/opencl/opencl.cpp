@@ -33,6 +33,8 @@ void apiInit(void)
         for(unsigned j = 0; j < size; j++) {
             __impl::opencl::Accelerator *acc = new __impl::opencl::Accelerator(n++, platforms[i], devices[j]);
             proc.addAccelerator(*acc);
+            // Nedded for OpenCL code compilation
+            __impl::opencl::Accelerator::addAccelerator(*acc);
         }
     }
     delete[] devices;

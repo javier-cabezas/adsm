@@ -39,6 +39,7 @@ WITH THE SOFTWARE.
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include "config/common.h"
 #include "core/Accelerator.h"
@@ -83,6 +84,8 @@ public:
 class GMAC_LOCAL Accelerator : public core::Accelerator {
     friend class Switch;
 protected:
+    typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
+    static AcceleratorMap Accelerators_;
     cl_platform_id platform_;
     cl_device_id device_;
 
@@ -97,6 +100,12 @@ public:
     cl_device_id device() const;
 
     static void init();
+
+    static void addAccelerator(Accelerator &acc);
+    void getKernel(gmacKernel_t k);
+
+    static gmacError_t prepareCLCode(const char *code, const char *flags);
+    static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 
     core::Mode *createMode(core::Process &proc);
 
@@ -124,9 +133,6 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     gmacError_t sync();
-    gmacError_t prepareCLCode(const char *code, const char *flags, cl_program &program);
-    gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags, cl_program &program);
-
     gmacError_t hostAlloc(hostptr_t *addr, size_t size);
     gmacError_t hostFree(hostptr_t addr);
     accptr_t hostMap(const hostptr_t addr);

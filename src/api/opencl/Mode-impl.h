@@ -18,6 +18,24 @@ void Mode::switchOut()
 {
 }
 
+inline core::KernelLaunch &
+Mode::launch(gmacKernel_t kernel)
+{
+    KernelMap::iterator i = kernels_.find(kernel);
+    core::Kernel * k;
+    if (i == kernels_.end()) {
+        k = acc_->getKernel(kernel);
+        ASSERTION(k != NULL);
+        kernel(kernel, k);
+    }
+    core::Kernel * k = i->second;
+    switchIn();
+    core::KernelLaunch &l = getContext().launch(*k);
+    switchOut();
+
+    return l;
+}
+
 inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {
@@ -83,28 +101,6 @@ gmacError_t Mode::argument(const void *arg, size_t size)
     switchOut();
     return ret;
 }
-
-inline
-gmacError_t Mode::prepareCLCode(const char *code, const char *flags)
-{
-    switchIn();
-    Accelerator &acc = getAccelerator();
-    gmacError_t ret = acc.prepareCLCode(code, flags, program_);
-    switchOut();
-    return ret;
-}
-
-inline
-gmacError_t Mode::prepareCLBinary(const unsigned char *binary, size_t size, const char *flags)
-{
-    switchIn();
-    Accelerator &acc = getAccelerator();
-    gmacError_t ret = acc.prepareCLBinary(binary, size, flags, program_);
-    switchOut();
-    return ret;
-}
-
-
 
 }}
 
