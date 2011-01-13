@@ -1,4 +1,5 @@
 #include "config/common.h"
+#include "include/gmac/api.h"
 
 #include "api/opencl/Mode.h"
 
@@ -14,7 +15,6 @@ gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size)
     return ret;
 }
 
-gmacError_t GMAC_LOCAL gmacLaunch(gmacKernel_t k);
 
 GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k)
 {
