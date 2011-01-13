@@ -50,6 +50,10 @@ do
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DVM_BITMAP=${size}"
         ;;
+    --prefix=*)
+        prefix=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_INSTALL_PREFIX=${prefix}"
+        ;;
         esac
 done
 
