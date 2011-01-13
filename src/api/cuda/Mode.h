@@ -134,7 +134,7 @@ public:
     */
     accptr_t hostMap(const hostptr_t addr);
 
-    core::KernelLaunch &Mode::launch(gmacKernel_t kernel);
+    core::KernelLaunch &launch(gmacKernel_t kernel);
 
     //! Execute a kernel on the accelerator
     /*!

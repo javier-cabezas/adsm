@@ -24,6 +24,7 @@ void Mode::switchOut()
 #endif
 }
 
+inline
 core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
