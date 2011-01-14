@@ -47,6 +47,7 @@ KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *gl
 }
 
 KernelConfig::KernelConfig(const KernelConfig &config) :
+    core::KernelConfig(config),
     workDim_(config.workDim_),
     globalWorkOffset_(NULL),
     globalWorkSize_(NULL),
@@ -97,7 +98,7 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &config)
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     core::KernelLaunch(),
-    opencl::KernelConfig(c),
+    KernelConfig(c),
     f_(k.f_)
 {
 }

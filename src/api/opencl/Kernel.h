@@ -48,7 +48,7 @@ public:
 
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public opencl::KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public KernelConfig, public util::NonCopyable {
 protected:
     cl_kernel f_;
 

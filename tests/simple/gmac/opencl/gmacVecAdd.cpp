@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
     size_t localSize = blockSize;
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
+    assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(c)) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(a)) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(b)) == gmacSuccess);
     assert(__oclPushArgument(vecSize) == gmacSuccess);
-    assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 

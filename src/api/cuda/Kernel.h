@@ -43,7 +43,7 @@ public:
     size_t shared() const { return shared_; }
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public KernelConfig, public util::NonCopyable {
 protected:
     // \todo Is this really necessary?
     const Kernel & kernel_;

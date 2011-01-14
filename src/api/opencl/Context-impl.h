@@ -13,6 +13,7 @@ Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize,
     ASSERTION(localWorkSize != NULL);
     TRACE(LOCAL, "Creating new kernel call");
     call_ = KernelConfig(workDim, globalWorkOffset, globalWorkSize, localWorkSize, streamLaunch_);
+
     // TODO: perform some checking
     return gmacSuccess;
 }
@@ -20,7 +21,6 @@ Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize,
 inline gmacError_t
 Context::argument(const void *arg, size_t size)
 {
-    
     call_.pushArgument(arg, size);
     // TODO: perform some checking
     return gmacSuccess;
