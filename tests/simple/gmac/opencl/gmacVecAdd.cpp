@@ -63,13 +63,6 @@ int main(int argc, char *argv[])
     
     // Call the kernel
     getTime(&s);
-#if 0
-    dim3 Db(blockSize);
-    dim3 Dg((unsigned long)vecSize / blockSize);
-    if(vecSize % blockSize) Dg.x++;
-    vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
-    if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-#endif
     size_t localSize = blockSize;
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
@@ -79,6 +72,7 @@ int main(int argc, char *argv[])
     assert(__oclPushArgument(vecSize) == gmacSuccess);
     assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
+    assert(gmacThreadSynchronize() == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
