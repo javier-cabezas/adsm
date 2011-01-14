@@ -107,6 +107,7 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Executing KernelLaunch");
     gmacError_t ret = launch.execute();
+    if (ret == gmacSuccess) trace::SetThreadState(THREAD_T(id_), trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }

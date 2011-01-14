@@ -124,6 +124,7 @@ KernelLaunch::execute()
 #endif
 
     // TODO: add support for events
+    TRACE(LOCAL, "Launch kernel %u %zd %zd ", workDim_, globalWorkSize_[0], localWorkSize_[0]);
     cl_int ret = clEnqueueNDRangeKernel(stream_, f_, workDim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, NULL);
 
     return Accelerator::error(ret);
