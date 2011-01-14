@@ -4,47 +4,55 @@
 namespace __impl { namespace opencl {
 
 inline void
-IOBuffer::toHost(Mode &mode, cl_command_queue s)
+IOBuffer::toHost(Mode &mode)
 {
-    cl_int ret = CL_SUCCESS;
-    cl_context ctx;
-    ASSERTION(clGetCommandQueueInfo(s, CL_QUEUE_CONTEXT, sizeof(ctx), &ctx, NULL) == CL_SUCCESS);
+    ASSERTION(!started_);
+    state_  = ToHost;
+    TRACE(LOCAL,"Buffer %p goes toHost", this); 
+    mode_   = &mode;
+}
+
+inline void
+IOBuffer::toAccelerator(Mode &mode)
+{
+    ASSERTION(!started_);
+    state_  = ToAccelerator;
+    TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
+    mode_   = &mode;
+}
+
+inline void
+IOBuffer::started(cl_command_queue s)
+{
+    ASSERTION(!started_);
+
     if (!created_) {
+        cl_int ret = CL_SUCCESS;
+        cl_context ctx;
+        ASSERTION(clGetCommandQueueInfo(s, CL_QUEUE_CONTEXT, sizeof(ctx), &ctx, NULL) == CL_SUCCESS);
         end_ = clCreateUserEvent(ctx, &ret);
         created_ = true;
     }
 
-    state_  = ToHost;
-    TRACE(LOCAL,"Buffer %p goes toHost", this); 
-    stream_ = s;
-    mode_   = &mode;
-}
-
-inline void
-IOBuffer::toAccelerator(Mode &mode, cl_command_queue s)
-{
-    if (!created_) {
-        created_ = true;
-    }
-
-    state_  = ToAccelerator;
-    TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
-    stream_ = s;
-    mode_   = &mode;
-}
-
-inline void
-IOBuffer::started()
-{
-    ASSERTION(created_ == true);
-    cl_int ret = clEnqueueMarker(stream_, &end_);
+    started_ = true;
+    cl_int ret = clEnqueueMarker(s, &end_);
     ASSERTION(ret == CL_SUCCESS);
+}
+
+inline void
+IOBuffer::started(cl_event event)
+{
+    ASSERTION(!created_);
+    ASSERTION(!started_);
+
+    end_ = event;
+    started_ = true;
 }
 
 inline gmacError_t
 IOBuffer::wait()
 {
-    ASSERTION(state_ == Idle || created_ == true);
+    ASSERTION(state_ == Idle || started_ == true);
 
     gmacError_t ret = gmacSuccess;
 
@@ -54,6 +62,7 @@ IOBuffer::wait()
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;
+        started_ = false;
     } else {
         ASSERTION(mode_ == NULL);
     }

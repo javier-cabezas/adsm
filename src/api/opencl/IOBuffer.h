@@ -48,17 +48,19 @@ protected:
     cl_command_queue stream_;
     Mode *mode_;
     bool created_;
+    bool started_;
 
 public:
     IOBuffer(void *addr, size_t size) :
-        core::IOBuffer(addr, size), mode_(NULL), created_(false)
+        core::IOBuffer(addr, size), mode_(NULL), created_(false), started_(false)
     {
     }
 
-    void toHost(Mode &mode, cl_command_queue s);
-    void toAccelerator(Mode &mode, cl_command_queue s);
+    void toHost(Mode &mode);
+    void toAccelerator(Mode &mode);
 
-    void started();
+    void started(cl_command_queue stream);
+    void started(cl_event event);
 
     gmacError_t wait();
 };

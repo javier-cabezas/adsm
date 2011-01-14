@@ -93,10 +93,11 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL,"Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
-    buffer.toAccelerator(mode, stream);
+    cl_event event;
+    buffer.toAccelerator(mode);
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
-        acc.offset_, count, host, 0, NULL, NULL);
-    buffer.started();
+        acc.offset_, count, host, 0, NULL, &event);
+    buffer.started(event);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -118,10 +119,12 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL,"Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
-    buffer.toHost(mode, stream);
+
+    cl_event event;
+    buffer.toHost(mode);
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
-        acc.offset_, count, host, 0, NULL, NULL);
-    buffer.started();
+        acc.offset_, count, host, 0, NULL, &event);
+    buffer.started(event);
     trace::ExitCurrentFunction();
     return error(ret);
 }
