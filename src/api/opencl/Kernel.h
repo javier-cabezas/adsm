@@ -39,10 +39,13 @@ public:
     KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream);
     ~KernelConfig();
 
+    KernelConfig &operator=(const KernelConfig &config);
+
     cl_uint workDim() const { return workDim_; }
     size_t *globalWorkOffset() const { return globalWorkOffset_; }
     size_t *globalWorkSize() const { return globalWorkSize_; }
     size_t *localWorkSize() const { return localWorkSize_; }
+
 };
 
 class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public opencl::KernelConfig, public util::NonCopyable {

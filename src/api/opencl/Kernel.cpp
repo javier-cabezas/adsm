@@ -46,9 +46,22 @@ KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *gl
     }
 }
 
-KernelConfig::KernelConfig(const KernelConfig &config)
+KernelConfig::KernelConfig(const KernelConfig &config) :
+    workDim_(config.workDim_),
+    globalWorkOffset_(NULL),
+    globalWorkSize_(NULL),
+    localWorkSize_(NULL),
+    stream_(config.stream_)
 {
-    ASSERTION(0);
+    if(config.globalWorkOffset_) globalWorkOffset_ = new size_t[workDim_];
+    if(config.globalWorkSize_) globalWorkSize_ = new size_t[workDim_];
+    if(config.localWorkSize_) localWorkSize_ = new size_t[workDim_];
+
+    for(unsigned i = 0; i < workDim_; i++) {
+        if(globalWorkOffset_) globalWorkOffset_[i] = config.globalWorkOffset_[i];
+        if(globalWorkSize_) globalWorkSize_[i] = config.globalWorkSize_[i];
+        if(localWorkSize_) localWorkSize_[i] = config.localWorkSize_[i];
+    }
 }
 
 KernelConfig::~KernelConfig()
@@ -57,6 +70,30 @@ KernelConfig::~KernelConfig()
     if (globalWorkSize_) delete [] globalWorkSize_;
     if (localWorkSize_) delete [] localWorkSize_;
 }
+
+KernelConfig &KernelConfig::operator=(const KernelConfig &config)
+{
+    if(this == &config) return *this;
+
+    workDim_ = config.workDim_;
+    globalWorkOffset_ = NULL;
+    globalWorkSize_ = NULL;
+    localWorkSize_ = NULL;
+    stream_ = config.stream_;
+    
+    if(config.globalWorkOffset_) globalWorkOffset_ = new size_t[workDim_];
+    if(config.globalWorkSize_) globalWorkSize_ = new size_t[workDim_];
+    if(config.localWorkSize_) localWorkSize_ = new size_t[workDim_];
+
+    for(unsigned i = 0; i < workDim_; i++) {
+        if(globalWorkOffset_) globalWorkOffset_[i] = config.globalWorkOffset_[i];
+        if(globalWorkSize_) globalWorkSize_[i] = config.globalWorkSize_[i];
+        if(localWorkSize_) localWorkSize_[i] = config.localWorkSize_[i];
+    }
+
+    return *this;
+}
+
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     core::KernelLaunch(),
