@@ -22,28 +22,10 @@ IOBuffer::toAccelerator(Mode &mode)
 }
 
 inline void
-IOBuffer::started(cl_command_queue s)
-{
-    ASSERTION(!started_);
-
-    if (!created_) {
-        cl_int ret = CL_SUCCESS;
-        cl_context ctx;
-        ASSERTION(clGetCommandQueueInfo(s, CL_QUEUE_CONTEXT, sizeof(ctx), &ctx, NULL) == CL_SUCCESS);
-        end_ = clCreateUserEvent(ctx, &ret);
-        created_ = true;
-    }
-
-    started_ = true;
-    cl_int ret = clEnqueueMarker(s, &end_);
-    ASSERTION(ret == CL_SUCCESS);
-}
-
-inline void
 IOBuffer::started(cl_event event)
 {
-    ASSERTION(!created_);
-    ASSERTION(!started_);
+    ASSERTION(created_ == false);
+    ASSERTION(started_ == false);
 
     end_ = event;
     started_ = true;
@@ -59,6 +41,8 @@ IOBuffer::wait()
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
         ret = mode_->waitForEvent(end_);
+        ASSERTION(ret == gmacSuccess);
+        ASSERTION(clReleaseEvent(end_) == CL_SUCCESS);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;

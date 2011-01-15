@@ -49,6 +49,7 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
     cl_int ret = CL_SUCCESS;
 
     trace::SetThreadState(trace::IO);
+    TRACE(LOCAL, "Sync stream %p", stream);
     ret = accelerator().syncCLstream(stream);
 #if 0
     while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
@@ -105,11 +106,12 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
 
 gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, (void *) acc, host);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.base_, host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
     if(buffer_ == NULL) {
+        TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
         return core::Context::copyToHost(host, acc, size);
     }

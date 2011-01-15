@@ -25,8 +25,12 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacVecAdd.cpp
+    gmacInit.cpp
 )
 
 add_executable(gmacVecAdd ${common_SRC} gmacVecAdd.cpp)
 target_link_libraries(gmacVecAdd gmac)
+
+add_executable(gmacInit ${common_SRC} gmacInit.cpp)
+target_link_libraries(gmacInit gmac)
 

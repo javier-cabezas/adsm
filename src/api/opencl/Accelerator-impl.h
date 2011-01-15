@@ -60,8 +60,8 @@ inline HostMap::~HostMap()
     lockWrite();
     Parent::iterator i;
     for(i = Parent::begin(); i != Parent::end(); i++) {
+//        clEnqueueUnmapMemObject(cmd_.front(), i->second, i->first, 0, NULL, NULL);
         clReleaseMemObject(i->second);
-        free(i->first);
         Parent::erase(i);
     }
     unlock();

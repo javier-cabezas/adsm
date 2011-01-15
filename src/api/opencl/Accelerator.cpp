@@ -50,7 +50,7 @@ core::Mode *Accelerator::createMode(core::Process &proc)
     }
     trace::ExitCurrentFunction();
 
-    TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
+    TRACE(LOCAL, "Creating Execution Mode %p to Accelerator", mode);
     return mode;
 }
 
@@ -78,7 +78,7 @@ gmacError_t Accelerator::free(accptr_t addr)
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
@@ -91,7 +91,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
     buffer.toAccelerator(mode);
@@ -106,7 +106,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to host: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
     trace::ExitCurrentFunction();
@@ -118,11 +118,11 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
     buffer.toHost(mode);
-    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
+    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_TRUE,
         acc.offset_, count, host, 0, NULL, &event);
     buffer.started(event);
     trace::ExitCurrentFunction();
@@ -132,7 +132,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
+    TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
         src.base_, dst.base_);
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
@@ -165,6 +165,7 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 gmacError_t Accelerator::sync()
 {
     trace::EnterCurrentFunction();
+    TRACE(LOCAL, "Waiting for accelerator to finish all activities");
     cl_int ret = cmd_.sync();
     trace::ExitCurrentFunction();
     return error(ret);
@@ -243,6 +244,7 @@ cl_command_queue Accelerator::createCLstream()
     trace::EnterCurrentFunction();
     cl_command_queue stream;
     cl_int error;
+    TRACE(LOCAL, "Creating OpenCL stream");
     stream = clCreateCommandQueue(ctx_, device_, 0, &error);
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
     cmd_.add(stream);
@@ -263,6 +265,7 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
+    TRACE(LOCAL, "Waiting for stream");
     cl_int ret = clFinish(stream);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -281,6 +284,7 @@ cl_int Accelerator::queryCLevent(cl_event event)
 gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
+    TRACE(LOCAL, "Accelerator waiting for all pending events");
     cl_int ret = clWaitForEvents(1, &event);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -290,16 +294,17 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
-    *addr = (hostptr_t)::malloc(size);
     cl_int ret = CL_SUCCESS;
     cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
         size, *addr, &ret);
     if(ret == CL_SUCCESS) {
         // OpenCL works in the opposite way to CUDA, so we need to keep the
         // translation in map_
+        *addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_TRUE,
+            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        ASSERTION(ret == CL_SUCCESS);
         map_.insert(*addr, acc);
     }
-    else ::free(*addr);
     trace::ExitCurrentFunction();
     return error(ret);
 }

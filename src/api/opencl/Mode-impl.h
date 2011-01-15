@@ -48,7 +48,7 @@ Mode::execute(core::KernelLaunch & launch)
 inline
 gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
 {
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), (void *) dst, len);
+    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.base_, len);
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
     gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
@@ -59,7 +59,7 @@ gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size
 inline
 gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) src, buffer.addr(), len);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.base_, buffer.addr(), len);
     switchIn();
     // Implement a function to remove these casts
     Context &ctx = dynamic_cast<Context &>(getContext());
