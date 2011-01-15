@@ -10,14 +10,14 @@
 
 const char *vecSizeStr = "GMAC_VECSIZE";
 const size_t vecSizeDefault = 16 * 1024 * 1024;
+size_t vecSize = 0;
 
-unsigned long vecSize = 0;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global float *a, __global float *b, unsigned long size)\
+__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned long size)\
 {\
     int i = get_global_id(0);\
     if(i >= size) return;\
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
-    assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(c)) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(a)) == gmacSuccess);
     assert(__oclPushArgument(gmacPtr(b)) == gmacSuccess);
@@ -79,17 +79,21 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float error = 0;
-    float check = 0;
+    float error = 0.f;
+    float check = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
         error += c[i] - (a[i] + b[i]);
-        check += a[i] + b[i];
+        check += c[i];
     }
-    assert(sum == check);
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
-
     fprintf(stderr, "Error: %f\n", error);
+
+    if (sum != check) {
+        printf("Sum: %f vs %f\n", sum, check);
+        abort();
+    }
+
 
     gmacFree(a);
     gmacFree(b);
