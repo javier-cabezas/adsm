@@ -19,7 +19,7 @@ const char *msg = "Done!";
 const char *kernel = "\
 __kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned long size)\
 {\
-    int i = get_global_id(0);\
+    unsigned i = get_global_id(0);\
     if(i >= size) return;\
 \
     c[i] = a[i] + b[i];\
