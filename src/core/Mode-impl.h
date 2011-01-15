@@ -48,10 +48,7 @@ inline gmacError_t ContextMap::sync()
     lockRead();
     for(i = begin(); i != end(); i++) {
         ret = i->second->sync();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
+        if(ret != gmacSuccess) break;
     }
     unlock();
     return ret;
