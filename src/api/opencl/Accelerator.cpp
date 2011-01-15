@@ -81,6 +81,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
+    CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -97,18 +98,20 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     buffer.toAccelerator(mode);
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
+    CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(event);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_,
-        CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
+        CL_TRUE, acc.offset_, count, host, 0, NULL, NULL);
+    CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -124,6 +127,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     buffer.toHost(mode);
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_TRUE,
         acc.offset_, count, host, 0, NULL, &event);
+    CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -139,9 +143,12 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     void *tmp = ::malloc(size);
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.base_, CL_TRUE,
         src.offset_, size, tmp, 0, NULL, NULL);
-    if(ret == CL_SUCCESS)
+    CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+    if(ret == CL_SUCCESS) {
         ret = clEnqueueWriteBuffer(cmd_.front(), dst.base_, CL_TRUE,
-            dst.offset_, size, tmp, 0, NULL, NULL);
+                dst.offset_, size, tmp, 0, NULL, NULL);
+        CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
+    }
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -244,9 +251,9 @@ cl_command_queue Accelerator::createCLstream()
     trace::EnterCurrentFunction();
     cl_command_queue stream;
     cl_int error;
-    TRACE(LOCAL, "Creating OpenCL stream");
     stream = clCreateCommandQueue(ctx_, device_, 0, &error);
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
+    TRACE(LOCAL, "Created OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.add(stream);
     trace::ExitCurrentFunction();
     return stream;
@@ -257,6 +264,7 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
     trace::EnterCurrentFunction();
     cl_int ret = clReleaseCommandQueue(stream);
     CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
+    TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
     trace::ExitCurrentFunction();
 }
@@ -265,18 +273,20 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Waiting for stream");
+    TRACE(LOCAL, "Waiting for stream %p in Accelerator %p", stream, this);
     cl_int ret = clFinish(stream);
+    CFATAL(ret == CL_SUCCESS, "Error syncing cl_command_queue: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
 cl_int Accelerator::queryCLevent(cl_event event)
 {
+    cl_int ret = CL_SUCCESS;
     trace::EnterCurrentFunction();
-    cl_int ret;
-    clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS,
+    cl_int err = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS,
         sizeof(cl_int), &ret, NULL);
+    CFATAL(err == CL_SUCCESS, "Error querying cl_event: %d", err);
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -286,6 +296,7 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Accelerator waiting for all pending events");
     cl_int ret = clWaitForEvents(1, &event);
+    CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
 }

@@ -30,18 +30,24 @@ Context::~Context()
 
 void Context::setupCLstreams()
 {
-    streamLaunch_   = accelerator().createCLstream();
-    streamToAccelerator_ = accelerator().createCLstream();
-    streamToHost_   = accelerator().createCLstream();
-    streamAccelerator_   = accelerator().createCLstream();
+    Accelerator &acc = accelerator();
+    streamLaunch_   = acc.createCLstream();
+    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
+    streamToAccelerator_ = acc.createCLstream();
+    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToAccelerator_, &acc);
+    streamToHost_   = acc.createCLstream();
+    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
+    streamAccelerator_   = acc.createCLstream();
+    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
 }
 
 void Context::cleanCLstreams()
 {
-    accelerator().destroyCLstream(streamLaunch_);
-    accelerator().destroyCLstream(streamToAccelerator_);
-    accelerator().destroyCLstream(streamToHost_);
-    accelerator().destroyCLstream(streamAccelerator_);
+    Accelerator &acc = accelerator();
+    acc.destroyCLstream(streamLaunch_);
+    acc.destroyCLstream(streamToAccelerator_);
+    acc.destroyCLstream(streamToHost_);
+    acc.destroyCLstream(streamAccelerator_);
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
@@ -49,8 +55,9 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
     cl_int ret = CL_SUCCESS;
 
     trace::SetThreadState(trace::IO);
-    TRACE(LOCAL, "Sync stream %p", stream);
-    ret = accelerator().syncCLstream(stream);
+    Accelerator &acc = accelerator();
+    TRACE(LOCAL, "Sync stream %p on accelerator %p", stream, &acc);
+    ret = acc.syncCLstream(stream);
 #if 0
     while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
