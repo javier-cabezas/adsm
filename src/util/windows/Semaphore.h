@@ -36,8 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <windows.h>
 
-#include "config/config.h"
-#include "config/config.h"
+#include "config/common.h"
 
 namespace __impl { namespace util {
 //! A Semaphore

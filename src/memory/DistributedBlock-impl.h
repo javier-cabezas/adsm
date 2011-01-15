@@ -103,7 +103,7 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, s
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
 	for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-		ret = i->first->copyToAccelerator(i->second + blockOffset, src, size);
+		ret = i->first->copyToAccelerator(i->second + ptroff_t(blockOffset), src, size);
 		if(ret != gmacSuccess) return ret;
 	}
 	return ret;
@@ -116,7 +116,7 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(core::IOBuffer &buffer
 	gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
 	for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-		ret = i->first->bufferToAccelerator(i->second + blockOffset, buffer, size, bufferOffset);
+		ret = i->first->bufferToAccelerator(i->second + ptroff_t(blockOffset), buffer, size, bufferOffset);
 		if(ret != gmacSuccess) return ret;
 	}
 	return ret;
@@ -165,7 +165,7 @@ inline gmacError_t DistributedBlock<T>::acceleratorMemset(int v, size_t size, si
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
 	for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-        ret = i->first->memset(i->second + blockOffset, v, size);
+        ret = i->first->memset(i->second + ptroff_t(blockOffset), v, size);
 		if(ret != gmacSuccess) break;
 	}
 	return ret;

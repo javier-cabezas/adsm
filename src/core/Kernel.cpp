@@ -27,7 +27,7 @@ void KernelConfig::pushArgument(const void *arg, size_t size, unsigned long offs
 
 void KernelConfig::pushArgument(const void *arg, size_t size)
 {
-    pushArgument(arg, size, argsSize_);
+    pushArgument(arg, size, unsigned long(argsSize_));
 }
 
 }}

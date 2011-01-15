@@ -27,7 +27,7 @@ inline core::Mode &SharedBlock<T>::owner() const
 template<typename T>
 inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	size_t offset = addr - StateBlock<T>::addr_;
+	ptroff_t offset = ptroff_t(addr - StateBlock<T>::addr_);
     accptr_t ret = acceleratorAddr_ + offset;
 	return ret;
 }
@@ -151,14 +151,15 @@ inline gmacError_t SharedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t siz
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
 {
-    return owner_.copyToAccelerator(acceleratorAddr_ + blockOffset, src, size);
+    return owner_.copyToAccelerator(acceleratorAddr_ + ptroff_t(blockOffset), src, size);
 }
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 												size_t bufferOffset, size_t blockOffset) const
 {
-	return owner_.bufferToAccelerator(acceleratorAddr_ + blockOffset, buffer, size, bufferOffset);
+	return owner_.bufferToAccelerator(acceleratorAddr_ + ptroff_t(blockOffset), 
+        buffer, size, bufferOffset);
 }
 
 template<typename T>
@@ -179,14 +180,15 @@ inline gmacError_t SharedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t s
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
 {
-    return owner_.copyToHost(dst, acceleratorAddr_ + blockOffset, size);
+    return owner_.copyToHost(dst, acceleratorAddr_ + ptroff_t(blockOffset), size);
 }
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
 												  size_t bufferOffset, size_t blockOffset) const
 {
-	return owner_.acceleratorToBuffer(buffer, acceleratorAddr_ + blockOffset, size, bufferOffset);
+	return owner_.acceleratorToBuffer(buffer, acceleratorAddr_ + ptroff_t(blockOffset), 
+        size, bufferOffset);
 }
 
 template<typename T>
@@ -199,7 +201,7 @@ inline gmacError_t SharedBlock<T>::hostMemset(int v, size_t size, size_t blockOf
 template<typename T>
 inline gmacError_t SharedBlock<T>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
 {
-    return owner_.memset(acceleratorAddr_ + blockOffset, v, size);
+    return owner_.memset(acceleratorAddr_ + ptroff_t(blockOffset), v, size);
 }
 
 }}

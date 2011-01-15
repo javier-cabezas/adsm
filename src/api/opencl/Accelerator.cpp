@@ -161,7 +161,7 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
-    memset(tmp, c, size);
+    ::memset(tmp, c, size);
     cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.base_,
         CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
     ::free(tmp);

@@ -22,7 +22,8 @@ GMAC_API gmacError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWo
 {
     gmac::enterGmac();
     Mode &mode = Mode::current();
-    gmacError_t ret = mode.call(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    gmacError_t ret = mode.call(cl_int(workDim), globalWorkOffset, 
+        globalWorkSize, localWorkSize);
     gmac::exitGmac();
     return ret;
 }

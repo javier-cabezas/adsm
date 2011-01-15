@@ -30,6 +30,7 @@ endif(CMAKE_USE_PTHREADS_INIT)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     message(STATUS "Compiling for GNU/Linux")
     set(OS_DIR "posix")
+    set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DLINUX)
     set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -37,30 +38,31 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     message(STATUS "Compiling for Mac OS X")
     set(OS_DIR "posix")
+    set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DDARWIN)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "Compiling for Windows")
     set(OS_DIR "windows")
+    set(gmac_static_FLAGS " ")
     add_definitions(-DWINDOWS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
 # Identify API being used
-option(OPENCL_INCLUDE "OpenCL Header Files" "/usr/include")
-option(OPENCL_LIBRARY "OpenCL Library Files" "/usr/lib")
+set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
+set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
 option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
     add_definitions(-DUSE_OPENCL)
     message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
+    message(STATUS "Compiling for OpenCL: ${OPENCL_LIBRARY}")
     set(API_DIR "opencl")
-    set(API_INCLUDE "#include <CL/cl.h>")
-    set(API_MEM_TYPE "cl_mem")
     include_directories(${OPENCL_INCLUDE})
     find_library(opencl_LIB
         ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
-        HITS OPENCL_LIBRARY)
+        HITS ${OPENCL_LIBRARY})
     message(STATUS "OpenCL: ${opencl_LIB}")
     set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
 else(USE_OPENCL)
@@ -71,8 +73,6 @@ else(USE_OPENCL)
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
-        set(API_MEM_TYPE "void *")
-        set(CUDA_INCLUDE "${NVCC}/../include")
         include_directories(${CUDA_INCLUDE})
         find_library(cuda_LIB
             ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}
@@ -217,7 +217,7 @@ add_definitions(-DGMAC_DLL_EXPORTS)
 add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
 add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
 set_target_properties(gmac-base PROPERTIES
-    COMPILE_FLAGS -fPIC
+    COMPILE_FLAGS ${gmac_static_FLAGS}
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
  
 

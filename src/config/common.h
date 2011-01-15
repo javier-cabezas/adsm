@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 
 #if defined(__GNUC__)
 #include <stdint.h>
+typedef size_t ptroff_t;
 #elif defined(_MSC_VER)
 typedef unsigned __int8 uint8_t;
 typedef signed __int8 int8_t;
@@ -51,114 +52,11 @@ typedef signed __int32 int32_t;
 typedef unsigned __int64 uint64_t;
 typedef signed __int64 int64_t;
 typedef signed __int64 ssize_t;
+typedef int ptroff_t;
 #endif
 
 #ifndef _MSC_VER
 #define UNREFERENCED_PARAMETER(a)
-#endif
-
-#if 0
-struct hostptr_t {
-    uint8_t *ptr_;
-    hostptr_t() :
-        ptr_(NULL) {}
-
-    hostptr_t(void * ptr) :
-        ptr_(static_cast<uint8_t *>(ptr)) {}
-
-    hostptr_t(long int ptr) :
-        ptr_((uint8_t *)ptr) {}
-
-#if 0
-    operator size_t()
-    {
-        return (size_t)ptr_;
-    }
-#endif
-
-    operator off_t() const
-    {
-        return (off_t)ptr_;
-    }
-
-    uint8_t operator [](const int &i) const
-    {
-        return ptr_[i];
-    }
-};
-
-static inline
-bool operator==(const hostptr_t &ptr1, const void *ptr2)
-{
-    return (ptr1.ptr_ == ptr2);
-}
-
-static inline
-bool operator!=(const hostptr_t &ptr1, const void *ptr2)
-{
-    return (ptr1.ptr_ != ptr2);
-}
-
-static inline
-hostptr_t operator+(const hostptr_t &ptr1, int add)
-{
-    return hostptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-hostptr_t operator+(const hostptr_t &ptr1, long int add)
-{
-    return hostptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-hostptr_t operator+(const hostptr_t &ptr1, unsigned add)
-{
-    return hostptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-hostptr_t operator+(const hostptr_t &ptr1, size_t add)
-{
-    return hostptr_t(ptr1.ptr_ + long(add));
-}
-
-static inline
-hostptr_t operator+(const hostptr_t &ptr1, const hostptr_t &ptr2)
-{
-    return hostptr_t(ptr1.ptr_ + (unsigned long)ptr2.ptr_);
-}
-
-
-static inline
-hostptr_t operator-(const hostptr_t &ptr1, int sub)
-{
-    return hostptr_t(ptr1.ptr_ - sub);
-}
-
-static inline
-hostptr_t operator-(const hostptr_t &ptr1, long int add)
-{
-    return hostptr_t(ptr1.ptr_ - add);
-}
-
-static inline
-hostptr_t operator-(const hostptr_t &ptr1, unsigned sub)
-{
-    return hostptr_t(ptr1.ptr_ - sub);
-}
-
-static inline
-hostptr_t operator-(const hostptr_t &ptr1, size_t sub)
-{
-    return hostptr_t(ptr1.ptr_ - long(sub));
-}
-
-static inline
-hostptr_t operator-(const hostptr_t &ptr1, const hostptr_t &ptr2)
-{
-    return hostptr_t(ptr1.ptr_ - ptr2.ptr_);
-}
 #endif
 
 typedef uint8_t * hostptr_t;

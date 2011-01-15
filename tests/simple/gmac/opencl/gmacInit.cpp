@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
-	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned long>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %lu\n", vecSize);
 
     getTime(&s);
