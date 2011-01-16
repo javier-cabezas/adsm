@@ -1,15 +1,19 @@
 #include <stdio.h>
-#include <gmac/cuda.h>
+#include <cstring>
+#include <gmac/opencl.h>
 
 const size_t size = 4 * 1024 * 1024;
 const size_t blockSize = 512;
 
-__global__ void reset(long *a, long v)
-{
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i >= size) return;
-	a[i] += v;
-}
+const char *kernel = "\
+__kernel void reset(__global long *a, unsigned long size, long v)\
+{\
+    unsigned i = get_global_id(0);\
+    if(i >= size) return;\
+\
+	a[i] += v;\
+}\
+";
 
 int check(long *ptr, int s)
 {
@@ -22,20 +26,31 @@ int check(long *ptr, int s)
 int main(int argc, char *argv[])
 {
 	long *ptr;
+
+    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+
 	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
 
 	// Call the kernel
-	dim3 Db(blockSize);
-	dim3 Dg(size / blockSize);
-	if(size % blockSize) Db.x++;
+    size_t localSize = blockSize;
+    size_t globalSize = size / blockSize;
+    if(size % blockSize) globalSize++;
+    globalSize *= localSize;
+    cl_mem tmp = cl_mem(gmacPtr(ptr));
+    long val = 1;
 
 	fprintf(stderr,"GMAC_MEMSET\n");
 	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
     gmacMemset(ptr, 0, size * sizeof(long));
 
-	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
-    gmacThreadSynchronize();
+    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclPushArgument(&size, sizeof(size));
+    __oclPushArgument(&val, sizeof(val));
+    assert(__oclLaunch("reset") == gmacSuccess);
+    assert(gmacThreadSynchronize() == gmacSuccess);
+
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
@@ -47,7 +62,14 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
-	reset<<<Dg, Db>>>(gmacPtr(ptr), 1);
+
+    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclPushArgument(&size, sizeof(size));
+    __oclPushArgument(&val, sizeof(val));
+    assert(__oclLaunch("reset") == gmacSuccess);
+    assert(gmacThreadSynchronize() == gmacSuccess);
+
     gmacThreadSynchronize();
 	fprintf(stderr,"%d\n", check(ptr, size));
 

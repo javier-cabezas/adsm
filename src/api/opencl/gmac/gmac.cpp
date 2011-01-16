@@ -7,7 +7,7 @@
 using __impl::opencl::Accelerator;
 using __impl::opencl::Mode;
 
-GMAC_API gmacError_t APICALL __oclPushArgument(void *addr, size_t size)
+GMAC_API gmacError_t APICALL __oclPushArgument(const void *addr, size_t size)
 {
     gmac::enterGmac();
     Mode &mode = Mode::getCurrent();

@@ -92,6 +92,9 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &config)
         if(localWorkSize_) localWorkSize_[i] = config.localWorkSize_[i];
     }
 
+    argsSize_ = 0;
+    clear();
+
     return *this;
 }
 
