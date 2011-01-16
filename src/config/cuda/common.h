@@ -15,9 +15,6 @@ struct accptr_t {
     inline accptr_t(CUdeviceptr ptr) :
         ptr_(ptr)
     {}
-    inline accptr_t(int ptr) :
-        ptr_(ptr)
-    {}
     inline accptr_t(long int ptr) :
         ptr_(ptr)
     {}
@@ -28,10 +25,8 @@ struct accptr_t {
 #if CUDA_VERSION < 3020
     inline operator uint32_t() const { return uint32_t(ptr_); }
 #else
-    inline operator CUdeviceptr() { return ptr_; }
     inline operator CUdeviceptr() const { return ptr_; }
 #endif
-    inline operator void *() { return (void *)(ptr_); }
     inline operator void *() const { return (void *)(ptr_); }
 
     inline void *get() const { return (void *)(ptr_); }
@@ -65,7 +60,5 @@ accptr_t operator-(const accptr_t &ptr1, T sub)
 {
     return accptr_t(ptr1.ptr_ - CUdeviceptr(sub));
 }
-
-
 
 #endif

@@ -11,7 +11,7 @@ Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    core::Context(acc, mode.id()),
+    gmac::core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL, NULL)

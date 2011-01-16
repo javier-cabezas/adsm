@@ -63,7 +63,7 @@ class Texture;
 class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public core::Mode {
+class GMAC_LOCAL Mode : public gmac::core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT

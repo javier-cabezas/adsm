@@ -22,7 +22,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #	pragma warning( disable : 4355 )
 #endif
     map_("ModeMemoryMap", *this),
-    releasedObjects_(true)
+    releasedObjects_(false)
 #ifdef USE_SUBBLOCK_TRACKING
     , hostBitmap_(*this)
 #else

@@ -57,7 +57,7 @@ public:
 
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public core::Mode {
+class GMAC_LOCAL Mode : public gmac::core::Mode {
     friend class Switch;
 protected:
     //! Switch to accelerator mode

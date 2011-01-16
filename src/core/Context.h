@@ -51,6 +51,7 @@ class KernelLaunch;
  * Represents the per-thread operations' state in the accelerator
  */
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
+    DBC_FORCE_TEST(Context)
 protected:
     Accelerator &acc_;
     unsigned id_;
@@ -82,7 +83,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE VIRTUAL gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
     /**
      * Copies size bytes from accelerator memory to host memory
      *
@@ -91,7 +92,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE VIRTUAL gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     /**
      * Copies size bytes from accelerator memory to accelerator memory
      *
@@ -100,7 +101,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE VIRTUAL gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /**
      * Fills size bytes of accelerator memory with the given value
@@ -129,5 +130,9 @@ public:
 };
 
 }}
+
+#ifdef USE_DBC
+#include "core/dbc/Context.h"
+#endif
 
 #endif

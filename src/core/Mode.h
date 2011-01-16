@@ -81,6 +81,8 @@ public:
  * thread has one mode per accelerator type in the system
  */
 class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
+    DBC_FORCE_TEST(Mode)
+
 protected:
     static util::Private<Mode> key;
     static unsigned next;
@@ -119,8 +121,8 @@ protected:
 
     gmacError_t error_;
 
-    void cleanUpContexts();
-    gmacError_t cleanUp();
+    TESTABLE void cleanUpContexts();
+    TESTABLE gmacError_t cleanUp();
 public:
     /**
      * Mode constructor
@@ -193,19 +195,19 @@ public:
     /**
      * Dettaches the execution mode to the current thread
      */
-    void detach();
+    TESTABLE void detach();
 
     /**
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
-    void addObject(memory::Object &obj);
+    TESTABLE void addObject(memory::Object &obj);
 
     /**
      * Removes an object from the map of the mode
      * \param obj A reference to the object to be removed
      */
-    void removeObject(memory::Object &obj);
+    TESTABLE void removeObject(memory::Object &obj);
 
     /**
      * Gets the first object that belongs to the memory range
@@ -214,7 +216,7 @@ public:
      * \return A pointer of the Object that contains the address or NULL if
      * there is no Object at that address
      */
-    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
+    TESTABLE memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
     /**
      * Applies a constant memory operation to all the objects that belong to
@@ -236,14 +238,14 @@ public:
      * power of two
      * \return Error code
      */
-    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
+    TESTABLE gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
 
     /**
      * Releases memory previously allocated by malloc
      * \param addr Accelerator memory allocation to be freed
      * \return Error code
      */
-    gmacError_t free(accptr_t addr);
+    TESTABLE gmacError_t free(accptr_t addr);
 
     /**
      * Copies data from system memory to accelerator memory
@@ -252,7 +254,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
 
     /**
      * Copies data from accelerator memory to system memory
@@ -261,7 +263,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
 
     /** Copies data from accelerator memory to accelerator memory
      * \param dst Destination accelerator memory
@@ -269,7 +271,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /**
      * Sets the contents of accelerator memory
@@ -278,7 +280,7 @@ public:
      * \param size Number of bytes to be set
      * \return Error code
      */
-    gmacError_t memset(accptr_t addr, int c, size_t size);
+    TESTABLE gmacError_t memset(accptr_t addr, int c, size_t size);
 
     /**
      * Creates a KernelLaunch object that can be executed by the mode
@@ -298,7 +300,7 @@ public:
      * Waits for kernel execution
      * \return Error code
      */
-    gmacError_t sync();
+    TESTABLE gmacError_t sync();
 
     /**
      * Creates an IOBuffer
@@ -351,7 +353,7 @@ public:
      * \param acc Accelerator to move the mode to
      * \return Error code
      */
-    gmacError_t moveTo(Accelerator &acc);
+    TESTABLE gmacError_t moveTo(Accelerator &acc);
 
     /**
      * Tells if the objects of the mode have been already released to the
@@ -364,12 +366,12 @@ public:
     /**
      * Releases the ownership of the objects of the mode to the accelerator
      */
-    void releaseObjects();
+    TESTABLE void releaseObjects();
 
     /**
      * Acquires the ownership of the objects of the mode from the accelerator
      */
-    void acquireObjects();
+    TESTABLE void acquireObjects();
 
     /**
      * Returns the process which the mode belongs to
@@ -397,6 +399,10 @@ public:
 }}
 
 #include "Mode-impl.h"
+
+#ifdef USE_DBC
+#include "core/dbc/Mode.h"
+#endif
 
 #endif
 

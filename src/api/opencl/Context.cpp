@@ -10,7 +10,7 @@ namespace __impl { namespace opencl {
 Context::AddressMap Context::HostMem_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    core::Context(acc, mode.id()),
+    gmac::core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL)
 {

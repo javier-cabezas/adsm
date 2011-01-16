@@ -59,7 +59,7 @@ class Accelerator;
 class IOBuffer;
 class Mode;
 
-class GMAC_LOCAL Context : public core::Context {
+class GMAC_LOCAL Context : public gmac::core::Context {
 protected:
 	static const unsigned USleepLaunch_ = 100;
 

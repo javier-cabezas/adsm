@@ -6,7 +6,7 @@
 namespace __impl { namespace opencl {
 
 Mode::Mode(core::Process &proc, Accelerator &acc) :
-    core::Mode(proc, acc)
+    gmac::core::Mode(proc, acc)
 {
     switchIn();
 
