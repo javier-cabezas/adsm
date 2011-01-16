@@ -9,6 +9,9 @@ set(core_SRC
    
     ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/Process.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Process.cpp
 )
    
 
