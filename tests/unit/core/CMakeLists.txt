@@ -5,7 +5,12 @@ set(core_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Accelerator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Mode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Mode.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/IOBuffer.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/IOBuffer.cpp
+   
+    ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
+)
+   
 
 # Export tests one level up
 set(unit_SRC ${unit_SRC}
