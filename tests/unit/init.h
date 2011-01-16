@@ -42,12 +42,15 @@ extern const char _gmacCode;
 extern const char _userCode;
 extern char _gmacInit;
 
-    namespace core { class Accelerator; }
+    namespace core { class Accelerator; 
+                     class Context; //added
+                                          }
     namespace util { template<typename T> class Private; }
 }
 
 extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
+extern __impl::core::Context *Context_; //added
 
 void InitGmac();
 
@@ -56,6 +59,12 @@ void InitTrace();
 void InitAccelerator();
 __impl::core::Accelerator &GetAccelerator();
 void FiniAccelerator();
+
+//added
+void InitContext(); 
+__impl::core::Context &GetContext();
+void FiniContext();
+////
 
 void InitProcess();
 void FiniProcess();
