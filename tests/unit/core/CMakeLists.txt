@@ -9,11 +9,17 @@ set(core_SRC
    
     ${CMAKE_CURRENT_SOURCE_DIR}/Context.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Context.cpp
-
     ${CMAKE_CURRENT_SOURCE_DIR}/Process.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Process.cpp
-)
    
+# ${CMAKE_CURRENT_SOURCE_DIR}/Kernel.h
+# ${CMAKE_CURRENT_SOURCE_DIR}/Kernel.cpp
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/Queue.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Queue.cpp
+
+)  
+
 
 # Export tests one level up
 set(unit_SRC ${unit_SRC}
