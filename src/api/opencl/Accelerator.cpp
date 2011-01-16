@@ -41,10 +41,10 @@ void Accelerator::init()
 {
 }
 
-core::Mode *Accelerator::createMode(core::Process &proc)
+gmac::core::Mode *Accelerator::createMode(core::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::Mode *mode = new opencl::Mode(proc, *this);
+    gmac::core::Mode *mode = new opencl::Mode(proc, *this);
     if (mode != NULL) {
         registerMode(*mode);
     }

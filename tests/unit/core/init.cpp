@@ -8,8 +8,7 @@
 
 using __impl::core::Accelerator;
 using __impl::core::Process;
-using __impl::core::Context; //added
-//using gmac::core::Context; 
+using gmac::core::Context; 
 
 
 Accelerator *Accelerator_ = NULL;
@@ -52,11 +51,11 @@ gmac::core::Context &GetContext()
 
 void FiniContext()
 {
-    if( Context_==NULL) return;
-    delete Context_; 
-    Context_=NULL;
+    if( Context_ == NULL) return;
+    delete dynamic_cast<__impl::core::Context *>(Context_);
+    Context_ = NULL;
     ASSERT_TRUE(Accelerator_ != NULL);
-    Accelerator_=NULL;
+    Accelerator_ = NULL;
 }
 
 void InitProcess()

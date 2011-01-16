@@ -12,3 +12,8 @@ void InitAccelerator()
     InitTrace();
     // TODO: Create OpenCL accelerator -- pending
 }
+
+
+void InitContext()
+{
+}

@@ -34,9 +34,9 @@ void InitAccelerator()
 
 //added//
 
-using gmac::cuda::Mode;
-using gmac::core::Process;
-using gmac::cuda::Context;
+using __impl::cuda::Mode;
+using __impl::core::Process;
+using __impl::cuda::Context;
 
 
 void InitContext()

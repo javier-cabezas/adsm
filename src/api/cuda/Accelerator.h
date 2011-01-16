@@ -115,7 +115,7 @@ public:
 
     static void init();
 
-    core::Mode *createMode(core::Process &proc);
+    gmac::core::Mode *createMode(core::Process &proc);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();

@@ -104,6 +104,7 @@ namespace __dbc {
     namespace core {
         // Singleton classes need to be predeclared
         class Process;
+        class Mode;
     }
     namespace util {}
     namespace memory {

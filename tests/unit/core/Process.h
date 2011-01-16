@@ -10,7 +10,7 @@
 
 
 
-class ProcessTest: public testing::Test{
+class ProcessTest: public testing::Test {
 
 public:
 	static gmac::core::Mode *Mode_;

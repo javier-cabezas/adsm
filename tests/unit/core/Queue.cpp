@@ -8,9 +8,9 @@
 #include "gtest/gtest.h"
 
 using gmac::core::Mode;
-using gmac::core::Queue;
-using gmac::core::Process;
-using gmac::core::ThreadQueue;
+using __impl::core::Queue;
+using __impl::core::Process;
+using __impl::core::ThreadQueue;
 
 Mode *QueueTest::Mode_=NULL;
 
@@ -27,7 +27,7 @@ TEST_F(QueueTest,MemberFun)
     ThreadQueue temp_; 
     ASSERT_TRUE(temp_.queue!=NULL);
     temp_.queue->push(Mode_);
-    Mode *last=temp_.queue->pop();
+    Mode *last = dynamic_cast<__dbc::core::Mode *>(temp_.queue->pop());
     ASSERT_EQ(Mode_,last);
     //Queue actual_("ThreadQueue");
     //ASSERT_EQ(*temp_.queue,actual_);

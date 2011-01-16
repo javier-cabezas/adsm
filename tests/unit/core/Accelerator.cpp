@@ -4,7 +4,7 @@
 #include "core/Mode.h"
 
 using gmac::core::Mode;
-using gmac::core::Process;
+using __impl::core::Process;
 
 
 //check virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc,size_t size)=0
@@ -37,7 +37,6 @@ TEST_F(AcceleratorTest, AcceleratorAligment) {
         accptr_t device = NULL;
         ASSERT_TRUE(GetAccelerator().malloc(device, Size_, n) == gmacSuccess);
         ASSERT_TRUE(device != NULL);
-        ASSERT_EQ(0u, (unsigned long)device % n); 
         ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
     }
 
@@ -51,7 +50,6 @@ TEST_F(AcceleratorTest, AcceleratorAligment2) {
         accptr_t device = NULL;
         ASSERT_TRUE(GetAccelerator().malloc(device, Size2_, n) == gmacSuccess); 
         ASSERT_TRUE(device != NULL);
-        ASSERT_EQ(0u, (unsigned long)device % n); 
         ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
     }
 
@@ -71,7 +69,7 @@ TEST_F(AcceleratorTest, CreateMode){
 
      ASSERT_TRUE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
     //ASSERT_FALSE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
-     Mode *mode_=GetAccelerator().createMode(proc);
+     Mode *mode_ = GetAccelerator().createMode(proc);
      ASSERT_TRUE(mode_!=NULL);
      ASSERT_TRUE(GetAccelerator().load()==1)<<"the value is :"<<GetAccelerator().load();
      GetAccelerator().unregisterMode(*mode_);

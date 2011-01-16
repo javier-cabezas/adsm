@@ -3,16 +3,13 @@
 #include  "core/Mode.h"
 
 
-
-
-
 using gmac::core::Mode;
-using gmac::core::Accelerator;
-using gmac::core::ModeMap;
-using gmac::core::Process;
-using gmac::core::QueueMap;
-using namespace gmac::util;
-using gmac::core::ThreadQueue;
+using __impl::core::Accelerator;
+using __impl::core::ModeMap;
+using __impl::core::Process;
+using __impl::core::QueueMap;
+using namespace __impl::util;
+using __impl::core::ThreadQueue;
 
 
 Mode *ProcessTest::Mode_ = NULL;
@@ -37,7 +34,7 @@ TEST( ModeMapTest,MemberFunc){
 	ModeMap mm;
 //	ASSERT_TRUE(&mm != NULL);
 	
-	typedef std::map<Mode *, Accelerator *> Parent;
+	typedef std::map<__impl::core::Mode *, Accelerator *> Parent;
 	typedef Parent::iterator iterator;
 	std::pair<iterator, bool> ib=mm.insert(mode_,&acc_);
 	ASSERT_TRUE(ib.second);

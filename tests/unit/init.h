@@ -43,14 +43,26 @@ extern const char _userCode;
 extern char _gmacInit;
 
     namespace core { class Accelerator; 
-                     class Context; //added
+                     class Context;
                                           }
     namespace util { template<typename T> class Private; }
 }
 
+namespace __dbc {
+    namespace core {
+        class Context;
+    }
+}
+
+#if defined(USE_DBC)
+namespace gmac = __dbc;
+#else
+namespace gmca = __impl;
+#endif
+
 extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
-extern __impl::core::Context *Context_; //added
+extern gmac::core::Context *Context_;
 
 void InitGmac();
 
@@ -62,7 +74,7 @@ void FiniAccelerator();
 
 //added
 void InitContext(); 
-__impl::core::Context &GetContext();
+gmac::core::Context &GetContext();
 void FiniContext();
 ////
 
