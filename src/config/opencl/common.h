@@ -13,22 +13,12 @@ struct _opencl_ptr_t {
         base_(0),
         offset_(0)
     { }
-    inline _opencl_ptr_t(void *addr) :
-        base_(cl_mem(addr)),
-        offset_(0)
-    { }
-    inline _opencl_ptr_t(int ptr) :
-        base_(cl_mem(ptr)),
+
+    inline _opencl_ptr_t(cl_mem base) :
+        base_(base),
         offset_(0)
     {}
-    inline _opencl_ptr_t(long int ptr) :
-        base_(cl_mem(ptr)),
-        offset_(0)
-    {}
-    inline _opencl_ptr_t(unsigned long ptr) :
-        base_(cl_mem(ptr)),
-        offset_(0)
-    {}
+
     inline _opencl_ptr_t(cl_mem base, size_t offset) :
         base_(base),
         offset_(offset)
@@ -44,14 +34,16 @@ struct _opencl_ptr_t {
         return *this;
     }
 
-    inline const _opencl_ptr_t operator+(unsigned off) const {
+    template <typename T>
+    inline const _opencl_ptr_t operator+(const T off) const {
         _opencl_ptr_t tmp;
         tmp.base_   = base_;
         tmp.offset_ = offset_ + off;
         return tmp;
     }
 
-    inline const _opencl_ptr_t operator-(unsigned off) const {
+    template <typename T>
+    inline const _opencl_ptr_t operator-(const T off) const {
         assert(off < offset_);
         _opencl_ptr_t tmp;
         tmp.base_   = base_;
@@ -59,12 +51,17 @@ struct _opencl_ptr_t {
         return tmp;
     }
 
-    inline const bool operator!=(void * addr) const {
-        return base_ != addr;
+    template <typename T>
+    inline const bool operator!=(const T addr) const {
+        if (addr != T(NULL)) abort();
+        return base_ != NULL || offset_ != 0;
+    }
+
+    inline const bool operator!=(const _opencl_ptr_t ptr) const {
+        return base_ != ptr.base_ || offset_ != ptr.offset_;
     }
 
     inline operator void*() { return (void *)offset_; }
-    inline operator void*() const { return (void *)offset_; }
 
     inline cl_mem get() const { return base_; }
 };
