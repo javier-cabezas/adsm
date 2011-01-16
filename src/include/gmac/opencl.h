@@ -44,11 +44,7 @@ WITH THE SOFTWARE.  */
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
 */
-GMAC_API gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size);
-#define __oclPushArgument(a) ({ \
-        typeof(a) __a = a; \
-        __oclPushArgumentWithSize(&(__a), sizeof(__a)); \
-    })
+GMAC_API gmacError_t APICALL __oclPushArgument(void *addr, size_t size);
 
 /*!
     Configures the next call

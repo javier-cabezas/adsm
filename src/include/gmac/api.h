@@ -172,13 +172,5 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
 };
 #endif
 
-#ifdef __cplusplus
-template<typename T> 
-inline T * gmacPtr(const T *devPtr);
-
-template<typename T> inline T * gmacPtr(const T *devPtr) {
-    return (T *)gmacPtr((const void *)devPtr);
-}
-#endif
 
 #endif

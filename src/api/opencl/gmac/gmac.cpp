@@ -7,7 +7,7 @@
 using __impl::opencl::Accelerator;
 using __impl::opencl::Mode;
 
-gmacError_t APICALL __oclPushArgumentWithSize(void *addr, size_t size)
+GMAC_API gmacError_t APICALL __oclPushArgument(void *addr, size_t size)
 {
     gmac::enterGmac();
     Mode &mode = Mode::current();
@@ -33,7 +33,7 @@ GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k)
     return gmacLaunch(k);
 }
 
-gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags)
+GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags)
 {
     gmac::enterGmac();
     gmacError_t ret = Accelerator::prepareCLCode(code, flags);

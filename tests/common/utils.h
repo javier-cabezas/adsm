@@ -58,6 +58,19 @@ typedef void*(*thread_routine)(void *);
 thread_t thread_create(thread_routine rtn, void *arg);
 void thread_wait(thread_t id);
 
+#if defined(__GNUC__)
+#	define GETENV getenv
+#elif defined(_MSC_VER)
+#	define GETENV gmac_getenv
+static inline const char *gmac_getenv(const char *name)
+{
+	static char buffer[512];
+	size_t size = 0;
+	if(getenv_s(&size, buffer, 512, name) != 0) return NULL;
+	if(strlen(buffer) == 0) return NULL;
+	return (const char *)buffer;
+}
+#endif
 
 #ifdef __cplusplus
 }
@@ -71,7 +84,7 @@ void thread_wait(thread_t id);
 template<typename T>
 void setParam(T *param, const char *str, const T def)
 {
-	const char *value = getenv(str);
+	const char *value = GETENV(str);
 	if(value != NULL) *param = atoi(value);
 	else              *param = def;
 }
