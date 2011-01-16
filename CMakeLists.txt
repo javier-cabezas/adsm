@@ -73,6 +73,7 @@ else(USE_OPENCL)
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
+        set(CUDA_INCLUDE "${NVCC}/../include")
         include_directories(${CUDA_INCLUDE})
         find_library(cuda_LIB
             ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}

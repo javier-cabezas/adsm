@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) globalSize++;
     globalSize = globalSize * localSize;
     assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = gmacPtr(a);
+    cl_mem tmp = cl_mem(gmacPtr(a));
     __oclPushArgument(&tmp, sizeof(cl_mem));
     __oclPushArgument(&vecSize, 8);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
