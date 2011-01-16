@@ -90,9 +90,9 @@ gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
 }
 
 inline Mode &
-Mode::current()
+Mode::getCurrent()
 {
-    return static_cast<Mode &>(core::Mode::current());
+    return static_cast<Mode &>(core::Mode::getCurrent());
 }
 
 #ifdef USE_VM

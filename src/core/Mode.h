@@ -73,7 +73,8 @@ public:
     void remove(THREAD_T id);
     void clean();
 
-    gmacError_t sync();
+    gmacError_t prepareForCall();
+    gmacError_t waitForCall();
 };
 
 /**
@@ -160,7 +161,7 @@ public:
      * \return A reference to the Mode for the calling thread. If the thread has
      *         no Mode yet, a new one is created
      */
-    static Mode &current();
+    static Mode &getCurrent();
 
     /**
      * Tells if the calling thread already has a Mode assigned
@@ -297,12 +298,6 @@ public:
     virtual gmacError_t execute(KernelLaunch &launch) = 0;
 
     /**
-     * Waits for kernel execution
-     * \return Error code
-     */
-    TESTABLE gmacError_t sync();
-
-    /**
      * Creates an IOBuffer
      * \param size Minimum size of the buffer
      * \return A pointer to the created IOBuffer or NULL if there is not enough
@@ -365,13 +360,15 @@ public:
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator
+     * and waits for pending transfers
      */
-    TESTABLE void releaseObjects();
+    TESTABLE gmacError_t releaseObjects();
 
     /**
-     * Acquires the ownership of the objects of the mode from the accelerator
+     * Waits for kernel execution and acquires the ownership of the objects
+     * of the mode from the accelerator
      */
-    TESTABLE void acquireObjects();
+    TESTABLE gmacError_t acquireObjects();
 
     /**
      * Returns the process which the mode belongs to

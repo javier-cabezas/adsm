@@ -122,11 +122,19 @@ public:
     virtual KernelLaunch &launch(Kernel &kernel) = 0;
 
     /**
+     * Waits for pending memory transfers before kernel execution
+     *
+     * \return Error code
+     */
+    virtual gmacError_t prepareForCall() = 0;
+
+    /**
      * Waits for kernel execution on the accelerator
      *
      * \return Error code returned by the kernel
      */
-    virtual gmacError_t sync() = 0;
+    virtual gmacError_t waitForCall() = 0;
+
 };
 
 }}

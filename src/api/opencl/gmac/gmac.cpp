@@ -10,7 +10,7 @@ using __impl::opencl::Mode;
 GMAC_API gmacError_t APICALL __oclPushArgument(void *addr, size_t size)
 {
     gmac::enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     gmacError_t ret = mode.argument(addr, size);
     gmac::exitGmac();
 
@@ -21,7 +21,7 @@ GMAC_API gmacError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWo
         size_t *globalWorkSize, size_t *localWorkSize)
 {
     gmac::enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     gmacError_t ret = mode.call(cl_int(workDim), globalWorkOffset, 
         globalWorkSize, localWorkSize);
     gmac::exitGmac();

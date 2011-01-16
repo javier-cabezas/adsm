@@ -170,7 +170,7 @@ public:
     /*!
         \return Current (active) execution mode or NULL if no mode is active
     */
-    static Mode & current();
+    static Mode & getCurrent();
 
     /** Get the physical accelerator associated to the mode
      * 

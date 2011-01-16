@@ -169,13 +169,22 @@ core::KernelLaunch &Context::launch(core::Kernel &kernel)
     return *ret;
 }
 
-gmacError_t Context::sync()
+gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
     if(buffer_ != NULL) {
         buffer_->wait();
     }
+    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Context::waitForCall()
+{
+    gmacError_t ret = gmacSuccess;
+    trace::EnterCurrentFunction();	
     ret = syncCLstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Running);    
     trace::ExitCurrentFunction();

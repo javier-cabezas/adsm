@@ -92,7 +92,8 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     core::KernelLaunch &launch(core::Kernel &kernel);
-    gmacError_t sync();
+    gmacError_t prepareForCall();
+    gmacError_t waitForCall();
 
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);

@@ -104,7 +104,7 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	mode.call(gridDim, blockDim, sharedMem, tokens);
 	exitGmac();
 	return cudaSuccess;
@@ -113,7 +113,7 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	mode.argument(arg, count, (off_t)offset);
 	exitGmac();
 	return cudaSuccess;

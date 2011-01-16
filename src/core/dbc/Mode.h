@@ -60,10 +60,9 @@ public:
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
-    gmacError_t sync();
     gmacError_t moveTo(__impl::core::Accelerator &acc);
-    void releaseObjects();
-    void acquireObjects();
+    gmacError_t releaseObjects();
+    gmacError_t acquireObjects();
 };
 
 }}

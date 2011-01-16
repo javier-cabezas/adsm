@@ -22,7 +22,7 @@ void ModeTest::SetUpTestCase() {
 
 TEST_F(ModeTest, ModeCurrent) {
     Mode_->attach();
-    Mode &current = Mode::current();
+    Mode &current = Mode::getCurrent();
     ASSERT_TRUE(&current == Mode_);
 }
 

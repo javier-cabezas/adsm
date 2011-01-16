@@ -61,7 +61,7 @@ void Mode::kernel(gmacKernel_t k, Kernel &kernel)
     kernels_[k] = &kernel;
 }
 
-Mode &Mode::current()
+Mode &Mode::getCurrent()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
@@ -133,14 +133,6 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
 {
     switchIn();
     error_ = getContext().memset(addr, c, size);
-    switchOut();
-    return error_;
-}
-
-gmacError_t Mode::sync()
-{
-    switchIn();
-    error_ = contextMap_.sync();
     switchOut();
     return error_;
 }

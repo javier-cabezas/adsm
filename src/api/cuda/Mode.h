@@ -157,7 +157,7 @@ public:
 
     CUstream eventStream();
 
-    static Mode & current();
+    static Mode &getCurrent();
     Accelerator &getAccelerator();
 
 #ifdef USE_VM

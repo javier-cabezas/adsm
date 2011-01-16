@@ -48,7 +48,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     Manager &manager = Manager::getInstance();
@@ -98,7 +98,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
     Manager &manager = Manager::getInstance();

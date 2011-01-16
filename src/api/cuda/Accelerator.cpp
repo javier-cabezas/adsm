@@ -11,12 +11,12 @@ util::Private<CUcontext> Accelerator::_Ctx;
 
 void Switch::in()
 {
-    Mode::current().getAccelerator().pushContext();
+    Mode::getCurrent().getAccelerator().pushContext();
 }
 
 void Switch::out()
 {
-    Mode::current().getAccelerator().popContext();
+    Mode::getCurrent().getAccelerator().popContext();
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :

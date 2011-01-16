@@ -243,7 +243,7 @@ void Process::addAccelerator(Accelerator &acc)
 
 accptr_t Process::translate(const hostptr_t addr)
 {
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     memory::Object *object = mode.getObject(addr);
     if(object == NULL) return accptr_t(NULL);
     accptr_t ptr = object->acceleratorAddr(addr);
@@ -253,7 +253,7 @@ accptr_t Process::translate(const hostptr_t addr)
 
 void Process::send(THREAD_T id)
 {
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     queues_.push(id, mode);
     mode.use();
     mode.detach();
@@ -262,14 +262,14 @@ void Process::send(THREAD_T id)
 void Process::receive()
 {
     // Get current context and destroy (if necessary)
-    Mode::current().detach();
+    Mode::getCurrent().detach();
     // Get a fresh context
     queues_.attach();
 }
 
 void Process::sendReceive(THREAD_T id)
 {
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     queues_.push(id, mode);
     Mode::initThread();
     queues_.attach();
@@ -277,7 +277,7 @@ void Process::sendReceive(THREAD_T id)
 
 void Process::copy(THREAD_T id)
 {
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     queues_.push(id, mode);
     mode.use();
 }

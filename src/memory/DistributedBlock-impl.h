@@ -43,7 +43,7 @@ inline void DistributedBlock<T>::removeOwner(core::Mode &mode)
 template<typename T>
 inline core::Mode &DistributedBlock<T>::owner() const
 {
-	return core::Mode::current();
+	return core::Mode::getCurrent();
 }
 
 template<typename T>
@@ -53,7 +53,7 @@ inline accptr_t DistributedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 
 	StateBlock<T>::lock();
 	AcceleratorMap::const_iterator i;
-	i = acceleratorAddr_.find(&core::Mode::current());
+	i = acceleratorAddr_.find(&core::Mode::getCurrent());
 	if(i != acceleratorAddr_.end()) {
 		ret = i->second + int(addr - StateBlock<T>::addr_);
 	}

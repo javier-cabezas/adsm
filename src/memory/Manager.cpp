@@ -22,7 +22,7 @@ Manager::~Manager()
 gmacError_t
 Manager::map(hostptr_t addr, size_t size, GmacProtection prot)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // Create new shared object
     Object *object = protocol_->createSharedObject(size, addr, prot);
@@ -40,7 +40,7 @@ gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 {
     // TODO implement partial unmapping
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
         if (object->isInAccelerator()) {
@@ -68,7 +68,7 @@ gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 
 gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
@@ -101,7 +101,7 @@ gmacError_t Manager::hostMappedAlloc(hostptr_t *addr, size_t size)
 gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // If a centralized object is requested, try creating it
     if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
@@ -123,7 +123,7 @@ gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocT
 gmacError_t Manager::free(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     Object *object = mode.getObject(addr);
     if(object != NULL)  {
         mode.removeObject(*object);
@@ -151,7 +151,7 @@ accptr_t Manager::translate(const hostptr_t addr)
 gmacError_t Manager::acquireObjects()
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     if(mode.releasedObjects() == false) {
         return gmacSuccess;
     }
@@ -167,7 +167,7 @@ gmacError_t Manager::acquireObjects()
 
 gmacError_t Manager::releaseObjects()
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
     // Release per-mode objects
@@ -239,7 +239,7 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
 bool
 Manager::read(hostptr_t addr)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -253,7 +253,7 @@ Manager::read(hostptr_t addr)
 bool
 Manager::write(hostptr_t addr)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -330,7 +330,7 @@ Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
@@ -383,7 +383,7 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(dstObj.blockSize());
@@ -461,7 +461,7 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
     core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());

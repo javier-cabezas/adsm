@@ -70,9 +70,9 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
 
 
 inline Mode &
-Mode::current()
+Mode::getCurrent()
 {
-    return static_cast<Mode &>(core::Mode::current());
+    return static_cast<Mode &>(core::Mode::getCurrent());
 }
 
 

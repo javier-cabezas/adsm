@@ -222,7 +222,9 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
             char *msg = new char[len + 1];
             ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
             ASSERTION(ret2 == CL_SUCCESS);
+            msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s", it->first->device_, msg);
+            delete [] msg;
 
             break;
         }
@@ -253,7 +255,10 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
             char *msg = new char[len + 1];
             ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
             ASSERTION(ret2 == CL_SUCCESS);
+            msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s", it->first->device_, msg);
+            delete [] msg;
+
             break;
         }
     }

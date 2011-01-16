@@ -41,18 +41,32 @@ inline void ContextMap::clean()
     unlock();
 }
 
-inline gmacError_t ContextMap::sync()
+inline gmacError_t ContextMap::prepareForCall()
 {
     Parent::iterator i;
     gmacError_t ret = gmacSuccess;
     lockRead();
     for(i = begin(); i != end(); i++) {
-        ret = i->second->sync();
+        ret = i->second->prepareForCall();
         if(ret != gmacSuccess) break;
     }
     unlock();
     return ret;
 }
+
+inline gmacError_t ContextMap::waitForCall()
+{
+    Parent::iterator i;
+    gmacError_t ret = gmacSuccess;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        ret = i->second->waitForCall();
+        if(ret != gmacSuccess) break;
+    }
+    unlock();
+    return ret;
+}
+
 
 inline gmacError_t Mode::cleanUp()
 {
@@ -179,16 +193,24 @@ Mode::releasedObjects() const
     return releasedObjects_;
 }
 
-inline void
+inline gmacError_t 
 Mode::releaseObjects()
 {
+    switchIn();
     releasedObjects_ = true;
+    error_ = contextMap_.prepareForCall();
+    switchOut();
+    return error_;
 }
 
-inline void
+inline gmacError_t 
 Mode::acquireObjects()
 {
+    switchIn();
     releasedObjects_ = false;
+    error_ = contextMap_.waitForCall();
+    switchOut();
+    return error_;
 }
 
 inline Process &

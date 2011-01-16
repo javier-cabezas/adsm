@@ -31,7 +31,7 @@ IOBuffer *IOBufferTest::Buffer_ = NULL;
 Mode *IOBufferTest::Mode_ = NULL;
 
 TEST_F(IOBufferTest, Creation) {
-    Mode &current = Mode::current();
+    Mode &current = Mode::getCurrent();
     Mode_ = &current;
     ASSERT_TRUE(Mode_ != NULL);
 

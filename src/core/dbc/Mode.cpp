@@ -130,15 +130,6 @@ Mode::memset(accptr_t addr, int c, size_t size)
     return ret;
 }
 
-gmacError_t
-Mode::sync()
-{
-    gmacError_t ret;
-    ret = __impl::core::Mode::sync();
-
-    return ret;
-}
-
 gmacError_t 
 Mode::moveTo(__impl::core::Accelerator &acc)
 {
@@ -150,24 +141,28 @@ Mode::moveTo(__impl::core::Accelerator &acc)
     return ret;
 }
 
-void
+gmacError_t
 Mode::releaseObjects()
 {
     REQUIRES(releasedObjects() == false);
 
-    __impl::core::Mode::releaseObjects();
+    gmacError_t ret;
+    ret = __impl::core::Mode::releaseObjects();
 
     ENSURES(releasedObjects() == true);
+    return ret;
 }
 
-void
+gmacError_t
 Mode::acquireObjects()
 {
     REQUIRES(releasedObjects() == true);
 
-    __impl::core::Mode::acquireObjects();
+    gmacError_t ret;
+    ret = __impl::core::Mode::acquireObjects();
 
     ENSURES(releasedObjects() == false);
+    return ret;
 }
 
 }}
