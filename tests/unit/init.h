@@ -62,7 +62,7 @@ namespace gmca = __impl;
 
 extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
-extern gmac::core::Context *Context_;
+extern __impl::core::Context *Context_; //added
 
 void InitGmac();
 
@@ -74,7 +74,7 @@ void FiniAccelerator();
 
 //added
 void InitContext(); 
-gmac::core::Context &GetContext();
+__impl::core::Context &GetContext();
 void FiniContext();
 ////
 
