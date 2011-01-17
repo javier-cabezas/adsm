@@ -39,6 +39,7 @@ WITH THE SOFTWARE.
 
 #include <list>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "config/common.h"
@@ -68,30 +69,33 @@ public:
 };
 
 class GMAC_LOCAL HostMap :
-    protected std::map<hostptr_t, cl_mem>,
+    protected std::map<hostptr_t, std::pair<cl_mem, size_t> >,
     protected gmac::util::RWLock {
 protected:
-    typedef std::map<hostptr_t, cl_mem> Parent;
+    typedef std::map<hostptr_t, std::pair<cl_mem, size_t> > Parent;
 public:
     HostMap() : RWLock("HostMap") { }
     virtual ~HostMap();
 
-    void insert(hostptr_t host, cl_mem acc);
+    void insert(hostptr_t host, cl_mem acc, size_t size);
     void remove(hostptr_t host);
 
-    cl_mem translate(hostptr_t host) const;
+    bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
 class GMAC_LOCAL Accelerator : public core::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     static AcceleratorMap *Accelerators_;
+
     cl_platform_id platform_;
     cl_device_id device_;
 
     cl_context ctx_;
     CommandList cmd_;
-    HostMap map_;
+    static HostMap *GlobalHostMap_;
+    HostMap localHostMap_;
+    HostMap localHostAlloc_;
 
 public:
     Accelerator(int n, cl_platform_id platform, cl_device_id device);
@@ -133,9 +137,10 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     gmacError_t sync();
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
     gmacError_t hostFree(hostptr_t addr);
-    accptr_t hostMap(const hostptr_t addr);
+    accptr_t hostMap(hostptr_t addr, size_t size);
+    accptr_t hostMapAddr(hostptr_t addr);
 
     static gmacError_t error(cl_int r);
 

@@ -11,7 +11,7 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     switchIn();
 
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(&addr, paramIOMemory);
+    gmacError_t ret = hostAlloc(addr, paramIOMemory);
     if(ret == gmacSuccess)
         ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
 
@@ -63,7 +63,7 @@ core::Context &Mode::getContext()
     return *context;
 }
 
-gmacError_t Mode::hostAlloc(hostptr_t *addr, size_t size)
+gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();
     gmacError_t ret = getAccelerator().hostAlloc(addr, size);
@@ -79,14 +79,21 @@ gmacError_t Mode::hostFree(hostptr_t addr)
     return ret;
 }
 
-accptr_t Mode::hostMap(const hostptr_t addr)
+accptr_t Mode::hostMap(const hostptr_t addr, size_t size)
 {
     switchIn();
-    accptr_t ret = getAccelerator().hostMap(addr);
+    accptr_t ret = getAccelerator().hostMap(addr, size);
     switchOut();
     return ret;
 }
 
+accptr_t Mode::hostMapAddr(const hostptr_t addr)
+{
+    switchIn();
+    accptr_t ret = getAccelerator().hostMapAddr(addr);
+    switchOut();
+    return ret;
+}
 
 cl_command_queue Mode::eventStream()
 {

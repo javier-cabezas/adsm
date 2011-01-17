@@ -6,6 +6,7 @@
 namespace __impl { namespace opencl {
 
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
+HostMap *Accelerator::GlobalHostMap_;
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     core::Accelerator(n), platform_(platform), device_(device)
@@ -13,7 +14,6 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     // Not used for now
     busId_ = 0;
     busAccId_ = 0;
-    
 
     cl_bool val = CL_FALSE;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
@@ -41,7 +41,10 @@ Accelerator::~Accelerator()
         ASSERTION(clReleaseProgram(*i) == CL_SUCCESS);
     }
     Accelerators_->erase(this);
-    if(Accelerators_->empty()) delete Accelerators_;
+    if(Accelerators_->empty()) {
+        delete Accelerators_;
+        delete GlobalHostMap_;
+    }
 
     ASSERTION(clReleaseContext(ctx_) == CL_SUCCESS);
 }
@@ -191,7 +194,10 @@ void
 Accelerator::addAccelerator(Accelerator &acc)
 {
     std::pair<Accelerator *, std::vector<cl_program> > pair(&acc, std::vector<cl_program>());
-    if(Accelerators_ == NULL) Accelerators_ = new AcceleratorMap();
+    if(Accelerators_ == NULL) {
+        Accelerators_ = new AcceleratorMap();
+        GlobalHostMap_ = new HostMap();
+    }
     Accelerators_->insert(pair);
 }
 
@@ -226,15 +232,16 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
         }
         if (ret == CL_SUCCESS) {
             it->second.push_back(program);
+            TRACE(GLOBAL, "Compilation OK for accelerator: %d", it->first->device_);
         } else {
             size_t len;
-            ret = clGetProgramBuildInfo(program, it->first->device_,
+            cl_int ret2 = clGetProgramBuildInfo(program, it->first->device_,
                     CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
-            ASSERTION(ret == CL_SUCCESS);
+            ASSERTION(ret2 == CL_SUCCESS);
             char *msg = new char[len + 1];
-            ret = clGetProgramBuildInfo(program, it->first->device_,
+            ret2 = clGetProgramBuildInfo(program, it->first->device_,
                     CL_PROGRAM_BUILD_LOG, len, msg, NULL);
-            ASSERTION(ret == CL_SUCCESS);
+            ASSERTION(ret2 == CL_SUCCESS);
             msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s",
                 it->first->device_, msg);
@@ -261,6 +268,7 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
         }
         if (ret == CL_SUCCESS) {
             it->second.push_back(program);
+            TRACE(GLOBAL, "Compilation OK for accelerator: %d", it->first->device_);
         } else {
             size_t len;
             cl_int ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
@@ -335,19 +343,19 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 }
 
 
-gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
+gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
     cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-        size, *addr, &ret);
+        size, NULL, &ret);
     if(ret == CL_SUCCESS) {
         // OpenCL works in the opposite way to CUDA, so we need to keep the
-        // translation in map_
-        *addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_TRUE,
+        // translation in GlobalHostMap_
+        addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_TRUE,
             CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
         ASSERTION(ret == CL_SUCCESS);
-        map_.insert(*addr, acc);
+        localHostAlloc_.insert(addr, acc, size);
     }
     trace::ExitCurrentFunction();
     return error(ret);
@@ -356,22 +364,62 @@ gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     trace::EnterCurrentFunction();
+
     cl_int ret = CL_SUCCESS;
-    cl_mem device = map_.translate(addr);
-    if(device != cl_mem(NULL)) {
+    cl_mem device;
+    size_t size;
+
+    if(localHostAlloc_.translate(addr, device, size) == false) {
+        ret = clReleaseMemObject(device);
+        goto exit;
+    }
+
+    if(localHostMap_.translate(addr, device, size) == false) {
+        CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
+               "Error translating address %p", (void *) addr);
+    } else {
         ret = clEnqueueUnmapMemObject(cmd_.front(), device, addr, 0, NULL, NULL);
         if(ret == CL_SUCCESS) ret = clReleaseMemObject(device);
     }
+
+exit:
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
 
-accptr_t Accelerator::hostMap(const hostptr_t addr)
+accptr_t Accelerator::hostMap(const hostptr_t addr, size_t size)
 {
     trace::EnterCurrentFunction();
-    cl_mem device = map_.translate(addr);
+    cl_int ret;
+    cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
+        size, addr, &ret);
+    if(ret == CL_SUCCESS) {
+        hostptr_t tmp = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_TRUE,
+            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        ASSERTION(ret == CL_SUCCESS);
+        ASSERTION(tmp == addr);
+        localHostMap_.insert(addr, acc, size);
+    }
     trace::ExitCurrentFunction();
+    return accptr_t(acc, 0);
+}
+
+accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
+{
+    cl_mem device;
+    size_t size;
+    if(localHostMap_.translate(addr, device, size) == false) {
+        cl_int ret;
+        CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
+               "Error translating address %p", (void *) addr);
+        hostptr_t tmp = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), device, CL_TRUE,
+            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        ASSERTION(ret == CL_SUCCESS);
+        ASSERTION(tmp == addr);
+        localHostMap_.insert(addr, device, size);
+    }
+
     return accptr_t(device, 0);
 }
 

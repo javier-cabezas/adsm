@@ -99,13 +99,13 @@ public:
     //! Default destructor
     ~Mode();
 
-    //! Allocated GPU-accessible host memory
+    //! Allocate GPU-accessible host memory
     /*!
-        \param addr Memory address of the pointer where the starting host memory address will be stored
-        \param size Size (in bytes) of the host memory to be allocated
+        \param addr Pointer of the memory to be mapped to the accelerator
+        \param size Size (in bytes) of the host memory to be mapped
         \return Error code
     */
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
     //! Release GPU-accessible host memory 
     /*!
@@ -119,7 +119,9 @@ public:
         \param addr Host memory address
         \return Device memory address
     */
-    accptr_t hostMap(const hostptr_t addr);
+    accptr_t hostMap(const hostptr_t addr, size_t size);
+
+    accptr_t hostMapAddr(const hostptr_t addr);
 
     core::KernelLaunch &launch(gmacKernel_t kernel);
 

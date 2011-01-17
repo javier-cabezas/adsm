@@ -71,10 +71,10 @@ inline HostMap::~HostMap()
 #endif
 }
 
-inline void HostMap::insert(hostptr_t host, cl_mem acc)
+inline void HostMap::insert(hostptr_t host, cl_mem acc, size_t size)
 {
     lockWrite();
-    Parent::insert(Parent::value_type(host, acc));
+    Parent::insert(Parent::value_type(host, std::make_pair(acc, size)));
     unlock();
 }
 
@@ -88,15 +88,17 @@ inline void HostMap::remove(hostptr_t host)
     unlock();
 }
 
-inline cl_mem HostMap::translate(hostptr_t host) const
+inline bool HostMap::translate(hostptr_t host, cl_mem &acc, size_t &size) const
 {
-    cl_mem ret(NULL);
+    acc = NULL;
     lockRead();
     Parent::const_iterator i = Parent::find(host);
-    if(i != Parent::end()) ret = i->second;
-    ASSERTION(i != Parent::end());
+    if(i != Parent::end()) {
+        acc  = i->second.first;
+        size = i->second.second;
+    }
     unlock();
-    return ret;
+    return (i != Parent::end());
 }
 
 inline cl_device_id

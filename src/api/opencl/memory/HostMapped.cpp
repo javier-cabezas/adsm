@@ -4,24 +4,28 @@
 
 namespace __impl { namespace memory {
 
-hostptr_t HostMappedAlloc(size_t size)
+hostptr_t
+HostMappedObject::alloc()
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-    hostptr_t ret = NULL;
-    if(mode.hostAlloc(&ret, size) != gmacSuccess) return NULL;
+    hostptr_t ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
+    if(mode.hostMap(ret, size_) != gmacSuccess) return NULL;
     return ret;
 }
 
-void HostMappedFree(hostptr_t addr)
+void
+HostMappedObject::free()
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-    mode.hostFree(addr);
+    mode.hostFree(addr_);
+    Memory::unmap(addr_, size_);
 }
 
-accptr_t HostMappedPtr(const hostptr_t addr)
+accptr_t
+HostMappedObject::getAccPtr() const
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-    return mode.hostMap(addr);
+    return mode.hostMapAddr(addr_);
 }
 
 } }
