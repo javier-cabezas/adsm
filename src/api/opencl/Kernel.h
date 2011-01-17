@@ -18,9 +18,9 @@ class GMAC_LOCAL Kernel : public core::Kernel {
     friend class KernelLaunch;
 protected:
     cl_kernel f_;
-
 public:
     Kernel(const core::KernelDescriptor & k, cl_kernel kernel);
+    ~Kernel();
     core::KernelLaunch * launch(core::KernelConfig & c);
 };
 
@@ -54,6 +54,7 @@ protected:
 
     KernelLaunch(const Kernel & k, const KernelConfig & c);
 public:
+    ~KernelLaunch();
     gmacError_t execute();
     friend class Kernel;
 };

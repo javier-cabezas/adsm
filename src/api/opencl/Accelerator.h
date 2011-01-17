@@ -82,16 +82,10 @@ public:
     cl_mem translate(hostptr_t host) const;
 };
 
-class GMAC_LOCAL AcceleratorLock: public gmac::util::Lock {
-    friend class Accelerator;
-public:
-    AcceleratorLock() : gmac::util::Lock("AcceleratorLock") { }
-};
-
 class GMAC_LOCAL Accelerator : public core::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
-    static AcceleratorMap Accelerators_;
+    static AcceleratorMap *Accelerators_;
     cl_platform_id platform_;
     cl_device_id device_;
 
@@ -99,7 +93,6 @@ protected:
     CommandList cmd_;
     HostMap map_;
 
-    AcceleratorLock mutex_;
 public:
     Accelerator(int n, cl_platform_id platform, cl_device_id device);
     ~Accelerator();

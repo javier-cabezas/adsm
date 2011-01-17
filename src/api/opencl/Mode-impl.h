@@ -9,6 +9,29 @@
 namespace __impl { namespace opencl {
 
 inline
+KernelList::KernelList() : gmac::util::Lock("KernelList")
+{
+}
+
+inline
+KernelList::~KernelList()
+{
+    Parent::const_iterator i;
+    lock();
+    for(i = Parent::begin(); i != Parent::end(); i++) delete *i;
+    Parent::clear();
+    unlock();
+}
+
+inline
+void KernelList::insert(core::Kernel *kernel)
+{
+    lock();
+    Parent::push_back(kernel);
+    unlock();
+}
+
+inline
 void Mode::switchIn()
 {
 }
@@ -19,20 +42,20 @@ void Mode::switchOut()
 }
 
 inline core::KernelLaunch &
-Mode::launch(gmacKernel_t kernel)
+Mode::launch(gmacKernel_t name)
 {
-    KernelMap::iterator i = kernels_.find(kernel);
+    KernelMap::iterator i = kernels_.find(name);
     core::Kernel *k = NULL;
     if (i == kernels_.end()) {
-        k = dynamic_cast<Accelerator *>(acc_)->getKernel(kernel);
+        k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
         ASSERTION(k != NULL);
-        //kernel(kernel, k);
+        kernel(name, *k);
+        kernelList_.insert(k);
     }
     else k = i->second;
     switchIn();
     core::KernelLaunch &l = getContext().launch(*k);
     switchOut();
-
     return l;
 }
 

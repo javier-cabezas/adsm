@@ -57,14 +57,18 @@ inline cl_int CommandList::sync() const
 
 inline HostMap::~HostMap()
 {
+    // There is a race condition with the OpenCL thread. If the OpenCL
+    // thread finishes before the main thread, OpenCL calls will access
+    // to freed memory
+#if 0
     lockWrite();
     Parent::iterator i;
     for(i = Parent::begin(); i != Parent::end(); i++) {
-//        clEnqueueUnmapMemObject(cmd_.front(), i->second, i->first, 0, NULL, NULL);
         clReleaseMemObject(i->second);
     }
     Parent::clear();
     unlock();
+#endif
 }
 
 inline void HostMap::insert(hostptr_t host, cl_mem acc)
@@ -107,9 +111,7 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Executing KernelLaunch");
-    mutex_.lock();
     gmacError_t ret = launch.execute();
-    mutex_.unlock();
     if (ret == gmacSuccess) trace::SetThreadState(THREAD_T(id_), trace::Running);
     trace::ExitCurrentFunction();
     return ret;

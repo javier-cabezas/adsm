@@ -11,6 +11,11 @@ Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
 {
 }
 
+Kernel::~Kernel()
+{
+    clReleaseKernel(f_);
+}
+
 core::KernelLaunch *
 Kernel::launch(core::KernelConfig & _c)
 {
@@ -104,6 +109,12 @@ KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     KernelConfig(c),
     f_(k.f_)
 {
+    clRetainKernel(f_);
+}
+
+KernelLaunch::~KernelLaunch()
+{
+    clReleaseKernel(f_);
 }
 
 gmacError_t

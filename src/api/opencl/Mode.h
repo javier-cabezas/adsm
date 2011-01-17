@@ -55,6 +55,18 @@ public:
     ContextLock() : gmac::util::Lock("Context") {}
 };
 
+class GMAC_LOCAL KernelList :
+    protected std::list<core::Kernel *>,
+    public gmac::util::Lock
+{
+protected:
+    typedef std::list<core::Kernel *> Parent;
+public:
+    KernelList();
+    virtual ~KernelList();
+
+    void insert(core::Kernel *);
+};
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::Mode {
@@ -75,7 +87,7 @@ protected:
     core::Context &getContext();
 
     cl_program program_;
-
+    KernelList kernelList_;
 public:
     //! Default constructor
     /*!
