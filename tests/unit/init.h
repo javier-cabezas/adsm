@@ -57,12 +57,12 @@ namespace __dbc {
 #if defined(USE_DBC)
 namespace gmac = __dbc;
 #else
-namespace gmca = __impl;
+namespace gmac = __impl;
 #endif
 
 extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
-extern __impl::core::Context *Context_; //added
+extern gmac::core::Context *Context_;
 
 void InitGmac();
 
@@ -72,11 +72,9 @@ void InitAccelerator();
 __impl::core::Accelerator &GetAccelerator();
 void FiniAccelerator();
 
-//added
 void InitContext(); 
-__impl::core::Context &GetContext();
+gmac::core::Context &GetContext();
 void FiniContext();
-////
 
 void InitProcess();
 void FiniProcess();
