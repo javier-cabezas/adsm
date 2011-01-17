@@ -152,16 +152,15 @@ gmacError_t Manager::acquireObjects()
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::getCurrent();
-    if(mode.releasedObjects() == false) {
-        return gmacSuccess;
-    }
+    if(mode.releasedObjects() == true) {
 #ifndef USE_VM
-	mode.forEachObject(&Object::acquire);
+        mode.forEachObject(&Object::acquire);
 #else
-    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    acceleratorBitmap.acquire();
+        vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+        acceleratorBitmap.acquire();
 #endif
-    mode.acquireObjects();
+        mode.acquireObjects();
+    }
     return ret;
 }
 
@@ -170,12 +169,15 @@ gmacError_t Manager::releaseObjects()
     core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    // Release per-mode objects
-    ret = mode.protocol().releaseObjects();
+    if (!mode.releasedObjects()) {
+        // Release per-mode objects
+        ret = mode.protocol().releaseObjects();
+        mode.releaseObjects();
+        
+    }
     if(ret == gmacSuccess) {
         // Release global per-process objects
         core::Process::getInstance().protocol().releaseObjects();
-        mode.releaseObjects();
     }
 #ifdef USE_VM
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
