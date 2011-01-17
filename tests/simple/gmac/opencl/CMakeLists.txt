@@ -30,6 +30,7 @@ source_group(${current_GROUP} FILES
     gmacMemcpy.cpp
     gmacMemset.cpp
     gmacFile.cpp
+    gmacFileVecAdd.cpp
 )
 
 add_executable(gmacInit ${common_SRC} gmacInit.cpp)
@@ -49,4 +50,7 @@ target_link_libraries(gmacMemset gmac)
 
 add_executable(gmacFile ${common_SRC} gmacFile.cpp)
 target_link_libraries(gmacFile gmac)
+
+add_executable(gmacFileVecAdd ${common_SRC} gmacFileVecAdd.cpp)
+target_link_libraries(gmacFileVecAdd gmac)
 
