@@ -62,8 +62,8 @@ inline HostMap::~HostMap()
     for(i = Parent::begin(); i != Parent::end(); i++) {
 //        clEnqueueUnmapMemObject(cmd_.front(), i->second, i->first, 0, NULL, NULL);
         clReleaseMemObject(i->second);
-        Parent::erase(i);
     }
+    Parent::clear();
     unlock();
 }
 
@@ -90,6 +90,7 @@ inline cl_mem HostMap::translate(hostptr_t host) const
     lockRead();
     Parent::const_iterator i = Parent::find(host);
     if(i != Parent::end()) ret = i->second;
+    ASSERTION(i != Parent::end());
     unlock();
     return ret;
 }
@@ -106,7 +107,9 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Executing KernelLaunch");
+    mutex_.lock();
     gmacError_t ret = launch.execute();
+    mutex_.unlock();
     if (ret == gmacSuccess) trace::SetThreadState(THREAD_T(id_), trace::Running);
     trace::ExitCurrentFunction();
     return ret;

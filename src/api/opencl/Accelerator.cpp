@@ -14,6 +14,7 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     busId_ = 0;
     busAccId_ = 0;
 
+    mutex_.lock();
     cl_bool val = CL_FALSE;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
         sizeof(val), NULL, NULL);
@@ -30,6 +31,7 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     stream = clCreateCommandQueue(ctx_, device_, 0, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL stream");
     cmd_.add(stream);
+    mutex_.unlock();
 }
 
 Accelerator::~Accelerator()
@@ -58,7 +60,9 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
+    mutex_.lock();
     addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
+    mutex_.unlock();
     addr.offset_ = 0;
     TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, addr.base_);
     trace::ExitCurrentFunction();
@@ -69,7 +73,9 @@ gmacError_t Accelerator::free(accptr_t addr)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
+    mutex_.lock();
     cl_int ret = clReleaseMemObject(addr.base_);
+    mutex_.unlock();
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -79,8 +85,10 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    mutex_.lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, size, host, 0, NULL, NULL);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -96,8 +104,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 
     cl_event event;
     buffer.toAccelerator(mode);
+    mutex_.lock();
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(event);
     trace::ExitCurrentFunction();
@@ -109,8 +119,10 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    mutex_.lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_,
         CL_TRUE, acc.offset_, count, host, 0, NULL, NULL);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -125,8 +137,10 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 
     cl_event event;
     buffer.toHost(mode);
+    mutex_.lock();
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_TRUE,
         acc.offset_, count, host, 0, NULL, &event);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);
     trace::ExitCurrentFunction();
@@ -141,6 +155,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
+    mutex_.lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.base_, CL_TRUE,
         src.offset_, size, tmp, 0, NULL, NULL);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
@@ -149,6 +164,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
                 dst.offset_, size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
+    mutex_.unlock();
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -162,8 +178,10 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
     // using a kernel for this task
     void *tmp = ::malloc(size);
     ::memset(tmp, c, size);
+    mutex_.lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.base_,
         CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
+    mutex_.unlock();
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -173,7 +191,9 @@ gmacError_t Accelerator::sync()
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Waiting for accelerator to finish all activities");
+    mutex_.lock();
     cl_int ret = cmd_.sync();
+    mutex_.unlock();
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -194,7 +214,9 @@ Accelerator::getKernel(gmacKernel_t k)
     cl_int err = CL_SUCCESS;
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
+        mutex_.lock();
         cl_kernel kernel = clCreateKernel(*i, k, &err);
+        mutex_.unlock();
         if(err != CL_SUCCESS) continue;
         return new Kernel(__impl::core::KernelDescriptor(k, k), kernel);
     }
@@ -208,7 +230,8 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
     cl_int ret;
     AcceleratorMap::iterator it;
     for (it = Accelerators_.begin(); it != Accelerators_.end(); it++) {
-        cl_program program = clCreateProgramWithSource(it->first->ctx_, 1, &code, NULL, &ret);
+        cl_program program = clCreateProgramWithSource(
+            it->first->ctx_, 1, &code, NULL, &ret);
         if (ret == CL_SUCCESS) {
             // TODO use the callback parameter to allow background code compilation
             ret = clBuildProgram(program, 1, &it->first->device_, flags, NULL, NULL);
@@ -217,15 +240,17 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
             it->second.push_back(program);
         } else {
             size_t len;
-            cl_int ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
-            ASSERTION(ret2 == CL_SUCCESS);
+            ret = clGetProgramBuildInfo(program, it->first->device_,
+                    CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
+            ASSERTION(ret == CL_SUCCESS);
             char *msg = new char[len + 1];
-            ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
-            ASSERTION(ret2 == CL_SUCCESS);
+            ret = clGetProgramBuildInfo(program, it->first->device_,
+                    CL_PROGRAM_BUILD_LOG, len, msg, NULL);
+            ASSERTION(ret == CL_SUCCESS);
             msg[len] = '\0';
-            TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s", it->first->device_, msg);
+            TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s",
+                it->first->device_, msg);
             delete [] msg;
-
             break;
         }
     }
@@ -271,7 +296,9 @@ cl_command_queue Accelerator::createCLstream()
     trace::EnterCurrentFunction();
     cl_command_queue stream;
     cl_int error;
+    mutex_.lock();
     stream = clCreateCommandQueue(ctx_, device_, 0, &error);
+    mutex_.unlock();
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
     TRACE(LOCAL, "Created OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.add(stream);
@@ -282,7 +309,9 @@ cl_command_queue Accelerator::createCLstream()
 void Accelerator::destroyCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
+    mutex_.lock();
     cl_int ret = clReleaseCommandQueue(stream);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
@@ -294,7 +323,9 @@ gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Waiting for stream %p in Accelerator %p", stream, this);
+    mutex_.lock();
     cl_int ret = clFinish(stream);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_command_queue: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -304,8 +335,10 @@ cl_int Accelerator::queryCLevent(cl_event event)
 {
     cl_int ret = CL_SUCCESS;
     trace::EnterCurrentFunction();
+    mutex_.lock();
     cl_int err = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS,
         sizeof(cl_int), &ret, NULL);
+    mutex_.unlock();
     CFATAL(err == CL_SUCCESS, "Error querying cl_event: %d", err);
     trace::ExitCurrentFunction();
     return ret;
@@ -315,7 +348,9 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Accelerator waiting for all pending events");
+    mutex_.lock();
     cl_int ret = clWaitForEvents(1, &event);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -326,6 +361,7 @@ gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
+    mutex_.lock();
     cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
         size, *addr, &ret);
     if(ret == CL_SUCCESS) {
@@ -336,6 +372,7 @@ gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
         ASSERTION(ret == CL_SUCCESS);
         map_.insert(*addr, acc);
     }
+    mutex_.unlock();
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -346,8 +383,10 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     cl_int ret = CL_SUCCESS;
     cl_mem device = map_.translate(addr);
     if(device != cl_mem(NULL)) {
+        mutex_.lock();
         ret = clEnqueueUnmapMemObject(cmd_.front(), device, addr, 0, NULL, NULL);
         if(ret == CL_SUCCESS) ret = clReleaseMemObject(device);
+        mutex_.unlock();
     }
     trace::ExitCurrentFunction();
     return error(ret);
@@ -367,15 +406,19 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
 {
     cl_int ret = CL_SUCCESS;
     cl_ulong value = 0;
+    mutex_.lock();
     ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
         sizeof(value), &value, NULL);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     total = value;
 
     // TODO: This is actually wrong, but OpenCL do not let us know the
     // amount of free memory in the accelerator
+    mutex_.lock();
     ret = clGetDeviceInfo(device_, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
         sizeof(value), &value, NULL);
+    mutex_.unlock();
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     free = value;
 }

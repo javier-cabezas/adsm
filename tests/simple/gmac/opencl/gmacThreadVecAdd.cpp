@@ -58,13 +58,13 @@ void *addVector(void *ptr)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(c));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    cl_mem tmp = cl_mem(gmacPtr(*c));
+    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
     tmp = cl_mem(gmacPtr(a));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
     tmp = cl_mem(gmacPtr(b));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&vecSize, sizeof(vecSize));
+    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
+    assert(__oclPushArgument(&vecSize, sizeof(vecSize)) == gmacSuccess);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 	getTime(&t);
