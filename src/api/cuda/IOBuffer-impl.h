@@ -1,6 +1,8 @@
 #ifndef GMAC_API_CUDA_IOBUFFER_IMPL_H_
 #define GMAC_API_CUDA_IOBUFFER_IMPL_H_
 
+#include "Tracer.h"
+
 namespace __impl { namespace cuda {
 
 inline void
@@ -52,6 +54,7 @@ IOBuffer::wait()
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
         ret = mode_->waitForEvent(end_);
+        DataCommunication(mode_->id(), start_, end_, size_);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;

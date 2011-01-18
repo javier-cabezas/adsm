@@ -31,69 +31,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TRACE_TRACER_H_
-#define GMAC_TRACE_TRACER_H_
+#ifndef GMAC_API_CUDA_TRACER_H_
+#define GMAC_API_CUDA_TRACER_H_
 
-#include "include/gmac/types.h"
-#include "config/common.h"
+#include "trace/Tracer.h"
 
-#if defined(__GNUC__)
-#define EnterCurrentFunction() EnterFunction(__func__)
-#define ExitCurrentFunction()  ExitFunction(__func__)
-#elif defined(_MSC_VER)
-#define EnterCurrentFunction() EnterFunction(__FUNCTION__)
-#define ExitCurrentFunction()  ExitFunction(__FUNCTION__)
-#endif
 
-namespace __impl { namespace trace {
+namespace __impl { namespace cuda { 
 
-typedef enum {
-	Idle,
-	Init,
-	Running,
-	Locked,
-	Exclusive,
-	IO
-} State;
-#if defined(USE_TRACE)
-class GMAC_LOCAL Tracer : public util::Lock {
-protected:
-	uint64_t timeMark() const;
-	uint64_t base_;
-
-public:
-	Tracer();
-	virtual void startThread(THREAD_T tid, const char *name) = 0;
-	virtual void endThread(THREAD_T tid) = 0;
-
-	virtual void enterFunction(THREAD_T tid, const char *name) = 0;
-	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
-
-	virtual void setThreadState(THREAD_T tid, const State state) = 0;
-
-    virtual int dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
-};
-#endif
-void InitTracer();
-void FiniTracer();
-
-void StartThread(THREAD_T tid, const char *name);
-void StartThread(const char *name);
-
-void EndThread(THREAD_T tid);
-void EndThread();
-
-void EnterFunction(THREAD_T tid, const char *name);
-void EnterFunction(const char *name);
-
-void ExitFunction(THREAD_T tid, const char *name);
-void ExitFunction(const char *name);
-
-void SetThreadState(THREAD_T tid, const State &state);
-void SetThreadState(const State &state);
-
-void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
-void DataCommunication(THREAD_T tid, uint64_t delta, size_t size);
+void DataCommunication(THREAD_T src, THREAD_T dst, CUevent start, CUevent end, size_t size);
+void DataCommunication(THREAD_T tid, CUevent start, CUevent end, size_t size);
 
 }}
 

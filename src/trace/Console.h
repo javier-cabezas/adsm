@@ -56,6 +56,8 @@ public:
     void exitFunction(THREAD_T tid, const char *name);
 
     void setThreadState(THREAD_T tid, const State state);
+
+    void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
 };
 
 }}

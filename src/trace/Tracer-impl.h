@@ -106,6 +106,20 @@ inline void SetThreadState(const State &state)
 #endif
 }
 
+inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
+{
+#if defined(USE_TRACE)
+    if(tracer != NULL) id = tracer->dataCommunication(src, dst, start, end, size);
+#endif
+}
+
+inline void DataCommunication(THREAD_T tid, uint64_t delta, size_t size)
+{
+#if defined(USE_TRACE)
+    return DataCommunication(util::GetThreadId(), tid, delta, size);
+#endif
+}
+
 }}
 
 #endif

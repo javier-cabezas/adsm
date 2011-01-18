@@ -3,5 +3,7 @@
 
 namespace __impl { namespace trace {
 Tracer *tracer = NULL;
+
+
 }}
 #endif
