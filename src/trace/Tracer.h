@@ -56,7 +56,7 @@ typedef enum {
 	IO
 } State;
 #if defined(USE_TRACE)
-class GMAC_LOCAL Tracer : public util::Lock {
+class GMAC_LOCAL Tracer {
 protected:
 	uint64_t timeMark() const;
 	uint64_t base_;
@@ -71,7 +71,7 @@ public:
 
 	virtual void setThreadState(THREAD_T tid, const State state) = 0;
 
-    virtual int dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
+    virtual void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
 };
 #endif
 void InitTracer();

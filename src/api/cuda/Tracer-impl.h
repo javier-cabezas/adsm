@@ -3,22 +3,30 @@
 
 namespace __impl { namespace cuda { 
 
-inline void DataCommunication(THREAD_T src, THREAD_T dst, CUevent start,
+inline void DataCommunication(Mode &mode, THREAD_T src, THREAD_T dst, CUevent start,
         CUevent end, size_t size)
 {
 #if defined(USE_TRACE)
-    float delta = 0.0;
-    cuEventElapsedTime(&delta, start, end);
-    return DataCommunication(src, dst, uint64_t(1000 * delta), size);
+    uint64_t delta = 0;
+    ASSERTION(mode.eventTime(delta, start, end) == gmacSuccess);
+    return trace::DataCommunication(src, dst, delta, size);
 #endif
 }
 
-inline void DataCommunication(THREAD_T tid, CUevent start, CUevent end, size_t size)
+inline void DataCommToAccelerator(Mode &mode, CUevent start, CUevent end, size_t size)
 {
 #if defined(USE_TRACE)
-    return DataCommunication(util::GetThreadId(), tid, start, end, size);
+    return DataCommunication(mode, util::GetThreadId(), mode.id(), start, end, size);
 #endif
 }
+
+inline void DataCommToHost(Mode &mode, CUevent start, CUevent end, size_t size)
+{
+#if defined(USE_TRACE)
+    return DataCommunication(mode, mode.id(), util::GetThreadId(), start, end, size);
+#endif
+}
+
 
 }}
 

@@ -196,6 +196,17 @@ gmacError_t Accelerator::syncCUevent(CUevent event)
 }
 
 inline
+gmacError_t Accelerator::timeCUevents(uint64_t &t, CUevent start, CUevent end)
+{
+    float delta = 0.0;
+    pushContext();
+    CUresult ret = cuEventElapsedTime(&delta, start, end);
+    popContext();
+    t = uint64_t(1000.0 * delta);
+    return error(ret);
+}
+
+inline
 void Accelerator::pushContext() const
 {
     CUresult ret;

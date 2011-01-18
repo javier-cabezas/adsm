@@ -116,6 +116,15 @@ Mode::getAccelerator()
     return *static_cast<Accelerator *>(acc_);
 }
 
+inline gmacError_t
+Mode::eventTime(uint64_t &t, CUevent start, CUevent end)
+{
+    switchIn();
+    gmacError_t ret = getAccelerator().timeCUevents(t, start, end);
+    switchOut();
+    return ret;
+}
+
 }}
 
 #endif

@@ -166,6 +166,7 @@ public:
 #endif
 
     gmacError_t waitForEvent(CUevent event);
+    gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);
 };
 
 }}

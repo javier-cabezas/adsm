@@ -109,7 +109,7 @@ inline void SetThreadState(const State &state)
 inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
 #if defined(USE_TRACE)
-    if(tracer != NULL) id = tracer->dataCommunication(src, dst, start, end, size);
+    if(tracer != NULL) tracer->dataCommunication(src, dst, delta, size);
 #endif
 }
 

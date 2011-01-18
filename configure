@@ -37,6 +37,9 @@ do
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
         ;;
+    --enable-console-trace)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_CONSOLE=ON"
+        ;;
     --enable-vm)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_VM=ON"
         ;;
