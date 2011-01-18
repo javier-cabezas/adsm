@@ -64,5 +64,4 @@ int main(int argc, char *argv[])
 	gmacFree(a);
 	gmacFree(b);
 	gmacFree(c);
-
 }

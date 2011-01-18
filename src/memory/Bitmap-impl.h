@@ -5,6 +5,415 @@
 
 namespace __impl { namespace memory { namespace vm {
 
+inline
+Store::Store() :
+    entries_(NULL),
+    allocated_(false)
+{
+}
+
+inline bool
+StoreHost::isSynced() const
+{
+    return true;
+}
+
+template <typename T>
+void
+StoreHost::alloc(size_t nEntries)
+{
+    entries_ = new T[nEntries];
+    allocated_ = true;
+}
+
+template <typename T>
+StoreHost::StoreHost() :
+    Store()
+{
+    entries_ = new T[nEntries];
+    allocated_ = true;
+}
+
+bool
+StoreShared::isSynced() const
+{
+    return synced_;
+}
+
+void
+StoreShared::setSynced(bool synced)
+{
+    synced_ = synced;
+}
+
+
+StoreShared::StoreShared(Bitmap<StoreShared> &root) :
+    Store(),
+    root_(root)
+{
+}
+
+template <typename S>
+unsigned long
+Directory<S>::getLocalIndex(unsigned long index) const
+{
+    return (index & mask_) >> shift_;
+}
+
+template <typename S>
+unsigned long
+Directory<S>::getNextIndex(unsigned long index) const
+{
+    return index & ~mask_;
+}
+
+template <typename S>
+unsigned long
+Directory<S>::getNextBaseIndex(unsigned long localIndex) const
+{
+    return getGlobalOffset * localIndex;
+}
+
+template <typename S>
+unsigned long
+Directory<S>::getGlobalOffset() const
+{
+    return 1 << (shift_ - 1);
+}
+
+template <typename S>
+Node *
+Directory<S>::get(unsigned long index)
+{
+    return static_cast<Node **>(this->entries_)[index];
+}
+
+template <typename S>
+Node **
+Directory<S>::getAddr(unsigned long index)
+{
+    return &static_cast<Node **>(this->entries_)[index];
+}
+
+template <typename S>
+Directory<S>::Directory(Bitmap<S> &root, size_t nEntries, std::vector<unsigned> nextEntries) :
+    Node(nEntries),
+    S(root),
+    nextEntries_(nextEntries)
+{
+    unsigned shift = 0;
+    for (unsigned i = 0; i < nextEntries_.size(); i++) {
+        shift += unsigned(ceilf(log2f(float(nextEntries[i]))));
+    }
+
+    mask_  = (nEntries - 1) << shift;
+    shift_ = shift;
+}
+
+template <typename S>
+BitmapState
+Directory<S>::getEntry(unsigned long index)
+{
+    if (!this->isSynced()) this->syncToHost();
+
+    unsigned long localIndex = getLocalIndex(index);
+    unsigned long nextIndex = getNextIndex(index);
+
+    if (nextEntries_.size() == 1) {
+        Leaf<S> *leaf = static_cast<Leaf<S> *>(get(localIndex));
+        return leaf->getEntry(nextIndex);
+    } else {
+        Directory<S> *dir = static_cast<Directory<S> *>(get(localIndex));
+        return dir->getEntry(nextIndex);
+    }
+}
+
+template <typename S>
+BitmapState
+Directory::getAndSetEntry(unsigned long index, BitmapState state)
+{
+    if (!this->allocated_) this->template alloc<Node *>(nEntries_);
+    if (!this->isSynced()) sync();
+
+    unsigned long localIndex = getLocalIndex(index);
+    unsigned long nextIndex = getNextIndex(index);
+
+    if (nextEntries_.size() == 1) {
+        Leaf<S> *&leaf = *reinterpret_cast<Leaf<S> **>(getAddr(localIndex));
+        if (leaf == NULL) leaf = new Leaf<S> (this->root_, nextEntries_[0]);
+        return leaf->setEntry(nextIndex, state);
+    } else {
+        Directory<S> *&dir = *reinterpret_cast<Directory<S> **>(getAddr(localIndex));
+        if (dir == NULL) {
+            std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
+            std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
+            dir = new Directory<S>(this->root_, nextEntries_[0], nextEntries);
+        }
+        return dir->setEntry(nextIndex, state);
+    }
+}
+
+template <typename S>
+void
+Directory<S>::setEntry(unsigned long index, BitmapState state)
+{
+    if (!this->allocated_) this->template alloc<Node *>(nEntries_);
+    if (!this->isSynced()) sync();
+
+    unsigned long localIndex = getLocalIndex(index);
+    unsigned long nextIndex = getNextIndex(index);
+
+    if (nextEntries_.size() == 1) {
+        Leaf<S> *&leaf = *reinterpret_cast<Leaf<S> **>(getAddr(localIndex));
+        if (leaf == NULL) leaf = new Leaf<S> (this->root_, nextEntries_[0]);
+        leaf->setEntry(nextIndex, state);
+    } else {
+        Directory<S> *&dir = *reinterpret_cast<Directory<S> **>(getAddr(localIndex));
+        if (dir == NULL) {
+            std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
+            std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
+            dir = new Directory<S>(this->root_, nextEntries_[0], nextEntries);
+        }
+        dir->setEntry(nextIndex, state);
+    }
+}
+
+void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
+{
+    if (!this->allocated_) this->template alloc<Node *>(nEntries_);
+    if (!this->isSynced()) sync();
+
+    unsigned long localStartIndex = getLocalIndex(startIndex);
+    unsigned long localEndIndex = getLocalIndex(endIndex);
+
+    if (nextEntries_.size() == 1) {
+        if (localStartIndex == localEndIndex) {
+            Leaf<S> *&leaf = *reinterpret_cast<Leaf<S> **>(getAddr(i));
+            if (leaf == NULL) leaf = new Leaf<S> (this->root_, nextEntries_[0]);
+            leaf->setEntryRange(getNextIndex(localStartIndex), getNextIndex, state);
+        } else {
+            localStartIndex++;
+            for (unsigned i = localStartIndex; i <= localEndIndex; i++) {
+                unsigned long nextIndex = getNextIndex(i);
+            }
+        }
+    } else {
+        Directory<S> *&dir = *reinterpret_cast<Directory<S> **>(getAddr(localIndex));
+        if (dir == NULL) {
+            std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
+            std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
+            dir = new Directory<S>(this->root_, nextEntries_[0], nextEntries);
+        }
+        dir->setEntry(nextIndex, state);
+    }
+}
+
+
+template <typename S>
+void
+Directory<S>::acquire()
+{
+    if (nextEntries_.size() == 1) {
+        Leaf<S> *leaf;
+        for (unsigned i = this->firstUsedEntry_; i <= this->lastUsedEntry_; i++) {
+            leaf = static_cast<Leaf<S> *>(get(i));
+            if (leaf != NULL) {
+                leaf->acquire();
+            }
+        }
+    } else {
+        Directory<S> *dir;
+        for (unsigned i = this->firstUsedEntry_; i <= this->lastUsedEntry_; i++) {
+            dir = static_cast<Directory<S> *>(get(i));
+            if (dir!= NULL) {
+                dir->acquire();
+            }
+        }
+    }
+
+    this->setSynced(false);
+}
+
+template <typename S>
+void
+Directory<S>::release()
+{
+    if (nextEntries_.size() == 1) {
+        Leaf<S> *leaf;
+        for (unsigned i = this->firstUsedEntry_; i <= this->lastUsedEntry_; i++) {
+            leaf = static_cast<Leaf<S> *>(get(i));
+            if (leaf != NULL) {
+                leaf->release();
+            }
+        }
+    } else {
+        Directory<S> *dir;
+        for (unsigned i = this->firstUsedEntry_; i <= this->lastUsedEntry_; i++) {
+            dir = static_cast<Directory<S> *>(get(i));
+            if (dir!= NULL) {
+                dir->release();
+            }
+        }
+    }
+
+    this->syncToDevice();
+    this->setSynced(true);
+}
+
+template <typename S>
+BitmapState
+Leaf<S>::getEntry(unsigned long index)
+{
+    if (!this->isSynced()) this->syncToHost();
+
+    return BitmapState(get(index));
+}
+
+template <typename S>
+void
+Leaf<S>::setEntry(unsigned long index, BitmapState state)
+{
+    if (!this->allocated_) this->template alloc<uint8_t>(nEntries_);
+    if (!this->isSynced()) this->syncToHost();
+
+    getRef(index) = state;
+}
+
+
+
+
+#if 0
+
+NestedBitmap::NestedBitmap(unsigned bits, bool shared)
+{
+    if (shared) {
+        if (BitmapLevels > 1) {
+            root = new Directory<StoreShared<Bitmap *> >(1);
+        }
+        else {
+            root = new Directory<StoreShared<BitmapType> >(1);
+        }
+    else {
+        if (BitmapLevels > 1) {
+            root = new Directory<StoreHost<Bitmap *> >(1);
+        }
+        else {
+            root = new Directory<StoreHost<BitmapType> >(1);
+        }
+    }
+};
+
+
+TableBase::TableBase(size_t nEntries) :
+    allocated_(false),
+    nEntries_(nEntries),
+    nUsedEntries_(0),
+    firstEntry_(-1),
+    lastEntry_(-1),
+{
+}
+
+bool
+TableBase::isAllocated()
+{
+    return allocated_;
+}
+
+size_t
+TableBase::getNEntries() const
+{
+    return nEntries_;
+}
+
+size_t
+TableBase::getNUsedEntries() const
+{
+    return nUsedEntries_;
+}
+
+long int
+TableBase::firstEntry() const
+{
+    return firstEntry_;
+}
+
+long int
+TableBase::lastEntry() const
+{
+    return lastEntry_;
+}
+
+
+template <typename T>
+void
+NestedBitmap<T>::alloc()
+{
+    assertion(entries_ == NULL);
+    entries_ = new T[nEntries_];
+    allocated_ = true;
+}
+
+template <typename T>
+NestedBitmap<T>::NestedBitmap(size_t nEntries) :
+    TableBase(nEntries), entries_(NULL), dirty_(false)
+{
+}
+
+template <typename T>
+T
+Table<T>::getEntry(unsigned long index)
+{
+    assertion(allocated_ == true);
+
+    if (level < BITMAP_LEVELS - 1) {
+        return ptrs_[index]->getEntry(index);
+    } else {
+        return ptrs_[index];
+    }
+}
+
+template <typename T>
+void
+Table<T>::setEntry(T value, unsigned long index)
+{
+    assertion(index < nEntries);
+    assertion(allocated_ == true);
+
+    return ptrs_[index] = value;
+}
+
+template <typename T>
+bool
+Table<T>::isDirty()
+{
+    return dirty_;
+}
+
+template <typename T>
+inline bool
+Directory<T>::exists(size_t index) const
+{
+    assertion(index < nEntries);
+    return allocated_ && ptrs_[index] != NULL;
+}
+
+template<typename T>
+void
+Directory<T>::create(size_t index, size_t entries)
+{
+    assertion(index < nEntries_);
+    assertion(ptrs_[index] == NULL);
+    setEntry(new T(entries), index);
+}
+
+template<typename T>
+T &
+Directory<T>::getEntry(size_t index) const
+{
+    assertion(index < nEntries_);
+    return *ptrs_[index];
+}
+
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 inline
@@ -64,19 +473,6 @@ Bitmap::CheckClearSet(const accptr_t addr)
     return ret;
 }
 
-inline void
-Bitmap::updateMaxMin(unsigned entry)
-{
-    if (minEntry_ == -1) {
-        minEntry_ = entry;
-        maxEntry_ = entry;
-    } else if (entry < unsigned(minEntry_)) {
-        minEntry_ = entry;
-    } else if (entry > unsigned(maxEntry_)) {
-        maxEntry_ = entry;
-    }
-}
-
 inline
 void Bitmap::set(const accptr_t addr)
 {
@@ -130,16 +526,6 @@ void Bitmap::clear(const accptr_t addr)
 }
 
 inline
-hostptr_t Bitmap::host() const
-{
-    if (minEntry_ != -1) {
-        return bitmap_ + minEntry_;
-    } else {
-        return bitmap_;
-    }
-}
-
-inline
 const size_t Bitmap::size() const
 {
     if (minEntry_ != -1) {
@@ -171,16 +557,25 @@ inline
 void Bitmap::newRange(const accptr_t ptr, size_t count)
 {
 #ifdef BITMAP_BYTE
-    hostptr_t start = bitmap_ + offset(ptr);
-    hostptr_t end   = bitmap_ + offset(ptr + count - 1);
-    ::memset(start, 0, end - start + 1);
+    hostptr_t start = ptr;
+    hostptr_t end   = ptr + count;
+
+    unsigned startRootEntry = getRootEntry(start);
+    unsigned endRootEntry   = getRootEntry(end);
+
+    for (unsigned i = startRootEntry; i <= endRootEntry; i++) {
+        // Create the memory ranges if needed
+        if (bitmap_[startRootEntry] == NULL) {
+            bitmap_[startRootEntry] = new EntryType[size_ * EntriesPerByte_];
+            ::memset(&bitmap_[i][startRangeEntry], 0, rangeEntries_);
+        }
+    }
+    allocations_.insert(AllocMap::value_type(ptr, count));
 #else // BITMAP_BIT
     hostptr_t start = bitmap_ + offset(ptr);
     hostptr_t end   = bitmap_ + offset(ptr + count - 1);
     ::memset(start, 0, end - start + 1);
 #endif
-    updateMaxMin(offset(ptr));
-    updateMaxMin(offset(ptr + count - 1));
     TRACE(LOCAL,"ptr: %p ("FMT_SIZE")", (void *) ptr, count);
 }
 
@@ -192,7 +587,7 @@ void Bitmap::removeRange(const accptr_t ptr, size_t count)
 }
 
 inline
-accptr_t SharedBitmap::accelerator() 
+accptr_t SharedBitmap::accelerator()
 {
     if (minEntry_ != -1) {
         return accelerator_ + minEntry_;
@@ -220,7 +615,7 @@ void SharedBitmap::synced(bool s)
     synced_ = s;
 }
 
-
+#endif
 
 }}}
 

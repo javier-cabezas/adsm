@@ -22,7 +22,7 @@ Manager::~Manager()
 gmacError_t
 Manager::map(hostptr_t addr, size_t size, GmacProtection prot)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // Create new shared object
     Object *object = protocol_->createSharedObject(size, addr, prot);
@@ -40,7 +40,7 @@ gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 {
     // TODO implement partial unmapping
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     Object *object = mode.getObjectWrite(addr);
     if(object != NULL)  {
         if (object->isInAccelerator()) {
@@ -68,7 +68,7 @@ gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 
 gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
@@ -101,7 +101,7 @@ gmacError_t Manager::hostMappedAlloc(hostptr_t *addr, size_t size)
 gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     core::Process &proc = core::Process::getInstance();
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // If a centralized object is requested, try creating it
     if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
@@ -115,19 +115,19 @@ gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocT
         object->release();
         return hostMappedAlloc(addr, size); // Try using a host mapped object
     }
-    gmacError_t ret = proc.globalMalloc(*object, size);
+    gmacError_t ret = proc.globalMalloc(*object);
     object->release();
     return ret;
 }
-    
+
 gmacError_t Manager::free(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     Object *object = mode.getObject(addr);
     if(object != NULL)  {
         mode.removeObject(*object);
-		object->release();
+        object->release();
     }
     else {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
@@ -141,7 +141,7 @@ accptr_t Manager::translate(const hostptr_t addr)
 {
     __impl::core::Process &proc = __impl::core::Process::getInstance();
     accptr_t ret = proc.translate(addr);
-    if(ret == NULL) {   
+    if(ret == NULL) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) ret = object->acceleratorAddr(addr);
     }
@@ -151,37 +151,45 @@ accptr_t Manager::translate(const hostptr_t addr)
 gmacError_t Manager::acquireObjects()
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
-    if(mode.releasedObjects() == false) {
-        return gmacSuccess;
+    core::Mode &mode = core::Mode::getCurrent();
+    if(mode.releasedObjects() == true) {
+#ifndef USE_VM
+        mode.forEachObject(&Object::acquire);
+#else
+        vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+        acceleratorBitmap.acquire();
+#endif
+        mode.acquireObjects();
     }
-	mode.forEachObject(&Object::acquire);
-    mode.acquireObjects();
     return ret;
 }
 
 gmacError_t Manager::releaseObjects()
 {
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    // Release per-mode objects
-    ret = mode.protocol().releaseObjects();
+    if (!mode.releasedObjects()) {
+        // Release per-mode objects
+        ret = mode.protocol().releaseObjects();
+        mode.releaseObjects();
+        
+    }
     if(ret == gmacSuccess) {
         // Release global per-process objects
         core::Process::getInstance().protocol().releaseObjects();
-        mode.releaseObjects();
     }
 #ifdef USE_VM
-    checkBitmapToAccelerator();
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    acceleratorBitmap.release();
 #endif
     return ret;
 }
 
 
-gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, size_t count)
+gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
 {
-    if (count > buffer.size()) return gmacErrorInvalidSize;
+    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
@@ -196,7 +204,7 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
-		ret = obj->copyToBuffer(buffer, c, off, objOff);
+		ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();
         if(ret != gmacSuccess) return ret;
         off += objCount;
@@ -205,9 +213,9 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, const hostptr_t addr, si
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t count)
+gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t bufferOff, size_t count)
 {
-    if (count > buffer.size()) return gmacErrorInvalidSize;
+    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
@@ -221,7 +229,7 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
-		ret = obj->copyFromBuffer(buffer, c, off, objOff);
+		ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();        
         if(ret != gmacSuccess) return ret;
         off += objCount;
@@ -230,36 +238,10 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
     return ret;
 }
 
-#ifdef USE_VM
-void
-Manager::checkBitmapToHost()
-{
-    core::Mode &mode = core::Mode::current();
-    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (!acceleratorBitmap.synced()) {
-        acceleratorBitmap.syncHost();
-        mode.forEachObject(&Object::acquire);
-    }
-}
-
-void
-Manager::checkBitmapToAccelerator()
-{
-    core::Mode &mode = core::Mode::current();
-    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (!acceleratorBitmap.clean()) {
-        acceleratorBitmap.syncAccelerator();
-    }
-}
-#endif
-
 bool
 Manager::read(hostptr_t addr)
 {
-#ifdef USE_VM
-    checkBitmapToHost();
-#endif
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -273,10 +255,7 @@ Manager::read(hostptr_t addr)
 bool
 Manager::write(hostptr_t addr)
 {
-#ifdef USE_VM
-    checkBitmapToHost();
-#endif
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -349,12 +328,11 @@ Manager::memset(hostptr_t s, int c, size_t size)
 
 
 gmacError_t
-Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
-                        size_t objOffset)
+Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src, size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
@@ -402,12 +380,12 @@ Manager::memcpyToObject(const Object &obj, const hostptr_t src, size_t size,
 }
 
 gmacError_t
-Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
-                        size_t dstOffset, size_t srcOffset)
+Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
+                        const Object &srcObj, size_t srcOffset, size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(dstObj.blockSize());
@@ -425,18 +403,15 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     if (copySize <= srcObj.blockEnd(srcOffset)) {
         ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
-        // if(ret != gmacSuccess) return ret;
     }
     else { // Two copies from the source to fill the buffer
-        size_t copySize1 = srcObj.blockEnd(srcOffset);
-        size_t copySize2 = copySize - copySize1;
+        size_t firstCopySize = srcObj.blockEnd(srcOffset);
+        size_t secondCopySize = copySize - firstCopySize;
 
-        ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+        ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
-        //if(ret != gmacSuccess) return ret;
-        ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+        ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
         ASSERTION(ret == gmacSuccess);
-        //if(ret != gmacSuccess) return ret;
     }
 
     // Copy first chunk of data
@@ -448,7 +423,7 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
         srcOffset += copySize;
         dstOffset += copySize;
         if(left > 0) {
-            copySize = left < dstObj.blockSize()? left: dstObj.blockSize();
+            copySize = (left < dstObj.blockSize()) ? left: dstObj.blockSize();
             // Avoid overwritting a buffer that is already in use
             passive->wait();
 
@@ -457,18 +432,15 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
             if (copySize <= srcObj.blockEnd(srcOffset)) {
                 ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
             }
             else { // Two copies from the source to fill the buffer
-                size_t copySize1 = srcObj.blockEnd(srcOffset);
-                size_t copySize2 = copySize - copySize1;
+                size_t firstCopySize = srcObj.blockEnd(srcOffset);
+                size_t secondCopySize = copySize - firstCopySize;
 
-                ret = srcObj.copyToBuffer(*active, copySize1, 0, srcOffset);
+                ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
-                ret = srcObj.copyToBuffer(*active, copySize2, copySize1, srcOffset + copySize1);
+                ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
                 ASSERTION(ret == gmacSuccess);
-                //if(ret != gmacSuccess) return ret;
             }
         }
         // Swap buffers
@@ -481,17 +453,17 @@ Manager::memcpyToObject(const Object &dstObj, const Object &srcObj, size_t size,
     mode.destroyIOBuffer(passive);
     active->wait();
     mode.destroyIOBuffer(active);
-    
+
     return ret;
 }
 
 gmacError_t
-Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
-                          size_t objOffset)
+Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
+                          size_t size)
 {
     gmacError_t ret = gmacSuccess;
 
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
     core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
@@ -520,7 +492,6 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t size,
             // synchronous call
             ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
             ASSERTION(ret == gmacSuccess);
-            //if(ret != gmacSuccess) return ret;
         }        
         // Wait for the active buffer to be full
         active->wait();
@@ -550,7 +521,6 @@ Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
     if(addr < obj->addr()) return obj->addr() - addr;
 
     ASSERTION(obj->end() > addr); // Sanity check
-
     return 0;
 }
 
@@ -601,13 +571,13 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
             size_t srcCopySize = srcObject->end() - src - offset;
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
             size_t srcObjectOffset = src + offset - srcObject->addr();
-            ret = memcpyFromObject(dst + offset, *srcObject, copySize, srcObjectOffset);
+            ret = memcpyFromObject(dst + offset, *srcObject, srcObjectOffset, copySize);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
             size_t dstCopySize = dstObject->end() - dst - offset;
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(*dstObject, src + offset, copySize, dstObjectOffset);
+            ret = memcpyToObject(*dstObject, dstObjectOffset, src + offset, copySize);
         }
         else { // Object-to-object memory copy
             size_t srcCopySize = srcObject->end() - src - offset;
@@ -616,16 +586,16 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
             copySize = (copySize < left) ? copySize : left;
             size_t srcObjectOffset = src + offset - srcObject->addr();
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(*dstObject, *srcObject, copySize, dstObjectOffset, srcObjectOffset);
+            ret = memcpyToObject(*dstObject, dstObjectOffset, *srcObject, srcObjectOffset, copySize);
         }
 
         offset += copySize;
         left -= copySize;
     }
-     
+
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();
-    
+
     return ret;
 }
 

@@ -34,17 +34,47 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_INIT_H_
 #define TEST_UNIT_INIT_H_
 
-namespace __impl { namespace core {
-    class Accelerator;
-}}
+namespace __impl {
+class GMACLock;
 
+extern GMACLock * _inGmacLock;
+extern const char _gmacCode;
+extern const char _userCode;
+extern char _gmacInit;
+
+    namespace core { class Accelerator; 
+                     class Context;
+                                          }
+    namespace util { template<typename T> class Private; }
+}
+
+namespace __dbc {
+    namespace core {
+        class Context;
+    }
+}
+
+#if defined(USE_DBC)
+namespace gmac = __dbc;
+#else
+namespace gmac = __impl;
+#endif
+
+extern __impl::util::Private<const char> _inGmac;
 extern __impl::core::Accelerator *Accelerator_;
+extern gmac::core::Context *Context_;
+
+void InitGmac();
 
 void InitTrace();
 
 void InitAccelerator();
 __impl::core::Accelerator &GetAccelerator();
 void FiniAccelerator();
+
+void InitContext(); 
+gmac::core::Context &GetContext();
+void FiniContext();
 
 void InitProcess();
 void FiniProcess();

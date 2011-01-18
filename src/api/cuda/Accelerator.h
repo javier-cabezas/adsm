@@ -59,12 +59,12 @@ public:
 typedef CUstream Stream;
 class Accelerator;
 class GMAC_LOCAL AcceleratorLock : protected gmac::util::Lock {
-	friend class Accelerator;
+    friend class Accelerator;
 public:
     AcceleratorLock() : gmac::util::Lock("Accelerator") {}
 };
 
-class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public gmac::util::RWLock { 
+class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public gmac::util::RWLock {
     friend class Accelerator;
 public:
     AlignmentMap() : gmac::util::RWLock("Aligment") {}
@@ -76,9 +76,8 @@ class GMAC_LOCAL Accelerator : public core::Accelerator {
 
     friend class Switch;
 protected:
-	CUdevice device_;
+    CUdevice device_;
 
-	std::set<Mode *> _queue;
     AlignmentMap _alignMap;
 
     int major_;
@@ -102,8 +101,8 @@ protected:
     void popContext() const;
 
 public:
-	Accelerator(int n, CUdevice device);
-	~Accelerator();
+    Accelerator(int n, CUdevice device);
+    ~Accelerator();
 
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
@@ -112,13 +111,11 @@ public:
 #endif
 #endif
 
-	CUdevice device() const;
+    CUdevice device() const;
 
     static void init();
 
-	core::Mode *createMode(core::Process &proc);
-    void registerMode(core::Mode &mode);
-    void unregisterMode(core::Mode &mode);
+    gmac::core::Mode *createMode(core::Process &proc);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();
@@ -134,8 +131,8 @@ public:
     int major() const;
     int minor() const;
 
-	gmacError_t malloc(accptr_t *addr, size_t size, unsigned align = 1);
-	gmacError_t free(accptr_t addr);
+    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
+    gmacError_t free(accptr_t addr);
 
     /* Synchronous interface */
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
@@ -156,7 +153,7 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-	gmacError_t sync();
+    gmacError_t sync();
 
     gmacError_t hostAlloc(hostptr_t *addr, size_t size);
     gmacError_t hostFree(hostptr_t addr);
@@ -164,7 +161,7 @@ public:
 
     static gmacError_t error(CUresult r);
 
-    void memInfo(size_t *free, size_t *total) const;
+    void memInfo(size_t &free, size_t &total) const;
 };
 
 }}

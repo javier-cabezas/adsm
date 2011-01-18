@@ -1,6 +1,10 @@
 #include <cstdlib>
 
-#include "include/gmac.h"
+#ifdef USE_CUDA
+#include "include/gmac/cuda.h"
+#else
+#include "include/gmac/opencl.h"
+#endif
 
 #include "config/config.h"
 #include "config/order.h"
@@ -46,7 +50,7 @@ gmacClear(gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacClear);
-    gmac::Kernel *kernel = core::Mode::current()->kernel(k);
+    gmac::Kernel *kernel = core::Mode::getCurrent()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else kernel->clear();
     exitFunction();
@@ -60,7 +64,7 @@ gmacBind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacBind);
-    gmac::Kernel *kernel = core::Mode::current()->kernel(k);
+    gmac::Kernel *kernel = core::Mode::getCurrent()->kernel(k);
 
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->bind(obj);
@@ -75,7 +79,7 @@ gmacUnbind(void * obj, gmacKernel_t k)
     gmacError_t ret = gmacSuccess;
     gmac::enterGmac();
     enterFunction(FuncGmacUnbind);
-    gmac::Kernel  * kernel = core::Mode::current()->kernel(k);
+    gmac::Kernel  * kernel = core::Mode::getCurrent()->kernel(k);
     if (kernel == NULL) ret = gmacErrorInvalidValue;
     else ret = kernel->unbind(obj);
 	exitFunction();
@@ -102,8 +106,8 @@ gmacError_t APICALL gmacMigrate(int acc)
 	gmac::enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    if (__impl::core::Mode::hasCurrent()) {
-        ret = proc.migrate(__impl::core::Mode::current(), acc);
+    if (gmac::core::Mode::hasCurrent()) {
+        ret = proc.migrate(gmac::core::Mode::getCurrent(), acc);
     } else {
         if (proc.createMode(acc) == NULL) {
             ret = gmacErrorUnknown;
@@ -210,20 +214,20 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	return ret;
 }
 
-void * APICALL gmacPtr(const void *ptr)
+__gmac_accptr_t APICALL gmacPtr(const void *ptr)
 {
     accptr_t ret = accptr_t(NULL);
     gmac::enterGmac();
     ret = __impl::memory::Manager::getInstance().translate(hostptr_t(ptr));
     gmac::exitGmac();
-    // TODO:FIX this
-    return (void *) ret.ptr_;
+    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get());
+    return ret.get();
 }
 
 gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 {
     gmac::enterGmac();
-    __impl::core::Mode &mode = __impl::core::Mode::current();
+    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     gmac::trace::EnterCurrentFunction();
     __impl::core::KernelLaunch &launch = mode.launch(k);
@@ -232,8 +236,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     CFATAL(manager.releaseObjects() == gmacSuccess, "Error releasing objects");
 
-    // Wait for pending transfers
-    mode.sync();
+    //mode.sync();
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
@@ -254,7 +257,8 @@ gmacError_t APICALL gmacThreadSynchronize()
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-	gmacError_t ret = __impl::core::Mode::current().sync();
+	gmacError_t ret = gmacSuccess;
+    // ret = gmac::core::Mode::getCurrent().sync();
     TRACE(GLOBAL, "Memory Sync");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     manager.acquireObjects();
@@ -267,7 +271,7 @@ gmacError_t APICALL gmacThreadSynchronize()
 gmacError_t APICALL gmacGetLastError()
 {
 	gmac::enterGmac();
-	gmacError_t ret = __impl::core::Mode::current().error();
+	gmacError_t ret = gmac::core::Mode::getCurrent().error();
 	gmac::exitGmac();
 	return ret;
 }

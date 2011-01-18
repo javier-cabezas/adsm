@@ -63,7 +63,7 @@ class Texture;
 class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public core::Mode {
+class GMAC_LOCAL Mode : public gmac::core::Mode {
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
@@ -134,10 +134,12 @@ public:
     */
     accptr_t hostMap(const hostptr_t addr);
 
+    core::KernelLaunch &launch(gmacKernel_t kernel);
+
     //! Execute a kernel on the accelerator
     /*!
         \param launch Structure defining the kernel to be executed
-        \param return Error code
+        \return Error code
     */
 	gmacError_t execute(core::KernelLaunch &launch);
 
@@ -146,8 +148,8 @@ public:
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
-    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	void argument(const void *arg, size_t size, off_t offset);
+    gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
+	gmacError_t argument(const void *arg, size_t size, off_t offset);
 
     const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;
@@ -155,7 +157,7 @@ public:
 
     CUstream eventStream();
 
-    static Mode & current();
+    static Mode &getCurrent();
     Accelerator &getAccelerator();
 
 #ifdef USE_VM

@@ -1,8 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
-#include <gmac.h>
+#include <gmac/opencl.h>
 
 #include "utils.h"
 #include "barrier.h"
@@ -23,29 +24,31 @@ const size_t blockSize = 512;
 
 const char *msg = "Done!";
 
-__global__ void vecSet(float *_a, size_t size, float val)
-{
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if(i >= size) return;
-
-    _a[i] = val;
-}
-
-__global__ void vecAccum(float *_b, const float *_a, size_t size)
-{
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if(i >= size) return;
-
-    _b[i] += _a[i];
-}
-
-__global__ void vecMove(float *_a, const float *_b, size_t size)
-{
-    int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if(i >= size) return;
-
-    _a[i] = _b[i];
-}
+const char *kernel = "\
+__kernel void vecSet(__global float *_a, unsigned long size, float val)\
+{\
+    unsigned i = get_global_id(0);\
+    if(i >= size) return;\
+\
+    _a[i] = val;\
+}\
+\
+__kernel void vecAccum(__global float *_b, __global const float *_a, unsigned long size)\
+{\
+    unsigned i = get_global_id(0);\
+    if(i >= size) return;\
+\
+    _b[i] += _a[i];\
+}\
+\
+__kernel void vecMove(__global float *_a, __global const float *_b, unsigned long size)\
+{\
+    unsigned i = get_global_id(0);\
+    if(i >= size) return;\
+\
+    _a[i] = _b[i];\
+}\
+";
 
 #define ITERATIONS 250
 
@@ -63,8 +66,10 @@ float error1, error2;
 
 void *doTest(void *)
 {
-    dim3 Db(blockSize);
-    dim3 Dg(vecSize / blockSize);
+    size_t localSize = blockSize;
+    size_t globalSize = vecSize / blockSize;
+    if(vecSize % blockSize) globalSize++;
+    globalSize *= localSize;
 
     // Alloc & init input data
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
@@ -79,13 +84,29 @@ void *doTest(void *)
 
     barrier_wait(&ioBefore);
 
-    if(vecSize % blockSize) Dg.x++;
-
     for (int i = 0; i < ITERATIONS; i++) {
-        vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
+        //vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
+
+        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+        cl_mem tmp = cl_mem(gmacPtr(a));
+        __oclPushArgument(&tmp, sizeof(cl_mem));
+        __oclPushArgument(&vecSize, sizeof(vecSize));
+        float val = float(i);
+        __oclPushArgument(&val, sizeof(val));
+        assert(__oclLaunch("vecSet") == gmacSuccess);
+
         barrier_wait(&ioAfter);
-        vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
-        gmacThreadSynchronize();
+        //vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
+
+        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+        tmp = cl_mem(gmacPtr(c));
+        __oclPushArgument(&tmp, sizeof(cl_mem));
+        tmp = cl_mem(gmacPtr(a));
+        __oclPushArgument(&tmp, sizeof(cl_mem));
+        __oclPushArgument(&vecSize, sizeof(vecSize));
+        assert(__oclLaunch("vecMove") == gmacSuccess);
+
+        assert(gmacThreadSynchronize() == gmacSuccess);
         barrier_wait(&ioBefore);
     }
 
@@ -95,7 +116,16 @@ void *doTest(void *)
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
         //readFile(a, vecSize, i);
-        vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
+        //vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
+
+        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+        cl_mem tmp = cl_mem(gmacPtr(b));
+        __oclPushArgument(&tmp, sizeof(cl_mem));
+        tmp = cl_mem(gmacPtr(a));
+        __oclPushArgument(&tmp, sizeof(cl_mem));
+        __oclPushArgument(&vecSize, sizeof(vecSize));
+        assert(__oclLaunch("vecAccum") == gmacSuccess);
+
         gmacThreadSynchronize();
     }
 
@@ -168,6 +198,8 @@ void *doTestIO(void *)
 int main(int argc, char *argv[])
 {
     thread_t tid, tidIO;
+
+    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 

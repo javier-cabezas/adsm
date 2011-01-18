@@ -11,13 +11,13 @@ Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    core::Context(acc, mode.id()),
+    gmac::core::Context(acc, mode.id()),
     mode_(mode),
     buffer_(NULL),
-    call_(dim3(0), dim3(0), 0, NULL)
+    call_(dim3(0), dim3(0), 0, NULL, NULL)
 {
     setupCUstreams();
-    call_.stream(streamLaunch_);
+    call_ = KernelConfig(dim3(0), dim3(0), 0, NULL, streamLaunch_);
 }
 
 Context::~Context()
@@ -161,13 +161,22 @@ core::KernelLaunch &Context::launch(core::Kernel &kernel)
     return *ret;
 }
 
-gmacError_t Context::sync()
+gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
     if(buffer_ != NULL) {
         buffer_->wait();
     }
+    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Context::waitForCall()
+{
+    gmacError_t ret = gmacSuccess;
+    trace::EnterCurrentFunction();	
     ret = syncCUstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Running);    
     trace::ExitCurrentFunction();

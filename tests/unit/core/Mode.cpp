@@ -6,8 +6,8 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::Mode;
-using gmac::core::Process;
+using __impl::core::Mode;
+using __impl::core::Process;
 
 Mode *ModeTest::Mode_ = NULL;
 
@@ -22,13 +22,13 @@ void ModeTest::SetUpTestCase() {
 
 TEST_F(ModeTest, ModeCurrent) {
     Mode_->attach();
-    Mode &current = Mode::current();
+    Mode &current = Mode::getCurrent();
     ASSERT_TRUE(&current == Mode_);
 }
 
 TEST_F(ModeTest, ModeMemory) {
     accptr_t addr = NULL;
-    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_));
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_));
     ASSERT_TRUE(addr != NULL);
 
     ASSERT_EQ(gmacSuccess, Mode_->free(addr));
@@ -41,7 +41,7 @@ TEST_F(ModeTest, MemoryCopy) {
     ASSERT_TRUE(dst != NULL);
     memset(src, 0x5a, Size_ * sizeof(int));
     accptr_t addr = NULL;
-    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_ * sizeof(int)));
     ASSERT_TRUE(addr != NULL);
     ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, hostptr_t(src), Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_ * sizeof(int)));
@@ -53,7 +53,7 @@ TEST_F(ModeTest, MemoryCopy) {
 
 TEST_F(ModeTest, MemorySet) {
     accptr_t addr = NULL;
-    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_ * sizeof(int)));
     ASSERT_TRUE(addr != NULL);
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5a, Size_ * sizeof(int)));
 

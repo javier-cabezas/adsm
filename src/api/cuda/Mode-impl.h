@@ -24,6 +24,19 @@ void Mode::switchOut()
 #endif
 }
 
+inline
+core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
+{
+    KernelMap::iterator i = kernels_.find(kernel);
+    ASSERTION(i != kernels_.end());
+    core::Kernel * k = i->second;
+    switchIn();
+    core::KernelLaunch &l = getContext().launch(*k);
+    switchOut();
+
+    return l;
+}
+
 inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {
@@ -57,27 +70,29 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
 }
 
 inline
-void Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
+gmacError_t Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    ctx.call(Dg, Db, shared, tokens);
+    gmacError_t ret = ctx.call(Dg, Db, shared, tokens);
     switchOut();
+    return ret;
 }
 
 inline
-void Mode::argument(const void *arg, size_t size, off_t offset)
+gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
 {
     switchIn();
     Context &ctx = dynamic_cast<Context &>(getContext());
-    ctx.argument(arg, size, offset);
+    gmacError_t ret = ctx.argument(arg, size, offset);
     switchOut();
+    return ret;
 }
 
 inline Mode &
-Mode::current()
+Mode::getCurrent()
 {
-    return static_cast<Mode &>(core::Mode::current());
+    return static_cast<Mode &>(core::Mode::getCurrent());
 }
 
 #ifdef USE_VM

@@ -8,7 +8,7 @@
 
 namespace __impl { namespace memory {
 
-Object *ObjectMap::mapFind(const void *addr, size_t size) const
+Object *ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 {
     ObjectMap::const_iterator i;
     Object *ret = NULL;
@@ -39,31 +39,31 @@ size_t ObjectMap::size() const
 
 bool ObjectMap::insert(Object &obj)
 {
-	lockWrite();
-	std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
-	if(ret.second == true) obj.use();
-	unlock();
-	return ret.second;
+    lockWrite();
+    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
+    if(ret.second == true) obj.use();
+    unlock();
+    return ret.second;
 }
 
 bool ObjectMap::remove(Object &obj)
 {
-	lockWrite();
-	iterator i = find(obj.end());
-	bool ret = (i != end());
-	if(ret == true) {
-		obj.release();
-		Parent::erase(i);
-	}
-	unlock();
-	return ret;
+    lockWrite();
+    iterator i = find(obj.end());
+    bool ret = (i != end());
+    if(ret == true) {
+        obj.release();
+        Parent::erase(i);
+    }
+    unlock();
+    return ret;
 }
 
-Object *ObjectMap::get(const void *addr, size_t size) const
+Object *ObjectMap::get(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;
     ret = mapFind(addr, size);
-	if(ret != NULL) ret->use();
+    if(ret != NULL) ret->use();
     return ret;
 }
 
@@ -130,10 +130,10 @@ Map::Map(const char *name, core::Mode &parent) :
 Map::~Map()
 {
     TRACE(LOCAL,"Cleaning Memory Map");
-	//TODO: actually clean the memory map
+    //TODO: actually clean the memory map
 }
 
-Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, size_t size) const
+Object *Map::get(const ObjectMap &map, hostptr_t &base, const hostptr_t addr, size_t size) const
 {
     Object *ret = map.mapFind(addr, size);
     if(ret == NULL) return ret;
@@ -144,10 +144,10 @@ Object *Map::get(const ObjectMap &map, const uint8_t *&base, const void *addr, s
     return NULL;
 }
 
-Object *Map::get(const void *addr, size_t size) const
-{    
+Object *Map::get(const hostptr_t addr, size_t size) const
+{
     Object *ret = NULL;
-    const uint8_t *base = NULL;
+    hostptr_t base = NULL;
     // Lookup in the current map
     ret = get(*this, base, addr, size);
 
@@ -172,60 +172,60 @@ exit_func:
 }
 
 bool Map::insert(Object &obj)
-{    
+{
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
-	bool ret = ObjectMap::insert(obj);
-	if(ret == false) return ret;
+    bool ret = ObjectMap::insert(obj);
+    if(ret == false) return ret;
     core::Process &proc = parent_.process();
     ObjectMap &shared = proc.shared();
-	ret = shared.insert(obj);
+    ret = shared.insert(obj);
     return ret;
 }
 
 
 bool Map::remove(Object &obj)
 {
-	void *addr = obj.addr();
+    void *addr = obj.addr();
 
-	bool ret = ObjectMap::remove(obj);
-	
+    bool ret = ObjectMap::remove(obj);
+
     // Shared object
     core::Process &proc = parent_.process();
     ObjectMap &shared = proc.shared();
-	ret = shared.remove(obj);
-	if(ret == true) {
-		TRACE(LOCAL,"Removed Shared Object %p", addr);
-		return true;
-	}
+    ret = shared.remove(obj);
+    if(ret == true) {
+        TRACE(LOCAL,"Removed Shared Object %p", addr);
+        return true;
+    }
 
     // Replicated object
     ObjectMap &global = proc.global();
-	ret = global.remove(obj);
-	if(ret == true) {
-		TRACE(LOCAL,"Removed Global Object %p", addr);
-		return true;
-	}
+    ret = global.remove(obj);
+    if(ret == true) {
+        TRACE(LOCAL,"Removed Global Object %p", addr);
+        return true;
+    }
 
     // Orphan object
     ObjectMap &orphans = proc.orphans();
-	ret = orphans.remove(obj);
-	if(ret == true) {
-		TRACE(LOCAL,"Removed Orphan Object %p", addr);
-	}
-    
-	return ret;
+    ret = orphans.remove(obj);
+    if(ret == true) {
+        TRACE(LOCAL,"Removed Orphan Object %p", addr);
+    }
+
+    return ret;
 }
 
 void Map::insertOrphan(Object &obj)
 {
     core::Process &proc = core::Process::getInstance();
-    ObjectMap &orphans = proc.orphans();    
+    ObjectMap &orphans = proc.orphans();
     orphans.insert(obj);
 }
 
 void Map::addOwner(core::Process &proc, core::Mode &mode)
 {
-	ObjectMap &global = proc.global();
+    ObjectMap &global = proc.global();
     iterator i;
     global.lockWrite();
     for(i = global.begin(); i != global.end(); i++) {
@@ -240,7 +240,7 @@ void Map::removeOwner(core::Process &proc, const core::Mode &mode)
     ObjectMap &global = proc.global();
     iterator i;
     global.lockWrite();
-    for(i = global.begin(); i != global.end(); i++) {        
+    for(i = global.begin(); i != global.end(); i++) {
         i->second->removeOwner(mode);
     }
     global.unlock();

@@ -44,6 +44,9 @@ static void CONSTRUCTOR init(void)
 #endif
     stdcInit();
 
+#ifdef USE_MPI
+    mpiInit();
+#endif
 
     TRACE(GLOBAL, "Using %s memory manager", paramProtocol);
     TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);

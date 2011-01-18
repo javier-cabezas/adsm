@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 __global__ void kernelFill(int *A, off_t off, size_t size)
 {

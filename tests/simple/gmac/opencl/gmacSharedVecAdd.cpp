@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <gmac.h>
+#include <gmac/opencl.h>
 
 #include "utils.h"
 #include "debug.h"
@@ -24,14 +24,16 @@ static struct param {
 	float *ptr;
 } *param;
 
-
-__global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
-{
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i >= vecSize) return;
-
-	c[i] = a[i] + b[i];
-}
+const char *kernel = "\
+__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned long size, unsigned long offset)\
+{\
+    unsigned i = get_global_id(0);\
+    unsigned global_i = get_global_id(0) + offset;\
+    if(i >= size) return;\
+\
+    c[i] = a[global_i] + b[global_i];\
+}\
+";
 
 void *addVector(void *ptr)
 {
@@ -43,13 +45,26 @@ void *addVector(void *ptr)
 	assert(ret == gmacSuccess);
 
 	// Call the kernel
-	dim3 Db(blockSize);
-	dim3 Dg(int(vecSize / blockSize));
-	if(vecSize % blockSize) Dg.x++;
-
 	getTime(&s);
-	 vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
-	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+
+    size_t localSize = blockSize;
+    size_t globalSize = vecSize / blockSize;
+    if(vecSize % blockSize) globalSize++;
+    globalSize *= localSize;
+
+    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+    cl_mem tmp = cl_mem(gmacPtr(p->ptr));
+    __oclPushArgument(&tmp, sizeof(cl_mem));
+    tmp = cl_mem(gmacPtr(a));
+    __oclPushArgument(&tmp, sizeof(cl_mem));
+    tmp = cl_mem(gmacPtr(b));
+    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclPushArgument(&vecSize, sizeof(vecSize));
+    unsigned long offset = p->i * vecSize;
+    __oclPushArgument(&offset, sizeof(offset));
+    assert(__oclLaunch("vecAdd") == gmacSuccess);
+    assert(gmacThreadSynchronize() == gmacSuccess);
+
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
@@ -75,6 +90,8 @@ int main(int argc, char *argv[])
 	unsigned n = 0;
 	gmacError_t ret = gmacSuccess;
 	gmactime_t s, t;
+
+    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);

@@ -21,6 +21,8 @@ using __impl::core::IOBuffer;
 using __impl::core::Mode;
 using __impl::core::Process;
 
+using __impl::memory::Manager;
+
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
@@ -46,10 +48,10 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    Manager &manager = Manager::getInstance();
     
     size_t left = n;
     while (left != 0) {
@@ -57,7 +59,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
         ASSERTION(elems * size == bytes);
 		ret += elems;
-        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer,  size * elems);
+        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer, 0, size * elems);
         ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         ASSERTION(err == gmacSuccess);
@@ -96,15 +98,15 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = paramPageSize > size ? paramPageSize : size;
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     IOBuffer *buffer = mode.createIOBuffer(bufferSize);
 
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    Manager &manager = Manager::getInstance();
 
     size_t left = n;
     while (left != 0) {
         size_t bytes = left < buffer->size()? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, hostptr_t(buf) + off, bytes);
+        err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf) + off, bytes);
         ASSERTION(err == gmacSuccess);
         err = buffer->wait();
         ASSERTION(err == gmacSuccess);

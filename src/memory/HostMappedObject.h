@@ -49,10 +49,6 @@ namespace core {
 
 namespace memory {
 
-hostptr_t HostMappedAlloc(size_t size);
-void HostMappedFree(hostptr_t addr);
-accptr_t HostMappedPtr(const hostptr_t addr);
-
 class HostMappedObject;
 //! A set of Host-mapped memory blocks
 /*! This class is actually a map, because we need to easily locate blocks
@@ -104,6 +100,11 @@ protected:
 
     //! Set of all host mapped memory objects
     static HostMappedSet set_;
+
+    hostptr_t alloc();
+    void free();
+    accptr_t getAccPtr() const;
+
 public:
     //! Default constructor
     /*!

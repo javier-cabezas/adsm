@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_WINDOWS_TEST_LOCK_H_
 #define GMAC_UTIL_WINDOWS_TEST_LOCK_H_
 
-#include "config/common.h"
+#include "config/config.h"
 #include "dbc/types.h"
 #include "dbc/Contract.h"
 #include "util/windows/Lock.h"
@@ -45,7 +45,9 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util {
 
-class GMAC_LOCAL SpinLock : public __impl::util::SpinLock, public Contract {
+class GMAC_LOCAL SpinLock :
+    public __impl::util::SpinLock,
+    public virtual Contract {
     DBC_TESTED(__impl::util::SpinLock)
 
 protected:

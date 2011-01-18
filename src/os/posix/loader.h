@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <dlfcn.h>
 
-#define SYM(ret, symbol, ...)	\
+#define SYM(ret, symbol, ...)            	\
 	typedef ret (*symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 

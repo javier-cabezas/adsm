@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 const size_t size = 4 * 1024 * 1024;
 const size_t blockSize = 512;

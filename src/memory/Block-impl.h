@@ -25,7 +25,7 @@ inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t
 inline Block::~Block()
 { }
 
-#ifdef USE_VM
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 inline void
 Block::resetBitmapStats()
 {
@@ -37,8 +37,12 @@ inline void
 Block::updateBitmapStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
-    const vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
-    unsigned currentSubBlock = hostBitmap.getSubBlock(acceleratorAddr(addr));
+#ifdef USE_VM
+    const vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+#else
+    const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+#endif
+    unsigned long currentSubBlock = bitmap.getSubBlock(acceleratorAddr(addr));
 #if 0
     if (write) {
         bitmap.set(acceleratorAddr(addr));
@@ -80,8 +84,12 @@ inline hostptr_t
 Block::getSubBlockAddr(const hostptr_t addr) const
 {
     core::Mode &mode = owner();
-    const vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
-    unsigned subBlock = hostBitmap.getSubBlock(acceleratorAddr(addr));
+#ifdef USE_VM
+    const vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+#else
+    const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+#endif
+    unsigned long subBlock = bitmap.getSubBlock(acceleratorAddr(addr));
     return addr_ + (subBlock * subBlockSize_);
 }
 
@@ -101,16 +109,24 @@ inline void
 Block::setSubBlockDirty(const hostptr_t addr)
 {
     core::Mode &mode = owner();
-    vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
-    hostBitmap.set(acceleratorAddr(addr));
+#ifdef USE_VM
+    vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+#else
+    vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+#endif
+    bitmap.setEntry(acceleratorAddr(addr), vm::BITMAP_SET_HOST);
 }
 
 inline void 
 Block::setBlockDirty()
 {
     core::Mode &mode = owner();
-    vm::Bitmap &hostBitmap = mode.hostDirtyBitmap();
-    hostBitmap.setBlock(acceleratorAddr(addr_));
+#ifdef USE_VM
+    vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+#else
+    vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+#endif
+    bitmap.setEntryRange(acceleratorAddr(addr_), size_, vm::BITMAP_SET_HOST);
 }
 
 #endif

@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <pthread.h>
 
-#include "config/common.h"
+#include "config/config.h"
 
 namespace __impl { namespace util {
 

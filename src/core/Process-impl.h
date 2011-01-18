@@ -1,13 +1,7 @@
 #ifndef GMAC_CORE_MODE_IMPL_H_
 #define GMAC_CORE_MODE_IMPL_H_
 
-namespace __impl { namespace core { 
-
-inline size_t
-Process::totalMemory()
-{
-    return TotalMemory_;
-}
+namespace __impl { namespace core {
 
 inline size_t
 Process::nAccelerators() const
@@ -18,7 +12,7 @@ Process::nAccelerators() const
 inline memory::Protocol &
 Process::protocol()
 {
-    return *protocol_;
+    return protocol_;
 }
 
 inline memory::ObjectMap &

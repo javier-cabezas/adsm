@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "include/gmac.h"
+#include "include/gmac/cuda.h"
 #include "gmac/init.h"
 
 #include "core/Kernel.h"
@@ -104,7 +104,7 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	mode.call(gridDim, blockDim, sharedMem, tokens);
 	exitGmac();
 	return cudaSuccess;
@@ -113,13 +113,14 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	mode.argument(arg, count, (off_t)offset);
 	exitGmac();
 	return cudaSuccess;
 }
 
-extern gmacError_t gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+
 GMAC_API cudaError_t APICALL cudaLaunch(gmacKernel_t k)
 {
 	gmacError_t ret = gmacLaunch(k);
