@@ -370,6 +370,7 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     size_t size;
 
     if(localHostAlloc_.translate(addr, device, size) == false) {
+        localHostAlloc_.remove(addr);
         ret = clReleaseMemObject(device);
         goto exit;
     }
@@ -380,6 +381,8 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     } else {
         ret = clEnqueueUnmapMemObject(cmd_.front(), device, addr, 0, NULL, NULL);
         if(ret == CL_SUCCESS) ret = clReleaseMemObject(device);
+        localHostMap_.remove(addr);
+        Accelerator::GlobalHostMap_->remove(addr);
     }
 
 exit:
