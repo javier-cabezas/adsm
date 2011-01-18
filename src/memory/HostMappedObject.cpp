@@ -47,7 +47,7 @@ HostMappedObject::HostMappedObject(size_t size) :
     size_(size)
 {
 	// Allocate memory (if necessary)
-    addr_ = HostMappedAlloc(size);
+    addr_ = alloc();
     if(addr_ == NULL) return; 
     set_.insert(this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_);
@@ -56,7 +56,7 @@ HostMappedObject::HostMappedObject(size_t size) :
 
 HostMappedObject::~HostMappedObject()
 {
-    if(addr_ != NULL) HostMappedFree(addr_);
+    if(addr_ != NULL) free();
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_);
 }
 
@@ -66,7 +66,7 @@ accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
     accptr_t ret = NULL;
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
-        accptr_t acceleratorAddr = HostMappedPtr(addr_);
+        accptr_t acceleratorAddr = getAccPtr();
         ret = acceleratorAddr + offset;
     }
     return ret;

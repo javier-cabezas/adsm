@@ -53,7 +53,7 @@ ssize_t read(int fd, void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    IOBuffer *buffer = Mode::current().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -62,13 +62,13 @@ ssize_t read(int fd, void *buf, size_t count)
     while (left != 0) {
         size_t bytes= left < buffer->size()? left: buffer->size();
         ret += __libc_read(fd, buffer->addr(), bytes);
-        ret = manager.fromIOBuffer(hostptr_t(buf) + off, *buffer, bytes);
+        ret = manager.fromIOBuffer(hostptr_t(buf) + off, *buffer, 0, bytes);
         ASSERTION(ret == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
     }
-    Mode::current().destroyIOBuffer(buffer);
+    Mode::getCurrent().destroyIOBuffer(buffer);
 	gmac::exitGmac();
 
     return ret;
@@ -95,21 +95,21 @@ ssize_t write(int fd, const void *buf, size_t count)
     size_t ret = 0;
 
     off_t  off  = 0;
-    IOBuffer *buffer = Mode::current().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
     size_t left = count;
     while (left != 0) {
         size_t bytes = left < buffer->size() ? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, hostptr_t(buf) + off, bytes);
+        err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf) + off, bytes);
         ASSERTION(err == gmacSuccess);
         ret += __libc_write(fd, buffer->addr(), bytes);
 
         left -= bytes;
         off  += bytes;
     }
-    Mode::current().destroyIOBuffer(buffer);
+    Mode::getCurrent().destroyIOBuffer(buffer);
 	gmac::exitGmac();
 
     return ret;

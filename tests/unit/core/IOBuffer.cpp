@@ -6,9 +6,9 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::IOBuffer;
-using gmac::core::Mode;
-using gmac::core::Process;
+using __impl::core::IOBuffer;
+using __impl::core::Mode;
+using __impl::core::Process;
 
 class IOBufferTest : public testing::Test {
 public:
@@ -31,7 +31,7 @@ IOBuffer *IOBufferTest::Buffer_ = NULL;
 Mode *IOBufferTest::Mode_ = NULL;
 
 TEST_F(IOBufferTest, Creation) {
-    Mode &current = Mode::current();
+    Mode &current = Mode::getCurrent();
     Mode_ = &current;
     ASSERT_TRUE(Mode_ != NULL);
 
@@ -44,7 +44,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
     ASSERT_TRUE(memset(Buffer_->addr(), 0x7a, Buffer_->size()) == Buffer_->addr());
 
     accptr_t addr = NULL;
-    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_));
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_));
     ASSERT_EQ(gmacSuccess, Mode_->bufferToAccelerator(addr, *Buffer_, Size_));
     ASSERT_EQ(IOBuffer::ToAccelerator, Buffer_->state());
 
@@ -63,7 +63,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
 
 TEST_F(IOBufferTest, ToHost) {
     accptr_t addr = NULL;
-    ASSERT_EQ(gmacSuccess, Mode_->malloc(&addr, Size_));
+    ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_));
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5b, Size_));
     
     ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(*Buffer_, addr, Size_));

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 const size_t size = 4 * 1024 * 1024;
 const size_t blockSize = 512;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	dim3 Dg(size / blockSize);
 	if(size % blockSize) Db.x++;
 
-	fprintf(stderr,"GMAC_MEMCPY\n");
+	fprintf(stderr,"GMAC_MEMSET\n");
 	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
     gmacMemset(ptr, 0, size * sizeof(long));
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	fprintf(stderr,"\n");
-	fprintf(stderr,"LIBC MEMCPY\n");
+	fprintf(stderr,"LIBC MEMSET\n");
 	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));

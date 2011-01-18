@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <list>
 
-using gmac::core::allocator::Buddy;
+using __impl::core::allocator::Buddy;
 
 class BuddyTest : public testing::Test {
 public:

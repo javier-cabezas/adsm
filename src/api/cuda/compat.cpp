@@ -418,7 +418,7 @@ cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *src, size
 {
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	const Variable *variable = mode.constant(symbol);
 	ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -483,7 +483,7 @@ cudaError_t APICALL cudaBindTextureToArray(const struct textureReference *texref
 		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
     Switch::in();
@@ -525,7 +525,7 @@ cudaError_t APICALL cudaBindTextureToArray(const struct textureReference *texref
 cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 {
 	enterGmac();
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     const Texture * texture = mode.texture(texref);
     Switch::in();
 	CUresult r = cuTexRefDestroy(texture->texRef());
@@ -582,7 +582,7 @@ cudaError_t APICALL cudaEventQuery(cudaEvent_t event)
 
 cudaError_t APICALL cudaEventRecord(cudaEvent_t event, cudaStream_t /*stream*/)
 {
-    CUresult ret = cuEventRecord((CUevent) event, Mode::current().eventStream());
+    CUresult ret = cuEventRecord((CUevent) event, Mode::getCurrent().eventStream());
     return __getCUDAError(ret);
 }
 

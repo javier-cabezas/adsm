@@ -19,7 +19,7 @@ class KernelConfig;
 class GMAC_LOCAL Kernel : public core::Kernel {
     friend class KernelLaunch;
 protected:
-    CUfunction _f;
+    CUfunction f_;
 
 public:
     Kernel(const core::KernelDescriptor & k, CUmodule mod);
@@ -28,28 +28,26 @@ public:
 
 class GMAC_LOCAL KernelConfig : public core::KernelConfig {
 protected:
-    dim3 _grid;
-    dim3 _block;
-    size_t _shared;
+    dim3 grid_;
+    dim3 block_;
+    size_t shared_;
 
-    CUstream _stream;
+    CUstream stream_;
 public:
     /// \todo Remove this piece of shit
+    KernelConfig();
+    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
 
-    KernelConfig(const KernelConfig & c);
-    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens);
-
-    inline void stream(CUstream s) { _stream = s; }
-    dim3 grid() const { return _grid; }
-    dim3 block() const { return _block; }
-    size_t shared() const { return _shared; }
+    dim3 grid() const { return grid_; }
+    dim3 block() const { return block_; }
+    size_t shared() const { return shared_; }
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public cuda::KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public KernelConfig, public util::NonCopyable {
 protected:
     // \todo Is this really necessary?
-    const Kernel & _kernel;
-    CUfunction _f;
+    const Kernel & kernel_;
+    CUfunction f_;
 
     KernelLaunch(const Kernel & k, const KernelConfig & c);
 public:

@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 class AcceleratorTest : public testing::Test {
 protected:
     static const int Size_ = 4 * 1024 * 1024;
+    static const int Size2_= 32 * 1024 *1024; //added 
 
     static void TearDownTestCase() {
         FiniAccelerator();

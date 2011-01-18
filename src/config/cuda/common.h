@@ -2,139 +2,63 @@
 #define GMAC_CONFIG_CUDA_COMMON_H_
 
 #include <cuda.h>
+
 struct accptr_t {
     CUdeviceptr ptr_;
-    accptr_t() :
-        ptr_(NULL) {}
 
-    accptr_t(void * ptr) :
-        ptr_(CUdeviceptr((unsigned long )ptr & ((0xff << sizeof(CUdeviceptr)) - 1))) {}
-
-    accptr_t(CUdeviceptr ptr) :
-        ptr_(ptr) {}
-
-    accptr_t(int ptr) :
-        ptr_(ptr) { }
-
-    accptr_t(long int ptr) :
-        ptr_(ptr) {}
+    inline accptr_t() :
+        ptr_(NULL)
+    {}
+    inline accptr_t(void * ptr) :
+        ptr_(CUdeviceptr((unsigned long )ptr & ((0xff << sizeof(CUdeviceptr)) - 1)))
+    {}
+    inline accptr_t(CUdeviceptr ptr) :
+        ptr_(ptr)
+    {}
+    inline accptr_t(long int ptr) :
+        ptr_(ptr)
+    {}
+    inline accptr_t(unsigned long ptr) :
+        ptr_(ptr)
+    {}
 
 #if CUDA_VERSION < 3020
-    operator uint32_t() const { return uint32_t(ptr_); }
+    inline operator uint32_t() const { return uint32_t(ptr_); }
 #else
-    operator CUdeviceptr() { return ptr_; }
-    operator CUdeviceptr() const { return ptr_; }
+    inline operator CUdeviceptr() const { return ptr_; }
 #endif
-    operator void *() { return (void *)(ptr_); }
-    operator void *() const { return (void *)(ptr_); }
+    inline operator void *() const { return (void *)(ptr_); }
+
+    inline void *get() const { return (void *)(ptr_); }
+
+    template <typename T>
+    inline
+    bool operator==(T ptr2)
+    {
+        return (((T)this->ptr_) == ptr2);
+    }
+
+    template <typename T>
+    inline
+    bool operator!=(T ptr2)
+    {
+        return (((T)this->ptr_) != ptr2);
+    }
+
 };
 
+template <typename T>
 static inline
-bool operator==(const accptr_t &ptr1, const void *ptr2)
+accptr_t operator+(const accptr_t &ptr1, T add)
 {
-    return (((const void *)ptr1.ptr_) == ptr2);
+    return accptr_t(ptr1.ptr_ + CUdeviceptr(add));
 }
 
+template <typename T>
 static inline
-bool operator==(const accptr_t &ptr1, int ptr2)
+accptr_t operator-(const accptr_t &ptr1, T sub)
 {
-    return (int)ptr1.ptr_ == ptr2;
-}
-
-static inline
-bool operator==(const accptr_t &ptr1, long int ptr2)
-{
-    return (((long int)ptr1.ptr_) == ptr2);
-}
-
-static inline
-bool operator!=(const accptr_t &ptr1, const void *ptr2)
-{
-    return (((const void *)ptr1.ptr_) != ptr2);
-}
-
-static inline
-bool operator!=(const accptr_t &ptr1, int ptr2)
-{
-    return (int)ptr1.ptr_ != ptr2;
-}
-
-static inline
-bool operator!=(const accptr_t &ptr1, long int ptr2)
-{
-    return (((long int)ptr1.ptr_) != ptr2);
-}
-
-static inline
-accptr_t operator>>(const accptr_t &ptr1, int shift)
-{
-    return accptr_t(ptr1.ptr_>> shift);
-}
-
-static inline
-accptr_t operator>>(const accptr_t &ptr1, unsigned shift)
-{
-    return accptr_t(ptr1.ptr_>> shift);
-}
-
-static inline
-accptr_t operator<<(const accptr_t &ptr1, int shift)
-{
-    return accptr_t(ptr1.ptr_<< shift);
-}
-
-static inline
-accptr_t operator<<(const accptr_t &ptr1, unsigned shift)
-{
-    return accptr_t(ptr1.ptr_<< shift);
-}
-
-static inline
-accptr_t operator+(const accptr_t &ptr1, int add)
-{
-    return accptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-accptr_t operator+(const accptr_t &ptr1, long int add)
-{
-    return accptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-accptr_t operator+(const accptr_t &ptr1, unsigned add)
-{
-    return accptr_t(ptr1.ptr_ + add);
-}
-
-static inline
-accptr_t operator+(const accptr_t &ptr1, size_t add)
-{
-    return accptr_t(ptr1.ptr_ + long(add));
-}
-
-static inline
-accptr_t operator-(const accptr_t &ptr1, int sub)
-{
-    return accptr_t(ptr1.ptr_ - sub);
-}
-
-static inline
-accptr_t operator-(const accptr_t &ptr1, long int add)
-{
-    return accptr_t(ptr1.ptr_ - add);
-}
-
-static inline
-accptr_t operator-(const accptr_t &ptr1, unsigned sub)
-{
-    return accptr_t(ptr1.ptr_ - sub);
-}
-
-static inline
-accptr_t operator-(const accptr_t &ptr1, size_t sub)
-{
-    return accptr_t(ptr1.ptr_ - long(sub));
+    return accptr_t(ptr1.ptr_ - CUdeviceptr(sub));
 }
 
 #endif

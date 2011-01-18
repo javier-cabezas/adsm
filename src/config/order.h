@@ -43,6 +43,9 @@ void paramInit(void) GMAC_LOCAL;
 void osInit(void) GMAC_LOCAL;
 void threadInit(void) GMAC_LOCAL;
 void stdcInit(void) GMAC_LOCAL;
+#ifdef USE_MPI
+void mpiInit(void) GMAC_LOCAL;
+#endif
 
 #ifdef __cplusplus
 namespace __impl { 

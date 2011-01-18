@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 #include <vector>
 
 #include "config/common.h"
-#include "config/order.h"
 
 enum GMAC_LOCAL ParamFlags {
     PARAM_NONZERO = 0x1

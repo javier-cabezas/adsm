@@ -9,14 +9,21 @@
 namespace __impl { namespace memory { namespace vm {
 
 #ifdef BITMAP_BIT
-const unsigned Bitmap::entriesPerByte = 8;
+const unsigned Bitmap::EntriesPerByte_ = 8;
 #else // BITMAP_BYTE
-const unsigned Bitmap::entriesPerByte = 1;
+const unsigned Bitmap::EntriesPerByte_ = 1;
 #endif
 
 Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
-    RWLock("Bitmap"), bits_(bits), mode_(mode), bitmap_(NULL), dirty_(true), minEntry_(-1), maxEntry_(-1)
+    RWLock("Bitmap"), bits_(bits), mode_(mode), bitmap_(NULL), dirty_(true), minPtr_(NULL), maxPtr_(NULL)
 {
+    unsigned rootEntries = (1 << bits) >> 32;
+    if (rootEntries == 0) rootEntries = 1;
+    rootEntries_ = rootEntries;
+
+    bitmap_ = new hostptr_t[rootEntries];
+    ::memset(bitmap_, 0, rootEntries * sizeof(hostptr_t));
+
     shiftBlock_ = int(log2(paramPageSize));
     shiftPage_  = shiftBlock_ - int(log2(paramSubBlocks));
 
@@ -24,17 +31,13 @@ Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
     subBlockMask_ = (paramSubBlocks) - 1;
     pageMask_     = subBlockSize_ - 1;
 
-    size_    = (1 << (bits - shiftPage_)) / entriesPerByte;
+    size_    = (1 << (bits - shiftPage_)) / EntriesPerByte_;
 #ifdef BITMAP_BIT
     bitMask_ = (1 << 3) - 1;
 #endif
 
     TRACE(LOCAL, "Pages: %u", 1 << (bits - shiftPage_));
     TRACE(LOCAL,"Size : %u", size_);
-
-#ifndef USE_HOSTMAP_VM
-    bitmap_ = new EntryType[size_];
-#endif
 }
 
 Bitmap::Bitmap(const Bitmap &base) :
@@ -59,11 +62,17 @@ Bitmap::Bitmap(const Bitmap &base) :
 
 Bitmap::~Bitmap()
 {
+    
 }
 
 void
 Bitmap::cleanUp()
 {
+    for (unsigned i = minRootEntry_; i <= maxRootEntry_; i++) {
+        if (bitmap_[i] != NULL) {
+            delete [] bitmap_[i];
+        }
+    }
     delete [] bitmap_;
 }
 

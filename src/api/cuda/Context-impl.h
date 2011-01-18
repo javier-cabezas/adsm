@@ -6,17 +6,20 @@
 
 namespace __impl { namespace cuda {
 
-inline void
+inline gmacError_t
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
-    call_ = KernelConfig(Dg, Db, shared, tokens);
-    call_.stream(streamLaunch_);
+    call_ = KernelConfig(Dg, Db, shared, tokens, streamLaunch_);
+    // TODO: do some checking
+    return gmacSuccess;
 }
 
-inline
-void Context::argument(const void *arg, size_t size, off_t offset)
+inline gmacError_t
+Context::argument(const void *arg, size_t size, off_t offset)
 {
     call_.pushArgument(arg, size, offset);
+    // TODO: do some checking
+    return gmacSuccess;
 }
 
 inline const CUstream

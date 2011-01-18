@@ -180,12 +180,12 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::current();
-    vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {
         case Invalid:
         case ReadOnly:
-            if (acceleratorBitmap.checkBlock(block.acceleratorAddr(block.addr()))) {
+            if (acceleratorBitmap.isAnyInRange(block.acceleratorAddr(block.addr()), block.size(), vm::BITMAP_SET_ACC)) {
                 if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(Invalid);

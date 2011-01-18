@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <cstdio>
 
-#include "config/common.h"
+#include "config/config.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
 

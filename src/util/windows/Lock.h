@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_WINDOWS_LOCK_H_
 #define GMAC_UTIL_WINDOWS_LOCK_H_
 
-#include "config/common.h"
+#include "config/config.h"
 #include "dbc/types.h"
 #include "util/Lock.h"
 

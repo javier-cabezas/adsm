@@ -37,9 +37,11 @@ WITH THE SOFTWARE.  */
 
 #include "config/config.h"
 #include "dbc/types.h"
+#include "include/gmac/types.h"
 
 #if defined(__GNUC__)
 #include <stdint.h>
+typedef size_t ptroff_t;
 #elif defined(_MSC_VER)
 typedef unsigned __int8 uint8_t;
 typedef signed __int8 int8_t;
@@ -50,19 +52,22 @@ typedef signed __int32 int32_t;
 typedef unsigned __int64 uint64_t;
 typedef signed __int64 int64_t;
 typedef signed __int64 ssize_t;
+typedef int ptroff_t;
 #endif
 
 #ifndef _MSC_VER
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
-typedef uint8_t *hostptr_t;
+typedef uint8_t * hostptr_t;
 
 #ifdef USE_CUDA
 #include "cuda/common.h"
+#include "include/gmac/cuda_types.h"
 #else
 #ifdef USE_OPENCL
 #include "opencl/common.h"
+#include "include/gmac/opencl_types.h"
 #else
 #error "No programming model back-end specified"
 #endif
@@ -99,6 +104,7 @@ namespace __dbc {
     namespace core {
         // Singleton classes need to be predeclared
         class Process;
+        class Mode;
     }
     namespace util {}
     namespace memory {

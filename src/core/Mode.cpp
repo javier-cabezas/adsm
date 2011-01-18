@@ -22,10 +22,13 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #	pragma warning( disable : 4355 )
 #endif
     map_("ModeMemoryMap", *this),
-    releasedObjects_(true)
-#ifdef USE_VM
+    releasedObjects_(false)
+#ifdef USE_SUBBLOCK_TRACKING
     , hostBitmap_(*this)
-    , acceleratorBitmap_(hostBitmap_)
+#else
+#ifdef USE_VM
+    , acceleratorBitmap_(*this)
+#endif
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
@@ -58,7 +61,7 @@ void Mode::kernel(gmacKernel_t k, Kernel &kernel)
     kernels_[k] = &kernel;
 }
 
-Mode &Mode::current()
+Mode &Mode::getCurrent()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
@@ -84,7 +87,7 @@ void Mode::detach()
     key.set(NULL);
 }
 
-gmacError_t Mode::malloc(accptr_t *addr, size_t size, unsigned align)
+gmacError_t Mode::malloc(accptr_t &addr, size_t size, unsigned align)
 {
     switchIn();
     error_ = acc_->malloc(addr, size, align);
@@ -102,7 +105,7 @@ gmacError_t Mode::free(accptr_t addr)
 
 gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, (void *) acc, size);
+    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), size);
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
@@ -111,7 +114,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
 
 gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) acc, host, size);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, size);
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
@@ -134,26 +137,6 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     return error_;
 }
 
-core::KernelLaunch &Mode::launch(const char *kernel)
-{
-    KernelMap::iterator i = kernels_.find(kernel);
-    ASSERTION(i != kernels_.end());
-    core::Kernel * k = i->second;
-    switchIn();
-    core::KernelLaunch &l = getContext().launch(*k);
-    switchOut();
-
-    return l;
-}
-
-gmacError_t Mode::sync()
-{
-    switchIn();
-    error_ = contextMap_.sync();
-    switchOut();
-    return error_;
-}
-
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t Mode::moveTo(Accelerator &acc)
 {
@@ -166,8 +149,9 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
     gmacError_t ret = gmacSuccess;
     size_t free;
+    size_t total;
     size_t needed = map_.memorySize();
-    acc_->memInfo(&free, NULL);
+    acc_->memInfo(free, total);
 
     if (needed > free) {
         switchOut();

@@ -12,8 +12,8 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     Object(cpuAddr, size)
 {
     // Allocate memory (if necessary)
-	if(addr_ == NULL)
-		addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
+    if(addr_ == NULL)
+        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
     if(addr_ == NULL) return;
 
     // Create a shadow mapping for the host memory
@@ -22,22 +22,22 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     accptr_t acceleratorAddr = NULL;
     // Allocate accelerator memory
     gmacError_t ret = 
-		owner.malloc(&acceleratorAddr, size, unsigned(paramPageSize));
-	if(ret == gmacSuccess) valid_ = true;
+        owner.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+    if(ret == gmacSuccess) valid_ = true;
 
-	// Populate the block-set
+    // Populate the block-set
     acceleratorAddr_.insert(AcceleratorMap::value_type(&owner, acceleratorAddr));
-	hostptr_t mark = addr_;
-	size_t offset = 0;
-	while(size > 0) {
-		size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
-		mark += blockSize;
-		blocks_.insert(BlockMap::value_type(mark, 
+    hostptr_t mark = addr_;
+    int offset = 0;
+    while(size > 0) {
+        size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
+        mark += blockSize;
+        blocks_.insert(BlockMap::value_type(mark,
 			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
 			acceleratorAddr + offset, blockSize, init)));
-		size -= blockSize;
-		offset += blockSize;
-	}
+        size -= blockSize;
+        offset += int(blockSize);
+    }
     TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : accelerator @ %p) ", 
         addr_, shadow_, (void *) acceleratorAddr);
 }
@@ -89,14 +89,14 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 
     accptr_t acceleratorAddr = NULL;
     gmacError_t ret = 
-		mode.malloc(&acceleratorAddr, size_, unsigned(paramPageSize));
+		mode.malloc(acceleratorAddr, size_, unsigned(paramPageSize));
     if(ret != gmacSuccess) return ret;
 
     lockWrite();
     acceleratorAddr_.insert(AcceleratorMap::value_type(&mode, acceleratorAddr));
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        size_t offset = i->second->addr() - addr_;
+        ptroff_t offset = ptroff_t(i->second->addr() - addr_);
         DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
         block.addOwner(mode, acceleratorAddr + offset);
         

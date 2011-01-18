@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include <iostream>
 #include <map>
 
-#include "config/common.h"
+#include "config/config.h"
 #include "dbc/types.h"
 #include "util/Lock.h"
 

@@ -48,11 +48,15 @@ namespace __impl { namespace core {
 
 class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
-public:
     void * ptr_;
     size_t size_;
-    unsigned  offset_;
-    Argument(void * ptr, size_t size, unsigned offset);
+    unsigned long offset_;
+public:
+    Argument(void * ptr, size_t size, unsigned long offset);
+
+    void * ptr() const { return ptr_; }
+    size_t size() const { return size_; }
+    unsigned long offset() const { return offset_; }
 };
 
 typedef std::vector<Argument> ArgVector;
@@ -63,7 +67,7 @@ protected:
     static const unsigned StackSize_ = 4096;
 
     uint8_t stack_[StackSize_];
-    unsigned argsSize_;
+    size_t argsSize_;
 
     KernelConfig(const KernelConfig & c);
 public:
@@ -71,8 +75,10 @@ public:
     KernelConfig();
     virtual ~KernelConfig();
 
-    void pushArgument(const void * arg, size_t size, unsigned offset);
-    unsigned argsSize() const;
+    void pushArgument(const void * arg, size_t size, unsigned long offset);
+    void pushArgument(const void * arg, size_t size);
+
+    size_t argsSize() const;
 
     uint8_t *argsArray();
 };

@@ -34,16 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_MPI_LOCAL_H_
 #define GMAC_GMAC_MPI_LOCAL_H_
 
+#ifdef USE_MPI
 #include <mpi.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void mpiInit();
 
-#ifdef __cplusplus
-}
-#endif
+#endif // USE_MPI
 
 #endif

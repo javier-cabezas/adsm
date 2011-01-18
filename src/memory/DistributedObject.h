@@ -46,15 +46,15 @@ protected:
     typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
 public:
-	DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, 
-		size_t size, T init);
+    DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
+                      size_t size, T init);
     virtual ~DistributedObject();
 
     accptr_t acceleratorAddr(const hostptr_t addr) const;
-	core::Mode &owner(const hostptr_t addr) const;
+    core::Mode &owner(const hostptr_t addr) const;
 
-	gmacError_t addOwner(core::Mode &owner);
-	gmacError_t removeOwner(const core::Mode &owner);
+    gmacError_t addOwner(core::Mode &owner);
+    gmacError_t removeOwner(const core::Mode &owner);
 
     gmacError_t mapToAccelerator();
     gmacError_t unmapFromAccelerator();

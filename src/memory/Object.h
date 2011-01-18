@@ -46,7 +46,7 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-	class Mode;
+    class Mode;
 }
 
 namespace memory {
@@ -62,11 +62,11 @@ protected:
     size_t size_;
 
     //! Mark the object as valid
-	bool valid_;
+    bool valid_;
 
-	typedef std::map<hostptr_t, Block *> BlockMap;
+    typedef std::map<hostptr_t, Block *> BlockMap;
     //! Collection of blocks forming the object
-	BlockMap blocks_;
+    BlockMap blocks_;
 
     //! Returns the block corresponding to a given offest from the begining of the object
     /*!
@@ -82,7 +82,7 @@ protected:
         \sa __impl::memory::Block::toHost
         \sa __impl::memory::Block::toAccelerator
     */
-	gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
+    gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
 
     //! Execute a memory operation involving an I/O buffer over all the blocks of the object
     /*!
@@ -163,52 +163,52 @@ public:
     /*!
         \return The owner of the object
     */
-	virtual core::Mode &owner(const hostptr_t addr) const = 0;
-    
+    virtual core::Mode &owner(const hostptr_t addr) const = 0;
+
     //! Add a new owner to the object
     /*!
-        \param The new owner of the mode
+        \param owner The new owner of the mode
         \return Wether it was possible to add the owner or not
     */
-	virtual gmacError_t addOwner(core::Mode &owner) = 0;
+    virtual gmacError_t addOwner(core::Mode &owner) = 0;
 
     //! Remove an owner from the object
     /*!
-        \param owner The owner to be removed
+      \param owner The owner to be removed
     */
-	virtual gmacError_t removeOwner(const core::Mode &owner) = 0;
+    virtual gmacError_t removeOwner(const core::Mode &owner) = 0;
 
     //! Acquire the ownership of the object for the CPU
     /*!
-        \return Error code
+      \return Error code
     */
-	gmacError_t acquire() const;
+    gmacError_t acquire() const;
 
     //! Ensures that the object host memory contains an updated copy of the data
     /*!
-        \return Error code
+      \return Error code
     */
-	gmacError_t toHost() const;
+    gmacError_t toHost() const;
 
     //! Ensures that the object accelerator memory contains an updated copy of the data
     /*!
-        \return Error code
+      \return Error code
     */
-	gmacError_t toAccelerator() const;
+    gmacError_t toAccelerator() const;
 
     //! Signal handler for faults caused due to memory reads
     /*!
-        \param addr Host memory address causing the fault
-        \return Error code
+      \param addr Host memory address causing the fault
+      \return Error code
     */
-	TESTABLE gmacError_t signalRead(hostptr_t addr) const;
+    TESTABLE gmacError_t signalRead(hostptr_t addr) const;
 
     //! Signal handler for faults caused due to memory writes
     /*!
-        \param addr Host memory address causing the fault
-        \return Error code
+      \param addr Host memory address causing the fault
+      \return Error code
     */
-	TESTABLE gmacError_t signalWrite(hostptr_t addr) const;
+    TESTABLE gmacError_t signalWrite(hostptr_t addr) const;
 
     //! Copies the data from the object to an I/O buffer
     /*!
@@ -218,8 +218,8 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data from
         \return Error code
     */
-	TESTABLE gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0) const;
+    TESTABLE gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size,
+                                      size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Copies the data from an I/O buffer to the object
     /*!
@@ -229,8 +229,8 @@ public:
         \param objectOffset Offset (in bytes) from the begining og the object to start copying data to
         \return Error code
     */
-	TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0) const;
+    TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size,
+                                        size_t bufferOffset = 0, size_t objectOffset = 0) const;
 
     //! Initializes a memory range within the object to a specific value
     /*!

@@ -5,18 +5,34 @@ CMAKE_HOME=`dirname $0`
 SCRIPT_NAME=`basename $0`
 
 BUILD_TYPE="Release"
+USE_DBC=OFF
 
 for i in $*
 do
     case $i in
     --enable-debug)
         BUILD_TYPE="Debug"
+        USE_DBC=ON
+        ;;
+    --enable-dbc)
+        USE_DBC=ON
+        ;;
+    --disable-dbc)
+        USE_DBC=OFF
         ;;
     --enable-tests)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
         ;;
     --enable-opencl)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_OPENCL=ON"
+        ;;
+    --with-opencl-include=*)
+        opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_INCLUDE=${opencl_include}"
+        ;;
+    --with-opencl-library=*)
+        opencl_library=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_LIBRARY=${opencl_library}"
         ;;
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
@@ -27,17 +43,21 @@ do
     --enable-vm-hostmap)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_HOSTMAP_VM=ON"
         ;;
-    --enable-paraver)
-        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_PARAVER=ON"
+    --enable-mpi)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;
     --with-vm-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DVM_BITMAP=${size}"
         ;;
+    --prefix=*)
+        prefix=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_INSTALL_PREFIX=${prefix}"
+        ;;
         esac
 done
 
-CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+CMAKE_ARGS="${CMAKE_ARGS} -DUSE_DBC=${USE_DBC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
 echo ${COMMAND} > ${SCRIPT_NAME}.log
 ${COMMAND}

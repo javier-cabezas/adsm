@@ -53,6 +53,9 @@ int pthread_create(pthread_t *__restrict __newthread,
                    void *(*__start_routine)(void *),
                    void *__restrict __arg)
 {
+    if(gmac::inGmac() == 1)
+        return __pthread_create(__newthread, __attr, __start_routine, __arg);
+        
 	int ret = 0;
 	gmac::enterGmac();
     TRACE(GLOBAL, "New POSIX thread");

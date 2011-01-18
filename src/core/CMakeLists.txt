@@ -1,3 +1,5 @@
+add_subdirectory(dbc)
+
 add_subdirectory(allocator)
 
 set(core_SRC
@@ -11,3 +13,4 @@ set(core_SRC
     Queue.h Queue.cpp)
 
 add_gmac_sources(gmac ${core_SRC})
+add_gmac_sources(gmac-dbc)

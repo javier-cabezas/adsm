@@ -42,22 +42,22 @@ WITH THE SOFTWARE.  */
 #include "Block.h"
 #include "StateBlock.h"
 
-namespace __impl { 
+namespace __impl {
 
 namespace core {
-	class Mode;
+    class Mode;
 }
 
-namespace memory { 
+namespace memory {
 
 template<typename T>
 class GMAC_LOCAL SharedBlock : public StateBlock<T> {
 protected:
     //! Owner of the block
-	core::Mode &owner_;
+    core::Mode &owner_;
 
     //! Accelerator memory address of the block
-	accptr_t acceleratorAddr_;
+    accptr_t acceleratorAddr_;
 
 public:
     //! Default construcutor
@@ -70,51 +70,51 @@ public:
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
-		hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
+    SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
+                hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~SharedBlock();
 
     //! Get memory block owner
     /*!
-        \param Returns the owner of the memory block
+        \return A reference to the owner mode of the memory block
     */
-	core::Mode &owner() const;
+    core::Mode &owner() const;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-	accptr_t acceleratorAddr(const hostptr_t addr) const;
+    accptr_t acceleratorAddr(const hostptr_t addr) const;
 
-	gmacError_t toHost() const;
+    gmacError_t toHost() const;
 
-	gmacError_t toAccelerator();
+    gmacError_t toAccelerator();
 
-    gmacError_t copyToHost(const hostptr_t src, size_t size, 
-        size_t blockOffset = 0) const;
-    
-	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
+    gmacError_t copyToHost(const hostptr_t src, size_t size,
+                           size_t blockOffset = 0) const;
 
-    gmacError_t copyToAccelerator(const hostptr_t src, size_t size, 
-        size_t blockOffset = 0) const;
+    gmacError_t copyToHost(core::IOBuffer &buffer, size_t size,
+                           size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
-	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
-	
+    gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
+                                  size_t blockOffset = 0) const;
+
+    gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size,
+                                  size_t bufferOffset = 0, size_t blockOffset = 0) const;
+
     gmacError_t copyFromHost(hostptr_t dst, size_t size,
-        size_t blockOffset = 0) const;
+                             size_t blockOffset = 0) const;
 
-	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
+    gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size,
+                             size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
     gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
         size_t blockOffset = 0) const;
 
-	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
+    gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size,
+                                    size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
     gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
 

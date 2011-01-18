@@ -13,7 +13,6 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
@@ -31,6 +30,7 @@ endif(CMAKE_USE_PTHREADS_INIT)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     message(STATUS "Compiling for GNU/Linux")
     set(OS_DIR "posix")
+    set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DLINUX)
     set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -38,21 +38,33 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     message(STATUS "Compiling for Mac OS X")
     set(OS_DIR "posix")
+    set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DDARWIN)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     message(STATUS "Compiling for Windows")
     set(OS_DIR "windows")
+    set(gmac_static_FLAGS " ")
     add_definitions(-DWINDOWS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
 # Identify API being used
+set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
+set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
 option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
     add_definitions(-DUSE_OPENCL)
-    message(FATAL_ERROR "OpenCL still not supported")
+    message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
+    message(STATUS "Compiling for OpenCL: ${OPENCL_LIBRARY}")
+    set(API_DIR "opencl")
+    include_directories(${OPENCL_INCLUDE})
+    find_library(opencl_LIB
+        ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
+        HITS ${OPENCL_LIBRARY})
+    message(STATUS "OpenCL: ${opencl_LIB}")
+    set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
 else(USE_OPENCL)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
@@ -73,10 +85,18 @@ else(USE_OPENCL)
 endif(USE_OPENCL)
 
 # Check for Tracing
-option(USE_TRACE_CONSOLE "Enable producing traces in the consoloe" OFF)
+option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
 if(USE_TRACE_CONSOLE)
     add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
 endif(USE_TRACE_CONSOLE)
+
+# Setup configuration options
+option(USE_MPI "Enable MPI interposition" OFF)
+if(USE_MPI)
+    message(STATUS "Using MPI")
+    add_definitions(-DUSE_MPI)
+endif(USE_MPI)
+
 
 # Setup configuration options
 option(USE_VM "Enable software GPU virtual memory" OFF)
@@ -171,7 +191,6 @@ add_subdirectory(src)
 add_gmac_groups(${gmac_SRC})
 
 
-
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)
@@ -188,26 +207,37 @@ if(MAKE_DOC)
 endif(MAKE_DOC)
 
 # Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_BINARY_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src/include)
 # GMAC is a DLL
 add_definitions(-DGMAC_DLL)
 # Compiling GMAC
 add_definitions(-DGMAC_DLL_EXPORTS)
 
-set(gmac_SOURCES ${gmac_SOURCES} ${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
+add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
+add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
+set_target_properties(gmac-base PROPERTIES
+    COMPILE_FLAGS ${gmac_static_FLAGS}
+    COMPILE_DEFINITIONS_DEBUG USE_DBC)
+ 
 
-add_gmac_groups(${gmac_SOURCES} ${gmac-dbc_SRC})
-add_library(gmac SHARED ${gmac_SOURCES})
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/include/gmac.h)
-set_property(TARGET gmac PROPERTY PRIVATE_HEADER
+add_library(gmac SHARED ${gmac-lib_SRC})
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
 )
 
 
-target_link_libraries(gmac ${gmac_LIBS})
+target_link_libraries(gmac gmac-base ${gmac_LIBS})
 link_directories(${gmac_LIBDIR})
+
 set_target_properties(gmac PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC
     VERSION 0.2.0 SOVERSION 1)
@@ -216,7 +246,6 @@ install(TARGETS gmac
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
-     PUBLIC_HEADER DESTINATION include
-     PRIVATE_HEADER DESTINATION include/gmac)
+     PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)

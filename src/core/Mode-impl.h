@@ -41,28 +41,43 @@ inline void ContextMap::clean()
     unlock();
 }
 
-inline gmacError_t ContextMap::sync()
+inline gmacError_t ContextMap::prepareForCall()
 {
     Parent::iterator i;
     gmacError_t ret = gmacSuccess;
     lockRead();
     for(i = begin(); i != end(); i++) {
-        ret = i->second->sync();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
+        ret = i->second->prepareForCall();
+        if(ret != gmacSuccess) break;
     }
     unlock();
     return ret;
 }
 
+inline gmacError_t ContextMap::waitForCall()
+{
+    Parent::iterator i;
+    gmacError_t ret = gmacSuccess;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        ret = i->second->waitForCall();
+        if(ret != gmacSuccess) break;
+    }
+    unlock();
+    return ret;
+}
+
+
 inline gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
     memory::Map::removeOwner(Process::getInstance(), *this);
+#ifdef USE_SUBBLOCK_TRACKING
+    hostBitmap_.cleanUp();
+#else
 #ifdef USE_VM
-    bitmap_.cleanUp();
+    acceleratorBitmap_.cleanUp();
+#endif
 #endif
     return ret;
 }
@@ -118,7 +133,7 @@ Mode::removeObject(memory::Object &obj)
 }
 
 inline memory::Object *
-Mode::getObject(hostptr_t addr, size_t size) const
+Mode::getObject(const hostptr_t addr, size_t size) const
 {
 	return map_.get(addr, size);
 }
@@ -142,18 +157,34 @@ Mode::error(gmacError_t err)
     error_ = err;
 }
 
-#ifdef USE_VM
-inline memory::vm::Bitmap &
-Mode::dirtyBitmap()
+#ifdef USE_SUBBLOCK_TRACKING
+inline memory::vm::BitmapHost &
+Mode::hostDirtyBitmap()
 {
-    return bitmap_;
+    return hostBitmap_;
 }
 
-inline const memory::vm::Bitmap &
-Mode::dirtyBitmap() const
+inline const memory::vm::BitmapHost &
+Mode::hostDirtyBitmap() const
 {
-    return bitmap_;
+    return hostBitmap_;
 }
+
+#else
+
+#ifdef USE_VM
+inline memory::vm::BitmapShared &
+Mode::acceleratorDirtyBitmap()
+{
+    return acceleratorBitmap_;
+}
+
+inline const memory::vm::BitmapShared &
+Mode::acceleratorDirtyBitmap() const
+{
+    return acceleratorBitmap_;
+}
+#endif
 #endif
 
 inline bool
@@ -162,16 +193,24 @@ Mode::releasedObjects() const
     return releasedObjects_;
 }
 
-inline void
+inline gmacError_t 
 Mode::releaseObjects()
 {
+    switchIn();
     releasedObjects_ = true;
+    error_ = contextMap_.prepareForCall();
+    switchOut();
+    return error_;
 }
 
-inline void
+inline gmacError_t 
 Mode::acquireObjects()
 {
+    switchIn();
     releasedObjects_ = false;
+    error_ = contextMap_.waitForCall();
+    switchOut();
+    return error_;
 }
 
 inline Process &

@@ -4,6 +4,12 @@
 namespace __impl { namespace core {
 
 inline unsigned
+Accelerator::load() const
+{
+    return load_;
+}
+
+inline unsigned
 Accelerator::id() const
 {
     return id_;
@@ -12,19 +18,19 @@ Accelerator::id() const
 inline unsigned
 Accelerator::busId() const
 {
-	return busId_;
+    return busId_;
 }
 
 inline unsigned
 Accelerator::busAccId() const
 {
-	return busAccId_;
+    return busAccId_;
 }
 
 inline bool
 Accelerator::integrated() const
 {
-	return integrated_;
+    return integrated_;
 }
 
 }}

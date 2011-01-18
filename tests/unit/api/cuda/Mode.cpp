@@ -2,7 +2,7 @@
 #include "api/cuda/Mode.h"
 #include "gtest/gtest.h"
 
-using gmac::cuda::Mode;
+using __impl::cuda::Mode;
 
 TEST_F(ModeTest, ModeHostMemory) {
 	Mode &mode = dynamic_cast<Mode &>(*Mode_);

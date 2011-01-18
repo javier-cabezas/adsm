@@ -11,11 +11,16 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
     gmacError_t ret = 
-		mode.malloc(&acceleratorAddr, size, unsigned(paramPageSize));
-	if(ret == gmacSuccess) {
+        mode.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+    if(ret == gmacSuccess) {
+#ifdef USE_SUBBLOCK_TRACKING
+        vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
+        bitmap.registerRange(acceleratorAddr, size);
+#else
 #ifdef USE_VM
-        vm::SharedBitmap &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-        acceleratorBitmap.newRange(acceleratorAddr, size);
+        vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+        bitmap.registerRange(acceleratorAddr, size);
+#endif
 #endif
         return acceleratorAddr;
     } else {
@@ -28,7 +33,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
     hostptr_t mark = addr_;
-    size_t offset = 0;
+    ptroff_t offset = 0;
     for(BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
         SharedBlock<T> &oldBlock = *dynamic_cast<SharedBlock<T> *>(i->second);
         SharedBlock<T> *newBlock = new SharedBlock<T>(oldBlock.getProtocol(), mode,
@@ -39,7 +44,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 
         i->second = newBlock;
 
-        offset += oldBlock.size();
+        offset += ptroff_t(oldBlock.size());
 
         // Decrement reference count
         oldBlock.release();
@@ -67,24 +72,20 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
     valid_ = (acceleratorAddr_ != NULL);
 
     if (valid_) {
-#ifdef USE_VM
-        vm::Bitmap &hostBitmap = owner.hostDirtyBitmap();
-        hostBitmap.newRange(acceleratorAddr_, size);
-#endif
-
         // Create a shadow mapping for the host memory
         // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
         // Populate the block-set
         hostptr_t mark = addr_;
-        size_t offset = 0;
+        ptroff_t offset = 0;
         while(size > 0) {
             size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
             mark += blockSize;
             blocks_.insert(BlockMap::value_type(mark, 
-                        new SharedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
+                        new SharedBlock<T>(protocol, owner, addr_ + ptroff_t(offset), 
+                            shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
             size -= blockSize;
-            offset += blockSize;
+            offset += ptroff_t(blockSize);
         }
         TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", addr_, shadow_, (void *) acceleratorAddr_);
     }
@@ -94,11 +95,14 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
 template<typename T>
 SharedObject<T>::~SharedObject()
 {
+#ifdef USE_SUBBLOCK_TRACKING
+    vm::BitmapHost &bitmap= owner_->hostDirtyBitmap();
+    bitmap.unregisterRange(acceleratorAddr_, size_);
+#else
 #ifdef USE_VM
-    vm::Bitmap &hostBitmap = owner_->hostDirtyBitmap();
-    vm::SharedBitmap &acceleratorBitmap = owner_->acceleratorDirtyBitmap();
-    hostBitmap.removeRange(acceleratorAddr_, size_);
-    acceleratorBitmap.removeRange(acceleratorAddr_, size_);
+    vm::BitmapShared &bitmap = owner_->acceleratorDirtyBitmap();
+    bitmap.unregisterRange(acceleratorAddr_, size_);
+#endif
 #endif
 
 	// If the object creation failed, this address will be NULL
@@ -113,7 +117,7 @@ inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
     accptr_t ret = NULL;
     lockRead();
     if(acceleratorAddr_ != NULL) {
-        size_t offset = addr - addr_;
+        ptroff_t offset = ptroff_t(addr - addr_);
         ret = acceleratorAddr_ + offset;
     }
     unlock();

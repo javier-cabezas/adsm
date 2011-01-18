@@ -6,7 +6,7 @@
 namespace __impl { namespace cuda {
 
 Mode::Mode(core::Process &proc, Accelerator &acc) :
-    core::Mode(proc, acc)
+    gmac::core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
     cudaCtx_ = getAccelerator().createCUContext::current();

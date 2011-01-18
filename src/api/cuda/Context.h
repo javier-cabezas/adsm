@@ -59,7 +59,7 @@ namespace cuda {
 class Accelerator;
 class IOBuffer;
 
-class GMAC_LOCAL Context : public core::Context {
+class GMAC_LOCAL Context : public gmac::core::Context {
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;
@@ -92,14 +92,15 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     core::KernelLaunch &launch(core::Kernel &kernel);
-    gmacError_t sync();
+    gmacError_t prepareForCall();
+    gmacError_t waitForCall();
 
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
     gmacError_t waitAccelerator();
 
-    void call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	void argument(const void *arg, size_t size, off_t offset);
+    gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
+	gmacError_t argument(const void *arg, size_t size, off_t offset);
 
     const CUstream eventStream() const;
 

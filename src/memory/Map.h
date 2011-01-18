@@ -54,166 +54,203 @@ class Protocol;
 
 
 //! A map of objects that is not bound to any Mode
-class GMAC_LOCAL ObjectMap : 
-	protected gmac::util::RWLock, protected std::map<const void *, Object *> {
+class GMAC_LOCAL ObjectMap :
+     protected gmac::util::RWLock, protected std::map<const hostptr_t, Object *> {
 public:
     typedef gmacError_t(Object::*ObjectOp)(void);
     typedef gmacError_t(Object::*ConstObjectOp)(void) const;
     typedef gmacError_t(Object::*ModeOp)(const core::Mode &);
 protected:
-	friend class Map;
-    typedef std::map<const void *, Object *> Parent;
+    friend class Map;
+    typedef std::map<const hostptr_t, Object *> Parent;
 
-    //! Find an object in the map
-    /*!
-        \param addr Starting memory address within the object to be found
-        \size Size (in bytes) of the memory range where the object can be found
-        \return First object inside the memory range. NULL if no object is found
-    */
-    Object *mapFind(const void *addr, size_t size) const;
+    /**
+     * Find an object in the map
+     *
+     * \param addr Starting memory address within the object to be found
+     * \param size Size (in bytes) of the memory range where the object can be
+     * found
+     * \return First object inside the memory range. NULL if no object is found
+     */
+    Object *mapFind(const hostptr_t addr, size_t size) const;
 public:
-    //! Default constructor
-    /*!
-        \param name Name of the object map used for tracing
-    */
+    /**
+     * Default constructor
+     *
+     * \param name Name of the object map used for tracing
+     */
     ObjectMap(const char *name);
 
-    //! Default destructor
+    /**
+     * Default destructor
+     */
     virtual ~ObjectMap();
 
-    //! Get the number of objects in the map
-    /*!
-        \return Number of objects in the map
-    */
+    /**
+     * Get the number of objects in the map
+     *
+     * \return Number of objects in the map
+     */
     size_t size() const;
 
-    //! Insert an object in the map
-    /*!
-        \param obj Object to insert in the map
-        \return True if the object was successfuly inserted
-    */
-	virtual bool insert(Object &obj);
+    /**
+     * Insert an object in the map
+     *
+     * \param obj Object to insert in the map
+     * \return True if the object was successfuly inserted
+     */
+    virtual bool insert(Object &obj);
 
-    //! Remove an object from the map
-    /*!
-        \param obj Object to remove from the map
-        \return True if the object was successfuly removed
-    */
-	virtual bool remove(Object &obj);
+    /**
+     * Remove an object from the map
+     *
+     * \param obj Object to remove from the map
+     * \return True if the object was successfuly removed
+     */
+    virtual bool remove(Object &obj);
 
-    //! Find the firs object in a memory range
-    /*!
-        \param addr Starting address of the memory range where the object is located
-        \param size Size (in bytes) of the memory range where the object is located
-        \return First object within the memory range. NULL if no object is found
-    */
-	virtual Object *get(const void *addr, size_t size) const;
+    /**
+     * Find the firs object in a memory range
+     *
+     * \param addr Starting address of the memory range where the object is
+     * located
+     * \param size Size (in bytes) of the memory range where the object is
+     * located
+     * \return First object within the memory range. NULL if no object is found
+     */
+    virtual Object *get(const hostptr_t addr, size_t size) const;
 
-    //! Get the amount of memory consumed by all objects in the map
-    /*!
-        \return Size (in bytes) of the memory consumed by all objects in the map
-    */
+    /**
+     * Get the amount of memory consumed by all objects in the map
+     *
+     * \return Size (in bytes) of the memory consumed by all objects in the map
+     */
     size_t memorySize() const;
 
-    //! Invoke a memory operation over all the objects in the map
-    /*!
-        \param op Memory operation to be executed
-        \sa __impl::memory::Object::acquire
-        \sa __impl::memory::Object::toHost
-        \sa __impl::memory::Object::toAccelerator
-        \return Error code
-    */
+    /**
+     * Invoke a memory operation over all the objects in the map
+     *
+     * \param op Memory operation to be executed
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
+     * \return Error code
+     */
     gmacError_t forEach(ObjectOp op) const;
 
-    //! Invoke a constant memory operation over all the objects in the map
-    /*!
-        \param op Memory operation to be executed
-        \sa __impl::memory::Object::acquire
-        \sa __impl::memory::Object::toHost
-        \sa __impl::memory::Object::toAccelerator
-        \return Error code
-    */
+    /**
+     * Invoke a constant memory operation over all the objects in the map
+     *
+     * \param op Memory operation to be executed
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
+     * \return Error code
+     */
     gmacError_t forEach(ConstObjectOp op) const;
 
 
-    //! Execute a mode operation over all the objects in the map without modifying the Mode
-    /*!
-        \param op Mode operation to be executed        
-        \sa __impl::memory::Object::removeOwner
-        \sa __impl::memory::Object::realloc
-        \return Error code
-    */
+    /**
+     * Execute a mode operation over all the objects in the map without
+     * modifying the Mode
+     *
+     * \param mode Mode to apply the operation to
+     * \param op Mode operation to be executed
+     * \sa __impl::memory::Object::removeOwner
+     * \sa __impl::memory::Object::realloc
+     * \return Error code
+     */
     gmacError_t forEach(const core::Mode &mode, ModeOp op) const;
 };
- 
+
 //! An object map associated to an execution mode
 class GMAC_LOCAL Map : public memory::ObjectMap, public util::NonCopyable {
 protected:
-    //! Execution mode owning this map
+    /**
+     * Execution mode owning this map
+     */
     core::Mode &parent_;
 
-    //! Get the first object in an object map that is in a memory range whose starting memory address is bellow a base
-    /*!
-        \param map Object map to look for objects
-        \param base Base memory address to filter out objects
-        \param addr Starting address of the memory range to look for objects
-        \param size Size (in bytes) of the memory range to look for objects
-        \return First object in the memory range whose starting address is bellow the base
-    */
-    Object *get(const ObjectMap &map, const uint8_t *&base, 
-        const void *addr, size_t size) const;
+    /**
+     * Get the first object in an object map that is in a memory range whose
+     * starting memory address is bellow a base
+     *
+     * \param map Object map to look for objects
+     * \param base Base memory address to filter out objects
+     * \param addr Starting address of the memory range to look for objects
+     * \param size Size (in bytes) of the memory range to look for objects
+     * \return First object in the memory range whose starting address is bellow the base
+     */
+    Object *get(const ObjectMap &map, hostptr_t &base, const hostptr_t addr,
+                size_t size) const;
 public:
-    //! Default constructor
-    /*!
-        \param name Name of the object map used for tracing
-        \param parent Mode that owns the map
-    */
+    /**
+     * Default constructor
+     *
+     * \param name Name of the object map used for tracing
+     * \param parent Mode that owns the map
+     */
     Map(const char *name, core::Mode &parent);
 
-    //! Default destructor
+    /**
+     * Default destructor
+     */
     virtual ~Map();
-    
-    //! Insert an object in the map and the global process map where all objects are registered
-    /*!
-        \param obj Object to remove from the map
-        \return True if the object was successfuly removed
-    */
+
+    /**
+     * Insert an object in the map and the global process map where all objects
+     * are registered
+     *
+     * \param obj Object to remove from the map
+     * \return True if the object was successfuly removed
+     */
     bool insert(Object &obj);
 
-    //! Remove an object from the map and from the global process map where all objects are registered
-    /*!
-        \param obj Object to remove from the map
-        \return True if the object was successfuly removed
-    */
+    /**
+     * Remove an object from the map and from the global process map where all
+     * objects are registered
+     *
+     * \param obj Object to remove from the map
+     * \return True if the object was successfuly removed
+     */
     bool remove(Object &obj);
 
-    //! Find the first object in a memory range in this map or on the global and shared process object maps
-    /*!
-        \param addr Starting address of the memory range where the object is located
-        \param size Size (in bytes) of the memory range where the object is located
-        \raturn First object within the memory range. NULL if no object is found
-    */
-	virtual Object *get(const void *addr, size_t size) const;
+    /**
+     * Find the first object in a memory range in this map or on the global and
+     * shared process object maps
+     *
+     * \param addr Starting address of the memory range where the object is
+     * located
+     * \param size Size (in bytes) of the memory range where the object is
+     * located
+     * \return First object within the memory range. NULL if no object is found
+     */
+    virtual Object *get(const hostptr_t addr, size_t size) const;
 
-    //! Remove object from this map and from the global process map and add that object to the process orphan object map
-    /*!
-        \param obj Memory object to be removed from the current and from the global process map and inserted in the orphan object map
-    */
+    /**
+     * Remove object from this map and from the global process map and add that
+     * object to the process orphan object map
+     *
+     * \param obj Memory object to be removed from the current and from the
+     * global process map and inserted in the orphan object map
+     */
     static void insertOrphan(Object &obj);
 
-    //! Add an owner to all global process objects
-    /*!
-        \param proc Process whose global objects will be the owner added to
-        \param mode Owner to be added to global objects
-    */
-	static void addOwner(core::Process &proc, core::Mode &mode);
+    /**
+     * Add an owner to all global process objects
+     *
+     * \param proc Process whose global objects will be the owner added to
+     * \param mode Owner to be added to global objects
+     */
+    static void addOwner(core::Process &proc, core::Mode &mode);
 
-    //! Remove an owner to all global process objects
-    /*!
-        \param proc Process whose global objects will be the owner removed from
-        \param mode Owner to be removed from global objects
-    */
-	static void removeOwner(core::Process &proc, const core::Mode &mode);
+    /**
+     * Remove an owner to all global process objects
+     *
+     * \param proc Process whose global objects will be the owner removed from
+     * \param mode Owner to be removed from global objects
+     */
+    static void removeOwner(core::Process &proc, const core::Mode &mode);
 
 };
 
