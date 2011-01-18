@@ -9,17 +9,17 @@
 #include "memory/Block.h"
 #include "gtest/gtest.h"
 
-using gmac::memory::Protocol;
-using gmac::core::Process;
-using gmac::memory::Object;
+using __impl::memory::Protocol;
+using __impl::core::Process;
+using __impl::memory::Object;
 using gmac::memory::Block;
-using gmac::core::Mode;
+using __impl::core::Mode;
 
 class ObjectTest : public testing::Test{
 
 public:
-	static gmac::memory::Protocol *Protocol_;
-	static gmac::memory::Object *Object_;
+	static Protocol *Protocol_;
+	static Object *Object_;
 
 	const static int Size_ = 4 * 1024 * 1024;
 
@@ -29,7 +29,7 @@ public:
 		if(Protocol_ != NULL) return;
 		Protocol_ = &Process::getInstance().protocol();
 		ASSERT_TRUE(Protocol_ != NULL);
-		Object_= Protocol_->createObject(Size_*sizeof(int),NULL,GMAC_PROT_NONE,0);
+		Object_= Protocol_->createObject(Size_ * sizeof(int), NULL, GMAC_PROT_NONE, 0);
 		ASSERT_TRUE( Object_ != NULL);
 
 	}
