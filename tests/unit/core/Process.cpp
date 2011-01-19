@@ -55,7 +55,7 @@ TEST_F(ProcessTest,QueueMapTestCase){
 	typedef Parent::iterator iterator;
 	QueueMap qm;
 	//ASSERT_TRUE(&qm != NULL);
-	std::pair<iterator, bool> ib=qm.insert(id, &tq);
+	std::pair<iterator, bool> ib = qm.insert(id, &tq);
 	ASSERT_TRUE(ib.second);
 
 	//cteate another Mode,because  want to test member  function  push()

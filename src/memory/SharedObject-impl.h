@@ -24,7 +24,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 #endif
         return acceleratorAddr;
     } else {
-        return NULL;
+        return accptr_t(NULL);
     }
 }
 
@@ -114,7 +114,7 @@ SharedObject<T>::~SharedObject()
 template<typename T>
 inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
 {
-    accptr_t ret = NULL;
+    accptr_t ret = accptr_t(NULL);
     lockRead();
     if(acceleratorAddr_ != NULL) {
         ptroff_t offset = ptroff_t(addr - addr_);
@@ -151,7 +151,7 @@ gmacError_t SharedObject<T>::removeOwner(const core::Mode &owner)
             ASSERTION(ret == gmacSuccess);
             owner_->free(acceleratorAddr_);
         }
-        acceleratorAddr_ = NULL;
+        acceleratorAddr_ = accptr_t(NULL);
         owner_ = NULL;
         // Put myself in the orphan map
         Map::insertOrphan(*this);

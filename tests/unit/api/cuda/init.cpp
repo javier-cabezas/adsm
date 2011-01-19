@@ -13,6 +13,9 @@
 #include <cuda.h>
 
 using gmac::cuda::Accelerator;
+using __impl::cuda::Mode;
+using __impl::core::Process;
+using __impl::cuda::Context;
 
 void InitAccelerator()
 {
@@ -34,26 +37,23 @@ void InitAccelerator()
 
 //added//
 
-using __impl::cuda::Mode;
-using __impl::core::Process;
-using __impl::cuda::Context;
 
 
 void InitContext()
 {
-    if(Context_ !=NULL) return;
+    if(Context_ != NULL) return;
     InitTrace();
     InitAccelerator();
     Process::create<Process>(); 
-    Process &proc =Process::getInstance();
+    Process &proc = Process::getInstance();
     proc.addAccelerator(*Accelerator_); //*accelerator
-    Mode *mode_=dynamic_cast<Mode*>(Process::getInstance().createMode(0)); 
+    Mode *mode_ = dynamic_cast<Mode*>(Process::getInstance().createMode(0)); 
     ASSERT_TRUE(mode_ !=NULL);
     mode_->initThread();
-    Accelerator *acc=dynamic_cast<Accelerator*> (Accelerator_);
-    ASSERT_TRUE(acc !=NULL); 
-    Context_=new Context(*acc,*mode_);
-    ASSERT_TRUE(Context_!=NULL); 
+    Accelerator *acc = dynamic_cast<Accelerator*> (Accelerator_);
+    ASSERT_TRUE(acc != NULL); 
+    Context_ = new Context(*acc,*mode_);
+    ASSERT_TRUE(Context_ != NULL); 
 } 
 
   

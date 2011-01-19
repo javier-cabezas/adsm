@@ -21,6 +21,9 @@ struct accptr_t {
     inline accptr_t(unsigned long ptr) :
         ptr_(ptr)
     {}
+    inline accptr_t(int ptr) :
+        ptr_(ptr)
+    {}
 
 #if CUDA_VERSION < 3020
     inline operator uint32_t() const { return uint32_t(ptr_); }
@@ -33,32 +36,32 @@ struct accptr_t {
 
     template <typename T>
     inline
-    bool operator==(T ptr2)
+    bool operator==(T ptr)
     {
-        return (((T)this->ptr_) == ptr2);
+        return (((T)this->ptr_) == ptr);
     }
 
     template <typename T>
     inline
-    bool operator!=(T ptr2)
+    bool operator!=(T ptr)
     {
-        return (((T)this->ptr_) != ptr2);
+        return (((T)this->ptr_) != ptr);
     }
 
 };
 
 template <typename T>
 static inline
-accptr_t operator+(const accptr_t &ptr1, T add)
+accptr_t operator+(const accptr_t &a, T b)
 {
-    return accptr_t(ptr1.ptr_ + CUdeviceptr(add));
+    return accptr_t(a.ptr_ + CUdeviceptr(b));
 }
 
 template <typename T>
 static inline
-accptr_t operator-(const accptr_t &ptr1, T sub)
+accptr_t operator-(const accptr_t &a, T b)
 {
-    return accptr_t(ptr1.ptr_ - CUdeviceptr(sub));
+    return accptr_t(a.ptr_ - CUdeviceptr(b));
 }
 
 #endif

@@ -63,7 +63,7 @@ HostMappedObject::~HostMappedObject()
 
 accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
 {
-    accptr_t ret = NULL;
+    accptr_t ret = accptr_t(NULL);
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
         accptr_t acceleratorAddr = getAccPtr();

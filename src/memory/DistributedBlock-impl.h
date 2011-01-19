@@ -49,7 +49,7 @@ inline core::Mode &DistributedBlock<T>::owner() const
 template<typename T>
 inline accptr_t DistributedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	accptr_t ret = NULL;
+	accptr_t ret = accptr_t(NULL);
 
 	StateBlock<T>::lock();
 	AcceleratorMap::const_iterator i;

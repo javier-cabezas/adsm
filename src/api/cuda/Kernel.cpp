@@ -54,9 +54,9 @@ gmacError_t
 KernelLaunch::execute()
 {
 	// Set-up parameters
-    CUresult ret = cuParamSetv(f_, 0, argsArray(), argsSize());
+    CUresult ret = cuParamSetv(f_, 0, argsArray(), unsigned(argsSize()));
     CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
-    ret = cuParamSetSize(f_, argsSize());
+    ret = cuParamSetSize(f_, unsigned(argsSize()));
 	CFATAL(ret == CUDA_SUCCESS);
 
 #if 0
