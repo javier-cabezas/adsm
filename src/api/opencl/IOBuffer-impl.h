@@ -6,7 +6,7 @@ namespace __impl { namespace opencl {
 inline void
 IOBuffer::toHost(Mode &mode)
 {
-    ASSERTION(!started_);
+    ASSERTION(started_ == false);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     mode_   = &mode;
@@ -15,7 +15,7 @@ IOBuffer::toHost(Mode &mode)
 inline void
 IOBuffer::toAccelerator(Mode &mode)
 {
-    ASSERTION(!started_);
+    ASSERTION(started_ == false);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     mode_   = &mode;
@@ -42,7 +42,8 @@ IOBuffer::wait()
         ASSERTION(mode_ != NULL);
         ret = mode_->waitForEvent(end_);
         ASSERTION(ret == gmacSuccess);
-        ASSERTION(clReleaseEvent(end_) == CL_SUCCESS);
+        cl_int clret = clReleaseEvent(end_);
+        ASSERTION(clret == CL_SUCCESS);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;

@@ -79,7 +79,8 @@ Accelerator::~Accelerator()
     }
     _modules.clear();
     popContext();
-    ASSERTION(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    CUresult ret = cuCtxDestroy(_ctx);
+    ASSERTION(ret == CUDA_SUCCESS);
 #endif
 }
 

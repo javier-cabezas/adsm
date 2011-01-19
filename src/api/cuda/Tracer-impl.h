@@ -8,7 +8,8 @@ inline void DataCommunication(Mode &mode, THREAD_T src, THREAD_T dst, CUevent st
 {
 #if defined(USE_TRACE)
     uint64_t delta = 0;
-    ASSERTION(mode.eventTime(delta, start, end) == gmacSuccess);
+    gmacError_t ret = mode.eventTime(delta, start, end);
+    ASSERTION(ret == gmacSuccess);
     return trace::DataCommunication(src, dst, delta, size);
 #endif
 }

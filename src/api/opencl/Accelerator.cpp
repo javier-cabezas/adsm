@@ -38,7 +38,8 @@ Accelerator::~Accelerator()
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
-        ASSERTION(clReleaseProgram(*i) == CL_SUCCESS);
+        cl_int ret = clReleaseProgram(*i);
+        ASSERTION(ret == CL_SUCCESS);
     }
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
@@ -46,7 +47,8 @@ Accelerator::~Accelerator()
         delete GlobalHostMap_;
     }
 
-    ASSERTION(clReleaseContext(ctx_) == CL_SUCCESS);
+    cl_int ret = clReleaseContext(ctx_);
+    ASSERTION(ret == CL_SUCCESS);
 }
 
 void Accelerator::init()

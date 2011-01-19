@@ -48,7 +48,7 @@ protected:
     CUevent end_;
     CUstream stream_;
     Mode *mode_;
-    bool created_;
+    bool created_, launched_;
 
 public:
     IOBuffer(void *addr, size_t size) :

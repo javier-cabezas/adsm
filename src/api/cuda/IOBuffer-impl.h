@@ -8,13 +8,16 @@ namespace __impl { namespace cuda {
 inline void
 IOBuffer::toHost(Mode &mode, CUstream s)
 {
+    CUresult ret = CUDA_SUCCESS;
     if(created_ == false) {
-        ASSERTION(cuEventCreate(&start_, CU_EVENT_DEFAULT) == CUDA_SUCCESS);
-        ASSERTION(cuEventCreate(&end_, CU_EVENT_DEFAULT) == CUDA_SUCCESS);
-        created_ = true;
+        ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+        ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
     }
 
-    ASSERTION(cuEventRecord(start_, s) == CUDA_SUCCESS);
+    ret = cuEventRecord(start_, s);
+    ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     stream_ = s;
@@ -24,12 +27,16 @@ IOBuffer::toHost(Mode &mode, CUstream s)
 inline void
 IOBuffer::toAccelerator(Mode &mode, CUstream s)
 {
+    CUresult ret = CUDA_SUCCESS;
     if(created_ == false) {
-        ASSERTION(cuEventCreate(&start_, CU_EVENT_DEFAULT) == CUDA_SUCCESS);
-        ASSERTION(cuEventCreate(&end_, CU_EVENT_DEFAULT) == CUDA_SUCCESS);
+        ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+        ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
         created_ = true;
     }
-    ASSERTION(cuEventRecord(start_, s) == CUDA_SUCCESS);
+    ret = cuEventRecord(start_, s);
+    ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     stream_ = s;
@@ -40,7 +47,8 @@ inline void
 IOBuffer::started()
 {
     ASSERTION(created_ == true);
-    ASSERTION(cuEventRecord(end_, stream_) == CUDA_SUCCESS);
+    CUresult ret = cuEventRecord(end_, stream_);
+    ASSERTION(ret == CUDA_SUCCESS);
 }
 
 inline gmacError_t
