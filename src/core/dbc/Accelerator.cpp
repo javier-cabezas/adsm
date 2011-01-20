@@ -1,7 +1,5 @@
-#include "Accelerator.h" 
-
-
 #ifdef USE_DBC
+
 #include "core/Accelerator.h"
 #include "core/Mode.h"
 
@@ -37,8 +35,6 @@ inline unsigned  __impl::core::Accelerator::busId_() const;
 inline unsigned  __impl::core::Accelerator::busAccId() const;
 inline bool __impl::core::Accelerator::integrated() const;
 */
-
- 
 
 }}
 #endif
