@@ -179,7 +179,7 @@ gmacError_t LazyBase::acquire(Block &b)
 gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {

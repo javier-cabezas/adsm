@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-namespace __impl { 
+namespace __impl {
 
 namespace core {
     class Mode;
@@ -99,7 +99,7 @@ protected:
         \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
     */
-	Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+        Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     //! Default destructor
     virtual ~Block();
@@ -244,7 +244,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyToHost(const hostptr_t src, size_t size, 
+    virtual gmacError_t copyToHost(const hostptr_t src, size_t size,
         size_t blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block host memory
@@ -355,7 +355,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t acceleratorMemset(int v, size_t size, 
+    virtual gmacError_t acceleratorMemset(int v, size_t size,
         size_t blockOffset = 0) const = 0;
 
     Protocol &getProtocol();

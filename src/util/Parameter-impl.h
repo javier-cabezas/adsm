@@ -37,6 +37,12 @@ inline int convert<int>(const char * str)
 }
 
 template <>
+inline unsigned convert<unsigned>(const char * str)
+{
+    return unsigned(atoi(str));
+}
+
+template <>
 inline float convert<float>(const char * str)
 {
     return (float)atof(str);
@@ -45,7 +51,7 @@ inline float convert<float>(const char * str)
 template <>
 inline size_t convert<size_t>(const char * str)
 {
-    return atol(str);
+    return size_t(atol(str));
 }
 
 template <>

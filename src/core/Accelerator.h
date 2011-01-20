@@ -103,14 +103,14 @@ public:
      * already registered in the accelerator
      * \param mode A reference to the mode to be registered
      */
-    void registerMode(Mode &mode);
+    TESTABLE void registerMode(Mode &mode);
 
     /**
      * Unegisters a mode from the accelerator. The mode must be already
      * registered in the accelerator
      * \param mode A reference to the mode to be unregistered
      */
-    void unregisterMode(Mode &mode);
+    TESTABLE void unregisterMode(Mode &mode);
 
     /**
      * Returns a value that indicates the load of the accelerator
@@ -208,7 +208,5 @@ public:
 #ifdef USE_DBC
 #include "core/dbc/Accelerator.h"
 #endif
-
-
 
 #endif

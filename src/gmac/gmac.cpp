@@ -170,7 +170,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if(count < (paramPageSize / 2)) {
+    if(count < (paramBlockSize / 2)) {
         *cpuPtr = allocator.alloc(count, hostptr_t(RETURN_ADDRESS));
     }
     else {

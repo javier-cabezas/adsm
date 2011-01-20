@@ -22,7 +22,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     accptr_t acceleratorAddr = accptr_t(NULL);
     // Allocate accelerator memory
     gmacError_t ret = 
-        owner.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+        owner.malloc(acceleratorAddr, size, unsigned(paramBlockSize));
     if(ret == gmacSuccess) valid_ = true;
 
     // Populate the block-set
@@ -30,7 +30,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     hostptr_t mark = addr_;
     int offset = 0;
     while(size > 0) {
-        size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
+        size_t blockSize = (size > paramBlockSize) ? paramBlockSize : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
 			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
@@ -89,7 +89,7 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 
     accptr_t acceleratorAddr = accptr_t(NULL);
     gmacError_t ret = 
-		mode.malloc(acceleratorAddr, size_, unsigned(paramPageSize));
+		mode.malloc(acceleratorAddr, size_, unsigned(paramBlockSize));
     if(ret != gmacSuccess) return ret;
 
     lockWrite();

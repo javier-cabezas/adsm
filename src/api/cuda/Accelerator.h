@@ -71,7 +71,7 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
     DBC_FORCE_TEST(Accelerator)
 
     friend class Switch;

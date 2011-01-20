@@ -6,23 +6,109 @@
 #ifdef USE_VM
 namespace __impl { namespace memory { namespace vm {
 
-template <>
 void
-StoreShared::alloc<Node *>(size_t nEntries)
+StoreShared::allocAcc()
 {
-    this->entries_ = new Node *[nEntries];
-    this->allocated_ = true;
-    // TODO: implement accelerator memory allocation
+    accptr_t addr;
+    gmacError_t ret = root_.mode_.malloc(addr, size_);
+    ASSERTION(ret == gmacSuccess);
 }
 
-template <>
 void
-StoreShared::alloc<uint8_t>(size_t nEntries)
+StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
 {
-    this->entries_ = new uint8_t[nEntries];
-    this->allocated_ = true;
-    // TODO: implement accelerator memory allocation
+#ifndef USE_HOSTMAP_VM
+    TRACE(LOCAL,"Syncing SharedBitmap");
+    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+    gmacError_t ret;
+    size_t size = (endIndex - startIndex) * elemSize;
+    hostptr_t host = entriesHost_ + startIndex * elemSize;
+    accptr_t acc = entriesAcc_ + startIndex * elemSize;
+    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: "FMT_SIZE, (void *) acc, host, size);
+    ret = mode.copyToHost(host, acc, size);
+    CFATAL(ret == gmacSuccess, "Unable to copy to host dirty bitmap node");
+#endif
 }
+
+void
+StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
+{
+    if (!allocatedAcc_) allocAcc();
+
+    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+
+#ifndef USE_HOSTMAP_VM
+    if (isDirty()) {
+        TRACE(LOCAL, "Syncing SharedBitmap");
+        TRACE(LOCAL, "Copying "FMT_SIZE" bytes", size_);
+        gmacError_t ret = gmacSuccess;
+        void * entriesAcc = & ((Node **)(void *) entriesAcc_)[startIndex];
+        void * entriesHost = & ((Node **)entriesHost_)[startIndex];
+        size_t size = endIndex - startIndex * sizeof(Node *);
+
+        ret = mode.copyToAccelerator(accptr_t(entriesAcc), hostptr_t(entriesHost), size);
+        CFATAL(ret == gmacSuccess, "Unable to copy dirty bitmap to accelerator");
+    }
+#endif
+}
+
+StoreShared::~StoreShared()
+{
+    if (allocatedAcc_ == true) {
+        // TODO: implement accelerator memory deallocation
+    }
+}
+
+
+void
+BitmapShared::syncToAccelerator()
+{
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+    cuda::Accelerator &acc = mode.getAccelerator();
+
+#ifndef USE_MULTI_CONTEXT
+    cuda::Mode *last = acc.getLastMode();
+
+    if (last != &mode) {
+        // TODO Is this really necessary
+        if (last != NULL) {
+            BitmapShared &lastBitmap = last->acceleratorDirtyBitmap();
+            Node *n = lastBitmap.root_;
+            NodeShared *root = (NodeShared *) lastBitmap.root_;
+            if (!root->isSynced()) {
+                root->syncToHost<Node *>(n->getFirstUsedEntry(), n->getLastUsedEntry());
+            }
+        }
+        TRACE(LOCAL, "Syncing SharedBitmap pointers");
+        gmacError_t ret = gmacSuccess;
+        accptr_t bitmapAccPtr = mode.dirtyBitmapAccPtr();
+        NodeShared *root = (NodeShared *) root_;
+
+        TRACE(LOCAL, "%p -> %p (0x%lx)", root->entriesHost_, (void *) root->entriesAcc_, mode.dirtyBitmapAccPtr());
+        void * entriesAcc = root->getAccAddr();
+        ret = mode.copyToAccelerator(bitmapAccPtr, hostptr_t(&entriesAcc), sizeof(entriesAcc));
+        CFATAL(ret == gmacSuccess, "Unable to set the pointer in the accelerator %p", (void *) mode.dirtyBitmapAccPtr());
+
+        accptr_t bitmapShiftPageAccPtr = mode.dirtyBitmapShiftPageAccPtr();
+        ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
+        CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
+        if (Bitmap::BitmapLevels_ > 1) {
+            accptr_t bitmapShiftL1AccPtr = mode.dirtyBitmapShiftPageAccPtr();
+            ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
+            CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
+        }
+
+
+    }
+
+    synced_ = true;
+#endif
+
+#ifndef USE_MULTI_CONTEXT
+    acc.setLastMode(mode);
+#endif
+}
+
 
 #if 0
 void SharedBitmap::allocate()

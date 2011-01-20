@@ -53,7 +53,7 @@ ssize_t read(int fd, void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramBlockSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 
@@ -95,7 +95,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     size_t ret = 0;
 
     off_t  off  = 0;
-    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
+    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramBlockSize);
 
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 

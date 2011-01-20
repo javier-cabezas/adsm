@@ -84,7 +84,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramBlockSize));
     if(buffer_ == NULL) {
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
@@ -101,7 +101,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::EnterCurrentFunction();
         ::memcpy(buffer_->addr(), host + offset, len);
         trace::ExitCurrentFunction();
-        ASSERTION(len <= paramPageSize);
+        ASSERTION(len <= paramBlockSize);
         ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
@@ -116,7 +116,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.base_, host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramBlockSize));
     if(buffer_ == NULL) {
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();

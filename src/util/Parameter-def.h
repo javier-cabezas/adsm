@@ -9,10 +9,7 @@ PARAM(paramDebug, const char *, "none", "GMAC_DEBUG")
 //PARAM(paramDebugFile, const char *, NULL, "GMAC_DEBUG_FILE")
 
 // GMAC Page table settings
-PARAM(paramPageSize, size_t, 2 * 1024 * 1024, "GMAC_PAGE", PARAM_NONZERO)
-
-// GMAC Bitmap settings
-PARAM(paramSubBlocks, size_t, 1, "GMAC_SUBBLOCKS", PARAM_NONZERO)
+PARAM(paramBlockSize, size_t, 2 * 1024 * 1024, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
 
 // Rolling Manager specific settings
 PARAM(paramRollSize, size_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
@@ -26,6 +23,13 @@ PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
 // OpenCL parameters
 PARAM(paramOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
 PARAM(paramOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
+
+// Bitmap parameters
+PARAM(paramSubBlocks, unsigned, 1, "GMAC_SUBBLOCKS", PARAM_NONZERO)
+PARAM(paramBitmapLevels, unsigned, 1, "GMAC_BITMAP_LEVELS", PARAM_NONZERO)
+PARAM(paramBitmapL1Entries, unsigned, 1, "GMAC_BITMAP_L1ENTRIES", PARAM_NONZERO)
+PARAM(paramBitmapL2Entries, unsigned, 1, "GMAC_BITMAP_L2ENTRIES", PARAM_NONZERO)
+PARAM(paramBitmapL3Entries, unsigned, 1, "GMAC_BITMAP_L3ENTRIES", PARAM_NONZERO)
 
 // GMAC parameters for auto-tunning
 PARAM(paramModelToHostConfig, float, 40.0, "GMAC_MODEL_TOHOSTCONFIG")       // DMA configuration costs

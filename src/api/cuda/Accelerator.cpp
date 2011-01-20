@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-    core::Accelerator(n), device_(device),
+    gmac::core::Accelerator(n), device_(device),
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     lastMode_(NULL),

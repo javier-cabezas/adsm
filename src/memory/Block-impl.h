@@ -18,7 +18,7 @@ inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t
 {
 #ifdef USE_VM
     resetBitmapStats();
-    subBlockSize_ = paramPageSize/paramSubBlocks;
+    subBlockSize_ = paramBlockSize/paramSubBlocks;
 #endif
 }
 
@@ -42,7 +42,7 @@ Block::updateBitmapStats(const hostptr_t addr, bool write)
 #else
     const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
 #endif
-    unsigned long currentSubBlock = bitmap.getSubBlock(acceleratorAddr(addr));
+    unsigned long currentSubBlock = bitmap.getIndex(acceleratorAddr(addr));
 #if 0
     if (write) {
         bitmap.set(acceleratorAddr(addr));
@@ -89,7 +89,7 @@ Block::getSubBlockAddr(const hostptr_t addr) const
 #else
     const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
 #endif
-    unsigned long subBlock = bitmap.getSubBlock(acceleratorAddr(addr));
+    unsigned long subBlock = bitmap.getIndex(acceleratorAddr(addr));
     return addr_ + (subBlock * subBlockSize_);
 }
 

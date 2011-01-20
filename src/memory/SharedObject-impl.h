@@ -11,7 +11,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
     gmacError_t ret = 
-        mode.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+        mode.malloc(acceleratorAddr, size, unsigned(paramBlockSize));
     if(ret == gmacSuccess) {
 #ifdef USE_SUBBLOCK_TRACKING
         vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
@@ -79,7 +79,7 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
         hostptr_t mark = addr_;
         ptroff_t offset = 0;
         while(size > 0) {
-            size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
+            size_t blockSize = (size > paramBlockSize) ? paramBlockSize : size;
             mark += blockSize;
             blocks_.insert(BlockMap::value_type(mark, 
                         new SharedBlock<T>(protocol, owner, addr_ + ptroff_t(offset), 

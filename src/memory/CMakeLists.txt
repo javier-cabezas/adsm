@@ -6,7 +6,7 @@ add_subdirectory(${OS_DIR})
 
 set(memory_SRC
     memory.cpp Memory.h
-    Bitmap.h Bitmap-impl.h
+    Bitmap.h Bitmap-impl.h Bitmap.cpp
     Block.h Block-impl.h Block.cpp
     StateBlock.h StateBlock-impl.h
     SharedBlock.h SharedBlock-impl.h
