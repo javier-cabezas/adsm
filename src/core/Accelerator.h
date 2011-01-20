@@ -51,6 +51,8 @@ class Process;
 
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
+      DBC_FORCE_TEST(Accelerator)
+
 protected:
     /** Identifier of the accelerator */
     unsigned id_;
@@ -202,5 +204,11 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "core/dbc/Accelerator.h"
+#endif
+
+
 
 #endif
