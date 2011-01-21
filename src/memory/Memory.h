@@ -31,13 +31,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MEMORY_H_
-#define __MEMORY_MEMORY_H_
+#ifndef GMAC_MEMORY_MEMORY_H_
+#define GMAC_MEMORY_MEMORY_H_
 
 #include "config/common.h"
 #include "include/gmac/types.h"
 
 namespace __impl { namespace memory {
+
+extern size_t BlockSize_;
+#ifdef USE_VM
+extern size_t SubBlockSize_;
+extern unsigned long BlockShift_;
+extern unsigned long SubBlockShift_;
+extern unsigned long SubBlockMask_;
+#endif
 
 class GMAC_LOCAL Memory {
 public:
@@ -47,6 +55,30 @@ public:
 	static void unshadow(hostptr_t addr, size_t count);
 	static void unmap(hostptr_t addr, size_t count);
 };
+
+static inline
+unsigned long
+GetSubBlock(const hostptr_t _addr)
+{
+    unsigned long addr = (unsigned long) _addr;
+    return (addr >> SubBlockShift_) & SubBlockMask_;
+}
+
+static inline
+hostptr_t
+GetBlockAddr(const hostptr_t _addr)
+{
+    unsigned long addr = (unsigned long) _addr;
+    return hostptr_t((addr >> BlockShift_) << BlockShift_);
+}
+
+static inline
+hostptr_t
+GetSubBlockAddr(const hostptr_t _addr)
+{
+    unsigned long addr = (unsigned long) _addr;
+    return hostptr_t((addr >> SubBlockShift_) << SubBlockShift_);
+}
 
 }}
 

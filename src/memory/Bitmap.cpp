@@ -8,12 +8,12 @@
 
 namespace __impl { namespace memory { namespace vm {
 
-const unsigned &Bitmap::BitmapLevels_ = paramBitmapLevels;
-const unsigned &Bitmap::L1Entries_ = paramBitmapL1Entries;
-const unsigned &Bitmap::L2Entries_ = paramBitmapL2Entries;
-const unsigned &Bitmap::L3Entries_ = paramBitmapL3Entries;
-const size_t &Bitmap::BlockSize_ = paramBlockSize;
-const unsigned &Bitmap::SubBlocks_ = paramSubBlocks;
+const unsigned &Bitmap::BitmapLevels_ = util::params::ParamBitmapLevels;
+const unsigned &Bitmap::L1Entries_ = util::params::ParamBitmapL1Entries;
+const unsigned &Bitmap::L2Entries_ = util::params::ParamBitmapL2Entries;
+const unsigned &Bitmap::L3Entries_ = util::params::ParamBitmapL3Entries;
+const size_t &Bitmap::BlockSize_ = util::params::ParamBlockSize;
+const unsigned &Bitmap::SubBlocks_ = util::params::ParamSubBlocks;
 
 Node::Node(size_t nEntries, std::vector<unsigned> nextEntries) :
     nEntries_(0), nUsedEntries_(0),
@@ -21,6 +21,8 @@ Node::Node(size_t nEntries, std::vector<unsigned> nextEntries) :
     firstUsedEntry_(-1), lastUsedEntry_(-1),
     nextEntries_(nextEntries)
 {
+    TRACE(LOCAL, "Node constructor");
+
     unsigned shift = 0;
     for (size_t i = 0; i < nextEntries_.size(); i++) {
         shift += unsigned(ceilf(log2f(float(nextEntries[i]))));
@@ -34,8 +36,11 @@ Node::Node(size_t nEntries, std::vector<unsigned> nextEntries) :
     shift_ = shift;
 }
 
-NodeHost::~NodeHost()
+template <typename S>
+NodeStore<S>::~NodeStore()
 {
+    TRACE(LOCAL, "NodeStore destructor");
+
     if (nextEntries_.size() > 0) {
         for (unsigned long i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
             Node *node = getNode(i);
@@ -47,9 +52,8 @@ NodeHost::~NodeHost()
 }
 
 template <typename S>
-template <typename T>
 void
-NodeStore<S>::registerRange(Bitmap &root, unsigned long startIndex, unsigned long endIndex)
+NodeStore<S>::registerRange(unsigned long startIndex, unsigned long endIndex)
 {
     unsigned long localStartIndex = getLocalIndex(startIndex);
     unsigned long localEndIndex = getLocalIndex(endIndex);
@@ -71,9 +75,9 @@ NodeStore<S>::registerRange(Bitmap &root, unsigned long startIndex, unsigned lon
     unsigned long i = localStartIndex;
     do {
         Node *&node = getNodeRef(i);
-        std::vector<unsigned> nextEntries;
-        std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-        node = new T(root, nextEntries_[0], nextEntries);
+        if (node == NULL) {
+            node = createChild();
+        }
         node->registerRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
         i++;
         startWIndex = getGlobalIndex(i);
@@ -90,11 +94,6 @@ NodeStore<S>::unregisterRange(unsigned long startIndex, unsigned long endIndex)
 
     if (nextEntries_.size() == 0) {
         removeEntries(localStartIndex, localEndIndex);
-
-        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
-            uint8_t &leaf = getLeafRef(i);
-            leaf = uint8_t(BITMAP_UNSET);
-        }
         return;
     }
 
@@ -116,29 +115,24 @@ NodeStore<S>::unregisterRange(unsigned long startIndex, unsigned long endIndex)
     } while (i <= localEndIndex);
 }
 
-
-void
-NodeHost::registerRange(unsigned long startIndex, unsigned long endIndex)
+Node *
+NodeHost::createChild()
 {
-    NodeStore<StoreHost>::registerRange<NodeHost>(root_, startIndex, endIndex);
+    if (nextEntries_.size() == 0) return NULL;
+
+    std::vector<unsigned> nextEntries;
+    std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
+    return new NodeHost(root_, nextEntries_[0], nextEntries);
 }
 
-void
-NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
+Node *
+NodeShared::createChild()
 {
-    NodeStore<StoreShared>::registerRange<NodeShared>(root_, startIndex, endIndex);
-}
+    if (nextEntries_.size() == 0) return NULL;
 
-NodeShared::~NodeShared()
-{
-    if (nextEntries_.size() > 0) {
-        for (unsigned long i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
-            Node *node = getNode(i);
-            if (node != NULL) {
-                delete node;
-            }
-        }
-    }
+    std::vector<unsigned> nextEntries;
+    std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
+    return new NodeShared(root_, nextEntries_[0], nextEntries);
 }
 
 void
@@ -177,10 +171,12 @@ NodeShared::release()
 Bitmap::Bitmap(core::Mode &mode, bool shared) :
     mode_(mode)
 {
+    TRACE(LOCAL, "Bitmap constructor");
 }
 
 Bitmap::~Bitmap()
 {
+    TRACE(LOCAL, "Bitmap destructor");
 }
 
 void
@@ -201,11 +197,7 @@ BitmapHost::BitmapHost(core::Mode &mode) :
         nextEntries.push_back(L3Entries_);
     }
 
-    shift_ = unsigned(ceilf(log2f(float()))); 
-
-    if (BitmapLevels_ > 1) {
-        root_ = new NodeHost(*this, L1Entries_, nextEntries);
-    }
+    root_ = new NodeHost(*this, L1Entries_, nextEntries);
 }
 
 BitmapShared::BitmapShared(core::Mode &mode) :
@@ -221,23 +213,23 @@ BitmapShared::BitmapShared(core::Mode &mode) :
         nextEntries.push_back(L3Entries_);
     }
 
-    shift_ = unsigned(ceilf(log2f(float()))); 
-
-    if (BitmapLevels_ > 1) {
-        root_ = new NodeShared(*this, L1Entries_, nextEntries);
-    }
+    root_ = new NodeShared(*this, L1Entries_, nextEntries);
 }
 
 void
 Bitmap::registerRange(const accptr_t addr, size_t bytes)
 {
-    root_->registerRange(getEntry(addr), getEntry(addr + bytes - 1));
+    TRACE(LOCAL, "registerRange %p %zd", (void *) addr, bytes);
+
+    root_->registerRange(getIndex(addr), getIndex(addr + bytes - 1));
 }
 
 void
 Bitmap::unregisterRange(const accptr_t addr, size_t bytes)
 {
-    root_->unregisterRange(getEntry(addr), getEntry(addr + bytes - 1));
+    TRACE(LOCAL, "unregisterRange %p %zd", (void *) addr, bytes);
+
+    root_->unregisterRange(getIndex(addr), getIndex(addr + bytes - 1));
 }
 
 #if 0
@@ -257,11 +249,11 @@ Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
     bitmap_ = new hostptr_t[rootEntries];
     ::memset(bitmap_, 0, rootEntries * sizeof(hostptr_t));
 
-    shiftBlock_ = int(log2(paramPageSize));
-    shiftPage_  = shiftBlock_ - int(log2(paramSubBlocks));
+    shiftBlock_ = int(log2(util::params::ParamPageSize));
+    shiftPage_  = shiftBlock_ - int(log2(util::params::ParamSubBlocks));
 
-    subBlockSize_ = (paramSubBlocks) - 1;
-    subBlockMask_ = (paramSubBlocks) - 1;
+    subBlockSize_ = (util::params::ParamSubBlocks) - 1;
+    subBlockMask_ = (util::params::ParamSubBlocks) - 1;
     pageMask_     = subBlockSize_ - 1;
 
     size_    = (1 << (bits - shiftPage_)) / EntriesPerByte_;

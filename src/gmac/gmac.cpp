@@ -43,6 +43,9 @@ static long getpagesize (void) {
 }
 #endif
 
+using __impl::util::params::ParamBlockSize;
+using __impl::util::params::ParamAcquireOnWrite;
+
 #if 0
 gmacError_t
 gmacClear(gmacKernel_t k)
@@ -170,7 +173,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if(count < (paramBlockSize / 2)) {
+    if(count < (ParamBlockSize / 2)) {
         *cpuPtr = allocator.alloc(count, hostptr_t(RETURN_ADDRESS));
     }
     else {
@@ -240,7 +243,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
-    if(paramAcquireOnWrite) {
+    if(ParamAcquireOnWrite) {
         TRACE(GLOBAL, "Invalidate the memory used in the kernel");
         //manager.invalidate();
     }

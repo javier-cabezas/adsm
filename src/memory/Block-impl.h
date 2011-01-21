@@ -18,7 +18,6 @@ inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t
 {
 #ifdef USE_VM
     resetBitmapStats();
-    subBlockSize_ = paramBlockSize/paramSubBlocks;
 #endif
 }
 
@@ -37,12 +36,7 @@ inline void
 Block::updateBitmapStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
-#ifdef USE_VM
-    const vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
-#else
-    const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
-#endif
-    unsigned long currentSubBlock = bitmap.getIndex(acceleratorAddr(addr));
+    unsigned long currentSubBlock = GetSubBlock(addr);
 #if 0
     if (write) {
         bitmap.set(acceleratorAddr(addr));
@@ -83,26 +77,19 @@ Block::getSequentialFaults() const
 inline hostptr_t
 Block::getSubBlockAddr(const hostptr_t addr) const
 {
-    core::Mode &mode = owner();
-#ifdef USE_VM
-    const vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
-#else
-    const vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
-#endif
-    unsigned long subBlock = bitmap.getIndex(acceleratorAddr(addr));
-    return addr_ + (subBlock * subBlockSize_);
+    return GetSubBlockAddr(addr);
 }
 
 inline size_t
 Block::getSubBlockSize() const
 {
-    return subBlockSize_;
+    return size_ < SubBlockSize_? size_: SubBlockSize_;
 }
 
 inline unsigned
 Block::getSubBlocks() const
 {
-    return size_/subBlockSize_;
+    return unsigned(ceilf(float(size_)/float(SubBlockSize_)));
 }
 
 inline void 

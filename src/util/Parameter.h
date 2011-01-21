@@ -95,9 +95,7 @@ public:
     void print() const;
 };
 
-}}
-
-
+namespace params {
 typedef struct GMAC_LOCAL {
     __impl::util::__Parameter *(*ctor)(void);
     __impl::util::__Parameter *param;
@@ -106,7 +104,11 @@ typedef struct GMAC_LOCAL {
 extern ParameterCtor ParamCtorList[];
 
 #define PARAM(v, t, d, ...)  extern t v;
+
 #include "Parameter-def.h"
+}
+
+}}
 
 #include "Parameter-impl.h"
 

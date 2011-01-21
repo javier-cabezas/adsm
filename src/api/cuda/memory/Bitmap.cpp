@@ -17,6 +17,7 @@ StoreShared::allocAcc()
 void
 StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
 {
+    return;
 #ifndef USE_HOSTMAP_VM
     TRACE(LOCAL,"Syncing SharedBitmap");
     cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
@@ -33,6 +34,7 @@ StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex, size_t
 void
 StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
 {
+    return;
     if (!allocatedAcc_) allocAcc();
 
     cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
@@ -54,6 +56,8 @@ StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex,
 
 StoreShared::~StoreShared()
 {
+    TRACE(LOCAL, "StoreShared constructor");
+
     if (allocatedAcc_ == true) {
         // TODO: implement accelerator memory deallocation
     }

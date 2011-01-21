@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <gmac.h>
+#include <gmac/cuda.h>
 #include <gmac/vm.h>
 
 #include <sys/time.h>

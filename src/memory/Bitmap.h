@@ -89,13 +89,15 @@ protected:
     unsigned long getGlobalIndex(unsigned long localIndex) const;
     unsigned long getNextIndex(unsigned long index) const;
 
-    Node(size_t nEntries, std::vector<unsigned> nextEntries);
+    virtual Node *createChild() = 0;
 
+    Node(size_t nEntries, std::vector<unsigned> nextEntries);
 public:
     virtual BitmapState getEntry(unsigned long index) = 0;
     virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state) = 0;
     virtual void setEntry(unsigned long index, BitmapState state) = 0;
     virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state) = 0;
+    virtual bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state) = 0;
 
     virtual void registerRange(unsigned long startIndex, unsigned long endIndex) = 0;
     virtual void unregisterRange(unsigned long startIndex, unsigned long endIndex) = 0;
@@ -181,21 +183,21 @@ protected:
     Node *&getNodeRef(unsigned long index);
     uint8_t &getLeafRef(unsigned long index);
 
-    template <typename T>
-    void registerRange(Bitmap &root, unsigned long startIndex, unsigned long endIndex);
-
-    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
-
     NodeStore(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    ~NodeStore();
 public:
 
-    BitmapState getEntry(unsigned long index);
-    BitmapState getAndSetEntry(unsigned long index, BitmapState state);
-    void setEntry(unsigned long index, BitmapState state);
-    void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+    virtual BitmapState getEntry(unsigned long index);
+    virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state);
+    virtual void setEntry(unsigned long index, BitmapState state);
+    virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+    virtual bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
 
+    void registerRange(unsigned long startIndex, unsigned long endIndex);
+    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
 };
 
+#if 0
 class GMAC_LOCAL NodeHost : public NodeStore<StoreHost>
 {
 public:
@@ -208,6 +210,17 @@ public:
     void release() {}
 };
 
+#endif
+
+class GMAC_LOCAL NodeHost : public NodeStore<StoreHost>
+{
+protected:
+    Node *createChild();
+
+public:
+    NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+};
+
 class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
 {
     friend class BitmapShared;
@@ -215,16 +228,19 @@ class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
     void sync();
     uint8_t &getAccLeafRef(unsigned long index);
 
+protected:
+    Node *createChild();
+
 public:
     NodeShared(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
-    virtual ~NodeShared();
 
     BitmapState getEntry(unsigned long index);
     BitmapState getAndSetEntry(unsigned long index, BitmapState state);
     void setEntry(unsigned long index, BitmapState state);
     void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+    bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
 
-    void registerRange(unsigned long startIndex, unsigned long endIndex);
+    //void registerRange(unsigned long startIndex, unsigned long endIndex);
 
     void acquire();
     void release();
@@ -279,8 +295,6 @@ protected:
      * Map of the registered memory ranges
      */
     std::map<accptr_t, size_t> ranges_;
-
-    unsigned shift_;
 
 public:
     /**
@@ -371,20 +385,20 @@ static inline
 float costTransferCache(const size_t subBlockSize, size_t subBlocks)
 {
     if (M == MODEL_TOHOST) {
-        if (subBlocks * subBlockSize <= paramModelL1/2) {
-            return paramModelToHostTransferL1;
-        } else if (subBlocks * subBlockSize <= paramModelL2/2) {
-            return paramModelToHostTransferL2;
+        if (subBlocks * subBlockSize <= util::params::ParamModelL1/2) {
+            return util::params::ParamModelToHostTransferL1;
+        } else if (subBlocks * subBlockSize <= util::params::ParamModelL2/2) {
+            return util::params::ParamModelToHostTransferL2;
         } else {
-            return paramModelToHostTransferMem;
+            return util::params::ParamModelToHostTransferMem;
         }
     } else {
-        if (subBlocks * subBlockSize <= paramModelL1/2) {
-            return paramModelToDeviceTransferL1;
-        } else if (subBlocks * subBlockSize <= paramModelL2/2) {
-            return paramModelToDeviceTransferL2;
+        if (subBlocks * subBlockSize <= util::params::ParamModelL1/2) {
+            return util::params::ParamModelToDeviceTransferL1;
+        } else if (subBlocks * subBlockSize <= util::params::ParamModelL2/2) {
+            return util::params::ParamModelToDeviceTransferL2;
         } else {
-            return paramModelToDeviceTransferMem;
+            return util::params::ParamModelToDeviceTransferMem;
         }
     }
 }
@@ -408,9 +422,9 @@ static inline
 float costConfig()
 {
     if (M == MODEL_TOHOST) {
-        return paramModelToHostConfig;
+        return util::params::ParamModelToHostConfig;
     } else {
-        return paramModelToDeviceConfig;
+        return util::params::ParamModelToDeviceConfig;
     }
 }
 

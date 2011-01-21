@@ -34,7 +34,7 @@ static void CONSTRUCTOR init(void)
 	util::Logger::Init();
     TRACE(GLOBAL, "Initialiazing GMAC");
 
-    paramInit();
+    util::params::Init();
 	gmac::trace::InitTracer();	
 
     /* Call initialization of interpose libraries */
@@ -48,8 +48,8 @@ static void CONSTRUCTOR init(void)
     mpiInit();
 #endif
 
-    TRACE(GLOBAL, "Using %s memory manager", paramProtocol);
-    TRACE(GLOBAL, "Using %s memory allocator", paramAllocator);
+    TRACE(GLOBAL, "Using %s memory manager", util::params::ParamProtocol);
+    TRACE(GLOBAL, "Using %s memory allocator", util::params::ParamAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
     core::Process::create<__impl::core::Process>();

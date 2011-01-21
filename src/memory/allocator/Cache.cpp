@@ -13,9 +13,9 @@ Arena::Arena(size_t objSize) :
     ptr_(NULL),
     size_(0)
 {
-    gmacError_t ret = Manager::getInstance().alloc(&ptr_, paramBlockSize);
+    gmacError_t ret = Manager::getInstance().alloc(&ptr_, memory::BlockSize_);
     CFATAL(ret == gmacSuccess, "Unable to allocate memory in the accelerator");
-    for(size_t s = 0; s < paramBlockSize; s += objSize, size_++) {
+    for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
         objects_.push_back(ptr_ + s);
     }

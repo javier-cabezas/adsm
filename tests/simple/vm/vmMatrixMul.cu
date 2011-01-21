@@ -56,7 +56,7 @@ extern "C" {
 }
 
 // includes, project
-#include <gmac.h>
+#include <gmac/cuda.h>
 #include <gmac/vm.h>
 
 // includes, utils and debug

@@ -55,7 +55,7 @@ inline size_t Object::blockEnd(size_t offset) const
 
 inline size_t Object::blockSize() const
 {
-    return paramBlockSize;
+    return BlockSize_;
 }
 
 inline size_t Object::size() const

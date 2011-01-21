@@ -13,6 +13,7 @@
         __##v = new __impl::util::Parameter<t>(&v, #v, d, ##__VA_ARGS__);\
         return __##v;\
     }
+namespace __impl { namespace util { namespace params {
 #include "Parameter-def.h"
 
 // This CPP directives will create the constructor table for all
@@ -25,7 +26,7 @@ ParameterCtor ParamCtorList[] = {
     {NULL, NULL}
 };
 
-void paramInit()
+void Init()
 {
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         ParamCtorList[i].param = ParamCtorList[i].ctor();
@@ -38,5 +39,7 @@ void paramInit()
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         delete ParamCtorList[i].param;
 }
+
+}}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

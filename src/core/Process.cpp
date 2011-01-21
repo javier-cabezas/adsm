@@ -92,13 +92,13 @@ void QueueMap::erase(THREAD_T id)
 Process::Process() :
     util::Singleton<Process>(),
     gmac::util::RWLock("Process"),
-    protocol_(*protocolInit(GLOBAL_PROTOCOL)),
+    protocol_(*memory::ProtocolInit(GLOBAL_PROTOCOL)),
     shared_("SharedMemoryMap"),
     global_("GlobalMemoryMap"),
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
-    memoryInit();
+    memory::Init();
     // Create the private per-thread variables for the implicit thread
     Mode::init();
     initThread();
@@ -118,7 +118,7 @@ Process::~Process()
     accs_.clear();
     queues_.cleanup();
     delete &protocol_;
-    memoryFini();
+    memory::Fini();
 }
 
 void Process::initThread()

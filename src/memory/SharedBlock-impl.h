@@ -38,40 +38,39 @@ inline gmacError_t SharedBlock<T>::toHost() const
     gmacError_t ret = gmacSuccess;
 #ifdef USE_VM
     vm::BitmapShared &acceleratorBitmap = owner_.acceleratorDirtyBitmap();
-    size_t subBlockSize = Block::getSubBlockSize();
     bool inSubGroup = false;
     unsigned groupStart = 0, groupEnd = 0;
     unsigned gaps = 0;
     //fprintf(stderr, "TOHOST: SubBlocks %u\n", Block::getSubBlocks());
     for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
         if (inSubGroup) {
-            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
+            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
                 groupEnd = i;
             } else {
-                if (vm::costGaps<vm::MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
-                    vm::cost<vm::MODEL_TODEVICE>(subBlockSize, 1)) {
+                if (vm::costGaps<vm::MODEL_TODEVICE>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
+                    vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
                     gaps++;
                 } else {
                     inSubGroup = false;
 
                     //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
-                    ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * subBlockSize,
-                                            acceleratorAddr_       + groupStart * subBlockSize,
-                                            (groupEnd - groupStart + 1) * subBlockSize);
+                    ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
+                                            acceleratorAddr_       + groupStart * SubBlockSize_,
+                                            (groupEnd - groupStart + 1) * SubBlockSize_);
                     if (ret != gmacSuccess) break;
                 }
             }
         } else {
-            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
+            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
                 groupStart = i; gaps = 0; inSubGroup = true;
             }
         }
     }
     if (inSubGroup) {
         //fprintf(stderr, "TOHOST B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-        ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * subBlockSize,
-                                acceleratorAddr_       + groupStart * subBlockSize,
-                                (groupEnd - groupStart + 1) * subBlockSize);
+        ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
+                                acceleratorAddr_       + groupStart * SubBlockSize_,
+                                (groupEnd - groupStart + 1) * SubBlockSize_);
     }
 #else
     ret = owner_.copyToHost(StateBlock<T>::shadow_, acceleratorAddr_, StateBlock<T>::size_);
@@ -91,40 +90,39 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
     vm::BitmapShared &bitmap= owner_.acceleratorDirtyBitmap();
 #endif
 #endif
-    size_t subBlockSize = Block::getSubBlockSize();
     bool inSubGroup = false;
     unsigned groupStart = 0, groupEnd = 0;
     unsigned gaps = 0;
     //fprintf(stderr, "TODEVICE: SubBlocks %u\n", Block::getSubBlocks());
     for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
         if (inSubGroup) {
-            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
+            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
                 groupEnd = i;
             } else {
-                if (vm::costGaps<vm::MODEL_TODEVICE>(subBlockSize, gaps + 1, i - groupStart + 1) <
-                    vm::cost<vm::MODEL_TODEVICE>(subBlockSize, 1)) {
+                if (vm::costGaps<vm::MODEL_TODEVICE>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
+                    vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
                     gaps++;
                 } else {
                     inSubGroup = false;
                     
                     //fprintf(stderr, "TODEVICE A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
-                    ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * subBlockSize,
-                                                   StateBlock<T>::shadow_ + groupStart * subBlockSize,
-                                                   (groupEnd - groupStart + 1) * subBlockSize);
+                    ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * SubBlockSize_,
+                                                   StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
+                                                   (groupEnd - groupStart + 1) * SubBlockSize_);
                     if (ret != gmacSuccess) break;
                 }
             }
         } else {
-            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * subBlockSize, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
+            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
                 groupStart = i; gaps = 0; inSubGroup = true;
             }
         }
     }
     if (inSubGroup) {
         //fprintf(stderr, "TODEVICE B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-        ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * subBlockSize,
-                                       StateBlock<T>::shadow_ + groupStart * subBlockSize,
-                                       (groupEnd - groupStart + 1) * subBlockSize);
+        ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * SubBlockSize_,
+                                       StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
+                                       (groupEnd - groupStart + 1) * SubBlockSize_);
     }
     Block::resetBitmapStats();
 #else

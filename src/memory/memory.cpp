@@ -15,40 +15,56 @@
 
 namespace __impl { 
 
-namespace core {
+namespace memory {
 
-void memoryInit(void)
+size_t BlockSize_;
+#ifdef USE_VM
+size_t SubBlockSize_;
+unsigned long BlockShift_;
+unsigned long SubBlockShift_;
+unsigned long SubBlockMask_;
+#endif
+
+void Init(void)
 {
 	TRACE(GLOBAL, "Initializing Memory Subsystem");
-    memory::Manager::create<gmac::memory::Manager>();
-    memory::Allocator::create<__impl::memory::allocator::Slab>();
+    Manager::create<gmac::memory::Manager>();
+    Allocator::create<__impl::memory::allocator::Slab>();
+
+    BlockSize_     = util::params::ParamBlockSize;
+#ifdef USE_VM
+    SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
+    BlockShift_    = ceilf(log2f(float(util::params::ParamBlockSize)));
+    SubBlockShift_ = ceilf(log2f(float(util::params::ParamBlockSize/util::params::ParamSubBlocks)));
+    SubBlockMask_  = util::params::ParamSubBlocks - 1;
+#endif
 }
 
-memory::Protocol *protocolInit(unsigned flags)
+Protocol *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
-    memory::Protocol *ret = NULL;
-    if(strcasecmp(paramProtocol, "Rolling") == 0) {
+    Protocol *ret = NULL;
+    if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new memory::protocol::Lazy<
-                memory::DistributedObject<memory::protocol::LazyBase::State> >(
-                paramRollSize);
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
+                util::params::ParamRollSize);
         }
         else {
-            ret = new memory::protocol::Lazy<
-                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
-                paramRollSize);
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
+                util::params::ParamRollSize);
         }
     }
-    else if(strcasecmp(paramProtocol, "Lazy") == 0) {
+    else if(strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new memory::protocol::Lazy<
-                memory::DistributedObject<memory::protocol::LazyBase::State> >(
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
                 (size_t)-1);
         }
         else {
-            ret = new memory::protocol::Lazy<
-                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
                 (size_t)-1);
         }
     }
@@ -58,12 +74,11 @@ memory::Protocol *protocolInit(unsigned flags)
     return ret;
 }
 
-void memoryFini(void)
+void Fini(void)
 {
 	TRACE(GLOBAL, "Cleaning Memory Subsystem");
-    memory::Allocator::destroy();
-    memory::Manager::destroy();
+    Allocator::destroy();
+    Manager::destroy();
 }
-
 
 }}

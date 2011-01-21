@@ -32,7 +32,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
-    protocol_ = protocolInit(0);
+    protocol_ = memory::ProtocolInit(0);
 }
 
 Mode::~Mode()
