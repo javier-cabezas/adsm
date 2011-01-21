@@ -33,7 +33,7 @@ void apiInit(void)
         ASSERTION(ret == CL_SUCCESS);
         TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", size, i);
         for(unsigned j = 0; j < size; j++) {
-            __impl::opencl::Accelerator *acc = new __impl::opencl::Accelerator(n++, platforms[i], devices[j]);
+            gmac::opencl::Accelerator *acc = new gmac::opencl::Accelerator(n++, platforms[i], devices[j]);
             proc.addAccelerator(*acc);
             // Nedded for OpenCL code compilation
             __impl::opencl::Accelerator::addAccelerator(*acc);

@@ -1,3 +1,5 @@
+add_subdirectory(dbc)
+
 add_subdirectory(gmac)
 add_subdirectory(memory)
 
@@ -14,3 +16,4 @@ set(api_SRC
 
 add_gmac_sources(gmac ${api_SRC})
 add_gmac_sources(gmac-lib ${api_lib_SRC})
+add_gmac_sources(gmac-dbc)

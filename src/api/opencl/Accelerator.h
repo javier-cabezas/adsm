@@ -83,7 +83,7 @@ public:
     bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
-class GMAC_LOCAL Accelerator : public core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     static AcceleratorMap *Accelerators_;
@@ -150,6 +150,10 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Accelerator.h"
+#endif
 
 
 #endif

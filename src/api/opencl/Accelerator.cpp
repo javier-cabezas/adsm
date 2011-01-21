@@ -9,7 +9,7 @@ Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostMap_;
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    core::Accelerator(n), platform_(platform), device_(device)
+    gmac::core::Accelerator(n), platform_(platform), device_(device)
 {
     // Not used for now
     busId_ = 0;

@@ -11,9 +11,9 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     switchIn();
 
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(addr, paramIOMemory);
+    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
+        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
     switchOut();
 }
