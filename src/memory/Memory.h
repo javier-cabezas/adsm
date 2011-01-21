@@ -56,6 +56,7 @@ public:
 	static void unmap(hostptr_t addr, size_t count);
 };
 
+#if USE_VM
 static inline
 unsigned long
 GetSubBlock(const hostptr_t _addr)
@@ -79,6 +80,7 @@ GetSubBlockAddr(const hostptr_t _addr)
     unsigned long addr = (unsigned long) _addr;
     return hostptr_t((addr >> SubBlockShift_) << SubBlockShift_);
 }
+#endif
 
 }}
 
