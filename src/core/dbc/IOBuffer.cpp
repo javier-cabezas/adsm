@@ -1,6 +1,5 @@
 #ifdef USE_DBC
 
-#include "IOBuffer.h"
 #include "core/IOBuffer.h"
 
 namespace __dbc { namespace core {
@@ -15,15 +14,14 @@ IOBuffer::~IOBuffer()
 }
 void IOBuffer::lock()
 {
- 
-      __impl::core:IOBuffer::lock();
- 
-     //thread_mutex_lock(&internal_);
-     //ENSURES(owner == 0);
-     //ENSURES(locked == false);
-     //locked_ = true;
-     //owner_ = pthread_self();
-     //pthread_mutex_unlock(&internal_);
+    __impl::core::IOBuffer::lock();
+
+    //thread_mutex_lock(&internal_);
+    //ENSURES(owner == 0);
+    //ENSURES(locked == false);
+    //locked_ = true;
+    //owner_ = pthread_self();
+    //pthread_mutex_unlock(&internal_);
 
 
 
