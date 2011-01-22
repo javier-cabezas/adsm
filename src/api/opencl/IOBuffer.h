@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace opencl {
 
-class GMAC_LOCAL IOBuffer : public core::IOBuffer {
+class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
     cl_event end_;
     cl_command_queue stream_;
@@ -52,7 +52,7 @@ protected:
 
 public:
     IOBuffer(void *addr, size_t size) :
-        core::IOBuffer(addr, size), mode_(NULL), created_(false), started_(false)
+        gmac::core::IOBuffer(addr, size), mode_(NULL), created_(false), started_(false)
     {
     }
 
