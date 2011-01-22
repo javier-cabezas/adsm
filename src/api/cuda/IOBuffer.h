@@ -39,10 +39,15 @@ WITH THE SOFTWARE.  */
 #include "Mode.h"
 
 #include "core/IOBuffer.h"
+#include "config/common.h"
+
+//include "core/dbc/IOBuffer.h"
+//using  __impl::core::IOBuffer;
+//using gmac::core::IOBuffer;
 
 namespace __impl { namespace cuda {
 
-class GMAC_LOCAL IOBuffer : public core::IOBuffer {
+class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
     CUevent start_;
     CUevent end_;
@@ -52,7 +57,7 @@ protected:
 
 public:
     IOBuffer(void *addr, size_t size) :
-        core::IOBuffer(addr, size), mode_(NULL), created_(false)
+        gmac::core::IOBuffer(addr, size), mode_(NULL), created_(false)
     {
     }
 
