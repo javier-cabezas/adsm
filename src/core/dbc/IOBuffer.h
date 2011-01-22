@@ -1,14 +1,11 @@
-#ifndef GMAC_CORE_DBC_ACCELERATOR_H_
-#define GMAC_CORE_DBC_ACCELERATOR_H_
+#ifndef GMAC_CORE_DBC_IOBUFFER_H_
+#define GMAC_CORE_DBC_IOBUFFER_H_
 
-#include "dbc/type.h"
+#include "dbc/types.h"
 #include "dbc/Contract.h"
-
 
 #include "pthread.h"
 #include "core/IOBuffer.h"
-
-
 
 namespace __dbc { namespace core {
 
@@ -24,7 +21,6 @@ protected:
 
 protected: 
     IOBuffer(void *addr, size_t size);
-     
 
 public:
     virtual ~IOBuffer();
