@@ -51,14 +51,15 @@ NodeStore<S>::~NodeStore()
     }
 }
 
-template <typename S>
 void
-NodeStore<S>::registerRange(unsigned long startIndex, unsigned long endIndex)
+NodeHost::registerRange(unsigned long startIndex, unsigned long endIndex)
 {
     unsigned long localStartIndex = getLocalIndex(startIndex);
     unsigned long localEndIndex = getLocalIndex(endIndex);
 
     addEntries(localStartIndex, localEndIndex);
+
+    TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
     if (nextEntries_.size() == 0) {
         for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
@@ -85,12 +86,13 @@ NodeStore<S>::registerRange(unsigned long startIndex, unsigned long endIndex)
     } while (i <= localEndIndex);
 }
 
-template <typename S>
 void
-NodeStore<S>::unregisterRange(unsigned long startIndex, unsigned long endIndex)
+NodeHost::unregisterRange(unsigned long startIndex, unsigned long endIndex)
 {
     unsigned long localStartIndex = getLocalIndex(startIndex);
     unsigned long localEndIndex = getLocalIndex(endIndex);
+
+    TRACE(LOCAL, "unregisterRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
     if (nextEntries_.size() == 0) {
         removeEntries(localStartIndex, localEndIndex);
@@ -104,7 +106,7 @@ NodeStore<S>::unregisterRange(unsigned long startIndex, unsigned long endIndex)
     unsigned long i = localStartIndex;
     do {
         Node *&node = getNodeRef(i);
-        node->registerRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
+        node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
         if (node->getNUsedEntries() == 0) {
             delete node;
             node = NULL;
@@ -115,12 +117,86 @@ NodeStore<S>::unregisterRange(unsigned long startIndex, unsigned long endIndex)
     } while (i <= localEndIndex);
 }
 
+void
+NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
+{
+    unsigned long localStartIndex = getLocalIndex(startIndex);
+    unsigned long localEndIndex = getLocalIndex(endIndex);
+
+    addEntries(localStartIndex, localEndIndex);
+
+    if (entriesAcc_ == NULL) allocAcc();
+
+    TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
+
+    if (nextEntries_.size() == 0) {
+        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
+            uint8_t &leaf = getLeafRef(i);
+            leaf = uint8_t(BITMAP_UNSET);
+        }
+        return;
+    }
+
+    unsigned long startWIndex = startIndex;
+    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+                                getGlobalIndex(localStartIndex + 1) - 1;
+
+    unsigned long i = localStartIndex;
+    do {
+        NodeShared *&node = getNodeRef(i);
+        if (node == NULL) {
+            NodeShared *&nodeAcc = getNodeAccHostRef(i);
+            node = (NodeShared *) createChild();
+            nodeAcc = getNodeAccAddr(i);
+        }
+
+        node->registerRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
+        i++;
+        startWIndex = getGlobalIndex(i);
+        endWIndex = (i < localEndIndex)? getGlobalIndex(i + 1) - 1: endIndex;
+    } while (i <= localEndIndex);
+}
+
+void
+NodeShared::unregisterRange(unsigned long startIndex, unsigned long endIndex)
+{
+    unsigned long localStartIndex = getLocalIndex(startIndex);
+    unsigned long localEndIndex = getLocalIndex(endIndex);
+
+    TRACE(LOCAL, "unregisterRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
+
+    if (nextEntries_.size() == 0) {
+        removeEntries(localStartIndex, localEndIndex);
+        return;
+    }
+
+    unsigned long startWIndex = startIndex;
+    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+                                getGlobalIndex(localStartIndex + 1) - 1;
+
+    unsigned long i = localStartIndex;
+    do {
+        NodeShared *&node = getNodeRef(i);
+        node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
+        if (node->getNUsedEntries() == 0) {
+            NodeShared *&nodeAcc = getNodeAccHostRef(i);
+            delete node;
+            node = NULL;
+            nodeAcc = NULL;
+        }
+        i++;
+        startWIndex = getGlobalIndex(i);
+        endWIndex = (i < localEndIndex)? getGlobalIndex(i + 1) - 1: endIndex;
+    } while (i <= localEndIndex);
+}
+
+
 Node *
 NodeHost::createChild()
 {
     if (nextEntries_.size() == 0) return NULL;
 
-    std::vector<unsigned> nextEntries;
+    std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
     std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
     return new NodeHost(root_, nextEntries_[0], nextEntries);
 }
@@ -130,9 +206,10 @@ NodeShared::createChild()
 {
     if (nextEntries_.size() == 0) return NULL;
 
-    std::vector<unsigned> nextEntries;
+    std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
     std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-    return new NodeShared(root_, nextEntries_[0], nextEntries);
+    NodeShared *node = new NodeShared(root_, nextEntries_[0], nextEntries);
+    return node;
 }
 
 void
@@ -188,7 +265,7 @@ Bitmap::cleanUp()
 BitmapHost::BitmapHost(core::Mode &mode) :
     Bitmap(mode, false)
 {
-    std::vector<unsigned> nextEntries(BitmapLevels_ - 1);
+    std::vector<unsigned> nextEntries;
 
     if (BitmapLevels_ > 1) {
         nextEntries.push_back(L2Entries_);
@@ -204,7 +281,7 @@ BitmapShared::BitmapShared(core::Mode &mode) :
     Bitmap(mode, true),
     synced_(true)
 {
-    std::vector<unsigned> nextEntries(BitmapLevels_ - 1);
+    std::vector<unsigned> nextEntries;
 
     if (BitmapLevels_ > 1) {
         nextEntries.push_back(L2Entries_);
@@ -213,7 +290,8 @@ BitmapShared::BitmapShared(core::Mode &mode) :
         nextEntries.push_back(L3Entries_);
     }
 
-    root_ = new NodeShared(*this, L1Entries_, nextEntries);
+    NodeShared *node = new NodeShared(*this, L1Entries_, nextEntries);
+    root_ = node;
 }
 
 void

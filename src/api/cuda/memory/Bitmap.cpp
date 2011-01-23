@@ -1,16 +1,19 @@
+#ifdef USE_VM
+
 #include "api/cuda/Accelerator.h"
 #include "api/cuda/Mode.h"
 
 #include "memory/Bitmap.h"
 
-#ifdef USE_VM
 namespace __impl { namespace memory { namespace vm {
 
 void
 StoreShared::allocAcc()
 {
     accptr_t addr;
+    TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd", size_);
     gmacError_t ret = root_.mode_.malloc(addr, size_);
+    entriesAcc_ = addr;
     ASSERTION(ret == gmacSuccess);
 }
 
@@ -35,7 +38,6 @@ void
 StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
 {
     return;
-    if (!allocatedAcc_) allocAcc();
 
     cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
 
@@ -56,11 +58,12 @@ StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex,
 
 StoreShared::~StoreShared()
 {
-    TRACE(LOCAL, "StoreShared constructor");
+    TRACE(LOCAL, "StoreShared destructor");
 
-    if (allocatedAcc_ == true) {
-        // TODO: implement accelerator memory deallocation
-    }
+    TRACE(LOCAL,"Freeing a node in the accelerator");
+    gmacError_t ret = root_.mode_.free(entriesAcc_);
+    ASSERTION(ret == gmacSuccess);
+    ::free(entriesAccHost_);
 }
 
 

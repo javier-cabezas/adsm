@@ -73,12 +73,18 @@ Node::removeEntries(unsigned long startIndex, unsigned long endIndex)
 }
 
 inline
-StoreHost::StoreHost(Bitmap &root, size_t size) :
+StoreHost::StoreHost(Bitmap &root, size_t size, bool alloc) :
     root_(root),
-    entriesHost_(hostptr_t(::malloc(size))),
     size_(size)
 {
     TRACE(LOCAL, "StoreHost constructor");
+    if (alloc) {
+        TRACE(LOCAL, "Allocating memory");
+        entriesHost_ = hostptr_t(::malloc(size));
+    } else {
+        TRACE(LOCAL, "NOT Allocating memory");
+        entriesHost_ = NULL;
+    }
 }
 
 inline
@@ -86,7 +92,9 @@ StoreHost::~StoreHost()
 {
     TRACE(LOCAL, "StoreHost destructor");
 
-    ::free(entriesHost_);
+    if (entriesHost_ != NULL) {
+        ::free(entriesHost_);
+    }
 }
 
 inline
@@ -152,13 +160,12 @@ StoreShared::addDirtyEntries(unsigned long startIndex, unsigned long endIndex)
 }
 
 inline
-StoreShared::StoreShared(Bitmap &root, size_t size) :
-    StoreHost(root, size),
+StoreShared::StoreShared(Bitmap &root, size_t size, bool allocHost) :
+    StoreHost(root, size, allocHost),
+    entriesAccHost_(hostptr_t(::malloc(size))),
     entriesAcc_(NULL),
-    allocatedAcc_(false),
     dirty_(false),
-    synced_(true),
-    firstDirtyEntry_(-1), lastDirtyEntry_(-1)
+    synced_(true)
 {
     TRACE(LOCAL, "StoreShared constructor");
 }
@@ -215,7 +222,7 @@ Node::getNextIndex(unsigned long index) const
 template <typename S>
 NodeStore<S>::NodeStore(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
     Node(nEntries, nextEntries),
-    S(root, sizeof(S) * nEntries)
+    S(root, nEntries * (nextEntries.size() == 0? sizeof(uint8_t): sizeof(Node *)), nextEntries.size() > 0) // TODO: fix this. It does not work for StoreHost
 {
     TRACE(LOCAL, "NodeStore constructor");
 }
@@ -228,25 +235,40 @@ NodeStore<S>::getNode(unsigned long index)
 }
 
 template <typename S>
-BitmapState
-NodeStore<S>::getLeaf(unsigned long index)
-{
-    uint8_t val = reinterpret_cast<uint8_t *>(this->entriesHost_)[index];
-    return BitmapState(val);
-}
-
-template <typename S>
 Node *&
 NodeStore<S>::getNodeRef(unsigned long index)
 {
     return reinterpret_cast<Node **>(this->entriesHost_)[index];
 }
 
-template <typename S>
+inline
+BitmapState
+NodeHost::getLeaf(unsigned long index)
+{
+    uint8_t val = reinterpret_cast<uint8_t *>(this->entriesHost_)[index];
+    return BitmapState(val);
+}
+
+inline
+BitmapState
+NodeShared::getLeaf(unsigned long index)
+{
+    uint8_t val = reinterpret_cast<uint8_t *>(this->entriesAccHost_)[index];
+    return BitmapState(val);
+}
+
+inline
 uint8_t &
-NodeStore<S>::getLeafRef(unsigned long index)
+NodeHost::getLeafRef(unsigned long index)
 {
     return static_cast<uint8_t *>(this->entriesHost_)[index];
+}
+
+inline
+uint8_t &
+NodeShared::getLeafRef(unsigned long index)
+{
+    return static_cast<uint8_t *>(this->entriesAccHost_)[index];
 }
 
 inline
@@ -256,11 +278,27 @@ NodeHost::NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntr
     TRACE(LOCAL, "NodeHost constructor");
 }
 
-inline uint8_t &
-NodeShared::getAccLeafRef(unsigned long index)
+inline
+NodeShared *&
+NodeShared::getNodeRef(unsigned long index)
 {
-    return static_cast<uint8_t *>((void *) this->entriesAcc_)[index];
+    return reinterpret_cast<NodeShared **>(this->entriesHost_)[index];
 }
+
+inline
+NodeShared *&
+NodeShared::getNodeAccHostRef(unsigned long index)
+{
+    return reinterpret_cast<NodeShared **>(this->entriesAccHost_)[index];
+}
+
+inline
+NodeShared *
+NodeShared::getNodeAccAddr(unsigned long index)
+{
+    return (NodeShared *) (reinterpret_cast<NodeShared **>((void *) this->entriesAcc_) + index);
+}
+
 
 inline
 NodeShared::NodeShared(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
@@ -317,6 +355,7 @@ NodeStore<S>::setEntry(unsigned long index, BitmapState state)
     } else {
         unsigned long nextIndex = this->getNextIndex(index);
         Node *node = getNode(localIndex);
+        ASSERTION(node != NULL);
         node->setEntry(nextIndex, state);
     }
 }
@@ -407,7 +446,9 @@ NodeShared::setEntry(unsigned long index, BitmapState state)
 {
     sync();
 
-    addDirtyEntry(getLocalIndex(index));
+    unsigned long localIndex = getLocalIndex(index);
+    TRACE(LOCAL, "setEntry 0x%lx", localIndex);
+    addDirtyEntry(localIndex);
 
     NodeStore<StoreShared>::setEntry(index, state);
 }
@@ -471,13 +512,9 @@ inline
 unsigned long
 Bitmap::getIndex(const accptr_t _ptr) const
 {
-    TRACE(LOCAL, "getIndex %p", (void *) _ptr);
     void * ptr = (void *) _ptr;
-    TRACE(LOCAL, "getIndex %p", (void *) ptr);
     unsigned long index = (unsigned long)ptr;
-    TRACE(LOCAL, "getIndex 0x%lx", (void *) index);
     index >>= SubBlockShift_;
-    TRACE(LOCAL, "getIndex 0x%lx", (void *) index);
     return index;
 }
 

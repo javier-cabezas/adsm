@@ -93,6 +93,8 @@ protected:
 
     Node(size_t nEntries, std::vector<unsigned> nextEntries);
 public:
+    virtual ~Node() {}
+
     virtual BitmapState getEntry(unsigned long index) = 0;
     virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state) = 0;
     virtual void setEntry(unsigned long index, BitmapState state) = 0;
@@ -122,8 +124,8 @@ protected:
 
     size_t size_;
 
-    StoreHost(Bitmap &root, size_t size);
-    ~StoreHost();
+    StoreHost(Bitmap &root, size_t size, bool alloc = true);
+    virtual ~StoreHost();
 };
 
 class GMAC_LOCAL StoreShared : public StoreHost
@@ -134,8 +136,8 @@ private:
     void setDirty(bool synced);
 
 protected:
+    hostptr_t entriesAccHost_;
     accptr_t entriesAcc_;
-    bool allocatedAcc_;
 
     bool dirty_;
     bool synced_;
@@ -145,10 +147,10 @@ protected:
 
     bool isDirty() const;
 
-    void allocAcc();
+    StoreShared(Bitmap &root, size_t size, bool allocHost = true);
+    virtual ~StoreShared();
 
-    StoreShared(Bitmap &root, size_t size);
-    ~StoreShared();
+    void allocAcc();
 
     virtual void acquire() = 0;
     virtual void release() = 0;
@@ -178,13 +180,13 @@ class NodeStore :
 {
 protected:
     Node *getNode(unsigned long index);
-    BitmapState getLeaf(unsigned long index);
+    virtual BitmapState getLeaf(unsigned long index) = 0;
+    virtual uint8_t &getLeafRef(unsigned long index) = 0;
 
     Node *&getNodeRef(unsigned long index);
-    uint8_t &getLeafRef(unsigned long index);
 
     NodeStore(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
-    ~NodeStore();
+    virtual ~NodeStore();
 public:
 
     virtual BitmapState getEntry(unsigned long index);
@@ -192,9 +194,6 @@ public:
     virtual void setEntry(unsigned long index, BitmapState state);
     virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
     virtual bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
-
-    void registerRange(unsigned long startIndex, unsigned long endIndex);
-    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
 };
 
 #if 0
@@ -217,8 +216,14 @@ class GMAC_LOCAL NodeHost : public NodeStore<StoreHost>
 protected:
     Node *createChild();
 
+    BitmapState getLeaf(unsigned long index);
+    uint8_t &getLeafRef(unsigned long index);
+
 public:
     NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+
+    void registerRange(unsigned long startIndex, unsigned long endIndex);
+    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
 };
 
 class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
@@ -226,10 +231,15 @@ class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
     friend class BitmapShared;
 
     void sync();
-    uint8_t &getAccLeafRef(unsigned long index);
 
 protected:
     Node *createChild();
+    NodeShared *&getNodeRef(unsigned long index);
+    NodeShared *&getNodeAccHostRef(unsigned long index);
+    NodeShared *getNodeAccAddr(unsigned long index);
+
+    BitmapState getLeaf(unsigned long index);
+    uint8_t &getLeafRef(unsigned long index);
 
 public:
     NodeShared(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
@@ -240,7 +250,8 @@ public:
     void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
     bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
 
-    //void registerRange(unsigned long startIndex, unsigned long endIndex);
+    void registerRange(unsigned long startIndex, unsigned long endIndex);
+    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
 
     void acquire();
     void release();
