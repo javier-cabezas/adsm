@@ -7,13 +7,14 @@
 #
 
 # Remove svn entries
-find . -name ".svn" -exec rm -Rf {} \;
+find . -name .svn -exec rm -Rf {} \;
 
 # Remove OpenCL bits
-find . -name "opencl" -exec rm -Rf {} && touch {}/CMakeLists.txt \;
+find . -name opencl -exec rm -Rf {} \; -exec mkdir {} \; -exec touch {}/CMakeLists.txt \;
+rm -f CMakeLists-opencl.txt
 
 # Remove Windows bits
-find . -name "windows" -exec rm -Rf {} && touch {}/CMakeLists.txt \;
-
+find . -name windows -exec rm -Rf {} \; -exec mkdir {} \; -exec touch {}/CMakeLists.txt \;
+rm -f CMakeLists-windows.txt
 
 # vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab:

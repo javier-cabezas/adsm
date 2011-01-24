@@ -72,6 +72,7 @@ typedef uint8_t BitmapType;
 class GMAC_LOCAL Node
 {
 private:
+    unsigned level_;
     size_t nEntries_;
     size_t nUsedEntries_;
     std::vector<bool> usedEntries_;
@@ -91,7 +92,7 @@ protected:
 
     virtual Node *createChild() = 0;
 
-    Node(size_t nEntries, std::vector<unsigned> nextEntries);
+    Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries);
 public:
     virtual ~Node() {}
 
@@ -104,6 +105,7 @@ public:
     virtual void registerRange(unsigned long startIndex, unsigned long endIndex) = 0;
     virtual void unregisterRange(unsigned long startIndex, unsigned long endIndex) = 0;
     
+    unsigned getLevel() const;
     size_t getNUsedEntries() const;
     void setNUsedEntries(size_t usedEntries) const;
 
@@ -150,7 +152,7 @@ protected:
     StoreShared(Bitmap &root, size_t size, bool allocHost = true);
     virtual ~StoreShared();
 
-    void allocAcc();
+    void allocAcc(bool isRoot);
 
     virtual void acquire() = 0;
     virtual void release() = 0;
@@ -185,7 +187,7 @@ protected:
 
     Node *&getNodeRef(unsigned long index);
 
-    NodeStore(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
     virtual ~NodeStore();
 public:
 
@@ -220,7 +222,7 @@ protected:
     uint8_t &getLeafRef(unsigned long index);
 
 public:
-    NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
 
     void registerRange(unsigned long startIndex, unsigned long endIndex);
     void unregisterRange(unsigned long startIndex, unsigned long endIndex);
@@ -242,7 +244,7 @@ protected:
     uint8_t &getLeafRef(unsigned long index);
 
 public:
-    NodeShared(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
 
     BitmapState getEntry(unsigned long index);
     BitmapState getAndSetEntry(unsigned long index, BitmapState state);

@@ -15,8 +15,8 @@ const unsigned &Bitmap::L3Entries_ = util::params::ParamBitmapL3Entries;
 const size_t &Bitmap::BlockSize_ = util::params::ParamBlockSize;
 const unsigned &Bitmap::SubBlocks_ = util::params::ParamSubBlocks;
 
-Node::Node(size_t nEntries, std::vector<unsigned> nextEntries) :
-    nEntries_(0), nUsedEntries_(0),
+Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
+    level_(level), nEntries_(0), nUsedEntries_(0),
     usedEntries_(nEntries),
     firstUsedEntry_(-1), lastUsedEntry_(-1),
     nextEntries_(nextEntries)
@@ -125,7 +125,7 @@ NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
 
     addEntries(localStartIndex, localEndIndex);
 
-    if (entriesAcc_ == NULL) allocAcc();
+    if (entriesAcc_ == NULL) allocAcc(getLevel() == 0);
 
     TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
@@ -198,7 +198,7 @@ NodeHost::createChild()
 
     std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
     std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-    return new NodeHost(root_, nextEntries_[0], nextEntries);
+    return new NodeHost(getLevel() + 1, root_, nextEntries_[0], nextEntries);
 }
 
 Node *
@@ -208,7 +208,7 @@ NodeShared::createChild()
 
     std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
     std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-    NodeShared *node = new NodeShared(root_, nextEntries_[0], nextEntries);
+    NodeShared *node = new NodeShared(getLevel() + 1, root_, nextEntries_[0], nextEntries);
     return node;
 }
 
@@ -274,7 +274,7 @@ BitmapHost::BitmapHost(core::Mode &mode) :
         nextEntries.push_back(L3Entries_);
     }
 
-    root_ = new NodeHost(*this, L1Entries_, nextEntries);
+    root_ = new NodeHost(0, *this, L1Entries_, nextEntries);
 }
 
 BitmapShared::BitmapShared(core::Mode &mode) :
@@ -290,7 +290,7 @@ BitmapShared::BitmapShared(core::Mode &mode) :
         nextEntries.push_back(L3Entries_);
     }
 
-    NodeShared *node = new NodeShared(*this, L1Entries_, nextEntries);
+    NodeShared *node = new NodeShared(0, *this, L1Entries_, nextEntries);
     root_ = node;
 }
 

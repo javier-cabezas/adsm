@@ -8,6 +8,13 @@
 namespace __impl { namespace memory { namespace vm {
 
 inline
+unsigned
+Node::getLevel() const
+{
+    return level_;
+}
+
+inline
 size_t
 Node::getNUsedEntries() const
 {
@@ -220,8 +227,8 @@ Node::getNextIndex(unsigned long index) const
 }
 
 template <typename S>
-NodeStore<S>::NodeStore(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
-    Node(nEntries, nextEntries),
+NodeStore<S>::NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
+    Node(level, nEntries, nextEntries),
     S(root, nEntries * (nextEntries.size() == 0? sizeof(uint8_t): sizeof(Node *)), nextEntries.size() > 0) // TODO: fix this. It does not work for StoreHost
 {
     TRACE(LOCAL, "NodeStore constructor");
@@ -272,8 +279,8 @@ NodeShared::getLeafRef(unsigned long index)
 }
 
 inline
-NodeHost::NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
-    NodeStore<StoreHost>(root, nEntries, nextEntries)
+NodeHost::NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
+    NodeStore<StoreHost>(level, root, nEntries, nextEntries)
 {
     TRACE(LOCAL, "NodeHost constructor");
 }
@@ -301,8 +308,8 @@ NodeShared::getNodeAccAddr(unsigned long index)
 
 
 inline
-NodeShared::NodeShared(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
-    NodeStore<StoreShared>(root, nEntries, nextEntries)
+NodeShared::NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
+    NodeStore<StoreShared>(level, root, nEntries, nextEntries)
 {
     TRACE(LOCAL, "NodeShared constructor");
 }

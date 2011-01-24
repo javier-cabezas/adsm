@@ -50,12 +50,12 @@ __constant__ unsigned __SHIFT_PAGE;
 #define to32bit(a) ((unsigned long)a & 0xffffffff)
 
 #ifdef BITMAP_BYTE
-__constant__ uint8_t *__dirtyBitmap;
+__constant__ uint8_t *__gmac_vm_root;
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
-    __dirtyBitmap[to32bit(addr) >> __SHIFT_PAGE] = 1;
+    __gmac_vm_root[to32bit(addr) >> __SHIFT_PAGE] = 1;
     return v;
 }
 #else
@@ -63,14 +63,14 @@ __device__ __inline__ T __globalSt(T *addr, T v) {
 #define MASK_BITPOS ((1 << 5) - 1)
 #define SHIFT_ENTRY 
 
-__constant__ uint32_t *__dirtyBitmap;
+__constant__ uint32_t *__gmac_vm_root;
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
     unsigned long entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
     uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_PAGE) & MASK_BITPOS);
-    atomicOr(&__dirtyBitmap[entry], val);
+    atomicOr(&__gmac_vm_root[entry], val);
     return v;
 }
 #else
