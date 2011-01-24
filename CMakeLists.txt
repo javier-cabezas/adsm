@@ -42,47 +42,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-DDARWIN)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "Compiling for Windows")
-    set(OS_DIR "windows")
-    set(gmac_static_FLAGS " ")
-    add_definitions(-DWINDOWS)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-
-# Identify API being used
-set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
-set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
-option(USE_OPENCL "Enable OpenCL backend" OFF)
-if(USE_OPENCL)
-    add_definitions(-DUSE_OPENCL)
-    message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
-    message(STATUS "Compiling for OpenCL: ${OPENCL_LIBRARY}")
-    set(API_DIR "opencl")
-    include_directories(${OPENCL_INCLUDE})
-    find_library(opencl_LIB
-        ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
-        HITS ${OPENCL_LIBRARY})
-    message(STATUS "OpenCL: ${opencl_LIB}")
-    set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
-else(USE_OPENCL)
-    add_definitions(-DUSE_CUDA)
-    # Default compilation for CUDA
-    find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
-            HINTS ENV "CUDA_BIN_PATH")
-    if(EXISTS ${NVCC})
-        message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
-        set(API_DIR "cuda")
-        set(CUDA_INCLUDE "${NVCC}/../include")
-        include_directories(${CUDA_INCLUDE})
-        find_library(cuda_LIB
-            ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}
-            HINTS ENV "CUDA_LIB_PATH")
-        set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
-    else(EXISTS ${NVCC})
-        message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
-    endif(EXISTS ${NVCC})
-endif(USE_OPENCL)
+include("CMakeLists-windows.txt" OPTIONAL)
+include("CMakeLists-opencl.txt" OPTIONAL)
+include("CMakeLists-cuda.txt")
 
 # Check for Tracing
 option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)

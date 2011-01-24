@@ -1,0 +1,6 @@
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    message(STATUS "Compiling for Windows")
+    set(OS_DIR "windows")
+    set(gmac_static_FLAGS " ")
+    add_definitions(-DWINDOWS)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
