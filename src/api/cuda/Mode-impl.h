@@ -95,21 +95,6 @@ Mode::getCurrent()
     return static_cast<Mode &>(core::Mode::getCurrent());
 }
 
-#ifdef USE_VM
-inline CUdeviceptr
-Mode::dirtyBitmapAccPtr() const
-{
-    return bitmapAccPtr_;
-}
-
-inline CUdeviceptr
-Mode::dirtyBitmapShiftPageAccPtr() const
-{
-    return bitmapShiftPageAccPtr_;
-}
-
-#endif
-
 inline Accelerator &
 Mode::getAccelerator()
 {

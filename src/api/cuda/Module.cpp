@@ -26,6 +26,7 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
 #else
     unsigned int tmp;
 #endif
+    TRACE(LOCAL, "Creating new accelerator variable: %s", v.name());
     CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, name());
     ASSERTION(ret == CUDA_SUCCESS);
     size_ = tmp;
@@ -84,10 +85,12 @@ Module::Module(const ModuleDescriptor & d) :
     ModuleDescriptor::VariableVector::const_iterator v;
     for (v = d.variables_.begin(); v != d.variables_.end(); v++) {
         variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
+        variablesByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
     }
 
     for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
         constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
+        constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
 #ifdef USE_VM
         if(strncmp(v->name(), DirtyBitmapSymbol_, strlen(DirtyBitmapSymbol_)) == 0) {
             dirtyBitmap_ = &constants_.find(v->key())->second;
@@ -110,9 +113,13 @@ Module::~Module()
 {
     CUresult ret = cuModuleUnload(mod_);
     ASSERTION(ret == CUDA_SUCCESS);
+
+    // TODO: remove objects from maps
+#if 0
     variables_.clear();
     constants_.clear();
     textures_.clear();
+#endif
 
     KernelMap::iterator i;
     for(i = kernels_.begin(); i != kernels_.end(); i++) delete i->second;

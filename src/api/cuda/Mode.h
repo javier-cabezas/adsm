@@ -82,11 +82,6 @@ protected:
     */
     core::Context &getContext();
 
-#ifdef USE_VM
-    CUdeviceptr bitmapAccPtr_;
-    CUdeviceptr bitmapShiftPageAccPtr_;
-#endif
-
 #ifdef USE_MULTI_CONTEXT
     //! CUDA modules active on this mode
 	ModuleVector modules;
@@ -153,17 +148,14 @@ public:
 
     const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;
+    const Variable *constantByName(std::string name) const;
+    const Variable *variableByName(std::string name) const;
     const Texture *texture(gmacTexture_t key) const;
 
     CUstream eventStream();
 
     static Mode &getCurrent();
     Accelerator &getAccelerator();
-
-#ifdef USE_VM
-    CUdeviceptr dirtyBitmapAccPtr() const;
-    CUdeviceptr dirtyBitmapShiftPageAccPtr() const;
-#endif
 
     gmacError_t waitForEvent(CUevent event);
     gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);

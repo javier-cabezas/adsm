@@ -2,19 +2,29 @@
 
 #include "api/cuda/Accelerator.h"
 #include "api/cuda/Mode.h"
+#include "api/cuda/Module.h"
 
 #include "memory/Bitmap.h"
 
 namespace __impl { namespace memory { namespace vm {
 
+static const char * ACC_VM_ROOT_VAR = "__gmac_vm_root";
+
 void
-StoreShared::allocAcc()
+StoreShared::allocAcc(bool isRoot)
 {
     accptr_t addr;
-    TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd", size_);
-    gmacError_t ret = root_.mode_.malloc(addr, size_);
+    cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+    if (isRoot == false) {
+        TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd", size_);
+        gmacError_t ret = mode.malloc(addr, size_);
+        ASSERTION(ret == gmacSuccess);
+    } else {
+        const cuda::Variable *var = mode.constantByName(ACC_VM_ROOT_VAR);
+        ASSERTION(var != NULL);
+        addr = var->devPtr();
+    }
     entriesAcc_ = addr;
-    ASSERTION(ret == gmacSuccess);
 }
 
 void
@@ -40,6 +50,29 @@ StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex,
     return;
 
     cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+
+    cuda::Mode *last = acc.getLastMode();
+
+    if (last != &mode) {
+        TRACE(LOCAL, "Syncing SharedBitmap pointers");
+        gmacError_t ret = gmacSuccess;
+        accptr_t bitmapAccPtr = mode.dirtyBitmapAccPtr();
+        NodeShared *root = (NodeShared *) root_;
+
+        TRACE(LOCAL, "%p -> %p", root->entriesHost_, (void *) root->entriesAcc_);
+        void * entriesAcc = root->getAccAddr();
+        ret = mode.copyToAccelerator(bitmapAccPtr, hostptr_t(&entriesAcc), sizeof(entriesAcc));
+        CFATAL(ret == gmacSuccess, "Unable to set the pointer in the accelerator %p", (void *) mode.dirtyBitmapAccPtr());
+
+        accptr_t bitmapShiftPageAccPtr = mode.dirtyBitmapShiftPageAccPtr();
+        ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
+        CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
+        if (Bitmap::BitmapLevels_ > 1) {
+            accptr_t bitmapShiftL1AccPtr = mode.dirtyBitmapShiftPageAccPtr();
+            ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
+            CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
+        }
+    }
 
 #ifndef USE_HOSTMAP_VM
     if (isDirty()) {
@@ -74,39 +107,7 @@ BitmapShared::syncToAccelerator()
     cuda::Accelerator &acc = mode.getAccelerator();
 
 #ifndef USE_MULTI_CONTEXT
-    cuda::Mode *last = acc.getLastMode();
-
-    if (last != &mode) {
-        // TODO Is this really necessary
-        if (last != NULL) {
-            BitmapShared &lastBitmap = last->acceleratorDirtyBitmap();
-            Node *n = lastBitmap.root_;
-            NodeShared *root = (NodeShared *) lastBitmap.root_;
-            if (!root->isSynced()) {
-                root->syncToHost<Node *>(n->getFirstUsedEntry(), n->getLastUsedEntry());
-            }
-        }
-        TRACE(LOCAL, "Syncing SharedBitmap pointers");
-        gmacError_t ret = gmacSuccess;
-        accptr_t bitmapAccPtr = mode.dirtyBitmapAccPtr();
-        NodeShared *root = (NodeShared *) root_;
-
-        TRACE(LOCAL, "%p -> %p (0x%lx)", root->entriesHost_, (void *) root->entriesAcc_, mode.dirtyBitmapAccPtr());
-        void * entriesAcc = root->getAccAddr();
-        ret = mode.copyToAccelerator(bitmapAccPtr, hostptr_t(&entriesAcc), sizeof(entriesAcc));
-        CFATAL(ret == gmacSuccess, "Unable to set the pointer in the accelerator %p", (void *) mode.dirtyBitmapAccPtr());
-
-        accptr_t bitmapShiftPageAccPtr = mode.dirtyBitmapShiftPageAccPtr();
-        ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
-        CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
-        if (Bitmap::BitmapLevels_ > 1) {
-            accptr_t bitmapShiftL1AccPtr = mode.dirtyBitmapShiftPageAccPtr();
-            ret = mode.copyToAccelerator(bitmapShiftPageAccPtr, hostptr_t(&root->shift_), sizeof(root->shift_));
-            CFATAL(ret == gmacSuccess, "Unable to set shift page in the accelerator %p", (void *) mode.dirtyBitmapShiftPageAccPtr());
-        }
-
-
-    }
+    
 
     synced_ = true;
 #endif

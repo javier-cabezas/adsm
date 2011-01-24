@@ -70,6 +70,24 @@ Module::variable(gmacVariable_t key) const
     return &v->second;
 }
 
+inline const Variable *
+Module::constantByName(std::string name) const
+{
+    VariableNameMap::const_iterator v;
+    v = constantsByName_.find(name);
+    if(v == constantsByName_.end()) return NULL;
+    return &v->second;
+}
+
+inline const Variable *
+Module::variableByName(std::string name) const
+{
+    VariableNameMap::const_iterator v;
+    v = variablesByName_.find(name);
+    if(v == variablesByName_.end()) return NULL;
+    return &v->second;
+}
+
 inline const Texture *
 Module::texture(gmacTexture_t key) const
 {
@@ -78,6 +96,7 @@ Module::texture(gmacTexture_t key) const
     if(t == textures_.end()) return NULL;
     return &t->second;
 }
+
 
 #ifdef USE_VM
 inline

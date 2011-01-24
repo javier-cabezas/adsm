@@ -21,12 +21,6 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     for(i = modules->begin(); i != modules->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
-#ifdef USE_VM
-        if((*i)->dirtyBitmap() != NULL) {
-            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-        }
-#endif
     }
 
     hostptr_t addr = NULL;
@@ -88,12 +82,6 @@ void Mode::load()
     for(i = modules->begin(); i != modules->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
-#ifdef USE_VM
-        if((*i)->dirtyBitmap() != NULL) {
-            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-        }
-#endif
     }
 
 }
@@ -165,6 +153,34 @@ const Variable *Mode::variable(gmacVariable_t key) const
     for(m = modules->begin(); m != modules->end(); m++) {
 #endif
         const Variable *var = (*m)->variable(key);
+        if(var != NULL) return var;
+    }
+    return NULL;
+}
+
+const Variable *Mode::constantByName(std::string name) const
+{
+    ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
+    for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
+        const Variable *var = (*m)->constantByName(name);
+        if(var != NULL) return var;
+    }
+    return NULL;
+}
+
+const Variable *Mode::variableByName(std::string name) const
+{
+    ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
+    for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
+        const Variable *var = (*m)->variableByName(name);
         if(var != NULL) return var;
     }
     return NULL;
