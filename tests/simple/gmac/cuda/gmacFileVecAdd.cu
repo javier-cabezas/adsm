@@ -33,13 +33,13 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 
 float doTest(float *a, float *b, float *c, float *orig)
 {
-	gmactime_t s, t;
+    gmactime_t s, t;
 
     FILE * fA = fopen(VECTORA, "rb");
     FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
-    fread(a, sizeof(float), vecSize, fA);
-    fread(b, sizeof(float), vecSize, fB);
+    int ret = fread(a, sizeof(float), vecSize, fA);
+    ret = fread(b, sizeof(float), vecSize, fB);
 
     getTime(&t);
     fclose(fA);
@@ -70,15 +70,15 @@ float doTest(float *a, float *b, float *c, float *orig)
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t;
+    float *a, *b, *c;
+    gmactime_t s, t;
     float error1, error2, error3;
 
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
-    fread(orig, sizeof(float), vecSize, fO);
+    int ret = fread(orig, sizeof(float), vecSize, fO);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
