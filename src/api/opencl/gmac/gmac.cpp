@@ -4,6 +4,10 @@
 #include "api/opencl/Accelerator.h"
 #include "api/opencl/Mode.h"
 
+#if defined(GMAC_DLL)
+#include "gmac/init.h"
+#endif
+
 using __impl::opencl::Accelerator;
 using __impl::opencl::Mode;
 

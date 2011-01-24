@@ -413,7 +413,7 @@ accptr_t Accelerator::hostMap(const hostptr_t addr, size_t size)
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     cl_mem device;
-    size_t size;
+    size_t size = 0;
     if(localHostMap_.translate(addr, device, size) == false) {
         cl_int ret;
         CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
