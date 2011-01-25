@@ -5,6 +5,7 @@
 #include "core/Mode.h"
 
 #include "Bitmap.h"
+#include "Memory.h"
 
 namespace __impl { namespace memory { namespace vm {
 
@@ -15,8 +16,15 @@ const unsigned &Bitmap::L3Entries_ = util::params::ParamBitmapL3Entries;
 const size_t &Bitmap::BlockSize_ = util::params::ParamBlockSize;
 const unsigned &Bitmap::SubBlocks_ = util::params::ParamSubBlocks;
 
+unsigned long Bitmap::L1Mask_;
+unsigned long Bitmap::L2Mask_;
+unsigned long Bitmap::L3Mask_;
+unsigned Bitmap::L1Shift_;
+unsigned Bitmap::L2Shift_;
+unsigned Bitmap::L3Shift_;
+
 Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
-    level_(level), nEntries_(0), nUsedEntries_(0),
+    level_(level), nEntries_(nEntries), nUsedEntries_(0),
     usedEntries_(nEntries),
     firstUsedEntry_(-1), lastUsedEntry_(-1),
     nextEntries_(nextEntries)
@@ -145,8 +153,8 @@ NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
     do {
         NodeShared *&node = getNodeRef(i);
         if (node == NULL) {
-            NodeShared *&nodeAcc = getNodeAccHostRef(i);
             node = (NodeShared *) createChild();
+            NodeShared *&nodeAcc = getNodeAccHostRef(i);
             nodeAcc = getNodeAccAddr(i);
         }
 
@@ -243,6 +251,32 @@ NodeShared::release()
             this->syncToAccelerator<uint8_t>(this->firstDirtyEntry_, this->lastDirtyEntry_);
         }
     }
+}
+
+void
+Bitmap::Init()
+{
+    unsigned shift = SubBlockShift_;
+
+    if (BitmapLevels_ == 3) {
+        Bitmap::L3Shift_ = shift;
+        Bitmap::L3Mask_  = Bitmap::L3Entries_ - 1;
+        shift += unsigned(ceilf(log2f(float(Bitmap::L3Entries_))));
+        TRACE(GLOBAL, "L3Shift %u", Bitmap::L3Shift_);
+        TRACE(GLOBAL, "L3Mask %lu", Bitmap::L3Mask_);
+    }
+
+    Bitmap::L2Shift_ = shift;
+    Bitmap::L2Mask_  = (((unsigned long) Bitmap::L2Entries_) - 1) << shift;
+    shift += unsigned(ceilf(log2f(float(Bitmap::L2Entries_))));
+    TRACE(GLOBAL, "L2Entries %u", Bitmap::L2Entries_);
+    TRACE(GLOBAL, "L2Shift %u", Bitmap::L2Shift_);
+    TRACE(GLOBAL, "L2Mask %lu", Bitmap::L2Mask_);
+
+    Bitmap::L1Shift_ = shift;
+    Bitmap::L1Mask_  = (((unsigned long) Bitmap::L1Entries_) - 1) << shift;
+    TRACE(GLOBAL, "L1Shift %u", Bitmap::L1Shift_);
+    TRACE(GLOBAL, "L1Mask %lu", Bitmap::L1Mask_);
 }
 
 Bitmap::Bitmap(core::Mode &mode, bool shared) :

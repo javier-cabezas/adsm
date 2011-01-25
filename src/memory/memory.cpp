@@ -37,6 +37,8 @@ void Init(void)
     BlockShift_    = ceilf(log2f(float(util::params::ParamBlockSize)));
     SubBlockShift_ = ceilf(log2f(float(util::params::ParamBlockSize/util::params::ParamSubBlocks)));
     SubBlockMask_  = util::params::ParamSubBlocks - 1;
+
+    vm::Bitmap::Init();
 #endif
 }
 

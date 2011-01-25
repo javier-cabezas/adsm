@@ -10,7 +10,7 @@ struct accptr_t {
         ptr_(NULL)
     {}
     inline accptr_t(void * ptr) :
-        ptr_(CUdeviceptr((unsigned long )ptr & ((0xff << sizeof(CUdeviceptr)) - 1)))
+        ptr_(CUdeviceptr((unsigned long)ptr & ((((unsigned long) 0x100) << 32) - 1)))
     {}
     inline accptr_t(CUdeviceptr ptr) :
         ptr_(ptr)

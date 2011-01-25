@@ -77,7 +77,7 @@ Block::getSequentialFaults() const
 inline hostptr_t
 Block::getSubBlockAddr(const hostptr_t addr) const
 {
-    return GetSubBlockAddr(addr);
+    return GetSubBlockAddr(addr_, addr);
 }
 
 inline size_t

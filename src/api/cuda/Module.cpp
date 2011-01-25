@@ -7,11 +7,6 @@ namespace __impl { namespace cuda {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 
-#ifdef USE_VM
-const char *Module::DirtyBitmapSymbol_ = "__dirtyBitmap";
-const char *Module::ShiftPageSymbol_   = "__SHIFT_PAGE";
-#endif
-
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
     core::Descriptor<gmacVariable_t>(name, key),
     constant_(constant)
@@ -91,15 +86,6 @@ Module::Module(const ModuleDescriptor & d) :
     for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
         constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
         constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
-#ifdef USE_VM
-        if(strncmp(v->name(), DirtyBitmapSymbol_, strlen(DirtyBitmapSymbol_)) == 0) {
-            dirtyBitmap_ = &constants_.find(v->key())->second;
-            TRACE(LOCAL,"Found constant to set a dirty bitmap on device");
-        } else if(strncmp(v->name(), ShiftPageSymbol_, strlen(ShiftPageSymbol_)) == 0) {
-            shiftPage_ = &constants_.find(v->key())->second;
-            TRACE(LOCAL,"Found constant to set __SHIFT_PAGE");
-        }
-#endif
     }
 
     ModuleDescriptor::TextureVector::const_iterator t;

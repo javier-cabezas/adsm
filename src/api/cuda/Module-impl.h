@@ -98,23 +98,6 @@ Module::texture(gmacTexture_t key) const
 }
 
 
-#ifdef USE_VM
-inline
-const Variable *
-Module::dirtyBitmap() const
-{
-    return dirtyBitmap_;
-}
-
-inline
-const Variable *
-Module::dirtyBitmapShiftPage() const
-{
-    return shiftPage_;
-}
-
-#endif
-
 }}
 
 #endif

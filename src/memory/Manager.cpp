@@ -153,9 +153,8 @@ gmacError_t Manager::acquireObjects()
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::getCurrent();
     if(mode.releasedObjects() == true) {
-#ifndef USE_VM
         mode.forEachObject(&Object::acquire);
-#else
+#ifdef USE_VM
         vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
         acceleratorBitmap.acquire();
 #endif

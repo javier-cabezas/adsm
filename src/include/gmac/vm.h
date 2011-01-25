@@ -45,19 +45,59 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
-__constant__ unsigned __SHIFT_PAGE;
+__constant__ uint8_t ***__gmac_vm_root;
+__constant__ unsigned __gmac_vm_shift_l1;
+__constant__ unsigned __gmac_vm_shift_l2;
+__constant__ unsigned long __gmac_vm_mask_l1;
+__constant__ unsigned long __gmac_vm_mask_l2;
 
-#define to32bit(a) ((unsigned long)a & 0xffffffff)
+#define USE_VM_LEVELS 3
+
+#if USE_VM_LEVELS == 3
+__constant__ unsigned __gmac_vm_shift_l3;
+__constant__ unsigned long __gmac_vm_mask_l3;
+#endif
 
 #ifdef BITMAP_BYTE
-__constant__ uint8_t *__gmac_vm_root;
+
+#if 0
+template<typename T>
+__device__ __inline__ T __globalSt2(T *addr, T v) {
+    *addr = v;
+    uint8_t *walk = __gmac_vm_root[(addr & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1];
+    walk[(addr & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2] = 1;
+    return v;
+}
+#endif
+
+typedef unsigned long ulong;
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
-    __gmac_vm_root[to32bit(addr) >> __SHIFT_PAGE] = 1;
+    unsigned long index1 = (ulong(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
+    unsigned long index2 = (ulong(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
+    unsigned long index3 = (ulong(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3;
+    // uint8_t **walk1 = (uint8_t **) __gmac_vm_root[index1];
+    // uint8_t *walk2 = (uint8_t *) walk1[index2];
+    __gmac_vm_root[index1][index2][index3] = 1;
+    //walk2[index3] = 1;
     return v;
 }
+
+#if 0
+#if USE_VM_LEVELS == 2
+#define __globalSt(a,v) __globalSt2(a,v)
+#else
+#if USE_VM_LEVELS == 3
+#define __globalSt(a,v) __globalSt3(a,v)
+#else
+#error "Unknown number of levels"
+#endif
+#endif
+#endif
+
+
 #else
 #ifdef BITMAP_BIT
 #define MASK_BITPOS ((1 << 5) - 1)

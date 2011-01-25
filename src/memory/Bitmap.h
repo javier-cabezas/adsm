@@ -153,6 +153,7 @@ protected:
     virtual ~StoreShared();
 
     void allocAcc(bool isRoot);
+    void freeAcc(bool isRoot);
 
     virtual void acquire() = 0;
     virtual void release() = 0;
@@ -245,6 +246,7 @@ protected:
 
 public:
     NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
+    ~NodeShared();
 
     BitmapState getEntry(unsigned long index);
     BitmapState getAndSetEntry(unsigned long index, BitmapState state);
@@ -284,6 +286,13 @@ protected:
      */
     static const unsigned &L3Entries_;
 
+    static unsigned long L1Mask_;
+    static unsigned long L2Mask_;
+    static unsigned long L3Mask_;
+    static unsigned L1Shift_;
+    static unsigned L2Shift_;
+    static unsigned L3Shift_;
+
     /**
      * Size in bytes of a block
      */
@@ -315,6 +324,8 @@ public:
      */
     Bitmap(core::Mode &mode, bool shared);
     ~Bitmap();
+
+    static void Init();
 
     void cleanUp();
 

@@ -103,11 +103,6 @@ protected:
 	VariableVector constants_;
 	TextureVector  textures_;
 
-#ifdef USE_VM
-    VariableDescriptor * dirtyBitmap_;
-    VariableDescriptor * shiftPage_;
-#endif
-
 public:
     ModuleDescriptor(const void * fatBin);
     ~ModuleDescriptor();
@@ -139,13 +134,6 @@ protected:
 	TextureMap  textures_;
     KernelMap kernels_;
 
-#ifdef USE_VM
-    static const char *DirtyBitmapSymbol_;
-    static const char *ShiftPageSymbol_;
-	Variable *dirtyBitmap_;
-	Variable *shiftPage_;
-#endif
-
 public:
 	Module(const ModuleDescriptor & d);
 	~Module();
@@ -157,11 +145,6 @@ public:
     const Variable *variableByName(std::string name) const;
 	const Variable *constantByName(std::string name) const;
     const Texture  *texture(gmacTexture_t   key) const;
-
-#ifdef USE_VM
-    const Variable *dirtyBitmap() const;
-    const Variable *dirtyBitmapShiftPage() const;
-#endif
 };
 
 }}

@@ -67,18 +67,24 @@ GetSubBlock(const hostptr_t _addr)
 
 static inline
 hostptr_t
-GetBlockAddr(const hostptr_t _addr)
+GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
 {
+    unsigned long start = (unsigned long) _start;
     unsigned long addr = (unsigned long) _addr;
-    return hostptr_t((addr >> BlockShift_) << BlockShift_);
+    unsigned long off = addr - start;
+    unsigned long block = off / BlockSize_;
+    return hostptr_t(start + block * BlockShift_);
 }
 
 static inline
 hostptr_t
-GetSubBlockAddr(const hostptr_t _addr)
+GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
 {
-    unsigned long addr = (unsigned long) _addr;
-    return hostptr_t((addr >> SubBlockShift_) << SubBlockShift_);
+    unsigned long start = (unsigned long) _start;
+    unsigned long addr  = (unsigned long) _addr;
+    unsigned long off = addr - start;
+    unsigned long subBlock = off / SubBlockSize_;
+    return hostptr_t(start + subBlock * SubBlockShift_);
 }
 #endif
 

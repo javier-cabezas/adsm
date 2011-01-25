@@ -88,6 +88,7 @@ StoreHost::StoreHost(Bitmap &root, size_t size, bool alloc) :
     if (alloc) {
         TRACE(LOCAL, "Allocating memory");
         entriesHost_ = hostptr_t(::malloc(size));
+        ::memset(entriesHost_, 0, size);
     } else {
         TRACE(LOCAL, "NOT Allocating memory");
         entriesHost_ = NULL;
@@ -314,6 +315,14 @@ NodeShared::NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vecto
     TRACE(LOCAL, "NodeShared constructor");
 }
 
+inline
+NodeShared::~NodeShared()
+{
+    TRACE(LOCAL, "NodeShared destructor");
+    freeAcc(getLevel() == 0);
+}
+
+
 template <typename S>
 BitmapState
 NodeStore<S>::getEntry(unsigned long index)
@@ -374,6 +383,7 @@ NodeStore<S>::setEntryRange(unsigned long startIndex, unsigned long endIndex, Bi
     unsigned long localStartIndex = this->getLocalIndex(startIndex);
     unsigned long localEndIndex = this->getLocalIndex(endIndex);
  
+    TRACE(LOCAL, "setEntryRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
         for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
             uint8_t &leaf = getLeafRef(i);
@@ -403,6 +413,7 @@ NodeStore<S>::isAnyInRange(unsigned long startIndex, unsigned long endIndex, Bit
     unsigned long localStartIndex = this->getLocalIndex(startIndex);
     unsigned long localEndIndex = this->getLocalIndex(endIndex);
  
+    TRACE(LOCAL, "isAnyInRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
         for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
             if (getLeaf(i) == state) return true;
@@ -433,6 +444,8 @@ NodeShared::getEntry(unsigned long index)
 {
     sync(); 
 
+    TRACE(LOCAL, "getEntry 0x%lx", getLocalIndex(index));
+
     return NodeStore<StoreShared>::getEntry(index);
 }
 
@@ -442,7 +455,9 @@ NodeShared::getAndSetEntry(unsigned long index, BitmapState state)
 {
     sync();
 
-    addDirtyEntry(getLocalIndex(index));
+    unsigned long localIndex = getLocalIndex(index);
+    TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
+    addDirtyEntry(localIndex);
 
     return NodeStore<StoreShared>::getAndSetEntry(index, state);
 }
@@ -476,6 +491,8 @@ bool
 NodeShared::isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
 {
     sync();
+
+    TRACE(LOCAL, "isAnyInRange 0x%lx 0x%lx", getLocalIndex(startIndex), getLocalIndex(endIndex));
 
     return NodeStore<StoreShared>::isAnyInRange(startIndex, endIndex, state);
 }
@@ -529,20 +546,22 @@ inline
 BitmapState
 Bitmap::getEntry(const accptr_t addr) const
 {
-    TRACE(LOCAL, "getEntry %p", (void *) addr);
 
     unsigned long entry = getIndex(addr);
-    return root_->getEntry(entry);
+    BitmapState state = root_->getEntry(entry);
+
+    TRACE(LOCAL, "getEntry %p: %d", (void *) addr, state);
+    return state;
 }
 
 inline
 BitmapState
 Bitmap::getAndSetEntry(const accptr_t addr, BitmapState state)
 {
-    TRACE(LOCAL, "getAndSetEntry %p", (void *) addr);
-
     unsigned long entry = getIndex(addr);
-    return root_->getAndSetEntry(entry, state);
+    BitmapState ret= root_->getAndSetEntry(entry, state);
+    TRACE(LOCAL, "getAndSetEntry %p: %d", (void *) addr, ret);
+    return ret;
 }
 
 
@@ -550,7 +569,7 @@ inline
 bool
 Bitmap::isAnyInRange(const accptr_t addr, size_t size, BitmapState state)
 {
-    TRACE(LOCAL, "setEntryRange %p %zd", (void *) addr, size);
+    TRACE(LOCAL, "isAnyInRange %p %zd", (void *) addr, size);
 
     unsigned long firstEntry = getIndex(addr);
     unsigned long lastEntry = getIndex(addr + size - 1);
@@ -560,7 +579,10 @@ Bitmap::isAnyInRange(const accptr_t addr, size_t size, BitmapState state)
 inline void
 BitmapShared::acquire()
 {
+    TRACE(LOCAL, "Acquire");
+
     if (synced_ == true) {
+        TRACE(LOCAL, "Acquiring");
         ((NodeShared *)root_)->acquire();
         synced_ = false;
     }
@@ -569,7 +591,10 @@ BitmapShared::acquire()
 inline void
 BitmapShared::release()
 {
+    TRACE(LOCAL, "Release");
+
     if (dirty_ == false) {
+        TRACE(LOCAL, "Releasing");
         // Sync the device variables
         syncToAccelerator();
 
