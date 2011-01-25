@@ -46,7 +46,7 @@ StoreShared::freeAcc(bool isRoot)
 
 
 void
-StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
+StoreShared::syncToHost(long_t startIndex, long_t endIndex, size_t elemSize)
 {
 #ifndef USE_HOSTMAP_VM
     TRACE(LOCAL,"Syncing SharedBitmap");
@@ -62,7 +62,7 @@ StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex, size_t
 }
 
 void
-StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex, size_t elemSize)
+StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize)
 {
     cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
     cuda::Accelerator &acc = mode.getAccelerator();

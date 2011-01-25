@@ -22,14 +22,14 @@ Node::getNUsedEntries() const
 }
 
 inline
-unsigned long
+long_t
 Node::getFirstUsedEntry() const
 {
     return firstUsedEntry_;
 }
 
 inline
-unsigned long
+long_t
 Node::getLastUsedEntry() const
 {
     return lastUsedEntry_;
@@ -37,7 +37,7 @@ Node::getLastUsedEntry() const
 
 inline
 void
-Node::addEntries(unsigned long startIndex, unsigned long endIndex)
+Node::addEntries(long_t startIndex, long_t endIndex)
 {
     if (nUsedEntries_ == 0) {
         firstUsedEntry_ = startIndex;
@@ -49,16 +49,16 @@ Node::addEntries(unsigned long startIndex, unsigned long endIndex)
 
     nUsedEntries_ += (endIndex - startIndex + 1);
 
-    for (unsigned long i = startIndex; i <= endIndex; i++) {
+    for (long_t i = startIndex; i <= endIndex; i++) {
         usedEntries_[i] = true;
     }
 }
 
 inline
 void
-Node::removeEntries(unsigned long startIndex, unsigned long endIndex)
+Node::removeEntries(long_t startIndex, long_t endIndex)
 {
-    for (unsigned long i = startIndex; i <= endIndex; i++) {
+    for (long_t i = startIndex; i <= endIndex; i++) {
         usedEntries_[i] = false;
     }
 
@@ -66,7 +66,7 @@ Node::removeEntries(unsigned long startIndex, unsigned long endIndex)
 
     if (nUsedEntries_ > 0) {
         bool first = false;
-        for (unsigned long i = 0; i <= nEntries_; i++) {
+        for (long_t i = 0; i <= nEntries_; i++) {
             if (first == false && usedEntries_[i] == true) {
                 firstUsedEntry_ = i;
                 first = true;
@@ -141,7 +141,7 @@ StoreShared::setDirty(bool dirty)
 
 inline
 void
-StoreShared::addDirtyEntry(unsigned long index)
+StoreShared::addDirtyEntry(long_t index)
 {
     if (isDirty() == false) {
         firstDirtyEntry_ = index;
@@ -155,7 +155,7 @@ StoreShared::addDirtyEntry(unsigned long index)
 
 inline
 void
-StoreShared::addDirtyEntries(unsigned long startIndex, unsigned long endIndex)
+StoreShared::addDirtyEntries(long_t startIndex, long_t endIndex)
 {
     if (isDirty() == false) {
         firstDirtyEntry_ = startIndex;
@@ -180,49 +180,49 @@ StoreShared::StoreShared(Bitmap &root, size_t size, bool allocHost) :
 
 template <typename T>
 inline void
-StoreShared::syncToHost(unsigned long startIndex, unsigned long endIndex)
+StoreShared::syncToHost(long_t startIndex, long_t endIndex)
 {
     syncToHost(startIndex, endIndex, sizeof(T));
 }
 
 template <typename T>
 inline void
-StoreShared::syncToAccelerator(unsigned long startIndex, unsigned long endIndex)
+StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex)
 {
     syncToAccelerator(startIndex, endIndex, sizeof(T));
 }
 
 inline
-unsigned long
+long_t
 StoreShared::getFirstDirtyEntry()
 {
     return firstDirtyEntry_;
 }
 
 inline
-unsigned long
+long_t
 StoreShared::getLastDirtyEntry()
 {
     return lastDirtyEntry_;
 }
 
 inline
-unsigned long
-Node::getLocalIndex(unsigned long index) const
+long_t
+Node::getLocalIndex(long_t index) const
 {
     return (index & mask_) >> shift_;
 }
 
 inline
-unsigned long
-Node::getGlobalIndex(unsigned long localIndex) const
+long_t
+Node::getGlobalIndex(long_t localIndex) const
 {
     return localIndex << shift_;
 }
 
 inline
-unsigned long
-Node::getNextIndex(unsigned long index) const
+long_t
+Node::getNextIndex(long_t index) const
 {
     return index & ~mask_;
 }
@@ -237,21 +237,21 @@ NodeStore<S>::NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vect
 
 template <typename S>
 Node *
-NodeStore<S>::getNode(unsigned long index)
+NodeStore<S>::getNode(long_t index)
 {
     return reinterpret_cast<Node **>(this->entriesHost_)[index];
 }
 
 template <typename S>
 Node *&
-NodeStore<S>::getNodeRef(unsigned long index)
+NodeStore<S>::getNodeRef(long_t index)
 {
     return reinterpret_cast<Node **>(this->entriesHost_)[index];
 }
 
 inline
 BitmapState
-NodeHost::getLeaf(unsigned long index)
+NodeHost::getLeaf(long_t index)
 {
     uint8_t val = reinterpret_cast<uint8_t *>(this->entriesHost_)[index];
     return BitmapState(val);
@@ -259,7 +259,7 @@ NodeHost::getLeaf(unsigned long index)
 
 inline
 BitmapState
-NodeShared::getLeaf(unsigned long index)
+NodeShared::getLeaf(long_t index)
 {
     uint8_t val = reinterpret_cast<uint8_t *>(this->entriesAccHost_)[index];
     return BitmapState(val);
@@ -267,14 +267,14 @@ NodeShared::getLeaf(unsigned long index)
 
 inline
 uint8_t &
-NodeHost::getLeafRef(unsigned long index)
+NodeHost::getLeafRef(long_t index)
 {
     return static_cast<uint8_t *>(this->entriesHost_)[index];
 }
 
 inline
 uint8_t &
-NodeShared::getLeafRef(unsigned long index)
+NodeShared::getLeafRef(long_t index)
 {
     return static_cast<uint8_t *>(this->entriesAccHost_)[index];
 }
@@ -288,21 +288,21 @@ NodeHost::NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<un
 
 inline
 NodeShared *&
-NodeShared::getNodeRef(unsigned long index)
+NodeShared::getNodeRef(long_t index)
 {
     return reinterpret_cast<NodeShared **>(this->entriesHost_)[index];
 }
 
 inline
 NodeShared *&
-NodeShared::getNodeAccHostRef(unsigned long index)
+NodeShared::getNodeAccHostRef(long_t index)
 {
     return reinterpret_cast<NodeShared **>(this->entriesAccHost_)[index];
 }
 
 inline
 NodeShared *
-NodeShared::getNodeAccAddr(unsigned long index)
+NodeShared::getNodeAccAddr(long_t index)
 {
     return (NodeShared *) (reinterpret_cast<NodeShared **>((void *) this->entriesAcc_) + index);
 }
@@ -325,15 +325,15 @@ NodeShared::~NodeShared()
 
 template <typename S>
 BitmapState
-NodeStore<S>::getEntry(unsigned long index)
+NodeStore<S>::getEntry(long_t index)
 {
-    unsigned long localIndex = this->getLocalIndex(index);
+    long_t localIndex = this->getLocalIndex(index);
 
     TRACE(LOCAL, "getEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
         return getLeaf(localIndex);
     } else {
-        unsigned long nextIndex = this->getNextIndex(index);
+        long_t nextIndex = this->getNextIndex(index);
         Node *node = getNode(localIndex);
         return node->getEntry(nextIndex);
     }
@@ -341,9 +341,9 @@ NodeStore<S>::getEntry(unsigned long index)
 
 template <typename S>
 BitmapState
-NodeStore<S>::getAndSetEntry(unsigned long index, BitmapState state)
+NodeStore<S>::getAndSetEntry(long_t index, BitmapState state)
 {
-    unsigned long localIndex = this->getLocalIndex(index);
+    long_t localIndex = this->getLocalIndex(index);
 
     TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
@@ -352,7 +352,7 @@ NodeStore<S>::getAndSetEntry(unsigned long index, BitmapState state)
         ref = state;
         return val;
     } else {
-        unsigned long nextIndex = this->getNextIndex(index);
+        long_t nextIndex = this->getNextIndex(index);
         Node *node = getNode(localIndex);
         return node->getAndSetEntry(nextIndex, state);
     }
@@ -360,16 +360,16 @@ NodeStore<S>::getAndSetEntry(unsigned long index, BitmapState state)
 
 template <typename S>
 void
-NodeStore<S>::setEntry(unsigned long index, BitmapState state)
+NodeStore<S>::setEntry(long_t index, BitmapState state)
 {
-    unsigned long localIndex = this->getLocalIndex(index);
+    long_t localIndex = this->getLocalIndex(index);
 
     TRACE(LOCAL, "setEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
         uint8_t &ref = getLeafRef(localIndex);
         ref = state;
     } else {
-        unsigned long nextIndex = this->getNextIndex(index);
+        long_t nextIndex = this->getNextIndex(index);
         Node *node = getNode(localIndex);
         ASSERTION(node != NULL);
         node->setEntry(nextIndex, state);
@@ -378,25 +378,25 @@ NodeStore<S>::setEntry(unsigned long index, BitmapState state)
 
 template <typename S>
 void
-NodeStore<S>::setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
+NodeStore<S>::setEntryRange(long_t startIndex, long_t endIndex, BitmapState state)
 {
-    unsigned long localStartIndex = this->getLocalIndex(startIndex);
-    unsigned long localEndIndex = this->getLocalIndex(endIndex);
+    long_t localStartIndex = this->getLocalIndex(startIndex);
+    long_t localEndIndex = this->getLocalIndex(endIndex);
  
     TRACE(LOCAL, "setEntryRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
-        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
+        for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             uint8_t &leaf = getLeafRef(i);
             leaf = state;
         }
         return;
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
                                 this->getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         Node *node = getNode(i);
         node->setEntryRange(this->getNextIndex(startWIndex), this->getNextIndex(endWIndex), state);
@@ -408,23 +408,23 @@ NodeStore<S>::setEntryRange(unsigned long startIndex, unsigned long endIndex, Bi
 
 template <typename S>
 bool
-NodeStore<S>::isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
+NodeStore<S>::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state)
 {
-    unsigned long localStartIndex = this->getLocalIndex(startIndex);
-    unsigned long localEndIndex = this->getLocalIndex(endIndex);
+    long_t localStartIndex = this->getLocalIndex(startIndex);
+    long_t localEndIndex = this->getLocalIndex(endIndex);
  
     TRACE(LOCAL, "isAnyInRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
-        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
+        for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             if (getLeaf(i) == state) return true;
         }
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
                                 this->getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         Node *node = getNode(i);
         bool ret = node->isAnyInRange(this->getNextIndex(startWIndex), this->getNextIndex(endWIndex), state);
@@ -440,7 +440,7 @@ NodeStore<S>::isAnyInRange(unsigned long startIndex, unsigned long endIndex, Bit
 
 inline
 BitmapState
-NodeShared::getEntry(unsigned long index)
+NodeShared::getEntry(long_t index)
 {
     sync(); 
 
@@ -451,11 +451,11 @@ NodeShared::getEntry(unsigned long index)
 
 inline
 BitmapState
-NodeShared::getAndSetEntry(unsigned long index, BitmapState state)
+NodeShared::getAndSetEntry(long_t index, BitmapState state)
 {
     sync();
 
-    unsigned long localIndex = getLocalIndex(index);
+    long_t localIndex = getLocalIndex(index);
     TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
     addDirtyEntry(localIndex);
 
@@ -464,11 +464,11 @@ NodeShared::getAndSetEntry(unsigned long index, BitmapState state)
 
 inline
 void
-NodeShared::setEntry(unsigned long index, BitmapState state)
+NodeShared::setEntry(long_t index, BitmapState state)
 {
     sync();
 
-    unsigned long localIndex = getLocalIndex(index);
+    long_t localIndex = getLocalIndex(index);
     TRACE(LOCAL, "setEntry 0x%lx", localIndex);
     addDirtyEntry(localIndex);
 
@@ -477,7 +477,7 @@ NodeShared::setEntry(unsigned long index, BitmapState state)
 
 inline
 void
-NodeShared::setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
+NodeShared::setEntryRange(long_t startIndex, long_t endIndex, BitmapState state)
 {
     sync();
 
@@ -488,7 +488,7 @@ NodeShared::setEntryRange(unsigned long startIndex, unsigned long endIndex, Bitm
 
 inline
 bool
-NodeShared::isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state)
+NodeShared::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state)
 {
     sync();
 
@@ -517,7 +517,7 @@ Bitmap::setEntry(const accptr_t addr, BitmapState state)
 {
     TRACE(LOCAL, "setEntry %p", (void *) addr);
 
-    unsigned long entry = getIndex(addr);
+    long_t entry = getIndex(addr);
     root_->setEntry(entry, state);
 }
 
@@ -527,17 +527,17 @@ Bitmap::setEntryRange(const accptr_t addr, size_t bytes, BitmapState state)
 {
     TRACE(LOCAL, "setEntryRange %p %zd", (void *) addr, bytes);
 
-    unsigned long firstEntry = getIndex(addr);
-    unsigned long lastEntry = getIndex(addr + bytes - 1);
+    long_t firstEntry = getIndex(addr);
+    long_t lastEntry = getIndex(addr + bytes - 1);
     root_->setEntryRange(firstEntry, lastEntry, state);
 }
 
 inline
-unsigned long
+long_t
 Bitmap::getIndex(const accptr_t _ptr) const
 {
     void * ptr = (void *) _ptr;
-    unsigned long index = (unsigned long)ptr;
+    long_t index = long_t(ptr);
     index >>= SubBlockShift_;
     return index;
 }
@@ -547,7 +547,7 @@ BitmapState
 Bitmap::getEntry(const accptr_t addr) const
 {
 
-    unsigned long entry = getIndex(addr);
+    long_t entry = getIndex(addr);
     BitmapState state = root_->getEntry(entry);
 
     TRACE(LOCAL, "getEntry %p: %d", (void *) addr, state);
@@ -558,7 +558,7 @@ inline
 BitmapState
 Bitmap::getAndSetEntry(const accptr_t addr, BitmapState state)
 {
-    unsigned long entry = getIndex(addr);
+    long_t entry = getIndex(addr);
     BitmapState ret= root_->getAndSetEntry(entry, state);
     TRACE(LOCAL, "getAndSetEntry %p: %d", (void *) addr, ret);
     return ret;
@@ -571,8 +571,8 @@ Bitmap::isAnyInRange(const accptr_t addr, size_t size, BitmapState state)
 {
     TRACE(LOCAL, "isAnyInRange %p %zd", (void *) addr, size);
 
-    unsigned long firstEntry = getIndex(addr);
-    unsigned long lastEntry = getIndex(addr + size - 1);
+    long_t firstEntry = getIndex(addr);
+    long_t lastEntry = getIndex(addr + size - 1);
     return root_->isAnyInRange(firstEntry, lastEntry, state);
 }
 

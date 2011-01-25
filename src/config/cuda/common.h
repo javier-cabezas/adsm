@@ -10,7 +10,7 @@ struct accptr_t {
         ptr_(NULL)
     {}
     inline accptr_t(void * ptr) :
-        ptr_(CUdeviceptr((unsigned long)ptr & ((((unsigned long) 0x100) << 32) - 1)))
+        ptr_(CUdeviceptr(long_t(ptr)))
     {}
     inline accptr_t(CUdeviceptr ptr) :
         ptr_(ptr)
@@ -18,8 +18,12 @@ struct accptr_t {
     inline accptr_t(long int ptr) :
         ptr_(ptr)
     {}
-    inline accptr_t(unsigned long ptr) :
+    inline accptr_t(long_t ptr) :
+#if CUDA_VERSION < 3020
+        ptr_(CUdeviceptr(ptr))
+#else
         ptr_(ptr)
+#endif
     {}
     inline accptr_t(int ptr) :
         ptr_(ptr)

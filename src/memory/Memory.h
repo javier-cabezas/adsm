@@ -37,14 +37,16 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
+#include "util/Logger.h"
+
 namespace __impl { namespace memory {
 
 extern size_t BlockSize_;
 #ifdef USE_VM
 extern size_t SubBlockSize_;
-extern unsigned long BlockShift_;
-extern unsigned long SubBlockShift_;
-extern unsigned long SubBlockMask_;
+extern unsigned BlockShift_;
+extern unsigned SubBlockShift_;
+extern long_t SubBlockMask_;
 #endif
 
 class GMAC_LOCAL Memory {
@@ -57,11 +59,36 @@ public:
 };
 
 #if USE_VM
+
+static
+long_t log2(long_t n)
+{
+    long_t ret = 0;
+    while (n != 1) {
+        ASSERTION((n & 0x1) == 0);
+        n >>= 1;
+        ret++;
+    }
+    return ret;
+}
+
+static
+unsigned log2(unsigned n)
+{
+    unsigned ret = 0;
+    while (n != 1) {
+        ASSERTION((n & 0x1) == 0);
+        n >>= 1;
+        ret++;
+    }
+    return ret;
+}
+
 static inline
-unsigned long
+long_t
 GetSubBlock(const hostptr_t _addr)
 {
-    unsigned long addr = (unsigned long) _addr;
+    long_t addr = long_t(_addr);
     return (addr >> SubBlockShift_) & SubBlockMask_;
 }
 
@@ -69,10 +96,10 @@ static inline
 hostptr_t
 GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
 {
-    unsigned long start = (unsigned long) _start;
-    unsigned long addr = (unsigned long) _addr;
-    unsigned long off = addr - start;
-    unsigned long block = off / BlockSize_;
+    long_t start = long_t(_start);
+    long_t addr = long_t(_addr);
+    long_t off = addr - start;
+    long_t block = off / BlockSize_;
     return hostptr_t(start + block * BlockShift_);
 }
 
@@ -80,10 +107,10 @@ static inline
 hostptr_t
 GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
 {
-    unsigned long start = (unsigned long) _start;
-    unsigned long addr  = (unsigned long) _addr;
-    unsigned long off = addr - start;
-    unsigned long subBlock = off / SubBlockSize_;
+    long_t start = long_t(_start);
+    long_t addr  = long_t(_addr);
+    long_t off = addr - start;
+    long_t subBlock = off / SubBlockSize_;
     return hostptr_t(start + subBlock * SubBlockShift_);
 }
 #endif

@@ -50,7 +50,7 @@
 //! wA is A's width and wB is B's width
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-matrixMul( float* C, float* A, float* B, int wA, int wB, int offset)
+matrixMul( float* C, float* A, float* B, size_t wA, size_t wB, size_t offset)
 {
     // Block index
     int bx = blockIdx.x;

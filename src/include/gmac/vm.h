@@ -35,8 +35,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_USER_VM_H_
 #define GMAC_USER_VM_H_
 
-#include <stdint.h>
-
 #include <cuda_runtime_api.h>
 
 
@@ -45,17 +43,26 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
+
+typedef unsigned char uint8_t;
+#if defined(__GNUC__)
+typedef unsigned long long_t;
+#elif defined(_MSC_VER)
+typedef ULONG_PTR long_t;
+#endif
+
+
 __constant__ uint8_t ***__gmac_vm_root;
 __constant__ unsigned __gmac_vm_shift_l1;
 __constant__ unsigned __gmac_vm_shift_l2;
-__constant__ unsigned long __gmac_vm_mask_l1;
-__constant__ unsigned long __gmac_vm_mask_l2;
+__constant__ long_t __gmac_vm_mask_l1;
+__constant__ long_t __gmac_vm_mask_l2;
 
 #define USE_VM_LEVELS 3
 
 #if USE_VM_LEVELS == 3
 __constant__ unsigned __gmac_vm_shift_l3;
-__constant__ unsigned long __gmac_vm_mask_l3;
+__constant__ long_t __gmac_vm_mask_l3;
 #endif
 
 #ifdef BITMAP_BYTE
@@ -70,14 +77,12 @@ __device__ __inline__ T __globalSt2(T *addr, T v) {
 }
 #endif
 
-typedef unsigned long ulong;
-
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long index1 = (ulong(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
-    unsigned long index2 = (ulong(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
-    unsigned long index3 = (ulong(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3;
+    long_t index1 = (long_t(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
+    long_t index2 = (long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
+    long_t index3 = (long_t(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3;
     // uint8_t **walk1 = (uint8_t **) __gmac_vm_root[index1];
     // uint8_t *walk2 = (uint8_t *) walk1[index2];
     __gmac_vm_root[index1][index2][index3] = 1;
@@ -108,7 +113,7 @@ __constant__ uint32_t *__gmac_vm_root;
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
+    long_t entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
     uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_PAGE) & MASK_BITPOS);
     atomicOr(&__gmac_vm_root[entry], val);
     return v;

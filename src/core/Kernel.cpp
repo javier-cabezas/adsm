@@ -16,7 +16,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     }
 }
 
-void KernelConfig::pushArgument(const void *arg, size_t size, unsigned long offset)
+void KernelConfig::pushArgument(const void *arg, size_t size, long_t offset)
 {
     ASSERTION(offset + size < KernelConfig::StackSize_);
 
@@ -27,7 +27,7 @@ void KernelConfig::pushArgument(const void *arg, size_t size, unsigned long offs
 
 void KernelConfig::pushArgument(const void *arg, size_t size)
 {
-    pushArgument(arg, size, (unsigned long)(argsSize_));
+    pushArgument(arg, size, argsSize_);
 }
 
 }}

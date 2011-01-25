@@ -20,9 +20,9 @@ namespace memory {
 size_t BlockSize_;
 #ifdef USE_VM
 size_t SubBlockSize_;
-unsigned long BlockShift_;
-unsigned long SubBlockShift_;
-unsigned long SubBlockMask_;
+unsigned BlockShift_;
+unsigned SubBlockShift_;
+long_t SubBlockMask_;
 #endif
 
 void Init(void)
@@ -34,8 +34,8 @@ void Init(void)
     BlockSize_     = util::params::ParamBlockSize;
 #ifdef USE_VM
     SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
-    BlockShift_    = ceilf(log2f(float(util::params::ParamBlockSize)));
-    SubBlockShift_ = ceilf(log2f(float(util::params::ParamBlockSize/util::params::ParamSubBlocks)));
+    BlockShift_    = (unsigned) log2(util::params::ParamBlockSize);
+    SubBlockShift_ = (unsigned) log2(util::params::ParamBlockSize/util::params::ParamSubBlocks);
     SubBlockMask_  = util::params::ParamSubBlocks - 1;
 
     vm::Bitmap::Init();

@@ -5,8 +5,6 @@
 #include <gmac/cuda.h>
 #include <gmac/vm.h>
 
-#include <sys/time.h>
-
 #include "debug.h"
 #include "utils.h"
 
@@ -56,7 +54,7 @@ int main(int argc, char *argv[])
     // Call the kernel
     getTime(&s);
     dim3 Db(blockSize);
-    dim3 Dg(vecSize / blockSize);
+    dim3 Dg(unsigned(vecSize / blockSize));
     if(vecSize % blockSize) Dg.x++;
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();

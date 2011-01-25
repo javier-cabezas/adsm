@@ -85,8 +85,17 @@ template<typename T>
 void setParam(T *param, const char *str, const T def)
 {
 	const char *value = GETENV(str);
-	if(value != NULL) *param = atoi(value);
-	else              *param = def;
+    T val = value != NULL? T(atoi(value)): def;
+    *param = val;
+}
+
+template<>
+static
+void setParam<bool>(bool *param, const char *str, const bool def)
+{
+	const char *value = GETENV(str);
+    bool val = (value != NULL) ? bool(atoi(value) != 0? true: false): def;
+    *param = val;
 }
 
 #include <cmath>

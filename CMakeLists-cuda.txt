@@ -1,4 +1,4 @@
-option(USE_CUDA"Enable CUDA backend" ON)
+option(USE_CUDA "Enable CUDA backend" ON)
 if(USE_CUDA)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA

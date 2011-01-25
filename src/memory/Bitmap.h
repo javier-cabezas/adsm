@@ -77,18 +77,18 @@ private:
     size_t nUsedEntries_;
     std::vector<bool> usedEntries_;
 
-    unsigned long firstUsedEntry_;
-    unsigned long lastUsedEntry_;
+    long_t firstUsedEntry_;
+    long_t lastUsedEntry_;
 
 protected:
-    unsigned long mask_;
+    long_t mask_;
     unsigned shift_;
 
     std::vector<unsigned> nextEntries_;
 
-    unsigned long getLocalIndex(unsigned long index) const;
-    unsigned long getGlobalIndex(unsigned long localIndex) const;
-    unsigned long getNextIndex(unsigned long index) const;
+    long_t getLocalIndex(long_t index) const;
+    long_t getGlobalIndex(long_t localIndex) const;
+    long_t getNextIndex(long_t index) const;
 
     virtual Node *createChild() = 0;
 
@@ -96,24 +96,24 @@ protected:
 public:
     virtual ~Node() {}
 
-    virtual BitmapState getEntry(unsigned long index) = 0;
-    virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state) = 0;
-    virtual void setEntry(unsigned long index, BitmapState state) = 0;
-    virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state) = 0;
-    virtual bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state) = 0;
+    virtual BitmapState getEntry(long_t index) = 0;
+    virtual BitmapState getAndSetEntry(long_t index, BitmapState state) = 0;
+    virtual void setEntry(long_t index, BitmapState state) = 0;
+    virtual void setEntryRange(long_t startIndex, long_t endIndex, BitmapState state) = 0;
+    virtual bool isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state) = 0;
 
-    virtual void registerRange(unsigned long startIndex, unsigned long endIndex) = 0;
-    virtual void unregisterRange(unsigned long startIndex, unsigned long endIndex) = 0;
+    virtual void registerRange(long_t startIndex, long_t endIndex) = 0;
+    virtual void unregisterRange(long_t startIndex, long_t endIndex) = 0;
     
     unsigned getLevel() const;
     size_t getNUsedEntries() const;
     void setNUsedEntries(size_t usedEntries) const;
 
-    unsigned long getFirstUsedEntry() const;
-    unsigned long getLastUsedEntry() const;
+    long_t getFirstUsedEntry() const;
+    long_t getLastUsedEntry() const;
 
-    void addEntries(unsigned long startIndex, unsigned long endIndex);
-    void removeEntries(unsigned long startIndex, unsigned long endIndex);
+    void addEntries(long_t startIndex, long_t endIndex);
+    void removeEntries(long_t startIndex, long_t endIndex);
 };
 
 class Bitmap;
@@ -133,8 +133,8 @@ protected:
 class GMAC_LOCAL StoreShared : public StoreHost
 {
 private:
-    void syncToHost(unsigned long startIndex, unsigned long endIndex, size_t elemSize);
-    void syncToAccelerator(unsigned long startIndex, unsigned long endIndex, size_t elemSize);
+    void syncToHost(long_t startIndex, long_t endIndex, size_t elemSize);
+    void syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize);
     void setDirty(bool synced);
 
 protected:
@@ -144,8 +144,8 @@ protected:
     bool dirty_;
     bool synced_;
 
-    unsigned long firstDirtyEntry_;
-    unsigned long lastDirtyEntry_;
+    long_t firstDirtyEntry_;
+    long_t lastDirtyEntry_;
 
     bool isDirty() const;
 
@@ -158,17 +158,17 @@ protected:
     virtual void acquire() = 0;
     virtual void release() = 0;
 
-    unsigned long getFirstDirtyEntry();
-    unsigned long getLastDirtyEntry();
+    long_t getFirstDirtyEntry();
+    long_t getLastDirtyEntry();
 
-    void addDirtyEntry(unsigned long index);
-    void addDirtyEntries(unsigned long startIndex, unsigned long endIndex);
+    void addDirtyEntry(long_t index);
+    void addDirtyEntries(long_t startIndex, long_t endIndex);
 
 public:
     template <typename T>
-    void syncToHost(unsigned long startIndex, unsigned long endIndex);
+    void syncToHost(long_t startIndex, long_t endIndex);
     template <typename T>
-    void syncToAccelerator(unsigned long startIndex, unsigned long endIndex);
+    void syncToAccelerator(long_t startIndex, long_t endIndex);
 
     bool isSynced() const;
     void setSynced(bool synced);
@@ -182,21 +182,21 @@ class NodeStore :
     public S
 {
 protected:
-    Node *getNode(unsigned long index);
-    virtual BitmapState getLeaf(unsigned long index) = 0;
-    virtual uint8_t &getLeafRef(unsigned long index) = 0;
+    Node *getNode(long_t index);
+    virtual BitmapState getLeaf(long_t index) = 0;
+    virtual uint8_t &getLeafRef(long_t index) = 0;
 
-    Node *&getNodeRef(unsigned long index);
+    Node *&getNodeRef(long_t index);
 
     NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
     virtual ~NodeStore();
 public:
 
-    virtual BitmapState getEntry(unsigned long index);
-    virtual BitmapState getAndSetEntry(unsigned long index, BitmapState state);
-    virtual void setEntry(unsigned long index, BitmapState state);
-    virtual void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
-    virtual bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+    virtual BitmapState getEntry(long_t index);
+    virtual BitmapState getAndSetEntry(long_t index, BitmapState state);
+    virtual void setEntry(long_t index, BitmapState state);
+    virtual void setEntryRange(long_t startIndex, long_t endIndex, BitmapState state);
+    virtual bool isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state);
 };
 
 #if 0
@@ -206,7 +206,7 @@ public:
     NodeHost(Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
     virtual ~NodeHost();
 
-    void registerRange(unsigned long startIndex, unsigned long endIndex);
+    void registerRange(long_t startIndex, long_t endIndex);
 
     void acquire() {}
     void release() {}
@@ -219,14 +219,14 @@ class GMAC_LOCAL NodeHost : public NodeStore<StoreHost>
 protected:
     Node *createChild();
 
-    BitmapState getLeaf(unsigned long index);
-    uint8_t &getLeafRef(unsigned long index);
+    BitmapState getLeaf(long_t index);
+    uint8_t &getLeafRef(long_t index);
 
 public:
     NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
 
-    void registerRange(unsigned long startIndex, unsigned long endIndex);
-    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
+    void registerRange(long_t startIndex, long_t endIndex);
+    void unregisterRange(long_t startIndex, long_t endIndex);
 };
 
 class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
@@ -237,25 +237,25 @@ class GMAC_LOCAL NodeShared : public NodeStore<StoreShared>
 
 protected:
     Node *createChild();
-    NodeShared *&getNodeRef(unsigned long index);
-    NodeShared *&getNodeAccHostRef(unsigned long index);
-    NodeShared *getNodeAccAddr(unsigned long index);
+    NodeShared *&getNodeRef(long_t index);
+    NodeShared *&getNodeAccHostRef(long_t index);
+    NodeShared *getNodeAccAddr(long_t index);
 
-    BitmapState getLeaf(unsigned long index);
-    uint8_t &getLeafRef(unsigned long index);
+    BitmapState getLeaf(long_t index);
+    uint8_t &getLeafRef(long_t index);
 
 public:
     NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
     ~NodeShared();
 
-    BitmapState getEntry(unsigned long index);
-    BitmapState getAndSetEntry(unsigned long index, BitmapState state);
-    void setEntry(unsigned long index, BitmapState state);
-    void setEntryRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
-    bool isAnyInRange(unsigned long startIndex, unsigned long endIndex, BitmapState state);
+    BitmapState getEntry(long_t index);
+    BitmapState getAndSetEntry(long_t index, BitmapState state);
+    void setEntry(long_t index, BitmapState state);
+    void setEntryRange(long_t startIndex, long_t endIndex, BitmapState state);
+    bool isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state);
 
-    void registerRange(unsigned long startIndex, unsigned long endIndex);
-    void unregisterRange(unsigned long startIndex, unsigned long endIndex);
+    void registerRange(long_t startIndex, long_t endIndex);
+    void unregisterRange(long_t startIndex, long_t endIndex);
 
     void acquire();
     void release();
@@ -286,9 +286,9 @@ protected:
      */
     static const unsigned &L3Entries_;
 
-    static unsigned long L1Mask_;
-    static unsigned long L2Mask_;
-    static unsigned long L3Mask_;
+    static long_t L1Mask_;
+    static long_t L2Mask_;
+    static long_t L3Mask_;
     static unsigned L1Shift_;
     static unsigned L2Shift_;
     static unsigned L3Shift_;
@@ -346,7 +346,7 @@ public:
      */
     void setEntryRange(const accptr_t addr, size_t bytes, BitmapState state);
 
-    unsigned long getIndex(const accptr_t ptr) const;
+    long_t getIndex(const accptr_t ptr) const;
 
     /**
      * Gets the state of the subblock containing the given address

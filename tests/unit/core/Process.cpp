@@ -45,7 +45,7 @@ TEST( ModeMapTest,MemberFunc){
 }
 
 TEST_F(ProcessTest,QueueMapTestCase){
-	unsigned long id=GetThreadId();
+	unsigned id=GetThreadId();
 	ASSERT_TRUE(id != 0);
 
 	ThreadQueue tq;

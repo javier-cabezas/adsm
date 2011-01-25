@@ -92,7 +92,7 @@ void Buddy::putToList(off_t addr, uint8_t i)
     }
     
     /* Try merging buddies */
-    unsigned long mask = ~((1 << (i + 1)) - 1);
+    long_t mask = ~((1 << (i + 1)) - 1);
     List &list = _tree[i];
     List::iterator buddy;
     for(buddy = list.begin(); buddy != list.end(); buddy++) {

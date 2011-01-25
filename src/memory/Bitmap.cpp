@@ -1,5 +1,6 @@
 #ifdef USE_VM
 
+#include <cmath>
 #include <cstring>
 
 #include "core/Mode.h"
@@ -16,9 +17,9 @@ const unsigned &Bitmap::L3Entries_ = util::params::ParamBitmapL3Entries;
 const size_t &Bitmap::BlockSize_ = util::params::ParamBlockSize;
 const unsigned &Bitmap::SubBlocks_ = util::params::ParamSubBlocks;
 
-unsigned long Bitmap::L1Mask_;
-unsigned long Bitmap::L2Mask_;
-unsigned long Bitmap::L3Mask_;
+long_t Bitmap::L1Mask_;
+long_t Bitmap::L2Mask_;
+long_t Bitmap::L3Mask_;
 unsigned Bitmap::L1Shift_;
 unsigned Bitmap::L2Shift_;
 unsigned Bitmap::L3Shift_;
@@ -31,16 +32,16 @@ Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
 {
     TRACE(LOCAL, "Node constructor");
 
-    unsigned shift = 0;
+    long shift = 0;
     for (size_t i = 0; i < nextEntries_.size(); i++) {
-        shift += unsigned(ceilf(log2f(float(nextEntries[i]))));
+        shift += log2(nextEntries[i]);
     }
 
     for (size_t i = 0; i < nEntries; i++) {
         usedEntries_[i] = false;
     }
 
-    mask_  = (nEntries - 1) << shift;
+    mask_  = (long_t(nEntries) - 1) << shift;
     shift_ = shift;
 }
 
@@ -50,7 +51,7 @@ NodeStore<S>::~NodeStore()
     TRACE(LOCAL, "NodeStore destructor");
 
     if (nextEntries_.size() > 0) {
-        for (unsigned long i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
+        for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
             Node *node = getNode(i);
             if (node != NULL) {
                 delete node;
@@ -60,28 +61,28 @@ NodeStore<S>::~NodeStore()
 }
 
 void
-NodeHost::registerRange(unsigned long startIndex, unsigned long endIndex)
+NodeHost::registerRange(long_t startIndex, long_t endIndex)
 {
-    unsigned long localStartIndex = getLocalIndex(startIndex);
-    unsigned long localEndIndex = getLocalIndex(endIndex);
+    long_t localStartIndex = getLocalIndex(startIndex);
+    long_t localEndIndex = getLocalIndex(endIndex);
 
     addEntries(localStartIndex, localEndIndex);
 
     TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
     if (nextEntries_.size() == 0) {
-        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
+        for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             uint8_t &leaf = getLeafRef(i);
             leaf = uint8_t(BITMAP_UNSET);
         }
         return;
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
-                                getGlobalIndex(localStartIndex + 1) - 1;
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+                          getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         Node *&node = getNodeRef(i);
         if (node == NULL) {
@@ -95,10 +96,10 @@ NodeHost::registerRange(unsigned long startIndex, unsigned long endIndex)
 }
 
 void
-NodeHost::unregisterRange(unsigned long startIndex, unsigned long endIndex)
+NodeHost::unregisterRange(long_t startIndex, long_t endIndex)
 {
-    unsigned long localStartIndex = getLocalIndex(startIndex);
-    unsigned long localEndIndex = getLocalIndex(endIndex);
+    long_t localStartIndex = getLocalIndex(startIndex);
+    long_t localEndIndex = getLocalIndex(endIndex);
 
     TRACE(LOCAL, "unregisterRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
@@ -107,11 +108,11 @@ NodeHost::unregisterRange(unsigned long startIndex, unsigned long endIndex)
         return;
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
-                                getGlobalIndex(localStartIndex + 1) - 1;
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+                         getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         Node *&node = getNodeRef(i);
         node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
@@ -126,10 +127,10 @@ NodeHost::unregisterRange(unsigned long startIndex, unsigned long endIndex)
 }
 
 void
-NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
+NodeShared::registerRange(long_t startIndex, long_t endIndex)
 {
-    unsigned long localStartIndex = getLocalIndex(startIndex);
-    unsigned long localEndIndex = getLocalIndex(endIndex);
+    long_t localStartIndex = getLocalIndex(startIndex);
+    long_t localEndIndex = getLocalIndex(endIndex);
 
     addEntries(localStartIndex, localEndIndex);
 
@@ -138,18 +139,18 @@ NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
     TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
     if (nextEntries_.size() == 0) {
-        for (unsigned long i = localStartIndex; i <= localEndIndex; i++) {
+        for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             uint8_t &leaf = getLeafRef(i);
             leaf = uint8_t(BITMAP_UNSET);
         }
         return;
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
                                 getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         NodeShared *&node = getNodeRef(i);
         if (node == NULL) {
@@ -166,10 +167,10 @@ NodeShared::registerRange(unsigned long startIndex, unsigned long endIndex)
 }
 
 void
-NodeShared::unregisterRange(unsigned long startIndex, unsigned long endIndex)
+NodeShared::unregisterRange(long_t startIndex, long_t endIndex)
 {
-    unsigned long localStartIndex = getLocalIndex(startIndex);
-    unsigned long localEndIndex = getLocalIndex(endIndex);
+    long_t localStartIndex = getLocalIndex(startIndex);
+    long_t localEndIndex = getLocalIndex(endIndex);
 
     TRACE(LOCAL, "unregisterRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
 
@@ -178,11 +179,11 @@ NodeShared::unregisterRange(unsigned long startIndex, unsigned long endIndex)
         return;
     }
 
-    unsigned long startWIndex = startIndex;
-    unsigned long endWIndex   = (localStartIndex == localEndIndex)? endIndex:
+    long_t startWIndex = startIndex;
+    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
                                 getGlobalIndex(localStartIndex + 1) - 1;
 
-    unsigned long i = localStartIndex;
+    long_t i = localStartIndex;
     do {
         NodeShared *&node = getNodeRef(i);
         node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
@@ -224,7 +225,7 @@ void
 NodeShared::acquire()
 {
     if (nextEntries_.size() > 0) {
-        for (unsigned long i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
+        for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
             NodeShared *node = (NodeShared *) getNode(i);
             if (node != NULL) node->acquire();
         }
@@ -238,7 +239,7 @@ void
 NodeShared::release()
 {
     if (nextEntries_.size() > 0) {
-        for (unsigned long i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
+        for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
             NodeShared *node = (NodeShared *) getNode(i);
             if (node != NULL) node->release();
         }
@@ -261,20 +262,20 @@ Bitmap::Init()
     if (BitmapLevels_ == 3) {
         Bitmap::L3Shift_ = shift;
         Bitmap::L3Mask_  = Bitmap::L3Entries_ - 1;
-        shift += unsigned(ceilf(log2f(float(Bitmap::L3Entries_))));
+        shift += log2(Bitmap::L3Entries_);
         TRACE(GLOBAL, "L3Shift %u", Bitmap::L3Shift_);
         TRACE(GLOBAL, "L3Mask %lu", Bitmap::L3Mask_);
     }
 
     Bitmap::L2Shift_ = shift;
-    Bitmap::L2Mask_  = (((unsigned long) Bitmap::L2Entries_) - 1) << shift;
-    shift += unsigned(ceilf(log2f(float(Bitmap::L2Entries_))));
+    Bitmap::L2Mask_  = (long_t(Bitmap::L2Entries_) - 1) << shift;
+    shift += log2(Bitmap::L2Entries_);
     TRACE(GLOBAL, "L2Entries %u", Bitmap::L2Entries_);
     TRACE(GLOBAL, "L2Shift %u", Bitmap::L2Shift_);
     TRACE(GLOBAL, "L2Mask %lu", Bitmap::L2Mask_);
 
     Bitmap::L1Shift_ = shift;
-    Bitmap::L1Mask_  = (((unsigned long) Bitmap::L1Entries_) - 1) << shift;
+    Bitmap::L1Mask_  = (long_t(Bitmap::L1Entries_) - 1) << shift;
     TRACE(GLOBAL, "L1Shift %u", Bitmap::L1Shift_);
     TRACE(GLOBAL, "L1Mask %lu", Bitmap::L1Mask_);
 }

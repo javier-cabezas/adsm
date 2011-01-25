@@ -85,7 +85,7 @@ protected:
     //! Last addr
     unsigned sequentialFaults_;
     unsigned faults_;
-    unsigned long lastSubBlock_;
+    long_t lastSubBlock_;
 
     void resetBitmapStats();
     void updateBitmapStats(const hostptr_t addr, bool write);

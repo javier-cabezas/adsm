@@ -36,7 +36,7 @@ inline void
 Block::updateBitmapStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
-    unsigned long currentSubBlock = GetSubBlock(addr);
+    long_t currentSubBlock = GetSubBlock(addr);
 #if 0
     if (write) {
         bitmap.set(acceleratorAddr(addr));
