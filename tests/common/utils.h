@@ -90,7 +90,7 @@ void setParam(T *param, const char *str, const T def)
 }
 
 template<>
-static
+inline
 void setParam<bool>(bool *param, const char *str, const bool def)
 {
 	const char *value = GETENV(str);
