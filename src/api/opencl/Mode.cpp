@@ -63,6 +63,11 @@ core::Context &Mode::getContext()
     return *context;
 }
 
+Context &Mode::getCLContext()
+{
+    return dynamic_cast<Context &>(getContext());
+}
+
 gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();
@@ -97,7 +102,7 @@ accptr_t Mode::hostMapAddr(const hostptr_t addr)
 
 cl_command_queue Mode::eventStream()
 {
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCLContext();
     return ctx.eventStream();
 }
 

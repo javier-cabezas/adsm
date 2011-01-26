@@ -203,7 +203,7 @@ Accelerator::addAccelerator(Accelerator &acc)
     Accelerators_->insert(pair);
 }
 
-core::Kernel *
+Kernel *
 Accelerator::getKernel(gmacKernel_t k)
 {
     std::vector<cl_program> &programs = (*Accelerators_)[this];

@@ -19,22 +19,22 @@ Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
-core::KernelLaunch *
-Kernel::launch(core::KernelConfig & _c)
+KernelConfig::KernelConfig(const KernelConfig & c) :
+    argsSize_(0),
+    grid_(c.grid_),
+    block_(c.block_),
+    shared_(c.shared_),
+    stream_(c.stream_)
 {
-    KernelConfig & c = static_cast<KernelConfig &>(_c);
-
-    KernelLaunch * l = new cuda::KernelLaunch(*this, c);
-    return l;
+    ArgsVector::const_iterator it;
+    for (it = c.begin(); it != c.end(); it++) {
+        pushArgument(it->ptr(), it->size(), it->offset());
+    }
 }
 
-
-KernelConfig::KernelConfig()
-{
-}
 
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/, CUstream stream) :
-    core::KernelConfig(),
+    argsSize_(0),
     grid_(grid),
     block_(block),
     shared_(shared),
@@ -42,9 +42,10 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 {
 }
 
+
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
     core::KernelLaunch(),
-    cuda::KernelConfig(c),
+    KernelConfig(c),
     kernel_(k),
     f_(k.f_)
 {

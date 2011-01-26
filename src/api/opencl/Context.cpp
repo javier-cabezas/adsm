@@ -160,10 +160,10 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
     return ret;
 }
 
-core::KernelLaunch &Context::launch(core::Kernel &kernel)
+KernelLaunch &Context::launch(Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    core::KernelLaunch *ret = kernel.launch(call_);
+    KernelLaunch *ret = kernel.launch(call_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;

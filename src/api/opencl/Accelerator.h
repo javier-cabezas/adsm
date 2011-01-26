@@ -44,7 +44,7 @@ WITH THE SOFTWARE.
 
 #include "config/common.h"
 #include "core/Accelerator.h"
-#include "core/Kernel.h"
+#include "Kernel.h"
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
@@ -106,7 +106,7 @@ public:
     static void init();
 
     static void addAccelerator(Accelerator &acc);
-    core::Kernel *getKernel(gmacKernel_t k);
+    Kernel *getKernel(gmacKernel_t k);
 
     static gmacError_t prepareCLCode(const char *code, const char *flags);
     static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);

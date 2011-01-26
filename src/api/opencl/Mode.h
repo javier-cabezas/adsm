@@ -85,6 +85,7 @@ protected:
         \return Main mode context
     */
     core::Context &getContext();
+    Context &getCLContext();
 
     cl_program program_;
     KernelList kernelList_;
@@ -193,7 +194,7 @@ public:
     Accelerator &getAccelerator();
 
     gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
-	gmacError_t argument(const void *arg, size_t size);
+	gmacError_t argument(const void *arg, size_t size, unsigned index);
 };
 
 }}

@@ -106,6 +106,11 @@ core::Context &Mode::getContext()
     return *context;
 }
 
+Context &Mode::getCUDAContext()
+{
+    return dynamic_cast<Context &>(getContext());
+}
+
 gmacError_t Mode::hostAlloc(hostptr_t *addr, size_t size)
 {
     switchIn();
@@ -202,7 +207,7 @@ const Texture *Mode::texture(gmacTexture_t key) const
 
 CUstream Mode::eventStream()
 {
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     return ctx.eventStream();
 }
 

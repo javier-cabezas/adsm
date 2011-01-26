@@ -81,6 +81,7 @@ protected:
         \return Main mode context
     */
     core::Context &getContext();
+    Context &getCUDAContext();
 
 #ifdef USE_MULTI_CONTEXT
     //! CUDA modules active on this mode

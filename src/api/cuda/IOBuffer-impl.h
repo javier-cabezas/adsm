@@ -14,6 +14,7 @@ IOBuffer::toHost(Mode &mode, CUstream s)
         ASSERTION(ret == CUDA_SUCCESS);
         ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
         ASSERTION(ret == CUDA_SUCCESS);
+        created_ = true;
     }
 
     ret = cuEventRecord(start_, s);
