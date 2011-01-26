@@ -74,11 +74,10 @@ gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 
     // Create new shared object
     Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
-    *addr = object->addr();
-    if(*addr == NULL) {
-		object->release();
+    if(object == NULL) {
         return gmacErrorMemoryAllocation;
     }
+    *addr = object->addr();
 
     // Insert object into memory maps
     mode.addObject(*object);

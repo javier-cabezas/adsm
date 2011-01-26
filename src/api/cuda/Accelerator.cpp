@@ -173,6 +173,8 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
+static size_t kk = 0;
+
 gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
@@ -193,6 +195,7 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
         trace::ExitCurrentFunction();
         return error(ret);
     }
+
     CUdeviceptr gpuPtr = ptr;
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);

@@ -58,20 +58,25 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
     Object(hostAddr, size),
 	owner_(&owner)
 {
-	// Allocate memory (if necessary)
-    if(hostAddr == NULL) {
-        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-        if(addr_ == NULL) return;
-    }
-    else {
-        addr_ = hostAddr;
-    }
+    acceleratorAddr_ = NULL;
+    addr_ = NULL;
 
     // Allocate accelerator memory
     acceleratorAddr_ = allocAcceleratorMemory(owner, size);
     valid_ = (acceleratorAddr_ != NULL);
 
-    if (valid_) {
+    if (valid_ == true) {
+        // Allocate memory (if necessary)
+        if(hostAddr == NULL) {
+            addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
+            valid_ =  addr_ != NULL;
+        }
+        else {
+            addr_ = hostAddr;
+        }
+    }
+
+    if (valid_ == true) {
         // Create a shadow mapping for the host memory
         // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
@@ -106,8 +111,9 @@ SharedObject<T>::~SharedObject()
 #endif
 
 	// If the object creation failed, this address will be NULL
-    if(acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
-    Memory::unshadow(shadow_, size_);
+    if (acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
+    if (valid_) Memory::unshadow(shadow_, size_);
+    if (addr_ != NULL) Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
 
