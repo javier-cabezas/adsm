@@ -184,6 +184,15 @@ public:
     */
     gmacError_t acquire() const;
 
+#ifdef USE_VM
+    //! Acquire the ownership of the object for the CPU (VM version)
+    /*!
+      \return Error code
+    */
+    gmacError_t acquireWithBitmap() const;
+#endif
+
+
     //! Ensures that the object host memory contains an updated copy of the data
     /*!
       \return Error code

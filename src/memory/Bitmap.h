@@ -219,8 +219,8 @@ class GMAC_LOCAL NodeHost : public NodeStore<StoreHost>
 protected:
     Node *createChild();
 
-    BitmapState getLeaf(long_t index);
-    uint8_t &getLeafRef(long_t index);
+    virtual BitmapState getLeaf(long_t index);
+    virtual uint8_t &getLeafRef(long_t index);
 
 public:
     NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries);
@@ -388,8 +388,7 @@ class GMAC_LOCAL BitmapShared :
     public Bitmap
 {
 protected:
-    bool dirty_;
-    bool synced_;
+    bool released_;
 
     void syncToAccelerator();
 public:
@@ -397,6 +396,8 @@ public:
 
     void acquire();
     void release();
+
+    bool isReleased() const;
 };
 
 enum ModelDirection {

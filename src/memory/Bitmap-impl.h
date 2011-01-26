@@ -47,10 +47,11 @@ Node::addEntries(long_t startIndex, long_t endIndex)
         if (lastUsedEntry_ < endIndex) lastUsedEntry_ = endIndex;
     }
 
-    nUsedEntries_ += (endIndex - startIndex + 1);
-
     for (long_t i = startIndex; i <= endIndex; i++) {
-        usedEntries_[i] = true;
+        if (usedEntries_[i] == false) {
+            usedEntries_[i] = true;
+            nUsedEntries_++;
+        }
     }
 }
 
@@ -59,10 +60,11 @@ void
 Node::removeEntries(long_t startIndex, long_t endIndex)
 {
     for (long_t i = startIndex; i <= endIndex; i++) {
-        usedEntries_[i] = false;
+        if (usedEntries_[i] == true) {
+            usedEntries_[i] = false;
+            nUsedEntries_--;
+        }
     }
-
-    nUsedEntries_ -= (endIndex - startIndex + 1);
 
     if (nUsedEntries_ > 0) {
         bool first = false;
@@ -176,6 +178,7 @@ StoreShared::StoreShared(Bitmap &root, size_t size, bool allocHost) :
     synced_(true)
 {
     TRACE(LOCAL, "StoreShared constructor");
+    ::memset(entriesAccHost_, 0, size);
 }
 
 template <typename T>
@@ -210,6 +213,7 @@ inline
 long_t
 Node::getLocalIndex(long_t index) const
 {
+    TRACE(LOCAL, "getLocalIndex (%lx & %lx) >> %u -> %lx", index, mask_, shift_, (index & mask_) >> shift_);
     return (index & mask_) >> shift_;
 }
 
@@ -224,6 +228,7 @@ inline
 long_t
 Node::getNextIndex(long_t index) const
 {
+    TRACE(LOCAL, "getNextIndex %lx ~ %lx-> %lx", index, ~mask_, index & ~mask_);
     return index & ~mask_;
 }
 
@@ -253,6 +258,7 @@ inline
 BitmapState
 NodeHost::getLeaf(long_t index)
 {
+    abort();
     uint8_t val = reinterpret_cast<uint8_t *>(this->entriesHost_)[index];
     return BitmapState(val);
 }
@@ -269,6 +275,7 @@ inline
 uint8_t &
 NodeHost::getLeafRef(long_t index)
 {
+    abort();
     return static_cast<uint8_t *>(this->entriesHost_)[index];
 }
 
@@ -418,6 +425,7 @@ NodeStore<S>::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state
         for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             if (getLeaf(i) == state) return true;
         }
+        return false;
     }
 
     long_t startWIndex = startIndex;
@@ -501,6 +509,8 @@ inline
 void
 NodeShared::sync()
 {
+    TRACE(LOCAL, "sync");
+
     if (!this->isSynced()) {
         if (nextEntries_.size() > 0) {
             this->syncToHost<Node *>(getFirstUsedEntry(), getLastUsedEntry());
@@ -546,11 +556,10 @@ inline
 BitmapState
 Bitmap::getEntry(const accptr_t addr) const
 {
-
+    TRACE(LOCAL, "getEntry %p", (void *) addr);
     long_t entry = getIndex(addr);
     BitmapState state = root_->getEntry(entry);
-
-    TRACE(LOCAL, "getEntry %p: %d", (void *) addr, state);
+    TRACE(LOCAL, "getEntry ret: %d", state);
     return state;
 }
 
@@ -558,9 +567,10 @@ inline
 BitmapState
 Bitmap::getAndSetEntry(const accptr_t addr, BitmapState state)
 {
+    TRACE(LOCAL, "getAndSetEntry %p", (void *) addr);
     long_t entry = getIndex(addr);
     BitmapState ret= root_->getAndSetEntry(entry, state);
-    TRACE(LOCAL, "getAndSetEntry %p: %d", (void *) addr, ret);
+    TRACE(LOCAL, "getAndSetEntry ret: %d", ret);
     return ret;
 }
 
@@ -581,10 +591,10 @@ BitmapShared::acquire()
 {
     TRACE(LOCAL, "Acquire");
 
-    if (synced_ == true) {
+    if (released_ == true) {
         TRACE(LOCAL, "Acquiring");
         ((NodeShared *)root_)->acquire();
-        synced_ = false;
+        released_ = false;
     }
 }
 
@@ -593,14 +603,22 @@ BitmapShared::release()
 {
     TRACE(LOCAL, "Release");
 
-    if (dirty_ == false) {
+    if (released_ == false) {
         TRACE(LOCAL, "Releasing");
         // Sync the device variables
         syncToAccelerator();
 
         // Sync the bitmap contents
         ((NodeShared *)root_)->release();
+
+        released_ = true;
     }
+}
+
+inline bool
+BitmapShared::isReleased() const
+{
+    return released_;
 }
 
 }}}

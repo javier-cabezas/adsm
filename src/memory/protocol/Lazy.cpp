@@ -164,7 +164,9 @@ gmacError_t LazyBase::acquire(Block &b)
         case ReadOnly:
 			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                 FATAL("Unable to set memory permissions");
+#ifndef USE_VM
             block.state(Invalid);
+#endif
             break;
         case Dirty:
             FATAL("Block in incongruent state in acquire: %p", block.addr());

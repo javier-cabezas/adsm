@@ -154,10 +154,6 @@ gmacError_t Manager::acquireObjects()
     core::Mode &mode = core::Mode::getCurrent();
     if(mode.releasedObjects() == true) {
         mode.forEachObject(&Object::acquire);
-#ifdef USE_VM
-        vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-        acceleratorBitmap.acquire();
-#endif
         mode.acquireObjects();
     }
     return ret;
@@ -241,6 +237,13 @@ bool
 Manager::read(hostptr_t addr)
 {
     core::Mode &mode = core::Mode::getCurrent();
+#ifdef USE_VM
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (acceleratorBitmap.isReleased()) {
+        acceleratorBitmap.acquire();
+        mode.forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -255,6 +258,13 @@ bool
 Manager::write(hostptr_t addr)
 {
     core::Mode &mode = core::Mode::getCurrent();
+#ifdef USE_VM
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (acceleratorBitmap.isReleased()) {
+        acceleratorBitmap.acquire();
+        mode.forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;

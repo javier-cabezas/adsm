@@ -40,7 +40,7 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CUDA_NVCC_FLAGS "-arch=sm_11" "--compiler-options;-fno-strict-aliasing")
+    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # vmVecAdd

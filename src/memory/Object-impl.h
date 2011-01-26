@@ -78,6 +78,16 @@ inline gmacError_t Object::acquire() const
     return ret;
 }
 
+#ifdef USE_VM
+inline gmacError_t Object::acquireWithBitmap() const
+{
+    lockRead();
+	gmacError_t ret = coherenceOp(&Protocol::acquireWithBitmap);
+    unlock();
+    return ret;
+}
+#endif
+
 inline gmacError_t Object::toHost() const
 {
 	lockRead();

@@ -51,19 +51,30 @@ typedef unsigned long long_t;
 typedef ULONG_PTR long_t;
 #endif
 
+#define USE_VM_LEVELS 3
 
-__constant__ uint8_t ***__gmac_vm_root;
+#define HARCODED
+
+#ifdef HARCODED
+#define __gmac_vm_shift_l1 39
+#define __gmac_vm_shift_l2 33
+#define __gmac_vm_shift_l3 21
+#define __gmac_vm_mask_l1 (long_t(0))
+#define __gmac_vm_mask_l2 (long_t(128  - 1) << 33)
+#define __gmac_vm_mask_l3 (long_t(4096 - 1) << 21)
+
+#else // HARCODED
 __constant__ unsigned __gmac_vm_shift_l1;
 __constant__ unsigned __gmac_vm_shift_l2;
 __constant__ long_t __gmac_vm_mask_l1;
 __constant__ long_t __gmac_vm_mask_l2;
 
-#define USE_VM_LEVELS 3
-
 #if USE_VM_LEVELS == 3
 __constant__ unsigned __gmac_vm_shift_l3;
 __constant__ long_t __gmac_vm_mask_l3;
 #endif
+
+#endif // HARCODED
 
 #ifdef BITMAP_BYTE
 
@@ -77,18 +88,34 @@ __device__ __inline__ T __globalSt2(T *addr, T v) {
 }
 #endif
 
+#if USE_VM_LEVELS == 3
+__constant__ uint8_t **__gmac_vm_root[1];
+
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
+    uint8_t &entry = __gmac_vm_root[0]
+                                   [(long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2]
+                                   [(long_t(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3];
     *addr = v;
-    long_t index1 = (long_t(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
-    long_t index2 = (long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
-    long_t index3 = (long_t(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3;
-    // uint8_t **walk1 = (uint8_t **) __gmac_vm_root[index1];
-    // uint8_t *walk2 = (uint8_t *) walk1[index2];
-    __gmac_vm_root[index1][index2][index3] = 1;
-    //walk2[index3] = 1;
+    entry = 1;
     return v;
 }
+
+
+#endif
+
+#if USE_VM_LEVELS == 2
+__constant__ uint8_t *__gmac_vm_root[1];
+
+template<typename T>
+__device__ __inline__ T __globalSt(T *addr, T v) {
+    long_t index1 = (long_t(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
+    long_t index2 = (long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
+    __gmac_vm_root[index1][index2] = 1;
+    *addr = v;
+    return v;
+}
+#endif
 
 #if 0
 #if USE_VM_LEVELS == 2

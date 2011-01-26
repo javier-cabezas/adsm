@@ -44,7 +44,7 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacVecAdd

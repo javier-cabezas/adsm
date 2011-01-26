@@ -139,9 +139,9 @@ main(int argc, char** argv)
     size_t sizeB = sizeof(float) * elemsB;
     sizeC = sizeof(float) * elemsC;
 
-    printf("Elems: %d\n", elemsA);
-    printf("Elems: %d\n", elemsB);
-    printf("Elems: %d\n", elemsC);
+    printf("Elems: %zd\n", elemsA);
+    printf("Elems: %zd\n", elemsB);
+    printf("Elems: %zd\n", elemsC);
 
 
     // allocate memory for matrices A and B

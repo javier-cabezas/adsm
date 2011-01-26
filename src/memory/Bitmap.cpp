@@ -43,6 +43,9 @@ Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
 
     mask_  = (long_t(nEntries) - 1) << shift;
     shift_ = shift;
+    TRACE(LOCAL, "Entries: %zd", nEntries_);
+    TRACE(LOCAL, "Shift: %u", shift_);
+    TRACE(LOCAL, "Mask : %lx", mask_);
 }
 
 template <typename S>
@@ -133,6 +136,7 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
     long_t localEndIndex = getLocalIndex(endIndex);
 
     addEntries(localStartIndex, localEndIndex);
+    addDirtyEntries(localStartIndex, localEndIndex);
 
     if (entriesAcc_ == NULL) allocAcc(getLevel() == 0);
 
@@ -155,8 +159,11 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
         NodeShared *&node = getNodeRef(i);
         if (node == NULL) {
             node = (NodeShared *) createChild();
+            node->allocAcc(false);
+
             NodeShared *&nodeAcc = getNodeAccHostRef(i);
-            nodeAcc = getNodeAccAddr(i);
+            nodeAcc = node->getNodeAccAddr(0);
+            TRACE(LOCAL, "linking with 0x%p", nodeAcc);
         }
 
         node->registerRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
@@ -224,6 +231,8 @@ NodeShared::createChild()
 void
 NodeShared::acquire()
 {
+    TRACE(LOCAL, "Acquire");
+
     if (nextEntries_.size() > 0) {
         for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
             NodeShared *node = (NodeShared *) getNode(i);
@@ -261,8 +270,9 @@ Bitmap::Init()
 
     if (BitmapLevels_ == 3) {
         Bitmap::L3Shift_ = shift;
-        Bitmap::L3Mask_  = Bitmap::L3Entries_ - 1;
+        Bitmap::L3Mask_  = long_t(Bitmap::L3Entries_ - 1) << shift;
         shift += log2(Bitmap::L3Entries_);
+        TRACE(GLOBAL, "L3SEntries_ %u", Bitmap::L3Shift_);
         TRACE(GLOBAL, "L3Shift %u", Bitmap::L3Shift_);
         TRACE(GLOBAL, "L3Mask %lu", Bitmap::L3Mask_);
     }
@@ -314,7 +324,7 @@ BitmapHost::BitmapHost(core::Mode &mode) :
 
 BitmapShared::BitmapShared(core::Mode &mode) :
     Bitmap(mode, true),
-    synced_(true)
+    released_(false)
 {
     std::vector<unsigned> nextEntries;
 

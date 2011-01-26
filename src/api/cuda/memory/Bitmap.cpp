@@ -9,12 +9,14 @@
 namespace __impl { namespace memory { namespace vm {
 
 static const char * ACC_VM_ROOT_VAR = "__gmac_vm_root";
+#if 0
 static const char * ACC_VM_SHIFT_L1 = "__gmac_vm_shift_l1";
 static const char * ACC_VM_SHIFT_L2 = "__gmac_vm_shift_l2";
 static const char * ACC_VM_SHIFT_L3 = "__gmac_vm_shift_l3";
 static const char * ACC_VM_MASK_L1 = "__gmac_vm_mask_l1";
 static const char * ACC_VM_MASK_L2 = "__gmac_vm_mask_l2";
 static const char * ACC_VM_MASK_L3 = "__gmac_vm_mask_l3";
+#endif
 
 void
 StoreShared::allocAcc(bool isRoot)
@@ -105,6 +107,7 @@ BitmapShared::syncToAccelerator()
         TRACE(LOCAL, "Syncing SharedBitmap pointers");
         gmacError_t ret = gmacSuccess;
 
+#if 0
         const cuda::Variable *varShiftL1 = mode.constantByName(ACC_VM_SHIFT_L1);
         ASSERTION(varShiftL1 != NULL);
         accptr_t addrShiftL1 = varShiftL1->devPtr();
@@ -143,10 +146,9 @@ BitmapShared::syncToAccelerator()
         CFATAL(ret == gmacSuccess, "Unable to set the number of L2 entries in the accelerator %p", (void *) addrMaskL2);
         ret = mode.copyToAccelerator(addrMaskL3, hostptr_t(&Bitmap::L3Mask_), sizeof(Bitmap::L3Mask_));
         CFATAL(ret == gmacSuccess, "Unable to set the number of L3 entries in the accelerator %p", (void *) addrMaskL3);
-
+#endif
     }
 
-    synced_ = true;
     acc.setLastMode(mode);
 #endif
 }

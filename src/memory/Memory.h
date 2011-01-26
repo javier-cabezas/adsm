@@ -60,7 +60,7 @@ public:
 
 #if USE_VM
 
-static
+static inline
 long_t log2(long_t n)
 {
     long_t ret = 0;
@@ -72,7 +72,7 @@ long_t log2(long_t n)
     return ret;
 }
 
-static
+static inline
 unsigned log2(unsigned n)
 {
     unsigned ret = 0;
