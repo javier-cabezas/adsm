@@ -56,12 +56,12 @@ float doTest(float *a, float *b, float *c, float *orig)
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(gmacPtr(c));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
     tmp = cl_mem(gmacPtr(a));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 1);
     tmp = cl_mem(gmacPtr(b));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&vecSize, sizeof(vecSize));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 2);
+    __oclSetArgument(&vecSize, sizeof(vecSize), 3);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 

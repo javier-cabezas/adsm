@@ -100,7 +100,7 @@ GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
     long_t addr = long_t(_addr);
     long_t off = addr - start;
     long_t block = off / BlockSize_;
-    return hostptr_t(start + block * BlockShift_);
+    return hostptr_t(start + block * BlockSize_);
 }
 
 static inline
@@ -111,7 +111,7 @@ GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
     long_t addr  = long_t(_addr);
     long_t off = addr - start;
     long_t subBlock = off / SubBlockSize_;
-    return hostptr_t(start + subBlock * SubBlockShift_);
+    return hostptr_t(start + subBlock * SubBlockSize_);
 }
 #endif
 

@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     globalSize = globalSize * localSize;
     assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(gmacPtr(a));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&vecSize, 8);
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
+    __oclSetArgument(&vecSize, 8, 1);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 

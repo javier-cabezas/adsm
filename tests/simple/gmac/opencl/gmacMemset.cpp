@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
     gmacMemset(ptr, 0, size * sizeof(long));
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&size, sizeof(size));
-    __oclPushArgument(&val, sizeof(val));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
+    __oclSetArgument(&size, sizeof(size), 1);
+    __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 
@@ -64,9 +64,9 @@ int main(int argc, char *argv[])
     memset(ptr, 0, size * sizeof(long));
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&size, sizeof(size));
-    __oclPushArgument(&val, sizeof(val));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
+    __oclSetArgument(&size, sizeof(size), 1);
+    __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 

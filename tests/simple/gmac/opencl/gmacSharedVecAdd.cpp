@@ -54,14 +54,14 @@ void *addVector(void *ptr)
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(gmacPtr(p->ptr));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
     tmp = cl_mem(gmacPtr(a));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 1);
     tmp = cl_mem(gmacPtr(b));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&vecSize, sizeof(vecSize));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 2);
+    __oclSetArgument(&vecSize, sizeof(vecSize), 3);
     unsigned long offset = p->i * long(vecSize);
-    __oclPushArgument(&offset, sizeof(offset));
+    __oclSetArgument(&offset, sizeof(offset), 4);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 
