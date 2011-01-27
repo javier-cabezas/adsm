@@ -52,7 +52,6 @@ typedef ULONG_PTR long_t;
 #endif
 
 #define USE_VM_LEVELS 3
-
 #define HARCODED
 
 #ifdef HARCODED
