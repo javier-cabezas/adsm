@@ -12,16 +12,11 @@ protected:
 	static const int Size_ = 4 * 1024 * 1024;
 
 	static void TearDownTestCase() {
-		FiniContext();		
-		
+		FiniProcess();		
 	}
 
 	void SetUp() {
-
-		ASSERT_NO_FATAL_FAILURE(InitContext());
-	
-
-
+        InitProcess();
 	}
 };
 

@@ -1,10 +1,3 @@
-/*
- * Singleton.h
- *
- *  Created on: Oct 2, 2010
- *      Author: jcabezas
- */
-
 #ifndef GMAC_UTIL_SINGLETON_H_
 #define GMAC_UTIL_SINGLETON_H_
 

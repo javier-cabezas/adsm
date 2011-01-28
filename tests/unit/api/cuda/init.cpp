@@ -1,14 +1,9 @@
 #include "unit/init.h"
+#include "core/Process.h"
 #include "api/cuda/Accelerator.h"
-#include "gtest/gtest.h"
-
-//added//
 #include "api/cuda/Context.h"
 #include "api/cuda/Mode.h"
-#include "core/Process.h"
-////
-
-
+#include "gtest/gtest.h"
 
 #include <cuda.h>
 
@@ -32,31 +27,15 @@ void InitAccelerator()
     ASSERT_TRUE(Accelerator_ != NULL);
 }
 
-
-
-
-//added//
-
-
-
 void InitContext()
 {
     if(Context_ != NULL) return;
-    InitTrace();
-    InitAccelerator();
-    Process::create<Process>(); 
-    Process &proc = Process::getInstance();
-    proc.addAccelerator(*Accelerator_); //*accelerator
     Mode *mode_ = dynamic_cast<Mode*>(Process::getInstance().createMode(0)); 
     ASSERT_TRUE(mode_ !=NULL);
     mode_->initThread();
     Accelerator *acc = dynamic_cast<Accelerator*> (Accelerator_);
     ASSERT_TRUE(acc != NULL); 
-    Context_ = new Context(*acc,*mode_);
+    Context_ = new Context(*acc, *mode_);
     ASSERT_TRUE(Context_ != NULL); 
 } 
-
-  
-
-
 
