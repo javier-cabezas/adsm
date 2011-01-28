@@ -58,7 +58,6 @@ typedef enum {
 #if defined(USE_TRACE)
 class GMAC_LOCAL Tracer {
 protected:
-	uint64_t timeMark() const;
 	uint64_t base_;
 
 public:
@@ -103,10 +102,16 @@ public:
     /**
         \param src ID of the thread sending the data
         \param dst ID of the thread getting the data
-        \param delta Elapsed time since the data communication started until it was done
+        \param delta Time taken to transfer the data
         \param size Size (in bytes) of the data being transferred
     */
     virtual void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
+
+    //! Get the current system time
+    /**
+        \return Time mark to be used by the traces
+    */
+	uint64_t timeMark() const;
 };
 #endif
 
@@ -181,7 +186,7 @@ void SetThreadState(const State &state);
 /**
     \param src ID of the thread sending the data
     \param dst ID of the thread receiving the data
-    \param delta Elapsed time during the data transfer
+    \param delta Time taken to transfer the data
     \param size Size (in bytes) of the data transferred
 */
 void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
@@ -189,10 +194,16 @@ void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
 //! Notify a data communication started by the current thread
 /**
     \param tid ID of the thread receiving the data
-    \param delta Elapsed time during the data transfer
+    \param delta Time taken to transfer the data
     \param size Size (in bytes) of the data transferred
 */
 void DataCommunication(THREAD_T tid, uint64_t delta, size_t size);
+
+//! Get a time mark to be used by the tracer
+/**
+ *  \param mark Reference to store the timemark
+*/
+void TimeMark(uint64_t &mark);
 
 }}
 

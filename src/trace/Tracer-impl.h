@@ -120,6 +120,14 @@ inline void DataCommunication(THREAD_T tid, uint64_t delta, size_t size)
 #endif
 }
 
+inline void TimeMark(uint64_t &mark)
+{
+#if defined(USE_TRACE)
+    if(tracer != NULL) mark = tracer->timeMark();
+    else mark = 0;
+#endif
+}
+
 }}
 
 #endif

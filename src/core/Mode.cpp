@@ -2,6 +2,8 @@
 #include "memory/Object.h"
 #include "memory/Protocol.h"
 
+#include "trace/Tracer.h"
+
 #include "Accelerator.h"
 #include "IOBuffer.h"
 #include "Kernel.h"
@@ -106,18 +108,31 @@ gmacError_t Mode::free(accptr_t addr)
 gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), size);
+    uint64_t start, end;
+    trace::TimeMark(start);
+
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
+
+    trace::TimeMark(end);
+    trace::DataCommunication(util::GetThreadId(), id_, end - start, size);
+
     return error_;
 }
 
 gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, size);
+    uint64_t start, end;
+    trace::TimeMark(start);
+
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
+
+    trace::TimeMark(end);
+    trace::DataCommunication(id_, util::GetThreadId(), end - start, size);
     return error_;
 }
 
