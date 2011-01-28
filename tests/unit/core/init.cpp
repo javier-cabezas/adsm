@@ -72,6 +72,8 @@ void FiniProcess()
 {
     FiniContext();
     Process::destroy();
+    Accelerator_ = NULL;
+    Context_ = NULL;
     FiniTrace();
 }
 
