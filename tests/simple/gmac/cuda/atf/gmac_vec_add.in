@@ -1,0 +1,25 @@
+#!/usr/bin/env atf-sh
+
+GMAC_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@
+GMAC_TESTS_DIR=$GMAC_INSTALL_DIR/share/gmac
+GMAC_LIB_DIR=$GMAC_INSTALL_DIR/lib
+
+atf_test_case default
+default_head()
+{
+    atf_set "descr" "Test gmacVecAdd"
+}
+
+default_body()
+{
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GMAC_LIB_DIR
+    atf_check -s exit:0 -o ignore -e ignore $GMAC_TESTS_DIR/gmacVecAdd
+}
+
+
+atf_init_test_cases()
+{
+    atf_add_test_case default
+}
+
+# vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab:

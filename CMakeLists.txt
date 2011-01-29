@@ -153,14 +153,6 @@ add_subdirectory(src)
 add_gmac_groups(${gmac_SRC})
 
 
-# Check if tests must be compiled
-option(MAKE_TESTS "Compile GMAC tests" OFF)
-if(MAKE_TESTS)
-    message(STATUS "Compile GMAC tests")
-    add_subdirectory(tests)
-    # Add libraries used in testing
-endif(MAKE_TESTS)
-
 # Check if doc must be generated
 option(MAKE_DOC "Generate GMAC documentation" OFF)
 if(MAKE_DOC)
@@ -204,10 +196,19 @@ set_target_properties(gmac PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC
     VERSION 0.2.0 SOVERSION 1)
 
+# Check if tests must be compiled
+option(MAKE_TESTS "Compile GMAC tests" OFF)
+if(MAKE_TESTS)
+    message(STATUS "Compile GMAC tests")
+    add_subdirectory(tests)
+    # Add libraries used in testing
+endif(MAKE_TESTS)
+
 install(TARGETS gmac 
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
+     RESOURCE DESTINATION share
      PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)

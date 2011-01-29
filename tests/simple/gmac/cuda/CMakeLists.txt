@@ -32,6 +32,7 @@ source_group(${current_GROUP} FILES
     gmacFileVecAdd.cu
     gmacMatrixMul.cu
     gmacMemcpy.cu
+    gmacMemset.cu
     gmacFile.cu
     gmacMigration.cu
 )
@@ -92,6 +93,15 @@ cuda_compile(migration gmacMigration.cu)
 add_executable(gmacMigration ${migration} ${common_SRC} gmacMigration.cu)
 target_link_libraries(gmacMigration gmac)
 
+install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacFileVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 
 # gmacMap
 # source_group(${current_GROUP} FILES gmacMap.cu)
@@ -104,3 +114,8 @@ add_custom_target(InputSets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../input
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
 endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+if(MAKE_TESTS_ATF)
+    add_subdirectory(atf)
+endif(MAKE_TESTS_ATF)
+
