@@ -72,8 +72,9 @@ extern "C"
  * Returns the number of available accelerators.
  * \return The number of available accelerators
  */
-GMAC_API size_t APICALL getNumberOfAccelerators();
+GMAC_API unsigned APICALL gmacGetNumberOfAccelerators();
 
+GMAC_API size_t APICALL gmacGetFreeMemory();
 
 /**
  * Migrates the GPU execution mode of a thread to a concrete accelerator.
@@ -84,7 +85,7 @@ GMAC_API size_t APICALL getNumberOfAccelerators();
  * \return On success gmacMigrate returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacMigrate(int acc);
+GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
 
 /**
  * Maps a range of CPU memory on the GPU. The memory pointed by cpuPtr must NOT have been allocated
@@ -140,7 +141,7 @@ GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enu
  */
 GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *cpuPtr);
 
-/*!
+/**
  * Free the memory pointed by cpuPtr. The memory must have been allocated using
  * with gmacMalloc() or gmacGlobalMalloc()
  * \param cpuPtr Memory address to free. This address must have been returned
@@ -156,7 +157,6 @@ GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr);
  * the causing error
  */
 GMAC_API gmacError_t APICALL gmacThreadSynchronize();
-
 
 GMAC_API gmacError_t APICALL gmacGetLastError();
 

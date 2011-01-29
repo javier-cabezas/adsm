@@ -2,20 +2,20 @@
 PARAM(ParamProtocol, const char *, "Rolling", "GMAC_PROTOCOL")
 PARAM(ParamAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 PARAM(ParamAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
-PARAM(ParamIOMemory, size_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
+PARAM(ParamIOMemory, long_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
 
 // GMAC debug settings
 PARAM(ParamDebug, const char *, "none", "GMAC_DEBUG")
 //PARAM(ParamDebugFile, const char *, NULL, "GMAC_DEBUG_FILE")
 
 // GMAC Page table settings
-PARAM(ParamBlockSize, size_t, 2 * 1024 * 1024, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
+PARAM(ParamBlockSize, long_t, 2 * 1024 * 1024, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
 
 // Rolling Manager specific settings
-PARAM(ParamRollSize, size_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
+PARAM(ParamRollSize, long_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
 
 // Context specific settings
-PARAM(ParamBufferPageLockedSize, size_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
+PARAM(ParamBufferPageLockedSize, long_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
 
 // Miscelaneous Parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
@@ -40,5 +40,5 @@ PARAM(ParamModelToDeviceConfig, float, 40.0, "GMAC_MODEL_TODEVICECONFIG")       
 PARAM(ParamModelToDeviceTransferL1, float, 0.0007f, "GMAC_MODEL_TODEVICETRANSFER_L1") // Transfer costs for data that fits in the L1 cache
 PARAM(ParamModelToDeviceTransferL2, float, 0.0008f, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that fits in the L2 cache
 PARAM(ParamModelToDeviceTransferMem, float, 0.0010f, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
-PARAM(ParamModelL1, size_t, 32 * 1024, "GMAC_MODEL_L1") // Size of the L1 cache
-PARAM(ParamModelL2, size_t, 256 * 1024, "GMAC_MODEL_L2") // Size of the L2 cache
+PARAM(ParamModelL1, long_t, 32 * 1024, "GMAC_MODEL_L1") // Size of the L1 cache
+PARAM(ParamModelL2, long_t, 256 * 1024, "GMAC_MODEL_L2") // Size of the L2 cache

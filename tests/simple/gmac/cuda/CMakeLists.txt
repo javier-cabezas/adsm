@@ -35,6 +35,7 @@ source_group(${current_GROUP} FILES
     gmacMemset.cu
     gmacFile.cu
     gmacMigration.cu
+    gmacMeminfo.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -93,6 +94,11 @@ cuda_compile(migration gmacMigration.cu)
 add_executable(gmacMigration ${migration} ${common_SRC} gmacMigration.cu)
 target_link_libraries(gmacMigration gmac)
 
+# gmacMeminfo
+cuda_compile(meminfo gmacMeminfo.cu)
+add_executable(gmacMeminfo ${meminfo} ${common_SRC} gmacMeminfo.cu)
+target_link_libraries(gmacMeminfo gmac)
+
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
@@ -102,6 +108,7 @@ install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 
 # gmacMap
 # source_group(${current_GROUP} FILES gmacMap.cu)

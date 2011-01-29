@@ -91,19 +91,33 @@ gmacUnbind(void * obj, gmacKernel_t k)
 }
 #endif
 
-size_t APICALL gmacGetNumberOfAccelerators()
+unsigned APICALL gmacGetNumberOfAccelerators()
 {
-    size_t ret;
+    unsigned ret;
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    ret = proc.nAccelerators();
+    ret = unsigned(proc.nAccelerators());
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
 
-gmacError_t APICALL gmacMigrate(int acc)
+GMAC_API size_t APICALL gmacGetFreeMemory()
+{
+    gmacError_t ret = gmacSuccess;
+    gmac::enterGmacExclusive();
+    gmac::trace::EnterCurrentFunction();
+    size_t free;
+    size_t total;
+    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+    mode.memInfo(free, total);
+    gmac::trace::ExitCurrentFunction();
+    gmac::exitGmac();
+    return free;
+}
+
+gmacError_t APICALL gmacMigrate(unsigned acc)
 {
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();

@@ -381,6 +381,8 @@ public:
      */
     const Process &process() const;
 
+    void memInfo(size_t &free, size_t &total);
+
 #ifdef USE_SUBBLOCK_TRACKING
     memory::vm::BitmapHost &hostDirtyBitmap();
     const memory::vm::BitmapHost &hostDirtyBitmap() const;

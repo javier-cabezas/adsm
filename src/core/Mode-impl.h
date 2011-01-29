@@ -225,6 +225,14 @@ Mode::process() const
     return proc_;
 }
 
+inline void
+Mode::memInfo(size_t &free, size_t &total)
+{
+    switchIn();
+    acc_->memInfo(free, total);
+    switchOut();
+}
+
 }}
 
 #endif
