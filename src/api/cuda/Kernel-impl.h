@@ -1,5 +1,5 @@
-#ifndef GMAC_KERNEL_IMPL_H_
-#define GMAC_KERNEL_IMPL_H_
+#ifndef GMAC_API_CUDA_KERNEL_IMPL_H_
+#define GMAC_API_CUDA_KERNEL_IMPL_H_
 
 #include "util/Logger.h"
 

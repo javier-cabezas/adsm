@@ -1,5 +1,5 @@
-#ifndef GMAC_UTIL_POSIX_FILE_LOCK_IMPL_H_
-#define GMAC_UTIL_POSIX_FILE_LOCK_IMPL_H
+#ifndef GMAC_UTIL_POSIX_FILELOCK_IMPL_H_
+#define GMAC_UTIL_POSIX_FILELOCK_IMPL_H_
 
 #include <sys/file.h>
 #include <errno.h>

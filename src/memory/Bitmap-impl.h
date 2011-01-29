@@ -1,5 +1,5 @@
-#ifndef GMAC_MEMORY_BITMAP_H_IMPL_
-#define GMAC_MEMORY_BITMAP_H_IMPL_
+#ifndef GMAC_MEMORY_BITMAP_IMPL_H_
+#define GMAC_MEMORY_BITMAP_IMPL_H_
 
 #include <cmath>
 

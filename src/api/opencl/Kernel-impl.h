@@ -1,5 +1,5 @@
-#ifndef GMAC_OPENCL_KERNEL_IMPL_H_
-#define GMAC_OPENCL_KERNEL_IMPL_H_
+#ifndef GMAC_API_OPENCL_KERNEL_IMPL_H_
+#define GMAC_API_OPENCL_KERNEL_IMPL_H_
 
 #include "util/Logger.h"
 

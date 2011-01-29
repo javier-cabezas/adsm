@@ -1,5 +1,5 @@
-#ifndef GMAC_API_CUDA_CONTEXT_IMPL_H_
-#define GMAC_API_CUDA_CONTEXT_IMPL_H_
+#ifndef GMAC_API_OPENCL_CONTEXT_IMPL_H_
+#define GMAC_API_OPENCL_CONTEXT_IMPL_H_
 
 #include "Accelerator.h"
 #include "Kernel.h"

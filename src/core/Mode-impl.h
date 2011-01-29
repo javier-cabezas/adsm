@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_MODE_IPP
-#define GMAC_CORE_MODE_IPP
+#ifndef GMAC_CORE_MODE_IMPL_H_
+#define GMAC_CORE_MODE_IMPL_H_
 
 #include "memory/Map.h"
 #include "memory/Object.h"
