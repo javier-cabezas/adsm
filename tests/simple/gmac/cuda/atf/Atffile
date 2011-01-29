@@ -3,4 +3,5 @@ Content-Type: application/X-atf-atffile; version="1"
 prop: test-suite = gmac-cuda
 
 tp: gmac_vec_add
+tp: gmac_thread_vec_add
 
