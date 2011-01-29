@@ -14,8 +14,8 @@ const unsigned nIterDefault = 1;
 const size_t vecSizeDefault = 1024 * 1024;
 
 unsigned nIter = 0;
-size_t vecSize = 0;
-const size_t blockSize = 512;
+unsigned long vecSize = 0;
+const size_t blockSize = 32;
 
 
 static float *a, *b;
@@ -25,13 +25,12 @@ static struct param {
 } *param;
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned long size, unsigned long offset)\
+__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size, unsigned offset)\
 {\
     unsigned i = get_global_id(0);\
-    unsigned global_i = get_global_id(0) + offset;\
     if(i >= size) return;\
 \
-    c[i] = a[global_i] + b[global_i];\
+    c[i] = a[i + offset] + b[i + offset];\
 }\
 ";
 
@@ -78,7 +77,7 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
-    assert(error == 0);
+    //assert(error == 0);
 
 	return NULL;
 }
@@ -94,7 +93,7 @@ int main(int argc, char *argv[])
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned long>(&vecSize, vecSizeStr, vecSizeDefault);
 
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;

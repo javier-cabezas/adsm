@@ -39,7 +39,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
         offset += int(blockSize);
     }
     TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : accelerator @ %p) ", 
-        addr_, shadow_, (void *) acceleratorAddr);
+        addr_, shadow_, (void *) acceleratorAddr.get());
 }
 
 

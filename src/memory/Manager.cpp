@@ -163,7 +163,7 @@ gmacError_t Manager::releaseObjects()
     core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    if (!mode.releasedObjects()) {
+    if (mode.releasedObjects() == false) {
         // Release per-mode objects
         ret = mode.protocol().releaseObjects();
         mode.releaseObjects();

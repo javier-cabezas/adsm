@@ -168,6 +168,7 @@ gmacError_t Context::prepareForCall()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
+    syncCUstream(streamToAccelerator_);
     trace::SetThreadState(THREAD_T(id_), trace::Running);    
     trace::ExitCurrentFunction();
     return ret;

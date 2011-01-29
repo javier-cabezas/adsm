@@ -71,7 +71,6 @@ inline void enterGmac()
 {
     _inGmac.set(&_gmacCode);
     _inGmacLock->lockRead();
-    TRACE(GLOBAL, "enterGMAC");
 }
 
 void enterGmacExclusive() GMAC_LOCAL;
@@ -80,14 +79,12 @@ inline void enterGmacExclusive()
 {
     _inGmac.set(&_gmacCode);
     _inGmacLock->lockWrite();
-    TRACE(GLOBAL, "enterGMAC exclusive");
 }
 
 void exitGmac() GMAC_LOCAL;
 
 inline void exitGmac()
 {
-    TRACE(GLOBAL, "exitGMAC");
     _inGmacLock->unlock();
     _inGmac.set(&_userCode);
 }

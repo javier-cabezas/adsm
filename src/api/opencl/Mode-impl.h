@@ -63,7 +63,8 @@ inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    gmacError_t ret = getContext().prepareForCall();
+    if(ret == gmacSuccess) ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     switchOut();
     return ret;
 }
