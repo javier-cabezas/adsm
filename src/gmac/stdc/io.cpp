@@ -34,7 +34,8 @@ extern "C"
 size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fread == NULL) stdcIoInit();
-	if(gmac::inGmac() == 1) return __libc_fread(buf, size, nmemb, stream);
+	if((gmac::inGmac() == 1) ||
+       (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
     Mode *dstMode = proc.owner(hostptr_t(buf), size);
@@ -51,26 +52,40 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer2 = NULL;
+    if (n > buffer1->size()) {
+        buffer2 = mode.createIOBuffer(bufferSize);
+    }
 
     Manager &manager = Manager::getInstance();
-    
+    IOBuffer *active  = buffer1;
+    IOBuffer *passive = buffer2;
+
     size_t left = n;
     while (left != 0) {
-        size_t bytes= left < buffer->size()? left: buffer->size();
-        size_t elems = __libc_fread(buffer->addr(), size, bytes/size, stream);
+        err = active->wait();
+        ASSERTION(err == gmacSuccess);
+        size_t bytes = left < active->size()? left: active->size();
+        size_t elems = __libc_fread(active->addr(), size, bytes/size, stream);
         ASSERTION(elems * size == bytes);
 		ret += elems;
-        err = manager.fromIOBuffer((uint8_t *)buf + off, *buffer, 0, size * elems);
-        ASSERTION(err == gmacSuccess);
-        err = buffer->wait();
+        err = manager.fromIOBuffer((uint8_t *)buf + off, *active, 0, size * elems);
         ASSERTION(err == gmacSuccess);
 
         left -= size * elems;
         off  += size * elems;
         TRACE(GLOBAL, FMT_SIZE" of %zd bytes read", elems * size, nmemb * size);
+        IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
     }
-    mode.destroyIOBuffer(buffer);
+    err = passive->wait();
+    ASSERTION(err == gmacSuccess);
+    mode.destroyIOBuffer(buffer1);
+    if (n > buffer1->size()) {
+        mode.destroyIOBuffer(buffer2);
+    }
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
@@ -84,7 +99,8 @@ extern "C"
 size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fwrite == NULL) stdcIoInit();
-	if(gmac::inGmac() == 1) return __libc_fwrite(buf, size, nmemb, stream);
+	if((gmac::inGmac() == 1) ||
+       (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
     Process &proc = Process::getInstance();
     Mode *srcMode = proc.owner(hostptr_t(buf), size);
@@ -101,28 +117,54 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer2 = NULL;
+    if (n > buffer1->size()) {
+        buffer2 = mode.createIOBuffer(bufferSize);
+    }
 
     Manager &manager = Manager::getInstance();
+    IOBuffer *active  = buffer1;
+    IOBuffer *passive = buffer2;
 
     size_t left = n;
-    while (left != 0) {
-        size_t bytes = left < buffer->size()? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf) + off, bytes);
-        ASSERTION(err == gmacSuccess);
-        err = buffer->wait();
+
+    size_t bytesActive = left < active->size()? left : active->size();
+    err = manager.toIOBuffer(*active, 0, hostptr_t(buf) + off, bytesActive);
+    ASSERTION(err == gmacSuccess);
+    size_t bytesPassive = 0;
+
+    do {
+        left -= bytesActive;
+        off  += bytesActive;
+
+        if (left > 0) {
+            bytesPassive = left < passive->size()? left : passive->size();
+            err = manager.toIOBuffer(*passive, 0, hostptr_t(buf) + off, bytesPassive);
+            ASSERTION(err == gmacSuccess);
+        }
+        err = active->wait();
         ASSERTION(err == gmacSuccess);
 
-        size_t elems = __libc_fwrite(buffer->addr(), size, bytes/size, stream);
-        ASSERTION(elems * size == bytes);
-        ret += elems;
-        
-        left -= size * elems;
-        off  += size * elems;
-
+        size_t elems = __libc_fwrite(active->addr(), size, bytesActive/size, stream);
+        ASSERTION(elems * size == bytesActive);
         TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes written", elems * size, nmemb * size);
+        ret += elems;
+
+        size_t bytesTmp = bytesActive;
+        bytesActive = bytesPassive;
+        bytesPassive = bytesTmp;
+        
+        IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
+    } while (left != 0);
+    err = passive->wait();
+    ASSERTION(err == gmacSuccess);
+    mode.destroyIOBuffer(buffer1);
+    if (n > buffer1->size()) {
+        mode.destroyIOBuffer(buffer2);
     }
-    mode.destroyIOBuffer(buffer);
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
