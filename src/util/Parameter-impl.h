@@ -42,6 +42,12 @@ inline unsigned convert<unsigned>(const char * str)
     return unsigned(atoi(str));
 }
 
+template<>
+inline unsigned long convert<long_t>(const char *str)
+{
+    return (unsigned long)(atoi(str));
+}
+
 template <>
 inline float convert<float>(const char * str)
 {
