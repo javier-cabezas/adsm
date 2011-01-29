@@ -111,6 +111,12 @@ gmacError_t Mode::waitForEvent(cl_event event)
 	switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
+    gmacError_t ret = acc.syncCLevent(event);
+    switchOut();
+    return ret;
+
+    // TODO: try to implement wait as a polling loop -- AMD OpenCL blocks execution
+#if 0
     cl_int ret;
     while ((ret = acc.queryCLevent(event)) != CL_COMPLETE) {
         // TODO: add delay here
@@ -119,6 +125,7 @@ gmacError_t Mode::waitForEvent(cl_event event)
 	switchOut();
 
     return Accelerator::error(ret);
+#endif
 }
 
 }}

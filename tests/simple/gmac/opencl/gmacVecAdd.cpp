@@ -12,7 +12,7 @@ const char *vecSizeStr = "GMAC_VECSIZE";
 const uint64_t vecSizeDefault = 16 * 1024 * 1024;
 uint64_t vecSize = 0;
 
-const size_t blockSize = 512;
+const size_t blockSize = 32;
 
 const char *msg = "Done!";
 
@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    randInit(a, vecSize);
-    randInit(b, vecSize);
+    valueInit(a, 0.1f, vecSize);
+    valueInit(b, 0.1f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 

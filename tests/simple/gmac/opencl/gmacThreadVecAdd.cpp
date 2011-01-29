@@ -15,7 +15,7 @@ const uint64_t vecSizeDefault = 16 * 1024 * 1024;
 
 unsigned nIter = 0;
 uint64_t vecSize = 0;
-const size_t blockSize = 512;
+const size_t blockSize = 32;
 
 static float **s;
 

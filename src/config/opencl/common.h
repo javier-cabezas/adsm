@@ -3,7 +3,8 @@
 
 #include <CL/cl.h>
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 
 struct _opencl_ptr_t {
     cl_mem base_;

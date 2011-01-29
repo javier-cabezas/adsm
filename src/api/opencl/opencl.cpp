@@ -28,7 +28,7 @@ void apiInit(void)
     cl_device_id *devices = new cl_device_id[deviceVectorSize];  
     cl_uint size = 0;
     for(unsigned i = 0; i < platformSize; i++) {
-        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL,
+        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
             deviceVectorSize, devices, &size);
         ASSERTION(ret == CL_SUCCESS);
         TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", size, i);

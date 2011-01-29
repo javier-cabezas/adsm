@@ -49,12 +49,6 @@ inline float convert<float>(const char * str)
 }
 
 template <>
-inline size_t convert<size_t>(const char * str)
-{
-    return size_t(atol(str));
-}
-
-template <>
 inline char * convert<char *>(const char * str)
 {
     return (char *)str;
