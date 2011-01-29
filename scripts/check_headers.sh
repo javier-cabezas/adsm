@@ -1,15 +1,12 @@
 #!/bin/bash
 
-SRC_HEADERS=`find src/ -name *.h` 
-
-for HEADER in $SRC_HEADERS
-do
+check_guard()
+{
+    HEADER=$1
     NAME=`basename $HEADER`
     DIR=`dirname $HEADER`
     GUARDS=`grep "#define" $HEADER | cut -f2 -d" "`
 
-    GUARD_ERROR_STRING=""
-    LICENSE_ERROR_STRING=""
     for GUARD in $GUARDS
     do
         i=0
@@ -28,7 +25,7 @@ do
                 
                 if [ $CORRECT != $GUARD ]
                 then
-                    GUARD_ERROR_STRING="Bad guard. Current: $GUARD Correct: $CORRECT"
+                    echo "Bad guard. Current: $GUARD Correct: $CORRECT"
                 fi
                 i=$(( i + 1 ))
             fi
@@ -39,12 +36,25 @@ do
             exit
         fi
     done
+}
 
+check_license()
+{
+    HEADER=$1
     LICENSE=`grep "Permission is hereby granted, free of charge" $HEADER`
     if [ ! -n "$LICENSE" ]
     then
-        LICENSE_ERROR_STRING="Bad license"
+        echo "Bad license"
     fi
+}
+
+SRC_HEADERS=`find src/ -name *.h` 
+
+for HEADER in $SRC_HEADERS
+do
+    GUARD_ERROR_STRING=`check_guard $HEADER`
+    LICENSE_ERROR_STRING=`check_license $HEADER`
+
     if [ -n "$GUARD_ERROR_STRING" -o -n  "$LICENSE_ERROR_STRING" ]
     then
         echo "Error in file $HEADER"
@@ -57,8 +67,21 @@ do
         then
             echo "$LICENSE_ERROR_STRING"
         fi
-
     fi
 done
+
+TEST_HEADERS=`find "tests" -name *.h` 
+
+for HEADER in $TEST_HEADERS
+do
+    LICENSE_ERROR_STRING=`check_license $HEADER`
+
+    if [ -n  "$LICENSE_ERROR_STRING" ]
+    then
+        echo "Error in file $HEADER"
+        echo "$LICENSE_ERROR_STRING"
+    fi
+done
+
 
 # vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab:
