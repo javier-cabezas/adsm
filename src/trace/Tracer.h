@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 #include "config/common.h"
 
+#include "States.h"
+
 #if defined(__GNUC__)
 #define EnterCurrentFunction() EnterFunction(__func__)
 #define ExitCurrentFunction()  ExitFunction(__func__)
@@ -45,17 +47,10 @@ WITH THE SOFTWARE.  */
 #define ExitCurrentFunction()  ExitFunction(__FUNCTION__)
 #endif
 
-namespace __impl { namespace trace {
 
-typedef enum {
-	Idle,
-	Init,
-	Running,
-	Locked,
-	Exclusive,
-	IO
-} State;
+namespace __impl { namespace trace {
 #if defined(USE_TRACE)
+
 class GMAC_LOCAL Tracer {
 protected:
 	uint64_t base_;

@@ -1,0 +1,43 @@
+#include "Element.h"
+
+namespace __impl { namespace trace { namespace paraver {
+
+void Thread::start(std::ofstream &of, unsigned s, uint64_t t)
+{ 
+	// Flush the previous state to disk (if needed)
+    if(current_ != NULL && current_->getId() != s) {
+	    current_->end(t);
+    	current_->write(of);
+    }
+    else t = -1;
+
+	// Setup the new state
+    current_ = new State(this);
+	current_->start(s, t);
+}
+
+void Thread::end(std::ofstream &of, uint64_t t)
+{
+    if(current_ == NULL) return;
+	// Flush previous state to disk (if needed)
+	current_->end(t);
+    current_->write(of);
+    delete current_;
+    current_ = NULL;
+}
+
+
+std::ostream &operator<<(std::ostream &os, const Application &app) 
+{
+	std::map<int32_t, Task *>::const_iterator i;
+	os << app.sons_.size();
+	os << "(";
+	for(i = app.sons_.begin(); i != app.sons_.end(); i++) {
+		if(i != app.sons_.begin()) os << ",";
+		os << i->second->size() << ":" << 0;
+	}
+	os << ")";
+	return os;
+}
+
+} } }
