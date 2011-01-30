@@ -8,6 +8,9 @@ PARAM(ParamIOMemory, long_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
 PARAM(ParamDebug, const char *, "none", "GMAC_DEBUG")
 //PARAM(ParamDebugFile, const char *, NULL, "GMAC_DEBUG_FILE")
 
+// GMAC tracing
+PARAM(ParamTrace, const char *, "trace", "GMAC_TRACE")
+
 // GMAC Page table settings
 PARAM(ParamBlockSize, long_t, 2 * 1024 * 1024, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
 

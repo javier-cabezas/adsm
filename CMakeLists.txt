@@ -50,7 +50,10 @@ include("CMakeLists-cuda.txt")
 option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
 if(USE_TRACE_CONSOLE)
     add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+elseif(USE_TRACE_PARAVER)
+    add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE)
 endif(USE_TRACE_CONSOLE)
+
 
 # Setup configuration options
 option(USE_MPI "Enable MPI interposition" OFF)

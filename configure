@@ -45,6 +45,9 @@ do
     --enable-console-trace)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_CONSOLE=ON"
         ;;
+    --enable-paraver-trace)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_PARAVER=ON"
+        ;;
     --enable-vm)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_VM=ON"
         ;;
