@@ -37,13 +37,15 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 	if((gmac::inGmac() == 1) ||
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
+    gmac::enterGmac();
     Process &proc = Process::getInstance();
     Mode *dstMode = proc.owner(hostptr_t(buf), size);
 
-    if(dstMode == NULL) return  __libc_fread(buf, size, nmemb, stream);
+    if(dstMode == NULL) {
+        gmac::exitGmac();
+        return  __libc_fread(buf, size, nmemb, stream);
+    }
 
-    gmac::enterGmac();
-	
 	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
     size_t n = size * nmemb;
@@ -83,7 +85,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     err = passive->wait();
     ASSERTION(err == gmacSuccess);
     mode.destroyIOBuffer(buffer1);
-    if (n > buffer1->size()) {
+    if (buffer2 != NULL) {
         mode.destroyIOBuffer(buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
@@ -102,12 +104,14 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 	if((gmac::inGmac() == 1) ||
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
+	gmac::enterGmac();
     Process &proc = Process::getInstance();
     Mode *srcMode = proc.owner(hostptr_t(buf), size);
 
-    if(srcMode == NULL) return __libc_fwrite(buf, size, nmemb, stream);
-
-	gmac::enterGmac();
+    if(srcMode == NULL) {
+        gmac::exitGmac();
+        return __libc_fwrite(buf, size, nmemb, stream);
+    }
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
@@ -159,10 +163,9 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         active = passive;
         passive = tmp;
     } while (left != 0);
-    err = passive->wait();
     ASSERTION(err == gmacSuccess);
     mode.destroyIOBuffer(buffer1);
-    if (n > buffer1->size()) {
+    if (buffer2 != NULL) {
         mode.destroyIOBuffer(buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
