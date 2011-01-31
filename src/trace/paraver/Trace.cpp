@@ -82,6 +82,17 @@ void TraceWriter::pushEvent(uint64_t t, int32_t pid, int32_t tid,
     pushEvent(t, pid, tid, event.getValue(), value);
 }
 
+void TraceWriter::pushCommunication(uint64_t start, int32_t srcPid, int32_t srcTid,
+        uint64_t end, int32_t dstPid, int32_t dstTid, uint64_t size)
+{
+    mutex_.lock();
+    Task *srcTask = apps_.back()->getTask(srcPid);
+    Task *dstTask = apps_.back()->getTask(dstPid);
+    Communication comm(srcTask->getThread(srcTid), dstTask->getThread(dstTid), start, end, size);
+    comm.write(of_);
+    mutex_.unlock();
+}
+
 void TraceWriter::write(uint64_t t)
 {
     mutex_.lock();

@@ -18,6 +18,7 @@ void __Lock::locked() const
 {
 #if defined(USE_TRACE)
     trace::SetThreadState(trace::Exclusive);
+    exclusive_ = true;
 #endif
 }
 
@@ -36,6 +37,7 @@ void __Lock::exit() const
 {
 #if defined(USE_TRACE)
     if(exclusive_) trace::SetThreadState(trace::Running);
+    exclusive_ = false;
 #endif
 }
 

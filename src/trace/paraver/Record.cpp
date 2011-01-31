@@ -15,6 +15,8 @@ Record *Record::read(std::ifstream &in)
 			return new State(in);
 		case EVENT:
 			return new Event(in);
+        case COMM:
+            return new Communication(in);
 		case LAST:
 			return NULL;
 		default:
@@ -29,9 +31,12 @@ std::ostream & operator<<(std::ostream &os, const Record &record)
 		os << dynamic_cast<const State &>(record);
 	else if(typeid(record) == typeid(Event)) 
 		os << dynamic_cast<const Event &>(record);
+    else if(typeid(record) == typeid(Communication))
+        os << dynamic_cast<const Communication &>(record);
 	
 	return os;
 }
+
 
 State::State(Thread *thread) :
 	id_(thread->getTask(), thread->getApp(), thread->getId()),
@@ -40,13 +45,20 @@ State::State(Thread *thread) :
 	state_(-1)
 { }
 
-
 Event::Event(Thread *thread, uint64_t when, uint64_t event, int64_t value) :
 	id_(thread->getTask(), thread->getApp(), thread->getId()),
 	when_(when),
 	event_(event),
 	value_(value)
 {}
+
+Communication::Communication(Thread *src, Thread *dst, uint64_t start, uint64_t end, uint64_t size) :
+	src_(src->getTask(), src->getApp(), src->getId()),
+	dst_(dst->getTask(), dst->getApp(), dst->getId()),
+    start_(start), end_(end), size_(size)
+{
+}
+
 
 
 } } }

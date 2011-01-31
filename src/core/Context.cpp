@@ -12,6 +12,7 @@ Context::Context(Accelerator &acc, unsigned id) :
     id_(id)
 {
     trace::StartThread(THREAD_T(id_), "GPU");
+    SetThreadState(THREAD_T(id_), trace::Idle);
 }
 
 Context::~Context()

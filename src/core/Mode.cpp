@@ -115,9 +115,6 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
 
-    trace::TimeMark(end);
-    trace::DataCommunication(util::GetThreadId(), id_, end - start, size);
-
     return error_;
 }
 
@@ -131,8 +128,6 @@ gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
 
-    trace::TimeMark(end);
-    trace::DataCommunication(id_, util::GetThreadId(), end - start, size);
     return error_;
 }
 

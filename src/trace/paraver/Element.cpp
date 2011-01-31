@@ -5,11 +5,14 @@ namespace __impl { namespace trace { namespace paraver {
 void Thread::start(std::ofstream &of, unsigned s, uint64_t t)
 { 
 	// Flush the previous state to disk (if needed)
-    if(current_ != NULL && current_->getId() != s) {
-	    current_->end(t);
-    	current_->write(of);
+    if(current_ != NULL) {
+        if(current_->getId() != s) {
+	        current_->end(t);
+    	    current_->write(of);
+            delete current_;
+        }
+        else return;
     }
-    else t = -1;
 
 	// Setup the new state
     current_ = new State(this);

@@ -66,6 +66,8 @@ public:
     void pushState(uint64_t t, int32_t pid, int32_t tid, const StateName &state);
     void pushEvent(uint64_t t, int32_t pid, int32_t tid, uint64_t ev, int64_t value);
     void pushEvent(uint64_t t, int32_t pid, int32_t tid, const EventName &event, int64_t value = 0);
+    void pushCommunication(uint64_t start, int32_t srcPid, int32_t srcTid, uint64_t end, int32_t dstPid,
+        int32_t dstTid, uint64_t size);
 
     void write(uint64_t t);
     

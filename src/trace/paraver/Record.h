@@ -129,6 +129,24 @@ public:
 
 };
 
+class GMAC_LOCAL Communication : public Record {
+private:
+    RecordId src_, dst_;
+    uint64_t start_, end_;
+    uint64_t size_;
+public:
+    Communication(Thread *src, Thread *dst, uint64_t start, uint64_t end, uint64_t size);
+    Communication(std::ifstream &in);
+
+    int getType() const;
+    uint64_t getTime() const;
+    uint64_t getEndTime() const;
+    uint32_t getId() const;
+
+    void write(std::ofstream &of) const;
+    friend std::ostream & operator<<(std::ostream &os, const Communication &comm);
+};
+
 } } }
 
 #include "Record-impl.h"

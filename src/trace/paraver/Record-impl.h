@@ -52,6 +52,7 @@ std::ostream & operator<<(std::ostream &os, const RecordId &id)
 }
 
 
+
 inline
 State::State(std::ifstream &in) :
     id_(in)
@@ -125,6 +126,7 @@ std::ostream & operator<<(std::ostream &os, const State &state)
     return os;
 }
 
+
 inline
 Event::Event(std::ifstream &in) :
     id_(in)
@@ -174,6 +176,64 @@ std::ostream & operator<<(std::ostream &os, const Event &event)
 {
     os << Record::EVENT << ":" << event.id_ << ":" << event.when_ << ":";
     os << event.event_ << ":" << event.value_ << std::endl;
+    return os;
+}
+
+
+inline
+Communication::Communication(std::ifstream &in) :
+    src_(in), dst_(in)
+{
+    in.read((char *)&start_, sizeof(start_));
+    in.read((char *)&end_, sizeof(end_));
+    in.read((char *)&size_, sizeof(size_));
+}
+
+inline
+int Communication::getType() const
+{
+    return COMM;
+}
+
+inline
+uint64_t Communication::getTime() const
+{
+    return start_;
+}
+
+inline
+uint64_t Communication::getEndTime() const
+{
+    return end_;
+}
+
+inline
+uint32_t Communication::getId() const
+{
+    return uint32_t(size_);
+}
+
+inline
+void Communication::write(std::ofstream &of) const
+{
+    Type type = COMM;
+    of.write((const char *)&type, sizeof(type));
+    src_.write(of);
+    dst_.write(of);
+    of.write((const char *)&start_, sizeof(start_));
+    of.write((const char *)&end_, sizeof(end_));
+    of.write((const char *)&size_, sizeof(size_));
+
+}
+
+inline
+std::ostream & operator<<(std::ostream &os, const Communication &comm)
+{
+    static int id = 1;
+    os << Record::COMM << ":" << comm.src_ << ":" << comm.start_ << ":" << comm.start_ << ":";
+    os << comm.dst_ << ":" << comm.end_ << ":" << comm.end_ << ":" << comm.size_ << ":";
+    os << id << std::endl;
+    id++;
     return os;
 }
 

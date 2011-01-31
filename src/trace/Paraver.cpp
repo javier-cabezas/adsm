@@ -59,7 +59,7 @@ void Paraver::enterFunction(THREAD_T tid, const char *name)
     mutex_.lock();
     FunctionMap::const_iterator i = functions_.find(std::string(name));
     if(i == functions_.end()) {
-        id = int32_t(functions_.size());
+        id = int32_t(functions_.size() + 1);
         FunctionEvent_->registerType(id, std::string(name));
         functions_.insert(FunctionMap::value_type(std::string(name), id));
     }
@@ -80,6 +80,8 @@ void Paraver::setThreadState(THREAD_T tid, const State state)
 
 void Paraver::dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
+    uint64_t current = timeMark();
+    trace_.pushCommunication(current - delta, 1, src, current, 1, dst, size);
 }
 
 } }
