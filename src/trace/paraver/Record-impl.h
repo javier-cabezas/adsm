@@ -233,7 +233,6 @@ std::ostream & operator<<(std::ostream &os, const Communication &comm)
     os << Record::COMM << ":" << comm.src_ << ":" << comm.start_ << ":" << comm.start_ << ":";
     os << comm.dst_ << ":" << comm.end_ << ":" << comm.end_ << ":" << comm.size_ << ":";
     os << id << std::endl;
-    id++;
     return os;
 }
 

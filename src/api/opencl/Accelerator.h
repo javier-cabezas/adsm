@@ -131,6 +131,7 @@ public:
     gmacError_t syncCLstream(cl_command_queue stream);
     cl_int queryCLevent(cl_event event);
     gmacError_t syncCLevent(cl_event event);
+    gmacError_t timeCLevents(uint64_t &t, cl_event start, cl_event end);
 
     gmacError_t execute(KernelLaunch &launch);
 

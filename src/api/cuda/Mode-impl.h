@@ -42,7 +42,10 @@ Mode::execute(core::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = getContext().prepareForCall();
-    if(ret == gmacSuccess) ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    if(ret == gmacSuccess) {
+        trace::SetThreadState(THREAD_T(id_), trace::Running);
+        ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    }
     switchOut();
     return ret;
 }

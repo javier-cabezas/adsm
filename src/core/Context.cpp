@@ -28,7 +28,11 @@ Context::init()
 gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
+    uint64_t start, end;
+    trace::TimeMark(start);
     gmacError_t ret = acc_.copyToAccelerator(acc, host, size);
+    trace::TimeMark(end);
+    trace::DataCommunication(util::GetThreadId(), id_, end - start, size);
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -36,7 +40,11 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
 gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     trace::EnterCurrentFunction();
+    uint64_t start, end;
+    trace::TimeMark(start);
     gmacError_t ret = acc_.copyToHost(host, acc, size);
+    trace::TimeMark(end);
+    trace::DataCommunication(id_, util::GetThreadId(), end - start, size);
     trace::ExitCurrentFunction();
     return ret;
 }

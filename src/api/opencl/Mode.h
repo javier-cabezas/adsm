@@ -70,7 +70,7 @@ public:
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::Mode {
-    friend class Switch;
+    friend class IOBuffer;
 protected:
     //! Switch to accelerator mode
     void switchIn();
@@ -201,6 +201,8 @@ public:
 
     gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
 	gmacError_t argument(const void *arg, size_t size, unsigned index);
+
+    gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };
 
 }}

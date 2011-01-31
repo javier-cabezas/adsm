@@ -12,6 +12,7 @@ set(api_SRC
     Kernel.h Kernel-impl.h Kernel.cpp
     Mode.h Mode-impl.h Mode.cpp
     Accelerator.h Accelerator-impl.h Accelerator.cpp Error.cpp
+    Tracer.h Tracer-impl.h
    )
 
 add_gmac_sources(gmac ${api_SRC})

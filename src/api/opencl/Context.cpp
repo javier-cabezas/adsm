@@ -177,7 +177,6 @@ gmacError_t Context::prepareForCall()
         buffer_->wait();
     }
     ret = syncCLstream(streamToAccelerator_);
-    trace::SetThreadState(THREAD_T(id_), trace::Running);    
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -187,7 +186,7 @@ gmacError_t Context::waitForCall()
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
     ret = syncCLstream(streamLaunch_);
-    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::SetThreadState(THREAD_T(id_), trace::Idle);    
     trace::ExitCurrentFunction();
     return ret;
 }

@@ -64,7 +64,10 @@ Mode::execute(core::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = getContext().prepareForCall();
-    if(ret == gmacSuccess) ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    if(ret == gmacSuccess) {
+        trace::SetThreadState(THREAD_T(id_), trace::Running);
+        ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    }
     switchOut();
     return ret;
 }
@@ -124,6 +127,15 @@ gmacError_t Mode::argument(const void *arg, size_t size, unsigned index)
     gmacError_t ret = ctx.argument(arg, size, index);
     switchOut();
     return ret;
+}
+
+inline gmacError_t
+Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
+{
+    switchIn();
+    gmacError_t ret = getAccelerator().timeCLevents(t, start, end);
+    switchOut();
+    return ret; 
 }
 
 }}

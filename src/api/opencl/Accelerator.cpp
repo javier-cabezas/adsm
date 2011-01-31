@@ -109,7 +109,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toAccelerator(mode);
+    buffer.toAccelerator(mode, stream);
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
@@ -138,7 +138,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toHost(mode);
+    buffer.toHost(mode, stream);
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_TRUE,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
@@ -294,7 +294,11 @@ cl_command_queue Accelerator::createCLstream()
     trace::EnterCurrentFunction();
     cl_command_queue stream;
     cl_int error;
-    stream = clCreateCommandQueue(ctx_, device_, 0, &error);
+    cl_command_queue_properties prop = 0;
+#if defined(USE_TRACE)
+    prop |= CL_QUEUE_PROFILING_ENABLE;
+#endif
+    stream = clCreateCommandQueue(ctx_, device_, prop, &error);
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
     TRACE(LOCAL, "Created OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.add(stream);
@@ -341,6 +345,19 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
     cl_int ret = clWaitForEvents(1, &event);
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
+{
+    uint64_t startTime, endTime;
+    cl_int ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_QUEUED,
+        sizeof(startTime), &startTime, NULL);
+    if(ret == CL_SUCCESS) {
+        ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END,
+            sizeof(endTime), &endTime, NULL);
+    }
+    t = (endTime - startTime) / 1000;
     return error(ret);
 }
 

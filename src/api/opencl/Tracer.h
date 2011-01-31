@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,38 +31,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_API_OPENCL_IOBUFFER_H_
-#define GMAC_API_OPENCL_IOBUFFER_H_
+#ifndef GMAC_API_OPENCL_TRACER_H_
+#define GMAC_API_OPENCL_TRACER_H_
 
-#include <CL/cl.h>
+#include "trace/Tracer.h"
 
-#include "Mode.h"
 
-#include "core/IOBuffer.h"
+namespace __impl { namespace opencl { 
 
-namespace __impl { namespace opencl {
-
-class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
-protected:
-    cl_event start_, end_;
-    Mode *mode_;
-    bool started_;
-
-public:
-    IOBuffer(void *addr, size_t size);
-
-    void toHost(Mode &mode, cl_command_queue stream);
-    void toAccelerator(Mode &mode, cl_command_queue stream);
-
-    void started(cl_event event);
-
-    gmacError_t wait();
-};
+void DataCommunication(THREAD_T src, THREAD_T dst, cl_event start, cl_event end, size_t size);
+void DataCommunication(THREAD_T tid, cl_event start, cl_event end, size_t size);
 
 }}
 
-#include "IOBuffer-impl.h"
+#include "Tracer-impl.h"
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
