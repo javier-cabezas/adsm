@@ -43,25 +43,6 @@ private:
             name_ += name + "=" + value + ";";
         }
 
-        void run(std::string exec)
-        {
-            pid_t pid = fork();
-            if (pid == 0) {
-                setEnvironment();
-
-                int execReturn = execlp(exec.c_str(), (char *)NULL);
-                printf("Failure! execve error code %d\n", execReturn);
-                abort();
-            }
-            else if(pid < 0) {
-                printf("Failure! failed to fork %d\n", pid);
-                abort();
-            } else {
-                run_ = true;
-                int ret = ::wait(&status_); 
-            }
-        }
-
         bool isFailure() const
         {
             return status_ != 0;
@@ -71,6 +52,8 @@ private:
         {
             return name_;
         }
+
+        void run(std::string exec);
 
         void report(std::ofstream &outfile) const
         {
