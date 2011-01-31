@@ -51,13 +51,12 @@ struct accptr_t {
     inline accptr_t(long int ptr) :
         ptr_(ptr)
     {}
-    inline accptr_t(long_t ptr) :
+    
 #if CUDA_VERSION < 3020
+    inline accptr_t(long_t ptr) :
         ptr_(CUdeviceptr(ptr))
-#else
-        ptr_(ptr)
-#endif
     {}
+#endif
     inline accptr_t(int ptr) :
         ptr_(ptr)
     {}

@@ -43,9 +43,9 @@ inline unsigned convert<unsigned>(const char * str)
 }
 
 template<>
-inline unsigned long convert<long_t>(const char *str)
+inline long_t convert<long_t>(const char *str)
 {
-    return (unsigned long)(atoi(str));
+    return long_t(atoi(str));
 }
 
 template <>

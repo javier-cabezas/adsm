@@ -38,8 +38,10 @@ float doTest(float *a, float *b, float *c, float *orig)
     FILE * fA = fopen(VECTORA, "rb");
     FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
-    int ret = fread(a, sizeof(float), vecSize, fA);
+    size_t ret = fread(a, sizeof(float), vecSize, fA);
+    assert(ret == vecSize);
     ret = fread(b, sizeof(float), vecSize, fB);
+    assert(ret == vecSize);
 
     getTime(&t);
     fclose(fA);
@@ -78,7 +80,8 @@ int main(int argc, char *argv[])
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
-    int ret = fread(orig, sizeof(float), vecSize, fO);
+    size_t ret = fread(orig, sizeof(float), vecSize, fO);
+    assert(ret == vecSize);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
