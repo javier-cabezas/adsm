@@ -58,9 +58,13 @@ void TraceWriter::pushState(uint64_t t, int32_t pid, int32_t tid,
 {
     mutex_.lock();
 	Task *task = apps_.back()->getTask(pid);
-	Thread *thread = task->getThread(tid);
-    thread->end(of_, t);
-	thread->start(of_, state.getValue(), t);
+    if(task != NULL) {
+    	Thread *thread = task->getThread(tid);
+        if(thread != NULL) {
+            thread->end(of_, t);
+        	thread->start(of_, state.getValue(), t);
+        }
+    }
     mutex_.unlock();
 }
 
@@ -70,8 +74,13 @@ void TraceWriter::pushEvent(uint64_t t, int32_t pid, int32_t tid,
 {
     mutex_.lock();
 	Task *task = apps_.back()->getTask(pid);
-	Event event(task->getThread(tid), t, ev, value);
-	event.write(of_);
+    if(task != NULL) {
+        Thread *thread = task->getThread(tid);
+        if(thread != NULL) {
+    	    Event event(thread, t, ev, value);
+        	event.write(of_);
+        }
+    }
     mutex_.unlock();
 }
 
@@ -87,8 +96,14 @@ void TraceWriter::pushCommunication(uint64_t start, int32_t srcPid, int32_t srcT
 {
     mutex_.lock();
     Task *srcTask = apps_.back()->getTask(srcPid);
+    if(srcTask == NULL) { mutex_.unlock(); return; }
     Task *dstTask = apps_.back()->getTask(dstPid);
-    Communication comm(srcTask->getThread(srcTid), dstTask->getThread(dstTid), start, end, size);
+    if(dstTask == NULL) { mutex_.unlock(); return; }
+    Thread *srcThread = srcTask->getThread(srcTid);
+    if(srcThread == NULL) { mutex_.unlock(); return; }
+    Thread *dstThread = dstTask->getThread(dstTid);
+    if(dstThread == NULL) { mutex_.unlock(); return; }
+    Communication comm(srcThread, dstThread, start, end, size);
     comm.write(of_);
     mutex_.unlock();
 }
