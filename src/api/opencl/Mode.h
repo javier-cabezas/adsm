@@ -115,13 +115,19 @@ public:
     */
     gmacError_t hostFree(hostptr_t addr);
 
-    //! Get the GPU memory address where GPU-accessible host memory is mapped
-    /*!
-        \param addr Host memory address
-        \return Device memory address
-    */
+    /** Maps host memory into the GPU memory
+     *
+     *  \param addr Host memory address
+     *  \return Device memory address
+     */
     accptr_t hostMap(const hostptr_t addr, size_t size);
 
+    /** Gets the GPU memory address where the given GPU-accessible host
+     *  memory pointer is mapped
+     *
+     *  \param addr Host memory address
+     *  \return Device memory address
+     */
     accptr_t hostMapAddr(const hostptr_t addr);
 
     core::KernelLaunch &launch(gmacKernel_t kernel);
@@ -146,25 +152,25 @@ public:
     */
     void destroyIOBuffer(core::IOBuffer *buffer);
 
-    //! Send data from an I/O buffer to the accelerator
-    /*!
-        \param dst Accelerator memory where data will be written to
-        \param buffer I/O buffer where data will be read from
-        \param size Size (in bytes) of the data to be copied
-        \param off Offset (in bytes) in the I/O buffer where to start reading data from
-        \return Error code
-    */
+    /** Send data from an I/O buffer to the accelerator
+     *
+     *  \param dst Accelerator memory where data will be written to
+     *  \param buffer I/O buffer where data will be read from
+     *  \param size Size (in bytes) of the data to be copied
+     *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
+     *  \return Error code
+     */
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
 
 
-    //! Fill I/O buffer with data from the accelerator
-    /*!
-        \param buffer I/O buffer where data will be stored
-        \param src Accelerator memory where the data will be read from
-        \param size Size (in bytes) of the data to be copied
-        \param off Offset (in bytes) in the I/O buffer where to start writing data to
-        \return Error code
-    */
+    /** Fill I/O buffer with data from the accelerator
+     *
+     *  \param buffer I/O buffer where data will be stored
+     *  \param src Accelerator memory where the data will be read from
+     *  \param size Size (in bytes) of the data to be copied
+     *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
+     *  \return Error code
+     */
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
     //! Get the accelerator stream where events are recorded

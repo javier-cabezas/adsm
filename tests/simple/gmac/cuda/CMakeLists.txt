@@ -122,7 +122,3 @@ add_custom_target(InputSets ALL
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
 endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
-if(MAKE_TESTS_ATF)
-    add_subdirectory(atf)
-endif(MAKE_TESTS_ATF)
-

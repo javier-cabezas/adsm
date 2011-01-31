@@ -25,9 +25,6 @@ do
     --enable-tests)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
         ;;
-    --enable-tests-atf)
-        CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON -DMAKE_TESTS_ATF=ON"
-        ;;
     --enable-opencl)
         FRONTEND="-DUSE_CUDA=OFF -DUSE_OPENCL=ON"
         ;;
