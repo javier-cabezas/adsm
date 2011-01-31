@@ -38,6 +38,25 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace trace { namespace paraver {
 
+class GMAC_LOCAL SpinLock {
+protected:
+    //! Spin lock value
+	mutable long spinlock_;
+public:
+    //! Default constructor
+	SpinLock();
+
+    //! Default destructor
+	~SpinLock();
+
+    //! Get the lock
+	void lock() const;
+
+    //! Release the lock
+	void unlock() const;
+};
+
+
 //! A Mutex lock
 class GMAC_LOCAL Lock {
 protected:
@@ -48,6 +67,28 @@ public:
 	Lock();
     //! Default destructor
 	~Lock();
+
+    //! Get the lock
+	void lock() const;
+
+    //! Release the lock
+	void unlock() const;
+};
+
+//! A Read/Write lock
+class GMAC_LOCAL RWLock {
+protected:
+    //! Read/Write lock
+	mutable SRWLOCK lock_;
+
+    //! Thread owning the lock
+	mutable DWORD owner_;
+public:
+    //! Default constructor
+	RWLock();
+    
+    //! Default destructor
+	~RWLock();
 
     //! Get shared access to the lock
 	void lockRead() const;

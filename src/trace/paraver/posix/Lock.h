@@ -36,8 +36,19 @@ WITH THE SOFTWARE.  */
 
 #include <pthread.h>
 
-
 namespace __impl { namespace trace { namespace paraver {
+
+class GMAC_LOCAL SpinLock {
+
+protected:
+	mutable pthread_spinlock_t spinlock_;
+public:
+	SpinLock();
+	~SpinLock();
+
+	void lock() const;
+	void unlock() const;
+};
 
 
 class GMAC_LOCAL Lock {
@@ -50,6 +61,21 @@ public:
 	void lock() const;
 	void unlock() const;
 };
+
+class GMAC_LOCAL RWLock {
+protected:
+	mutable pthread_rwlock_t lock_;
+    bool write_;
+public:
+	RWLock();
+	~RWLock();
+
+	void lockRead() const;
+	void lockWrite() const;
+	void unlock() const;
+};
+
+
 
 } } }
 
