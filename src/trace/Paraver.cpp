@@ -133,8 +133,7 @@ void Paraver::exitLock(THREAD_T tid, const char *name)
     LockMap::const_iterator i = locksExclusive_.find(std::string(name));
     if(i == locksExclusive_.end()) {
         trace_.pushEvent(mark, 1, tid, *LockEventAcquireExclusive_, 0);
-    } else {
-        ASSERTION(locksShared_.find(std::string(name)) != locksShared.end());
+    } else if(locksShared_.find(std::string(name)) != locksShared_.end()) {
         trace_.pushEvent(mark, 1, tid, *LockEventAcquireShared_, 0);
     }
     mutex_.unlock();
