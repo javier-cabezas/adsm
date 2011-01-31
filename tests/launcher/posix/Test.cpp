@@ -1,3 +1,6 @@
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "../Test.h"
     
 void
@@ -17,6 +20,15 @@ Test::TestCase::run(std::string exec)
     } else {
         run_ = true;
         int ret = ::wait(&status_); 
+    }
+}
+
+void
+Test::TestCase::setEnvironment()
+{
+    std::vector<KeyVal>::const_iterator it;
+    for (it = keyvals_.begin(); it != keyvals_.end(); it++) {
+        ::setenv(it->first.c_str(), it->second.c_str(), 1);
     }
 }
 

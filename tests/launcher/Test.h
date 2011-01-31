@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 
-#include <sys/types.h>
-#include <sys/wait.h>
-
 #include "Variable.h"
 
 class Test
@@ -23,13 +20,7 @@ private:
         int status_;
         bool run_;
 
-        void setEnvironment()
-        {
-            std::vector<KeyVal>::const_iterator it;
-            for (it = keyvals_.begin(); it != keyvals_.end(); it++) {
-                ::setenv(it->first.c_str(), it->second.c_str(), 1);
-            }
-        }
+        void setEnvironment();
 
     public:
         TestCase() :
