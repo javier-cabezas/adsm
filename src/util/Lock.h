@@ -36,6 +36,10 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
+#if defined(USE_TRACE)
+#include <string>
+#endif
+
 namespace __impl { namespace util {
 
 class GMAC_LOCAL __Lock {
@@ -43,6 +47,7 @@ protected:
 #if defined(USE_TRACE)
     //! Signal that the lock is exclusive, e.g., due to a lock-write
     mutable bool exclusive_;
+    std::string name_;
 #endif
 public:
     //! Default constructor

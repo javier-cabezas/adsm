@@ -97,6 +97,34 @@ inline void ExitFunction(const char *name)
 #endif
 }
 
+inline void RequestLock(const char *name)
+{
+#if defined(USE_TRACE)
+	if(tracer != NULL) tracer->requestLock(util::GetThreadId(), name);
+#endif
+}
+
+inline void AcquireLockExclusive(const char *name)
+{
+#if defined(USE_TRACE)
+	if(tracer != NULL) tracer->acquireLockExclusive(util::GetThreadId(), name);
+#endif
+}
+
+inline void AcquireLockShared(const char *name)
+{
+#if defined(USE_TRACE)
+	if(tracer != NULL) tracer->acquireLockShared(util::GetThreadId(), name);
+#endif
+}
+
+inline void ExitLock(const char *name)
+{
+#if defined(USE_TRACE)
+	if(tracer != NULL) tracer->exitLock(util::GetThreadId(), name);
+#endif
+}
+
 inline void SetThreadState(THREAD_T tid, const State &state)
 {
 #if defined(USE_TRACE)

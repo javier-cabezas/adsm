@@ -91,7 +91,7 @@ gmacUnbind(void * obj, gmacKernel_t k)
 }
 #endif
 
-GMAC_API unsigned APICALL gmacGetNumberOfAccelerators()
+unsigned APICALL gmacGetNumberOfAccelerators()
 {
     unsigned ret;
 	gmac::enterGmac();
@@ -103,7 +103,7 @@ GMAC_API unsigned APICALL gmacGetNumberOfAccelerators()
 	return ret;
 }
 
-GMAC_API size_t APICALL gmacGetFreeMemory()
+size_t APICALL gmacGetFreeMemory()
 {
     gmacError_t ret = gmacSuccess;
     gmac::enterGmacExclusive();

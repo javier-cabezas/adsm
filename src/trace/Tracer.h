@@ -89,6 +89,34 @@ public:
     */
 	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
 
+    //! Trace requesting a GMAC lock 
+    /**
+        \param tid Thread ID aquiring the lock 
+        \param name Name of the lock 
+    */
+	virtual void requestLock(THREAD_T tid, const char *name) = 0;
+
+    //! Trace acquiring a GMAC exclusive lock 
+    /**
+        \param tid Thread ID aquiring the lock 
+        \param name Name of the lock being acquired
+    */
+	virtual void acquireLockExclusive(THREAD_T tid, const char *name) = 0;
+
+    //! Trace acquiring a GMAC shared lock 
+    /**
+        \param tid Thread existing the lock 
+        \param name Name of the lock being acquired
+    */
+	virtual void acquireLockShared(THREAD_T tid, const char *name) = 0;
+
+    //! Trace releasing a GMAC lock
+    /**
+        \param tid Thread existing the lock 
+        \param name Name of the lock being released
+    */
+	virtual void exitLock(THREAD_T tid, const char *name) = 0;
+
     //! Trace a change in the thread state
     /**
         \param tid Thread ID of the thread chaning its state
@@ -166,6 +194,39 @@ void ExitFunction(THREAD_T tid, const char *name);
     \param name Name of the function
 */
 void ExitFunction(const char *name);
+
+//! Notify that the current thread requests a lock
+/**
+    \param name Name of the lock
+*/
+void RequestLock(const char *name);
+
+//! Notify that the current thread acquires a exclusive lock
+/**
+    \param name Name of the lock
+*/
+void AcquireLockExclusive(const char *name);
+
+//! Notify that the current thread acquires a shared lock
+/**
+    \param name Name of the lock
+*/
+void AcquireLockShared(const char *name);
+
+//! Notify that the current thread releases a lock
+/**
+    \param name Name of the lock
+*/
+void ExitLock(const char *name);
+
+//! Set the state of a thread
+/**
+    \param tid ID of the thread whose state is changing
+    \param state New thread's state
+*/
+void ExitLock(THREAD_T tid, const char *name);
+
+
 
 //! Set the state of a thread
 /**

@@ -51,11 +51,20 @@ protected:
     std::string baseName_, fileName_;
     paraver::TraceWriter trace_;
 
-    typedef std::map<std::string, int32_t > FunctionMap;
     paraver::Lock mutex_;
-    FunctionMap functions_;
 
+    typedef std::map<std::string, int32_t > FunctionMap;
+    FunctionMap functions_;
     paraver::EventName *FunctionEvent_;
+
+    typedef std::map<std::string, int32_t > LockMap;
+    LockMap locksRequest_;
+    LockMap locksExclusive_;
+    LockMap locksShared_;
+    paraver::EventName *LockEventRequest_;
+    paraver::EventName *LockEventAcquireShared_;
+    paraver::EventName *LockEventAcquireExclusive_;
+
     typedef std::map<const State, paraver::StateName *> StateMap;
     StateMap states_;
     
@@ -68,6 +77,11 @@ public:
 
     void enterFunction(THREAD_T tid, const char *name);
     void exitFunction(THREAD_T tid, const char *name);
+
+    void requestLock(THREAD_T tid, const char *name);
+    void acquireLockExclusive(THREAD_T tid, const char *name);
+    void acquireLockShared(THREAD_T tid, const char *name);
+    void exitLock(THREAD_T tid, const char *name);
 
     void setThreadState(THREAD_T tid, const State state);
     
