@@ -63,6 +63,7 @@ static void DESTRUCTOR fini(void)
 	gmac::enterGmac();
     TRACE(GLOBAL, "Cleaning GMAC");
     core::Process::destroy();
+    gmac::trace::FiniTracer();
     delete _inGmacLock;
 	// TODO: Clean-up logger
 }

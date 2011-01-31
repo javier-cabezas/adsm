@@ -3,6 +3,7 @@
 #include "Paraver.h"
 
 #include "util/Parameter.h"
+#include "paraver/Pcf.h"
 
 namespace __impl { namespace trace {
 
@@ -16,7 +17,9 @@ void FiniApiTracer()
 }
 
 Paraver::Paraver() :
-    trace_(util::params::ParamTrace, 1, util::GetThreadId())
+    baseName_(std::string(util::params::ParamTrace)),
+    fileName_(baseName_ + ".trace"),
+    trace_(fileName_.c_str(), 1, util::GetThreadId())
 {
     FunctionEvent_ = paraver::Factory<paraver::EventName>::create("Function");
 #   define STATE(s) \
@@ -27,6 +30,18 @@ Paraver::Paraver() :
 
 Paraver::~Paraver()
 {
+    trace_.write(timeMark());
+
+    paraver::TraceReader reader(fileName_.c_str());
+    std::string prvFile = baseName_ + ".prv";
+    std::ofstream prv(prvFile.c_str());
+    prv << reader;
+    prv.close();
+
+    std::string pcfFile = baseName_ + ".pcf";
+    std::ofstream pcf(pcfFile.c_str());
+    paraver::pcf(pcf);
+    pcf.close();
 }
 
 void Paraver::startThread(THREAD_T tid, const char *name)

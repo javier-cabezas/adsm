@@ -13,11 +13,21 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
+# Setup GMAC as main target
+include_directories(${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src/include)
+# GMAC is a DLL
+add_definitions(-DGMAC_DLL)
+# Compiling GMAC
+add_definitions(-DGMAC_DLL_EXPORTS)
+
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
     add_definitions(-DHAVE_PTHREADS)
     set(gmac_LIBS ${gmac_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    set(thread_LIB ${CMAKE_THREAD_LIBS_INIT})
     add_gmac_test_library(${CMAKE_THREAD_LIBS_INIT})
     set(THREAD_DIR "pthreads")
 elseif(CMAKE_USE_WIN32_THREADS_INIT)
@@ -163,14 +173,6 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
-# Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src
-                    ${CMAKE_BINARY_DIR}/src
-                    ${CMAKE_BINARY_DIR}/src/include)
-# GMAC is a DLL
-add_definitions(-DGMAC_DLL)
-# Compiling GMAC
-add_definitions(-DGMAC_DLL_EXPORTS)
 
 add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
 add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})

@@ -35,7 +35,6 @@ TraceWriter::~TraceWriter()
     std::list<Application *>::iterator i;
     for(i = apps_.begin(); i != apps_.end(); i++) delete (*i);
     apps_.clear();
-    
 }
 
 void TraceWriter::addThread(uint32_t pid, uint32_t tid)

@@ -48,6 +48,7 @@ namespace __impl { namespace trace {
 
 class GMAC_LOCAL Paraver : public Tracer {
 protected:
+    std::string baseName_, fileName_;
     paraver::TraceWriter trace_;
 
     typedef std::map<std::string, int32_t > FunctionMap;

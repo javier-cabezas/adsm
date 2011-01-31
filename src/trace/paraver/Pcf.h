@@ -31,14 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __PARAVER_PCF_H
-#define __PARAVER_PCF_H
+#ifndef GMAC_TRACE_PARAVER_PCF_H_
+#define GMAC_TRACE_PARAVER_PCF_H_
 
 #include <iostream>
 
-namespace paraver {
+namespace __impl { namespace trace { namespace paraver {
 
 std::ostream &pcf(std::ostream &os);
 
-};
+} } }
 #endif

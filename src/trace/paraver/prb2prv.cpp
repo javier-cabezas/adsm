@@ -37,8 +37,8 @@ WITH THE SOFTWARE.  */
 
 int main(int argc, char *argv[])
 {
-	paraver::Trace trace;
-
-	trace.read(argv[1]);
+	gmac::trace::paraver::TraceReader trace(argv[1]);
 	std::cout << trace;
+
+    return 0;
 }

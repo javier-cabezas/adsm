@@ -17,6 +17,11 @@ Tracer::Tracer() : base_(0)
 	base_ = timeMark();
 }
 
+inline
+Tracer::~Tracer()
+{
+}
+
 #endif
 
 inline void InitTracer()

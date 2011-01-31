@@ -7,7 +7,7 @@ inline
 void Record::end(std::ofstream &of)
 {
     Type type = LAST;
-    of.write((const char *)type, sizeof(type));
+    of.write((const char *)&type, sizeof(type));
 }
 
 

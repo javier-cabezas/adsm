@@ -1,6 +1,5 @@
 #include "Pcf.h"
 #include "Names.h"
-#include "Types.h"
 
 #include <vector>
 
@@ -12,7 +11,7 @@
 #	include <values.h>
 #endif
 
-namespace paraver {
+namespace __impl { namespace trace { namespace paraver {
 
 std::ostream &pcf(std::ostream &os)
 {
@@ -74,4 +73,4 @@ std::ostream &pcf(std::ostream &os)
 	return os;
 }
 
-};
+} } }

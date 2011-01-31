@@ -59,6 +59,9 @@ public:
     //! Default constructor
 	Tracer();
 
+    //! Default destructor
+    virtual ~Tracer();
+
     //! Trace the creation of a thread
     /**
         \param tid Thread ID for the created thread

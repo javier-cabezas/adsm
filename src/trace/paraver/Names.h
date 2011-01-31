@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_TRACE_PARAVER_NAMES_H_
 
 #include "config/common.h"
-
+#include "util/Logger.h"
 
 #include <string>
 #include <vector>
