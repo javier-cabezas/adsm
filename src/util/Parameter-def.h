@@ -17,9 +17,6 @@ PARAM(ParamBlockSize, long_t, 2 * 1024 * 1024, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
 // Rolling Manager specific settings
 PARAM(ParamRollSize, long_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
 
-// Context specific settings
-PARAM(ParamBufferPageLockedSize, long_t, 1, "GMAC_BUFFER_PAGE_LOCKED_SIZE", PARAM_NONZERO)
-
 // Miscelaneous Parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")
 
