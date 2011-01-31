@@ -66,7 +66,7 @@ hostptr_t Slab::alloc(size_t size, hostptr_t addr)
 
 bool Slab::free(hostptr_t addr)
 {
-    addresses.lockRead();
+    addresses.lockWrite();
     AddressMap::iterator i = addresses.find(addr);
     if(i == addresses.end()) {
         addresses.unlock();
