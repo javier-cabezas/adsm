@@ -22,7 +22,7 @@ void TraceWriter::processTrace(Thread *thread, uint64_t t, StateName *state)
 }
 
 TraceWriter::TraceWriter(const char *fileName, uint32_t pid, uint32_t tid) :
-    of_(fileName, std::ios::out)
+    of_(fileName)
 {
 	// Create the root application and add the current task
 	apps_.push_back(new Application(1, "app"));
@@ -173,7 +173,7 @@ TraceReader::TraceReader(const char *fileName) :
 	for(uint32_t i = 0; i < nApps; i++) buildApp(in);
 }
 
-std::ostream &operator<<(std::ostream &of, const TraceReader &trace)
+StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
 {
 	time_t timep = time(NULL);
 	struct tm *t = localtime(&timep);

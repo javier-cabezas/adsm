@@ -34,16 +34,17 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_TRACE_PARAVER_ELEMENT_H_
 #define GMAC_TRACE_PARAVER_ELEMENT_H_
 
-#include "config/common.h"
-
-#include "Record.h"
-
 #include <cassert>
 
 #include <map>
 #include <list>
 #include <string>
 #include <fstream>
+
+#include "config/common.h"
+
+#include "Record.h"
+#include "StreamOut.h"
 
 namespace __impl { namespace trace { namespace paraver {
 class GMAC_LOCAL Abstract {
@@ -55,7 +56,7 @@ public:
 	int32_t getId() const;
 	std::string getName() const;
 
-	virtual void end(std::ofstream &of, uint64_t t) const = 0;
+	virtual void end(StreamOut &of, uint64_t t) const = 0;
 };
 
 template<typename P, typename S>
@@ -72,8 +73,8 @@ public:
 	virtual ~Element();
 
 	size_t size() const;
-	virtual void end(std::ofstream &of, uint64_t t) const;
-	virtual void write(std::ofstream &os) const;
+	virtual void end(StreamOut &of, uint64_t t) const;
+	virtual void write(StreamOut &os) const;
 };
 
 template<typename P>
@@ -86,8 +87,8 @@ public:
 	virtual ~Element();
 
 	size_t size() const;
-    void end(std::ofstream &of, uint64_t t) const;
-	void write(std::ofstream &of) const;
+    void end(StreamOut &of, uint64_t t) const;
+	void write(StreamOut &of) const;
 };
 
 class Application;
@@ -99,8 +100,8 @@ protected:
 public:
 	Thread(Task *task, int32_t id, int32_t tid);
 
-	void start(std::ofstream &of, unsigned s, uint64_t t);
-	void end(std::ofstream &of, uint64_t t);
+	void start(StreamOut &of, unsigned s, uint64_t t);
+	void end(StreamOut &of, uint64_t t);
 
 	int32_t getTask() const;
 	int32_t getApp() const;
@@ -133,7 +134,9 @@ public:
 	Task *getTask(int32_t id) const;
 	Task *addTask(int32_t id);
     
-	friend std::ostream &operator<<(std::ostream &os, const Application &app);
+	friend StreamOut &operator<<(StreamOut &os, const Application &app);
+
+    void close();
 };
 
 

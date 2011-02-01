@@ -25,7 +25,7 @@ Record *Record::read(std::ifstream &in)
 	return NULL;
 }
 
-std::ostream & operator<<(std::ostream &os, const Record &record)
+StreamOut & operator<<(StreamOut &os, const Record &record)
 {
 	if(typeid(record) == typeid(State)) 
 		os << dynamic_cast<const State &>(record);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,63 +31,86 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_TRACE_PARAVER_TRACE_H
-#define GMAC_TRACE_PARAVER_TRACE_H
+#ifndef GMAC_TRACE_PARAVER_STREAMOUT_H_
+#define GMAC_TRACE_PARAVER_STREAMOUT_H_
 
-#include "config/common.h"
-
-#include "Element.h"
-#include "Record.h"
-#include "Names.h"
 #include "Lock.h"
-
-#include <vector>
-#include <list>
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include "StreamOut.h"
 
 namespace __impl { namespace trace { namespace paraver {
 
-class GMAC_LOCAL TraceWriter {
+class GMAC_LOCAL StreamOut {
 protected:
-    std::list<Application *> apps_;
     paraver::Lock mutex_;
-    StreamOut of_;
+    std::ofstream of_;
 
-    void processTrace(Thread *thread, uint64_t t, StateName *state);
 public:
-    TraceWriter(const char *fileName, uint32_t pid, uint32_t tid);
-    virtual ~TraceWriter();
+    StreamOut(const char *fileName) :
+        of_(fileName, std::ios::out)
+    {
+    }
 
-    void addTask(uint32_t pid);
-    void addThread(uint32_t pid, uint32_t tid);
+#if 0
+    template <typename T>
+	friend StreamOut &operator<<(StreamOut &of, const T & t)
+    {
+        of.mutex_.lock();
+        of.of_ << t;
+        of.mutex_.unlock();
+        return of;
+    }
+#endif
+    // this is the type of std::cout
+    typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
 
-    void pushState(uint64_t t, int32_t pid, int32_t tid, const StateName &state);
-    void pushEvent(uint64_t t, int32_t pid, int32_t tid, uint64_t ev, int64_t value);
-    void pushEvent(uint64_t t, int32_t pid, int32_t tid, const EventName &event, int64_t value = 0);
-    void pushCommunication(uint64_t start, int32_t srcPid, int32_t srcTid, uint64_t end, int32_t dstPid,
-        int32_t dstTid, uint64_t size);
+    // this is the function signature of std::endl
+    typedef CoutType& (*StandardEndLine)(CoutType&);
 
-    void write(uint64_t t);
-    
+    StreamOut &operator<<(StandardEndLine t)
+    {
+        mutex_.lock();
+        of_ << t;
+        mutex_.unlock();
+        return *this;
+    }
+
+    template <typename T>
+    StreamOut &operator<<(const T &t)
+    {
+        mutex_.lock();
+        of_ << t;
+        mutex_.unlock();
+        return *this;
+    }
+
+	StreamOut &write(const char *s, size_t size)
+    {
+        mutex_.lock();
+        of_.write(s, size);
+        mutex_.unlock();
+        return *this;
+    }
+
+    friend StreamOut &operator<<(StreamOut &of, const char * t);
+
+    void close()
+    {
+        of_.close();
+    }
 };
 
-class GMAC_LOCAL TraceReader {
-protected:
-    std::list<Application *> apps_;
-    std::list<Record *> records_;
+inline
+StreamOut &operator<<(StreamOut &of, const char * t)
+{
+    of.mutex_.lock();
+    of.of_ << t;
+    of.mutex_.unlock();
+    return of;
+}
 
-    uint64_t endTime_;
 
-    void buildApp(std::ifstream &in);
-	friend StreamOut &operator<<(StreamOut &os, const TraceReader &trace);
-public:
-    TraceReader(const char *fileName);
-};
 
-} } }
+}}}
 
 #endif
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

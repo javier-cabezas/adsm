@@ -4,7 +4,7 @@
 namespace __impl { namespace trace { namespace paraver {
 
 inline
-void Record::end(std::ofstream &of)
+void Record::end(StreamOut &of)
 {
     Type type = LAST;
     of.write((const char *)&type, sizeof(type));
@@ -37,7 +37,7 @@ RecordId::RecordId(std::ifstream &in)
 }
 	
 inline
-void RecordId::write(std::ofstream &of) const
+void RecordId::write(StreamOut &of) const
 {
     of.write((const char *)&task_, sizeof(task_));
     of.write((const char *)&app_, sizeof(app_));
@@ -45,13 +45,11 @@ void RecordId::write(std::ofstream &of) const
 }
 
 inline
-std::ostream & operator<<(std::ostream &os, const RecordId &id)
+StreamOut & operator<<(StreamOut &os, const RecordId &id)
 {
     os << 0 << ":" << id.task_ << ":" << id.app_ << ":" << id.thread_;
     return os;
 }
-
-
 
 inline
 State::State(std::ifstream &in) :
@@ -107,7 +105,7 @@ void State::end(uint64_t end)
 }
 
 inline
-void State::write(std::ofstream &of) const
+void State::write(StreamOut &of) const
 {
     if(start_ >= end_) return;
     Type type = STATE;
@@ -119,13 +117,12 @@ void State::write(std::ofstream &of) const
 }
 
 inline
-std::ostream & operator<<(std::ostream &os, const State &state)
+StreamOut & operator<<(StreamOut &os, const State &state)
 {
     os << Record::STATE << ":" << state.id_ << ":" << state.start_ << ":";
     os << state.end_ << ":" << state.state_ << std::endl;
     return os;
 }
-
 
 inline
 Event::Event(std::ifstream &in) :
@@ -161,7 +158,7 @@ uint32_t Event::getId() const
 }
 
 inline
-void Event::write(std::ofstream &of) const
+void Event::write(StreamOut &of) const
 {
     Type type = EVENT;
     of.write((const char *)&type, sizeof(type));
@@ -172,7 +169,7 @@ void Event::write(std::ofstream &of) const
 }
 
 inline
-std::ostream & operator<<(std::ostream &os, const Event &event)
+StreamOut & operator<<(StreamOut &os, const Event &event)
 {
     os << Record::EVENT << ":" << event.id_ << ":" << event.when_ << ":";
     os << event.event_ << ":" << event.value_ << std::endl;
@@ -214,7 +211,7 @@ uint32_t Communication::getId() const
 }
 
 inline
-void Communication::write(std::ofstream &of) const
+void Communication::write(StreamOut &of) const
 {
     Type type = COMM;
     of.write((const char *)&type, sizeof(type));
@@ -227,7 +224,7 @@ void Communication::write(std::ofstream &of) const
 }
 
 inline
-std::ostream & operator<<(std::ostream &os, const Communication &comm)
+StreamOut & operator<<(StreamOut &os, const Communication &comm)
 {
     static int id = 1;
     os << Record::COMM << ":" << comm.src_ << ":" << comm.start_ << ":" << comm.start_ << ":";

@@ -76,7 +76,7 @@ size_t Element<P, S>::size() const
 
 template<typename P, typename S>
 inline
-void Element<P, S>::end(std::ofstream &os, uint64_t t) const
+void Element<P, S>::end(StreamOut &os, uint64_t t) const
 {
     typename std::map<int32_t, S *>::const_iterator i;
     for(i = sons_.begin(); i != sons_.end(); i++)
@@ -85,7 +85,7 @@ void Element<P, S>::end(std::ofstream &os, uint64_t t) const
 
 template<typename P, typename S>
 inline
-void Element<P, S>::write(std::ofstream &os) const
+void Element<P, S>::write(StreamOut &os) const
 {
     uint32_t s = uint32_t(sons_.size());
     os.write((const char *)&id_, sizeof(id_));
@@ -124,13 +124,13 @@ size_t Element<P, void>::size() const
 
 template<typename P>
 inline
-void Element<P, void>::end(std::ofstream &os, uint64_t t) const
+void Element<P, void>::end(StreamOut &os, uint64_t t) const
 {
 }
 
 template<typename P>
 inline
-void Element<P, void>::write(std::ofstream &of) const
+void Element<P, void>::write(StreamOut &of) const
 {
     of.write((const char *)&id_, sizeof(id_));
     uint32_t s = uint32_t(size());

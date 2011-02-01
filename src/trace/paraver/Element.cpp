@@ -2,7 +2,7 @@
 
 namespace __impl { namespace trace { namespace paraver {
 
-void Thread::start(std::ofstream &of, unsigned s, uint64_t t)
+void Thread::start(StreamOut &of, unsigned s, uint64_t t)
 { 
 	// Flush the previous state to disk (if needed)
     if(current_ != NULL) {
@@ -19,7 +19,7 @@ void Thread::start(std::ofstream &of, unsigned s, uint64_t t)
 	current_->start(s, t);
 }
 
-void Thread::end(std::ofstream &of, uint64_t t)
+void Thread::end(StreamOut &of, uint64_t t)
 {
     if(current_ == NULL) return;
 	// Flush previous state to disk (if needed)
@@ -29,8 +29,7 @@ void Thread::end(std::ofstream &of, uint64_t t)
     current_ = NULL;
 }
 
-
-std::ostream &operator<<(std::ostream &os, const Application &app) 
+StreamOut &operator<<(StreamOut &os, const Application &app) 
 {
 	std::map<int32_t, Task *>::const_iterator i;
 	os << app.sons_.size();

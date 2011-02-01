@@ -34,12 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_TRACE_PARAVER_RECORD_H_
 #define GMAC_TRACE_PARAVER_RECORD_H_
 
-#include "config/common.h"
-
 #include <list>
 #include <string>
 #include <iostream>
 #include <fstream>
+
+#include "config/common.h"
+
+#include "StreamOut.h"
 
 namespace __impl { namespace trace { namespace paraver {
 
@@ -58,11 +60,11 @@ public:
 	virtual uint64_t getEndTime() const = 0;
 	virtual int getType() const = 0;
 	virtual uint32_t getId() const = 0;
-	virtual void write(std::ofstream &of) const = 0;
+	virtual void write(StreamOut &of) const = 0;
 
-	static void end(std::ofstream &of);
+	static void end(StreamOut &of);
 	static Record *read(std::ifstream &in);
-	friend std::ostream & operator<<(std::ostream &os, const Record &record);
+	friend StreamOut & operator<<(StreamOut &os, const Record &record);
 };
 
 class GMAC_LOCAL RecordPredicate {
@@ -77,9 +79,9 @@ public:
 	RecordId(int32_t task, int32_t app, int32_t thread);
 	RecordId(std::ifstream &in);
 	
-	void write(std::ofstream &of) const;
+	void write(StreamOut &of) const;
 
-	friend std::ostream & operator<<(std::ostream &os, const RecordId &id);
+	friend StreamOut & operator<<(StreamOut &os, const RecordId &id);
 };
 
 class GMAC_LOCAL State : public Record {
@@ -104,8 +106,8 @@ public:
 	void restart(uint64_t start);
 	void end(uint64_t end);
 
-	void write(std::ofstream &of) const;
-	friend std::ostream & operator<<(std::ostream &os, const State &state);
+	void write(StreamOut &of) const;
+	friend StreamOut & operator<<(StreamOut &os, const State &state);
 };
 
 class GMAC_LOCAL Event : public Record {
@@ -124,8 +126,8 @@ public:
 	uint64_t getEndTime() const;
 	uint32_t getId() const;
 
-	void write(std::ofstream &of) const;
-	friend std::ostream & operator<<(std::ostream &os, const Event &event);
+	void write(StreamOut &of) const;
+	friend StreamOut & operator<<(StreamOut &os, const Event &event);
 
 };
 
@@ -143,8 +145,8 @@ public:
     uint64_t getEndTime() const;
     uint32_t getId() const;
 
-    void write(std::ofstream &of) const;
-    friend std::ostream & operator<<(std::ostream &os, const Communication &comm);
+    void write(StreamOut &of) const;
+    friend StreamOut & operator<<(StreamOut &os, const Communication &comm);
 };
 
 } } }

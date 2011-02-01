@@ -1,4 +1,5 @@
 set(paraver_SRC
+    StreamOut.h
     Lock.h ${OS_DIR}/Lock.h ${OS_DIR}/Lock-impl.h
     Element.h Element-impl.h Element.cpp
     Names.h Names.cpp

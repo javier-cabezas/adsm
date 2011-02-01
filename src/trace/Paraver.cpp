@@ -37,7 +37,7 @@ Paraver::~Paraver()
 
     paraver::TraceReader reader(fileName_.c_str());
     std::string prvFile = baseName_ + ".prv";
-    std::ofstream prv(prvFile.c_str());
+    paraver::StreamOut prv(prvFile.c_str());
     prv << reader;
     prv.close();
 
