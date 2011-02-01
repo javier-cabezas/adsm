@@ -30,7 +30,6 @@ void __Lock::done() const
 #if defined(USE_TRACE)
     trace::SetThreadState(trace::Running);
     trace::AcquireLockShared(name_.c_str());
-    exclusive_ = false;
 #endif
 }
 

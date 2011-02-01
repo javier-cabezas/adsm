@@ -53,12 +53,23 @@ protected:
     CUevent end_;
     CUstream stream_;
     Mode *mode_;
-    bool created_, launched_;
+
+    typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
+    EventMap map_;
 
 public:
     IOBuffer(void *addr, size_t size) :
-        gmac::core::IOBuffer(addr, size), mode_(NULL), created_(false)
+        gmac::core::IOBuffer(addr, size), mode_(NULL)
     {
+    }
+
+    ~IOBuffer()
+    {
+        EventMap::iterator it;
+        for (it = map_.begin(); it != map_.end(); it++) {
+            cuEventDestroy(it->second.first);
+            cuEventDestroy(it->second.second);
+        }
     }
 
     void toHost(Mode &mode, CUstream s);
