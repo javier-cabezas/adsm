@@ -33,6 +33,9 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
 #endif
 {
+    trace::StartThread(THREAD_T(id_), "GPU");
+    SetThreadState(THREAD_T(id_), trace::Idle);
+
     TRACE(LOCAL,"Creating Execution Mode %p", this);
     protocol_ = memory::ProtocolInit(0);
 }
@@ -45,6 +48,8 @@ Mode::~Mode()
     acc_->unregisterMode(*this); 
     Process::getInstance().removeMode(*this);
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
+
+    trace::EndThread(THREAD_T(id_));
 }
 
 void Mode::finiThread()
