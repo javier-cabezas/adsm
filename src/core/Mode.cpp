@@ -113,7 +113,6 @@ gmacError_t Mode::free(accptr_t addr)
 gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), size);
-    uint64_t start;
 
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
@@ -125,7 +124,6 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
 gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, size);
-    uint64_t start;
 
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);

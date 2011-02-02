@@ -103,7 +103,8 @@ int main(int argc, char *argv[])
     error1 = doTest(a, b, c, orig);
 
     FILE * fC = fopen("vectorC_shared", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
 
     gmacFree(a);
@@ -124,8 +125,9 @@ int main(int argc, char *argv[])
 
     error2 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_replicated", "w");
-    fwrite(c, sizeof(float), vecSize, fC);
+    fC = fopen("vectorC_replicated", "wb");
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
 
     gmacFree(a);
@@ -146,7 +148,7 @@ int main(int argc, char *argv[])
 
     error3 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_centralized", "w");
+    fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 

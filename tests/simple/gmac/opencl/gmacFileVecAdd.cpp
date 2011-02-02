@@ -40,8 +40,10 @@ float doTest(float *a, float *b, float *c, float *orig)
     FILE * fA = fopen(VECTORA, "rb");
     FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
-    int ret = fread(a, sizeof(float), vecSize, fA);
+    size_t ret = fread(a, sizeof(float), vecSize, fA);
+    assert(ret == vecSize);
     ret = fread(b, sizeof(float), vecSize, fB);
+    assert(ret == vecSize);
 
     getTime(&t);
     fclose(fA);
@@ -92,7 +94,8 @@ int main(int argc, char *argv[])
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
-    int ret = fread(orig, sizeof(float), vecSize, fO);
+    size_t ret = fread(orig, sizeof(float), vecSize, fO);
+    assert(ret == vecSize);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
@@ -114,7 +117,9 @@ int main(int argc, char *argv[])
     error1 = doTest(a, b, c, orig);
 
     FILE * fC = fopen("vectorC_shared", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
+
     fclose(fC);
 
     gmacFree(a);
@@ -135,7 +140,7 @@ int main(int argc, char *argv[])
 
     error2 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_replicated", "w");
+    fC = fopen("vectorC_replicated", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 
@@ -157,7 +162,7 @@ int main(int argc, char *argv[])
 
     error3 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_centralized", "w");
+    fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 

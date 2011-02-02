@@ -77,7 +77,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
         left -= size * elems;
         off  += size * elems;
-        TRACE(GLOBAL, FMT_SIZE" of %zd bytes read", elems * size, nmemb * size);
+        TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes read", elems * size, nmemb * size);
         IOBuffer *tmp = active;
         active = passive;
         passive = tmp;
@@ -100,7 +100,7 @@ extern "C"
 #endif
 size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
-	if(__libc_fwrite == NULL) stdcIoInit();
+    if(__libc_fwrite == NULL) stdcIoInit();
 	if((gmac::inGmac() == 1) ||
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
