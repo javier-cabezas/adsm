@@ -57,6 +57,7 @@ protected:
     FunctionMap functions_;
     paraver::EventName *FunctionEvent_;
 
+#ifdef USE_TRACE_LOCKS
     typedef std::map<std::string, int32_t > LockMap;
     LockMap locksRequest_;
     LockMap locksExclusive_;
@@ -64,6 +65,7 @@ protected:
     paraver::EventName *LockEventRequest_;
     paraver::EventName *LockEventAcquireShared_;
     paraver::EventName *LockEventAcquireExclusive_;
+#endif
 
     typedef std::map<const State, paraver::StateName *> StateMap;
     StateMap states_;
@@ -78,10 +80,12 @@ public:
     void enterFunction(THREAD_T tid, const char *name);
     void exitFunction(THREAD_T tid, const char *name);
 
+#ifdef USE_TRACE_LOCKS
     void requestLock(THREAD_T tid, const char *name);
     void acquireLockExclusive(THREAD_T tid, const char *name);
     void acquireLockShared(THREAD_T tid, const char *name);
     void exitLock(THREAD_T tid, const char *name);
+#endif
 
     void setThreadState(THREAD_T tid, const State state);
     

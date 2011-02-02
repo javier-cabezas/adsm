@@ -89,6 +89,7 @@ public:
     */
 	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
 
+#ifdef USE_TRACE_LOCKS
     //! Trace requesting a GMAC lock 
     /**
         \param tid Thread ID aquiring the lock 
@@ -116,6 +117,7 @@ public:
         \param name Name of the lock being released
     */
 	virtual void exitLock(THREAD_T tid, const char *name) = 0;
+#endif
 
     //! Trace a change in the thread state
     /**
@@ -218,15 +220,6 @@ void AcquireLockShared(const char *name);
     \param name Name of the lock
 */
 void ExitLock(const char *name);
-
-//! Set the state of a thread
-/**
-    \param tid ID of the thread whose state is changing
-    \param state New thread's state
-*/
-void ExitLock(THREAD_T tid, const char *name);
-
-
 
 //! Set the state of a thread
 /**

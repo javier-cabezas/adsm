@@ -58,10 +58,19 @@ include("CMakeLists-cuda.txt")
 
 # Check for Tracing
 option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
+option(USE_TRACE_LOCKS "Enable producing traces for locks" OFF)
 if(USE_TRACE_CONSOLE)
-    add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+    if(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE -DUSE_TRACE_LOCKS)
+    else(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+    endif(USE_TRACE_LOCKS)
 elseif(USE_TRACE_PARAVER)
-    add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE)
+    if(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE -DUSE_TRACE_LOCKS)
+    else(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE)
+    endif(USE_TRACE_LOCKS)
 endif(USE_TRACE_CONSOLE)
 
 

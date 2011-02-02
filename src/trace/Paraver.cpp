@@ -22,9 +22,13 @@ Paraver::Paraver() :
     trace_(fileName_.c_str(), 1, util::GetThreadId())
 {
     FunctionEvent_ = paraver::Factory<paraver::EventName>::create("Function");
+
+#ifdef USE_TRACE_LOCKS
     LockEventRequest_ = paraver::Factory<paraver::EventName>::create("LockRequest");
     LockEventAcquireExclusive_ = paraver::Factory<paraver::EventName>::create("LockAcquireExclusive");
     LockEventAcquireShared_ = paraver::Factory<paraver::EventName>::create("LockAcquireShared");
+#endif
+
 #   define STATE(s) \
         states_.insert(StateMap::value_type(s, paraver::Factory<paraver::StateName>::create(EnumState<s>::name())));
 #   include "States-def.h"
@@ -76,6 +80,7 @@ void Paraver::exitFunction(THREAD_T tid, const char *name)
     trace_.pushEvent(timeMark(), 1, tid, *FunctionEvent_, 0);
 }
 
+#ifdef USE_TRACE_LOCKS
 void Paraver::requestLock(THREAD_T tid, const char *name)
 {
     int32_t id = 0;
@@ -138,6 +143,7 @@ void Paraver::exitLock(THREAD_T tid, const char *name)
     }
     mutex_.unlock();
 }
+#endif
 
 void Paraver::setThreadState(THREAD_T tid, const State state)
 {
