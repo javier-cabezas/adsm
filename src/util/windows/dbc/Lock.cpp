@@ -1,3 +1,5 @@
+#ifdef USE_DBC
+
 #include "Lock.h"
 
 namespace __dbc { namespace util {
@@ -143,3 +145,5 @@ void RWLock::unlock() const
 }
 
 }}
+
+#endif

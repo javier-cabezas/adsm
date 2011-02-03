@@ -50,7 +50,7 @@ inline size_t Object::blockEnd(size_t offset) const
     if (offset + blockBase(offset) + blockSize() > size_)
         return size_ - offset;
     else
-        return blockSize() + blockBase(offset);
+        return size_t(ssize_t(blockSize()) + blockBase(offset));
 }
 
 inline size_t Object::blockSize() const

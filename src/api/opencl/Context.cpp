@@ -93,7 +93,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     buffer_->wait();
     gmacError_t ret = gmacSuccess;
     ptroff_t offset = 0;
-    while(offset < size) {
+    while(size_t(offset) < size) {
         ret = buffer_->wait();
         if(ret != gmacSuccess) break;
         ptroff_t len = ptroff_t(buffer_->size());
@@ -101,7 +101,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::EnterCurrentFunction();
         ::memcpy(buffer_->addr(), host + offset, len);
         trace::ExitCurrentFunction();
-        ASSERTION(len <= util::params::ParamBlockSize);
+        ASSERTION(size_t(len) <= util::params::ParamBlockSize);
         ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
@@ -127,7 +127,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     buffer_->wait();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ptroff_t offset = 0;
-    while(offset < size) {
+    while(size_t(offset) < size) {
         ptroff_t len = ptroff_t(buffer_->size());
         if((size - offset) < buffer_->size()) len = ptroff_t(size - offset);
         ret = accelerator().copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, streamToHost_);

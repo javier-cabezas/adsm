@@ -9,9 +9,9 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const uint64_t vecSizeDefault = 16 * 1024 * 1024;
+const size_t vecSizeDefault = 16 * 1024 * 1024;
 
-uint64_t vecSize = 0;
+size_t vecSize = 0;
 const size_t blockSize = 512;
 
 const char *msg = "Done!";
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
-    setParam<uint64_t>(&vecSize, vecSizeStr, vecSizeDefault);
+    setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
     // Alloc & init input data

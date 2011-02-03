@@ -11,10 +11,10 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
 const unsigned nIterDefault = 2;
-const uint64_t vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
 
 unsigned nIter = 0;
-uint64_t vecSize = 0;
+unsigned vecSize = 0;
 const size_t blockSize = 32;
 
 static float **s;
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	gmactime_t st, en;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<uint64_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 

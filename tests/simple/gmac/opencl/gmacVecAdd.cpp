@@ -9,15 +9,15 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const uint64_t vecSizeDefault = 16 * 1024 * 1024;
-uint64_t vecSize = 0;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
+unsigned vecSize = 0;
 
 const size_t blockSize = 32;
 
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned long size)\
+__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
 {\
     unsigned i = get_global_id(0);\
     if(i >= size) return;\
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
-	setParam<uint64_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);

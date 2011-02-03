@@ -461,14 +461,14 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
     ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
         sizeof(value), &value, NULL);
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    total = value;
+    total = size_t(value);
 
     // TODO: This is actually wrong, but OpenCL do not let us know the
     // amount of free memory in the accelerator
     ret = clGetDeviceInfo(device_, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
         sizeof(value), &value, NULL);
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    free = value;
+    free = size_t(value);
 }
 
 }}
