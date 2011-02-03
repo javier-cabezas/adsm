@@ -8,14 +8,11 @@ namespace __impl { namespace opencl {
 Mode::Mode(core::Process &proc, Accelerator &acc) :
     gmac::core::Mode(proc, acc)
 {
-    switchIn();
-
     hostptr_t addr = NULL;
     gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
         ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
-
-    switchOut();
+    else ioMemory_ = NULL;
 }
 
 Mode::~Mode()
@@ -23,12 +20,10 @@ Mode::~Mode()
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
 
-    switchIn();
     if(ioMemory_ != NULL) {
         hostFree(ioMemory_->addr());
         delete ioMemory_;
     }
-    switchOut();
 }
 
 inline

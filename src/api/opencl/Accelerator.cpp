@@ -44,7 +44,9 @@ Accelerator::~Accelerator()
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
         delete Accelerators_;
+        Accelerators_ = NULL;
         delete GlobalHostMap_;
+        GlobalHostMap_ = NULL;
     }
 
     cl_int ret = clReleaseContext(ctx_);
@@ -396,12 +398,6 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     cl_mem device;
     size_t size;
 
-    if(localHostAlloc_.translate(addr, device, size) == false) {
-        localHostAlloc_.remove(addr);
-        ret = clReleaseMemObject(device);
-        goto exit;
-    }
-
     if(localHostMap_.translate(addr, device, size) == false) {
         CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
                "Error translating address %p", (void *) addr);
@@ -412,7 +408,6 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
         Accelerator::GlobalHostMap_->remove(addr);
     }
 
-exit:
     trace::ExitCurrentFunction();
     return error(ret);
 }

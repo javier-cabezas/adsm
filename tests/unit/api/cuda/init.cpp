@@ -30,8 +30,8 @@ void InitAccelerator()
 void InitContext()
 {
     if(Context_ != NULL) return;
-    Mode *mode_ = dynamic_cast<Mode*>(Process::getInstance().createMode(0)); 
-    ASSERT_TRUE(mode_ !=NULL);
+    Mode *mode_ = dynamic_cast<Mode *>(Process::getInstance().createMode(0)); 
+    ASSERT_TRUE(mode_ != NULL);
     mode_->initThread();
     Accelerator *acc = dynamic_cast<Accelerator*> (Accelerator_);
     ASSERT_TRUE(acc != NULL); 
