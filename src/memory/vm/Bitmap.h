@@ -31,16 +31,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_BITMAP_H_
-#define GMAC_MEMORY_BITMAP_H_
-
-#include <cmath>
+#ifndef GMAC_MEMORY_VM_BITMAP_H_
+#define GMAC_MEMORY_VM_BITMAP_H_
 
 #include "config/common.h"
 
 #include "util/Lock.h"
 #include "util/Logger.h"
 
+#include "memory/Memory.h"
 
 #ifdef USE_VM
 

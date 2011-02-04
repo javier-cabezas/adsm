@@ -1,9 +1,5 @@
-#ifndef GMAC_MEMORY_BITMAP_IMPL_H_
-#define GMAC_MEMORY_BITMAP_IMPL_H_
-
-#include <cmath>
-
-#include "Memory.h"
+#ifndef GMAC_MEMORY_VM_BITMAP_IMPL_H_
+#define GMAC_MEMORY_VM_BITMAP_IMPL_H_
 
 namespace __impl { namespace memory { namespace vm {
 
@@ -548,7 +544,7 @@ Bitmap::getIndex(const accptr_t _ptr) const
 {
     void * ptr = (void *) _ptr;
     long_t index = long_t(ptr);
-    index >>= SubBlockShift_;
+    index >>= memory::SubBlockShift_;
     return index;
 }
 

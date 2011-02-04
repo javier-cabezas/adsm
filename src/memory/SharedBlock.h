@@ -84,9 +84,16 @@ public:
 
     //! Get memory block address at the accelerator
     /*!
+     * \param addr Address within the block
         \return Accelerator memory address of the block
     */
     accptr_t acceleratorAddr(const hostptr_t addr) const;
+
+    //! Get memory block address at the accelerator
+    /*!
+        \return Accelerator memory address of the block
+    */
+    accptr_t acceleratorAddr() const;
 
     gmacError_t toHost() const;
 

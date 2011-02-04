@@ -81,6 +81,8 @@ public:
 
 	accptr_t acceleratorAddr(const hostptr_t addr) const;
 
+	accptr_t acceleratorAddr() const;
+
 	gmacError_t toHost() const;
 
 	gmacError_t toAccelerator();

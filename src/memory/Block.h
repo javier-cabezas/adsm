@@ -109,8 +109,9 @@ public:
     unsigned getSequentialFaults() const;
 
     hostptr_t getSubBlockAddr(const hostptr_t addr) const;
-    size_t getSubBlockSize() const;
+    unsigned getSubBlock(const hostptr_t addr) const;
     unsigned getSubBlocks() const;
+    size_t getSubBlockSize() const;
 
     void setSubBlockDirty(const hostptr_t addr);
     void setBlockDirty();
@@ -221,6 +222,12 @@ public:
         \return Accelerator memory address of the block
     */
     virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
+
+    //! Get memory block address at the accelerator
+    /*!
+        \return Accelerator memory address of the block
+    */
+    virtual accptr_t acceleratorAddr() const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!

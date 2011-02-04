@@ -3,7 +3,7 @@
 
 #include "memory/Memory.h"
 #ifdef USE_VM
-#include "Bitmap.h"
+#include "vm/Bitmap.h"
 #include "core/Mode.h"
 #endif
 
@@ -87,9 +87,17 @@ Block::getSubBlockSize() const
 }
 
 inline unsigned
+Block::getSubBlock(const hostptr_t addr) const
+{
+    return GetSubBlock(addr);
+}
+
+inline unsigned
 Block::getSubBlocks() const
 {
-    return unsigned(ceilf(float(size_)/float(SubBlockSize_)));
+    unsigned subBlocks = size_/SubBlockSize_;
+    if (size_ % SubBlockSize_ != 0) subBlocks++;
+    return subBlocks;
 }
 
 inline void 

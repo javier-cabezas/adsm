@@ -33,6 +33,13 @@ inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 }
 
 template<typename T>
+inline accptr_t SharedBlock<T>::acceleratorAddr() const
+{
+    return acceleratorAddr_;
+}
+
+
+template<typename T>
 inline gmacError_t SharedBlock<T>::toHost() const
 {
     gmacError_t ret = gmacSuccess;

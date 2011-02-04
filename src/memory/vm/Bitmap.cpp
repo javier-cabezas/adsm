@@ -4,9 +4,9 @@
 #include <cstring>
 
 #include "core/Mode.h"
+#include "memory/Memory.h"
 
 #include "Bitmap.h"
-#include "Memory.h"
 
 namespace __impl { namespace memory { namespace vm {
 

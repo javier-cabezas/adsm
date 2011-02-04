@@ -65,16 +65,16 @@ public:
     //! Default destructor
     virtual ~BlockList();
 
-    //! Whether the list is empty or not
-    /*!
-        \return True if the list is empty
-    */
+    /** Whether the list is empty or not
+     *
+     * \return True if the list is empty
+     */
     bool empty() const;
 
-    //! Size of the list
-    /*!
-        \return Number of blocks in the list
-    */
+    /** Size of the list
+     * 
+     *  \return Number of blocks in the list
+     */
     size_t size() const;
 
     //! Add a block to the end of list

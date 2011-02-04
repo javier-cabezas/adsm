@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
-#include "memory/Bitmap.h"
+#include "memory/vm/Bitmap.h"
 #endif
 
 #include "memory/Manager.h"

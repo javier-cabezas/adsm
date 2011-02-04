@@ -4,7 +4,7 @@
 #include "api/cuda/Mode.h"
 #include "api/cuda/Module.h"
 
-#include "memory/Bitmap.h"
+#include "memory/vm/Bitmap.h"
 
 namespace __impl { namespace memory { namespace vm {
 

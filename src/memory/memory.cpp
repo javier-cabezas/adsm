@@ -5,6 +5,10 @@
 
 #include "memory/SharedObject.h"
 #include "memory/DistributedObject.h"
+
+#ifdef USE_VM
+#include "protocol/Gather.h"
+#endif
 #include "protocol/Lazy.h"
 
 #if defined(__GNUC__)
@@ -70,6 +74,20 @@ Protocol *ProtocolInit(unsigned flags)
                 (size_t)-1);
         }
     }
+#ifdef USE_VM
+    else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
+        if(0 != (flags & 0x1)) {
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
+                (size_t)-1);
+        }
+        else {
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
+                (size_t)-1);
+        }
+    }
+#endif
     else {
         FATAL("Memory Coherence Protocol not defined");
     }
