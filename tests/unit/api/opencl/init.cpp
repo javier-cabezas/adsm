@@ -7,12 +7,14 @@
 
 #include <CL/cl.h>
 
+using __impl::opencl::Accelerator;
+using __impl::opencl::Mode;
+using __impl::opencl::Context;
 
 void InitAccelerator()
 {
     if(Accelerator_ != NULL) return;
     InitTrace();
-    // TODO: Create OpenCL accelerator -- pending
 
     cl_platform_id platform;
     ASSERT_EQ(CL_SUCCESS, clGetPlatformIDs(1, &platform, NULL));
@@ -28,12 +30,7 @@ void InitAccelerator()
 void InitContext()
 {
     if(Context_ != NULL) return;
-    __impl::opencl::Mode *mode_ =
-        dynamic_cast<__impl::opencl::Mode *>(__impl::core::Process::getInstance().createMode(0));
-    ASSERT_TRUE(mode_ != NULL);
-    mode_->initThread();
-    gmac::opencl::Accelerator *acc = dynamic_cast<gmac::opencl::Accelerator *>(Accelerator_);
-    ASSERT_TRUE(acc != NULL);
-    Context_ = new __impl::opencl::Context(*acc, *mode_);
+    ASSERT_TRUE(Accelerator_ != NULL);
+    Context_ = new Context(dynamic_cast<Accelerator &>(*Accelerator_), Mode::getCurrent());
     ASSERT_TRUE(Context_ != NULL);
 }

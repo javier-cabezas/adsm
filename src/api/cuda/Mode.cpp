@@ -37,7 +37,6 @@ Mode::~Mode()
     cleanUpContexts();
 
     ModuleVector::const_iterator m;
-    switchIn();
 #ifdef USE_MULTI_CONTEXT
     getAccelerator().destroyModules(modules);
     modules.clear();
@@ -45,8 +44,8 @@ Mode::~Mode()
     if(ioMemory_ != NULL) {
         hostFree(ioMemory_->addr());
         delete ioMemory_;
+        ioMemory_ = NULL;
     }
-    switchOut();
 }
 
 inline

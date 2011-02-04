@@ -9,7 +9,6 @@
 
 using gmac::cuda::Accelerator;
 using __impl::cuda::Mode;
-using __impl::core::Process;
 using __impl::cuda::Context;
 
 void InitAccelerator()
@@ -30,12 +29,8 @@ void InitAccelerator()
 void InitContext()
 {
     if(Context_ != NULL) return;
-    Mode *mode_ = dynamic_cast<Mode *>(Process::getInstance().createMode(0)); 
-    ASSERT_TRUE(mode_ != NULL);
-    mode_->initThread();
-    Accelerator *acc = dynamic_cast<Accelerator*> (Accelerator_);
-    ASSERT_TRUE(acc != NULL); 
-    Context_ = new Context(*acc, *mode_);
+    ASSERT_TRUE(Accelerator_ != NULL);
+    Context_ = new Context(dynamic_cast<Accelerator &>(*Accelerator_), Mode::getCurrent());
     ASSERT_TRUE(Context_ != NULL); 
 } 
 

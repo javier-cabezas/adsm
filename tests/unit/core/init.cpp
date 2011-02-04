@@ -52,7 +52,8 @@ gmac::core::Context &GetContext()
 void FiniContext()
 {
     if(Context_ == NULL) return;
-    delete dynamic_cast<__impl::core::Context *>(Context_);
+    delete Context_;
+    Context_ = NULL;
 }
 
 void InitProcess()
@@ -63,17 +64,13 @@ void InitProcess()
     Process::create<Process>();
     Process &proc = Process::getInstance();
     proc.addAccelerator(*Accelerator_);
-
-    InitContext();
 }
 
 
 void FiniProcess()
 {
-    FiniContext();
     Process::destroy();
     Accelerator_ = NULL;
-    Context_ = NULL;
     FiniTrace();
 }
 

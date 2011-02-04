@@ -45,9 +45,9 @@ protected:
     void cleanUpContexts();
     gmacError_t cleanUp();
 
-    virtual ~Mode();
 public:
     Mode(__impl::core::Process &proc, __impl::core::Accelerator &acc);
+    virtual ~Mode();
 
     void detach();
     void addObject(__impl::memory::Object &obj);
