@@ -29,7 +29,7 @@ SpinLock::unlock() const
 }
 
 inline
-Lock::Lock() :
+Lock::Lock()
 {
     InitializeCriticalSection(&mutex_);
 }

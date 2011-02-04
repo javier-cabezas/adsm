@@ -2,11 +2,22 @@
 
 #include "util/Logger.h"
 
+#include <time.h>
 #include <iomanip>
 #include <sstream>
 
 namespace __impl { namespace trace { namespace paraver {
 
+#if defined(_MSC_VER)
+static struct tm *gmac_localtime(time_t *a)
+{
+    static struct tm time_struct;
+    localtime_s(&time_struct, a);
+    return &time_struct;
+}
+#else
+#   define gmac_localtime(a) localtime(a)
+#endif
 
 void TraceWriter::processTrace(Thread *thread, uint64_t t, StateName *state)
 {
@@ -176,7 +187,7 @@ TraceReader::TraceReader(const char *fileName) :
 StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
 {
 	time_t timep = time(NULL);
-	struct tm *t = localtime(&timep);
+	struct tm *t = gmac_localtime(&timep);
 	int32_t year=(t->tm_year<100)?t->tm_year:t->tm_year-100;
 	// Print the file header: date/time
 	of << "#Paraver(";

@@ -46,6 +46,9 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace trace { namespace paraver {
 
 class Thread;
+class State;
+class Event;
+class Communication;
 
 class GMAC_LOCAL Record {
 protected:
@@ -65,6 +68,9 @@ public:
 	static void end(StreamOut &of);
 	static Record *read(std::ifstream &in);
 	friend StreamOut & operator<<(StreamOut &os, const Record &record);
+    friend StreamOut & operator<<(StreamOut &os, const State &state);
+    friend StreamOut & operator<<(StreamOut &os, const Event &event);
+    friend StreamOut & operator<<(StreamOut &os, const Communication &comm);
 };
 
 class GMAC_LOCAL RecordPredicate {

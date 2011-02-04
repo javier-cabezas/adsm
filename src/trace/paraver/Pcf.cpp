@@ -5,8 +5,6 @@
 
 #if defined(_MSC_VER)
 #	include <limits.h>
-#	define MAXINT _I64_MAX
-#	define MININT _I64_MIN
 #else
 #	include <values.h>
 #endif
