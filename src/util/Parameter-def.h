@@ -25,11 +25,11 @@ PARAM(ParamOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
 PARAM(ParamOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
 
 // Bitmap Parameters
-PARAM(ParamSubBlocks, unsigned, 1, "GMAC_SUBBLOCKS", PARAM_NONZERO)
-PARAM(ParamBitmapLevels, unsigned, 1, "GMAC_BITMAP_LEVELS", PARAM_NONZERO)
-PARAM(ParamBitmapL1Entries, unsigned, 1, "GMAC_BITMAP_L1ENTRIES", PARAM_NONZERO)
-PARAM(ParamBitmapL2Entries, unsigned, 1, "GMAC_BITMAP_L2ENTRIES", PARAM_NONZERO)
-PARAM(ParamBitmapL3Entries, unsigned, 1, "GMAC_BITMAP_L3ENTRIES", PARAM_NONZERO)
+PARAM(ParamSubBlocks, unsigned, 512, "GMAC_SUBBLOCKS", PARAM_NONZERO)
+PARAM(ParamBitmapLevels, unsigned, 3, "GMAC_BITMAP_LEVELS", PARAM_NONZERO)
+PARAM(ParamBitmapL1Entries, unsigned, 512, "GMAC_BITMAP_L1ENTRIES", PARAM_NONZERO)
+PARAM(ParamBitmapL2Entries, unsigned, 128, "GMAC_BITMAP_L2ENTRIES", PARAM_NONZERO)
+PARAM(ParamBitmapL3Entries, unsigned, 4096, "GMAC_BITMAP_L3ENTRIES", PARAM_NONZERO)
 
 // GMAC Parameters for auto-tunning
 PARAM(ParamModelToHostConfig, float, 40.0, "GMAC_MODEL_TOHOSTCONFIG")       // DMA configuration costs

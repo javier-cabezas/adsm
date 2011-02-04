@@ -55,12 +55,15 @@ typedef ULONG_PTR long_t;
 #define HARCODED
 
 #ifdef HARCODED
-#define __gmac_vm_shift_l1 38
-#define __gmac_vm_shift_l2 32
-#define __gmac_vm_shift_l3 20
-#define __gmac_vm_mask_l1 (long_t(0))
-#define __gmac_vm_mask_l2 (long_t(256  - 1) << __gmac_vm_shift_l2)
-#define __gmac_vm_mask_l3 (long_t(4096 - 1) << __gmac_vm_shift_l3)
+#define __gmac_vm_entries_l1 512
+#define __gmac_vm_entries_l2 128
+#define __gmac_vm_entries_l3 4096
+#define __gmac_vm_shift_l1 31
+#define __gmac_vm_shift_l2 24
+#define __gmac_vm_shift_l3 12
+#define __gmac_vm_mask_l1 (long_t(__gmac_vm_entries_l1 - 1))
+#define __gmac_vm_mask_l2 (long_t(__gmac_vm_entries_l2 - 1))
+#define __gmac_vm_mask_l3 (long_t(__gmac_vm_entries_l3 - 1))
 
 #else // HARCODED
 __constant__ unsigned __gmac_vm_shift_l1;
@@ -88,13 +91,13 @@ __device__ __inline__ T __globalSt2(T *addr, T v) {
 #endif
 
 #if USE_VM_LEVELS == 3
-__constant__ uint8_t **__gmac_vm_root[1];
+__device__ uint8_t **__gmac_vm_root[__gmac_vm_entries_l1];
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
-    uint8_t &entry = __gmac_vm_root[(long_t(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1]
-                                   [(long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2]
-                                   [(long_t(addr) & __gmac_vm_mask_l3) >> __gmac_vm_shift_l3];
+    uint8_t &entry = __gmac_vm_root[(long_t(addr) >> __gmac_vm_shift_l1) & __gmac_vm_mask_l1]
+                                   [(long_t(addr) >> __gmac_vm_shift_l2) & __gmac_vm_mask_l2]
+                                   [(long_t(addr) >> __gmac_vm_shift_l3) & __gmac_vm_mask_l3];
     *addr = v;
     entry = 1;
     return v;

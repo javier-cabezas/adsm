@@ -53,7 +53,7 @@ inline gmacError_t SharedBlock<T>::toHost() const
                 } else {
                     inSubGroup = false;
 
-                    //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
+                    //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
                     ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
                                             acceleratorAddr_       + groupStart * SubBlockSize_,
                                             (groupEnd - groupStart + 1) * SubBlockSize_);
@@ -62,7 +62,7 @@ inline gmacError_t SharedBlock<T>::toHost() const
             }
         } else {
             if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
-                groupStart = i; gaps = 0; inSubGroup = true;
+                groupStart = groupEnd = i; gaps = 0; inSubGroup = true;
             }
         }
     }
@@ -105,7 +105,7 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
                 } else {
                     inSubGroup = false;
                     
-                    //fprintf(stderr, "TODEVICE A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupEnd + 1);
+                    //fprintf(stderr, "TODEVICE A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
                     ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * SubBlockSize_,
                                                    StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
                                                    (groupEnd - groupStart + 1) * SubBlockSize_);
@@ -114,7 +114,7 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
             }
         } else {
             if (bitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
-                groupStart = i; gaps = 0; inSubGroup = true;
+                groupStart = groupEnd = i; gaps = 0; inSubGroup = true;
             }
         }
     }

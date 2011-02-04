@@ -23,12 +23,13 @@ StoreShared::allocAcc(bool isRoot)
 {
     accptr_t addr;
     cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+
     if (isRoot == false) {
         gmacError_t ret = mode.malloc(addr, size_);
         ASSERTION(ret == gmacSuccess);
         TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
     } else {
-        const cuda::Variable *var = mode.constantByName(ACC_VM_ROOT_VAR);
+        const cuda::Variable *var = mode.variableByName(ACC_VM_ROOT_VAR);
         ASSERTION(var != NULL);
         addr = var->devPtr();
     }
