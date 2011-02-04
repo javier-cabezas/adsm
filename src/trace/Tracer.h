@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "config/common.h"
+#include "util/Private.h"
+#include "util/Atomics.h"
 
 #include "States.h"
 
@@ -50,6 +52,9 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace trace {
 #if defined(USE_TRACE)
+
+extern Atomic threads_;
+extern util::Private<int32_t> tid_;
 
 class GMAC_LOCAL Tracer {
 protected:
@@ -253,9 +258,17 @@ void DataCommunication(THREAD_T tid, uint64_t delta, size_t size);
 
 //! Get a time mark to be used by the tracer
 /**
- *  \param mark Reference to store the timemark
+    \param mark Reference to store the timemark
 */
 void TimeMark(uint64_t &mark);
+
+#if defined(USE_TRACE)
+//! Get the thread Id for tracing purposes
+/**
+    \return Thread ID
+*/ 
+int32_t GetThreadId();
+#endif
 
 }}
 

@@ -27,6 +27,7 @@ Tracer::~Tracer()
 inline void InitTracer()
 {
 #if defined(USE_TRACE)
+    util::Private<int32_t>::init(tid_);
 	InitApiTracer();
 #endif
 }
@@ -37,6 +38,19 @@ inline void FiniTracer()
 	FiniApiTracer();
 #endif
 }
+
+#if defined(USE_TRACE)
+inline int32_t GetThreadId()
+{
+    if(tid_.get() == NULL) {
+        AtomicInc(threads_);
+        tid_.set((int32_t *)threads_);
+    }
+    // This will break if we have more than 8192 CPU threads using GPUs
+    return 8192 + static_cast<int32_t>((long_t)tid_.get() & 0xffffffff);
+}
+#endif
+
 
 inline void StartThread(THREAD_T tid, const char *name)
 {
@@ -51,7 +65,7 @@ inline void StartThread(THREAD_T tid, const char *name)
 inline void StartThread(const char *name)
 {
 #if defined(USE_TRACE)
-	return StartThread(util::GetThreadId(), name);
+	return StartThread(GetThreadId(), name);
 #endif
 }
 
@@ -65,7 +79,7 @@ inline void EndThread(THREAD_T tid)
 inline void EndThread()
 {
 #if defined(USE_TRACE)
-	return EndThread(util::GetThreadId());
+	return EndThread(GetThreadId());
 #endif
 }
 
@@ -79,7 +93,7 @@ inline void EnterFunction(THREAD_T tid, const char *name)
 inline void EnterFunction(const char *name)
 {
 #if defined(USE_TRACE)
-	return EnterFunction(util::GetThreadId(), name);
+	return EnterFunction(GetThreadId(), name);
 #endif
 }
 
@@ -93,35 +107,35 @@ inline void ExitFunction(THREAD_T tid, const char *name)
 inline void ExitFunction(const char *name)
 {
 #if defined(USE_TRACE)
-	return ExitFunction(util::GetThreadId(),name);
+	return ExitFunction(GetThreadId(),name);
 #endif
 }
 
 inline void RequestLock(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->requestLock(util::GetThreadId(), name);
+	if(tracer != NULL) tracer->requestLock(GetThreadId(), name);
 #endif
 }
 
 inline void AcquireLockExclusive(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->acquireLockExclusive(util::GetThreadId(), name);
+	if(tracer != NULL) tracer->acquireLockExclusive(GetThreadId(), name);
 #endif
 }
 
 inline void AcquireLockShared(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->acquireLockShared(util::GetThreadId(), name);
+	if(tracer != NULL) tracer->acquireLockShared(GetThreadId(), name);
 #endif
 }
 
 inline void ExitLock(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->exitLock(util::GetThreadId(), name);
+	if(tracer != NULL) tracer->exitLock(GetThreadId(), name);
 #endif
 }
 
@@ -135,7 +149,7 @@ inline void SetThreadState(THREAD_T tid, const State &state)
 inline void SetThreadState(const State &state)
 {
 #if defined(USE_TRACE)
-	return SetThreadState(util::GetThreadId(), state);
+	return SetThreadState(GetThreadId(), state);
 #endif
 }
 
@@ -149,7 +163,7 @@ inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t
 inline void DataCommunication(THREAD_T tid, uint64_t delta, size_t size)
 {
 #if defined(USE_TRACE)
-    return DataCommunication(util::GetThreadId(), tid, delta, size);
+    return DataCommunication(GetThreadId(), tid, delta, size);
 #endif
 }
 

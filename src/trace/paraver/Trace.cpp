@@ -53,7 +53,7 @@ void TraceWriter::addTask(uint32_t pid)
     mutex_.unlock();
 }
 
-void TraceWriter::pushState(uint64_t t, int32_t pid, int32_t tid,
+void TraceWriter::pushState(uint64_t t, uint32_t pid, uint32_t tid,
 		const StateName &state)
 {
     mutex_.lock();
@@ -69,7 +69,7 @@ void TraceWriter::pushState(uint64_t t, int32_t pid, int32_t tid,
 }
 
 
-void TraceWriter::pushEvent(uint64_t t, int32_t pid, int32_t tid,
+void TraceWriter::pushEvent(uint64_t t, uint32_t pid, uint32_t tid,
 		uint64_t ev, int64_t value)
 {
     mutex_.lock();
@@ -85,14 +85,14 @@ void TraceWriter::pushEvent(uint64_t t, int32_t pid, int32_t tid,
 }
 
 
-void TraceWriter::pushEvent(uint64_t t, int32_t pid, int32_t tid,
+void TraceWriter::pushEvent(uint64_t t, uint32_t pid, uint32_t tid,
         const EventName &event, int64_t value)
 {
     pushEvent(t, pid, tid, event.getValue(), value);
 }
 
-void TraceWriter::pushCommunication(uint64_t start, int32_t srcPid, int32_t srcTid,
-        uint64_t end, int32_t dstPid, int32_t dstTid, uint64_t size)
+void TraceWriter::pushCommunication(uint64_t start, uint32_t srcPid, uint32_t srcTid,
+        uint64_t end, uint32_t dstPid, uint32_t dstTid, uint64_t size)
 {
     mutex_.lock();
     Task *srcTask = apps_.back()->getTask(srcPid);

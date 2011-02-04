@@ -19,7 +19,7 @@ void FiniApiTracer()
 Paraver::Paraver() :
     baseName_(std::string(util::params::ParamTrace)),
     fileName_(baseName_ + ".trace"),
-    trace_(fileName_.c_str(), 1, util::GetThreadId())
+    trace_(fileName_.c_str(), 1, trace::GetThreadId())
 {
     FunctionEvent_ = paraver::Factory<paraver::EventName>::create("Function");
 
