@@ -84,7 +84,9 @@ IOBuffer::wait()
         ASSERTION(mode_ != NULL);
         CUevent start = it->second.first;
         CUevent end   = it->second.second;
+        trace::SetThreadState(trace::Wait);
         ret = mode_->waitForEvent(end);
+        trace::SetThreadState(trace::Running);
         if(state_ == ToHost) DataCommToHost(*mode_, start, end, size_);
         else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, size_);
         TRACE(LOCAL,"Buffer %p goes Idle", this);

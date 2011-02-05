@@ -21,12 +21,27 @@ inline void DataCommToAccelerator(Mode &mode, cl_event start, cl_event end, size
 #endif
 }
 
+inline void DataCommToAccelerator(Mode &mode, cl_event event, size_t size)
+{
+#if defined(USE_TRACE)
+    return DataCommunication(mode, trace::GetThreadId(), mode.id(), event, event, size);
+#endif
+}
+
 inline void DataCommToHost(Mode &mode, cl_event start, cl_event end, size_t size)
 {
 #if defined(USE_TRACE)
     return DataCommunication(mode, mode.id(), trace::GetThreadId(), start, end, size);
 #endif
 }
+
+inline void DataCommToHost(Mode &mode, cl_event event, size_t size)
+{
+#if defined(USE_TRACE)
+    return DataCommunication(mode, mode.id(), trace::GetThreadId(), event, event, size);
+#endif
+}
+
 
 
 }}

@@ -1,7 +1,5 @@
 STATE(Idle)
 STATE(Running)
 STATE(Init)
-STATE(Locked)
-STATE(Exclusive)
 STATE(Wait)
 STATE(IO)

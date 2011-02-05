@@ -42,6 +42,11 @@ namespace __impl { namespace opencl {
 void DataCommunication(THREAD_T src, THREAD_T dst, cl_event start, cl_event end, size_t size);
 void DataCommunication(THREAD_T tid, cl_event start, cl_event end, size_t size);
 
+void DataCommToAccelerator(Mode &mode, cl_event start, cl_event end, size_t size);
+void DataCommToAccelerator(Mode &mode, cl_event event, size_t size);
+
+void DataCommToHost(Mode &mode, cl_event start, cl_event end, size_t size);
+void DataCommToHost(Mode &mode, cl_event event, size_t size);
 }}
 
 #include "Tracer-impl.h"

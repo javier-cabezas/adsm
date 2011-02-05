@@ -44,15 +44,15 @@ namespace __impl { namespace opencl {
 
 class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
-    cl_event start_, end_;
+    cl_event event_;
     Mode *mode_;
     bool started_;
 
 public:
     IOBuffer(void *addr, size_t size);
 
-    void toHost(Mode &mode, cl_command_queue stream);
-    void toAccelerator(Mode &mode, cl_command_queue stream);
+    void toHost(Mode &mode);
+    void toAccelerator(Mode &mode);
 
     void started(cl_event event);
 

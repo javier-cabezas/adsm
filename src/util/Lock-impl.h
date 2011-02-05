@@ -9,7 +9,6 @@ inline
 void __Lock::enter() const
 {
 #if defined(USE_TRACE_LOCKS)
-    trace::SetThreadState(trace::Locked);
     trace::RequestLock(name_.c_str());
 #endif
 }
@@ -18,7 +17,6 @@ inline
 void __Lock::locked() const
 {
 #if defined(USE_TRACE_LOCKS)
-    trace::SetThreadState(trace::Exclusive);
     trace::AcquireLockExclusive(name_.c_str());
     exclusive_ = true;
 #endif
@@ -28,7 +26,6 @@ inline
 void __Lock::done() const
 {
 #if defined(USE_TRACE_LOCKS)
-    trace::SetThreadState(trace::Running);
     trace::AcquireLockShared(name_.c_str());
 #endif
 }
@@ -38,7 +35,6 @@ inline
 void __Lock::exit() const
 {
 #if defined(USE_TRACE_LOCKS)
-    if(exclusive_) trace::SetThreadState(trace::Running);
     trace::ExitLock(name_.c_str());
     exclusive_ = false;
 #endif

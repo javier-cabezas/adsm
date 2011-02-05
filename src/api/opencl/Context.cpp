@@ -54,7 +54,6 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
 {
     cl_int ret = CL_SUCCESS;
 
-    trace::SetThreadState(trace::IO);
     Accelerator &acc = accelerator();
     TRACE(LOCAL, "Sync stream %p on accelerator %p", stream, &acc);
     ret = acc.syncCLstream(stream);
@@ -63,8 +62,6 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
         // TODO: add delay here
     }
 #endif
-    trace::SetThreadState(trace::Running);
-
     if (ret == CL_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
 
@@ -176,7 +173,10 @@ gmacError_t Context::prepareForCall()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
+    trace::SetThreadState(trace::Wait);
     ret = syncCLstream(streamToAccelerator_);
+    trace::SetThreadState(trace::Running);
+
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -185,8 +185,10 @@ gmacError_t Context::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
+    trace::SetThreadState(trace::Wait);
     ret = syncCLstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
+    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }

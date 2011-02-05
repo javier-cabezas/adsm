@@ -12,22 +12,18 @@ IOBuffer::IOBuffer(void *addr, size_t size) :
 }
 
 inline void
-IOBuffer::toHost(Mode &mode, cl_command_queue stream)
+IOBuffer::toHost(Mode &mode)
 {
     ASSERTION(started_ == false);
-    cl_int ret = clEnqueueMarker(stream, &start_);
-    ASSERTION(ret == CL_SUCCESS);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     mode_   = &mode;
 }
 
 inline void
-IOBuffer::toAccelerator(Mode &mode, cl_command_queue stream)
+IOBuffer::toAccelerator(Mode &mode)
 {
     ASSERTION(started_ == false);
-    cl_int ret = clEnqueueMarker(stream, &start_);
-    ASSERTION(ret == CL_SUCCESS);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     mode_   = &mode;
@@ -38,7 +34,7 @@ IOBuffer::started(cl_event event)
 {
     ASSERTION(started_ == false);
 
-    end_ = event;
+    event_ = event;
     started_ = true;
 }
 
@@ -51,13 +47,13 @@ IOBuffer::wait()
 
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
-        ret = mode_->waitForEvent(end_);
+        trace::SetThreadState(trace::Wait);
+        ret = mode_->waitForEvent(event_);
+        trace::SetThreadState(trace::Running);
         ASSERTION(ret == gmacSuccess);
-        if(state_ == ToHost) DataCommToHost(*mode_, start_, end_, size_);
-        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start_, end_, size_);
-        cl_int clret = clReleaseEvent(end_);
-        ASSERTION(clret == CL_SUCCESS);
-        clret = clReleaseEvent(start_);
+        if(state_ == ToHost) DataCommToHost(*mode_, event_, size_);
+        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, event_, size_);
+        cl_int clret = clReleaseEvent(event_);
         ASSERTION(clret == CL_SUCCESS);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
