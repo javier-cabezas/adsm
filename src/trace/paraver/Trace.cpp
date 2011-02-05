@@ -168,6 +168,7 @@ TraceReader::TraceReader(const char *fileName) :
 {
 	std::ifstream in;
 	in.open(fileName, std::ios::binary);
+    ASSERTION(in.is_open() != 0);
 	// Read records from file
 	Record *record = NULL;
 	while((record = Record::read(in)) != NULL) {

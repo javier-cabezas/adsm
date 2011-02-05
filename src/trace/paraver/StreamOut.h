@@ -44,9 +44,10 @@ protected:
     std::ofstream of_;
 
 public:
-    StreamOut(const char *fileName) :
-        of_(fileName, std::ios::out)
-    {
+    StreamOut(const char *fileName, bool textMode = false) {
+      int mode = std::ios::out;
+      if(textMode == false) mode |= std::ios::binary;
+      of_.open(fileName, mode);
     }
 
 #if 0

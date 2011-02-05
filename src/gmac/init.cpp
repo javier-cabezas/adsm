@@ -36,6 +36,7 @@ static void CONSTRUCTOR init(void)
 
     util::params::Init();
 	gmac::trace::InitTracer();	
+    trace::SetThreadState(trace::Running);
 
     /* Call initialization of interpose libraries */
 #if defined(POSIX)
@@ -79,7 +80,7 @@ static void InitThread()
 	gmac::enterGmac();
 	__impl::core::Process &proc = __impl::core::Process::getInstance();
 	proc.initThread();
-	gmac::trace::SetThreadState(gmac::trace::Running);
+    gmac::trace::SetThreadState(__impl::trace::Running);
 	gmac::exitGmac();
 }
 
