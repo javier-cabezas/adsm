@@ -2,6 +2,7 @@
 #include "api/cuda/Accelerator.h"
 
 using gmac::cuda::Accelerator;
+using gmac::core::Mode;
 
 TEST_F(AcceleratorTest, AcceleratorHost) {
     hostptr_t host = NULL;
@@ -22,7 +23,7 @@ TEST_F(AcceleratorTest, AcceleratorMemset) {
     ASSERT_EQ(gmacSuccess, accelerator.malloc(device, Size_ * sizeof(unsigned)));
     ASSERT_TRUE(device != NULL);
     ASSERT_EQ(gmacSuccess, accelerator.memset(device, 0xa5, Size_ * sizeof(unsigned)));
-    ASSERT_EQ(gmacSuccess, accelerator.copyToHost(hostptr_t(host), device, Size_ * sizeof(unsigned)));
+    ASSERT_EQ(gmacSuccess, accelerator.copyToHost(hostptr_t(host), device, Size_ * sizeof(unsigned), Mode::getCurrent()));
     for(int j = 0; j < Size_; j++) ASSERT_EQ(0xa5a5a5a5, host[j]);
     ASSERT_EQ(gmacSuccess, accelerator.free(device));
 

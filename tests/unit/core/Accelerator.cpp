@@ -65,19 +65,18 @@ TEST_F(AcceleratorTest, CreateMode){
 
      ASSERT_TRUE(&proc != NULL);
 
-     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
+     unsigned load = GetAccelerator().load();
      Mode *mode_ = GetAccelerator().createMode(proc);
      ASSERT_TRUE(mode_!=NULL);
-     ASSERT_TRUE(GetAccelerator().load() == 1) << "the value is :" << GetAccelerator().load();
+     ASSERT_TRUE(GetAccelerator().load() == load + 1) << "the value is :" << GetAccelerator().load();
      GetAccelerator().unregisterMode(*mode_);
       
-    
-     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
      GetAccelerator().registerMode(*mode_);
-     ASSERT_TRUE(GetAccelerator().load() == 1) << "the value is :" << GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == load + 1) << "the value is :" << GetAccelerator().load(); 
 
      delete dynamic_cast<__impl::core::Mode *>(mode_);
-     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
 
      Process::destroy();
 }

@@ -13,28 +13,28 @@ Accelerator::~Accelerator()
 {
 }
 
-gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(acc  != NULL);
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::opencl::Accelerator::copyToAccelerator(acc, host, size);
+    gmacError_t ret = __impl::opencl::Accelerator::copyToAccelerator(acc, host, size, mode);
     // POSTCONDITIONS
     ENSURES(ret == gmacSuccess);
 
     return ret;
 }
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(host != NULL);
     REQUIRES(acc  != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::opencl::Accelerator::copyToHost(host, acc, size);
+    gmacError_t ret = __impl::opencl::Accelerator::copyToHost(host, acc, size, mode);
     // POSTCONDITIONS
     ENSURES(ret == gmacSuccess);
 
@@ -55,7 +55,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     return ret;
 }
 
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::opencl::Mode &mode, cl_command_queue stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::Mode &mode, cl_command_queue stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -71,7 +71,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IO
     return ret;
 }
 
-gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::opencl::Mode &mode, cl_command_queue stream)
+gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::Mode &mode, cl_command_queue stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
