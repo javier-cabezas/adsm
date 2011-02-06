@@ -42,8 +42,8 @@ WITH THE SOFTWARE.  */
 #include "States.h"
 
 #if defined(__GNUC__)
-#define EnterCurrentFunction() EnterFunction(__func__)
-#define ExitCurrentFunction()  ExitFunction(__func__)
+#define EnterCurrentFunction() EnterFunction(__PRETTY_FUNCTION__)
+#define ExitCurrentFunction()  ExitFunction(__PRETTY_FUNCTION__)
 #elif defined(_MSC_VER)
 #define EnterCurrentFunction() EnterFunction(__FUNCTION__)
 #define ExitCurrentFunction()  ExitFunction(__FUNCTION__)

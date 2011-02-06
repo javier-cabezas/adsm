@@ -68,6 +68,7 @@ gmacError_t Manager::unmap(hostptr_t addr, size_t size)
 
 gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 {
+    trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
@@ -75,6 +76,7 @@ gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
     // Create new shared object
     Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
+        trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
     *addr = object->addr();
@@ -82,45 +84,56 @@ gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
     // Insert object into memory maps
     mode.addObject(*object);
     object->release();
+    trace::ExitCurrentFunction();
     return gmacSuccess;
 }
 
 gmacError_t Manager::hostMappedAlloc(hostptr_t *addr, size_t size)
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     HostMappedObject *object = new HostMappedObject(size);
     *addr = object->addr();
     if(*addr == NULL) {
         delete object;
+        trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
+    trace::ExitCurrentFunction();
     return gmacSuccess;
 }
 
 gmacError_t Manager::globalAlloc(hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
+    trace::EnterCurrentFunction();
     core::Process &proc = core::Process::getInstance();
     core::Mode &mode = core::Mode::getCurrent();
 
     // If a centralized object is requested, try creating it
     if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
         gmacError_t ret = hostMappedAlloc(addr, size);
-        if(ret == gmacSuccess) return ret;
+        if(ret == gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
     }
 
     Object *object = proc.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->release();
+        trace::ExitCurrentFunction();
         return hostMappedAlloc(addr, size); // Try using a host mapped object
     }
     gmacError_t ret = proc.globalMalloc(*object);
     object->release();
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Manager::free(hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::getCurrent();
     Object *object = mode.getObject(addr);
@@ -130,36 +143,45 @@ gmacError_t Manager::free(hostptr_t addr)
     }
     else {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
-        if(hostMappedObject == NULL) return gmacErrorInvalidValue;
+        if(hostMappedObject == NULL) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
         hostMappedObject->release();
     }
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 accptr_t Manager::translate(const hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     __impl::core::Process &proc = __impl::core::Process::getInstance();
     accptr_t ret = proc.translate(addr);
     if(ret == NULL) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) ret = object->acceleratorAddr(addr);
     }
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Manager::acquireObjects()
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::getCurrent();
     if(mode.releasedObjects() == true) {
         mode.forEachObject(&Object::acquire);
         mode.acquireObjects();
     }
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Manager::releaseObjects()
 {
+    trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
@@ -177,6 +199,7 @@ gmacError_t Manager::releaseObjects()
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     acceleratorBitmap.release();
 #endif
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -184,15 +207,22 @@ gmacError_t Manager::releaseObjects()
 gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
+    trace::EnterCurrentFunction();
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
         core::Mode * mode = proc.owner(addr + off);
-        if (mode == NULL) return gmacErrorInvalidValue;
+        if (mode == NULL) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
         Object *obj = mode->getObject(addr + off);
-        if (!obj) return gmacErrorInvalidValue;
+        if (!obj) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
@@ -200,41 +230,57 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, size_t bufferOff, const 
         // Handle objects with no memory in the accelerator
 		ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();
-        if(ret != gmacSuccess) return ret;
+        if(ret != gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
         off += objCount;
         TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(addr + off < addr + count);
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t bufferOff, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
+    trace::EnterCurrentFunction();
     core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
         core::Mode *mode = proc.owner(addr + off);
-        if (mode == NULL) return gmacErrorInvalidValue;
+        if (mode == NULL) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
         Object *obj = mode->getObject(addr + off);
-        if (!obj) return gmacErrorInvalidValue;
+        if (!obj) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
         // Compute sizes for the current object
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
 		ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
 		obj->release();        
-        if(ret != gmacSuccess) return ret;
+        if(ret != gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
         off += objCount;
         TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
     } while(addr + off < addr + count);
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 bool
 Manager::read(hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
 #ifdef USE_VM
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
@@ -245,17 +291,22 @@ Manager::read(hostptr_t addr)
 #endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
-    if(obj == NULL) return false;
+    if(obj == NULL) {
+        trace::ExitCurrentFunction();
+        return false;
+    }
     TRACE(LOCAL,"Read access for object %p", obj->addr());
 	gmacError_t err = obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
 	obj->release();
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 bool
 Manager::write(hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
 #ifdef USE_VM
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
@@ -266,20 +317,26 @@ Manager::write(hostptr_t addr)
 #endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
-    if(obj == NULL) return false;
+    if(obj == NULL) {
+        trace::ExitCurrentFunction();
+        return false;
+    }
     TRACE(LOCAL,"Write access for object %p", obj->addr());
 	if(obj->signalWrite(addr) != gmacSuccess) ret = false;
 	obj->release();
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
 Manager::memset(hostptr_t s, int c, size_t size)
 {
+    trace::EnterCurrentFunction();
     core::Process &proc = core::Process::getInstance();
     core::Mode *mode = proc.owner(s, size);
 	if (mode == NULL) {
         ::memset(s, c, size);
+        trace::ExitCurrentFunction();
         return gmacSuccess;
     }
 
@@ -293,6 +350,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
         size_t objSize = (size < obj->size()) ? size : obj->size();
         ret = obj->memset(s - obj->addr(), c, objSize);
         obj->release();
+        trace::ExitCurrentFunction();
         return ret;
     }
 
@@ -331,6 +389,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
         obj = mode->getObject(s);
     }
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -338,6 +397,7 @@ Manager::memset(hostptr_t s, int c, size_t size)
 gmacError_t
 Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src, size_t size)
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     core::Mode &mode = core::Mode::getCurrent();
@@ -384,6 +444,7 @@ Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src
     active->wait();
     mode.destroyIOBuffer(active);
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -391,6 +452,7 @@ gmacError_t
 Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
                         const Object &srcObj, size_t srcOffset, size_t size)
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     core::Mode &mode = core::Mode::getCurrent();
@@ -426,7 +488,10 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     while(left > 0) {
         active->wait(); // Wait for the active buffer to be full
         ret = dstObj.copyFromBuffer(*active, copySize, 0, dstOffset);
-        if(ret != gmacSuccess) return ret;
+        if(ret != gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
         left -= copySize;
         srcOffset += copySize;
         dstOffset += copySize;
@@ -462,6 +527,7 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     active->wait();
     mode.destroyIOBuffer(active);
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -469,6 +535,7 @@ gmacError_t
 Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
                           size_t size)
 {
+    trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
     core::Mode &mode = core::Mode::getCurrent();
@@ -516,6 +583,7 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
     mode.destroyIOBuffer(passive);
     mode.destroyIOBuffer(active);
     
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -535,12 +603,14 @@ Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
 gmacError_t
 Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
 {
+    trace::EnterCurrentFunction();
     core::Process &proc = core::Process::getInstance();
     core::Mode *dstMode = proc.owner(dst, size);
     core::Mode *srcMode = proc.owner(src, size);
 
     if(dstMode == NULL && srcMode == NULL) {
         ::memcpy(dst, src, size);
+        trace::ExitCurrentFunction();
         return gmacSuccess;
     }
 
@@ -604,6 +674,7 @@ Manager::memcpy(hostptr_t dst, const hostptr_t src, size_t size)
     if(dstObject != NULL) dstObject->release();
     if(srcObject != NULL) srcObject->release();
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
