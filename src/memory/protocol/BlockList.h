@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_DBL_H_
-#define GMAC_MEMORY_PROTOCOL_DBL_H_
+#ifndef GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
+#define GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
 
 #include "config/common.h"
 #include "include/gmac/types.h"
@@ -65,16 +65,16 @@ public:
     //! Default destructor
     virtual ~BlockList();
 
-    //! Whether the list is empty or not
-    /*!
-        \return True if the list is empty
-    */
+    /** Whether the list is empty or not
+     *
+     * \return True if the list is empty
+     */
     bool empty() const;
 
-    //! Size of the list
-    /*!
-        \return Number of blocks in the list
-    */
+    /** Size of the list
+     * 
+     *  \return Number of blocks in the list
+     */
     size_t size() const;
 
     //! Add a block to the end of list

@@ -74,11 +74,10 @@ gmacError_t Manager::alloc(hostptr_t *addr, size_t size)
 
     // Create new shared object
     Object *object = mode.protocol().createObject(size, NULL, GMAC_PROT_READ, 0);
-    *addr = object->addr();
-    if(*addr == NULL) {
-		object->release();
+    if(object == NULL) {
         return gmacErrorMemoryAllocation;
     }
+    *addr = object->addr();
 
     // Insert object into memory maps
     mode.addObject(*object);
@@ -153,12 +152,7 @@ gmacError_t Manager::acquireObjects()
     gmacError_t ret = gmacSuccess;
     core::Mode &mode = core::Mode::getCurrent();
     if(mode.releasedObjects() == true) {
-#ifndef USE_VM
         mode.forEachObject(&Object::acquire);
-#else
-        vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-        acceleratorBitmap.acquire();
-#endif
         mode.acquireObjects();
     }
     return ret;
@@ -169,7 +163,7 @@ gmacError_t Manager::releaseObjects()
     core::Mode &mode = core::Mode::getCurrent();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    if (!mode.releasedObjects()) {
+    if (mode.releasedObjects() == false) {
         // Release per-mode objects
         ret = mode.protocol().releaseObjects();
         mode.releaseObjects();
@@ -242,6 +236,13 @@ bool
 Manager::read(hostptr_t addr)
 {
     core::Mode &mode = core::Mode::getCurrent();
+#ifdef USE_VM
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (acceleratorBitmap.isReleased()) {
+        acceleratorBitmap.acquire();
+        mode.forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;
@@ -256,6 +257,13 @@ bool
 Manager::write(hostptr_t addr)
 {
     core::Mode &mode = core::Mode::getCurrent();
+#ifdef USE_VM
+    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
+    if (acceleratorBitmap.isReleased()) {
+        acceleratorBitmap.acquire();
+        mode.forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
     bool ret = true;
     Object *obj = mode.getObject(addr);
     if(obj == NULL) return false;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Logger.h"
 
-namespace __impl { 
+namespace __impl {
 
 namespace core {
     class Mode;
@@ -85,8 +85,7 @@ protected:
     //! Last addr
     unsigned sequentialFaults_;
     unsigned faults_;
-    unsigned long lastSubBlock_;
-    size_t subBlockSize_;
+    long_t lastSubBlock_;
 
     void resetBitmapStats();
     void updateBitmapStats(const hostptr_t addr, bool write);
@@ -99,7 +98,7 @@ protected:
         \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
     */
-	Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+        Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     //! Default destructor
     virtual ~Block();
@@ -110,8 +109,9 @@ public:
     unsigned getSequentialFaults() const;
 
     hostptr_t getSubBlockAddr(const hostptr_t addr) const;
-    size_t getSubBlockSize() const;
+    unsigned getSubBlock(const hostptr_t addr) const;
     unsigned getSubBlocks() const;
+    size_t getSubBlockSize() const;
 
     void setSubBlockDirty(const hostptr_t addr);
     void setBlockDirty();
@@ -223,6 +223,12 @@ public:
     */
     virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
 
+    //! Get memory block address at the accelerator
+    /*!
+        \return Accelerator memory address of the block
+    */
+    virtual accptr_t acceleratorAddr() const = 0;
+
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
         \return Error code
@@ -244,7 +250,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t copyToHost(const hostptr_t src, size_t size, 
+    virtual gmacError_t copyToHost(const hostptr_t src, size_t size,
         size_t blockOffset = 0) const = 0;
 
     //! Copy data from an I/O buffer to the block host memory
@@ -355,7 +361,7 @@ public:
         \warning This method should be only called from a Protocol class
         \sa __impl::memory::Protocol
     */
-    virtual gmacError_t acceleratorMemset(int v, size_t size, 
+    virtual gmacError_t acceleratorMemset(int v, size_t size,
         size_t blockOffset = 0) const = 0;
 
     Protocol &getProtocol();

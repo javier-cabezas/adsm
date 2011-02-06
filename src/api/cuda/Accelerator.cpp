@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-    core::Accelerator(n), device_(device),
+    gmac::core::Accelerator(n), device_(device),
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     lastMode_(NULL),
@@ -79,7 +79,8 @@ Accelerator::~Accelerator()
     }
     _modules.clear();
     popContext();
-    ASSERTION(cuCtxDestroy(_ctx) == CUDA_SUCCESS);
+    CUresult ret = cuCtxDestroy(_ctx);
+    ASSERTION(ret == CUDA_SUCCESS);
 #endif
 }
 
@@ -172,10 +173,12 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
+static size_t kk = 0;
+
 gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
-    addr = NULL;
+    addr = accptr_t(NULL);
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
 #else
@@ -192,6 +195,7 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
         trace::ExitCurrentFunction();
         return error(ret);
     }
+
     CUdeviceptr gpuPtr = ptr;
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);

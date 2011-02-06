@@ -1,3 +1,5 @@
+#include "unit/init.h"
+
 #include "core/allocator/Buddy.h"
 
 #include "gtest/gtest.h"
@@ -11,10 +13,11 @@ using __impl::core::allocator::Buddy;
 class BuddyTest : public testing::Test {
 public:
     static const size_t Size_ = 8 * 1024 * 1024;
-    static unsigned long Base_;
+    static long_t Base_;
     static void *BasePtr_;
 
     static void SetUpTestCase() {
+        InitTrace();
     }
 
     static void TearDownTestCase() {
@@ -22,7 +25,7 @@ public:
 };
 
 
-unsigned long BuddyTest::Base_ = 0x1000;
+long_t BuddyTest::Base_ = 0x1000;
 void *BuddyTest::BasePtr_ = (void *)Base_;
 
 TEST_F(BuddyTest, SimpleAllocations) {
@@ -34,7 +37,7 @@ TEST_F(BuddyTest, SimpleAllocations) {
     for(unsigned n = 2; n < 32; n = n * 2) {
         size_t size = Size_ / n;
         ret = buddy.get(size);
-        ASSERT_EQ(Base_, (unsigned long)ret % (Size_ / n));
+        ASSERT_EQ(Base_, long_t(ret) % (Size_ / n));
         ASSERT_EQ(size, (Size_ / n));
         allocs.push_back(ret);
     }

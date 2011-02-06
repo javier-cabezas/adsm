@@ -67,7 +67,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     gmac::enterGmac();
 
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
 
     gmacError_t err;
@@ -185,7 +185,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     gmac::enterGmac();
 
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
 
     gmacError_t err;
@@ -282,7 +282,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     gmac::enterGmac();
 
-    Mode &mode = Mode::current();
+    Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
 
     gmacError_t err;

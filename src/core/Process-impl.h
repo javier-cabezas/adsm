@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_MODE_IMPL_H_
-#define GMAC_CORE_MODE_IMPL_H_
+#ifndef GMAC_CORE_PROCESS_IMPL_H_
+#define GMAC_CORE_PROCESS_IMPL_H_
 
 namespace __impl { namespace core {
 

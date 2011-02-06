@@ -13,11 +13,21 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
+# Setup GMAC as main target
+include_directories(${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_BINARY_DIR}/src/include)
+# GMAC is a DLL
+add_definitions(-DGMAC_DLL)
+# Compiling GMAC
+add_definitions(-DGMAC_DLL_EXPORTS)
+
 # Identify thread library being used
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Using POSIX threads")
     add_definitions(-DHAVE_PTHREADS)
     set(gmac_LIBS ${gmac_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+    set(thread_LIB ${CMAKE_THREAD_LIBS_INIT})
     add_gmac_test_library(${CMAKE_THREAD_LIBS_INIT})
     set(THREAD_DIR "pthreads")
 elseif(CMAKE_USE_WIN32_THREADS_INIT)
@@ -42,53 +52,28 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-DDARWIN)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    message(STATUS "Compiling for Windows")
-    set(OS_DIR "windows")
-    set(gmac_static_FLAGS " ")
-    add_definitions(-DWINDOWS)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-
-# Identify API being used
-set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
-set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
-option(USE_OPENCL "Enable OpenCL backend" OFF)
-if(USE_OPENCL)
-    add_definitions(-DUSE_OPENCL)
-    message(STATUS "Compiling for OpenCL: ${OPENCL_INCLUDE}")
-    message(STATUS "Compiling for OpenCL: ${OPENCL_LIBRARY}")
-    set(API_DIR "opencl")
-    include_directories(${OPENCL_INCLUDE})
-    find_library(opencl_LIB
-        ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
-        HITS ${OPENCL_LIBRARY})
-    message(STATUS "OpenCL: ${opencl_LIB}")
-    set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
-else(USE_OPENCL)
-    add_definitions(-DUSE_CUDA)
-    # Default compilation for CUDA
-    find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
-            HINTS ENV "CUDA_BIN_PATH")
-    if(EXISTS ${NVCC})
-        message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
-        set(API_DIR "cuda")
-        set(CUDA_INCLUDE "${NVCC}/../include")
-        include_directories(${CUDA_INCLUDE})
-        find_library(cuda_LIB
-            ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}
-            HINTS ENV "CUDA_LIB_PATH")
-        set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
-    else(EXISTS ${NVCC})
-        message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
-    endif(EXISTS ${NVCC})
-endif(USE_OPENCL)
+include("CMakeLists-windows.txt" OPTIONAL)
+include("CMakeLists-opencl.txt" OPTIONAL)
+include("CMakeLists-cuda.txt")
 
 # Check for Tracing
 option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
+option(USE_TRACE_PARACER "Enable producing Paraver traces" OFF)
+option(USE_TRACE_LOCKS "Enable producing traces for locks" OFF)
 if(USE_TRACE_CONSOLE)
-    add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+    if(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE -DUSE_TRACE_LOCKS)
+    else(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_CONSOLE -DUSE_TRACE)
+    endif(USE_TRACE_LOCKS)
+elseif(USE_TRACE_PARAVER)
+    if(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE -DUSE_TRACE_LOCKS)
+    else(USE_TRACE_LOCKS)
+        add_definitions(-DUSE_TRACE_PARAVER -DUSE_TRACE)
+    endif(USE_TRACE_LOCKS)
 endif(USE_TRACE_CONSOLE)
+
 
 # Setup configuration options
 option(USE_MPI "Enable MPI interposition" OFF)
@@ -115,39 +100,6 @@ if(USE_VM)
         add_definitions(-DUSE_HOSTMAP_VM)
     endif(USE_HOSTMAP_VM)
 endif(USE_VM)
-
-
-# Check if GMAC is buid with Paraver support
-#option(USE_PARAVER "Enable production of Paraver traces" OFF)
-#if(USE_PARAVER)
-#    message(STATUS "Compiling with Paraver support")
-#    add_definitions(-DPARAVER)
-#    find_library(PARAVER paraver)
-#    if(EXISTS ${PARAVER})
-#        message(STATUS "Using Paraver library at ${PARAVER}")
-#        set(gmac_LIBS ${gmac_LIBS} paraver)
-#    else()
-#        message(STATUS "Using Paraver library from source code")
-#        set(EP_paraver_SRC ${CMAKE_SOURCE_DIR}/lib/libparaver)
-#        set(EP_paraver_BIN ${CMAKE_BINARY_DIR}/lib/libparaver)
-#        if(CMAKE_BUILD_TYPE MATCHES "Debug")
-#            set(PARAVER_CMAKE_ARGS -DCMAKE_BUILD_TYPE=Debug)
-#        endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-#        include(ExternalProject)
-#        ExternalProject_Add(EP_paraver
-#            DOWNLOAD_COMMAND ""
-#            SOURCE_DIR ${EP_paraver_SRC}
-#            CMAKE_ARGS ${PARAVER_CMAKE_ARGS} 
-#            BINARY_DIR ${EP_paraver_BIN}
-#            INSTALL_COMMAND ""
-#            )
-#        add_dependencies(gmac EP_paraver)
-#        include_directories(${EP_paraver_SRC} ${EP_paraver_BIN})
-#        set(gmac_LIBS ${gmac_LIBS}
-#            ${EP_paraver_BIN}/paraver/${CMAKE_SHARED_LIBRARY_PREFIX}paraver${CMAKE_SHARED_LIBRARY_SUFFIX})
-#        install(CODE "execute_process(COMMAND make install WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/libparaver)")
-#    endif()
-#endif(USE_PARAVER)
 
 # Make sure we compile the necessary libraries
 add_subdirectory(lib)
@@ -191,14 +143,6 @@ add_subdirectory(src)
 add_gmac_groups(${gmac_SRC})
 
 
-# Check if tests must be compiled
-option(MAKE_TESTS "Compile GMAC tests" OFF)
-if(MAKE_TESTS)
-    message(STATUS "Compile GMAC tests")
-    add_subdirectory(tests)
-    # Add libraries used in testing
-endif(MAKE_TESTS)
-
 # Check if doc must be generated
 option(MAKE_DOC "Generate GMAC documentation" OFF)
 if(MAKE_DOC)
@@ -206,14 +150,6 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
-# Setup GMAC as main target
-include_directories(${CMAKE_SOURCE_DIR}/src
-                    ${CMAKE_BINARY_DIR}/src
-                    ${CMAKE_BINARY_DIR}/src/include)
-# GMAC is a DLL
-add_definitions(-DGMAC_DLL)
-# Compiling GMAC
-add_definitions(-DGMAC_DLL_EXPORTS)
 
 add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
 add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
@@ -242,10 +178,19 @@ set_target_properties(gmac PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC
     VERSION 0.2.0 SOVERSION 1)
 
+# Check if tests must be compiled
+option(MAKE_TESTS "Compile GMAC tests" OFF)
+if(MAKE_TESTS)
+    message(STATUS "Compile GMAC tests")
+    add_subdirectory(tests)
+    # Add libraries used in testing
+endif(MAKE_TESTS)
+
 install(TARGETS gmac 
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
      RUNTIME DESTINATION bin
+     RESOURCE DESTINATION share
      PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)

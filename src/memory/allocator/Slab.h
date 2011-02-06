@@ -53,7 +53,7 @@ protected:
         AddressMap() : gmac::util::RWLock("memory::Slab") {}
     };
 
-    typedef std::map<long, Cache *> CacheMap;
+    typedef std::map<long_t, Cache *> CacheMap;
 
     class GMAC_LOCAL ModeMap : public std::map<core::Mode *, CacheMap>, gmac::util::RWLock {
         friend class Slab;
@@ -64,8 +64,8 @@ protected:
     AddressMap addresses;
     ModeMap modes; // Per-context cache map
 
-    Cache &createCache(CacheMap &map, long key, size_t size);
-    Cache &get(long key, size_t size);
+    Cache &createCache(CacheMap &map, long_t key, size_t size);
+    Cache &get(long_t key, size_t size);
     void cleanup();
 
 public:

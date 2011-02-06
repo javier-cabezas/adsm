@@ -29,9 +29,9 @@ core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     ASSERTION(i != kernels_.end());
-    core::Kernel * k = i->second;
+    Kernel * k = dynamic_cast<Kernel *>(i->second);
     switchIn();
-    core::KernelLaunch &l = getContext().launch(*k);
+    KernelLaunch &l = getCUDAContext().launch(*k);
     switchOut();
 
     return l;
@@ -41,7 +41,11 @@ inline gmacError_t
 Mode::execute(core::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    gmacError_t ret = getContext().prepareForCall();
+    if(ret == gmacSuccess) {
+        trace::SetThreadState(THREAD_T(id_), trace::Running);
+        ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    }
     switchOut();
     return ret;
 }
@@ -51,7 +55,7 @@ gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), (void *) dst, len);
     switchIn();
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
     switchOut();
     return ret;
@@ -63,7 +67,7 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) src, buffer.addr(), len);
     switchIn();
     // Implement a function to remove these casts
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     gmacError_t ret = ctx.acceleratorToBuffer(buffer, src, len, off);
     switchOut();
     return ret;
@@ -73,7 +77,7 @@ inline
 gmacError_t Mode::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
     switchIn();
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     gmacError_t ret = ctx.call(Dg, Db, shared, tokens);
     switchOut();
     return ret;
@@ -83,7 +87,7 @@ inline
 gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
 {
     switchIn();
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     gmacError_t ret = ctx.argument(arg, size, offset);
     switchOut();
     return ret;
@@ -95,25 +99,19 @@ Mode::getCurrent()
     return static_cast<Mode &>(core::Mode::getCurrent());
 }
 
-#ifdef USE_VM
-inline CUdeviceptr
-Mode::dirtyBitmapAccPtr() const
-{
-    return bitmapAccPtr_;
-}
-
-inline CUdeviceptr
-Mode::dirtyBitmapShiftPageAccPtr() const
-{
-    return bitmapShiftPageAccPtr_;
-}
-
-#endif
-
 inline Accelerator &
 Mode::getAccelerator()
 {
     return *static_cast<Accelerator *>(acc_);
+}
+
+inline gmacError_t
+Mode::eventTime(uint64_t &t, CUevent start, CUevent end)
+{
+    switchIn();
+    gmacError_t ret = getAccelerator().timeCUevents(t, start, end);
+    switchOut();
+    return ret;
 }
 
 }}

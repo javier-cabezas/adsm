@@ -43,6 +43,9 @@ static long getpagesize (void) {
 }
 #endif
 
+using __impl::util::params::ParamBlockSize;
+using __impl::util::params::ParamAcquireOnWrite;
+
 #if 0
 gmacError_t
 gmacClear(gmacKernel_t k)
@@ -88,19 +91,33 @@ gmacUnbind(void * obj, gmacKernel_t k)
 }
 #endif
 
-size_t APICALL gmacAccs()
+unsigned APICALL gmacGetNumberOfAccelerators()
 {
-    size_t ret;
+    unsigned ret;
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::Process &proc = __impl::core::Process::getInstance();
-    ret = proc.nAccelerators();
+    ret = unsigned(proc.nAccelerators());
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
 	return ret;
 }
 
-gmacError_t APICALL gmacMigrate(int acc)
+size_t APICALL gmacGetFreeMemory()
+{
+    gmacError_t ret = gmacSuccess;
+    gmac::enterGmacExclusive();
+    gmac::trace::EnterCurrentFunction();
+    size_t free;
+    size_t total;
+    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+    mode.memInfo(free, total);
+    gmac::trace::ExitCurrentFunction();
+    gmac::exitGmac();
+    return free;
+}
+
+gmacError_t APICALL gmacMigrate(unsigned acc)
 {
 	gmacError_t ret = gmacSuccess;
 	gmac::enterGmacExclusive();
@@ -170,7 +187,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if(count < (paramPageSize / 2)) {
+    if(count < (ParamBlockSize / 2)) {
         *cpuPtr = allocator.alloc(count, hostptr_t(RETURN_ADDRESS));
     }
     else {
@@ -240,7 +257,7 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
-    if(paramAcquireOnWrite) {
+    if(ParamAcquireOnWrite) {
         TRACE(GLOBAL, "Invalidate the memory used in the kernel");
         //manager.invalidate();
     }

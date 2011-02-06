@@ -45,8 +45,8 @@ TEST_F(IOBufferTest, ToAccelerator) {
 
     accptr_t addr = NULL;
     ASSERT_EQ(gmacSuccess, Mode_->malloc(addr, Size_));
+
     ASSERT_EQ(gmacSuccess, Mode_->bufferToAccelerator(addr, *Buffer_, Size_));
-    ASSERT_EQ(IOBuffer::ToAccelerator, Buffer_->state());
 
     ASSERT_EQ(gmacSuccess, Buffer_->wait());
     ASSERT_EQ(IOBuffer::Idle, Buffer_->state());

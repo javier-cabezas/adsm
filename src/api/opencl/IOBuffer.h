@@ -42,19 +42,14 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace opencl {
 
-class GMAC_LOCAL IOBuffer : public core::IOBuffer {
+class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
-    cl_event end_;
-    cl_command_queue stream_;
+    cl_event event_;
     Mode *mode_;
-    bool created_;
     bool started_;
 
 public:
-    IOBuffer(void *addr, size_t size) :
-        core::IOBuffer(addr, size), mode_(NULL), created_(false), started_(false)
-    {
-    }
+    IOBuffer(void *addr, size_t size);
 
     void toHost(Mode &mode);
     void toAccelerator(Mode &mode);

@@ -1,5 +1,5 @@
-#ifndef __UTIL_WINDOWS_LOCK_IMPL_H_
-#define __UTIL_WINDOWS_LOCK_IMPL_H_
+#ifndef GMAC_UTIL_WINDOWS_LOCK_IMPL_H_
+#define GMAC_UTIL_WINDOWS_LOCK_IMPL_H_
 
 #include <windows.h>
 

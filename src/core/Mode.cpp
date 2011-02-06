@@ -2,6 +2,8 @@
 #include "memory/Object.h"
 #include "memory/Protocol.h"
 
+#include "trace/Tracer.h"
+
 #include "Accelerator.h"
 #include "IOBuffer.h"
 #include "Kernel.h"
@@ -31,8 +33,11 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
 #endif
 {
+    trace::StartThread(THREAD_T(id_), "GPU");
+    SetThreadState(THREAD_T(id_), trace::Idle);
+
     TRACE(LOCAL,"Creating Execution Mode %p", this);
-    protocol_ = protocolInit(0);
+    protocol_ = memory::ProtocolInit(0);
 }
 
 Mode::~Mode()
@@ -43,6 +48,8 @@ Mode::~Mode()
     acc_->unregisterMode(*this); 
     Process::getInstance().removeMode(*this);
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
+
+    trace::EndThread(THREAD_T(id_));
 }
 
 void Mode::finiThread()
@@ -106,18 +113,22 @@ gmacError_t Mode::free(accptr_t addr)
 gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), size);
+
     switchIn();
     error_ = getContext().copyToAccelerator(acc, host, size);
     switchOut();
+
     return error_;
 }
 
 gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, size);
+
     switchIn();
     error_ = getContext().copyToHost(host, acc, size);
     switchOut();
+
     return error_;
 }
 

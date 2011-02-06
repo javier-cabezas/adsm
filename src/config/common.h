@@ -42,6 +42,8 @@ WITH THE SOFTWARE.  */
 #if defined(__GNUC__)
 #include <stdint.h>
 typedef size_t ptroff_t;
+
+typedef unsigned long long_t;
 #elif defined(_MSC_VER)
 typedef unsigned __int8 uint8_t;
 typedef signed __int8 int8_t;
@@ -53,6 +55,8 @@ typedef unsigned __int64 uint64_t;
 typedef signed __int64 int64_t;
 typedef signed __int64 ssize_t;
 typedef int ptroff_t;
+
+typedef ULONG_PTR long_t;
 #endif
 
 #ifndef _MSC_VER

@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
 */
-GMAC_API gmacError_t APICALL __oclPushArgument(const void *addr, size_t size);
+GMAC_API gmacError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index);
 
 /*!
     Configures the next call

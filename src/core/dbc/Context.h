@@ -43,8 +43,8 @@ class GMAC_LOCAL Context :
 
 protected:
     Context(__impl::core::Accelerator &acc, unsigned id);
-    virtual ~Context();
 public:
+    virtual ~Context();
 
     virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
     virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);

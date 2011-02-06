@@ -1,5 +1,5 @@
-#ifndef GMAC_CORE_MODE_IPP
-#define GMAC_CORE_MODE_IPP
+#ifndef GMAC_CORE_MODE_IMPL_H_
+#define GMAC_CORE_MODE_IMPL_H_
 
 #include "memory/Map.h"
 #include "memory/Object.h"
@@ -223,6 +223,14 @@ inline const Process &
 Mode::process() const
 {
     return proc_;
+}
+
+inline void
+Mode::memInfo(size_t &free, size_t &total)
+{
+    switchIn();
+    acc_->memInfo(free, total);
+    switchOut();
 }
 
 }}

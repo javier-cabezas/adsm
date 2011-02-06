@@ -5,6 +5,10 @@
 
 #include "memory/SharedObject.h"
 #include "memory/DistributedObject.h"
+
+#ifdef USE_VM
+#include "protocol/Gather.h"
+#endif
 #include "protocol/Lazy.h"
 
 #if defined(__GNUC__)
@@ -15,55 +19,86 @@
 
 namespace __impl { 
 
-namespace core {
+namespace memory {
 
-void memoryInit(void)
+size_t BlockSize_;
+#ifdef USE_VM
+size_t SubBlockSize_;
+unsigned BlockShift_;
+unsigned SubBlockShift_;
+long_t SubBlockMask_;
+#endif
+
+void Init(void)
 {
 	TRACE(GLOBAL, "Initializing Memory Subsystem");
-    memory::Manager::create<gmac::memory::Manager>();
-    memory::Allocator::create<__impl::memory::allocator::Slab>();
+    Manager::create<gmac::memory::Manager>();
+    Allocator::create<__impl::memory::allocator::Slab>();
+
+    BlockSize_     = util::params::ParamBlockSize;
+#ifdef USE_VM
+    SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
+    BlockShift_    = (unsigned) log2(util::params::ParamBlockSize);
+    SubBlockShift_ = (unsigned) log2(util::params::ParamBlockSize/util::params::ParamSubBlocks);
+    SubBlockMask_  = util::params::ParamSubBlocks - 1;
+
+    vm::Bitmap::Init();
+#endif
 }
 
-memory::Protocol *protocolInit(unsigned flags)
+Protocol *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
-    memory::Protocol *ret = NULL;
-    if(strcasecmp(paramProtocol, "Rolling") == 0) {
+    Protocol *ret = NULL;
+    if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new memory::protocol::Lazy<
-                memory::DistributedObject<memory::protocol::LazyBase::State> >(
-                paramRollSize);
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
+                util::params::ParamRollSize);
         }
         else {
-            ret = new memory::protocol::Lazy<
-                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
-                paramRollSize);
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
+                util::params::ParamRollSize);
         }
     }
-    else if(strcasecmp(paramProtocol, "Lazy") == 0) {
+    else if(strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new memory::protocol::Lazy<
-                memory::DistributedObject<memory::protocol::LazyBase::State> >(
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
                 (size_t)-1);
         }
         else {
-            ret = new memory::protocol::Lazy<
-                gmac::memory::SharedObject<memory::protocol::LazyBase::State> >(
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
                 (size_t)-1);
         }
     }
+#ifdef USE_VM
+    else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
+        if(0 != (flags & 0x1)) {
+            ret = new protocol::Lazy<
+                DistributedObject<protocol::LazyBase::State> >(
+                (size_t)-1);
+        }
+        else {
+            ret = new protocol::Lazy<
+                gmac::memory::SharedObject<protocol::LazyBase::State> >(
+                (size_t)-1);
+        }
+    }
+#endif
     else {
         FATAL("Memory Coherence Protocol not defined");
     }
     return ret;
 }
 
-void memoryFini(void)
+void Fini(void)
 {
 	TRACE(GLOBAL, "Cleaning Memory Subsystem");
-    memory::Allocator::destroy();
-    memory::Manager::destroy();
+    Allocator::destroy();
+    Manager::destroy();
 }
-
 
 }}

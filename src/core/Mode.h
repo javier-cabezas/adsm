@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
-#include "memory/Bitmap.h"
+#include "memory/vm/Bitmap.h"
 #endif
 
 #include "memory/Manager.h"
@@ -380,6 +380,8 @@ public:
      * \return A constant reference to the process which the mode belongs to
      */
     const Process &process() const;
+
+    void memInfo(size_t &free, size_t &total);
 
 #ifdef USE_SUBBLOCK_TRACKING
     memory::vm::BitmapHost &hostDirtyBitmap();

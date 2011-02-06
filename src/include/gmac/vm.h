@@ -35,8 +35,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_USER_VM_H_
 #define GMAC_USER_VM_H_
 
-#include <stdint.h>
-
 #include <cuda_runtime_api.h>
 
 
@@ -45,32 +43,108 @@ __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
 __device__ inline T __globalLd(const T *addr) { return *addr; }
 
-__constant__ unsigned __SHIFT_PAGE;
 
-#define to32bit(a) ((unsigned long)a & 0xffffffff)
+typedef unsigned char uint8_t;
+#if defined(__GNUC__)
+typedef unsigned long long_t;
+#elif defined(_MSC_VER)
+typedef ULONG_PTR long_t;
+#endif
+
+#define USE_VM_LEVELS 3
+#define HARCODED
+
+#ifdef HARCODED
+#define __gmac_vm_entries_l1 512
+#define __gmac_vm_entries_l2 128
+#define __gmac_vm_entries_l3 4096
+#define __gmac_vm_shift_l1 31
+#define __gmac_vm_shift_l2 24
+#define __gmac_vm_shift_l3 12
+#define __gmac_vm_mask_l1 (long_t(__gmac_vm_entries_l1 - 1))
+#define __gmac_vm_mask_l2 (long_t(__gmac_vm_entries_l2 - 1))
+#define __gmac_vm_mask_l3 (long_t(__gmac_vm_entries_l3 - 1))
+
+#else // HARCODED
+__constant__ unsigned __gmac_vm_shift_l1;
+__constant__ unsigned __gmac_vm_shift_l2;
+__constant__ long_t __gmac_vm_mask_l1;
+__constant__ long_t __gmac_vm_mask_l2;
+
+#if USE_VM_LEVELS == 3
+__constant__ unsigned __gmac_vm_shift_l3;
+__constant__ long_t __gmac_vm_mask_l3;
+#endif
+
+#endif // HARCODED
 
 #ifdef BITMAP_BYTE
-__constant__ uint8_t *__dirtyBitmap;
+
+#if 0
+template<typename T>
+__device__ __inline__ T __globalSt2(T *addr, T v) {
+    *addr = v;
+    uint8_t *walk = __gmac_vm_root[(addr & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1];
+    walk[(addr & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2] = 1;
+    return v;
+}
+#endif
+
+#if USE_VM_LEVELS == 3
+__device__ uint8_t **__gmac_vm_root[__gmac_vm_entries_l1];
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
+    uint8_t &entry = __gmac_vm_root[(long_t(addr) >> __gmac_vm_shift_l1) & __gmac_vm_mask_l1]
+                                   [(long_t(addr) >> __gmac_vm_shift_l2) & __gmac_vm_mask_l2]
+                                   [(long_t(addr) >> __gmac_vm_shift_l3) & __gmac_vm_mask_l3];
     *addr = v;
-    __dirtyBitmap[to32bit(addr) >> __SHIFT_PAGE] = 1;
+    entry = 1;
     return v;
 }
+
+
+#endif
+
+#if USE_VM_LEVELS == 2
+__constant__ uint8_t *__gmac_vm_root[1];
+
+template<typename T>
+__device__ __inline__ T __globalSt(T *addr, T v) {
+    long_t index1 = (long_t(addr) & __gmac_vm_mask_l1) >> __gmac_vm_shift_l1;
+    long_t index2 = (long_t(addr) & __gmac_vm_mask_l2) >> __gmac_vm_shift_l2;
+    __gmac_vm_root[index1][index2] = 1;
+    *addr = v;
+    return v;
+}
+#endif
+
+#if 0
+#if USE_VM_LEVELS == 2
+#define __globalSt(a,v) __globalSt2(a,v)
+#else
+#if USE_VM_LEVELS == 3
+#define __globalSt(a,v) __globalSt3(a,v)
+#else
+#error "Unknown number of levels"
+#endif
+#endif
+#endif
+
+
 #else
 #ifdef BITMAP_BIT
 #define MASK_BITPOS ((1 << 5) - 1)
 #define SHIFT_ENTRY 
 
-__constant__ uint32_t *__dirtyBitmap;
+__constant__ uint32_t *__gmac_vm_root;
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
     *addr = v;
-    unsigned long entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
+    long_t entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
     uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_PAGE) & MASK_BITPOS);
-    atomicOr(&__dirtyBitmap[entry], val);
+    atomicOr(&__gmac_vm_root[entry], val);
     return v;
 }
 #else

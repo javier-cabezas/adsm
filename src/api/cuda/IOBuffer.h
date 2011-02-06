@@ -39,21 +39,37 @@ WITH THE SOFTWARE.  */
 #include "Mode.h"
 
 #include "core/IOBuffer.h"
+#include "config/common.h"
+
+//include "core/dbc/IOBuffer.h"
+//using  __impl::core::IOBuffer;
+//using gmac::core::IOBuffer;
 
 namespace __impl { namespace cuda {
 
-class GMAC_LOCAL IOBuffer : public core::IOBuffer {
+class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
     CUevent start_;
     CUevent end_;
     CUstream stream_;
     Mode *mode_;
-    bool created_;
+
+    typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
+    EventMap map_;
 
 public:
     IOBuffer(void *addr, size_t size) :
-        core::IOBuffer(addr, size), mode_(NULL), created_(false)
+        gmac::core::IOBuffer(addr, size), mode_(NULL)
     {
+    }
+
+    ~IOBuffer()
+    {
+        EventMap::iterator it;
+        for (it = map_.begin(); it != map_.end(); it++) {
+            cuEventDestroy(it->second.first);
+            cuEventDestroy(it->second.second);
+        }
     }
 
     void toHost(Mode &mode, CUstream s);

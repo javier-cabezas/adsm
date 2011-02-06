@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #include <gmac/opencl.h>
@@ -48,9 +49,9 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
 	memcpy_fn(device, host, size * sizeof(long));
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&size, sizeof(size));
-    __oclPushArgument(&val, sizeof(val));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
+    __oclSetArgument(&size, sizeof(size), 1);
+    __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 

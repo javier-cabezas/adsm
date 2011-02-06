@@ -71,7 +71,7 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
     DBC_FORCE_TEST(Accelerator)
 
     friend class Switch;
@@ -142,12 +142,15 @@ public:
     /* Asynchronous interface */
     TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, Mode &mode, CUstream stream);
     TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, Mode &mode, CUstream stream);
+
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
     gmacError_t syncCUstream(CUstream stream);
+
     CUresult queryCUevent(CUevent event);
     gmacError_t syncCUevent(CUevent event);
+    gmacError_t timeCUevents(uint64_t &t, CUevent start, CUevent end);
 
     gmacError_t execute(KernelLaunch &launch);
 

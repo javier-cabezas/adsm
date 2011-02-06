@@ -62,35 +62,24 @@ TEST_F(AcceleratorTest, CreateMode){
 
      Process::create<Process>();  
      Process &proc=Process::getInstance();
-      
 
      ASSERT_TRUE(&proc != NULL);
-//     EXPECT_TRUE(&proc != NULL);
 
-     ASSERT_TRUE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
-    //ASSERT_FALSE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
      Mode *mode_ = GetAccelerator().createMode(proc);
      ASSERT_TRUE(mode_!=NULL);
-     ASSERT_TRUE(GetAccelerator().load()==1)<<"the value is :"<<GetAccelerator().load();
+     ASSERT_TRUE(GetAccelerator().load() == 1) << "the value is :" << GetAccelerator().load();
      GetAccelerator().unregisterMode(*mode_);
       
     
-       
-     ASSERT_TRUE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
      GetAccelerator().registerMode(*mode_);
-     ASSERT_TRUE(GetAccelerator().load()==1)<<"the value is :"<<GetAccelerator().load(); 
-     GetAccelerator().unregisterMode(*mode_);
-      
-     ASSERT_TRUE(GetAccelerator().load()==0)<<"the value is :"<<GetAccelerator().load(); 
+     ASSERT_TRUE(GetAccelerator().load() == 1) << "the value is :" << GetAccelerator().load(); 
 
+     delete dynamic_cast<__impl::core::Mode *>(mode_);
+     ASSERT_TRUE(GetAccelerator().load() == 0) << "the value is :" << GetAccelerator().load(); 
 
-     mode_=NULL;
-
-     //delete mode
-     //delete process;  
      Process::destroy();
-
-
 }
 
 

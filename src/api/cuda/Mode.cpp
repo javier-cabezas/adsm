@@ -21,18 +21,12 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     for(i = modules->begin(); i != modules->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
-#ifdef USE_VM
-        if((*i)->dirtyBitmap() != NULL) {
-            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-        }
-#endif
     }
 
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(&addr, paramIOMemory);
+    gmacError_t ret = hostAlloc(&addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
+        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
     switchOut();
 }
@@ -43,7 +37,6 @@ Mode::~Mode()
     cleanUpContexts();
 
     ModuleVector::const_iterator m;
-    switchIn();
 #ifdef USE_MULTI_CONTEXT
     getAccelerator().destroyModules(modules);
     modules.clear();
@@ -51,8 +44,8 @@ Mode::~Mode()
     if(ioMemory_ != NULL) {
         hostFree(ioMemory_->addr());
         delete ioMemory_;
+        ioMemory_ = NULL;
     }
-    switchOut();
 }
 
 inline
@@ -88,12 +81,6 @@ void Mode::load()
     for(i = modules->begin(); i != modules->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
-#ifdef USE_VM
-        if((*i)->dirtyBitmap() != NULL) {
-            bitmapAccPtr_ = (*i)->dirtyBitmap()->devPtr();
-            bitmapShiftPageAccPtr_ = (*i)->dirtyBitmapShiftPage()->devPtr();
-        }
-#endif
     }
 
 }
@@ -116,6 +103,11 @@ core::Context &Mode::getContext()
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
+}
+
+Context &Mode::getCUDAContext()
+{
+    return dynamic_cast<Context &>(getContext());
 }
 
 gmacError_t Mode::hostAlloc(hostptr_t *addr, size_t size)
@@ -170,6 +162,34 @@ const Variable *Mode::variable(gmacVariable_t key) const
     return NULL;
 }
 
+const Variable *Mode::constantByName(std::string name) const
+{
+    ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
+    for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
+        const Variable *var = (*m)->constantByName(name);
+        if(var != NULL) return var;
+    }
+    return NULL;
+}
+
+const Variable *Mode::variableByName(std::string name) const
+{
+    ModuleVector::const_iterator m;
+#ifdef USE_MULTI_CONTEXT
+    for(m = modules.begin(); m != modules.end(); m++) {
+#else
+    for(m = modules->begin(); m != modules->end(); m++) {
+#endif
+        const Variable *var = (*m)->variableByName(name);
+        if(var != NULL) return var;
+    }
+    return NULL;
+}
+
 const Texture *Mode::texture(gmacTexture_t key) const
 {
     ModuleVector::const_iterator m;
@@ -186,7 +206,7 @@ const Texture *Mode::texture(gmacTexture_t key) const
 
 CUstream Mode::eventStream()
 {
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCUDAContext();
     return ctx.eventStream();
 }
 

@@ -75,9 +75,9 @@ protected:
 	mutable CRITICAL_SECTION mutex_;
 public:
     //! Default constructor
-    /*
-        \param name Name using during tracing
-    */
+    /**
+     * \param name Name using during tracing
+     */
 	Lock(const char *name);
 
     //! Default destructor
@@ -103,9 +103,9 @@ protected:
 	mutable DWORD owner_;
 public:
     //! Default constructor
-    /*
-        \param name Name using during tracing
-    */
+    /**
+     * \param name Name using during tracing
+     */
 	RWLock(const char *name);
     
     //! Default destructor

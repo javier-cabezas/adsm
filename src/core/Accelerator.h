@@ -51,6 +51,8 @@ class Process;
 
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
+      DBC_FORCE_TEST(Accelerator)
+
 protected:
     /** Identifier of the accelerator */
     unsigned id_;
@@ -101,14 +103,14 @@ public:
      * already registered in the accelerator
      * \param mode A reference to the mode to be registered
      */
-    void registerMode(Mode &mode);
+    TESTABLE void registerMode(Mode &mode);
 
     /**
      * Unegisters a mode from the accelerator. The mode must be already
      * registered in the accelerator
      * \param mode A reference to the mode to be unregistered
      */
-    void unregisterMode(Mode &mode);
+    TESTABLE void unregisterMode(Mode &mode);
 
     /**
      * Returns a value that indicates the load of the accelerator
@@ -202,5 +204,9 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "core/dbc/Accelerator.h"
+#endif
 
 #endif

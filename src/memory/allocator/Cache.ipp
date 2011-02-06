@@ -1,12 +1,14 @@
 #ifndef GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 #define GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 
+#include "memory/Memory.h"
+
 namespace __impl { namespace memory { namespace allocator {
 
 inline
 hostptr_t Arena::key() const
 {
-    return ptr_ + paramPageSize;
+    return ptr_ + memory::BlockSize_;
 }
 
 inline
@@ -47,7 +49,7 @@ inline
 Cache::Cache(size_t size) :
     gmac::util::Lock("Cache"),
     objectSize(size),
-    arenaSize(paramPageSize)
+    arenaSize(memory::BlockSize_)
 { }
 
 

@@ -164,7 +164,9 @@ gmacError_t LazyBase::acquire(Block &b)
         case ReadOnly:
 			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                 FATAL("Unable to set memory permissions");
+#ifndef USE_VM
             block.state(Invalid);
+#endif
             break;
         case Dirty:
             FATAL("Block in incongruent state in acquire: %p", block.addr());
@@ -179,7 +181,7 @@ gmacError_t LazyBase::acquire(Block &b)
 gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::current();
+    core::Mode &mode = core::Mode::getCurrent();
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     switch(block.state()) {

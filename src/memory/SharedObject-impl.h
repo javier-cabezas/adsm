@@ -11,7 +11,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
     gmacError_t ret = 
-        mode.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+        mode.malloc(acceleratorAddr, size, unsigned(BlockSize_));
     if(ret == gmacSuccess) {
 #ifdef USE_SUBBLOCK_TRACKING
         vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
@@ -24,7 +24,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 #endif
         return acceleratorAddr;
     } else {
-        return NULL;
+        return accptr_t(NULL);
     }
 }
 
@@ -58,20 +58,25 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
     Object(hostAddr, size),
 	owner_(&owner)
 {
-	// Allocate memory (if necessary)
-    if(hostAddr == NULL) {
-        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-        if(addr_ == NULL) return;
-    }
-    else {
-        addr_ = hostAddr;
-    }
+    acceleratorAddr_ = NULL;
+    addr_ = NULL;
 
     // Allocate accelerator memory
     acceleratorAddr_ = allocAcceleratorMemory(owner, size);
     valid_ = (acceleratorAddr_ != NULL);
 
-    if (valid_) {
+    if (valid_ == true) {
+        // Allocate memory (if necessary)
+        if(hostAddr == NULL) {
+            addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
+            valid_ =  addr_ != NULL;
+        }
+        else {
+            addr_ = hostAddr;
+        }
+    }
+
+    if (valid_ == true) {
         // Create a shadow mapping for the host memory
         // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
@@ -79,7 +84,7 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
         hostptr_t mark = addr_;
         ptroff_t offset = 0;
         while(size > 0) {
-            size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
+            size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
             mark += blockSize;
             blocks_.insert(BlockMap::value_type(mark, 
                         new SharedBlock<T>(protocol, owner, addr_ + ptroff_t(offset), 
@@ -106,15 +111,16 @@ SharedObject<T>::~SharedObject()
 #endif
 
 	// If the object creation failed, this address will be NULL
-    if(acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
-    Memory::unshadow(shadow_, size_);
+    if (acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
+    if (valid_) Memory::unshadow(shadow_, size_);
+    if (addr_ != NULL) Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
 
 template<typename T>
 inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
 {
-    accptr_t ret = NULL;
+    accptr_t ret = accptr_t(NULL);
     lockRead();
     if(acceleratorAddr_ != NULL) {
         ptroff_t offset = ptroff_t(addr - addr_);
@@ -151,7 +157,7 @@ gmacError_t SharedObject<T>::removeOwner(const core::Mode &owner)
             ASSERTION(ret == gmacSuccess);
             owner_->free(acceleratorAddr_);
         }
-        acceleratorAddr_ = NULL;
+        acceleratorAddr_ = accptr_t(NULL);
         owner_ = NULL;
         // Put myself in the orphan map
         Map::insertOrphan(*this);

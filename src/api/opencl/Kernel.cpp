@@ -6,34 +6,8 @@
 
 namespace __impl { namespace opencl {
 
-Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
-    core::Kernel(k), f_(kernel)
-{
-}
-
-Kernel::~Kernel()
-{
-    clReleaseKernel(f_);
-}
-
-core::KernelLaunch *
-Kernel::launch(core::KernelConfig & _c)
-{
-    KernelConfig & c = static_cast<KernelConfig &>(_c);
-
-    KernelLaunch * l = new opencl::KernelLaunch(*this, c);
-    return l;
-}
-
-KernelConfig::KernelConfig() :
-    globalWorkOffset_(NULL),
-    globalWorkSize_(NULL),
-    localWorkSize_(NULL)
-{
-}
-
 KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
-    core::KernelConfig(),
+    argsSize_(0),
     workDim_(workDim),
     globalWorkOffset_(NULL),
     globalWorkSize_(NULL),
@@ -52,7 +26,7 @@ KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *gl
 }
 
 KernelConfig::KernelConfig(const KernelConfig &config) :
-    core::KernelConfig(config),
+    argsSize_(0),
     workDim_(config.workDim_),
     globalWorkOffset_(NULL),
     globalWorkSize_(NULL),
@@ -68,13 +42,11 @@ KernelConfig::KernelConfig(const KernelConfig &config) :
         if(globalWorkSize_) globalWorkSize_[i] = config.globalWorkSize_[i];
         if(localWorkSize_) localWorkSize_[i] = config.localWorkSize_[i];
     }
-}
 
-KernelConfig::~KernelConfig()
-{
-    if (globalWorkOffset_) delete [] globalWorkOffset_;
-    if (globalWorkSize_) delete [] globalWorkSize_;
-    if (localWorkSize_) delete [] localWorkSize_;
+    ArgsList::const_iterator it;
+    for (it = config.begin(); it != config.end(); it++) {
+        setArgument(it->ptr(), it->size(), it->index());
+    }
 }
 
 KernelConfig &KernelConfig::operator=(const KernelConfig &config)
@@ -86,7 +58,7 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &config)
     globalWorkSize_ = NULL;
     localWorkSize_ = NULL;
     stream_ = config.stream_;
-    
+
     if(config.globalWorkOffset_) globalWorkOffset_ = new size_t[workDim_];
     if(config.globalWorkSize_) globalWorkSize_ = new size_t[workDim_];
     if(config.localWorkSize_) localWorkSize_ = new size_t[workDim_];
@@ -100,33 +72,23 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &config)
     argsSize_ = 0;
     clear();
 
+    ArgsList::const_iterator it;
+    for (it = config.begin(); it != config.end(); it++) {
+        setArgument(it->ptr(), it->size(), it->index());
+    }
+
     return *this;
 }
 
-
-KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    core::KernelLaunch(),
-    KernelConfig(c),
-    f_(k.f_)
-{
-    clRetainKernel(f_);
-}
-
-KernelLaunch::~KernelLaunch()
-{
-    clReleaseKernel(f_);
-}
 
 gmacError_t
 KernelLaunch::execute()
 {
 	// Set-up parameters
-    unsigned i = 0;
-    for (std::vector<core::Argument>::const_iterator it = begin(); it != end(); it++) {
-        TRACE(LOCAL, "Setting param %d @ %p ("FMT_SIZE")", i, it->ptr(), it->size());
-        cl_int ret = clSetKernelArg(f_, i, it->size(), it->ptr());
+    for (ArgsList::const_iterator it = begin(); it != end(); it++) {
+        TRACE(LOCAL, "Setting param %u @ %p ("FMT_SIZE")", it->index(), it->ptr(), it->size());
+        cl_int ret = clSetKernelArg(f_, it->index(), it->size(), it->ptr());
         CFATAL(ret == CL_SUCCESS, "OpenCL Error setting parameters: %d", ret);
-        i++;
     }
 
 #if 0

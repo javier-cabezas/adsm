@@ -44,7 +44,7 @@ WITH THE SOFTWARE.
 
 #include "config/common.h"
 #include "core/Accelerator.h"
-#include "core/Kernel.h"
+#include "Kernel.h"
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
@@ -83,7 +83,7 @@ public:
     bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
-class GMAC_LOCAL Accelerator : public core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     static AcceleratorMap *Accelerators_;
@@ -106,7 +106,7 @@ public:
     static void init();
 
     static void addAccelerator(Accelerator &acc);
-    core::Kernel *getKernel(gmacKernel_t k);
+    Kernel *getKernel(gmacKernel_t k);
 
     static gmacError_t prepareCLCode(const char *code, const char *flags);
     static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
@@ -131,6 +131,7 @@ public:
     gmacError_t syncCLstream(cl_command_queue stream);
     cl_int queryCLevent(cl_event event);
     gmacError_t syncCLevent(cl_event event);
+    gmacError_t timeCLevents(uint64_t &t, cl_event start, cl_event end);
 
     gmacError_t execute(KernelLaunch &launch);
 
@@ -150,6 +151,10 @@ public:
 }}
 
 #include "Accelerator-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Accelerator.h"
+#endif
 
 
 #endif

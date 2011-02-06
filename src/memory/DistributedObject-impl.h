@@ -19,10 +19,10 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     // Create a shadow mapping for the host memory
     shadow_ = Memory::shadow(addr_, size_);
 
-    accptr_t acceleratorAddr = NULL;
+    accptr_t acceleratorAddr = accptr_t(NULL);
     // Allocate accelerator memory
     gmacError_t ret = 
-        owner.malloc(acceleratorAddr, size, unsigned(paramPageSize));
+        owner.malloc(acceleratorAddr, size, unsigned(BlockSize_));
     if(ret == gmacSuccess) valid_ = true;
 
     // Populate the block-set
@@ -30,7 +30,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     hostptr_t mark = addr_;
     int offset = 0;
     while(size > 0) {
-        size_t blockSize = (size > paramPageSize) ? paramPageSize : size;
+        size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
 			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
@@ -39,7 +39,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
         offset += int(blockSize);
     }
     TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : accelerator @ %p) ", 
-        addr_, shadow_, (void *) acceleratorAddr);
+        addr_, shadow_, (void *) acceleratorAddr.get());
 }
 
 
@@ -56,7 +56,7 @@ inline DistributedObject<T>::~DistributedObject()
 template<typename T>
 inline accptr_t DistributedObject<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	accptr_t ret = NULL;
+	accptr_t ret = accptr_t(NULL);
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i != blocks_.end()) {
@@ -87,9 +87,9 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
     unlock();
     if(alreadyOwned) return gmacSuccess;
 
-    accptr_t acceleratorAddr = NULL;
+    accptr_t acceleratorAddr = accptr_t(NULL);
     gmacError_t ret = 
-		mode.malloc(acceleratorAddr, size_, unsigned(paramPageSize));
+		mode.malloc(acceleratorAddr, size_, unsigned(BlockSize_));
     if(ret != gmacSuccess) return ret;
 
     lockWrite();

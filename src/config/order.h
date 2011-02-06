@@ -37,7 +37,9 @@ WITH THE SOFTWARE.  */
 #include "common.h"
 
 /* Common constructors */
-void paramInit(void) GMAC_LOCAL;
+namespace __impl { namespace util { namespace params {
+void Init(void) GMAC_LOCAL;
+}}}
 
 /* Interposition Constructors */
 void osInit(void) GMAC_LOCAL;
@@ -50,7 +52,14 @@ void mpiInit(void) GMAC_LOCAL;
 #ifdef __cplusplus
 namespace __impl { 
 
-namespace memory { class Protocol; }
+namespace memory {
+class Protocol;
+
+void Init(void);
+#define GLOBAL_PROTOCOL 0x1
+Protocol *ProtocolInit(unsigned flags);
+void Fini(void);
+}
 
 namespace core {
 class Accelerator;
@@ -61,12 +70,7 @@ class Process;
 
 void apiInit(void);
 void contextInit(void);
-void memoryInit(void);
-void memoryFini(void);
 
-
-#define GLOBAL_PROTOCOL 0x1
-memory::Protocol *protocolInit(unsigned flags);
 }}
 #endif
 #endif

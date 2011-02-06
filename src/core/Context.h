@@ -114,14 +114,6 @@ public:
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
 
     /**
-     * Returns a reference to a KernelLaunch object for the given kernel
-     *
-     * \param kernel Reference to the kernel object to be launched
-     * \return A reference to the KernelLaunch object
-     */
-    virtual KernelLaunch &launch(Kernel &kernel) = 0;
-
-    /**
      * Waits for pending memory transfers before kernel execution
      *
      * \return Error code

@@ -40,11 +40,11 @@ kernelStencil(const float * u2,
               float * u3,
               const float * v,
               const float dt2,
-              const uint32_t dimZ,
-              const uint32_t dimRealZ,
-              const uint32_t dimZX,
-              const uint32_t dimRealZX,
-              const int slices)
+              const size_t dimZ,
+              const size_t dimRealZ,
+              const size_t dimZX,
+              const size_t dimRealZX,
+              const size_t slices)
 {
     __shared__
         __align__(0x10)
@@ -196,8 +196,6 @@ struct JobDescriptor {
 
 };
 
-#include <pthread.h>
-
 #define ITERATIONS 50
 
 void *
@@ -224,7 +222,7 @@ do_stencil(void * ptr)
     for (unsigned k = 0; k < descr->slices; k++) {        
         for (unsigned j = 0; j < descr->dimRealElems; j++) {        
             for (unsigned i = 0; i < descr->dimRealElems; i++) {        
-                int iter = k * descr->sliceRealElems() + j * descr->dimRealElems + i;
+                size_t iter = k * descr->sliceRealElems() + j * descr->dimRealElems + i;
                 v[iter] = VELOCITY;
             }
         }
@@ -234,7 +232,7 @@ do_stencil(void * ptr)
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	dim3 Db(32, 8);
-	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
+	dim3 Dg(unsigned(descr->dimElems / 32), unsigned(descr->dimElems / 8));
 	getTime(&s);
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         if (i % 10 == 0)
@@ -244,7 +242,7 @@ do_stencil(void * ptr)
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),
-                                         0.08,
+                                         0.08f,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
         //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();

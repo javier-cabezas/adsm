@@ -43,7 +43,7 @@ void apiInit(void)
         if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
             FATAL("Unable to access CUDA device");
         if(attr != CU_COMPUTEMODE_PROHIBITED) {
-            gmac::cuda::Accelerator *accelerator = new gmac::cuda::Accelerator(i, cuDev);
+            cuda::Accelerator *accelerator = new gmac::cuda::Accelerator(i, cuDev);
             CFATAL(accelerator != NULL, "Error allocating resources for the accelerator");
             proc.addAccelerator(*accelerator);
             devRealCount++;

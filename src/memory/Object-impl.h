@@ -50,12 +50,12 @@ inline size_t Object::blockEnd(size_t offset) const
     if (offset + blockBase(offset) + blockSize() > size_)
         return size_ - offset;
     else
-        return blockSize() + blockBase(offset);
+        return size_t(ssize_t(blockSize()) + blockBase(offset));
 }
 
 inline size_t Object::blockSize() const
 {
-    return paramPageSize;
+    return BlockSize_;
 }
 
 inline size_t Object::size() const
@@ -77,6 +77,16 @@ inline gmacError_t Object::acquire() const
     unlock();
     return ret;
 }
+
+#ifdef USE_VM
+inline gmacError_t Object::acquireWithBitmap() const
+{
+    lockRead();
+	gmacError_t ret = coherenceOp(&Protocol::acquireWithBitmap);
+    unlock();
+    return ret;
+}
+#endif
 
 inline gmacError_t Object::toHost() const
 {
