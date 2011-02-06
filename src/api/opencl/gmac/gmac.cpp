@@ -4,14 +4,18 @@
 #include "api/opencl/Accelerator.h"
 #include "api/opencl/Mode.h"
 
+#if defined(GMAC_DLL)
+#include "gmac/init.h"
+#endif
+
 using __impl::opencl::Accelerator;
 using __impl::opencl::Mode;
 
-GMAC_API gmacError_t APICALL __oclPushArgument(const void *addr, size_t size)
+GMAC_API gmacError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index)
 {
     gmac::enterGmac();
     Mode &mode = Mode::getCurrent();
-    gmacError_t ret = mode.argument(addr, size);
+    gmacError_t ret = mode.argument(addr, size, index);
     gmac::exitGmac();
 
     return ret;

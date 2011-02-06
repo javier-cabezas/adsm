@@ -1,0 +1,19 @@
+option(USE_CUDA "Enable CUDA backend" ON)
+if(USE_CUDA)
+    add_definitions(-DUSE_CUDA)
+    # Default compilation for CUDA
+    find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
+              HINTS ENV "CUDA_BIN_PATH")
+    if(EXISTS ${NVCC})
+        message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
+        set(API_DIR "cuda")
+        set(CUDA_INCLUDE "${NVCC}/../include")
+        include_directories(${CUDA_INCLUDE})
+        find_library(cuda_LIB
+                     ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX}
+                     HINTS ENV "CUDA_LIB_PATH")
+        set(gmac_LIBS ${gmac_LIBS} ${cuda_LIB})
+    else(EXISTS ${NVCC})
+        message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
+    endif(EXISTS ${NVCC})
+endif(USE_CUDA)

@@ -32,8 +32,10 @@ source_group(${current_GROUP} FILES
     gmacFileVecAdd.cu
     gmacMatrixMul.cu
     gmacMemcpy.cu
+    gmacMemset.cu
     gmacFile.cu
     gmacMigration.cu
+    gmacMeminfo.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -44,7 +46,7 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CUDA_NVCC_FLAGS "--compiler-options;-fno-strict-aliasing")
+    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacVecAdd
@@ -92,6 +94,21 @@ cuda_compile(migration gmacMigration.cu)
 add_executable(gmacMigration ${migration} ${common_SRC} gmacMigration.cu)
 target_link_libraries(gmacMigration gmac)
 
+# gmacMeminfo
+cuda_compile(meminfo gmacMeminfo.cu)
+add_executable(gmacMeminfo ${meminfo} ${common_SRC} gmacMeminfo.cu)
+target_link_libraries(gmacMeminfo gmac)
+
+install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacFileVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 
 # gmacMap
 # source_group(${current_GROUP} FILES gmacMap.cu)
@@ -104,3 +121,4 @@ add_custom_target(InputSets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../input
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
 endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+

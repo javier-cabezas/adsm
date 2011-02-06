@@ -92,13 +92,13 @@ void QueueMap::erase(THREAD_T id)
 Process::Process() :
     util::Singleton<Process>(),
     gmac::util::RWLock("Process"),
-    protocol_(*protocolInit(GLOBAL_PROTOCOL)),
+    protocol_(*memory::ProtocolInit(GLOBAL_PROTOCOL)),
     shared_("SharedMemoryMap"),
     global_("GlobalMemoryMap"),
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
-    memoryInit();
+    memory::Init();
     // Create the private per-thread variables for the implicit thread
     Mode::init();
     initThread();
@@ -118,7 +118,7 @@ Process::~Process()
     accs_.clear();
     queues_.cleanup();
     delete &protocol_;
-    memoryFini();
+    memory::Fini();
 }
 
 void Process::initThread()
@@ -284,10 +284,10 @@ void Process::copy(THREAD_T id)
 
 Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
-    // We do not consider global objects for ownership,
-    // since memory operations over them are performed
-    // as if they were regular host memory
+    // We consider global objects for ownership,
+    // since it contains distributed objects not found in shared_
     memory::Object *object = shared_.get(addr, size);
+    if(object == NULL) object = global_.get(addr, size);
     if(object == NULL) return NULL;
     Mode &ret = object->owner(addr);
     object->release();

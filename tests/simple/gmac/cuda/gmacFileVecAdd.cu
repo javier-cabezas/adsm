@@ -33,13 +33,15 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 
 float doTest(float *a, float *b, float *c, float *orig)
 {
-	gmactime_t s, t;
+    gmactime_t s, t;
 
     FILE * fA = fopen(VECTORA, "rb");
     FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
-    fread(a, sizeof(float), vecSize, fA);
-    fread(b, sizeof(float), vecSize, fB);
+    size_t ret = fread(a, sizeof(float), vecSize, fA);
+    assert(ret == vecSize);
+    ret = fread(b, sizeof(float), vecSize, fB);
+    assert(ret == vecSize);
 
     getTime(&t);
     fclose(fA);
@@ -70,15 +72,16 @@ float doTest(float *a, float *b, float *c, float *orig)
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t;
+    float *a, *b, *c;
+    gmactime_t s, t;
     float error1, error2, error3;
 
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
-    fread(orig, sizeof(float), vecSize, fO);
+    size_t ret = fread(orig, sizeof(float), vecSize, fO);
+    assert(ret == vecSize);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
@@ -100,7 +103,8 @@ int main(int argc, char *argv[])
     error1 = doTest(a, b, c, orig);
 
     FILE * fC = fopen("vectorC_shared", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
 
     gmacFree(a);
@@ -121,8 +125,9 @@ int main(int argc, char *argv[])
 
     error2 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_replicated", "w");
-    fwrite(c, sizeof(float), vecSize, fC);
+    fC = fopen("vectorC_replicated", "wb");
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
 
     gmacFree(a);
@@ -143,7 +148,7 @@ int main(int argc, char *argv[])
 
     error3 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_centralized", "w");
+    fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 

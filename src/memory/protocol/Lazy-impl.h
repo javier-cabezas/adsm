@@ -22,7 +22,7 @@ inline memory::Object *Lazy<T>::createObject(size_t size, hostptr_t cpuPtr,
     Object *ret = new T(*this, core::Mode::getCurrent(), cpuPtr, 
 		size, state(prot));
 	if(ret == NULL) return ret;
-	if(ret->addr() == NULL) {
+	if(ret->valid() == false) {
 		ret->release();
 		return NULL;
 	}

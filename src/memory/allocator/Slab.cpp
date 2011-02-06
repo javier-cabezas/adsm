@@ -1,17 +1,18 @@
 #include "Slab.h"
 
+#include "config/common.h"
 #include "core/Mode.h"
 
 namespace __impl { namespace memory { namespace allocator {
 
-Cache &Slab::createCache(CacheMap &map, long key, size_t size)
+Cache &Slab::createCache(CacheMap &map, long_t key, size_t size)
 {
     Cache *cache = new __impl::memory::allocator::Cache(size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }
 
-Cache &Slab::get(long key, size_t size)
+Cache &Slab::get(long_t key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
@@ -53,7 +54,7 @@ void Slab::cleanup()
 
 hostptr_t Slab::alloc(size_t size, hostptr_t addr)
 {
-    Cache &cache = get((unsigned long)addr ^ (unsigned long)size, size);
+    Cache &cache = get(long_t(addr) ^ size, size);
     TRACE(LOCAL,"Using cache %p", &cache);
     hostptr_t ret = cache.get();
     addresses.lockWrite();
@@ -65,7 +66,7 @@ hostptr_t Slab::alloc(size_t size, hostptr_t addr)
 
 bool Slab::free(hostptr_t addr)
 {
-    addresses.lockRead();
+    addresses.lockWrite();
     AddressMap::iterator i = addresses.find(addr);
     if(i == addresses.end()) {
         addresses.unlock();

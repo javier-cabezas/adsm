@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdint.h>
 
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 #include "utils.h"
 #include "debug.h"

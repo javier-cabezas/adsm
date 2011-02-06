@@ -18,6 +18,10 @@ using __impl::core::IOBuffer;
 using __impl::core::Mode;
 using __impl::core::Process;
 
+using __impl::memory::Manager;
+
+using __impl::util::params::ParamBlockSize;
+
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
@@ -38,8 +42,7 @@ extern "C"
 ssize_t read(int fd, void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(gmac::inGmac() == 1) return __libc_read(fd, buf, count);
-
+	if(gmac::inGmac() == 1 || count == 0) return __libc_read(fd, buf, count);
 
     gmac::enterGmac();
     Process &proc = Process::getInstance();
@@ -50,25 +53,44 @@ ssize_t read(int fd, void *buf, size_t count)
         return __libc_read(fd, buf, count);
     }
 
+	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
     size_t ret = 0;
+    size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
+    Mode &mode = Mode::getCurrent();
+    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer2 = NULL;
+    if (count > buffer1->size()) {
+        buffer2 = mode.createIOBuffer(bufferSize);
+    }
 
-    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
-
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    Manager &manager = Manager::getInstance();
+    IOBuffer *active  = buffer1;
+    IOBuffer *passive = buffer2;
 
     size_t left = count;
     off_t  off  = 0;
     while (left != 0) {
-        size_t bytes= left < buffer->size()? left: buffer->size();
-        ret += __libc_read(fd, buffer->addr(), bytes);
-        ret = manager.fromIOBuffer(hostptr_t(buf) + off, *buffer, 0, bytes);
+        err = active->wait();
+        ASSERTION(err == gmacSuccess);
+        size_t bytes= left < active->size()? left: active->size();
+        ret += __libc_read(fd, active->addr(), bytes);
+        ret = manager.fromIOBuffer(hostptr_t(buf) + off, *active, 0, bytes);
         ASSERTION(ret == gmacSuccess);
 
         left -= bytes;
         off  += bytes;
+        IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
     }
-    Mode::getCurrent().destroyIOBuffer(buffer);
+    err = passive->wait();
+    ASSERTION(err == gmacSuccess);
+    mode.destroyIOBuffer(buffer1);
+    if (buffer2 != NULL) {
+        mode.destroyIOBuffer(buffer2);
+    }
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
     return ret;
@@ -80,7 +102,7 @@ extern "C"
 ssize_t write(int fd, const void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(gmac::inGmac() == 1) return __libc_write(fd, buf, count);
+	if(gmac::inGmac() == 1 || count == 0) return __libc_write(fd, buf, count);
 
 	gmac::enterGmac();
     Process &proc = Process::getInstance();
@@ -91,25 +113,59 @@ ssize_t write(int fd, const void *buf, size_t count)
         return __libc_write(fd, buf, count);
     }
 
+	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
     size_t ret = 0;
 
     off_t  off  = 0;
-    IOBuffer *buffer = Mode::getCurrent().createIOBuffer(paramPageSize);
+    size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
+    Mode &mode = Mode::getCurrent();
+    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer2 = NULL;
+    if (count > buffer1->size()) {
+        buffer2 = mode.createIOBuffer(bufferSize);
+    }
 
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    Manager &manager = Manager::getInstance();
+    IOBuffer *active  = buffer1;
+    IOBuffer *passive = buffer2;
 
     size_t left = count;
-    while (left != 0) {
-        size_t bytes = left < buffer->size() ? left : buffer->size();
-        err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf) + off, bytes);
-        ASSERTION(err == gmacSuccess);
-        ret += __libc_write(fd, buffer->addr(), bytes);
 
-        left -= bytes;
-        off  += bytes;
+    size_t bytesActive = left < active->size() ? left : active->size();
+    err = manager.toIOBuffer(*active, 0, hostptr_t(buf) + off, bytesActive);
+    ASSERTION(err == gmacSuccess);
+    size_t bytesPassive = 0;
+
+    do {
+        left -= bytesActive;
+        off  += bytesActive;
+
+        if (left > 0) {
+            bytesPassive = left < passive->size()? left : passive->size();
+            err = manager.toIOBuffer(*passive, 0, hostptr_t(buf) + off, bytesPassive);
+            ASSERTION(err == gmacSuccess);
+        }
+
+        err = active->wait();
+        ASSERTION(err == gmacSuccess);
+
+        ret += __libc_write(fd, active->addr(), bytesActive);
+
+        size_t bytesTmp = bytesActive;
+        bytesActive = bytesPassive;
+        bytesPassive = bytesTmp;
+        
+        IOBuffer *tmp = active;
+        active = passive;
+        passive = tmp;
+    } while (left != 0);
+    ASSERTION(err == gmacSuccess);
+    mode.destroyIOBuffer(buffer1);
+    if (buffer2 != NULL) {
+        mode.destroyIOBuffer(buffer2);
     }
-    Mode::getCurrent().destroyIOBuffer(buffer);
+	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
 
     return ret;

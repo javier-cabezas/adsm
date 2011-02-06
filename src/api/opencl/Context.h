@@ -90,7 +90,7 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    core::KernelLaunch &launch(core::Kernel &kernel);
+    KernelLaunch &launch(Kernel &kernel);
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
 
@@ -99,7 +99,7 @@ public:
     gmacError_t waitAccelerator();
 
     gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
-	gmacError_t argument(const void *arg, size_t size);
+	gmacError_t argument(const void *arg, size_t size, unsigned index);
 
     const cl_command_queue eventStream() const;
 

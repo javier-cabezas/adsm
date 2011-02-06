@@ -11,18 +11,17 @@ class ContextTest : public testing::Test {
 protected:
 	static const int Size_ = 4 * 1024 * 1024;
 
+	static void SetUpTestCase() {
+        InitProcess();
+        InitContext();
+	}
+
+
 	static void TearDownTestCase() {
-		FiniContext();		
-		
+        FiniContext();
+		FiniProcess();		
 	}
 
-	void SetUp() {
-
-		ASSERT_NO_FATAL_FAILURE(InitContext());
-	
-
-
-	}
 };
 
 #endif

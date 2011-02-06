@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -89,10 +90,10 @@ void *doTest(void *)
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
         cl_mem tmp = cl_mem(gmacPtr(a));
-        __oclPushArgument(&tmp, sizeof(cl_mem));
-        __oclPushArgument(&vecSize, sizeof(vecSize));
+        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
+        __oclSetArgument(&vecSize, sizeof(vecSize), 1);
         float val = float(i);
-        __oclPushArgument(&val, sizeof(val));
+        __oclSetArgument(&val, sizeof(val), 2);
         assert(__oclLaunch("vecSet") == gmacSuccess);
 
         barrier_wait(&ioAfter);
@@ -100,10 +101,10 @@ void *doTest(void *)
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
         tmp = cl_mem(gmacPtr(c));
-        __oclPushArgument(&tmp, sizeof(cl_mem));
+        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
         tmp = cl_mem(gmacPtr(a));
-        __oclPushArgument(&tmp, sizeof(cl_mem));
-        __oclPushArgument(&vecSize, sizeof(vecSize));
+        __oclSetArgument(&tmp, sizeof(cl_mem), 1);
+        __oclSetArgument(&vecSize, sizeof(vecSize), 2);
         assert(__oclLaunch("vecMove") == gmacSuccess);
 
         assert(gmacThreadSynchronize() == gmacSuccess);
@@ -120,10 +121,10 @@ void *doTest(void *)
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
         cl_mem tmp = cl_mem(gmacPtr(b));
-        __oclPushArgument(&tmp, sizeof(cl_mem));
+        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
         tmp = cl_mem(gmacPtr(a));
-        __oclPushArgument(&tmp, sizeof(cl_mem));
-        __oclPushArgument(&vecSize, sizeof(vecSize));
+        __oclSetArgument(&tmp, sizeof(cl_mem), 1);
+        __oclSetArgument(&vecSize, sizeof(vecSize), 2);
         assert(__oclLaunch("vecAccum") == gmacSuccess);
 
         gmacThreadSynchronize();

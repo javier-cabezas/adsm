@@ -43,7 +43,12 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : public gmac::util::Lock, public util::NonCopyable {
+class GMAC_LOCAL IOBuffer : 
+           public gmac::util::Lock, 
+           public util::NonCopyable {
+           DBC_FORCE_TEST(__impl::core::IOBuffer)                
+
+
 public:
     typedef enum { Idle, ToHost, ToAccelerator } State;
 protected:
@@ -59,8 +64,8 @@ public:
     uint8_t *end() const;
     size_t size() const;
 
-    void lock();
-    void unlock();
+    TESTABLE void lock();
+    TESTABLE void unlock();
 
     State state() const;
     virtual gmacError_t wait() = 0;
@@ -70,6 +75,13 @@ public:
 
 #include "IOBuffer-impl.h"
 
+#ifdef USE_DBC
+#include "core/dbc/IOBuffer.h"
+#endif 
+
 #endif
+
+
+
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

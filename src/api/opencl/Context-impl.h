@@ -1,5 +1,5 @@
-#ifndef GMAC_API_CUDA_CONTEXT_IMPL_H_
-#define GMAC_API_CUDA_CONTEXT_IMPL_H_
+#ifndef GMAC_API_OPENCL_CONTEXT_IMPL_H_
+#define GMAC_API_OPENCL_CONTEXT_IMPL_H_
 
 #include "Accelerator.h"
 #include "Kernel.h"
@@ -19,9 +19,9 @@ Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize,
 }
 
 inline gmacError_t
-Context::argument(const void *arg, size_t size)
+Context::argument(const void *arg, size_t size, unsigned index)
 {
-    call_.pushArgument(arg, size);
+    call_.setArgument(arg, size, index);
     // TODO: perform some checking
     return gmacSuccess;
 }

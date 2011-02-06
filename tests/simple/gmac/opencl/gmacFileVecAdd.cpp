@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -34,13 +35,15 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 
 float doTest(float *a, float *b, float *c, float *orig)
 {
-	gmactime_t s, t;
+    gmactime_t s, t;
 
     FILE * fA = fopen(VECTORA, "rb");
     FILE * fB = fopen(VECTORB, "rb");
     getTime(&s);
-    fread(a, sizeof(float), vecSize, fA);
-    fread(b, sizeof(float), vecSize, fB);
+    size_t ret = fread(a, sizeof(float), vecSize, fA);
+    assert(ret == vecSize);
+    ret = fread(b, sizeof(float), vecSize, fB);
+    assert(ret == vecSize);
 
     getTime(&t);
     fclose(fA);
@@ -55,12 +58,12 @@ float doTest(float *a, float *b, float *c, float *orig)
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(gmacPtr(c));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
     tmp = cl_mem(gmacPtr(a));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 1);
     tmp = cl_mem(gmacPtr(b));
-    __oclPushArgument(&tmp, sizeof(cl_mem));
-    __oclPushArgument(&vecSize, sizeof(vecSize));
+    __oclSetArgument(&tmp, sizeof(cl_mem), 2);
+    __oclSetArgument(&vecSize, sizeof(vecSize), 3);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 
@@ -91,7 +94,8 @@ int main(int argc, char *argv[])
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
-    fread(orig, sizeof(float), vecSize, fO);
+    size_t ret = fread(orig, sizeof(float), vecSize, fO);
+    assert(ret == vecSize);
 
     // Alloc output data
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
@@ -113,7 +117,9 @@ int main(int argc, char *argv[])
     error1 = doTest(a, b, c, orig);
 
     FILE * fC = fopen("vectorC_shared", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
+
     fclose(fC);
 
     gmacFree(a);
@@ -134,7 +140,7 @@ int main(int argc, char *argv[])
 
     error2 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_replicated", "w");
+    fC = fopen("vectorC_replicated", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 
@@ -156,7 +162,7 @@ int main(int argc, char *argv[])
 
     error3 = doTest(a, b, c, orig);
 
-    fC = fopen("vectorC_centralized", "w");
+    fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 

@@ -51,11 +51,9 @@ gmacError_t Context::syncCUstream(CUstream _stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
-    trace::SetThreadState(trace::IO);
     while ((ret = accelerator().queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
-    trace::SetThreadState(trace::Running);
 
     if (ret == CUDA_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
@@ -76,7 +74,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(util::params::ParamBlockSize));
     if(buffer_ == NULL) {
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
@@ -93,7 +91,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::EnterCurrentFunction();
         ::memcpy(buffer_->addr(), host + offset, len);
         trace::ExitCurrentFunction();
-        ASSERTION(len <= paramPageSize);
+        ASSERTION(len <= util::params::ParamBlockSize);
         ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
@@ -108,7 +106,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, (void *) acc, host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(paramPageSize));
+    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(util::params::ParamBlockSize));
     if(buffer_ == NULL) {
         trace::ExitCurrentFunction();
         return core::Context::copyToHost(host, acc, size);
@@ -151,11 +149,10 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
     return ret;
 }
 
-core::KernelLaunch &Context::launch(core::Kernel &kernel)
+KernelLaunch &Context::launch(Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    trace::SetThreadState(THREAD_T(id_), trace::Running);
-    core::KernelLaunch *ret = kernel.launch(call_);
+    KernelLaunch *ret = kernel.launch(call_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;
@@ -168,7 +165,9 @@ gmacError_t Context::prepareForCall()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
-    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::SetThreadState(trace::Wait);
+    syncCUstream(streamToAccelerator_);
+    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -177,8 +176,10 @@ gmacError_t Context::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
+    trace::SetThreadState(trace::Wait);
     ret = syncCUstream(streamLaunch_);
-    trace::SetThreadState(THREAD_T(id_), trace::Running);    
+    trace::SetThreadState(THREAD_T(id_), trace::Idle);    
+    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }

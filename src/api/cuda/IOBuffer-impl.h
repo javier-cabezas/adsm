@@ -1,18 +1,32 @@
 #ifndef GMAC_API_CUDA_IOBUFFER_IMPL_H_
 #define GMAC_API_CUDA_IOBUFFER_IMPL_H_
 
+#include "Tracer.h"
+
 namespace __impl { namespace cuda {
 
 inline void
 IOBuffer::toHost(Mode &mode, CUstream s)
 {
-    if (!created_) {
-        cuEventCreate(&start_, CU_EVENT_DEFAULT);
-        cuEventCreate(&end_, CU_EVENT_DEFAULT);
-        created_ = true;
+    CUresult ret = CUDA_SUCCESS;
+
+    EventMap::iterator it;
+    it = map_.find(&mode);
+    if (it == map_.end()) {
+        CUevent start;
+        CUevent end;
+        ret = cuEventCreate(&start, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+        ret = cuEventCreate(&end, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+
+        std::pair<EventMap::iterator, bool> ret =
+            map_.insert(EventMap::value_type(&mode, std::pair<CUevent, CUevent>(start, end)));
+        it = ret.first;
     }
 
-    cuEventRecord(start_, s);
+    ret = cuEventRecord(it->second.first, s);
+    ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     stream_ = s;
@@ -22,12 +36,25 @@ IOBuffer::toHost(Mode &mode, CUstream s)
 inline void
 IOBuffer::toAccelerator(Mode &mode, CUstream s)
 {
-    if (!created_) {
-        cuEventCreate(&start_, CU_EVENT_DEFAULT);
-        cuEventCreate(&end_, CU_EVENT_DEFAULT);
-        created_ = true;
+    CUresult ret = CUDA_SUCCESS;
+
+    EventMap::iterator it;
+    it = map_.find(&mode);
+    if (it == map_.end()) {
+        CUevent start;
+        CUevent end;
+        ret = cuEventCreate(&start, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+        ret = cuEventCreate(&end, CU_EVENT_DEFAULT);
+        ASSERTION(ret == CUDA_SUCCESS);
+
+        std::pair<EventMap::iterator, bool> ret =
+            map_.insert(EventMap::value_type(&mode, std::pair<CUevent, CUevent>(start, end)));
+        it = ret.first;
     }
-    cuEventRecord(start_, s);
+
+    ret = cuEventRecord(it->second.first, s);
+    ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     stream_ = s;
@@ -37,21 +64,31 @@ IOBuffer::toAccelerator(Mode &mode, CUstream s)
 inline void
 IOBuffer::started()
 {
-    ASSERTION(created_ == true);
-
-    cuEventRecord(end_, stream_);
+    EventMap::iterator it;
+    it = map_.find(mode_);
+    ASSERTION(state_ != Idle && it != map_.end());
+    CUresult ret = cuEventRecord(it->second.second, stream_);
+    ASSERTION(ret == CUDA_SUCCESS);
 }
 
 inline gmacError_t
 IOBuffer::wait()
 {
-    ASSERTION(state_ == Idle || created_ == true);
+    EventMap::iterator it;
+    it = map_.find(mode_);
+    ASSERTION(state_ == Idle || it != map_.end());
 
     gmacError_t ret = gmacSuccess;
 
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
-        ret = mode_->waitForEvent(end_);
+        CUevent start = it->second.first;
+        CUevent end   = it->second.second;
+        trace::SetThreadState(trace::Wait);
+        ret = mode_->waitForEvent(end);
+        trace::SetThreadState(trace::Running);
+        if(state_ == ToHost) DataCommToHost(*mode_, start, end, size_);
+        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, size_);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;

@@ -9,7 +9,7 @@ Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostMap_;
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    core::Accelerator(n), platform_(platform), device_(device)
+    gmac::core::Accelerator(n), platform_(platform), device_(device)
 {
     // Not used for now
     busId_ = 0;
@@ -38,15 +38,19 @@ Accelerator::~Accelerator()
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
-        ASSERTION(clReleaseProgram(*i) == CL_SUCCESS);
+        cl_int ret = clReleaseProgram(*i);
+        ASSERTION(ret == CL_SUCCESS);
     }
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
         delete Accelerators_;
+        Accelerators_ = NULL;
         delete GlobalHostMap_;
+        GlobalHostMap_ = NULL;
     }
 
-    ASSERTION(clReleaseContext(ctx_) == CL_SUCCESS);
+    cl_int ret = clReleaseContext(ctx_);
+    ASSERTION(ret == CL_SUCCESS);
 }
 
 void Accelerator::init()
@@ -112,6 +116,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(event);
+#ifdef _MSC_VER
+    ret = clFlush(stream);
+    CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
+#endif
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -141,6 +149,10 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);
+#ifdef _MSC_VER
+    ret = clFlush(stream);
+    CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
+#endif
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -201,7 +213,7 @@ Accelerator::addAccelerator(Accelerator &acc)
     Accelerators_->insert(pair);
 }
 
-core::Kernel *
+Kernel *
 Accelerator::getKernel(gmacKernel_t k)
 {
     std::vector<cl_program> &programs = (*Accelerators_)[this];
@@ -292,7 +304,11 @@ cl_command_queue Accelerator::createCLstream()
     trace::EnterCurrentFunction();
     cl_command_queue stream;
     cl_int error;
-    stream = clCreateCommandQueue(ctx_, device_, 0, &error);
+    cl_command_queue_properties prop = 0;
+#if defined(USE_TRACE)
+    prop |= CL_QUEUE_PROFILING_ENABLE;
+#endif
+    stream = clCreateCommandQueue(ctx_, device_, prop, &error);
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
     TRACE(LOCAL, "Created OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.add(stream);
@@ -342,6 +358,19 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
     return error(ret);
 }
 
+gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
+{
+    uint64_t startTime, endTime;
+    cl_int ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_QUEUED,
+        sizeof(startTime), &startTime, NULL);
+    if(ret == CL_SUCCESS) {
+        ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END,
+            sizeof(endTime), &endTime, NULL);
+    }
+    t = (endTime - startTime) / 1000;
+    return error(ret);
+}
+
 
 gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
@@ -369,12 +398,6 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     cl_mem device;
     size_t size;
 
-    if(localHostAlloc_.translate(addr, device, size) == false) {
-        localHostAlloc_.remove(addr);
-        ret = clReleaseMemObject(device);
-        goto exit;
-    }
-
     if(localHostMap_.translate(addr, device, size) == false) {
         CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
                "Error translating address %p", (void *) addr);
@@ -385,7 +408,6 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
         Accelerator::GlobalHostMap_->remove(addr);
     }
 
-exit:
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -411,7 +433,7 @@ accptr_t Accelerator::hostMap(const hostptr_t addr, size_t size)
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     cl_mem device;
-    size_t size;
+    size_t size = 0;
     if(localHostMap_.translate(addr, device, size) == false) {
         cl_int ret;
         CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, size) == false,
@@ -434,14 +456,14 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
     ret = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE,
         sizeof(value), &value, NULL);
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    total = value;
+    total = size_t(value);
 
     // TODO: This is actually wrong, but OpenCL do not let us know the
     // amount of free memory in the accelerator
     ret = clGetDeviceInfo(device_, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
         sizeof(value), &value, NULL);
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    free = value;
+    free = size_t(value);
 }
 
 }}

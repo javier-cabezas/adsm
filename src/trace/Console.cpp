@@ -46,6 +46,12 @@ void Console::setThreadState(THREAD_T tid, State state)
 	os << "@STATE:" << timeMark() << ":" << tid << ":" << state << "@" << std::endl;
 }
 
+void Console::dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
+{
+    uint64_t t = timeMark();
+    os << "@COMM:" << t - delta << ":" << src << ":" << t << ":" << dst << ":" << size << "@" << std::endl;
+}
+
 }}
 
 #endif

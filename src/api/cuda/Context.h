@@ -91,7 +91,7 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    core::KernelLaunch &launch(core::Kernel &kernel);
+    KernelLaunch &launch(Kernel &kernel);
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
 

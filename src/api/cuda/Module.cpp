@@ -7,11 +7,6 @@ namespace __impl { namespace cuda {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 
-#ifdef USE_VM
-const char *Module::DirtyBitmapSymbol_ = "__dirtyBitmap";
-const char *Module::ShiftPageSymbol_   = "__SHIFT_PAGE";
-#endif
-
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
     core::Descriptor<gmacVariable_t>(name, key),
     constant_(constant)
@@ -26,6 +21,7 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
 #else
     unsigned int tmp;
 #endif
+    TRACE(LOCAL, "Creating new accelerator variable: %s", v.name());
     CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, name());
     ASSERTION(ret == CUDA_SUCCESS);
     size_ = tmp;
@@ -84,19 +80,12 @@ Module::Module(const ModuleDescriptor & d) :
     ModuleDescriptor::VariableVector::const_iterator v;
     for (v = d.variables_.begin(); v != d.variables_.end(); v++) {
         variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
+        variablesByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
     }
 
     for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
         constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
-#ifdef USE_VM
-        if(strncmp(v->name(), DirtyBitmapSymbol_, strlen(DirtyBitmapSymbol_)) == 0) {
-            dirtyBitmap_ = &constants_.find(v->key())->second;
-            TRACE(LOCAL,"Found constant to set a dirty bitmap on device");
-        } else if(strncmp(v->name(), ShiftPageSymbol_, strlen(ShiftPageSymbol_)) == 0) {
-            shiftPage_ = &constants_.find(v->key())->second;
-            TRACE(LOCAL,"Found constant to set __SHIFT_PAGE");
-        }
-#endif
+        constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
     }
 
     ModuleDescriptor::TextureVector::const_iterator t;
@@ -110,9 +99,13 @@ Module::~Module()
 {
     CUresult ret = cuModuleUnload(mod_);
     ASSERTION(ret == CUDA_SUCCESS);
+
+    // TODO: remove objects from maps
+#if 0
     variables_.clear();
     constants_.clear();
     textures_.clear();
+#endif
 
     KernelMap::iterator i;
     for(i = kernels_.begin(); i != kernels_.end(); i++) delete i->second;

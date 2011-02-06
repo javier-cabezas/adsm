@@ -8,14 +8,11 @@ namespace __impl { namespace opencl {
 Mode::Mode(core::Process &proc, Accelerator &acc) :
     gmac::core::Mode(proc, acc)
 {
-    switchIn();
-
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(addr, paramIOMemory);
+    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, paramIOMemory);
-
-    switchOut();
+        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
+    else ioMemory_ = NULL;
 }
 
 Mode::~Mode()
@@ -23,12 +20,10 @@ Mode::~Mode()
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
 
-    switchIn();
     if(ioMemory_ != NULL) {
         hostFree(ioMemory_->addr());
         delete ioMemory_;
     }
-    switchOut();
 }
 
 inline
@@ -61,6 +56,11 @@ core::Context &Mode::getContext()
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
+}
+
+Context &Mode::getCLContext()
+{
+    return dynamic_cast<Context &>(getContext());
 }
 
 gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
@@ -97,7 +97,7 @@ accptr_t Mode::hostMapAddr(const hostptr_t addr)
 
 cl_command_queue Mode::eventStream()
 {
-    Context &ctx = dynamic_cast<Context &>(getContext());
+    Context &ctx = getCLContext();
     return ctx.eventStream();
 }
 
@@ -106,6 +106,12 @@ gmacError_t Mode::waitForEvent(cl_event event)
 	switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
+    gmacError_t ret = acc.syncCLevent(event);
+    switchOut();
+    return ret;
+
+    // TODO: try to implement wait as a polling loop -- AMD OpenCL blocks execution
+#if 0
     cl_int ret;
     while ((ret = acc.queryCLevent(event)) != CL_COMPLETE) {
         // TODO: add delay here
@@ -114,6 +120,7 @@ gmacError_t Mode::waitForEvent(cl_event event)
 	switchOut();
 
     return Accelerator::error(ret);
+#endif
 }
 
 }}

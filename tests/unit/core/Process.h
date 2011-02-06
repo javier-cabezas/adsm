@@ -13,15 +13,13 @@
 class ProcessTest: public testing::Test {
 
 public:
-	static gmac::core::Mode *Mode_;
 
-
-	static void SetUpTestCase();
+	static void SetUpTestCase() {
+        InitProcess();
+    }
 
 	static void TearDownTestCase() {
-		Mode_->detach();
 		FiniProcess();
-		Mode_ = NULL;
 	}
 
 

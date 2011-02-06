@@ -36,6 +36,10 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "config/common.h"
+#include "util/Private.h"
+#include "util/Atomics.h"
+
+#include "States.h"
 
 #if defined(__GNUC__)
 #define EnterCurrentFunction() EnterFunction(__func__)
@@ -45,50 +49,226 @@ WITH THE SOFTWARE.  */
 #define ExitCurrentFunction()  ExitFunction(__FUNCTION__)
 #endif
 
-namespace __impl { namespace trace {
 
-typedef enum {
-	Idle,
-	Init,
-	Running,
-	Locked,
-	Exclusive,
-	IO
-} State;
+namespace __impl { namespace trace {
 #if defined(USE_TRACE)
+
+extern Atomic threads_;
+extern util::Private<int32_t> tid_;
+
 class GMAC_LOCAL Tracer {
 protected:
-	uint64_t timeMark() const;
 	uint64_t base_;
+
 public:
+    //! Default constructor
 	Tracer();
+
+    //! Default destructor
+    virtual ~Tracer();
+
+    //! Trace the creation of a thread
+    /**
+        \param tid Thread ID for the created thread
+        \param name Name for the created thread
+    */
 	virtual void startThread(THREAD_T tid, const char *name) = 0;
+
+    //! Trace the destruction of a thread
+    /**
+        \param tid Thread ID for the destroyed thread
+    */
 	virtual void endThread(THREAD_T tid) = 0;
 
+    //! Trace entering a GMAC function
+    /**
+        \param tid Thread ID entering the function
+        \param name Name of the function
+    */
 	virtual void enterFunction(THREAD_T tid, const char *name) = 0;
+
+    //! Trace exiting from a GMAC function
+    /**
+        \param tid Thread existing the function
+        \param name Name of the function being exited
+    */
 	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
 
+#ifdef USE_TRACE_LOCKS
+    //! Trace requesting a GMAC lock 
+    /**
+        \param tid Thread ID aquiring the lock 
+        \param name Name of the lock 
+    */
+	virtual void requestLock(THREAD_T tid, const char *name) = 0;
+
+    //! Trace acquiring a GMAC exclusive lock 
+    /**
+        \param tid Thread ID aquiring the lock 
+        \param name Name of the lock being acquired
+    */
+	virtual void acquireLockExclusive(THREAD_T tid, const char *name) = 0;
+
+    //! Trace acquiring a GMAC shared lock 
+    /**
+        \param tid Thread existing the lock 
+        \param name Name of the lock being acquired
+    */
+	virtual void acquireLockShared(THREAD_T tid, const char *name) = 0;
+
+    //! Trace releasing a GMAC lock
+    /**
+        \param tid Thread existing the lock 
+        \param name Name of the lock being released
+    */
+	virtual void exitLock(THREAD_T tid, const char *name) = 0;
+#endif
+
+    //! Trace a change in the thread state
+    /**
+        \param tid Thread ID of the thread chaning its state
+        \param state New thread's state
+    */
 	virtual void setThreadState(THREAD_T tid, const State state) = 0;
+
+    //! Trace a data communication between threads
+    /**
+        \param src ID of the thread sending the data
+        \param dst ID of the thread getting the data
+        \param delta Time taken to transfer the data
+        \param size Size (in bytes) of the data being transferred
+    */
+    virtual void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
+
+    //! Get the current system time
+    /**
+        \return Time mark to be used by the traces
+    */
+	uint64_t timeMark() const;
 };
 #endif
+
+//! Initialize the tracing utilities
 void InitTracer();
+
+//! Finalize the tracing utilities
 void FiniTracer();
 
+//! Notify the creation of a new thread
+/**
+    \param tid Thread ID of the new thread
+    \param name Name of the new thread
+*/
 void StartThread(THREAD_T tid, const char *name);
+
+//! Notify the creation of a the calling thread
+/**
+    \param name Name of the new thread
+*/
 void StartThread(const char *name);
 
+//! Notify the destruction of a thread
+/**
+    \param tid ID of the thread being destroyed
+*/
 void EndThread(THREAD_T tid);
+
+//! Notify the destruction of the calling thread
 void EndThread();
 
+//! Nofify that a thread enters a function
+/**
+    \param tid ID of the thread entering the function
+    \param name Name of the function
+*/
 void EnterFunction(THREAD_T tid, const char *name);
+
+//! Notify that the current thread enters a function
+/**
+    \param name Name of the function
+*/
 void EnterFunction(const char *name);
 
+//! Notifiy that a thread exits a function
+/**
+    \param tid ID of the thread entering the function
+    \param name Name of the funcion
+*/
 void ExitFunction(THREAD_T tid, const char *name);
+
+//! Notify that the current thread exists a function
+/**
+    \param name Name of the function
+*/
 void ExitFunction(const char *name);
 
+//! Notify that the current thread requests a lock
+/**
+    \param name Name of the lock
+*/
+void RequestLock(const char *name);
+
+//! Notify that the current thread acquires a exclusive lock
+/**
+    \param name Name of the lock
+*/
+void AcquireLockExclusive(const char *name);
+
+//! Notify that the current thread acquires a shared lock
+/**
+    \param name Name of the lock
+*/
+void AcquireLockShared(const char *name);
+
+//! Notify that the current thread releases a lock
+/**
+    \param name Name of the lock
+*/
+void ExitLock(const char *name);
+
+//! Set the state of a thread
+/**
+    \param tid ID of the thread whose state is changing
+    \param state New thread's state
+*/
 void SetThreadState(THREAD_T tid, const State &state);
+
+//! Set the state of the current thread
+/**
+    \param state New thread's state
+*/
 void SetThreadState(const State &state);
 
+//! Notify data communication between two threads
+/**
+    \param src ID of the thread sending the data
+    \param dst ID of the thread receiving the data
+    \param delta Time taken to transfer the data
+    \param size Size (in bytes) of the data transferred
+*/
+void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
+
+//! Notify a data communication started by the current thread
+/**
+    \param tid ID of the thread receiving the data
+    \param delta Time taken to transfer the data
+    \param size Size (in bytes) of the data transferred
+*/
+void DataCommunication(THREAD_T tid, uint64_t delta, size_t size);
+
+//! Get a time mark to be used by the tracer
+/**
+    \param mark Reference to store the timemark
+*/
+void TimeMark(uint64_t &mark);
+
+#if defined(USE_TRACE)
+//! Get the thread Id for tracing purposes
+/**
+    \return Thread ID
+*/ 
+int32_t GetThreadId();
+#endif
 
 }}
 

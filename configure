@@ -7,6 +7,8 @@ SCRIPT_NAME=`basename $0`
 BUILD_TYPE="Release"
 USE_DBC=OFF
 
+FRONTEND="-DUSE_CUDA=ON -DUSE_OPENCL=OFF"
+
 for i in $*
 do
     case $i in
@@ -24,7 +26,7 @@ do
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
         ;;
     --enable-opencl)
-        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_OPENCL=ON"
+        FRONTEND="-DUSE_CUDA=OFF -DUSE_OPENCL=ON"
         ;;
     --with-opencl-include=*)
         opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
@@ -36,6 +38,15 @@ do
         ;;
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
+        ;;
+    --enable-console-trace)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_CONSOLE=ON"
+        ;;
+    --enable-paraver-trace)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_PARAVER=ON"
+        ;;
+    --enable-trace-locks)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_LOCKS=ON"
         ;;
     --enable-vm)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_VM=ON"
@@ -57,7 +68,7 @@ do
         esac
 done
 
-CMAKE_ARGS="${CMAKE_ARGS} -DUSE_DBC=${USE_DBC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+CMAKE_ARGS="${CMAKE_ARGS} ${FRONTEND} -DUSE_DBC=${USE_DBC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
 echo ${COMMAND} > ${SCRIPT_NAME}.log
 ${COMMAND}

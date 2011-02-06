@@ -70,85 +70,112 @@ extern "C"
 
 /**
  * Returns the number of available accelerators.
- * This number can be used to perform a manual context distribution among
- * accelerators
+ * \return The number of available accelerators
  */
-GMAC_API size_t APICALL gmacAccs();
+GMAC_API unsigned APICALL gmacGetNumberOfAccelerators();
 
+GMAC_API size_t APICALL gmacGetFreeMemory();
 
 /**
  * Migrates the GPU execution mode of a thread to a concrete accelerator.
- * Sets the affinity of a thread to a concrete accelerator. Valid values are 0
- * ... gmacAccs() - 1.
+ * Valid values are 0 * ... gmacNumberOfAccelerators() - 1.
  * Currently only works if this is the first gmac call in the thread.
  *
  * \param acc index of the preferred accelerator
+ * \return On success gmacMigrate returns gmacSuccess. Otherwise it returns the
+ * causing error
  */
-GMAC_API gmacError_t APICALL gmacMigrate(int acc);
+GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
 
 /**
- * Maps a range of CPU memory on the GPU. Both, GPU and CPU,
+ * Maps a range of CPU memory on the GPU. The memory pointed by cpuPtr must NOT have been allocated
+ * using gmacMalloc or gmacGlobalMalloc, and must not have been mapped before. Both, GPU and CPU,
  * use the same addresses for this memory.
- *
  * \param cpuPtr CPU memory address to be mapped on the GPU
  * \param count Number of bytes to be allocated
  * \param prot The protection to be used in the mapping (currently unused)
+ * \return On success gmacMap returns gmacSuccess. Otherwise it returns the
+ * causing error
  */
 GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
-/*!
-	Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
-	use the same addresses for this memory.
-	\param cpuPtr memory address to be unmapped from the GPU
-	\param count  bytes to be allocated
-*/
+/**
+ * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param cpuPtr memory address to be unmapped from the GPU. 
+ * \param count  bytes to be allocated
+ * \return On success gmacUnmmap returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
 GMAC_API gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count);
 
-/*!
-	Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
-	use the same addresses for this memory.
-	\param devPtr memory address to store the address for the allocated memory
-	\param count  bytes to be allocated
-*/
+/**
+ * Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param devPtr memory address to store the address for the allocated memory
+ * \param count  bytes to be allocated
+ * \return On success gmacMalloc returns gmacSuccess and stores the address of the allocated
+ * memory in devPtr. Otherwise it returns the causing error
+ */
 GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
 
 
-/*!
-	Allocates global memory at all GPUS
-*/
+/**
+ * Allocates a range of memory in all the GPUs and the CPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param devPtr memory address to store the address for the allocated memory
+ * \param count  bytes to be allocated
+ * \param hint Type of memory (distributed or hostmapped) to be allocated
+ * \return On success gmacGlobalMalloc returns gmacSuccess and stores the address
+ * of the allocated memory in devPtr. Otherwise it returns the causing error
+ */
 #define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
 GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
 
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
-
-/*!
-	Gets a GPU address
-	\param cpuPtr memory address at the CPU
-*/
+/**
+ * Gets a the GPU address of an allocation performed with gmacMalloc or
+ * gmacGlobalMalloc
+ * \param cpuPtr memory address at the CPU
+ * \return On success gmacPtr returns the GPU address of the allocation pointed
+ * by CPU cpuPtr. Otherwise it returns NULL
+ */
 GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *cpuPtr);
 
-/*!
-	Free the memory allocated with gmacMalloc() and gmacSafeMalloc()
-	\param cpuPtr Memory address to free. This address must have been returned
-	by a previous call to gmacMalloc() or gmacSafeMalloc()
-*/
+/**
+ * Free the memory pointed by cpuPtr. The memory must have been allocated using
+ * with gmacMalloc() or gmacGlobalMalloc()
+ * \param cpuPtr Memory address to free. This address must have been returned
+ * by a previous call to gmacMalloc() or gmacGlobalMalloc()
+ * \return On success gmacFree returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
 GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr);
 
-/*!
-	Waits until all previous GPU requests have finished
-*/
-GMAC_API gmacError_t APICALL gmacThreadSynchronize(void);
+/**
+ * Waits until all previous GPU requests have finished
+ * \return On success gmacThreadSynchronize returns gmacSuccess. Otherwise it returns
+ * the causing error
+ */
+GMAC_API gmacError_t APICALL gmacThreadSynchronize();
 
+GMAC_API gmacError_t APICALL gmacGetLastError();
 
-GMAC_API gmacError_t APICALL gmacGetLastError(void);
-
-GMAC_API void * APICALL gmacMemset(void *, int, size_t);
-GMAC_API void * APICALL gmacMemcpy(void *, const void *, size_t);
+GMAC_API void * APICALL gmacMemset(void *ptr, int c, size_t count);
+GMAC_API void * APICALL gmacMemcpy(void *dst, const void *src, size_t count);
 
 GMAC_API void APICALL gmacSend(THREAD_T);
 GMAC_API void APICALL gmacReceive(void);
 GMAC_API void APICALL gmacSendReceive(THREAD_T);
 GMAC_API void APICALL gmacCopy(THREAD_T);
+
+
+/**
+ * Launches a kernel on the accelerator. This function is NOT meant to be directly
+ * used by the application
+ */
+GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+
+
 
 #ifdef __cplusplus
 #include <cassert>

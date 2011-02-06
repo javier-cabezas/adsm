@@ -16,7 +16,8 @@ template <typename T>
 inline
 void Private<T>::init(Private &var)
 {
-	ASSERTION((var.key_ = TlsAlloc()) != TLS_OUT_OF_INDEXES);
+	var.key_ = TlsAlloc();
+    ASSERTION(var.key_ != TLS_OUT_OF_INDEXES);
 }
 
 template <typename T>

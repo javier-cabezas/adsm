@@ -2,6 +2,8 @@
 
 #include "trace/Tracer.h"
 
+#include <sys/time.h>
+
 namespace __impl { namespace trace {
 uint64_t Tracer::timeMark() const
 {

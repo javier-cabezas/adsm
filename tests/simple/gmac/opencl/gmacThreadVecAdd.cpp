@@ -11,11 +11,11 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
 const unsigned nIterDefault = 2;
-const uint64_t vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
 
 unsigned nIter = 0;
-uint64_t vecSize = 0;
-const size_t blockSize = 512;
+unsigned vecSize = 0;
+const size_t blockSize = 32;
 
 static float **s;
 
@@ -59,12 +59,12 @@ void *addVector(void *ptr)
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(gmacPtr(*c));
-    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
+    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 0) == gmacSuccess);
     tmp = cl_mem(gmacPtr(a));
-    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
+    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 1) == gmacSuccess);
     tmp = cl_mem(gmacPtr(b));
-    assert(__oclPushArgument(&tmp, sizeof(cl_mem)) == gmacSuccess);
-    assert(__oclPushArgument(&vecSize, sizeof(vecSize)) == gmacSuccess);
+    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 2) == gmacSuccess);
+    assert(__oclSetArgument(&vecSize, sizeof(vecSize), 3) == gmacSuccess);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
 	getTime(&t);
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	gmactime_t st, en;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<uint64_t>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 

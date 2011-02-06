@@ -31,13 +31,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef __MEMORY_MEMORY_H_
-#define __MEMORY_MEMORY_H_
+#ifndef GMAC_MEMORY_MEMORY_H_
+#define GMAC_MEMORY_MEMORY_H_
 
 #include "config/common.h"
 #include "include/gmac/types.h"
 
+#include "util/Logger.h"
+
 namespace __impl { namespace memory {
+
+extern size_t BlockSize_;
+#ifdef USE_VM
+extern size_t SubBlockSize_;
+extern unsigned BlockShift_;
+extern unsigned SubBlockShift_;
+extern long_t SubBlockMask_;
+#endif
 
 class GMAC_LOCAL Memory {
 public:
@@ -47,6 +57,63 @@ public:
 	static void unshadow(hostptr_t addr, size_t count);
 	static void unmap(hostptr_t addr, size_t count);
 };
+
+#if USE_VM
+
+static inline
+long_t log2(long_t n)
+{
+    long_t ret = 0;
+    while (n != 1) {
+        ASSERTION((n & 0x1) == 0);
+        n >>= 1;
+        ret++;
+    }
+    return ret;
+}
+
+static inline
+unsigned log2(unsigned n)
+{
+    unsigned ret = 0;
+    while (n != 1) {
+        ASSERTION((n & 0x1) == 0);
+        n >>= 1;
+        ret++;
+    }
+    return ret;
+}
+
+static inline
+long_t
+GetSubBlock(const hostptr_t _addr)
+{
+    long_t addr = long_t(_addr);
+    return (addr >> SubBlockShift_) & SubBlockMask_;
+}
+
+static inline
+hostptr_t
+GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
+{
+    long_t start = long_t(_start);
+    long_t addr = long_t(_addr);
+    long_t off = addr - start;
+    long_t block = off / BlockSize_;
+    return hostptr_t(start + block * BlockSize_);
+}
+
+static inline
+hostptr_t
+GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
+{
+    long_t start = long_t(_start);
+    long_t addr  = long_t(_addr);
+    long_t off = addr - start;
+    long_t subBlock = off / SubBlockSize_;
+    return hostptr_t(start + subBlock * SubBlockSize_);
+}
+#endif
 
 }}
 

@@ -51,12 +51,8 @@
 #include <cstring>
 #include <cmath>
 
-extern "C" {
-#include <pthread.h>
-}
-
 // includes, project
-#include <gmac.h>
+#include <gmac/cuda.h>
 #include <gmac/vm.h>
 
 // includes, utils and debug
@@ -76,7 +72,7 @@ const size_t WADefault = (32 * BLOCK_SIZE); // Matrix A width
 const size_t HADefault = (32 * BLOCK_SIZE); // Matrix A height
 const size_t WBDefault = (32 * BLOCK_SIZE); // Matrix B width
 const size_t HBDefault = (32 * BLOCK_SIZE); // Matrix B height
-const int checkDefault = false; // Matrix B height
+const bool checkDefault = 0; // Matrix B height
 
 static size_t WA = 0; // Matrix A width
 static size_t HA = 0; // Matrix A height
@@ -89,8 +85,8 @@ static bool check = checkDefault; // Matrix B height
 
 static float * A, * B, * C;
 
-unsigned elemsC;
-unsigned sizeC;
+size_t elemsC;
+size_t sizeC;
 
 ////////////////////////////////////////////////////////////////////////////////
 //! Compute reference data set
@@ -102,12 +98,12 @@ unsigned sizeC;
 //! @param wB         width of matrix B
 ////////////////////////////////////////////////////////////////////////////////
 void
-computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned int wA, unsigned int wB)
+computeGold(float* C, const float* A, const float* B, size_t hA, size_t wA, size_t wB)
 {
-    for (unsigned int i = 0; i < hA; ++i) {
-        for (unsigned int j = 0; j < wB; ++j) {
+    for (size_t i = 0; i < hA; ++i) {
+        for (size_t j = 0; j < wB; ++j) {
             double sum = 0;
-            for (unsigned int k = 0; k < wA; ++k) {
+            for (size_t k = 0; k < wA; ++k) {
                 double a = A[i * wA + k];
                 double b = B[k * wB + j];
                 sum += a * b;
@@ -136,16 +132,16 @@ main(int argc, char** argv)
 
     gmactime_t s, t;
 
-    unsigned elemsA = WA * HA;
-    unsigned elemsB = WB * HB;
+    size_t elemsA = WA * HA;
+    size_t elemsB = WB * HB;
     elemsC = WC * HC;
-    unsigned sizeA = sizeof(float) * elemsA;
-    unsigned sizeB = sizeof(float) * elemsB;
+    size_t sizeA = sizeof(float) * elemsA;
+    size_t sizeB = sizeof(float) * elemsB;
     sizeC = sizeof(float) * elemsC;
 
-    printf("Elems: %d\n", elemsA);
-    printf("Elems: %d\n", elemsB);
-    printf("Elems: %d\n", elemsC);
+    printf("Elems: %zd\n", elemsA);
+    printf("Elems: %zd\n", elemsB);
+    printf("Elems: %zd\n", elemsC);
 
 
     // allocate memory for matrices A and B
@@ -175,13 +171,13 @@ main(int argc, char** argv)
     // Call the kernel
     getTime(&s);
     dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 grid(WC / threads.x, HC / threads.y);
+    dim3 grid(unsigned(WC / threads.x), unsigned(HC / threads.y));
     matrixMul<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB, 0);
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
-    if (check) {
+    if (check == 1) {
         // compute reference solution
         getTime(&s);
 

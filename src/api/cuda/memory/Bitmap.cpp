@@ -1,28 +1,159 @@
+#ifdef USE_VM
+
 #include "api/cuda/Accelerator.h"
 #include "api/cuda/Mode.h"
+#include "api/cuda/Module.h"
 
-#include "memory/Bitmap.h"
+#include "memory/vm/Bitmap.h"
 
-#ifdef USE_VM
 namespace __impl { namespace memory { namespace vm {
 
-template <>
+static const char * ACC_VM_ROOT_VAR = "__gmac_vm_root";
+#if 0
+static const char * ACC_VM_SHIFT_L1 = "__gmac_vm_shift_l1";
+static const char * ACC_VM_SHIFT_L2 = "__gmac_vm_shift_l2";
+static const char * ACC_VM_SHIFT_L3 = "__gmac_vm_shift_l3";
+static const char * ACC_VM_MASK_L1 = "__gmac_vm_mask_l1";
+static const char * ACC_VM_MASK_L2 = "__gmac_vm_mask_l2";
+static const char * ACC_VM_MASK_L3 = "__gmac_vm_mask_l3";
+#endif
+
 void
-StoreShared::alloc<Node *>(size_t nEntries)
+StoreShared::allocAcc(bool isRoot)
 {
-    this->entries_ = new Node *[nEntries];
-    this->allocated_ = true;
-    // TODO: implement accelerator memory allocation
+    accptr_t addr;
+    cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+
+    if (isRoot == false) {
+        gmacError_t ret = mode.malloc(addr, size_);
+        ASSERTION(ret == gmacSuccess);
+        TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
+    } else {
+        const cuda::Variable *var = mode.variableByName(ACC_VM_ROOT_VAR);
+        ASSERTION(var != NULL);
+        addr = var->devPtr();
+    }
+    entriesAcc_ = addr;
 }
 
-template <>
 void
-StoreShared::alloc<uint8_t>(size_t nEntries)
+StoreShared::freeAcc(bool isRoot)
 {
-    this->entries_ = new uint8_t[nEntries];
-    this->allocated_ = true;
-    // TODO: implement accelerator memory allocation
+    cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+    if (isRoot == false) {
+        gmacError_t ret = mode.free(entriesAcc_);
+        ASSERTION(ret == gmacSuccess);
+        TRACE(LOCAL,"Freeing a node in the accelerator. Size %zd. Addr %p", size_, (void *)entriesAcc_);
+    }
 }
+
+
+void
+StoreShared::syncToHost(long_t startIndex, long_t endIndex, size_t elemSize)
+{
+#ifndef USE_HOSTMAP_VM
+    TRACE(LOCAL,"Syncing SharedBitmap");
+    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+    gmacError_t ret;
+    size_t size = (endIndex - startIndex + 1) * elemSize;
+    hostptr_t host = entriesAccHost_ + startIndex * elemSize;
+    accptr_t acc = entriesAcc_ + startIndex * elemSize;
+    TRACE(LOCAL,"Setting dirty bitmap on host: %p -> %p: "FMT_SIZE, (void *) acc, host, size);
+    ret = mode.copyToHost(host, acc, size);
+    CFATAL(ret == gmacSuccess, "Unable to copy to host dirty bitmap node");
+#endif
+}
+
+void
+StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize)
+{
+    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+    cuda::Accelerator &acc = mode.getAccelerator();
+
+#ifndef USE_HOSTMAP_VM
+    if (isDirty()) {
+        gmacError_t ret = gmacSuccess;
+        accptr_t acc = entriesAcc_ + startIndex * elemSize;
+        hostptr_t host = entriesAccHost_ + startIndex * elemSize;
+        size_t size = (endIndex - startIndex + 1) * elemSize;
+
+        ret = mode.copyToAccelerator(acc, host, size);
+        TRACE(LOCAL,"Setting dirty bitmap on acc: %p -> %p: "FMT_SIZE, host, (void *) acc, size);
+        CFATAL(ret == gmacSuccess, "Unable to copy dirty bitmap to accelerator");
+        TRACE(LOCAL, "Syncing SharedBitmap");
+        TRACE(LOCAL, "Copying "FMT_SIZE" bytes", size);
+
+        setDirty(false);
+    }
+#endif
+}
+
+StoreShared::~StoreShared()
+{
+    TRACE(LOCAL, "StoreShared destructor");
+    ::free(entriesAccHost_);
+}
+
+
+void
+BitmapShared::syncToAccelerator()
+{
+#ifndef USE_MULTI_CONTEXT
+    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
+    cuda::Accelerator &acc = mode.getAccelerator();
+
+    cuda::Mode *last = acc.getLastMode();
+
+    if (last != &mode) {
+        TRACE(LOCAL, "Syncing SharedBitmap pointers");
+        gmacError_t ret = gmacSuccess;
+
+#if 0
+        const cuda::Variable *varShiftL1 = mode.constantByName(ACC_VM_SHIFT_L1);
+        ASSERTION(varShiftL1 != NULL);
+        accptr_t addrShiftL1 = varShiftL1->devPtr();
+
+        const cuda::Variable *varShiftL2 = mode.constantByName(ACC_VM_SHIFT_L2);
+        ASSERTION(varShiftL2 != NULL);
+        accptr_t addrShiftL2 = varShiftL2->devPtr();
+
+        const cuda::Variable *varShiftL3 = mode.constantByName(ACC_VM_SHIFT_L3);
+        ASSERTION(varShiftL3 != NULL);
+        accptr_t addrShiftL3 = varShiftL3->devPtr();
+
+        const cuda::Variable *varMaskL1 = mode.constantByName(ACC_VM_MASK_L1);
+        ASSERTION(varMaskL1 != NULL);
+        accptr_t addrMaskL1 = varMaskL1->devPtr();
+
+        const cuda::Variable *varMaskL2 = mode.constantByName(ACC_VM_MASK_L2);
+        ASSERTION(varMaskL2 != NULL);
+        accptr_t addrMaskL2 = varMaskL2->devPtr();
+
+        const cuda::Variable *varMaskL3 = mode.constantByName(ACC_VM_MASK_L3);
+        ASSERTION(varMaskL3 != NULL);
+        accptr_t addrMaskL3 = varMaskL3->devPtr();
+
+
+        ret = mode.copyToAccelerator(addrShiftL1, hostptr_t(&Bitmap::L1Shift_), sizeof(Bitmap::L1Shift_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L1 entries in the accelerator %p", (void *) addrShiftL1);
+        ret = mode.copyToAccelerator(addrShiftL2, hostptr_t(&Bitmap::L2Shift_), sizeof(Bitmap::L2Shift_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L2 entries in the accelerator %p", (void *) addrShiftL2);
+        ret = mode.copyToAccelerator(addrShiftL3, hostptr_t(&Bitmap::L3Shift_), sizeof(Bitmap::L3Shift_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L3 entries in the accelerator %p", (void *) addrShiftL3);
+
+        ret = mode.copyToAccelerator(addrMaskL1, hostptr_t(&Bitmap::L1Mask_), sizeof(Bitmap::L1Mask_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L1 entries in the accelerator %p", (void *) addrMaskL1);
+        ret = mode.copyToAccelerator(addrMaskL2, hostptr_t(&Bitmap::L2Mask_), sizeof(Bitmap::L2Mask_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L2 entries in the accelerator %p", (void *) addrMaskL2);
+        ret = mode.copyToAccelerator(addrMaskL3, hostptr_t(&Bitmap::L3Mask_), sizeof(Bitmap::L3Mask_));
+        CFATAL(ret == gmacSuccess, "Unable to set the number of L3 entries in the accelerator %p", (void *) addrMaskL3);
+#endif
+    }
+
+    acc.setLastMode(mode);
+#endif
+}
+
 
 #if 0
 void SharedBitmap::allocate()
