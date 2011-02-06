@@ -159,11 +159,11 @@ void Accelerator::destroyCUstream(CUstream stream)
 inline
 CUresult Accelerator::queryCUstream(CUstream stream)
 {
-    trace::EnterCurrentFunction();
+    //trace::EnterCurrentFunction();
     pushContext();
     CUresult ret = cuStreamQuery(stream);
     popContext();
-    trace::ExitCurrentFunction();
+    //trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -181,11 +181,11 @@ gmacError_t Accelerator::syncCUstream(CUstream stream)
 inline
 CUresult Accelerator::queryCUevent(CUevent event)
 {
-    trace::EnterCurrentFunction();
+    //trace::EnterCurrentFunction();
     pushContext();
     CUresult ret = cuEventQuery(event);
     popContext();
-    trace::ExitCurrentFunction();
+    //trace::ExitCurrentFunction();
     return ret;
 }
 

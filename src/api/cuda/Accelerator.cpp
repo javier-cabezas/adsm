@@ -225,7 +225,9 @@ gmacError_t Accelerator::free(accptr_t addr)
     _alignMap.erase(i);
     _alignMap.unlock();
     pushContext();
+    trace::SetThreadState(trace::Wait);
     CUresult ret = cuMemFree(device);
+    trace::SetThreadState(trace::Running);
     popContext();
     trace::ExitCurrentFunction();
     return error(ret);
