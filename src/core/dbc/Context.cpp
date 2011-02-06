@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace core {
 
-Context::Context(__impl::core::Accelerator &acc, unsigned id) :
-    __impl::core::Context(acc, id)
+Context::Context(__impl::core::Accelerator &acc, __impl::core::Mode &mode, unsigned id) :
+    __impl::core::Context(acc, mode, id)
 {
 }
 

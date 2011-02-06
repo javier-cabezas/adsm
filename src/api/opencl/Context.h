@@ -71,7 +71,6 @@ protected:
     cl_command_queue streamToHost_;
     cl_command_queue streamAccelerator_;
 
-    Mode &mode_;
     IOBuffer *buffer_;
 
     KernelConfig call_;

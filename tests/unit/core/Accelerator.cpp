@@ -18,8 +18,8 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
     accptr_t device = NULL;
     ASSERT_TRUE(GetAccelerator().malloc(device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(device != NULL);
-    ASSERT_TRUE(GetAccelerator().copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(GetAccelerator().copyToHost(hostptr_t(canary), device, Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(GetAccelerator().copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
+    ASSERT_TRUE(GetAccelerator().copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
     ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
     delete[] canary;

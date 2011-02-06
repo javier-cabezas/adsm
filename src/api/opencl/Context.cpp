@@ -10,8 +10,7 @@ namespace __impl { namespace opencl {
 Context::AddressMap Context::HostMem_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::Context(acc, mode.id()),
-    mode_(mode),
+    gmac::core::Context(acc, mode, mode.id()),
     buffer_(NULL)
 {
     setupCLstreams();
@@ -56,7 +55,9 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
 
     Accelerator &acc = accelerator();
     TRACE(LOCAL, "Sync stream %p on accelerator %p", stream, &acc);
+    trace::SetThreadState(trace::Wait);
     ret = acc.syncCLstream(stream);
+    trace::SetThreadState(trace::Running);
 #if 0
     while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
@@ -173,9 +174,7 @@ gmacError_t Context::prepareForCall()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
-    trace::SetThreadState(trace::Wait);
     ret = syncCLstream(streamToAccelerator_);
-    trace::SetThreadState(trace::Running);
 
     trace::ExitCurrentFunction();
     return ret;
@@ -185,10 +184,8 @@ gmacError_t Context::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
-    trace::SetThreadState(trace::Wait);
     ret = syncCLstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
-    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }

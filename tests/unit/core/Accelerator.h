@@ -43,10 +43,10 @@ protected:
     static const int Size2_= 32 * 1024 *1024; //added 
 
     static void SetUpTestCase() {
-        InitAccelerator();
+        InitProcess();
     }
     static void TearDownTestCase() {
-        FiniAccelerator();
+        FiniProcess();
     }
 };
 

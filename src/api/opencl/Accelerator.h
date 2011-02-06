@@ -117,13 +117,13 @@ public:
     gmacError_t free(accptr_t addr);
 
     /* Synchronous interface */
-    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::Mode &mode);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, Mode &mode, cl_command_queue stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, Mode &mode, cl_command_queue stream);
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::Mode &mode, cl_command_queue stream);
 
     cl_command_queue createCLstream();
     void destroyCLstream(cl_command_queue stream);

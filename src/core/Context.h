@@ -43,6 +43,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace core {
 
 class Accelerator;
+class Mode;
 class Kernel;
 class KernelLaunch;
 
@@ -54,6 +55,7 @@ class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
     DBC_FORCE_TEST(Context)
 protected:
     Accelerator &acc_;
+    Mode &mode_;
     unsigned id_;
 
     /**
@@ -63,7 +65,7 @@ protected:
      * perform operations on
      * \param id Context identifier
      */
-    Context(Accelerator &acc, unsigned id);
+    Context(Accelerator &acc, Mode &mode, unsigned id);
 public:
     /**
      * Destroys the resources used by the context

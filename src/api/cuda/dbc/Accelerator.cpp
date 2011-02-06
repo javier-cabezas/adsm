@@ -13,28 +13,28 @@ Accelerator::~Accelerator()
 {
 }
 
-gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(acc  != NULL);
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::cuda::Accelerator::copyToAccelerator(acc, host, size);
+    gmacError_t ret = __impl::cuda::Accelerator::copyToAccelerator(acc, host, size, mode);
     // POSTCONDITIONS
     ENSURES(ret == gmacSuccess);
 
     return ret;
 }
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(host != NULL);
     REQUIRES(acc  != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::cuda::Accelerator::copyToHost(host, acc, size);
+    gmacError_t ret = __impl::cuda::Accelerator::copyToHost(host, acc, size, mode);
     // POSTCONDITIONS
     ENSURES(ret == gmacSuccess);
 

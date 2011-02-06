@@ -11,8 +11,7 @@ Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::Context(acc, mode.id()),
-    mode_(mode),
+    gmac::core::Context(acc, mode, mode.id()),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL, NULL)
 {
@@ -51,9 +50,11 @@ gmacError_t Context::syncCUstream(CUstream _stream)
 {
     CUresult ret = CUDA_SUCCESS;
 
+    trace::SetThreadState(trace::Wait);
     while ((ret = accelerator().queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
+    trace::SetThreadState(trace::Running);
 
     if (ret == CUDA_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
@@ -165,9 +166,7 @@ gmacError_t Context::prepareForCall()
     if(buffer_ != NULL) {
         buffer_->wait();
     }
-    trace::SetThreadState(trace::Wait);
     syncCUstream(streamToAccelerator_);
-    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -176,10 +175,8 @@ gmacError_t Context::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
-    trace::SetThreadState(trace::Wait);
     ret = syncCUstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
-    trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return ret;
 }

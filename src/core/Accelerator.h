@@ -147,19 +147,21 @@ public:
      * \param acc Destination pointer to accelerator memory
      * \param host Source pointer to host memory
      * \param size Number of bytes to be copied
+     * \param mode Mode that receives the data
      * \return Error code
      */
     virtual gmacError_t
-        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size) = 0;
+        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, Mode &mode) = 0;
 
     /**
      * Copies data from accelerator memory to host memory
      * \param host Destination pointer to host memory
      * \param acc Source pointer to accelerator memory
      * \param size Number of bytes to be copied
+     * \param mode Mode that sends the data
      * \return Error code
      */
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size) = 0;
+    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, Mode &mode) = 0;
 
     /**
      * Copies data from accelerator memory to accelerator memory
