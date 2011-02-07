@@ -14,7 +14,7 @@ const unsigned nIterDefault = 1;
 const size_t vecSizeDefault = 1024 * 1024;
 
 unsigned nIter = 0;
-unsigned long vecSize = 0;
+unsigned vecSize = 0;
 const size_t blockSize = 32;
 
 
@@ -59,7 +59,7 @@ void *addVector(void *ptr)
     tmp = cl_mem(gmacPtr(b));
     __oclSetArgument(&tmp, sizeof(cl_mem), 2);
     __oclSetArgument(&vecSize, sizeof(vecSize), 3);
-    unsigned long offset = p->i * long(vecSize);
+    unsigned offset = p->i * long(vecSize);
     __oclSetArgument(&offset, sizeof(offset), 4);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
     assert(gmacThreadSynchronize() == gmacSuccess);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<unsigned long>(&vecSize, vecSizeStr, vecSizeDefault);
+	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;
