@@ -23,9 +23,9 @@ Accelerator::Accelerator(int n, CUdevice device) :
     gmac::core::Accelerator(n), device_(device)
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
-    , lastMode_(NULL),
+    , lastMode_(NULL)
 #endif
-    ctx_(NULL)
+    , ctx_(NULL)
 #endif
 {
 #if CUDA_VERSION > 3010
