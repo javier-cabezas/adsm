@@ -1,0 +1,50 @@
+#!/bin/sh
+
+usage()
+{
+    echo "Usage:\n  embed.sh outfile file1 [file2 ...]"
+}
+
+quit()
+{
+    echo $1
+    rm -f $OUTFILE.tmp
+    exit 1
+}
+
+if [ $# -lt 2 ]
+then
+    echo "Error: wrong number of parameters: $#";
+    usage;
+    exit 1;
+fi
+
+DUMMY_CODE="extern char __gmac_ocl_code_start, __gmac_ocl_code_end;"
+
+OUTFILE=$1
+TMPFILE=$OUTFILE.tmp
+shift
+
+echo $DUMMY_CODE | gcc -x c -c -o $TMPFILE -
+
+while [ "$1" != "" ]
+do
+    FILE=$1
+
+    # Check if the file exists
+    test -f $1 || quit "Error: File $FILE not found"
+
+    NAME=`basename $1`
+
+    # Check if the file has been already inserted
+    SECTION_NAME=.gmac_code.$NAME
+    objdump -hj $SECTION_NAME $TMPFILE > /dev/null 2>&1 && quit "Error: File $FILE already embedded"
+    objcopy --add-section $SECTION_NAME=$FILE $TMPFILE || quit echo "Error: Failed embedding file $FILE"
+
+    shift
+done
+
+ld -T script.ld -r -o $OUTFILE $TMPFILE
+rm -f $TMPFILE
+
+echo "$OUTFILE generated correctly"
