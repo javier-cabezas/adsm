@@ -405,8 +405,8 @@ Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
     core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
-    ASSERTION(active  != NULL);
-    ASSERTION(passive != NULL);
+    CFATAL(active  != NULL);
+    CFATAL(passive != NULL);
 
     // Control variables
     size_t left = size;
@@ -460,8 +460,8 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(dstObj.blockSize());
     core::IOBuffer *passive = mode.createIOBuffer(dstObj.blockSize());
-    ASSERTION(active  != NULL);
-    ASSERTION(passive != NULL);
+    CFATAL(active  != NULL);
+    CFATAL(passive != NULL);
 
     // Control variables
     size_t left = size;
@@ -542,8 +542,8 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
     core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
-    ASSERTION(active  != NULL);
-    ASSERTION(passive != NULL);
+    CFATAL(active  != NULL);
+    CFATAL(passive != NULL);
 
     // Control variables
     size_t left = size;
