@@ -4,21 +4,11 @@
 
 #include "common.h"
 
-MapVariable Variables;
 TestSuite Tests("GMAC");
-
-static
-void InitVariables()
-{
-    // InitGMACVariables();
-    // InitTestVariables();
-}
 
 static void
 LaunchTests()
 {
-    InitVariables();
-
     TestSuite suite("GMAC");
     ReadConf(suite);
 

@@ -105,19 +105,24 @@ private:
 
     void generateTestCases()
     {
-        std::vector<VectorString::iterator> start; 
-        std::vector<VectorString::iterator> current; 
-        std::vector<VectorString::iterator> end; 
+        if (vars_.size() > 0) {
+            std::vector<VectorString::iterator> start; 
+            std::vector<VectorString::iterator> current; 
+            std::vector<VectorString::iterator> end; 
 
-        for (size_t i = 0; i < vars_.size(); i++) {
-            start.push_back(vars_[i].begin());
-            current.push_back(vars_[i].begin());
-            end.push_back(vars_[i].end());
+            for (size_t i = 0; i < vars_.size(); i++) {
+                start.push_back(vars_[i].begin());
+                current.push_back(vars_[i].begin());
+                end.push_back(vars_[i].end());
+            }
+
+            do {
+                addTestCase(current);
+            } while(advance(current, start, end));
+        } else {
+            TestCase dummy;
+            testCases_.push_back(dummy);
         }
-
-        do {
-            addTestCase(current);
-        } while(advance(current, start, end));
     }
 public:
 

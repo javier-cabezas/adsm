@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <gmac/cuda.h>
 
-__global__ void kernelFill(int *A, off_t off, size_t size)
+__global__ void kernelFill(unsigned *A, off_t off, size_t size)
 {
     int localIdx = blockIdx.x * blockDim.x + threadIdx.x;
     int idx = localIdx + off;
@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
         assert(totalSize % currentSize == 0);
         size_t nObjects = totalSize / currentSize;
 
-        int **objects = (int **) malloc(nObjects * sizeof(int *));
+        unsigned **objects = (unsigned **) malloc(nObjects * sizeof(int *));
         assert(objects != NULL);
 
         fprintf(stderr, "- Allocating: %zd objects\n", nObjects);
-        for(int i = 0; i < nObjects; i++) {
+        for(size_t i = 0; i < nObjects; i++) {
             assert(gmacMalloc((void **)&objects[i], currentSize * sizeof(int)) == gmacSuccess);
         }
 
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         dim3 Dg(currentSize / Db.x);
         if (currentSize > 256 && currentSize % 256 != 0) Dg.x++;
 
-        for(int i = 0; i < nObjects; i++) {
+        for(size_t i = 0; i < nObjects; i++) {
             kernelFill<<<Dg, Db>>>(gmacPtr(objects[i]), off, totalSize);
             off += currentSize;
         }
@@ -41,16 +41,16 @@ int main(int argc, char *argv[])
 
         fprintf(stderr, "- Checking\n");
         off = 0;
-        for(int i = 0; i < nObjects; i++) {
-            for(int j = 0; j < currentSize; j++) {
-                int idx = off + j;
+        for(size_t i = 0; i < nObjects; i++) {
+            for(size_t j = 0; j < currentSize; j++) {
+                size_t idx = off + j;
                 assert(objects[i][j] == idx);
             }
             off += currentSize;
         }
 
         fprintf(stderr, "- Freeing: %zd objects\n", nObjects);
-        for(int i = 0; i < nObjects; i++) {
+        for(size_t i = 0; i < nObjects; i++) {
             gmacFree(objects[i]);
         }
 

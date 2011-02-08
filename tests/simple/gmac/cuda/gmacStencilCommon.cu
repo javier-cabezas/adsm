@@ -1,6 +1,8 @@
 #ifndef GMAC_STENCIL_COMMON
 #define GMAC_STENCIL_COMMON
 
+#include "gmac/cuda.h"
+
 #define STENCIL 4
 
 __constant__
@@ -205,9 +207,9 @@ do_stencil(void * ptr)
     JobDescriptor * descr = (JobDescriptor *) ptr;
 
 	float * v = NULL;
-	struct timeval s, t;
+	gmactime_t s, t;
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
 	if(gmacMalloc((void **)&descr->u2, descr->size()) != gmacSuccess)
@@ -220,10 +222,10 @@ do_stencil(void * ptr)
     if(gmacMalloc((void **) &v, descr->realSize()) != gmacSuccess)
 		CUFATAL();
 
-    for (int k = 0; k < descr->slices; k++) {        
-        for (int j = 0; j < descr->dimRealElems; j++) {        
-            for (int i = 0; i < descr->dimRealElems; i++) {        
-                int iter = k * descr->sliceRealElems() + j * descr->dimRealElems + i;
+    for (size_t k = 0; k < descr->slices; k++) {        
+        for (size_t j = 0; j < descr->dimRealElems; j++) {        
+            for (size_t i = 0; i < descr->dimRealElems; i++) {        
+                size_t iter = k * descr->sliceRealElems() + j * descr->dimRealElems + i;
                 v[iter] = VELOCITY;
             }
         }
@@ -234,12 +236,12 @@ do_stencil(void * ptr)
         barrier_wait(&barrier);
     }
 
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	dim3 Db(32, 8);
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
-	gettimeofday(&s, NULL);
+	getTime(&s);
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         if (i % 10 == 0)
             printf("Iteration: %d\n", i);
@@ -283,7 +285,7 @@ do_stencil(void * ptr)
         barrier_wait(&barrier);
     }
 
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
 	gmacFree(descr->u2);
@@ -294,7 +296,7 @@ do_stencil(void * ptr)
     return NULL;
 }
 
-const char * dimRealElemsStr = "GMAC_DIM_REAL_ELEMS";
+const char * dimRealElemsStr = "GMAC_STENCIL_DIM_ELEMS";
 const size_t dimRealElemsDefault = 352;
 
 static size_t dimElems     = 0;

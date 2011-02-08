@@ -6,24 +6,22 @@
 #include <pthread.h>
 #include "barrier.h"
 
-#include <gmac.h>
-
 #include "utils.h"
 #include "debug.h"
 
 #include "gmacStencilCommon.cu"
 
 const char * nIterStr = "GMAC_NITER";
-const size_t nIterDefault        = 4;
+const unsigned nIterDefault        = 4;
 
-static size_t nIter = 0;
+static unsigned nIter = 0;
 
 
 int main(int argc, char *argv[])
 {
-	struct timeval s, t;
+	gmactime_t s, t;
 	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
-	setParam<size_t>(&nIter, nIterStr, nIterDefault);
+	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 
     if (nIter == 0) {
         fprintf(stderr, "Error: nIter should be greater than 0\n");
@@ -31,7 +29,7 @@ int main(int argc, char *argv[])
     }
 
     if (dimRealElems % 32 != 0) {
-        fprintf(stderr, "Error: wrong dimension %d\n", dimRealElems);
+        fprintf(stderr, "Error: wrong dimension %u\n", unsigned(dimRealElems));
         abort();
     }
 
@@ -46,7 +44,7 @@ int main(int argc, char *argv[])
         barrier_init(&barrier, nIter);
     }
 
-    for(int n = 0; n < nIter; n++) {
+    for(unsigned n = 0; n < nIter; n++) {
         descriptors[n] = JobDescriptor();
         descriptors[n].gpus  = nIter;
         descriptors[n].gpuId = n;
@@ -69,15 +67,15 @@ int main(int argc, char *argv[])
         descriptors[n].slices       = dimElems / nIter;
 	}
 
-	gettimeofday(&t, NULL);
-	for(int n = 0; n < nIter; n++) {
+	getTime(&t);
+	for(unsigned n = 0; n < nIter; n++) {
 		pthread_create(&nThread[n], NULL, do_stencil, (void *) &descriptors[n]);
     }
 
-	for(int n = 0; n < nIter; n++) {
+	for(unsigned n = 0; n < nIter; n++) {
 		pthread_join(nThread[n], NULL);
 	}
-	gettimeofday(&s, NULL);
+	getTime(&s);
 	printTime(&t, &s, "Total: ", "\n");
 
     if (nIter > 1) {

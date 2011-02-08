@@ -26,6 +26,7 @@ string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
+    gmacAlloc.cu
     gmacVecAdd.cu
     gmacThreadVecAdd.cu
     gmacSharedVecAdd.cu
@@ -36,6 +37,11 @@ source_group(${current_GROUP} FILES
     gmacFile.cu
     gmacMigration.cu
     gmacMeminfo.cu
+    gmacStencil.cu
+    gmacStencilCommon.cu
+    gmacConstant.cu
+    gmacTexture.cu
+    gmacThreadStencil.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -48,6 +54,11 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing")
 endif(CMAKE_COMPILER_IS_GNUCC)
+
+# gmacAlloc
+cuda_compile(alloc gmacAlloc.cu)
+add_executable(gmacAlloc ${alloc} ${common_SRC} gmacAlloc.cu)
+target_link_libraries(gmacAlloc gmac)
 
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
@@ -74,6 +85,16 @@ cuda_compile(matrixMul gmacMatrixMul.cu)
 add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMul.cu)
 target_link_libraries(gmacMatrixMul gmac)
 
+# gmacStencil
+cuda_compile(stencil gmacStencil.cu)
+add_executable(gmacStencil ${stencil} ${common_SRC} gmacStencil.cu gmacStencilCommon.cu)
+target_link_libraries(gmacStencil gmac)
+
+# gmacThreadStencil
+cuda_compile(threadStencil gmacThreadStencil.cu)
+add_executable(gmacThreadStencil ${threadStencil} ${common_SRC} gmacThreadStencil.cu gmacStencilCommon.cu)
+target_link_libraries(gmacThreadStencil gmac)
+
 # gmacMemcpy
 cuda_compile(memcpy gmacMemcpy.cu)
 add_executable(gmacMemcpy ${memcpy} ${common_SRC} gmacMemcpy.cu)
@@ -99,6 +120,16 @@ cuda_compile(meminfo gmacMeminfo.cu)
 add_executable(gmacMeminfo ${meminfo} ${common_SRC} gmacMeminfo.cu)
 target_link_libraries(gmacMeminfo gmac)
 
+# gmacTexture
+cuda_compile(texture gmacTexture.cu)
+add_executable(gmacTexture ${texture} ${common_SRC} gmacTexture.cu)
+target_link_libraries(gmacTexture gmac)
+
+# gmacConstant
+cuda_compile(constant gmacConstant.cu)
+add_executable(gmacConstant ${constant} ${common_SRC} gmacConstant.cu)
+target_link_libraries(gmacConstant gmac)
+
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
@@ -109,6 +140,8 @@ install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+
+file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
 # gmacMap
 # source_group(${current_GROUP} FILES gmacMap.cu)

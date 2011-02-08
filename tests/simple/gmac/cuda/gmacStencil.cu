@@ -3,8 +3,6 @@
 #include <time.h>
 #include <stdint.h>
 
-#include <gmac.h>
-
 #include "utils.h"
 #include "debug.h"
 #include "barrier.h"
@@ -17,7 +15,7 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 
     if (dimRealElems % 32 != 0) {
-        fprintf(stderr, "Error: wrong dimension %d\n", dimRealElems);
+        fprintf(stderr, "Error: wrong dimension %u\n", unsigned(dimRealElems));
         abort();
     }
 

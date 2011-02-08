@@ -7,10 +7,6 @@
 #include "Test.h"
 #include "Variable.h"
 
-typedef std::map<std::string, Variable> MapVariable;
-
-extern MapVariable Variables;
-
 void ReadConf(TestSuite &suite);
 
 #endif /* COMMON_H */

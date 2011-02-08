@@ -9,12 +9,12 @@
 #include "debug.h"
 
 
-const int width = 16;
-const int height = 16;
+const unsigned width = 16;
+const unsigned height = 16;
 
 __constant__ float constant[width * height];
 
-__global__ void vecAdd(float *c, int width, int height)
+__global__ void vecAdd(float *c, unsigned width, unsigned height)
 {
 	unsigned x = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	float *data, *c;
 
 	data = (float *)malloc(width * height * sizeof(float));
-	for(int i = 0; i < width * height; i++)
+	for(unsigned i = 0; i < width * height; i++)
 		data[i] = i;
 	assert(cudaMemcpyToSymbol(constant, data, width * height * sizeof(float)) == cudaSuccess);
 
@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
 	vecAdd<<<Dg, Db>>>(gmacPtr(c), width, height);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
-	for(int i = 0; i < width * height; i++) {
+	for(unsigned i = 0; i < width * height; i++) {
 		if(c[i] == data[i]) continue;
-		fprintf(stderr,"Error on %d (0x%x)\n", i, c[i]);
+		fprintf(stderr,"Error on %d (%f)\n", i, c[i]);
 		abort();
 	}
 	fprintf(stderr,"Done!\n");

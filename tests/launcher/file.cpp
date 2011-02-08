@@ -5,11 +5,18 @@
 
 #include "common.h"
 
+typedef std::map<std::string, Variable> MapVariable;
+static MapVariable Variables;
+
 static void
 ReadVars(std::string fileName)
 {
     std::ifstream input(fileName.c_str(), std::ios::in);
-    assert(input.is_open());
+    if (input.fail() == true || input.is_open() == false) {
+        std::cerr << "Error opening variable specification file: " << fileName << std::endl;
+        return;
+    }
+
     while (input.good()) {
         std::string line;
         std::getline(input, line);
@@ -37,7 +44,11 @@ static void
 ReadTests(std::string fileName, TestSuite &suite)
 {
     std::ifstream input(fileName.c_str(), std::ios::in);
-    assert(input.is_open());
+    if (input.fail() == true || input.is_open() == false) {
+        std::cerr << "Error opening test specification file: " << fileName << std::endl;
+        return;
+    }
+
     while (input.good()) {
         std::string line;
         std::getline(input, line);

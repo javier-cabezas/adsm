@@ -10,6 +10,7 @@ Test::TestCase::run(std::string exec)
     if (pid == 0) {
         setEnvironment();
 
+        printf("Launching: %s\n", exec.c_str());
         int execReturn = execlp(exec.c_str(), exec.c_str(), (char *)NULL);
         printf("Failure! execve error code %d\n", execReturn);
         abort();
@@ -30,6 +31,7 @@ Test::TestCase::setEnvironment()
     for (it = keyvals_.begin(); it != keyvals_.end(); it++) {
         ::setenv(it->first.c_str(), it->second.c_str(), 1);
     }
+    ::setenv("PATH", ".", 1);
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
