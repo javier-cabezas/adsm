@@ -6,7 +6,7 @@
 namespace __impl { namespace cuda {
 
 #ifdef USE_MULTI_CONTEXT
-util::Private<CUcontext> Accelerator::_Ctx;
+util::Private<CUcontext> Accelerator::Ctx_;
 #endif
 
 void Switch::in()
@@ -20,13 +20,13 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-    gmac::core::Accelerator(n), device_(device),
+    gmac::core::Accelerator(n), device_(device)
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
-    lastMode_(NULL),
+    , lastMode_(NULL),
 #endif
+    ctx_(NULL)
 #endif
-    _ctx(NULL)
 {
 #if CUDA_VERSION > 3010
     size_t size = 0;
@@ -34,20 +34,12 @@ Accelerator::Accelerator(int n, CUdevice device) :
     unsigned int size = 0;
 #endif
     CUresult ret = cuDeviceTotalMem(&size, device_);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
     ret = cuDeviceComputeCapability(&major_, &minor_, device_);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA %d", ret);
-
-#ifndef USE_MULTI_CONTEXT
-    CUcontext tmp;
-    unsigned int flags = 0;
-#if CUDA_VERSION >= 2020
-    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
-#else
-    TRACE(LOCAL,"Host mapped memory not supported by the HW");
-#endif
+    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
 
     int val;
+
 #if CUDA_VERSION > 3000
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, n);
     CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
@@ -60,8 +52,16 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     integrated_ = (val != 0);
 
+#ifndef USE_MULTI_CONTEXT
+    CUcontext tmp;
+    unsigned int flags = 0;
+#if CUDA_VERSION >= 2020
+    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
+#else
+    TRACE(LOCAL,"Host mapped memory not supported by the HW");
+#endif
 
-    ret = cuCtxCreate(&_ctx, flags, device_);
+    ret = cuCtxCreate(&ctx_, flags, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
     ret = cuCtxPopCurrent(&tmp);
     CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
@@ -79,7 +79,7 @@ Accelerator::~Accelerator()
     }
     _modules.clear();
     popContext();
-    CUresult ret = cuCtxDestroy(_ctx);
+    CUresult ret = cuCtxDestroy(ctx_);
     ASSERTION(ret == CUDA_SUCCESS);
 #endif
 }
@@ -87,7 +87,7 @@ Accelerator::~Accelerator()
 void Accelerator::init()
 {
 #ifdef USE_MULTI_CONTEXT
-    util::Private<CUcontext>::init(_Ctx);
+    util::Private<CUcontext>::init(Ctx_);
 #endif
 }
 

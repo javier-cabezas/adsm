@@ -90,9 +90,9 @@ protected:
 #endif
 
 #ifdef USE_MULTI_CONTEXT
-    static util::Private<CUcontext> _Ctx;
+    static util::Private<CUcontext> Ctx_;
 #else
-    CUcontext _ctx;
+    CUcontext ctx_;
     AcceleratorLock _mutex;
     ModuleVector _modules;
 #endif

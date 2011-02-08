@@ -74,6 +74,12 @@ elseif(USE_TRACE_PARAVER)
     endif(USE_TRACE_LOCKS)
 endif(USE_TRACE_CONSOLE)
 
+# Setup configuration options
+option(USE_MULTI_CONTEXT "Enable multi context" OFF)
+if(USE_MULTI_CONTEXT)
+    message(STATUS "Using multi context")
+    add_definitions(-DUSE_MULTI_CONTEXT)
+endif(USE_MULTI_CONTEXT)
 
 # Setup configuration options
 option(USE_MPI "Enable MPI interposition" OFF)

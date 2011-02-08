@@ -16,6 +16,9 @@ do
         BUILD_TYPE="Debug"
         USE_DBC=ON
         ;;
+    --enable-multi-context)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MULTI_CONTEXT=ON"
+        ;;
     --enable-dbc)
         USE_DBC=ON
         ;;

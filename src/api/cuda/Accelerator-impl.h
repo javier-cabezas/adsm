@@ -216,10 +216,10 @@ void Accelerator::pushContext() const
 {
     CUresult ret;
 #ifdef USE_MULTI_CONTEXT
-    ret = cuCtxPushCurrent(*Accelerator::_Ctx.get());
+    ret = cuCtxPushCurrent(*Accelerator::Ctx_.get());
 #else
     _mutex.lock();
-    ret = cuCtxPushCurrent(_ctx);
+    ret = cuCtxPushCurrent(ctx_);
 #endif
     CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
 }
@@ -260,7 +260,7 @@ Accelerator::setLastMode(cuda::Mode &mode)
 inline void
 Accelerator::setCUcontext(CUcontext * ctx)
 {
-    _Ctx.set(ctx);
+    Ctx_.set(ctx);
 }
 #endif
 

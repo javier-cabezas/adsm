@@ -9,7 +9,7 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
     gmac::core::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = getAccelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUcontext();
 #endif
     switchIn();
     modules = getAccelerator().createModules();
@@ -33,6 +33,8 @@ Mode::Mode(core::Process &proc, Accelerator &acc) :
 
 Mode::~Mode()
 {
+    switchIn();
+
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
 
@@ -46,6 +48,8 @@ Mode::~Mode()
         delete ioMemory_;
         ioMemory_ = NULL;
     }
+
+    switchOut();
 }
 
 inline
@@ -70,7 +74,7 @@ void Mode::destroyIOBuffer(core::IOBuffer *buffer)
 void Mode::load()
 {
 #ifdef USE_MULTI_CONTEXT
-    cudaCtx_ = getAccelerator().createCUContext::current();
+    cudaCtx_ = getAccelerator().createCUcontext();
 #endif
 
     modules = getAccelerator().createModules();
@@ -212,15 +216,13 @@ CUstream Mode::eventStream()
 
 gmacError_t Mode::waitForEvent(CUevent event)
 {
-	switchIn();
+    // Backend methods do not need to switch in/out
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
     CUresult ret;
     while ((ret = acc.queryCUevent(event)) == CUDA_ERROR_NOT_READY) {
         // TODO: add delay here
     }
-
-	switchOut();
 
     return Accelerator::error(ret);
 }
