@@ -158,7 +158,7 @@ public:
     static Mode &getCurrent();
     Accelerator &getAccelerator();
 
-    gmacError_t waitForEvent(CUevent event);
+    gmacError_t waitForEvent(CUevent event, bool fromCUDA);
     gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);
 };
 

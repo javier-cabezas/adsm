@@ -10,8 +10,13 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
 {
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
+#ifdef USE_VM
     gmacError_t ret = 
-        mode.malloc(acceleratorAddr, size, unsigned(BlockSize_));
+        mode.malloc(acceleratorAddr, size, unsigned(SubBlockSize_));
+#else
+    gmacError_t ret = 
+        mode.malloc(acceleratorAddr, size);
+#endif
     if(ret == gmacSuccess) {
 #ifdef USE_SUBBLOCK_TRACKING
         vm::BitmapHost &bitmap = mode.hostDirtyBitmap();

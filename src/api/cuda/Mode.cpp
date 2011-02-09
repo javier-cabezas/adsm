@@ -214,9 +214,10 @@ CUstream Mode::eventStream()
     return ctx.eventStream();
 }
 
-gmacError_t Mode::waitForEvent(CUevent event)
+gmacError_t Mode::waitForEvent(CUevent event, bool fromCUDA)
 {
     // Backend methods do not need to switch in/out
+    if (!fromCUDA) switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
     CUresult ret;
@@ -224,6 +225,7 @@ gmacError_t Mode::waitForEvent(CUevent event)
         // TODO: add delay here
     }
 
+    if (!fromCUDA) switchOut();
     return Accelerator::error(ret);
 }
 

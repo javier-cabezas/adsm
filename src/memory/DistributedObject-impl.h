@@ -20,9 +20,17 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     shadow_ = Memory::shadow(addr_, size_);
 
     accptr_t acceleratorAddr = accptr_t(NULL);
+
+#ifdef USE_VM
     // Allocate accelerator memory
     gmacError_t ret = 
-        owner.malloc(acceleratorAddr, size, unsigned(BlockSize_));
+        owner.malloc(acceleratorAddr, size, unsigned(SubBlockSize_));
+#else
+    // Allocate accelerator memory
+    gmacError_t ret = 
+        owner.malloc(acceleratorAddr, size);
+#endif
+
     if(ret == gmacSuccess) valid_ = true;
 
     // Populate the block-set
@@ -88,8 +96,13 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
     if(alreadyOwned) return gmacSuccess;
 
     accptr_t acceleratorAddr = accptr_t(NULL);
+#ifdef USE_VM
     gmacError_t ret = 
-		mode.malloc(acceleratorAddr, size_, unsigned(BlockSize_));
+		mode.malloc(acceleratorAddr, size_, unsigned(SubBlockSize_));
+#else
+    gmacError_t ret = 
+		mode.malloc(acceleratorAddr, size_);
+#endif
     if(ret != gmacSuccess) return ret;
 
     lockWrite();

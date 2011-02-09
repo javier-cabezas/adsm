@@ -7,7 +7,7 @@ set(api_lib_SRC
 set(api_SRC
     Accelerator.h Accelerator-impl.h Accelerator.cpp
     Error.cpp
-    IOBuffer.h IOBuffer-impl.h
+    IOBuffer.h IOBuffer-impl.h IOBuffer.cpp
     Kernel.h Kernel-impl.h Kernel.cpp
     Mode.h Mode-impl.h Mode.cpp
     Context.h Context-impl.h Context.cpp

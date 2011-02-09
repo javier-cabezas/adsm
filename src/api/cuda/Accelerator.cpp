@@ -74,10 +74,10 @@ Accelerator::~Accelerator()
 #ifndef USE_MULTI_CONTEXT
     pushContext();
     ModuleVector::iterator i;
-    for(i = _modules.begin(); i != _modules.end(); i++) {
+    for(i = modules_.begin(); i != modules_.end(); i++) {
         delete *i;
     }
-    _modules.clear();
+    modules_.clear();
     popContext();
     CUresult ret = cuCtxDestroy(ctx_);
     ASSERTION(ret == CUDA_SUCCESS);
@@ -163,13 +163,13 @@ Accelerator::destroyModules(ModuleVector & modules)
 ModuleVector *Accelerator::createModules()
 {
     trace::EnterCurrentFunction();
-    if(_modules.empty()) {
+    if(modules_.empty()) {
         pushContext();
-        _modules = ModuleDescriptor::createModules();
+        modules_ = ModuleDescriptor::createModules();
         popContext();
     }
     trace::ExitCurrentFunction();
-    return &_modules;
+    return &modules_;
 }
 #endif
 
@@ -201,9 +201,9 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
         gpuPtr += align - (gpuPtr % align);
     }
     addr = gpuPtr;
-    _alignMap.lockWrite();
-    _alignMap.insert(AlignmentMap::value_type(gpuPtr, ptr));
-    _alignMap.unlock();
+    alignMap_.lockWrite();
+    alignMap_.insert(AlignmentMap::value_type(gpuPtr, ptr));
+    alignMap_.unlock();
     TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) addr, ptr, gpuSize, size, align);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -214,16 +214,16 @@ gmacError_t Accelerator::free(accptr_t addr)
     trace::EnterCurrentFunction();
     ASSERTION(addr != NULL);
     AlignmentMap::iterator i;
-    _alignMap.lockWrite();
-    i = _alignMap.find(addr);
-    if (i == _alignMap.end()) {
-        _alignMap.unlock();
+    alignMap_.lockWrite();
+    i = alignMap_.find(addr);
+    if (i == alignMap_.end()) {
+        alignMap_.unlock();
         trace::ExitCurrentFunction();
         return gmacErrorInvalidValue;
     }
     CUdeviceptr device = i->second;
-    _alignMap.erase(i);
-    _alignMap.unlock();
+    alignMap_.erase(i);
+    alignMap_.unlock();
     pushContext();
     trace::SetThreadState(trace::Wait);
     CUresult ret = cuMemFree(device);

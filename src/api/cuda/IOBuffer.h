@@ -36,8 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include <cuda.h>
 
-#include "Mode.h"
-
 #include "core/IOBuffer.h"
 #include "config/common.h"
 
@@ -47,7 +45,12 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace cuda {
 
+class Mode;
+
 class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
+private:
+    gmacError_t wait(bool fromCUDA);
+
 protected:
     CUevent start_;
     CUevent end_;
@@ -78,6 +81,7 @@ public:
     void started();
 
     gmacError_t wait();
+    gmacError_t waitFromCUDA();
 };
 
 }}

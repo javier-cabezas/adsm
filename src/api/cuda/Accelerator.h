@@ -37,6 +37,7 @@ WITH THE SOFTWARE.
 
 #include <vector_types.h>
 
+#include <list>
 #include <set>
 
 #include "config/common.h"
@@ -78,10 +79,10 @@ class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
 protected:
     CUdevice device_;
 
-    AlignmentMap _alignMap;
-
     int major_;
     int minor_;
+
+    AlignmentMap alignMap_;
 
 #ifdef USE_VM
 #ifndef USE_MULTI_CONTEXT
@@ -93,9 +94,9 @@ protected:
     static util::Private<CUcontext> Ctx_;
 #else
     CUcontext ctx_;
-    AcceleratorLock _mutex;
-    ModuleVector _modules;
+    ModuleVector modules_;
 #endif
+    AcceleratorLock mutex_;
 
     void pushContext() const;
     void popContext() const;

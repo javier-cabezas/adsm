@@ -74,30 +74,16 @@ IOBuffer::started()
 inline gmacError_t
 IOBuffer::wait()
 {
-    EventMap::iterator it;
-    it = map_.find(mode_);
-    ASSERTION(state_ == Idle || it != map_.end());
-
-    gmacError_t ret = gmacSuccess;
-
-    if (state_ != Idle) {
-        ASSERTION(mode_ != NULL);
-        CUevent start = it->second.first;
-        CUevent end   = it->second.second;
-        trace::SetThreadState(trace::Wait);
-        ret = mode_->waitForEvent(end);
-        trace::SetThreadState(trace::Running);
-        if(state_ == ToHost) DataCommToHost(*mode_, start, end, size_);
-        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, size_);
-        TRACE(LOCAL,"Buffer %p goes Idle", this);
-        state_ = Idle;
-        mode_  = NULL;
-    } else {
-        ASSERTION(mode_ == NULL);
-    }
-
-    return ret;
+    return wait(false);
 }
+
+inline gmacError_t
+IOBuffer::waitFromCUDA()
+{
+    return wait(true);
+}
+
+
 
 }}
 

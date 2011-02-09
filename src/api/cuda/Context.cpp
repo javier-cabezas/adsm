@@ -81,11 +81,11 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::ExitCurrentFunction();
         return core::Context::copyToAccelerator(acc, host, size);
     }
-    buffer_->wait();
+    buffer_->waitFromCUDA();
     gmacError_t ret = gmacSuccess;
     size_t offset = 0;
     while(offset < size) {
-        ret = buffer_->wait();
+        ret = buffer_->waitFromCUDA();
         if(ret != gmacSuccess) break;
         size_t len = buffer_->size();
         if((size - offset) < buffer_->size()) len = size - offset;
@@ -113,8 +113,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         return core::Context::copyToHost(host, acc, size);
     }
 
-    gmacError_t ret = buffer_->wait();
-    buffer_->wait();
+    gmacError_t ret = buffer_->waitFromCUDA();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     size_t offset = 0;
     while(offset < size) {
@@ -123,7 +122,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         ret = accelerator().copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, streamToHost_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
-        ret = buffer_->wait();
+        ret = buffer_->waitFromCUDA();
         if(ret != gmacSuccess) break;
         trace::EnterCurrentFunction();
         ::memcpy((uint8_t *)host + offset, buffer_->addr(), len);
@@ -164,7 +163,7 @@ gmacError_t Context::prepareForCall()
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
     if(buffer_ != NULL) {
-        buffer_->wait();
+        buffer_->waitFromCUDA();
     }
     syncCUstream(streamToAccelerator_);
     trace::ExitCurrentFunction();
@@ -186,7 +185,7 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
 {
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.wait();
+    gmacError_t ret = buffer.waitFromCUDA();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
@@ -201,7 +200,7 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
 {
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.wait();
+    gmacError_t ret = buffer.waitFromCUDA();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
