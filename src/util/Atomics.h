@@ -38,10 +38,13 @@ WITH THE SOFTWARE.  */
 typedef volatile int Atomic;
 #   define AtomicInc(v) __sync_add_and_fetch(&v, 1)
 #   define AtomicDec(v) __sync_sub_and_fetch(&v, 1)
+#	define AtomicTestAndSet(v, a, b) __sync_val_compare_and_swap(&v, a, b)
 #elif defined(_MSC_VER)
+#include <windows.h>
 typedef volatile LONG Atomic;
 #   define AtomicInc(v) InterlockedIncrement(&v)
 #   define AtomicDec(v) InterlockedDecrement(&v)
+#	define AtomicTestAndSet(v, a, b) InterlockedCompareExchange(&v, b, a)
 #endif
 
 #endif

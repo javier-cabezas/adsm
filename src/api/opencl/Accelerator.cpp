@@ -331,8 +331,12 @@ cl_command_queue Accelerator::createCLstream()
 void Accelerator::destroyCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
+#ifndef _MSC_VER
+	// We cannot remove the command queue because the OpenCL DLL might
+	// have been already unloaded
     cl_int ret = clReleaseCommandQueue(stream);
     CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
+#endif
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
     trace::ExitCurrentFunction();

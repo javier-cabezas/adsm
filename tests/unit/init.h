@@ -34,13 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_INIT_H_
 #define TEST_UNIT_INIT_H_
 
+#include "util/Atomics.h"
+
 namespace __impl {
 class GMACLock;
 
 extern GMACLock * _inGmacLock;
 extern const char _gmacCode;
 extern const char _userCode;
-extern char _gmacInit;
+extern Atomic _gmacInit;
 
     namespace core { class Accelerator; 
                      class Context;

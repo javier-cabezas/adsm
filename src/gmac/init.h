@@ -42,6 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/Thread.h"
 #include "util/Private.h"
+#include "util/Atomics.h"
 #include "util/Logger.h"
 
 namespace __impl {
@@ -63,12 +64,16 @@ extern __impl::util::Private<const char> _inGmac;
 extern GMACLock * _inGmacLock;
 extern const char _gmacCode;
 extern const char _userCode;
-extern char _gmacInit;
+extern Atomic _gmacInit;
 
+void init() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
 
 inline void enterGmac()
 {
+#	if defined(_MSC_VER)
+	if(AtomicTestAndSet(_gmacInit, 0, 1) == 0) init();
+#endif
     _inGmac.set(&_gmacCode);
     _inGmacLock->lockRead();
 }

@@ -12,12 +12,16 @@ namespace __impl { namespace opencl {
 
 inline CommandList::~CommandList()
 {
+	// We cannot execute this code in Windows, because
+	// the OpenCL DLL might have been already unloaded
+#ifndef _MSC_VER
     lockWrite();
     Parent::iterator i;
     for(i = Parent::begin(); i != Parent::end(); i++)
         clReleaseCommandQueue(*i);
     Parent::clear();
     unlock();
+#endif
 }
 
 inline void CommandList::add(cl_command_queue stream)

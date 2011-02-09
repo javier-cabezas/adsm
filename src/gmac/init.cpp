@@ -13,7 +13,7 @@ GMACLock * _inGmacLock;
 const char _gmacCode = 1;
 const char _userCode = 0;
 
-char _gmacInit = 0;
+Atomic _gmacInit = 0;
 
 #ifdef LINUX 
 #define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
@@ -23,14 +23,14 @@ char _gmacInit = 0;
 #endif
 #endif
 
-static void CONSTRUCTOR init(void)
+void CONSTRUCTOR init(void)
 {
 	util::Private<const char>::init(_inGmac);
     _inGmacLock = new GMACLock();
 
+	_gmacInit = 1;
 	enterGmac();
-    _gmacInit = 1;
-
+    
 	util::Logger::Init();
     TRACE(GLOBAL, "Initialiazing GMAC");
 
@@ -99,7 +99,7 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch(dwReason) {
 		case DLL_PROCESS_ATTACH:
-            __impl::init();
+            //__impl::init();
 			break;
 		case DLL_PROCESS_DETACH:
 			__impl::fini();

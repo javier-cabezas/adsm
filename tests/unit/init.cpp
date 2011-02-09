@@ -1,6 +1,7 @@
 #include "init.h"
 
 #include "util/Private.h"
+#include "util/Atomics.h"
 
 namespace __impl {
 class GMACLock {
@@ -17,7 +18,10 @@ GMACLock * _inGmacLock;
 const char _gmacCode = 1;
 const char _userCode = 0;
 
-char _gmacInit = 0;
+Atomic _gmacInit = 0;
+
+void init() { }
+
 }
 
 void InitGmac()
