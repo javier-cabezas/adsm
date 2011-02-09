@@ -58,7 +58,7 @@ include("CMakeLists-cuda.txt")
 
 # Check for Tracing
 option(USE_TRACE_CONSOLE "Enable producing traces in the console" OFF)
-option(USE_TRACE_PARACER "Enable producing Paraver traces" OFF)
+option(USE_TRACE_PARAVER "Enable producing Paraver traces" OFF)
 option(USE_TRACE_LOCKS "Enable producing traces for locks" OFF)
 if(USE_TRACE_CONSOLE)
     if(USE_TRACE_LOCKS)
