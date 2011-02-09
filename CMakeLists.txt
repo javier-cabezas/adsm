@@ -192,6 +192,13 @@ if(MAKE_TESTS)
     # Add libraries used in testing
 endif(MAKE_TESTS)
 
+# Check if tools must be compiled
+option(MAKE_TOOLS "Compile GMAC tools" OFF)
+if(MAKE_TOOLS)
+    message(STATUS "Compile GMAC tools")
+    add_subdirectory(tools)
+endif(MAKE_TOOLS)
+
 install(TARGETS gmac 
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib

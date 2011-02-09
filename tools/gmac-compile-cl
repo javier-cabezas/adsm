@@ -1,15 +1,82 @@
-#!/bin/sh
+#!/bin/bash
+
+# Constant global variables
+DUMMY_CODE="extern char __gmac_ocl_code_start, __gmac_ocl_code_end;"
+MAGIC="!@#~"
+
+# Global variables
+CHECK=1
+OUTFILE=""
+TMPFILE=""
 
 usage()
 {
-    echo "Usage:\n  embed.sh outfile file1 [file2 ...]"
+    echo "Usage:\n  embed.sh outfile file1 [-f \"flags\"] [file2 [-f \"flags\"] ...]"
+}
+
+clean()
+{
+    rm -f $OUTFILE.tmp __code_flags.tmp __openclcc_output.tmp
 }
 
 quit()
 {
-    echo $1
-    rm -f $OUTFILE.tmp
+    echo -e "$1"
+    clean
     exit 1
+}
+
+check_file()
+{
+    FILE=$1
+    FLAGS=$2
+
+    echo -n "- Checking... "
+    openclcc $FILE $FLAGS 2> __openclcc_output.tmp > /dev/null
+
+    if [ $? -ne 0 ]
+    then
+        ERROR_MSG=`cat __openclcc_output.tmp`
+        quit "Error\nOpenCLcc output\n$ERROR_MSG"
+    else
+        echo "OK"
+    fi
+}
+
+embed_file()
+{
+    FILE=$1
+    FLAGS=$2
+    echo -n "- Embedding... "
+    cat $FILE > __code_flags.tmp
+    echo "$MAGIC$FLAGS$MAGIC" >> __code_flags.tmp
+    objcopy --add-section $SECTION_NAME=__code_flags.tmp $TMPFILE || quit "Error\nFailed embedding file $FILE"
+    echo "OK"
+}
+
+process_file()
+{
+    FILE=$1
+    CHECK=$2
+    FLAGS=$3
+
+    # Check if the file exists
+    test -f $FILE || quit "Error: File $FILE not found"
+
+    NAME=`basename $FILE`
+
+    # Check if the file has been already inserted
+    SECTION_NAME=.gmac_code.$NAME
+    objdump -hj $SECTION_NAME $TMPFILE > /dev/null 2>&1 && quit "Error: File $FILE already embedded"
+
+    echo "File: $FILE"
+    # Check CL code
+    if [ $CHECK -eq 1 ]
+    then
+        check_file $FILE $FLAGS
+    fi
+
+    embed_file $FILE $FLAGS
 }
 
 if [ $# -lt 2 ]
@@ -19,32 +86,50 @@ then
     exit 1;
 fi
 
-DUMMY_CODE="extern char __gmac_ocl_code_start, __gmac_ocl_code_end;"
+which openclcc >> /dev/null
+if [ $? -eq 1 ]
+then
+    PATH=$PATH:`dirname $0`:.
+    which openclcc >> /dev/null
+    if [ $? -eq 1 ]
+    then
+        echo "Warning: no openclcc found. Code will not be checked"
+        CHECK=0
+    fi
+fi
 
 OUTFILE=$1
 TMPFILE=$OUTFILE.tmp
 shift
 
+# Generate dummy ELF file with the needed symbols to locate the code
+# in run-time
 echo $DUMMY_CODE | gcc -x c -c -o $TMPFILE -
 
+# Process all files
 while [ "$1" != "" ]
 do
     FILE=$1
+    FLAGS=""
 
-    # Check if the file exists
-    test -f $1 || quit "Error: File $FILE not found"
+    # Look for compilation flags
+    if [ "$2" == "-f" ]
+    then
+        test "$3" != "" || quit "Error: Expected parameters after -f\n $( usage )"
+        FLAGS="$3"
+        shift
+        shift
+    fi
 
-    NAME=`basename $1`
-
-    # Check if the file has been already inserted
-    SECTION_NAME=.gmac_code.$NAME
-    objdump -hj $SECTION_NAME $TMPFILE > /dev/null 2>&1 && quit "Error: File $FILE already embedded"
-    objcopy --add-section $SECTION_NAME=$FILE $TMPFILE || quit echo "Error: Failed embedding file $FILE"
-
+    # Process the file
+    process_file $FILE $CHECK $FLAGS
+    
     shift
 done
 
+# Generate output file wich contains a .rodata section with the CL code
+# and symbols pointing to the beginning and end of the section
 ld -T script.ld -r -o $OUTFILE $TMPFILE
-rm -f $TMPFILE
+clean
 
 echo "$OUTFILE generated correctly"

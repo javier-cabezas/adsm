@@ -28,6 +28,9 @@ do
     --enable-tests)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
         ;;
+    --enable-tools)
+        CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TOOLS=ON"
+        ;;
     --enable-opencl)
         FRONTEND="-DUSE_CUDA=OFF -DUSE_OPENCL=ON"
         ;;
