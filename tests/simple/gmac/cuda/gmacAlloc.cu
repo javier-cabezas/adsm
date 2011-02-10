@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 {
     const unsigned totalSize = 8 * 1024 * 1024;
     for (unsigned currentSize = totalSize; currentSize > 32; currentSize /= 2) {
-        fprintf(stderr, "Testing object size %zd\n", currentSize);
+        fprintf(stderr, "Testing object size %u\n", currentSize);
         assert(totalSize % currentSize == 0);
         size_t nObjects = totalSize / currentSize;
 
