@@ -1,6 +1,8 @@
 #ifndef GMAC_API_CUDA_TRACER_IMPL_H_
 #define GMAC_API_CUDA_TRACER_IMPL_H_
 
+#include "Mode.h"
+
 namespace __impl { namespace cuda { 
 
 inline void DataCommunication(Mode &mode, THREAD_T src, THREAD_T dst, CUevent start,
