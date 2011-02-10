@@ -1,7 +1,7 @@
 SECTIONS {
-    .rodata.gmac_code : {
-        __gmac_code_start = .;
-        *(.gmac_code .gmac_code.*)
-        __gmac_code_end = .;
+    .rodata.ocl_code : {
+        __ocl_code_start = .;
+        *(.ocl_code .ocl_code.*)
+        __ocl_code_end = .;
     }
 }

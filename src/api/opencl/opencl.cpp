@@ -45,6 +45,8 @@ void apiInit(void)
     }
     delete[] platforms;
     initialized = true;
+
+    gmacError_t compileRet = __impl::opencl::Accelerator::prepareEmbeddedCLCode();
 }
 
-} }
+}}

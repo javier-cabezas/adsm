@@ -177,6 +177,9 @@ static inline CUmemorytype __getMemoryFrom(cudaMemcpyKind kind)
 		case cudaMemcpyDeviceToHost:
 		case cudaMemcpyDeviceToDevice:
 			return CU_MEMORYTYPE_DEVICE;
+        default:
+            abort();
+            return CU_MEMORYTYPE_DEVICE;
 	}
 }
 
@@ -189,6 +192,9 @@ static inline CUmemorytype __getMemoryTo(cudaMemcpyKind kind)
 		case cudaMemcpyHostToDevice:
 		case cudaMemcpyDeviceToDevice:
 			return CU_MEMORYTYPE_DEVICE;
+        default:
+            abort();
+            return CU_MEMORYTYPE_DEVICE;
 	}
 }
 

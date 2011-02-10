@@ -3,6 +3,14 @@
 
 #include "core/Process.h"
 
+#ifndef _MSC_VER
+// Symbols needed for automatic compilation of embedded code
+extern "C" {
+    extern char __ocl_code_start __attribute__((weak));
+    extern char __ocl_code_end   __attribute__((weak));
+};
+#endif
+
 namespace __impl { namespace opencl {
 
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
@@ -239,6 +247,57 @@ Accelerator::getKernel(gmacKernel_t k)
         return new Kernel(__impl::core::KernelDescriptor(k, k), kernel);
     }
     return NULL;
+}
+
+gmacError_t Accelerator::prepareEmbeddedCLCode()
+{
+#ifndef _MSC_VER
+    const char *CL_MAGIC = "!@#~";
+
+    trace::EnterCurrentFunction();
+
+    TRACE(GLOBAL, "Preparing embedded code");
+
+    if (&__ocl_code_start != NULL &&
+        &__ocl_code_end   != NULL) {
+        size_t size = size_t(&__ocl_code_end - &__ocl_code_start);
+        char *code = &__ocl_code_start;
+        char *cursor = strstr(code, CL_MAGIC);
+
+        while (cursor != NULL && cursor < &__ocl_code_end) {
+            char *params = cursor + strlen(CL_MAGIC);
+
+            size_t fileSize = cursor - code;
+            size_t paramsSize = 0;
+            char *file = new char[fileSize + 1];
+            char *fileParams = NULL;
+            ::memcpy(file, code, fileSize);
+            file[fileSize] = '\0';
+
+            cursor = ::strstr(cursor + 1, CL_MAGIC);
+            if (cursor != params) {
+                paramsSize = cursor - params;
+                fileParams = new char[paramsSize + 1];
+                ::memcpy(fileParams, params, paramsSize);
+                fileParams[paramsSize] = '\0';
+            }
+            TRACE(GLOBAL, "Compiling file in embedded code");
+            gmacError_t ret = prepareCLCode(file, fileParams);
+            if (ret != gmacSuccess) {
+                abort();
+                trace::ExitCurrentFunction();
+                return error(ret);
+            }
+
+            code = cursor + strlen(CL_MAGIC);
+            cursor = ::strstr(cursor + 1, CL_MAGIC);
+            if (fileParams != NULL) delete [] fileParams;
+            delete [] file;
+        }
+    }
+    trace::ExitCurrentFunction();
+#endif
+    return gmacSuccess;
 }
 
 gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)

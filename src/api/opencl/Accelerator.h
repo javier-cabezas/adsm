@@ -108,6 +108,8 @@ public:
     static void addAccelerator(Accelerator &acc);
     Kernel *getKernel(gmacKernel_t k);
 
+    static gmacError_t prepareEmbeddedCLCode();
+
     static gmacError_t prepareCLCode(const char *code, const char *flags);
     static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 
