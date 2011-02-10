@@ -52,8 +52,7 @@ namespace core {
 
 namespace memory {
 
-
-//! Memory block
+    //! Memory block
 /*!
     A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
     memory block has an unique host memory address, used by applications to access the shared data in the CPU code, and

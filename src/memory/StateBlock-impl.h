@@ -11,17 +11,16 @@ inline StateBlock<T>::StateBlock(Protocol &protocol, hostptr_t addr,
 {}
 
 template<typename T>
-inline const T &StateBlock<T>::state() const
+inline const T &StateBlock<T>::getState() const
 {
 	return state_;
 }
 
 template<typename T>
-inline void StateBlock<T>::state(const T &s)
+inline void StateBlock<T>::setState(const T &s)
 {
 	state_ = s;
 }
-
 
 }}
 

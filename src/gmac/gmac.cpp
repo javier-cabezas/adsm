@@ -44,7 +44,7 @@ static long getpagesize (void) {
 #endif
 
 using __impl::util::params::ParamBlockSize;
-using __impl::util::params::ParamAcquireOnWrite;
+using __impl::util::params::ParamAutoSync;
 
 #if 0
 gmacError_t
@@ -253,13 +253,12 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     CFATAL(manager.releaseObjects() == gmacSuccess, "Error releasing objects");
 
-    //mode.sync();
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
-    if(ParamAcquireOnWrite) {
-        TRACE(GLOBAL, "Invalidate the memory used in the kernel");
-        //manager.invalidate();
+    if (ParamAutoSync == true) {
+        TRACE(GLOBAL, "Waiting for Kernel to complete");
+        manager.acquireObjects();
     }
 
     delete &launch;
@@ -275,10 +274,11 @@ gmacError_t APICALL gmacThreadSynchronize()
     gmac::trace::EnterCurrentFunction();
 
 	gmacError_t ret = gmacSuccess;
-    // ret = gmac::core::Mode::getCurrent().sync();
-    TRACE(GLOBAL, "Memory Sync");
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.acquireObjects();
+    if (ParamAutoSync == false) {
+        TRACE(GLOBAL, "Memory Sync");
+        gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+        ret = manager.acquireObjects();
+    }
 
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();

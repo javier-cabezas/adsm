@@ -45,7 +45,7 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
                                                       addr_   + offset,
                                                       shadow_ + offset,
                                                       accPtr  + offset,
-                                                      oldBlock.size(), oldBlock.state());
+                                                      oldBlock.size(), oldBlock.getState());
 
         i->second = newBlock;
 

@@ -61,13 +61,13 @@ public:
     /*!
         \return Block state
     */
-	const T &state() const;
+	const T &getState() const;
 
     //! Set block state
     /*!
         \param s New block state
     */
-	void state(const T &s);
+	void setState(const T &s);
 };
 
 }}
