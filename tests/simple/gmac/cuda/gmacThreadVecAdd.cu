@@ -38,16 +38,21 @@ void *addVector(void *ptr)
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	valueInit(a, 1.0, vecSize);
 	ret = gmacMalloc((void **)&b, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	valueInit(b, 1.0, vecSize);
 
 	// Alloc output data
 	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
+
+    // Init the input data
+    getTime(&s);
+	valueInit(a, 1.0, vecSize);
+	valueInit(b, 1.0, vecSize);
+    getTime(&t);
+    printTime(&s, &t, "Init: ", "\n");
 
 	// Call the kernel
 	dim3 Db(blockSize);

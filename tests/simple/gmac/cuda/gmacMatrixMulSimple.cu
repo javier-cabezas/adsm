@@ -1,68 +1,15 @@
-/*
- * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
- *
- * NOTICE TO USER:
- *
- * This source code is subject to NVIDIA ownership rights under U.S. and
- * international Copyright laws.  Users and possessors of this source code
- * are hereby granted a nonexclusive, royalty-free license to use this code
- * in individual and commercial software.
- *
- * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
- * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
- * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
- * OR PERFORMANCE OF THIS SOURCE CODE.
- *
- * U.S. Government End Users.   This source code is a "commercial item" as
- * that term is defined at  48 C.F.R. 2.101 (OCT 1995), consisting  of
- * "commercial computer  software"  and "commercial computer software
- * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
- * and is provided to the U.S. Government only as a commercial end item.
- * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
- * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
- * source code with only those rights set forth herein.
- *
- * Any use of this source code in individual and commercial software must
- * include, in the user documentation and internal comments to the code,
- * the above Disclaimer and U.S. Government End Users Notice.
- */
-
-/* Matrix multiplication: C = A * B.
- * Host code.
- *
- * This sample implements matrix multiplication and is exactly the same as
- * Chapter 7 of the programming guide.
- * It has been written for clarity of exposition to illustrate various CUDA
- * programming principles, not with the goal of providing the most
- * performant generic kernel for matrix multiplication.
- *
- * CUBLAS provides high-performance matrix multiplication.
- */
-
-// includes, system
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <cmath>
 
-extern "C" {
 #include <pthread.h>
-}
 
-// includes, project
-#include <gmac.h>
+#include <gmac/cuda.h>
 
-// includes, utils and debug
 #include "debug.h"
 #include "utils.h"
 
-// includes, kernels
 #include "gmacMatrixMulKernel.cu"
 
 
@@ -96,15 +43,6 @@ struct param {
 unsigned elemsC;
 unsigned sizeC;
 
-////////////////////////////////////////////////////////////////////////////////
-//! Compute reference data set
-//! C = A * B
-//! @param C          reference data, computed but preallocated
-//! @param A          matrix A as provided to device
-//! @param B          matrix B as provided to device
-//! @param hA         height of matrix A
-//! @param wB         width of matrix B
-////////////////////////////////////////////////////////////////////////////////
 void
 computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned int wA, unsigned int wB)
 {
@@ -120,16 +58,13 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Run a simple test for CUDA
-////////////////////////////////////////////////////////////////////////////////
 void *
 matrixMulThread(void * ptr)
 {
 	struct param *p = (struct param *) ptr;
 
     // timers
-    struct timeval s, t;
+    gmactime_t s, t;
 
     if (gmacMalloc((void**) &p->ptr, sizeC) != gmacSuccess) {
         fprintf(stderr, "Error allocating C");
@@ -137,17 +72,14 @@ matrixMulThread(void * ptr)
     }
 
     // Call the kernel
-	gettimeofday(&s, NULL);
+    getTime(&s);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
     return NULL;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
 int
 main(int argc, char** argv)
 {
@@ -162,7 +94,7 @@ main(int argc, char** argv)
         abort();
     }
 
-    struct timeval s, t;
+    gmactime_t s, t;
 
     unsigned elemsA = WA * HA;
     unsigned elemsB = WB * HB;
@@ -172,7 +104,7 @@ main(int argc, char** argv)
              sizeC = sizeof(float) * elemsC;
 
     // allocate memory for matrices A and B
-	gettimeofday(&s, NULL);
+	getTime(&s);
     if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
@@ -185,27 +117,27 @@ main(int argc, char** argv)
         fprintf(stderr, "Error allocating C");
         abort();
     }
-
-    // initialize matricesmatrices
-    valueInit(A, 100.f, elemsA);
-    valueInit(B, 100.f, elemsB);
-
-	// Alloc output data
-	gettimeofday(&t, NULL);
+	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-	gettimeofday(&s, NULL);
 
+	getTime(&s);
+    valueInit(A, 100.f, elemsA);
+    valueInit(B, 100.f, elemsB);
+	getTime(&t);
+	printTime(&s, &t, "Init: ", "\n");
+
+	getTime(&s);
     dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
     dim3 grid(WC / threads.x, HC / threads.y);
     matrixMulSimple<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB);
     gmacThreadSynchronize();
-	gettimeofday(&t, NULL);
+	getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
     if (check) {
         // compute reference solution
-        gettimeofday(&s, NULL);
+        getTime(&s);
 
         // check result
         float err = 0.0;
@@ -213,12 +145,12 @@ main(int argc, char** argv)
         printf("Computing host matrix mul. Please wait...\n");
         float* reference = (float *) malloc(sizeC);
         computeGold(reference, A, B, HA, WA, WB);
-        for (int i = 0; i < elemsC; i++) {
+        for (unsigned i = 0; i < elemsC; i++) {
             err += fabsf(reference[i] - C[i]);
         }
 
         //err += checkError(reference, C, elemsC);
-        gettimeofday(&t, NULL);
+        getTime(&t);
         printTime(&s, &t, "Check: ", "\n");
 
         fprintf(stderr, "Error: %f\n", err);
@@ -226,9 +158,6 @@ main(int argc, char** argv)
         free(reference);
         return fabsf(err) != 0.0f;
     }
-
-	gettimeofday(&t, NULL);
-	printTime(&s, &t, "Total: ", "\n");
 
 	gmacFree(A);
 	gmacFree(B);

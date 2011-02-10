@@ -31,6 +31,7 @@ source_group(${current_GROUP} FILES
     gmacThreadVecAdd.cu
     gmacSharedVecAdd.cu
     gmacFileVecAdd.cu
+    gmacMatrixMulSimple.cu
     gmacMatrixMul.cu
     gmacMemcpy.cu
     gmacMemset.cu
@@ -81,9 +82,15 @@ add_executable(gmacFileVecAdd ${fileVecAdd} ${common_SRC} gmacFileVecAdd.cu)
 target_link_libraries(gmacFileVecAdd gmac)
 
 # gmacMatrixMul
-cuda_compile(matrixMul gmacMatrixMul.cu)
-add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMul.cu)
+cuda_compile(matrixMul gmacMatrixMulSimple.cu)
+add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMulSimple.cu)
 target_link_libraries(gmacMatrixMul gmac)
+
+# gmacSharedMatrixMul
+cuda_compile(sharedMatrixMul gmacMatrixMul.cu)
+add_executable(gmacSharedMatrixMul ${sharedMatrixMul} ${common_SRC} gmacMatrixMul.cu)
+target_link_libraries(gmacSharedMatrixMul gmac)
+
 
 # gmacStencil
 cuda_compile(stencil gmacStencil.cu)
@@ -135,6 +142,7 @@ install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacFileVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)

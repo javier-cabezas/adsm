@@ -1,84 +1,35 @@
-/*
- * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
- *
- * NOTICE TO USER:
- *
- * This source code is subject to NVIDIA ownership rights under U.S. and
- * international Copyright laws.  Users and possessors of this source code
- * are hereby granted a nonexclusive, royalty-free license to use this code
- * in individual and commercial software.
- *
- * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
- * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
- * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
- * OR PERFORMANCE OF THIS SOURCE CODE.
- *
- * U.S. Government End Users.   This source code is a "commercial item" as
- * that term is defined at  48 C.F.R. 2.101 (OCT 1995), consisting  of
- * "commercial computer  software"  and "commercial computer software
- * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
- * and is provided to the U.S. Government only as a commercial end item.
- * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
- * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
- * source code with only those rights set forth herein.
- *
- * Any use of this source code in individual and commercial software must
- * include, in the user documentation and internal comments to the code,
- * the above Disclaimer and U.S. Government End Users Notice.
- */
-
-/* Matrix multiplication: C = A * B.
- * Host code.
- *
- * This sample implements matrix multiplication and is exactly the same as
- * Chapter 7 of the programming guide.
- * It has been written for clarity of exposition to illustrate various CUDA
- * programming principles, not with the goal of providing the most
- * performant generic kernel for matrix multiplication.
- *
- * CUBLAS provides high-performance matrix multiplication.
- */
-
-// includes, system
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <cmath>
 
-// includes, project
 #include <gmac/cuda.h>
 
-// includes, utils and debug
 #include "debug.h"
 #include "utils.h"
 
-// includes, kernels
 #include "gmacMatrixMulKernel.cu"
-
 
 const char * nIterStr = "GMAC_NITER";
 const char * WAStr = "GMAC_WA";
 const char * HAStr = "GMAC_HA";
 const char * WBStr = "GMAC_WB";
 const char * HBStr = "GMAC_HB";
+const char * centralObjectsStr = "GMAC_CENTRALIZED";
 
 const int nIterDefault = 4;
 const int WADefault = (40 * BLOCK_SIZE); // Matrix A width
 const int HADefault = (40 * BLOCK_SIZE); // Matrix A height
 const int WBDefault = (40 * BLOCK_SIZE); // Matrix B width
 const int HBDefault = (40 * BLOCK_SIZE); // Matrix B height
+const int centralObjectsDefault = 0;
 
 static int nIter = 0;
 static int WA = 0; // Matrix A width
 static int HA = 0; // Matrix A height
 static int WB = 0; // Matrix B width
 static int HB = 0; // Matrix B height
+static int centralObjects = 0;
 
 #define WC WB  // Matrix C width 
 #define HC HA  // Matrix C height
@@ -92,15 +43,6 @@ struct param {
 unsigned elemsC;
 unsigned sizeC;
 
-////////////////////////////////////////////////////////////////////////////////
-//! Compute reference data set
-//! C = A * B
-//! @param C          reference data, computed but preallocated
-//! @param A          matrix A as provided to device
-//! @param B          matrix B as provided to device
-//! @param hA         height of matrix A
-//! @param wB         width of matrix B
-////////////////////////////////////////////////////////////////////////////////
 void
 computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned int wA, unsigned int wB)
 {
@@ -116,9 +58,7 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
         }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Run a simple test for CUDA
-////////////////////////////////////////////////////////////////////////////////
+
 void *
 matrixMulThread(void * ptr)
 {
@@ -201,9 +141,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     return err;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
+
 int
 main(int argc, char** argv)
 {
@@ -212,6 +150,7 @@ main(int argc, char** argv)
 	setParam<int>(&HA, HAStr, HADefault);
 	setParam<int>(&WB, WBStr, WBDefault);
 	setParam<int>(&HB, HBStr, HBDefault);
+    setParam<int>(&centralObjects, centralObjectsStr, centralObjectsDefault);
 
     if (nIter == 0) {
         fprintf(stderr, "Error: nIter should be greater than 0\n");
@@ -235,28 +174,26 @@ main(int argc, char** argv)
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
 
+    GmacGlobalMallocType allocFlags;
+    if(centralObjects == 1) allocFlags = GMAC_GLOBAL_MALLOC_CENTRALIZED;
+    else allocFlags = GMAC_GLOBAL_MALLOC_REPLICATED;
     
-    fprintf(stderr, "Size A: %d\n", sizeA);
-    fprintf(stderr, "Size B: %d\n", sizeB);
-    fprintf(stderr, "Size C: %d\n", sizeC);
-
     gmactime_t s, t;
 
-    /////////////////////
-    // CENTRALIZED OBJECT
-    /////////////////////
-    fprintf(stderr, "CENTRALIZED OBJECTS\n");
     // allocate memory for matrices A and B
 	getTime(&s);
-    if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess) {
+    if (gmacGlobalMalloc((void**) &A, sizeA, allocFlags) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
     }
-    if (gmacGlobalMalloc((void**) &B, sizeB, GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess) {
+    if (gmacGlobalMalloc((void**) &B, sizeB, allocFlags) != gmacSuccess) {
         fprintf(stderr, "Error allocating B");
         abort();
     }
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
+    getTime(&s);
     float err = doTest(A, B, elemsA, elemsB, elemsC);
 	getTime(&t);
 	printTime(&s, &t, "Total: ", "\n");
@@ -264,28 +201,5 @@ main(int argc, char** argv)
     assert(gmacFree(A) == gmacSuccess);
 	assert(gmacFree(B) == gmacSuccess);
 
-    ////////////////////
-    // REPLICATED OBJECT
-    ////////////////////
-    fprintf(stderr, "REPLICATED OBJECTS\n");
-    // allocate memory for matrices A and B
-	getTime(&s);
-    if (gmacGlobalMalloc((void**) &A, sizeA, GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess) {
-        fprintf(stderr, "Error allocating A");
-        abort();
-    }
-    if (gmacGlobalMalloc((void**) &B, sizeB, GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess) {
-        fprintf(stderr, "Error allocating B");
-        abort();
-    }
-
-    float err2 = doTest(A, B, elemsA, elemsB, elemsC);
-	getTime(&t);
-	printTime(&s, &t, "Total: ", "\n");
-
-    assert(gmacFree(A) == gmacSuccess);
-	assert(gmacFree(B) == gmacSuccess);
-
-    // return fabsf(err) != 0.0f && fabsf(err2) != 0.0f;
-    return fabsf(err2) != 0.0f;
+    return fabsf(err);
 }
