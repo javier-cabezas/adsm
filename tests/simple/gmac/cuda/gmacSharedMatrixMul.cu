@@ -201,5 +201,5 @@ main(int argc, char** argv)
     assert(gmacFree(A) == gmacSuccess);
 	assert(gmacFree(B) == gmacSuccess);
 
-    return fabsf(err);
+    return fabsf(err) == 0.0f;
 }

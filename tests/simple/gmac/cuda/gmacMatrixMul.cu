@@ -3,8 +3,6 @@
 #include <cstring>
 #include <cmath>
 
-#include <pthread.h>
-
 #include <gmac/cuda.h>
 
 #include "debug.h"
@@ -19,16 +17,16 @@ const char * WBStr = "GMAC_WB";
 const char * HBStr = "GMAC_HB";
 const char * checkStr = "GMAC_CHECK";
 
-const size_t WADefault = (32 * BLOCK_SIZE); // Matrix A width
-const size_t HADefault = (32 * BLOCK_SIZE); // Matrix A height
-const size_t WBDefault = (32 * BLOCK_SIZE); // Matrix B width
-const size_t HBDefault = (32 * BLOCK_SIZE); // Matrix B height
+const unsigned WADefault = (32 * BLOCK_SIZE); // Matrix A width
+const unsigned HADefault = (32 * BLOCK_SIZE); // Matrix A height
+const unsigned WBDefault = (32 * BLOCK_SIZE); // Matrix B width
+const unsigned HBDefault = (32 * BLOCK_SIZE); // Matrix B height
 const int checkDefault = false; // Matrix B height
 
-static size_t WA = 0; // Matrix A width
-static size_t HA = 0; // Matrix A height
-static size_t WB = 0; // Matrix B width
-static size_t HB = 0; // Matrix B height
+static unsigned WA = 0; // Matrix A width
+static unsigned HA = 0; // Matrix A height
+static unsigned WB = 0; // Matrix B width
+static unsigned HB = 0; // Matrix B height
 static bool check = checkDefault; // Matrix B height
 
 #define WC WB  // Matrix C width 
@@ -83,10 +81,10 @@ matrixMulThread(void * ptr)
 int
 main(int argc, char** argv)
 {
-	setParam<size_t>(&WA, WAStr, WADefault);
-	setParam<size_t>(&HA, HAStr, HADefault);
-	setParam<size_t>(&WB, WBStr, WBDefault);
-	setParam<size_t>(&HB, HBStr, HBDefault);
+	setParam<unsigned>(&WA, WAStr, WADefault);
+	setParam<unsigned>(&HA, HAStr, HADefault);
+	setParam<unsigned>(&WB, WBStr, WBDefault);
+	setParam<unsigned>(&HB, HBStr, HBDefault);
 	setParam<bool>(&check, checkStr, checkDefault);
 
     if (HB != WA) {
