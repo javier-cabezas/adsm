@@ -31,8 +31,8 @@ source_group(${current_GROUP} FILES
     gmacThreadVecAdd.cu
     gmacSharedVecAdd.cu
     gmacFileVecAdd.cu
-    gmacMatrixMulSimple.cu
     gmacMatrixMul.cu
+    gmacSharedMatrixMul.cu
     gmacMemcpy.cu
     gmacMemset.cu
     gmacFile.cu
@@ -82,13 +82,13 @@ add_executable(gmacFileVecAdd ${fileVecAdd} ${common_SRC} gmacFileVecAdd.cu)
 target_link_libraries(gmacFileVecAdd gmac)
 
 # gmacMatrixMul
-cuda_compile(matrixMul gmacMatrixMulSimple.cu)
-add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMulSimple.cu)
+cuda_compile(matrixMul gmacMatrixMul.cu)
+add_executable(gmacMatrixMul ${matrixMul} ${common_SRC} gmacMatrixMul.cu)
 target_link_libraries(gmacMatrixMul gmac)
 
 # gmacSharedMatrixMul
-cuda_compile(sharedMatrixMul gmacMatrixMul.cu)
-add_executable(gmacSharedMatrixMul ${sharedMatrixMul} ${common_SRC} gmacMatrixMul.cu)
+cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
+add_executable(gmacSharedMatrixMul ${sharedMatrixMul} ${common_SRC} gmacSharedMatrixMul.cu)
 target_link_libraries(gmacSharedMatrixMul gmac)
 
 

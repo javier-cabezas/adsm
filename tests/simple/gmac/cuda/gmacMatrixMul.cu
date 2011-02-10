@@ -3,6 +3,8 @@
 #include <cstring>
 #include <cmath>
 
+#include <pthread.h>
+
 #include <gmac/cuda.h>
 
 #include "debug.h"
@@ -10,31 +12,29 @@
 
 #include "gmacMatrixMulKernel.cu"
 
-const char * nIterStr = "GMAC_NITER";
+
 const char * WAStr = "GMAC_WA";
 const char * HAStr = "GMAC_HA";
 const char * WBStr = "GMAC_WB";
 const char * HBStr = "GMAC_HB";
-const char * centralObjectsStr = "GMAC_CENTRALIZED";
+const char * checkStr = "GMAC_CHECK";
 
-const int nIterDefault = 4;
-const int WADefault = (40 * BLOCK_SIZE); // Matrix A width
-const int HADefault = (40 * BLOCK_SIZE); // Matrix A height
-const int WBDefault = (40 * BLOCK_SIZE); // Matrix B width
-const int HBDefault = (40 * BLOCK_SIZE); // Matrix B height
-const int centralObjectsDefault = 0;
+const size_t WADefault = (32 * BLOCK_SIZE); // Matrix A width
+const size_t HADefault = (32 * BLOCK_SIZE); // Matrix A height
+const size_t WBDefault = (32 * BLOCK_SIZE); // Matrix B width
+const size_t HBDefault = (32 * BLOCK_SIZE); // Matrix B height
+const int checkDefault = false; // Matrix B height
 
-static int nIter = 0;
-static int WA = 0; // Matrix A width
-static int HA = 0; // Matrix A height
-static int WB = 0; // Matrix B width
-static int HB = 0; // Matrix B height
-static int centralObjects = 0;
+static size_t WA = 0; // Matrix A width
+static size_t HA = 0; // Matrix A height
+static size_t WB = 0; // Matrix B width
+static size_t HB = 0; // Matrix B height
+static bool check = checkDefault; // Matrix B height
 
 #define WC WB  // Matrix C width 
 #define HC HA  // Matrix C height
 
-static float * A, * B;
+static float * A, * B, * C;
 struct param {
 	int i;
 	float * ptr;
@@ -58,7 +58,6 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
         }
 }
 
-
 void *
 matrixMulThread(void * ptr)
 {
@@ -73,10 +72,7 @@ matrixMulThread(void * ptr)
     }
 
     // Call the kernel
-	getTime(&s);
-    dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 grid(WC / threads.x, (HC / nIter) / threads.y);
-    matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * elemsC);
+    getTime(&s);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
@@ -84,122 +80,88 @@ matrixMulThread(void * ptr)
     return NULL;
 }
 
-float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned elemsC)
-{
-    thread_t * threads = new thread_t[nIter];
-	param * params = new param[nIter];
-
-    gmactime_t s, t;
-
-    // allocate memory for matrices A and B
-	getTime(&s);
-
-    // initialize matricesmatrices
-    valueInit(A, 100.f, elemsA);
-    valueInit(B, 100.f, elemsB);
-
-	// Alloc output data
-	getTime(&t);
-	printTime(&s, &t, "Init: ", "\n");
-
-    for (int n = 0; n < nIter; n++) {
-		params[n].i = n;
-		threads[n] = thread_create(matrixMulThread, &(params[n]));
-	}
-
-	for (int n = 0; n < nIter; n++) {
-		thread_wait(threads[n]);
-	}
-
-    // compute reference solution
-	getTime(&s);
-    // check result
-    float err = 0;
-    printf("Computing host matrix mul. Please wait...\n");
-    float* reference = (float *) malloc(sizeC * nIter);
-    computeGold(reference, A, B, HA, WA, WB);
-
-    for (int n = 0; n < nIter; n++) {
-        err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
-    }
-
-    getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
-
-    fprintf(stderr, "Error: %f\n", err);
-
-    // clean up memory
-    free(reference);
-
-    for (int n = 0; n < nIter; n++) {
-        assert(gmacFree(params[n].ptr) == gmacSuccess);
-    }
-
-    delete [] params;
-    delete [] threads;
-
-    return err;
-}
-
-
 int
 main(int argc, char** argv)
 {
-	setParam<int>(&nIter, nIterStr, nIterDefault);
-	setParam<int>(&WA, WAStr, WADefault);
-	setParam<int>(&HA, HAStr, HADefault);
-	setParam<int>(&WB, WBStr, WBDefault);
-	setParam<int>(&HB, HBStr, HBDefault);
-    setParam<int>(&centralObjects, centralObjectsStr, centralObjectsDefault);
-
-    if (nIter == 0) {
-        fprintf(stderr, "Error: nIter should be greater than 0\n");
-        abort();
-    }
-
-    if ((HA/BLOCK_SIZE) % nIter != 0) {
-        fprintf(stderr, "Error: wrong HA size. HA/%d nIter must be 0\n", BLOCK_SIZE);
-        abort();
-    }
+	setParam<size_t>(&WA, WAStr, WADefault);
+	setParam<size_t>(&HA, HAStr, HADefault);
+	setParam<size_t>(&WB, WBStr, WBDefault);
+	setParam<size_t>(&HB, HBStr, HBDefault);
+	setParam<bool>(&check, checkStr, checkDefault);
 
     if (HB != WA) {
         fprintf(stderr, "Error: WA and HB must be equal\n");
         abort();
     }
 
+    gmactime_t s, t;
+
     unsigned elemsA = WA * HA;
     unsigned elemsB = WB * HB;
-             elemsC = WC * HC / nIter;
+             elemsC = WC * HC;
     unsigned sizeA = sizeof(float) * elemsA;
     unsigned sizeB = sizeof(float) * elemsB;
              sizeC = sizeof(float) * elemsC;
 
-    GmacGlobalMallocType allocFlags;
-    if(centralObjects == 1) allocFlags = GMAC_GLOBAL_MALLOC_CENTRALIZED;
-    else allocFlags = GMAC_GLOBAL_MALLOC_REPLICATED;
-    
-    gmactime_t s, t;
-
     // allocate memory for matrices A and B
 	getTime(&s);
-    if (gmacGlobalMalloc((void**) &A, sizeA, allocFlags) != gmacSuccess) {
+    if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
         fprintf(stderr, "Error allocating A");
         abort();
     }
-    if (gmacGlobalMalloc((void**) &B, sizeB, allocFlags) != gmacSuccess) {
+    if (gmacMalloc((void**) &B, sizeB) != gmacSuccess) {
         fprintf(stderr, "Error allocating B");
         abort();
     }
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-    getTime(&s);
-    float err = doTest(A, B, elemsA, elemsB, elemsC);
+    if (gmacMalloc((void**) &C, sizeC) != gmacSuccess) {
+        fprintf(stderr, "Error allocating C");
+        abort();
+    }
 	getTime(&t);
-	printTime(&s, &t, "Total: ", "\n");
+	printTime(&s, &t, "Alloc: ", "\n");
 
-    assert(gmacFree(A) == gmacSuccess);
-	assert(gmacFree(B) == gmacSuccess);
 
-    return fabsf(err);
+	getTime(&s);
+    valueInit(A, 100.f, elemsA);
+    valueInit(B, 100.f, elemsB);
+	getTime(&t);
+	printTime(&s, &t, "Init: ", "\n");
+
+	getTime(&s);
+    dim3 threads(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 grid(WC / threads.x, HC / threads.y);
+    matrixMulSimple<<< grid, threads >>>(gmacPtr(C), gmacPtr(A), gmacPtr(B), WA, WB);
+    gmacThreadSynchronize();
+	getTime(&t);
+    printTime(&s, &t, "Run: ", "\n");
+
+    if (check) {
+        // compute reference solution
+        getTime(&s);
+
+        // check result
+        float err = 0.0;
+
+        printf("Computing host matrix mul. Please wait...\n");
+        float* reference = (float *) malloc(sizeC);
+        computeGold(reference, A, B, HA, WA, WB);
+        for (unsigned i = 0; i < elemsC; i++) {
+            err += fabsf(reference[i] - C[i]);
+        }
+
+        //err += checkError(reference, C, elemsC);
+        getTime(&t);
+        printTime(&s, &t, "Check: ", "\n");
+
+        fprintf(stderr, "Error: %f\n", err);
+        // clean up memory
+        free(reference);
+        return fabsf(err) != 0.0f;
+    }
+
+	gmacFree(A);
+	gmacFree(B);
+	gmacFree(C);
+
+    return 0;
 }
