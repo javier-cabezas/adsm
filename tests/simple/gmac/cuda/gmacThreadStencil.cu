@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdint.h>
 
-#include <pthread.h>
 #include "barrier.h"
 
 #include "utils.h"
@@ -20,7 +18,7 @@ static unsigned nIter = 0;
 int main(int argc, char *argv[])
 {
 	gmactime_t s, t;
-	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
+	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 
     if (nIter == 0) {
@@ -36,11 +34,9 @@ int main(int argc, char *argv[])
     dimElems = dimRealElems + 2 * STENCIL;
 
     JobDescriptor * descriptors = new JobDescriptor[nIter];
-    pthread_t * nThread = new pthread_t[nIter];
+    thread_t * nThread = new thread_t[nIter];
 
     if (nIter > 1) {
-        pthread_mutex_init(&mutex, NULL);
-        //pthread_barrier_init(&barrier, NULL, nIter);
         barrier_init(&barrier, nIter);
     }
 
@@ -69,11 +65,11 @@ int main(int argc, char *argv[])
 
 	getTime(&t);
 	for(unsigned n = 0; n < nIter; n++) {
-		pthread_create(&nThread[n], NULL, do_stencil, (void *) &descriptors[n]);
+		nThread[n] = thread_create(do_stencil, (void *) &descriptors[n]);
     }
 
 	for(unsigned n = 0; n < nIter; n++) {
-		pthread_join(nThread[n], NULL);
+		thread_wait(nThread[n]);
 	}
 	getTime(&s);
 	printTime(&t, &s, "Total: ", "\n");

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
 	data = (float *)malloc(width * height * sizeof(float));
 	for(unsigned i = 0; i < width * height; i++)
-		data[i] = i;
+		data[i] = float(i);
 	assert(cudaMemcpyToSymbol(constant, data, width * height * sizeof(float)) == cudaSuccess);
 
 	// Alloc output data

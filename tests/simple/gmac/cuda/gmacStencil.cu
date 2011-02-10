@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdint.h>
 
 #include "utils.h"
 #include "debug.h"
@@ -12,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-	setParam<size_t>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
+	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 
     if (dimRealElems % 32 != 0) {
         fprintf(stderr, "Error: wrong dimension %u\n", unsigned(dimRealElems));

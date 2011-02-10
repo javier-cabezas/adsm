@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <gmac/cuda.h>
 
-__global__ void kernelFill(unsigned *A, off_t off, size_t size)
+__global__ void kernelFill(unsigned *A, unsigned off, size_t size)
 {
-    int localIdx = blockIdx.x * blockDim.x + threadIdx.x;
-    int idx = localIdx + off;
+    unsigned localIdx = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned idx = localIdx + off;
 
     if (idx >= size) return;
     A[localIdx] = idx;
@@ -12,8 +12,8 @@ __global__ void kernelFill(unsigned *A, off_t off, size_t size)
 
 int main(int argc, char *argv[])
 {
-    const size_t totalSize = 8 * 1024 * 1024;
-    for (size_t currentSize = totalSize; currentSize > 32; currentSize /= 2) {
+    const unsigned totalSize = 8 * 1024 * 1024;
+    for (unsigned currentSize = totalSize; currentSize > 32; currentSize /= 2) {
         fprintf(stderr, "Testing object size %zd\n", currentSize);
         assert(totalSize % currentSize == 0);
         size_t nObjects = totalSize / currentSize;
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
         }
 
         fprintf(stderr, "- Running kernel\n");
-        size_t off = 0;
+        unsigned off = 0;
 
         dim3 Db(currentSize > 256? 256: currentSize);
         dim3 Dg(currentSize / Db.x);

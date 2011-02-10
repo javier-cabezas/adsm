@@ -145,9 +145,7 @@ kernelStencil(const float * u2,
 
 #define VELOCITY 2000
 
-//pthread_barrier_t barrier;
 barrier_t barrier;
-pthread_mutex_t mutex;
 
 struct JobDescriptor {
     const static int DEFAULT_DIM = 256;
@@ -160,44 +158,42 @@ struct JobDescriptor {
     float * u3;
     float * u2;
 
-    size_t dimRealElems;
-    size_t dimElems;
-    size_t slices;
+    unsigned dimRealElems;
+    unsigned dimElems;
+    unsigned slices;
 
-    size_t sliceElems()
+    unsigned sliceElems()
     {
         return dimElems * dimElems;
     }
 
-    size_t sliceRealElems()
+    unsigned sliceRealElems()
     {
         return dimRealElems * dimRealElems;
     }
 
-    size_t elems()
+    unsigned elems()
     {
         return dimElems * dimElems * (slices + 2 * STENCIL);
     }
 
-    size_t realElems()
+    unsigned realElems()
     {
         return dimRealElems * dimRealElems * slices;
     }
 
-    size_t size()
+    unsigned size()
     {
         return dimElems * dimElems * (slices + 2 * STENCIL) * sizeof(float);
     }
 
-    size_t realSize()
+    unsigned realSize()
     {
         return dimRealElems * dimRealElems * slices * sizeof(float);
     }
 
 
 };
-
-#include <pthread.h>
 
 #define ITERATIONS 50
 
@@ -232,7 +228,6 @@ do_stencil(void * ptr)
     }
 
     if (descr->gpus > 1) {
-        //pthread_barrier_wait(&barrier);
         barrier_wait(&barrier);
     }
 
@@ -250,13 +245,12 @@ do_stencil(void * ptr)
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(v),
-                                         0.08,
+                                         0.08f,
                                          descr->dimElems, descr->dimRealElems, descr->sliceElems(), descr->sliceRealElems(),
                                          descr->slices);
         //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
-            //pthread_barrier_wait(&barrier);
             barrier_wait(&barrier);
 
             // Send data
@@ -297,9 +291,9 @@ do_stencil(void * ptr)
 }
 
 const char * dimRealElemsStr = "GMAC_STENCIL_DIM_ELEMS";
-const size_t dimRealElemsDefault = 352;
+const unsigned dimRealElemsDefault = 352;
 
-static size_t dimElems     = 0;
-static size_t dimRealElems = 0;
+static unsigned dimElems     = 0;
+static unsigned dimRealElems = 0;
 
 #endif

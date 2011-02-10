@@ -36,10 +36,10 @@ using __impl::cuda::VariableDescriptor;
  */
 GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
-    Process &proc = Process::getInstance();
     TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
-    ASSERTION(proc.nAccelerators() > 0);
     enterGmac();
+    Process &proc = Process::getInstance();
+    ASSERTION(proc.nAccelerators() > 0);
     // Use the first GPU to load the fat binary
     void **ret = (void **) new __impl::cuda::ModuleDescriptor(fatCubin);
 	exitGmac();
