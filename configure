@@ -45,10 +45,10 @@ do
     --enable-doc)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_DOC=ON"
         ;;
-    --enable-console-trace)
+    --enable-trace-console)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_CONSOLE=ON"
         ;;
-    --enable-paraver-trace)
+    --enable-trace-araver)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_PARAVER=ON"
         ;;
     --enable-trace-locks)

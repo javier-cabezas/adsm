@@ -89,14 +89,18 @@ int main(int argc, char *argv[])
 	// Alloc & init input data
 	ret = gmacGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	valueInit(a, 1.0, nIter * vecSize);
 	ret = gmacGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-	valueInit(b, 1.0, nIter * vecSize);
 
 	// Alloc output data
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
+
+    getTime(&s);
+	valueInit(a, 1.0, nIter * vecSize);
+	valueInit(b, 1.0, nIter * vecSize);
+    getTime(&t);
+    printTime(&s, &t, "Init: ", "\n");
 
 	for(n = 0; n < nIter; n++) {
 		param[n].i = n;
