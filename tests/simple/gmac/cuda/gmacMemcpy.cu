@@ -29,31 +29,31 @@ int check(long *ptr, int s)
 int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, size_t n))
 {
     init(host, size, 1);
-    int ret1, ret2, ret3;
+    int ret_full, ret_partial, ret_reverse;
 
 	// Call the kernel
 	dim3 Db(blockSize);
 	dim3 Dg(size / blockSize);
 	if(size % blockSize) Db.x++;
 
-	printf("Test full memcpy: ");
+	fprintf(stderr, "Test full memcpy: ");
 	memcpy_fn(device, host, size * sizeof(long));
 	reset<<<Dg, Db>>>(gmacPtr(device), 1);
     gmacThreadSynchronize();
-    ret1 = check(device, 2 * size);
-	printf("%d\n", ret1);
+    ret_full = check(device, 2 * size);
+	fprintf(stderr, "%d\n", ret_full);
 
-	printf("Test partial memcpy: ");
+	fprintf(stderr, "Test partial memcpy: ");
 	memcpy_fn(&device[size / 8], host, 3 * size / 4 * sizeof(long));
-    ret2 = check(device, 5 * size / 4);
-	printf("%d\n", ret2);
+    ret_partial = check(device, 5 * size / 4);
+	fprintf(stderr, "%d\n", ret_partial);
 
 	fprintf(stderr,"Test reverse full: ");
 	memcpy_fn(host, device, size * sizeof(long));
-    ret3 = check(host, 5 * size / 4);
-	fprintf(stderr, "%d\n", ret3);
+    ret_reverse = check(host, 5 * size / 4);
+	fprintf(stderr, "%d\n", ret_reverse);
 
-    return (ret1 != 0 || ret2 != 0 || ret3 != 0);
+    return (ret_full != 0 || ret_partial != 0 || ret_reverse != 0);
 }
 
 static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
@@ -70,17 +70,17 @@ int main(int argc, char *argv[])
     // memcpy
 	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
 
-    int res1 = doTest(host, ptr, memcpy);
-    if (res1 != 0) fprintf(stderr, "Failed!\n");
+    int res_host = doTest(host, ptr, memcpy);
+    if (res_host != 0) fprintf(stderr, "Failed!\n");
 	gmacFree(ptr);
 
     // gmacMemcpy
 	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
-    int res2 = doTest(host, ptr, gmacMemcpyWrapper);
-    if (res2 != 0) fprintf(stderr, "Failed!\n");
+    int res_device = doTest(host, ptr, gmacMemcpyWrapper);
+    if (res_device != 0) fprintf(stderr, "Failed!\n");
 	gmacFree(ptr);
 
 	free(host);
 
-    return (res1 != 0 || res2 != 0);
+    return (res_host != 0 || res_device != 0);
 }
