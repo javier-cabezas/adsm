@@ -1,3 +1,5 @@
+#ifndef USE_MULTI_CONTEXT
+
 #include "Accelerator.h"
 #include "core/Accelerator.h"
 #include "core/Process.h"
@@ -85,3 +87,4 @@ TEST_F(AcceleratorTest, CreateMode){
 
 
 
+#endif

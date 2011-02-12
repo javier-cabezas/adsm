@@ -11,6 +11,7 @@ Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
     core::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&f_, mod, name_);
+    ASSERTION(ret == CUDA_SUCCESS);
     //! \todo Calculate this dynamically
 #if CUDA_VERSION >= 3000 && LINUX
     ret = cuFuncSetCacheConfig(f_, CU_FUNC_CACHE_PREFER_L1);

@@ -1,3 +1,4 @@
+#ifndef USE_MULTI_CONTEXT
 #include "unit/core/Accelerator.h"
 #include "api/cuda/Accelerator.h"
 
@@ -29,3 +30,5 @@ TEST_F(AcceleratorTest, AcceleratorMemset) {
 
     delete[] host;
 }
+
+#endif

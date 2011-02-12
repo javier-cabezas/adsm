@@ -1,5 +1,5 @@
 #include "config/common.h"
-#include "include/gmac/api.h"
+#include "include/gmac/opencl.h"
 
 #include "api/opencl/Accelerator.h"
 #include "api/opencl/Mode.h"

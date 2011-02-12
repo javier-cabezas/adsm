@@ -117,6 +117,7 @@ size_t APICALL gmacGetFreeMemory()
     return free;
 }
 
+
 gmacError_t APICALL gmacMigrate(unsigned acc)
 {
 	gmacError_t ret = gmacSuccess;
@@ -134,10 +135,11 @@ gmacError_t APICALL gmacMigrate(unsigned acc)
 	gmac::exitGmac();
 	return ret;
 }
-#if 0
-gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
+
+
+gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
 {
-#ifndef USE_MMAP
+#if 0
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         return ret;
@@ -151,14 +153,14 @@ gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, GmacProtection prot)
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
     return ret;
-#else
-    return gmacErrorFeatureNotSupported;
 #endif
+    return gmacErrorFeatureNotSupported;
 }
 
-gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count)
+
+gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count)
 {
-#ifndef USE_MMAP
+#if 0
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         return ret;
@@ -172,11 +174,11 @@ gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count)
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
     return ret;
-#else
+#endif
     return gmacErrorFeatureNotSupported;
-#endif
 }
-#endif
+
+
 gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
@@ -200,7 +202,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
 	return ret;
 }
 
-gmacError_t APICALL __gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint, ...)
+gmacError_t APICALL gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
 {
     gmacError_t ret = gmacSuccess;
     if(count == 0) {

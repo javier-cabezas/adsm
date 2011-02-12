@@ -68,6 +68,12 @@ extern "C"
 {
 #endif
 
+#ifdef __cplusplus
+#   define __dv(a) = a
+#else
+#   define __dv(a)
+#endif
+
 /**
  * Returns the number of available accelerators.
  * \return The number of available accelerators
@@ -97,7 +103,7 @@ GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
  * \return On success gmacMap returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
+GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
 /**
  * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
@@ -107,7 +113,7 @@ GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtec
  * \return On success gmacUnmmap returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count);
+GMAC_API gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count);
 
 /**
  * Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
@@ -129,8 +135,8 @@ GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
  * \return On success gmacGlobalMalloc returns gmacSuccess and stores the address
  * of the allocated memory in devPtr. Otherwise it returns the causing error
  */
-#define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
-GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
+GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **devPtr, size_t count,
+        enum GmacGlobalMallocType hint __dv(GMAC_GLOBAL_MALLOC_CENTRALIZED));
 
 /**
  * Gets a the GPU address of an allocation performed with gmacMalloc or
@@ -190,8 +196,7 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
     if (err <= gmacErrorUnknown)
         return error[err];
     else {
-        printf("Error %d\n", err);
-        return "WTF Error";
+        abort();
     }
 }
 
@@ -204,5 +209,7 @@ static inline T *gmacPtr(const T *addr) {
 }
 #endif
 
+
+#undef __dv
 
 #endif

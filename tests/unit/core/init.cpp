@@ -2,7 +2,7 @@
 #include "trace/Tracer.h"
 #include "core/Process.h"
 #include "core/Accelerator.h"
-#include "core/Context.h" //added 
+#include "core/Context.h"
 
 #include "gtest/gtest.h"
 
@@ -12,7 +12,7 @@ using gmac::core::Context;
 
 
 Accelerator *Accelerator_ = NULL;
-Context *Context_=NULL; //added
+Context *Context_=NULL;
 static bool Trace_ = false;
 
 

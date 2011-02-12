@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_CORE_ACCELERATOR_H_
 #define TEST_UNIT_CORE_ACCELERATOR_H_
 
+#ifndef USE_MULTI_CONTEXT
+
 #include "unit/init.h"
 #include "gtest/gtest.h"
 
@@ -49,5 +51,7 @@ protected:
         FiniProcess();
     }
 };
+
+#endif
 
 #endif
