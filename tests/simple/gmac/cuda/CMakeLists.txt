@@ -144,6 +144,12 @@ cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
 add_executable(gmacCompress ${compress} ${common_SRC} gmacCompressCommon.cu gmacCompress.cu)
 target_link_libraries(gmacCompress gmac)
 
+# gmacCompress
+cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
+add_executable(gmacCompressSend ${compressSend} ${common_SRC} gmacCompressCommon.cu gmacCompressSend.cu)
+target_link_libraries(gmacCompressSend gmac)
+
+
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
@@ -155,6 +161,10 @@ install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacTexture DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacConstant DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacCompress DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+install(TARGETS gmacCompressSend DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 

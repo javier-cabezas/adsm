@@ -3,7 +3,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <pthread.h>
 #include <semaphore.h>
 
 #include <gmac/cuda.h>
@@ -18,18 +17,18 @@ const char *widthStr = "GMAC_WIDTH";
 const char *heightStr = "GMAC_HEIGHT";
 const char *framesStr = "GMAC_FRAMES";
 
-const size_t widthDefault = 128;
-const size_t heightDefault = 128;
-const size_t framesDefault = 32;
+const unsigned widthDefault = 128;
+const unsigned heightDefault = 128;
+const unsigned framesDefault = 32;
 
-size_t width = 0;
-size_t height = 0;
-size_t frames = 0;
-const size_t blockSize = 16;
+unsigned width = 0;
+unsigned height = 0;
+unsigned frames = 0;
+const unsigned blockSize = 16;
 
 
 typedef struct stage {
-	pthread_t id;
+	thread_t id;
 	sem_t free;
 	float *in;
 	float *out;
@@ -42,7 +41,7 @@ stage_t s_dct, s_quant, s_idct;
 
 void __randInit(float *a, size_t size)
 {
-	for(int i = 0; i < size; i++) {
+	for(unsigned i = 0; i < size; i++) {
 		a[i] = 10.0 * rand() / RAND_MAX;
 	}
 }
@@ -62,14 +61,13 @@ void nextStage(stage_t *current, stage_t *next)
 	}
 }
 
-//pthread_barrier_t barrierInit;
 barrier_t barrierInit;
 
 void *dct_thread(void *args)
 {
 	gmacError_t ret;
+    gmactime_t s, t;
 
-    //pthread_barrier_wait(&barrierInit);
     barrier_wait(&barrierInit);
 
 	dim3 Db(blockSize, blockSize);
@@ -77,56 +75,68 @@ void *dct_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	//sem_post(&s_dct.free);
 
-	for(int i = 0; i < frames; i++) {
-		//fprintf(stderr,"DCT %d init\n", i);
+	for(unsigned i = 0; i < frames; i++) {
+        getTime(&s);
 		ret = gmacMalloc((void **)&s_dct.in, width * height * sizeof(float));
 		assert(ret == gmacSuccess);
 		ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 		assert(ret == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "DCT:Malloc: ", "\n");
 
+        getTime(&s);
 		__randInit(s_dct.in, width * height);
+        getTime(&t);
+        printTime(&s, &t, "DCT:Init: ", "\n");
+
+        getTime(&s);
 		dct<<<Dg, Db>>>(gmacPtr(s_dct.out), gmacPtr(s_dct.in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "DCT:Run: ", "\n");
 
-		//fprintf(stderr,"DCT %d done\n", i);
-		
+        getTime(&s);
 		sem_wait(&s_quant.free);
 		s_quant.next_in = s_dct.out;
 		s_quant.next_out = s_dct.in;
 		gmacSendReceive(s_quant.id);
-		//nextStage(NULL, &s_quant);	
-
-		//assert(gmacFree(&s_dct.in) == gmacSuccess);
-		//assert(gmacFree(&s_dct.out) == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "DCT:SendRecv: ", "\n");
 	}
 
+    getTime(&s);
 	ret = gmacMalloc((void **)&s_dct.in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 	ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
+    getTime(&t);
+    printTime(&s, &t, "DCT:Malloc: ", "\n");
 
+    getTime(&s);
 	sem_wait(&s_quant.free);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
-//	nextStage(NULL, &s_quant);
+    getTime(&t);
+    printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
+    getTime(&s);
 	ret = gmacMalloc((void **)&s_dct.in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
 	ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
+    getTime(&t);
+    printTime(&s, &t, "DCT:Malloc: ", "\n");
 
+    getTime(&s);
 	sem_wait(&s_quant.free);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
-//	nextStage(NULL, &s_quant);
-
-//	gmacFree(s_dct.in);
-//	gmacFree(s_dct.out);
+    getTime(&t);
+    printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
 	return NULL;
 }
@@ -134,38 +144,40 @@ void *dct_thread(void *args)
 void *quant_thread(void *args)
 {
 	gmacError_t ret;
+    gmactime_t s, t;
 
-    //pthread_barrier_wait(&barrierInit);
     barrier_wait(&barrierInit);
-
-	//ret = gmacMalloc((void **)&s_quant.in, width * height * sizeof(float));
-	//assert(ret == gmacSuccess);
-	//ret = gmacMalloc((void **)&s_quant.out, width * height * sizeof(float));
-	//assert(ret == gmacSuccess);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
+    getTime(&s);
 	sem_post(&s_quant.free);
 	nextStage(&s_quant, &s_idct);
+    getTime(&t);
+    printTime(&s, &t, "Quant:SendRecv: ", "\n");
 
-	for(int i = 0; i < frames; i++) {
-		//fprintf(stderr,"Quant %d init\n", i);
+	for(unsigned i = 0; i < frames; i++) {
+        getTime(&s);
 		quant<<<Dg, Db>>>(gmacPtr(s_quant.out), gmacPtr(s_quant.in), width, height, 1e-6);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "Quant:Run: ", "\n");
 		
-		//fprintf(stderr,"Quant %d done\n", i);
+        getTime(&s);
 		nextStage(&s_quant, &s_idct);
+        getTime(&t);
+        printTime(&s, &t, "Quant:SendRecv: ", "\n");
 	}
 
 	// Move one stage the pipeline stages the pipeline
+	getTime(&s);
 	nextStage(&s_quant, &s_idct);
-
-	//gmacFree(s_quant.in);
-	//gmacFree(s_quant.out);
+    getTime(&t);
+    printTime(&s, &t, "Quant:SendRecv: ", "\n");
 
 	return NULL;
 }
@@ -173,45 +185,56 @@ void *quant_thread(void *args)
 void *idct_thread(void *args)
 {
 	gmacError_t ret;
+    gmactime_t s, t;
 
-    //pthread_barrier_wait(&barrierInit);
     barrier_wait(&barrierInit);
-
-	//ret = gmacMalloc((void **)&s_idct.in, width * height * sizeof(float));
-	//assert(ret == gmacSuccess);
-	//ret = gmacMalloc((void **)&s_idct.out, width * height * sizeof(float));
-	//assert(ret == gmacSuccess);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
+    getTime(&s);
 	sem_post(&s_idct.free);
 	gmacSendReceive(s_dct.id);
 	nextStage(&s_idct, NULL);
-	gmacSendReceive(s_dct.id);
-	nextStage(&s_idct, NULL);
-	//assert(gmacFree(s_idct.in) == gmacSuccess);
-	//assert(gmacFree(s_idct.out) == gmacSuccess);
+    getTime(&t);
+    printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
-	for(int i = 0; i < frames; i++) {
-		//fprintf(stderr,"IDCT %d init\n", i);
+    getTime(&s);
+	gmacSendReceive(s_dct.id);
+    getTime(&t);
+	nextStage(&s_idct, NULL);
+    getTime(&t);
+    printTime(&s, &t, "IDCT:SendRecv: ", "\n");
+
+
+	for(unsigned i = 0; i < frames; i++) {
+        getTime(&s);
 		idct<<<Dg, Db>>>(gmacPtr(s_idct.out), gmacPtr(s_idct.in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "IDCT:Run: ", "\n");
 
-		//fprintf(stderr,"IDCT %d done\n", i);
-
+        getTime(&s);
 		assert(gmacFree(s_idct.in) == gmacSuccess);
 		assert(gmacFree(s_idct.out) == gmacSuccess);
+        getTime(&t);
+        printTime(&s, &t, "IDCT:Free: ", "\n");
 
+        getTime(&s);
 		gmacSendReceive(s_dct.id);
 		nextStage(&s_idct, NULL);
+        getTime(&t);
+        printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 	}
 
+    getTime(&s);
 	gmacFree(s_idct.in);
 	gmacFree(s_idct.out);
+    getTime(&t);
+    printTime(&s, &t, "IDCT:Free: ", "\n");
 
 	return NULL;
 }
@@ -219,10 +242,10 @@ void *idct_thread(void *args)
 
 int main(int argc, char *argv[])
 {
-	struct timeval s,t;
-	setParam<size_t>(&width, widthStr, widthDefault);
-	setParam<size_t>(&height, heightStr, heightDefault);
-	setParam<size_t>(&frames, framesStr, framesDefault);
+	gmactime_t s, t;
+	setParam<unsigned>(&width, widthStr, widthDefault);
+	setParam<unsigned>(&height, heightStr, heightDefault);
+	setParam<unsigned>(&frames, framesStr, framesDefault);
 
 	//sem_init(&s_dct.free, 0, 0);
 	sem_init(&s_quant.free, 0, 0);
@@ -230,20 +253,19 @@ int main(int argc, char *argv[])
 
 	srand(time(NULL));
 
-	gettimeofday(&s, NULL);
+	getTime(&s);
 
-    //pthread_barrier_init(&barrierInit, NULL, 3);
     barrier_init(&barrierInit, 3);
 
-	pthread_create(&s_dct.id, NULL, dct_thread, NULL);
-	pthread_create(&s_quant.id, NULL, quant_thread, NULL);
-	pthread_create(&s_idct.id, NULL, idct_thread, NULL);
+	s_dct.id = thread_create(dct_thread, NULL);
+	s_quant.id = thread_create(quant_thread, NULL);
+	s_idct.id = thread_create(idct_thread, NULL);
 
-	pthread_join(s_dct.id, NULL);
-	pthread_join(s_quant.id, NULL);
-	pthread_join(s_idct.id, NULL);
+	thread_wait(s_dct.id);
+	thread_wait(s_quant.id);
+	thread_wait(s_idct.id);
 
-	gettimeofday(&t, NULL);
+	getTime(&t);
 
 	printTime(&s, &t, "Total: ", "\n");
 
