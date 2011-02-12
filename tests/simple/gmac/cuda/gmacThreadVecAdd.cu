@@ -71,11 +71,13 @@ void *addVector(void *ptr)
 	}
 	getTime(&t);
 	printTime(&s, &t, "Check: ", "\n");
-	fprintf(stdout, "Error: %.02f\n", error);
 
+    getTime(&s);
 	gmacFree(a);
 	gmacFree(b);
 	gmacFree(*c);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
     assert(error == 0.f);
 

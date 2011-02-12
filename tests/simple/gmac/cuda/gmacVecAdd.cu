@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 	gmactime_t s, t;
 
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
     // Alloc & init input data
@@ -78,11 +77,13 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
-    fprintf(stderr, "Error: %f\n", error);
 
+    getTime(&s);
     gmacFree(a);
     gmacFree(b);
     gmacFree(c);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
     return error != 0;
 }
