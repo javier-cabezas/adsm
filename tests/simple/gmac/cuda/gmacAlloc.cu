@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <gmac/cuda.h>
 
+#include "utils.h"
+
 __global__ void kernelFill(unsigned *A, unsigned off, size_t size)
 {
     unsigned localIdx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -13,22 +15,24 @@ __global__ void kernelFill(unsigned *A, unsigned off, size_t size)
 int main(int argc, char *argv[])
 {
     const unsigned totalSize = 8 * 1024 * 1024;
-    for (unsigned currentSize = totalSize; currentSize > 32; currentSize /= 2) {
-        fprintf(stderr, "Testing object size %u\n", currentSize);
-        assert(totalSize % currentSize == 0);
-        size_t nObjects = totalSize / currentSize;
+    gmactime_t s, t;
 
+    for (unsigned currentSize = totalSize; currentSize > 32; currentSize /= 2) {
+        assert(totalSize % currentSize == 0);
+        fprintf(stderr,"Size: %u\n", currentSize);
+        size_t nObjects = totalSize / currentSize;
         unsigned **objects = (unsigned **) malloc(nObjects * sizeof(int *));
         assert(objects != NULL);
 
-        fprintf(stderr, "- Allocating: %zd objects\n", nObjects);
+        getTime(&s);
         for(size_t i = 0; i < nObjects; i++) {
             assert(gmacMalloc((void **)&objects[i], currentSize * sizeof(int)) == gmacSuccess);
         }
+        getTime(&t);
+        printTime(&s, &t, "Alloc: ", "\n");
 
-        fprintf(stderr, "- Running kernel\n");
+        getTime(&s);
         unsigned off = 0;
-
         dim3 Db(currentSize > 256? 256: currentSize);
         dim3 Dg(currentSize / Db.x);
         if (currentSize > 256 && currentSize % 256 != 0) Dg.x++;
@@ -38,8 +42,10 @@ int main(int argc, char *argv[])
             off += currentSize;
         }
         gmacThreadSynchronize();
+        getTime(&t);
+        printTime(&s, &t, "Run: ", "\n");
 
-        fprintf(stderr, "- Checking\n");
+        getTime(&s);
         off = 0;
         for(size_t i = 0; i < nObjects; i++) {
             for(size_t j = 0; j < currentSize; j++) {
@@ -48,13 +54,16 @@ int main(int argc, char *argv[])
             }
             off += currentSize;
         }
+        getTime(&t);
+        printTime(&s, &t, "Check: ", "\n");
 
-        fprintf(stderr, "- Freeing: %zd objects\n", nObjects);
+        getTime(&s);
         for(size_t i = 0; i < nObjects; i++) {
             gmacFree(objects[i]);
         }
-
         free(objects);
+        getTime(&t);
+        printTime(&s, &t, "Free: ", "\n");
     }
 
     return 0;
