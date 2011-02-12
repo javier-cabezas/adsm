@@ -41,6 +41,8 @@ source_group(${current_GROUP} FILES
     gmacStencil.cu
     gmacStencilCommon.cu
     gmacConstant.cu
+    gmacCompressCommon.cu
+    gmacCompress.cu
     gmacTexture.cu
     gmacThreadStencil.cu
 )
@@ -136,6 +138,11 @@ target_link_libraries(gmacTexture gmac)
 cuda_compile(constant gmacConstant.cu)
 add_executable(gmacConstant ${constant} ${common_SRC} gmacConstant.cu)
 target_link_libraries(gmacConstant gmac)
+
+# gmacCompress
+cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
+add_executable(gmacCompress ${compress} ${common_SRC} gmacCompressCommon.cu gmacCompress.cu)
+target_link_libraries(gmacCompress gmac)
 
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
