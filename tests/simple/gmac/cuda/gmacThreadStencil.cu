@@ -17,19 +17,11 @@ static unsigned nIter = 0;
 
 int main(int argc, char *argv[])
 {
-	gmactime_t s, t;
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 
-    if (nIter == 0) {
-        fprintf(stderr, "Error: nIter should be greater than 0\n");
-        abort();
-    }
-
-    if (dimRealElems % 32 != 0) {
-        fprintf(stderr, "Error: wrong dimension %u\n", unsigned(dimRealElems));
-        abort();
-    }
+    assert(nIter > 0);
+    assert(dimRealElems % 32 == 0);
 
     dimElems = dimRealElems + 2 * STENCIL;
 
@@ -63,7 +55,6 @@ int main(int argc, char *argv[])
         descriptors[n].slices       = dimElems / nIter;
 	}
 
-	getTime(&t);
 	for(unsigned n = 0; n < nIter; n++) {
 		nThread[n] = thread_create(do_stencil, (void *) &descriptors[n]);
     }
@@ -71,11 +62,8 @@ int main(int argc, char *argv[])
 	for(unsigned n = 0; n < nIter; n++) {
 		thread_wait(nThread[n]);
 	}
-	getTime(&s);
-	printTime(&t, &s, "Total: ", "\n");
 
     if (nIter > 1) {
-        //pthread_barrier_destroy(&barrier);
         barrier_destroy(&barrier);
     }
 
