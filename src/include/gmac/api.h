@@ -186,9 +186,11 @@ GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
 #ifdef __cplusplus
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #else
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #endif
 
 static inline const char *gmacGetErrorString(gmacError_t err) {
