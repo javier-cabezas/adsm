@@ -174,9 +174,7 @@ file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 # add_executable(gmacMap ${map} ${common_SRC} gmacMap.cu)
 # target_link_libraries(gmacMap gmac)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 add_custom_target(InputSets ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../input
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../../input
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
-endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
