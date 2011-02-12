@@ -303,13 +303,13 @@ public:
      * \return A pointer to the created IOBuffer or NULL if there is not enough
      *         memory
      */
-    virtual IOBuffer *createIOBuffer(size_t size) = 0;
+    virtual IOBuffer &createIOBuffer(size_t size) = 0;
 
     /**
      * Destroys an IOBuffer
      * \param buffer Pointer to the buffer to be destroyed
      */
-    virtual void destroyIOBuffer(IOBuffer *buffer) = 0;
+    virtual void destroyIOBuffer(IOBuffer &buffer) = 0;
 
     /** Copies size bytes from an IOBuffer to accelerator memory
      * \param dst Pointer to accelerator memory

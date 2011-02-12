@@ -54,15 +54,17 @@ public:
 protected:
     void *addr_;
     size_t size_;
+    bool async_;
 
     State state_;
-    IOBuffer(void *addr, size_t size);
+    IOBuffer(void *addr, size_t size, bool async);
 public:
     virtual ~IOBuffer();
 
     uint8_t *addr() const;
     uint8_t *end() const;
     size_t size() const;
+    bool async() const;
 
     TESTABLE void lock();
     TESTABLE void unlock();

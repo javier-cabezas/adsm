@@ -88,23 +88,23 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     sendbytes = sendcount * typebytes;
     ret2 = MPI_Type_size(recvtype, &typebytes);
     recvbytes = recvcount * typebytes;
-    IOBuffer *buffer = mode.createIOBuffer(recvbytes + sendbytes);
+    IOBuffer &buffer = mode.createIOBuffer(recvbytes + sendbytes);
 
     if (ret  != MPI_SUCCESS) goto exit;
     if (ret2 != MPI_SUCCESS) goto exit;
 
-    ASSERTION(buffer->size() >= size_t(recvbytes + sendbytes));
+    ASSERTION(buffer.size() >= size_t(recvbytes + sendbytes));
 
     if(dest != MPI_PROC_NULL && srcMode != NULL) {
         // Fast path
-        if (buffer->size() >= sendbytes) {
+        if (buffer.size() >= sendbytes) {
             printf("Fast path!\n");
-            tmpSend     = buffer->addr();
+            tmpSend     = buffer.addr();
             bufferUsed += sendbytes;
 
             err = manager.toIOBuffer(*buffer, 0, hostptr_t(sendbuf), sendbytes);
             ASSERTION(err == gmacSuccess);
-            err = buffer->wait();
+            err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } // Slow path
         else {
@@ -122,8 +122,8 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     }
 
     if(source != MPI_PROC_NULL && dstMode != NULL) {
-        if (buffer->size() - bufferUsed >= recvbytes) {
-            tmpRecv = buffer->addr() + bufferUsed;
+        if (buffer.size() - bufferUsed >= recvbytes) {
+            tmpRecv = buffer.addr() + bufferUsed;
         } else {
             // Alloc buffer
             tmpRecv = malloc(recvbytes);
@@ -146,7 +146,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             printf("Fast path2!\n");
             err = manager.fromIOBuffer(hostptr_t(recvbuf), *buffer, bufferUsed, recvbytes);
             ASSERTION(err == gmacSuccess);
-            err = buffer->wait();
+            err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
             printf("Slow path2!\n");
@@ -200,16 +200,16 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     ret = MPI_Type_size(datatype, &typebytes);
     sendbytes = count * typebytes;
-    IOBuffer *buffer = mode.createIOBuffer(sendbytes);
+    IOBuffer &buffer = mode.createIOBuffer(sendbytes);
     if (ret != MPI_SUCCESS) goto exit;
 
     if (dest != MPI_PROC_NULL) {
-        if (buffer->size() >= sendbytes) {
-            tmpSend     = buffer->addr();
+        if (buffer.size() >= sendbytes) {
+            tmpSend     = buffer.addr();
 
             err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf), sendbytes);
             ASSERTION(err == gmacSuccess);
-            err = buffer->wait();
+            err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
             // Alloc buffer
@@ -297,12 +297,12 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     
     ret = MPI_Type_size(datatype, &typebytes);
     recvbytes = count * typebytes;
-    IOBuffer *buffer = mode.createIOBuffer(recvbytes);
+    IOBuffer &buffer = mode.createIOBuffer(recvbytes);
     if (ret != MPI_SUCCESS) goto exit;
 
     if(source != MPI_PROC_NULL) {
-        if (buffer->size() >= recvbytes) {
-            tmpRecv = buffer->addr();
+        if (buffer.size() >= recvbytes) {
+            tmpRecv = buffer.addr();
         } else {
             // Alloc buffer
             tmpRecv = malloc(recvbytes);
@@ -319,7 +319,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
         if (!allocRecv) {
             err = manager.fromIOBuffer(hostptr_t(buf), *buffer, 0, recvbytes);
             ASSERTION(err == gmacSuccess);
-            err = buffer->wait();
+            err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
             err = manager.memcpy(hostptr_t(buf), hostptr_t(tmpRecv), recvbytes);

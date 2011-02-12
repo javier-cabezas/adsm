@@ -24,7 +24,7 @@ Context::~Context()
     // Destroy context's private IOBuffer (if any)
     if(buffer_ != NULL) {
         TRACE(LOCAL,"Destroying I/O buffer");
-    	mode_.destroyIOBuffer(buffer_);
+    	mode_.destroyIOBuffer(*buffer_);
     }
 
     cleanCUstreams();
@@ -75,8 +75,9 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(util::params::ParamBlockSize));
-    if(buffer_ == NULL) {
+    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
+    if(buffer_->async() == false) {
+        mode_.destroyIOBuffer(*buffer_);
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
         return core::Context::copyToAccelerator(acc, host, size);
@@ -107,8 +108,9 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, (void *) acc, host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
-    if(buffer_ == NULL) buffer_ = static_cast<IOBuffer *>(mode_.createIOBuffer(util::params::ParamBlockSize));
-    if(buffer_ == NULL) {
+    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
+    if(buffer_->async() == false) {
+        mode_.destroyIOBuffer(*buffer_);
         trace::ExitCurrentFunction();
         return core::Context::copyToHost(host, acc, size);
     }
@@ -183,6 +185,7 @@ gmacError_t Context::waitForCall()
 gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer, 
                                          size_t len, size_t off)
 {
+    if (_buffer.async() == false) return copyToAccelerator(dst, _buffer.addr() + off, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
     gmacError_t ret = buffer.waitFromCUDA();
@@ -198,6 +201,7 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
 gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t src, 
                                          size_t len, size_t off)
 {
+    if (_buffer.async() == false) return copyToHost(_buffer.addr() + off, src, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
     gmacError_t ret = buffer.waitFromCUDA();

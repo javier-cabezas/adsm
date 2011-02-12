@@ -22,7 +22,7 @@ public:
     }
 
     static void TearDownTestCase() {
-        Mode_->destroyIOBuffer(Buffer_);
+        Mode_->destroyIOBuffer(*Buffer_);
         FiniProcess();
     }
 };
@@ -35,7 +35,7 @@ TEST_F(IOBufferTest, Creation) {
     Mode_ = &current;
     ASSERT_TRUE(Mode_ != NULL);
 
-    Buffer_ = current.createIOBuffer(Size_);
+    Buffer_ = &current.createIOBuffer(Size_);
     ASSERT_TRUE(Buffer_ != NULL);
     ASSERT_TRUE(Buffer_->size() >= Size_);
 }

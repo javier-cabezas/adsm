@@ -49,7 +49,7 @@ protected:
     bool started_;
 
 public:
-    IOBuffer(void *addr, size_t size);
+    IOBuffer(void *addr, size_t size, bool async);
 
     void toHost(Mode &mode);
     void toAccelerator(Mode &mode);

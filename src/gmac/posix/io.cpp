@@ -58,10 +58,10 @@ ssize_t read(int fd, void *buf, size_t count)
     size_t ret = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
-        buffer2 = mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
     Manager &manager = Manager::getInstance();
@@ -86,9 +86,9 @@ ssize_t read(int fd, void *buf, size_t count)
     }
     err = passive->wait();
     ASSERTION(err == gmacSuccess);
-    mode.destroyIOBuffer(buffer1);
+    mode.destroyIOBuffer(*buffer1);
     if (buffer2 != NULL) {
-        mode.destroyIOBuffer(buffer2);
+        mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
@@ -120,10 +120,10 @@ ssize_t write(int fd, const void *buf, size_t count)
     off_t  off  = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
-        buffer2 = mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
     Manager &manager = Manager::getInstance();
@@ -161,9 +161,9 @@ ssize_t write(int fd, const void *buf, size_t count)
         passive = tmp;
     } while (left != 0);
     ASSERTION(err == gmacSuccess);
-    mode.destroyIOBuffer(buffer1);
+    mode.destroyIOBuffer(*buffer1);
     if (buffer2 != NULL) {
-        mode.destroyIOBuffer(buffer2);
+        mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();

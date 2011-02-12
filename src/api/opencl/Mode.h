@@ -144,13 +144,13 @@ public:
         \param size Size (in bytes) of the IO buffer
         \return Pointer to the created I/O buffer or NULL if not enough memory
     */
-    core::IOBuffer *createIOBuffer(size_t size);
+    core::IOBuffer &createIOBuffer(size_t size);
 
     //! Destroy (release) an I/O buffer
     /*!
         \param buffer I/O buffer to be released
     */
-    void destroyIOBuffer(core::IOBuffer *buffer);
+    void destroyIOBuffer(core::IOBuffer &buffer);
 
     /** Send data from an I/O buffer to the accelerator
      *

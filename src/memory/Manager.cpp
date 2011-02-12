@@ -403,10 +403,8 @@ Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src
     core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
-    core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
-    CFATAL(active  != NULL);
-    CFATAL(passive != NULL);
+    core::IOBuffer *active  = &mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *passive = &mode.createIOBuffer(obj.blockSize());
 
     // Control variables
     size_t left = size;
@@ -440,9 +438,9 @@ Manager::memcpyToObject(const Object &obj, size_t objOffset, const hostptr_t src
     }
     // Clean up buffers after they are idle
     passive->wait();
-    mode.destroyIOBuffer(passive);
+    mode.destroyIOBuffer(*passive);
     active->wait();
-    mode.destroyIOBuffer(active);
+    mode.destroyIOBuffer(*active);
 
     trace::ExitCurrentFunction();
     return ret;
@@ -458,10 +456,8 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     core::Mode &mode = core::Mode::getCurrent();
 
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = mode.createIOBuffer(dstObj.blockSize());
-    core::IOBuffer *passive = mode.createIOBuffer(dstObj.blockSize());
-    CFATAL(active  != NULL);
-    CFATAL(passive != NULL);
+    core::IOBuffer *active  = &mode.createIOBuffer(dstObj.blockSize());
+    core::IOBuffer *passive = &mode.createIOBuffer(dstObj.blockSize());
 
     // Control variables
     size_t left = size;
@@ -523,9 +519,9 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
     }
     // Clean up buffers after they are idle
     passive->wait();
-    mode.destroyIOBuffer(passive);
+    mode.destroyIOBuffer(*passive);
     active->wait();
-    mode.destroyIOBuffer(active);
+    mode.destroyIOBuffer(*active);
 
     trace::ExitCurrentFunction();
     return ret;
@@ -540,10 +536,8 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
 
     core::Mode &mode = core::Mode::getCurrent();
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active = mode.createIOBuffer(obj.blockSize());
-    core::IOBuffer *passive = mode.createIOBuffer(obj.blockSize());
-    CFATAL(active  != NULL);
-    CFATAL(passive != NULL);
+    core::IOBuffer *active  = &mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *passive = &mode.createIOBuffer(obj.blockSize());
 
     // Control variables
     size_t left = size;
@@ -580,8 +574,8 @@ Manager::memcpyFromObject(hostptr_t dst, const Object &obj, size_t objOffset,
         passive = tmp;
     }
     // No need to wait for the buffers because we waited for them before ::memcpy
-    mode.destroyIOBuffer(passive);
-    mode.destroyIOBuffer(active);
+    mode.destroyIOBuffer(*passive);
+    mode.destroyIOBuffer(*active);
     
     trace::ExitCurrentFunction();
     return ret;

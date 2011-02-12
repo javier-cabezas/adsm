@@ -139,8 +139,8 @@ public:
     */
 	gmacError_t execute(core::KernelLaunch &launch);
 
-    core::IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(core::IOBuffer *buffer);
+    core::IOBuffer &createIOBuffer(size_t size);
+    void destroyIOBuffer(core::IOBuffer &buffer);
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 

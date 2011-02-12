@@ -54,10 +54,10 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
-        buffer2 = mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
     Manager &manager = Manager::getInstance();
@@ -84,9 +84,9 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     }
     err = passive->wait();
     ASSERTION(err == gmacSuccess);
-    mode.destroyIOBuffer(buffer1);
+    mode.destroyIOBuffer(*buffer1);
     if (buffer2 != NULL) {
-        mode.destroyIOBuffer(buffer2);
+        mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();
@@ -121,10 +121,10 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = Mode::getCurrent();
-    IOBuffer *buffer1 = mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
-        buffer2 = mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
     Manager &manager = Manager::getInstance();
@@ -164,9 +164,9 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         passive = tmp;
     } while (left != 0);
     ASSERTION(err == gmacSuccess);
-    mode.destroyIOBuffer(buffer1);
+    mode.destroyIOBuffer(*buffer1);
     if (buffer2 != NULL) {
-        mode.destroyIOBuffer(buffer2);
+        mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	gmac::exitGmac();

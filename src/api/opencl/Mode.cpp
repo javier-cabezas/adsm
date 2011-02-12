@@ -27,20 +27,30 @@ Mode::~Mode()
 }
 
 inline
-core::IOBuffer *Mode::createIOBuffer(size_t size)
+core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
-    if(ioMemory_ == NULL) return NULL;
+    IOBuffer *ret;
     void *addr = ioMemory_->get(size);
-    if(addr == NULL) return NULL;
-    return new IOBuffer(addr, size);
+    if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
+        addr = ::malloc(size);
+        ret = new IOBuffer(addr, size, false);
+    } else {
+        ret = new IOBuffer(addr, size, true);
+    }
+    return *ret;
 }
 
 inline
-void Mode::destroyIOBuffer(core::IOBuffer *buffer)
+void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
     ASSERTION(ioMemory_ != NULL);
-    ioMemory_->put(buffer->addr(), buffer->size());
-    delete buffer;
+
+    if (buffer.async()) {
+        ioMemory_->put(buffer.addr(), buffer.size());
+    } else {
+        ::free(buffer.addr());
+    }
+    delete &buffer;
 }
 
 
