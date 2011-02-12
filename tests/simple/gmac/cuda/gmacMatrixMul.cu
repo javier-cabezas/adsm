@@ -122,10 +122,7 @@ main(int argc, char** argv)
 
     // compute reference solution
     getTime(&s);
-
-    // check result
     float err = 0.0;
-
     float* reference = (float *) malloc(sizeC);
     computeGold(reference, A, B, HA, WA, WB);
     for (unsigned i = 0; i < elemsC; i++) {
