@@ -41,9 +41,10 @@ source_group(${current_GROUP} FILES
     gmacStencil.cu
     gmacStencilCommon.cu
     gmacConstant.cu
+    gmacTexture.cu
     gmacCompressCommon.cu
     gmacCompress.cu
-    gmacTexture.cu
+    gmacPingPong.cu
     gmacThreadStencil.cu
 )
 
@@ -139,6 +140,13 @@ cuda_compile(constant gmacConstant.cu)
 add_executable(gmacConstant ${constant} ${common_SRC} gmacConstant.cu)
 target_link_libraries(gmacConstant gmac)
 
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+else(CMAKE_SYSTEM_NAME MATCHES "Windows")
+# gmacPingPong
+cuda_compile(pingpong gmacPingPong.cu)
+add_executable(gmacPingPong ${pingpong} ${common_SRC} gmacPingPong.cu)
+target_link_libraries(gmacPingPong gmac)
+
 # gmacCompress
 cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
 add_executable(gmacCompress ${compress} ${common_SRC} gmacCompressCommon.cu gmacCompress.cu)
@@ -148,6 +156,7 @@ target_link_libraries(gmacCompress gmac)
 cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
 add_executable(gmacCompressSend ${compressSend} ${common_SRC} gmacCompressCommon.cu gmacCompressSend.cu)
 target_link_libraries(gmacCompressSend gmac)
+endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
