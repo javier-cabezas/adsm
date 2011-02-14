@@ -187,11 +187,10 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
     if (_buffer.async() == false) return copyToAccelerator(dst, _buffer.addr() + off, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.waitFromCUDA();
-    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    gmacError_t ret;
     ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
     trace::ExitCurrentFunction();
     return ret;
@@ -203,11 +202,10 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     if (_buffer.async() == false) return copyToHost(_buffer.addr() + off, src, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.waitFromCUDA();
-    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    gmacError_t ret;
     ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
     trace::ExitCurrentFunction();
     return ret;

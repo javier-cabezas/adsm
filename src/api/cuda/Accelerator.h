@@ -103,7 +103,7 @@ protected:
 
 public:
     Accelerator(int n, CUdevice device);
-    ~Accelerator();
+    virtual ~Accelerator();
 
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
@@ -116,7 +116,7 @@ public:
 
     static void init();
 
-    gmac::core::Mode *createMode(core::Process &proc);
+    core::Mode *createMode(core::Process &proc);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();

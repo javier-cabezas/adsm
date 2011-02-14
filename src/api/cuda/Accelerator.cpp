@@ -91,10 +91,10 @@ void Accelerator::init()
 #endif
 }
 
-gmac::core::Mode *Accelerator::createMode(core::Process &proc)
+core::Mode *Accelerator::createMode(core::Process &proc)
 {
     trace::EnterCurrentFunction();
-    gmac::core::Mode *mode = new cuda::Mode(proc, *this);
+    core::Mode *mode = new gmac::cuda::Mode(proc, *this);
     if (mode != NULL) {
         registerMode(*mode);
     }

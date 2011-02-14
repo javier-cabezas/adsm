@@ -196,7 +196,6 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
     if (_buffer.async() == false) return copyToAccelerator(dst, _buffer.addr() + off, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    ASSERTION(buffer.state() == IOBuffer::Idle);
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
@@ -212,7 +211,6 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     if (_buffer.async() == false) return copyToHost(_buffer.addr() + off, src, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    ASSERTION(buffer.state() == IOBuffer::Idle);
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();

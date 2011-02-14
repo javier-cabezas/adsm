@@ -64,6 +64,8 @@ class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::Mode {
+    DBC_FORCE_TEST(Mode)
+
     friend class Switch;
 protected:
 #ifdef USE_MULTI_CONTEXT
@@ -106,7 +108,7 @@ public:
     Mode(core::Process &proc, Accelerator &acc);
 
     //! Default destructor
-    ~Mode();
+    virtual ~Mode();
 
     //! Allocated GPU-accessible host memory
     /*!
@@ -141,8 +143,8 @@ public:
 
     core::IOBuffer &createIOBuffer(size_t size);
     void destroyIOBuffer(core::IOBuffer &buffer);
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
+    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
+    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);
@@ -165,5 +167,9 @@ public:
 }}
 
 #include "Mode-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Mode.h"
+#endif
 
 #endif

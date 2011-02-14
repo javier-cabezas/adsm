@@ -5,7 +5,7 @@
 #include "core/Process.h"
 #include "core/Mode.h"
 
-using gmac::core::Mode;
+using __impl::core::Mode;
 using __impl::core::Process;
 
 

@@ -44,7 +44,7 @@ class GMAC_LOCAL Accelerator :
 
 public:
 	Accelerator(int n, CUdevice device);
-    virtual ~Accelerator();
+    ~Accelerator();
 
     /* Synchronous interface */
 	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::Mode &mode);

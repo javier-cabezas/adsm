@@ -99,7 +99,7 @@ protected:
 
 public:
     Accelerator(int n, cl_platform_id platform, cl_device_id device);
-    ~Accelerator();
+    virtual ~Accelerator();
 
     cl_device_id device() const;
 
@@ -113,7 +113,7 @@ public:
     static gmacError_t prepareCLCode(const char *code, const char *flags);
     static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 
-    gmac::core::Mode *createMode(core::Process &proc);
+    core::Mode *createMode(core::Process &proc);
 
     gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
     gmacError_t free(accptr_t addr);

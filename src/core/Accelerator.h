@@ -93,7 +93,7 @@ public:
      * \param proc Reference to a process which the mode will belong to
      * \return A pointer to the created mode or NULL if there has been an error
      */
-    virtual gmac::core::Mode *createMode(Process &proc) = 0;
+    virtual core::Mode *createMode(Process &proc) = 0;
 
     /**
      * Registers a mode to be run on the accelerator. The mode must not be

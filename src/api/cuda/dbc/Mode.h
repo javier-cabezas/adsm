@@ -32,28 +32,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_OPENCL_DBC_ACCELERATOR_H_
-#define GMAC_API_OPENCL_DBC_ACCELERATOR_H_
+#ifndef GMAC_API_CUDA_DBC_MODE_H_
+#define GMAC_API_CUDA_DBC_MODE_H_
 
-namespace __dbc { namespace opencl {
+namespace __dbc { namespace cuda {
 
-class GMAC_LOCAL Accelerator :
-    public __impl::opencl::Accelerator,
+class GMAC_LOCAL Mode :
+    public __impl::cuda::Mode,
     public virtual Contract {
-    DBC_TESTED(__impl::opencl::Accelerator)
+    DBC_TESTED(__impl::cuda::Mode)
 
 public:
-	Accelerator(int n, cl_platform_id platform, cl_device_id device);
-    ~Accelerator();
+    Mode(__impl::core::Process &proc, __impl::cuda::Accelerator &acc);
+    ~Mode();
 
-    /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::Mode &mode);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::Mode &mode);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
-
-    /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::Mode &mode, cl_command_queue stream);
-    gmacError_t copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::Mode &mode, cl_command_queue stream);
+    gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
+    gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 };
 
 

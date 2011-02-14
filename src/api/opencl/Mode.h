@@ -70,6 +70,8 @@ public:
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::Mode {
+    DBC_FORCE_TEST(Mode)
+
     friend class IOBuffer;
 protected:
     //! Switch to accelerator mode
@@ -98,7 +100,7 @@ public:
     Mode(core::Process &proc, Accelerator &acc);
 
     //! Default destructor
-    ~Mode();
+    virtual ~Mode();
 
     //! Allocate GPU-accessible host memory
     /*!
@@ -160,7 +162,7 @@ public:
      *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
      *  \return Error code
      */
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
+    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
 
 
     /** Fill I/O buffer with data from the accelerator
@@ -171,7 +173,7 @@ public:
      *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
      *  \return Error code
      */
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
+    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
     //! Get the accelerator stream where events are recorded
     /*!
@@ -208,5 +210,9 @@ public:
 }}
 
 #include "Mode-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/Mode.h"
+#endif
 
 #endif
