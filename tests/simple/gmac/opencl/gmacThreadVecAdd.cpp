@@ -34,19 +34,19 @@ void *addVector(void *ptr)
 	float *a, *b;
 	float **c = (float **)ptr;
 	gmactime_t s, t;
-	gmacError_t ret = gmacSuccess;
+	oclError_t ret = gmacSuccess;
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
+	ret = oclMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	valueInit(a, 1.0, vecSize);
-	ret = gmacMalloc((void **)&b, vecSize * sizeof(float));
+	ret = oclMalloc((void **)&b, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	valueInit(b, 1.0, vecSize);
 
 	// Alloc output data
-	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
+	ret = oclMalloc((void **)c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
@@ -58,15 +58,15 @@ void *addVector(void *ptr)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(*c));
+    cl_mem tmp = cl_mem(oclPtr(*c));
     assert(__oclSetArgument(&tmp, sizeof(cl_mem), 0) == gmacSuccess);
-    tmp = cl_mem(gmacPtr(a));
+    tmp = cl_mem(oclPtr(a));
     assert(__oclSetArgument(&tmp, sizeof(cl_mem), 1) == gmacSuccess);
-    tmp = cl_mem(gmacPtr(b));
+    tmp = cl_mem(oclPtr(b));
     assert(__oclSetArgument(&tmp, sizeof(cl_mem), 2) == gmacSuccess);
     assert(__oclSetArgument(&vecSize, sizeof(vecSize), 3) == gmacSuccess);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
@@ -79,9 +79,9 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
-	gmacFree(a);
-	gmacFree(b);
-	gmacFree(*c);
+	oclFree(a);
+	oclFree(b);
+	oclFree(*c);
 
     assert(error == 0.f);
 

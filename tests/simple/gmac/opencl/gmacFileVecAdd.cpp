@@ -57,15 +57,15 @@ float doTest(float *a, float *b, float *c, float *orig)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(c));
+    cl_mem tmp = cl_mem(oclPtr(c));
     __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    tmp = cl_mem(gmacPtr(a));
+    tmp = cl_mem(oclPtr(a));
     __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-    tmp = cl_mem(gmacPtr(b));
+    tmp = cl_mem(oclPtr(b));
     __oclSetArgument(&tmp, sizeof(cl_mem), 2);
     __oclSetArgument(&vecSize, sizeof(vecSize), 3);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
 
     // Alloc output data
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
 
     //////////////////////
@@ -107,9 +107,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"SHARED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -122,8 +122,8 @@ int main(int argc, char *argv[])
 
     fclose(fC);
 
-    gmacFree(a);
-    gmacFree(b);
+    oclFree(a);
+    oclFree(b);
 
     //////////////////////////
     // Test replicated objects
@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 
-    gmacFree(a);
-    gmacFree(b);
+    oclFree(a);
+    oclFree(b);
 
     ///////////////////////////
     // Test centralized objects
@@ -166,10 +166,10 @@ int main(int argc, char *argv[])
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
 
-    gmacFree(a);
-    gmacFree(b);
+    oclFree(a);
+    oclFree(b);
 
-    gmacFree(c);
+    oclFree(c);
     free(orig);
     return error1 != 0.f && error2 != 0.f && error3 != 0.f;
 }

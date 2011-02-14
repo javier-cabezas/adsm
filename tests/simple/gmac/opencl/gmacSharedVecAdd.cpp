@@ -38,9 +38,9 @@ void *addVector(void *ptr)
 {
 	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
-	gmacError_t ret = gmacSuccess;
+	oclError_t ret = gmacSuccess;
 
-	ret = gmacMalloc((void **)&p->ptr, vecSize * sizeof(float));
+	ret = oclMalloc((void **)&p->ptr, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 
 	// Call the kernel
@@ -52,17 +52,17 @@ void *addVector(void *ptr)
     globalSize *= localSize;
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(p->ptr));
+    cl_mem tmp = cl_mem(oclPtr(p->ptr));
     __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    tmp = cl_mem(gmacPtr(a));
+    tmp = cl_mem(oclPtr(a));
     __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-    tmp = cl_mem(gmacPtr(b));
+    tmp = cl_mem(oclPtr(b));
     __oclSetArgument(&tmp, sizeof(cl_mem), 2);
     __oclSetArgument(&vecSize, sizeof(vecSize), 3);
     unsigned offset = p->i * long(vecSize);
     __oclSetArgument(&offset, sizeof(offset), 4);
     assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 {
 	thread_t *nThread;
 	unsigned n = 0;
-	gmacError_t ret = gmacSuccess;
+	oclError_t ret = gmacSuccess;
 	gmactime_t s, t;
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
@@ -103,10 +103,10 @@ int main(int argc, char *argv[])
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = gmacGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
+	ret = oclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	valueInit(a, 1.0, nIter * vecSize);
-	ret = gmacGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
+	ret = oclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	valueInit(b, 1.0, nIter * vecSize);
 
@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
 		thread_wait(nThread[n]);
 	}
 
-	gmacFree(a);
-	gmacFree(b);
+	oclFree(a);
+	oclFree(b);
 
 	float error = 0;
 	for(n = 0; n < nIter; n++) {

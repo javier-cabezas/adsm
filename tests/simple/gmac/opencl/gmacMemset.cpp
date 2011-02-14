@@ -29,32 +29,32 @@ int main(int argc, char *argv[])
 
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
 
 	// Call the kernel
     size_t localSize = blockSize;
     size_t globalSize = size / blockSize;
     if(size % blockSize) globalSize++;
     globalSize *= localSize;
-    cl_mem tmp = cl_mem(gmacPtr(ptr));
+    cl_mem tmp = cl_mem(oclPtr(ptr));
     long val = 1;
 
 	fprintf(stderr,"GMAC_MEMSET\n");
 	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
-    gmacMemset(ptr, 0, size * sizeof(long));
+    oclMemset(ptr, 0, size * sizeof(long));
 
     assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
     __oclSetArgument(&tmp, sizeof(cl_mem), 0);
     __oclSetArgument(&size, sizeof(size), 1);
     __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
-	gmacMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
+	oclMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	fprintf(stderr,"\n");
@@ -68,16 +68,15 @@ int main(int argc, char *argv[])
     __oclSetArgument(&size, sizeof(size), 1);
     __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 
-    gmacThreadSynchronize();
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
 	memset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
-	gmacFree(ptr);
+	oclFree(ptr);
 
     return 0;
 }

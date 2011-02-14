@@ -36,7 +36,7 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
 {
     init(host, size, 1);
     int ret1, ret2, ret3;
-    cl_mem tmp = cl_mem(gmacPtr(device));
+    cl_mem tmp = cl_mem(oclPtr(device));
     long val = 1;
 
 	// Call the kernel
@@ -53,7 +53,7 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
     __oclSetArgument(&size, sizeof(size), 1);
     __oclSetArgument(&val, sizeof(val), 2);
     assert(__oclLaunch("reset") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(oclThreadSynchronize() == gmacSuccess);
 
     ret1 = check(device, 2 * size);
 	printf("%d\n", ret1);
@@ -71,9 +71,9 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
     return (ret1 != 0 || ret2 != 0 || ret3 != 0);
 }
 
-static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
+static void *oclMemcpyWrapper(void *dst, const void *src, size_t size)
 {
-	return gmacMemcpy(dst, src, size);
+	return oclMemcpy(dst, src, size);
 }
 
 int main(int argc, char *argv[])
@@ -87,17 +87,17 @@ int main(int argc, char *argv[])
 	assert(host != NULL);
 
     // memcpy
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
 
     int res1 = doTest(host, ptr, memcpy);
     if (res1 != 0) fprintf(stderr, "Failed!\n");
-	gmacFree(ptr);
+	oclFree(ptr);
 
-    // gmacMemcpy
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
-    int res2 = doTest(host, ptr, gmacMemcpyWrapper);
+    // oclMemcpy
+	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+    int res2 = doTest(host, ptr, oclMemcpyWrapper);
     if (res2 != 0) fprintf(stderr, "Failed!\n");
-	gmacFree(ptr);
+	oclFree(ptr);
 
 	free(host);
 

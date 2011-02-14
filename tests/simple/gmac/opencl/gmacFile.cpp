@@ -73,23 +73,23 @@ void *doTest(void *)
     globalSize *= localSize;
 
     // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
 
-    gmacMemset(a, 0, vecSize * sizeof(float));
-    gmacMemset(b, 0, vecSize * sizeof(float));
+    oclMemset(a, 0, vecSize * sizeof(float));
+    oclMemset(b, 0, vecSize * sizeof(float));
 
     barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
-        //vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
+        //vecSet<<<Dg, Db>>>(oclPtr(a), vecSize, float(i));
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        cl_mem tmp = cl_mem(gmacPtr(a));
+        cl_mem tmp = cl_mem(oclPtr(a));
         __oclSetArgument(&tmp, sizeof(cl_mem), 0);
         __oclSetArgument(&vecSize, sizeof(vecSize), 1);
         float val = float(i);
@@ -97,17 +97,17 @@ void *doTest(void *)
         assert(__oclLaunch("vecSet") == gmacSuccess);
 
         barrier_wait(&ioAfter);
-        //vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
+        //vecMove<<<Dg, Db>>>(oclPtr(c), oclPtr(a), vecSize);
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        tmp = cl_mem(gmacPtr(c));
+        tmp = cl_mem(oclPtr(c));
         __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-        tmp = cl_mem(gmacPtr(a));
+        tmp = cl_mem(oclPtr(a));
         __oclSetArgument(&tmp, sizeof(cl_mem), 1);
         __oclSetArgument(&vecSize, sizeof(vecSize), 2);
         assert(__oclLaunch("vecMove") == gmacSuccess);
 
-        assert(gmacThreadSynchronize() == gmacSuccess);
+        assert(oclThreadSynchronize() == gmacSuccess);
         barrier_wait(&ioBefore);
     }
 
@@ -117,17 +117,17 @@ void *doTest(void *)
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
         //readFile(a, vecSize, i);
-        //vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
+        //vecAccum<<<Dg, Db>>>(oclPtr(b), oclPtr(a), vecSize);
 
         assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        cl_mem tmp = cl_mem(gmacPtr(b));
+        cl_mem tmp = cl_mem(oclPtr(b));
         __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-        tmp = cl_mem(gmacPtr(a));
+        tmp = cl_mem(oclPtr(a));
         __oclSetArgument(&tmp, sizeof(cl_mem), 1);
         __oclSetArgument(&vecSize, sizeof(vecSize), 2);
         assert(__oclLaunch("vecAccum") == gmacSuccess);
 
-        gmacThreadSynchronize();
+        oclThreadSynchronize();
     }
 
 
@@ -137,8 +137,8 @@ void *doTest(void *)
     }
     fprintf(stderr,"Error: %f\n", error1);
 
-    gmacFree(a);
-    gmacFree(b);
+    oclFree(a);
+    oclFree(b);
 
     return &error1;
 }
@@ -146,7 +146,7 @@ void *doTest(void *)
 static void
 setPath(char *name, size_t len, int it)
 {
-    static const char path_base[] = "_gmac_file_";
+    static const char path_base[] = "_ocl_file_";
     memset(name, '\0', len);
     sprintf(name, "%s%d", path_base, it);
 }
