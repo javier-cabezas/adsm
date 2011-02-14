@@ -12,8 +12,8 @@ Test::TestCase::run(std::string exec)
     ::memset(&processInfo, 0, sizeof(processInfo)); 
     startupInfo.cb = sizeof(startupInfo); 
 
+    std::cout << "Launching: "<< exec << " - " << name_ << std::endl;
     setEnvironment();
-    printf("Launching: %s - \n", exec.c_str(), name_.c_str());
     TCHAR tmpCmdLine[MAX_PATH * 2];
     const char *appName = exec.c_str();
     ::memcpy(tmpCmdLine, appName, strlen(appName) + 1);
