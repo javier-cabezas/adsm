@@ -13,7 +13,7 @@ Test::TestCase::run(std::string exec)
     startupInfo.cb = sizeof(startupInfo); 
 
     setEnvironment();
-    printf("Launching: %s\n", exec.c_str());
+    printf("Launching: %s - \n", exec.c_str(), name_.c_str());
     TCHAR tmpCmdLine[MAX_PATH * 2];
     const char *appName = exec.c_str();
     ::memcpy(tmpCmdLine, appName, strlen(appName) + 1);
