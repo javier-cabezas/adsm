@@ -169,7 +169,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 
     cl_event event;
     buffer.toHost(reinterpret_cast<Mode &>(mode));
-    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_TRUE,
+    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);

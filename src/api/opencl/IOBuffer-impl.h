@@ -32,6 +32,7 @@ IOBuffer::toAccelerator(Mode &mode)
 inline void
 IOBuffer::started(cl_event event)
 {
+	TRACE(LOCAL,"Buffer %p starts", this);
     ASSERTION(started_ == false);
 
     event_ = event;
@@ -41,12 +42,15 @@ IOBuffer::started(cl_event event)
 inline gmacError_t
 IOBuffer::wait()
 {
+	TRACE(LOCAL,"Buffer %p waits: %d", this, state_ == Idle || started_ == true);
     ASSERTION(state_ == Idle || started_ == true);
 
     gmacError_t ret = gmacSuccess;
 
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
+        ASSERTION(event_ != NULL);
+
         trace::SetThreadState(trace::Wait);
         ret = mode_->waitForEvent(event_);
         trace::SetThreadState(trace::Running);
@@ -56,7 +60,9 @@ IOBuffer::wait()
         cl_int clret = clReleaseEvent(event_);
         ASSERTION(clret == CL_SUCCESS);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
+
         state_ = Idle;
+        event_ = NULL;
         mode_  = NULL;
         started_ = false;
     } else {

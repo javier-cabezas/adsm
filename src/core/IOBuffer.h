@@ -43,10 +43,9 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : 
-           public gmac::util::Lock, 
-           public util::NonCopyable {
-           DBC_FORCE_TEST(__impl::core::IOBuffer)                
+class GMAC_LOCAL IOBuffer :
+    public util::NonCopyable {
+    DBC_FORCE_TEST(__impl::core::IOBuffer)
 
 
 public:
@@ -65,9 +64,6 @@ public:
     uint8_t *end() const;
     size_t size() const;
     bool async() const;
-
-    TESTABLE void lock();
-    TESTABLE void unlock();
 
     State state() const;
     virtual gmacError_t wait() = 0;

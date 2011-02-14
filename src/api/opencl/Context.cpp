@@ -90,8 +90,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::ExitCurrentFunction();
         return core::Context::copyToAccelerator(acc, host, size);
     }
-    buffer_->wait();
-    gmacError_t ret = gmacSuccess;
+    gmacError_t ret = buffer_->wait();;
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
         ret = buffer_->wait();
@@ -126,7 +125,6 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     }
 
     gmacError_t ret = buffer_->wait();
-    buffer_->wait();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
@@ -175,9 +173,7 @@ gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
-    if(buffer_ != NULL) {
-        buffer_->wait();
-    }
+
     ret = syncCLstream(streamToAccelerator_);
 
     trace::ExitCurrentFunction();
@@ -200,11 +196,11 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
     if (_buffer.async() == false) return copyToAccelerator(dst, _buffer.addr() + off, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.wait();
-    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
+    ASSERTION(buffer.state() == IOBuffer::Idle);
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    gmacError_t ret;
     ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
     trace::ExitCurrentFunction();
     return ret;
@@ -216,11 +212,11 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     if (_buffer.async() == false) return copyToHost(_buffer.addr() + off, src, len);
     trace::EnterCurrentFunction();
     IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    gmacError_t ret = buffer.wait();
-    if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
+    ASSERTION(buffer.state() == IOBuffer::Idle);
     ASSERTION(off + len <= buffer.size());
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
+    gmacError_t ret;
     ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
     trace::ExitCurrentFunction();
     return ret;

@@ -165,10 +165,7 @@ KernelLaunch &Context::launch(Kernel &kernel)
 gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
-    trace::EnterCurrentFunction();	
-    if(buffer_ != NULL) {
-        buffer_->waitFromCUDA();
-    }
+    trace::EnterCurrentFunction();
     syncCUstream(streamToAccelerator_);
     trace::ExitCurrentFunction();
     return ret;
