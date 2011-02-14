@@ -78,6 +78,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
     if(buffer_->async() == false) {
         mode_.destroyIOBuffer(*buffer_);
+        buffer_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
         return core::Context::copyToAccelerator(acc, host, size);
@@ -111,6 +112,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
     if(buffer_->async() == false) {
         mode_.destroyIOBuffer(*buffer_);
+        buffer_ = NULL;
         trace::ExitCurrentFunction();
         return core::Context::copyToHost(host, acc, size);
     }

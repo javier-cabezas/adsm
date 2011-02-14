@@ -114,6 +114,8 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(reinterpret_cast<Mode &>(mode), event, size);
+    cl_int clret = clReleaseEvent(event);
+    ASSERTION(clret == CL_SUCCESS);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -152,6 +154,8 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(reinterpret_cast<Mode &>(mode), event, count);
+    cl_int clret = clReleaseEvent(event);
+    ASSERTION(clret == CL_SUCCESS);
     trace::ExitCurrentFunction();
     return error(ret);
 }
