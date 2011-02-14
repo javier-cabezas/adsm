@@ -58,3 +58,4 @@ target_link_libraries(gmacFileVecAdd gmac)
 add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
 target_link_libraries(gmacSharedVecAdd gmac)
 
+file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
