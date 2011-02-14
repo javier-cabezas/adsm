@@ -64,12 +64,24 @@ ModuleDescriptor::createModules()
     return modules;
 }
 
+static const int CUDA_MAGIC = 0x466243b1;
+
+struct GMAC_LOCAL FatBinDesc {
+    int magic; int v; const unsigned long long* data; char* f;
+};
+
 Module::Module(const ModuleDescriptor & d) :
     fatBin_(d.fatBin_)
 {
     TRACE(LOCAL, "Module image: %p", fatBin_);
     CUresult res;
-    res = cuModuleLoadFatBinary(&mod_, fatBin_);
+
+    FatBinDesc *desc = (FatBinDesc *)fatBin_;
+    if (desc->magic == CUDA_MAGIC) {
+        res = cuModuleLoadFatBinary(&mod_, desc->data);
+    } else {
+        res = cuModuleLoadFatBinary(&mod_, fatBin_);
+    }
     CFATAL(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
     ModuleDescriptor::KernelVector::const_iterator k;
