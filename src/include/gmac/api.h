@@ -200,6 +200,7 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
     else {
         abort();
     }
+    return NULL;
 }
 
 #ifdef __cplusplus

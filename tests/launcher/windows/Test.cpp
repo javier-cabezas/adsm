@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "../Test.h"
+#include <iostream>
     
 void
 Test::TestCase::run(std::string exec)

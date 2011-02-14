@@ -140,8 +140,7 @@ cuda_compile(constant gmacConstant.cu)
 add_executable(gmacConstant ${constant} ${common_SRC} gmacConstant.cu)
 target_link_libraries(gmacConstant gmac)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-else(CMAKE_SYSTEM_NAME MATCHES "Windows")
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 # gmacPingPong
 cuda_compile(pingpong gmacPingPong.cu)
 add_executable(gmacPingPong ${pingpong} ${common_SRC} gmacPingPong.cu)
@@ -156,7 +155,7 @@ target_link_libraries(gmacCompress gmac)
 cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
 add_executable(gmacCompressSend ${compressSend} ${common_SRC} gmacCompressCommon.cu gmacCompressSend.cu)
 target_link_libraries(gmacCompressSend gmac)
-endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 
 install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
@@ -172,8 +171,11 @@ install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacTexture DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacConstant DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 install(TARGETS gmacCompress DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 install(TARGETS gmacCompressSend DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
