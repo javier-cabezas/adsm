@@ -69,9 +69,6 @@ protected:
 
     /** Value that represents the load of the accelerator */
     unsigned load_;
-
-    /** Set of modes that run on the accelerator */
-    std::set<Mode *> queue_;
 public:
     /**
      * Constructs an Accelerator and initializes its information fields
