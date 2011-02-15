@@ -102,7 +102,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             tmpSend     = buffer.addr();
             bufferUsed += sendbytes;
 
-            err = manager.toIOBuffer(*buffer, 0, hostptr_t(sendbuf), sendbytes);
+            err = manager.toIOBuffer(buffer, 0, hostptr_t(sendbuf), sendbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -144,7 +144,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     if(source != MPI_PROC_NULL && dstMode != NULL) {
         if (!allocRecv) {
             printf("Fast path2!\n");
-            err = manager.fromIOBuffer(hostptr_t(recvbuf), *buffer, bufferUsed, recvbytes);
+            err = manager.fromIOBuffer(hostptr_t(recvbuf), buffer, bufferUsed, recvbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -159,7 +159,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     }
 
 exit:
-    if (buffer != NULL) mode.destroyIOBuffer(buffer);
+    mode.destroyIOBuffer(buffer);
 
 	gmac::exitGmac();
 
@@ -207,7 +207,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
         if (buffer.size() >= sendbytes) {
             tmpSend     = buffer.addr();
 
-            err = manager.toIOBuffer(*buffer, 0, hostptr_t(buf), sendbytes);
+            err = manager.toIOBuffer(buffer, 0, hostptr_t(buf), sendbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -232,7 +232,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     }
 
 exit:
-    if (buffer != NULL) mode.destroyIOBuffer(buffer);
+    mode.destroyIOBuffer(buffer);
 
 	gmac::exitGmac();
 
@@ -317,7 +317,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     if(source != MPI_PROC_NULL) {
         if (!allocRecv) {
-            err = manager.fromIOBuffer(hostptr_t(buf), *buffer, 0, recvbytes);
+            err = manager.fromIOBuffer(hostptr_t(buf), buffer, 0, recvbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -336,7 +336,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     }
 
 exit:
-    if (buffer != NULL) mode.destroyIOBuffer(buffer);
+    mode.destroyIOBuffer(buffer);
 
 	gmac::exitGmac();
 
