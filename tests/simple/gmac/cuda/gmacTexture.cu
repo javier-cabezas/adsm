@@ -50,7 +50,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr,"Error on %d (%hu)\n", i, c[i]);
 		abort();
 	}
-	fprintf(stderr,"Done!\n");
 
 	gmacFree(c);
 

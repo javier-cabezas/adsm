@@ -1,6 +1,7 @@
 #ifndef VARIABLE_H
 #define VARIABLE_H
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -46,6 +47,12 @@ public:
     VectorString::iterator end()
     {
         VectorString::iterator ret = values_.end();
+        return ret;
+    }
+
+    VectorString::iterator find(std::string value)
+    {
+        VectorString::iterator ret = std::find(values_.begin(), values_.end(), value);
         return ret;
     }
 };

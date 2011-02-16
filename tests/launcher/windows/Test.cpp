@@ -4,8 +4,10 @@
 #include <iostream>
     
 void
-Test::TestCase::run(std::string exec)
+Test::TestCase::run(const std::string &exec)
 {
+    Stats stats;
+
     /* CreateProcess API initialization */ 
     STARTUPINFO startupInfo; 
     PROCESS_INFORMATION processInfo; 
@@ -29,6 +31,8 @@ Test::TestCase::run(std::string exec)
         printf("Failure! execve error code %d\n", created);
         abort(); 
     }
+
+    return stats;
 }
 
 void
