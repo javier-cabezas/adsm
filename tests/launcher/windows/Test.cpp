@@ -3,7 +3,7 @@
 #include "../Test.h"
 #include <iostream>
     
-void
+Test::TestCase::Stats
 Test::TestCase::run(const std::string &exec)
 {
     Stats stats;

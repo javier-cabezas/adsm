@@ -205,7 +205,7 @@ Test::Test(std::string name) :
 {
 }
 
-Test::Test &
+Test &
 Test::operator+=(Variable &v)
 {
     vars_.push_back(v);

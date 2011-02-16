@@ -59,3 +59,8 @@ add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
 target_link_libraries(gmacSharedVecAdd gmac)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
+
+add_custom_target(InputSets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../../input
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
+
