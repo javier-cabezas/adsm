@@ -11,7 +11,7 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
 const unsigned nIterDefault = 1;
-const size_t vecSizeDefault = 1024 * 1024;
+const size_t vecSizeDefault = 4 * 1024 * 1024;
 
 unsigned nIter = 0;
 size_t vecSize = 0;
@@ -22,6 +22,7 @@ static float *a, *b;
 static struct param {
 	int i;
 	float *ptr;
+    char *prefix;
 } *param;
 
 
@@ -35,8 +36,11 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t vecSize)
 
 void *addVector(void *ptr)
 {
+    static char buffer[1024];
+
 	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
+    char *prefix = p->prefix;
 	gmacError_t ret = gmacSuccess;
 
 	ret = gmacMalloc((void **)&p->ptr, vecSize * sizeof(float));
@@ -51,7 +55,8 @@ void *addVector(void *ptr)
 	 vecAdd<<<Dg, Db>>>(gmacPtr((p->ptr)), gmacPtr(a + p->i * vecSize), gmacPtr(b + p->i * vecSize), vecSize);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	getTime(&t);
-	printTime(&s, &t, "Run: ", "\n");
+    snprintf(buffer, 1024, "%s-Run: ", prefix);
+	printTime(&s, &t, buffer, "\n");
 
 	getTime(&s);
 	float error = 0;
@@ -60,27 +65,22 @@ void *addVector(void *ptr)
 		//error += (a[i] - b[i]);
 	}
 	getTime(&t);
-	printTime(&s, &t, "Check: ", "\n");
-	fprintf(stdout, "Error: %.02f\n", error);
+    snprintf(buffer, 1024, "%s-CheckFull: ", prefix);
+	printTime(&s, &t, buffer, "\n");
 
     assert(error == 0);
 
 	return NULL;
 }
 
-
-int main(int argc, char *argv[])
+float do_test(GmacGlobalMallocType allocType, const char *prefix)
 {
+    static char buffer[1024];
 	thread_t *nThread;
 	unsigned n = 0;
 	gmacError_t ret = gmacSuccess;
+
 	gmactime_t s, t;
-
-	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
-
-	vecSize = vecSize / nIter;
-	if(vecSize % nIter) vecSize++;
 
 	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
 	param = (struct param *)malloc(nIter * sizeof(struct param));
@@ -94,16 +94,20 @@ int main(int argc, char *argv[])
 
 	// Alloc output data
 	getTime(&t);
-	printTime(&s, &t, "Alloc: ", "\n");
+    snprintf(buffer, 1024, "%s-Alloc: ", prefix);
+	printTime(&s, &t, buffer, "\n");
 
     getTime(&s);
 	valueInit(a, 1.0, nIter * vecSize);
 	valueInit(b, 1.0, nIter * vecSize);
     getTime(&t);
-    printTime(&s, &t, "Init: ", "\n");
+
+    snprintf(buffer, 1024, "%s-Init: ", prefix);
+    printTime(&s, &t, buffer, "\n");
 
 	for(n = 0; n < nIter; n++) {
 		param[n].i = n;
+		param[n].prefix = (char *) prefix;
 		nThread[n] = thread_create(addVector, &(param[n]));
 	}
 
@@ -111,19 +115,52 @@ int main(int argc, char *argv[])
 		thread_wait(nThread[n]);
 	}
 
-	gmacFree(a);
-	gmacFree(b);
-
+    getTime(&s);
 	float error = 0;
 	for(n = 0; n < nIter; n++) {
 		for(unsigned i = 0; i < vecSize; i++) {
-			error += param[n].ptr[i] - 2;
+			error += param[n].ptr[i] - 2.f;
 		}
 	}
-	fprintf(stdout, "Total: %.02f\n", error);
+    getTime(&t);
+
+    snprintf(buffer, 1024, "%s-Check: ", prefix);
+    printTime(&s, &t, buffer, "\n");
+
+
+    getTime(&s);
+    for(n = 0; n < nIter; n++) {
+		gmacFree(param[n].ptr);
+	}
+
+	gmacFree(a);
+	gmacFree(b);
 
 	free(param);
 	free(nThread);
 
-    return error != 0;
+    getTime(&t);
+
+    snprintf(buffer, 1024, "%s-Free: ", prefix);
+    printTime(&s, &t, buffer, "\n");
+
+    return error;
+}
+
+int main(int argc, char *argv[])
+{
+	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
+	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+
+	vecSize = vecSize / nIter;
+	if(vecSize % nIter) vecSize++;
+
+    float error;
+
+    error = do_test(GMAC_GLOBAL_MALLOC_REPLICATED, "Replicated");
+    if (error != 0.f) abort();
+    error = do_test(GMAC_GLOBAL_MALLOC_CENTRALIZED, "Centralized");
+    if (error != 0.f) abort();
+    
+    return 0;
 }

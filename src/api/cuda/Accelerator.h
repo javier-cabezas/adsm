@@ -126,14 +126,16 @@ public:
     ModuleVector createModules();
     void destroyModules(ModuleVector & modules);
 #else
+    const CUcontext getCUcontext() const;
+
     ModuleVector *createModules();
 #endif
 
     int major() const;
     int minor() const;
 
-    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
-    gmacError_t free(accptr_t addr);
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t unmap(hostptr_t addr, size_t size);
 
     /* Synchronous interface */
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode);

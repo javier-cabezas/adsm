@@ -43,7 +43,7 @@ template<typename T>
 class GMAC_LOCAL DistributedObject : public gmac::memory::Object {
 protected:
     uint8_t *shadow_;
-    typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
+    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
 public:
     DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
@@ -54,7 +54,7 @@ public:
     core::Mode &owner(const hostptr_t addr) const;
 
     gmacError_t addOwner(core::Mode &owner);
-    gmacError_t removeOwner(const core::Mode &owner);
+    gmacError_t removeOwner(core::Mode &owner);
 
     gmacError_t mapToAccelerator();
     gmacError_t unmapFromAccelerator();

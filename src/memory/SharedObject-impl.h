@@ -6,16 +6,16 @@
 namespace __impl { namespace memory {
 
 template<typename T>
-accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, size_t size)
+accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size)
 {
     accptr_t acceleratorAddr;
     // Allocate accelerator memory
 #ifdef USE_VM
     gmacError_t ret = 
-        mode.malloc(acceleratorAddr, size, unsigned(SubBlockSize_));
+        mode.map(acceleratorAddr, addr, size, unsigned(SubBlockSize_));
 #else
     gmacError_t ret = 
-        mode.malloc(acceleratorAddr, size);
+        mode.map(acceleratorAddr, addr, size);
 #endif
     if(ret == gmacSuccess) {
 #ifdef USE_SUBBLOCK_TRACKING
@@ -66,19 +66,24 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
     acceleratorAddr_ = NULL;
     addr_ = NULL;
 
-    // Allocate accelerator memory
-    acceleratorAddr_ = allocAcceleratorMemory(owner, size);
-    valid_ = (acceleratorAddr_ != NULL);
+    // Allocate memory (if necessary)
+    if(hostAddr == NULL) {
+        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
+        valid_ =  addr_ != NULL;
+    }
+    else {
+        addr_ = hostAddr;
+    }
 
     if (valid_ == true) {
-        // Allocate memory (if necessary)
-        if(hostAddr == NULL) {
-            addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-            valid_ =  addr_ != NULL;
-        }
-        else {
-            addr_ = hostAddr;
-        }
+        // Allocate accelerator memory
+        acceleratorAddr_ = allocAcceleratorMemory(owner, addr_, size);
+        valid_ = (acceleratorAddr_ != NULL);
+    }
+
+    // Free allocated memory if there has been an error
+    if (valid_ == false && hostAddr == NULL) {
+        Memory::unmap(addr_, size);
     }
 
     if (valid_ == true) {
@@ -116,7 +121,7 @@ SharedObject<T>::~SharedObject()
 #endif
 
 	// If the object creation failed, this address will be NULL
-    if (acceleratorAddr_ != NULL) owner_->free(acceleratorAddr_);
+    if (acceleratorAddr_ != NULL) owner_->unmap(addr_, size_);
     if (valid_) Memory::unshadow(shadow_, size_);
     if (addr_ != NULL) Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
@@ -152,7 +157,7 @@ inline gmacError_t SharedObject<T>::addOwner(core::Mode &owner)
 
 template<typename T>
 inline
-gmacError_t SharedObject<T>::removeOwner(const core::Mode &owner)
+gmacError_t SharedObject<T>::removeOwner(core::Mode &owner)
 {
     lockWrite();
     if(owner_ == &owner) {
@@ -160,7 +165,7 @@ gmacError_t SharedObject<T>::removeOwner(const core::Mode &owner)
         if(acceleratorAddr_ != NULL) {
             gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
             ASSERTION(ret == gmacSuccess);
-            owner_->free(acceleratorAddr_);
+            owner_->unmap(addr_, size_);
         }
         acceleratorAddr_ = accptr_t(NULL);
         owner_ = NULL;
@@ -179,7 +184,7 @@ gmacError_t SharedObject<T>::unmapFromAccelerator()
     // Remove blocks from the coherency domain
     gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
     // Free accelerator memory
-    CFATAL(owner_->free(acceleratorAddr_) == gmacSuccess);
+    CFATAL(owner_->unmap(addr_, size_) == gmacSuccess);
     unlock();
     return ret;
 }
@@ -192,7 +197,7 @@ inline gmacError_t SharedObject<T>::mapToAccelerator()
     gmacError_t ret;
 
     // Allocate accelerator memory in the new mode
-    accptr_t newAcceleratorAddr = allocAcceleratorMemory(*owner_, size_);
+    accptr_t newAcceleratorAddr = allocAcceleratorMemory(*owner_, addr_, size_);
     valid_ = (newAcceleratorAddr != NULL);
 
     if (valid_) {
@@ -205,6 +210,7 @@ inline gmacError_t SharedObject<T>::mapToAccelerator()
     else {
         ret = gmacErrorMemoryAllocation;
     }
+
 
     unlock();
 	return ret;

@@ -19,35 +19,41 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
     // Create a shadow mapping for the host memory
     shadow_ = Memory::shadow(addr_, size_);
 
+    valid_ = true;
+
+#if 0
     accptr_t acceleratorAddr = accptr_t(NULL);
 
 #ifdef USE_VM
     // Allocate accelerator memory
     gmacError_t ret = 
-        owner.malloc(acceleratorAddr, size, unsigned(SubBlockSize_));
+        owner.map(acceleratorAddr, addr_, size, unsigned(SubBlockSize_));
 #else
     // Allocate accelerator memory
     gmacError_t ret = 
-        owner.malloc(acceleratorAddr, size);
+        owner.map(acceleratorAddr, addr_, size);
 #endif
 
     if(ret == gmacSuccess) valid_ = true;
 
     // Populate the block-set
-    acceleratorAddr_.insert(AcceleratorMap::value_type(&owner, acceleratorAddr));
+    acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::Mode *>()));
+    AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
+    it->second.push_back(&owner);
+#endif
+
     hostptr_t mark = addr_;
     int offset = 0;
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
-			new DistributedBlock<T>(protocol, owner, addr_ + offset, shadow_ + offset,
-			acceleratorAddr + offset, blockSize, init)));
+			new DistributedBlock<T>(protocol, addr_ + offset, shadow_ + offset, blockSize, init)));
         size -= blockSize;
         offset += int(blockSize);
     }
-    TRACE(GLOBAL, "Creating Distributed Object @ %p : shadow @ %p : accelerator @ %p) ", 
-        addr_, shadow_, (void *) acceleratorAddr.get());
+    TRACE(LOCAL, "Creating Distributed Object @ %p : shadow @ %p) ", 
+        addr_, shadow_);
 }
 
 
@@ -55,10 +61,15 @@ template<typename T>
 inline DistributedObject<T>::~DistributedObject()
 {
     AcceleratorMap::iterator i;
-    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++)
-        i->first->free(i->second);
+    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
+        std::list<core::Mode *> modes = i->second;
+        if (modes.size() > 0) {
+            modes.front()->unmap(addr_, size_);
+        }
+    }
     Memory::unshadow(shadow_, size_);
-    TRACE(GLOBAL, "Destroying Distributed Object @ %p", addr_);
+    Memory::unmap(addr_, size_);
+    TRACE(LOCAL, "Destroying Distributed Object @ %p", addr_);
 }
 
 template<typename T>
@@ -89,50 +100,73 @@ inline core::Mode &DistributedObject<T>::owner(const hostptr_t addr) const
 template<typename T>
 inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 {
-    // Make sure that we do not add the same owner twice
-    lockRead();
-    bool alreadyOwned = (acceleratorAddr_.find(&mode) != acceleratorAddr_.end());
-    unlock();
-    if(alreadyOwned) return gmacSuccess;
-
     accptr_t acceleratorAddr = accptr_t(NULL);
 #ifdef USE_VM
     gmacError_t ret = 
-		mode.malloc(acceleratorAddr, size_, unsigned(SubBlockSize_));
+		mode.map(acceleratorAddr, addr_, size_, unsigned(SubBlockSize_));
 #else
     gmacError_t ret = 
-		mode.malloc(acceleratorAddr, size_);
+		mode.map(acceleratorAddr, addr_, size_);
 #endif
+    TRACE(LOCAL, "CUCU1");
     if(ret != gmacSuccess) return ret;
 
     lockWrite();
-    acceleratorAddr_.insert(AcceleratorMap::value_type(&mode, acceleratorAddr));
+
+    AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
+    if (it == acceleratorAddr_.end()) {
+        TRACE(LOCAL, "CUCU2a");
+        acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::Mode *>()));
+        AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
+        it->second.push_back(&mode);
+
+        
+    } else {
+        TRACE(LOCAL, "CUCU2b");
+        it->second.push_back(&mode);
+    }
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
+        TRACE(LOCAL, "CUCU_BLOCKS");
         ptroff_t offset = ptroff_t(i->second->addr() - addr_);
         DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
         block.addOwner(mode, acceleratorAddr + offset);
-        
     }
+    TRACE(LOCAL, "Add owner %p Object @ %p", &mode, addr_);
 	unlock();
 	return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t DistributedObject<T>::removeOwner(const core::Mode &mode)
+inline gmacError_t DistributedObject<T>::removeOwner(core::Mode &mode)
 {
+    TRACE(LOCAL, "Remove owner %p Object @ %p", &mode, addr_);
+
 	lockWrite();
-    AcceleratorMap::iterator i = acceleratorAddr_.find((core::Mode *)&mode);
-    if(i != acceleratorAddr_.end()) {
-        BlockMap::iterator j;
-        for(j = blocks_.begin(); j != blocks_.end(); j++) {
-            DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*j->second);
-            block.removeOwner(*i->first);
+    AcceleratorMap::iterator i;
+    for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
+        std::list<core::Mode *> &list = i->second;
+        std::list<core::Mode *>::iterator j = std::find(list.begin(), list.end(), &mode);
+        if (j != list.end()) {
+            list.erase(j);
+            if (list.size() == 0) {
+                acceleratorAddr_.erase(i);
+                mode.unmap(addr_, size_);
+            }
+            break;
         }
-        i->first->free(i->second);
-        acceleratorAddr_.erase(i);
-        if(acceleratorAddr_.empty()) Map::insertOrphan(*this);
     }
+
+    ASSERTION(i != acceleratorAddr_.end());
+
+    BlockMap::iterator j;
+    for(j = blocks_.begin(); j != blocks_.end(); j++) {
+        DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*j->second);
+        block.removeOwner(mode);
+    }
+    //i->first->unmap(i->second, size_);
+    //if(acceleratorAddr_.empty()) Map::insertOrphan(*this);
+
     unlock();
 	return gmacSuccess;
 }

@@ -173,12 +173,10 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-static size_t kk = 0;
-
-gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
-    addr = accptr_t(NULL);
+    dst = accptr_t(NULL);
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
 #else
@@ -200,19 +198,38 @@ gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align)
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
     }
-    addr = gpuPtr;
+    dst = gpuPtr;
+
+#ifndef USE_MULTI_CONTEXT
+    dst.pasId_ = id_;
+#endif
+
+    allocations_.insert(src, dst, size);
+
     alignMap_.lockWrite();
+
     alignMap_.insert(AlignmentMap::value_type(gpuPtr, ptr));
     alignMap_.unlock();
-    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) addr, ptr, gpuSize, size, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) dst, ptr, gpuSize, size, align);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::free(accptr_t addr)
+gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
-    ASSERTION(addr != NULL);
+    ASSERTION(host != NULL);
+
+    accptr_t addr;
+    size_t s;
+
+    bool hasMapping = allocations_.find(host, addr, s);
+    ASSERTION(hasMapping == true);
+    ASSERTION(s == size);
+    allocations_.erase(host, size);
+
+    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.get());
+
     AlignmentMap::iterator i;
     alignMap_.lockWrite();
     i = alignMap_.find(addr);

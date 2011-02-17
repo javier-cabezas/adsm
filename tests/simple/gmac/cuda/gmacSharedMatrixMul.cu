@@ -75,7 +75,7 @@ matrixMulThread(void * ptr)
     matrixMul<<< grid, threads >>>(gmacPtr(p->ptr), gmacPtr(A), gmacPtr(B), WA, WB, p->i * elemsC);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 	getTime(&t);
-    snprintf(buffer, 1024, "%s:Run: ", p->name);
+    snprintf(buffer, 1024, "%s-Run: ", p->name);
 	printTime(&s, &t, buffer, "\n");
 
     return NULL;
@@ -94,7 +94,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
     valueInit(A, 100.f, elemsA);
     valueInit(B, 100.f, elemsB);
 	getTime(&t);
-    snprintf(buffer, 1024, "%s:Init: ", name);
+    snprintf(buffer, 1024, "%s-Init: ", name);
 	printTime(&s, &t, buffer, "\n");
 
     for (int n = 0; n < nIter; n++) {
@@ -116,7 +116,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
         err += checkError(reference + n * elemsC, params[n].ptr, elemsC);
     }
     getTime(&t);
-    snprintf(buffer, 1024, "%s:Check: ", name);
+    snprintf(buffer, 1024, "%s-Check: ", name);
 	printTime(&s, &t, buffer, "\n");
 
     // clean up memory
@@ -126,7 +126,7 @@ float doTest(float * A, float * B, unsigned elemsA, unsigned elemsB, unsigned el
         assert(gmacFree(params[n].ptr) == gmacSuccess);
     }
     getTime(&t);
-    snprintf(buffer, 1024, "%s:Free: ", name);
+    snprintf(buffer, 1024, "%s-Free: ", name);
 	printTime(&s, &t, buffer, "\n");
 
     delete [] params;

@@ -176,7 +176,7 @@ public:
     /*!
       \param owner The owner to be removed
     */
-    virtual gmacError_t removeOwner(const core::Mode &owner) = 0;
+    virtual gmacError_t removeOwner(core::Mode &owner) = 0;
 
     //! Acquire the ownership of the object for the CPU
     /*!

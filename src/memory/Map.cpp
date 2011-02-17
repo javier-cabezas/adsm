@@ -107,7 +107,7 @@ gmacError_t ObjectMap::forEach(ConstObjectOp op) const
     return gmacSuccess;
 }
 
-gmacError_t ObjectMap::forEach(const core::Mode &mode, ModeOp op) const
+gmacError_t ObjectMap::forEach(core::Mode &mode, ModeOp op) const
 {
     const_iterator i;
     lockRead();
@@ -235,7 +235,7 @@ void Map::addOwner(core::Process &proc, core::Mode &mode)
 }
 
 
-void Map::removeOwner(core::Process &proc, const core::Mode &mode)
+void Map::removeOwner(core::Process &proc, core::Mode &mode)
 {
     ObjectMap &global = proc.global();
     iterator i;

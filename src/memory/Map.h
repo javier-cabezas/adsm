@@ -59,7 +59,7 @@ class GMAC_LOCAL ObjectMap :
 public:
     typedef gmacError_t(Object::*ObjectOp)(void);
     typedef gmacError_t(Object::*ConstObjectOp)(void) const;
-    typedef gmacError_t(Object::*ModeOp)(const core::Mode &);
+    typedef gmacError_t(Object::*ModeOp)(core::Mode &);
 protected:
     friend class Map;
     typedef std::map<const hostptr_t, Object *> Parent;
@@ -151,8 +151,7 @@ public:
 
 
     /**
-     * Execute a mode operation over all the objects in the map without
-     * modifying the Mode
+     * Execute a mode operation over all the objects in the map
      *
      * \param mode Mode to apply the operation to
      * \param op Mode operation to be executed
@@ -160,7 +159,7 @@ public:
      * \sa __impl::memory::Object::realloc
      * \return Error code
      */
-    gmacError_t forEach(const core::Mode &mode, ModeOp op) const;
+    gmacError_t forEach(core::Mode &mode, ModeOp op) const;
 };
 
 //! An object map associated to an execution mode
@@ -250,7 +249,7 @@ public:
      * \param proc Process whose global objects will be the owner removed from
      * \param mode Owner to be removed from global objects
      */
-    static void removeOwner(core::Process &proc, const core::Mode &mode);
+    static void removeOwner(core::Process &proc, core::Mode &mode);
 
 };
 

@@ -104,7 +104,7 @@ Mode::getCurrent()
 
 
 inline Accelerator &
-Mode::getAccelerator()
+Mode::getAccelerator() const
 {
     return *static_cast<Accelerator *>(acc_);
 }

@@ -37,10 +37,11 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <set>
 
 #include "config/common.h"
-#include "include/gmac/types.h"
+#include "util/Lock.h"
 
 
 namespace __impl { namespace core {
@@ -48,6 +49,19 @@ namespace __impl { namespace core {
 class KernelLaunch;
 class Mode;
 class Process;
+
+typedef std::pair<accptr_t, size_t> PairAlloc;
+typedef std::map<hostptr_t, PairAlloc> MapAlloc;
+
+class GMAC_LOCAL MapAllocations :
+    protected MapAlloc,
+    protected gmac::util::RWLock {
+public:
+    MapAllocations();
+    void insert(hostptr_t key, accptr_t val, size_t size);
+    void erase(hostptr_t key, size_t size);
+    bool find(hostptr_t key, accptr_t &val, size_t &size);
+};
 
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
@@ -69,6 +83,10 @@ protected:
 
     /** Value that represents the load of the accelerator */
     unsigned load_;
+
+    /** Map of allocations in the device */
+    MapAllocations allocations_;
+
 public:
     /**
      * Constructs an Accelerator and initializes its information fields
@@ -116,22 +134,34 @@ public:
     virtual unsigned load() const;
 
     /**
-     * Allocates memory on the accelerator memory
-     * \param addr Reference to a pointer to store the address of the allocated
+     * Queries the accelerator address of the given host pointer
+     * \param acc Reference to a pointer to store the address of the allocated
      * memory
+     * \param addr Host pointer to be queried
      * \param size The number of bytes of the allocation
-     * \param align The alignment of the allocation. This value must be a power
+     * \return Error code
+     */
+    bool getMapping(accptr_t &acc, hostptr_t addr, size_t size);
+
+    /**
+     * Maps host memory on the accelerator memory
+     * \param dst Reference to a pointer to store the address of the mapped
+     * memory in the accelerator
+     * \param src Host address to be mapped
+     * \param size The number of bytes of the mapping
+     * \param align The alignment of the mapping. This value must be a power
      * of two
      * \return Error code
      */
-    virtual gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1) = 0;
+    virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
 
     /**
-     * Releases memory previously allocated by malloc
-     * \param addr A pointer with the address of the allocation to be freed
+     * Unmaps memory previously mapped by map
+     * \param addr A pointer with the address of the allocation to be unmapped
+     * \param size The number of bytes to unmap
      * \return Error code
      */
-    virtual gmacError_t free(accptr_t addr) = 0;
+    virtual gmacError_t unmap(hostptr_t addr, size_t size) = 0;
 
     /**
      * Waits for kernel execution and returns the execution return value

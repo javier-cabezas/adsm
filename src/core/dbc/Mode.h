@@ -54,8 +54,8 @@ public:
     void removeObject(__impl::memory::Object &obj);
 
     __impl::memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
-    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
-    gmacError_t free(accptr_t addr);
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t unmap(hostptr_t addr, size_t size);
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);

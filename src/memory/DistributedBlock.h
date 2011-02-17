@@ -53,22 +53,20 @@ namespace memory {
 template<typename T>
 class GMAC_LOCAL DistributedBlock : public StateBlock<T> {
 protected:
-	typedef std::map<core::Mode *, accptr_t> AcceleratorMap;
+    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
 	AcceleratorMap acceleratorAddr_;
 
 public:
     //! Default construcutor
     /*!
         \param protocol Memory coherence protocol used by the block
-        \param owner Initial ownwer of the memory block
         \param hostAddr Host memory address for applications to accesss the block
         \param shadowAddr Shadow host memory mapping that is always read/write
-        \param acceleratorAddr Accelerator memory address for applications to accesss the block
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	DistributedBlock(Protocol &protocol, core::Mode &owner, hostptr_t shadowAddr,
-		hostptr_t hostAddr, accptr_t acceleratorAddr, size_t size, T init);
+	DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
+		hostptr_t hostAddr, size_t size, T init);
 
     //! Default destructor
     virtual ~DistributedBlock();

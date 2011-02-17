@@ -1,6 +1,8 @@
 #ifndef GMAC_CORE_ACCELERATOR_IMPL_H_
 #define GMAC_CORE_ACCELERATOR_IMPL_H_
 
+#include "util/Logger.h"
+
 namespace __impl { namespace core {
 
 inline unsigned
@@ -31,6 +33,16 @@ inline bool
 Accelerator::integrated() const
 {
     return integrated_;
+}
+
+inline bool
+Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
+{
+    size_t s;
+    bool ret = allocations_.find(addr, acc, s);
+    // For now, we require the mappings to match in size
+    if (ret == true) ASSERTION(s == size);
+    return ret;
 }
 
 }}

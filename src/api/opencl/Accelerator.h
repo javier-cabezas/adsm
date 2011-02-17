@@ -115,8 +115,10 @@ public:
 
     core::Mode *createMode(core::Process &proc);
 
-    gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
-    gmacError_t free(accptr_t addr);
+    const cl_context getCLcontext() const;
+
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t unmap(hostptr_t addr, size_t size);
 
     /* Synchronous interface */
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode);

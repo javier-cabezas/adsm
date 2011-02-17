@@ -94,18 +94,29 @@ void Mode::detach()
     key.set(NULL);
 }
 
-gmacError_t Mode::malloc(accptr_t &addr, size_t size, unsigned align)
+gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     switchIn();
-    error_ = acc_->malloc(addr, size, align);
+
+    accptr_t acc;
+    bool hasMapping = acc_->getMapping(acc, src, size);
+    if (hasMapping == true) {
+        error_ = gmacSuccess;
+        dst = acc;
+        TRACE(LOCAL,"Mapping for address %p: %p", src, dst.get());
+    } else {
+        error_ = acc_->map(dst, src, size, align);
+        TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
+    }
+
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::free(accptr_t addr)
+gmacError_t Mode::unmap(hostptr_t addr, size_t size)
 {
     switchIn();
-    error_ = acc_->free(addr);
+    error_ = acc_->unmap(addr, size);
     switchOut();
     return error_;
 }

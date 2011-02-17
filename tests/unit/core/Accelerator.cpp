@@ -18,12 +18,12 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
     accptr_t device = NULL;
-    ASSERT_TRUE(GetAccelerator().malloc(device, Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(GetAccelerator().map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(device != NULL);
     ASSERT_TRUE(GetAccelerator().copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
     ASSERT_TRUE(GetAccelerator().copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
-    ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
+    ASSERT_TRUE(GetAccelerator().unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
     delete[] canary;
     delete[] buffer;
 }
@@ -34,12 +34,13 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
 //check gmacError_t__impl::core::Accelerator::malloc(accptr_t& addr ,size_t size, unsigned align=1)
 // the alignment of mem alloc must be a power of two
 TEST_F(AcceleratorTest, AcceleratorAligment) {
+    const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
     for(int n = 1; n < max; n <<= 1) {
         accptr_t device = NULL;
-        ASSERT_TRUE(GetAccelerator().malloc(device, Size_, n) == gmacSuccess);
+        ASSERT_TRUE(GetAccelerator().map(device, fakePtr, Size_, n) == gmacSuccess);
         ASSERT_TRUE(device != NULL);
-        ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
+        ASSERT_TRUE(GetAccelerator().unmap(fakePtr, Size_) == gmacSuccess);
     }
 
 }
@@ -47,12 +48,13 @@ TEST_F(AcceleratorTest, AcceleratorAligment) {
 //added
 //use Size2_
 TEST_F(AcceleratorTest, AcceleratorAligment2) {
+    const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
     for(int n = 1; n < max; n <<= 1) {
         accptr_t device = NULL;
-        ASSERT_TRUE(GetAccelerator().malloc(device, Size2_, n) == gmacSuccess); 
+        ASSERT_TRUE(GetAccelerator().map(device, fakePtr, Size2_, n) == gmacSuccess); 
         ASSERT_TRUE(device != NULL);
-        ASSERT_TRUE(GetAccelerator().free(device) == gmacSuccess);
+        ASSERT_TRUE(GetAccelerator().unmap(fakePtr, Size2_) == gmacSuccess);
     }
 
 }

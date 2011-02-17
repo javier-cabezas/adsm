@@ -36,8 +36,11 @@ WITH THE SOFTWARE.  */
 
 #include <cuda.h>
 
+typedef CUcontext AddressSpace;
+
 struct accptr_t {
     CUdeviceptr ptr_;
+    unsigned pasId_;
 
     inline accptr_t() :
         ptr_(NULL)
@@ -70,6 +73,18 @@ struct accptr_t {
 
     inline void *get() const { return (void *)(ptr_); }
 
+        inline
+    bool operator==(accptr_t ptr)
+    {
+        return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
+    }
+
+    inline
+    bool operator!=(accptr_t ptr)
+    {
+        return this->ptr_ != ptr.ptr_ || this->pasId_ != ptr.pasId_;
+    }
+
     template <typename T>
     inline
     bool operator==(T ptr)
@@ -83,21 +98,32 @@ struct accptr_t {
     {
         return (((T)this->ptr_) != ptr);
     }
-
 };
+
+inline
+static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
+{
+    return ptr.pasId_ < ptr2.pasId_ || (ptr.pasId_ == ptr2.pasId_ && ptr.ptr_ < ptr2.ptr_);
+}
+
+
 
 template <typename T>
 static inline
 accptr_t operator+(const accptr_t &a, T b)
 {
-    return accptr_t(a.ptr_ + CUdeviceptr(b));
+    accptr_t ret(a.ptr_ + CUdeviceptr(b));
+    ret.pasId_ = a.pasId_;
+    return ret;
 }
 
 template <typename T>
 static inline
 accptr_t operator-(const accptr_t &a, T b)
 {
-    return accptr_t(a.ptr_ - CUdeviceptr(b));
+    accptr_t ret(a.ptr_ - CUdeviceptr(b));
+    ret.pasId_ = a.pasId_;
+    return ret;
 }
 
 #endif

@@ -58,23 +58,23 @@ Mode::getObject(const hostptr_t addr, size_t size) const
 }
 
 gmacError_t
-Mode::malloc(accptr_t &addr, size_t size, unsigned align)
+Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::malloc(addr, size, align);
+    ret = __impl::core::Mode::map(dst, src, size, align);
 
     return ret;
 }
 
 gmacError_t
-Mode::free(accptr_t addr)
+Mode::unmap(hostptr_t addr, size_t size)
 {
     REQUIRES(addr != NULL);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::free(addr);
+    ret = __impl::core::Mode::unmap(addr, size);
 
     return ret;
 }

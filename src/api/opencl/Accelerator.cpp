@@ -78,23 +78,39 @@ core::Mode *Accelerator::createMode(core::Process &proc)
     return mode;
 }
 
-gmacError_t Accelerator::malloc(accptr_t &addr, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
+
     cl_int ret = CL_SUCCESS;
     trace::SetThreadState(trace::Wait);
-    addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
+    dst.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
     trace::SetThreadState(trace::Running);
-    addr.offset_ = 0;
-    TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, addr.base_);
+    dst.offset_ = 0;
+
+    allocations_.insert(src, dst, size);
+
+    TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.base_);
+
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::free(accptr_t addr)
+gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
+    ASSERTION(host != NULL);
+
+    accptr_t addr;
+    size_t s;
+
+    bool hasMapping = allocations_.find(host, addr, s);
+    ASSERTION(hasMapping == true);
+    ASSERTION(s == size);
+    allocations_.erase(host, size);
+
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
+
     trace::SetThreadState(trace::Wait);
     cl_int ret = clReleaseMemObject(addr.base_);
     trace::SetThreadState(trace::Running);

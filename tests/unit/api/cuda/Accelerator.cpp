@@ -21,12 +21,12 @@ TEST_F(AcceleratorTest, AcceleratorMemset) {
     ASSERT_TRUE(host != NULL);
     accptr_t device = NULL;
     memset(host, 0x5a, Size_ * sizeof(unsigned));
-    ASSERT_EQ(gmacSuccess, accelerator.malloc(device, Size_ * sizeof(unsigned)));
+    ASSERT_EQ(gmacSuccess, accelerator.map(device, hostptr_t(host), Size_ * sizeof(unsigned)));
     ASSERT_TRUE(device != NULL);
     ASSERT_EQ(gmacSuccess, accelerator.memset(device, 0xa5, Size_ * sizeof(unsigned)));
     ASSERT_EQ(gmacSuccess, accelerator.copyToHost(hostptr_t(host), device, Size_ * sizeof(unsigned), Mode::getCurrent()));
     for(int j = 0; j < Size_; j++) ASSERT_EQ(0xa5a5a5a5, host[j]);
-    ASSERT_EQ(gmacSuccess, accelerator.free(device));
+    ASSERT_EQ(gmacSuccess, accelerator.unmap(hostptr_t(host), Size_ * sizeof(unsigned)));
 
     delete[] host;
 }

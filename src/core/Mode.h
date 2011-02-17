@@ -231,22 +231,24 @@ public:
     gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
     /**
-     * Allocates memory on the accelerator memory
-     * \param addr Reference to a pointer where to store the accelerator
-     * address of the allocation
-     * \param size Size of the allocation
-     * \param align Alignment of the memory allocation. This value must be a
+     * Maps the given host memory on the accelerator memory
+     * \param dst Reference to a pointer where to store the accelerator
+     * address of the mapping
+     * \param src Host address to be mapped
+     * \param size Size of the mapping
+     * \param align Alignment of the memory mapping. This value must be a
      * power of two
      * \return Error code
      */
-    TESTABLE gmacError_t malloc(accptr_t &addr, size_t size, unsigned align = 1);
+    TESTABLE VIRTUAL gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
     /**
-     * Releases memory previously allocated by malloc
-     * \param addr Accelerator memory allocation to be freed
+     * Unmaps the memory previously mapped by map
+     * \param addr Host memory allocation to be unmap
+     * \param size Size of the unmapping
      * \return Error code
      */
-    TESTABLE gmacError_t free(accptr_t addr);
+    TESTABLE gmacError_t unmap(hostptr_t addr, size_t size);
 
     /**
      * Copies data from system memory to accelerator memory

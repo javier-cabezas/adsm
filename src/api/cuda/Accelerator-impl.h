@@ -267,6 +267,13 @@ Accelerator::setCUcontext(CUcontext *ctx)
     Ctx_.set(ctx);
 }
 
+#else
+inline const CUcontext
+Accelerator::getCUcontext() const
+{
+    return ctx_;
+}
+
 #endif
 
 }}
