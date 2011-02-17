@@ -32,7 +32,6 @@ SYM(int, __MPI_Recv    , void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Stat
 void mpiInit(void)
 {
 	TRACE(GLOBAL, "Overloading MPI_Sendrecv");
-	printf("Overloading MPI_Sendrecv\n");
 	LOAD_SYM(__MPI_Sendrecv, MPI_Sendrecv);
 
 	LOAD_SYM(__MPI_Send,  MPI_Send);
