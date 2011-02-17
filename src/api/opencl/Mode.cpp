@@ -90,18 +90,18 @@ gmacError_t Mode::hostFree(cl_mem addr)
     return ret;
 }
 
-hostptr_t Mode::hostMap(cl_mem addr, size_t offset, size_t size)
+hostptr_t Mode::hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream)
 {
     switchIn();
-    hostptr_t ret = getAccelerator().hostMap(addr, offset, size);
+    hostptr_t ret = getAccelerator().hostMap(addr, offset, size, stream);
     switchOut(); 
     return ret;
 }
 
-gmacError_t Mode::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size)
+gmacError_t Mode::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream)
 {
     switchIn();
-    gmacError_t ret = getAccelerator().hostUnmap(ptr, addr, size);
+    gmacError_t ret = getAccelerator().hostUnmap(ptr, addr, size, stream);
     switchOut();
     return ret;
 }

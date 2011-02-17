@@ -31,11 +31,11 @@ IOBuffer::offset() const
 }
 
 inline void
-IOBuffer::toHost(Mode &mode)
+IOBuffer::toHost(cl_command_queue stream, Mode &mode)
 {
     ASSERTION(started_ == false);
 
-    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_);
+    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_, stream);
     CFATAL(ret == gmacSuccess, "Unable to hand off I/O buffer to accelerator");
 
     state_  = ToHost;
@@ -44,11 +44,11 @@ IOBuffer::toHost(Mode &mode)
 }
 
 inline void
-IOBuffer::toAccelerator(Mode &mode)
+IOBuffer::toAccelerator(cl_command_queue stream, Mode &mode)
 {
     ASSERTION(started_ == false);
 
-    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_);
+    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_, stream);
     CFATAL(ret == gmacSuccess, "Unable to hand off I/O buffer to accelerator");
 
     state_  = ToAccelerator;

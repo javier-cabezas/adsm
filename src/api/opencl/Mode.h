@@ -125,9 +125,9 @@ public:
         \param size Size (in bytes) to be mapped
         \return Host memory address
     */
-    hostptr_t hostMap(cl_mem addr, size_t offset, size_t size);
+    hostptr_t hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream = NULL);
 
-    gmacError_t hostUnmap(hostptr_t ptr, cl_mem addr, size_t size);
+    gmacError_t hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream = NULL);
 
     /** Maps host memory into the GPU memory
      *

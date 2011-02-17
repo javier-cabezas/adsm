@@ -56,8 +56,8 @@ public:
     cl_mem base() const;
     size_t offset() const;
 
-    void toHost(Mode &mode);
-    void toAccelerator(Mode &mode);
+    void toHost(cl_command_queue stream, Mode &mode);
+    void toAccelerator(cl_command_queue stream, Mode &mode);
 
     void started(cl_event event);
 

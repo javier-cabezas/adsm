@@ -144,8 +144,8 @@ public:
     gmacError_t sync();
     gmacError_t hostAlloc(cl_mem &addr, size_t size);
     gmacError_t hostFree(cl_mem addr);
-    hostptr_t hostMap(cl_mem addr, size_t offset, size_t size);
-    gmacError_t hostUnmap(hostptr_t ptr, cl_mem addr, size_t size);
+    hostptr_t hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream);
+    gmacError_t hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream);
 
     accptr_t hostMap(hostptr_t addr, size_t size);
     accptr_t hostMapAddr(hostptr_t addr);
