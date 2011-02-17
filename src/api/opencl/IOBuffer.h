@@ -51,7 +51,10 @@ protected:
     bool started_;
 
 public:
-    IOBuffer(accptr_t base, hostptr_t addr, size_t size, bool async);
+    IOBuffer(Mode &mode, cl_mem base, hostptr_t addr, size_t size, bool async);
+
+    cl_mem base() const;
+    size_t offset() const;
 
     void toHost(Mode &mode);
     void toAccelerator(Mode &mode);

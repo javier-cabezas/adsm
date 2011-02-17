@@ -130,18 +130,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 
     cl_event event;
     buffer.toAccelerator(reinterpret_cast<Mode &>(mode));
-	cl_mem bufferMemory;
-	size_t bufferOffset, size;
-	CFATAL(localHostAlloc_.translate(host, bufferMemory, bufferOffset, size) == true, 
-		"Failed to find a valid mapping for buffer at %p", host);
-	fprintf(stderr, "Copy with offset %d (original size %d)\n", bufferOffset, size / 1024 / 1024);
     //cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
     //    acc.offset_, count, host, 0, NULL, &event);
-	clEnqueueUnmapMemObject(stream, bufferMemory, host - bufferOffset, 0, NULL, NULL);
-	cl_int ret = clEnqueueCopyBuffer(stream, bufferMemory, acc.base_, 
-		bufferOffset, acc.offset_, count, 0, NULL, &event);
-	clEnqueueMapBuffer(stream, bufferMemory, CL_TRUE,
-            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+	cl_int ret = clEnqueueCopyBuffer(stream, buffer.base(), acc.base_, 
+		buffer.offset(), acc.offset_, count, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(event);
 #ifdef _MSC_VER
@@ -181,12 +173,10 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     buffer.toHost(reinterpret_cast<Mode &>(mode));
 	cl_mem device;
 	size_t off, size;
-	CFATAL(localHostAlloc_.translate(host, device, off, size) == true, 
-		"Failed to find a valid mapping for buffer at %p", host);
-    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
-        acc.offset_, count, host, 0, NULL, &event);
-//	cl_int ret = clEnqueueCopyBuffer(stream, device, acc.base_,
-//		off, acc.offset_, count, 0, NULL, &event);
+//    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
+//        acc.offset_, count, host, 0, NULL, &event);
+	cl_int ret = clEnqueueCopyBuffer(stream, acc.base_, buffer.base(),
+		acc.offset_, buffer.offset(), count, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);
 #ifdef _MSC_VER
@@ -467,27 +457,45 @@ gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
 }
 
 
-gmacError_t Accelerator::hostAlloc(accptr_t &addr, size_t size)
+gmacError_t Accelerator::hostAlloc(cl_mem &addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-	addr.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+	addr = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
         size, NULL, &ret);
-	addr.offset_ = 0;
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::hostFree(accptr_t addr)
+gmacError_t Accelerator::hostFree(cl_mem addr)
 {
     trace::EnterCurrentFunction();
 
-	cl_int ret = clReleaseMemObject(addr.base_);
+	cl_int ret = clReleaseMemObject(addr);
     
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
+hostptr_t Accelerator::hostMap(cl_mem addr, size_t offset, size_t size)
+{
+    trace::EnterCurrentFunction();
+    cl_int status = CL_SUCCESS;
+    hostptr_t ret = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), addr, CL_TRUE,
+        CL_MAP_READ | CL_MAP_WRITE, offset, size, 0, NULL, NULL, &status);
+    if(status != CL_SUCCESS) ret = NULL;
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Accelerator::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size)
+{
+    trace::EnterCurrentFunction();
+    cl_int ret = clEnqueueUnmapMemObject(cmd_.front(), addr, ptr, 0, NULL, NULL);
+    clFinish(cmd_.front());
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
 
 accptr_t Accelerator::hostMap(const hostptr_t addr, size_t size)
 {
@@ -525,7 +533,6 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 
     return accptr_t(device, 0);
 }
-
 
 void Accelerator::memInfo(size_t &free, size_t &total) const
 {
