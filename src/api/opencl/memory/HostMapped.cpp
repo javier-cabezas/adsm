@@ -17,7 +17,8 @@ void
 HostMappedObject::free()
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-    mode.hostFree(addr_);
+	// TODO: Use a different method for this purpose
+    //mode.hostFree(addr_);
     Memory::unmap(addr_, size_);
 }
 

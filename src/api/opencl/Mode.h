@@ -91,6 +91,8 @@ protected:
 
     cl_program program_;
     KernelList kernelList_;
+
+	accptr_t ioAddr_;
 public:
     //! Default constructor
     /*!
@@ -108,14 +110,14 @@ public:
         \param size Size (in bytes) of the host memory to be mapped
         \return Error code
     */
-    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
+    gmacError_t hostAlloc(accptr_t &addr, size_t size);
 
     //! Release GPU-accessible host memory 
     /*!
         \param addr Starting address of the host memory to be released
         \return Error code
     */
-    gmacError_t hostFree(hostptr_t addr);
+    gmacError_t hostFree(accptr_t addr);
 
     /** Maps host memory into the GPU memory
      *

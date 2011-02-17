@@ -6,8 +6,12 @@
 namespace __impl { namespace opencl {
 
 inline
-IOBuffer::IOBuffer(void *addr, size_t size, bool async) :
-    gmac::core::IOBuffer(addr, size, async), mode_(NULL), started_(false)
+IOBuffer::IOBuffer(accptr_t base, hostptr_t addr, size_t size, bool async) :
+    gmac::core::IOBuffer(addr, size, async), 
+	base_(base),
+	offset_(addr),
+	mode_(NULL), 
+	started_(false)
 {
 }
 

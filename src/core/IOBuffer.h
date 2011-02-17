@@ -60,8 +60,8 @@ protected:
 public:
     virtual ~IOBuffer();
 
-    uint8_t *addr() const;
-    uint8_t *end() const;
+    virtual uint8_t *addr() const;
+    virtual uint8_t *end() const;
     size_t size() const;
     bool async() const;
 
