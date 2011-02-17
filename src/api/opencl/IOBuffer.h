@@ -59,7 +59,7 @@ public:
     void toHost(cl_command_queue stream, Mode &mode);
     void toAccelerator(cl_command_queue stream, Mode &mode);
 
-    void started(cl_event event);
+    void started(cl_command_queue stream, cl_event event);
 
     gmacError_t wait();
 };

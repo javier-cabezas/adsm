@@ -151,7 +151,8 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 	cl_int ret = clEnqueueCopyBuffer(stream, buffer.base(), acc.base_, 
 		buffer.offset(), acc.offset_, count, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-    buffer.started(event);
+	clEnqueueBarrier(stream);
+    buffer.started(stream, event);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
@@ -187,12 +188,12 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 
     cl_event event;
     buffer.toHost(stream, reinterpret_cast<Mode &>(mode));
-//    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
-//        acc.offset_, count, host, 0, NULL, &event);
-	cl_int ret = clEnqueueCopyBuffer(stream, acc.base_, buffer.base(),
-		acc.offset_, buffer.offset(), count, 0, NULL, &event);
+    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
+        acc.offset_, count, host, 0, NULL, &event);
+//	cl_int ret = clEnqueueCopyBuffer(stream, acc.base_, buffer.base(),
+//		acc.offset_, buffer.offset(), count, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-    buffer.started(event);
+    buffer.started(stream, event);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
@@ -496,7 +497,7 @@ hostptr_t Accelerator::hostMap(cl_mem addr, size_t offset, size_t size, cl_comma
     trace::EnterCurrentFunction();
     cl_int status = CL_SUCCESS;
 	if(stream == NULL) stream = cmd_.front();
-    hostptr_t ret = (hostptr_t)clEnqueueMapBuffer(stream, addr, CL_TRUE,
+	hostptr_t ret = (hostptr_t)clEnqueueMapBuffer(stream, addr, CL_TRUE,
         CL_MAP_READ | CL_MAP_WRITE, offset, size, 0, NULL, NULL, &status);
     if(status != CL_SUCCESS) ret = NULL;
     trace::ExitCurrentFunction();
@@ -507,7 +508,7 @@ gmacError_t Accelerator::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_c
 {
     trace::EnterCurrentFunction();
 	if(stream == NULL) stream = cmd_.front();
-    cl_int ret = clEnqueueUnmapMemObject(stream, addr, ptr, 0, NULL, NULL);
+	cl_int ret = clEnqueueUnmapMemObject(stream, addr, ptr, 0, NULL, NULL);
     trace::ExitCurrentFunction();
     return error(ret);
 }

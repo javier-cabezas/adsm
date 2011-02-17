@@ -57,7 +57,7 @@ IOBuffer::toAccelerator(cl_command_queue stream, Mode &mode)
 }
 
 inline void
-IOBuffer::started(cl_event event)
+IOBuffer::started(cl_command_queue stream, cl_event event)
 {
 	TRACE(LOCAL,"Buffer %p starts", this);
     ASSERTION(started_ == false);
