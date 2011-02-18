@@ -14,7 +14,7 @@ extern "C" {
 namespace __impl { namespace opencl {
 
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
-HostMap *Accelerator::GlobalHostMap_;
+HostMap *Accelerator::GlobalHostAlloc_;
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     gmac::core::Accelerator(n), platform_(platform), device_(device)
@@ -53,8 +53,8 @@ Accelerator::~Accelerator()
     if(Accelerators_->empty()) {
         delete Accelerators_;
         Accelerators_ = NULL;
-        delete GlobalHostMap_;
-        GlobalHostMap_ = NULL;
+        delete GlobalHostAlloc_;
+        GlobalHostAlloc_ = NULL;
     }
 
     cl_int ret = clReleaseContext(ctx_);
@@ -145,14 +145,11 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toAccelerator(stream, reinterpret_cast<Mode &>(mode));
-    //cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
-    //    acc.offset_, count, host, 0, NULL, &event);
-	cl_int ret = clEnqueueCopyBuffer(stream, buffer.base(), acc.base_, 
-		buffer.offset(), acc.offset_, count, 0, NULL, &event);
+    buffer.toAccelerator(reinterpret_cast<Mode &>(mode));
+    cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
+        acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-	clEnqueueBarrier(stream);
-    buffer.started(stream, event);
+    buffer.started(event);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
@@ -187,13 +184,11 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toHost(stream, reinterpret_cast<Mode &>(mode));
+    buffer.toHost(reinterpret_cast<Mode &>(mode));
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
-//	cl_int ret = clEnqueueCopyBuffer(stream, acc.base_, buffer.base(),
-//		acc.offset_, buffer.offset(), count, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-    buffer.started(stream, event);
+    buffer.started(event);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
@@ -253,7 +248,7 @@ Accelerator::addAccelerator(Accelerator &acc)
     std::pair<Accelerator *, std::vector<cl_program> > pair(&acc, std::vector<cl_program>());
     if(Accelerators_ == NULL) {
         Accelerators_ = new AcceleratorMap();
-        GlobalHostMap_ = new HostMap();
+        GlobalHostAlloc_ = new HostMap();
     }
     Accelerators_->insert(pair);
 }
@@ -472,81 +467,54 @@ gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
 }
 
 
-gmacError_t Accelerator::hostAlloc(cl_mem &addr, size_t size)
+gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-	addr = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+    addr = NULL;
+
+    // Get a memory object in the host memory
+	cl_mem mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
         size, NULL, &ret);
+    if(ret == CL_SUCCESS) {
+        // Get the host pointer for the memory object
+	    addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
+            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        // Insert the object in the allocation map for the accelerator
+        if(ret != CL_SUCCESS) clReleaseMemObject(mem);
+        else {
+            localHostAlloc_.insert(addr, mem, size);
+            Accelerator::GlobalHostAlloc_->insert(addr, mem, size);
+        }
+    }
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::hostFree(cl_mem addr)
+gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     trace::EnterCurrentFunction();
-
-	cl_int ret = clReleaseMemObject(addr);
+    cl_int ret = CL_SUCCESS;
+    cl_mem mem = NULL;
+    size_t size;
+    if(localHostAlloc_.translate(addr, mem, size) == true) {
+        localHostAlloc_.remove(addr); 
+        Accelerator::GlobalHostAlloc_->remove(addr);
+	    ret = clReleaseMemObject(mem);
+    }
     
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-hostptr_t Accelerator::hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream)
-{
-    trace::EnterCurrentFunction();
-    cl_int status = CL_SUCCESS;
-	if(stream == NULL) stream = cmd_.front();
-	hostptr_t ret = (hostptr_t)clEnqueueMapBuffer(stream, addr, CL_TRUE,
-        CL_MAP_READ | CL_MAP_WRITE, offset, size, 0, NULL, NULL, &status);
-    if(status != CL_SUCCESS) ret = NULL;
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t Accelerator::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream)
-{
-    trace::EnterCurrentFunction();
-	if(stream == NULL) stream = cmd_.front();
-	cl_int ret = clEnqueueUnmapMemObject(stream, addr, ptr, 0, NULL, NULL);
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-accptr_t Accelerator::hostMap(const hostptr_t addr, size_t size)
-{
-    trace::EnterCurrentFunction();
-    cl_int ret;
-    cl_mem acc = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-        size, addr, &ret);
-    if(ret == CL_SUCCESS) {
-        hostptr_t tmp = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), acc, CL_TRUE,
-            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
-        ASSERTION(ret == CL_SUCCESS);
-        ASSERTION(tmp == addr);
-        localHostMap_.insert(addr, acc, size);
-    }
-    trace::ExitCurrentFunction();
-    return accptr_t(acc, 0);
-}
-
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     cl_mem device;
-    size_t off, size = 0;
-    if(localHostMap_.translate(addr, device, off, size) == false) {
-		ASSERTION(off == 0);
-        cl_int ret;
-        CFATAL(Accelerator::GlobalHostMap_->translate(addr, device, off, size) == false,
+    size_t size = 0;
+    if(localHostAlloc_.translate(addr, device, size) == false) {
+        CFATAL(Accelerator::GlobalHostAlloc_->translate(addr, device, size) == false,
                "Error translating address %p", (void *) addr);
-		ASSERTION(off == 0);
-        hostptr_t tmp = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), device, CL_TRUE,
-            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
-        ASSERTION(ret == CL_SUCCESS);
-        ASSERTION(tmp == addr);
-        localHostMap_.insert(addr, device, size);
     }
-
     return accptr_t(device, 0);
 }
 

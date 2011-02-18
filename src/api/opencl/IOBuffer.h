@@ -51,15 +51,12 @@ protected:
     bool started_;
 
 public:
-    IOBuffer(Mode &mode, cl_mem base, hostptr_t addr, size_t size, bool async);
+    IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async);
 
-    cl_mem base() const;
-    size_t offset() const;
+    void toHost(Mode &mode);
+    void toAccelerator(Mode &mode);
 
-    void toHost(cl_command_queue stream, Mode &mode);
-    void toAccelerator(cl_command_queue stream, Mode &mode);
-
-    void started(cl_command_queue stream, cl_event event);
+    void started(cl_event event);
 
     gmacError_t wait();
 };

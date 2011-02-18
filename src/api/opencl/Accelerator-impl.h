@@ -78,28 +78,27 @@ inline HostMap::~HostMap()
 inline void HostMap::insert(hostptr_t host, cl_mem acc, size_t size)
 {
     lockWrite();
-    Parent::insert(Parent::value_type(host + size, std::make_pair(acc, size)));
+    Parent::insert(Parent::value_type(host, std::make_pair(acc, size)));
     unlock();
 }
 
 inline void HostMap::remove(hostptr_t host)
 {
     lockWrite();
-    Parent::iterator i = Parent::upper_bound(host);
-	if(i != Parent::end() && host >= (i->first - i->second.second)) {
+    Parent::iterator i = Parent::find(host);
+	if(i != Parent::end()) {
         Parent::erase(i);
     }
     unlock();
 }
 
-inline bool HostMap::translate(hostptr_t host, cl_mem &acc, size_t &off, size_t &size) const
+inline bool HostMap::translate(hostptr_t host, cl_mem &acc, size_t &size) const
 {
     acc = NULL;
     lockRead();
-    Parent::const_iterator i = Parent::upper_bound(host);
-    if(i != Parent::end() && host >= (i->first - i->second.second)) {
+    Parent::const_iterator i = Parent::find(host);
+    if(i != Parent::end()) {
         acc  = i->second.first;
-		off  = host - (i->first - i->second.second);
         size = i->second.second;
     }
     unlock();

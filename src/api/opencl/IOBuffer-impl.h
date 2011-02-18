@@ -6,37 +6,17 @@
 namespace __impl { namespace opencl {
 
 inline
-IOBuffer::IOBuffer(Mode &mode, cl_mem base, hostptr_t offset, size_t size, bool async) :
-    gmac::core::IOBuffer(NULL, size, async), 
-	base_(base),
-	offset_(size_t(offset) - 0x1000),
+IOBuffer::IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async) :
+    gmac::core::IOBuffer(addr, size, async), 
 	mode_(NULL), 
 	started_(false)
 {
-    // Map the buffer to set the correct address
-    addr_ = mode.hostMap(base_, offset_, size_);
-    CFATAL(addr_ != NULL, "Unable to map I/O buffer in system memory");
-}
-
-inline cl_mem
-IOBuffer::base() const 
-{
-    return base_;
-}
-
-inline size_t
-IOBuffer::offset() const
-{
-    return offset_;
 }
 
 inline void
-IOBuffer::toHost(cl_command_queue stream, Mode &mode)
+IOBuffer::toHost(Mode &mode)
 {
     ASSERTION(started_ == false);
-
-    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_, stream);
-    CFATAL(ret == gmacSuccess, "Unable to hand off I/O buffer to accelerator");
 
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
@@ -44,12 +24,9 @@ IOBuffer::toHost(cl_command_queue stream, Mode &mode)
 }
 
 inline void
-IOBuffer::toAccelerator(cl_command_queue stream, Mode &mode)
+IOBuffer::toAccelerator(Mode &mode)
 {
     ASSERTION(started_ == false);
-
-    gmacError_t ret = mode.hostUnmap(hostptr_t(addr_), base_, size_, stream);
-    CFATAL(ret == gmacSuccess, "Unable to hand off I/O buffer to accelerator");
 
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
@@ -57,14 +34,11 @@ IOBuffer::toAccelerator(cl_command_queue stream, Mode &mode)
 }
 
 inline void
-IOBuffer::started(cl_command_queue stream, cl_event event)
+IOBuffer::started(cl_event event)
 {
 	TRACE(LOCAL,"Buffer %p starts", this);
     ASSERTION(started_ == false);
     ASSERTION(mode_ != NULL);
-
-    addr_ = mode_->hostMap(base_, offset_, size_);
-    CFATAL(addr_ != NULL, "Unable to map I/O buffer in system memory");
 
     event_ = event;
     started_ = true;

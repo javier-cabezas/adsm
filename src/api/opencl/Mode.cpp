@@ -6,12 +6,12 @@
 namespace __impl { namespace opencl {
 
 Mode::Mode(core::Process &proc, Accelerator &acc) :
-    gmac::core::Mode(proc, acc),
-	ioAddr_(NULL)
+    gmac::core::Mode(proc, acc)
 {
-    gmacError_t ret = hostAlloc(ioAddr_, util::params::ParamIOMemory);
+    hostptr_t addr = NULL;
+    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(hostptr_t(0x1000), util::params::ParamIOMemory);
+        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
     else ioMemory_ = NULL;
 }
 
@@ -20,8 +20,8 @@ Mode::~Mode()
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
 
-    if(ioMemory_ != NULL && ioAddr_ != NULL) {
-        hostFree(ioAddr_);
+    if(ioMemory_ != NULL) {
+        hostFree(ioMemory_->addr());
         delete ioMemory_;
     }
 }
@@ -33,9 +33,9 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
     void *addr = NULL;
     if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
         addr = ::malloc(size);
-        ret = new IOBuffer(*this, NULL, hostptr_t(addr), size, false);
+        ret = new IOBuffer(*this, hostptr_t(addr), size, false);
     } else {
-        ret = new IOBuffer(*this, ioAddr_, hostptr_t(addr), size, true);
+        ret = new IOBuffer(*this, hostptr_t(addr), size, true);
     }
     return *ret;
 }
@@ -45,9 +45,8 @@ void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
     ASSERTION(ioMemory_ != NULL);
 
-    IOBuffer &ioBuffer = dynamic_cast<IOBuffer &>(buffer);
-    if (ioBuffer.async()) {
-        ioMemory_->put(hostptr_t(ioBuffer.offset() + 0x1000), ioBuffer.size());
+    if (buffer.async()) {
+        ioMemory_->put(buffer.addr(), buffer.size());
     } else {
         ::free(buffer.addr());
     }
@@ -74,7 +73,7 @@ Context &Mode::getCLContext()
     return dynamic_cast<Context &>(getContext());
 }
 
-gmacError_t Mode::hostAlloc(cl_mem &addr, size_t size)
+gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();
     gmacError_t ret = getAccelerator().hostAlloc(addr, size);
@@ -82,34 +81,10 @@ gmacError_t Mode::hostAlloc(cl_mem &addr, size_t size)
     return ret;
 }
 
-gmacError_t Mode::hostFree(cl_mem addr)
+gmacError_t Mode::hostFree(hostptr_t addr)
 {
     switchIn();
     gmacError_t ret = getAccelerator().hostFree(addr);
-    switchOut();
-    return ret;
-}
-
-hostptr_t Mode::hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream)
-{
-    switchIn();
-    hostptr_t ret = getAccelerator().hostMap(addr, offset, size, stream);
-    switchOut(); 
-    return ret;
-}
-
-gmacError_t Mode::hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream)
-{
-    switchIn();
-    gmacError_t ret = getAccelerator().hostUnmap(ptr, addr, size, stream);
-    switchOut();
-    return ret;
-}
-
-accptr_t Mode::hostMap(const hostptr_t addr, size_t size)
-{
-    switchIn();
-    accptr_t ret = getAccelerator().hostMap(addr, size);
     switchOut();
     return ret;
 }

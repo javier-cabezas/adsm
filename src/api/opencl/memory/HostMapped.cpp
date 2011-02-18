@@ -8,8 +8,8 @@ hostptr_t
 HostMappedObject::alloc()
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-    hostptr_t ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
-    if(mode.hostMap(ret, size_) != gmacSuccess) return NULL;
+    hostptr_t ret = NULL;
+    if(mode.hostAlloc(ret, size_) != gmacSuccess) return NULL;
     return ret;
 }
 
@@ -17,9 +17,7 @@ void
 HostMappedObject::free()
 {
     opencl::Mode &mode = opencl::Mode::getCurrent();
-	// TODO: Use a different method for this purpose
-    //mode.hostFree(addr_);
-    Memory::unmap(addr_, size_);
+    mode.hostFree(addr_);
 }
 
 accptr_t

@@ -80,7 +80,7 @@ public:
     void insert(hostptr_t host, cl_mem acc, size_t size);
     void remove(hostptr_t host);
 
-    bool translate(hostptr_t host, cl_mem &acc, size_t &off, size_t &size) const;
+    bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
 class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
@@ -93,8 +93,7 @@ protected:
 
     cl_context ctx_;
     CommandList cmd_;
-    static HostMap *GlobalHostMap_;
-    HostMap localHostMap_;
+    static HostMap *GlobalHostAlloc_;
     HostMap localHostAlloc_;
 
 public:
@@ -142,10 +141,8 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     gmacError_t sync();
-    gmacError_t hostAlloc(cl_mem &addr, size_t size);
-    gmacError_t hostFree(cl_mem addr);
-    hostptr_t hostMap(cl_mem addr, size_t offset, size_t size, cl_command_queue stream);
-    gmacError_t hostUnmap(hostptr_t ptr, cl_mem addr, size_t size, cl_command_queue stream);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
+    gmacError_t hostFree(hostptr_t addr);
 
     accptr_t hostMap(hostptr_t addr, size_t size);
     accptr_t hostMapAddr(hostptr_t addr);
