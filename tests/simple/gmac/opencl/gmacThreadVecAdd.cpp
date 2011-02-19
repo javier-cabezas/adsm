@@ -11,7 +11,7 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 
 const unsigned nIterDefault = 2;
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 32 * 1024 * 1024;
 
 unsigned nIter = 0;
 unsigned vecSize = 0;
