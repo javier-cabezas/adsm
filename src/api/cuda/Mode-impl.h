@@ -108,9 +108,8 @@ Mode::getAccelerator() const
 inline gmacError_t
 Mode::eventTime(uint64_t &t, CUevent start, CUevent end)
 {
-    switchIn();
+    /* There is no switch-in because we must already be inside the mode */
     gmacError_t ret = getAccelerator().timeCUevents(t, start, end);
-    switchOut();
     return ret;
 }
 

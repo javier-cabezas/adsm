@@ -48,7 +48,7 @@ do
     --enable-trace-console)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_CONSOLE=ON"
         ;;
-    --enable-trace-araver)
+    --enable-trace-paraver)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TRACE_PARAVER=ON"
         ;;
     --enable-trace-locks)

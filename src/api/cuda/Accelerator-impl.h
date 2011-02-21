@@ -221,6 +221,7 @@ void Accelerator::pushContext() const
     ASSERTION(contexts->size() > 0);
 #endif
     CUcontext *ctx = reinterpret_cast<CUcontext *>(Ctx_.get());
+    ASSERTION(ctx != NULL);
     mutex_.lock();
     ret = cuCtxPushCurrent(*ctx);
 #else
