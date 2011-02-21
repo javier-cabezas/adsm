@@ -23,6 +23,7 @@ Mode::~Mode()
     if(ioMemory_ != NULL) {
         hostFree(ioMemory_->addr());
         delete ioMemory_;
+        ioMemory_ = NULL;
     }
 }
 

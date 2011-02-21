@@ -18,7 +18,8 @@ GMACLock * _inGmacLock;
 const char _gmacCode = 1;
 const char _userCode = 0;
 
-Atomic _gmacInit = 0;
+Atomic gmacInit__ = 0;
+Atomic gmacFini__ = 0;
 
 void init() { }
 
@@ -29,6 +30,6 @@ void InitGmac()
     __impl::util::Private<const char>::init(__impl::_inGmac);
     __impl::_inGmacLock = new __impl::GMACLock();
     __impl::_inGmac.set(&__impl::_gmacCode);
-    __impl::_gmacInit = 1;
+    __impl::gmacInit__ = 1;
     __impl::_inGmac.set(&__impl::_userCode);
 }

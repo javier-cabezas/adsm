@@ -13,7 +13,8 @@ GMACLock * _inGmacLock;
 const char _gmacCode = 1;
 const char _userCode = 0;
 
-Atomic _gmacInit = 0;
+Atomic gmacInit__ = 0;
+Atomic gmacFini__ = -1;
 
 #ifdef LINUX 
 #define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
@@ -28,7 +29,7 @@ void CONSTRUCTOR init(void)
 	util::Private<const char>::init(_inGmac);
     _inGmacLock = new GMACLock();
 
-	_gmacInit = 1;
+	gmacInit__ = 1;
 	enterGmac();
     
 	util::Logger::Init();
@@ -62,10 +63,12 @@ void CONSTRUCTOR init(void)
 static void DESTRUCTOR fini(void)
 {
 	gmac::enterGmac();
-    TRACE(GLOBAL, "Cleaning GMAC");
-    core::Process::destroy();
-    gmac::trace::FiniTracer();
-    delete _inGmacLock;
+    if(AtomicInc(gmacFini__) == 0) {
+        TRACE(GLOBAL, "Cleaning GMAC");
+        core::Process::destroy();
+        gmac::trace::FiniTracer();
+        delete _inGmacLock;
+    }
 	// TODO: Clean-up logger
 }
 
@@ -99,10 +102,9 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch(dwReason) {
 		case DLL_PROCESS_ATTACH:
-            //__impl::init();
-			break;
+            break;
 		case DLL_PROCESS_DETACH:
-			__impl::fini();
+            __impl::fini();
 			break;
 		case DLL_THREAD_ATTACH:
 			InitThread();

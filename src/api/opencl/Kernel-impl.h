@@ -2,6 +2,7 @@
 #define GMAC_API_OPENCL_KERNEL_IMPL_H_
 
 #include "util/Logger.h"
+#include "gmac/init.h"
 
 namespace __impl { namespace opencl {
 
@@ -20,7 +21,7 @@ Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
 inline
 Kernel::~Kernel()
 {
-    clReleaseKernel(f_);
+    if(gmacFini__ < 0) clReleaseKernel(f_);
 }
 
 inline

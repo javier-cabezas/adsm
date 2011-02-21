@@ -2,6 +2,7 @@
 #include "Mode.h"
 
 #include "core/Process.h"
+#include "gmac/init.h"
 
 #ifndef _MSC_VER
 // Symbols needed for automatic compilation of embedded code
@@ -46,8 +47,10 @@ Accelerator::~Accelerator()
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
-        cl_int ret = clReleaseProgram(*i);
-        ASSERTION(ret == CL_SUCCESS);
+        if(gmacFini__ < 0) {
+            cl_int ret = clReleaseProgram(*i);
+            ASSERTION(ret == CL_SUCCESS);
+        }
     }
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
@@ -57,8 +60,10 @@ Accelerator::~Accelerator()
         GlobalHostAlloc_ = NULL;
     }
 
-    cl_int ret = clReleaseContext(ctx_);
-    ASSERTION(ret == CL_SUCCESS);
+    if(gmacFini__ < 0) {
+        cl_int ret = clReleaseContext(ctx_);
+        ASSERTION(ret == CL_SUCCESS);
+    }
 }
 
 void Accelerator::init()
@@ -410,12 +415,13 @@ cl_command_queue Accelerator::createCLstream()
 void Accelerator::destroyCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-#ifndef _MSC_VER
 	// We cannot remove the command queue because the OpenCL DLL might
 	// have been already unloaded
-    cl_int ret = clReleaseCommandQueue(stream);
-    CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
-#endif
+    if(__impl::gmacFini__ < 0) {
+        cl_int ret = clReleaseCommandQueue(stream);
+        CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
+    }
+
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
     trace::ExitCurrentFunction();
@@ -500,7 +506,7 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     if(localHostAlloc_.translate(addr, mem, size) == true) {
         localHostAlloc_.remove(addr); 
         Accelerator::GlobalHostAlloc_->remove(addr);
-	    ret = clReleaseMemObject(mem);
+        if(__impl::gmacFini__ < 0) ret = clReleaseMemObject(mem);
     }
     
     trace::ExitCurrentFunction();

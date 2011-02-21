@@ -64,7 +64,9 @@ extern __impl::util::Private<const char> _inGmac;
 extern GMACLock * _inGmacLock;
 extern const char _gmacCode;
 extern const char _userCode;
-extern Atomic _gmacInit;
+
+extern Atomic gmacInit__;
+extern Atomic gmacFini__;
 
 void init() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
@@ -72,8 +74,8 @@ void enterGmac() GMAC_LOCAL;
 inline void enterGmac()
 {
 #	if defined(_MSC_VER)
-	if(AtomicTestAndSet(_gmacInit, 0, 1) == 0) init();
-#endif
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
+#   endif
     _inGmac.set(&_gmacCode);
     _inGmacLock->lockRead();
 }
@@ -97,7 +99,7 @@ inline void exitGmac()
 char inGmac() GMAC_LOCAL;
 
 inline char inGmac() { 
-    if(_gmacInit == 0) return 1;
+    if(gmacInit__ == 0) return 1;
     char *ret = (char  *)_inGmac.get();
     if(ret == NULL) return 0;
     else if(*ret == _gmacCode) return 1;
