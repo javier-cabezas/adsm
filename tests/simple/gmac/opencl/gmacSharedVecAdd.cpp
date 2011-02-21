@@ -101,9 +101,9 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = oclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
+	ret = oclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
 	assert(ret == gmacSuccess);
-	ret = oclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
+	ret = oclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
 	assert(ret == gmacSuccess);
 
 	// Alloc output data
