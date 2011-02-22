@@ -122,7 +122,16 @@ protected:
 
     gmacError_t error_;
 
+    /**
+     * Releases the resources used by the contexts associated to the mode
+    */
     TESTABLE void cleanUpContexts();
+
+    /**
+     * Releases the resources used by the mode
+     *
+     * \return gmacSuccess on success. An error code on failure
+    */
     TESTABLE gmacError_t cleanUp();
 public:
     /**
@@ -330,6 +339,12 @@ public:
      */
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
 
+    /**
+     * Registers a new kernel that can be executed by the owner thread of the mode
+     *
+     * \param k A key that identifies the kernel object
+     * \param kernel A reference to the kernel to be registered
+     */
     void kernel(gmacKernel_t k, Kernel &kernel);
     //Kernel * kernel(gmacKernel_t k);
 
@@ -383,6 +398,12 @@ public:
      */
     const Process &process() const;
 
+    /** Returns the memory information of the accelerator on which the mode runs
+     * \param free A reference to a variable to store the memory available on the
+     * accelerator
+     * \param total A reference to a variable to store the total amount of memory
+     * on the accelerator
+     */
     void memInfo(size_t &free, size_t &total);
 
 #ifdef USE_SUBBLOCK_TRACKING

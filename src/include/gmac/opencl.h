@@ -59,6 +59,7 @@ typedef enum GmacGlobalMallocType OclMemoryHint;
 	Adds an argument to be used by the following call to gmacLaunch()
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
+	\param index Index of the parameter being added in the parameter list
 */
 GMAC_API oclError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index);
 

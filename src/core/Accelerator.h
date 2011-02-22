@@ -101,7 +101,7 @@ public:
 
     /**
      * Gets the identifier of the accelerator
-     * @return The identifier of the accelerator
+     * \return The identifier of the accelerator
      */
     unsigned id() const;
 

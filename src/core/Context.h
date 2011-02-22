@@ -63,6 +63,7 @@ protected:
      *
      * \param acc Reference to the accelerator where the thread is going to
      * perform operations on
+     * \param mode Reference to the parent mode of the context
      * \param id Context identifier
      */
     Context(Accelerator &acc, Mode &mode, unsigned id);

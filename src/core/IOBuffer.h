@@ -56,16 +56,63 @@ protected:
     bool async_;
 
     State state_;
+
+    /**
+     * Constructor of the buffer 
+     *
+     * \param addr A pointer to the address to be used by the buffer
+     * \param size The size of the buffer
+     * \param async Indicates if the buffer can be used in asynchronous transfers
+     */
     IOBuffer(void *addr, size_t size, bool async);
 public:
+    /**
+     * Destructor of the buffer
+     */
     virtual ~IOBuffer();
 
+    /**
+     * Returns the starting address of the buffer memory
+     *
+     * \return The starting address of the buffer memory
+     */
     virtual uint8_t *addr() const;
+
+    /**
+     * Returns the end address of the buffer memory
+     *
+     * \return The end address of the buffer memory
+     */
     virtual uint8_t *end() const;
+
+    /**
+     * Returns the size in bytes of the buffer
+     *
+     * \return The size in bytes of the buffer
+     */
     size_t size() const;
+
+    /**
+     * Tells if the buffer can be used in asynchronous memory transfers
+     *
+     * \return true if the buffer can be used in asynchronous memory transfers.
+     * false otherwise
+     */
     bool async() const;
 
+    /**
+     * Returns the current state of the buffer
+     *
+     * \return The current state of the buffer
+     * \sa State
+     */
     State state() const;
+
+    /**
+     * Waits for the transfer that uses the buffer
+     *
+     * \return gmacSuccess on success. An error code otherwise
+     */
     virtual gmacError_t wait() = 0;
 };
 
