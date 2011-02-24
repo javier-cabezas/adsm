@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,39 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_OPENCL_H_
-#define GMAC_OPENCL_H_
 
-#include "CL/cl.h"
-#include "opencl_types.h"
-
-#include "api.h"
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
 #endif
 
-#ifdef __cplusplus
-#   define __dv(a) = a
-#else
-#   define __dv(a)
-#endif
+#ifndef GMAC_OPENCL_CPP_H_
+#define GMAC_OPENCL_CPP_H_
 
-typedef gmacError_t oclError_t;
-typedef gmacKernel_t oclKernel_t;
-typedef enum GmacGlobalMallocType OclMemoryHint;
-typedef enum GmacProtection OclProtection;
+#include "opencl.h"
 
-#define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
-#define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
+namespace ocl {
+
+typedef oclError_t error_t;
+typedef oclKernel_t kernel_t;
+
+typedef OclMemoryHint MemoryHint;
+typedef OclProtection Protection;
 
 /*!
-	Adds an argument to be used by the following call to __oclLaunch()
+	Adds an argument to be used by the following call to oclLaunch()
 	\param addr Memory address where the param is stored
 	\param size Size, in bytes, of the argument
 	\param index Index of the parameter being added in the parameter list
 */
-GMAC_API oclError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index);
+static inline error_t __setArgument(const void *addr, size_t size, unsigned index)
+{
+    return ::__oclSetArgument(addr, size, index);
+}
 
 /*!
     Configures the next call
@@ -73,21 +68,30 @@ GMAC_API oclError_t APICALL __oclSetArgument(const void *addr, size_t size, unsi
     \param localWorkSize
     \return Error code
 */
-GMAC_API oclError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWorkOffset,
-    size_t *globalWorkSize, size_t *localWorkSize);
+static inline error_t __configureCall(size_t workDim, size_t *globalWorkOffset,
+    size_t *globalWorkSize, size_t *localWorkSize)
+{
+    return ::__oclConfigureCall(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+}
 
 /**
  * Launches a kernel execution
  * \param k Handler of the kernel to be executed at the GPU
  */
-GMAC_API oclError_t APICALL __oclLaunch(oclKernel_t k);
+static inline error_t __launch(kernel_t k)
+{
+    return ::__oclLaunch(k);
+}
 
 /**
  * Prepares the OpenCL code to be used by the applications 
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
-GMAC_API oclError_t APICALL __oclPrepareCLCode(const char *code, const char *flags = NULL);
+static inline error_t __prepareCLCode(const char *code, const char *flags = NULL)
+{
+    return ::__oclPrepareCLCode(code, flags);
+}
 
 /**
  * Prepares the OpenCL binary to be used by the applications 
@@ -95,76 +99,76 @@ GMAC_API oclError_t APICALL __oclPrepareCLCode(const char *code, const char *fla
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  */
-GMAC_API oclError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+static inline error_t __prepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
+{
+    return ::__oclPrepareCLBinary(binary, size, flags);
+}
 
 
 /* Wrappers to GMAC native calls */
 static inline
-unsigned oclGetNumberOfAccelerators() { return gmacGetNumberOfAccelerators(); }
+unsigned getNumberOfAccelerators() { return ::oclGetNumberOfAccelerators(); }
 
 static inline
-size_t oclGetFreeMemory() { return gmacGetFreeMemory(); }
+size_t getFreeMemory() { return ::oclGetFreeMemory(); }
 
 static inline
-oclError_t oclMigrate(unsigned acc) { return gmacMigrate(acc); }
+error_t migrate(unsigned acc) { return ::oclMigrate(acc); }
 
 static inline
-oclError_t oclMemoryMap(void *cpuPtr, size_t count, OclProtection prot) {
-    return gmacMemoryMap(cpuPtr, count, prot);
+oclError_t memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot) {
+    return ::oclMemoryMap(cpuPtr, count, prot);
 }
 
 static inline
-oclError_t oclMemoryUnmap(void *cpuPtr, size_t count) { return gmacMemoryUnmap(cpuPtr, count); }
+oclError_t memoryUnmap(void *cpuPtr, size_t count) { return ::oclMemoryUnmap(cpuPtr, count); }
 
 static inline
-oclError_t oclMalloc(void **devPtr, size_t count) { return gmacMalloc(devPtr, count); }
+oclError_t malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
 
 static inline
-oclError_t oclGlobalMalloc(void **devPtr, size_t count, OclMemoryHint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
-    return gmacGlobalMalloc(devPtr, count, hint);
+oclError_t globalMalloc(void **devPtr, size_t count, MemoryHint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
+    return ::oclGlobalMalloc(devPtr, count, hint);
 }
 
 static inline
-cl_mem oclPtr(const void *cpuPtr) { return gmacPtr(cpuPtr); }
+oclError_t free(void *cpuPtr) { return ::oclFree(cpuPtr); }
 
 static inline
-oclError_t oclFree(void *cpuPtr) { return gmacFree(cpuPtr); }
+error_t threadSynchronize() { return ::oclThreadSynchronize(); }
 
 static inline
-oclError_t oclThreadSynchronize() { return gmacThreadSynchronize(); }
+error_t getLastError() { return ::oclGetLastError(); }
 
 static inline
-oclError_t oclGetLastError() { return gmacGetLastError(); }
+void *memset(void *cpuPtr, int c, size_t count) { return ::oclMemset(cpuPtr, c, count); }
 
 static inline
-void *oclMemset(void *cpuPtr, int c, size_t count) { return gmacMemset(cpuPtr, c, count); }
-
-static inline
-void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
-    return gmacMemcpy(cpuDstPtr, cpuSrcPtr, count);
+void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
+    return ::oclMemcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
 static inline
-void oclSend(THREAD_T tid) { return gmacSend(tid); }
+void send(THREAD_T tid) { return ::oclSend(tid); }
 
 static inline
-void oclReceive(void) { return gmacReceive(); }
+void receive(void) { return ::oclReceive(); }
 
 static inline
-void oclSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
+void sendReceive(THREAD_T tid) { return ::oclSendReceive(tid); }
 
 static inline
-void oclCopy(THREAD_T tid) { return gmacCopy(tid); }
+void copy(THREAD_T tid) { return ::oclCopy(tid); }
+
+template<typename T>
+static inline cl_mem ptr(const T *addr) {
+    return ::oclPtr(addr);
+}
 
 #ifdef __cplusplus
 }
-
-template<typename T>
-static inline cl_mem oclPtr(const T *addr) {
-    return gmacPtr((const void *)addr);
-}
-
 #endif
+
 
 #undef __dv
 

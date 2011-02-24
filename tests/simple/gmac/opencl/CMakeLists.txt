@@ -26,6 +26,7 @@ string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacInit.cpp
     gmacVecAdd.cpp
+    gmacVecAdd_cplusplus.cpp
     gmacThreadVecAdd.cpp
     gmacMemcpy.cpp
     gmacMemset.cpp
@@ -39,6 +40,9 @@ target_link_libraries(gmacInit gmac)
 
 add_executable(gmacVecAdd ${common_SRC} gmacVecAdd.cpp)
 target_link_libraries(gmacVecAdd gmac)
+
+add_executable(gmacVecAdd_cplusplus ${common_SRC} gmacVecAdd_cplusplus.cpp)
+target_link_libraries(gmacVecAdd_cplusplus gmac)
 
 add_executable(gmacThreadVecAdd ${common_SRC} gmacThreadVecAdd.cpp)
 target_link_libraries(gmacThreadVecAdd gmac)

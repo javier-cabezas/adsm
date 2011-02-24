@@ -254,7 +254,7 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
 }
 
 #ifdef __cplusplus
-};
+}
 
 template<typename T>
 static inline T *gmacPtr(const T *addr) {
