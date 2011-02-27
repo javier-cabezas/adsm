@@ -33,6 +33,8 @@ source_group(${current_GROUP} FILES
     gmacFile.cpp
     gmacFileVecAdd.cpp
     gmacSharedVecAdd.cpp
+    gmacStencil.cpp
+    gmacStencilCommon.h
 )
 
 add_executable(gmacInit ${common_SRC} gmacInit.cpp)
@@ -61,6 +63,10 @@ target_link_libraries(gmacFileVecAdd gmac)
 
 add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
 target_link_libraries(gmacSharedVecAdd gmac)
+
+add_executable(gmacStencil ${common_SRC} gmacStencil.cpp)
+target_link_libraries(gmacStencil gmac)
+
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
