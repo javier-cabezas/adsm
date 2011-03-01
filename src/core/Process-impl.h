@@ -8,6 +8,14 @@ Process::nAccelerators() const
 {
     return accs_.size();
 }
+    
+inline Accelerator *
+Process::getAccelerator(unsigned i)
+{
+    if (i >= accs_.size()) return NULL;
+
+    return accs_[i];
+}
 
 inline memory::Protocol &
 Process::protocol()

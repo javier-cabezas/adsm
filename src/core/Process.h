@@ -227,6 +227,15 @@ public:
     size_t nAccelerators() const;
 
     /**
+     * Gets the accelerator with the given id
+     *
+     * \param i An accelerator id
+     * \return A pointer to the accelerator with the given id, or NULL if a non-valid id is given
+     */
+    Accelerator *getAccelerator(unsigned i);
+
+
+    /**
      * Tells if all the available accelerators in the process are integrated and
      * therefore share the physical memory with the CPU
      *
