@@ -181,84 +181,6 @@ static inline cudaError_t __getCUDAError(CUresult r)
 	return cudaErrorUnknown;
 }
 
-GMAC_API cudaError_t APICALL cudaGetDeviceProperties(struct cudaDeviceProp *prop, int devNum)
-{
-    if (devNum < 0 || unsigned(devNum) >= Process::getInstance().nAccelerators())
-        return cudaErrorInvalidDevice;
-
-    CUdevice device;
-    CUresult ret;
-    ret = cuDeviceGet(&device, devNum);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetName(prop->name, 255, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    CUdevprop_st cuProps;
-    ret = cuDeviceGetProperties(&cuProps, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceTotalMem(&prop->totalGlobalMem, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
- 
-    prop->sharedMemPerBlock = cuProps.sharedMemPerBlock;
-    prop->regsPerBlock = cuProps.regsPerBlock;
-    prop->warpSize = cuProps.SIMDWidth;
-    prop->memPitch = cuProps.memPitch;
-    prop->maxThreadsPerBlock = cuProps.maxThreadsPerBlock;
-    prop->maxThreadsDim[0] = cuProps.maxThreadsDim[0];
-    prop->maxThreadsDim[1] = cuProps.maxThreadsDim[1];
-    prop->maxThreadsDim[2] = cuProps.maxThreadsDim[2];
-    prop->maxGridSize[0] = cuProps.maxGridSize[0];
-    prop->maxGridSize[1] = cuProps.maxGridSize[1];
-    prop->maxGridSize[2] = cuProps.maxGridSize[2];
-    prop->totalConstMem = cuProps.totalConstantMemory;
-
-    ret = cuDeviceComputeCapability(&prop->major, &prop->minor, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    prop->clockRate = cuProps.clockRate;
-    prop->textureAlignment = cuProps.textureAlign;
-
-    ret = cuDeviceGetAttribute(&prop->deviceOverlap, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->multiProcessorCount, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->kernelExecTimeoutEnabled, CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->canMapHostMemory, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->computeMode, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->concurrentKernels, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->ECCEnabled, CU_DEVICE_ATTRIBUTE_ECC_ENABLED, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->pciBusID, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->pciDeviceID, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    ret = cuDeviceGetAttribute(&prop->tccDriver, CU_DEVICE_ATTRIBUTE_TCC_DRIVER, device);
-    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
-
-    return cudaSuccess;
-}
-
 
 static inline CUmemorytype __getMemoryFrom(cudaMemcpyKind kind)
 {
@@ -380,6 +302,84 @@ static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigne
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+GMAC_API cudaError_t APICALL cudaGetDeviceProperties(struct cudaDeviceProp *prop, int devNum)
+{
+    if (devNum < 0 || unsigned(devNum) >= Process::getInstance().nAccelerators())
+        return cudaErrorInvalidDevice;
+
+    CUdevice device;
+    CUresult ret;
+    ret = cuDeviceGet(&device, devNum);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetName(prop->name, 255, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    CUdevprop_st cuProps;
+    ret = cuDeviceGetProperties(&cuProps, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceTotalMem(&prop->totalGlobalMem, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+ 
+    prop->sharedMemPerBlock = cuProps.sharedMemPerBlock;
+    prop->regsPerBlock = cuProps.regsPerBlock;
+    prop->warpSize = cuProps.SIMDWidth;
+    prop->memPitch = cuProps.memPitch;
+    prop->maxThreadsPerBlock = cuProps.maxThreadsPerBlock;
+    prop->maxThreadsDim[0] = cuProps.maxThreadsDim[0];
+    prop->maxThreadsDim[1] = cuProps.maxThreadsDim[1];
+    prop->maxThreadsDim[2] = cuProps.maxThreadsDim[2];
+    prop->maxGridSize[0] = cuProps.maxGridSize[0];
+    prop->maxGridSize[1] = cuProps.maxGridSize[1];
+    prop->maxGridSize[2] = cuProps.maxGridSize[2];
+    prop->totalConstMem = cuProps.totalConstantMemory;
+
+    ret = cuDeviceComputeCapability(&prop->major, &prop->minor, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    prop->clockRate = cuProps.clockRate;
+    prop->textureAlignment = cuProps.textureAlign;
+
+    ret = cuDeviceGetAttribute(&prop->deviceOverlap, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->multiProcessorCount, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->kernelExecTimeoutEnabled, CU_DEVICE_ATTRIBUTE_KERNEL_EXEC_TIMEOUT, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->canMapHostMemory, CU_DEVICE_ATTRIBUTE_CAN_MAP_HOST_MEMORY, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->integrated, CU_DEVICE_ATTRIBUTE_INTEGRATED, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->computeMode, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->concurrentKernels, CU_DEVICE_ATTRIBUTE_CONCURRENT_KERNELS, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->ECCEnabled, CU_DEVICE_ATTRIBUTE_ECC_ENABLED, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->pciBusID, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->pciDeviceID, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    ret = cuDeviceGetAttribute(&prop->tccDriver, CU_DEVICE_ATTRIBUTE_TCC_DRIVER, device);
+    if (ret != CUDA_SUCCESS) return __getCUDAError(ret);
+
+    return cudaSuccess;
+}
 
 // CUDA Channel related functions
 
