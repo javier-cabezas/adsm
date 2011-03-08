@@ -3,6 +3,7 @@ set(core_test_SRC
     Mode.h Mode.cpp
     Accelerator.h Accelerator.cpp  
     IOBuffer.h IOBuffer.cpp
+    Process.h Process.cpp
 )
 
 add_gmac_sources(gmac-dbc ${core_test_SRC})
