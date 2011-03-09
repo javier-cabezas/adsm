@@ -1,6 +1,6 @@
 #ifdef USE_DBC
 
-//#include "core/dbc/Process.h"	
+#include "core/dbc/Process.h"	
 #include "core/Process.h"
 #include "core/Mode.h"
 
@@ -20,7 +20,7 @@ void Process::finiThread()
 {
    __impl::core::Process::finiThread();
 }
-Mode *Process::createMode(int acc)
+Mode* Process::createMode(int acc)
 {
     return  __impl::core::Process::createMode(acc);
 }
