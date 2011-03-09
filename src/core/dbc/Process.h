@@ -2,6 +2,7 @@
 #define GMAC_CORE_DBC_PROCESS_H_
 
 #include "dbc/Contract.h"
+#include "core/Process.h"
 
 namespace __dbc { namespace core {
    
