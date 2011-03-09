@@ -55,6 +55,11 @@ int main(int argc, char *argv[])
         descriptors[n].slices       = dimElems / nIter;
 	}
 
+	gmactime_t s, t;
+
+	getTime(&s);
+
+
 	for(unsigned n = 0; n < nIter; n++) {
 		nThread[n] = thread_create(do_stencil, (void *) &descriptors[n]);
     }
@@ -66,6 +71,9 @@ int main(int argc, char *argv[])
     if (nIter > 1) {
         barrier_destroy(&barrier);
     }
+
+    getTime(&t);
+	printTime(&s, &t, "Total: ", "\n");
 
     delete descriptors;
     delete nThread;

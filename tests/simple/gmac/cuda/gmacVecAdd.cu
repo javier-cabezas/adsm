@@ -28,11 +28,12 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
-	gmactime_t s, t;
+	gmactime_t s, t, begin, end;
 
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
+    begin = s;
     // Alloc & init input data
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
@@ -83,7 +84,9 @@ int main(int argc, char *argv[])
     gmacFree(b);
     gmacFree(c);
     getTime(&t);
+    end = t;
     printTime(&s, &t, "Free: ", "\n");
+    printTime(&begin, &end, "Total: ", "\n");
 
     return error != 0;
 }
