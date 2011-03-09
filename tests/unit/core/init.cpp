@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 using __impl::core::Accelerator;
-using __impl::core::Process;
+using gmac::core::Process;
 using gmac::core::Context; 
 
 

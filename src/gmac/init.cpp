@@ -54,7 +54,7 @@ void CONSTRUCTOR init(void)
     TRACE(GLOBAL, "Using %s memory allocator", util::params::ParamAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    core::Process::create<__impl::core::Process>();
+    gmac::core::Process::create<gmac::core::Process>();
     core::apiInit();
 
     exitGmac();

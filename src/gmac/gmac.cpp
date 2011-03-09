@@ -260,7 +260,8 @@ gmacError_t APICALL gmacLaunch(gmacKernel_t k)
 
     if (ParamAutoSync == true) {
         TRACE(GLOBAL, "Waiting for Kernel to complete");
-        manager.acquireObjects();
+        ret = manager.acquireObjects();
+        CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
     delete &launch;

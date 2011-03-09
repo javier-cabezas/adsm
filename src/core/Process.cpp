@@ -90,7 +90,7 @@ void QueueMap::erase(THREAD_T id)
 }
 
 Process::Process() :
-    util::Singleton<Process>(),
+    util::Singleton<gmac::core::Process>(),
     gmac::util::RWLock("Process"),
     protocol_(*memory::ProtocolInit(GLOBAL_PROTOCOL)),
     shared_("SharedMemoryMap"),
