@@ -6,27 +6,36 @@
 
 namespace __dbc { namespace core {
 
-Process::Process()
+Process::Process() :
+    __impl::core::Process()
 {
 }
+
 Process::~Process()
 {
 }
-void Process::initThread()
+
+void
+Process::initThread()
 {
    __impl::core::Process::initThread();
 }
-void Process::finiThread()
+
+void
+Process::finiThread()
 {
    __impl::core::Process::finiThread();
 }
-Mode* Process::createMode(int acc)
+
+__impl::core::Mode*
+Process::createMode(int acc)
 {
     return  __impl::core::Process::createMode(acc);
 }
-void Process::removeMode(__impl::core::Mode& mode)
+
+void
+Process::removeMode(__impl::core::Mode &mode)
 {
-    REQUIRES(&mode != NULL);
     __impl::core::Process::removeMode(mode);
 }
 

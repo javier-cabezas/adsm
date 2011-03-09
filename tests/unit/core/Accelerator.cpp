@@ -6,7 +6,7 @@
 #include "core/Mode.h"
 
 using __impl::core::Mode;
-using __impl::core::Process;
+using gmac::core::Process;
 
 
 //check virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc,size_t size)=0
@@ -79,7 +79,7 @@ TEST_F(AcceleratorTest, CreateMode){
      GetAccelerator().registerMode(*mode_);
      ASSERT_TRUE(GetAccelerator().load() == load + 1) << "the value is :" << GetAccelerator().load(); 
 
-     delete dynamic_cast<__impl::core::Mode *>(mode_);
+     delete mode_;
      ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
 
      Process::destroy();

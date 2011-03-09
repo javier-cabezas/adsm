@@ -94,11 +94,11 @@ public:
 };
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
+class GMAC_LOCAL Process : public util::Singleton<gmac::core::Process>, gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 
     // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<Process>;
+    friend class util::Singleton<gmac::core::Process>;
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
@@ -323,5 +323,9 @@ public:
 }}
 
 #include "Process-impl.h"
+
+#ifdef USE_DBC
+#include "core/dbc/Process.h"
+#endif
 
 #endif

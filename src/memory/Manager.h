@@ -57,7 +57,7 @@ class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager>
     DBC_FORCE_TEST(Manager)
 
     // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<Manager>;
+    friend class util::Singleton<gmac::memory::Manager>;
 protected:
     /**
      * Allocates a host mapped memory
