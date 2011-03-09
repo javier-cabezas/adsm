@@ -163,8 +163,12 @@ set_target_properties(gmac-base PROPERTIES
     COMPILE_FLAGS ${gmac_static_FLAGS}
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
  
-
+option(MAKE_STATIC "Build GMAC as a static library")
+if(MAKE_STATIC)
+add_library(gmac STATIC ${gmac-lib_SRC})
+else(MAKE_STATIC)
 add_library(gmac SHARED ${gmac-lib_SRC})
+endif(MAKE_STATIC)
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h

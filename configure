@@ -25,6 +25,9 @@ do
     --disable-dbc)
         USE_DBC=OFF
         ;;
+    --enable-static)
+        CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_STATIC=ON"
+        ;;
     --enable-tests)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_TESTS=ON"
         ;;
