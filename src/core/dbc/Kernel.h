@@ -12,7 +12,6 @@ public:
    Kernel(const KernelDescriptor & k);
    virtual ~Kernel();
 };
- 
 }}
 
 #endif  
