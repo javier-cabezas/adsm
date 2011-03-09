@@ -21,7 +21,7 @@
 #endif
 
 const size_t vecSize = 1024 * 1024;
-const size_t blockSize = 512;
+const size_t blockSize = 32;
 
 const char *msg = "Done!";
 

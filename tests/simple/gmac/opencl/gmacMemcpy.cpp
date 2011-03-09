@@ -5,7 +5,7 @@
 #include <gmac/opencl.h>
 
 const size_t size = 4 * 1024 * 1024;
-const size_t blockSize = 512;
+const size_t blockSize = 32;
 
 const char *kernel = "\
 __kernel void reset(__global long *a, unsigned long size, long v)\
