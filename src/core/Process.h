@@ -95,6 +95,8 @@ public:
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process>, gmac::util::RWLock {
+    DBC_FORCE_TEST(Process)
+
     // Needed to let Singleton call the protected constructor
     friend class util::Singleton<Process>;
 protected:
@@ -121,12 +123,12 @@ public:
     /**
      * Registers a new thread in the process
      */
-    void initThread();
+    TESTABLE void initThread();  
 
     /**
      * Unregisters a thread from the process
      */
-    void finiThread();
+    TESTABLE void finiThread(); 
 
 #define ACC_AUTO_BIND -1
     /**
@@ -137,14 +139,14 @@ public:
      * ACC_AUTO_BIND to let the run-time choose
      * \return A pointer to the newly created mode or NULL if there has been an error
      */
-    Mode * createMode(int acc = ACC_AUTO_BIND);
+     TESTABLE Mode * createMode(int acc = ACC_AUTO_BIND); 
 
     /**
      * Removes a mode from the process
      *
      * \param mode A reference to the mode to be removed from the process
      */
-    void removeMode(Mode &mode);
+    TESTABLE void removeMode(Mode &mode); 
 
     /**
      * Registers a global object in the process
