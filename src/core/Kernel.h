@@ -50,8 +50,9 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
 class KernelLaunch;
 
-class GMAC_LOCAL Kernel : public KernelDescriptor
-{
+class GMAC_LOCAL Kernel : public KernelDescriptor{
+      DBC_FORCE_TEST(Kernel)
+
 public:
     Kernel(const KernelDescriptor & k);
     virtual ~Kernel();
