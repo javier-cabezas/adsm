@@ -51,7 +51,7 @@ typedef Descriptor<gmacKernel_t> KernelDescriptor;
 class KernelLaunch;
 
 class GMAC_LOCAL Kernel : public KernelDescriptor{
-//     DBC_FORCE_TEST(Kernel)
+     DBC_FORCE_TEST(Kernel)
 
 public:
     Kernel(const KernelDescriptor & k);
@@ -67,6 +67,10 @@ public:
 }}
 
 #include "Kernel-impl.h"
+
+#ifdef USE_DBC
+#include "core/dbc/Kernel.h"
+#endif
 
 #endif
 

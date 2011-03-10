@@ -65,7 +65,7 @@ public:
 
 
 
-class GMAC_LOCAL Kernel : public core::Kernel {
+class GMAC_LOCAL Kernel : public gmac::core::Kernel { //added
     friend class KernelLaunch;
 protected:
     cl_kernel f_;
