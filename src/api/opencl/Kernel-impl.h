@@ -14,7 +14,7 @@ Argument::Argument(const void * ptr, size_t size, unsigned index) :
 
 inline
 Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
-    core::Kernel(k), f_(kernel)
+    gmac::core::Kernel(k), f_(kernel) //added
 {
 }
 
