@@ -499,23 +499,24 @@ Manager::memcpyToObject(const Object &dstObj, size_t dstOffset,
             // Request the next copy
             // Single copy from the source to fill the buffer
             if (copySize <= srcObj.blockEnd(srcOffset)) {
-                ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
+                ret = srcObj.copyToBuffer(*passive, copySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
             }
             else { // Two copies from the source to fill the buffer
                 size_t firstCopySize = srcObj.blockEnd(srcOffset);
                 size_t secondCopySize = copySize - firstCopySize;
 
-                ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
+                ret = srcObj.copyToBuffer(*passive, firstCopySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
-                ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
+                ret = srcObj.copyToBuffer(*passive, secondCopySize, firstCopySize, srcOffset + firstCopySize);
                 ASSERTION(ret == gmacSuccess);
             }
+
+            // Swap buffers
+            core::IOBuffer *tmp = active;
+            active = passive;
+            passive = tmp;
         }
-        // Swap buffers
-        core::IOBuffer *tmp = active;
-        active = passive;
-        passive = tmp;
     }
     // Clean up buffers after they are idle
     passive->wait();
