@@ -40,13 +40,15 @@ source_group(${current_GROUP} FILES
     gmacMigration.cu
     gmacMeminfo.cu
     gmacStencil.cu
+    gmacThreadStencil.cu
     gmacStencilCommon.cu
+    cudaThreadStencil.cu
+    cudaStencilCommon.cu
     gmacConstant.cu
     gmacTexture.cu
     gmacCompressCommon.cu
     gmacCompress.cu
     gmacPingPong.cu
-    gmacThreadStencil.cu
 )
 
 message(STATUS "Size of pointer: ${CMAKE_SIZEOF_VOID_P}")
@@ -100,7 +102,6 @@ cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
 add_executable(gmacSharedMatrixMul ${sharedMatrixMul} ${common_SRC} gmacSharedMatrixMul.cu)
 target_link_libraries(gmacSharedMatrixMul gmac)
 
-
 # gmacStencil
 cuda_compile(stencil gmacStencil.cu)
 add_executable(gmacStencil ${stencil} ${common_SRC} gmacStencil.cu gmacStencilCommon.cu)
@@ -110,6 +111,11 @@ target_link_libraries(gmacStencil gmac)
 cuda_compile(threadStencil gmacThreadStencil.cu)
 add_executable(gmacThreadStencil ${threadStencil} ${common_SRC} gmacThreadStencil.cu gmacStencilCommon.cu)
 target_link_libraries(gmacThreadStencil gmac)
+
+# cudaThreadStencil
+cuda_compile(threadStencil cudaThreadStencil.cu)
+add_executable(cudaThreadStencil ${threadStencil} ${common_SRC} cudaThreadStencil.cu cudaStencilCommon.cu)
+target_link_libraries(cudaThreadStencil ${CUDA_CUDART_LIBRARY} ${thread_LIB})
 
 # gmacMemcpy
 cuda_compile(memcpy gmacMemcpy.cu)
@@ -164,24 +170,24 @@ target_link_libraries(gmacCompressSend gmac)
 endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 
-install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacFileVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacTexture DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacConstant DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacThreadVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacSharedVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacFileVecAdd DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacMemcpy DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacMemset DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacFile DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacMigration DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacMeminfo DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacTexture DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacConstant DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
 
-if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
-install(TARGETS gmacCompress DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-install(TARGETS gmacCompressSend DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
-endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+#if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+#install(TARGETS gmacCompress DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#install(TARGETS gmacCompressSend DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gmac)
+#endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
