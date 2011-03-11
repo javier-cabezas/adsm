@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <gmac/cuda.h>
 
-const size_t size = 4 * 1024 * 1024;
-const size_t blockSize = 512;
+const size_t minCount = 1024;
+const size_t maxCount = 2 * 1024 * 1024;
 
-__global__ void reset(long *a, long v)
+__global__ void null()
 {
-	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	if(i >= size) return;
-	a[i] += v;
+	return;
 }
 
 void init(long *ptr, int s, long v)
@@ -18,42 +16,93 @@ void init(long *ptr, int s, long v)
 	}
 }
 
-int check(long *ptr, int s)
+enum MemcpyType {
+    GMAC_TO_GMAC = 1,
+    HOST_TO_GMAC = 2,
+    GMAC_TO_HOST = 3,
+};
+
+int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, const void *, size_t n))
 {
-	int a = 0;
-	for(size_t i = 0; i < size; i++)
-		a += ptr[i];
-	return a - s;
-}
+    int error = 0;
+    for (size_t count = minCount; count <= maxCount; count *= 2) {
+        fprintf(stderr, "ALLOC: %zd\n", count * sizeof(long));
+        long *baseSrc = (long *)malloc(count * sizeof(long));
+        long *baseDst = (long *)malloc(count * sizeof(long));
 
-int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, size_t n))
-{
-    init(host, size, 1);
-    int ret_full, ret_partial, ret_reverse;
+        long *gmacSrc;
+        long *gmacDst;
 
-	// Call the kernel
-	dim3 Db(blockSize);
-	dim3 Dg(size / blockSize);
-	if(size % blockSize) Db.x++;
+        if (type == GMAC_TO_GMAC) {
+            assert(gmacMalloc((void **)&gmacSrc, count * sizeof(long)) == gmacSuccess);
+            assert(gmacMalloc((void **)&gmacDst, count * sizeof(long)) == gmacSuccess);
+        } else if (type == HOST_TO_GMAC) {
+            gmacSrc = (long *)malloc(count * sizeof(long));
+            assert(gmacMalloc((void **)&gmacDst, count * sizeof(long)) == gmacSuccess);
+        } else if (type == GMAC_TO_HOST) {
+            assert(gmacMalloc((void **)&gmacSrc, count * sizeof(long)) == gmacSuccess);
+            gmacDst = (long *)malloc(count * sizeof(long));
+        }
 
-	fprintf(stderr, "Test full memcpy: ");
-	memcpy_fn(device, host, size * sizeof(long));
-	reset<<<Dg, Db>>>(gmacPtr(device), 1);
-    gmacThreadSynchronize();
-    ret_full = check(device, 2 * size);
-	fprintf(stderr, "%d\n", ret_full);
+        for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
+            for (size_t copyCount = 0, j = 1; copyCount < count/3; copyCount = j, j *= 2) {
+                init(baseSrc, count, 1);
+                init(baseDst, count, 0);
 
-	fprintf(stderr, "Test partial memcpy: ");
-	memcpy_fn(&device[size / 8], host, 3 * size / 4 * sizeof(long));
-    ret_partial = check(device, 5 * size / 4);
-	fprintf(stderr, "%d\n", ret_partial);
+                init(gmacSrc, count, 1);
+                init(gmacDst, count, 0);
+                assert(stride + copyCount <= count);
 
-	fprintf(stderr,"Test reverse full: ");
-	memcpy_fn(host, device, size * sizeof(long));
-    ret_reverse = check(host, 5 * size / 4);
-	fprintf(stderr, "%d\n", ret_reverse);
+                if (callKernel) {
+                    null<<<1, 1>>>();
+                }
+                assert(gmacThreadSynchronize() == gmacSuccess);
+                memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
+                memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));
 
-    return (ret_full != 0 || ret_partial != 0 || ret_reverse != 0);
+                int ret = memcmp(gmacDst, baseDst, count * sizeof(long));
+
+                if (ret != 0) {
+#if 0
+                    fprintf(stderr, "Error: gmacToGmacTest size: %zd, stride: %zd, copy: %zd\n",
+                            count     * sizeof(long),
+                            stride    * sizeof(long),
+                            copyCount * sizeof(long));
+#endif
+                    error = 1;
+                    goto exit_test;
+                }
+#if 0
+                for (unsigned k = 0; k < count; k++) {
+                    int ret = baseDst[k] != gmacDst[k];
+                    if (ret != 0) {
+                        fprintf(stderr, "Error: gmacToGmacTest size: %zd, stride: %zd, copy: %zd. Pos %u\n", count     * sizeof(long),
+                                stride    * sizeof(long),
+                                copyCount * sizeof(long), k);
+                        error = 1;
+                    }
+                }
+#endif
+            }
+        }
+
+        if (type == GMAC_TO_GMAC) {
+            assert(gmacFree(gmacSrc) == gmacSuccess);
+            assert(gmacFree(gmacDst) == gmacSuccess);
+        } else if (type == HOST_TO_GMAC) {
+            free(gmacSrc);
+            assert(gmacFree(gmacDst) == gmacSuccess);
+        } else if (type == GMAC_TO_HOST) {
+            assert(gmacFree(gmacSrc) == gmacSuccess);
+            free(gmacDst);
+        }
+
+        free(baseSrc);
+        free(baseDst);
+    }
+
+exit_test:
+    return error;
 }
 
 static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
@@ -63,24 +112,20 @@ static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
 
 int main(int argc, char *argv[])
 {
-	long *ptr;
-	long *host = (long *)malloc(size * sizeof(long));
-	assert(host != NULL);
+    int           ret = memcpyTest(GMAC_TO_GMAC, false, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, true, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, false, memcpy);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, true, memcpy);
 
-    // memcpy
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, false, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, true, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, false, memcpy);
+    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, true, memcpy);
 
-    int res_host = doTest(host, ptr, memcpy);
-    if (res_host != 0) fprintf(stderr, "Failed!\n");
-	gmacFree(ptr);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, false, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, true, gmacMemcpyWrapper);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, false, memcpy);
+    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, true, memcpy);
 
-    // gmacMemcpy
-	assert(gmacMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
-    int res_device = doTest(host, ptr, gmacMemcpyWrapper);
-    if (res_device != 0) fprintf(stderr, "Failed!\n");
-	gmacFree(ptr);
-
-	free(host);
-
-    return (res_host != 0 || res_device != 0);
+    return ret;
 }
