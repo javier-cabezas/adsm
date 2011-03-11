@@ -78,7 +78,7 @@ target_link_libraries(gmacThreadVecAdd gmac)
 # cudaThreadVecAdd
 cuda_compile(threadVecAdd cudaThreadVecAdd.cu)
 add_executable(cudaThreadVecAdd ${threadVecAdd} ${common_SRC} cudaThreadVecAdd.cu)
-target_link_libraries(cudaThreadVecAdd ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cudaThreadVecAdd ${CUDA_CUDART_LIBRARY} ${thread_LIB})
 
 # gmacSharedVecAdd
 cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
