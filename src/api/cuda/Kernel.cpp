@@ -8,7 +8,7 @@
 namespace __impl { namespace cuda {
 
 Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
-    core::Kernel(k)
+    gmac::core::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&f_, mod, name_);
     ASSERTION(ret == CUDA_SUCCESS);

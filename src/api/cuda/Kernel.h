@@ -64,7 +64,7 @@ public:
 
 
 
-class GMAC_LOCAL Kernel : public core::Kernel {
+class GMAC_LOCAL Kernel : public gmac::core::Kernel {
     friend class KernelLaunch;
 protected:
     CUfunction f_;
