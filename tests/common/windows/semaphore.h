@@ -1,5 +1,5 @@
-#ifndef GMAC_TESTS_COMMON_WINDOWS_BARRIER_H_
-#define GMAC_TESTS_COMMON_WINDOWS_BARRIER_H_
+#ifndef GMAC_TESTS_COMMON_WINDOWS_SEMAPHORE_H_
+#define GMAC_TESTS_COMMON_WINDOWS_SEMAPHORE_H_
 
 #include <windows.h>
 
@@ -9,10 +9,10 @@ extern "C" {
 
 typedef struct {
     int value;
-    int counter;
     CONDITION_VARIABLE cond;
     CRITICAL_SECTION mutex;
-} barrier_t;
+} sem_t;
+
 
 #ifdef __cplusplus
 }
