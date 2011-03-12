@@ -62,7 +62,7 @@ target_link_libraries(gmacThreadVecAdd test-common gmac)
 # cudaThreadVecAdd
 cuda_compile(threadVecAdd cudaThreadVecAdd.cu)
 add_executable(cudaThreadVecAdd ${threadVecAdd})
-target_link_libraries(cudaThreadVecAdd test-common ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cudaThreadVecAdd test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # gmacSharedVecAdd
 cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
@@ -97,7 +97,7 @@ target_link_libraries(gmacThreadStencil test-common gmac)
 # cudaThreadStencil
 cuda_compile(threadStencil cudaThreadStencil.cu)
 add_executable(cudaThreadStencil ${threadStencil})
-target_link_libraries(cudaThreadStencil test-common ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cudaThreadStencil test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # gmacMemcpy
 cuda_compile(memcpy gmacMemcpy.cu)
