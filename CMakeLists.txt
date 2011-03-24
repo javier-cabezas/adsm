@@ -94,6 +94,7 @@ option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)
     message(STATUS "Compiling with VM support")
     add_definitions(-DUSE_VM)
+    set(USE_VM_BITMAP "1")
     if(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'bit' bitmap implementation")
         add_definitions(-DBITMAP_BIT)
@@ -105,7 +106,17 @@ if(USE_VM)
     if(USE_HOSTMAP_VM)
         add_definitions(-DUSE_HOSTMAP_VM)
     endif(USE_HOSTMAP_VM)
+else(USE_VM)
+    set(USE_VM_BITMAP "0")
 endif(USE_VM)
+
+# Setup configuration options
+option(USE_SUBBLOCK_TRACKING "Enable subblock modification tracking" OFF)
+if(USE_SUBBLOCK_TRACKING)
+    message(STATUS "Compiling with subblock modification tracking")
+    add_definitions(-DUSE_SUBBLOCK_TRACKING)
+endif(USE_SUBBLOCK_TRACKING)
+
 
 # Make sure we compile the necessary libraries
 add_subdirectory(lib)
@@ -177,7 +188,7 @@ set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
+    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
 )
 
 

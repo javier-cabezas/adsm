@@ -50,7 +50,8 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 {
     printf("MPI Sendrecv\n");
 
-	if(gmac::inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
+	if(gmac::inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest,   sendtag,
+                                                  recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
     Process &proc = Process::getInstance();
@@ -134,7 +135,8 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         tmpRecv = recvbuf;
     }
 
-    ret = __MPI_Sendrecv(tmpSend, sendcount, sendtype, dest, sendtag, tmpRecv, recvcount, recvtype, source, recvtag, comm, status);
+    ret = __MPI_Sendrecv(tmpSend, sendcount, sendtype, dest,   sendtag,
+                         tmpRecv, recvcount, recvtype, source, recvtag, comm, status);
 
     if (allocSend) {
         free(tmpSend);

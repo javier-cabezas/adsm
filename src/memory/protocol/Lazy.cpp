@@ -103,8 +103,8 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
 
     switch(block.getState()) {
         case Dirty:            
-#ifdef USE_VM
-            if (!block.isSequentialAccess()) {
+#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
+            if (!block.isStridedAccess()) {
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
@@ -118,8 +118,8 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
         case Invalid:          
             ret = block.toHost();
             if(ret != gmacSuccess) goto exit_func;
-#ifdef USE_VM
-            if (!block.isSequentialAccess()) {
+#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
+            if (!block.isStridedAccess()) {
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
@@ -133,8 +133,8 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
         case HostOnly:
             WARNING("Signal on HostOnly block - Changing protection and continuing");
         case ReadOnly:
-#ifdef USE_VM
-            if (!block.isSequentialAccess()) {
+#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
+            if (!block.isStridedAccess()) {
                 start = block.getSubBlockAddr(addr);
                 count = block.getSubBlockSize();
 
