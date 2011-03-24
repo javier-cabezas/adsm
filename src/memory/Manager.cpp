@@ -218,6 +218,16 @@ gmacError_t Manager::toIOBuffer(core::IOBuffer &buffer, size_t bufferOff, const 
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
+
+#ifdef USE_VM
+        CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
+        vm::BitmapShared &acceleratorBitmap = mode->acceleratorDirtyBitmap();
+        if (acceleratorBitmap.isReleased()) {
+            acceleratorBitmap.acquire();
+            mode->forEachObject(&Object::acquireWithBitmap);
+        }
+#endif
+
         Object *obj = mode->getObject(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
@@ -255,6 +265,14 @@ gmacError_t Manager::fromIOBuffer(hostptr_t addr, core::IOBuffer &buffer, size_t
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
+#ifdef USE_VM
+        CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
+        vm::BitmapShared &acceleratorBitmap = mode->acceleratorDirtyBitmap();
+        if (acceleratorBitmap.isReleased()) {
+            acceleratorBitmap.acquire();
+            mode->forEachObject(&Object::acquireWithBitmap);
+        }
+#endif
         Object *obj = mode->getObject(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
@@ -283,6 +301,7 @@ Manager::read(hostptr_t addr)
     trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
 #ifdef USE_VM
+    CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     if (acceleratorBitmap.isReleased()) {
         acceleratorBitmap.acquire();
@@ -309,6 +328,7 @@ Manager::write(hostptr_t addr)
     trace::EnterCurrentFunction();
     core::Mode &mode = core::Mode::getCurrent();
 #ifdef USE_VM
+    CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     if (acceleratorBitmap.isReleased()) {
         acceleratorBitmap.acquire();
@@ -339,6 +359,15 @@ Manager::memset(hostptr_t s, int c, size_t size)
         trace::ExitCurrentFunction();
         return gmacSuccess;
     }
+
+#ifdef USE_VM
+    CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
+    vm::BitmapShared &acceleratorBitmap = mode->acceleratorDirtyBitmap();
+    if (acceleratorBitmap.isReleased()) {
+        acceleratorBitmap.acquire();
+        mode->forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
 
     gmacError_t ret = gmacSuccess;
 

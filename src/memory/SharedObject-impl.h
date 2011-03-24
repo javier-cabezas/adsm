@@ -18,14 +18,9 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, hostptr_t add
         mode.map(acceleratorAddr, addr, size);
 #endif
     if(ret == gmacSuccess) {
-#ifdef USE_SUBBLOCK_TRACKING
-        vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
-        bitmap.registerRange(acceleratorAddr, size);
-#else
 #ifdef USE_VM
         vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
         bitmap.registerRange(acceleratorAddr, size);
-#endif
 #endif
         return acceleratorAddr;
     } else {
@@ -110,14 +105,9 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
 template<typename T>
 SharedObject<T>::~SharedObject()
 {
-#ifdef USE_SUBBLOCK_TRACKING
-    vm::BitmapHost &bitmap= owner_->hostDirtyBitmap();
-    bitmap.unregisterRange(acceleratorAddr_, size_);
-#else
 #ifdef USE_VM
     vm::BitmapShared &bitmap = owner_->acceleratorDirtyBitmap();
     bitmap.unregisterRange(acceleratorAddr_, size_);
-#endif
 #endif
 
 	// If the object creation failed, this address will be NULL

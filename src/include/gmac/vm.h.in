@@ -38,6 +38,10 @@ WITH THE SOFTWARE.  */
 #include <cuda_runtime_api.h>
 
 
+#define USE_VM_BITMAP @USE_VM_BITMAP@
+
+#if USE_VM_BITMAP == 1
+
 template<typename T>
 __device__ inline T __globalLd(T *addr) { return *addr; }
 template<typename T>
@@ -78,8 +82,6 @@ __constant__ long_t __gmac_vm_mask_l3;
 
 #endif // HARCODED
 
-#ifdef BITMAP_BYTE
-
 #if 0
 template<typename T>
 __device__ __inline__ T __globalSt2(T *addr, T v) {
@@ -91,7 +93,7 @@ __device__ __inline__ T __globalSt2(T *addr, T v) {
 #endif
 
 #if USE_VM_LEVELS == 3
-__device__ uint8_t **__gmac_vm_root[__gmac_vm_entries_l1];
+extern __device__ uint8_t **__gmac_vm_root[__gmac_vm_entries_l1];
 
 template<typename T>
 __device__ __inline__ T __globalSt(T *addr, T v) {
@@ -103,6 +105,61 @@ __device__ __inline__ T __globalSt(T *addr, T v) {
     return v;
 }
 
+__device__ __inline__ void __updateBlock(void *addr) {
+    uint8_t &entry = __gmac_vm_root[(long_t(addr) >> __gmac_vm_shift_l1) & __gmac_vm_mask_l1]
+                                   [(long_t(addr) >> __gmac_vm_shift_l2) & __gmac_vm_mask_l2]
+                                   [(long_t(addr) >> __gmac_vm_shift_l3) & __gmac_vm_mask_l3];
+    entry = 1;
+}
+
+template<typename T>
+__device__ __inline__ T __atomicAdd(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicAdd(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicSub(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicSub(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicMin(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicMin(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicMax(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicMax(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicExch(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicExch(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicAnd(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicAnd(addr, v);
+}
+
+template<typename T>
+__device__ __inline__ T __atomicOr(T *addr, T v)
+{
+    __updateBlock(addr);
+    return atomicOr(addr, v);
+}
 
 #endif
 
@@ -119,38 +176,22 @@ __device__ __inline__ T __globalSt(T *addr, T v) {
 }
 #endif
 
-#if 0
-#if USE_VM_LEVELS == 2
-#define __globalSt(a,v) __globalSt2(a,v)
 #else
-#if USE_VM_LEVELS == 3
-#define __globalSt(a,v) __globalSt3(a,v)
-#else
-#error "Unknown number of levels"
-#endif
-#endif
-#endif
 
-
-#else
-#ifdef BITMAP_BIT
-#define MASK_BITPOS ((1 << 5) - 1)
-#define SHIFT_ENTRY 
-
-__constant__ uint32_t *__gmac_vm_root;
-
-template<typename T>
-__device__ __inline__ T __globalSt(T *addr, T v) {
-    *addr = v;
-    long_t entry = to32bit(addr) >> (__SHIFT_PAGE + 5);
-    uint32_t val = 1 << ((to32bit(addr) >> __SHIFT_PAGE) & MASK_BITPOS);
-    atomicOr(&__gmac_vm_root[entry], val);
-    return v;
-}
-#else
 #define __globalSt(a,v) (*(a)=(v))
-#endif
-#endif
+template<typename T>
+__device__ inline T __globalLd(T *addr) { return *addr; }
+template<typename T>
+__device__ inline T __globalLd(const T *addr) { return *addr; }
 
+#define __atomicAdd  atomicAdd
+#define __atomicSub  atomicSub
+#define __atomicMin  atomicMin
+#define __atomicMax  atomicMax
+#define __atomicExch atomicExch
+#define __atomicAnd  atomicAnd
+#define __atomicOr   atomicOr
+
+#endif
 
 #endif

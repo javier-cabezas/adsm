@@ -112,9 +112,9 @@ public:
     void add(TextureDescriptor      & t);
 
     static ModuleVector createModules();
-
-
 };
+
+typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
 
 class GMAC_LOCAL Module {
 protected:
@@ -125,7 +125,7 @@ protected:
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<std::string, Variable> VariableNameMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
-    typedef std::map<const char *, Kernel *> KernelMap;
+    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
 
     VariableMap variables_;
 	VariableMap constants_;
@@ -135,7 +135,7 @@ protected:
     KernelMap kernels_;
 
 public:
-	Module(const ModuleDescriptor & d);
+	Module(const ModuleDescriptorVector & dVector);
 	~Module();
 
     void registerKernels(Mode &mode) const;

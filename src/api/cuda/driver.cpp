@@ -67,10 +67,10 @@ GMAC_API void APICALL __cudaRegisterFunction(
 }
 
 GMAC_API void APICALL __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
-		char * /*deviceAddress*/, const char *deviceName, int /*ext*/, int /*size*/,
+		char * deviceAddress, const char *deviceName, int /*ext*/, int /*size*/,
 		int constant, int /*global*/)
 {
-    TRACE(GLOBAL, "CUDA Variable %s", deviceName);
+    TRACE(GLOBAL, "CUDA Variable %s: %p", deviceName, deviceAddress);
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERTION(mod != NULL);
 	enterGmac();

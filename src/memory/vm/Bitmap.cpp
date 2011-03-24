@@ -135,12 +135,15 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
     long_t localStartIndex = getLocalIndex(startIndex);
     long_t localEndIndex = getLocalIndex(endIndex);
 
+    TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
+
     addEntries(localStartIndex, localEndIndex);
     addDirtyEntries(localStartIndex, localEndIndex);
 
-    if (entriesAcc_ == NULL) allocAcc(getLevel() == 0);
-
-    TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
+    if (entriesAcc_ == NULL) {
+        allocAcc(getLevel() == 0);
+        TRACE(LOCAL, "Allocating accelerator memory: %p", entriesAcc_.get());
+    }
 
     if (nextEntries_.size() == 0) {
         for (long_t i = localStartIndex; i <= localEndIndex; i++) {
@@ -160,6 +163,7 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
         if (node == NULL) {
             node = (NodeShared *) createChild();
             node->allocAcc(false);
+            TRACE(LOCAL, "Allocating accelerator memory: %p", node->entriesAcc_.get());
 
             NodeShared *&nodeAcc = getNodeAccHostRef(i);
             nodeAcc = node->getNodeAccAddr(0);

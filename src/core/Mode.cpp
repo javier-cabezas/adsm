@@ -25,12 +25,8 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #endif
     map_("ModeMemoryMap", *this),
     releasedObjects_(false)
-#ifdef USE_SUBBLOCK_TRACKING
-    , hostBitmap_(*this)
-#else
 #ifdef USE_VM
     , acceleratorBitmap_(*this)
-#endif
 #endif
 {
     trace::StartThread(THREAD_T(id_), "GPU");

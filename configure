@@ -63,6 +63,9 @@ do
     --enable-vm-hostmap)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_HOSTMAP_VM=ON"
         ;;
+    --enable-subblock)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_SUBBLOCK_TRACKING=ON"
+        ;;
     --enable-mpi)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;
