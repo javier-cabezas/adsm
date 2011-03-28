@@ -31,7 +31,7 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     else integrated_ = false;
 
     cl_context_properties prop[] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)platform_, NULL };
+        CL_CONTEXT_PLATFORM, (cl_context_properties)platform_, 0 };
 
     ctx_ = clCreateContext(prop, 1, &device_, NULL, NULL, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);

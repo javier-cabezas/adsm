@@ -92,10 +92,8 @@ struct _opencl_ptr_t {
         return tmp;
     }
 
-    template <typename T>
-    inline const bool operator!=(const T addr) const {
-        if (addr != T(NULL)) abort();
-        return base_ != NULL || offset_ != 0;
+    inline const bool operator!=(const hostptr_t addr) const {
+        return base_ != cl_mem(addr - offset_);
     }
 
     inline const bool operator!=(const _opencl_ptr_t ptr) const {
