@@ -160,7 +160,7 @@ gmacError_t SharedObject<T>::removeOwner(core::Mode &owner)
         acceleratorAddr_ = accptr_t(NULL);
         owner_ = NULL;
         // Put myself in the orphan map
-        Map::insertOrphan(*this);
+        owner.process().insertOrphan(*this);
     }
     unlock();
 	return gmacSuccess;

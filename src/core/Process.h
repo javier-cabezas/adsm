@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/order.h"
 #include "include/gmac/types.h"
-#include "memory/Map.h"
+#include "memory/ObjectMap.h"
 
 #include "util/Singleton.h"
 
@@ -298,6 +298,12 @@ public:
      * have been orphaned in the process
      */
     memory::ObjectMap &orphans();
+
+    /**
+     * Inserts an object into the orphan (objects without owner) list
+     * \param object Object that becomes orphan
+     */
+    void insertOrphan(memory::Object &obj);
 
     /**
      * Gets the object map that contains all the objects that have been orphaned

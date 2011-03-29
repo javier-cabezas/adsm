@@ -2,7 +2,6 @@
 #include "core/Process.h"
 
 #include "Manager.h"
-#include "Map.h"
 #include "Object.h"
 #include "HostMappedObject.h"
 

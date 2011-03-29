@@ -1,6 +1,8 @@
 #ifndef GMAC_CORE_PROCESS_IMPL_H_
 #define GMAC_CORE_PROCESS_IMPL_H_
 
+#include "core/Map.h"
+
 namespace __impl { namespace core {
 
 inline size_t
@@ -57,6 +59,12 @@ inline const memory::ObjectMap &
 Process::orphans() const
 {
     return orphans_;
+}
+
+inline void
+Process::insertOrphan(memory::Object &obj)
+{
+    Map::insertOrphan(obj);
 }
 
 }}

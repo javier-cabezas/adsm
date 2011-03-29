@@ -164,7 +164,7 @@ Mode *Process::createMode(int acc)
     mode->attach();
 
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
-    memory::Map::addOwner(*this, *mode);
+    Map::addOwner(*this, *mode);
 
     unlock();
 

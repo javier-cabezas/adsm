@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #include "core/Accelerator.h"
-#include "core/Context.h"
+#include "core/Map.h"
 #include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
@@ -45,7 +45,6 @@ WITH THE SOFTWARE.  */
 #endif
 
 #include "memory/Manager.h"
-#include "memory/Map.h"
 
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
@@ -54,12 +53,13 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace memory { class Map; class Object; class Block; }
+namespace memory { class Object; class Block; }
 
 namespace core {
 
 class Context;
 class IOBuffer;
+class Kernel;
 class KernelLaunch;
 class Process;
 
@@ -94,7 +94,7 @@ protected:
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
-    memory::Map map_;
+    Map map_;
     memory::Protocol *protocol_;
 
     allocator::Buddy *ioMemory_;
