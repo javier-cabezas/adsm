@@ -10,7 +10,8 @@ set(core_SRC
     IOBuffer.h IOBuffer-impl.h
     Mode.h Mode-impl.h Mode.cpp
     Context.h Context.cpp
-    Queue.h Queue.cpp)
+    Queue.h Queue.cpp
+    Map.h Map.cpp)
 
 add_gmac_sources(gmac ${core_SRC})
 add_gmac_sources(gmac-dbc)

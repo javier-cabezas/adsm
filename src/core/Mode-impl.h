@@ -1,10 +1,10 @@
 #ifndef GMAC_CORE_MODE_IMPL_H_
 #define GMAC_CORE_MODE_IMPL_H_
 
-#include "memory/Map.h"
 #include "memory/Object.h"
 
 #include "core/Process.h"
+#include "core/Context.h"
 
 namespace __impl { namespace core {
 
@@ -71,7 +71,7 @@ inline gmacError_t ContextMap::waitForCall()
 inline gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
-    memory::Map::removeOwner(Process::getInstance(), *this);
+    Map::removeOwner(Process::getInstance(), *this);
 #ifdef USE_VM
     acceleratorBitmap_.cleanUp();
 #endif
