@@ -1,4 +1,5 @@
 #include "semaphore.h"
+#include <windows.h>
 
 void sem_init(sem_t *sem, int value)
 {
@@ -25,7 +26,7 @@ void sem_wait(sem_t *sem, int v)
 
     sem->value -= v;
     while(sem->value < 0) {
-        SleepConditionVaraibleCS(&sem->cond, &sem->mutext, INFINITE);
+        SleepConditionVariableCS(&sem->cond, &sem->mutex, INFINITE);
     }
 
     LeaveCriticalSection(&sem->mutex);
