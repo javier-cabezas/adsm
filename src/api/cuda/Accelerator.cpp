@@ -176,7 +176,7 @@ ModuleVector *Accelerator::createModules()
 gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
-    dst = accptr_t(NULL);
+    dst = accptr_t(0);
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
 #else
@@ -220,7 +220,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
-    accptr_t addr;
+    accptr_t addr(0);
     size_t s;
 
     bool hasMapping = allocations_.find(host, addr, s);

@@ -44,7 +44,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
     ASSERT_TRUE(memset(Buffer_->addr(), 0x7a, Buffer_->size()) == Buffer_->addr());
 
     hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
-    accptr_t addr = NULL;
+    accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
 
     ASSERT_EQ(gmacSuccess, Mode_->bufferToAccelerator(addr, *Buffer_, Size_));
@@ -64,7 +64,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
 
 TEST_F(IOBufferTest, ToHost) {
     hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
-    accptr_t addr = NULL;
+    accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5b, Size_));
     
