@@ -94,7 +94,7 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     switchIn();
 
-    accptr_t acc;
+    accptr_t acc(0);
     bool hasMapping = acc_->getMapping(acc, src, size);
     if (hasMapping == true) {
         error_ = gmacSuccess;

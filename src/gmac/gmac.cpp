@@ -235,7 +235,7 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 
 __gmac_accptr_t APICALL gmacPtr(const void *ptr)
 {
-    accptr_t ret = accptr_t(NULL);
+    accptr_t ret = accptr_t(0);
     gmac::enterGmac();
     ret = __impl::memory::Manager::getInstance().translate(hostptr_t(ptr));
     gmac::exitGmac();

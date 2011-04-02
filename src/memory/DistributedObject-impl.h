@@ -75,7 +75,7 @@ inline DistributedObject<T>::~DistributedObject()
 template<typename T>
 inline accptr_t DistributedObject<T>::acceleratorAddr(const hostptr_t addr) const
 {
-	accptr_t ret = accptr_t(NULL);
+	accptr_t ret = accptr_t(0);
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i != blocks_.end()) {
@@ -100,7 +100,7 @@ inline core::Mode &DistributedObject<T>::owner(const hostptr_t addr) const
 template<typename T>
 inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 {
-    accptr_t acceleratorAddr = accptr_t(NULL);
+    accptr_t acceleratorAddr = accptr_t(0);
 #ifdef USE_VM
     gmacError_t ret = 
 		mode.map(acceleratorAddr, addr_, size_, unsigned(SubBlockSize_));

@@ -157,7 +157,7 @@ accptr_t Manager::translate(const hostptr_t addr)
     trace::EnterCurrentFunction();
     __impl::core::Process &proc = __impl::core::Process::getInstance();
     accptr_t ret = proc.translate(addr);
-    if(ret == NULL) {
+    if(ret == 0) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) ret = object->acceleratorAddr(addr);
     }

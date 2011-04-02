@@ -245,7 +245,7 @@ accptr_t Process::translate(const hostptr_t addr)
 {
     Mode &mode = Mode::getCurrent();
     memory::Object *object = mode.getObject(addr);
-    if(object == NULL) return accptr_t(NULL);
+    if(object == NULL) return accptr_t(0);
     accptr_t ptr = object->acceleratorAddr(addr);
     object->release();
     return ptr;

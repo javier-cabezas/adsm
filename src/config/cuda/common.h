@@ -42,38 +42,22 @@ struct accptr_t {
     CUdeviceptr ptr_;
     unsigned pasId_;
 
-    inline accptr_t() :
-        ptr_(NULL)
+    template<typename T>
+    inline accptr_t(T * ptr) :
+        ptr_(CUdeviceptr(ptr))
     {}
-    inline accptr_t(void * ptr) :
-        ptr_(CUdeviceptr(long_t(ptr)))
-    {}
+
     inline accptr_t(CUdeviceptr ptr) :
         ptr_(ptr)
     {}
-    inline accptr_t(long int ptr) :
-        ptr_(ptr)
-    {}
     
-#if CUDA_VERSION < 3020
-    inline accptr_t(long_t ptr) :
-        ptr_(CUdeviceptr(ptr))
-    {}
-#endif
-    inline accptr_t(int ptr) :
-        ptr_(ptr)
-    {}
-
-#if CUDA_VERSION < 3020
-    inline operator uint32_t() const { return uint32_t(ptr_); }
-#else
     inline operator CUdeviceptr() const { return ptr_; }
-#endif
+
     inline operator void *() const { return (void *)(ptr_); }
 
     inline void *get() const { return (void *)(ptr_); }
 
-        inline
+    inline
     bool operator==(accptr_t ptr)
     {
         return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
