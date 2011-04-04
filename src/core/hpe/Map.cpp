@@ -5,7 +5,7 @@
 #include "memory/ObjectMap.h"
 #include "memory/Object.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 Map::Map(const char *name, Mode &parent) :
     memory::ObjectMap(name), parent_(parent)
@@ -139,4 +139,4 @@ void Map::removeOwner(Process &proc, Mode &mode)
     shared.unlock();
 }
 
-}}
+}}}

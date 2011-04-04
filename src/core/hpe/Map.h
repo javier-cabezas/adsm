@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_MAP_H_
-#define GMAC_CORE_MAP_H_
+#ifndef GMAC_CORE_HPE_MAP_H_
+#define GMAC_CORE_HPE_MAP_H_
 
 #include <map>
 #include <set>
@@ -51,7 +51,7 @@ class Object;
 }
 
 
-namespace core {
+namespace core { namespace hpe {
 
 class Mode;
 
@@ -147,6 +147,6 @@ public:
 
 };
 
-}}
+}}}
 
 #endif
