@@ -1,10 +1,10 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-#include "Accelerator.h"
-#include "Context.h"
+#include "core/Accelerator.h"
+#include "core/hpe/Context.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 Context::Context(Accelerator &acc, Mode &mode, unsigned id) :
     gmac::util::RWLock("Context"),
@@ -47,4 +47,4 @@ gmacError_t Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t si
     return ret;
 }
 
-}}
+}}}
