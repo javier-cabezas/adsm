@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_PROCESS_H_
-#define GMAC_CORE_PROCESS_H_
+#ifndef GMAC_CORE_HPE_PROCESS_H_
+#define GMAC_CORE_HPE_PROCESS_H_
 
 #include <list>
 #include <map>
@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 #include "allocator/Buddy.h"
 #include "Queue.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 /** Map that contains in which accelerator resides a mode */
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
@@ -94,11 +94,11 @@ public:
 };
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL Process : public util::Singleton<gmac::core::Process>, gmac::util::RWLock {
+class GMAC_LOCAL Process : public util::Singleton<gmac::core::hpe::Process>, gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 
     // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<gmac::core::Process>;
+    friend class util::Singleton<gmac::core::hpe::Process>;
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
@@ -326,12 +326,12 @@ public:
     Mode *owner(const hostptr_t addr, size_t size = 0) const;
 };
 
-}}
+}}}
 
 #include "Process-impl.h"
 
 #ifdef USE_DBC
-#include "core/dbc/Process.h"
+#include "core/hpe/dbc/Process.h"
 #endif
 
 #endif

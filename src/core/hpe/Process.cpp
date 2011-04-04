@@ -1,5 +1,6 @@
-#include "Accelerator.h"
-#include "IOBuffer.h"
+#include "core/Accelerator.h"
+#include "core/IOBuffer.h"
+
 #include "Mode.h"
 #include "Process.h"
 
@@ -11,7 +12,7 @@
 #include "memory/DistributedObject.h"
 #include "trace/Tracer.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 ModeMap::ModeMap() :
     gmac::util::RWLock("ModeMap")
@@ -304,4 +305,4 @@ bool Process::allIntegrated()
     return ret;
 }
 
-}}
+}}}
