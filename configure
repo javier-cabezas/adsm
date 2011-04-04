@@ -5,7 +5,6 @@ CMAKE_HOME=`dirname $0`
 SCRIPT_NAME=`basename $0`
 
 BUILD_TYPE="Release"
-USE_DBC=OFF
 
 FRONTEND="-DUSE_CUDA=ON -DUSE_OPENCL=OFF"
 
@@ -14,16 +13,9 @@ do
     case $i in
     --enable-debug)
         BUILD_TYPE="Debug"
-        USE_DBC=ON
         ;;
     --enable-multi-context)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MULTI_CONTEXT=ON"
-        ;;
-    --enable-dbc)
-        USE_DBC=ON
-        ;;
-    --disable-dbc)
-        USE_DBC=OFF
         ;;
     --enable-static)
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_STATIC=ON"
@@ -80,7 +72,7 @@ do
         esac
 done
 
-CMAKE_ARGS="${CMAKE_ARGS} ${FRONTEND} -DUSE_DBC=${USE_DBC} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
+CMAKE_ARGS="${CMAKE_ARGS} ${FRONTEND} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
 echo ${COMMAND} > ${SCRIPT_NAME}.log
 ${COMMAND}
