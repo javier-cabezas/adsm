@@ -1,9 +1,9 @@
-#ifndef GMAC_CORE_PROCESS_IMPL_H_
-#define GMAC_CORE_PROCESS_IMPL_H_
+#ifndef GMAC_CORE_HPE_PROCESS_IMPL_H_
+#define GMAC_CORE_HPE_PROCESS_IMPL_H_
 
-#include "core/Map.h"
+#include "Map.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 inline size_t
 Process::nAccelerators() const
@@ -67,6 +67,6 @@ Process::insertOrphan(memory::Object &obj)
     Map::insertOrphan(obj);
 }
 
-}}
+}}}
 
 #endif
