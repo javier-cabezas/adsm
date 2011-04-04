@@ -71,7 +71,7 @@ inline gmacError_t ContextMap::waitForCall()
 inline gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
-    Map::removeOwner(Process::getInstance(), *this);
+    Map::removeOwner(proc_, *this);
 #ifdef USE_VM
     acceleratorBitmap_.cleanUp();
 #endif
@@ -193,14 +193,12 @@ Mode::acquireObjects()
     return error_;
 }
 
-inline Process &
-Mode::process()
+inline Process &Mode::process()
 {
     return proc_;
 }
 
-inline const Process &
-Mode::process() const
+inline const Process &Mode::process() const
 {
     return proc_;
 }

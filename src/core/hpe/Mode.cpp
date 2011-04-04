@@ -43,7 +43,7 @@ Mode::~Mode()
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
     acc_->unregisterMode(*this); 
-    Process::getInstance().removeMode(*this);
+    Process::getInstance<Process>().removeMode(*this);
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
 
     trace::EndThread(THREAD_T(id_));
@@ -69,7 +69,7 @@ Mode &Mode::getCurrent()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
-        Process &proc = Process::getInstance();
+        Process &proc = Process::getInstance<Process>();
         mode = proc.createMode();
     }
     ASSERTION(mode != NULL);

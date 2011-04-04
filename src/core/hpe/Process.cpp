@@ -4,7 +4,7 @@
 #include "Mode.h"
 #include "Process.h"
 
-#include "allocator/Buddy.h"
+#include "core/allocator/Buddy.h"
 
 #include "gmac/init.h"
 #include "memory/Manager.h"
@@ -91,7 +91,7 @@ void QueueMap::erase(THREAD_T id)
 }
 
 Process::Process() :
-    util::Singleton<gmac::core::Process>(),
+    core::Process(),
     gmac::util::RWLock("Process"),
     protocol_(*memory::ProtocolInit(GLOBAL_PROTOCOL)),
     shared_("SharedMemoryMap"),
@@ -124,7 +124,7 @@ Process::~Process()
 
 void Process::initThread()
 {
-    ThreadQueue * q = new core::ThreadQueue();
+    ThreadQueue * q = new ThreadQueue();
     queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
     Mode::initThread();
@@ -159,7 +159,7 @@ Mode *Process::createMode(int acc)
     TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = accs_[usedAcc]->createMode(*this);
+    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this));
     modes_.insert(mode, accs_[usedAcc]);
 
     mode->attach();
@@ -247,7 +247,7 @@ accptr_t Process::translate(const hostptr_t addr)
     Mode &mode = Mode::getCurrent();
     memory::Object *object = mode.getObject(addr);
     if(object == NULL) return accptr_t(0);
-    accptr_t ptr = object->acceleratorAddr(addr);
+    accptr_t ptr = object->acceleratorAddr(mode, addr);
     object->release();
     return ptr;
 }
@@ -283,14 +283,14 @@ void Process::copy(THREAD_T id)
     mode.use();
 }
 
-Mode *Process::owner(const hostptr_t addr, size_t size) const
+core::Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
     // We consider global objects for ownership,
     // since it contains distributed objects not found in shared_
     memory::Object *object = shared_.get(addr, size);
     if(object == NULL) object = global_.get(addr, size);
     if(object == NULL) return NULL;
-    Mode &ret = object->owner(addr);
+    core::Mode &ret = object->owner(Mode::getCurrent(), addr);
     object->release();
     return &ret;
 }

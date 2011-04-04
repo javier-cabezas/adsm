@@ -46,7 +46,7 @@ namespace __impl {
 namespace core {
 class Mode;
 class Process;
-class Map;
+namespace hpe { class Map; }
 }
 
 namespace memory {
@@ -62,7 +62,7 @@ public:
     typedef gmacError_t(Object::*ConstObjectOp)(void) const;
     typedef gmacError_t(Object::*ModeOp)(core::Mode &);
 protected:
-    friend class core::Map;
+    friend class core::hpe::Map;
     typedef std::map<const hostptr_t, Object *> Parent;
 
     /**

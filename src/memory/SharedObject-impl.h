@@ -3,6 +3,8 @@
 
 #include "memory/SharedBlock.h"
 
+#include "core/Process.h"
+
 namespace __impl { namespace memory {
 
 template<typename T>
@@ -160,7 +162,7 @@ gmacError_t SharedObject<T>::removeOwner(core::Mode &owner)
         acceleratorAddr_ = accptr_t(0);
         owner_ = NULL;
         // Put myself in the orphan map
-        owner.process().insertOrphan(*this);
+        core::Process::getInstance().insertOrphan(*this);
     }
     unlock();
 	return gmacSuccess;

@@ -64,7 +64,7 @@ public:
         \param flags Protocool specific flags
         \return Pointer to the created object
     */
-    virtual Object *createObject(size_t size, hostptr_t cpuPtr, 
+    virtual Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr, 
         GmacProtection prot, unsigned flags) = 0;
 
     //! Deletes an object created by this protocol

@@ -107,8 +107,10 @@ namespace __dbc {
     namespace cuda {}
     namespace core {
         // Singleton classes need to be predeclared
-        class Process;
-        class Mode;
+        namespace hpe {
+            class Process;
+            class Mode;
+        }
     }
     namespace util {}
     namespace memory {

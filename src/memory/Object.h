@@ -157,13 +157,13 @@ public:
         \param addr Host memory address within the object
         \return Accelerator memory address within the object
     */
-    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
+    virtual accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const = 0;
 
     //! Get the owner of the object
     /*!
         \return The owner of the object
     */
-    virtual core::Mode &owner(const hostptr_t addr) const = 0;
+    virtual core::Mode &owner(core::Mode &current, const hostptr_t addr) const = 0;
 
     //! Add a new owner to the object
     /*!

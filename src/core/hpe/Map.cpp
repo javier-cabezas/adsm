@@ -61,8 +61,7 @@ bool Map::insert(memory::Object &obj)
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
     bool ret = memory::ObjectMap::insert(obj);
     if(ret == false) return ret;
-    Process &proc = parent_.process();
-    memory::ObjectMap &shared = proc.shared();
+    memory::ObjectMap &shared = parent_.process().shared();
     ret = shared.insert(obj);
     return ret;
 }
@@ -101,12 +100,6 @@ bool Map::remove(memory::Object &obj)
     return ret;
 }
 
-void Map::insertOrphan(memory::Object &obj)
-{
-    Process &proc = Process::getInstance();
-    memory::ObjectMap &orphans = proc.orphans();
-    orphans.insert(obj);
-}
 
 void Map::addOwner(Process &proc, Mode &mode)
 {

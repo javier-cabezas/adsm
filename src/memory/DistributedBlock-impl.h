@@ -63,24 +63,23 @@ inline void DistributedBlock<T>::removeOwner(core::Mode &mode)
 }
 
 template<typename T>
-inline core::Mode &DistributedBlock<T>::owner() const
+inline core::Mode &DistributedBlock<T>::owner(core::Mode &current) const
 {
-	return core::Mode::getCurrent();
+    return current;
 }
 
 template<typename T>
-inline accptr_t DistributedBlock<T>::acceleratorAddr(const hostptr_t addr) const
+inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	accptr_t ret = accptr_t(0);
 
 	StateBlock<T>::lock();
 	AcceleratorMap::const_iterator i;
-    core::Mode &mode = core::Mode::getCurrent();
-    TRACE(LOCAL, "Accelerator address for %p @ Context %p", addr, &mode);
+    TRACE(LOCAL, "Accelerator address for %p @ Context %p", addr, &current);
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         const std::list<core::Mode *> &list = i->second;
         std::list<core::Mode *>::const_iterator it;
-        it = std::find(list.begin(), list.end(), &mode);
+        it = std::find(list.begin(), list.end(), &current);
 
         if (it != list.end()) {
             ret = i->first + int(addr - StateBlock<T>::addr_);
@@ -94,17 +93,16 @@ inline accptr_t DistributedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 }
 
 template<typename T>
-inline accptr_t DistributedBlock<T>::acceleratorAddr() const
+inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current) const
 {
 	accptr_t ret = accptr_t(0);
 
 	StateBlock<T>::lock();
 
     AcceleratorMap::const_iterator i;
-    core::Mode &mode = core::Mode::getCurrent();
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         const std::list<core::Mode *> &list = i->second;
-        if (std::find(list.begin(), list.end(), &mode) != list.end()) {
+        if (std::find(list.begin(), list.end(), &current) != list.end()) {
             ret = i->first;
             break;
         }

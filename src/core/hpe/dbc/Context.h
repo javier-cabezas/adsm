@@ -37,9 +37,9 @@ WITH THE SOFTWARE.  */
 namespace __dbc { namespace core { namespace hpe {
 
 class GMAC_LOCAL Context :
-    public __impl::core::hpe:Context,
+    public __impl::core::hpe::Context,
     public virtual Contract {
-    DBC_TESTED(__impl::core::Context)
+    DBC_TESTED(__impl::core::hpe::Context)
 
 protected:
     Context(__impl::core::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id);

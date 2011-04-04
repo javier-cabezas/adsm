@@ -121,15 +121,6 @@ public:
     virtual memory::Object *get(const hostptr_t addr, size_t size) const;
 
     /**
-     * Remove object from this map and from the global process map and add that
-     * object to the process orphan object map
-     *
-     * \param obj Memory object to be removed from the current and from the
-     * global process map and inserted in the orphan object map
-     */
-    static void insertOrphan(memory::Object &obj);
-
-    /**
      * Add an owner to all global process objects
      *
      * \param proc Process whose global objects will be the owner added to

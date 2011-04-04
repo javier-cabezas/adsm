@@ -50,8 +50,8 @@ public:
                       size_t size, T init);
     virtual ~DistributedObject();
 
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
-    core::Mode &owner(const hostptr_t addr) const;
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
+    core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
 
     gmacError_t addOwner(core::Mode &owner);
     gmacError_t removeOwner(core::Mode &owner);

@@ -64,7 +64,7 @@ Process::orphans() const
 inline void
 Process::insertOrphan(memory::Object &obj)
 {
-    Map::insertOrphan(obj);
+    orphans_.insert(obj);
 }
 
 }}}

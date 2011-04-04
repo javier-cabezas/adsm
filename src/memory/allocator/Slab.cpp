@@ -12,16 +12,15 @@ Cache &Slab::createCache(CacheMap &map, long_t key, size_t size)
     return *cache;
 }
 
-Cache &Slab::get(long_t key, size_t size)
+Cache &Slab::get(core::Mode &current, long_t key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    core::Mode *mode = &core::Mode::getCurrent();
-    i = modes.find(mode);
+    i = modes.find(&current);
     modes.unlock();
     if(i == modes.end()) {
         modes.lockWrite();
-        Cache &ret = createCache(modes[mode], key, size);
+        Cache &ret = createCache(modes[&current], key, size);
         modes.unlock();
         return ret;
     }
@@ -35,11 +34,11 @@ Cache &Slab::get(long_t key, size_t size)
     }
 }
 
-void Slab::cleanup()
+void Slab::cleanup(core::Mode &current)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(&core::Mode::getCurrent());
+    i = modes.find(&current);
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;
@@ -52,9 +51,9 @@ void Slab::cleanup()
     modes.unlock();
 }
 
-hostptr_t Slab::alloc(size_t size, hostptr_t addr)
+hostptr_t Slab::alloc(core::Mode &current, size_t size, hostptr_t addr)
 {
-    Cache &cache = get(long_t(addr) ^ size, size);
+    Cache &cache = get(current, long_t(addr) ^ size, size);
     TRACE(LOCAL,"Using cache %p", &cache);
     hostptr_t ret = cache.get();
     addresses.lockWrite();

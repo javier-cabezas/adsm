@@ -65,14 +65,14 @@ protected:
     ModeMap modes; // Per-context cache map
 
     Cache &createCache(CacheMap &map, long_t key, size_t size);
-    Cache &get(long_t key, size_t size);
-    void cleanup();
+    Cache &get(core::Mode &current, long_t key, size_t size);
+    void cleanup(core::Mode &current);
 
 public:
     Slab();
     virtual ~Slab();
     
-    virtual hostptr_t alloc(size_t size, hostptr_t addr);
+    virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr);
     virtual bool free(hostptr_t addr);
 };
 

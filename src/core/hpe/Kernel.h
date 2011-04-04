@@ -69,7 +69,7 @@ public:
 #include "Kernel-impl.h"
 
 #ifdef USE_DBC
-#include "core/dbc/Kernel.h"
+#include "core/hpe/dbc/Kernel.h"
 #endif
 
 #endif

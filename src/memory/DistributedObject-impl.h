@@ -73,25 +73,25 @@ inline DistributedObject<T>::~DistributedObject()
 }
 
 template<typename T>
-inline accptr_t DistributedObject<T>::acceleratorAddr(const hostptr_t addr) const
+inline accptr_t DistributedObject<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	accptr_t ret = accptr_t(0);
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i != blocks_.end()) {
-		ret = i->second->acceleratorAddr(addr);
+		ret = i->second->acceleratorAddr(current, addr);
 	}
 	unlock();
 	return ret;
 }
 
 template<typename T>
-inline core::Mode &DistributedObject<T>::owner(const hostptr_t addr) const
+inline core::Mode &DistributedObject<T>::owner(core::Mode &current, const hostptr_t addr) const
 {
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	ASSERTION(i != blocks_.end());
-	core::Mode &ret = i->second->owner();
+	core::Mode &ret = i->second->owner(current);
 	unlock();
 	return ret;
 }
