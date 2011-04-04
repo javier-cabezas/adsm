@@ -1,20 +1,20 @@
 #ifdef USE_DBC
 
-#include "core/Mode.h"
+#include "core/hpe/Mode.h"
 
-namespace __dbc { namespace core {
+namespace __dbc { namespace core { namespace hpe {
 
 void
 Mode::cleanUpContexts()
 {
-    __impl::core::Mode::cleanUpContexts();
+    __impl::core::hpe::Mode::cleanUpContexts();
 }
 
 gmacError_t
 Mode::cleanUp()
 {
     gmacError_t ret;
-    ret = __impl::core::Mode::cleanUp();
+    ret = __impl::core::hpe::Mode::cleanUp();
     return ret;
 }
 
@@ -22,29 +22,29 @@ Mode::~Mode()
 {
 }
 
-Mode::Mode(__impl::core::Process &proc, __impl::core::Accelerator &acc) :
-    __impl::core::Mode(proc, acc)
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::Accelerator &acc) :
+    __impl::core::hpe::Mode(proc, acc)
 {
 }
 
 void
 Mode::detach()
 {
-    __impl::core::Mode::detach();
+    __impl::core::hpe::Mode::detach();
 }
 
 void
 Mode::addObject(__impl::memory::Object &obj)
 {
     // TODO Check that the object has not been previously added
-    __impl::core::Mode::addObject(obj);
+    __impl::core::hpe::Mode::addObject(obj);
 }
 
 void
 Mode::removeObject(__impl::memory::Object &obj)
 {
     // TODO Check that the object has been previously added
-    __impl::core::Mode::removeObject(obj);
+    __impl::core::hpe::Mode::removeObject(obj);
 }
 
 __impl::memory::Object *
@@ -53,7 +53,7 @@ Mode::getObject(const hostptr_t addr, size_t size) const
     REQUIRES(addr != NULL);
 
     __impl::memory::Object *obj;
-    obj = __impl::core::Mode::getObject(addr, size);
+    obj = __impl::core::hpe::Mode::getObject(addr, size);
     return obj;
 }
 
@@ -63,7 +63,7 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::map(dst, src, size, align);
+    ret = __impl::core::hpe::Mode::map(dst, src, size, align);
 
     return ret;
 }
@@ -74,7 +74,7 @@ Mode::unmap(hostptr_t addr, size_t size)
     REQUIRES(addr != NULL);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::unmap(addr, size);
+    ret = __impl::core::hpe::Mode::unmap(addr, size);
 
     return ret;
 }
@@ -87,7 +87,7 @@ Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::copyToAccelerator(acc, host, size);
+    ret = __impl::core::hpe::Mode::copyToAccelerator(acc, host, size);
 
     return ret;
 }
@@ -100,7 +100,7 @@ Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::copyToHost(host, acc, size);
+    ret = __impl::core::hpe::Mode::copyToHost(host, acc, size);
 
     return ret;
 }
@@ -113,7 +113,7 @@ Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::copyAccelerator(dst, src, size);
+    ret = __impl::core::hpe::Mode::copyAccelerator(dst, src, size);
 
     return ret;
 }
@@ -125,7 +125,7 @@ Mode::memset(accptr_t addr, int c, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::memset(addr, c, size);
+    ret = __impl::core::hpe::Mode::memset(addr, c, size);
 
     return ret;
 }
@@ -136,7 +136,7 @@ Mode::moveTo(__impl::core::Accelerator &acc)
     REQUIRES(&acc != acc_);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::moveTo(acc);
+    ret = __impl::core::hpe::Mode::moveTo(acc);
 
     return ret;
 }
@@ -147,7 +147,7 @@ Mode::releaseObjects()
     REQUIRES(releasedObjects() == false);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::releaseObjects();
+    ret = __impl::core::hpe::Mode::releaseObjects();
 
     ENSURES(releasedObjects() == true);
     return ret;
@@ -159,13 +159,13 @@ Mode::acquireObjects()
     REQUIRES(releasedObjects() == true);
 
     gmacError_t ret;
-    ret = __impl::core::Mode::acquireObjects();
+    ret = __impl::core::hpe::Mode::acquireObjects();
 
     ENSURES(releasedObjects() == false);
     return ret;
 }
 
-}}
+}}}
 
 #endif
 
