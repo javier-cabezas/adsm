@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_KERNEL_H_
-#define GMAC_CORE_KERNEL_H_
+#ifndef GMAC_CORE_HPE_KERNEL_H_
+#define GMAC_CORE_HPE_KERNEL_H_
 
 #include <vector>
 
@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 
 #include "Descriptor.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 typedef Descriptor<gmacKernel_t> KernelDescriptor;
 
@@ -64,7 +64,7 @@ public:
     virtual gmacError_t execute() = 0;
 };
 
-}}
+}}}
 
 #include "Kernel-impl.h"
 
