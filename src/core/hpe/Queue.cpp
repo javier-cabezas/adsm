@@ -1,7 +1,7 @@
 #include "Queue.h"
 #include "util/Logger.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 Queue::Queue(const char *name) :
     gmac::util::Lock(name), sem(0)
@@ -36,4 +36,4 @@ ThreadQueue::~ThreadQueue()
     delete queue;
 }
 
-}}
+}}}
