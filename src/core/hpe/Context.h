@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_CONTEXT_H_
-#define GMAC_CORE_CONTEXT_H_
+#ifndef GMAC_CORE_HPE_CONTEXT_H_
+#define GMAC_CORE_HPE_CONTEXT_H_
 
 #include "config/common.h"
 #include "include/gmac/types.h"
@@ -40,9 +40,11 @@ WITH THE SOFTWARE.  */
 #include "util/NonCopyable.h"
 #include "util/Private.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { 
 
 class Accelerator;
+
+namespace hpe {
 class Mode;
 class Kernel;
 class KernelLaunch;
@@ -132,10 +134,10 @@ public:
 
 };
 
-}}
+}}}
 
 #ifdef USE_DBC
-#include "core/dbc/Context.h"
+#include "core/hpe/dbc/Context.h"
 #endif
 
 #endif

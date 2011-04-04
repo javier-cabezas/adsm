@@ -1,11 +1,11 @@
 #ifdef USE_DBC
 
-#include "core/Context.h"
+#include "core/hpe/Context.h"
 
-namespace __dbc { namespace core {
+namespace __dbc { namespace core { namespace hpe {
 
-Context::Context(__impl::core::Accelerator &acc, __impl::core::Mode &mode, unsigned id) :
-    __impl::core::Context(acc, mode, id)
+Context::Context(__impl::core::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id) :
+    __impl::core::hpe::Context(acc, mode, id)
 {
 }
 
@@ -20,7 +20,7 @@ Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     gmacError_t ret;
-    ret = __impl::core::Context::copyToAccelerator(acc, host, size);
+    ret = __impl::core::hpe::Context::copyToAccelerator(acc, host, size);
     return ret;
 }
 
@@ -31,7 +31,7 @@ Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     REQUIRES(acc != 0);
     REQUIRES(size > 0);
     gmacError_t ret;
-    ret = __impl::core::Context::copyToHost(host, acc, size);
+    ret = __impl::core::hpe::Context::copyToHost(host, acc, size);
     return ret;
 }
 
@@ -42,11 +42,11 @@ Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     REQUIRES(dst != 0);
     REQUIRES(size > 0);
     gmacError_t ret;
-    ret = __impl::core::Context::copyAccelerator(dst, src, size);
+    ret = __impl::core::hpe::Context::copyAccelerator(dst, src, size);
     return ret;
 }
 
-}}
+}}}
 
 #endif
 

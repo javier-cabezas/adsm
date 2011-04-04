@@ -31,18 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_DBC_CONTEXT_H_
-#define GMAC_CORE_DBC_CONTEXT_H_
+#ifndef GMAC_CORE_HPE_DBC_CONTEXT_H_
+#define GMAC_CORE_HPE_DBC_CONTEXT_H_
 
-namespace __dbc { namespace core {
+namespace __dbc { namespace core { namespace hpe {
 
 class GMAC_LOCAL Context :
-    public __impl::core::Context,
+    public __impl::core::hpe:Context,
     public virtual Contract {
     DBC_TESTED(__impl::core::Context)
 
 protected:
-    Context(__impl::core::Accelerator &acc, __impl::core::Mode &mode, unsigned id);
+    Context(__impl::core::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id);
 public:
     virtual ~Context();
 
@@ -51,7 +51,7 @@ public:
     virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 };
 
-}}
+}}}
 
 #endif /* BLOCK_H */
 
