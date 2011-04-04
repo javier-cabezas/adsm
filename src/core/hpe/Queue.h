@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_QUEUE_H_
-#define GMAC_CORE_QUEUE_H_
+#ifndef GMAC_CORE_HPE_QUEUE_H_
+#define GMAC_CORE_HPE_QUEUE_H_
 
 #include <list>
 
@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/Semaphore.h"
 
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 class Mode;
 
@@ -70,6 +70,6 @@ public:
     Queue *queue;
 };
 
-}}
+}}}
 
 #endif
