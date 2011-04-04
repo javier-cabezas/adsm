@@ -220,19 +220,19 @@ public:
     /*!
         \return Owner of the memory block
     */
-    virtual core::Mode &owner() const = 0;
+    virtual core::Mode &owner(core::Mode &current) const = 0;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
+    virtual accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const = 0;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-    virtual accptr_t acceleratorAddr() const = 0;
+    virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!

@@ -19,11 +19,11 @@ Singleton<T>::~Singleton()
 }
 
 template <typename T>
-template <typename U>
+template <typename S>
 void Singleton<T>::create()
 {
     ASSERTION(Singleton_ == NULL);
-    Singleton_ = new U();
+    Singleton_ = new S();
 }
 
 template <typename T>
@@ -34,11 +34,19 @@ void Singleton<T>::destroy()
 	Singleton_ = NULL;
 }
 
-template <typename T>
-T& Singleton<T>::getInstance()
+template<typename T>
+T &Singleton<T>::getInstance()
 {
 	ASSERTION(Singleton_ != NULL);
 	return *Singleton_;
+}
+
+template <typename T>
+template <typename S>
+S& Singleton<T>::getInstance()
+{
+	ASSERTION(Singleton_ != NULL);
+	return dynamic_cast<S &>(*Singleton_);
 }
 
 }}

@@ -2,6 +2,7 @@
 #include "trace/Tracer.h"
 
 #include "core/Accelerator.h"
+#include "core/hpe/Mode.h"
 #include "core/hpe/Context.h"
 
 namespace __impl { namespace core { namespace hpe {

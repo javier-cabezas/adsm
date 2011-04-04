@@ -4,6 +4,7 @@ add_subdirectory(allocator)
 add_subdirectory(hpe)
 
 set(core_SRC
+    Mode.h
     Accelerator.h Accelerator-impl.h Accelerator.cpp
     IOBuffer.h IOBuffer-impl.h)
 

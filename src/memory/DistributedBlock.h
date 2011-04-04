@@ -75,11 +75,11 @@ public:
 
 	void removeOwner(core::Mode &owner);
 
-	core::Mode &owner() const;
+	core::Mode &owner(core::Mode &current) const;
 
-	accptr_t acceleratorAddr(const hostptr_t addr) const;
+	accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
 
-	accptr_t acceleratorAddr() const;
+	accptr_t acceleratorAddr(core::Mode &current) const;
 
 	gmacError_t toHost() const;
 

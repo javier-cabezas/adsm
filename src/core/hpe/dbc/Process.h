@@ -53,7 +53,7 @@ public:
     void initThread();
     void finiThread();
 #define ACC_AUTO_BIND -1 
-    __impl::core::Mode * createMode(int acc =ACC_AUTO_BIND);
+    __impl::core::hpe::Mode * createMode(int acc =ACC_AUTO_BIND);
     void removeMode(__impl::core::hpe::Mode &mode);
 //    gmacError_t globalMalloc(memory::Object  &Object);
 //    gmacError_t globalFree(memory::Object &Object);

@@ -45,7 +45,9 @@ WITH THE SOFTWARE.  */
 
 #include "util/Singleton.h"
 
-#include "allocator/Buddy.h"
+#include "core/Process.h"
+#include "core/allocator/Buddy.h"
+
 #include "Queue.h"
 
 namespace __impl { namespace core { namespace hpe {
@@ -94,7 +96,7 @@ public:
 };
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL Process : public util::Singleton<gmac::core::hpe::Process>, gmac::util::RWLock {
+class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 
     // Needed to let Singleton call the protected constructor
@@ -323,7 +325,7 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    Mode *owner(const hostptr_t addr, size_t size = 0) const;
+    core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
 };
 
 }}}
