@@ -1,7 +1,7 @@
-#ifndef GMAC_CORE_KERNEL_IMPL_H_
-#define GMAC_CORE_KERNEL_IMPL_H_
+#ifndef GMAC_CORE_HPE_KERNEL_IMPL_H_
+#define GMAC_CORE_HPE_KERNEL_IMPL_H_
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 inline
 Kernel::Kernel(const KernelDescriptor & k) :
@@ -20,6 +20,6 @@ KernelLaunch::~KernelLaunch()
 {
 }
 
-}}
+}}}
 
 #endif
