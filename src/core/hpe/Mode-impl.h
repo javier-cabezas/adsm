@@ -3,10 +3,10 @@
 
 #include "memory/Object.h"
 
-#include "core/Process.h"
-#include "core/Context.h"
+#include "core/hpe/Process.h"
+#include "core/hpe/Context.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 inline void ContextMap::add(THREAD_T id, Context *ctx)
 {
@@ -213,6 +213,6 @@ Mode::memInfo(size_t &free, size_t &total)
     switchOut();
 }
 
-}}
+}}}
 
 #endif

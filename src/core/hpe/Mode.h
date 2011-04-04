@@ -31,14 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_MODE_H_
-#define GMAC_CORE_MODE_H_
+#ifndef GMAC_CORE_HPE_MODE_H_
+#define GMAC_CORE_HPE_MODE_H_
 
 #include "config/common.h"
 
 #include "core/Accelerator.h"
-#include "core/Map.h"
-#include "core/allocator/Buddy.h"
+#include "core/hpe/Map.h"
+#include "core/hpe/allocator/Buddy.h"
 
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
@@ -57,8 +57,11 @@ namespace memory { class Object; class Block; }
 
 namespace core {
 
-class Context;
 class IOBuffer;
+
+namespace hpe {
+
+class Context;
 class Kernel;
 class KernelLaunch;
 class Process;
@@ -409,12 +412,12 @@ public:
 
 };
 
-}}
+}}}
 
 #include "Mode-impl.h"
 
 #ifdef USE_DBC
-#include "core/dbc/Mode.h"
+#include "core/hpe/dbc/Mode.h"
 #endif
 
 #endif

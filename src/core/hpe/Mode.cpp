@@ -4,13 +4,14 @@
 
 #include "trace/Tracer.h"
 
-#include "Accelerator.h"
-#include "IOBuffer.h"
-#include "Kernel.h"
-#include "Mode.h"
-#include "Process.h"
+#include "core/Accelerator.h"
+#include "core/IOBuffer.h"
 
-namespace __impl { namespace core {
+#include "core/hpe/Kernel.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
+
+namespace __impl { namespace core { namespace hpe {
 
 util::Private<Mode> Mode::key;
 
@@ -200,4 +201,4 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     return ret;
 }
 
-}}
+}}}
