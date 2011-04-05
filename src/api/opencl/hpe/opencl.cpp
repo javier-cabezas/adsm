@@ -1,9 +1,8 @@
 #include "config/order.h"
 
 #include "gmac/init.h"
-#include "core/Process.h"
-
-#include "Accelerator.h"
+#include "core/hpe/Process.h"
+#include "api/opencl/hpe/Accelerator.h"
 
 namespace __impl { namespace core {
 
@@ -11,7 +10,7 @@ static bool initialized = false;
 
 void apiInit(void)
 {
-    core::Process &proc = core::Process::getInstance();
+    core::hpe::Process &proc = core::Process::getInstance<core::hpe::Process>();
     if(initialized) FATAL("GMAC double initialization not allowed");
 
     TRACE(GLOBAL, "Initializing OpenCL API");
@@ -36,17 +35,17 @@ void apiInit(void)
         ASSERTION(ret == CL_SUCCESS);
         TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", deviceSize, i);
         for(unsigned j = 0; j < deviceSize; j++) {
-            gmac::opencl::Accelerator *acc = new gmac::opencl::Accelerator(n++, platforms[i], devices[j]);
+            gmac::opencl::hpe::Accelerator *acc = new gmac::opencl::hpe::Accelerator(n++, platforms[i], devices[j]);
             proc.addAccelerator(*acc);
             // Nedded for OpenCL code compilation
-            __impl::opencl::Accelerator::addAccelerator(*acc);
+            __impl::opencl::hpe::Accelerator::addAccelerator(*acc);
         }
         delete[] devices;
     }
     delete[] platforms;
     initialized = true;
 
-    gmacError_t compileRet = __impl::opencl::Accelerator::prepareEmbeddedCLCode();
+    gmacError_t compileRet = __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
 }
 
 }}

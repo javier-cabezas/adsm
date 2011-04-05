@@ -36,8 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-//#include "core/Accelerator.h"
-
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
 #include "util/Private.h"
