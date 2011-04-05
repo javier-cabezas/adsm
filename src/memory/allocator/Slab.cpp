@@ -63,7 +63,7 @@ hostptr_t Slab::alloc(core::Mode &current, size_t size, hostptr_t addr)
     return ret;
 }
 
-bool Slab::free(hostptr_t addr)
+bool Slab::free(core::Mode &current, hostptr_t addr)
 {
     addresses.lockWrite();
     AddressMap::iterator i = addresses.find(addr);

@@ -58,8 +58,8 @@ public:
 	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, T init);
     virtual ~SharedObject();
 
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
-	core::Mode &owner(const hostptr_t addr) const;
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
+	core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
 
 	gmacError_t addOwner(core::Mode &owner);
 	gmacError_t removeOwner(core::Mode &owner);
