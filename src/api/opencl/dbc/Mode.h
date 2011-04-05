@@ -43,7 +43,7 @@ class GMAC_LOCAL Mode :
     DBC_TESTED(__impl::opencl::Mode)
 
 public:
-    Mode(__impl::core::Process &proc, __impl::opencl::Accelerator &acc);
+    Mode(__impl::core::hpe::Process &proc, __impl::opencl::Accelerator &acc);
     ~Mode();
 
     gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);

@@ -69,7 +69,8 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
-    if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
+    // TODO: ask process instead
+    // if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
     // Create new shared object
     Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
