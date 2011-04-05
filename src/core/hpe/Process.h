@@ -52,6 +52,8 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core { namespace hpe {
 
+class Accelerator;
+
 /** Map that contains in which accelerator resides a mode */
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
 {

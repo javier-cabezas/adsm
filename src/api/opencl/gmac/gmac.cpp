@@ -1,15 +1,15 @@
 #include "config/common.h"
 #include "include/gmac/opencl.h"
 
-#include "api/opencl/Accelerator.h"
-#include "api/opencl/Mode.h"
+#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/Mode.h"
 
 #if defined(GMAC_DLL)
 #include "gmac/init.h"
 #endif
 
-using __impl::opencl::Accelerator;
-using __impl::opencl::Mode;
+using __impl::opencl::hpe::Accelerator;
+using __impl::opencl::hpe::Mode;
 
 GMAC_API gmacError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index)
 {
