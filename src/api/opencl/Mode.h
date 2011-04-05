@@ -36,7 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
-#include "core/Mode.h"
+
+#include "core/hpe/Mode.h"
 
 namespace __impl {
     
@@ -56,20 +57,20 @@ public:
 };
 
 class GMAC_LOCAL KernelList :
-    protected std::list<core::Kernel *>,
+    protected std::list<core::hpe::Kernel *>,
     public gmac::util::Lock
 {
 protected:
-    typedef std::list<core::Kernel *> Parent;
+    typedef std::list<core::hpe::Kernel *> Parent;
 public:
     KernelList();
     virtual ~KernelList();
 
-    void insert(core::Kernel *);
+    void insert(core::hpe::Kernel *);
 };
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::Mode {
+class GMAC_LOCAL Mode : public gmac::core::hpe::Mode {
     DBC_FORCE_TEST(Mode)
 
     friend class IOBuffer;
@@ -86,7 +87,7 @@ protected:
     /*!
         \return Main mode context
     */
-    core::Context &getContext();
+    core::hpe::Context &getContext();
     Context &getCLContext();
 
     cl_program program_;
@@ -97,7 +98,7 @@ public:
         \param proc Process where the mode is attached
         \param acc Virtual CUDA accelerator where the mode is executed
     */
-    Mode(core::Process &proc, Accelerator &acc);
+    Mode(core::hpe::Process &proc, Accelerator &acc);
 
     //! Default destructor
     virtual ~Mode();
@@ -125,14 +126,14 @@ public:
      */
     accptr_t hostMapAddr(const hostptr_t addr);
 
-    core::KernelLaunch &launch(gmacKernel_t kernel);
+    core::hpe::KernelLaunch &launch(gmacKernel_t kernel);
 
     //! Execute a kernel on the accelerator
     /*!
         \param launch Structure defining the kernel to be executed
         \return Error code
     */
-	gmacError_t execute(core::KernelLaunch &launch);
+	gmacError_t execute(core::hpe::KernelLaunch &launch);
 
     //! Create an IO buffer to sent / receive data from the accelerator
     /*!

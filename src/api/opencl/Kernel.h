@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include <list>
 
 #include "config/common.h"
-#include "core/Kernel.h"
+#include "core/hpe/Kernel.h"
 #include "util/NonCopyable.h"
 
 namespace __impl { namespace opencl {
@@ -65,12 +65,12 @@ public:
 
 
 
-class GMAC_LOCAL Kernel : public gmac::core::Kernel { //added
+class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
     friend class KernelLaunch;
 protected:
     cl_kernel f_;
 public:
-    Kernel(const core::KernelDescriptor & k, cl_kernel kernel);
+    Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel);
     ~Kernel();
     KernelLaunch * launch(KernelConfig & c);
 };
@@ -108,7 +108,7 @@ public:
     size_t *localWorkSize() const { return localWorkSize_; }
 };
 
-class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch : public core::hpe::KernelLaunch, public KernelConfig, public util::NonCopyable {
     friend class Kernel;
 
 protected:

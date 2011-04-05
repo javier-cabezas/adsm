@@ -100,7 +100,7 @@ public:
      * Gets a reference to the accelerator which the mode belongs to
      * \return A reference to the accelerator which the mode belongs to
      */
-    virtual Accelerator &getAccelerator() const = 0;
+    //virtual Accelerator &getAccelerator() const = 0;
 
     /**
      * Adds an object to the map of the mode

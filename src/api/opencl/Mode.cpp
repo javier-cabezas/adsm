@@ -5,8 +5,8 @@
 
 namespace __impl { namespace opencl {
 
-Mode::Mode(core::Process &proc, Accelerator &acc) :
-    gmac::core::Mode(proc, acc)
+Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
+    gmac::core::hpe::Mode(proc, acc)
 {
     hostptr_t addr = NULL;
     gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
@@ -59,9 +59,9 @@ void Mode::reload()
 {
 }
 
-core::Context &Mode::getContext()
+core::hpe::Context &Mode::getContext()
 {
-	core::Context *context = contextMap_.find(util::GetThreadId());
+	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
     context = new opencl::Context(getAccelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");

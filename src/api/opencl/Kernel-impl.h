@@ -13,8 +13,8 @@ Argument::Argument(const void * ptr, size_t size, unsigned index) :
 }
 
 inline
-Kernel::Kernel(const core::KernelDescriptor & k, cl_kernel kernel) :
-    gmac::core::Kernel(k), f_(kernel) //added
+Kernel::Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel) :
+    gmac::core::hpe::Kernel(k), f_(kernel)
 {
 }
 
@@ -62,7 +62,7 @@ KernelConfig::setArgument(const void * arg, size_t size, unsigned index)
 
 inline
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    core::KernelLaunch(),
+    core::hpe::KernelLaunch(),
     KernelConfig(c),
     f_(k.f_)
 {

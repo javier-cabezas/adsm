@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "dbc/Contract.h"
 #include "core/hpe/Process.h"
 
-namespace __dbc { namespace core {
+namespace __dbc { namespace core { namespace hpe {
    
 class GMAC_LOCAL Process :
     public __impl::core::hpe::Process,
@@ -59,7 +59,7 @@ public:
 //    gmacError_t globalFree(memory::Object &Object);
 };
 
-}}
+}}}
 
 #endif
 

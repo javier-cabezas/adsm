@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
-#include "core/Context.h"
+#include "core/hpe/Context.h"
 #include "util/Lock.h"
 
 #include "Kernel.h"
@@ -59,7 +59,7 @@ class Accelerator;
 class IOBuffer;
 class Mode;
 
-class GMAC_LOCAL Context : public gmac::core::Context {
+class GMAC_LOCAL Context : public gmac::core::hpe::Context {
 protected:
 	static const unsigned USleepLaunch_ = 100;
 
@@ -89,7 +89,7 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    KernelLaunch &launch(Kernel &kernel);
+    core::hpe::KernelLaunch &launch(core::hpe::Kernel &kernel);
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
 

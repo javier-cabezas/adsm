@@ -10,7 +10,7 @@ namespace __impl { namespace opencl {
 Context::AddressMap Context::HostMem_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::Context(acc, mode, mode.id()),
+    gmac::core::hpe::Context(acc, mode, mode.id()),
     buffer_(NULL)
 {
     setupCLstreams();
@@ -88,7 +88,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         buffer_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
-        return core::Context::copyToAccelerator(acc, host, size);
+        return core::hpe::Context::copyToAccelerator(acc, host, size);
     }
     gmacError_t ret = buffer_->wait();;
     ptroff_t offset = 0;
@@ -121,7 +121,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         buffer_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
-        return core::Context::copyToHost(host, acc, size);
+        return core::hpe::Context::copyToHost(host, acc, size);
     }
 
     gmacError_t ret = buffer_->wait();
@@ -160,10 +160,10 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
     return ret;
 }
 
-KernelLaunch &Context::launch(Kernel &kernel)
+core::hpe::KernelLaunch &Context::launch(core::hpe::Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    KernelLaunch *ret = kernel.launch(call_);
+    core::hpe::KernelLaunch *ret = dynamic_cast<Kernel &>(kernel).launch(call_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;
