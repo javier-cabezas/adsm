@@ -36,9 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "core/Accelerator.h"
 #include "core/Mode.h"
 
+#include "core/hpe/Accelerator.h"
 #include "core/hpe/Map.h"
 #include "core/allocator/Buddy.h"
 
@@ -86,7 +86,7 @@ public:
  * A Mode represents the address space of a thread in an accelerator. Each
  * thread has one mode per accelerator type in the system
  */
-class GMAC_LOCAL Mode : public __impl::core::Mode {
+class GMAC_LOCAL Mode : public virtual core::Mode {
     DBC_FORCE_TEST(Mode)
 
 protected:

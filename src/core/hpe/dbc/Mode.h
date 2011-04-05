@@ -46,7 +46,7 @@ protected:
     gmacError_t cleanUp();
 
 public:
-    Mode(__impl::core::hpe::Process &proc, __impl::core::Accelerator &acc);
+    Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc);
     virtual ~Mode();
 
     void detach();
@@ -60,7 +60,7 @@ public:
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
-    gmacError_t moveTo(__impl::core::Accelerator &acc);
+    gmacError_t moveTo(__impl::core::hpe::Accelerator &acc);
     gmacError_t releaseObjects();
     gmacError_t acquireObjects();
 };

@@ -1,6 +1,7 @@
 add_subdirectory(dbc)
 
 set(core_hpe_SRC
+    Accelerator.h Accelerator-impl.h Accelerator.cpp
     Context.h Context.cpp
     Descriptor.h Descriptor-impl.h
     Kernel.h Kernel-impl.h

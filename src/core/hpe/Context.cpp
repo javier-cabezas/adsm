@@ -1,7 +1,7 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-#include "core/Accelerator.h"
+#include "core/hpe/Accelerator.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Context.h"
 

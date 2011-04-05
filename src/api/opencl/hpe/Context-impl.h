@@ -1,10 +1,11 @@
-#ifndef GMAC_API_OPENCL_CONTEXT_IMPL_H_
-#define GMAC_API_OPENCL_CONTEXT_IMPL_H_
+#ifndef GMAC_API_OPENCL_HPE_CONTEXT_IMPL_H_
+#define GMAC_API_OPENCL_HPE_CONTEXT_IMPL_H_
 
-#include "Accelerator.h"
 #include "Kernel.h"
 
-namespace __impl { namespace opencl {
+#include "api/opencl/hpe/Accelerator.h"
+
+namespace __impl { namespace opencl { namespace hpe {
 
 inline gmacError_t
 Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
@@ -38,6 +39,6 @@ Context::accelerator()
     return dynamic_cast<Accelerator &>(acc_);
 }
 
-}}
+}}}
 
 #endif

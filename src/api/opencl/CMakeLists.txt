@@ -1,5 +1,6 @@
 add_subdirectory(dbc)
 
+add_subdirectory(hpe)
 add_subdirectory(gmac)
 add_subdirectory(memory)
 
@@ -8,10 +9,6 @@ set(api_lib_SRC
 
 set(api_SRC
     IOBuffer.h IOBuffer-impl.h
-    Context.h Context-impl.h Context.cpp
-    Kernel.h Kernel-impl.h Kernel.cpp
-    Mode.h Mode-impl.h Mode.cpp
-    Accelerator.h Accelerator-impl.h Accelerator.cpp Error.cpp
     Tracer.h Tracer-impl.h
    )
 

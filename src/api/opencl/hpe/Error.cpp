@@ -1,6 +1,6 @@
 #include "Accelerator.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 #define __GMAC_ERROR(r, err) case r: error = err; break
 
@@ -22,4 +22,4 @@ Accelerator::error(cl_int r)
 
 #undef __GMAC_ERROR
 
-}}
+}}}

@@ -32,8 +32,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
 
-#ifndef GMAC_API_OPENCL_KERNEL_H_
-#define GMAC_API_OPENCL_KERNEL_H_
+#ifndef GMAC_API_OPENCL_HPE_KERNEL_H_
+#define GMAC_API_OPENCL_HPE_KERNEL_H_
 
 #include <CL/cl.h>
 
@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 #include "core/hpe/Kernel.h"
 #include "util/NonCopyable.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 class Mode;
 
@@ -120,7 +120,7 @@ public:
     gmacError_t execute();
 };
 
-}}
+}}}
 
 #include "Kernel-impl.h"
 

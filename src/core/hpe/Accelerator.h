@@ -32,8 +32,8 @@
  WITH THE SOFTWARE.
  */
 
-#ifndef GMAC_CORE_ACCELERATOR_H_
-#define GMAC_CORE_ACCELERATOR_H_
+#ifndef GMAC_CORE_HPE_ACCELERATOR_H_
+#define GMAC_CORE_HPE_ACCELERATOR_H_
 
 #include <stddef.h>
 
@@ -44,7 +44,7 @@
 #include "util/Lock.h"
 
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 class KernelLaunch;
 class Mode;
@@ -111,7 +111,7 @@ public:
      * \param proc Reference to a process which the mode will belong to
      * \return A pointer to the created mode or NULL if there has been an error
      */
-    virtual core::Mode *createMode(Process &proc) = 0;
+    virtual Mode *createMode(Process &proc) = 0;
 
     /**
      * Registers a mode to be run on the accelerator. The mode must not be
@@ -230,12 +230,12 @@ public:
     bool integrated() const;
 };
 
-}}
+}}}
 
 #include "Accelerator-impl.h"
 
 #ifdef USE_DBC
-#include "core/dbc/Accelerator.h"
+#include "core/hpe/dbc/Accelerator.h"
 #endif
 
 #endif

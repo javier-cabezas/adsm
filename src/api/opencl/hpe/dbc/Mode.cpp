@@ -1,10 +1,10 @@
 #ifdef USE_DBC
-#include "api/opencl/Mode.h"
+#include "api/opencl/hpe/Mode.h"
 
-namespace __dbc { namespace opencl {
+namespace __dbc { namespace opencl { namespace hpe {
 
-Mode::Mode(__impl::core::hpe::Process &proc, __impl::opencl::Accelerator &acc) :
-    __impl::opencl::Mode(proc, acc)
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::opencl::hpe::Accelerator &acc) :
+    __impl::opencl::hpe::Mode(proc, acc)
 {
 }
 
@@ -19,7 +19,7 @@ Mode::bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t s
     REQUIRES(dst != NULL);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
-    gmacError_t ret = __impl::opencl::Mode::bufferToAccelerator(dst, buffer, size, off);
+    gmacError_t ret = __impl::opencl::hpe::Mode::bufferToAccelerator(dst, buffer, size, off);
 
     return ret;
 }
@@ -31,12 +31,12 @@ Mode::acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, si
     REQUIRES(src != NULL);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
-    gmacError_t ret = __impl::opencl::Mode::acceleratorToBuffer(buffer, src, size, off);
+    gmacError_t ret = __impl::opencl::hpe::Mode::acceleratorToBuffer(buffer, src, size, off);
 
     return ret;
 }
 
 
-}}
+}}}
 #endif
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

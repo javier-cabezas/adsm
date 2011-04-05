@@ -1,11 +1,13 @@
-#include "Context.h"
-#include "Mode.h"
+#include "api/opencl/IOBuffer.h"
+
+#include "api/opencl/hpe/Context.h"
+#include "api/opencl/hpe/Mode.h"
 
 #include "gmac/init.h"
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 Context::AddressMap Context::HostMem_;
 
@@ -220,4 +222,4 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     return ret;
 }
 
-}}
+}}}

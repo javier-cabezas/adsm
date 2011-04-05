@@ -40,7 +40,12 @@ WITH THE SOFTWARE.  */
 
 #include "util/Singleton.h"
 
-namespace __impl { namespace core { 
+namespace __impl {
+
+namespace memory { class Object; }
+
+
+namespace core { 
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process> {
@@ -90,29 +95,6 @@ public:
      * \return Error code
      */
     virtual gmacError_t migrate(Mode &mode, int acc);
-
-    /**
-     * Adds an accelerator to the process so it can be used by the threads of the
-     * process
-     *
-     * \param acc A reference to the accelerator to be added
-     */
-    virtual void addAccelerator(Accelerator &acc) = 0;
-
-    /**
-     * Gets the number of accelerators available in the process
-     *
-     * \return The number of accelerators available in the process
-     */
-    virtual size_t nAccelerators() const = 0;
-
-    /**
-     * Gets the accelerator with the given id
-     *
-     * \param i An accelerator id
-     * \return A pointer to the accelerator with the given id, or NULL if a non-valid id is given
-     */
-    virtual Accelerator *getAccelerator(unsigned i) = 0;
 
 
     /**

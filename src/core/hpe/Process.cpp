@@ -1,8 +1,8 @@
-#include "core/Accelerator.h"
 #include "core/IOBuffer.h"
 
-#include "Mode.h"
-#include "Process.h"
+#include "core/hpe/Accelerator.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
 
 #include "core/allocator/Buddy.h"
 

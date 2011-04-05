@@ -42,7 +42,7 @@ class GMAC_LOCAL Context :
     DBC_TESTED(__impl::core::hpe::Context)
 
 protected:
-    Context(__impl::core::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id);
+    Context(__impl::core::hpe::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id);
 public:
     virtual ~Context();
 

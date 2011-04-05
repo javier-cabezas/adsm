@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "core/Accelerator.h"
+//#include "core/Accelerator.h"
 
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
@@ -59,26 +59,10 @@ class Process;
  */
 class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
 protected:
-#if 0
-    Process &proc_;
-    Accelerator &acc_;
-
-    bool releasedObjects_;
-    gmacError_t error_;
-#endif
 
     virtual void switchIn() = 0;
     virtual void switchOut() = 0;
 public:
-    /**
-     * Mode constructor
-     *
-     * \param proc Reference to the process which the mode belongs to
-     * \param acc Reference to the accelerator in which the mode will perform
-     *            the allocations
-    */
-    //Mode(Process &proc, Accelerator &acc);
-
     /**
      * Mode destructor
      */
@@ -89,18 +73,6 @@ public:
      * \return A reference to the memory protocol used by the mode
      */
     virtual memory::Protocol &protocol() = 0;
-
-    /**
-     * Gets a numeric identifier for the mode. This identifier must be unique.
-     * \return A numeric identifier for the mode
-     */
-    virtual unsigned id() const = 0;
-
-    /**
-     * Gets a reference to the accelerator which the mode belongs to
-     * \return A reference to the accelerator which the mode belongs to
-     */
-    //virtual Accelerator &getAccelerator() const = 0;
 
     /**
      * Adds an object to the map of the mode
@@ -231,13 +203,6 @@ public:
      * \param err Error code
      */
     virtual void error(gmacError_t err) = 0;
-
-    /**
-     * Moves the mode to accelerator acc
-     * \param acc Accelerator to move the mode to
-     * \return Error code
-     */
-    virtual gmacError_t moveTo(Accelerator &acc) = 0;
 
     /**
      * Tells if the objects of the mode have been already released to the

@@ -67,7 +67,7 @@ protected:
      * \param size Size (in bytes) of the memory to be allocated
      * \return Error code
      */
-    gmacError_t hostMappedAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size);
 
     /**
      * Copies data from host memory to an object

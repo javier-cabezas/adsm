@@ -4,7 +4,7 @@
 
 #include "trace/Tracer.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 KernelConfig::KernelConfig(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream) :
     argsSize_(0),
@@ -106,4 +106,4 @@ KernelLaunch::execute()
     return Accelerator::error(ret);
 }
 
-}}
+}}}

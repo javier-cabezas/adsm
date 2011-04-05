@@ -32,8 +32,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_OPENCL_ACCELERATOR_H_
-#define GMAC_API_OPENCL_ACCELERATOR_H_
+#ifndef GMAC_API_OPENCL_HPE_ACCELERATOR_H_
+#define GMAC_API_OPENCL_HPE_ACCELERATOR_H_
+
 
 #include <CL/cl.h>
 
@@ -43,12 +44,18 @@ WITH THE SOFTWARE.
 #include <vector>
 
 #include "config/common.h"
-#include "core/Accelerator.h"
+#include "core/hpe/Accelerator.h"
+
 #include "Kernel.h"
+
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
+
 class IOBuffer;
+
+namespace hpe {
+
 class KernelLaunch;
 class Mode;
 
@@ -83,7 +90,7 @@ public:
     bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
-class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::hpe::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     static AcceleratorMap *Accelerators_;
@@ -112,7 +119,7 @@ public:
     static gmacError_t prepareCLCode(const char *code, const char *flags);
     static gmacError_t prepareCLBinary(const unsigned char *binary, size_t size, const char *flags);
 
-    core::Mode *createMode(core::Process &proc);
+    core::hpe::Mode *createMode(core::hpe::Process &proc);
 
     const cl_context getCLcontext() const;
 
@@ -120,13 +127,13 @@ public:
     gmacError_t unmap(hostptr_t addr, size_t size);
 
     /* Synchronous interface */
-    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode);
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::Mode &mode);
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, cl_command_queue stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 
     cl_command_queue createCLstream();
     void destroyCLstream(cl_command_queue stream);
@@ -152,7 +159,7 @@ public:
     void memInfo(size_t &free, size_t &total) const;
 };
 
-}}
+}}}
 
 #include "Accelerator-impl.h"
 

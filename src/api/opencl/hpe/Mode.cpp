@@ -1,9 +1,10 @@
-#include "Accelerator.h"
-#include "Context.h"
-#include "IOBuffer.h"
-#include "Mode.h"
+#include "api/opencl/IOBuffer.h"
 
-namespace __impl { namespace opencl {
+#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/Context.h"
+#include "api/opencl/hpe/Mode.h"
+
+namespace __impl { namespace opencl { namespace hpe {
 
 Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     gmac::core::hpe::Mode(proc, acc)
@@ -63,7 +64,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new opencl::Context(getAccelerator(), *this);
+    context = new opencl::hpe::Context(getAccelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -126,4 +127,4 @@ gmacError_t Mode::waitForEvent(cl_event event)
 #endif
 }
 
-}}
+}}}
