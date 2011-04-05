@@ -5,9 +5,9 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Cache &Slab::createCache(CacheMap &map, long_t key, size_t size)
+Cache &Slab::createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size)
 {
-    Cache *cache = new __impl::memory::allocator::Cache(size);
+    Cache *cache = new __impl::memory::allocator::Cache(mode, size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }
@@ -20,7 +20,7 @@ Cache &Slab::get(core::Mode &current, long_t key, size_t size)
     modes.unlock();
     if(i == modes.end()) {
         modes.lockWrite();
-        Cache &ret = createCache(modes[&current], key, size);
+        Cache &ret = createCache(current, modes[&current], key, size);
         modes.unlock();
         return ret;
     }
@@ -28,7 +28,7 @@ Cache &Slab::get(core::Mode &current, long_t key, size_t size)
         CacheMap::iterator j;
         j = i->second.find(key);
         if(j == i->second.end())
-            return createCache(i->second, key, size);
+            return createCache(current, i->second, key, size);
         else
             return *j->second;
     }

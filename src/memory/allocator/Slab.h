@@ -64,7 +64,7 @@ protected:
     AddressMap addresses;
     ModeMap modes; // Per-context cache map
 
-    Cache &createCache(CacheMap &map, long_t key, size_t size);
+    Cache &createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size);
     Cache &get(core::Mode &current, long_t key, size_t size);
     void cleanup(core::Mode &current);
 

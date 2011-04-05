@@ -3,7 +3,7 @@
 
 namespace __dbc { namespace opencl {
 
-Mode::Mode(__impl::core::Process &proc, __impl::opencl::Accelerator &acc) :
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::opencl::Accelerator &acc) :
     __impl::opencl::Mode(proc, acc)
 {
 }
