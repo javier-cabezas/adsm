@@ -36,8 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <CL/cl.h>
 
-#include "Mode.h"
-
+#include "api/opencl/Mode.h"
 #include "core/IOBuffer.h"
 
 namespace __impl { namespace opencl {

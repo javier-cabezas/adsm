@@ -101,16 +101,17 @@ protected:
     //! Set of all host mapped memory objects
     static HostMappedSet set_;
 
-    hostptr_t alloc();
-    void free();
-    accptr_t getAccPtr() const;
+    hostptr_t alloc(core::Mode &mode);
+    void free(core::Mode &mode);
+    accptr_t getAccPtr(core::Mode &mode) const;
 
+    core::Mode &mode_;
 public:
     //! Default constructor
     /*!
         \param size Size (in bytes) of the object being created
     */
-	HostMappedObject(size_t size);
+	HostMappedObject(core::Mode &mode, size_t size);
 
     //! Default destructor
     virtual ~HostMappedObject();

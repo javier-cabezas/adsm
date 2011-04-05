@@ -1,5 +1,8 @@
-#include "Accelerator.h"
-#include "Mode.h"
+#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/Mode.h"
+
+#include "api/opencl/IOBuffer.h"
+#include "api/opencl/Tracer.h"
 
 #include "core/Process.h"
 #include "gmac/init.h"
@@ -12,13 +15,13 @@ extern "C" {
 };
 #endif
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    gmac::core::Accelerator(n), platform_(platform), device_(device)
+    gmac::core::hpe::Accelerator(n), platform_(platform), device_(device)
 {
     // Not used for now
     busId_ = 0;
@@ -70,10 +73,10 @@ void Accelerator::init()
 {
 }
 
-core::Mode *Accelerator::createMode(core::Process &proc)
+core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = new gmac::opencl::Mode(dynamic_cast<core::hpe::Process &>(proc), *this);
+    core::hpe::Mode *mode = new gmac::opencl::hpe::Mode(dynamic_cast<core::hpe::Process &>(proc), *this);
     if (mode != NULL) {
         registerMode(*mode);
     }
@@ -124,7 +127,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 }
 
 
-gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
@@ -134,7 +137,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
         CL_TRUE, acc.offset_, size, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(reinterpret_cast<Mode &>(mode), event, size);
+    DataCommToAccelerator(dynamic_cast<opencl::Mode &>(mode), event, size);
     cl_int clret = clReleaseEvent(event);
     ASSERTION(clret == CL_SUCCESS);
     trace::ExitCurrentFunction();
@@ -143,14 +146,14 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 
 
 gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
-    size_t bufferOff, size_t count, core::Mode &mode, cl_command_queue stream)
+    size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toAccelerator(reinterpret_cast<Mode &>(mode));
+    buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
     cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
@@ -164,7 +167,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 }
 
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count, core::Mode &mode)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
@@ -174,7 +177,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
         CL_TRUE, acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(reinterpret_cast<Mode &>(mode), event, count);
+    DataCommToAccelerator(dynamic_cast<opencl::Mode &>(mode), event, count);
     cl_int clret = clReleaseEvent(event);
     ASSERTION(clret == CL_SUCCESS);
     trace::ExitCurrentFunction();
@@ -182,14 +185,14 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
 }
 
 gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
-    const accptr_t acc, size_t count, core::Mode &mode, cl_command_queue stream)
+    const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
 
     cl_event event;
-    buffer.toHost(reinterpret_cast<Mode &>(mode));
+    buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
     cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
         acc.offset_, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
@@ -541,4 +544,4 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
     free = size_t(value);
 }
 
-}}
+}}}

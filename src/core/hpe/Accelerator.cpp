@@ -3,7 +3,7 @@
 
 #include "Accelerator.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 MapAllocations::MapAllocations() :
     gmac::util::RWLock("AcceleratorMapAlloc")
@@ -69,4 +69,4 @@ void Accelerator::unregisterMode(Mode &mode)
     trace::ExitCurrentFunction();
 }
 
-}}
+}}}

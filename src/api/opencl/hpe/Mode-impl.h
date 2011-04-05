@@ -6,7 +6,7 @@
 
 #include "Context.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 inline
 KernelList::KernelList() : gmac::util::Lock("KernelList")
@@ -138,6 +138,6 @@ Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
     return ret; 
 }
 
-}}
+}}}
 
 #endif

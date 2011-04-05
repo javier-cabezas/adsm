@@ -43,11 +43,12 @@ bool HostMappedSet::remove(hostptr_t addr)
 
 HostMappedSet HostMappedObject::set_;
 
-HostMappedObject::HostMappedObject(size_t size) :
-    size_(size)
+HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
+    size_(size),
+    mode_(mode)
 {
 	// Allocate memory (if necessary)
-    addr_ = alloc();
+    addr_ = alloc(mode_);
     if(addr_ == NULL) return; 
     set_.insert(this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_);
@@ -56,7 +57,7 @@ HostMappedObject::HostMappedObject(size_t size) :
 
 HostMappedObject::~HostMappedObject()
 {
-    if(addr_ != NULL) free();
+    if(addr_ != NULL) free(mode_);
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_);
 }
 
@@ -66,7 +67,7 @@ accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
     accptr_t ret = accptr_t(0);
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
-        accptr_t acceleratorAddr = getAccPtr();
+        accptr_t acceleratorAddr = getAccPtr(mode_);
         ret = acceleratorAddr + offset;
     }
     return ret;

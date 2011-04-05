@@ -1,14 +1,14 @@
-#ifndef GMAC_API_OPENCL_ACCELERATOR_IMPL_H_
-#define GMAC_API_OPENCL_ACCELERATOR_IMPL_H_
+#ifndef GMAC_API_OPENCL_HPE_ACCELERATOR_IMPL_H_
+#define GMAC_API_OPENCL_HPE_ACCELERATOR_IMPL_H_
 
 #include <CL/cl.h>
 
 #include "util/Logger.h"
 #include "trace/Tracer.h"
 
-#include "IOBuffer.h"
+//#include "api/opencl/IOBuffer.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 inline CommandList::~CommandList()
 {
@@ -128,6 +128,6 @@ Accelerator::getCLcontext() const
     return ctx_;
 }
 
-}}
+}}}
 
 #endif

@@ -39,8 +39,6 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
 
-#include "Mode.h"
-
 namespace __impl { namespace core {
 
 class GMAC_LOCAL IOBuffer :

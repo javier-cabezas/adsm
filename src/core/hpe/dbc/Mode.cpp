@@ -22,7 +22,7 @@ Mode::~Mode()
 {
 }
 
-Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::Accelerator &acc) :
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc) :
     __impl::core::hpe::Mode(proc, acc)
 {
 }
@@ -131,7 +131,7 @@ Mode::memset(accptr_t addr, int c, size_t size)
 }
 
 gmacError_t 
-Mode::moveTo(__impl::core::Accelerator &acc)
+Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 {
     REQUIRES(&acc != acc_);
 

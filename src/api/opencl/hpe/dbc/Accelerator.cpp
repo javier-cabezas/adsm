@@ -1,7 +1,7 @@
 #ifdef USE_DBC
 #include "api/opencl/Accelerator.h"
 
-namespace __dbc { namespace opencl {
+namespace __dbc { namespace opencl { namespace hpe {
 
 Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     __impl::opencl::Accelerator(n, platform, device)
@@ -87,6 +87,6 @@ gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_
     return ret;
 }
 
-}}
+}}}
 #endif
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

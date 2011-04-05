@@ -29,27 +29,36 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-WITH THE SOFTWARE.  */
+WITH THE SOFTWARE.
+*/
 
-#ifndef GMAC_CORE_DBC_ACCELERATOR_H_
-#define GMAC_CORE_DBC_ACCELERATOR_H_ 
-
-#include "dbc/Contract.h"
-
-namespace __dbc { namespace core {
+#ifndef GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
+#define GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
+ 
+namespace __dbc { namespace opencl { namespace hpe {
 
 class GMAC_LOCAL Accelerator :
-    public __impl::core::Accelerator, 
+    public __impl::opencl::hpe::Accelerator,
     public virtual Contract {
-    DBC_TESTED(__impl::core::Accelerator)
-public: 
-    Accelerator(int n);
-    virtual ~Accelerator();
-    void registerMode(__impl::core::Mode&  mode);
-    void unregisterMode(__impl::core::Mode& mode);
+    DBC_TESTED(__impl::opencl::hpe::Accelerator)
+
+public:
+	Accelerator(int n, cl_platform_id platform, cl_device_id device);
+    ~Accelerator();
+
+    /* Synchronous interface */
+	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
+	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
+	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+
+    /* Asynchronous interface */
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream);
 };
 
-}}
 
-#endif 
-  
+}}}
+
+#endif
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

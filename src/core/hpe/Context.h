@@ -42,9 +42,8 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core { 
 
-class Accelerator;
-
 namespace hpe {
+class Accelerator;
 class Mode;
 class Kernel;
 class KernelLaunch;

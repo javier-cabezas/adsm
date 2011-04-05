@@ -1,9 +1,9 @@
-#ifndef GMAC_CORE_ACCELERATOR_IMPL_H_
-#define GMAC_CORE_ACCELERATOR_IMPL_H_
+#ifndef GMAC_CORE_HPE_ACCELERATOR_IMPL_H_
+#define GMAC_CORE_HPE_ACCELERATOR_IMPL_H_
 
 #include "util/Logger.h"
 
-namespace __impl { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
 inline unsigned
 Accelerator::load() const
@@ -45,6 +45,6 @@ Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
     return ret;
 }
 
-}}
+}}}
 
 #endif

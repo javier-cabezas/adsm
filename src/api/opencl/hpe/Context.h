@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_API_OPENCL_CONTEXT_H_
-#define GMAC_API_OPENCL_CONTEXT_H_
+#ifndef GMAC_API_OPENCL_HPE_CONTEXT_H_
+#define GMAC_API_OPENCL_HPE_CONTEXT_H_
 
 #include <CL/cl.h>
 
@@ -55,8 +55,11 @@ class IOBuffer;
 
 namespace opencl {
 
-class Accelerator;
 class IOBuffer;
+
+
+namespace hpe {
+class Accelerator;
 class Mode;
 
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
@@ -106,7 +109,7 @@ public:
     gmacError_t waitForEvent(cl_event e);
 };
 
-}}
+}}}
 
 #include "Context-impl.h"
 

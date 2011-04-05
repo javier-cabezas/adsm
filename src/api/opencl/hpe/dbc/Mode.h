@@ -32,18 +32,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_OPENCL_DBC_MODE_H_
-#define GMAC_API_OPENCL_DBC_MODE_H_
+#ifndef GMAC_API_OPENCL_HPE_DBC_MODE_H_
+#define GMAC_API_OPENCL_HPE_DBC_MODE_H_
 
-namespace __dbc { namespace opencl {
+namespace __dbc { namespace opencl { namespace hpe {
 
 class GMAC_LOCAL Mode :
-    public __impl::opencl::Mode,
+    public __impl::opencl::hpe::Mode,
     public virtual Contract {
-    DBC_TESTED(__impl::opencl::Mode)
+    DBC_TESTED(__impl::opencl::hpe::Mode)
 
 public:
-    Mode(__impl::core::hpe::Process &proc, __impl::opencl::Accelerator &acc);
+    Mode(__impl::core::hpe::Process &proc, __impl::opencl::hpe::Accelerator &acc);
     ~Mode();
 
     gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
@@ -51,7 +51,7 @@ public:
 };
 
 
-}}
+}}}
 
 #endif
 

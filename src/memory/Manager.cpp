@@ -1,4 +1,5 @@
 #include "core/IOBuffer.h"
+#include "core/Mode.h"
 #include "core/Process.h"
 
 #include "Manager.h"
@@ -87,11 +88,11 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
     return gmacSuccess;
 }
 
-gmacError_t Manager::hostMappedAlloc(hostptr_t *addr, size_t size)
+gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    HostMappedObject *object = new HostMappedObject(size);
+    HostMappedObject *object = new HostMappedObject(mode, size);
     *addr = object->addr();
     if(*addr == NULL) {
         delete object;
@@ -109,7 +110,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
 
     // If a centralized object is requested, try creating it
     if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
-        gmacError_t ret = hostMappedAlloc(addr, size);
+        gmacError_t ret = hostMappedAlloc(mode, addr, size);
         if(ret == gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -121,7 +122,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
     if(*addr == NULL) {
         object->release();
         trace::ExitCurrentFunction();
-        return hostMappedAlloc(addr, size); // Try using a host mapped object
+        return hostMappedAlloc(mode, addr, size); // Try using a host mapped object
     }
     gmacError_t ret = proc.globalMalloc(*object);
     object->release();

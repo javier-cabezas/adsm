@@ -1,11 +1,11 @@
 #ifdef USE_DBC
 
-#include "core/Accelerator.h"
+#include "core/hpe/Accelerator.h"
 #include "core/Mode.h"
 
-namespace __dbc { namespace core  {
+namespace __dbc { namespace core  { namespace hpe {
     
-Accelerator::Accelerator(int n) : __impl::core::Accelerator(n)
+Accelerator::Accelerator(int n) : __impl::core::hpe::Accelerator(n)
 {
 }
 
@@ -17,14 +17,14 @@ void Accelerator::registerMode(__impl::core::Mode& mode)
 {
    REQUIRES(&mode != NULL);
   //gmacError_t ret;
-    __impl::core::Accelerator::registerMode(mode);
+    __impl::core::hpe::Accelerator::registerMode(mode);
 }
 
 void Accelerator::unregisterMode(__impl::core::Mode& mode)
 {
    REQUIRES(&mode != NULL);       
   // gmacError_t ret; 
-    __impl::core::Accelerator::unregisterMode(mode);
+    __impl::core::hpe::Accelerator::unregisterMode(mode);
 }
  
 /*
@@ -36,6 +36,6 @@ inline unsigned  __impl::core::Accelerator::busAccId() const;
 inline bool __impl::core::Accelerator::integrated() const;
 */
 
-}}
+}}}
 #endif
 

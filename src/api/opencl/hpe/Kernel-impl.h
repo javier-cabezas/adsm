@@ -4,7 +4,7 @@
 #include "util/Logger.h"
 #include "gmac/init.h"
 
-namespace __impl { namespace opencl {
+namespace __impl { namespace opencl { namespace hpe {
 
 inline
 Argument::Argument(const void * ptr, size_t size, unsigned index) :
@@ -77,7 +77,7 @@ KernelLaunch::~KernelLaunch()
 
 
 
-}}
+}}}
 
 #endif
 
