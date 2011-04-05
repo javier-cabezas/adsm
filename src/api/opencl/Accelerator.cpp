@@ -269,7 +269,7 @@ Accelerator::getKernel(gmacKernel_t k)
     for(i = programs.begin(); i != programs.end(); i++) {
         cl_kernel kernel = clCreateKernel(*i, k, &err);
         if(err != CL_SUCCESS) continue;
-        return new Kernel(__impl::core::KernelDescriptor(k, k), kernel);
+        return new Kernel(__impl::core::hpe::KernelDescriptor(k, k), kernel);
     }
     return NULL;
 }

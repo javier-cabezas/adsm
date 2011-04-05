@@ -24,7 +24,7 @@ KernelList::~KernelList()
 }
 
 inline
-void KernelList::insert(core::Kernel *kernel)
+void KernelList::insert(core::hpe::Kernel *kernel)
 {
     lock();
     Parent::push_back(kernel);
@@ -41,11 +41,11 @@ void Mode::switchOut()
 {
 }
 
-inline core::KernelLaunch &
+inline core::hpe::KernelLaunch &
 Mode::launch(gmacKernel_t name)
 {
     KernelMap::iterator i = kernels_.find(name);
-    Kernel *k = NULL;
+    core::hpe::Kernel *k = NULL;
     if (i == kernels_.end()) {
         k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
         ASSERTION(k != NULL);
@@ -54,13 +54,13 @@ Mode::launch(gmacKernel_t name)
     }
     else k = dynamic_cast<Kernel *>(i->second);
     switchIn();
-    core::KernelLaunch &l = getCLContext().launch(*k);
+    core::hpe::KernelLaunch &l = getCLContext().launch(*k);
     switchOut();
     return l;
 }
 
 inline gmacError_t
-Mode::execute(core::KernelLaunch & launch)
+Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = getContext().prepareForCall();
@@ -99,7 +99,7 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
 inline Mode &
 Mode::getCurrent()
 {
-    return static_cast<Mode &>(core::Mode::getCurrent());
+    return static_cast<Mode &>(core::hpe::Mode::getCurrent());
 }
 
 
