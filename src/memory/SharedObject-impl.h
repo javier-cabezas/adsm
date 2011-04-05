@@ -120,7 +120,7 @@ SharedObject<T>::~SharedObject()
 }
 
 template<typename T>
-inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
+inline accptr_t SharedObject<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
     accptr_t ret = accptr_t(0);
     lockRead();
@@ -133,7 +133,7 @@ inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
 }
 
 template<typename T>
-inline core::Mode &SharedObject<T>::owner(const hostptr_t addr) const
+inline core::Mode &SharedObject<T>::owner(core::Mode &current, const hostptr_t addr) const
 {
     lockRead();
     core::Mode &ret = *owner_;

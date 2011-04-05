@@ -23,13 +23,13 @@ inline SharedBlock<T>::~SharedBlock()
 {}
 
 template<typename T>
-inline core::Mode &SharedBlock<T>::owner() const
+inline core::Mode &SharedBlock<T>::owner(core::Mode &current) const
 {
 	return owner_;
 }
 
 template<typename T>
-inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
+inline accptr_t SharedBlock<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	ptroff_t offset = ptroff_t(addr - StateBlock<T>::addr_);
     accptr_t ret = acceleratorAddr_ + offset;
@@ -37,7 +37,7 @@ inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 }
 
 template<typename T>
-inline accptr_t SharedBlock<T>::acceleratorAddr() const
+inline accptr_t SharedBlock<T>::acceleratorAddr(core::Mode &current) const
 {
     return acceleratorAddr_;
 }

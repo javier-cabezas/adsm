@@ -73,11 +73,11 @@ public:
     virtual ~Slab();
     
     virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr);
-    virtual bool free(hostptr_t addr);
+    virtual bool free(core::Mode &current, hostptr_t addr);
 };
 
 }}}
 
-#include "Slab.ipp"
+#include "Slab-impl.h"
 
 #endif

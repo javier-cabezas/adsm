@@ -6,6 +6,8 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
+#include "core/Process.h"
+
 namespace __impl { namespace memory {
 
 struct sigaction defaultAction;
@@ -34,9 +36,12 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-	Manager &manager = Manager::getInstance();
-	if(!writeAccess) resolved = manager.read(addr);
-	else resolved = manager.write(addr);
+    core::Mode *mode = core::Process::getInstance().owner(addr);
+    if(mode != NULL) {
+    	Manager &manager = Manager::getInstance();
+	    if(!writeAccess) resolved = manager.read(*mode, addr);
+    	else resolved = manager.write(*mode, addr);
+    }
 
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
