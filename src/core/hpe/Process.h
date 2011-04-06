@@ -215,7 +215,7 @@ public:
      * \param acc Identifier of the destination accelerator
      * \return Error code
      */
-    gmacError_t migrate(Mode &mode, int acc);
+    gmacError_t migrate(core::Mode &mode, int acc);
 
     /**
      * Adds an accelerator to the process so it can be used by the threads of the

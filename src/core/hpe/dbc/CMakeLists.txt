@@ -1,4 +1,5 @@
 set(core_hpe_dbc_SRC
+    Accelerator.h Accelerator.cpp
     Context.h Context.cpp
     Kernel.h Kernel.cpp
     Mode.h Mode.cpp
