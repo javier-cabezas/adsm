@@ -41,26 +41,27 @@ void Mode::switchOut()
 {
 }
 
-inline core::KernelLaunch &
-Mode::launch(gmacKernel_t name)
+inline 
+gmacError_t
+Mode::launch(gmac_kernel_id_t name, core::KernelLaunch *&launch)
 {
     KernelMap::iterator i = kernels_.find(name);
     Kernel *k = NULL;
     if (i == kernels_.end()) {
         k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
-        ASSERTION(k != NULL);
-        kernel(name, *k);
+        if (k == NULL) return gmacErrorInvalidValue;
+        registerKernel(name, *k);
         kernelList_.insert(k);
     }
     else k = dynamic_cast<Kernel *>(i->second);
     switchIn();
-    core::KernelLaunch &l = getCLContext().launch(*k);
+    launch = &(getCLContext().launch(*k));
     switchOut();
-    return l;
+    return gmacSuccess;
 }
 
 inline gmacError_t
-Mode::execute(core::KernelLaunch & launch)
+Mode::execute(core::KernelLaunch &launch)
 {
     switchIn();
     gmacError_t ret = getContext().prepareForCall();
@@ -70,6 +71,26 @@ Mode::execute(core::KernelLaunch & launch)
     }
     switchOut();
     return ret;
+}
+
+inline gmacError_t
+Mode::wait(core::KernelLaunch &launch)
+{
+    switchIn();
+    error_ = contextMap_.waitForCall(launch);
+    switchOut();
+
+    return error_;
+}
+
+inline gmacError_t
+Mode::wait()
+{
+    switchIn();
+    error_ = contextMap_.waitForCall();
+    switchOut();
+
+    return error_;
 }
 
 inline
@@ -109,6 +130,7 @@ Mode::getAccelerator() const
     return *static_cast<Accelerator *>(acc_);
 }
 
+#if 0
 inline
 gmacError_t Mode::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
 {
@@ -128,6 +150,7 @@ gmacError_t Mode::argument(const void *arg, size_t size, unsigned index)
     switchOut();
     return ret;
 }
+#endif
 
 inline gmacError_t
 Mode::eventTime(uint64_t &t, cl_event start, cl_event end)

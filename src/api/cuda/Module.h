@@ -125,7 +125,7 @@ protected:
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<std::string, Variable> VariableNameMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
-    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
+    typedef std::map<gmac_kernel_id_t, Kernel *> KernelMap;
 
     VariableMap variables_;
 	VariableMap constants_;

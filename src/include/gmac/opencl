@@ -39,12 +39,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_OPENCL_CPP_H_
 #define GMAC_OPENCL_CPP_H_
 
+#include <string>
+
 #include "opencl.h"
 
 namespace ocl {
 
 typedef oclError_t error_t;
-typedef oclKernel_t kernel_t;
+typedef ocl_kernel_id_t kernel_id_t;
 
 typedef OclMemoryHint MemoryHint;
 typedef OclProtection Protection;
@@ -55,33 +57,106 @@ typedef OclProtection Protection;
 	\param size Size, in bytes, of the argument
 	\param index Index of the parameter being added in the parameter list
 */
-static inline error_t __setArgument(const void *addr, size_t size, unsigned index)
-{
-    return ::__oclSetArgument(addr, size, index);
-}
 
-/*!
-    Configures the next call
-    \param workDim
-    \param globalWorkOffset
-    \param globalWorkSize
-    \param localWorkSize
-    \return Error code
-*/
-static inline error_t __configureCall(size_t workDim, size_t *globalWorkOffset,
-    size_t *globalWorkSize, size_t *localWorkSize)
-{
-    return ::__oclConfigureCall(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
-}
+class Kernel {
+private:
+    inline
+    static error_t getKernel(std::string name, ::OclKernel &kernel)
+    {
+        return ::__oclKernelGet(name.c_str(), &kernel);
+    }
 
-/**
- * Launches a kernel execution
- * \param k Handler of the kernel to be executed at the GPU
- */
-static inline error_t __launch(kernel_t k)
-{
-    return ::__oclLaunch(k);
-}
+    ::OclKernel kernel_;
+    bool initialized_;
+
+public:
+    inline
+    Kernel() :
+        initialized_(false)
+    {
+        kernel_.id_ = NULL;
+        kernel_.launch_ = NULL;
+    }
+
+    inline
+    Kernel(std::string name)
+    {
+        get(name);
+    }
+
+    inline
+    Kernel(const char *name)
+    {
+        get(name);
+    }
+
+    inline
+    ~Kernel()
+    {
+        if (initialized_) ::__oclKernelDestroy(&kernel_);
+    }
+
+    inline
+    error_t get(std::string name)
+    {
+        error_t ret = Kernel::getKernel(name, kernel_);
+        if (ret == gmacSuccess) initialized_ = true;
+
+        return ret;
+    }
+
+    inline
+    error_t get(const char *name)
+    {
+        gmacError_t ret = Kernel::getKernel(std::string(name), kernel_);
+
+        return ret;
+    }
+
+    inline
+    error_t setArg(const void *addr, size_t size, unsigned index)
+    {
+        return ::__oclKernelSetArg(&kernel_, addr, size, index);
+    }
+
+    template <typename T>
+    inline 
+    error_t setArg(const T *addr, unsigned index)
+    {
+        return ::__oclKernelSetArg(&kernel_, addr, sizeof(T), index);
+    }
+
+    /*!
+      Configures the next call
+      \param workDim
+      \param globalWorkOffset
+      \param globalWorkSize
+      \param localWorkSize
+      \return Error code
+     */
+    inline
+    error_t configure(size_t workDim, size_t *globalWorkOffset,
+            size_t *globalWorkSize, size_t *localWorkSize)
+    {
+        return ::__oclKernelConfigure(&kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    }
+
+    /**
+     * Launches a kernel execution
+     * \param k Handler of the kernel to be executed at the GPU
+     */
+    inline
+    error_t launch()
+    {
+        return ::__oclKernelLaunch(&kernel_);
+    }
+
+    inline
+    error_t wait()
+    {
+        return ::__oclKernelWait(&kernel_);
+    }
+};
 
 /**
  * Prepares the OpenCL code to be used by the applications 

@@ -61,7 +61,7 @@ GMAC_API void APICALL __cudaRegisterFunction(
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERTION(mod != NULL);
 	enterGmac();
-    KernelDescriptor k = __impl::core::KernelDescriptor(devName, (gmacKernel_t) hostFun);
+    KernelDescriptor k = __impl::core::KernelDescriptor(devName, (gmac_kernel_id_t) hostFun);
     mod->add(k);
 	exitGmac();
 }
@@ -119,9 +119,9 @@ GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, si
 	return cudaSuccess;
 }
 
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k);
 
-GMAC_API cudaError_t APICALL cudaLaunch(gmacKernel_t k)
+GMAC_API cudaError_t APICALL cudaLaunch(gmac_kernel_id_t k)
 {
 	gmacError_t ret = gmacLaunch(k);
     assert(ret == gmacSuccess);

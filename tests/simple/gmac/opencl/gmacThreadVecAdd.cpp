@@ -57,15 +57,22 @@ void *addVector(void *ptr)
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
+
+
+    OclKernel kernel;
+
+    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(oclPtr(*c));
-    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclSetArgument(&tmp, sizeof(cl_mem), 2) == gmacSuccess);
-    assert(__oclSetArgument(&vecSize, sizeof(vecSize), 3) == gmacSuccess);
-    assert(__oclLaunch("vecAdd") == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    //assert(__oclKernelWait(&kernel) == gmacSuccess);
     assert(oclThreadSynchronize() == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");

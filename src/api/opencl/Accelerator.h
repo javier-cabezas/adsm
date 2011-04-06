@@ -105,7 +105,7 @@ public:
     static void init();
 
     static void addAccelerator(Accelerator &acc);
-    Kernel *getKernel(gmacKernel_t k);
+    Kernel *getKernel(gmac_kernel_id_t k);
 
     static gmacError_t prepareEmbeddedCLCode();
 

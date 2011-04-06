@@ -48,11 +48,15 @@ int doTest(long *host, long *device, void *(*memcpy_fn)(void *, const void *, si
 	printf("Test full memcpy: ");
 	memcpy_fn(device, host, size * sizeof(long));
 
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    __oclSetArgument(&size, sizeof(size), 1);
-    __oclSetArgument(&val, sizeof(val), 2);
-    assert(__oclLaunch("reset") == gmacSuccess);
+    OclKernel kernel;
+
+    assert(__oclKernelGet("reset", &kernel) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
     assert(oclThreadSynchronize() == gmacSuccess);
 
     ret1 = check(device, 2 * size);

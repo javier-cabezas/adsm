@@ -134,7 +134,7 @@ public:
     */
     accptr_t hostMap(const hostptr_t addr);
 
-    core::KernelLaunch &launch(gmacKernel_t kernel);
+    gmacError_t launch(gmac_kernel_id_t id, core::KernelLaunch *&kernel);
 
     //! Execute a kernel on the accelerator
     /*!
@@ -142,6 +142,9 @@ public:
         \return Error code
     */
 	gmacError_t execute(core::KernelLaunch &launch);
+
+    gmacError_t wait(core::KernelLaunch &launch);
+    gmacError_t wait();
 
     core::IOBuffer &createIOBuffer(size_t size);
     void destroyIOBuffer(core::IOBuffer &buffer);

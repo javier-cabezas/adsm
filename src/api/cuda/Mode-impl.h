@@ -25,16 +25,18 @@ void Mode::switchOut()
 }
 
 inline
-core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
+gmacError_t
+Mode::launch(gmac_kernel_id_t id, core::KernelLaunch *&kernel)
 {
-    KernelMap::iterator i = kernels_.find(kernel);
-    ASSERTION(i != kernels_.end());
+    KernelMap::iterator i = kernels_.find(id);
+    if (i == kernels_.end()) return gmacErrorInvalidValue;
+
     Kernel * k = dynamic_cast<Kernel *>(i->second);
     switchIn();
-    KernelLaunch &l = getCUDAContext().launch(*k);
+    kernel = &(getCUDAContext().launch(*k));
     switchOut();
 
-    return l;
+    return gmacSuccess;
 }
 
 inline gmacError_t
@@ -48,6 +50,26 @@ Mode::execute(core::KernelLaunch & launch)
     }
     switchOut();
     return ret;
+}
+
+inline gmacError_t
+Mode::wait(core::KernelLaunch &launch)
+{
+    switchIn();
+    error_ = contextMap_.waitForCall(launch);
+    switchOut();
+
+    return error_;
+}
+
+inline gmacError_t
+Mode::wait()
+{
+    switchIn();
+    error_ = contextMap_.waitForCall();
+    switchOut();
+
+    return error_;
 }
 
 inline

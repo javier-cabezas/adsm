@@ -44,12 +44,18 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 }
 
 
-KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    core::KernelLaunch(),
+KernelLaunch::KernelLaunch(core::Mode &mode, const Kernel & k, const KernelConfig & c) :
+    core::KernelLaunch(mode),
     KernelConfig(c),
     kernel_(k),
     f_(k.f_)
 {
+}
+
+KernelLaunch::~KernelLaunch()
+{
+    cuEventDestroy(start_);
+    cuEventDestroy(end_);
 }
 
 gmacError_t
@@ -79,7 +85,20 @@ KernelLaunch::execute()
         goto exit;
 	}
 
+    if (cuEventCreate(&start_, CU_EVENT_DEFAULT) != CUDA_SUCCESS) {
+        goto exit;
+    }
+    if (cuEventCreate(&end_, CU_EVENT_DEFAULT) != CUDA_SUCCESS) {
+        goto exit;
+    }
+
+    if (cuEventRecord(start_, stream_) != CUDA_SUCCESS) goto exit;
+
 	ret = cuLaunchGridAsync(f_, grid().x, grid().y, stream_);
+
+    if (ret != CUDA_SUCCESS) goto exit;
+
+    cuEventRecord(end_, stream_);
 
 exit:
     return Accelerator::error(ret);

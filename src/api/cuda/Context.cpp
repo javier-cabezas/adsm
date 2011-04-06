@@ -156,7 +156,7 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
 KernelLaunch &Context::launch(Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    KernelLaunch *ret = kernel.launch(call_);
+    KernelLaunch *ret = kernel.launch(mode_, call_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;
@@ -176,6 +176,17 @@ gmacError_t Context::waitForCall()
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
     ret = syncCUstream(streamLaunch_);
+    trace::SetThreadState(THREAD_T(id_), trace::Idle);    
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Context::waitForCall(core::KernelLaunch &_launch)
+{
+    KernelLaunch &launch = dynamic_cast<KernelLaunch &>(_launch);
+    gmacError_t ret = gmacSuccess;
+    trace::EnterCurrentFunction();	
+    ret = accelerator().syncCUevent(launch.getCUevent());
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
     trace::ExitCurrentFunction();
     return ret;

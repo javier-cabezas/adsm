@@ -124,12 +124,18 @@ public:
     virtual gmacError_t prepareForCall() = 0;
 
     /**
-     * Waits for kernel execution on the accelerator
+     * Waits for all kernels ot execute on the accelerator
      *
      * \return Error code returned by the kernel
      */
     virtual gmacError_t waitForCall() = 0;
 
+    /**
+     * Waits for kernel execution on the accelerator
+     *
+     * \return Error code returned by the kernel
+     */
+    virtual gmacError_t waitForCall(core::KernelLaunch &launch) = 0;
 };
 
 }}

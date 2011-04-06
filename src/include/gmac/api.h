@@ -224,7 +224,7 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
  * 
  * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
  */
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k);
 
 
 
