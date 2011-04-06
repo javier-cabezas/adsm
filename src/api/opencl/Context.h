@@ -73,8 +73,6 @@ protected:
 
     IOBuffer *buffer_;
 
-    KernelConfig call_;
-
     void setupCLstreams();
     void cleanCLstreams();
     gmacError_t syncCLstream(cl_command_queue stream);
@@ -92,13 +90,11 @@ public:
     KernelLaunch &launch(Kernel &kernel);
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
+    gmacError_t waitForCall(core::KernelLaunch &launch);
 
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
     gmacError_t waitAccelerator();
-
-    gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
-	gmacError_t argument(const void *arg, size_t size, unsigned index);
 
     const cl_command_queue eventStream() const;
 

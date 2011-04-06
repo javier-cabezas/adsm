@@ -68,7 +68,7 @@ public:
     void insert(core::Kernel *);
 };
 
-//! A Mode represents a virtual CUDA accelerator on an execution thread
+//! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::Mode {
     DBC_FORCE_TEST(Mode)
 
@@ -125,7 +125,7 @@ public:
      */
     accptr_t hostMapAddr(const hostptr_t addr);
 
-    core::KernelLaunch &launch(gmacKernel_t kernel);
+    gmacError_t launch(gmac_kernel_id_t kernel, core::KernelLaunch *&launch);
 
     //! Execute a kernel on the accelerator
     /*!
@@ -133,6 +133,19 @@ public:
         \return Error code
     */
 	gmacError_t execute(core::KernelLaunch &launch);
+
+    /**
+     * Waits for kernel execution
+     * \param launch Reference to a KernelLaunch object
+     * \return Error code
+     */
+    gmacError_t wait(core::KernelLaunch &launch);
+
+    /**
+     * Waits for all kernels execution
+     * \return Error code
+     */
+    gmacError_t wait();
 
     //! Create an IO buffer to sent / receive data from the accelerator
     /*!
@@ -194,8 +207,10 @@ public:
      */
     Accelerator &getAccelerator() const;
 
+#if 0
     gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
 	gmacError_t argument(const void *arg, size_t size, unsigned index);
+#endif
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };

@@ -259,7 +259,7 @@ Accelerator::addAccelerator(Accelerator &acc)
 }
 
 Kernel *
-Accelerator::getKernel(gmacKernel_t k)
+Accelerator::getKernel(gmac_kernel_id_t k)
 {
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     ASSERTION(programs.size() > 0);
@@ -452,7 +452,7 @@ cl_int Accelerator::queryCLevent(cl_event event)
 gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Accelerator waiting for all pending events");
+    TRACE(LOCAL, "Accelerator waiting for event");
     cl_int ret = clWaitForEvents(1, &event);
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();

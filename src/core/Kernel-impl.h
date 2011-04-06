@@ -1,6 +1,8 @@
 #ifndef GMAC_CORE_KERNEL_IMPL_H_
 #define GMAC_CORE_KERNEL_IMPL_H_
 
+#include "Mode.h"
+
 namespace __impl { namespace core {
 
 inline
@@ -10,14 +12,16 @@ Kernel::Kernel(const KernelDescriptor & k) :
 }
 
 inline
-Kernel::~Kernel()
+KernelLaunch::KernelLaunch(__impl::core::Mode &mode) :
+    mode_(mode)
 {
 }
 
-
 inline
-KernelLaunch::~KernelLaunch()
+Mode &
+KernelLaunch::getMode()
 {
+    return mode_;
 }
 
 }}

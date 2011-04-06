@@ -46,51 +46,6 @@ static long getpagesize (void) {
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
 
-#if 0
-gmacError_t
-gmacClear(gmacKernel_t k)
-{
-    gmacError_t ret = gmacSuccess;
-    gmac::enterGmac();
-    enterFunction(FuncGmacClear);
-    gmac::Kernel *kernel = core::Mode::getCurrent()->kernel(k);
-    if (kernel == NULL) ret = gmacErrorInvalidValue;
-    else kernel->clear();
-    exitFunction();
-    gmac::exitGmac();
-    return ret;
-}
-
-gmacError_t
-gmacBind(void * obj, gmacKernel_t k)
-{
-    gmacError_t ret = gmacSuccess;
-    gmac::enterGmac();
-    enterFunction(FuncGmacBind);
-    gmac::Kernel *kernel = core::Mode::getCurrent()->kernel(k);
-
-    if (kernel == NULL) ret = gmacErrorInvalidValue;
-    else ret = kernel->bind(obj);
-    exitFunction();
-    gmac::exitGmac();
-    return ret;
-}
-
-gmacError_t
-gmacUnbind(void * obj, gmacKernel_t k)
-{
-    gmacError_t ret = gmacSuccess;
-    gmac::enterGmac();
-    enterFunction(FuncGmacUnbind);
-    gmac::Kernel  * kernel = core::Mode::getCurrent()->kernel(k);
-    if (kernel == NULL) ret = gmacErrorInvalidValue;
-    else ret = kernel->unbind(obj);
-	exitFunction();
-	gmac::exitGmac();
-    return ret;
-}
-#endif
-
 unsigned APICALL gmacGetNumberOfAccelerators()
 {
     unsigned ret;
@@ -243,32 +198,59 @@ __gmac_accptr_t APICALL gmacPtr(const void *ptr)
     return ret.get();
 }
 
-gmacError_t APICALL gmacLaunch(gmacKernel_t k)
+gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::KernelLaunch &launch)
 {
-    gmac::enterGmac();
-    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    gmac::trace::EnterCurrentFunction();
-    __impl::core::KernelLaunch &launch = mode.launch(k);
-
     gmacError_t ret = gmacSuccess;
+    __impl::core::Mode &mode = launch.getMode();
+    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    CFATAL(manager.releaseObjects() == gmacSuccess, "Error releasing objects");
+    ret = manager.releaseObjects();
+    CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
 
     if (ParamAutoSync == true) {
         TRACE(GLOBAL, "Waiting for Kernel to complete");
+        mode.wait(launch);
+        TRACE(GLOBAL, "Memory Sync");
         ret = manager.acquireObjects();
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
-    delete &launch;
+    return ret;
+}
+
+gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
+{
+    gmac::enterGmac();
+    gmac::trace::EnterCurrentFunction();
+    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+    __impl::core::KernelLaunch *launch;
+    gmacError_t ret = mode.launch(k, launch);
+
+    if (ret == gmacSuccess) {
+        ret = gmacLaunch(*launch); 
+        delete launch;
+    }
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
 
     return ret;
+}
+
+gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::KernelLaunch &launch)
+{
+	gmacError_t ret = gmacSuccess;
+    if (ParamAutoSync == false) {
+        //__impl::core::Mode &mode = launch.getMode();
+        __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+        mode.wait(launch);
+        TRACE(GLOBAL, "Memory Sync");
+        gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+        ret = manager.acquireObjects();
+    }
+	return ret;
 }
 
 gmacError_t APICALL gmacThreadSynchronize()
@@ -278,6 +260,8 @@ gmacError_t APICALL gmacThreadSynchronize()
 
 	gmacError_t ret = gmacSuccess;
     if (ParamAutoSync == false) {
+        __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+        mode.wait();
         TRACE(GLOBAL, "Memory Sync");
         gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
         ret = manager.acquireObjects();

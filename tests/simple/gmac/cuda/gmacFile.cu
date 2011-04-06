@@ -121,6 +121,7 @@ void *doTest(void *)
     for(unsigned i = 0; i < vecSize; i++) {
         error_compute += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
     }
+    fprintf(stderr,"Error: %f\n", error_compute);
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 

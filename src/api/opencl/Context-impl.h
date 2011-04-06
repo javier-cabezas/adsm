@@ -6,6 +6,7 @@
 
 namespace __impl { namespace opencl {
 
+#if 0
 inline gmacError_t
 Context::call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize)
 {
@@ -25,6 +26,7 @@ Context::argument(const void *arg, size_t size, unsigned index)
     // TODO: perform some checking
     return gmacSuccess;
 }
+#endif
 
 inline const cl_command_queue
 Context::eventStream() const

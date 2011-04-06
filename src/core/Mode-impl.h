@@ -67,6 +67,18 @@ inline gmacError_t ContextMap::waitForCall()
     return ret;
 }
 
+inline gmacError_t ContextMap::waitForCall(core::KernelLaunch &launch)
+{
+    Parent::iterator i;
+    gmacError_t ret = gmacSuccess;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        ret = i->second->waitForCall(launch);
+        if(ret != gmacSuccess) break;
+    }
+    unlock();
+    return ret;
+}
 
 inline gmacError_t Mode::cleanUp()
 {
@@ -188,7 +200,6 @@ Mode::acquireObjects()
 {
     switchIn();
     releasedObjects_ = false;
-    error_ = contextMap_.waitForCall();
     switchOut();
     return error_;
 }
