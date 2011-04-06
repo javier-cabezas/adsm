@@ -2,7 +2,8 @@
 #define GMAC_API_OPENCL_KERNEL_IMPL_H_
 
 #include "util/Logger.h"
-#include "gmac/init.h"
+
+#include "hpe/init.h"
 
 namespace __impl { namespace opencl { namespace hpe {
 

@@ -1,8 +1,9 @@
 #include "config/order.h"
 
-#include "gmac/init.h"
 #include "core/hpe/Process.h"
 #include "api/opencl/hpe/Accelerator.h"
+
+#include "hpe/init.h"
 
 namespace __impl { namespace core {
 

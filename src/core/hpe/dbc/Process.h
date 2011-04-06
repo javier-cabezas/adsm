@@ -45,7 +45,7 @@ class GMAC_LOCAL Process :
     DBC_TESTED(__impl::core::hpe::Process)
     
     // Needed to let Singleton call the protected constructor
-    friend class __impl::util::Singleton<Process>;
+    friend class __impl::util::Singleton<__impl::core::Process>;
 protected:
     Process();
 public:

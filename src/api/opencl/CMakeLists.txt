@@ -1,7 +1,6 @@
 add_subdirectory(dbc)
 
 add_subdirectory(hpe)
-add_subdirectory(gmac)
 add_subdirectory(memory)
 
 set(api_lib_SRC

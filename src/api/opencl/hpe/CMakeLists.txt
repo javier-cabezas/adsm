@@ -1,7 +1,7 @@
 add_subdirectory(dbc)
 
 set(api_lib_SRC
-    opencl.cpp)
+    gmac.cpp opencl.cpp)
 
 set(api_SRC
     Accelerator.h Accelerator-impl.h Accelerator.cpp

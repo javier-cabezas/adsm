@@ -7,12 +7,16 @@
 #include "os/windows/loader.h"
 #endif
 
-#include "gmac/init.h"
+#include "hpe/init.h"
+
 #include "memory/Manager.h"
+
 #include "core/IOBuffer.h"
-#include "core/Process.h"
-#include "core/Mode.h"
+#include "core/hpe/Process.h"
+#include "core/hpe/Mode.h"
+
 #include "trace/Tracer.h"
+
 #include "util/Logger.h"
 
 #include "stdc.h"
@@ -38,7 +42,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
     gmac::enterGmac();
-    Process &proc = Process::getInstance();
+    Process &proc = Process::getInstance<Process>();
     Mode *dstMode = proc.owner(hostptr_t(buf), size);
 
     if(dstMode == NULL) {
@@ -53,7 +57,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = gmac::core::hpe::Mode::getCurrent();
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -72,7 +76,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t elems = __libc_fread(active->addr(), size, bytes/size, stream);
         ASSERTION(elems * size == bytes);
 		ret += elems;
-        err = manager.fromIOBuffer((uint8_t *)buf + off, *active, 0, size * elems);
+        err = manager.fromIOBuffer(mode, (uint8_t *)buf + off, *active, 0, size * elems);
         ASSERTION(err == gmacSuccess);
 
         left -= size * elems;
@@ -120,7 +124,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = gmac::core::hpe::Mode::getCurrent();
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -134,7 +138,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
 
     size_t bytesActive = left < active->size()? left : active->size();
-    err = manager.toIOBuffer(*active, 0, hostptr_t(buf) + off, bytesActive);
+    err = manager.toIOBuffer(mode, *active, 0, hostptr_t(buf) + off, bytesActive);
     ASSERTION(err == gmacSuccess);
     size_t bytesPassive = 0;
 
@@ -144,7 +148,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
         if (left > 0) {
             bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(*passive, 0, hostptr_t(buf) + off, bytesPassive);
+            err = manager.toIOBuffer(gmac::core::hpe::Mode::getCurrent(), *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
         err = active->wait();

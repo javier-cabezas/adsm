@@ -5,7 +5,8 @@
 #include "api/opencl/Tracer.h"
 
 #include "core/Process.h"
-#include "gmac/init.h"
+
+#include "hpe/init.h"
 
 #ifndef _MSC_VER
 // Symbols needed for automatic compilation of embedded code
