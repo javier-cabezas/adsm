@@ -1,7 +1,9 @@
-#include "core/Process.h"
+#include "core/hpe/Process.h"
+
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
+
 #include "trace/Tracer.h"
 
 #include "init.h"
@@ -54,7 +56,7 @@ void CONSTRUCTOR init(void)
     TRACE(GLOBAL, "Using %s memory allocator", util::params::ParamAllocator);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    gmac::core::Process::create<gmac::core::Process>();
+    __impl::core::Process::create<gmac::core::hpe::Process>();
     core::apiInit();
 
     exitGmac();

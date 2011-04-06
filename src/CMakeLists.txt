@@ -12,7 +12,7 @@ add_subdirectory(memory)
 add_subdirectory(os)
 add_subdirectory(api)
 
-add_subdirectory(gmac)
+add_subdirectory(hpe)
 
 add_gmac_sources(gmac)
 add_gmac_sources(gmac-lib)

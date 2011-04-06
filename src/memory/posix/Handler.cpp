@@ -1,7 +1,6 @@
 #include <csignal>
 #include <cerrno>
 
-#include "gmac/init.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "trace/Tracer.h"

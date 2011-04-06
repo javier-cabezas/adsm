@@ -6,7 +6,6 @@
 
 #include "core/allocator/Buddy.h"
 
-#include "gmac/init.h"
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/DistributedObject.h"

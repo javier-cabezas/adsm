@@ -5,7 +5,7 @@
 #include "api/opencl/hpe/Mode.h"
 
 #if defined(GMAC_DLL)
-#include "gmac/init.h"
+#include "hpe/init.h"
 #endif
 
 using __impl::opencl::hpe::Accelerator;

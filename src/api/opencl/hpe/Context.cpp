@@ -3,8 +3,8 @@
 #include "api/opencl/hpe/Context.h"
 #include "api/opencl/hpe/Mode.h"
 
-#include "gmac/init.h"
 #include "memory/Manager.h"
+
 #include "trace/Tracer.h"
 
 namespace __impl { namespace opencl { namespace hpe {

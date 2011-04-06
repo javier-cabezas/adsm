@@ -1,12 +1,16 @@
 #include "config/common.h"
-#include "core/Process.h"
-#include "core/Context.h"
-#include "gmac/init.h"
+#include "config/order.h"
+
+#include "core/hpe/Process.h"
+
+#include "hpe/init.h"
+
 #include "os/posix/loader.h"
+
 #include "trace/Tracer.h"
+
 #include "util/Lock.h"
 
-#include "config/order.h"
 
 #include <pthread.h>
 
@@ -36,7 +40,7 @@ static void *gmac_pthread(void *arg)
 	gmac::enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     bool do_exit = gthread->__do_exit;
-    Process &proc = Process::getInstance();
+    gmac::core::hpe::Process &proc = Process::getInstance<gmac::core::hpe::Process>();
     proc.initThread();
     gmac::trace::SetThreadState(gmac::trace::Running);
 	if(do_exit) gmac::exitGmac();
