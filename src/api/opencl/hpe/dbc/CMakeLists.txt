@@ -1,4 +1,5 @@
 set(opencl_test_SRC
+    Accelerator.h Accelerator.cpp
     Mode.h Mode.cpp
 )
 

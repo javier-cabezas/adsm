@@ -4,7 +4,7 @@ add_subdirectory(allocator)
 add_subdirectory(hpe)
 
 set(core_SRC
-    Process.h Mode.h
+    Process.h Process.cpp Mode.h
     IOBuffer.h IOBuffer-impl.h)
 
 add_gmac_sources(gmac ${core_SRC})

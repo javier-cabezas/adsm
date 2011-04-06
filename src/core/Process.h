@@ -94,7 +94,7 @@ public:
      * \param acc Identifier of the destination accelerator
      * \return Error code
      */
-    virtual gmacError_t migrate(Mode &mode, int acc);
+    virtual gmacError_t migrate(Mode &mode, int acc) = 0;
 
 
     /**
@@ -109,7 +109,7 @@ public:
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    void insertOrphan(memory::Object &obj);
+    virtual void insertOrphan(memory::Object &obj) = 0;
 
     /**
      * Returns the owner of the object with the smallest address within the

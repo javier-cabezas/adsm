@@ -1,7 +1,6 @@
 #ifdef USE_DBC
 
 #include "core/hpe/Accelerator.h"
-#include "core/Mode.h"
 
 namespace __dbc { namespace core  { namespace hpe {
     
@@ -13,14 +12,14 @@ Accelerator::~Accelerator()
 {
 }
 
-void Accelerator::registerMode(__impl::core::Mode& mode)
+void Accelerator::registerMode(__impl::core::hpe::Mode &mode)
 {
    REQUIRES(&mode != NULL);
   //gmacError_t ret;
     __impl::core::hpe::Accelerator::registerMode(mode);
 }
 
-void Accelerator::unregisterMode(__impl::core::Mode& mode)
+void Accelerator::unregisterMode(__impl::core::hpe::Mode &mode)
 {
    REQUIRES(&mode != NULL);       
   // gmacError_t ret; 
