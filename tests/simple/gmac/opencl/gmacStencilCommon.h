@@ -258,12 +258,9 @@ do_stencil(void * ptr)
         oclError_t ret;
         ret = __oclKernelLaunch(&kernel);
         assert(ret == gmacSuccess);
-        //assert(oclThreadSynchronize() == gmacSuccess);
-
-        //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
-            assert(oclThreadSynchronize() == gmacSuccess);
+            assert(__oclKernelWait(&kernel) == gmacSuccess);
             barrier_wait(&barrier);
 
             // Send data

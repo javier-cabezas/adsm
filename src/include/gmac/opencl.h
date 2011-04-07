@@ -109,14 +109,21 @@ GMAC_API oclError_t APICALL __oclKernelWait(OclKernel *kernel);
 GMAC_API oclError_t APICALL __oclKernelDestroy(OclKernel *kernel);
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the application
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
 GMAC_API oclError_t APICALL __oclPrepareCLCode(const char *code, const char *flags = NULL);
 
 /**
- * Prepares the OpenCL binary to be used by the applications 
+ * Prepares the OpenCL code in the specified fie to be used by the application
+ * \param path String pointing to the file with the code to be added
+ * \param flags Compilation flags or NULL
+ */
+GMAC_API oclError_t APICALL __oclPrepareCLCodeFile(const char *path, const char *flags = NULL);
+
+/**
+ * Prepares the OpenCL binary to be used by the application
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
