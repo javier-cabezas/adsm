@@ -109,11 +109,11 @@ void *doTest(void *)
         float val = float(i);
         assert(__oclKernelSetArg(&kernelSet, &val, sizeof(val), 2) == gmacSuccess);
         assert(__oclKernelLaunch(&kernelSet) == gmacSuccess);
-        assert(oclThreadSynchronize() == gmacSuccess);
+        assert(__oclKernelWait(&kernelSet) == gmacSuccess);
 
         barrier_wait(&ioAfter);
         assert(__oclKernelLaunch(&kernelMove) == gmacSuccess);
-        assert(oclThreadSynchronize() == gmacSuccess);
+        assert(__oclKernelWait(&kernelMove) == gmacSuccess);
         barrier_wait(&ioBefore);
     }
 
@@ -134,8 +134,7 @@ void *doTest(void *)
         barrier_wait(&ioAfter);
 
         assert(__oclKernelLaunch(&kernelAccum) == gmacSuccess);
-        //assert(__oclKernelWait(&kernelAccum) == gmacSuccess);
-        assert(oclThreadSynchronize() == gmacSuccess);
+        assert(__oclKernelWait(&kernelAccum) == gmacSuccess);
     }
 
 

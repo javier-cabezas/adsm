@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "config/common.h"
 #include "include/gmac/opencl.h"
 
@@ -66,6 +68,27 @@ GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *fl
     gmac::enterGmac();
     gmacError_t ret = Accelerator::prepareCLCode(code, flags);
     gmac::exitGmac();
+
+    return ret;
+}
+
+GMAC_API gmacError_t APICALL __oclPrepareCLCodeFile(const char *path, const char *flags)
+{
+    std::ifstream in(path, std::ios_base::in);
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == 0) return gmacSuccess;
+    // Allocate memory for the code
+    char *buffer = new char[int(length)+1];
+    // Read data as a block
+    in.read(buffer,length);
+    buffer[length] = '\0';
+    in.close();
+    gmacError_t ret = __oclPrepareCLCode(buffer, flags);
+    in.close();
+    delete [] buffer;
 
     return ret;
 }

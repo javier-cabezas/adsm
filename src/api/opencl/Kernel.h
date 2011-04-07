@@ -107,7 +107,7 @@ class GMAC_LOCAL KernelLaunch : public core::KernelLaunch, public KernelConfig, 
 protected:
     cl_kernel f_;
     cl_command_queue stream_;
-    cl_event event_;
+    cl_event lastEvent_;
 
     KernelLaunch(core::Mode &mode, const Kernel &k, cl_command_queue stream);
 public:

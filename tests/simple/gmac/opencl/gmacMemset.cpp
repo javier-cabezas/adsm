@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == gmacSuccess);
     assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     memset(ptr, 0, size * sizeof(long));
 
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 

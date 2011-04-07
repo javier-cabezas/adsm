@@ -68,16 +68,13 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    ocl::Kernel kernel;
+    ocl::KernelLaunch kernel;
     assert(kernel.get("vecAdd") == gmacSuccess);
     assert(kernel.configure(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(ocl::ptr(c));
-    assert(kernel.setArg(&tmp, 0) == gmacSuccess);
-    tmp = cl_mem(ocl::ptr(a));
-    assert(kernel.setArg(&tmp, 1) == gmacSuccess);
-    tmp = cl_mem(ocl::ptr(b));
-    assert(kernel.setArg(&tmp, 2) == gmacSuccess);
-    assert(kernel.setArg(&vecSize, 3) == gmacSuccess);
+    assert(kernel.setArg(c, 0) == gmacSuccess);
+    assert(kernel.setArg(a, 1) == gmacSuccess);
+    assert(kernel.setArg(b, 2) == gmacSuccess);
+    assert(kernel.setArg(vecSize, 3) == gmacSuccess);
     assert(kernel.launch() == gmacSuccess);
     assert(kernel.wait() == gmacSuccess);
 

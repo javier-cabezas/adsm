@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
     assert(__oclKernelSetArg(&kernel, &vecSize, 8, 1) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
