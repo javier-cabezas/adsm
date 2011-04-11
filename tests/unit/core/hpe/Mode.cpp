@@ -1,22 +1,28 @@
 #include "unit/init.h"
-#include "unit/core/Mode.h"
+#include "unit/core/hpe/Mode.h"
 
-#include "core/Process.h"
-#include "core/Mode.h"
+#include "core/hpe/Process.h"
+#include "core/hpe/Mode.h"
 
 #include "gtest/gtest.h"
 
-using __impl::core::Mode;
-using __impl::core::Process;
+using __impl::core::hpe::Mode;
+using gmac::core::hpe::Process;
 
 Mode *ModeTest::Mode_ = NULL;
 
 void ModeTest::SetUpTestCase() {
     InitProcess();
     if(Mode_ != NULL) return;
-    Mode_ = dynamic_cast<Mode *>(Process::getInstance().createMode(0));
+    Mode_ = dynamic_cast<Mode *>(Process::getInstance<Process &>().createMode(0));
     ASSERT_TRUE(Mode_ != NULL);
     Mode_->initThread();
+}
+
+void ModeTest::TearDownTestCase() {
+    Mode_->detach();
+    FiniProcess();
+    Mode_ = NULL;
 }
 
 

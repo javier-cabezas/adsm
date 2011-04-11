@@ -1,9 +1,6 @@
 #include "Context.h"
-#include "core/Context.h"
-#include "core/Accelerator.h"
-
-
-
+#include "core/hpe/Context.h"
+#include "core/hpe/Accelerator.h"
 
 
 TEST_F(ContextTest,ContextMemory){

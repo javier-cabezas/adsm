@@ -13,8 +13,6 @@ using __impl::core::Process;
 class IOBufferTest : public testing::Test {
 public:
     static IOBuffer *Buffer_;
-    static Mode *Mode_;
-
     const static size_t Size_ = 4 * 1024 * 1024;
 
     static void SetUpTestCase() {
@@ -28,14 +26,15 @@ public:
 };
 
 IOBuffer *IOBufferTest::Buffer_ = NULL;
-Mode *IOBufferTest::Mode_ = NULL;
 
 TEST_F(IOBufferTest, Creation) {
+#if 0
     Mode &current = Mode::getCurrent();
     Mode_ = &current;
     ASSERT_TRUE(Mode_ != NULL);
+#endif
 
-    Buffer_ = &current.createIOBuffer(Size_);
+    Buffer_ = &GetMode().createIOBuffer(Size_);
     ASSERT_TRUE(Buffer_ != NULL);
     ASSERT_TRUE(Buffer_->size() >= Size_);
 }

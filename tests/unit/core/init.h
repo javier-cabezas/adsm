@@ -31,38 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef TEST_UNIT_INIT_H_
-#define TEST_UNIT_INIT_H_
-
-#include "util/Atomics.h"
-#include "trace/Tracer.h"
+#ifndef TEST_UNIT_CORE_INIT_H_
+#define TEST_UNIT_CORE_INIT_H_
 
 namespace __impl {
-class GMACLock;
-
-extern GMACLock * _inGmacLock;
-extern const char _gmacCode;
-extern const char _userCode;
-extern Atomic _gmacInit;
-
-    namespace util { template<typename T> class Private; }
+    namespace core { class Mode; }
 }
 
-namespace __dbc {
-}
+extern __impl::core::Mode *Mode_;
 
-#if defined(USE_DBC)
-namespace gmac = __dbc;
-#else
-namespace gmac = __impl;
-#endif
+void InitProcess();
+void FiniProcess();
 
-extern __impl::util::Private<const char> _inGmac;
+void InitMode();
+__impl::core::Mode &GetMode();
+void FiniMode();
 
-void InitGmac();
-void InitTrace();
-void FiniTrace();
+void InitModel();
+void FiniModel();
 
-#include "core/init.h"
+#include "hpe/init.h"
 
 #endif

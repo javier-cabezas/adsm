@@ -31,27 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef TEST_UNIT_CORE_MODE_H_
-#define TEST_UNIT_CORE_MODE_H_
+#ifndef TEST_UNIT_CORE_HPE_INIT_H_
+#define TEST_UNIT_CORE_HPE_INIT_H_
 
 #include "unit/init.h"
-#include "gtest/gtest.h"
 
-#include "core/Mode.h"
+namespace __impl { namespace core { namespace hpe {
+        class Accelerator; 
+        class Context;
+} } }
 
-class ModeTest : public testing::Test {
-public:
-	static __impl::core::Mode *Mode_;
+namespace __dbc { namespace core { namespace hpe {
+        class Context;
+} } }
 
-    const static size_t Size_ = 4 * 1024 * 1024;
+extern __impl::core::hpe::Accelerator *Accelerator_;
+extern gmac::core::hpe::Context *Context_;
 
-    static void SetUpTestCase();
+void InitAccelerator();
+__impl::core::hpe::Accelerator &GetAccelerator();
+void FiniAccelerator();
 
-    static void TearDownTestCase() {
-		Mode_->detach();
-        FiniProcess();
-        Mode_ = NULL;
-    }
-};
+void InitContext(); 
+gmac::core::hpe::Context &GetContext();
+void FiniContext();
+
 
 #endif
