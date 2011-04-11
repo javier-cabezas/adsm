@@ -13,7 +13,7 @@ class QueueTest:public testing::Test{
 
   public:
      static gmac::core::hpe::Mode *Mode_;
-     // const static size_t Size_= 4* 1024*1024; 
+
      static void SetUpTestCase();
      static void TearDownTestCase()
      {

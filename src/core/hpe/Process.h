@@ -143,7 +143,7 @@ public:
      * ACC_AUTO_BIND to let the run-time choose
      * \return A pointer to the newly created mode or NULL if there has been an error
      */
-     TESTABLE Mode * createMode(int acc = ACC_AUTO_BIND); 
+     TESTABLE Mode *createMode(int acc = ACC_AUTO_BIND); 
 
     /**
      * Removes a mode from the process
