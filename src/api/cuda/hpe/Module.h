@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_API_CUDA_MODULE_H_
-#define GMAC_API_CUDA_MODULE_H_
+#ifndef GMAC_API_CUDA_HPE_MODULE_H_
+#define GMAC_API_CUDA_HPE_MODULE_H_
 
 #include "config/common.h"
 #include "config/config.h"
@@ -48,14 +48,14 @@ WITH THE SOFTWARE.  */
 #include <driver_types.h>
 #include <texture_types.h>
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 typedef const char *gmacVariable_t;
 typedef const struct textureReference * gmacTexture_t;
 
-typedef core::Descriptor<gmacTexture_t> TextureDescriptor;
+typedef core::hpe::Descriptor<gmacTexture_t> TextureDescriptor;
 
-class GMAC_LOCAL VariableDescriptor : public core::Descriptor<gmacVariable_t> {
+class GMAC_LOCAL VariableDescriptor : public core::hpe::Descriptor<gmacVariable_t> {
 protected:
     bool constant_;
 
@@ -64,7 +64,7 @@ public:
     bool constant() const;
 };
 
-class GMAC_LOCAL Variable : public cuda::VariableDescriptor {
+class GMAC_LOCAL Variable : public cuda::hpe::VariableDescriptor {
 	CUdeviceptr ptr_;
     size_t size_;
 public:
@@ -73,7 +73,7 @@ public:
     CUdeviceptr devPtr() const;
 };
 
-class GMAC_LOCAL Texture : public cuda::TextureDescriptor {
+class GMAC_LOCAL Texture : public cuda::hpe::TextureDescriptor {
 protected:
     CUtexref texRef_;
 
@@ -94,7 +94,7 @@ protected:
     static ModuleDescriptorVector Modules_;
 	const void * fatBin_;
 
-    typedef std::vector<core::KernelDescriptor> KernelVector;
+    typedef std::vector<core::hpe::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
 	typedef std::vector<TextureDescriptor>      TextureVector;
 
@@ -107,7 +107,7 @@ public:
     ModuleDescriptor(const void * fatBin);
     ~ModuleDescriptor();
 
-    void add(core::KernelDescriptor & k);
+    void add(core::hpe::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
     void add(TextureDescriptor      & t);
 
@@ -147,7 +147,7 @@ public:
     const Texture  *texture(gmacTexture_t   key) const;
 };
 
-}}
+}}}
 
 #include "Module-impl.h"
 

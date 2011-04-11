@@ -1,11 +1,11 @@
-#include <gmac/init.h>
+#include "hpe/init.h"
 
 #include "memory/Manager.h"
-#include "core/Process.h"
+#include "core/hpe/Process.h"
 
-#include "Accelerator.h"
-#include "Mode.h"
-#include "Module.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
+#include "api/cuda/hpe/Module.h"
 
 #include <cuda.h>
 #define __stdcall GMAC_API __stdcall
@@ -15,11 +15,11 @@
 #include <string>
 #include <list>
 
-using __impl::core::Process;
-using __impl::cuda::Mode;
-using __impl::cuda::Switch;
-using __impl::cuda::Texture;
-using __impl::cuda::Variable;
+using __impl::core::hpe::Process;
+using __impl::cuda::hpe::Mode;
+using __impl::cuda::hpe::Switch;
+using __impl::cuda::hpe::Texture;
+using __impl::cuda::hpe::Variable;
 using __impl::enterGmac;
 using __impl::exitGmac;
 
@@ -305,7 +305,7 @@ extern "C" {
 
 GMAC_API cudaError_t APICALL cudaGetDeviceProperties(struct cudaDeviceProp *prop, int devNum)
 {
-    if (devNum < 0 || unsigned(devNum) >= Process::getInstance().nAccelerators())
+    if (devNum < 0 || unsigned(devNum) >= Process::getInstance<Process &>().nAccelerators())
         return cudaErrorInvalidDevice;
 
     CUdevice device;
@@ -477,7 +477,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	ASSERTION(kind == cudaMemcpyHostToDevice);
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Process &proc = Process::getInstance();
+    Process &proc = Process::getInstance<Process &>();
     __impl::cuda::Mode *mode = dynamic_cast<__impl::cuda::Mode *>(proc.owner(hostptr_t(src)));
     if(mode == NULL) {
 #if CUDA_VERSION >= 3020

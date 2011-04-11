@@ -1,12 +1,11 @@
-#ifndef GMAC_API_CUDA_MODE_IMPL_H_
-#define GMAC_API_CUDA_MODE_IMPL_H_
+#ifndef GMAC_API_CUDA_HPE_MODE_IMPL_H_
+#define GMAC_API_CUDA_HPE_MODE_IMPL_H_
 
-#include "core/Process.h"
 #include "core/IOBuffer.h"
 
 #include "Context.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 inline
 void Mode::switchIn()
@@ -25,7 +24,7 @@ void Mode::switchOut()
 }
 
 inline
-core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
+core::hpe::KernelLaunch &Mode::launch(gmacKernel_t kernel)
 {
     KernelMap::iterator i = kernels_.find(kernel);
     ASSERTION(i != kernels_.end());
@@ -38,7 +37,7 @@ core::KernelLaunch &Mode::launch(gmacKernel_t kernel)
 }
 
 inline gmacError_t
-Mode::execute(core::KernelLaunch & launch)
+Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = getContext().prepareForCall();
@@ -96,7 +95,7 @@ gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
 inline Mode &
 Mode::getCurrent()
 {
-    return static_cast<Mode &>(core::Mode::getCurrent());
+    return static_cast<Mode &>(core::hpe::Mode::getCurrent());
 }
 
 inline Accelerator &
@@ -113,6 +112,6 @@ Mode::eventTime(uint64_t &t, CUevent start, CUevent end)
     return ret;
 }
 
-}}
+}}}
 
 #endif

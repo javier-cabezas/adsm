@@ -31,84 +31,98 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_API_CUDA_CONTEXT_H_
-#define GMAC_API_CUDA_CONTEXT_H_
+#ifndef GMAC_API_CUDA_HPE_KERNEL_H_
+#define GMAC_API_CUDA_HPE_KERNEL_H_
 
 #include <cuda.h>
+#include <driver_types.h>
 #include <vector_types.h>
 
-#include <map>
-#include <vector>
-
 #include "config/common.h"
-#include "config/config.h"
+#include "core/hpe/Kernel.h"
+#include "util/NonCopyable.h"
 
-#include "core/Context.h"
-#include "util/Lock.h"
+namespace __impl { namespace cuda { namespace hpe {
 
-#include "Kernel.h"
+class Mode;
 
-namespace __impl {
+class KernelConfig;
+class KernelLaunch;
 
-namespace core {
-class IOBuffer;
-}
-
-namespace cuda {
-
-class Accelerator;
-class IOBuffer;
-
-class GMAC_LOCAL Context : public gmac::core::Context {
-protected:
-    static void * FatBin_;
-	static const unsigned USleepLaunch_ = 100;
-
-	typedef std::map<void *, void *> AddressMap;
-	static AddressMap HostMem_;
-
-    CUstream streamLaunch_;
-    CUstream streamToAccelerator_;
-    CUstream streamToHost_;
-    CUstream streamAccelerator_;
-
-    IOBuffer *buffer_;
-
-    KernelConfig call_;
-
-    void setupCUstreams();
-    void cleanCUstreams();
-    gmacError_t syncCUstream(CUstream);
-
+class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
+	friend class Kernel;
+    const void * ptr_;
+    size_t size_;
+    long_t offset_;
 public:
-	Context(Accelerator &acc, Mode &mode);
-	~Context();
+    Argument(const void * ptr, size_t size, long_t offset);
 
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
-
-    gmacError_t memset(accptr_t addr, int c, size_t size);
-
-    KernelLaunch &launch(Kernel &kernel);
-    gmacError_t prepareForCall();
-    gmacError_t waitForCall();
-
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-    gmacError_t waitAccelerator();
-
-    gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	gmacError_t argument(const void *arg, size_t size, off_t offset);
-
-    const CUstream eventStream() const;
-
-    Accelerator & accelerator();
-    gmacError_t waitForEvent(CUevent e);
+    const void * ptr() const { return ptr_; }
+    size_t size() const { return size_; }
+    long_t offset() const { return offset_; }
 };
 
-}}
 
-#include "Context-impl.h"
+
+class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
+    friend class KernelLaunch;
+protected:
+    CUfunction f_;
+
+public:
+    Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod);
+    KernelLaunch * launch(KernelConfig & c);
+};
+
+typedef std::vector<Argument> ArgsVector;
+
+class GMAC_LOCAL KernelConfig : public ArgsVector {
+protected:
+    static const unsigned StackSize_ = 4096;
+
+    uint8_t stack_[StackSize_];
+    size_t argsSize_;
+
+    dim3 grid_;
+    dim3 block_;
+    size_t shared_;
+
+    CUstream stream_;
+
+public:
+    /// \todo create a pool of objects to avoid mallocs/frees
+    KernelConfig();
+    KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
+    KernelConfig(const KernelConfig & c);
+
+    void pushArgument(const void * arg, size_t size, long_t offset);
+
+    size_t argsSize() const;
+    uint8_t *argsArray();
+
+    dim3 grid() const { return grid_; }
+    dim3 block() const { return block_; }
+    size_t shared() const { return shared_; }
+};
+
+class GMAC_LOCAL KernelLaunch : public core::hpe::KernelLaunch,
+                                public KernelConfig,
+                                public util::NonCopyable {
+    friend class Kernel;
+
+protected:
+    // \todo Is this really necessary?
+    const Kernel & kernel_;
+    CUfunction f_;
+
+    KernelLaunch(const Kernel & k, const KernelConfig & c);
+public:
+
+    gmacError_t execute();
+};
+
+}}}
+
+#include "Kernel-impl.h"
 
 #endif

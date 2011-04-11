@@ -32,32 +32,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_CUDA_DBC_ACCELERATOR_H_
-#define GMAC_API_CUDA_DBC_ACCELERATOR_H_
+#ifndef GMAC_API_CUDA_HPE_DBC_MODE_H_
+#define GMAC_API_CUDA_HPE_DBC_MODE_H_
 
-namespace __dbc { namespace cuda {
+namespace __dbc { namespace cuda { namespace hpe {
 
-class GMAC_LOCAL Accelerator :
-    public __impl::cuda::Accelerator,
+class GMAC_LOCAL Mode :
+    public __impl::cuda::hpe::Mode,
     public virtual Contract {
-    DBC_TESTED(__impl::cuda::Accelerator)
+    DBC_TESTED(__impl::cuda::hpe::Mode)
 
 public:
-	Accelerator(int n, CUdevice device);
-    ~Accelerator();
+    Mode(__impl::core::hpe::Process &proc, __impl::cuda::hpe::Accelerator &acc);
+    ~Mode();
 
-    /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::Mode &mode);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::Mode &mode);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
-
-    /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::Mode &mode, CUstream stream);
-    gmacError_t copyToHostAsync(__impl::cuda::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::Mode &mode, CUstream stream);
+    gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
+    gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 };
 
 
-}}
+}}}
 
 #endif
 

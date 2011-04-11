@@ -29,30 +29,88 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-WITH THE SOFTWARE.
-*/
+WITH THE SOFTWARE.  */
 
-#ifndef GMAC_API_CUDA_DBC_MODE_H_
-#define GMAC_API_CUDA_DBC_MODE_H_
+#ifndef GMAC_API_CUDA_HPE_CONTEXT_H_
+#define GMAC_API_CUDA_HPE_CONTEXT_H_
 
-namespace __dbc { namespace cuda {
+#include <cuda.h>
+#include <vector_types.h>
 
-class GMAC_LOCAL Mode :
-    public __impl::cuda::Mode,
-    public virtual Contract {
-    DBC_TESTED(__impl::cuda::Mode)
+#include <map>
+#include <vector>
+
+#include "config/common.h"
+#include "config/config.h"
+
+#include "core/hpe/Context.h"
+#include "util/Lock.h"
+
+#include "Kernel.h"
+
+namespace __impl {
+
+namespace core {
+class IOBuffer;
+}
+
+namespace cuda { 
+
+class IOBuffer;
+
+namespace hpe {
+
+class Accelerator;
+class GMAC_LOCAL Context : public gmac::core::hpe::Context {
+protected:
+    static void * FatBin_;
+	static const unsigned USleepLaunch_ = 100;
+
+	typedef std::map<void *, void *> AddressMap;
+	static AddressMap HostMem_;
+
+    CUstream streamLaunch_;
+    CUstream streamToAccelerator_;
+    CUstream streamToHost_;
+    CUstream streamAccelerator_;
+
+    IOBuffer *buffer_;
+
+    KernelConfig call_;
+
+    void setupCUstreams();
+    void cleanCUstreams();
+    gmacError_t syncCUstream(CUstream);
 
 public:
-    Mode(__impl::core::Process &proc, __impl::cuda::Accelerator &acc);
-    ~Mode();
+	Context(Accelerator &acc, Mode &mode);
+	~Context();
 
-    gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
+	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+
+    gmacError_t memset(accptr_t addr, int c, size_t size);
+
+    KernelLaunch &launch(Kernel &kernel);
+    gmacError_t prepareForCall();
+    gmacError_t waitForCall();
+
+    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
+    gmacError_t waitAccelerator();
+
+    gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
+	gmacError_t argument(const void *arg, size_t size, off_t offset);
+
+    const CUstream eventStream() const;
+
+    Accelerator & accelerator();
+    gmacError_t waitForEvent(CUevent e);
 };
 
+}}}
 
-}}
+#include "Context-impl.h"
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
