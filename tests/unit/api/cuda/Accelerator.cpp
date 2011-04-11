@@ -1,9 +1,9 @@
 #ifndef USE_MULTI_CONTEXT
-#include "unit/core/Accelerator.h"
-#include "api/cuda/Accelerator.h"
+#include "unit/core/hpe/Accelerator.h"
+#include "api/cuda/hpe/Accelerator.h"
 
-using gmac::cuda::Accelerator;
-using gmac::core::Mode;
+using gmac::cuda::hpe::Accelerator;
+using gmac::core::hpe::Mode;
 
 TEST_F(AcceleratorTest, AcceleratorHost) {
     hostptr_t host = NULL;

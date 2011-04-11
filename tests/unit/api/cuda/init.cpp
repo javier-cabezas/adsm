@@ -1,15 +1,15 @@
 #include "unit/init.h"
 #include "core/Process.h"
-#include "api/cuda/Accelerator.h"
-#include "api/cuda/Context.h"
-#include "api/cuda/Mode.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Context.h"
+#include "api/cuda/hpe/Mode.h"
 #include "gtest/gtest.h"
 
 #include <cuda.h>
 
-using gmac::cuda::Accelerator;
-using __impl::cuda::Mode;
-using __impl::cuda::Context;
+using gmac::cuda::hpe::Accelerator;
+using __impl::cuda::hpe::Mode;
+using __impl::cuda::hpe::Context;
 
 void InitAccelerator()
 {

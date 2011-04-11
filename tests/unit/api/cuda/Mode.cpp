@@ -1,8 +1,8 @@
-#include "unit/core/Mode.h"
-#include "api/cuda/Mode.h"
+#include "unit/core/hpe/Mode.h"
+#include "api/cuda/hpe/Mode.h"
 #include "gtest/gtest.h"
 
-using __impl::cuda::Mode;
+using __impl::cuda::hpe::Mode;
 
 TEST_F(ModeTest, ModeHostMemory) {
 	Mode &mode = dynamic_cast<Mode &>(*Mode_);
