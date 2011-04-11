@@ -121,4 +121,39 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 #endif
 
+
+namespace __impl {
+
+void enterGmac()
+{
+#	if defined(_MSC_VER)
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
+#   endif
+    _inGmac.set(&_gmacCode);
+    _inGmacLock->lockRead();
+}
+
+
+void enterGmacExclusive()
+{
+    _inGmac.set(&_gmacCode);
+    _inGmacLock->lockWrite();
+}
+
+void exitGmac()
+{
+    _inGmacLock->unlock();
+    _inGmac.set(&_userCode);
+}
+
+char inGmac() { 
+    if(gmacInit__ == 0) return 1;
+    char *ret = (char  *)_inGmac.get();
+    if(ret == NULL) return 0;
+    else if(*ret == _gmacCode) return 1;
+    return 0;
+}
+
+}
+
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

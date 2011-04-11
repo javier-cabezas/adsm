@@ -70,42 +70,9 @@ extern Atomic gmacFini__;
 
 void init() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
-
-inline void enterGmac()
-{
-#	if defined(_MSC_VER)
-	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
-#   endif
-    _inGmac.set(&_gmacCode);
-    _inGmacLock->lockRead();
-}
-
 void enterGmacExclusive() GMAC_LOCAL;
-
-inline void enterGmacExclusive()
-{
-    _inGmac.set(&_gmacCode);
-    _inGmacLock->lockWrite();
-}
-
 void exitGmac() GMAC_LOCAL;
-
-inline void exitGmac()
-{
-    _inGmacLock->unlock();
-    _inGmac.set(&_userCode);
-}
-
 char inGmac() GMAC_LOCAL;
-
-inline char inGmac() { 
-    if(gmacInit__ == 0) return 1;
-    char *ret = (char  *)_inGmac.get();
-    if(ret == NULL) return 0;
-    else if(*ret == _gmacCode) return 1;
-    return 0;
-}
-
 
 }
 
