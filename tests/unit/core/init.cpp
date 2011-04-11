@@ -13,14 +13,12 @@ using __impl::core::Process;
 void InitProcess()
 {
     InitModel();
-    std::cerr << "Process created" << std::endl;
 }
 
 void FiniProcess()
 {
     FiniModel();
     Process::destroy();
-    std::cerr << "Process destroyed" << std::endl;
 }
 
 __impl::core::Mode &GetMode()

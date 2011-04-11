@@ -160,13 +160,13 @@ Mode *Process::createMode(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this));
     modes_.insert(mode, accs_[usedAcc]);
+    unlock();
 
     mode->attach();
 
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
     Map::addOwner(*this, *mode);
 
-    unlock();
 
     return mode;
 }
