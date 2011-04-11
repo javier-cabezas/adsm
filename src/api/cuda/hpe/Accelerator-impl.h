@@ -1,14 +1,14 @@
-#ifndef GMAC_API_CUDA_ACCELERATOR_IMPL_H_
-#define GMAC_API_CUDA_ACCELERATOR_IMPL_H_
+#ifndef GMAC_API_CUDA_HPE_ACCELERATOR_IMPL_H_
+#define GMAC_API_CUDA_HPE_ACCELERATOR_IMPL_H_
 
 #include <cuda.h>
 
 #include "util/Logger.h"
 #include "trace/Tracer.h"
 
-#include "IOBuffer.h"
+#include "api/cuda/IOBuffer.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 inline CUdevice
 Accelerator::device() const
@@ -55,7 +55,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, 
     TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
     pushContext();
 
-    buffer.toAccelerator(reinterpret_cast<Mode &>(mode), stream);
+    buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
 #else
@@ -92,7 +92,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff, con
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
     pushContext();
-    buffer.toHost(reinterpret_cast<Mode &>(mode), stream);
+    buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
 #else
@@ -277,6 +277,6 @@ Accelerator::getCUcontext() const
 
 #endif
 
-}}
+}}}
 
 #endif

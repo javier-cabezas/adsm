@@ -1,7 +1,7 @@
-#ifndef GMAC_API_CUDA_MODULE_IMPL_H_
-#define GMAC_API_CUDA_MODULE_IMPL_H_
+#ifndef GMAC_API_CUDA_HPE_MODULE_IMPL_H_
+#define GMAC_API_CUDA_HPE_MODULE_IMPL_H_
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 inline bool
 VariableDescriptor::constant() const
@@ -29,7 +29,7 @@ Texture::texRef() const
 
 inline
 void
-ModuleDescriptor::add(core::KernelDescriptor & k)
+ModuleDescriptor::add(core::hpe::KernelDescriptor & k)
 {
     kernels_.push_back(k);
 }
@@ -98,6 +98,6 @@ Module::texture(gmacTexture_t key) const
 }
 
 
-}}
+}}}
 
 #endif

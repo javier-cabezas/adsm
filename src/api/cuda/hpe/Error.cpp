@@ -1,6 +1,6 @@
 #include "Accelerator.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 #define __GMAC_ERROR(r, err) case r: error = err; break
 
@@ -38,4 +38,4 @@ Accelerator::error(CUresult r)
 
 #undef __GMAC_ERROR
 
-}}
+}}}

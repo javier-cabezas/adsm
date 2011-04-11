@@ -1,12 +1,14 @@
-#include "Accelerator.h"
-#include "Context.h"
-#include "IOBuffer.h"
-#include "Mode.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Context.h"
+#include "api/cuda/hpe/Mode.h"
 
-namespace __impl { namespace cuda {
 
-Mode::Mode(core::Process &proc, Accelerator &acc) :
-    gmac::core::Mode(proc, acc)
+#include "api/cuda/IOBuffer.h"
+
+namespace __impl { namespace cuda { namespace hpe {
+
+Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
+    gmac::core::hpe::Mode(proc, acc)
 {
 #ifdef USE_MULTI_CONTEXT
     cudaCtx_ = getAccelerator().createCUcontext();
@@ -106,11 +108,11 @@ void Mode::reload()
     load();
 }
 
-core::Context &Mode::getContext()
+core::hpe::Context &Mode::getContext()
 {
-	core::Context *context = contextMap_.find(util::GetThreadId());
+	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new cuda::Context(getAccelerator(), *this);
+    context = new cuda::hpe::Context(getAccelerator(), *this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -259,4 +261,4 @@ gmacError_t Mode::waitForEvent(CUevent event, bool fromCUDA)
     return Accelerator::error(ret);
 }
 
-}}
+}}}

@@ -1,10 +1,10 @@
-#ifndef GMAC_API_CUDA_CONTEXT_IMPL_H_
-#define GMAC_API_CUDA_CONTEXT_IMPL_H_
+#ifndef GMAC_API_CUDA_HPE_CONTEXT_IMPL_H_
+#define GMAC_API_CUDA_HPE_CONTEXT_IMPL_H_
 
 #include "Accelerator.h"
 #include "Kernel.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 inline gmacError_t
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
@@ -34,6 +34,6 @@ Context::accelerator()
     return dynamic_cast<Accelerator &>(acc_);
 }
 
-}}
+}}}
 
 #endif

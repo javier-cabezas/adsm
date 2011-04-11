@@ -3,7 +3,7 @@
 
 #include "core/Process.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 #ifdef USE_MULTI_CONTEXT
 util::Private<CUcontext> Accelerator::Ctx_;
@@ -20,7 +20,7 @@ void Switch::out()
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-    gmac::core::Accelerator(n), device_(device)
+    gmac::core::hpe::Accelerator(n), device_(device)
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     , lastMode_(NULL)
@@ -91,10 +91,10 @@ void Accelerator::init()
 #endif
 }
 
-core::Mode *Accelerator::createMode(core::Process &proc)
+__impl::core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::Mode *mode = new gmac::cuda::Mode(proc, *this);
+    core::hpe::Mode *mode = new gmac::cuda::hpe::Mode(proc, *this);
     if (mode != NULL) {
         registerMode(*mode);
     }
@@ -349,4 +349,4 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
     popContext();
 }
 
-}}
+}}}

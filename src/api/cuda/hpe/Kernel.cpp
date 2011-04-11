@@ -1,14 +1,12 @@
 #include "Kernel.h"
-#include "Module.h"
-#include "Mode.h"
 #include "Accelerator.h"
 
 #include "trace/Tracer.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
-Kernel::Kernel(const core::KernelDescriptor & k, CUmodule mod) :
-    gmac::core::Kernel(k)
+Kernel::Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod) :
+    gmac::core::hpe::Kernel(k)
 {
     CUresult ret = cuModuleGetFunction(&f_, mod, name_);
     ASSERTION(ret == CUDA_SUCCESS);
@@ -45,7 +43,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 
 
 KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c) :
-    core::KernelLaunch(),
+    core::hpe::KernelLaunch(),
     KernelConfig(c),
     kernel_(k),
     f_(k.f_)
@@ -85,4 +83,4 @@ exit:
     return Accelerator::error(ret);
 }
 
-}}
+}}}

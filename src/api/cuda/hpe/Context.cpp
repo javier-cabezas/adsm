@@ -1,17 +1,17 @@
 #include "Context.h"
 #include "Mode.h"
 
-#include "gmac/init.h"
+#include "hpe/init.h"
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
 Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::Context(acc, mode, mode.id()),
+    gmac::core::hpe::Context(acc, mode, mode.id()),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL, NULL)
 {
@@ -81,7 +81,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         buffer_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
-        return core::Context::copyToAccelerator(acc, host, size);
+        return core::hpe::Context::copyToAccelerator(acc, host, size);
     }
     buffer_->waitFromCUDA();
     gmacError_t ret = gmacSuccess;
@@ -114,7 +114,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         mode_.destroyIOBuffer(*buffer_);
         buffer_ = NULL;
         trace::ExitCurrentFunction();
-        return core::Context::copyToHost(host, acc, size);
+        return core::hpe::Context::copyToHost(host, acc, size);
     }
 
     gmacError_t ret = buffer_->waitFromCUDA();
@@ -211,4 +211,4 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     return ret;
 }
 
-}}
+}}}

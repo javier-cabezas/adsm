@@ -1,10 +1,11 @@
 #include "config/order.h"
 
-#include "Accelerator.h"
-#include "Mode.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
 
-#include "gmac/init.h"
 #include "core/Process.h"
+
+#include "hpe/init.h"
 
 #include <cuda.h>
 
@@ -17,7 +18,7 @@ static bool initialized = false;
 
 void apiInit(void)
 {
-    core::Process &proc = core::Process::getInstance();
+    core::hpe::Process &proc = core::Process::getInstance<core::hpe::Process &>();
     if(initialized)
         FATAL("GMAC double initialization not allowed");
 
@@ -43,7 +44,7 @@ void apiInit(void)
         if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
             FATAL("Unable to access CUDA device");
         if(attr != CU_COMPUTEMODE_PROHIBITED) {
-            cuda::Accelerator *accelerator = new gmac::cuda::Accelerator(i, cuDev);
+            cuda::hpe::Accelerator *accelerator = new gmac::cuda::hpe::Accelerator(i, cuDev);
             CFATAL(accelerator != NULL, "Error allocating resources for the accelerator");
             proc.addAccelerator(*accelerator);
             devRealCount++;
@@ -58,7 +59,7 @@ void apiInit(void)
         FATAL("No CUDA-enabled devices found");
 
     // Initialize the private per-thread variables
-    cuda::Accelerator::init();
+    cuda::hpe::Accelerator::init();
 
     initialized = true;
 }

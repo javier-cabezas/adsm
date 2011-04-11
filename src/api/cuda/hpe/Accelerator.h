@@ -32,8 +32,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_CUDA_ACCELERATOR_H_
-#define GMAC_API_CUDA_ACCELERATOR_H_
+#ifndef GMAC_API_CUDA_HPE_ACCELERATOR_H_
+#define GMAC_API_CUDA_HPE_ACCELERATOR_H_
 
 #include <vector_types.h>
 
@@ -41,14 +41,16 @@ WITH THE SOFTWARE.
 #include <set>
 
 #include "config/common.h"
-#include "core/Accelerator.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Accelerator.h"
 #include "util/Lock.h"
 
 #include "Module.h"
 
 namespace __impl { namespace cuda {
 class IOBuffer;
-class Mode;
+
+namespace hpe {
 class ModuleDescriptor;
 
 class GMAC_LOCAL Switch {
@@ -72,7 +74,7 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public gmac::core::Accelerator {
+class GMAC_LOCAL Accelerator : public gmac::core::hpe::Accelerator {
     DBC_FORCE_TEST(Accelerator)
 
     friend class Switch;
@@ -116,7 +118,7 @@ public:
 
     static void init();
 
-    core::Mode *createMode(core::Process &proc);
+    __impl::core::hpe::Mode *createMode(core::hpe::Process &proc);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();
@@ -170,7 +172,7 @@ public:
     void memInfo(size_t &free, size_t &total) const;
 };
 
-}}
+}}}
 
 #include "Accelerator-impl.h"
 

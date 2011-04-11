@@ -1,9 +1,9 @@
-#ifndef GMAC_API_CUDA_KERNEL_IMPL_H_
-#define GMAC_API_CUDA_KERNEL_IMPL_H_
+#ifndef GMAC_API_CUDA_HPE_KERNEL_IMPL_H_
+#define GMAC_API_CUDA_HPE_KERNEL_IMPL_H_
 
 #include "util/Logger.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 inline
 Argument::Argument(const void * ptr, size_t size, long_t offset) :
@@ -15,7 +15,7 @@ inline
 KernelLaunch *
 Kernel::launch(KernelConfig & c)
 {
-    KernelLaunch * l = new cuda::KernelLaunch(*this, c);
+    KernelLaunch * l = new cuda::hpe::KernelLaunch(*this, c);
     return l;
 }
 
@@ -48,10 +48,7 @@ KernelConfig::argsArray()
 }
 
 
-
-
-
-}}
+}}}
 
 #endif
 

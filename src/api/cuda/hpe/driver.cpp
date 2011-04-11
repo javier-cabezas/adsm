@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "include/gmac/cuda.h"
-#include "gmac/init.h"
+#include "hpe/init.h"
 
-#include "core/Kernel.h"
+#include "core/hpe/Kernel.h"
 
-#include "Accelerator.h"
-#include "Mode.h"
-#include "Module.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
+#include "api/cuda/hpe/Module.h"
 
 
 #ifdef __cplusplus
@@ -23,13 +23,13 @@ extern "C" {
 using __impl::enterGmac;
 using __impl::exitGmac;
 
-using __impl::core::KernelDescriptor;
-using __impl::core::Process;
+using __impl::core::hpe::KernelDescriptor;
+using __impl::core::hpe::Process;
 
-using __impl::cuda::Mode;
-using __impl::cuda::ModuleDescriptor;
-using __impl::cuda::TextureDescriptor;
-using __impl::cuda::VariableDescriptor;
+using __impl::cuda::hpe::Mode;
+using __impl::cuda::hpe::ModuleDescriptor;
+using __impl::cuda::hpe::TextureDescriptor;
+using __impl::cuda::hpe::VariableDescriptor;
 
 /*!
  * @returns Module **
@@ -38,10 +38,10 @@ GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
     TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
     enterGmac();
-    Process &proc = Process::getInstance();
+    Process &proc = Process::getInstance<Process &>();
     ASSERTION(proc.nAccelerators() > 0);
     // Use the first GPU to load the fat binary
-    void **ret = (void **) new __impl::cuda::ModuleDescriptor(fatCubin);
+    void **ret = (void **) new __impl::cuda::hpe::ModuleDescriptor(fatCubin);
 	exitGmac();
 	return ret;
 }
@@ -61,7 +61,7 @@ GMAC_API void APICALL __cudaRegisterFunction(
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERTION(mod != NULL);
 	enterGmac();
-    KernelDescriptor k = __impl::core::KernelDescriptor(devName, (gmacKernel_t) hostFun);
+    KernelDescriptor k = __impl::core::hpe::KernelDescriptor(devName, (gmacKernel_t) hostFun);
     mod->add(k);
 	exitGmac();
 }
@@ -74,7 +74,7 @@ GMAC_API void APICALL __cudaRegisterVar(void **fatCubinHandle, char *hostVar,
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERTION(mod != NULL);
 	enterGmac();
-    VariableDescriptor v = __impl::cuda::VariableDescriptor(deviceName, hostVar, bool(constant != 0));
+    VariableDescriptor v = __impl::cuda::hpe::VariableDescriptor(deviceName, hostVar, bool(constant != 0));
     mod->add(v);
 	exitGmac();
 }
@@ -86,7 +86,7 @@ GMAC_API void APICALL __cudaRegisterTexture(void **fatCubinHandle, const struct 
 	ModuleDescriptor *mod = (ModuleDescriptor *)fatCubinHandle;
 	ASSERTION(mod != NULL);
 	enterGmac();
-    TextureDescriptor t = __impl::cuda::TextureDescriptor(deviceName, hostVar);
+    TextureDescriptor t = __impl::cuda::hpe::TextureDescriptor(deviceName, hostVar);
 	mod->add(t);
 	exitGmac();
 }

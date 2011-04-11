@@ -29,64 +29,38 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-WITH THE SOFTWARE.  */
+WITH THE SOFTWARE.
+*/
 
-#ifndef GMAC_API_CUDA_MODE_H_
-#define GMAC_API_CUDA_MODE_H_
+#ifndef GMAC_API_CUDA_HPE_DBC_ACCELERATOR_H_
+#define GMAC_API_CUDA_HPE_DBC_ACCELERATOR_H_
 
-#include <cuda.h>
-#include <vector_types.h>
+namespace __dbc { namespace cuda { namespace hpe {
 
-#include "config/common.h"
-#include "config/config.h"
-#include "core/Mode.h"
+class GMAC_LOCAL Accelerator :
+    public __impl::cuda::hpe::Accelerator,
+    public virtual Contract {
+    DBC_TESTED(__impl::cuda::hpe::Accelerator)
 
-namespace __impl {
-    
-namespace core {
-class IOBuffer;
-}
-
-namespace cuda {
-
-
-//! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public virtual core::Mode {
-protected:
 public:
-    //! Default destructor
-    virtual ~Mode() { };
+	Accelerator(int n, CUdevice device);
+    ~Accelerator();
 
-    //! Allocated GPU-accessible host memory
-    /*!
-        \param addr Memory address of the pointer where the starting host memory address will be stored
-        \param size Size (in bytes) of the host memory to be allocated
-        \return Error code
-    */
-    virtual gmacError_t hostAlloc(hostptr_t *addr, size_t size) = 0;
+    /* Synchronous interface */
+	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
+	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
+	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
-    //! Release GPU-accessible host memory 
-    /*!
-        \param addr Starting address of the host memory to be released
-        \return Error code
-    */
-    virtual gmacError_t hostFree(hostptr_t addr) = 0;
-
-    //! Get the GPU memory address where GPU-accessible host memory is mapped
-    /*!
-        \param addr Host memory address
-        \return Device memory address
-    */
-    virtual accptr_t hostMap(const hostptr_t addr) = 0;
-
-    virtual CUstream eventStream() = 0;
-
-    virtual gmacError_t waitForEvent(CUevent event, bool fromCUDA) = 0;
-
-    virtual gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end) = 0;
+    /* Asynchronous interface */
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBuffer &buffer, size_t bufferOff, size_t count,
+__impl::core::hpe::Mode &mode, CUstream stream);
+    gmacError_t copyToHostAsync(__impl::cuda::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count,
+__impl::core::hpe::Mode &mode, CUstream stream);
 };
 
-}}
 
+}}}
 
 #endif
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

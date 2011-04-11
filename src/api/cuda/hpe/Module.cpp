@@ -1,14 +1,14 @@
-#include "gmac/init.h"
+#include "hpe/init.h"
 
-#include "Module.h"
-#include "Mode.h"
+#include "api/cuda/hpe/Module.h"
+#include "api/cuda/hpe/Mode.h"
 
-namespace __impl { namespace cuda {
+namespace __impl { namespace cuda { namespace hpe {
 
 ModuleDescriptor::ModuleDescriptorVector ModuleDescriptor::Modules_;
 
 VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, bool constant) :
-    core::Descriptor<gmacVariable_t>(name, key),
+    core::hpe::Descriptor<gmacVariable_t>(name, key),
     constant_(constant)
 {
 }
@@ -56,7 +56,7 @@ ModuleDescriptor::createModules()
     TRACE(GLOBAL, "Creating modules");
     ModuleVector modules;
 
-    modules.push_back(new cuda::Module(Modules_));
+    modules.push_back(new cuda::hpe::Module(Modules_));
 #if 0
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules_.begin(); it != Modules_.end(); it++) {
@@ -93,7 +93,7 @@ Module::Module(const ModuleDescriptorVector & dVector)
         ModuleDescriptor::KernelVector::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
             TRACE(LOCAL, "Registering kernel: %s", k->name());
-            Kernel * kernel = new cuda::Kernel(*k, mod_);
+            Kernel * kernel = new cuda::hpe::Kernel(*k, mod_);
             kernels_.insert(KernelMap::value_type(k->key(), kernel));
         }
 
@@ -153,4 +153,4 @@ void Module::registerKernels(Mode &mode) const
     }
 }
 
-}}
+}}}
