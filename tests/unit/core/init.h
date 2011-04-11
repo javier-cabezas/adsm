@@ -47,8 +47,6 @@ void InitMode();
 __impl::core::Mode &GetMode();
 void FiniMode();
 
-void InitModel();
-void FiniModel();
 
 #include "hpe/init.h"
 

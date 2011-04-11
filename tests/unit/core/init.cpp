@@ -3,6 +3,9 @@
 #include "core/Process.h"
 #include "core/Mode.h"
 
+void InitModel();
+void FiniModel();
+
 __impl::core::Mode *Mode_ = NULL;
 
 using __impl::core::Process;
@@ -14,8 +17,8 @@ void InitProcess()
 
 void FiniProcess()
 {
-    FiniModel();
     Process::destroy();
+    FiniModel();
 }
 
 __impl::core::Mode &GetMode()

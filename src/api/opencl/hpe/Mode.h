@@ -70,7 +70,6 @@ public:
     void insert(core::hpe::Kernel *);
 };
 
-//! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public opencl::Mode {
     DBC_FORCE_TEST(Mode)
 
