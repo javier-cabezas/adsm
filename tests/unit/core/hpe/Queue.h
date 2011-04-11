@@ -4,15 +4,15 @@
 #include "unit/init.h"
 #include "gtest/gtest.h"
 
-#include "core/Queue.h"
-#include "core/Mode.h"
+#include "core/hpe/Queue.h"
+#include "core/hpe/Mode.h"
 
-using gmac::core::Mode;
+using gmac::core::hpe::Mode;
 
 class QueueTest:public testing::Test{
 
   public:
-     static gmac::core::Mode *Mode_;
+     static gmac::core::hpe::Mode *Mode_;
      // const static size_t Size_= 4* 1024*1024; 
      static void SetUpTestCase();
      static void TearDownTestCase()

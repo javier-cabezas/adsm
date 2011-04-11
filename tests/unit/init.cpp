@@ -25,6 +25,8 @@ void init() { }
 
 }
 
+static bool Trace_ = false;
+
 void InitGmac()
 {
     __impl::util::Private<const char>::init(__impl::_inGmac);
@@ -32,4 +34,25 @@ void InitGmac()
     __impl::_inGmac.set(&__impl::_gmacCode);
     __impl::gmacInit__ = 1;
     __impl::_inGmac.set(&__impl::_userCode);
+}
+
+void InitTrace(void)
+{
+    if(Trace_ == true) return;
+    Trace_ = true;
+    gmac::trace::InitTracer();
+}
+
+void FiniTrace(void)
+{
+    if(Trace_ == false) return;
+    Trace_ = false;
+    gmac::trace::FiniTracer();
+}
+
+namespace __impl {
+
+void enterGmac() { }
+void exitGmac() { }
+
 }

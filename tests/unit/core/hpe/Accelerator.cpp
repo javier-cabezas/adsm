@@ -1,12 +1,12 @@
 #ifndef USE_MULTI_CONTEXT
 
 #include "Accelerator.h"
-#include "core/Accelerator.h"
-#include "core/Process.h"
-#include "core/Mode.h"
+#include "core/hpe/Accelerator.h"
+#include "core/hpe/Process.h"
+#include "core/hpe/Mode.h"
 
-using __impl::core::Mode;
-using gmac::core::Process;
+using __impl::core::hpe::Mode;
+using gmac::core::hpe::Process;
 
 
 //check virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc,size_t size)=0
@@ -63,7 +63,7 @@ TEST_F(AcceleratorTest, AcceleratorAligmentExt) {
 TEST_F(AcceleratorTest, CreateMode){
 
      Process::create<Process>();  
-     Process &proc=Process::getInstance();
+     Process &proc=Process::getInstance<Process &>();
 
      ASSERT_TRUE(&proc != NULL);
 
