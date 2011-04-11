@@ -53,12 +53,13 @@ void InitModel()
     Process &proc = Process::getInstance<Process &>();
     proc.addAccelerator(*Accelerator_);
     Mode_ = dynamic_cast<__impl::core::Mode *>(proc.createMode(0));
+    std::cerr << "Create Mode"<< std::endl;
 }
 
 
 void FiniModel()
 {
-    Accelerator_ = NULL;
     Mode_= NULL;
+    Accelerator_ = NULL;
 }
 
