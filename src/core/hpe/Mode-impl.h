@@ -79,7 +79,6 @@ inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
     unlock();
     return ret;
 }
-}
 
 inline gmacError_t Mode::cleanUp()
 {

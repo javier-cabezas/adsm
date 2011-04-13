@@ -6,7 +6,7 @@
 #include "util/Logger.h"
 #include "trace/Tracer.h"
 
-//#include "api/opencl/IOBuffer.h"
+#include "api/opencl/hpe/Kernel.h"
 
 namespace __impl { namespace opencl { namespace hpe {
 

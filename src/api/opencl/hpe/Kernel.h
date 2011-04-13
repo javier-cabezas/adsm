@@ -75,7 +75,7 @@ protected:
 public:
     Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel);
     ~Kernel();
-    KernelLaunch * launch(KernelConfig & c, cl_command_queue stream);
+    KernelLaunch *launch(Mode &mode, cl_command_queue stream);
 };
 
 typedef std::vector<Argument> ArgsVector;
@@ -92,7 +92,7 @@ public:
     ~KernelConfig();
 
     void setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
-        size_t *globalWorkSize, void *localWorkSize);
+        size_t *globalWorkSize, size_t *localWorkSize);
     void setArgument(const void * arg, size_t size, unsigned index);
 
     KernelConfig &operator=(const KernelConfig &config);
@@ -111,7 +111,7 @@ protected:
     cl_command_queue stream_;
     cl_event event_;
 
-    KernelLaunch(core::hpe::Mode &mode, const Kernel & k, cl_command_queue stream);
+    KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream);
 public:
     ~KernelLaunch();
     gmacError_t execute();
