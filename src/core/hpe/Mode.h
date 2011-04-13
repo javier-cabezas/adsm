@@ -80,6 +80,7 @@ public:
 
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
+    gmacError_t waitForCall(KernelLaunch &launch);
 };
 
 /**
@@ -112,7 +113,7 @@ protected:
 
     ContextMap contextMap_;
 
-    typedef std::map<gmacKernel_t, Kernel *> KernelMap;
+    typedef std::map<gmac_kernel_id_t, Kernel *> KernelMap;
     KernelMap kernels_;
 
     virtual void switchIn() = 0;
@@ -297,10 +298,11 @@ public:
 
     /**
      * Creates a KernelLaunch object that can be executed by the mode
+     * \param id Handler to the kernel to be launched
      * \param kernel Handler of the kernel to be launched
      * \return Reference to the KernelLaunch object
      */
-    virtual KernelLaunch &launch(gmacKernel_t kernel) = 0;
+    virtual KernelLaunch &launch(gmac_kernel_id_t kernel, KernelLaunch &launch) = 0;
 
     /**
      * Executes a kernel using a KernelLaunch object
@@ -308,6 +310,19 @@ public:
      * \return Error code
      */
     virtual gmacError_t execute(KernelLaunch &launch) = 0;
+
+    /**
+     * Waits for kernel execution
+     * \param launch Reference to KernelLaunch object
+     * \return Error code
+     */
+    virtual gmacError_t wait(KernelLaunch &launch) = 0;
+
+    /**
+     * Waits for all kernels to finish execution
+     * \return Error code
+     */
+    virtual gmacError_t wait() = 0;
 
     /**
      * Creates an IOBuffer
@@ -346,8 +361,7 @@ public:
      * \param k A key that identifies the kernel object
      * \param kernel A reference to the kernel to be registered
      */
-    void kernel(gmacKernel_t k, Kernel &kernel);
-    //Kernel * kernel(gmacKernel_t k);
+    void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
 
     /**
      * Returns the last error code

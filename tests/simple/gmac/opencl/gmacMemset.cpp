@@ -44,12 +44,16 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test full memset: ");
     oclMemset(ptr, 0, size * sizeof(long));
 
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    __oclSetArgument(&size, sizeof(size), 1);
-    __oclSetArgument(&val, sizeof(val), 2);
-    assert(__oclLaunch("reset") == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    OclKernel kernel;
+
+    assert(__oclKernelGet("reset", &kernel) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -63,12 +67,8 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
 
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    __oclSetArgument(&size, sizeof(size), 1);
-    __oclSetArgument(&val, sizeof(val), 2);
-    assert(__oclLaunch("reset") == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 

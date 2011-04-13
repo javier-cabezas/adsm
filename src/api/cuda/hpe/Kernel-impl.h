@@ -13,9 +13,9 @@ Argument::Argument(const void * ptr, size_t size, long_t offset) :
 
 inline
 KernelLaunch *
-Kernel::launch(KernelConfig & c)
+Kernel::launch(core::hpe::Mode &mode, KernelConfig & c)
 {
-    KernelLaunch * l = new cuda::hpe::KernelLaunch(*this, c);
+    KernelLaunch * l = new cuda::hpe::KernelLaunch(mode, *this, c);
     return l;
 }
 
@@ -47,6 +47,11 @@ KernelConfig::argsArray()
     return stack_;
 }
 
+inline CUevent
+KernelLaunch::getCUevent()
+{
+    return end_;
+}
 
 }}}
 

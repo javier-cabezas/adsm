@@ -10,15 +10,18 @@ Kernel::Kernel(const KernelDescriptor & k) :
 }
 
 inline
-Kernel::~Kernel()
-{
-}
+KernelLaunch::KernelLaunch(Mode &mode) :
+    mode_(mode)
+{ }
 
 
 inline
-KernelLaunch::~KernelLaunch()
+Mode &
+KernelLaunch::getMode()
 {
+    return mode_;
 }
+
 
 }}}
 

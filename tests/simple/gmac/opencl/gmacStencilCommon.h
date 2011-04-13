@@ -226,38 +226,41 @@ do_stencil(void * ptr)
     globalSize[1] = descr->dimElems - 2 * STENCIL;
 
 	getTime(&s);
+
+    OclKernel kernel;
+    
+    assert(__oclKernelGet("kernelStencil", &kernel) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == gmacSuccess);
+    cl_mem tmpMem = cl_mem(oclPtr(v));
+    tmpMem = cl_mem(oclPtr(v));
+    assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 2) == gmacSuccess);
+    float dt2 = 0.08f;
+    assert(__oclKernelSetArg(&kernel, &dt2, sizeof(dt2), 3) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &descr->dimElems,     sizeof(descr->dimElems    ), 4) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &descr->dimRealElems, sizeof(descr->dimRealElems), 5) == gmacSuccess);
+    unsigned intTmp = descr->sliceElems();
+    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 6) == gmacSuccess);
+    intTmp = descr->sliceRealElems();
+    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 7) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &descr->slices, sizeof(descr->slices), 8) == gmacSuccess);
+
+
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         float * tmp;
         printf("Holaaa\n");
         
         // Call the kernel
-        assert(__oclConfigureCall(2, NULL, globalSize, localSize) == gmacSuccess);
-
-        cl_mem tmpMem = cl_mem(oclPtr(descr->u2));
-        __oclSetArgument(&tmpMem, sizeof(cl_mem), 0);
+        tmpMem = cl_mem(oclPtr(descr->u2));
+        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 0) == gmacSuccess);
         tmpMem = cl_mem(oclPtr(descr->u3));
-        __oclSetArgument(&tmpMem, sizeof(cl_mem), 1);
-        tmpMem = cl_mem(oclPtr(v));
-        __oclSetArgument(&tmpMem, sizeof(cl_mem), 2);
-        float dt2 = 0.08f;
-        __oclSetArgument(&dt2, sizeof(dt2), 3);
-        __oclSetArgument(&descr->dimElems,     sizeof(descr->dimElems    ), 4);
-        __oclSetArgument(&descr->dimRealElems, sizeof(descr->dimRealElems), 5);
-        unsigned intTmp = descr->sliceElems();
-        __oclSetArgument(&intTmp, sizeof(intTmp), 6);
-        intTmp = descr->sliceRealElems();
-        __oclSetArgument(&intTmp, sizeof(intTmp), 7);
-        __oclSetArgument(&descr->slices, sizeof(descr->slices), 8);
-
+        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 1) == gmacSuccess);
+        
         oclError_t ret;
-        ret = __oclLaunch("kernelStencil");
+        ret = __oclKernelLaunch(&kernel);
         assert(ret == gmacSuccess);
-        //assert(oclThreadSynchronize() == gmacSuccess);
-
-        //if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
 
         if(descr->gpus > 1) {
-            assert(oclThreadSynchronize() == gmacSuccess);
+            assert(__oclKernelWait(&kernel) == gmacSuccess);
             barrier_wait(&barrier);
 
             // Send data

@@ -56,7 +56,7 @@ void Mode::finiThread()
     mode->release();
 }
 
-void Mode::kernel(gmacKernel_t k, Kernel &kernel)
+void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {
     TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
     KernelMap::iterator i;

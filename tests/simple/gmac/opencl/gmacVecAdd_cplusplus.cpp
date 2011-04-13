@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    valueInit(a, 0.1f, vecSize);
-    valueInit(b, 0.1f, vecSize);
+    valueInit(a, 1.f, vecSize);
+    valueInit(b, 1.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -67,16 +67,16 @@ int main(int argc, char *argv[])
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
-    assert(ocl::__configureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(ocl::ptr(c));
-    ocl::__setArgument(&tmp, sizeof(cl_mem), 0);
-    tmp = cl_mem(ocl::ptr(a));
-    ocl::__setArgument(&tmp, sizeof(cl_mem), 1);
-    tmp = cl_mem(ocl::ptr(b));
-    ocl::__setArgument(&tmp, sizeof(cl_mem), 2);
-    ocl::__setArgument(&vecSize, sizeof(vecSize), 3);
-    assert(ocl::__launch("vecAdd") == gmacSuccess);
-    assert(ocl::threadSynchronize() == gmacSuccess);
+
+    ocl::KernelLaunch kernel;
+    assert(kernel.get("vecAdd") == gmacSuccess);
+    assert(kernel.configure(1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(kernel.setArg(c, 0) == gmacSuccess);
+    assert(kernel.setArg(a, 1) == gmacSuccess);
+    assert(kernel.setArg(b, 2) == gmacSuccess);
+    assert(kernel.setArg(vecSize, 3) == gmacSuccess);
+    assert(kernel.launch() == gmacSuccess);
+    assert(kernel.wait() == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

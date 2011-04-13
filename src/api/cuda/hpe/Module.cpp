@@ -149,7 +149,7 @@ void Module::registerKernels(Mode &mode) const
 {
     KernelMap::const_iterator k;
     for (k = kernels_.begin(); k != kernels_.end(); k++) {
-        mode.kernel(k->first, *k->second);
+        mode.registerKernel(k->first, *k->second);
     }
 }
 

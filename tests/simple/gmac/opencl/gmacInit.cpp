@@ -49,12 +49,16 @@ int main(int argc, char *argv[])
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize = globalSize * localSize;
-    assert(__oclConfigureCall(1, 0, &globalSize, &localSize) == gmacSuccess);
+    OclKernel kernel;
+
+    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernel, 1, 0, &globalSize, &localSize) == gmacSuccess);
     cl_mem tmp = cl_mem(oclPtr(a));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    __oclSetArgument(&vecSize, 8, 1);
-    assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, 8, 1) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

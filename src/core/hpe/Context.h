@@ -125,12 +125,19 @@ public:
     virtual gmacError_t prepareForCall() = 0;
 
     /**
-     * Waits for kernel execution on the accelerator
+     * Waits for all kernels to finish execution on the accelerator
      *
      * \return Error code returned by the kernel
      */
     virtual gmacError_t waitForCall() = 0;
 
+    /**
+     * Waits for a kernel to finish execution on the accelerator
+     * 
+     * \param launch Kernel to wait for
+     * \return Error code returned by the kernel
+     */
+    virtual gmacError_t waitForCall(core::hpe::KernelLaunch &launch) = 0;
 };
 
 }}}
