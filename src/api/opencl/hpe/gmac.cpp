@@ -15,7 +15,7 @@ using __impl::opencl::hpe::Mode;
 GMAC_API gmacError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index)
 {
     gmac::enterGmac();
-    ((__impl::opencl:hpe::KernelLaunch *)kernel->launch_)->setArgument(addr, size, index);
+    ((__impl::opencl::hpe::KernelLaunch *)kernel->launch_)->setArgument(addr, size, index);
     gmac::exitGmac();
 
     return gmacSuccess;
@@ -33,7 +33,7 @@ GMAC_API gmacError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t work
 }
 
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
-GMAC_API gmacError_t APICALL __oclKernelLaunch(OclKernel *k)
+GMAC_API gmacError_t APICALL __oclKernelLaunch(OclKernel *kernel)
 {
     gmac::enterGmac();
     gmacError_t ret = gmacLaunch(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
@@ -45,7 +45,7 @@ gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
 GMAC_API gmacError_t APICALL __oclKernelWait(OclKernel *kernel)
 {
     gmac::enterGmac();
-    gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::KernelLaunch *)kernel->launch_);
+    gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
     gmac::exitGmac();
     return ret;
 }
@@ -72,9 +72,9 @@ gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t siz
 gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, OclKernel *kernel)
 {
     gmac::enterGmac();
-    __impl::core::Mode &mode = gmac::core::Mode::getCurrent();
+    __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    __impl::core::KernelLaunch *launch;
+    __impl::core::hpe::KernelLaunch *launch;
     gmacError_t ret = mode.launch(id, launch);
     if (ret == gmacSuccess) {
         kernel->id_ = id;
@@ -89,7 +89,7 @@ gmacError_t APICALL __oclKernelDestroy(OclKernel *kernel)
 {
     gmac::enterGmac();
     if (kernel->launch_ != NULL) {
-        delete ((__impl::opencl::KernelLaunch *) kernel->launch_);
+        delete ((__impl::opencl::hpe::KernelLaunch *) kernel->launch_);
     }
     gmac::exitGmac();
 
