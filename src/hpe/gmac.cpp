@@ -205,8 +205,8 @@ gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
     __impl::core::hpe::Mode &mode = launch.getMode();
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    ret = manager.releaseObjects();
-    CFATAL(ret = gmacSuccess, "Error releasing objects");
+    ret = manager.releaseObjects(mode);
+    CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
     ret = mode.execute(launch);
@@ -225,12 +225,12 @@ gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
 gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
 {
     gmac::enterGmac();
-    gmac::Trace::EnterCurrentFunction();
+    gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
     __impl::core::hpe::KernelLaunch *launch = NULL;
     gmacError_t ret = mode.launch(k, launch);
 
-    if(ret == gmac__success) {
+    if(ret == gmacSuccess) {
         ret = gmacLaunch(*launch);
         delete launch;
     }
@@ -241,7 +241,7 @@ gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
     return ret;
 }
 
-gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl:core::hpe::KernelLaunch &launch)
+gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     if(ParamAutoSync == false) {
@@ -261,7 +261,7 @@ gmacError_t APICALL gmacThreadSynchronize()
 
 	gmacError_t ret = gmacSuccess;
     if (ParamAutoSync == false) {
-        gmac::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
+        __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
         mode.wait();
         TRACE(GLOBAL, "Memory Sync");
         gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();

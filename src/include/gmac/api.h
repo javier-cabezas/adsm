@@ -222,14 +222,6 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
  * Launches a kernel on the accelerator. This function is NOT meant to be directly
  * used by the application
  * 
- * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
- */
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
-
-/**
- * Launches a kernel on the accelerator. This function is NOT meant to be directly
- * used by the application
- * 
  * \param Kernel descriptor for the kernel to be launched
  * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
  */
