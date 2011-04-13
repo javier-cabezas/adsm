@@ -46,8 +46,6 @@ WITH THE SOFTWARE.
 #include "config/common.h"
 #include "core/hpe/Accelerator.h"
 
-#include "Kernel.h"
-
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
@@ -56,8 +54,10 @@ class IOBuffer;
 
 namespace hpe {
 
-class KernelLaunch;
 class Mode;
+
+class KernelLaunch;
+class Kernel;
 
 class GMAC_LOCAL CommandList :
     protected std::list<cl_command_queue>,

@@ -4,12 +4,13 @@
 #include "util/Logger.h"
 
 #include "hpe/init.h"
+#include "api/opencl/hpe/Mode.h"
 
 namespace __impl { namespace opencl { namespace hpe {
 
 inline 
 Argument::Argument() :
-    size(0)
+    size_(0)
 {}
 
 inline void
@@ -35,9 +36,9 @@ Kernel::~Kernel()
 
 inline
 KernelLaunch *
-Kernel::launch(core::hpe::Mode &mode, cl_command_queue stream)
+Kernel::launch(Mode &mode, cl_command_queue stream)
 {
-    KernelLaunch * l = new KernelLaunch(mode, *this, c);
+    KernelLaunch * l = new KernelLaunch(mode, *this, stream);
     return l;
 }
 
@@ -106,11 +107,10 @@ KernelConfig::setArgument(const void *arg, size_t size, unsigned index)
 }
 
 inline
-KernelLaunch::KernelLaunch(const Kernel & k, const KernelConfig & c,
-        cl_command_queue stream) :
-    core::hpe::KernelLaunch(),
+KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream) :
+    core::hpe::KernelLaunch(dynamic_cast<core::hpe::Mode &>(mode)),
     KernelConfig(k.nArgs_),
-    f_(k.f_)
+    f_(k.f_),
     stream_(stream)
 {
     clRetainKernel(f_);

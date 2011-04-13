@@ -45,8 +45,6 @@ WITH THE SOFTWARE.  */
 #include "core/hpe/Context.h"
 #include "util/Lock.h"
 
-#include "Kernel.h"
-
 namespace __impl {
 
 namespace core {
@@ -59,8 +57,12 @@ class IOBuffer;
 
 
 namespace hpe {
+
 class Accelerator;
 class Mode;
+class Kernel;
+class KernelLaunch;
+
 
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
 protected:
@@ -90,7 +92,7 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    core::hpe::KernelLaunch &launch(core::hpe::Kernel &kernel);
+    KernelLaunch &launch(Kernel &kernel);
     gmacError_t prepareForCall();
     gmacError_t waitForCall();
     gmacError_t waitForCall(core::hpe::KernelLaunch &launch);

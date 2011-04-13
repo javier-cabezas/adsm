@@ -302,7 +302,7 @@ public:
      * \param kernel Handler of the kernel to be launched
      * \return Reference to the KernelLaunch object
      */
-    virtual KernelLaunch &launch(gmac_kernel_id_t kernel, KernelLaunch &launch) = 0;
+    virtual gmacError_t launch(gmac_kernel_id_t kernel, KernelLaunch *&launch) = 0;
 
     /**
      * Executes a kernel using a KernelLaunch object

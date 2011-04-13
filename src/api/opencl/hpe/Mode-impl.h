@@ -1,10 +1,10 @@
-#ifndef GMAC_API_OPENCL_MODE_IMPL_H_
-#define GMAC_API_OPENCL_MODE_IMPL_H_
+#ifndef GMAC_API_OPENCL_HPE_MODE_IMPL_H_
+#define GMAC_API_OPENCL_HPE_MODE_IMPL_H_
 
-#include "core/Process.h"
 #include "core/IOBuffer.h"
 
-#include "Context.h"
+#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/Context.h"
 
 namespace __impl { namespace opencl { namespace hpe {
 
@@ -42,10 +42,10 @@ void Mode::switchOut()
 }
 
 inline gmacError_t
-Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch &launch)
+Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch *&launch)
 {
     KernelMap::iterator i = kernels_.find(name);
-    core::hpe::Kernel *k = NULL;
+    Kernel *k = NULL;
     if (i == kernels_.end()) {
         k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
         if(k == NULL) return gmacErrorInvalidValue;
@@ -73,7 +73,7 @@ Mode::execute(core::hpe::KernelLaunch & launch)
 }
 
 inline gmacError_t
-Mode::wait(core::KernelLaunch &launch)
+Mode::wait(core::hpe::KernelLaunch &launch)
 {
     switchIn();
     error_ = contextMap_.waitForCall(launch);
@@ -131,16 +131,6 @@ Mode::getAccelerator() const
     return *static_cast<Accelerator *>(acc_);
 }
 
-
-inline
-gmacError_t Mode::argument(const void *arg, size_t size, unsigned index)
-{
-    switchIn();
-    Context &ctx = getCLContext();
-    gmacError_t ret = ctx.argument(arg, size, index);
-    switchOut();
-    return ret;
-}
 
 inline gmacError_t
 Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
