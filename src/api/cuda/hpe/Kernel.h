@@ -114,11 +114,15 @@ protected:
     // \todo Is this really necessary?
     const Kernel & kernel_;
     CUfunction f_;
+    CUevent start_; 
+    CUevent end_;
 
-    KernelLaunch(const Kernel & k, const KernelConfig & c);
+    KernelLaunch(core::hpe::Mode &mode, const Kernel & k, const KernelConfig & c);
 public:
+    ~KernelLaunch();
 
     gmacError_t execute();
+    CUevent getCUevent();
 };
 
 }}}

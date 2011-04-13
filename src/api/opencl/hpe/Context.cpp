@@ -2,6 +2,7 @@
 
 #include "api/opencl/hpe/Context.h"
 #include "api/opencl/hpe/Mode.h"
+#include "api/opencl/hpe/Kernel.h"
 
 #include "memory/Manager.h"
 
@@ -165,7 +166,7 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
 core::hpe::KernelLaunch &Context::launch(core::hpe::Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    core::hpe::KernelLaunch *ret = dynamic_cast<Kernel &>(kernel).launch(call_);
+    core::hpe::KernelLaunch *ret = kernel.launch(dynamic_cast<Mode &>(mode_), streamLaunch_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;
@@ -188,6 +189,17 @@ gmacError_t Context::waitForCall()
     trace::EnterCurrentFunction();	
     ret = syncCLstream(streamLaunch_);
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Context::waitForCall(core::hpe::KernelLaunch &kl)
+{
+    trace::EnterCurrentFunction();
+    KernelLaunch &launch = dynamic_cast<KernelLaunch &>(kl);
+    gmacError_t ret = gmacSuccess;
+    ret = waitForEvent(launch.getCLEvent());
+    trace::SetThreadState(THREAD_T(id_), trace::Idle);
     trace::ExitCurrentFunction();
     return ret;
 }

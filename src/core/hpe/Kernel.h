@@ -46,22 +46,27 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core { namespace hpe {
 
-typedef Descriptor<gmacKernel_t> KernelDescriptor;
-
+class Mode;
 class KernelLaunch;
+
+typedef Descriptor<gmac_kernel_id_t> KernelDescriptor;
 
 class GMAC_LOCAL Kernel : public KernelDescriptor{
      DBC_FORCE_TEST(Kernel)
 
 public:
-    Kernel(const KernelDescriptor & k);
-    virtual ~Kernel();
+    Kernel(const KernelDescriptor &k);
+    virtual ~Kernel() {};
 };
 
 class GMAC_LOCAL KernelLaunch {
+protected:
+    Mode &mode_;
+    KernelLaunch(Mode &mode);
 public:
     virtual ~KernelLaunch();
     virtual gmacError_t execute() = 0;
+    Mode &getMode();
 };
 
 }}}

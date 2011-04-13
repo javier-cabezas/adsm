@@ -263,7 +263,7 @@ Accelerator::addAccelerator(Accelerator &acc)
 }
 
 Kernel *
-Accelerator::getKernel(gmacKernel_t k)
+Accelerator::getKernel(gmac_kernel_id_t k)
 {
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     ASSERTION(programs.size() > 0);

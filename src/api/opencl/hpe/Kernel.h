@@ -52,15 +52,17 @@ class KernelLaunch;
 
 class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
 	friend class Kernel;
-    const void * ptr_;
+protected:
     size_t size_;
-    unsigned index_;
-public:
-    Argument(const void * ptr, size_t size, unsigned index);
 
-    const void * ptr() const { return ptr_; }
+    static const unsigned StackSize_ = 4096;
+    uint8_t stack_[StackSize_];
+public:
+    Argument();
+    void setArgument(const void *ptr, size_t size);
+
+    const void * ptr() const { return stack_; }
     size_t size() const { return size_; }
-    unsigned index() const { return index_; }
 };
 
 
@@ -69,35 +71,28 @@ class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
     friend class KernelLaunch;
 protected:
     cl_kernel f_;
+    unsigned nArgs_;
 public:
     Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel);
     ~Kernel();
-    KernelLaunch * launch(KernelConfig & c);
+    KernelLaunch * launch(KernelConfig & c, cl_command_queue stream);
 };
 
-typedef std::list<Argument> ArgsList;
+typedef std::vector<Argument> ArgsVector;
 
-class GMAC_LOCAL KernelConfig : protected ArgsList {
+class GMAC_LOCAL KernelConfig : protected ArgsVector {
 protected:
-    static const unsigned StackSize_ = 4096;
-
-    uint8_t stack_[StackSize_];
-    size_t argsSize_;
-
     cl_uint workDim_;
     size_t *globalWorkOffset_;
     size_t *globalWorkSize_;
     size_t *localWorkSize_;
 
-    cl_command_queue stream_;
-
-    KernelConfig(const KernelConfig &config);
 public:
-    /// \todo Remove this piece of shit
-    KernelConfig();
-    KernelConfig(cl_uint work_dim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize, cl_command_queue stream);
+    KernelConfig(unsigned nArgs);
     ~KernelConfig();
 
+    void setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
+        size_t *globalWorkSize, void *localWorkSize);
     void setArgument(const void * arg, size_t size, unsigned index);
 
     KernelConfig &operator=(const KernelConfig &config);
@@ -113,11 +108,14 @@ class GMAC_LOCAL KernelLaunch : public core::hpe::KernelLaunch, public KernelCon
 
 protected:
     cl_kernel f_;
+    cl_command_queue stream_;
+    cl_event event_;
 
-    KernelLaunch(const Kernel & k, const KernelConfig & c);
+    KernelLaunch(core::hpe::Mode &mode, const Kernel & k, cl_command_queue stream);
 public:
     ~KernelLaunch();
     gmacError_t execute();
+    cl_event getCLEvent();
 };
 
 }}}

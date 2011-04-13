@@ -20,13 +20,13 @@
 #define VECTORC "inputset/vectorC"
 #endif
 
-const size_t vecSize = 1024 * 1024;
-const size_t blockSize = 32;
+const unsigned vecSize = 1024 * 1024;
+const unsigned blockSize = 32;
 
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecSet(__global float *_a, unsigned long size, float val)\
+__kernel void vecSet(__global float *_a, unsigned size, float val)\
 {\
     unsigned i = get_global_id(0);\
     if(i >= size) return;\
@@ -34,7 +34,7 @@ __kernel void vecSet(__global float *_a, unsigned long size, float val)\
     _a[i] = val;\
 }\
 \
-__kernel void vecAccum(__global float *_b, __global const float *_a, unsigned long size)\
+__kernel void vecAccum(__global float *_b, __global const float *_a, unsigned size)\
 {\
     unsigned i = get_global_id(0);\
     if(i >= size) return;\
@@ -42,7 +42,7 @@ __kernel void vecAccum(__global float *_b, __global const float *_a, unsigned lo
     _b[i] += _a[i];\
 }\
 \
-__kernel void vecMove(__global float *_a, __global const float *_b, unsigned long size)\
+__kernel void vecMove(__global float *_a, __global const float *_b, unsigned size)\
 {\
     unsigned i = get_global_id(0);\
     if(i >= size) return;\
@@ -85,49 +85,56 @@ void *doTest(void *)
 
     barrier_wait(&ioBefore);
 
-    for (int i = 0; i < ITERATIONS; i++) {
-        //vecSet<<<Dg, Db>>>(oclPtr(a), vecSize, float(i));
+    OclKernel kernelSet;
 
-        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        cl_mem tmp = cl_mem(oclPtr(a));
-        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-        __oclSetArgument(&vecSize, sizeof(vecSize), 1);
+    assert(__oclKernelGet("vecSet", &kernelSet) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernelSet, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    cl_mem tmp = cl_mem(oclPtr(a));
+    assert(__oclKernelSetArg(&kernelSet, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelSet, &vecSize, sizeof(vecSize), 1) == gmacSuccess);
+
+    OclKernel kernelMove;
+
+    assert(__oclKernelGet("vecMove", &kernelMove) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernelMove, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    tmp = cl_mem(oclPtr(c));
+    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    tmp = cl_mem(oclPtr(a));
+    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelMove, &vecSize, sizeof(vecSize), 2) == gmacSuccess);
+
+    for (int i = 0; i < ITERATIONS; i++) {
         float val = float(i);
-        __oclSetArgument(&val, sizeof(val), 2);
-        assert(__oclLaunch("vecSet") == gmacSuccess);
+        assert(__oclKernelSetArg(&kernelSet, &val, sizeof(val), 2) == gmacSuccess);
+        assert(__oclKernelLaunch(&kernelSet) == gmacSuccess);
+        assert(__oclKernelWait(&kernelSet) == gmacSuccess);
 
         barrier_wait(&ioAfter);
-        //vecMove<<<Dg, Db>>>(oclPtr(c), oclPtr(a), vecSize);
-
-        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        tmp = cl_mem(oclPtr(c));
-        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-        tmp = cl_mem(oclPtr(a));
-        __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-        __oclSetArgument(&vecSize, sizeof(vecSize), 2);
-        assert(__oclLaunch("vecMove") == gmacSuccess);
-
-        assert(oclThreadSynchronize() == gmacSuccess);
+        assert(__oclKernelLaunch(&kernelMove) == gmacSuccess);
+        assert(__oclKernelWait(&kernelMove) == gmacSuccess);
         barrier_wait(&ioBefore);
     }
 
     barrier_wait(&ioBefore);
 
+    OclKernel kernelAccum;
+    assert(__oclKernelGet("vecAccum", &kernelAccum) == gmacSuccess);
+
+    assert(__oclKernelConfigure(&kernelAccum, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    tmp = cl_mem(oclPtr(b));
+    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    tmp = cl_mem(oclPtr(a));
+    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelAccum, &vecSize, sizeof(vecSize), 2) == gmacSuccess);
+
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
-        //readFile(a, vecSize, i);
-        //vecAccum<<<Dg, Db>>>(oclPtr(b), oclPtr(a), vecSize);
 
-        assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-        cl_mem tmp = cl_mem(oclPtr(b));
-        __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-        tmp = cl_mem(oclPtr(a));
-        __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-        __oclSetArgument(&vecSize, sizeof(vecSize), 2);
-        assert(__oclLaunch("vecAccum") == gmacSuccess);
-
-        oclThreadSynchronize();
+        assert(__oclKernelLaunch(&kernelAccum) == gmacSuccess);
+        assert(__oclKernelWait(&kernelAccum) == gmacSuccess);
     }
 
 
