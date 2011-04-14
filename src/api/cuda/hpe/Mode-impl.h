@@ -24,12 +24,10 @@ void Mode::switchOut()
 }
 
 inline
-core::hpe::KernelLaunch &Mode::launch(gmac_kernel_id_t kernel, core::hpe::KernelLaunch *&kernel)
+gmacError_t Mode::launch(gmac_kernel_id_t id, core::hpe::KernelLaunch *&kernel)
 {
-    KernelMap::iterator i = kernels_.find(kernel);
-    ASSERTION(i != kernels_.end());
     KernelMap::iterator i = kernels_.find(id);
-    if(id == kernels_.end()) return gmacErrorInvalidValue;
+    if(i == kernels_.end()) return gmacErrorInvalidValue;
 
     Kernel * k = dynamic_cast<Kernel *>(i->second);
     switchIn();
@@ -53,7 +51,7 @@ Mode::execute(core::hpe::KernelLaunch & launch)
 }
 
 inline gmacError_t
-Mode::wait(core::KernelLaunch &launch)
+Mode::wait(core::hpe::KernelLaunch &launch)
 {
     switchIn();
     error_ = contextMap_.waitForCall(launch);
