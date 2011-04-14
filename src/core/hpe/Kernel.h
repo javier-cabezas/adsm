@@ -64,7 +64,7 @@ protected:
     Mode &mode_;
     KernelLaunch(Mode &mode);
 public:
-    virtual ~KernelLaunch();
+    virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;
     Mode &getMode();
 };
