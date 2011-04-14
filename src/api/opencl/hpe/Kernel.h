@@ -109,7 +109,7 @@ class GMAC_LOCAL KernelLaunch : public core::hpe::KernelLaunch, public KernelCon
 protected:
     cl_kernel f_;
     cl_command_queue stream_;
-    cl_event event_;
+    cl_event lastEvent_;
 
     KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream);
 public:
