@@ -13,7 +13,7 @@ Argument::Argument(const void * ptr, size_t size, long_t offset) :
 
 inline
 KernelLaunch *
-Kernel::launch(core::hpe::Mode &mode, KernelConfig & c)
+Kernel::launch(Mode &mode, KernelConfig & c)
 {
     KernelLaunch * l = new cuda::hpe::KernelLaunch(mode, *this, c);
     return l;

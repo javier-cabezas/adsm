@@ -146,7 +146,7 @@ public:
     */
 	gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-    gmacError_t wait(core::KernelLaunch &launch);
+    gmacError_t wait(core::hpe::KernelLaunch &launch);
     gmacError_t wait();
 
     core::IOBuffer &createIOBuffer(size_t size);

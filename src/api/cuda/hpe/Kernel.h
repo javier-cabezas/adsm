@@ -71,7 +71,7 @@ protected:
 
 public:
     Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod);
-    KernelLaunch * launch(KernelConfig & c);
+    KernelLaunch *launch(Mode &mode, KernelConfig & c);
 };
 
 typedef std::vector<Argument> ArgsVector;
@@ -117,7 +117,7 @@ protected:
     CUevent start_; 
     CUevent end_;
 
-    KernelLaunch(core::hpe::Mode &mode, const Kernel & k, const KernelConfig & c);
+    KernelLaunch(Mode &mode, const Kernel & k, const KernelConfig & c);
 public:
     ~KernelLaunch();
 

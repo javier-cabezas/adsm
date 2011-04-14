@@ -1,5 +1,6 @@
-#include "Kernel.h"
-#include "Accelerator.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Kernel.h"
+#include "api/cuda/hpe/Mode.h"
 
 #include "trace/Tracer.h"
 
@@ -42,7 +43,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 }
 
 
-KernelLaunch::KernelLaunch(core::hpe::Mode &mode, const Kernel & k, const KernelConfig & c) :
+KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, const KernelConfig & c) :
     core::hpe::KernelLaunch(mode),
     KernelConfig(c),
     kernel_(k),
@@ -87,7 +88,7 @@ KernelLaunch::execute()
         goto exit;
     }
 
-    if((ret = cuEventCreate(&end_, CU_EVENT_DEFATULT)) != CUDA_SUCCESS) {
+    if((ret = cuEventCreate(&end_, CU_EVENT_DEFAULT)) != CUDA_SUCCESS) {
         goto exit;
     }
 
