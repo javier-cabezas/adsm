@@ -80,13 +80,13 @@ KernelConfig::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
         }
 
         if(globalWorkOffset) {
-            globalWorkOffset = new size_t[work_dim];
+            globalWorkOffset_ = new size_t[work_dim];
         }
         if(globalWorkSize) {
-            globalWorkSize = new size_t[work_dim];
+            globalWorkSize_ = new size_t[work_dim];
         }
         if(localWorkSize) {
-            localWorkSize = new size_t[work_dim];
+            localWorkSize_ = new size_t[work_dim];
         }
     }
 
