@@ -125,7 +125,7 @@ KernelLaunch::~KernelLaunch()
 inline cl_event
 KernelLaunch::getCLEvent()
 {
-    return event_;
+    return lastEvent_;
 }
 
 
