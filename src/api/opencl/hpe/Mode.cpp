@@ -28,7 +28,6 @@ Mode::~Mode()
     }
 }
 
-inline
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     IOBuffer *ret;
@@ -42,7 +41,6 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
     return *ret;
 }
 
-inline
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
     ASSERTION(ioMemory_ != NULL);

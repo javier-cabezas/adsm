@@ -40,14 +40,12 @@ void InitTrace(void)
 {
     if(Trace_ == true) return;
     Trace_ = true;
-    gmac::trace::InitTracer();
 }
 
 void FiniTrace(void)
 {
     if(Trace_ == false) return;
     Trace_ = false;
-    gmac::trace::FiniTracer();
 }
 
 namespace __impl {

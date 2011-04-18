@@ -34,8 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_GMAC_INIT_H_
 #define GMAC_GMAC_INIT_H_
 
-#if defined(GMAC_DLL)
-
 #include <cstdio>
 
 #include "config/common.h"
@@ -51,36 +49,13 @@ namespace memory {
 class Allocator;
 }
 
-class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
-public:
-    GMACLock() : gmac::util::RWLock("Process") {}
 
-    void lockRead()  const { gmac::util::RWLock::lockRead();  }
-    void lockWrite() const { gmac::util::RWLock::lockWrite(); }
-    void unlock()    const { gmac::util::RWLock::unlock();   }
-};
-
-extern __impl::util::Private<const char> _inGmac;
-extern GMACLock * _inGmacLock;
-extern const char _gmacCode;
-extern const char _userCode;
-
-extern Atomic gmacInit__;
-extern Atomic gmacFini__;
-
-void init() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
 void enterGmacExclusive() GMAC_LOCAL;
 void exitGmac() GMAC_LOCAL;
 char inGmac() GMAC_LOCAL;
 
-}
 
-#else
-#   define enterGmac()
-#   define enterGmacExclusive()
-#   define exitGmac()
-#   define inGmac()
-#endif
+}
 
 #endif

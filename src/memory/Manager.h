@@ -53,7 +53,7 @@ class Protocol;
 //! Memory Manager Interface
 
 //! Memory Managers orchestate the data transfers between host and accelerator memories
-class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
+class GMAC_API Manager : public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
 
     // Needed to let Singleton call the protected constructor

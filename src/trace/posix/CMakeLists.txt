@@ -1,4 +1,4 @@
 set(trace_SRC
     Tracer.cpp)
 
-add_gmac_sources(gmac ${trace_SRC})
+add_gmac_sources(gmac-trace ${trace_SRC})

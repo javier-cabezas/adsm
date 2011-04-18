@@ -62,7 +62,6 @@ TEST_F(AcceleratorTest, AcceleratorAligmentExt) {
 //check void unregisterMode(Mode &mode)
 TEST_F(AcceleratorTest, CreateMode){
 
-     Process::create<Process>();  
      Process &proc=Process::getInstance<Process &>();
 
      ASSERT_TRUE(&proc != NULL);
@@ -79,8 +78,6 @@ TEST_F(AcceleratorTest, CreateMode){
 
      delete mode_;
      ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
-
-     Process::destroy();
 }
 
 

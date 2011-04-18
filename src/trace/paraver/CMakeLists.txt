@@ -8,4 +8,4 @@ set(paraver_SRC
     Pcf.h Pcf.cpp
 )
 
-add_gmac_sources(gmac ${paraver_SRC})
+add_gmac_sources(gmac-trace ${paraver_SRC})

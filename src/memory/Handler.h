@@ -41,7 +41,9 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 //! Handler for Read/Write faults
-class GMAC_LOCAL Handler {
+class GMAC_API Handler {
+public:
+    typedef void (*CallBack)(void);
 private:
     //! Activate the fault handler
 	void setHandler(void);
@@ -58,6 +60,8 @@ private:
     //! Active handler
 	static Handler *Handler_;
 	
+    static CallBack Entry_;
+    static CallBack Exit_;
 public:
 
     //! Default constructor
@@ -71,6 +75,23 @@ public:
 		if(--Count_ == 0) restoreHandler();
 	}
 
+    //! Set function to be called before executing the handler
+    static inline void setEntry(CallBack call) {
+        Entry_ = call;
+    }
+
+    static inline void Entry() {
+        if(Entry_ != NULL) Entry_();
+    }
+
+    //! Set function be bo called after executing the handler
+    static inline void setExit(CallBack call) {
+        Exit_ = call;
+    }
+
+    static inline void Exit() {
+        if(Exit_ != NULL) Exit_();
+    }
 };
 
 }}

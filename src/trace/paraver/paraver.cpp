@@ -31,7 +31,7 @@ int init = 0;
 static const char *paraverVar = "PARAVER_OUTPUT";
 static const char *defaultOut = "paraver";
 
-static void CONSTRUCTOR Init(void)
+static void CONSTRUCTOR init(void)
 {
 	TRACE("Paraver Tracing");
 	const char *__file = __getenv(paraverVar);
@@ -41,7 +41,7 @@ static void CONSTRUCTOR Init(void)
 	init = 0;
 }
 
-static void DESTRUCTOR Fini(void)
+static void DESTRUCTOR fini(void)
 {
 	const char *__file = __getenv(paraverVar);
 	if(__file == NULL) __file = defaultOut;
@@ -76,10 +76,10 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	switch(dwReason) {
 		case DLL_PROCESS_ATTACH:
-			paraver::Init();
+			paraver::init();
 			break;
 		case DLL_PROCESS_DETACH:
-			paraver::Fini();
+			paraver::fini();
 			break;
 		case DLL_THREAD_ATTACH:
 			break;

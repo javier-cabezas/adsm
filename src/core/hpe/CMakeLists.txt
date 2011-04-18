@@ -1,14 +1,36 @@
-add_subdirectory(dbc)
-
 set(core_hpe_SRC
-    Accelerator.h Accelerator-impl.h Accelerator.cpp
-    Context.h Context.cpp
-    Descriptor.h Descriptor-impl.h
-    Kernel.h Kernel-impl.h
-    Map.h Map.cpp
-    Mode.h Mode-impl.h Mode.cpp
-    Process.h Process-impl.h Process.cpp
-    Queue.h Queue.cpp)
+    Accelerator.h
+    Accelerator-impl.h
+    Accelerator.cpp
+    Context.h
+    Context.cpp
+    Descriptor.h
+    Descriptor-impl.h
+    Kernel.h
+    Kernel-impl.h
+    Map.h
+    Map.cpp
+    Mode.h
+    Mode-impl.h
+    Mode.cpp
+    Process.h
+    Process-impl.h
+    Process.cpp
+    Queue.h
+    Queue.cpp
+)
 
-add_gmac_sources(gmac ${core_hpe_SRC})
-add_gmac_sources(gmac-dbc)
+set(core_hpe_DBC
+    dbc/Accelerator.h
+    dbc/Accelerator.cpp
+    dbc/Context.h
+    dbc/Context.cpp
+    dbc/Kernel.h
+    dbc/Kernel.cpp
+    dbc/Mode.h
+    dbc/Mode.cpp
+    dbc/Process.h
+    dbc/Process.cpp
+)
+
+add_gmac_sources(gmac-core-hpe ${core_hpe_SRC} ${core_hpe_DBC})

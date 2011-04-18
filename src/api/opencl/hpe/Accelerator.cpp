@@ -50,8 +50,10 @@ Accelerator::~Accelerator()
 {
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     std::vector<cl_program>::const_iterator i;
-    for(i = programs.begin(); i != programs.end(); i++) {
-        if(gmacFini__ < 0) {
+    // We cannot call OpenCL at destruction time because the library
+    // might have been unloaded
+    if(core::Process::isValid()) {
+        for(i = programs.begin(); i != programs.end(); i++) {
             cl_int ret = clReleaseProgram(*i);
             ASSERTION(ret == CL_SUCCESS);
         }
@@ -64,10 +66,9 @@ Accelerator::~Accelerator()
         GlobalHostAlloc_ = NULL;
     }
 
-    if(gmacFini__ < 0) {
-        cl_int ret = clReleaseContext(ctx_);
-        ASSERTION(ret == CL_SUCCESS);
-    }
+    cl_int ret = CL_SUCCESS;
+    if(core::Process::isValid()) ret = clReleaseContext(ctx_);
+    ASSERTION(ret == CL_SUCCESS);
 }
 
 void Accelerator::init()
@@ -121,7 +122,8 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
 
     trace::SetThreadState(trace::Wait);
-    cl_int ret = clReleaseMemObject(addr.base_);
+    cl_int ret = CL_SUCCESS;
+    if(core::Process::isValid()) ret = clReleaseMemObject(addr.base_);
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -421,10 +423,9 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
     trace::EnterCurrentFunction();
 	// We cannot remove the command queue because the OpenCL DLL might
 	// have been already unloaded
-    if(__impl::gmacFini__ < 0) {
-        cl_int ret = clReleaseCommandQueue(stream);
-        CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
-    }
+    cl_int ret = CL_SUCCESS;
+    if(core::Process::isValid()) ret = clReleaseCommandQueue(stream);
+    CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
 
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
@@ -505,12 +506,14 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-    cl_mem mem = NULL;
-    size_t size;
-    if(localHostAlloc_.translate(addr, mem, size) == true) {
-        localHostAlloc_.remove(addr); 
-        Accelerator::GlobalHostAlloc_->remove(addr);
-        if(__impl::gmacFini__ < 0) ret = clReleaseMemObject(mem);
+    if(core::Process::isValid()) {
+        cl_mem mem = NULL;
+        size_t size;
+        if(localHostAlloc_.translate(addr, mem, size) == true) {
+            localHostAlloc_.remove(addr); 
+            Accelerator::GlobalHostAlloc_->remove(addr);
+            ret = clReleaseMemObject(mem);
+        }
     }
     
     trace::ExitCurrentFunction();

@@ -55,7 +55,7 @@ class Protocol;
 
 
 //! A map of objects that is not bound to any Mode
-class GMAC_LOCAL ObjectMap :
+class GMAC_API ObjectMap :
      protected gmac::util::RWLock, protected std::map<const hostptr_t, Object *> {
 public:
     typedef gmacError_t(Object::*ObjectOp)(void);

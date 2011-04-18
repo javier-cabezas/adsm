@@ -8,7 +8,11 @@ endif(DEFINED THREAD_DIR)
 
 set(gmac_lib_SRC
     gmac.cpp
-    init.h init.cpp)
+    init.h
+    init.cpp
+    stdc/io.cpp
+    stdc/stdc.h
+    stdc/stdc.cpp
+)
 
-add_gmac_sources(gmac-lib ${gmac_lib_SRC})
-add_gmac_sources(gmac ${gmac_SRC})
+add_gmac_sources(gmac-hpe-api ${gmac_lib_SRC})

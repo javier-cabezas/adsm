@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T = void>
-class GMAC_LOCAL Private {
+class GMAC_API Private {
 protected:
     pthread_key_t key_;
     

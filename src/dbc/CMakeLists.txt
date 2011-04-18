@@ -1,5 +1,7 @@
 set(dbc_SRC
+    Contract.h
+    Contract.cpp
     types.h
-    Contract.h Contract.cpp)
+)
 
 add_gmac_sources(gmac-dbc ${dbc_SRC})

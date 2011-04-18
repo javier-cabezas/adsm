@@ -4,8 +4,13 @@ if(USE_TRACE_PARAVER)
 endif(USE_TRACE_PARAVER)
 
 set(trace_SRC
-    Tracer.h Tracer-impl.h Tracer.cpp
-    Console.h Console.cpp
-    Paraver.h Paraver.cpp)
+    Console.h
+    Console.cpp
+    Paraver.h
+    Paraver.cpp
+    Tracer.h
+    Tracer-impl.h
+    Tracer.cpp
+)
 
-add_gmac_sources(gmac ${trace_SRC})
+add_gmac_sources(gmac-trace ${trace_SRC})
