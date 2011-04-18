@@ -168,33 +168,39 @@ if(MAKE_DOC)
 endif(MAKE_DOC)
 
 
+option(MAKE_STATIC "Build GMAC as a static library")
 include("CMakeLists-libs.txt")
+if(MAKE_STATIC)
+add_library(gmac STATIC ${gmac-hpe_SRC}) 
+else(MAKE_STATIC)
+add_library(gmac SHARED ${gmac-hpe_SRC}) 
+endif(MAKE_STATIC)
+target_link_libraries(gmac gmac-memory gmac-core-hpe gmac-core gmac-common gmac-trace ${gmac_LIBS})
+set_target_properties(gmac PROPERTIES
+    COMPILE_FLAGS ${gmac_static_FLAGS}
+    VERSION 0.3.0 SOVERSION 1
+    COMPILE_DEFINITIONS_DEBUG USE_DBC)
 
- 
-#option(MAKE_STATIC "Build GMAC as a static library")
-#if(MAKE_STATIC)
-#add_library(gmac STATIC ${gmac-lib_SRC})
-#else(MAKE_STATIC)
-#add_library(gmac SHARED ${gmac-lib_SRC})
-#endif(MAKE_STATIC)
-#set_property(TARGET gmac PROPERTY PUBLIC_HEADER
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
-#    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
-#    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
-#)
+link_directories(${gmac_LIBDIR})
 
+set_property(TARGET gmac PROPERTY PUBLIC_HEADER
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
+    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
+)
 
-#target_link_libraries(gmac gmac-base ${gmac_LIBS})
-#link_directories(${gmac_LIBDIR})
+install(TARGETS gmac 
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
+     RUNTIME DESTINATION bin
+     RESOURCE DESTINATION share
+     PUBLIC_HEADER DESTINATION include/gmac)
 
-#set_target_properties(gmac PROPERTIES
-#    COMPILE_DEFINITIONS_DEBUG USE_DBC
-#    VERSION 0.2.0 SOVERSION 1)
 
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
@@ -211,11 +217,5 @@ if(MAKE_TOOLS)
     add_subdirectory(tools)
 endif(MAKE_TOOLS)
 
-#install(TARGETS gmac 
-#     LIBRARY DESTINATION lib
-#     ARCHIVE DESTINATION lib
-#     RUNTIME DESTINATION bin
-#     RESOURCE DESTINATION share
-#     PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)
