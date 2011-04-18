@@ -57,28 +57,6 @@ public:
     //! Default destructor
     virtual ~Mode() { };
 
-    //! Allocated GPU-accessible host memory
-    /*!
-        \param addr Memory address of the pointer where the starting host memory address will be stored
-        \param size Size (in bytes) of the host memory to be allocated
-        \return Error code
-    */
-    virtual gmacError_t hostAlloc(hostptr_t *addr, size_t size) = 0;
-
-    //! Release GPU-accessible host memory 
-    /*!
-        \param addr Starting address of the host memory to be released
-        \return Error code
-    */
-    virtual gmacError_t hostFree(hostptr_t addr) = 0;
-
-    //! Get the GPU memory address where GPU-accessible host memory is mapped
-    /*!
-        \param addr Host memory address
-        \return Device memory address
-    */
-    virtual accptr_t hostMap(const hostptr_t addr) = 0;
-
     virtual CUstream eventStream() = 0;
 
     virtual gmacError_t waitForEvent(CUevent event, bool fromCUDA) = 0;

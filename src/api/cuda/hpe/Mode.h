@@ -66,7 +66,7 @@ class Texture;
 class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public cuda::Mode {
+class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual cuda::Mode {
     DBC_FORCE_TEST(Mode)
 
     friend class Switch;
@@ -119,7 +119,7 @@ public:
         \param size Size (in bytes) of the host memory to be allocated
         \return Error code
     */
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
     //! Release GPU-accessible host memory 
     /*!
@@ -135,7 +135,7 @@ public:
         \param addr Host memory address
         \return Device memory address
     */
-    accptr_t hostMap(const hostptr_t addr);
+    accptr_t hostMapAddr(const hostptr_t addr);
 
     gmacError_t launch(gmac_kernel_id_t id, core::hpe::KernelLaunch *&kernel);
 
