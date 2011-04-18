@@ -57,6 +57,7 @@ RWLock::RWLock(const char *name) :
 RWLock::~RWLock()
 {
     ENSURES(pthread_mutex_destroy(&internal_) == 0);
+    readers_.clear();
 }
 
 void RWLock::lockRead() const
