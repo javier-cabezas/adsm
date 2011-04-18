@@ -26,12 +26,3 @@ set_target_properties(gmac-core-hpe PROPERTIES
     COMPILE_FLAGS ${gmac_static_FLAGS}
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
 
-
-add_library(gmac SHARED ${gmac-hpe_SRC}) 
-target_link_libraries(gmac gmac-memory gmac-core-hpe gmac-core gmac-common gmac-trace ${gmac_LIBS})
-set_target_properties(gmac PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG USE_DBC)
-
-
-link_directories(${gmac_LIBDIR})
-
