@@ -26,7 +26,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     }
 
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(&addr, util::params::ParamIOMemory);
+    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
         ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
@@ -123,10 +123,10 @@ Context &Mode::getCUDAContext()
     return dynamic_cast<Context &>(getContext());
 }
 
-gmacError_t Mode::hostAlloc(hostptr_t *addr, size_t size)
+gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();
-    gmacError_t ret = getAccelerator().hostAlloc(addr, size);
+    gmacError_t ret = getAccelerator().hostAlloc(&addr, size);
     switchOut();
     return ret;
 }
@@ -162,7 +162,7 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
     return error_;
 }
 
-accptr_t Mode::hostMap(const hostptr_t addr)
+accptr_t Mode::hostMapAddr(const hostptr_t addr)
 {
     switchIn();
     accptr_t ret = getAccelerator().hostMap(addr);
