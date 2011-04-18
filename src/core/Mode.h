@@ -116,6 +116,31 @@ public:
      */
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
 
+    /** Allocate GPU-accessible host memory
+     *
+     *  \param addr Pointer of the memory to be mapped to the accelerator
+     *  \param size Size (in bytes) of the host memory to be mapped
+     *  \return Error code
+     */
+    virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
+
+    /** Release GPU-accessible host memory 
+     *
+     *  \param addr Starting address of the host memory to be released
+     *  \return Error code
+     */
+    virtual gmacError_t hostFree(hostptr_t addr) = 0;
+
+
+    /** Gets the GPU memory address where the given GPU-accessible host
+     *  memory pointer is mapped
+     *
+     *  \param addr Host memory address
+     *  \return Device memory address
+     */
+    virtual accptr_t hostMapAddr(const hostptr_t addr) = 0;
+
+
     /**
      * Unmaps the memory previously mapped by map
      * \param addr Host memory allocation to be unmap

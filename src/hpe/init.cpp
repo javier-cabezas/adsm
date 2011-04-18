@@ -1,5 +1,7 @@
 #include "core/hpe/Process.h"
 
+#include "memory/Handler.h"
+
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
@@ -9,14 +11,24 @@
 #include "init.h"
 
 namespace __impl {
-util::Private<const char> _inGmac;
-GMACLock * _inGmacLock;
 
-const char _gmacCode = 1;
-const char _userCode = 0;
+class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
+public:
+    GMACLock() : gmac::util::RWLock("Process") {}
 
-Atomic gmacInit__ = 0;
-Atomic gmacFini__ = -1;
+    void lockRead()  const { gmac::util::RWLock::lockRead();  }
+    void lockWrite() const { gmac::util::RWLock::lockWrite(); }
+    void unlock()    const { gmac::util::RWLock::unlock();   }
+};
+
+static util::Private<const char> inGmac_;
+static GMACLock * inGmacLock;
+
+static const char gmacCode = 1;
+static const char userCode = 0;
+
+static Atomic gmacInit__ = 0;
+static Atomic gmacFini__ = -1;
 
 #ifdef LINUX 
 #define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
@@ -26,20 +38,12 @@ Atomic gmacFini__ = -1;
 #endif
 #endif
 
-void CONSTRUCTOR init(void)
+static void init(void)
 {
-	util::Private<const char>::init(_inGmac);
-    _inGmacLock = new GMACLock();
-
-	gmacInit__ = 1;
-	enterGmac();
-    
-	util::Logger::Init();
-    TRACE(GLOBAL, "Initialiazing GMAC");
-
-    util::params::Init();
-	gmac::trace::InitTracer();	
-    trace::SetThreadState(trace::Running);
+    /* Create GMAC enter lock and set GMAC as initialized */
+    inGmacLock = new GMACLock();
+    util::Private<const char>::init(inGmac_);
+    enterGmac();
 
     /* Call initialization of interpose libraries */
 #if defined(POSIX)
@@ -54,13 +58,52 @@ void CONSTRUCTOR init(void)
 
     TRACE(GLOBAL, "Using %s memory manager", util::params::ParamProtocol);
     TRACE(GLOBAL, "Using %s memory allocator", util::params::ParamAllocator);
+
+    // Set the entry and exit points for Manager
+    __impl::memory::Handler::setEntry(enterGmac);
+    __impl::memory::Handler::setExit(exitGmac);
+
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
     __impl::core::Process::create<gmac::core::hpe::Process>();
+
+    TRACE(GLOBAL, "Initializing API");
     core::apiInit();
 
     exitGmac();
 }
+
+
+void enterGmac()
+{
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
+    inGmac_.set(&gmacCode);
+    inGmacLock->lockRead();
+}
+
+
+void enterGmacExclusive()
+{
+    inGmac_.set(&gmacCode);
+    inGmacLock->lockWrite();
+}
+
+void exitGmac()
+{
+    inGmacLock->unlock();
+    inGmac_.set(&userCode);
+}
+
+char inGmac()
+{ 
+    if(gmacInit__ == 0) return 1;
+    char *ret = (char  *)inGmac_.get();
+    if(ret == NULL) return 0;
+    else if(*ret == gmacCode) return 1;
+    return 0;
+}
+
+
 
 static void DESTRUCTOR fini(void)
 {
@@ -68,8 +111,6 @@ static void DESTRUCTOR fini(void)
     if(AtomicInc(gmacFini__) == 0) {
         TRACE(GLOBAL, "Cleaning GMAC");
         core::Process::destroy();
-        gmac::trace::FiniTracer();
-        delete _inGmacLock;
     }
 	// TODO: Clean-up logger
 }
@@ -124,35 +165,6 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 namespace __impl {
 
-void enterGmac()
-{
-#	if defined(_MSC_VER)
-	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
-#   endif
-    _inGmac.set(&_gmacCode);
-    _inGmacLock->lockRead();
-}
-
-
-void enterGmacExclusive()
-{
-    _inGmac.set(&_gmacCode);
-    _inGmacLock->lockWrite();
-}
-
-void exitGmac()
-{
-    _inGmacLock->unlock();
-    _inGmac.set(&_userCode);
-}
-
-char inGmac() { 
-    if(gmacInit__ == 0) return 1;
-    char *ret = (char  *)_inGmac.get();
-    if(ret == NULL) return 0;
-    else if(*ret == _gmacCode) return 1;
-    return 0;
-}
 
 }
 

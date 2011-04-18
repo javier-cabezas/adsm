@@ -1,17 +1,27 @@
 add_subdirectory(${OS_DIR})
 
 set(util_SRC
-    Atomics.h Thread.h
-    Lock.h Lock-impl.h Lock.cpp
-    Semaphore.h
+    Atomics.h
+    FileLock.h
+    Lock.h
+    Lock-impl.h
+    Lock.cpp
+    Logger.h
+    Logger-impl.h
+    Logger.cpp
     NonCopyable.h
+    Parameter.h
+    Parameter-impl.h
+    Parameter.cpp
+    Parameter-def.h
     Private.h
-    Parameter.h Parameter-impl.h Parameter.cpp Parameter-def.h
-    Logger.h Logger-impl.h Logger.cpp
+    Reference.h
+    Reference-impl.h
     ReusableObject.h
-    Reference.h Reference-impl.h
-    Singleton.h Singleton-impl.h
-    FileLock.h)
+    Semaphore.h
+    Singleton.h
+    Singleton-impl.h
+    Thread.h
+)
 
-add_gmac_sources(gmac ${util_SRC})
-add_gmac_sources(gmac-dbc)
+add_gmac_sources(gmac-util ${util_SRC})

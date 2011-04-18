@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 /* Common constructors */
 namespace __impl { namespace util { namespace params {
-void Init(void) GMAC_LOCAL;
+void Init(void) GMAC_API;
 }}}
 
 /* Interposition Constructors */
@@ -57,7 +57,7 @@ class Protocol;
 
 void Init(void);
 #define GLOBAL_PROTOCOL 0x1
-Protocol *ProtocolInit(unsigned flags);
+Protocol *ProtocolInit(unsigned flags) GMAC_API;
 void Fini(void);
 }
 
@@ -68,7 +68,7 @@ class Mode;
 class Context;
 class Process;
 
-void apiInit(void);
+void apiInit(void) GMAC_API;
 void contextInit(void);
 
 }}

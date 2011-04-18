@@ -7,35 +7,34 @@
 namespace __impl { namespace util {
 
 template<typename T> T *Singleton<T>::Singleton_ = NULL;
+template<typename T> bool Singleton<T>::Valid_ = false;
+
 
 template <typename T>
-Singleton<T>::Singleton()
-{
-}
-
-template <typename T>
-Singleton<T>::~Singleton()
+inline Singleton<T>::~Singleton()
 {
 }
 
 template <typename T>
 template <typename S>
-void Singleton<T>::create()
+inline void Singleton<T>::create()
 {
     ASSERTION(Singleton_ == NULL);
     Singleton_ = new S();
+    Valid_ = true;
 }
 
 template <typename T>
-void Singleton<T>::destroy()
+inline void Singleton<T>::destroy()
 {
 	ASSERTION(Singleton_ != NULL);
+    Valid_ = false;
 	delete Singleton_;
 	Singleton_ = NULL;
 }
 
 template<typename T>
-T &Singleton<T>::getInstance()
+inline T &Singleton<T>::getInstance()
 {
 	ASSERTION(Singleton_ != NULL);
 	return *Singleton_;
@@ -43,10 +42,16 @@ T &Singleton<T>::getInstance()
 
 template <typename T>
 template <typename S>
-S& Singleton<T>::getInstance()
+inline S& Singleton<T>::getInstance()
 {
 	ASSERTION(Singleton_ != NULL);
 	return dynamic_cast<S &>(*Singleton_);
+}
+
+template<typename T>
+inline bool Singleton<T>::isValid()
+{
+    return Valid_;
 }
 
 }}

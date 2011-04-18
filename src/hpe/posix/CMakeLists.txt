@@ -1,4 +1,7 @@
 set(gmac_os_SRC 
-    posix.h posix.cpp io.cpp)
+    io.cpp
+    posix.h
+    posix.cpp
+)
 
-add_gmac_sources(gmac-lib ${gmac_os_SRC})
+add_gmac_sources(gmac-hpe-api ${gmac_os_SRC})

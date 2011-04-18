@@ -1,5 +1,5 @@
-#include "HostMappedObject.h"
-
+#include "core/Mode.h"
+#include "memory/HostMappedObject.h"
 #include "util/Logger.h"
 
 namespace __impl { namespace memory {
@@ -72,6 +72,27 @@ accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
     }
     return ret;
 }
+
+hostptr_t
+HostMappedObject::alloc(core::Mode &mode)
+{
+    hostptr_t ret = NULL;
+    if(mode.hostAlloc(ret, size_) != gmacSuccess) return NULL;
+    return ret;
+}
+
+void
+HostMappedObject::free(core::Mode &mode)
+{
+    mode.hostFree(addr_);
+}
+
+accptr_t
+HostMappedObject::getAccPtr(core::Mode &mode) const
+{
+    return mode.hostMapAddr(addr_);
+}
+
 
 }}
 

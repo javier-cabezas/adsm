@@ -57,7 +57,7 @@ public:
     ContextLock() : gmac::util::Lock("Context") {}
 };
 
-class GMAC_LOCAL KernelList :
+class GMAC_API KernelList :
     protected std::list<core::hpe::Kernel *>,
     public gmac::util::Lock
 {
@@ -71,7 +71,7 @@ public:
 };
 
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public opencl::Mode {
+class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual opencl::Mode {
     DBC_FORCE_TEST(Mode)
 
     friend class IOBuffer;

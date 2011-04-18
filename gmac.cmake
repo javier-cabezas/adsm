@@ -19,6 +19,16 @@ macro(add_gmac_sources label)
     set(${label}_SRC ${${label}_SRC} ${__sources} PARENT_SCOPE)
 endmacro(add_gmac_sources)
 
+macro(group_gmac_sources label)
+    set(__sources "")
+    foreach(__label ${ARGN})
+        set(__sources ${__sources} ${${__label}_SRC})
+    endforeach()
+
+    # Add the source files to the global list
+    set(${label}_SRC ${__sources} PARENT_SCOPE)
+endmacro(group_gmac_sources)
+
 function(add_gmac_groups)
     foreach(__file ${ARGV})
         # Create group name

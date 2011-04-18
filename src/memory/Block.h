@@ -64,7 +64,7 @@ namespace memory {
 
     Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
 */
-class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
+class GMAC_API Block : public gmac::util::Lock, public util::Reference {
     DBC_FORCE_TEST(Block)
 
 protected:

@@ -26,7 +26,7 @@ ParameterCtor ParamCtorList[] = {
     {NULL, NULL}
 };
 
-void Init()
+void CONSTRUCTOR init()
 {
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         ParamCtorList[i].param = ParamCtorList[i].ctor();

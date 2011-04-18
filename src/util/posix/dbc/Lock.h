@@ -45,7 +45,7 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util {
 
-class GMAC_LOCAL Lock :
+class GMAC_API Lock :
     public __impl::util::Lock,
     public virtual Contract {
     DBC_TESTED(__impl::util::Lock)
@@ -62,7 +62,7 @@ protected:
     void unlock() const;
 };
 
-class GMAC_LOCAL RWLock :
+class GMAC_API RWLock :
     public __impl::util::RWLock,
     public virtual Contract {
     DBC_TESTED(__impl::util::RWLock)

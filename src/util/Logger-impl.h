@@ -6,7 +6,7 @@ namespace __impl { namespace util {
 #ifdef DEBUG
 inline void Logger::__Trace(const char *name, const char *fmt, ...)
 {
-    if(Ready_ == false) return;
+    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 
     va_list list;
     va_start(list, fmt);
@@ -16,7 +16,8 @@ inline void Logger::__Trace(const char *name, const char *fmt, ...)
 
 inline void Logger::__Assertion(bool c, const char *cStr, const char *fmt, ...)
 {
-    if(c == true || Ready_ == false) return;
+    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
+    if(c == true ) return;
     va_list list;
     va_start(list, fmt);
     Print(cStr, NULL, fmt, list);

@@ -31,7 +31,7 @@ Kernel::Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel) :
 inline
 Kernel::~Kernel()
 {
-    if(gmacFini__ < 0) clReleaseKernel(f_);
+    if(core::Process::isValid()) clReleaseKernel(f_);
 }
 
 inline

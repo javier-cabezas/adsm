@@ -44,7 +44,7 @@ namespace __dbc { namespace memory {
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class GMAC_LOCAL Manager :
+class GMAC_API Manager :
     public __impl::memory::Manager,
     public virtual Contract {
     DBC_TESTED(__impl::memory::Manager)

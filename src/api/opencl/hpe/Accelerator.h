@@ -59,7 +59,7 @@ class Mode;
 class KernelLaunch;
 class Kernel;
 
-class GMAC_LOCAL CommandList :
+class GMAC_API CommandList :
     protected std::list<cl_command_queue>,
     protected gmac::util::RWLock {
 protected:
@@ -75,7 +75,7 @@ public:
     cl_int sync() const;
 };
 
-class GMAC_LOCAL HostMap :
+class GMAC_API HostMap :
     protected std::map<hostptr_t, std::pair<cl_mem, size_t> >,
     protected gmac::util::RWLock {
 protected:

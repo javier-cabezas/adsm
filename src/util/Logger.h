@@ -92,13 +92,14 @@ inline static const char *__extract_file_name(const char *file) {
 
 #include "util/Parameter.h"
 #include "util/Private.h"
+#include "util/Atomics.h"
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL Logger {
+class GMAC_API Logger {
 private:    
 #ifdef DEBUG
-	static bool Ready_;
+	static Atomic Ready_;
     static Parameter<const char *> *Level_;
     static const char *DebugString_;
     static std::list<std::string> *Tags_;
@@ -112,6 +113,7 @@ private:
 #endif
 public:
 	static void Init();
+    static void Fini();
 #ifdef DEBUG
     static void __Trace(const char *name, const char *fmt, ...);  
     static void __Assertion(bool c, const char * cStr, const char *fmt, ...);

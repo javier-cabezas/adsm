@@ -168,36 +168,33 @@ if(MAKE_DOC)
 endif(MAKE_DOC)
 
 
-add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
-add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
-set_target_properties(gmac-base PROPERTIES
-    COMPILE_FLAGS ${gmac_static_FLAGS}
-    COMPILE_DEFINITIONS_DEBUG USE_DBC)
+include("CMakeLists-libs.txt")
+
  
-option(MAKE_STATIC "Build GMAC as a static library")
-if(MAKE_STATIC)
-add_library(gmac STATIC ${gmac-lib_SRC})
-else(MAKE_STATIC)
-add_library(gmac SHARED ${gmac-lib_SRC})
-endif(MAKE_STATIC)
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
-    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
-)
+#option(MAKE_STATIC "Build GMAC as a static library")
+#if(MAKE_STATIC)
+#add_library(gmac STATIC ${gmac-lib_SRC})
+#else(MAKE_STATIC)
+#add_library(gmac SHARED ${gmac-lib_SRC})
+#endif(MAKE_STATIC)
+#set_property(TARGET gmac PROPERTY PUBLIC_HEADER
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
+#    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
+#    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
+#)
 
 
-target_link_libraries(gmac gmac-base ${gmac_LIBS})
-link_directories(${gmac_LIBDIR})
+#target_link_libraries(gmac gmac-base ${gmac_LIBS})
+#link_directories(${gmac_LIBDIR})
 
-set_target_properties(gmac PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG USE_DBC
-    VERSION 0.2.0 SOVERSION 1)
+#set_target_properties(gmac PROPERTIES
+#    COMPILE_DEFINITIONS_DEBUG USE_DBC
+#    VERSION 0.2.0 SOVERSION 1)
 
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
@@ -214,11 +211,11 @@ if(MAKE_TOOLS)
     add_subdirectory(tools)
 endif(MAKE_TOOLS)
 
-install(TARGETS gmac 
-     LIBRARY DESTINATION lib
-     ARCHIVE DESTINATION lib
-     RUNTIME DESTINATION bin
-     RESOURCE DESTINATION share
-     PUBLIC_HEADER DESTINATION include/gmac)
+#install(TARGETS gmac 
+#     LIBRARY DESTINATION lib
+#     ARCHIVE DESTINATION lib
+#     RUNTIME DESTINATION bin
+#     RESOURCE DESTINATION share
+#     PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)
