@@ -203,7 +203,8 @@ protected:
 
     // Global statistis
     unsigned faults_;
-    unsigned transfers_;
+    unsigned transfersToAccelerator_;
+    unsigned transfersToHost_;
 
 public:
     BlockState(ProtocolState init, lazy::Block &block);

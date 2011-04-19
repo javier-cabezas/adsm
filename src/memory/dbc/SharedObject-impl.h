@@ -3,16 +3,16 @@
 
 namespace __dbc { namespace memory {
 
-template<typename T>
-SharedObject<T>::SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, T init) :
-    __impl::memory::SharedObject<T>(protocol, owner, addr, size, init)
+template<typename State>
+SharedObject<State>::SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init) :
+    __impl::memory::SharedObject<State>(protocol, owner, addr, size, init)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
 }
 
-template<typename T>
-SharedObject<T>::~SharedObject()
+template<typename State>
+SharedObject<State>::~SharedObject()
 {
 }
 
