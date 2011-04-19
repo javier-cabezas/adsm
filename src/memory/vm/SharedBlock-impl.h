@@ -1,5 +1,6 @@
 #ifndef GMAC_MEMORY_VM_SHAREDBLOCK_IMPL_H_
 #define GMAC_MEMORY_VM_SHAREDBLOCK_IMPL_H_
+#if 0
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::toHost() const
@@ -83,5 +84,6 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
     Block::resetBitmapStats();
 	return ret;
 }
+#endif
 
 #endif

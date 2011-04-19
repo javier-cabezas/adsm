@@ -1,7 +1,9 @@
 add_subdirectory(dbc)
 
+add_subdirectory(common)
+add_subdirectory(lazy)
+
 set(memory_protocol_SRC
-    BlockList.h BlockList-impl.h
     Lazy.h Lazy-impl.h Lazy.cpp)
 
 #set(memory_protocol_SRC

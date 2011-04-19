@@ -57,13 +57,14 @@ class Protocol;
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL ObjectMap :
      protected gmac::util::RWLock, protected std::map<const hostptr_t, Object *> {
-public:
-    typedef gmacError_t(Object::*ObjectOp)(void);
-    typedef gmacError_t(Object::*ConstObjectOp)(void) const;
-    typedef gmacError_t(Object::*ModeOp)(core::Mode &);
 protected:
     friend class core::Map;
     typedef std::map<const hostptr_t, Object *> Parent;
+
+#ifdef DEBUG
+    typedef std::vector<Object *> VectorObject;
+    VectorObject orderedAllocs_;
+#endif
 
     /**
      * Find an object in the map
@@ -129,40 +130,36 @@ public:
     size_t memorySize() const;
 
     /**
-     * Invoke a memory operation over all the objects in the map
+     * Execute an operation on all the objects in the map
      *
-     * \param op Memory operation to be executed
+     * \param f Operation to be executed
      * \sa __impl::memory::Object::acquire
      * \sa __impl::memory::Object::toHost
      * \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEach(ObjectOp op) const;
+    gmacError_t forEachObject(gmacError_t (Object::*f)(void));
+    gmacError_t forEachObject(gmacError_t (Object::*f)(void) const) const;
+
+    gmacError_t dumpObjects(std::string prefix) const;
 
     /**
-     * Invoke a constant memory operation over all the objects in the map
+     * Execute an operation on all the objects in the map passing an argument
      *
-     * \param op Memory operation to be executed
-     * \sa __impl::memory::Object::acquire
-     * \sa __impl::memory::Object::toHost
-     * \sa __impl::memory::Object::toAccelerator
-     * \return Error code
-     */
-    gmacError_t forEach(ConstObjectOp op) const;
-
-
-    /**
-     * Execute a mode operation over all the objects in the map
-     *
-     * \param mode Mode to apply the operation to
-     * \param op Mode operation to be executed
+     * \param f Operation to be executed
+     * \param p1 Parameter to be passed
      * \sa __impl::memory::Object::removeOwner
      * \sa __impl::memory::Object::realloc
      * \return Error code
      */
-    gmacError_t forEach(core::Mode &mode, ModeOp op) const;
+    template <typename P1>
+    gmacError_t forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1);
+    template <typename P1>
+    gmacError_t forEachObject(gmacError_t (Object::*f)(P1 &) const, P1 &p1) const;
 };
 
 }}
+
+#include "ObjectMap-impl.h"
 
 #endif

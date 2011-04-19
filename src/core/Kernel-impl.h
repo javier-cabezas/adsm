@@ -7,7 +7,7 @@ namespace __impl { namespace core {
 
 inline
 Kernel::Kernel(const KernelDescriptor & k) :
-    KernelDescriptor(k.name(), k.key())
+    KernelDescriptor(k.getName(), k.key())
 {
 }
 

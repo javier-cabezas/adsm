@@ -3,10 +3,12 @@
 
 #include "memory/SharedBlock.h"
 
+#include "core/Process.h"
+
 namespace __impl { namespace memory {
 
-template<typename T>
-accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size)
+template<typename State>
+accptr_t SharedObject<State>::allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size)
 {
     accptr_t acceleratorAddr(0);
     // Allocate accelerator memory
@@ -19,7 +21,7 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, hostptr_t add
 #endif
     if(ret == gmacSuccess) {
 #ifdef USE_VM
-        vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
+        vm::Bitmap &bitmap = mode.getBitmap();
         bitmap.registerRange(acceleratorAddr, size);
 #endif
         return acceleratorAddr;
@@ -28,15 +30,15 @@ accptr_t SharedObject<T>::allocAcceleratorMemory(core::Mode &mode, hostptr_t add
     }
 }
 
-template<typename T>
-gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
+template<typename State>
+gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
     hostptr_t mark = addr_;
     ptroff_t offset = 0;
     for(BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
-        SharedBlock<T> &oldBlock = *dynamic_cast<SharedBlock<T> *>(i->second);
-        SharedBlock<T> *newBlock = new SharedBlock<T>(oldBlock.getProtocol(), mode,
+        SharedBlock<State> &oldBlock = *dynamic_cast<SharedBlock<State> *>(i->second);
+        SharedBlock<State> *newBlock = new SharedBlock<State>(oldBlock.getProtocol(), mode,
                                                       addr_   + offset,
                                                       shadow_ + offset,
                                                       accPtr  + offset,
@@ -53,8 +55,8 @@ gmacError_t SharedObject<T>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
     return gmacSuccess;
 }
 
-template<typename T>
-SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, T init) :
+template<typename State>
+SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, typename State::ProtocolState init) :
     Object(hostAddr, size),
     acceleratorAddr_(0),
 	owner_(&owner)
@@ -92,7 +94,7 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
             size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
             mark += blockSize;
             blocks_.insert(BlockMap::value_type(mark, 
-                        new SharedBlock<T>(protocol, owner, addr_ + ptroff_t(offset), 
+                           new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset), 
                             shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
             size -= blockSize;
             offset += ptroff_t(blockSize);
@@ -102,11 +104,11 @@ SharedObject<T>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t h
 }
 
 
-template<typename T>
-SharedObject<T>::~SharedObject()
+template<typename State>
+SharedObject<State>::~SharedObject()
 {
 #ifdef USE_VM
-    vm::BitmapShared &bitmap = owner_->acceleratorDirtyBitmap();
+    vm::Bitmap &bitmap = owner_->getBitmap();
     bitmap.unregisterRange(acceleratorAddr_, size_);
 #endif
 
@@ -117,8 +119,8 @@ SharedObject<T>::~SharedObject()
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
 
-template<typename T>
-inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
+template<typename State>
+inline accptr_t SharedObject<State>::acceleratorAddr(const hostptr_t addr) const
 {
     accptr_t ret = accptr_t(0);
     lockRead();
@@ -130,8 +132,8 @@ inline accptr_t SharedObject<T>::acceleratorAddr(const hostptr_t addr) const
     return ret;
 }
 
-template<typename T>
-inline core::Mode &SharedObject<T>::owner(const hostptr_t addr) const
+template<typename State>
+inline core::Mode &SharedObject<State>::owner(const hostptr_t addr) const
 {
     lockRead();
     core::Mode &ret = *owner_;
@@ -139,15 +141,15 @@ inline core::Mode &SharedObject<T>::owner(const hostptr_t addr) const
     return ret;
 }
 
-template<typename T>
-inline gmacError_t SharedObject<T>::addOwner(core::Mode &owner)
+template<typename State>
+inline gmacError_t SharedObject<State>::addOwner(core::Mode &owner)
 {
 	return gmacErrorUnknown; // This kind of objects only accepts one owner
 }
 
-template<typename T>
+template<typename State>
 inline
-gmacError_t SharedObject<T>::removeOwner(core::Mode &owner)
+gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
 {
     lockWrite();
     if(owner_ == &owner) {
@@ -166,22 +168,22 @@ gmacError_t SharedObject<T>::removeOwner(core::Mode &owner)
 	return gmacSuccess;
 }
 
-template<typename T>
+template<typename State>
 inline
-gmacError_t SharedObject<T>::unmapFromAccelerator()
+gmacError_t SharedObject<State>::unmapFromAccelerator()
 {
     lockWrite();
     // Remove blocks from the coherency domain
     gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
     // Free accelerator memory
-    CFATAL(owner_->unmap(addr_, size_) == gmacSuccess);
+    CFATAL(owner_->unmap(addr_, size_) == gmacSuccess, "Error unmapping object from accelerator");
     unlock();
     return ret;
 }
 
 
-template<typename T>
-inline gmacError_t SharedObject<T>::mapToAccelerator()
+template<typename State>
+inline gmacError_t SharedObject<State>::mapToAccelerator()
 {
     lockWrite();
     gmacError_t ret;

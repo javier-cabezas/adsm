@@ -233,6 +233,11 @@ gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
         ret = gmacLaunch(*launch); 
         delete launch;
     }
+
+#ifdef DEBUG
+    mode.dump(mode.getKernelName(k));
+#endif
+
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
 

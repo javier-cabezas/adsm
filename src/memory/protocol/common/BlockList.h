@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,94 +31,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_MEMORY_H_
-#define GMAC_MEMORY_MEMORY_H_
+#ifndef GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
+#define GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
+
+#include <list>
+#include <map>
+#include <vector>
 
 #include "config/common.h"
 #include "include/gmac/types.h"
+#include "util/Lock.h"
 
-#include "util/Logger.h"
+namespace __impl {
 
-namespace __impl { namespace memory {
+namespace core {
+    class Mode;
+}
+    
+namespace memory {
+class Block;
 
-extern size_t BlockSize_;
-#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
-extern unsigned SubBlocks_;
-extern size_t SubBlockSize_;
-extern unsigned BlockShift_;
-extern unsigned SubBlockShift_;
-extern long_t SubBlockMask_;
+namespace protocol {
 
-#endif
-
-class GMAC_LOCAL Memory {
+//! FIFO list of blocks
+class GMAC_LOCAL BlockList : protected std::list<Block *>, public gmac::util::Lock {
+// We need a locked list becase execution modes might be shared among different threads
+protected:
+    typedef std::list<Block *> Parent;
 public:
-	static int protect(hostptr_t addr, size_t count, GmacProtection prot);
-	static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
-	static hostptr_t shadow(hostptr_t addr, size_t count);
-	static void unshadow(hostptr_t addr, size_t count);
-	static void unmap(hostptr_t addr, size_t count);
+    //! Default constructor
+    BlockList();
+
+    //! Default destructor
+    virtual ~BlockList();
+
+    /** Whether the list is empty or not
+     *
+     * \return True if the list is empty
+     */
+    bool empty() const;
+
+    /** Size of the list
+     * 
+     *  \return Number of blocks in the list
+     */
+    size_t size() const;
+
+    //! Add a block to the end of list
+    /*!
+        \param block Block to be addded to the end of list
+    */
+    void push(Block &block);
+
+    //! Extract a block from the list
+    /*!
+        \return Block from extracted from the begining of the list
+    */
+    Block &pop();
+
+    //! Remove a block from the list
+    /*!
+        \param block Block to be removed from the list
+    */
+    void remove(Block &block);
 };
 
-#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+}}}
 
-template <typename T>
-static inline
-T log2(T n)
-{
-    T ret = 0;
-    while (n != 1) {
-        ASSERTION((n & 0x1) == 0);
-        n >>= 1;
-        ret++;
-    }
-    return ret;
-}
-
-#if 0
-static inline
-long_t
-GetSubBlock(const hostptr_t _addr)
-{
-    long_t addr = long_t(_addr);
-    return (addr >> SubBlockShift_) & SubBlockMask_;
-}
-#endif
-
-
-static inline
-long_t
-GetSubBlockIndex(const hostptr_t _start, const hostptr_t _addr)
-{
-    long_t start = long_t(_start);
-    long_t addr = long_t(_addr);
-    long_t off = addr - start;
-    return (off >> SubBlockShift_) & SubBlockMask_;
-}
-
-static inline
-hostptr_t
-GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
-{
-    long_t start = long_t(_start);
-    long_t addr = long_t(_addr);
-    long_t off = addr - start;
-    long_t block = off / BlockSize_;
-    return hostptr_t(start + block * BlockSize_);
-}
-
-static inline
-hostptr_t
-GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
-{
-    long_t start = long_t(_start);
-    long_t addr  = long_t(_addr);
-    long_t off = addr - start;
-    long_t subBlock = off / SubBlockSize_;
-    return hostptr_t(start + subBlock * SubBlockSize_);
-}
-#endif
-
-}}
+#include "BlockList-impl.h"
 
 #endif

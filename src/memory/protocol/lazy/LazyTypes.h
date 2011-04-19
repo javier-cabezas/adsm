@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,27 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_DBC_BLOCK_H_
-#define GMAC_MEMORY_DBC_BLOCK_H_
+#ifndef GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
+#define GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
 
-namespace __dbc { namespace memory {
+namespace __impl {
+namespace memory {
+template <typename State> class StateBlock;
 
-class GMAC_LOCAL Block :
-    public __impl::memory::Block,
-    public virtual Contract {
-    DBC_TESTED(__impl::memory::Block)
+namespace protocol {
 
-protected:
-	Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
-    virtual ~Block();
-public:
+namespace lazy {
+class BlockState;
 
-	gmacError_t memoryOp(gmacError_t (__impl::memory::Protocol::*f)(Block &block, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset), __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
-    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
+//! Protocol states
+enum State {
+    ReadOnly = 0, /*!< Valid copy of the data in both host and accelerator memory */
+    Invalid  = 1, /*!< Valid copy of the data in accelerator memory */
+    Dirty    = 2, /*!< Valid copy of the data in host memory */
+    HostOnly = 3 /*< Data only allowed in host memory */
 };
 
-}}
+typedef StateBlock<lazy::BlockState> Block;
 
-#endif /* BLOCK_H */
+}}}}
+
+#endif /* LAZYTYPES_H */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

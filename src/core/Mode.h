@@ -103,7 +103,7 @@ protected:
     bool releasedObjects_;
 
 #ifdef USE_VM
-    __impl::memory::vm::BitmapShared acceleratorBitmap_;
+    __impl::memory::vm::Bitmap bitmap_;
 #endif
 
     ContextMap contextMap_;
@@ -234,7 +234,8 @@ public:
      *   \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
+    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void));
+    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void) const) const;
 
     /**
      * Maps the given host memory on the accelerator memory
@@ -359,6 +360,14 @@ public:
     void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
 
     /**
+     * Returns the kernel name identified by k
+     *
+     * \param k A key that identifies the kernel object
+     * \param kernel A reference to the kernel to be registered
+     */
+    std::string getKernelName(gmac_kernel_id_t k) const;
+
+    /**
      * Returns the last error code
      * \return The last error code
      */
@@ -391,6 +400,8 @@ public:
      */
     TESTABLE gmacError_t releaseObjects();
 
+    gmacError_t dump(std::string name, hostptr_t addr = NULL);
+
     /**
      * Waits for kernel execution and acquires the ownership of the objects
      * of the mode from the accelerator
@@ -417,8 +428,8 @@ public:
     void memInfo(size_t &free, size_t &total);
 
 #ifdef USE_VM
-    memory::vm::BitmapShared &acceleratorDirtyBitmap();
-    const memory::vm::BitmapShared &acceleratorDirtyBitmap() const;
+    memory::vm::Bitmap &getBitmap();
+    const memory::vm::Bitmap &getBitmap() const;
 #endif
 
 };

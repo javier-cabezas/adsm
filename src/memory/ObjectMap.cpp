@@ -42,6 +42,9 @@ bool ObjectMap::insert(Object &obj)
     lockWrite();
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
     if(ret.second == true) obj.use();
+#ifdef DEBUG
+    if(ret.second == true) orderedAllocs_.push_back(&obj);
+#endif
     unlock();
     return ret.second;
 }
@@ -55,6 +58,19 @@ bool ObjectMap::remove(Object &obj)
         obj.release();
         Parent::erase(i);
     }
+#ifdef DEBUG
+    VectorObject::iterator it;
+    for (it = orderedAllocs_.begin(); it != orderedAllocs_.end(); it++) {
+        if ((*it) == &obj) {
+            orderedAllocs_.erase(it);
+            goto out;
+        }
+    }
+    printf("CUCU1\n");
+    CFATAL(false, "Allocation not found!");
+    printf("CUCU2\n");
+out:
+#endif
     unlock();
     return ret;
 }
@@ -77,21 +93,7 @@ size_t ObjectMap::memorySize() const
     return total;
 }
 
-gmacError_t ObjectMap::forEach(ObjectOp op) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*op)();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
-
+#if 0
 gmacError_t ObjectMap::forEach(ConstObjectOp op) const
 {
     const_iterator i;
@@ -107,20 +109,8 @@ gmacError_t ObjectMap::forEach(ConstObjectOp op) const
     return gmacSuccess;
 }
 
-gmacError_t ObjectMap::forEach(core::Mode &mode, ModeOp op) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*op)(mode);
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
+
+#endif
 
 
 }}

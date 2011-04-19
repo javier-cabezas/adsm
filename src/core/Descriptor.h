@@ -47,7 +47,7 @@ protected:
 
 public:
     Descriptor(const char * name, K key);
-    const char * name() const;
+    const char * getName() const;
     K key() const;
 };
 

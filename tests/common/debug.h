@@ -6,6 +6,7 @@
 #include <string.h>
 #include <errno.h>
 
+
 #ifdef CUDA_ERRORS
 #include <cuda.h>
 #define gmacGetErrorString cudaGetErrorString
@@ -13,7 +14,6 @@
 #else
 #include "gmac.h"
 #endif
-
 #endif
 
 #define FATAL()	\

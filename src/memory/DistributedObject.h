@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory {
 
-template<typename T>
+template<typename State>
 class GMAC_LOCAL DistributedObject : public gmac::memory::Object {
 protected:
     uint8_t *shadow_;
@@ -47,7 +47,7 @@ protected:
     AcceleratorMap acceleratorAddr_;
 public:
     DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
-                      size_t size, T init);
+                      size_t size, typename State::ProtocolState init);
     virtual ~DistributedObject();
 
     accptr_t acceleratorAddr(const hostptr_t addr) const;

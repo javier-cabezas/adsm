@@ -1,6 +1,6 @@
-#include "Process.h"
-#include "Mode.h"
 #include "Context.h"
+#include "Mode.h"
+#include "Process.h"
 
 #include "memory/ObjectMap.h"
 #include "memory/Object.h"

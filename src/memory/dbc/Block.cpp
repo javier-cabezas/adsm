@@ -19,7 +19,7 @@ Block::~Block()
 }
 
 gmacError_t
-Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
+Block::memoryOp(gmacError_t (__impl::memory::Protocol::*f)(Block &block, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset), __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -34,7 +34,7 @@ Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &b
 
 
 gmacError_t
-Block::memset(int v, size_t size, size_t blockOffset) const
+Block::memset(int v, size_t size, size_t blockOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

@@ -1,10 +1,14 @@
 #ifndef GMAC_CORE_MODE_IMPL_H_
 #define GMAC_CORE_MODE_IMPL_H_
 
+#ifdef DEBUG
+#include <fstream>
+#include <sstream>
+#endif
+
 #include "memory/Object.h"
 
-#include "core/Process.h"
-#include "core/Context.h"
+#include "Context.h"
 
 namespace __impl { namespace core {
 
@@ -80,16 +84,6 @@ inline gmacError_t ContextMap::waitForCall(core::KernelLaunch &launch)
     return ret;
 }
 
-inline gmacError_t Mode::cleanUp()
-{
-    gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
-    Map::removeOwner(Process::getInstance(), *this);
-#ifdef USE_VM
-    acceleratorBitmap_.cleanUp();
-#endif
-    return ret;
-}
-
 inline void Mode::cleanUpContexts()
 {
     contextMap_.clean();
@@ -147,11 +141,19 @@ Mode::getObject(const hostptr_t addr, size_t size) const
 }
 
 inline gmacError_t
-Mode::forEachObject(memory::ObjectMap::ConstObjectOp op) const
+Mode::forEachObject(gmacError_t (memory::Object::*f)(void) const) const
 {
-    gmacError_t ret = map_.forEach(op);
-	return ret;
+    gmacError_t ret = map_.forEachObject(f);
+    return ret;
 }
+
+inline gmacError_t
+Mode::forEachObject(gmacError_t (memory::Object::*f)(void))
+{
+    gmacError_t ret = map_.forEachObject(f);
+    return ret;
+}
+
 
 inline gmacError_t
 Mode::error() const
@@ -166,16 +168,16 @@ Mode::error(gmacError_t err)
 }
 
 #ifdef USE_VM
-inline memory::vm::BitmapShared &
-Mode::acceleratorDirtyBitmap()
+inline memory::vm::Bitmap&
+Mode::getBitmap()
 {
-    return acceleratorBitmap_;
+    return bitmap_;
 }
 
-inline const memory::vm::BitmapShared &
-Mode::acceleratorDirtyBitmap() const
+inline const memory::vm::Bitmap&
+Mode::getBitmap() const
 {
-    return acceleratorBitmap_;
+    return bitmap_;
 }
 #endif
 
@@ -191,8 +193,35 @@ Mode::releaseObjects()
     switchIn();
     releasedObjects_ = true;
     error_ = contextMap_.prepareForCall();
+#ifdef USE_VM
+    bitmap_.release();
+#endif
     switchOut();
     return error_;
+}
+
+inline gmacError_t
+Mode::dump(std::string _name, uint8_t *addr)
+{
+#ifdef DEBUG
+    static int i = 0;
+    std::stringstream name;
+    name << _name << "-" << i++;
+
+    if (addr == NULL) {
+        map_.dumpObjects(name.str());
+    } else {
+#if 0
+        std::ofstream out(name.str().c_str(), std::ios_base::trunc);
+        ASSERTION(out.good());
+        memory::Object *obj = getObject(addr);
+        ASSERTION(obj != NULL);
+        obj->dump(out);
+        out.close();
+#endif
+    }
+#endif
+    return gmacSuccess;
 }
 
 inline gmacError_t 
