@@ -578,7 +578,8 @@ BlockState::BlockState(ProtocolState init, lazy::Block &block) :
     common::BlockState<lazy::State>(init),
     block_(block),
     faults_(0),
-    transfers_(0)
+    transfersToAccelerator_(0),
+    transfersToHost_(0)
 {
 }
 
@@ -586,7 +587,7 @@ inline
 gmacError_t
 BlockState::syncToAccelerator()
 {
-    transfers_++;
+    transfersToAccelerator_++;
     return block_.toAccelerator();
 }
 
@@ -594,6 +595,7 @@ inline
 gmacError_t
 BlockState::syncToHost()
 {
+    transfersToHost_++;
     return block_.toHost();
 }
 
@@ -655,12 +657,18 @@ BlockState::dump(std::ostream &stream, common::Statistic stat)
         stream << oss.str();
 
         faults_ = 0;
-    } else if (stat == common::PAGE_TRANSFERS) {
+    } else if (stat == common::PAGE_TRANSFERS_TO_ACCELERATOR) {
         std::ostringstream oss;
-        oss << transfers_ << " ";
+        oss << transfersToAccelerator_ << " ";
         stream << oss.str();
 
-        transfers_ = 0;
+        transfersToAccelerator_ = 0;
+    } else if (stat == common::PAGE_TRANSFERS_TO_HOST) {
+        std::ostringstream oss;
+        oss << transfersToHost_ << " ";
+        stream << oss.str();
+
+        transfersToHost_ = 0;
     }
 #endif
     return gmacSuccess;
