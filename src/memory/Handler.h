@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 //! Handler for Read/Write faults
-class GMAC_API Handler {
+class GMAC_LOCAL Handler {
 public:
     typedef void (*CallBack)(void);
 private:

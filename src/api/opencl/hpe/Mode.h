@@ -57,7 +57,7 @@ public:
     ContextLock() : gmac::util::Lock("Context") {}
 };
 
-class GMAC_API KernelList :
+class GMAC_LOCAL KernelList :
     protected std::list<core::hpe::Kernel *>,
     public gmac::util::Lock
 {
@@ -70,6 +70,10 @@ public:
     void insert(core::hpe::Kernel *);
 };
 
+
+//! Visual studio produces a stupid warning due to the complex diamond inheritance
+#pragma warning( push )
+#pragma warning( disable : 4250 )
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual opencl::Mode {
     DBC_FORCE_TEST(Mode)
@@ -212,7 +216,7 @@ public:
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };
-
+#pragma warning( pop )
 }}}
 
 #include "Mode-impl.h"

@@ -220,7 +220,7 @@ static inline error_t __prepareCLCodeFile(std::istream &in, const char *flags = 
     in.seekg (0, std::ios::end);
     std::streampos length = in.tellg();
     in.seekg (0, std::ios::beg);
-    if (length == 0) return gmacSuccess;
+    if (length == std::streampos(0)) return gmacSuccess;
     // Allocate memory for the code
     char *buffer = new char[int(length)+1];
     // Read data as a block

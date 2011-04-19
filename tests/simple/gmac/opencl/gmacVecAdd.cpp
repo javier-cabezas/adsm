@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <unistd.h>
 
 #include <gmac/opencl.h>
 

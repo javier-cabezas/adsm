@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc {
 
-class GMAC_API Contract {
+class GMAC_LOCAL Contract {
 private:
     static void Preamble(const char *file, const int line);
 protected:

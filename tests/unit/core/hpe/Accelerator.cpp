@@ -62,7 +62,7 @@ TEST_F(AcceleratorTest, AcceleratorAligmentExt) {
 //check void unregisterMode(Mode &mode)
 TEST_F(AcceleratorTest, CreateMode){
 
-     Process &proc=Process::getInstance<Process &>();
+     Process &proc= dynamic_cast<Process &>(Process::getInstance());
 
      ASSERT_TRUE(&proc != NULL);
 
