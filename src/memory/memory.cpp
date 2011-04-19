@@ -23,6 +23,7 @@ namespace memory {
 
 size_t BlockSize_;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+unsigned SubBlocks_;
 size_t SubBlockSize_;
 unsigned BlockShift_;
 unsigned SubBlockShift_;
@@ -37,6 +38,7 @@ void Init(void)
 
     BlockSize_     = util::params::ParamBlockSize;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+    SubBlocks_     = util::params::ParamSubBlocks;
     SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
     BlockShift_    = (unsigned) log2(util::params::ParamBlockSize);
     SubBlockShift_ = (unsigned) log2(util::params::ParamBlockSize/util::params::ParamSubBlocks);
@@ -52,40 +54,33 @@ Protocol *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
     Protocol *ret = NULL;
-    if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
+    if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0 ||
+       strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
+        size_t rollSize;
+        if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
+            rollSize = util::params::ParamRollSize;
+        } else {
+            rollSize = (size_t)-1;
+        }
         if(0 != (flags & 0x1)) {
             ret = new protocol::Lazy<
-                DistributedObject<protocol::LazyBase::State> >(
-                util::params::ParamRollSize);
+                DistributedObject<protocol::lazy::BlockState> >(rollSize);
         }
         else {
             ret = new protocol::Lazy<
-                gmac::memory::SharedObject<protocol::LazyBase::State> >(
-                util::params::ParamRollSize);
-        }
-    }
-    else if(strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
-        if(0 != (flags & 0x1)) {
-            ret = new protocol::Lazy<
-                DistributedObject<protocol::LazyBase::State> >(
-                (size_t)-1);
-        }
-        else {
-            ret = new protocol::Lazy<
-                gmac::memory::SharedObject<protocol::LazyBase::State> >(
-                (size_t)-1);
+                gmac::memory::SharedObject<protocol::lazy::BlockState> >(rollSize);
         }
     }
 #ifdef USE_VM
     else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new protocol::Lazy<
-                DistributedObject<protocol::LazyBase::State> >(
+                DistributedObject<protocol::lazy::BlockState> >(
                 (size_t)-1);
         }
         else {
             ret = new protocol::Lazy<
-                gmac::memory::SharedObject<protocol::LazyBase::State> >(
+                gmac::memory::SharedObject<protocol::lazy::BlockState> >(
                 (size_t)-1);
         }
     }

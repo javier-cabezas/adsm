@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,73 +31,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
-#define GMAC_MEMORY_PROTOCOL_BLOCKLIST_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
+
+#include <ostream>
 
 #include "config/common.h"
-#include "include/gmac/types.h"
-
-#include "util/Lock.h"
-
-#include <list>
-#include <map>
 
 namespace __impl {
+namespace memory { namespace protocol { namespace common {
 
-namespace core {
-    class Mode;
-}
-    
-namespace memory {
-class Block;
+enum Statistic {
+    PAGE_FAULTS    = 0,
+    PAGE_TRANSFERS_TO_ACCELERATOR = 1,
+    PAGE_TRANSFERS_TO_HOST        = 2
+};
+extern const char *StatisticName[];
 
-namespace protocol { 
-
-//! FIFO list of blocks
-class GMAC_LOCAL BlockList: protected std::list<Block *>, public gmac::util::Lock {
-// We need a locked list becase execution modes might be shared among different threads
-protected:
-    typedef std::list<Block *> Parent;
+template <typename T>
+class GMAC_LOCAL BlockState {
 public:
-    //! Default constructor
-    BlockList();
+    typedef T ProtocolState;
+    
+protected:
+    T state_;
 
-    //! Default destructor
-    virtual ~BlockList();
+public:
+    BlockState(ProtocolState init);
 
-    /** Whether the list is empty or not
-     *
-     * \return True if the list is empty
-     */
-    bool empty() const;
+    virtual gmacError_t syncToAccelerator() = 0;
+    virtual gmacError_t syncToHost() = 0;
 
-    /** Size of the list
-     * 
-     *  \return Number of blocks in the list
-     */
-    size_t size() const;
+    virtual bool is(ProtocolState state) const = 0;
 
-    //! Add a block to the end of list
-    /*!
-        \param block Block to be addded to the end of list
-    */
-    void push(Block &block);
+    ProtocolState getState() const;
+    void setState(ProtocolState state);
 
-    //! Extract a block from the list
-    /*!
-        \return Block from extracted from the begining of the list
-    */
-    Block *pop();
-
-    //! Remove a block from the list
-    /*!
-        \param block Block to be removed from the list
-    */
-    void remove(Block &block);
+    virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };
 
-}}}
+}}}}
 
-#include "BlockList-impl.h"
+#include "BlockState-impl.h"
 
-#endif
+#endif /* BLOCKINFO_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -26,7 +26,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     map_("ModeMemoryMap", *this),
     releasedObjects_(false)
 #ifdef USE_VM
-    , acceleratorBitmap_(*this)
+    , bitmap_(*this)
 #endif
 {
     trace::StartThread(THREAD_T(id_), "GPU");
@@ -57,11 +57,19 @@ void Mode::finiThread()
 
 void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {
-    TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.name(), k);
+    TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.getName(), k);
     KernelMap::iterator i;
     i = kernels_.find(k);
     ASSERTION(i == kernels_.end());
     kernels_[k] = &kernel;
+}
+
+std::string Mode::getKernelName(gmac_kernel_id_t k) const
+{
+    KernelMap::const_iterator i;
+    i = kernels_.find(k);
+    ASSERTION(i != kernels_.end());
+    return std::string(i->second->getName());
 }
 
 Mode &Mode::getCurrent()
@@ -178,7 +186,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
     gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    map_.forEach(&memory::Object::unmapFromAccelerator);
+    map_.forEachObject(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
@@ -190,13 +198,23 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     
     TRACE(LOCAL,"Reallocating objects");
     //map_.reallocObjects(*this);
-    map_.forEach(&memory::Object::mapToAccelerator);
+    map_.forEachObject(&memory::Object::mapToAccelerator);
 
     TRACE(LOCAL,"Reloading mode");
     reload();
 
     switchOut();
 
+    return ret;
+}
+
+gmacError_t Mode::cleanUp()
+{
+    gmacError_t ret = map_.forEachObject(&memory::Object::removeOwner, *this);
+    Map::removeOwner(Process::getInstance(), *this);
+#ifdef USE_VM
+    bitmap_.cleanUp();
+#endif
     return ret;
 }
 

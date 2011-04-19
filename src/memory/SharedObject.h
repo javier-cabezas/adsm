@@ -44,9 +44,9 @@ namespace core {
 
 namespace memory {
 
-template<typename T>
+template<typename State>
 class GMAC_LOCAL SharedObject : public gmac::memory::Object {
-    DBC_FORCE_TEST(SharedObject<T>)
+    DBC_FORCE_TEST(SharedObject<State>)
 protected:
     hostptr_t shadow_;
 	accptr_t  acceleratorAddr_;
@@ -55,7 +55,7 @@ protected:
     static accptr_t allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size);
     gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
 public:
-	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, T init);
+	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init);
     virtual ~SharedObject();
 
     accptr_t acceleratorAddr(const hostptr_t addr) const;

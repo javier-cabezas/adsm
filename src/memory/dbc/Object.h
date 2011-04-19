@@ -45,21 +45,20 @@ protected:
 	Object(hostptr_t addr, size_t size);
     virtual ~Object();
 
-	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t objectOffset) const;
+    gmacError_t memoryOp(gmacError_t (__impl::memory::Protocol::*f)(Block &block, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset), __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 public:
     ssize_t blockBase(size_t offset) const;
     size_t blockEnd(size_t offset) const;
 
-	gmacError_t signalRead(hostptr_t addr) const;
-    gmacError_t signalWrite(hostptr_t addr) const;
+	gmacError_t signalRead(hostptr_t addr);
+    gmacError_t signalWrite(hostptr_t addr);
 
     gmacError_t copyToBuffer(__impl::core::IOBuffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0) const;
+            size_t bufferOffset = 0, size_t objectOffset = 0);
     gmacError_t copyFromBuffer(__impl::core::IOBuffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0) const;
+            size_t bufferOffset = 0, size_t objectOffset = 0);
 
-    gmacError_t memset(size_t offset, int v, size_t size) const;
+    gmacError_t memset(size_t offset, int v, size_t size);
 };
 
 }}

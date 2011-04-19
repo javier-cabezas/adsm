@@ -88,7 +88,7 @@ inline static const char *__extract_file_name(const char *file) {
 
 #define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) __impl::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
-#define CFATAL(c, ...) __impl::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
+#define CFATAL(c, fmt, ...) __impl::util::Logger::__CFatal(c, "Condition '"#c"' failed at "LOCATION_STRING, fmt, ##__VA_ARGS__)
 
 #include "util/Parameter.h"
 #include "util/Private.h"

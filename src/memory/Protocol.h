@@ -34,9 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_H_
 #define GMAC_MEMORY_PROTOCOL_H_
 
+#include <fstream>
+
 #include "config/common.h"
 #include "include/gmac/types.h"
 
+#include "memory/protocol/common/BlockState.h"
 
 namespace __impl {
 
@@ -181,8 +184,8 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-                                     size_t bufferOffset, size_t blockOffset) const = 0;
+    virtual gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+                                     size_t bufferOffset, size_t blockOffset) = 0;
 
     //! Copy the contents an I/O buffer to a memory block
     /*!
@@ -194,8 +197,8 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-                                       size_t bufferOffset, size_t blockOffset) const = 0;
+    virtual gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+                                       size_t bufferOffset, size_t blockOffset) = 0;
 
     //! Initializes a memory range within a memory block to a specific value
     /*!
@@ -207,10 +210,12 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
-        size_t blockOffset) const = 0;
+        size_t blockOffset) = 0;
+
+    virtual gmacError_t dump(Block &block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
 	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
-	typedef gmacError_t (Protocol::*MemoryOp)(const Block &, core::IOBuffer &, size_t, size_t, size_t) const;
+	typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::IOBuffer &, size_t, size_t, size_t);
 };
 
 }}

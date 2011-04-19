@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,6 +18,7 @@
 
 #include <cuda.h>
 #define CUDA_ERRORS
+#define HAVE_PTHREADS 1
 #include "debug.h"
 #include "utils.h"
 
@@ -78,6 +80,7 @@ static struct sigaction defaultAction;
 
 cudaStream_t stream;
 
+#define LINUX
 #if defined(LINUX)
 int signum = SIGSEGV;
 #elif defined(DARWIN)
@@ -316,10 +319,10 @@ void * transfer(param_t param)
     stamp->_sigsegv_min = *std::min_element(sigsegv, sigsegv + iters);
 
     for(int j = 0; j < iters; j++) {
-        if (fabs(time[j] - stamp->_time) / stamp->_time > 0.1) printf("Fiesta en cabina1\n");
-        if (fabs(memcopy[j] - stamp->_memcpy) / stamp->_memcpy > 0.1) printf("Fiesta en cabina2\n");
-        if (fabs(search[j] - stamp->_search) / stamp->_search > 0.1) printf("Fiesta en cabina3\n");
-        if (fabs(sigsegv[j] - stamp->_sigsegv) / stamp->_sigsegv > 0.1) printf("Fiesta en cabina4\n");
+        if (fabs(time[j] - stamp->_time) / stamp->_time > 0.1) perror("Fiesta en cabina1\n");
+        if (fabs(memcopy[j] - stamp->_memcpy) / stamp->_memcpy > 0.1) perror("Fiesta en cabina2\n");
+        if (fabs(search[j] - stamp->_search) / stamp->_search > 0.1) perror("Fiesta en cabina3\n");
+        if (fabs(sigsegv[j] - stamp->_sigsegv) / stamp->_sigsegv > 0.1) perror("Fiesta en cabina4\n");
     }
 
     return NULL;
@@ -376,7 +379,7 @@ int main(int argc, char *argv[])
 		if (i > 1024 * 1024) fprintf(stdout, "%dMB\t", i / 1024 / 1024);
 		else if (i > 1024) fprintf(stdout, "%dKB\t", i / 1024);
         #endif
-		fprintf(stdout, "%d\t%d\t", i, maxSize/i);
+		fprintf(stdout, "%d\t%d\t", i, transferSize/i);
 
         if (pageLocked) {
             fprintf(stdout, "%f\t%f\t%f\t%f",

@@ -24,10 +24,14 @@ unsigned Bitmap::L1Shift_;
 unsigned Bitmap::L2Shift_;
 unsigned Bitmap::L3Shift_;
 
-Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
+Node::Node(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
     level_(level), nEntries_(nEntries), nUsedEntries_(0),
     usedEntries_(nEntries),
     firstUsedEntry_(-1), lastUsedEntry_(-1),
+    root_(root),
+    entriesAcc_(NULL),
+    dirty_(false),
+    synced_(true),
     nextEntries_(nextEntries)
 {
     TRACE(LOCAL, "Node constructor");
@@ -46,11 +50,22 @@ Node::Node(unsigned level, size_t nEntries, std::vector<unsigned> nextEntries) :
     TRACE(LOCAL, "Entries: %zd", nEntries_);
     TRACE(LOCAL, "Shift: %u", shift_);
     TRACE(LOCAL, "Mask : %lx", mask_);
+
+    if (nextEntries_.size() > 0) {
+        entriesHost_ = hostptr_t(::malloc(nEntries * sizeof(uint8_t)));
+        ::memset(entriesHost_, 0, nEntries * sizeof(uint8_t));
+    } else {
+        entriesHost_ = NULL;
+    }
+    entriesAccHost_ = hostptr_t(::malloc(nEntries * sizeof(uint8_t)));
+    TRACE(LOCAL, "Allocating memory: %p", entriesHost_);
+    ::memset(entriesAccHost_, 0, nEntries * sizeof(uint8_t));
 }
 
-template <typename S>
-NodeStore<S>::~NodeStore()
+Node::~Node()
 {
+    freeAcc(getLevel() == 0);
+
     TRACE(LOCAL, "NodeStore destructor");
 
     if (nextEntries_.size() > 0) {
@@ -61,76 +76,15 @@ NodeStore<S>::~NodeStore()
             }
         }
     }
-}
 
-void
-NodeHost::registerRange(long_t startIndex, long_t endIndex)
-{
-    long_t localStartIndex = getLocalIndex(startIndex);
-    long_t localEndIndex = getLocalIndex(endIndex);
-
-    addEntries(localStartIndex, localEndIndex);
-
-    TRACE(LOCAL, "registerRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
-
-    if (nextEntries_.size() == 0) {
-        for (long_t i = localStartIndex; i <= localEndIndex; i++) {
-            uint8_t &leaf = getLeafRef(i);
-            leaf = uint8_t(BITMAP_UNSET);
-        }
-        return;
+    if (entriesHost_ != NULL) {
+        ::free(entriesHost_);
     }
-
-    long_t startWIndex = startIndex;
-    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
-                          getGlobalIndex(localStartIndex + 1) - 1;
-
-    long_t i = localStartIndex;
-    do {
-        Node *&node = getNodeRef(i);
-        if (node == NULL) {
-            node = createChild();
-        }
-        node->registerRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
-        i++;
-        startWIndex = getGlobalIndex(i);
-        endWIndex = (i < localEndIndex)? getGlobalIndex(i + 1) - 1: endIndex;
-    } while (i <= localEndIndex);
+    ::free(entriesAccHost_);
 }
 
 void
-NodeHost::unregisterRange(long_t startIndex, long_t endIndex)
-{
-    long_t localStartIndex = getLocalIndex(startIndex);
-    long_t localEndIndex = getLocalIndex(endIndex);
-
-    TRACE(LOCAL, "unregisterRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
-
-    if (nextEntries_.size() == 0) {
-        removeEntries(localStartIndex, localEndIndex);
-        return;
-    }
-
-    long_t startWIndex = startIndex;
-    long_t endWIndex   = (localStartIndex == localEndIndex)? endIndex:
-                         getGlobalIndex(localStartIndex + 1) - 1;
-
-    long_t i = localStartIndex;
-    do {
-        Node *&node = getNodeRef(i);
-        node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
-        if (node->getNUsedEntries() == 0) {
-            delete node;
-            node = NULL;
-        }
-        i++;
-        startWIndex = getGlobalIndex(i);
-        endWIndex = (i < localEndIndex)? getGlobalIndex(i + 1) - 1: endIndex;
-    } while (i <= localEndIndex);
-}
-
-void
-NodeShared::registerRange(long_t startIndex, long_t endIndex)
+Node::registerRange(long_t startIndex, long_t endIndex)
 {
     long_t localStartIndex = getLocalIndex(startIndex);
     long_t localEndIndex = getLocalIndex(endIndex);
@@ -159,13 +113,13 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
 
     long_t i = localStartIndex;
     do {
-        NodeShared *&node = getNodeRef(i);
+        Node *&node = getNodeRef(i);
         if (node == NULL) {
-            node = (NodeShared *) createChild();
+            node = (Node *) createChild();
             node->allocAcc(false);
             TRACE(LOCAL, "Allocating accelerator memory: %p", node->entriesAcc_.get());
 
-            NodeShared *&nodeAcc = getNodeAccHostRef(i);
+            Node *&nodeAcc = getNodeAccHostRef(i);
             nodeAcc = node->getNodeAccAddr(0);
             TRACE(LOCAL, "linking with 0x%p", nodeAcc);
         }
@@ -178,7 +132,7 @@ NodeShared::registerRange(long_t startIndex, long_t endIndex)
 }
 
 void
-NodeShared::unregisterRange(long_t startIndex, long_t endIndex)
+Node::unregisterRange(long_t startIndex, long_t endIndex)
 {
     long_t localStartIndex = getLocalIndex(startIndex);
     long_t localEndIndex = getLocalIndex(endIndex);
@@ -196,10 +150,10 @@ NodeShared::unregisterRange(long_t startIndex, long_t endIndex)
 
     long_t i = localStartIndex;
     do {
-        NodeShared *&node = getNodeRef(i);
+        Node *&node = getNodeRef(i);
         node->unregisterRange(getNextIndex(startWIndex), getNextIndex(endWIndex));
         if (node->getNUsedEntries() == 0) {
-            NodeShared *&nodeAcc = getNodeAccHostRef(i);
+            Node *&nodeAcc = getNodeAccHostRef(i);
             delete node;
             node = NULL;
             nodeAcc = NULL;
@@ -212,34 +166,24 @@ NodeShared::unregisterRange(long_t startIndex, long_t endIndex)
 
 
 Node *
-NodeHost::createChild()
+Node::createChild()
 {
     if (nextEntries_.size() == 0) return NULL;
 
     std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
     std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-    return new NodeHost(getLevel() + 1, root_, nextEntries_[0], nextEntries);
-}
-
-Node *
-NodeShared::createChild()
-{
-    if (nextEntries_.size() == 0) return NULL;
-
-    std::vector<unsigned> nextEntries(nextEntries_.size() - 1);
-    std::copy(++nextEntries_.begin(), nextEntries_.end(), nextEntries.begin());
-    NodeShared *node = new NodeShared(getLevel() + 1, root_, nextEntries_[0], nextEntries);
+    Node *node = new Node(getLevel() + 1, root_, nextEntries_[0], nextEntries);
     return node;
 }
 
 void
-NodeShared::acquire()
+Node::acquire()
 {
     TRACE(LOCAL, "Acquire");
 
     if (nextEntries_.size() > 0) {
         for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
-            NodeShared *node = (NodeShared *) getNode(i);
+            Node *node = (Node *) getNode(i);
             if (node != NULL) node->acquire();
         }
     } else {
@@ -249,11 +193,11 @@ NodeShared::acquire()
 }
 
 void
-NodeShared::release()
+Node::release()
 {
     if (nextEntries_.size() > 0) {
         for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
-            NodeShared *node = (NodeShared *) getNode(i);
+            Node *node = (Node *) getNode(i);
             if (node != NULL) node->release();
         }
     }
@@ -294,10 +238,22 @@ Bitmap::Init()
     TRACE(GLOBAL, "L1Mask %lu", Bitmap::L1Mask_);
 }
 
-Bitmap::Bitmap(core::Mode &mode, bool shared) :
-    mode_(mode)
+Bitmap::Bitmap(core::Mode &mode) :
+    mode_(mode),
+    released_(false)
 {
     TRACE(LOCAL, "Bitmap constructor");
+
+    std::vector<unsigned> nextEntries;
+
+    if (BitmapLevels_ > 1) {
+        nextEntries.push_back(L2Entries_);
+    }
+    if (BitmapLevels_ == 3) {
+        nextEntries.push_back(L3Entries_);
+    }
+
+    root_ = new Node(0, *this, L1Entries_, nextEntries);
 }
 
 Bitmap::~Bitmap()
@@ -309,38 +265,6 @@ void
 Bitmap::cleanUp()
 {
     delete root_;
-}
-
-BitmapHost::BitmapHost(core::Mode &mode) :
-    Bitmap(mode, false)
-{
-    std::vector<unsigned> nextEntries;
-
-    if (BitmapLevels_ > 1) {
-        nextEntries.push_back(L2Entries_);
-    }
-    if (BitmapLevels_ == 3) {
-        nextEntries.push_back(L3Entries_);
-    }
-
-    root_ = new NodeHost(0, *this, L1Entries_, nextEntries);
-}
-
-BitmapShared::BitmapShared(core::Mode &mode) :
-    Bitmap(mode, true),
-    released_(false)
-{
-    std::vector<unsigned> nextEntries;
-
-    if (BitmapLevels_ > 1) {
-        nextEntries.push_back(L2Entries_);
-    }
-    if (BitmapLevels_ == 3) {
-        nextEntries.push_back(L3Entries_);
-    }
-
-    NodeShared *node = new NodeShared(0, *this, L1Entries_, nextEntries);
-    root_ = node;
 }
 
 void

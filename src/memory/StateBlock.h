@@ -41,33 +41,27 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory {
 
-template<typename T>
-class GMAC_LOCAL StateBlock : public gmac::memory::Block {
-protected:
-    //! Block state
-	T state_;    
+template <typename T>
+struct Friend
+{
+    typedef T Type;
+};
 
+template <typename State>
+class GMAC_LOCAL StateBlock : public gmac::memory::Block,
+                              public State {
+    friend class Friend<State>::Type;
+
+protected:
     //! Default construcutor
     /*!
         \param protocol Memory coherence protocol used by the block
         \param addr Host memory address for applications to accesss the block
         \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
-        \param init Initial block state
+        \param init Initial protocol state for the block
     */
-	StateBlock(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, T init);
-public:
-    //! Get block state
-    /*!
-        \return Block state
-    */
-	const T &getState() const;
-
-    //! Set block state
-    /*!
-        \param s New block state
-    */
-	void setState(const T &s);
+	StateBlock(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, typename State::ProtocolState init);
 };
 
 }}

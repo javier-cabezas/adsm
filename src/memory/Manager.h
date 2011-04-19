@@ -79,7 +79,7 @@ protected:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(const Object &obj, size_t objOffset,
+    gmacError_t memcpyToObject(Object &obj, size_t objOffset,
                                const hostptr_t src, size_t size);
 
     /** Copy data from object to object
@@ -93,8 +93,8 @@ protected:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(const Object &dstObj, size_t dstOffset,
-                               const Object &srcObj, size_t srcOffset,
+    gmacError_t memcpyToObject(Object &dstObj, size_t dstOffset,
+                               Object &srcObj, size_t srcOffset,
                                size_t size);
 
     /**
@@ -106,7 +106,7 @@ protected:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyFromObject(hostptr_t dst, const Object &obj,
+    gmacError_t memcpyFromObject(hostptr_t dst, Object &obj,
                                  size_t objOffset, size_t size);
 
     /**

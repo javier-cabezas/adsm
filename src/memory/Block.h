@@ -39,9 +39,9 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "memory/Protocol.h"
-#include "util/Reference.h"
 #include "util/Lock.h"
 #include "util/Logger.h"
+#include "util/Reference.h"
 
 namespace __impl {
 
@@ -67,6 +67,8 @@ namespace memory {
 class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
     DBC_FORCE_TEST(Block)
 
+    friend class Object;
+
 protected:
     //! Memory coherence protocol used by the block
     Protocol &protocol_;
@@ -80,18 +82,6 @@ protected:
     //! Shadow host memory mapping that is always read/write.
     hostptr_t shadow_;
 
-#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
-    //! Last addr
-    hostptr_t lastAddr_;
-    long_t stride_;
-    unsigned stridedFaults_;
-    unsigned faults_;
-
-    void resetSubBlockStats();
-    void updateSubBlockStats(const hostptr_t addr, bool write);
-#endif
-
-
     //! Default construcutor
     /*!
         \param protocol Memory coherence protocol used by the block
@@ -103,24 +93,8 @@ protected:
 
     //! Default destructor
     virtual ~Block();
+
 public:
-#ifdef USE_SUBBLOCK_TRACKING
-    typedef std::vector<uint8_t> SubBlockVector;
-    SubBlockVector subBlockState_; 
-#endif
-
-#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
-    bool isStridedAccess() const;
-    unsigned getFaults() const;
-    unsigned getStridedFaults() const;
-
-    hostptr_t getSubBlockAddr(const hostptr_t addr) const;
-    unsigned getSubBlocks() const;
-    size_t getSubBlockSize() const;
-
-    void setSubBlockDirty(const hostptr_t addr);
-    void setBlockDirty();
-#endif
 
     //! Host memory address where the block starts
     /*!
@@ -134,6 +108,7 @@ public:
     */
     size_t size() const;
 
+protected:
     //! Signal handler for faults caused due to memory reads
     /*!
         \param addr Faulting address
@@ -148,12 +123,48 @@ public:
     */
     gmacError_t signalWrite(hostptr_t addr);
 
-    //! Request a memory coherence operation
+    //! Ensures that the host memory has a valid and accessible copy of the data
     /*!
-        \param op Memory coherence operation to be executed
         \return Error code
     */
-    gmacError_t coherenceOp(Protocol::CoherenceOp op);
+    gmacError_t toAccelerator() { return toAccelerator(0, size_); }
+    virtual gmacError_t toAccelerator(unsigned blockOff, size_t count) = 0;
+
+    //! Ensures that the host memory has a valid and accessible copy of the data
+    /*!
+        \return Error code
+    */
+    gmacError_t toHost() { return toHost(0, size_); }
+    virtual gmacError_t toHost(unsigned blockOff, size_t count) = 0;
+
+    
+public:
+    //! Initializes a memory range within the block to a specific value
+    /*!
+        \param v Value to initialize the memory to
+        \param size Size (in bytes) of the memory region to be initialized
+        \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
+        \return Error code
+    */
+    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
+
+    #if 0
+    //! Copy data from host memory to the memory block
+    /*!
+        \param src Source host memory address to copy the data from
+        \param size Size (in bytes) of the data to be copied
+        \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
+        \return Error code
+    */
+    TESTABLE gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, size_t blockOffset = 0) const;
+    #endif
+
+    /** Request a memory coherence operation
+     * 
+     *  \param op Memory coherence operation to be executed
+     *  \return Error code
+     */
+    gmacError_t coherenceOp(gmacError_t (Protocol::*f)(Block &));
 
     //! Request a memory operation over an I/O buffer
     /*!
@@ -170,28 +181,10 @@ public:
         \sa copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Protocol
     */
-    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size,
-                                  size_t bufferOffset, size_t blockOffset);
+    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
+                                  core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 
-    //! Initializes a memory range within the block to a specific value
-    /*!
-        \param v Value to initialize the memory to
-        \param size Size (in bytes) of the memory region to be initialized
-        \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
-        \return Error code
-    */
-    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0) const;
 
-    #if 0
-    //! Copy data from host memory to the memory block
-    /*!
-        \param src Source host memory address to copy the data from
-        \param size Size (in bytes) of the data to be copied
-        \param blockOffset Offset (in bytes) from the begining of the block to copy the data to
-        \return Error code
-    */
-    TESTABLE gmacError_t memcpyFromMemory(const hostptr_t src, size_t size, size_t blockOffset = 0) const;
-    #endif
 
     /**
      * Copy data from a GMAC object to the memory block
@@ -233,19 +226,7 @@ public:
         \return Accelerator memory address of the block
     */
     virtual accptr_t acceleratorAddr() const = 0;
-
-    //! Ensures that the host memory has a valid and accessible copy of the data
-    /*!
-        \return Error code
-    */
-    virtual gmacError_t toHost() const = 0;
-
-    //! Ensures that the host memory has a valid and accessible copy of the data
-    /*!
-        \return Error code
-    */
-    virtual gmacError_t toAccelerator() = 0;
-
+ 
     //! Copy the data from a host memory location to the block host memory
     /*!
         \param src Source host memory address to copy the data from
@@ -370,6 +351,8 @@ public:
         size_t blockOffset = 0) const = 0;
 
     Protocol &getProtocol();
+
+    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
 };
 
 

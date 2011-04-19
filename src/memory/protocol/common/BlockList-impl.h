@@ -1,9 +1,13 @@
 #ifndef GMAC_MEMORY_PROTOCOL_BLOCKLIST_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_BLOCKLIST_IMPL_H_
 
+#include <algorithm>
+
 #include "memory/Block.h"
+#include "memory/vm/Model.h"
 
 namespace __impl { namespace memory { namespace protocol { 
+
 
 inline BlockList::BlockList() :
     Lock("BlockList")
@@ -36,17 +40,15 @@ inline void BlockList::push(Block &block)
     unlock();
 }
 
-inline Block *BlockList::pop()
+inline Block &BlockList::pop()
 {
-    Block *ret = (Block *)NULL;
+    ASSERTION(Parent::empty() == false);
     lock();
-    if(Parent::empty() == false) {
-        ret = Parent::front();
-        Parent::pop_front();
-        ret->release();
-    }
+    Block *ret = Parent::front();
+    Parent::pop_front();
+    ret->release();
     unlock();
-    return ret;
+    return *ret;
 }
 
 inline void BlockList::remove(Block &block)

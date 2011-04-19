@@ -65,7 +65,7 @@ KernelLaunch::execute()
     CUresult ret = cuParamSetv(f_, 0, argsArray(), unsigned(argsSize()));
     CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameters: %d", ret);
     ret = cuParamSetSize(f_, unsigned(argsSize()));
-	CFATAL(ret == CUDA_SUCCESS);
+	CFATAL(ret == CUDA_SUCCESS, "CUDA Error setting parameter size: %d", ret);
 
 #if 0
 	// Set-up textures

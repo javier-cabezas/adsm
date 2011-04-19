@@ -18,19 +18,23 @@ Object::BlockMap::const_iterator Object::firstBlock(size_t &objectOffset) const
     return i;
 }
 
-gmacError_t Object::coherenceOp(Protocol::CoherenceOp op) const
+gmacError_t Object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
 {
 	gmacError_t ret = gmacSuccess;
 	BlockMap::const_iterator i;
 	for(i = blocks_.begin(); i != blocks_.end(); i++) {
-		ret = i->second->coherenceOp(op);
+		ret = i->second->coherenceOp(f);
 		if(ret != gmacSuccess) break;
 	}
 	return ret;
 }
 
+#if 0
 gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
 							 size_t bufferOffset, size_t objectOffset) const
+#endif
+gmacError_t Object::memoryOp(Protocol::MemoryOp op,
+                             core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
 	gmacError_t ret = gmacSuccess;
 	BlockMap::const_iterator i = firstBlock(objectOffset); // objectOffset gets modified
@@ -47,7 +51,8 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 	return ret;
 }
 
-gmacError_t Object::memset(size_t offset, int v, size_t size) const
+
+gmacError_t Object::memset(size_t offset, int v, size_t size)
 {
     gmacError_t ret = gmacSuccess;
     BlockMap::const_iterator i = firstBlock(offset); // offset gets modified

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,27 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_DBC_BLOCK_H_
-#define GMAC_MEMORY_DBC_BLOCK_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
 
-namespace __dbc { namespace memory {
+namespace __impl {
+namespace memory { namespace protocol { namespace common {
 
-class GMAC_LOCAL Block :
-    public __impl::memory::Block,
-    public virtual Contract {
-    DBC_TESTED(__impl::memory::Block)
+template <typename T>
+inline
+BlockState<T>::BlockState(ProtocolState init) :
+    state_(init)
+{
+}
 
-protected:
-	Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
-    virtual ~Block();
-public:
+template <typename T>
+inline
+T
+BlockState<T>::getState() const
+{
+    return state_;
+}
 
-	gmacError_t memoryOp(gmacError_t (__impl::memory::Protocol::*f)(Block &block, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset), __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
-    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
-};
+template <typename T>
+inline
+void
+BlockState<T>::setState(ProtocolState state)
+{
+    state_ = state;
+}
 
-}}
+}}}}
 
-#endif /* BLOCK_H */
+#endif /* BLOCKSTATE_IMPL_H */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
