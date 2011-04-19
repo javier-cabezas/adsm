@@ -51,7 +51,7 @@ namespace core {
 
 namespace memory {
 
-class GMAC_API Object: protected gmac::util::RWLock, public util::Reference {
+class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
     DBC_FORCE_TEST(Object)
 
 protected:

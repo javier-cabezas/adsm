@@ -17,7 +17,8 @@ TEST_F(ProcessTest, ModeMap) {
 	ASSERT_TRUE(&acc_ != NULL);
 
     Mode *mode = NULL;
-	mode = dynamic_cast<Mode *>(Process::getInstance<Process &>().createMode(0));
+	Process &proc = dynamic_cast<Process &>(__impl::core::Process::getInstance());
+	mode = dynamic_cast<Mode *>(proc.createMode(0));
 	ASSERT_TRUE(mode != NULL);
 	mode->initThread();
 

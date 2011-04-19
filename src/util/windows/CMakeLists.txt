@@ -15,4 +15,4 @@ set(util_os_DBC
     dbc/Lock.cpp
 )
 
-add_gmac_sources(gmac-util ${uutil_os_SRC} ${util_os_DBC})
+add_gmac_sources(gmac-util ${util_os_SRC} ${util_os_DBC})

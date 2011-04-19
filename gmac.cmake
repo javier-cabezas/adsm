@@ -1,3 +1,17 @@
+function(add_gmac_groups)
+    foreach(__file ${ARGV})
+        # Create group name
+        string(REGEX REPLACE "/[^/]+$" "" file_DIR ${__file})
+        if(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+            string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
+        elseif(${file_DIR} MATCHES ${CMAKE_BINARY_DIR})
+            string(REPLACE "${CMAKE_BINARY_DIR}" "" group_DIR ${file_DIR})
+        endif(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+        string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
+        source_group(${group_LABEL} FILES ${__file})
+    endforeach()
+endfunction(add_gmac_groups)
+
 macro(add_gmac_sources label)
     set(__sources "")
     foreach(__file ${ARGN})
@@ -15,9 +29,17 @@ macro(add_gmac_sources label)
     endforeach()
 
     # Add the source files to the global list
-
     set(${label}_SRC ${${label}_SRC} ${__sources} PARENT_SCOPE)
 endmacro(add_gmac_sources)
+
+macro(add_gmac_library name type)
+    add_library(${name} ${type} ${ARGN})
+    add_gmac_groups(${ARGN})
+    set_target_properties(${name} PROPERTIES
+        COMPILE_FLAGS ${gmac_static_FLAGS}
+	COMPILE_DEFINITIONS_DEBUG USE_DBC
+    )
+endmacro(add_gmac_library)
 
 macro(group_gmac_sources label)
     set(__sources "")
@@ -28,20 +50,6 @@ macro(group_gmac_sources label)
     # Add the source files to the global list
     set(${label}_SRC ${__sources} PARENT_SCOPE)
 endmacro(group_gmac_sources)
-
-function(add_gmac_groups)
-    foreach(__file ${ARGV})
-        # Create group name
-        string(REGEX REPLACE "/[^/]+$" "" file_DIR ${__file})
-        if(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
-            string(REPLACE "${CMAKE_SOURCE_DIR}" "" group_DIR ${file_DIR})
-        elseif(${file_DIR} MATCHES ${CMAKE_BINARY_DIR})
-            string(REPLACE "${CMAKE_BINARY_DIR}" "" group_DIR ${file_DIR})
-        endif(${file_DIR} MATCHES ${CMAKE_SOURCE_DIR})
-        string(REPLACE "/" "\\\\" group_LABEL ${group_DIR})
-        source_group(${group_LABEL} FILES ${__file})
-    endforeach()
-endfunction(add_gmac_groups)
 
 function(add_gmac_test_include)
     get_property(gmac_test_INCLUDE GLOBAL PROPERTY gmac_test_INCLUDE)

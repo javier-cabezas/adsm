@@ -69,7 +69,7 @@ GMAC_API gmacError_t APICALL __oclPrepareCLCodeFile(const char *path, const char
     in.seekg (0, std::ios::end);
     std::streampos length = in.tellg();
     in.seekg (0, std::ios::beg);
-    if (length == 0) return gmacSuccess;
+	if (length == std::streampos(0)) return gmacSuccess;
     // Allocate memory for the code
     char *buffer = new char[int(length)+1];
     // Read data as a block

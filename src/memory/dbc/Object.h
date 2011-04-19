@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace memory {
 
-class GMAC_API Object :
+class GMAC_LOCAL Object :
     public __impl::memory::Object,
     public virtual Contract {
     DBC_TESTED(__impl::memory::Object)

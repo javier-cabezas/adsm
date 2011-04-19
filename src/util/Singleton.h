@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T>
-class GMAC_API Singleton {
+class GMAC_LOCAL Singleton {
 private:
 	static T *Singleton_;
     static bool Valid_;

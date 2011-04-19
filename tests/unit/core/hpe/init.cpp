@@ -50,7 +50,7 @@ void InitModel()
 {
     InitAccelerator();
     Process::create<Process>();
-    Process &proc = Process::getInstance<Process &>();
+    Process &proc = Process::getInstance<Process>();
     proc.addAccelerator(*Accelerator_);
     Mode_ = dynamic_cast<__impl::core::Mode *>(proc.createMode(0));
 }

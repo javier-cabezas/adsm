@@ -14,7 +14,8 @@ Mode *ModeTest::Mode_ = NULL;
 void ModeTest::SetUpTestCase() {
     InitProcess();
     if(Mode_ != NULL) return;
-    Mode_ = dynamic_cast<Mode *>(Process::getInstance<Process &>().createMode(0));
+	Process &proc = dynamic_cast<Process &>(Process::getInstance());
+    Mode_ = dynamic_cast<Mode *>(proc.createMode(0));
     ASSERT_TRUE(Mode_ != NULL);
     Mode_->initThread();
 }

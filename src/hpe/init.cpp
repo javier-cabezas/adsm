@@ -125,7 +125,7 @@ static void InitThread()
 {
 	gmac::trace::StartThread("CPU");
 	gmac::enterGmac();
-	__impl::core::Process &proc = __impl::core::Process::getInstance();
+	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
 	proc.initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
 	gmac::exitGmac();
@@ -136,7 +136,7 @@ static void FiniThread()
 	gmac::enterGmac();
 	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
-	__impl::core::Process &proc = __impl::core::Process::getInstance();
+	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
 	proc.finiThread();
 	gmac::exitGmac();
 }

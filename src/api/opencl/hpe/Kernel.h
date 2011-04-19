@@ -67,7 +67,7 @@ public:
 
 
 
-class GMAC_API Kernel : public gmac::core::hpe::Kernel {
+class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
     friend class KernelLaunch;
 protected:
     cl_kernel f_;

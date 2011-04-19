@@ -96,7 +96,7 @@ inline static const char *__extract_file_name(const char *file) {
 
 namespace __impl { namespace util {
 
-class GMAC_API Logger {
+class GMAC_LOCAL Logger {
 private:    
 #ifdef DEBUG
 	static Atomic Ready_;
