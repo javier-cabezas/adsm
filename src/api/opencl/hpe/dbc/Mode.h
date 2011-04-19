@@ -36,8 +36,10 @@ WITH THE SOFTWARE.
 #define GMAC_API_OPENCL_HPE_DBC_MODE_H_
 
 namespace __dbc { namespace opencl { namespace hpe {
+#if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4250 )
+#endif
 class GMAC_LOCAL Mode :
     public __impl::opencl::hpe::Mode,
     public virtual Contract {
@@ -50,8 +52,9 @@ public:
     gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 };
+#if defined(_MSC_VER)
 #pragma warning( pop )
-
+#endif
 }}}
 
 #endif

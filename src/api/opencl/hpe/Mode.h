@@ -72,8 +72,10 @@ public:
 
 
 //! Visual studio produces a stupid warning due to the complex diamond inheritance
+#if defined(_MSC_VER)
 #pragma warning( push )
 #pragma warning( disable : 4250 )
+#endif
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual opencl::Mode {
     DBC_FORCE_TEST(Mode)
@@ -216,7 +218,9 @@ public:
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };
+#if defined(_MSC_VER)
 #pragma warning( pop )
+#endif
 }}}
 
 #include "Mode-impl.h"
