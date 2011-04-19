@@ -140,8 +140,8 @@ public:
     gmacError_t unmap(hostptr_t addr, size_t size);
 
     /* Synchronous interface */
-    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode);
-    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::Mode &mode);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */

@@ -29,7 +29,7 @@ int Accelerator::minor() const
 }
 
 inline
-gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::Mode &mode)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
@@ -68,7 +68,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, 
 }
 
 inline
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::Mode &mode)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
