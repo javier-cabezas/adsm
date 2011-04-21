@@ -73,6 +73,12 @@ public:
     virtual memory::Protocol &protocol() = 0;
 
     /**
+     * Gets a numeric identifier for the mode. This identifier must be unique.
+     * \return A numeric identifier for the mode
+     */
+    virtual unsigned id() const = 0;
+
+    /**
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
