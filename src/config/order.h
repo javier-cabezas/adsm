@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 /* Common constructors */
 namespace __impl { namespace util { namespace params {
-void Init(void) GMAC_LOCAL;
+void GMAC_API Init(void);
 }}}
 
 /* Interposition Constructors */

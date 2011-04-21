@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #include <gmac/opencl.h>
 
@@ -9,7 +9,7 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 32 * 1024 * 1024;
 unsigned vecSize = 0;
 
 const size_t blockSize = 32;
@@ -39,12 +39,12 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     // Alloc output data
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -52,8 +52,8 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    valueInit(a, 0.1f, vecSize);
-    valueInit(b, 0.1f, vecSize);
+    valueInit(a, 1.f, vecSize);
+    valueInit(b, 1.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -67,16 +67,20 @@ int main(int argc, char *argv[])
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(c));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    tmp = cl_mem(gmacPtr(a));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-    tmp = cl_mem(gmacPtr(b));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 2);
-    __oclSetArgument(&vecSize, sizeof(vecSize), 3);
-    assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+
+    OclKernel kernel;
+
+    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    cl_mem tmp = cl_mem(oclPtr(c));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    tmp = cl_mem(oclPtr(a));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    tmp = cl_mem(oclPtr(b));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -97,10 +101,9 @@ int main(int argc, char *argv[])
         abort();
     }
 
-
-    gmacFree(a);
-    gmacFree(b);
-    gmacFree(c);
+    oclFree(a);
+    oclFree(b);
+    oclFree(c);
 
     //return error != 0;
     return 0;

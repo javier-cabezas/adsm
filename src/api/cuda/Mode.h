@@ -41,8 +41,6 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 #include "core/Mode.h"
 
-#include "Module.h"
-
 namespace __impl {
     
 namespace core {
@@ -51,119 +49,22 @@ class IOBuffer;
 
 namespace cuda {
 
-class Context;
-
-class GMAC_LOCAL ContextLock : public gmac::util::Lock {
-    friend class Mode;
-public:
-    ContextLock() : gmac::util::Lock("Context") {}
-};
-
-class Texture;
-class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::Mode {
-    friend class Switch;
+class GMAC_LOCAL Mode : public virtual core::Mode {
 protected:
-#ifdef USE_MULTI_CONTEXT
-    //! Associated CUDA context
-    CUcontext cudaCtx_;
-#endif
-    //! Switch to accelerator mode
-    void switchIn();
-
-    //! Switch back to CPU mode
-    void switchOut();
-
-    //! Get the main mode context
-    /*!
-        \return Main mode context
-    */
-    core::Context &getContext();
-    Context &getCUDAContext();
-
-#ifdef USE_MULTI_CONTEXT
-    //! CUDA modules active on this mode
-	ModuleVector modules;
-#else
-    //! CUDA modules active on this mode
-    ModuleVector *modules;
-#endif
-
-    //! Load CUDA modules and kernels
-    void load();
-
-    //! Reload CUDA kernels
-    void reload();
-
 public:
-    //! Default constructor
-    /*!
-        \param proc Process where the mode is attached
-        \param acc Virtual CUDA accelerator where the mode is executed
-    */
-    Mode(core::Process &proc, Accelerator &acc);
-
     //! Default destructor
-    ~Mode();
+    virtual ~Mode() { };
 
-    //! Allocated GPU-accessible host memory
-    /*!
-        \param addr Memory address of the pointer where the starting host memory address will be stored
-        \param size Size (in bytes) of the host memory to be allocated
-        \return Error code
-    */
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    virtual CUstream eventStream() = 0;
 
-    //! Release GPU-accessible host memory 
-    /*!
-        \param addr Starting address of the host memory to be released
-        \return Error code
-    */
-    gmacError_t hostFree(hostptr_t addr);
+    virtual gmacError_t waitForEvent(CUevent event, bool fromCUDA) = 0;
 
-    //! Get the GPU memory address where GPU-accessible host memory is mapped
-    /*!
-        \param addr Host memory address
-        \return Device memory address
-    */
-    accptr_t hostMap(const hostptr_t addr);
-
-    core::KernelLaunch &launch(gmacKernel_t kernel);
-
-    //! Execute a kernel on the accelerator
-    /*!
-        \param launch Structure defining the kernel to be executed
-        \return Error code
-    */
-	gmacError_t execute(core::KernelLaunch &launch);
-
-    core::IOBuffer *createIOBuffer(size_t size);
-    void destroyIOBuffer(core::IOBuffer *buffer);
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
-
-    gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	gmacError_t argument(const void *arg, size_t size, off_t offset);
-
-    const Variable *constant(gmacVariable_t key) const;
-    const Variable *variable(gmacVariable_t key) const;
-    const Variable *constantByName(std::string name) const;
-    const Variable *variableByName(std::string name) const;
-    const Texture *texture(gmacTexture_t key) const;
-
-    CUstream eventStream();
-
-    static Mode &getCurrent();
-    Accelerator &getAccelerator();
-
-    gmacError_t waitForEvent(CUevent event, bool fromCUDA);
-    gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);
+    virtual gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end) = 0;
 };
 
 }}
 
-#include "Mode-impl.h"
 
 #endif

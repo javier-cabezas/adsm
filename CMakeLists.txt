@@ -94,6 +94,7 @@ option(USE_VM "Enable software GPU virtual memory" OFF)
 if(USE_VM)
     message(STATUS "Compiling with VM support")
     add_definitions(-DUSE_VM)
+    set(USE_VM_BITMAP "1")
     if(VM_BITMAP MATCHES "bit")
         message(STATUS "Using 'bit' bitmap implementation")
         add_definitions(-DBITMAP_BIT)
@@ -105,7 +106,17 @@ if(USE_VM)
     if(USE_HOSTMAP_VM)
         add_definitions(-DUSE_HOSTMAP_VM)
     endif(USE_HOSTMAP_VM)
+else(USE_VM)
+    set(USE_VM_BITMAP "0")
 endif(USE_VM)
+
+# Setup configuration options
+option(USE_SUBBLOCK_TRACKING "Enable subblock modification tracking" OFF)
+if(USE_SUBBLOCK_TRACKING)
+    message(STATUS "Compiling with subblock modification tracking")
+    add_definitions(-DUSE_SUBBLOCK_TRACKING)
+endif(USE_SUBBLOCK_TRACKING)
+
 
 # Make sure we compile the necessary libraries
 add_subdirectory(lib)
@@ -157,14 +168,20 @@ if(MAKE_DOC)
 endif(MAKE_DOC)
 
 
-add_gmac_groups(${gmac_SRC} ${gmac-lib_SRC} ${gmac-dbc_SRC})
-add_library(gmac-base STATIC ${gmac_SRC} ${gmac-dbc_SRC})
-set_target_properties(gmac-base PROPERTIES
-    COMPILE_FLAGS ${gmac_static_FLAGS}
-    COMPILE_DEFINITIONS_DEBUG USE_DBC)
- 
+option(MAKE_STATIC "Build GMAC as a static library")
+include("CMakeLists-libs.txt")
+if(MAKE_STATIC)
+add_gmac_library(gmac STATIC ${gmac-hpe_SRC})
+else(MAKE_STATIC)
+add_gmac_library(gmac SHARED ${gmac-hpe_SRC})
+endif(MAKE_STATIC)
+target_link_libraries(gmac gmac-memory gmac-core-hpe gmac-core gmac-common gmac-trace ${gmac_LIBS})
+set_target_properties(gmac PROPERTIES
+    VERSION 0.3.0 SOVERSION 1
+)
 
-add_library(gmac SHARED ${gmac-lib_SRC})
+link_directories(${gmac_LIBDIR})
+
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
@@ -173,16 +190,16 @@ set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/vm.h
+    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
 )
 
+install(TARGETS gmac 
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
+     RUNTIME DESTINATION bin
+     RESOURCE DESTINATION share
+     PUBLIC_HEADER DESTINATION include/gmac)
 
-target_link_libraries(gmac gmac-base ${gmac_LIBS})
-link_directories(${gmac_LIBDIR})
-
-set_target_properties(gmac PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG USE_DBC
-    VERSION 0.2.0 SOVERSION 1)
 
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
@@ -199,11 +216,5 @@ if(MAKE_TOOLS)
     add_subdirectory(tools)
 endif(MAKE_TOOLS)
 
-install(TARGETS gmac 
-     LIBRARY DESTINATION lib
-     ARCHIVE DESTINATION lib
-     RUNTIME DESTINATION bin
-     RESOURCE DESTINATION share
-     PUBLIC_HEADER DESTINATION include/gmac)
 
 include(CPack)

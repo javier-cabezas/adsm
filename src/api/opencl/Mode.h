@@ -36,177 +36,34 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/config.h"
+
 #include "core/Mode.h"
 
-namespace __impl {
-    
-namespace core {
-class IOBuffer;
-}
+namespace __impl { namespace opencl {
 
-namespace opencl {
-
-class Accelerator;
-class Context;
-
-class GMAC_LOCAL ContextLock : public gmac::util::Lock {
-    friend class Mode;
+//! A Mode represents a virtual accelerator 
+class GMAC_LOCAL Mode : public virtual core::Mode {
 public:
-    ContextLock() : gmac::util::Lock("Context") {}
-};
-
-class GMAC_LOCAL KernelList :
-    protected std::list<core::Kernel *>,
-    public gmac::util::Lock
-{
-protected:
-    typedef std::list<core::Kernel *> Parent;
-public:
-    KernelList();
-    virtual ~KernelList();
-
-    void insert(core::Kernel *);
-};
-
-//! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::Mode {
-    friend class IOBuffer;
-protected:
-    //! Switch to accelerator mode
-    void switchIn();
-
-    //! Switch back to CPU mode
-    void switchOut();
-
-    void reload();
-
-    //! Get the main mode context
-    /*!
-        \return Main mode context
-    */
-    core::Context &getContext();
-    Context &getCLContext();
-
-    cl_program program_;
-    KernelList kernelList_;
-public:
-    //! Default constructor
-    /*!
-        \param proc Process where the mode is attached
-        \param acc Virtual CUDA accelerator where the mode is executed
-    */
-    Mode(core::Process &proc, Accelerator &acc);
-
     //! Default destructor
-    ~Mode();
-
-    //! Allocate GPU-accessible host memory
-    /*!
-        \param addr Pointer of the memory to be mapped to the accelerator
-        \param size Size (in bytes) of the host memory to be mapped
-        \return Error code
-    */
-    gmacError_t hostAlloc(hostptr_t &addr, size_t size);
-
-    //! Release GPU-accessible host memory 
-    /*!
-        \param addr Starting address of the host memory to be released
-        \return Error code
-    */
-    gmacError_t hostFree(hostptr_t addr);
-
-    /** Maps host memory into the GPU memory
-     *
-     *  \param addr Host memory address
-     *  \return Device memory address
-     */
-    accptr_t hostMap(const hostptr_t addr, size_t size);
-
-    /** Gets the GPU memory address where the given GPU-accessible host
-     *  memory pointer is mapped
-     *
-     *  \param addr Host memory address
-     *  \return Device memory address
-     */
-    accptr_t hostMapAddr(const hostptr_t addr);
-
-    core::KernelLaunch &launch(gmacKernel_t kernel);
-
-    //! Execute a kernel on the accelerator
-    /*!
-        \param launch Structure defining the kernel to be executed
-        \return Error code
-    */
-	gmacError_t execute(core::KernelLaunch &launch);
-
-    //! Create an IO buffer to sent / receive data from the accelerator
-    /*!
-        \param size Size (in bytes) of the IO buffer
-        \return Pointer to the created I/O buffer or NULL if not enough memory
-    */
-    core::IOBuffer *createIOBuffer(size_t size);
-
-    //! Destroy (release) an I/O buffer
-    /*!
-        \param buffer I/O buffer to be released
-    */
-    void destroyIOBuffer(core::IOBuffer *buffer);
-
-    /** Send data from an I/O buffer to the accelerator
-     *
-     *  \param dst Accelerator memory where data will be written to
-     *  \param buffer I/O buffer where data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
-     *  \return Error code
-     */
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
-
-    /** Fill I/O buffer with data from the accelerator
-     *
-     *  \param buffer I/O buffer where data will be stored
-     *  \param src Accelerator memory where the data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
-     *  \return Error code
-     */
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
+    virtual ~Mode() { };
 
     //! Get the accelerator stream where events are recorded
     /*!
         \return Command queue where events are recorded
     */
-    cl_command_queue eventStream();
-
+    virtual cl_command_queue eventStream() = 0;
 
     //! Block the CPU thread until an event happens
     /*!
         \param event Event to wait for
         \return Error code
     */
-    gmacError_t waitForEvent(cl_event event);
+    virtual gmacError_t waitForEvent(cl_event event) = 0;
 
-    //! Get the current (active) execution mode
-    /*!
-        \return Current (active) execution mode or NULL if no mode is active
-    */
-    static Mode & getCurrent();
 
-    /** Get the physical accelerator associated to the mode
-     * 
-     * \return Physical accelerator associated to the mode
-     */
-    Accelerator &getAccelerator();
-
-    gmacError_t call(cl_uint workDim, size_t *globalWorkOffset, size_t *globalWorkSize, size_t *localWorkSize);
-	gmacError_t argument(const void *arg, size_t size, unsigned index);
-
-    gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
+    virtual gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end) = 0;
 };
 
 }}
-
-#include "Mode-impl.h"
 
 #endif

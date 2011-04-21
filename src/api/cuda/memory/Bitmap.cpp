@@ -25,13 +25,14 @@ StoreShared::allocAcc(bool isRoot)
     cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
 
     if (isRoot == false) {
-        gmacError_t ret = mode.malloc(addr, size_);
+        gmacError_t ret = mode.map(addr, entriesAccHost_, size_);
         ASSERTION(ret == gmacSuccess);
         TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
     } else {
         const cuda::Variable *var = mode.variableByName(ACC_VM_ROOT_VAR);
         ASSERTION(var != NULL);
         addr = var->devPtr();
+        TRACE(LOCAL,"Using a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
     }
     entriesAcc_ = addr;
 }
@@ -41,7 +42,7 @@ StoreShared::freeAcc(bool isRoot)
 {
     cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
     if (isRoot == false) {
-        gmacError_t ret = mode.free(entriesAcc_);
+        gmacError_t ret = mode.unmap(entriesAccHost_, size_);
         ASSERTION(ret == gmacSuccess);
         TRACE(LOCAL,"Freeing a node in the accelerator. Size %zd. Addr %p", size_, (void *)entriesAcc_);
     }

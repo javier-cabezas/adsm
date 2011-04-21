@@ -4,8 +4,8 @@
 namespace __impl { namespace core {
 
 inline
-IOBuffer::IOBuffer(void *addr, size_t size) :
-        gmac::util::Lock("IOBuffer"), addr_(addr), size_(size), state_(Idle)
+IOBuffer::IOBuffer(void *addr, size_t size, bool async) :
+    addr_(addr), size_(size), async_(async), state_(Idle)
 {
 }
 
@@ -32,16 +32,10 @@ IOBuffer::size() const
     return size_;
 }
 
-inline void
-IOBuffer::lock()
+inline bool
+IOBuffer::async() const
 {
-    gmac::util::Lock::lock();
-}
-
-inline void
-IOBuffer::unlock()
-{
-    gmac::util::Lock::unlock();
+    return async_;
 }
 
 inline IOBuffer::State

@@ -44,18 +44,25 @@ static char *demangle(const char *name)
 namespace __impl { namespace util {
 
 #ifdef DEBUG
-bool Logger::Ready_ = false;
+Atomic Logger::Ready_ = 0;
 Parameter<const char *> *Logger::Level_ = NULL;
 const char *Logger::DebugString_ = NULL;
 std::list<std::string> *Logger::Tags_ = NULL;
 Private<char> Logger::Buffer_;    
 #endif
 
+
+static void DESTRUCTOR fini()
+{
+    Logger::Fini();
+}
+
 void Logger::Init()
 {
 #ifdef DEBUG
 	Private<char>::init(Buffer_);
 	Buffer_.set(new char[BufferSize_]);
+    char *buffer = Buffer_.get();
 
     Tags_ = new std::list<std::string>();
     Level_ = new Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
@@ -73,10 +80,22 @@ void Logger::Init()
 #endif
 }
 
+void Logger::Fini()
+{
+#ifdef DEBUG
+    if(Ready_ == 0) return;
+    delete Level_;
+    delete Tags_;
+    char *buffer = Buffer_.get();
+
+    if(buffer) delete [] buffer;
+#endif
+}
+
 #ifdef DEBUG
 bool Logger::Check(const char *name)
 {
-    if(Ready_ == false) return false;
+    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 	if(name == NULL) return true;
     std::list<std::string>::const_iterator i;
     for(i = Tags_->begin(); i != Tags_->end(); i++) {

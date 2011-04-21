@@ -1,0 +1,315 @@
+/* Copyright (c) 2011 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
+#endif
+
+#ifndef GMAC_OPENCL_CPP_H_
+#define GMAC_OPENCL_CPP_H_
+
+#include <string>
+#include <istream>
+
+#include "opencl.h"
+
+namespace ocl {
+
+typedef oclError_t error_t;
+typedef ocl_kernel_id_t kernel_id_t;
+
+typedef OclMemoryHint MemoryHint;
+typedef OclProtection Protection;
+
+/*!
+	Adds an argument to be used by the following call to oclLaunch()
+	\param addr Memory address where the param is stored
+	\param size Size, in bytes, of the argument
+	\param index Index of the parameter being added in the parameter list
+*/
+
+class KernelLaunch {
+private:
+    inline
+    static error_t getKernel(std::string name, ::OclKernel &kernel)
+    {
+        return ::__oclKernelGet(name.c_str(), &kernel);
+    }
+
+    ::OclKernel kernel_;
+    bool initialized_;
+
+    template <typename T>
+    struct Param {
+        T value_;
+        Param(T init) :
+            value_(init)
+        {
+        }
+    };
+
+    template <typename T>
+    struct Param<T *> {
+        cl_mem value_;
+        Param(T *init) :
+            value_(oclPtr(init))
+        {
+        }
+    };
+
+public:
+    inline
+    KernelLaunch() :
+        initialized_(false)
+    {
+        kernel_.id_ = NULL;
+        kernel_.launch_ = NULL;
+    }
+
+    inline
+    KernelLaunch(std::string name)
+    {
+        get(name);
+    }
+
+    inline
+    KernelLaunch(const char *name)
+    {
+        get(name);
+    }
+
+    inline
+    ~KernelLaunch()
+    {
+        if (initialized_) ::__oclKernelDestroy(&kernel_);
+    }
+
+    inline
+    error_t get(std::string name)
+    {
+        error_t ret = KernelLaunch::getKernel(name, kernel_);
+        if (ret == gmacSuccess) initialized_ = true;
+
+        return ret;
+    }
+
+    inline
+    error_t get(const char *name)
+    {
+        gmacError_t ret = KernelLaunch::getKernel(std::string(name), kernel_);
+
+        return ret;
+    }
+
+    template <typename T>
+    inline
+    error_t setArg(const T &addr, size_t size, unsigned index)
+    {
+        return ::__oclKernelSetArg(&kernel_, &addr, size, index);
+    } 
+
+    template <typename T>
+    inline
+    error_t setArg(T val, unsigned index)
+    {
+        Param<T> p(val);
+        return ::__oclKernelSetArg(&kernel_, &p.value_, sizeof(p.value_), index);
+    }
+
+    /*!
+      Configures the next call
+      \param workDim
+      \param globalWorkOffset
+      \param globalWorkSize
+      \param localWorkSize
+      \return Error code
+     */
+    inline
+    error_t configure(size_t workDim, size_t *globalWorkOffset,
+                      size_t *globalWorkSize, size_t *localWorkSize)
+    {
+        return ::__oclKernelConfigure(&kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    }
+
+    /**
+     * Launches a kernel execution
+     * \param k Handler of the kernel to be executed at the GPU
+     */
+    inline
+    error_t launch()
+    {
+        return ::__oclKernelLaunch(&kernel_);
+    }
+
+    inline
+    error_t wait()
+    {
+        return ::__oclKernelWait(&kernel_);
+    }
+};
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param code Pointer to the NULL-terminated string that contains the code
+ * \param flags Compilation flags or NULL
+ */
+static inline error_t __prepareCLCode(const char *code, const char *flags = NULL)
+{
+    return ::__oclPrepareCLCode(code, flags);
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param code String that contains the code
+ * \param flags Compilation flags or NULL
+ */
+static inline error_t __prepareCLCode(std::string code, const char *flags = NULL)
+{
+    return ::__oclPrepareCLCode(code.c_str(), flags);
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param path String with the path of the file that contains the code
+ * \param flags Compilation flags or NULL
+ */
+static inline error_t __prepareCLCodeFile(const char *path, const char *flags = NULL)
+{
+    return ::__oclPrepareCLCodeFile(path, flags);
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param in Input stream that reads the code
+ * \param flags Compilation flags or NULL
+ */
+static inline error_t __prepareCLCodeFile(std::istream &in, const char *flags = NULL)
+{
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == std::streampos(0)) return gmacSuccess;
+    // Allocate memory for the code
+    char *buffer = new char[int(length)+1];
+    // Read data as a block
+    in.read(buffer,length);
+    buffer[length] = '\0';
+    error_t ret = ::__oclPrepareCLCode(buffer, flags);
+    delete [] buffer;
+    return ret;
+}
+
+/**
+ * Prepares the OpenCL binary to be used by the applications 
+ * \param binary Pointer to the array that contains the binary code
+ * \param size Size in bytes of the array that contains the binary code
+ * \param flags Compilation flags or NULL
+ */
+static inline error_t __prepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
+{
+    return ::__oclPrepareCLBinary(binary, size, flags);
+}
+
+
+/* Wrappers to GMAC native calls */
+static inline
+unsigned getNumberOfAccelerators() { return ::oclGetNumberOfAccelerators(); }
+
+static inline
+size_t getFreeMemory() { return ::oclGetFreeMemory(); }
+
+static inline
+error_t migrate(unsigned acc) { return ::oclMigrate(acc); }
+
+static inline
+oclError_t memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot) {
+    return ::oclMemoryMap(cpuPtr, count, prot);
+}
+
+static inline
+oclError_t memoryUnmap(void *cpuPtr, size_t count) { return ::oclMemoryUnmap(cpuPtr, count); }
+
+static inline
+oclError_t malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
+
+static inline
+oclError_t globalMalloc(void **devPtr, size_t count, MemoryHint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
+    return ::oclGlobalMalloc(devPtr, count, hint);
+}
+
+static inline
+oclError_t free(void *cpuPtr) { return ::oclFree(cpuPtr); }
+
+static inline
+error_t threadSynchronize() { return ::oclThreadSynchronize(); }
+
+static inline
+error_t getLastError() { return ::oclGetLastError(); }
+
+static inline
+void *memset(void *cpuPtr, int c, size_t count) { return ::oclMemset(cpuPtr, c, count); }
+
+static inline
+void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
+    return ::oclMemcpy(cpuDstPtr, cpuSrcPtr, count);
+}
+
+static inline
+void send(THREAD_T tid) { return ::oclSend(tid); }
+
+static inline
+void receive(void) { return ::oclReceive(); }
+
+static inline
+void sendReceive(THREAD_T tid) { return ::oclSendReceive(tid); }
+
+static inline
+void copy(THREAD_T tid) { return ::oclCopy(tid); }
+
+template<typename T>
+static inline cl_mem ptr(const T *addr) {
+    return ::oclPtr(addr);
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#undef __dv
+
+#endif /* OPENCL_H */
+
+/* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -1,10 +1,13 @@
 #include <windows.h>
 
 #include "../Test.h"
+#include <iostream>
     
-void
-Test::TestCase::run(std::string exec)
+Test::TestCase::Stats
+Test::TestCase::run(const std::string &exec)
 {
+    Stats stats;
+
     /* CreateProcess API initialization */ 
     STARTUPINFO startupInfo; 
     PROCESS_INFORMATION processInfo; 
@@ -12,8 +15,8 @@ Test::TestCase::run(std::string exec)
     ::memset(&processInfo, 0, sizeof(processInfo)); 
     startupInfo.cb = sizeof(startupInfo); 
 
+    std::cout << "Launching: "<< exec << " - " << name_ << std::endl;
     setEnvironment();
-    printf("Launching: %s\n", exec.c_str());
     TCHAR tmpCmdLine[MAX_PATH * 2];
     const char *appName = exec.c_str();
     ::memcpy(tmpCmdLine, appName, strlen(appName) + 1);
@@ -28,6 +31,8 @@ Test::TestCase::run(std::string exec)
         printf("Failure! execve error code %d\n", created);
         abort(); 
     }
+
+    return stats;
 }
 
 void

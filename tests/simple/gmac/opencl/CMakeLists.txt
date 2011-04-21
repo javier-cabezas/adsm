@@ -26,12 +26,15 @@ string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacInit.cpp
     gmacVecAdd.cpp
+    gmacVecAdd_cplusplus.cpp
     gmacThreadVecAdd.cpp
     gmacMemcpy.cpp
     gmacMemset.cpp
     gmacFile.cpp
     gmacFileVecAdd.cpp
     gmacSharedVecAdd.cpp
+    gmacStencil.cpp
+    gmacStencilCommon.h
 )
 
 add_executable(gmacInit ${common_SRC} gmacInit.cpp)
@@ -39,6 +42,9 @@ target_link_libraries(gmacInit gmac)
 
 add_executable(gmacVecAdd ${common_SRC} gmacVecAdd.cpp)
 target_link_libraries(gmacVecAdd gmac)
+
+add_executable(gmacVecAdd_cplusplus ${common_SRC} gmacVecAdd_cplusplus.cpp)
+target_link_libraries(gmacVecAdd_cplusplus gmac)
 
 add_executable(gmacThreadVecAdd ${common_SRC} gmacThreadVecAdd.cpp)
 target_link_libraries(gmacThreadVecAdd gmac)
@@ -57,4 +63,14 @@ target_link_libraries(gmacFileVecAdd gmac)
 
 add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
 target_link_libraries(gmacSharedVecAdd gmac)
+
+add_executable(gmacStencil ${common_SRC} gmacStencil.cpp)
+target_link_libraries(gmacStencil gmac)
+
+
+file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
+
+add_custom_target(InputSets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../../input
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
 

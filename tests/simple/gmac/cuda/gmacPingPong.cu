@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <semaphore.h>
 
-#include <gmac.h>
+#include <gmac/cuda.h>
 
 #include "utils.h"
 #include "debug.h"
@@ -17,11 +17,11 @@ const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
 const char *roundsStr = "GMAC_ROUNDS";
 
-const unsigned nIterDefault = 4;
+const int nIterDefault = 4;
 const size_t vecSizeDefault = 1024 * 1024;
 const unsigned roundsDefault = 4;
 
-unsigned nIter = 0;
+int nIter = 0;
 size_t vecSize = 0;
 unsigned rounds = 0;
 const size_t blockSize = 512;
@@ -29,7 +29,7 @@ const size_t blockSize = 512;
 static pthread_t *nThread;
 static int *ids;
 static float **a;
-static sem_t *init;
+static sem_t init;
 
 __global__ void inc(float *a, float f, size_t size)
 {
@@ -53,9 +53,9 @@ void *chain(void *ptr)
     dim3 Dg(vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
 
-    sem_wait(init);
+    sem_wait(&init, 1);
 
-    for(int i = 0; i < rounds; i++) {
+    for(unsigned i = 0; i < rounds; i++) {
         int current = *id - i;
         if(current < 0) current += nIter;
         // Call the kernel
@@ -72,7 +72,7 @@ void *chain(void *ptr)
 
     fprintf(stderr,"%d (Thread %d): %d sends\t%d receives\n", current, *id, n, m);
     float error = 0;
-    for(int i = 0; i < vecSize; i++) {
+    for(unsigned i = 0; i < vecSize; i++) {
         error += (a[current][i]);
     }
     fprintf(stderr,"%d (Thread %d): Error %f\n", current, *id, error / 1024);
@@ -87,13 +87,12 @@ void *chain(void *ptr)
 
 int main(int argc, char *argv[])
 {
-	unsigned n = 0;
+	int n = 0;
 
-	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
+	setParam<int>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	setParam<unsigned>(&rounds, roundsStr, roundsDefault);
-	init = sem_open("gmacPingPong", O_CREAT, S_IRUSR | S_IWUSR, 0);
-    assert(init != SEM_FAILED);
+    sem_init(&init, 0);
 
 	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
 	ids = (int *)malloc(nIter * sizeof(int));
@@ -105,7 +104,7 @@ int main(int argc, char *argv[])
 	}
 
     fprintf(stderr,"Ready... Steady\n");
-	for(n = 0; n < nIter; n++) sem_post(init);
+	for(n = 0; n < nIter; n++) sem_post(&init, 1);
     fprintf(stderr,"Go!\n");
 	
 	for(n = 0; n < nIter; n++) {
@@ -116,6 +115,5 @@ int main(int argc, char *argv[])
 	free(ids);
 	free(nThread);
 
-    sem_unlink("gmacPingPong");
     return 0;
 }

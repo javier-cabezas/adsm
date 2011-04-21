@@ -41,7 +41,9 @@ Node::addEntries(long_t startIndex, long_t endIndex)
     } else {
         if (firstUsedEntry_ > startIndex) firstUsedEntry_ = startIndex;
         if (lastUsedEntry_ < endIndex) lastUsedEntry_ = endIndex;
+
     }
+    if (lastUsedEntry_ >= nEntries_) FATAL("STH IS WROOOONG %lu", lastUsedEntry_);
 
     for (long_t i = startIndex; i <= endIndex; i++) {
         if (usedEntries_[i] == false) {
@@ -64,7 +66,7 @@ Node::removeEntries(long_t startIndex, long_t endIndex)
 
     if (nUsedEntries_ > 0) {
         bool first = false;
-        for (long_t i = 0; i <= nEntries_; i++) {
+        for (long_t i = 0; i < nEntries_; i++) {
             if (first == false && usedEntries_[i] == true) {
                 firstUsedEntry_ = i;
                 first = true;
@@ -74,6 +76,9 @@ Node::removeEntries(long_t startIndex, long_t endIndex)
                 lastUsedEntry_ = i;
             }
         }
+    } else {
+        firstUsedEntry_ = -1;
+        lastUsedEntry_ = -1;
     }
 }
 
@@ -84,8 +89,8 @@ StoreHost::StoreHost(Bitmap &root, size_t size, bool alloc) :
 {
     TRACE(LOCAL, "StoreHost constructor");
     if (alloc) {
-        TRACE(LOCAL, "Allocating memory");
         entriesHost_ = hostptr_t(::malloc(size));
+        TRACE(LOCAL, "Allocating memory: %p", entriesHost_);
         ::memset(entriesHost_, 0, size);
     } else {
         TRACE(LOCAL, "NOT Allocating memory");
@@ -210,7 +215,8 @@ long_t
 Node::getLocalIndex(long_t index) const
 {
     TRACE(LOCAL, "getLocalIndex (%lx & %lx) >> %u -> %lx", index, mask_, shift_, (index & mask_) >> shift_);
-    return (index & mask_) >> shift_;
+    long_t ret = (index & mask_) >> shift_;
+    return ret;
 }
 
 inline

@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 extern size_t BlockSize_;
-#ifdef USE_VM
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 extern size_t SubBlockSize_;
 extern unsigned BlockShift_;
 extern unsigned SubBlockShift_;
@@ -58,8 +58,7 @@ public:
 	static void unmap(hostptr_t addr, size_t count);
 };
 
-#if USE_VM
-
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 static inline
 long_t log2(long_t n)
 {
@@ -90,6 +89,16 @@ GetSubBlock(const hostptr_t _addr)
 {
     long_t addr = long_t(_addr);
     return (addr >> SubBlockShift_) & SubBlockMask_;
+}
+
+static inline
+long_t
+GetSubBlockIndex(const hostptr_t _start, const hostptr_t _addr)
+{
+    long_t start = long_t(_start);
+    long_t addr = long_t(_addr);
+    long_t off = addr - start;
+    return (off >> SubBlockShift_) & SubBlockMask_;
 }
 
 static inline

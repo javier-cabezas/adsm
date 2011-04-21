@@ -1,7 +1,8 @@
 #include <csignal>
 #include <cerrno>
 
-#include "gmac/init.h"
+#include "config/common.h"
+#include "core/Process.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
@@ -16,7 +17,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	if(ex->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
 		return EXCEPTION_CONTINUE_SEARCH;
 
-	enterGmac();
+	Handler::Entry();
 	trace::EnterCurrentFunction();
 	
 	bool writeAccess = false;
@@ -29,9 +30,12 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-	Manager &manager = Manager::getInstance();
-	if(!writeAccess) resolved = manager.read(hostptr_t(addr));
-	else resolved = manager.write(hostptr_t(addr));
+	core::Mode *mode = core::Process::getInstance().owner((const hostptr_t)addr);
+    if(mode != NULL) {
+    	Manager &manager = Manager::getInstance();
+	    if(!writeAccess) resolved = manager.read(*mode, (hostptr_t)addr);
+    	else resolved = manager.write(*mode, (hostptr_t)addr);
+    }
 
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
@@ -41,7 +45,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	}
 
 	trace::ExitCurrentFunction();
-	exitGmac();
+	Handler::Exit();
 
 	return EXCEPTION_CONTINUE_EXECUTION;
 }

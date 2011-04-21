@@ -3,6 +3,10 @@ add_subdirectory(${API_DIR})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 set(gmac_config_SRC
-    config.h order.h common.h dbc.h)
+    common.h
+    config.h
+    dbc.h
+    order.h
+)
 
-add_gmac_sources(gmac ${gmac_config_SRC})
+add_gmac_sources(gmac-config ${gmac_config_SRC})

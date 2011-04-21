@@ -7,7 +7,7 @@
 #include <cuda.h>
 
 #include "debug.h"
-
+#include "utils.h"
 
 const unsigned width = 16;
 const unsigned height = 16;
@@ -26,6 +26,7 @@ __global__ void vecAdd(float *c, unsigned width, unsigned height)
 int main(int argc, char *argv[])
 {
 	float *data, *c;
+    gmactime_t s, t;
 
 	data = (float *)malloc(width * height * sizeof(float));
 	for(unsigned i = 0; i < width * height; i++)
@@ -33,23 +34,33 @@ int main(int argc, char *argv[])
 	assert(cudaMemcpyToSymbol(constant, data, width * height * sizeof(float)) == cudaSuccess);
 
 	// Alloc output data
+    getTime(&s);
 	if(gmacMalloc((void **)&c, width * height * sizeof(float)) != gmacSuccess)
 		CUFATAL();
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
 	// Call the kernel
 	dim3 Db(width, height);
 	dim3 Dg(1);
+    getTime(&s);
 	vecAdd<<<Dg, Db>>>(gmacPtr(c), width, height);
 	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+    getTime(&t);
+    printTime(&s, &t, "Run: ", "\n");
 
+    getTime(&s);
 	for(unsigned i = 0; i < width * height; i++) {
 		if(c[i] == data[i]) continue;
-		fprintf(stderr,"Error on %d (%f)\n", i, c[i]);
-		abort();
+        return -1;
 	}
-	fprintf(stderr,"Done!\n");
+    getTime(&t);
+    printTime(&s, &t, "Check: ", "\n");
 
+    getTime(&s);
 	gmacFree(c);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
     return 0;
 }

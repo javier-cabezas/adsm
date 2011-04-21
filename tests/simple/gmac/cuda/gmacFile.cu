@@ -59,33 +59,47 @@ readFile(float *v, unsigned nmemb, int it);
 
 float *a, *b, *c;
 
-float error1, error2;
+float error_compute, error_io;
 
 void *doTest(void *)
 {
     dim3 Db(blockSize);
     dim3 Dg(vecSize / blockSize);
+    gmactime_t s, t;
 
     // Alloc & init input data
+    getTime(&s);
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
+    getTime(&s);
     gmacMemset(a, 0, vecSize * sizeof(float));
     gmacMemset(b, 0, vecSize * sizeof(float));
+    getTime(&t);
+    printTime(&s, &t, "Memset: ", "\n");
 
     barrier_wait(&ioBefore);
 
     if(vecSize % blockSize) Dg.x++;
 
     for (int i = 0; i < ITERATIONS; i++) {
+        getTime(&s);
         vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
+        getTime(&t);
+        printTime(&s, &t, "Run: ", "\n");
         barrier_wait(&ioAfter);
+
+        getTime(&s);
         vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
+        getTime(&t);
+        printTime(&s, &t, "Run: ", "\n");
         barrier_wait(&ioBefore);
     }
 
@@ -94,22 +108,29 @@ void *doTest(void *)
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
-        //readFile(a, vecSize, i);
+        getTime(&s);
         vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
+        getTime(&t);
+        printTime(&s, &t, "Run: ", "\n");
     }
 
 
-    error1 = 0.f;
+    error_compute = 0.f;
+    getTime(&s);
     for(unsigned i = 0; i < vecSize; i++) {
-        error1 += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
+        error_compute += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
     }
-    fprintf(stderr,"Error: %f\n", error1);
+    getTime(&t);
+    printTime(&s, &t, "Check: ", "\n");
 
+    getTime(&s);
     gmacFree(a);
     gmacFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
-    return &error1;
+    return &error_compute;
 }
 
 static void
@@ -125,11 +146,15 @@ writeFile(float *v, unsigned nmemb, int it)
 {
     char path[256];
     setPath(path, 256, it);
+    gmactime_t s, t;
 
+    getTime(&s);
     FILE * f = fopen(path, "wb");
     assert(f != NULL);
     assert(fwrite(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
+    getTime(&t);
+    printTime(&s, &t, "Write: ", "\n");
 }
 
 static void
@@ -137,15 +162,20 @@ readFile(float *v, unsigned nmemb, int it)
 {
     char path[256];
     setPath(path, 256, it);
+    gmactime_t s, t;
 
+    getTime(&s);
     FILE * f = fopen(path, "rb");
     assert(f != NULL);
     assert(fread(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
+    getTime(&t);
+    printTime(&s, &t, "Read: ", "\n");
 }
 
 void *doTestIO(void *)
 {
+    error_io = 0.0f;
     barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
@@ -162,14 +192,12 @@ void *doTestIO(void *)
         barrier_wait(&ioAfter);
     }
 
-    return &error2;
+    return &error_io;
 }
 
 int main(int argc, char *argv[])
 {
     thread_t tid, tidIO;
-
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     barrier_init(&ioAfter,2);
     barrier_init(&ioBefore, 2);
@@ -183,5 +211,5 @@ int main(int argc, char *argv[])
     barrier_destroy(&ioAfter);
     barrier_destroy(&ioBefore);
 
-    return error2 != 0.f;
+    return error_io != 0.f;
 }

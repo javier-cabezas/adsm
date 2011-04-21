@@ -27,7 +27,6 @@ int main(int argc, char *argv[])
     gmactime_t s, t;
 
     setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
-    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     gmacMigrate(0);
     getTime(&s);
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
         if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
     }
     getTime(&t);
-    printTime(&s, &t, "Run no-migrate: ", "\n");
+    printTime(&s, &t, "Run: ", "\n");
 
     gmacMemset(a, 0, vecSize * sizeof(float));
     getTime(&s);
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
         gmacMigrate(i % 2);
     }
     getTime(&t);
-    printTime(&s, &t, "Run migrate: ", "\n");
+    printTime(&s, &t, "Run: ", "\n");
 
     float error = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
@@ -68,9 +67,10 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
-    fprintf(stderr,"Error: %f\n", error);
-
+    getTime(&s);
     gmacFree(a);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
     return error != 0.f;
 }

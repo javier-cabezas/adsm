@@ -4,6 +4,10 @@
 #include "core/Mode.h"
 #include "core/IOBuffer.h"
 
+#ifdef USE_SUBBLOCK_TRACKING
+#include "vm/Model.h"
+#endif
+
 namespace __impl { namespace memory {
 
 template<typename T>
@@ -19,13 +23,13 @@ inline SharedBlock<T>::~SharedBlock()
 {}
 
 template<typename T>
-inline core::Mode &SharedBlock<T>::owner() const
+inline core::Mode &SharedBlock<T>::owner(core::Mode &current) const
 {
 	return owner_;
 }
 
 template<typename T>
-inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
+inline accptr_t SharedBlock<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	ptroff_t offset = ptroff_t(addr - StateBlock<T>::addr_);
     accptr_t ret = acceleratorAddr_ + offset;
@@ -33,55 +37,19 @@ inline accptr_t SharedBlock<T>::acceleratorAddr(const hostptr_t addr) const
 }
 
 template<typename T>
-inline accptr_t SharedBlock<T>::acceleratorAddr() const
+inline accptr_t SharedBlock<T>::acceleratorAddr(core::Mode &current) const
 {
     return acceleratorAddr_;
 }
 
+#ifndef USE_VM
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::toHost() const
 {
     gmacError_t ret = gmacSuccess;
-#ifdef USE_VM
-    vm::BitmapShared &acceleratorBitmap = owner_.acceleratorDirtyBitmap();
-    bool inSubGroup = false;
-    unsigned groupStart = 0, groupEnd = 0;
-    unsigned gaps = 0;
-    //fprintf(stderr, "TOHOST: SubBlocks %u\n", Block::getSubBlocks());
-    for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
-        if (inSubGroup) {
-            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
-                groupEnd = i;
-            } else {
-                if (vm::costGaps<vm::MODEL_TODEVICE>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
-                    vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
-                    gaps++;
-                } else {
-                    inSubGroup = false;
 
-                    //fprintf(stderr, "TOHOST A: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-                    ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
-                                            acceleratorAddr_       + groupStart * SubBlockSize_,
-                                            (groupEnd - groupStart + 1) * SubBlockSize_);
-                    if (ret != gmacSuccess) break;
-                }
-            }
-        } else {
-            if (acceleratorBitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_ACC) {
-                groupStart = groupEnd = i; gaps = 0; inSubGroup = true;
-            }
-        }
-    }
-    if (inSubGroup) {
-        //fprintf(stderr, "TOHOST B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
-        ret = owner_.copyToHost(StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
-                                acceleratorAddr_       + groupStart * SubBlockSize_,
-                                (groupEnd - groupStart + 1) * SubBlockSize_);
-    }
-#else
     ret = owner_.copyToHost(StateBlock<T>::shadow_, acceleratorAddr_, StateBlock<T>::size_);
-#endif
     return ret;
 }
 
@@ -89,22 +57,17 @@ template<typename T>
 inline gmacError_t SharedBlock<T>::toAccelerator()
 {
     gmacError_t ret = gmacSuccess;
-#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 #ifdef USE_SUBBLOCK_TRACKING
-    vm::BitmapHost &bitmap = owner_.acceleratorDirtyBitmap();
-#else
-#ifdef USE_VM
-    vm::BitmapShared &bitmap= owner_.acceleratorDirtyBitmap();
-#endif
-#endif
+    unsigned i;
     bool inSubGroup = false;
     unsigned groupStart = 0, groupEnd = 0;
     unsigned gaps = 0;
-    //fprintf(stderr, "TODEVICE: SubBlocks %u\n", Block::getSubBlocks());
-    for (unsigned i = 0; i < Block::getSubBlocks(); i++) {
+
+    for (i = 0; i != Block::subBlockState_.size(); i++) {
         if (inSubGroup) {
-            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
+            if (Block::subBlockState_[i] == 1) {
                 groupEnd = i;
+                Block::subBlockState_[i] = 0;
             } else {
                 if (vm::costGaps<vm::MODEL_TODEVICE>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
                     vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
@@ -120,23 +83,30 @@ inline gmacError_t SharedBlock<T>::toAccelerator()
                 }
             }
         } else {
-            if (bitmap.getAndSetEntry(acceleratorAddr_ + i * SubBlockSize_, vm::BITMAP_UNSET) == vm::BITMAP_SET_HOST) {
+            if (Block::subBlockState_[i] == 1) {
                 groupStart = groupEnd = i; gaps = 0; inSubGroup = true;
+                Block::subBlockState_[i] = 0;
             }
         }
     }
+
     if (inSubGroup) {
-        //fprintf(stderr, "TODEVICE B: Copying from %u to %u, size %u\n", groupStart, groupEnd, groupEnd - groupStart + 1);
         ret = owner_.copyToAccelerator(acceleratorAddr_       + groupStart * SubBlockSize_,
                                        StateBlock<T>::shadow_ + groupStart * SubBlockSize_,
                                        (groupEnd - groupStart + 1) * SubBlockSize_);
     }
-    Block::resetBitmapStats();
+    Block::resetSubBlockStats();
 #else
     ret = owner_.copyToAccelerator(acceleratorAddr_, StateBlock<T>::shadow_, StateBlock<T>::size_);
 #endif
 	return ret;
 }
+
+#else
+
+#include "vm/SharedBlock-impl.h"
+
+#endif
 
 template<typename T>
 inline gmacError_t SharedBlock<T>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const

@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL Semaphore {
+class GMAC_API Semaphore {
 protected:
 	int _val;
     pthread_cond_t _cond;

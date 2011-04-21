@@ -5,23 +5,22 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Cache &Slab::createCache(CacheMap &map, long_t key, size_t size)
+Cache &Slab::createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size)
 {
-    Cache *cache = new __impl::memory::allocator::Cache(size);
+    Cache *cache = new __impl::memory::allocator::Cache(mode, size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }
 
-Cache &Slab::get(long_t key, size_t size)
+Cache &Slab::get(core::Mode &current, long_t key, size_t size)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    core::Mode *mode = &core::Mode::getCurrent();
-    i = modes.find(mode);
+    i = modes.find(&current);
     modes.unlock();
     if(i == modes.end()) {
         modes.lockWrite();
-        Cache &ret = createCache(modes[mode], key, size);
+        Cache &ret = createCache(current, modes[&current], key, size);
         modes.unlock();
         return ret;
     }
@@ -29,17 +28,17 @@ Cache &Slab::get(long_t key, size_t size)
         CacheMap::iterator j;
         j = i->second.find(key);
         if(j == i->second.end())
-            return createCache(i->second, key, size);
+            return createCache(current, i->second, key, size);
         else
             return *j->second;
     }
 }
 
-void Slab::cleanup()
+void Slab::cleanup(core::Mode &current)
 {
     ModeMap::iterator i;
     modes.lockRead();
-    i = modes.find(&core::Mode::getCurrent());
+    i = modes.find(&current);
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;
@@ -52,9 +51,9 @@ void Slab::cleanup()
     modes.unlock();
 }
 
-hostptr_t Slab::alloc(size_t size, hostptr_t addr)
+hostptr_t Slab::alloc(core::Mode &current, size_t size, hostptr_t addr)
 {
-    Cache &cache = get(long_t(addr) ^ size, size);
+    Cache &cache = get(current, long_t(addr) ^ size, size);
     TRACE(LOCAL,"Using cache %p", &cache);
     hostptr_t ret = cache.get();
     addresses.lockWrite();
@@ -64,7 +63,7 @@ hostptr_t Slab::alloc(size_t size, hostptr_t addr)
     return ret;
 }
 
-bool Slab::free(hostptr_t addr)
+bool Slab::free(core::Mode &current, hostptr_t addr)
 {
     addresses.lockWrite();
     AddressMap::iterator i = addresses.find(addr);

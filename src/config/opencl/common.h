@@ -39,27 +39,34 @@ WITH THE SOFTWARE.  */
 #include <cassert>
 #include <cstdlib>
 
+typedef cl_context AddressSpace;
+
 struct _opencl_ptr_t {
     cl_mem base_;
     size_t offset_;
+    unsigned pasId_;
 
     inline _opencl_ptr_t() :
         base_(0),
-        offset_(0)
+        offset_(0),
+        pasId_(0)
     { }
 
     inline _opencl_ptr_t(cl_mem base) :
         base_(base),
-        offset_(0)
+        offset_(0),
+        pasId_(0)
     {}
 
     inline _opencl_ptr_t(cl_mem base, size_t offset) :
         base_(base),
-        offset_(offset)
+        offset_(offset),
+        pasId_(0)
     { }
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
         base_(ptr.base_),
-        offset_(ptr.offset_)
+        offset_(ptr.offset_),
+        pasId_(0)
     { }
 
     inline const _opencl_ptr_t & operator=(const _opencl_ptr_t &ptr) {
@@ -85,10 +92,8 @@ struct _opencl_ptr_t {
         return tmp;
     }
 
-    template <typename T>
-    inline const bool operator!=(const T addr) const {
-        if (addr != T(NULL)) abort();
-        return base_ != NULL || offset_ != 0;
+    inline const bool operator!=(const hostptr_t addr) const {
+        return base_ != cl_mem(addr - offset_);
     }
 
     inline const bool operator!=(const _opencl_ptr_t ptr) const {
@@ -101,5 +106,13 @@ struct _opencl_ptr_t {
 };
 
 typedef _opencl_ptr_t accptr_t;
+
+inline
+static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
+{
+    return ptr.base_ < ptr2.base_;
+}
+
+
 
 #endif

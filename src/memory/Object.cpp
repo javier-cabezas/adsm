@@ -1,4 +1,5 @@
 #include "config/config.h"
+#include "core/IOBuffer.h"
 
 #include "Object.h"
 #include "memory/Memory.h"
@@ -37,6 +38,7 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size
 	for(; i != blocks_.end() && size > 0; i++) {
 		size_t blockSize = i->second->size() - blockOffset;
 		blockSize = size < blockSize? size: blockSize;
+        buffer.wait();
 		ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
 		blockOffset = 0;
 		bufferOffset += blockSize;

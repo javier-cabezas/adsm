@@ -7,7 +7,7 @@ namespace __dbc { namespace util {
 Lock::Lock(const char *name) :
     __impl::util::Lock(name),
     locked_(false),
-    owner_(NULL)
+    owner_(0)
 {
     pthread_mutex_init(&internal_, NULL);
 }
@@ -38,7 +38,7 @@ void Lock::unlock() const
     pthread_mutex_lock(&internal_);
     REQUIRES(locked_ == true);
     REQUIRES(owner_ == pthread_self());
-    owner_ = NULL;
+    owner_ = 0;
     locked_ = false;
 
     __impl::util::Lock::unlock();
@@ -49,7 +49,7 @@ void Lock::unlock() const
 RWLock::RWLock(const char *name) :
     __impl::util::RWLock(name),
     state_(Idle),
-    writer_(NULL)
+    writer_(0)
 {
     ENSURES(pthread_mutex_init(&internal_, NULL) == 0);
 }
@@ -57,6 +57,7 @@ RWLock::RWLock(const char *name) :
 RWLock::~RWLock()
 {
     ENSURES(pthread_mutex_destroy(&internal_) == 0);
+    readers_.clear();
 }
 
 void RWLock::lockRead() const
@@ -98,7 +99,7 @@ void RWLock::unlock() const
         REQUIRES(readers_.empty() == true);
         REQUIRES(state_ == Write);
         state_ = Idle;
-        writer_ = NULL;
+        writer_ = 0;
     }
     else {
         REQUIRES(readers_.erase(pthread_self()) == 1);
