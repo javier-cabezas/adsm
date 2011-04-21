@@ -1,16 +1,19 @@
-add_subdirectory(dbc)
-
-add_subdirectory(allocator)
+add_subdirectory(hpe)
 
 set(core_SRC
-    Process.h Process-impl.h Process.cpp
-    Accelerator.h Accelerator-impl.h Accelerator.cpp
-    Descriptor.h Descriptor-impl.h
-    Kernel.h Kernel-impl.h Kernel.cpp
-    IOBuffer.h IOBuffer-impl.h
-    Mode.h Mode-impl.h Mode.cpp
-    Context.h Context.cpp
-    Queue.h Queue.cpp)
+    Process.h
+    Process.cpp
+    Mode.h
+    IOBuffer.h
+    IOBuffer-impl.h
+    allocator/Buddy.h
+    allocator/Buddy.cpp
+)
 
-add_gmac_sources(gmac ${core_SRC})
-add_gmac_sources(gmac-dbc)
+set(core_DBC
+    dbc/IOBuffer.h
+    dbc/IOBuffer.cpp
+)
+
+add_gmac_sources(gmac-core ${core_SRC} ${core_DBC})
+add_gmac_sources(gmac-core-hpe)

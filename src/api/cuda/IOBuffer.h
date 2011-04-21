@@ -61,8 +61,8 @@ protected:
     EventMap map_;
 
 public:
-    IOBuffer(void *addr, size_t size) :
-        gmac::core::IOBuffer(addr, size), mode_(NULL)
+    IOBuffer(void *addr, size_t size, bool async) :
+        gmac::core::IOBuffer(addr, size, async), mode_(NULL)
     {
     }
 

@@ -51,7 +51,6 @@ WITH THE SOFTWARE.  */
 #endif
 #endif
 
-
 namespace __impl {
 
 namespace core {
@@ -399,67 +398,9 @@ public:
     bool isReleased() const;
 };
 
-enum ModelDirection {
-    MODEL_TOHOST = 0,
-    MODEL_TODEVICE = 1
-};
-
-template <ModelDirection M>
-static inline
-float costTransferCache(const size_t subBlockSize, size_t subBlocks)
-{
-    if (M == MODEL_TOHOST) {
-        if (subBlocks * subBlockSize <= util::params::ParamModelL1/2) {
-            return util::params::ParamModelToHostTransferL1;
-        } else if (subBlocks * subBlockSize <= util::params::ParamModelL2/2) {
-            return util::params::ParamModelToHostTransferL2;
-        } else {
-            return util::params::ParamModelToHostTransferMem;
-        }
-    } else {
-        if (subBlocks * subBlockSize <= util::params::ParamModelL1/2) {
-            return util::params::ParamModelToDeviceTransferL1;
-        } else if (subBlocks * subBlockSize <= util::params::ParamModelL2/2) {
-            return util::params::ParamModelToDeviceTransferL2;
-        } else {
-            return util::params::ParamModelToDeviceTransferMem;
-        }
-    }
-}
-
-template <ModelDirection M>
-static inline
-float costGaps(const size_t subBlockSize, unsigned gaps, unsigned subBlocks)
-{
-    return costTransferCache<M>(subBlockSize, subBlocks) * gaps * subBlockSize;
-}
-
-template <ModelDirection M>
-static inline
-float costTransfer(const size_t subBlockSize, size_t subBlocks)
-{
-    return costTransferCache<M>(subBlockSize, subBlocks) * subBlocks * subBlockSize;
-}
-
-template <ModelDirection M>
-static inline
-float costConfig()
-{
-    if (M == MODEL_TOHOST) {
-        return util::params::ParamModelToHostConfig;
-    } else {
-        return util::params::ParamModelToDeviceConfig;
-    }
-}
-
-template <ModelDirection M>
-static inline
-float cost(const size_t subBlockSize, size_t subBlocks)
-{
-    return costConfig<M>() + costTransfer<M>(subBlockSize, subBlocks);
-}
-
 }}}
+
+#include "Model.h"
 
 #include "Bitmap-impl.h"
 

@@ -84,8 +84,8 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 
 	PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)module;
 	PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)PtrFromRva(dosHeader, dosHeader->e_lfanew);
-	if(ntHeader->Signature != IMAGE_NT_SIGNATURE) return false;
-	if(ntHeader->FileHeader.SizeOfOptionalHeader != sizeof(ntHeader->OptionalHeader)) return false;
+	if(ntHeader->Signature != IMAGE_NT_SIGNATURE) return NULL;
+	if(ntHeader->FileHeader.SizeOfOptionalHeader != sizeof(ntHeader->OptionalHeader)) return NULL;
 	PIMAGE_SECTION_HEADER sections = (PIMAGE_SECTION_HEADER)PtrFromRva(ntHeader, sizeof(IMAGE_NT_HEADERS));
 
 	PIMAGE_IMPORT_DESCRIPTOR dlls = NULL;
@@ -96,7 +96,7 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 		break;
 	}
 
-	if(dlls == NULL) return false;
+	if(dlls == NULL) return ret;
 	for(int i = 0; dlls[i].Name != NULL; i++) {
 		const char *dllName = (const char *)PtrFromRva(dosHeader, dlls[i].Name);
 		if(_stricmp(dllName, GmacDll_) == 0) continue;
@@ -112,8 +112,7 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 
 void LoadSymbol(PVOID *symbol, PVOID hook, const char *name)
 {
-	// Patch the symbol in all IATs
-	
-	*symbol = (PVOID) PatchModule(NULL, hook, name);	
+	// Patch the symbol in all IATs	
+	*symbol = (PVOID) PatchModule(NULL, hook, name);
 }
 } }

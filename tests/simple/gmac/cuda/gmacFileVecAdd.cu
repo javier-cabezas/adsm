@@ -31,22 +31,25 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 }
 
 
-float doTest(float *a, float *b, float *c, float *orig)
+float doTest(float *a, float *b, float *c, float *orig, const char *name)
 {
     gmactime_t s, t;
+    static char buffer[1024];
 
     FILE * fA = fopen(VECTORA, "rb");
+    assert(fA != NULL);
     FILE * fB = fopen(VECTORB, "rb");
+    assert(fB != NULL);
     getTime(&s);
     size_t ret = fread(a, sizeof(float), vecSize, fA);
     assert(ret == vecSize);
     ret = fread(b, sizeof(float), vecSize, fB);
     assert(ret == vecSize);
-
-    getTime(&t);
     fclose(fA);
     fclose(fB);
-    printTime(&s, &t, "Init: ", "\n");
+    getTime(&t);
+    snprintf(buffer, 1024, "%s:Init: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     // Call the kernel
     getTime(&s);
@@ -56,7 +59,8 @@ float doTest(float *a, float *b, float *c, float *orig)
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
     if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
     getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
+    snprintf(buffer, 1024, "%s:Run: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     getTime(&s);
     float error = 0.f;
@@ -64,8 +68,8 @@ float doTest(float *a, float *b, float *c, float *orig)
         error += orig[i] - (c[i]);
     }
     getTime(&t);
-    fprintf(stderr, "Error: %f\n", error);
-    printTime(&s, &t, "Check: ", "\n");
+    snprintf(buffer, 1024, "%s:Check: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     return error;
 }
@@ -74,12 +78,11 @@ int main(int argc, char *argv[])
 {
     float *a, *b, *c;
     gmactime_t s, t;
-    float error1, error2, error3;
-
-    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    float error_shared, error_distributed, error_centralized;
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
+    assert(fO != NULL);
     size_t ret = fread(orig, sizeof(float), vecSize, fO);
     assert(ret == vecSize);
 
@@ -87,10 +90,6 @@ int main(int argc, char *argv[])
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
 
-    //////////////////////
-    // Test shared objects
-    //////////////////////
-    fprintf(stderr,"SHARED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
     if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
@@ -98,22 +97,24 @@ int main(int argc, char *argv[])
     if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Shared:Alloc: ", "\n");
 
-    error1 = doTest(a, b, c, orig);
+    error_shared = doTest(a, b, c, orig, "Shared");
 
+    getTime(&s);
     FILE * fC = fopen("vectorC_shared", "wb");
     ret = fwrite(c, sizeof(float), vecSize, fC);
     assert(ret == vecSize);
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Shared::Write: ", "\n");
 
+    getTime(&s);
     gmacFree(a);
     gmacFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Shared:Free: ", "\n");
 
-    //////////////////////////
-    // Test replicated objects
-    //////////////////////////
-    fprintf(stderr,"REPLICATED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
     if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
@@ -121,22 +122,24 @@ int main(int argc, char *argv[])
     if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
         CUFATAL();
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Distributed:Alloc: ", "\n");
 
-    error2 = doTest(a, b, c, orig);
+    error_distributed = doTest(a, b, c, orig, "Distributed");
 
+    getTime(&s);
     fC = fopen("vectorC_replicated", "wb");
     ret = fwrite(c, sizeof(float), vecSize, fC);
     assert(ret == vecSize);
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Distributed:Write: ", "\n");
 
+    getTime(&s);
     gmacFree(a);
     gmacFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Distributed:Free: ", "\n");
 
-    ///////////////////////////
-    // Test centralized objects
-    ///////////////////////////
-    fprintf(stderr,"CENTRALIZED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
     if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
@@ -144,18 +147,24 @@ int main(int argc, char *argv[])
     if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
         CUFATAL();
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Centralized:Alloc: ", "\n");
 
-    error3 = doTest(a, b, c, orig);
+    error_centralized = doTest(a, b, c, orig, "Centralized");
 
+    getTime(&s);
     fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Centralized:Write: ", "\n");
 
+    getTime(&s);
     gmacFree(a);
     gmacFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Centralized:Write: ", "\n");
 
     gmacFree(c);
     free(orig);
-    return error1 != 0.f && error2 != 0.f && error3 != 0.f;
+    return error_shared != 0.f && error_distributed != 0.f && error_centralized != 0.f;
 }

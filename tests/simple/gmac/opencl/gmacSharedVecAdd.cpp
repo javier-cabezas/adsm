@@ -22,6 +22,7 @@ static float *a, *b;
 static struct param {
 	int i;
 	float *ptr;
+    char *prefix;
 } *param;
 
 const char *kernel = "\
@@ -36,11 +37,14 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 
 void *addVector(void *ptr)
 {
+    static char buffer[1024];
+
 	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
-	gmacError_t ret = gmacSuccess;
+    char *prefix = p->prefix;
+	oclError_t ret = gmacSuccess;
 
-	ret = gmacMalloc((void **)&p->ptr, vecSize * sizeof(float));
+	ret = oclMalloc((void **)&p->ptr, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 
 	// Call the kernel
@@ -51,21 +55,25 @@ void *addVector(void *ptr)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    assert(__oclConfigureCall(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(gmacPtr(p->ptr));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 0);
-    tmp = cl_mem(gmacPtr(a));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 1);
-    tmp = cl_mem(gmacPtr(b));
-    __oclSetArgument(&tmp, sizeof(cl_mem), 2);
-    __oclSetArgument(&vecSize, sizeof(vecSize), 3);
+    OclKernel kernel;
+
+    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    cl_mem tmp = cl_mem(oclPtr(p->ptr));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    tmp = cl_mem(oclPtr(a));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    tmp = cl_mem(oclPtr(b));
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
     unsigned offset = p->i * long(vecSize);
-    __oclSetArgument(&offset, sizeof(offset), 4);
-    assert(__oclLaunch("vecAdd") == gmacSuccess);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &offset, sizeof(offset), 4) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	getTime(&t);
-	printTime(&s, &t, "Run: ", "\n");
+    snprintf(buffer, 1024, "%s-Run: ", prefix);
+	printTime(&s, &t, buffer, "\n");
 
 	getTime(&s);
 	float error = 0;
@@ -74,22 +82,91 @@ void *addVector(void *ptr)
 		//error += (a[i] - b[i]);
 	}
 	getTime(&t);
-	printTime(&s, &t, "Check: ", "\n");
-	fprintf(stdout, "Error: %.02f\n", error);
+    snprintf(buffer, 1024, "%s-CheckFull: ", prefix);
+	printTime(&s, &t, buffer, "\n");
 
     //assert(error == 0);
 
 	return NULL;
 }
 
-
-int main(int argc, char *argv[])
+float do_test(GmacGlobalMallocType allocType, const char *prefix)
 {
+    static char buffer[1024];
 	thread_t *nThread;
 	unsigned n = 0;
 	gmacError_t ret = gmacSuccess;
+
 	gmactime_t s, t;
 
+	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
+	param = (struct param *)malloc(nIter * sizeof(struct param));
+
+	getTime(&s);
+	// Alloc & init input data
+	ret = oclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
+	assert(ret == gmacSuccess);
+	ret = oclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
+	assert(ret == gmacSuccess);
+
+	// Alloc output data
+	getTime(&t);
+    snprintf(buffer, 1024, "%s-Alloc: ", prefix);
+	printTime(&s, &t, buffer, "\n");
+
+    getTime(&s);
+	valueInit(a, 1.0, nIter * vecSize);
+	valueInit(b, 1.0, nIter * vecSize);
+    getTime(&t);
+
+    snprintf(buffer, 1024, "%s-Init: ", prefix);
+    printTime(&s, &t, buffer, "\n");
+
+	for(n = 0; n < nIter; n++) {
+		param[n].i = n;
+		param[n].prefix = (char *) prefix;
+		nThread[n] = thread_create(addVector, &(param[n]));
+	}
+
+	for(n = 0; n < nIter; n++) {
+		thread_wait(nThread[n]);
+	}
+
+    getTime(&s);
+	float error = 0;
+	for(n = 0; n < nIter; n++) {
+		for(unsigned i = 0; i < vecSize; i++) {
+			error += param[n].ptr[i] - 2.f;
+		}
+	}
+    getTime(&t);
+
+    snprintf(buffer, 1024, "%s-Check: ", prefix);
+    printTime(&s, &t, buffer, "\n");
+
+
+    getTime(&s);
+    for(n = 0; n < nIter; n++) {
+		oclFree(param[n].ptr);
+	}
+
+	oclFree(a);
+	oclFree(b);
+
+	free(param);
+	free(nThread);
+
+    getTime(&t);
+
+    snprintf(buffer, 1024, "%s-Free: ", prefix);
+    printTime(&s, &t, buffer, "\n");
+
+    return error;
+}
+
+
+int main(int argc, char *argv[])
+{
     assert(__oclPrepareCLCode(kernel) == gmacSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
@@ -98,44 +175,12 @@ int main(int argc, char *argv[])
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;
 
-	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
-	param = (struct param *)malloc(nIter * sizeof(struct param));
+    float error;
 
-	getTime(&s);
-	// Alloc & init input data
-	ret = gmacGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
-	valueInit(a, 1.0, nIter * vecSize);
-	ret = gmacGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
-	valueInit(b, 1.0, nIter * vecSize);
-
-	// Alloc output data
-	getTime(&t);
-	printTime(&s, &t, "Alloc: ", "\n");
-
-	for(n = 0; n < nIter; n++) {
-		param[n].i = n;
-		nThread[n] = thread_create(addVector, &(param[n]));
-	}
-
-	for(n = 0; n < nIter; n++) {
-		thread_wait(nThread[n]);
-	}
-
-	gmacFree(a);
-	gmacFree(b);
-
-	float error = 0;
-	for(n = 0; n < nIter; n++) {
-		for(unsigned i = 0; i < vecSize; i++) {
-			error += param[n].ptr[i] - 2;
-		}
-	}
-	fprintf(stdout, "Total: %.02f\n", error);
-
-	free(param);
-	free(nThread);
-
+    error = do_test(GMAC_GLOBAL_MALLOC_REPLICATED, "Replicated");
+    if (error != 0.f) abort();
+    error = do_test(GMAC_GLOBAL_MALLOC_CENTRALIZED, "Centralized");
+    if (error != 0.f) abort();
+    
     return error != 0;
 }

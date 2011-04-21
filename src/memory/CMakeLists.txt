@@ -1,26 +1,66 @@
-add_subdirectory(dbc)
 add_subdirectory(vm)
-
-add_subdirectory(protocol)
-add_subdirectory(allocator)
 add_subdirectory(${OS_DIR})
 
 set(memory_SRC
-    memory.cpp Memory.h
-    Block.h Block-impl.h Block.cpp
-    StateBlock.h StateBlock-impl.h
-    SharedBlock.h SharedBlock-impl.h
-    DistributedBlock.h DistributedBlock-impl.h
-    Object.h Object-impl.h Object.cpp
-    SharedObject.h SharedObject-impl.h
-    DistributedObject.h DistributedObject-impl.h
-    HostMappedObject.h HostMappedObject-impl.h HostMappedObject.cpp
-    Map.h Map.cpp
-    Protocol.h Protocol.cpp
-    Manager.h Manager-impl.h Manager.cpp
-    Handler.h Handler.cpp
-    Allocator.h Allocator.cpp)
+    Allocator.h
+    Allocator.cpp
+    Block.h
+    Block-impl.h
+    Block.cpp
+    DistributedBlock.h
+    DistributedBlock-impl.h
+    DistributedObject.h
+    DistributedObject-impl.h
+    Handler.h
+    Handler.cpp
+    HostMappedObject.h
+    HostMappedObject-impl.h
+    HostMappedObject.cpp
+    Manager.h
+    Manager-impl.h
+    Manager.cpp
+    Memory.h
+    Object.h
+    Object-impl.h
+    Object.cpp
+    ObjectMap.h
+    ObjectMap.cpp
+    Protocol.h
+    Protocol.cpp
+    SharedBlock.h
+    SharedBlock-impl.h
+    SharedObject.h
+    SharedObject-impl.h
+    StateBlock.h
+    StateBlock-impl.h
+    memory.cpp
+    allocator/Cache.h
+    allocator/Cache-impl.h
+    allocator/Cache.cpp
+    allocator/Slab.h
+    allocator/Slab-impl.h
+    allocator/Slab.cpp
+    protocol/BlockList.h
+    protocol/BlockList-impl.h
+    protocol/Gather.h
+    protocol/Gather-impl.h
+    protocol/Gather.cpp
+    protocol/Lazy.h
+    protocol/Lazy-impl.h
+    protocol/Lazy.cpp
+)
 
-add_gmac_sources(gmac ${memory_SRC})
-add_gmac_sources(gmac-lib ${memory_lib_SRC})
-add_gmac_sources(gmac-dbc)
+set(memory_DBC
+    dbc/Block.h
+    dbc/Block.cpp
+    dbc/Manager.h
+    dbc/Manager.cpp
+    dbc/Object.h
+    dbc/Object.cpp
+    dbc/SharedObject.h
+    dbc/SharedObject-impl.h
+    protocol/dbc/Lazy.h
+    protocol/dbc/Lazy.cpp
+)
+
+add_gmac_sources(gmac-memory ${memory_SRC} ${memory_DBC})

@@ -1,76 +1,29 @@
-#include "unit/init.h"
-#include "trace/Tracer.h"
+#include "init.h"
+
 #include "core/Process.h"
-#include "core/Accelerator.h"
-#include "core/Context.h" //added 
+#include "core/Mode.h"
 
-#include "gtest/gtest.h"
+void InitModel();
+void FiniModel();
 
-using __impl::core::Accelerator;
+__impl::core::Mode *Mode_ = NULL;
+
 using __impl::core::Process;
-using gmac::core::Context; 
-
-
-Accelerator *Accelerator_ = NULL;
-Context *Context_=NULL; //added
-static bool Trace_ = false;
-
-
-void InitTrace(void)
-{
-    if(Trace_ == true) return;
-    Trace_ = true;
-    gmac::trace::InitTracer();
-}
-
-void FiniTrace(void)
-{
-    if(Trace_ == false) return;
-    Trace_ = false;
-    gmac::trace::FiniTracer();
-}
-
-__impl::core::Accelerator &GetAccelerator()
-{
-    return *Accelerator_;
-}
-
-void FiniAccelerator()
-{
-    if(Accelerator_ == NULL) return;
-    delete Accelerator_;
-    Accelerator_ = NULL;
-}
-
-
-
-gmac::core::Context &GetContext()
-{
-    return *Context_;
-}
-
-void FiniContext()
-{
-    if(Context_ == NULL) return;
-    delete Context_;
-    Context_ = NULL;
-}
 
 void InitProcess()
 {
-    InitTrace();
-    InitAccelerator();
-
-    Process::create<Process>();
-    Process &proc = Process::getInstance();
-    proc.addAccelerator(*Accelerator_);
+    InitModel();
 }
-
 
 void FiniProcess()
 {
+    FiniModel();
     Process::destroy();
-    Accelerator_ = NULL;
-    FiniTrace();
 }
+
+__impl::core::Mode &GetMode()
+{
+    return *Mode_;
+}
+
 

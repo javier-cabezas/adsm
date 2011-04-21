@@ -49,23 +49,26 @@ class GMAC_LOCAL Manager :
     public virtual Contract {
     DBC_TESTED(__impl::memory::Manager)
 
-public:
+    // Needed to let Singleton call the protected constructor
+    friend class __impl::util::Singleton<Manager>;
+protected:
     Manager();
+public:
     ~Manager();
 #if 0
     gmacError_t map(void *addr, size_t size, GmacProtection prot);
     gmacError_t unmap(void *addr, size_t size);
 #endif
-    gmacError_t alloc(hostptr_t *addr, size_t size);
+    gmacError_t alloc(__impl::core::Mode &mode, hostptr_t *addr, size_t size);
 
     //gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
-    gmacError_t free(hostptr_t addr);
+    gmacError_t free(__impl::core::Mode &mode, hostptr_t addr);
 
-    bool read(hostptr_t addr);
-    bool write(hostptr_t addr);
+    bool read(__impl::core::Mode &mode, hostptr_t addr);
+    bool write(__impl::core::Mode &mode, hostptr_t addr);
 
-    gmacError_t toIOBuffer(__impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
-    gmacError_t fromIOBuffer(hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
+    gmacError_t toIOBuffer(__impl::core::Mode &mode, __impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+    gmacError_t fromIOBuffer(__impl::core::Mode &mode, hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
 #if 0
     gmacError_t memcpy(void * dst, const void * src, size_t n);
     gmacError_t memset(void * dst, int c, size_t n);

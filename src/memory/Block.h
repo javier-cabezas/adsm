@@ -80,15 +80,17 @@ protected:
     //! Shadow host memory mapping that is always read/write.
     hostptr_t shadow_;
 
-#ifdef USE_VM
+#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
     //! Last addr
-    unsigned sequentialFaults_;
+    hostptr_t lastAddr_;
+    long_t stride_;
+    unsigned stridedFaults_;
     unsigned faults_;
-    long_t lastSubBlock_;
 
-    void resetBitmapStats();
-    void updateBitmapStats(const hostptr_t addr, bool write);
+    void resetSubBlockStats();
+    void updateSubBlockStats(const hostptr_t addr, bool write);
 #endif
+
 
     //! Default construcutor
     /*!
@@ -97,18 +99,22 @@ protected:
         \param shadow Shadow host memory mapping that is always read/write
         \param size Size (in bytes) of the memory block
     */
-        Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+    Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     //! Default destructor
     virtual ~Block();
 public:
-#ifdef USE_VM
-    bool isSequentialAccess() const;
+#ifdef USE_SUBBLOCK_TRACKING
+    typedef std::vector<uint8_t> SubBlockVector;
+    SubBlockVector subBlockState_; 
+#endif
+
+#if (defined USE_VM) || (defined USE_SUBBLOCK_TRACKING)
+    bool isStridedAccess() const;
     unsigned getFaults() const;
-    unsigned getSequentialFaults() const;
+    unsigned getStridedFaults() const;
 
     hostptr_t getSubBlockAddr(const hostptr_t addr) const;
-    unsigned getSubBlock(const hostptr_t addr) const;
     unsigned getSubBlocks() const;
     size_t getSubBlockSize() const;
 
@@ -214,19 +220,19 @@ public:
     /*!
         \return Owner of the memory block
     */
-    virtual core::Mode &owner() const = 0;
+    virtual core::Mode &owner(core::Mode &current) const = 0;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-    virtual accptr_t acceleratorAddr(const hostptr_t addr) const = 0;
+    virtual accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const = 0;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-    virtual accptr_t acceleratorAddr() const = 0;
+    virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
 
     //! Ensures that the host memory has a valid and accessible copy of the data
     /*!

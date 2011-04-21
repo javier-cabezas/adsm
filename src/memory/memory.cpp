@@ -7,7 +7,7 @@
 #include "memory/DistributedObject.h"
 
 #ifdef USE_VM
-#include "protocol/Gather.h"
+//#include "protocol/Gather.h"
 #endif
 #include "protocol/Lazy.h"
 
@@ -22,7 +22,7 @@ namespace __impl {
 namespace memory {
 
 size_t BlockSize_;
-#ifdef USE_VM
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 size_t SubBlockSize_;
 unsigned BlockShift_;
 unsigned SubBlockShift_;
@@ -36,13 +36,15 @@ void Init(void)
     Allocator::create<__impl::memory::allocator::Slab>();
 
     BlockSize_     = util::params::ParamBlockSize;
-#ifdef USE_VM
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
     SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
     BlockShift_    = (unsigned) log2(util::params::ParamBlockSize);
     SubBlockShift_ = (unsigned) log2(util::params::ParamBlockSize/util::params::ParamSubBlocks);
     SubBlockMask_  = util::params::ParamSubBlocks - 1;
 
+#if defined(USE_VM)
     vm::Bitmap::Init();
+#endif
 #endif
 }
 

@@ -53,8 +53,10 @@ protected:
 
     ObjectList objects_;
 
+    core::Mode &mode_;
+
 public:
-    Arena(size_t objSize);
+    Arena(core::Mode &mode, size_t objSize);
     ~Arena();
 
     inline hostptr_t address() const { return ptr_; }
@@ -77,8 +79,9 @@ protected:
     typedef std::map<hostptr_t, Arena *> ArenaMap;
     ArenaMap arenas;
 
+    core::Mode &mode_;
 public:
-    Cache(size_t size);
+    Cache(core::Mode &mode, size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);
@@ -91,6 +94,6 @@ public:
 
 }}}
 
-#include "Cache.ipp"
+#include "Cache-impl.h"
 
 #endif

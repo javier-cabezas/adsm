@@ -68,6 +68,12 @@ extern "C"
 {
 #endif
 
+#ifdef __cplusplus
+#   define __dv(a) = a
+#else
+#   define __dv(a)
+#endif
+
 /**
  * Returns the number of available accelerators.
  * \return The number of available accelerators
@@ -97,7 +103,7 @@ GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
  * \return On success gmacMap returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtection prot);
+GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, enum GmacProtection prot);
 
 /**
  * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
@@ -107,7 +113,7 @@ GMAC_API gmacError_t APICALL gmacMap(void *cpuPtr, size_t count, enum GmacProtec
  * \return On success gmacUnmmap returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacUnmap(void *cpuPtr, size_t count);
+GMAC_API gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count);
 
 /**
  * Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
@@ -129,8 +135,8 @@ GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
  * \return On success gmacGlobalMalloc returns gmacSuccess and stores the address
  * of the allocated memory in devPtr. Otherwise it returns the causing error
  */
-#define gmacGlobalMalloc(a, b, ...) __gmacGlobalMalloc(a, b, ##__VA_ARGS__, GMAC_GLOBAL_MALLOC_CENTRALIZED)
-GMAC_API gmacError_t APICALL __gmacGlobalMalloc(void **devPtr, size_t count, enum GmacGlobalMallocType hint, ...);
+GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **devPtr, size_t count,
+        enum GmacGlobalMallocType hint __dv(GMAC_GLOBAL_MALLOC_CENTRALIZED));
 
 /**
  * Gets a the GPU address of an allocation performed with gmacMalloc or
@@ -158,45 +164,98 @@ GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr);
  */
 GMAC_API gmacError_t APICALL gmacThreadSynchronize();
 
+/**
+ * Returns the error code of the last gmac operation performed by the calling thread
+ * \return The error code of the last gmac operation performed by the calling thread
+ */
 GMAC_API gmacError_t APICALL gmacGetLastError();
 
+/**
+ * Sets count bytes to c in the memory pointed by ptr
+ *
+ * \param ptr A pointer to the memory to be set
+ * \param c Value to be set
+ * \param count Number of bytes to be set
+ *
+ * \return A pointer to ptr
+ */
 GMAC_API void * APICALL gmacMemset(void *ptr, int c, size_t count);
+
+/**
+ * Copies count bytes from the memory pointed by src to the memory pointed by dst
+ *
+ * \param dst Pointer to destination memory
+ * \param src Pointer to source memory
+ * \param count Number of bytes to be copied
+ *
+ * \return A pointer to dst
+ */
 GMAC_API void * APICALL gmacMemcpy(void *dst, const void *src, size_t count);
 
-GMAC_API void APICALL gmacSend(THREAD_T);
-GMAC_API void APICALL gmacReceive(void);
-GMAC_API void APICALL gmacSendReceive(THREAD_T);
-GMAC_API void APICALL gmacCopy(THREAD_T);
+/**
+ * Sends the execution mode of the current thread to the thread identified by tid
+ *
+ * \param tid The identifier of the destination thread
+ */
+GMAC_API void APICALL gmacSend(THREAD_T tid);
 
+/**
+ * The current thread receives the execution mode that is sent by another thread using
+ * gmacSend or gmacSendReceive
+ */
+GMAC_API void APICALL gmacReceive();
+
+/**
+ * Sends the execution mode of the current thread to the thread identified by tid
+ * receives the execution mode that is sent by another thread using gmacSend/gmacSendReceive
+ *
+ * \param tid The identifier of the destination thread
+ */
+GMAC_API void APICALL gmacSendReceive(THREAD_T tid);
+
+/**
+ * Copies the execution mode of the current thread to the thread identified by tid
+ */
+GMAC_API void APICALL gmacCopy(THREAD_T tid);
 
 /**
  * Launches a kernel on the accelerator. This function is NOT meant to be directly
  * used by the application
+ * 
+ * \param Kernel descriptor for the kernel to be launched
+ * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
  */
-GMAC_API gmacError_t APICALL gmacLaunch(gmacKernel_t k);
+GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k);
 
 
 
 #ifdef __cplusplus
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #else
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #endif
 
+/**
+ * Returns a description of the given error
+ * \param err An error code 
+ * \return A string with the description of the error code
+ */
 static inline const char *gmacGetErrorString(gmacError_t err) {
     //assert(err <= gmacErrorUnknown);
     if (err <= gmacErrorUnknown)
         return error[err];
     else {
-        printf("Error %d\n", err);
-        return "WTF Error";
+        abort();
     }
+    return NULL;
 }
 
 #ifdef __cplusplus
-};
+}
 
 template<typename T>
 static inline T *gmacPtr(const T *addr) {
@@ -204,5 +263,7 @@ static inline T *gmacPtr(const T *addr) {
 }
 #endif
 
+
+#undef __dv
 
 #endif

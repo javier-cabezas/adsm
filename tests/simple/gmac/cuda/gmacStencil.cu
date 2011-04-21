@@ -13,10 +13,7 @@ int main(int argc, char *argv[])
 {
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 
-    if (dimRealElems % 32 != 0) {
-        fprintf(stderr, "Error: wrong dimension %u\n", unsigned(dimRealElems));
-        abort();
-    }
+    assert(dimRealElems % 32 == 0);
 
     dimElems = dimRealElems + 2 * STENCIL;
 

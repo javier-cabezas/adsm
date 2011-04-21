@@ -1,15 +1,15 @@
 #include "unit/init.h"
 #include "core/Process.h"
-#include "api/opencl/Accelerator.h"
-#include "api/opencl/Context.h"
-#include "api/opencl/Mode.h"
+#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/Context.h"
+#include "api/opencl/hpe/Mode.h"
 #include "gtest/gtest.h"
 
 #include <CL/cl.h>
 
-using __impl::opencl::Accelerator;
-using __impl::opencl::Mode;
-using __impl::opencl::Context;
+using __impl::opencl::hpe::Accelerator;
+using __impl::opencl::hpe::Mode;
+using __impl::opencl::hpe::Context;
 
 void InitAccelerator()
 {
@@ -21,9 +21,9 @@ void InitAccelerator()
 
     cl_device_id device;
     ASSERT_EQ(CL_SUCCESS, clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL));
-    Accelerator_ = new gmac::opencl::Accelerator(0, platform, device);
+    Accelerator_ = new gmac::opencl::hpe::Accelerator(0, platform, device);
     ASSERT_TRUE(Accelerator_ != NULL);
-    gmac::opencl::Accelerator::addAccelerator(dynamic_cast<gmac::opencl::Accelerator &>(*Accelerator_));
+    gmac::opencl::hpe::Accelerator::addAccelerator(dynamic_cast<gmac::opencl::hpe::Accelerator &>(*Accelerator_));
 }
 
 

@@ -80,20 +80,20 @@ public:
     /*!
         \return A reference to the owner mode of the memory block
     */
-    core::Mode &owner() const;
+    core::Mode &owner(core::Mode &current) const;
 
     //! Get memory block address at the accelerator
     /*!
      * \param addr Address within the block
         \return Accelerator memory address of the block
     */
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
 
     //! Get memory block address at the accelerator
     /*!
         \return Accelerator memory address of the block
     */
-    accptr_t acceleratorAddr() const;
+    accptr_t acceleratorAddr(core::Mode &current) const;
 
     gmacError_t toHost() const;
 

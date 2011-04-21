@@ -16,8 +16,13 @@ inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t
 	addr_(addr),
     shadow_(shadow)
 {
-#ifdef USE_VM
-    resetBitmapStats();
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+    resetSubBlockStats();
+#if defined(USE_SUBBLOCK_TRACKING)
+    for (size_t s = 0; s < size; s += SubBlockSize_) {
+        subBlockState_.push_back(0);
+    }
+#endif
 #endif
 }
 
@@ -26,14 +31,14 @@ inline Block::~Block()
 
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 inline void
-Block::resetBitmapStats()
+Block::resetSubBlockStats()
 {
-    faults_           = 0;
-    sequentialFaults_ = 0;
+    faults_        = 0;
+    stridedFaults_ = 0;
 }
 
 inline void
-Block::updateBitmapStats(const hostptr_t addr, bool write)
+Block::updateSubBlockStats(const hostptr_t addr, bool write)
 {
     core::Mode &mode = owner();
     long_t currentSubBlock = GetSubBlock(addr);
@@ -43,23 +48,27 @@ Block::updateBitmapStats(const hostptr_t addr, bool write)
     }
 #endif
 
-    if (faults_ > 0) {
-        if (currentSubBlock == lastSubBlock_ + 1) {
-            sequentialFaults_++;
+    if (faults_ == 1) {
+        stride_ = addr - lastAddr_;
+        stridedFaults_  = 2;
+    } else if (faults_ > 1) {
+        if (addr == lastAddr_ + stride_) {
+            stridedFaults_++;
         } else {
-            sequentialFaults_ = 1;
+            stridedFaults_ = 1;
         }
     } else {
-        sequentialFaults_ = 1;
+        stridedFaults_ = 1;
     }
-    lastSubBlock_ = currentSubBlock;
+    lastAddr_ = addr;
     faults_++;
 }
 
 inline bool
-Block::isSequentialAccess() const
+Block::isStridedAccess() const
 {
-    return sequentialFaults_ >= 2;
+    /// \todo Do not hardcode the threshold value
+    return stridedFaults_ > 2;
 }
 
 inline unsigned
@@ -69,9 +78,9 @@ Block::getFaults() const
 }
 
 inline unsigned
-Block::getSequentialFaults() const
+Block::getStridedFaults() const
 {
-    return sequentialFaults_;
+    return stridedFaults_;
 }
 
 inline hostptr_t
@@ -87,12 +96,6 @@ Block::getSubBlockSize() const
 }
 
 inline unsigned
-Block::getSubBlock(const hostptr_t addr) const
-{
-    return GetSubBlock(addr);
-}
-
-inline unsigned
 Block::getSubBlocks() const
 {
     unsigned subBlocks = size_/SubBlockSize_;
@@ -103,25 +106,28 @@ Block::getSubBlocks() const
 inline void 
 Block::setSubBlockDirty(const hostptr_t addr)
 {
-    core::Mode &mode = owner();
 #ifdef USE_VM
+    core::Mode &mode = owner();
     vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
-#else
-    vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
-#endif
     bitmap.setEntry(acceleratorAddr(addr), vm::BITMAP_SET_HOST);
+#else // USE_SUBBLOCK_TRACKING
+    subBlockState_[GetSubBlockIndex(addr_, addr)] = 1;
+#endif
 }
 
 inline void 
 Block::setBlockDirty()
 {
-    core::Mode &mode = owner();
 #ifdef USE_VM
+    core::Mode &mode = owner();
     vm::BitmapShared &bitmap = mode.acceleratorDirtyBitmap();
-#else
-    vm::BitmapHost &bitmap = mode.hostDirtyBitmap();
-#endif
     bitmap.setEntryRange(acceleratorAddr(addr_), size_, vm::BITMAP_SET_HOST);
+#else // USE_SUBBLOCK_TRACKING
+    SubBlockVector::iterator it;
+    for (it = subBlockState_.begin(); it != subBlockState_.end(); it++) {
+        *it = 1;
+    }
+#endif
 }
 
 #endif
@@ -150,8 +156,8 @@ inline gmacError_t Block::signalWrite(hostptr_t addr)
     TRACE(LOCAL,"SIGNAL WRITE on block %p: addr %p", addr_, addr);
 	lock();
 	gmacError_t ret = protocol_.signalWrite(*this, addr);
-#ifdef USE_VM
-    updateBitmapStats(addr, true);
+#if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+    updateSubBlockStats(addr, true);
 #endif
 	unlock();
 	return ret;

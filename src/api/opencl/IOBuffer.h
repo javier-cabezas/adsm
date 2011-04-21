@@ -36,20 +36,21 @@ WITH THE SOFTWARE.  */
 
 #include <CL/cl.h>
 
-#include "Mode.h"
-
+#include "api/opencl/Mode.h"
 #include "core/IOBuffer.h"
 
 namespace __impl { namespace opencl {
 
 class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
+	cl_mem base_;
+	size_t offset_;
     cl_event event_;
     Mode *mode_;
     bool started_;
 
 public:
-    IOBuffer(void *addr, size_t size);
+    IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async);
 
     void toHost(Mode &mode);
     void toAccelerator(Mode &mode);

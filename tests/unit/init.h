@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define TEST_UNIT_INIT_H_
 
 #include "util/Atomics.h"
+#include "trace/Tracer.h"
 
 namespace __impl {
 class GMACLock;
@@ -44,16 +45,10 @@ extern const char _gmacCode;
 extern const char _userCode;
 extern Atomic _gmacInit;
 
-    namespace core { class Accelerator; 
-                     class Context;
-                                          }
     namespace util { template<typename T> class Private; }
 }
 
 namespace __dbc {
-    namespace core {
-        class Context;
-    }
 }
 
 #if defined(USE_DBC)
@@ -63,22 +58,11 @@ namespace gmac = __impl;
 #endif
 
 extern __impl::util::Private<const char> _inGmac;
-extern __impl::core::Accelerator *Accelerator_;
-extern gmac::core::Context *Context_;
 
 void InitGmac();
-
 void InitTrace();
+void FiniTrace();
 
-void InitAccelerator();
-__impl::core::Accelerator &GetAccelerator();
-void FiniAccelerator();
-
-void InitContext(); 
-gmac::core::Context &GetContext();
-void FiniContext();
-
-void InitProcess();
-void FiniProcess();
+#include "core/init.h"
 
 #endif

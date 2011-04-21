@@ -1,10 +1,13 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <list>
+#include <map>
 #include <vector>
 
 #include "Variable.h"
@@ -13,8 +16,39 @@ class Test
 {
 private:
     class TestCase {
-        typedef std::pair<std::string, std::string> KeyVal;
+    public:
+        class Stats {
+        public:
+            typedef std::list<float> ListValues;
+            typedef std::list<std::string> ListNames;
+        protected:
+            typedef std::map<std::string, ListValues> MapStats;
+            MapStats stats_;
+
+        public:
+            Stats();
+
+            void addPair(std::string name, float val);
+            ListNames getNames() const;
+            const ListValues &getValues(std::string name) const;
+        };
+
     private:
+        typedef std::pair<std::string, std::string> KeyVal;
+
+        struct KeyValFunc : std::unary_function<const KeyVal&, bool>
+        {
+            const std::string name_;
+            explicit KeyValFunc(const std::string& val)
+                : name_(val) {}
+
+            bool operator() (const KeyVal &pair)
+            {
+                return pair.first == name_;
+            }
+        };
+
+
         std::vector<KeyVal> keyvals_;
         std::string name_;
         int status_;
@@ -23,167 +57,62 @@ private:
         void setEnvironment();
 
     public:
-        TestCase() :
-            name_(""),
-            run_(false)
-        {}
+        TestCase();
+        TestCase(const TestCase &testCase);
+        void addVariableInstance(std::string name, std::string value);
 
-        void addVariableInstance(std::string name, std::string value)
-        {
-            keyvals_.push_back(KeyVal(name, value));
-            name_ += name + "=" + value + ";";
-        }
+        bool isFailure() const;
+        std::string getName() const;
+        bool hasVariable(const std::string &name) const;
+        bool hasValue(const std::string &name, const std::string &val) const;
 
-        bool isFailure() const
-        {
-            return status_ != 0;
-        }
-
-        std::string getName() const
-        {
-            return name_;
-        }
-
-        void run(std::string exec);
-
-        void report(std::ofstream &outfile) const
-        {
-            outfile << "<testcase ";
-            outfile << "name=\"" << name_ << "\" ";
-            outfile << "status=\"" << (run_? "run": "notrun") << "\"";
-            outfile << ">" << std::endl;
-            if (status_ != 0) {
-                outfile << "<failure message=\"Exit code: " << status_ << "\"/>" << std::endl;
-            }
-            outfile << "</testcase>" << std::endl;
-        }
+        Stats run(const std::string &exec);
+        void report(std::ofstream &outfile) const;
     };
+
+    class Stats {
+        typedef std::map<const TestCase *, TestCase::Stats> MapStats;
+        MapStats testCaseStats_;
+
+    public:
+        Stats();
+        ~Stats();
+        void addTestCaseStats(const TestCase &testCase, const TestCase::Stats &stats);
+
+        Stats filter(Variable &v, std::string value) const;
+    };
+
+    Stats stats_;
 
     std::string name_;
     std::vector<Variable> vars_;
 
     std::vector<TestCase> testCases_;
 
-    void addTestCase(std::vector<VectorString::iterator> &current)
-    {
-        TestCase conf;
-
-        for (size_t i = 0; i < current.size(); i++) {
-            conf.addVariableInstance(vars_[i].getName(), *(current[i]));
-        }
-        testCases_.push_back(conf);
-    }
-
+    void addTestCase(std::vector<VectorString::iterator> &current);
     bool advance(std::vector<VectorString::iterator> &current,
                  std::vector<VectorString::iterator> &start,
-                 std::vector<VectorString::iterator> &end)
-    {
-        if (equals(current, end)) return false;
-
-        for (size_t i = 0; i < current.size(); i++) {
-            if ((current[i] + 1) != end[i]) {
-                current[i]++;
-                break;
-            } else {
-                if (i != current.size() - 1) {
-                    current[i] = start[i];
-                }
-            }
-        }
-
-        return true;
-    }
+                 std::vector<VectorString::iterator> &end);
 
     bool equals(std::vector<VectorString::iterator> &current,
-                std::vector<VectorString::iterator> &end)
-    {
-        for (size_t i = 0; i < current.size(); i++) {
-            if ((current[i] + 1) != end[i]) return false;
-        }
-        return true;
-    }
+                std::vector<VectorString::iterator> &end);
 
-    void generateTestCases()
-    {
-        if (vars_.size() > 0) {
-            std::vector<VectorString::iterator> start; 
-            std::vector<VectorString::iterator> current; 
-            std::vector<VectorString::iterator> end; 
-
-            for (size_t i = 0; i < vars_.size(); i++) {
-                start.push_back(vars_[i].begin());
-                current.push_back(vars_[i].begin());
-                end.push_back(vars_[i].end());
-            }
-
-            do {
-                addTestCase(current);
-            } while(advance(current, start, end));
-        } else {
-            TestCase dummy;
-            testCases_.push_back(dummy);
-        }
-    }
+    void generateTestCases();
+    
 public:
+    Test();
+    Test(std::string name);
 
-    Test()
-    {
-    }
+    Test &operator+=(Variable &v);
 
-    Test(std::string name) :
-        name_(name)
-    {
-    }
+    std::string getName() const;
 
-    Test &operator+=(Variable &v)
-    {
-        vars_.push_back(v);
-        return *this;
-    }
+    void launch();
 
-    std::string getName() const
-    {
-        return name_;
-    }
-
-    void launch()
-    {
-        generateTestCases();
-
-        for (size_t i = 0; i < testCases_.size(); i++) {
-            testCases_[i].run(name_);
-        }
-    }
-
-    unsigned getNumberOfTestCases() const
-    {
-        return unsigned(testCases_.size());
-    }
-
-    unsigned getNumberOfFailures() const
-    {
-        unsigned failures = 0;
-        for (size_t i = 0; i < testCases_.size(); i++) {
-            if (testCases_[i].isFailure()) failures++; 
-        }
-        return failures;
-    }
-
-    void report(std::ofstream &outfile) const
-    {
-        outfile << "<testsuite ";
-        outfile << "name=\"" << name_ << "\" ";
-        outfile << "tests=\"" << getNumberOfTestCases() << "\" ";
-        outfile << "failures=\"" << getNumberOfFailures() << "\" ";
-        outfile << "errors=\"0\" ";
-        outfile << ">" << std::endl;
-
-        for (size_t i = 0; i < testCases_.size(); i++) {
-            testCases_[i].report(outfile);
-        }
-
-        outfile << "</testsuite>" << std::endl;
-    }
+    unsigned getNumberOfTestCases() const;
+    unsigned getNumberOfFailures() const;
+    
+    void report(std::ofstream &outfile) const;
 };
 
 class TestSuite {
@@ -193,66 +122,17 @@ private:
     std::ofstream outfile_;
 
 public:
-    TestSuite(std::string name) :
-        name_(name),
-        outfile_((name + ".report.xml").c_str(), std::ofstream::out | std::ofstream::trunc)
-    {
-    }
+    TestSuite(std::string name);
+    ~TestSuite();
 
-    ~TestSuite()
-    {
-        outfile_.close();
-    }
+    TestSuite &operator+=(Test test);
 
-    TestSuite &operator+=(Test test)
-    {
-        tests_.push_back(test);
-        return *this;
-    }
+    void launch();
 
-    void launch()
-    {
-        for (size_t i = 0; i < tests_.size(); i++) {
-            tests_[i].launch();
-        }
-    }
+    unsigned getNumberOfTestCases() const;
+    unsigned getNumberOfFailures() const;
 
-    unsigned getNumberOfTestCases() const
-    {
-        unsigned testCases = 0;
-        for (size_t i = 0; i < tests_.size(); i++) {
-            testCases += tests_[i].getNumberOfTestCases();
-        }
-        return testCases;
-    }
-
-    unsigned getNumberOfFailures() const
-    {
-        unsigned failures = 0;
-        for (size_t i = 0; i < tests_.size(); i++) {
-            failures += tests_[i].getNumberOfFailures();
-        }
-        return failures;
-    }
-
-    void report()
-    {
-        outfile_ << std::boolalpha;
-        outfile_ << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-
-        outfile_ << "<testsuites ";
-        outfile_ << "name=\"" << name_ << "\" ";
-        outfile_ << "tests=\"" << getNumberOfTestCases() << "\" ";
-        outfile_ << "failures=\"" << getNumberOfFailures() << "\" ";
-        outfile_ << "errors=\"0\"";
-        outfile_ << ">" << std::endl;
-
-        for (size_t i = 0; i < tests_.size(); i++) {
-            tests_[i].report(outfile_);
-        }
-
-        outfile_ << "</testsuites>" << std::endl;
-    }
+    void report();
 };
 
 #endif /* TEST_H */

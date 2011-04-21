@@ -64,10 +64,10 @@ matrixMulThread(void * ptr)
     // timers
     gmactime_t s, t;
 
-    if (gmacMalloc((void**) &p->ptr, sizeC) != gmacSuccess) {
-        fprintf(stderr, "Error allocating C");
-        abort();
-    }
+    getTime(&s);
+    assert(gmacMalloc((void**) &p->ptr, sizeC) == gmacSuccess); 
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
     // Call the kernel
     getTime(&s);
@@ -87,13 +87,9 @@ main(int argc, char** argv)
 	setParam<unsigned>(&HB, HBStr, HBDefault);
 	setParam<bool>(&check, checkStr, checkDefault);
 
-    if (HB != WA) {
-        fprintf(stderr, "Error: WA and HB must be equal\n");
-        abort();
-    }
+    assert(HB == WA);
 
     gmactime_t s, t;
-
     unsigned elemsA = WA * HA;
     unsigned elemsB = WB * HB;
              elemsC = WC * HC;
@@ -103,18 +99,9 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    if (gmacMalloc((void**) &A, sizeA) != gmacSuccess) {
-        fprintf(stderr, "Error allocating A");
-        abort();
-    }
-    if (gmacMalloc((void**) &B, sizeB) != gmacSuccess) {
-        fprintf(stderr, "Error allocating B");
-        abort();
-    }
-    if (gmacMalloc((void**) &C, sizeC) != gmacSuccess) {
-        fprintf(stderr, "Error allocating C");
-        abort();
-    }
+    assert(gmacMalloc((void**) &A, sizeA) == gmacSuccess);
+    assert(gmacMalloc((void**) &B, sizeB) == gmacSuccess);
+    assert(gmacMalloc((void**) &C, sizeC) == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -133,33 +120,25 @@ main(int argc, char** argv)
 	getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
-    if (check) {
-        // compute reference solution
-        getTime(&s);
-
-        // check result
-        float err = 0.0;
-
-        printf("Computing host matrix mul. Please wait...\n");
-        float* reference = (float *) malloc(sizeC);
-        computeGold(reference, A, B, HA, WA, WB);
-        for (unsigned i = 0; i < elemsC; i++) {
-            err += fabsf(reference[i] - C[i]);
-        }
-
-        //err += checkError(reference, C, elemsC);
-        getTime(&t);
-        printTime(&s, &t, "Check: ", "\n");
-
-        fprintf(stderr, "Error: %f\n", err);
-        // clean up memory
-        free(reference);
-        return fabsf(err) != 0.0f;
+    // compute reference solution
+    getTime(&s);
+    float err = 0.0;
+    float* reference = (float *) malloc(sizeC);
+    computeGold(reference, A, B, HA, WA, WB);
+    for (unsigned i = 0; i < elemsC; i++) {
+        err += fabsf(reference[i] - C[i]);
     }
+    getTime(&t);
+    printTime(&s, &t, "Check: ", "\n");
 
+    free(reference);
+
+    getTime(&s);
 	gmacFree(A);
 	gmacFree(B);
 	gmacFree(C);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
-    return 0;
+    return fabsf(err) != 0.0f;
 }

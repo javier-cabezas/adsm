@@ -3,6 +3,8 @@
 
 #include <cassert>
 
+#include <stdio.h>
+
 namespace __impl { namespace util {
 
 template <typename T>

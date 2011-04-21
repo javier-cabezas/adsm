@@ -21,23 +21,7 @@ inline
 Tracer::~Tracer()
 {
 }
-
 #endif
-
-inline void InitTracer()
-{
-#if defined(USE_TRACE)
-    util::Private<int32_t>::init(tid_);
-	InitApiTracer();
-#endif
-}
-
-inline void FiniTracer()
-{
-#if defined(USE_TRACE)
-	FiniApiTracer();
-#endif
-}
 
 #if defined(USE_TRACE)
 inline int32_t GetThreadId()

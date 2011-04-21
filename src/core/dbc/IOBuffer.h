@@ -47,7 +47,7 @@ class GMAC_LOCAL IOBuffer:
     DBC_TESTED(__impl::core::IOBuffer)
 
 protected: 
-    IOBuffer(void *addr, size_t size);
+    IOBuffer(void *addr, size_t size, bool async);
 
 public:
     virtual ~IOBuffer();

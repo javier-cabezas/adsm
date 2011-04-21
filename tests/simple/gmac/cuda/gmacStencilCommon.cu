@@ -238,9 +238,8 @@ do_stencil(void * ptr)
 	dim3 Dg(descr->dimElems / 32, descr->dimElems / 8);
 	getTime(&s);
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
-        if (i % 10 == 0)
-            printf("Iteration: %d\n", i);
         float * tmp;
+        
         // Call the kernel
         kernelStencil<32, 8><<<Dg, Db>>>(gmacPtr(descr->u2 + descr->dimElems * STENCIL + STENCIL),
                                          gmacPtr(descr->u3 + descr->dimElems * STENCIL + STENCIL),
@@ -265,7 +264,6 @@ do_stencil(void * ptr)
                            descr->sliceElems() * STENCIL * sizeof(float));                
             }
 
-            //pthread_barrier_wait(&barrier);
             barrier_wait(&barrier);
         }
 
@@ -275,17 +273,18 @@ do_stencil(void * ptr)
     }
 
     if(descr->gpus > 1) {
-        //pthread_barrier_wait(&barrier);
         barrier_wait(&barrier);
     }
 
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
+    getTime(&s);
 	gmacFree(descr->u2);
 	gmacFree(descr->u3);
-
 	gmacFree(v);
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
 
     return NULL;
 }

@@ -39,14 +39,11 @@ WITH THE SOFTWARE.  */
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
 
-#include "Mode.h"
-
 namespace __impl { namespace core {
 
-class GMAC_LOCAL IOBuffer : 
-           public gmac::util::Lock, 
-           public util::NonCopyable {
-           DBC_FORCE_TEST(__impl::core::IOBuffer)                
+class GMAC_LOCAL IOBuffer :
+    public util::NonCopyable {
+    DBC_FORCE_TEST(__impl::core::IOBuffer)
 
 
 public:
@@ -54,20 +51,66 @@ public:
 protected:
     void *addr_;
     size_t size_;
+    bool async_;
 
     State state_;
-    IOBuffer(void *addr, size_t size);
+
+    /**
+     * Constructor of the buffer 
+     *
+     * \param addr A pointer to the address to be used by the buffer
+     * \param size The size of the buffer
+     * \param async Indicates if the buffer can be used in asynchronous transfers
+     */
+    IOBuffer(void *addr, size_t size, bool async);
 public:
+    /**
+     * Destructor of the buffer
+     */
     virtual ~IOBuffer();
 
-    uint8_t *addr() const;
-    uint8_t *end() const;
+    /**
+     * Returns the starting address of the buffer memory
+     *
+     * \return The starting address of the buffer memory
+     */
+    virtual uint8_t *addr() const;
+
+    /**
+     * Returns the end address of the buffer memory
+     *
+     * \return The end address of the buffer memory
+     */
+    virtual uint8_t *end() const;
+
+    /**
+     * Returns the size in bytes of the buffer
+     *
+     * \return The size in bytes of the buffer
+     */
     size_t size() const;
 
-    TESTABLE void lock();
-    TESTABLE void unlock();
+    /**
+     * Tells if the buffer can be used in asynchronous memory transfers
+     *
+     * \return true if the buffer can be used in asynchronous memory transfers.
+     * false otherwise
+     */
+    bool async() const;
 
+    /**
+     * Returns the current state of the buffer
+     *
+     * \return The current state of the buffer
+     * \sa State
+     */
     State state() const;
+
+    /**
+     * Waits for the transfer that uses the buffer
+     *
+     * \return gmacSuccess on success. An error code otherwise
+     */
     virtual gmacError_t wait() = 0;
 };
 

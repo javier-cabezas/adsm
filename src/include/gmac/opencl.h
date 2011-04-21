@@ -39,44 +39,167 @@ WITH THE SOFTWARE.  */
 
 #include "api.h"
 
-/*!
-	Adds an argument to be used by the following call to gmacLaunch()
-	\param addr Memory address where the param is stored
-	\param size Size, in bytes, of the argument
-*/
-GMAC_API gmacError_t APICALL __oclSetArgument(const void *addr, size_t size, unsigned index);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+#   define __dv(a) = a
+#else
+#   define __dv(a)
+#endif
+
+typedef gmacError_t oclError_t;
+typedef gmac_kernel_id_t ocl_kernel_id_t;
+typedef enum GmacGlobalMallocType OclMemoryHint;
+typedef enum GmacProtection OclProtection;
+
+#define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
+#define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
 
 /*!
-    Configures the next call
-    \param workDim
-    \param globalWorkOffset
-    \param globalWorkSize
-    \param localWorkSize
-    \return Error code
+ *  Adds an argument to be used by the following call to __oclLaunch()
+ *  \param index Index of the parameter being added in the parameter list
+ *  \return Error code
 */
-GMAC_API gmacError_t APICALL __oclConfigureCall(size_t workDim, size_t *globalWorkOffset,
+GMAC_API oclError_t APICALL __oclKernelGet(ocl_kernel_id_t id, OclKernel *kernel);
+
+
+/**
+ *  Adds an argument to be used by the following call to __oclLaunch()
+ *  \param kernel Kernel descriptor
+ *  \param addr Memory address where the param is stored
+ *  \param size Size, in bytes, of the argument
+ *  \param index Index of the parameter being added in the parameter list
+ *  \return Error code
+ */
+GMAC_API oclError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index);
+
+/**
+ *  Configures the next call
+ *  \param kernel Kernel descriptor
+ *  \param workDim
+ *  \param globalWorkOffset
+ *  \param globalWorkSize
+ *  \param localWorkSize
+ *  \return Error code
+ */
+GMAC_API oclError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
 
 /**
  * Launches a kernel execution
- * \param k Handler of the kernel to be executed at the GPU
+ * \param kernel Handler of the kernel to be executed at the GPU
+ * \return Error code
  */
-GMAC_API gmacError_t APICALL __oclLaunch(gmacKernel_t k);
+GMAC_API oclError_t APICALL __oclKernelLaunch(OclKernel *kernel);
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Waits for kernel execution finalization
+ * \param kernel Handler of the kernel to wait for
+ * \return Error code
+ */
+GMAC_API oclError_t APICALL __oclKernelWait(OclKernel *kernel);
+
+/**
+ * Launches a kernel execution
+ * \param kernel Handler of the kernel to be executed at the GPU
+ * \return Error code
+ */
+GMAC_API oclError_t APICALL __oclKernelDestroy(OclKernel *kernel);
+
+/**
+ * Prepares the OpenCL code to be used by the application
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
-GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags = NULL);
+GMAC_API oclError_t APICALL __oclPrepareCLCode(const char *code, const char *flags = NULL);
 
 /**
- * Prepares the OpenCL binary to be used by the applications 
+ * Prepares the OpenCL code in the specified fie to be used by the application
+ * \param path String pointing to the file with the code to be added
+ * \param flags Compilation flags or NULL
+ */
+GMAC_API oclError_t APICALL __oclPrepareCLCodeFile(const char *path, const char *flags = NULL);
+
+/**
+ * Prepares the OpenCL binary to be used by the application
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  */
-GMAC_API gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+GMAC_API oclError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+
+
+/* Wrappers to GMAC native calls */
+static inline
+unsigned oclGetNumberOfAccelerators() { return gmacGetNumberOfAccelerators(); }
+
+static inline
+size_t oclGetFreeMemory() { return gmacGetFreeMemory(); }
+
+static inline
+oclError_t oclMigrate(unsigned acc) { return gmacMigrate(acc); }
+
+static inline
+oclError_t oclMemoryMap(void *cpuPtr, size_t count, OclProtection prot) {
+    return gmacMemoryMap(cpuPtr, count, prot);
+}
+
+static inline
+oclError_t oclMemoryUnmap(void *cpuPtr, size_t count) { return gmacMemoryUnmap(cpuPtr, count); }
+
+static inline
+oclError_t oclMalloc(void **devPtr, size_t count) { return gmacMalloc(devPtr, count); }
+
+static inline
+oclError_t oclGlobalMalloc(void **devPtr, size_t count, OclMemoryHint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
+    return gmacGlobalMalloc(devPtr, count, hint);
+}
+
+static inline
+cl_mem oclPtr(const void *cpuPtr) { return gmacPtr(cpuPtr); }
+
+static inline
+oclError_t oclFree(void *cpuPtr) { return gmacFree(cpuPtr); }
+
+static inline
+oclError_t oclThreadSynchronize() { return gmacThreadSynchronize(); }
+
+static inline
+oclError_t oclGetLastError() { return gmacGetLastError(); }
+
+static inline
+void *oclMemset(void *cpuPtr, int c, size_t count) { return gmacMemset(cpuPtr, c, count); }
+
+static inline
+void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
+    return gmacMemcpy(cpuDstPtr, cpuSrcPtr, count);
+}
+
+static inline
+void oclSend(THREAD_T tid) { return gmacSend(tid); }
+
+static inline
+void oclReceive(void) { return gmacReceive(); }
+
+static inline
+void oclSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
+
+static inline
+void oclCopy(THREAD_T tid) { return gmacCopy(tid); }
+
+#ifdef __cplusplus
+}
+
+template<typename T>
+static inline cl_mem oclPtr(const T *addr) {
+    return gmacPtr((const void *)addr);
+}
+
+#endif
+
+#undef __dv
 
 #endif /* OPENCL_H */
 
