@@ -147,6 +147,7 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
         }
         hostMappedObject->release();
         // We need to release the object twice to effectively destroy it
+        HostMappedObject::remove(addr);
         hostMappedObject->release();
     }
     trace::ExitCurrentFunction();

@@ -20,9 +20,9 @@ IOBuffer::toHost(Mode &mode, CUstream s)
         ret = cuEventCreate(&end, CU_EVENT_DEFAULT);
         ASSERTION(ret == CUDA_SUCCESS);
 
-        std::pair<EventMap::iterator, bool> ret =
+        std::pair<EventMap::iterator, bool> par =
             map_.insert(EventMap::value_type(&mode, std::pair<CUevent, CUevent>(start, end)));
-        it = ret.first;
+        it = par.first;
     }
 
     ret = cuEventRecord(it->second.first, s);
