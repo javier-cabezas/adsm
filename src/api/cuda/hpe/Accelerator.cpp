@@ -72,6 +72,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {
 #ifndef USE_MULTI_CONTEXT
+    if(core::hpe::Process::isValid() == false) return;
     pushContext();
     ModuleVector::iterator i;
     for(i = modules_.begin(); i != modules_.end(); i++) {
