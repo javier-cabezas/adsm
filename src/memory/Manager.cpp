@@ -146,6 +146,8 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
             return gmacErrorInvalidValue;
         }
         hostMappedObject->release();
+        // We need to release the object twice to effectively destroy it
+        hostMappedObject->release();
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -158,7 +160,10 @@ accptr_t Manager::translate(core::Mode &mode, const hostptr_t addr)
     accptr_t ret = proc.translate(addr);
     if(ret == 0) {
         HostMappedObject *object = HostMappedObject::get(addr);
-        if(object != NULL) ret = object->acceleratorAddr(addr);
+        if(object != NULL) {
+            ret = object->acceleratorAddr(addr);
+            object->release();
+        }
     }
     trace::ExitCurrentFunction();
     return ret;
