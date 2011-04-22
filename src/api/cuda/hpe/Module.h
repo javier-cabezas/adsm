@@ -119,7 +119,7 @@ typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
 class GMAC_LOCAL Module {
 protected:
 
-	CUmodule mod_;
+	std::vector<CUmodule> mods_;
 	const void *fatBin_;
 
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
