@@ -75,6 +75,7 @@ struct GMAC_LOCAL FatBinDesc {
 
 Module::Module(const ModuleDescriptorVector & dVector)
 {
+    CUmodule mod;
     ModuleDescriptorVector::const_iterator it;
     for (it = dVector.begin(); it != dVector.end(); it++) {
         ModuleDescriptor &d = *(*it);
@@ -84,16 +85,16 @@ Module::Module(const ModuleDescriptorVector & dVector)
 
         FatBinDesc *desc = (FatBinDesc *)fatBin_;
         if (desc->magic == CUDA_MAGIC) {
-            res = cuModuleLoadFatBinary(&mod_, desc->data);
+            res = cuModuleLoadFatBinary(&mod, desc->data);
         } else {
-            res = cuModuleLoadFatBinary(&mod_, fatBin_);
+            res = cuModuleLoadFatBinary(&mod, fatBin_);
         }
         CFATAL(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
         ModuleDescriptor::KernelVector::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
             TRACE(LOCAL, "Registering kernel: %s", k->name());
-            Kernel * kernel = new cuda::hpe::Kernel(*k, mod_);
+            Kernel * kernel = new cuda::hpe::Kernel(*k, mod);
             kernels_.insert(KernelMap::value_type(k->key(), kernel));
         }
 
@@ -105,8 +106,8 @@ Module::Module(const ModuleDescriptorVector & dVector)
                 FATAL("Variable already registered: %s", v->name());
             } else {
                 TRACE(LOCAL, "Registering variable: %s", v->name());
-                variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
-                variablesByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
+                variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod)));
+                variablesByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod)));
             }
         }
 
@@ -117,21 +118,28 @@ Module::Module(const ModuleDescriptorVector & dVector)
                 FATAL("Constant already registered: %s", v->name());
             }
             TRACE(LOCAL, "Registering constant: %s", v->name());
-            constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod_)));
-            constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod_)));
+            constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod)));
+            constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod)));
         }
 
         ModuleDescriptor::TextureVector::const_iterator t;
         for (t = d.textures_.begin(); t != d.textures_.end(); t++) {
-            textures_.insert(TextureMap::value_type(t->key(), Texture(*t, mod_)));
+            textures_.insert(TextureMap::value_type(t->key(), Texture(*t, mod)));
         }
+
+        mods_.push_back(mod);
     }
 }
 
 Module::~Module()
 {
-    CUresult ret = cuModuleUnload(mod_);
-    ASSERTION(ret == CUDA_SUCCESS);
+    std::vector<CUmodule>::const_iterator m;
+
+    for(m = mods_.begin(); m != mods_.end(); m++) {
+        CUresult ret = cuModuleUnload(*m);
+        ASSERTION(ret == CUDA_SUCCESS);
+    }
+    mods_.clear();
 
     // TODO: remove objects from maps
 #if 0
