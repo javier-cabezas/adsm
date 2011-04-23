@@ -21,4 +21,7 @@ group_gmac_sources(gmac-core gmac-core gmac-arch)
 group_gmac_sources(gmac-core-hpe gmac-core-hpe gmac-arch-hpe)
 group_gmac_sources(gmac-hpe gmac-hpe-api gmac-arch-hpe-api)
 
-
+if(MAKE_LITE)
+    group_gmac_sources(gmac-core-lite gmac-arch-lite)
+    group_gmac_sources(gmac-lite gmac-arch-lite-api)
+endif(MAKE_LITE)
