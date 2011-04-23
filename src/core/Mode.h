@@ -56,10 +56,6 @@ class Process;
  * thread has one mode per accelerator type in the system
  */
 class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
-protected:
-
-    virtual void switchIn() = 0;
-    virtual void switchOut() = 0;
 public:
     /**
      * Mode destructor

@@ -1,0 +1,24 @@
+if(MAKE_LITE)
+
+add_gmac_library(gmac-core-lite STATIC ${gmac-core-lite_SRC})
+
+if(MAKE_STATIC)
+    add_gmac_library(gmac-lite STATIC ${gmac-lite_SRC})
+else(MAKE_STATIC)
+    add_gmac_library(gmac-lite SHARED ${gmac-lite_SRC})
+endif(MAKE_STATIC)
+target_link_libraries(gmac-lite gmac-memory gmac-core-lite gmac-core gmac-common gmac-trace ${gmac_LIBS})
+set_target_properties(gmac-lite PROPERTIES
+    VERSION 0.3.0 SOVERSION 1
+)
+
+install(TARGETS gmac-lite 
+     LIBRARY DESTINATION lib
+     ARCHIVE DESTINATION lib
+     RUNTIME DESTINATION bin
+     RESOURCE DESTINATION share
+     PUBLIC_HEADER DESTINATION include/gmac)
+
+
+endif(MAKE_LITE)
+

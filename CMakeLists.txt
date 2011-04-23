@@ -167,20 +167,21 @@ if(MAKE_DOC)
     add_subdirectory(doc)
 endif(MAKE_DOC)
 
+link_directories(${gmac_LIBDIR})
 
 option(MAKE_STATIC "Build GMAC as a static library")
 include("CMakeLists-libs.txt")
 if(MAKE_STATIC)
-add_gmac_library(gmac STATIC ${gmac-hpe_SRC})
+    add_gmac_library(gmac STATIC ${gmac-hpe_SRC})
 else(MAKE_STATIC)
-add_gmac_library(gmac SHARED ${gmac-hpe_SRC})
+    add_gmac_library(gmac SHARED ${gmac-hpe_SRC})
 endif(MAKE_STATIC)
 target_link_libraries(gmac gmac-memory gmac-core-hpe gmac-core gmac-common gmac-trace ${gmac_LIBS})
 set_target_properties(gmac PROPERTIES
     VERSION 0.3.0 SOVERSION 1
 )
 
-link_directories(${gmac_LIBDIR})
+include("CMakeLists-lite.txt" OPTIONAL)
 
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h

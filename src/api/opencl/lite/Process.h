@@ -31,26 +31,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_PROCESS_H_
-#define GMAC_CORE_PROCESS_H_
+#ifndef GMAC_API_OPENCL_LITE_PROCESS_H_
+#define GMAC_API_OPENCL_LITE_PROCESS_H_
 
-#include "config/common.h"
-#include "config/order.h"
-#include "include/gmac/types.h"
-
-#include "util/Singleton.h"
+#include "core/Process.h"
 
 namespace __impl {
 
-namespace memory { class Object; }
+namespace opencl { namespace lite { 
 
-
-namespace core { 
+class Mode;
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL Process : public util::Singleton<Process> {
+class GMAC_LOCAL Process : public core::Process {
     // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<Process>;
+    friend class util::Singleton<core::Process>;
 protected:
 
     /**
@@ -69,7 +64,7 @@ public:
      * \param object Reference to the object to be registered
      * \return Error code
      */
-    virtual gmacError_t globalMalloc(memory::Object &object) = 0;
+    virtual gmacError_t globalMalloc(memory::Object &object);
 
     /**
      * Unregisters a global object from the process
@@ -77,7 +72,7 @@ public:
      * \param object Reference to the object to be unregistered
      * \return Error code
      */
-    virtual gmacError_t globalFree(memory::Object &object) = 0;
+    virtual gmacError_t globalFree(memory::Object &object);
 
     /**
      * Translates a host address to an accelerator address
@@ -85,7 +80,7 @@ public:
      * \param addr Host address to be translated
      * \return Accelerator address
      */
-    virtual accptr_t translate(const hostptr_t addr) = 0;
+    virtual accptr_t translate(const hostptr_t addr);
 
     /**
      * Gets the protocol used by the process for the global objects
@@ -93,13 +88,13 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::Protocol &protocol() = 0;
+    virtual memory::Protocol &protocol();
 
     /**
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    virtual void insertOrphan(memory::Object &obj) = 0;
+    virtual void insertOrphan(memory::Object &obj);
 
     /**
      * Returns the owner of the object with the smallest address within the
@@ -110,10 +105,10 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    virtual Mode *owner(const hostptr_t addr, size_t size = 0) const = 0;
+    virtual core::Mode *owner(const hostptr_t addr, size_t size = 0);
 };
 
-}}
+}}}
 
 
 #endif
