@@ -1,13 +1,14 @@
 #ifndef GMAC_API_OPENCL_LITE_MODE_IMPL_H_
 #define GMAC_API_OPENCL_LITE_MODE_IMPL_H_
 
-#include "core/IOBuffer.h"
+#include "api/opencl/IOBuffer.h"
 
 namespace __impl { namespace opencl { namespace lite {
 
 inline
 Mode::Mode(cl_context ctx) :
-    context_(ctx)
+    context_(ctx),
+    validStream_(false)
 {}
 
 inline
@@ -38,7 +39,7 @@ accptr_t Mode::hostMapAddr(const hostptr_t)
 inline
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
-    IOBuffer *ret;
+    core::IOBuffer *ret;
     void *addr = ::malloc(size);
     ret = new IOBuffer(*this, hostptr_t(addr), size, false);
     return *ret;

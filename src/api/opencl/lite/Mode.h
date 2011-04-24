@@ -60,7 +60,7 @@ class GMAC_LOCAL Mode : public virtual opencl::Mode {
 protected:
     cl_context context_;
     cl_command_queue stream_;
-
+    bool validStream_;
 public:
     //! Default constructor
     /*!
