@@ -113,7 +113,8 @@ protected:
     virtual void reload() = 0;
     virtual Context &getContext() = 0;
 
-    gmacError_t error_;
+    memory::ObjectMap &getObjectMap();
+    const memory::ObjectMap &getObjectMap() const;
 
     /**
      * Releases the resources used by the contexts associated to the mode
@@ -187,38 +188,6 @@ public:
      * Dettaches the execution mode to the current thread
      */
     TESTABLE void detach();
-
-    /**
-     * Adds an object to the map of the mode
-     * \param obj A reference to the object to be added
-     */
-    TESTABLE void addObject(memory::Object &obj);
-
-    /**
-     * Removes an object from the map of the mode
-     * \param obj A reference to the object to be removed
-     */
-    TESTABLE void removeObject(memory::Object &obj);
-
-    /**
-     * Gets the first object that belongs to the memory range
-     * \param addr Starting address of the memory range
-     * \param size Size of the memory range
-     * \return A pointer of the Object that contains the address or NULL if
-     * there is no Object at that address
-     */
-    TESTABLE memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
-
-    /**
-     * Applies a constant memory operation to all the objects that belong to
-     * the mode
-     * \param op Memory operation to be executed
-     *   \sa __impl::memory::Object::acquire
-     *   \sa __impl::memory::Object::toHost
-     *   \sa __impl::memory::Object::toAccelerator
-     * \return Error code
-     */
-    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
 
     /**
      * Maps the given host memory on the accelerator memory
@@ -343,31 +312,12 @@ public:
     void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
 
     /**
-     * Returns the last error code
-     * \return The last error code
-     */
-    gmacError_t error() const;
-
-    /**
-     * Sets up the last error code
-     * \param err Error code
-     */
-    void error(gmacError_t err);
-
-    /**
      * Moves the mode to accelerator acc
      * \param acc Accelerator to move the mode to
      * \return Error code
      */
     TESTABLE gmacError_t moveTo(Accelerator &acc);
 
-    /**
-     * Tells if the objects of the mode have been already released to the
-     * accelerator
-     * \return Boolean that tells if objects of the mode have been already
-     * released to the accelerator
-     */
-    bool releasedObjects() const;
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator

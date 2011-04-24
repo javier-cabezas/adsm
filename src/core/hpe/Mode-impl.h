@@ -81,6 +81,19 @@ inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
     return ret;
 }
 
+inline
+memory::ObjectMap &Mode::getObjectMap()
+{
+    return map_;
+}
+
+inline
+const memory::ObjectMap &Mode::getObjectMap() const
+{
+    return map_;
+}
+
+
 inline void Mode::cleanUpContexts()
 {
     contextMap_.clean();
@@ -109,43 +122,6 @@ Mode::getAccelerator() const
     return *acc_;
 }
 
-inline void
-Mode::addObject(memory::Object &obj)
-{
-    map_.insert(obj);
-}
-
-inline void 
-Mode::removeObject(memory::Object &obj)
-{
-    map_.remove(obj);
-}
-
-inline memory::Object *
-Mode::getObject(const hostptr_t addr, size_t size) const
-{
-	return map_.get(addr, size);
-}
-
-inline gmacError_t
-Mode::forEachObject(memory::ObjectMap::ConstObjectOp op) const
-{
-    gmacError_t ret = map_.forEach(op);
-	return ret;
-}
-
-inline gmacError_t
-Mode::error() const
-{
-    return error_;
-}
-
-inline void
-Mode::error(gmacError_t err)
-{
-    error_ = err;
-}
-
 #ifdef USE_VM
 inline memory::vm::BitmapShared &
 Mode::acceleratorDirtyBitmap()
@@ -159,12 +135,6 @@ Mode::acceleratorDirtyBitmap() const
     return acceleratorBitmap_;
 }
 #endif
-
-inline bool
-Mode::releasedObjects() const
-{
-    return releasedObjects_;
-}
 
 inline gmacError_t 
 Mode::releaseObjects()

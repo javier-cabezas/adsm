@@ -50,10 +50,7 @@ public:
     virtual ~Mode();
 
     void detach();
-    void addObject(__impl::memory::Object &obj);
-    void removeObject(__impl::memory::Object &obj);
 
-    __impl::memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t size);
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
