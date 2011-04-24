@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_API_OPENCL_LITE_PROCESS_H_
 
 #include "core/Process.h"
+#include "api/opencl/lite/ModeMap.h"
 
 namespace __impl {
 
@@ -47,6 +48,8 @@ class GMAC_LOCAL Process : public core::Process {
     // Needed to let Singleton call the protected constructor
     friend class util::Singleton<core::Process>;
 protected:
+
+    ModeMap map_;
 
     /**
      * Constructs the process
@@ -105,7 +108,10 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    virtual core::Mode *owner(const hostptr_t addr, size_t size = 0);
+    virtual core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
+
+
+    Mode *createMode(cl_context ctx);
 };
 
 }}}

@@ -8,6 +8,8 @@ set(arch_lite_SRC
     Mode.h
     Mode-impl.h
     Mode.cpp
+    ModeMap.h
+    ModeMap-impl.h
     Process.h
     Process.cpp
 )

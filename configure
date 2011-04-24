@@ -29,6 +29,9 @@ do
     --enable-opencl)
         FRONTEND="-DUSE_CUDA=OFF -DUSE_OPENCL=ON"
         ;;
+    --enable-lite)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_LITE=ON"
+        ;;
     --with-opencl-include=*)
         opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_INCLUDE=${opencl_include}"

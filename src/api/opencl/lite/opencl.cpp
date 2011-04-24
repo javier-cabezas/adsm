@@ -4,9 +4,12 @@
 #include "os/windows/loader.h"
 #endif
 
+#include "api/opencl/lite/Process.h"
 #include "util/Logger.h"
 
 #include <CL/cl.h>
+
+using __impl::opencl::lite::Process;
 
 SYM(cl_context, __opencl_clCreateContext,
         const cl_context_properties *,
@@ -79,6 +82,12 @@ static void openclInit()
     LOAD_SYM(__opencl_clCreateCommandQueue, clCreateCommandQueue);
     LOAD_SYM(__opencl_clRetainCommandQueue, clRetainCommandQueue);
     LOAD_SYM(__opencl_clReleaseCommandQueue, clReleaseCommandQueue);
+
+    LOAD_SYM(__opencl_clEnqueueNDRangeKernel, clEnqueueNDRangeKernel);
+    LOAD_SYM(__opencl_clEnqueueTask, clEnqueueTask);
+    LOAD_SYM(__opencl_clEnqueueNativeKernel, clEnqueueNativeKernel);
+
+    LOAD_SYM(__opencl_clFinish, clFinish);
 }
 
 #ifdef __cplusplus
@@ -96,6 +105,9 @@ cl_context SYMBOL(clCreateContext)(
     if(__opencl_clCreateContext == NULL) openclInit();
     cl_context ret = __opencl_clCreateContext(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
     if(*errcode_ret != CL_SUCCESS) return ret;
+
+    Process &proc = Process::getInstance<Process>();
+    proc.createMode(ret);
 
     return ret;
 }
@@ -160,9 +172,72 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
     return ret;
 }
 
+cl_int SYMBOL(clEnqueueNDRangeKernel)(
+    cl_command_queue command_queue,
+    cl_kernel kernel,
+    cl_uint work_dim,
+    const size_t *global_work_offset,
+    const size_t *global_work_size,
+    const size_t *local_work_size,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    if(__opencl_clEnqueueNDRangeKernel == NULL) openclInit();
+    cl_int ret = __opencl_clEnqueueNDRangeKernel(command_queue, kernel, work_dim, global_work_offset,
+        global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
+    if(ret != CL_SUCCESS) return ret;
+
+    return ret;
+}
+
+cl_int SYMBOL(clEnqueueTask)(
+    cl_command_queue command_queue,
+    cl_kernel kernel,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{ 
+    if(__opencl_clEnqueueTask == NULL) openclInit();
+    cl_int ret = __opencl_clEnqueueTask(command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
+    if(ret != CL_SUCCESS) return ret;
+
+    return ret;
+}
+
+cl_int SYMBOL(clEnqueueNativeKernel)(
+    cl_command_queue command_queue,
+    void (*user_func)(void *),
+    void *args,
+    size_t cb_args,
+    cl_uint num_mem_objects,
+    const cl_mem *mem_list,
+    const void **args_mem_loc,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    if(__opencl_clEnqueueNativeKernel == NULL) openclInit();
+    cl_int ret = __opencl_clEnqueueNativeKernel(command_queue, user_func, args, cb_args, num_mem_objects,
+        mem_list, args_mem_loc, num_events_in_wait_list, event_wait_list, event);
+    if(ret != CL_SUCCESS) return ret;
+
+    return ret;
+}
+
+cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
+{
+    if(__opencl_clFinish == NULL) openclInit();
+    cl_int ret = __opencl_clFinish(command_queue);
+    if(ret != CL_SUCCESS) return ret;
+
+    return ret;
+}
+
 static void CONSTRUCTOR init()
 {
-    fprintf(stderr,"Init GMAC/Lite\n");
+    TRACE(GLOBAL, "Initializing Process");
+   Process::create<Process>();
 }
 
 #ifdef __cplusplus

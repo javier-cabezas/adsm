@@ -38,10 +38,19 @@ void Process::insertOrphan(memory::Object &)
     FATAL("Orphan Objects not supported in GMAC-lite");
 }
 
-core::Mode *Process::owner(const hostptr_t addr, size_t size)
+core::Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
     // TODO: Implement
     return NULL;
+}
+
+Mode *Process::createMode(cl_context ctx)
+{
+    Mode *ret = map_.get(ctx);
+    if(ret != NULL) return ret;
+    ret = new Mode(ctx);
+    map_.insert(ctx, ret);
+    return ret;
 }
 
 }}}
