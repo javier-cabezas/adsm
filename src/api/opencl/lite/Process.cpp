@@ -49,7 +49,7 @@ Mode *Process::createMode(cl_context ctx)
     Mode *ret = map_.get(ctx);
     if(ret != NULL) return ret;
     ret = new Mode(ctx);
-    map_.insert(ctx, ret);
+    map_.insert(ctx, *ret);
     return ret;
 }
 

@@ -1,52 +1,39 @@
 #include "memory/Manager.h"
 #include "memory/Object.h"
-#include "memory/Protocol.h"
 
-#include "trace/Tracer.h"
 
 #include "core/IOBuffer.h"
 
 #include "core/hpe/Accelerator.h"
 #include "core/hpe/Kernel.h"
 #include "core/hpe/Mode.h"
+#include "core/hpe/Context.h"
 #include "core/hpe/Process.h"
 
 namespace __impl { namespace core { namespace hpe {
 
 util::Private<Mode> Mode::key;
 
-unsigned Mode::next = 0;
 
 Mode::Mode(Process &proc, Accelerator &acc) :
-    id_(++next),
     proc_(proc),
     acc_(&acc),
 #if defined(_MSC_VER)
 #	pragma warning( disable : 4355 )
 #endif
-    map_("ModeMemoryMap", *this),
-    releasedObjects_(false)
+    map_("ModeMemoryMap", *this)
 #ifdef USE_VM
     , acceleratorBitmap_(*this)
 #endif
 {
-    trace::StartThread(THREAD_T(id_), "GPU");
-    SetThreadState(THREAD_T(id_), trace::Idle);
-
-    TRACE(LOCAL,"Creating Execution Mode %p", this);
-    protocol_ = memory::ProtocolInit(0);
 }
 
 Mode::~Mode()
 {    
-    delete protocol_;
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
     acc_->unregisterMode(*this); 
     Process::getInstance<Process>().removeMode(*this);
-    TRACE(LOCAL,"Destroying Execution Mode %p", this);
-
-    trace::EndThread(THREAD_T(id_));
 }
 
 void Mode::finiThread()
@@ -200,5 +187,16 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     return ret;
 }
+
+gmacError_t Mode::cleanUp()
+{
+    gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
+    Map::removeOwner(proc_, *this);
+#ifdef USE_VM
+    acceleratorBitmap_.cleanUp();
+#endif
+    return ret;
+}
+
 
 }}}

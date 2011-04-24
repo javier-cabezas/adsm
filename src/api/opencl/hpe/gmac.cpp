@@ -6,6 +6,7 @@
 #include "api/opencl/hpe/Accelerator.h"
 #include "api/opencl/hpe/Mode.h"
 #include "api/opencl/hpe/Kernel.h"
+#include "memory/Manager.h"
 
 #if defined(GMAC_DLL)
 #include "hpe/init.h"
