@@ -1,11 +1,13 @@
 add_subdirectory(hpe)
 
 set(core_SRC
-    Process.h
-    Process.cpp
-    Mode.h
     IOBuffer.h
     IOBuffer-impl.h
+    Mode.h
+    Mode-impl.h
+    Mode.cpp
+    Process.h
+    Process.cpp
     allocator/Buddy.h
     allocator/Buddy.cpp
 )

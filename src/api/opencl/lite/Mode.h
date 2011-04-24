@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "api/opencl/Mode.h"
+#include "util/Atomics.h"
 
 #include <CL/cl.h>
 
@@ -117,7 +118,7 @@ public:
      *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
      *  \return Error code
      */
-    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
+    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
 
 
     /** Fill I/O buffer with data from the accelerator
@@ -128,29 +129,158 @@ public:
      *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
      *  \return Error code
      */
-    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
-    //! Get the accelerator stream where events are recorded
-    /*!
-        \return Command queue where events are recorded
-    */
+    /** Get the accelerator stream where events are recorded
+     *
+     *   \return Command queue where events are recorded
+     */
     cl_command_queue eventStream();
 
 
-    //! Block the CPU thread until an event happens
-    /*!
-        \param event Event to wait for
-        \return Error code
-    */
+    /** Block the CPU thread until an event happens
+     *
+     *  \param event Event to wait for
+     *  \return Error code
+     */
     gmacError_t waitForEvent(cl_event event);
 
-    //! Get the current (active) execution mode
-    /*!
-        \return Current (active) execution mode or NULL if no mode is active
-    */
+    /** Get the current (active) execution mode
+     *  \return Current (active) execution mode or NULL if no mode is active
+     */
     static Mode & getCurrent();
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
+
+    /**
+     * Adds an object to the map of the mode
+     * \param obj A reference to the object to be added
+     */
+    void addObject(memory::Object &obj);
+
+    /**
+     * Removes an object from the map of the mode
+     * \param obj A reference to the object to be removed
+     */
+    void removeObject(memory::Object &obj);
+
+    /**
+     * Gets the first object that belongs to the memory range
+     * \param addr Starting address of the memory range
+     * \param size Size of the memory range
+     * \return A pointer of the Object that contains the address or NULL if
+     * there is no Object at that address
+     */
+    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
+
+    /**
+     * Applies a constant memory operation to all the objects that belong to
+     * the mode
+     * \param op Memory operation to be executed
+     *   \sa __impl::memory::Object::acquire
+     *   \sa __impl::memory::Object::toHost
+     *   \sa __impl::memory::Object::toAccelerator
+     * \return Error code
+     */
+    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
+
+    /**
+     * Maps the given host memory on the accelerator memory
+     * \param dst Reference to a pointer where to store the accelerator
+     * address of the mapping
+     * \param src Host address to be mapped
+     * \param size Size of the mapping
+     * \param align Alignment of the memory mapping. This value must be a
+     * power of two
+     * \return Error code
+     */
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+
+    /**
+     * Unmaps the memory previously mapped by map
+     * \param addr Host memory allocation to be unmap
+     * \param size Size of the unmapping
+     * \return Error code
+     */
+    gmacError_t unmap(hostptr_t addr, size_t size);
+
+    /**
+     * Copies data from system memory to accelerator memory
+     * \param acc Destination accelerator pointer
+     * \param host Source host pointer
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+
+    /**
+     * Copies data from accelerator memory to system memory
+     * \param host Destination host pointer
+     * \param acc Source accelerator pointer
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+
+    /** Copies data from accelerator memory to accelerator memory
+     * \param dst Destination accelerator memory
+     * \param src Source accelerator memory
+     * \param size Number of bytes to be copied
+     * \return Error code
+     */
+    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+
+    /**
+     * Sets the contents of accelerator memory
+     * \param addr Pointer to the accelerator memory to be set
+     * \param c Value used to fill the memory
+     * \param size Number of bytes to be set
+     * \return Error code
+     */
+    gmacError_t memset(accptr_t addr, int c, size_t size);
+
+    /**
+     * Returns the last error code
+     * \return The last error code
+     */
+    gmacError_t error() const;
+
+    /**
+     * Sets up the last error code
+     * \param err Error code
+     */
+    void error(gmacError_t err);
+
+    /**
+     * Tells if the objects of the mode have been already released to the
+     * accelerator
+     * \return Boolean that tells if objects of the mode have been already
+     * released to the accelerator
+     */
+    bool releasedObjects() const;
+
+    /**
+     * Releases the ownership of the objects of the mode to the accelerator
+     * and waits for pending transfers
+     */
+    gmacError_t releaseObjects();
+
+    /**
+     * Waits for kernel execution and acquires the ownership of the objects
+     * of the mode from the accelerator
+     */
+    virtual gmacError_t acquireObjects();
+
+
+    /** Returns the memory information of the accelerator on which the mode runs
+     * \param free A reference to a variable to store the memory available on the
+     * accelerator
+     * \param total A reference to a variable to store the total amount of memory
+     * on the accelerator
+     */
+    virtual void memInfo(size_t &free, size_t &total);
+
+
 };
 #if defined(_MSC_VER)
 #pragma warning( pop )

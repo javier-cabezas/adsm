@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
-#include "util/Private.h"
+#include "util/Atomics.h"
 
 #include "memory/ObjectMap.h"
 
@@ -56,23 +56,35 @@ class Process;
  * thread has one mode per accelerator type in the system
  */
 class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
+protected:
+    static Atomic Count_;
+
+    unsigned id_;
+    memory::Protocol *protocol_;
+
+    bool releasedObjects_;
 public:
+    /**
+     * Mode constructor
+     */
+    Mode();
+
     /**
      * Mode destructor
      */
-    virtual ~Mode() { };
+    virtual ~Mode();
 
     /**
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    virtual memory::Protocol &protocol() = 0;
+    virtual memory::Protocol &protocol();
 
     /**
      * Gets a numeric identifier for the mode. This identifier must be unique.
      * \return A numeric identifier for the mode
      */
-    virtual unsigned id() const = 0;
+    virtual unsigned id() const;
 
     /**
      * Adds an object to the map of the mode
@@ -260,6 +272,8 @@ public:
 };
 
 }}
+
+#include "Mode-impl.h"
 
 #endif
 

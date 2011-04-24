@@ -37,16 +37,12 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #include "core/Mode.h"
-
-#include "core/hpe/Accelerator.h"
 #include "core/hpe/Map.h"
 #include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
 #endif
-
-#include "memory/Manager.h"
 
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
@@ -63,6 +59,7 @@ class IOBuffer;
 
 namespace hpe {
 
+class Accelerator;
 class Context;
 class Kernel;
 class KernelLaunch;
@@ -92,20 +89,14 @@ class GMAC_LOCAL Mode : public virtual core::Mode {
 
 protected:
     static util::Private<Mode> key;
-    static unsigned next;
-
-    unsigned id_;
 
     Process &proc_;
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
     Map map_;
-    memory::Protocol *protocol_;
 
     allocator::Buddy *ioMemory_;
-
-    bool releasedObjects_;
 
 #ifdef USE_VM
     __impl::memory::vm::BitmapShared acceleratorBitmap_;
@@ -180,18 +171,6 @@ public:
      *         assigned
      */
     static bool hasCurrent();
-
-    /**
-     * Gets a reference to the memory protocol used by the mode
-     * \return A reference to the memory protocol used by the mode
-     */
-    memory::Protocol &protocol();
-
-    /**
-     * Gets a numeric identifier for the mode. This identifier must be unique.
-     * \return A numeric identifier for the mode
-     */
-    unsigned id() const;
 
     /**
      * Gets a reference to the accelerator which the mode belongs to

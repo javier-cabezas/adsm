@@ -9,7 +9,9 @@ inline
 Mode::Mode(cl_context ctx) :
     context_(ctx),
     validStream_(false)
-{}
+{
+    AtomicInc(Count_);
+}
 
 inline
 Mode::~Mode()

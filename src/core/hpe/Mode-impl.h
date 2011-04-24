@@ -1,8 +1,9 @@
-#ifndef GMAC_CORE_MODE_IMPL_H_
-#define GMAC_CORE_MODE_IMPL_H_
+#ifndef GMAC_CORE_HPE_MODE_IMPL_H_
+#define GMAC_CORE_HPE_MODE_IMPL_H_
 
 #include "memory/Object.h"
 
+#include "core/hpe/Accelerator.h"
 #include "core/hpe/Process.h"
 #include "core/hpe/Context.h"
 
@@ -80,16 +81,6 @@ inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
     return ret;
 }
 
-inline gmacError_t Mode::cleanUp()
-{
-    gmacError_t ret = map_.forEach(*this, &memory::Object::removeOwner);
-    Map::removeOwner(proc_, *this);
-#ifdef USE_VM
-    acceleratorBitmap_.cleanUp();
-#endif
-    return ret;
-}
-
 inline void Mode::cleanUpContexts()
 {
     contextMap_.clean();
@@ -109,16 +100,6 @@ inline bool
 Mode::hasCurrent()
 {
     return key.get() != NULL;
-}
-
-inline memory::Protocol &Mode::protocol()
-{
-    return *protocol_;
-}
-
-inline unsigned Mode::id() const
-{
-    return id_;
 }
 
 inline
