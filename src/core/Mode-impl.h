@@ -38,6 +38,50 @@ unsigned Mode::id() const
     return id_;
 }
 
+inline
+gmacError_t Mode::error() const
+{
+    return error_;
+}
+
+inline
+void Mode::error(gmacError_t err)
+{
+    error_ = err;
+}
+
+inline
+bool Mode::releasedObjects() const
+{
+    return releasedObjects_;
+}
+
+
+inline void
+Mode::addObject(memory::Object &obj)
+{
+    getObjectMap().insert(obj);
+}
+
+inline void 
+Mode::removeObject(memory::Object &obj)
+{
+    getObjectMap().remove(obj);
+}
+
+inline memory::Object *
+Mode::getObject(const hostptr_t addr, size_t size) const
+{
+	return getObjectMap().get(addr, size);
+}
+
+inline gmacError_t
+Mode::forEachObject(memory::ObjectMap::ConstObjectOp op) const
+{
+    gmacError_t ret = getObjectMap().forEach(op);
+	return ret;
+}
+
 
 } }
 

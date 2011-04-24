@@ -63,6 +63,10 @@ protected:
     memory::Protocol *protocol_;
 
     bool releasedObjects_;
+    gmacError_t error_;
+
+    virtual memory::ObjectMap &getObjectMap() = 0;
+    virtual const memory::ObjectMap &getObjectMap() const = 0;
 public:
     /**
      * Mode constructor
@@ -78,25 +82,38 @@ public:
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    virtual memory::Protocol &protocol();
+    memory::Protocol &protocol();
 
     /**
      * Gets a numeric identifier for the mode. This identifier must be unique.
      * \return A numeric identifier for the mode
      */
-    virtual unsigned id() const;
+    unsigned id() const;
+
+    /**
+     * Returns the last error code
+     * \return The last error code
+     */
+    gmacError_t error() const;
+
+    /**
+     * Sets up the last error code
+     * \param err Error code
+     */
+    void error(gmacError_t err);
+
 
     /**
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
-    virtual void addObject(memory::Object &obj) = 0;
+    void addObject(memory::Object &obj);
 
     /**
      * Removes an object from the map of the mode
      * \param obj A reference to the object to be removed
      */
-    virtual void removeObject(memory::Object &obj) = 0;
+    void removeObject(memory::Object &obj);
 
     /**
      * Gets the first object that belongs to the memory range
@@ -105,7 +122,7 @@ public:
      * \return A pointer of the Object that contains the address or NULL if
      * there is no Object at that address
      */
-    virtual memory::Object *getObject(const hostptr_t addr, size_t size = 0) const = 0;
+    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
     /**
      * Applies a constant memory operation to all the objects that belong to
@@ -116,7 +133,28 @@ public:
      *   \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    virtual gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const = 0;
+    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
+
+    /**
+     * Tells if the objects of the mode have been already released to the
+     * accelerator
+     * \return Boolean that tells if objects of the mode have been already
+     * released to the accelerator
+     */
+    bool releasedObjects() const;
+
+    /**
+     * Releases the ownership of the objects of the mode to the accelerator
+     * and waits for pending transfers
+     */
+    virtual gmacError_t releaseObjects() = 0;
+
+    /**
+     * Waits for kernel execution and acquires the ownership of the objects
+     * of the mode from the accelerator
+     */
+    virtual gmacError_t acquireObjects() = 0;
+
 
     /**
      * Maps the given host memory on the accelerator memory
@@ -229,37 +267,7 @@ public:
      */
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
 
-    /**
-     * Returns the last error code
-     * \return The last error code
-     */
-    virtual gmacError_t error() const = 0;
 
-    /**
-     * Sets up the last error code
-     * \param err Error code
-     */
-    virtual void error(gmacError_t err) = 0;
-
-    /**
-     * Tells if the objects of the mode have been already released to the
-     * accelerator
-     * \return Boolean that tells if objects of the mode have been already
-     * released to the accelerator
-     */
-    virtual bool releasedObjects() const = 0;
-
-    /**
-     * Releases the ownership of the objects of the mode to the accelerator
-     * and waits for pending transfers
-     */
-    virtual gmacError_t releaseObjects() = 0;
-
-    /**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     */
-    virtual gmacError_t acquireObjects() = 0;
 
 
     /** Returns the memory information of the accelerator on which the mode runs

@@ -33,30 +33,6 @@ Mode::detach()
     __impl::core::hpe::Mode::detach();
 }
 
-void
-Mode::addObject(__impl::memory::Object &obj)
-{
-    // TODO Check that the object has not been previously added
-    __impl::core::hpe::Mode::addObject(obj);
-}
-
-void
-Mode::removeObject(__impl::memory::Object &obj)
-{
-    // TODO Check that the object has been previously added
-    __impl::core::hpe::Mode::removeObject(obj);
-}
-
-__impl::memory::Object *
-Mode::getObject(const hostptr_t addr, size_t size) const
-{
-    REQUIRES(addr != NULL);
-
-    __impl::memory::Object *obj;
-    obj = __impl::core::hpe::Mode::getObject(addr, size);
-    return obj;
-}
-
 gmacError_t
 Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
