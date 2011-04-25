@@ -61,7 +61,8 @@ namespace opencl { namespace lite {
 #endif
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode :
-    public virtual opencl::Mode,
+    public opencl::Mode,
+    public core::Mode,
     public gmac::util::RWLock
 {
     friend class IOBuffer;
