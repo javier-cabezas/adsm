@@ -5,6 +5,7 @@ set(arch_lite_api_SRC
 )
 
 set(arch_lite_SRC
+    Error.cpp
     Mode.h
     Mode-impl.h
     Mode.cpp

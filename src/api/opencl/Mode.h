@@ -47,12 +47,6 @@ public:
     //! Default destructor
     virtual ~Mode() { };
 
-    //! Get the accelerator stream where events are recorded
-    /*!
-        \return Command queue where events are recorded
-    */
-    virtual cl_command_queue eventStream() = 0;
-
     //! Block the CPU thread until an event happens
     /*!
         \param event Event to wait for

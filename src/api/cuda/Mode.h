@@ -57,8 +57,6 @@ public:
     //! Default destructor
     virtual ~Mode() { };
 
-    virtual CUstream eventStream() = 0;
-
     virtual gmacError_t waitForEvent(CUevent event, bool fromCUDA) = 0;
 
     virtual gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end) = 0;

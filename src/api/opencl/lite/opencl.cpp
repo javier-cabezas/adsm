@@ -5,11 +5,21 @@
 #endif
 
 #include "api/opencl/lite/Process.h"
+#include "memory/Handler.h"
 #include "util/Logger.h"
 
 #include <CL/cl.h>
 
+using __impl::memory::Handler;
 using __impl::opencl::lite::Process;
+using __impl::util::Private;
+
+static Private<const char> inGmac_;
+static const char gmacCode = 1;
+static const char userCode = 0;
+static Atomic gmacInit_ = 0;
+
+
 
 SYM(cl_context, __opencl_clCreateContext,
         const cl_context_properties *,
@@ -94,6 +104,29 @@ static void openclInit()
 extern "C" {
 #endif
 
+static void CONSTRUCTOR init();
+
+static void enterGmac()
+{
+    if(AtomicTestAndSet(gmacInit_, 0, 1) == 0) init();
+    inGmac_.set(&gmacCode);
+}
+
+static void exitGmac()
+{
+    inGmac_.set(&userCode);
+}
+
+static bool inGmac()
+{
+    if(gmacInit_ == 0) return 1;
+    char *ret = (char *)inGmac_.get();
+    if(ret == NULL) return false;
+    else if(*ret == gmacCode) return true;
+    return false;
+}
+
+
 cl_context SYMBOL(clCreateContext)(
         const cl_context_properties *properties,
         cl_uint num_devices,
@@ -104,10 +137,10 @@ cl_context SYMBOL(clCreateContext)(
 {
     if(__opencl_clCreateContext == NULL) openclInit();
     cl_context ret = __opencl_clCreateContext(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
-    if(*errcode_ret != CL_SUCCESS) return ret;
+    if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
 
     Process &proc = Process::getInstance<Process>();
-    proc.createMode(ret);
+    proc.createMode(ret, num_devices, devices);
 
     return ret;
 }
@@ -121,7 +154,7 @@ cl_context SYMBOL(clCreateContextFromType)(
 {
     if(__opencl_clCreateContext == NULL) openclInit();
     cl_context ret = __opencl_clCreateContextFromType(properties, device_type, pfn_notify, user_data, errcode_ret);
-    if(*errcode_ret != CL_SUCCESS) return ret;
+    if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
     return ret;
 }
         
@@ -129,7 +162,7 @@ cl_int SYMBOL(clRetainContext)(cl_context context)
 {
     if(__opencl_clRetainContext == NULL) openclInit();
     cl_int ret = __opencl_clRetainContext(context);
-    if(ret != CL_SUCCESS) return ret;
+    if(inGmac() || ret != CL_SUCCESS) return ret;
     return ret;
 }
 
@@ -137,7 +170,7 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
 {
     if(__opencl_clReleaseContext == NULL) openclInit();
     cl_int ret = __opencl_clReleaseContext(context);
-    if(ret != CL_SUCCESS) return ret;
+    if(inGmac() || ret != CL_SUCCESS) return ret;
     return ret;
 }
 
@@ -149,7 +182,7 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
 {
     if(__opencl_clCreateCommandQueue == NULL) openclInit();
     cl_command_queue ret = __opencl_clCreateCommandQueue(context, device, properties,  errcode_ret);
-    if(*errcode_ret != CL_SUCCESS) return ret;
+    if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
 
     return ret;
 }
@@ -158,7 +191,7 @@ cl_int SYMBOL(clRetainCommandQueue)(cl_command_queue command_queue)
 {
     if(__opencl_clRetainCommandQueue == NULL) openclInit();
     cl_int ret = __opencl_clRetainCommandQueue(command_queue);
-    if(ret != CL_SUCCESS) return ret;
+    if(inGmac() || ret != CL_SUCCESS) return ret;
 
     return ret;
 }
@@ -167,7 +200,7 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
 {
     if(__opencl_clReleaseCommandQueue == NULL) openclInit();
     cl_int ret = __opencl_clRetainCommandQueue(command_queue);
-    if(ret != CL_SUCCESS) return ret;
+    if(inGmac() || ret != CL_SUCCESS) return ret;
 
     return ret;
 }
@@ -183,6 +216,7 @@ cl_int SYMBOL(clEnqueueNDRangeKernel)(
     const cl_event *event_wait_list,
     cl_event *event)
 {
+    ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNDRangeKernel == NULL) openclInit();
     cl_int ret = __opencl_clEnqueueNDRangeKernel(command_queue, kernel, work_dim, global_work_offset,
         global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
@@ -198,6 +232,7 @@ cl_int SYMBOL(clEnqueueTask)(
     const cl_event *event_wait_list,
     cl_event *event)
 { 
+    ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueTask == NULL) openclInit();
     cl_int ret = __opencl_clEnqueueTask(command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
     if(ret != CL_SUCCESS) return ret;
@@ -217,6 +252,7 @@ cl_int SYMBOL(clEnqueueNativeKernel)(
     const cl_event *event_wait_list,
     cl_event *event)
 {
+    ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNativeKernel == NULL) openclInit();
     cl_int ret = __opencl_clEnqueueNativeKernel(command_queue, user_func, args, cb_args, num_mem_objects,
         mem_list, args_mem_loc, num_events_in_wait_list, event_wait_list, event);
@@ -229,15 +265,24 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
 {
     if(__opencl_clFinish == NULL) openclInit();
     cl_int ret = __opencl_clFinish(command_queue);
-    if(ret != CL_SUCCESS) return ret;
+    if(inGmac() || ret != CL_SUCCESS) return ret;
 
     return ret;
 }
 
+
 static void CONSTRUCTOR init()
 {
+    Private<const char>::init(inGmac_);
+    enterGmac();
+
+    TRACE(GLOBAL, "Initializing Memory Manager");
+    Handler::setEntry(enterGmac);
+    Handler::setExit(exitGmac);
+
     TRACE(GLOBAL, "Initializing Process");
-   Process::create<Process>();
+    Process::create<Process>();
+    exitGmac();
 }
 
 #ifdef __cplusplus

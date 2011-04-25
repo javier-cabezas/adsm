@@ -38,9 +38,13 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "api/opencl/Mode.h"
+#include "memory/ObjectMap.h"
 #include "util/Atomics.h"
+#include "util/Private.h"
 
 #include <CL/cl.h>
+
+#include <vector>
 
 namespace __impl {
     
@@ -60,25 +64,47 @@ class GMAC_LOCAL Mode : public virtual opencl::Mode {
     friend class IOBuffer;
 protected:
     cl_context context_;
-    cl_command_queue stream_;
-    bool validStream_;
-public:
-    //! Default constructor
-    /*!
-        \param proc Process where the mode is attached
-        \param acc Virtual CUDA accelerator where the mode is executed
-    */
-    Mode(cl_context ctx);
+    typedef std::map<cl_device_id, cl_command_queue> StreamMap;
+    StreamMap streams_;
+    cl_command_queue active_;
 
-    //! Default destructor
+    memory::ObjectMap map_;
+
+    memory::ObjectMap &getObjectMap();
+    const memory::ObjectMap &getObjectMap() const;
+
+    gmacError_t error(cl_int) const;
+public:
+    /**
+     * Default constructor
+     *  \param ctx A OpenCL context
+     */
+    Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
+
+    /**
+     * Default destructor
+     */
     virtual ~Mode();
 
-    //! Allocate GPU-accessible host memory
-    /*!
-        \param addr Pointer of the memory to be mapped to the accelerator
-        \param size Size (in bytes) of the host memory to be mapped
-        \return Error code
-    */
+    /**
+     * Maps the given host memory on the accelerator memory
+     * \param dst Reference to a pointer where to store the accelerator
+     * address of the mapping
+     * \param src Host address to be mapped
+     * \param size Size of the mapping
+     * \param align Alignment of the memory mapping. This value must be a
+     * power of two
+     * \return Error code
+     */
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+
+
+    /**
+     * Allocate GPU-accessible host memory
+     * \param addr Pointer of the memory to be mapped to the accelerator
+     * \param size Size (in bytes) of the host memory to be mapped
+     * \return Error code
+     */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
     //! Release GPU-accessible host memory 
@@ -95,6 +121,14 @@ public:
      *  \return Device memory address
      */
     accptr_t hostMapAddr(const hostptr_t addr);
+
+    /**
+     * Unmaps the memory previously mapped by map
+     * \param addr Host memory allocation to be unmap
+     * \param size Size of the unmapping
+     * \return Error code
+     */
+    gmacError_t unmap(hostptr_t addr, size_t size);
 
 
     //! Create an IO buffer to sent / receive data from the accelerator
@@ -152,57 +186,6 @@ public:
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 
-    /**
-     * Adds an object to the map of the mode
-     * \param obj A reference to the object to be added
-     */
-    void addObject(memory::Object &obj);
-
-    /**
-     * Removes an object from the map of the mode
-     * \param obj A reference to the object to be removed
-     */
-    void removeObject(memory::Object &obj);
-
-    /**
-     * Gets the first object that belongs to the memory range
-     * \param addr Starting address of the memory range
-     * \param size Size of the memory range
-     * \return A pointer of the Object that contains the address or NULL if
-     * there is no Object at that address
-     */
-    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
-
-    /**
-     * Applies a constant memory operation to all the objects that belong to
-     * the mode
-     * \param op Memory operation to be executed
-     *   \sa __impl::memory::Object::acquire
-     *   \sa __impl::memory::Object::toHost
-     *   \sa __impl::memory::Object::toAccelerator
-     * \return Error code
-     */
-    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
-
-    /**
-     * Maps the given host memory on the accelerator memory
-     * \param dst Reference to a pointer where to store the accelerator
-     * address of the mapping
-     * \param src Host address to be mapped
-     * \param size Size of the mapping
-     * \param align Alignment of the memory mapping. This value must be a
-     * power of two
-     * \return Error code
-     */
-    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-
-    /**
-     * Unmaps the memory previously mapped by map
-     * \param addr Host memory allocation to be unmap
-     * \param size Size of the unmapping
-     * \return Error code
-     */
-    gmacError_t unmap(hostptr_t addr, size_t size);
 
     /**
      * Copies data from system memory to accelerator memory
@@ -238,26 +221,6 @@ public:
      * \return Error code
      */
     gmacError_t memset(accptr_t addr, int c, size_t size);
-
-    /**
-     * Returns the last error code
-     * \return The last error code
-     */
-    gmacError_t error() const;
-
-    /**
-     * Sets up the last error code
-     * \param err Error code
-     */
-    void error(gmacError_t err);
-
-    /**
-     * Tells if the objects of the mode have been already released to the
-     * accelerator
-     * \return Boolean that tells if objects of the mode have been already
-     * released to the accelerator
-     */
-    bool releasedObjects() const;
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator
