@@ -4,13 +4,35 @@
 #include "os/windows/loader.h"
 #endif
 
+#include "config/config.h"
+
 #include "api/opencl/lite/Process.h"
 #include "include/gmac/lite.h"
+#include "memory/Allocator.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "util/Logger.h"
+#include "util/Parameter.h"
 
 #include <CL/cl.h>
+
+#if defined(__GNUC__)
+#define RETURN_ADDRESS __builtin_return_address(0)
+#elif defined(_MSC_VER)
+extern "C" void * _ReturnAddress(void);
+#pragma intrinsic(_ReturnAddress)
+#define RETURN_ADDRESS _ReturnAddress()
+static long getpagesize (void) {
+    static long pagesize = 0;
+    if(pagesize == 0) {
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        pagesize = systemInfo.dwPageSize;
+    }
+    return pagesize;
+}
+#endif
+
 
 using __impl::memory::Handler;
 using __impl::opencl::lite::Process;
@@ -372,14 +394,61 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
 }
 
 
+GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count)
+{
+    cl_int ret = CL_SUCCESS;
+    *addr = NULL;
+    if(count == 0) return ret;
+
+    enterGmac();
+    gmac::trace::EnterCurrentFunction();
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode != NULL) {
+        __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
+        if(count < (__impl::util::params::ParamBlockSize / 2)) {
+            *addr = allocator.alloc(*mode, count, hostptr_t(RETURN_ADDRESS));
+        }
+        else {
+        	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    	    count = (int(count) < getpagesize())? getpagesize(): count;
+            ret = manager.alloc(*mode, (hostptr_t *) addr, count);
+            mode->release();
+        }
+    }
+    else ret = CL_INVALID_CONTEXT;
+    gmac::trace::ExitCurrentFunction();
+	exitGmac();
+	return ret;
+}
+
+GMAC_API cl_int clFree(cl_context context, void *addr)
+{
+    cl_int ret = CL_SUCCESS;
+	enterGmac();
+    gmac::trace::EnterCurrentFunction();
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode != NULL) {
+        __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
+        if(allocator.free(*mode, hostptr_t(addr)) == false) {
+        	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+            ret = manager.free(*mode, hostptr_t(addr));
+        }
+        mode->release();
+    }
+    else ret = CL_INVALID_CONTEXT;
+    
+    gmac::trace::ExitCurrentFunction();
+	exitGmac();
+	return ret;
+
+}
+
 GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();
     Mode *mode = Process::getInstance<Process>().getMode(context);
-    if(mode != NULL) {
-        ret = __impl::memory::Manager::getInstance().translate(*mode, hostptr_t(ptr));
-    }
+    if(mode != NULL) ret = __impl::memory::Manager::getInstance().translate(*mode, hostptr_t(ptr));
     exitGmac();
     return ret.get();
 }
