@@ -45,7 +45,9 @@ void Process::insertOrphan(memory::Object &)
 
 core::Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
+    return map_.owner(addr, size);
     // TODO: Implement
+    
     return NULL;
 }
 

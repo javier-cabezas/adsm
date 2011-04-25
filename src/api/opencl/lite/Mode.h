@@ -82,6 +82,7 @@ class GMAC_LOCAL Mode :
     public gmac::util::Lock
 {
     friend class IOBuffer;
+    friend class ModeMap;
 protected:
     cl_context context_;
     typedef std::map<cl_command_queue, cl_device_id> StreamMap;

@@ -59,6 +59,7 @@ public:
     void remove(cl_context ctx);
 
     Mode *get(cl_context ctx) const; 
+    Mode *owner(const hostptr_t addr, size_t size) const;
 };
 
 

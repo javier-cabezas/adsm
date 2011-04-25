@@ -2,6 +2,7 @@
 #define GMAC_API_OPENCL_LITE_MODEMAP_IMPL_H_
 
 #include "api/opencl/lite/Mode.h"
+#include "memory/Object.h"
 
 namespace __impl { namespace opencl { namespace lite {
 
@@ -46,6 +47,23 @@ Mode *ModeMap::get(cl_context ctx) const
     if(i != end()) {
         ret = i->second;
         ret->use();
+    }
+    unlock();
+    return ret;
+}
+
+inline
+Mode *ModeMap::owner(const hostptr_t addr, size_t size) const
+{
+    Mode *ret = NULL;
+    Parent::const_iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        const memory::ObjectMap &map = i->second->getObjectMap();
+        memory::Object *obj = map.get(addr, size);
+        if(obj == NULL) continue;
+        ret = &(dynamic_cast<Mode &>(obj->owner(*(i->second), addr)));
+        obj->release();
     }
     unlock();
     return ret;

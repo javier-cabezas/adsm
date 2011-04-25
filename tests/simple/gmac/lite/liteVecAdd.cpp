@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Alloc: ", "\n");
 
 
-#if 0
     float sum = 0.f;
 
     getTime(&s);
@@ -85,6 +84,8 @@ int main(int argc, char *argv[])
         sum += a[i] + b[i];
     }
     
+
+#if 0
     // Call the kernel
     getTime(&s);
     size_t localSize = blockSize;
