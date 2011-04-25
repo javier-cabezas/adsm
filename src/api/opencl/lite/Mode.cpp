@@ -50,7 +50,7 @@ gmacError_t Mode::setActiveQueue(cl_command_queue queue)
 
 void Mode::deactivateQueue()
 {
-    active_ = cl_command_queue(0);
+    /* active_ = cl_command_queue(0); */
     unlock();
 }
 
@@ -59,6 +59,29 @@ void Mode::removeQueue(cl_command_queue queue)
     if(active_ == queue) active_ = cl_command_queue(0);
     queues_.remove(queue);
 }
+
+gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
+{
+    cl_int ret = CL_SUCCESS;
+    dst.base_ = clCreateBuffer(context_, CL_MEM_READ_WRITE, size, NULL, &ret);
+    dst.offset_ = 0;
+    allocations_.insert(src, dst, size);
+    return error(ret);
+}
+
+gmacError_t Mode::unmap(hostptr_t host, size_t size)
+{
+    ASSERTION(host != NULL);
+    accptr_t addr;
+    size_t s;
+    bool hasMapping = allocations_.find(host, addr, s);
+    ASSERTION(hasMapping == true);
+    ASSERTION(s = size);
+    cl_int ret = CL_SUCCESS;
+    if(core::Process::isValid()) ret = clReleaseMemObject(addr.base_);
+    return error(ret);
+}
+
 
 gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
 {

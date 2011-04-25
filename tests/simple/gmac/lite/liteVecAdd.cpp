@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cassert>
 
-#include <CL/cl.h>
+#include "gmac/lite.h"
 
 #include "utils.h"
 #include "debug.h"
@@ -59,19 +59,20 @@ int main(int argc, char *argv[])
     kernel = clCreateKernel(program, "vecAdd", &error_code);
     assert(error_code == CL_SUCCESS);
 
-#if 0
     getTime(&s);
     // Alloc & init input data
-    if(clMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    if(clMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    if(clMalloc(context, (void **)&a, vecSize * sizeof(float)) != CL_SUCCESS)
+        abort();
+    if(clMalloc(context, (void **)&b, vecSize * sizeof(float)) != CL_SUCCESS)
+        abort();
     // Alloc output data
-    if(clMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    if(clMalloc(context, (void **)&c, vecSize * sizeof(float)) != CL_SUCCESS)
+        abort();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
+
+#if 0
     float sum = 0.f;
 
     getTime(&s);

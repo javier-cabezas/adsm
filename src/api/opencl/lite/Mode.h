@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "api/opencl/Mode.h"
+#include "core/AllocationMap.h"
 #include "memory/ObjectMap.h"
 #include "util/Atomics.h"
 #include "util/Private.h"
@@ -67,7 +68,6 @@ public:
     void insert(cl_command_queue queue);
     bool exists(cl_command_queue queue);
     void remove(cl_command_queue queue);
-
 };
 
 //! Visual studio produces a stupid warning due to the complex diamond inheritance
@@ -90,6 +90,7 @@ protected:
     cl_command_queue active_;
 
     memory::ObjectMap map_;
+    core::AllocationMap allocations_;
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;
