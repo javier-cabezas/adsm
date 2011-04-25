@@ -42,6 +42,25 @@ extern "C" {
 #endif
 
 /**
+ *  Allocates a OpenCL memory buffer accessible from the host
+ *  \param context OpenCL context where the obejct will be allocated
+ *  \param adddr Reference to the host memory address where the data will be accessible
+ *  \param count Size (in bytes) of the data to be allocated
+ *  \return OpenCL memory buffer
+ */
+GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count);
+
+
+/**
+ *  Release the OpenCL buffer associated to a host memory address
+ *  \param context OpenCL context where the obejct was allocated
+ *  \param addr Host memory address
+ *  \return OpenCL memory buffer
+ */
+GMAC_API cl_int clFree(cl_context context, void *addr);
+
+
+/**
  *  Returns the OpenCL buffer associated to a host memory address
  *  \param context OpenCL context where the obejct was allocated
  *  \param addr Host memory address
