@@ -456,6 +456,7 @@ GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
 static void CONSTRUCTOR init()
 {
     Private<const char>::init(inGmac_);
+    AtomicInc(gmacInit_);
     enterGmac();
 
     TRACE(GLOBAL, "Initializing Memory Manager");
