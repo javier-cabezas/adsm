@@ -76,7 +76,7 @@ gmacError_t Mode::unmap(hostptr_t host, size_t size)
     size_t s;
     bool hasMapping = allocations_.find(host, addr, s);
     ASSERTION(hasMapping == true);
-    ASSERTION(s = size);
+    ASSERTION(s == size);
     cl_int ret = CL_SUCCESS;
     if(core::Process::isValid()) ret = clReleaseMemObject(addr.base_);
     return error(ret);
