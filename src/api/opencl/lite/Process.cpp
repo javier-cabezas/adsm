@@ -50,10 +50,15 @@ core::Mode *Process::owner(const hostptr_t addr, size_t size) const
 Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices)
 {
     Mode *ret = map_.get(ctx);
-    if(ret != NULL) return ret;
+    if(ret != NULL) { ret->release(); return ret; }
     ret = new Mode(ctx, numDevices, devices);
     map_.insert(ctx, *ret);
     return ret;
+}
+
+Mode *Process::getMode(cl_context ctx)
+{
+    return map_.get(ctx);
 }
 
 }}}

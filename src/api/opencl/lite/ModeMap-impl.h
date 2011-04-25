@@ -43,7 +43,10 @@ Mode *ModeMap::get(cl_context ctx) const
     Mode *ret = NULL;
     lockRead();
     Parent::const_iterator i = find(ctx);
-    if(i != end()) ret = i->second;
+    if(i != end()) {
+        ret = i->second;
+        ret->use();
+    }
     unlock();
     return ret;
 }
