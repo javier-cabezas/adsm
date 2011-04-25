@@ -5,6 +5,7 @@
 #endif
 
 #include "api/opencl/lite/Process.h"
+#include "include/gmac/lite.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "util/Logger.h"
@@ -141,8 +142,10 @@ cl_context SYMBOL(clCreateContext)(
     cl_context ret = __opencl_clCreateContext(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
 
+    enterGmac();
     Process &proc = Process::getInstance<Process>();
     proc.createMode(ret, num_devices, devices);
+    exitGmac();
 
     return ret;
 }
@@ -165,7 +168,9 @@ cl_int SYMBOL(clRetainContext)(cl_context context)
     if(__opencl_clRetainContext == NULL) openclInit();
     cl_int ret = __opencl_clRetainContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
+    enterGmac();
     Process::getInstance<Process>().getMode(context);
+    exitGmac();
     return ret;
 }
 
@@ -174,12 +179,14 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
     if(__opencl_clReleaseContext == NULL) openclInit();
     cl_int ret = __opencl_clReleaseContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
+    enterGmac();
     Mode *mode = Process::getInstance<Process>().getMode(context);
     if(mode != NULL) {
         mode->release();
         // We release the mode twice to effectively decrease the usage count
         mode->release();
     }
+    exitGmac();
     return ret;
 }
 
@@ -192,10 +199,12 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     if(__opencl_clCreateCommandQueue == NULL) openclInit();
     cl_command_queue ret = __opencl_clCreateCommandQueue(context, device, properties,  errcode_ret);
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
+    enterGmac();
     Mode *mode = Process::getInstance<Process>().getMode(context);
     if(mode == NULL) return ret;
     mode->addQueue(ret);
     mode->release();
+    exitGmac();
     return ret;
 }
 
@@ -220,10 +229,12 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
 
     ret = __opencl_clRetainCommandQueue(command_queue);
     if(inGmac() || ret != CL_SUCCESS || count > 1) return ret;
+    enterGmac();
     Mode *mode = Process::getInstance<Process>().getMode(context);
     if(mode == NULL) return ret;
     mode->removeQueue(command_queue);
     mode->release();
+    exitGmac();
     return ret;
 }
 
@@ -237,6 +248,7 @@ static void acquireMemoryObjects(cl_event event, cl_int status, void *user_data)
     if(ret != CL_SUCCESS) goto do_exit;
     ret = clGetEventInfo(event, CL_EVENT_COMMAND_QUEUE, sizeof(cl_command_queue), &queue, NULL);
     if(ret != CL_SUCCESS) goto do_exit;
+
     mode = Process::getInstance<Process>().getMode(context);
     if(mode != NULL) {
         mode->setActiveQueue(queue);
@@ -281,16 +293,19 @@ cl_int SYMBOL(clEnqueueNDRangeKernel)(
 {
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNDRangeKernel == NULL) openclInit();
+    enterGmac();
     cl_int ret = releaseMemoryObjects(command_queue);
-    if(ret != CL_SUCCESS) return ret;
     cl_event *user_event = NULL;
+    if(ret != CL_SUCCESS) goto do_exit;
     if(event == NULL) user_event = new cl_event();
     else user_event = event;
     ret = __opencl_clEnqueueNDRangeKernel(command_queue, kernel, work_dim, global_work_offset,
         global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, user_event);
-    if(ret != CL_SUCCESS) return ret;
+    if(ret != CL_SUCCESS) goto do_exit;
     ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
+do_exit:
+    exitGmac();
     return ret;
 }
 
@@ -303,15 +318,18 @@ cl_int SYMBOL(clEnqueueTask)(
 { 
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueTask == NULL) openclInit();
-    cl_int ret = releaseMemoryObjects(command_queue);
-    if(ret != CL_SUCCESS) return ret;
+    enterGmac();
     cl_event *user_event = NULL;
+    cl_int ret = releaseMemoryObjects(command_queue);
+    if(ret != CL_SUCCESS) goto do_exit;
     if(event == NULL) user_event = new cl_event();
     else user_event = event;
     ret = __opencl_clEnqueueTask(command_queue, kernel, num_events_in_wait_list, event_wait_list, user_event);
-    if(ret != CL_SUCCESS) return ret;
+    if(ret != CL_SUCCESS) goto do_exit;
     ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
+do_exit:
+    exitGmac();
     return ret;
 }
 
@@ -329,16 +347,18 @@ cl_int SYMBOL(clEnqueueNativeKernel)(
 {
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNativeKernel == NULL) openclInit();
-    cl_int ret = releaseMemoryObjects(command_queue);
-    if(ret != CL_SUCCESS) return ret;
     cl_event *user_event = NULL;
+    cl_int ret = releaseMemoryObjects(command_queue);
+    if(ret != CL_SUCCESS) goto do_exit;
     if(event == NULL) user_event = new cl_event();
     else user_event = event;
     ret = __opencl_clEnqueueNativeKernel(command_queue, user_func, args, cb_args, num_mem_objects,
         mem_list, args_mem_loc, num_events_in_wait_list, event_wait_list, user_event);
-    if(ret != CL_SUCCESS) return ret;
+    if(ret != CL_SUCCESS) goto do_exit;
     ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
+do_exit:
+    exitGmac();
     return ret;
 }
 
@@ -351,6 +371,18 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
     return ret;
 }
 
+
+GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
+{
+    accptr_t ret = accptr_t(0);
+    enterGmac();
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode != NULL) {
+        ret = __impl::memory::Manager::getInstance().translate(*mode, hostptr_t(ptr));
+    }
+    exitGmac();
+    return ret.get();
+}
 
 static void CONSTRUCTOR init()
 {
