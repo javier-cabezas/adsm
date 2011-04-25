@@ -7,6 +7,40 @@
 namespace __impl { namespace opencl { namespace lite {
 
 inline
+QueueSet::QueueSet() :
+    gmac::util::RWLock("QueueMap")
+{}
+
+inline
+QueueSet::~QueueSet() { }
+
+inline
+void QueueSet::insert(cl_command_queue queue)
+{
+    lockWrite();
+    Parent::insert(queue); 
+    unlock();
+}
+
+inline
+bool QueueSet::exists(cl_command_queue queue)
+{
+    bool ret = false;
+    lockRead();
+    if(Parent::find(queue) != Parent::end()) ret = true;
+    unlock();
+    return ret;
+}
+
+inline
+void QueueSet::remove(cl_command_queue queue)
+{
+    lockWrite();
+    Parent::erase(queue);
+    unlock();
+}
+
+inline
 memory::ObjectMap &Mode::getObjectMap()
 {
     return map_;

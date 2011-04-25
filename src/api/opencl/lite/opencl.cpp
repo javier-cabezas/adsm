@@ -6,6 +6,7 @@
 
 #include "api/opencl/lite/Process.h"
 #include "memory/Handler.h"
+#include "memory/Manager.h"
 #include "util/Logger.h"
 
 #include <CL/cl.h>
@@ -193,7 +194,8 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
     Mode *mode = Process::getInstance<Process>().getMode(context);
     if(mode == NULL) return ret;
-    mode->addQueue(device, ret);
+    mode->addQueue(ret);
+    mode->release();
     return ret;
 }
 
@@ -225,6 +227,47 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
     return ret;
 }
 
+static void acquireMemoryObjects(cl_event event, cl_int status, void *user_data)
+{
+    Mode *mode = NULL;
+    cl_context context;
+    cl_command_queue queue;
+    cl_int ret = CL_SUCCESS;
+    ret = clGetEventInfo(event, CL_EVENT_CONTEXT, sizeof(cl_context), &context, NULL);
+    if(ret != CL_SUCCESS) goto do_exit;
+    ret = clGetEventInfo(event, CL_EVENT_COMMAND_QUEUE, sizeof(cl_command_queue), &queue, NULL);
+    if(ret != CL_SUCCESS) goto do_exit;
+    mode = Process::getInstance<Process>().getMode(context);
+    if(mode != NULL) {
+        mode->setActiveQueue(queue);
+        gmac::memory::Manager::getInstance().releaseObjects(*mode);
+        mode->deactivateQueue();
+        mode->release();
+    }
+
+do_exit:
+    cl_event *user_event = (cl_event *)user_data;
+    if(user_event != NULL) delete user_event;
+}
+
+static cl_int releaseMemoryObjects(cl_command_queue command_queue)
+{
+    cl_int ret = CL_SUCCESS;
+    cl_context context;
+    ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_CONTEXT, sizeof(cl_context), &context, NULL);
+    if(ret == CL_SUCCESS) {
+        Mode *mode = Process::getInstance<Process>().getMode(context);
+        if(mode != NULL) {
+            mode->setActiveQueue(command_queue);
+            gmac::memory::Manager::getInstance().releaseObjects(*mode);
+            mode->deactivateQueue();
+            mode->release();
+        }
+    }
+    return ret;
+}
+
+
 cl_int SYMBOL(clEnqueueNDRangeKernel)(
     cl_command_queue command_queue,
     cl_kernel kernel,
@@ -238,9 +281,15 @@ cl_int SYMBOL(clEnqueueNDRangeKernel)(
 {
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNDRangeKernel == NULL) openclInit();
-    cl_int ret = __opencl_clEnqueueNDRangeKernel(command_queue, kernel, work_dim, global_work_offset,
-        global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, event);
+    cl_int ret = releaseMemoryObjects(command_queue);
     if(ret != CL_SUCCESS) return ret;
+    cl_event *user_event = NULL;
+    if(event == NULL) user_event = new cl_event();
+    else user_event = event;
+    ret = __opencl_clEnqueueNDRangeKernel(command_queue, kernel, work_dim, global_work_offset,
+        global_work_size, local_work_size, num_events_in_wait_list, event_wait_list, user_event);
+    if(ret != CL_SUCCESS) return ret;
+    ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
     return ret;
 }
@@ -254,8 +303,14 @@ cl_int SYMBOL(clEnqueueTask)(
 { 
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueTask == NULL) openclInit();
-    cl_int ret = __opencl_clEnqueueTask(command_queue, kernel, num_events_in_wait_list, event_wait_list, event);
+    cl_int ret = releaseMemoryObjects(command_queue);
     if(ret != CL_SUCCESS) return ret;
+    cl_event *user_event = NULL;
+    if(event == NULL) user_event = new cl_event();
+    else user_event = event;
+    ret = __opencl_clEnqueueTask(command_queue, kernel, num_events_in_wait_list, event_wait_list, user_event);
+    if(ret != CL_SUCCESS) return ret;
+    ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
     return ret;
 }
@@ -274,9 +329,15 @@ cl_int SYMBOL(clEnqueueNativeKernel)(
 {
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNativeKernel == NULL) openclInit();
-    cl_int ret = __opencl_clEnqueueNativeKernel(command_queue, user_func, args, cb_args, num_mem_objects,
-        mem_list, args_mem_loc, num_events_in_wait_list, event_wait_list, event);
+    cl_int ret = releaseMemoryObjects(command_queue);
     if(ret != CL_SUCCESS) return ret;
+    cl_event *user_event = NULL;
+    if(event == NULL) user_event = new cl_event();
+    else user_event = event;
+    ret = __opencl_clEnqueueNativeKernel(command_queue, user_func, args, cb_args, num_mem_objects,
+        mem_list, args_mem_loc, num_events_in_wait_list, event_wait_list, user_event);
+    if(ret != CL_SUCCESS) return ret;
+    ret = clSetEventCallback(*user_event, CL_COMPLETE, acquireMemoryObjects, event);
 
     return ret;
 }
