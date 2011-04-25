@@ -12,6 +12,7 @@
 
 using __impl::memory::Handler;
 using __impl::opencl::lite::Process;
+using __impl::opencl::lite::Mode;
 using __impl::util::Private;
 
 static Private<const char> inGmac_;
@@ -163,6 +164,7 @@ cl_int SYMBOL(clRetainContext)(cl_context context)
     if(__opencl_clRetainContext == NULL) openclInit();
     cl_int ret = __opencl_clRetainContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
+    Process::getInstance<Process>().getMode(context);
     return ret;
 }
 
@@ -171,6 +173,12 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
     if(__opencl_clReleaseContext == NULL) openclInit();
     cl_int ret = __opencl_clReleaseContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode != NULL) {
+        mode->release();
+        // We release the mode twice to effectively decrease the usage count
+        mode->release();
+    }
     return ret;
 }
 
@@ -183,7 +191,9 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     if(__opencl_clCreateCommandQueue == NULL) openclInit();
     cl_command_queue ret = __opencl_clCreateCommandQueue(context, device, properties,  errcode_ret);
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
-
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode == NULL) return ret;
+    mode->addQueue(device, ret);
     return ret;
 }
 
@@ -192,16 +202,26 @@ cl_int SYMBOL(clRetainCommandQueue)(cl_command_queue command_queue)
     if(__opencl_clRetainCommandQueue == NULL) openclInit();
     cl_int ret = __opencl_clRetainCommandQueue(command_queue);
     if(inGmac() || ret != CL_SUCCESS) return ret;
-
     return ret;
 }
 
 cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
 {
     if(__opencl_clReleaseCommandQueue == NULL) openclInit();
-    cl_int ret = __opencl_clRetainCommandQueue(command_queue);
-    if(inGmac() || ret != CL_SUCCESS) return ret;
+    cl_context context;
+    cl_int ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_CONTEXT, sizeof(cl_context), &context, NULL);
+    if(ret != CL_SUCCESS) return ret;
 
+    cl_uint count = 0;
+    ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_REFERENCE_COUNT, sizeof(cl_uint), &count, NULL);
+    if(ret != CL_SUCCESS) return ret;
+
+    ret = __opencl_clRetainCommandQueue(command_queue);
+    if(inGmac() || ret != CL_SUCCESS || count > 1) return ret;
+    Mode *mode = Process::getInstance<Process>().getMode(context);
+    if(mode == NULL) return ret;
+    mode->removeQueue(command_queue);
+    mode->release();
     return ret;
 }
 

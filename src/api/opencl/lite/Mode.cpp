@@ -7,7 +7,9 @@
 namespace __impl { namespace opencl { namespace lite {
 
 Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
+    gmac::util::RWLock("Mode"),
     context_(ctx),
+    active_(0),
     map_("ObjectMap")
 {
     AtomicInc(Count_);
@@ -16,7 +18,7 @@ Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
     for(unsigned i = 0; i < numDevices; i++) {
         cl_command_queue queue = clCreateCommandQueue(ctx, devices[i], 0, &ret);
         ASSERTION(ret == CL_SUCCESS);
-        streams_.insert(StreamMap::value_type(devices[i], queue));
+        streams_.insert(StreamMap::value_type(queue, devices[i]));
     }
 }
 
@@ -27,9 +29,36 @@ Mode::~Mode()
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clReleaseCommandQueue(i->second);
+        ret = clReleaseCommandQueue(i->first);
         ASSERTION(ret == CL_SUCCESS);
     }
+}
+
+void Mode::addQueue(cl_device_id device, cl_command_queue queue)
+{
+    lockWrite();
+    if(queues_.empty()) active_ = queue;
+    queues_.insert(StreamMap::value_type(queue, device));
+    unlock();
+}
+
+gmacError_t Mode::setActiveQueue(cl_command_queue queue)
+{
+    lockRead();
+    StreamMap::const_iterator i = queues_.find(queue);
+    bool valid = (i != queues_.end());
+    unlock();
+    if(valid == false) return gmacErrorInvalidValue;
+    active_ = queue;
+    return gmacSuccess;
+}
+
+void Mode::removeQueue(cl_command_queue queue)
+{
+    if(active_ == queue) active_ = cl_command_queue(0);
+    lockWrite();
+    queues_.erase(queue);
+    unlock();
 }
 
 gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
@@ -56,7 +85,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     cl_event event;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueWriteBuffer(i->second, acc.base_,
+        ret = clEnqueueWriteBuffer(i->first, acc.base_,
             CL_TRUE, acc.offset_, size, host, 0, NULL, &event);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         trace::SetThreadState(trace::Running);
@@ -65,7 +94,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
         if(ret != CL_SUCCESS) goto do_exit;
     }
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clFinish(i->second);
+        ret = clFinish(i->first);
         if(ret != CL_SUCCESS) goto do_exit;
     }
 do_exit:
@@ -105,11 +134,11 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueReadBuffer(i->second, src.base_, CL_TRUE,
+        ret = clEnqueueReadBuffer(i->first, src.base_, CL_TRUE,
             src.offset_, size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         if(ret == CL_SUCCESS) {
-            ret = clEnqueueWriteBuffer(i->second, dst.base_, CL_TRUE,
+            ret = clEnqueueWriteBuffer(i->first, dst.base_, CL_TRUE,
                     dst.offset_, size, tmp, 0, NULL, NULL);
             CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
@@ -130,7 +159,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueWriteBuffer(i->second , addr.base_,
+        ret = clEnqueueWriteBuffer(i->first, addr.base_,
             CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
     }
     ::free(tmp);
@@ -145,14 +174,14 @@ void Mode::memInfo(size_t &free, size_t &total)
     StreamMap::const_iterator i;
     free = total = size_t(-1);
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clGetDeviceInfo(i->first, CL_DEVICE_GLOBAL_MEM_SIZE,
+        ret = clGetDeviceInfo(i->second, CL_DEVICE_GLOBAL_MEM_SIZE,
             sizeof(value), &value, NULL);
         CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
         total = (total < size_t(value)) ? total : size_t(value);
 
         // TODO: This is actually wrong, but OpenCL do not let us know the
         // amount of free memory in the accelerator
-        ret = clGetDeviceInfo(i->first, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
+        ret = clGetDeviceInfo(i->second, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
             sizeof(value), &value, NULL);
         CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
         free = (free < size_t(value)) ? free : size_t(value);

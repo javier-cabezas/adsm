@@ -60,12 +60,16 @@ namespace opencl { namespace lite {
 #pragma warning( disable : 4250 )
 #endif
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
-class GMAC_LOCAL Mode : public virtual opencl::Mode {
+class GMAC_LOCAL Mode :
+    public virtual opencl::Mode,
+    public gmac::util::RWLock
+{
     friend class IOBuffer;
 protected:
     cl_context context_;
-    typedef std::map<cl_device_id, cl_command_queue> StreamMap;
+    typedef std::map<cl_command_queue, cl_device_id> StreamMap;
     StreamMap streams_;
+    StreamMap queues_;
     cl_command_queue active_;
 
     memory::ObjectMap map_;
@@ -85,6 +89,25 @@ public:
      * Default destructor
      */
     virtual ~Mode();
+
+    /**
+     * Add a new command queue to the active set
+     * \param queue New command queue in the mode
+     */
+    void addQueue(cl_device_id device, cl_command_queue queue);
+
+    /**
+     * Set the active command queue
+     * \param queue Command queue to set as active
+     * \return Error code
+     */
+    gmacError_t setActiveQueue(cl_command_queue queue);
+
+    /**
+     * Removes a command queue from the mode
+     * \param queue Command queue to be removed
+     */
+    void removeQueue(cl_command_queue queue);
 
     /**
      * Maps the given host memory on the accelerator memory

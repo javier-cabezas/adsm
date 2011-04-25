@@ -112,6 +112,7 @@ public:
 
 
     Mode *createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
+    Mode *getMode(cl_context ctx);
 };
 
 }}}
