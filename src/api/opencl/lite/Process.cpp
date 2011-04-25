@@ -4,6 +4,9 @@
 
 namespace __impl { namespace opencl { namespace lite {
 
+Process::Process()
+{}
+
 Process::~Process()
 {
 }
@@ -27,7 +30,7 @@ accptr_t Process::translate(const hostptr_t addr)
 }
 
 
-memory::Protocol &protocol()
+memory::Protocol &Process::protocol()
 {
     FATAL("Global Memory Protocol not implemented in GMAC-lite");
     return *(memory::Protocol *)0;
@@ -44,11 +47,11 @@ core::Mode *Process::owner(const hostptr_t addr, size_t size) const
     return NULL;
 }
 
-Mode *Process::createMode(cl_context ctx)
+Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices)
 {
     Mode *ret = map_.get(ctx);
     if(ret != NULL) return ret;
-    ret = new Mode(ctx);
+    ret = new Mode(ctx, numDevices, devices);
     map_.insert(ctx, *ret);
     return ret;
 }

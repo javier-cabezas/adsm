@@ -1,6 +1,7 @@
 if(MAKE_LITE)
 
 add_gmac_library(gmac-core-lite STATIC ${gmac-core-lite_SRC})
+target_link_libraries(gmac-core-lite gmac-core gmac-memory gmac-common gmac-trace)
 
 if(MAKE_STATIC)
     add_gmac_library(gmac-lite STATIC ${gmac-lite_SRC})

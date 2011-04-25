@@ -111,7 +111,7 @@ public:
     virtual core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
 
 
-    Mode *createMode(cl_context ctx);
+    Mode *createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
 };
 
 }}}
