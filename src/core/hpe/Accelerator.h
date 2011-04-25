@@ -41,6 +41,7 @@
 #include <set>
 
 #include "config/common.h"
+#include "core/AllocationMap.h"
 #include "util/Lock.h"
 
 
@@ -52,16 +53,6 @@ class Process;
 
 typedef std::pair<accptr_t, size_t> PairAlloc;
 typedef std::map<hostptr_t, PairAlloc> MapAlloc;
-
-class GMAC_LOCAL MapAllocations :
-    protected MapAlloc,
-    protected gmac::util::RWLock {
-public:
-    MapAllocations();
-    void insert(hostptr_t key, accptr_t val, size_t size);
-    void erase(hostptr_t key, size_t size);
-    bool find(hostptr_t key, accptr_t &val, size_t &size);
-};
 
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
@@ -85,7 +76,7 @@ protected:
     unsigned load_;
 
     /** Map of allocations in the device */
-    MapAllocations allocations_;
+    AllocationMap allocations_;
 
 public:
     /**

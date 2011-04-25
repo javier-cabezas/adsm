@@ -34,8 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_LITE_H_
 #define GMAC_LITE_H_
 
-#include "CL/cl.h"
+#include <CL/cl.h>
 #include "opencl_types.h"
+#include "visibility.h"
 
 #ifdef __cplusplus
 extern "C" {

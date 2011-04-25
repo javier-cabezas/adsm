@@ -66,12 +66,6 @@ gmacError_t Mode::hostFree(hostptr_t)
     return gmacErrorUnknown;
 }
 
-inline
-gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
-{
-    FATAL("Host Memory mapping is not supported in GMAC/Lite");
-    return gmacErrorUnknown;
-}
 
 inline
 accptr_t Mode::hostMapAddr(const hostptr_t)
@@ -80,12 +74,6 @@ accptr_t Mode::hostMapAddr(const hostptr_t)
     return accptr_t(0);
 }
 
-inline
-gmacError_t Mode::unmap(hostptr_t addr, size_t size)
-{
-    FATAL("Host Memory unmapping is not supported in GMAC/Lite");
-    return gmacErrorUnknown;
-}
 
 inline
 core::IOBuffer &Mode::createIOBuffer(size_t size)
