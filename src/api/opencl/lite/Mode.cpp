@@ -7,7 +7,7 @@
 namespace __impl { namespace opencl { namespace lite {
 
 Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
-    gmac::util::RWLock("Mode"),
+    gmac::util::Lock("Mode"),
     context_(ctx),
     active_(0),
     map_("ObjectMap")
@@ -34,31 +34,30 @@ Mode::~Mode()
     }
 }
 
-void Mode::addQueue(cl_device_id device, cl_command_queue queue)
+void Mode::addQueue(cl_command_queue queue)
 {
-    lockWrite();
-    if(queues_.empty()) active_ = queue;
-    queues_.insert(StreamMap::value_type(queue, device));
-    unlock();
+    queues_.insert(queue);
 }
 
 gmacError_t Mode::setActiveQueue(cl_command_queue queue)
 {
-    lockRead();
-    StreamMap::const_iterator i = queues_.find(queue);
-    bool valid = (i != queues_.end());
-    unlock();
+    bool valid = queues_.exists(queue);
     if(valid == false) return gmacErrorInvalidValue;
     active_ = queue;
+    lock();
     return gmacSuccess;
+}
+
+void Mode::deactivateQueue()
+{
+    active_ = cl_command_queue(0);
+    unlock();
 }
 
 void Mode::removeQueue(cl_command_queue queue)
 {
     if(active_ == queue) active_ = cl_command_queue(0);
-    lockWrite();
-    queues_.erase(queue);
-    unlock();
+    queues_.remove(queue);
 }
 
 gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)

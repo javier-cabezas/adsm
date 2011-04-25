@@ -44,7 +44,8 @@ WITH THE SOFTWARE.  */
 
 #include <CL/cl.h>
 
-#include <vector>
+#include <map>
+#include <set>
 
 namespace __impl {
     
@@ -53,6 +54,21 @@ class IOBuffer;
 }
 
 namespace opencl { namespace lite {
+
+class GMAC_LOCAL QueueSet :
+    protected std::set<cl_command_queue>,
+    public gmac::util::RWLock {
+protected:
+    typedef std::set<cl_command_queue> Parent;
+public:
+    QueueSet();
+    virtual ~QueueSet();
+
+    void insert(cl_command_queue queue);
+    bool exists(cl_command_queue queue);
+    void remove(cl_command_queue queue);
+
+};
 
 //! Visual studio produces a stupid warning due to the complex diamond inheritance
 #if defined(_MSC_VER)
@@ -63,14 +79,14 @@ namespace opencl { namespace lite {
 class GMAC_LOCAL Mode :
     public opencl::Mode,
     public core::Mode,
-    public gmac::util::RWLock
+    public gmac::util::Lock
 {
     friend class IOBuffer;
 protected:
     cl_context context_;
     typedef std::map<cl_command_queue, cl_device_id> StreamMap;
     StreamMap streams_;
-    StreamMap queues_;
+    QueueSet queues_;
     cl_command_queue active_;
 
     memory::ObjectMap map_;
@@ -95,7 +111,7 @@ public:
      * Add a new command queue to the active set
      * \param queue New command queue in the mode
      */
-    void addQueue(cl_device_id device, cl_command_queue queue);
+    void addQueue(cl_command_queue queue);
 
     /**
      * Set the active command queue
@@ -103,6 +119,11 @@ public:
      * \return Error code
      */
     gmacError_t setActiveQueue(cl_command_queue queue);
+
+    /**
+     * Deactivates the command queue
+     */
+    void deactivateQueue();
 
     /**
      * Removes a command queue from the mode
