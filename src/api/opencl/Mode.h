@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace opencl {
 
 //! A Mode represents a virtual accelerator 
-class GMAC_LOCAL Mode : public virtual core::Mode {
+class GMAC_LOCAL Mode {
 public:
     //! Default destructor
     virtual ~Mode() { };

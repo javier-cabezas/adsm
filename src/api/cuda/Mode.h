@@ -51,7 +51,7 @@ namespace cuda {
 
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public virtual core::Mode {
+class GMAC_LOCAL Mode {
 protected:
 public:
     //! Default destructor
