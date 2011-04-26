@@ -80,7 +80,7 @@ protected:
      * \return Error code
      */
     gmacError_t memcpyToObject(core::Mode &mode,
-                               const Object &obj, size_t objOffset,
+                               Object &obj, size_t objOffset,
                                const hostptr_t src, size_t size);
 
     /** Copy data from object to object
@@ -95,8 +95,8 @@ protected:
      * \return Error code
      */
     gmacError_t memcpyToObject(core::Mode &mode,
-                               const Object &dstObj, size_t dstOffset,
-                               const Object &srcObj, size_t srcOffset,
+                               Object &dstObj, size_t dstOffset,
+                               Object &srcObj, size_t srcOffset,
                                size_t size);
 
     /**
@@ -109,7 +109,7 @@ protected:
      * \return Error code
      */
     gmacError_t memcpyFromObject(core::Mode &mode,
-                                 hostptr_t dst, const Object &obj,
+                                 hostptr_t dst, Object &obj,
                                  size_t objOffset, size_t size);
 
     /**

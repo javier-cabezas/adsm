@@ -50,8 +50,8 @@ namespace core {
 
 namespace memory {
 
-template<typename T>
-class GMAC_LOCAL DistributedBlock : public StateBlock<T> {
+template<typename State>
+class GMAC_LOCAL DistributedBlock : public StateBlock<State> {
 protected:
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
 	AcceleratorMap acceleratorAddr_;
@@ -66,7 +66,7 @@ public:
         \param init Initial block state
     */
 	DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
-		hostptr_t hostAddr, size_t size, T init);
+                     hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
     //! Default destructor
     virtual ~DistributedBlock();
@@ -81,9 +81,8 @@ public:
 
 	accptr_t acceleratorAddr(core::Mode &current) const;
 
-	gmacError_t toHost() const;
-
-	gmacError_t toAccelerator();
+    gmacError_t toHost(unsigned blockOff, size_t count);
+    gmacError_t toAccelerator(unsigned blockOff, size_t count);
 
     gmacError_t copyToHost(const hostptr_t src, size_t size, 
         size_t blockOffset = 0) const;

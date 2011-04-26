@@ -197,10 +197,6 @@ gmacError_t Manager::releaseObjects(core::Mode &mode)
         // Release global per-process objects
         core::Process::getInstance().protocol().releaseObjects();
     }
-#ifdef USE_VM
-    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    acceleratorBitmap.release();
-#endif
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -223,9 +219,9 @@ gmacError_t Manager::toIOBuffer(core::Mode &mode, core::IOBuffer &buffer, size_t
 
 #ifdef USE_VM
         CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
-        vm::BitmapShared &acceleratorBitmap = mode->acceleratorDirtyBitmap();
-        if (acceleratorBitmap.isReleased()) {
-            acceleratorBitmap.acquire();
+        vm::Bitmap &bitmap = mode->getBitmap();
+        if (bitmap.isReleased()) {
+            bitmap.acquire();
             mode->forEachObject(&Object::acquireWithBitmap);
         }
 #endif
@@ -269,9 +265,9 @@ gmacError_t Manager::fromIOBuffer(core::Mode &mode, hostptr_t addr, core::IOBuff
         }
 #ifdef USE_VM
         CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
-        vm::BitmapShared &acceleratorBitmap = mode->acceleratorDirtyBitmap();
-        if (acceleratorBitmap.isReleased()) {
-            acceleratorBitmap.acquire();
+        vm::Bitmap &bitmap = mode->getBitmap();
+        if (bitmap.isReleased()) {
+            bitmap.acquire();
             mode->forEachObject(&Object::acquireWithBitmap);
         }
 #endif
@@ -303,9 +299,9 @@ Manager::read(core::Mode &mode, hostptr_t addr)
     trace::EnterCurrentFunction();
 #ifdef USE_VM
     CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (acceleratorBitmap.isReleased()) {
-        acceleratorBitmap.acquire();
+    vm::Bitmap &bitmap = mode.getBitmap();
+    if (bitmap.isReleased()) {
+        bitmap.acquire();
         mode.forEachObject(&Object::acquireWithBitmap);
     }
 #endif
@@ -329,9 +325,9 @@ Manager::write(core::Mode &mode, hostptr_t addr)
     trace::EnterCurrentFunction();
 #ifdef USE_VM
     CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
-    if (acceleratorBitmap.isReleased()) {
-        acceleratorBitmap.acquire();
+    vm::Bitmap &bitmap = mode.getBitmap();
+    if (bitmap.isReleased()) {
+        bitmap.acquire();
         mode.forEachObject(&Object::acquireWithBitmap);
     }
 #endif
@@ -361,10 +357,10 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     }
 
 #ifdef USE_VM
-    CFATAL(owner->releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::BitmapShared &acceleratorBitmap = owner->acceleratorDirtyBitmap();
-    if (acceleratorBitmap.isReleased()) {
-        acceleratorBitmap.acquire();
+    CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
+    vm::Bitmap &bitmap = mode->getBitmap();
+    if (bitmap.isReleased()) {
+        bitmap.acquire();
         mode->forEachObject(&Object::acquireWithBitmap);
     }
 #endif
@@ -424,7 +420,7 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
 
 
 gmacError_t
-Manager::memcpyToObject(core::Mode &mode, const Object &obj, size_t objOffset, const hostptr_t src, size_t size)
+Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const hostptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -475,8 +471,8 @@ Manager::memcpyToObject(core::Mode &mode, const Object &obj, size_t objOffset, c
 
 gmacError_t
 Manager::memcpyToObject(core::Mode &mode,
-                        const Object &dstObj, size_t dstOffset,
-                        const Object &srcObj, size_t srcOffset, size_t size)
+                        Object &dstObj, size_t dstOffset,
+                        Object &srcObj, size_t srcOffset, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -556,7 +552,7 @@ Manager::memcpyToObject(core::Mode &mode,
 
 gmacError_t
 Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
-                          const Object &obj, size_t objOffset, size_t size)
+                          Object &obj, size_t objOffset, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;

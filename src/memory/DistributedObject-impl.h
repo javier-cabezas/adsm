@@ -1,14 +1,14 @@
-#ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_IMPL_H_
-#define GMAC_MEMORY_DISTRIBUTEDOBJECT_IMPL_H_
+#ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_INST_H_
+#define GMAC_MEMORY_DISTRIBUTEDOBJECT_INST_H_
 
 #include "core/Mode.h"
 #include "memory/DistributedBlock.h"
 
 namespace __impl { namespace memory {
 
-template<typename T>
-inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &owner,
-											   hostptr_t cpuAddr, size_t size, T init) :
+template<typename State>
+inline DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
+											   hostptr_t cpuAddr, size_t size, typename State::ProtocolState init) :
     Object(cpuAddr, size)
 {
     // Allocate memory (if necessary)
@@ -48,7 +48,7 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
-			new DistributedBlock<T>(protocol, addr_ + offset, shadow_ + offset, blockSize, init)));
+			new DistributedBlock<State>(protocol, addr_ + offset, shadow_ + offset, blockSize, init)));
         size -= blockSize;
         offset += int(blockSize);
     }
@@ -57,8 +57,8 @@ inline DistributedObject<T>::DistributedObject(Protocol &protocol, core::Mode &o
 }
 
 
-template<typename T>
-inline DistributedObject<T>::~DistributedObject()
+template<typename State>
+inline DistributedObject<State>::~DistributedObject()
 {
     AcceleratorMap::iterator i;
     for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -72,8 +72,8 @@ inline DistributedObject<T>::~DistributedObject()
     TRACE(LOCAL, "Destroying Distributed Object @ %p", addr_);
 }
 
-template<typename T>
-inline accptr_t DistributedObject<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+template<typename State>
+inline accptr_t DistributedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	accptr_t ret = accptr_t(0);
 	lockRead();
@@ -85,8 +85,8 @@ inline accptr_t DistributedObject<T>::acceleratorAddr(core::Mode &current, const
 	return ret;
 }
 
-template<typename T>
-inline core::Mode &DistributedObject<T>::owner(core::Mode &current, const hostptr_t addr) const
+template<typename State>
+inline core::Mode &DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
 	lockRead();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
@@ -97,8 +97,8 @@ inline core::Mode &DistributedObject<T>::owner(core::Mode &current, const hostpt
 }
 
 
-template<typename T>
-inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
+template<typename State>
+inline gmacError_t DistributedObject<State>::addOwner(core::Mode &mode)
 {
     accptr_t acceleratorAddr = accptr_t(0);
 #ifdef USE_VM
@@ -129,7 +129,7 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         TRACE(LOCAL, "CUCU_BLOCKS");
         ptroff_t offset = ptroff_t(i->second->addr() - addr_);
-        DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*i->second);
+        DistributedBlock<State> &block = dynamic_cast<DistributedBlock<State> &>(*i->second);
         block.addOwner(mode, acceleratorAddr + offset);
     }
     TRACE(LOCAL, "Add owner %p Object @ %p", &mode, addr_);
@@ -137,8 +137,8 @@ inline gmacError_t DistributedObject<T>::addOwner(core::Mode &mode)
 	return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedObject<T>::removeOwner(core::Mode &mode)
+template<typename State>
+inline gmacError_t DistributedObject<State>::removeOwner(core::Mode &mode)
 {
     TRACE(LOCAL, "Remove owner %p Object @ %p", &mode, addr_);
 
@@ -161,7 +161,7 @@ inline gmacError_t DistributedObject<T>::removeOwner(core::Mode &mode)
 
     BlockMap::iterator j;
     for(j = blocks_.begin(); j != blocks_.end(); j++) {
-        DistributedBlock<T> &block = dynamic_cast<DistributedBlock<T> &>(*j->second);
+        DistributedBlock<State> &block = dynamic_cast<DistributedBlock<State> &>(*j->second);
         block.removeOwner(mode);
     }
     //i->first->unmap(i->second, size_);
@@ -171,17 +171,17 @@ inline gmacError_t DistributedObject<T>::removeOwner(core::Mode &mode)
 	return gmacSuccess;
 }
 
-template<typename T>
+template<typename State>
 inline
-gmacError_t DistributedObject<T>::mapToAccelerator()
+gmacError_t DistributedObject<State>::mapToAccelerator()
 {
     // TODO Fail
 	return gmacSuccess;
 }
 
-template<typename T>
+template<typename State>
 inline
-gmacError_t DistributedObject<T>::unmapFromAccelerator()
+gmacError_t DistributedObject<State>::unmapFromAccelerator()
 {
     // TODO Fail
 	return gmacSuccess;

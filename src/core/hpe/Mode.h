@@ -99,7 +99,7 @@ protected:
     allocator::Buddy *ioMemory_;
 
 #ifdef USE_VM
-    __impl::memory::vm::BitmapShared acceleratorBitmap_;
+    __impl::memory::vm::Bitmap bitmap_;
 #endif
 
     ContextMap contextMap_;
@@ -312,6 +312,14 @@ public:
     void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
 
     /**
+     * Returns the kernel name identified by k
+     *
+     * \param k A key that identifies the kernel object
+     * \param kernel A reference to the kernel to be registered
+     */
+    std::string getKernelName(gmac_kernel_id_t k) const;
+
+    /**
      * Moves the mode to accelerator acc
      * \param acc Accelerator to move the mode to
      * \return Error code
@@ -324,6 +332,8 @@ public:
      * and waits for pending transfers
      */
     TESTABLE gmacError_t releaseObjects();
+
+    gmacError_t dump(std::string name, memory::protocol::common::Statistic stat, hostptr_t ptr = NULL);
 
     /**
      * Waits for kernel execution and acquires the ownership of the objects

@@ -24,6 +24,13 @@ __global__ void vecAdd(float *c, float *a, float *b, size_t size)
     c[i] = a[i] + b[i];
 }
 
+void init(float *ptr, unsigned s, float v)
+{
+    for(unsigned i = 0; i < s; i++) {
+        ptr[i] = v;
+    }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -48,8 +55,10 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    randInit(a, vecSize);
-    randInit(b, vecSize);
+    //randInit(a, vecSize);
+    //randInit(b, vecSize);
+    init(a, vecSize, 1.f);
+    init(b, vecSize, 1.f);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 

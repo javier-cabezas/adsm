@@ -14,23 +14,23 @@ VariableDescriptor::VariableDescriptor(const char *name, gmacVariable_t key, boo
 }
 
 Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
-    VariableDescriptor(v.name(), v.key(), v.constant())
+    VariableDescriptor(v.getName(), v.key(), v.constant())
 {
 #if CUDA_VERSION > 3010
     size_t tmp;
 #else
     unsigned int tmp;
 #endif
-    TRACE(LOCAL, "Creating new accelerator variable: %s", v.name());
-    CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, name());
+    TRACE(LOCAL, "Creating new accelerator variable: %s", v.getName());
+    CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, getName());
     ASSERTION(ret == CUDA_SUCCESS);
     size_ = tmp;
 }
 
 Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
-    TextureDescriptor(t.name(), t.key())
+    TextureDescriptor(t.getName(), t.key())
 {
-    CUresult ret = cuModuleGetTexRef(&texRef_, mod, name());
+    CUresult ret = cuModuleGetTexRef(&texRef_, mod, getName());
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
@@ -93,7 +93,7 @@ Module::Module(const ModuleDescriptorVector & dVector)
 
         ModuleDescriptor::KernelVector::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
-            TRACE(LOCAL, "Registering kernel: %s", k->name());
+            TRACE(LOCAL, "Registering kernel: %s", k->getName());
             Kernel * kernel = new cuda::hpe::Kernel(*k, mod);
             kernels_.insert(KernelMap::value_type(k->key(), kernel));
         }
@@ -101,25 +101,25 @@ Module::Module(const ModuleDescriptorVector & dVector)
         ModuleDescriptor::VariableVector::const_iterator v;
         for (v = d.variables_.begin(); v != d.variables_.end(); v++) {
             VariableNameMap::const_iterator f;
-            f = variablesByName_.find(v->name());
+            f = variablesByName_.find(v->getName());
             if (f != variablesByName_.end()) {
-                FATAL("Variable already registered: %s", v->name());
+                FATAL("Variable already registered: %s", v->getName());
             } else {
-                TRACE(LOCAL, "Registering variable: %s", v->name());
+                TRACE(LOCAL, "Registering variable: %s", v->getName());
                 variables_.insert(VariableMap::value_type(v->key(), Variable(*v, mod)));
-                variablesByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod)));
+                variablesByName_.insert(VariableNameMap::value_type(std::string(v->getName()), Variable(*v, mod)));
             }
         }
 
         for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
             VariableNameMap::const_iterator f;
-            f = constantsByName_.find(v->name());
+            f = constantsByName_.find(v->getName());
             if (f != constantsByName_.end()) {
-                FATAL("Constant already registered: %s", v->name());
+                FATAL("Constant already registered: %s", v->getName());
             }
-            TRACE(LOCAL, "Registering constant: %s", v->name());
+            TRACE(LOCAL, "Registering constant: %s", v->getName());
             constants_.insert(VariableMap::value_type(v->key(), Variable(*v, mod)));
-            constantsByName_.insert(VariableNameMap::value_type(std::string(v->name()), Variable(*v, mod)));
+            constantsByName_.insert(VariableNameMap::value_type(std::string(v->getName()), Variable(*v, mod)));
         }
 
         ModuleDescriptor::TextureVector::const_iterator t;

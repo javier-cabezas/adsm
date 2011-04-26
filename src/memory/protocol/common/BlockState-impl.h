@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,28 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DESCRIPTOR_H_
-#define GMAC_CORE_HPE_DESCRIPTOR_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
 
-#include "config/common.h"
+namespace __impl {
+namespace memory { namespace protocol { namespace common {
 
+template <typename T>
+inline
+BlockState<T>::BlockState(ProtocolState init) :
+    state_(init)
+{
+}
 
-namespace __impl { namespace core { namespace hpe {
+template <typename T>
+inline
+T
+BlockState<T>::getState() const
+{
+    return state_;
+}
 
-template <typename K>
-class GMAC_LOCAL Descriptor {
-protected:
-    K key_;
-    const char * name_;
+template <typename T>
+inline
+void
+BlockState<T>::setState(ProtocolState state)
+{
+    state_ = state;
+}
 
-public:
-    Descriptor(const char * name, K key);
-    const char * getName() const;
-    K key() const;
-};
+}}}}
 
-}}}
+#endif /* BLOCKSTATE_IMPL_H */
 
-#include "Descriptor-impl.h"
-
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

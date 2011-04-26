@@ -15,7 +15,7 @@ Descriptor<K>::Descriptor(const char * name, K key) :
 
 template <typename K>
 inline const char *
-Descriptor<K>::name() const
+Descriptor<K>::getName() const
 {
     return name_;
 }

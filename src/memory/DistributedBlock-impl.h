@@ -1,5 +1,5 @@
-#ifndef GMAC_MEMORY_DISTRIBUTEDBLOCK_IMPL_H_
-#define GMAC_MEMORY_DISTRIBUTEDBLOCK_IMPL_H_
+#ifndef GMAC_MEMORY_DISTRIBUTEDBLOCK_INST_H_
+#define GMAC_MEMORY_DISTRIBUTEDBLOCK_INST_H_
 
 #include <algorithm>
 
@@ -8,21 +8,21 @@
 
 namespace __impl { namespace memory {
 
-template<typename T>
-inline DistributedBlock<T>::DistributedBlock(Protocol &protocol, hostptr_t hostAddr,
-											 hostptr_t shadowAddr, size_t size, T init) :
-    StateBlock<T>(protocol, hostAddr, shadowAddr, size, init)
+template<typename State>
+inline DistributedBlock<State>::DistributedBlock(Protocol &protocol, hostptr_t hostAddr,
+											 hostptr_t shadowAddr, size_t size, typename State::ProtocolState init) :
+    StateBlock<State>(protocol, hostAddr, shadowAddr, size, init)
 {
 }
 
-template<typename T>
-inline DistributedBlock<T>::~DistributedBlock()
+template<typename State>
+inline DistributedBlock<State>::~DistributedBlock()
 {}
 
-template<typename T>
-inline void DistributedBlock<T>::addOwner(core::Mode &mode, accptr_t addr)
+template<typename State>
+inline void DistributedBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
 {
-	StateBlock<T>::lock();
+	StateBlock<State>::lock();
 
     AcceleratorMap::iterator it = acceleratorAddr_.find(addr);
 
@@ -32,21 +32,21 @@ inline void DistributedBlock<T>::addOwner(core::Mode &mode, accptr_t addr)
         AcceleratorMap::iterator it = acceleratorAddr_.find(addr);
         it->second.push_back(&mode);
 
-        if(StateBlock<T>::protocol_.needUpdate(*this) == true) {
-            gmacError_t ret = mode.copyToAccelerator(addr, StateBlock<T>::shadow_, StateBlock<T>::size_);
+        if(StateBlock<State>::protocol_.needUpdate(*this) == true) {
+            gmacError_t ret = mode.copyToAccelerator(addr, StateBlock<State>::shadow_, StateBlock<State>::size_);
             ASSERTION(ret == gmacSuccess);
         }
     } else {
         it->second.push_back(&mode);
     }
 
-    StateBlock<T>::unlock();
+    StateBlock<State>::unlock();
 }
 
-template<typename T>
-inline void DistributedBlock<T>::removeOwner(core::Mode &mode)
+template<typename State>
+inline void DistributedBlock<State>::removeOwner(core::Mode &mode)
 {
-	StateBlock<T>::lock();
+	StateBlock<State>::lock();
 
     AcceleratorMap::iterator i;
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -59,21 +59,21 @@ inline void DistributedBlock<T>::removeOwner(core::Mode &mode)
         }
     }
 
-	StateBlock<T>::unlock();
+	StateBlock<State>::unlock();
 }
 
-template<typename T>
-inline core::Mode &DistributedBlock<T>::owner(core::Mode &current) const
+template<typename State>
+inline core::Mode &DistributedBlock<State>::owner(core::Mode &current) const
 {
     return current;
 }
 
-template<typename T>
-inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+template<typename State>
+inline accptr_t DistributedBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
 	accptr_t ret = accptr_t(0);
 
-	StateBlock<T>::lock();
+	StateBlock<State>::lock();
 	AcceleratorMap::const_iterator i;
     TRACE(LOCAL, "Accelerator address for %p @ Context %p", addr, &current);
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -82,22 +82,22 @@ inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current, const 
         it = std::find(list.begin(), list.end(), &current);
 
         if (it != list.end()) {
-            ret = i->first + int(addr - StateBlock<T>::addr_);
+            ret = i->first + int(addr - StateBlock<State>::addr_);
             break;
         }
 
     }
     ASSERTION(i != acceleratorAddr_.end());
-	StateBlock<T>::unlock();
+	StateBlock<State>::unlock();
 	return ret;
 }
 
-template<typename T>
-inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current) const
+template<typename State>
+inline accptr_t DistributedBlock<State>::acceleratorAddr(core::Mode &current) const
 {
 	accptr_t ret = accptr_t(0);
 
-	StateBlock<T>::lock();
+	StateBlock<State>::lock();
 
     AcceleratorMap::const_iterator i;
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -108,51 +108,48 @@ inline accptr_t DistributedBlock<T>::acceleratorAddr(core::Mode &current) const
         }
     }
 
-	StateBlock<T>::unlock();
+	StateBlock<State>::unlock();
 	return ret;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::toHost() const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::toHost(unsigned /*blockOff*/, size_t /*count*/)
 {
 	return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::toAccelerator()
+template<typename State>
+inline gmacError_t DistributedBlock<State>::toAccelerator(unsigned blockOff, size_t count)
 {
-	gmacError_t ret = gmacSuccess;
+    gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
 	for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         const std::list<core::Mode *> &list = i->second;
         ASSERTION(list.size() > 0);
         core::Mode *mode = list.front();
-		ret = mode->copyToAccelerator(i->first, StateBlock<T>::shadow_, StateBlock<T>::size_);
+		ret = mode->copyToAccelerator(i->first + blockOff, StateBlock<State>::shadow_ + blockOff, count);
 		if(ret != gmacSuccess) break;
 	}
-#ifdef USE_VM
-    Block::resetBitmapStats();
-#endif
 	return ret;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
 {
-    ::memcpy(StateBlock<T>::shadow_ + blockOffset, src, size);
+    ::memcpy(StateBlock<State>::shadow_ + blockOffset, src, size);
     return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToHost(core::IOBuffer &buffer, size_t size, 
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyToHost(core::IOBuffer &buffer, size_t size, 
 												size_t bufferOffset, size_t blockOffset) const
 {
-	::memcpy(StateBlock<T>::shadow_ + blockOffset, buffer.addr() + bufferOffset, size);
+	::memcpy(StateBlock<State>::shadow_ + blockOffset, buffer.addr() + bufferOffset, size);
 	return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;
@@ -166,8 +163,8 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(const hostptr_t src, s
 	return ret;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyToAccelerator(core::IOBuffer &buffer, size_t size, 
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyToAccelerator(core::IOBuffer &buffer, size_t size, 
 												  size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
@@ -182,45 +179,45 @@ inline gmacError_t DistributedBlock<T>::copyToAccelerator(core::IOBuffer &buffer
 	return ret;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
 {
-    ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
+    ::memcpy(dst, StateBlock<State>::shadow_ + blockOffset, size);
     return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromHost(core::IOBuffer &buffer, size_t size, 
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyFromHost(core::IOBuffer &buffer, size_t size, 
 												  size_t bufferOffset, size_t blockOffset) const
 {
-	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
+	::memcpy(buffer.addr() + bufferOffset, StateBlock<State>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
 {
-    ::memcpy(dst, StateBlock<T>::shadow_ + blockOffset, size);
+    ::memcpy(dst, StateBlock<State>::shadow_ + blockOffset, size);
     return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
+template<typename State>
+inline gmacError_t DistributedBlock<State>::copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
 													size_t bufferOffset, size_t blockOffset) const
 {
-	::memcpy(buffer.addr() + bufferOffset, StateBlock<T>::shadow_ + blockOffset, size);
+	::memcpy(buffer.addr() + bufferOffset, StateBlock<State>::shadow_ + blockOffset, size);
 	return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::hostMemset(int v, size_t size, size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::hostMemset(int v, size_t size, size_t blockOffset) const
 {
-    ::memset(StateBlock<T>::shadow_ + blockOffset, v, size);
+    ::memset(StateBlock<State>::shadow_ + blockOffset, v, size);
     return gmacSuccess;
 }
 
-template<typename T>
-inline gmacError_t DistributedBlock<T>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
+template<typename State>
+inline gmacError_t DistributedBlock<State>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	AcceleratorMap::const_iterator i;

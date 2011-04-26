@@ -75,21 +75,7 @@ size_t ObjectMap::memorySize() const
     return total;
 }
 
-gmacError_t ObjectMap::forEach(ObjectOp op) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*op)();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
-
+#if 0
 gmacError_t ObjectMap::forEach(ConstObjectOp op) const
 {
     const_iterator i;
@@ -105,20 +91,8 @@ gmacError_t ObjectMap::forEach(ConstObjectOp op) const
     return gmacSuccess;
 }
 
-gmacError_t ObjectMap::forEach(core::Mode &mode, ModeOp op) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*op)(mode);
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
+
+#endif
 
 
 }}
