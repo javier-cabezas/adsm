@@ -69,5 +69,6 @@ Mode *ModeMap::owner(const hostptr_t addr, size_t size) const
     return ret;
 }
 
+
 }}}
 #endif

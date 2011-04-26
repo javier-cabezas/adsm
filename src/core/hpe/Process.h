@@ -256,7 +256,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    memory::Protocol &protocol();
+    memory::Protocol *protocol();
 
     /**
      * Gets the object map that contains all the shared objects allocated in the
