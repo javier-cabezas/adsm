@@ -133,13 +133,15 @@ Module::Module(const ModuleDescriptorVector & dVector)
 
 Module::~Module()
 {
-    std::vector<CUmodule>::const_iterator m;
-
-    for(m = mods_.begin(); m != mods_.end(); m++) {
-        CUresult ret = cuModuleUnload(*m);
-        ASSERTION(ret == CUDA_SUCCESS);
+    if(core::Process::isValid()) {
+        std::vector<CUmodule>::const_iterator m;
+        for(m = mods_.begin(); m != mods_.end(); m++) {
+            CUresult ret = cuModuleUnload(*m);
+            ASSERTION(ret == CUDA_SUCCESS);
+        }
     }
     mods_.clear();
+    
 
     // TODO: remove objects from maps
 #if 0
