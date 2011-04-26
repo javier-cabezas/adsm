@@ -61,13 +61,10 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    if(clMalloc(context, (void **)&a, vecSize * sizeof(float)) != CL_SUCCESS)
-        abort();
-    if(clMalloc(context, (void **)&b, vecSize * sizeof(float)) != CL_SUCCESS)
-        abort();
+    assert(clMalloc(context, (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(clMalloc(context, (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
     // Alloc output data
-    if(clMalloc(context, (void **)&c, vecSize * sizeof(float)) != CL_SUCCESS)
-        abort();
+    assert(clMalloc(context, (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -85,30 +82,27 @@ int main(int argc, char *argv[])
     }
     
 
-#if 0
     // Call the kernel
     getTime(&s);
-    size_t localSize = blockSize;
-    size_t globalSize = vecSize / blockSize;
-    if(vecSize % blockSize) globalSize++;
-    globalSize *= localSize;
+    size_t local_size = blockSize;
+    size_t global_size = vecSize / blockSize;
+    if(vecSize % blockSize) global_size++;
+    global_size *= local_size;
 
-    OclKernel kernel;
+    cl_mem c_device = clBuffer(context, c);
+    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &c_device) == CL_SUCCESS);
+    cl_mem a_device = clBuffer(context, a);
+    assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &a_device) == CL_SUCCESS);
+    cl_mem b_device = clBuffer(context, b);
+    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &b_device) == CL_SUCCESS);
+    assert(clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == CL_SUCCESS);
 
-    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
-    cl_mem tmp = cl_mem(oclPtr(c));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
-    tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
-    tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
+    assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL) == CL_SUCCESS);
+    assert(clFinish(command_queue) == CL_SUCCESS);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
+
 
     getTime(&s);
     float error = 0.f;
@@ -126,9 +120,8 @@ int main(int argc, char *argv[])
         abort();
     }
 
-    oclFree(a);
-    oclFree(b);
-    oclFree(c);
-#endif
+    clFree(context, a);
+    clFree(context, b);
+    clFree(context, c);
     return 0;
 }

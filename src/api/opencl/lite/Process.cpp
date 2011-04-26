@@ -27,15 +27,19 @@ gmacError_t Process::globalFree(memory::Object &)
 
 accptr_t Process::translate(const hostptr_t addr)
 {
-    //TODO: implement
-    return accptr_t(0);
+    Mode *mode = map_.owner(addr, 0);
+    if(mode == NULL) return accptr_t(0);
+    memory::Object *object = mode->getObject(addr);
+    if(object == NULL) return accptr_t(0);
+    accptr_t ret = object->acceleratorAddr(*mode, addr);
+    object->release();
+    return ret;
 }
 
 
-memory::Protocol &Process::protocol()
+memory::Protocol *Process::protocol()
 {
-    FATAL("Global Memory Protocol not implemented in GMAC-lite");
-    return *(memory::Protocol *)0;
+    return NULL;
 }
 
 void Process::insertOrphan(memory::Object &)
@@ -46,7 +50,6 @@ void Process::insertOrphan(memory::Object &)
 core::Mode *Process::owner(const hostptr_t addr, size_t size) const
 {
     return map_.owner(addr, size);
-    // TODO: Implement
     
     return NULL;
 }

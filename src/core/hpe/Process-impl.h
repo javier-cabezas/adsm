@@ -19,10 +19,10 @@ Process::getAccelerator(unsigned i)
     return accs_[i];
 }
 
-inline memory::Protocol &
+inline memory::Protocol *
 Process::protocol()
 {
-    return protocol_;
+    return &protocol_;
 }
 
 inline memory::ObjectMap &

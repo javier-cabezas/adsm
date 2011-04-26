@@ -117,7 +117,9 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
         }
     }
 
-    Object *object = proc.protocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    Protocol *protocol = proc.protocol();
+    if(protocol == NULL) return gmacErrorInvalidValue;
+    Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->release();
@@ -195,7 +197,8 @@ gmacError_t Manager::releaseObjects(core::Mode &mode)
     }
     if(ret == gmacSuccess) {
         // Release global per-process objects
-        core::Process::getInstance().protocol().releaseObjects();
+        Protocol *protocol = core::Process::getInstance().protocol();
+        if(protocol != NULL) protocol->releaseObjects();
     }
     trace::ExitCurrentFunction();
     return ret;
