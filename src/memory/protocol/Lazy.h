@@ -41,7 +41,8 @@ WITH THE SOFTWARE.  */
 #include "memory/Protocol.h"
 #include "util/Lock.h"
 
-#include "BlockList.h"
+#include "common/BlockList.h"
+#include "lazy/BlockState.h"
 
 namespace __impl {
 
@@ -53,7 +54,8 @@ namespace core {
 namespace memory {
 class Object;
 class Block;
-template<typename T> class StateBlock;
+
+template <typename State> class StateBlock;
 
 namespace protocol { 
 //! A lazy memory coherence protocol
@@ -64,20 +66,13 @@ namespace protocol {
 */
 class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
-    //! Protocol states
-    typedef enum {
-        Invalid, /*!< Valid copy of the data in accelerator memory */
-        ReadOnly, /*!< Valid copy of the data in both host and accelerator memory */
-        Dirty, /*!< Valid copy of the data in host memory */
-        HostOnly /*< Data only allowed in host memory */
-    } State;
 protected:
     //! Return the state corresponding to a memory protection
     /*!
         \param prot Memory protection
         \return Protocol state
     */
-	State state(GmacProtection prot) const;
+    lazy::State state(GmacProtection prot) const;
 
     //! Maximum number of blocks in dirty state
     size_t limit_;
@@ -97,6 +92,8 @@ protected:
 
     //! Default destructor
     virtual ~LazyBase();
+
+    gmacError_t copyToAccelerator(lazy::Block &block);
 
 public:
     // Protocol Interface
@@ -128,17 +125,19 @@ public:
 
     gmacError_t toAccelerator(Block &block);
 
-	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t blockOffset) const;
+	gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size, 
+		size_t bufferOffset, size_t blockOffset);
 	
-	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		size_t bufferOffset, size_t blockOffset) const;
+	gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+		size_t bufferOffset, size_t blockOffset);
 
     gmacError_t memset(const Block &block, int v, size_t size, 
-        size_t blockOffset) const;
+        size_t blockOffset);
+
+    gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
 };
 
-template<typename T>
+template <typename T>
 class GMAC_LOCAL Lazy : public LazyBase {
 public:
     //! Default constructor

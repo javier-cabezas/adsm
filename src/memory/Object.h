@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
+#include "util/Atomics.h"
 #include "util/Lock.h"
 #include "util/Reference.h"
 #include "memory/Protocol.h"
@@ -53,8 +54,13 @@ namespace memory {
 
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
     DBC_FORCE_TEST(Object)
-
 protected:
+#ifdef DEBUG
+    static Atomic Id_;
+    unsigned id_;
+    std::map<protocol::common::Statistic, unsigned> dumps_;
+#endif
+
     //! Object host memory address
     hostptr_t addr_;
 
@@ -75,16 +81,16 @@ protected:
     */
     BlockMap::const_iterator firstBlock(size_t &objectOffset) const;
 
-    //! Execute a coherence operation over all the blocks of the object
+    //! Execute a coherence operation on all the blocks of the object
     /*!
         \param op Coherence operation to be performed
         \return Error code
         \sa __impl::memory::Block::toHost
         \sa __impl::memory::Block::toAccelerator
     */
-    gmacError_t coherenceOp(Protocol::CoherenceOp op) const;
+    gmacError_t coherenceOp(gmacError_t (Protocol::*f)(Block &));
 
-    //! Execute a memory operation involving an I/O buffer over all the blocks of the object
+    //! Execute a memory operation involving an I/O buffer on all the blocks of the object
     /*!
         \param op Memory operation to be executed
         \param buffer I/O buffer used in the memory operation
@@ -97,8 +103,18 @@ protected:
         \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
     */
-	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t objectOffset) const;
+	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
+                                  core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
+
+    /** Execute an operation on all the blocks of the object
+     *
+     * \param f Operation to be performed
+     * \param p1 Parameter to be passed
+     * \return Error code
+     * \sa __impl::memory::Block::dump
+     */
+    template <typename P1, typename P2>
+    gmacError_t forEachBlock(gmacError_t (Block::*f)(P1 &, P2), P1 &p1, P2 p2);
 
     //! Default constructor
     /*!
@@ -110,6 +126,11 @@ protected:
     //! Default destructor
 	virtual ~Object();
 public:
+#ifdef DEBUG
+    unsigned getId() const;
+    unsigned getDumps(protocol::common::Statistic stat);
+#endif
+
     //! Get the starting host memory address of the object
     /*!
         \return Starting host memory address of the object
@@ -182,42 +203,51 @@ public:
     /*!
       \return Error code
     */
-    gmacError_t acquire() const;
+    gmacError_t acquire();
 
 #ifdef USE_VM
     //! Acquire the ownership of the object for the CPU (VM version)
     /*!
       \return Error code
     */
-    gmacError_t acquireWithBitmap() const;
+    gmacError_t acquireWithBitmap();
 #endif
+
+    //! Dump object information to a file
+    /*!
+      \param param std::ostream to write information to
+      \param stat protocol::commo
+        \sa __impl::memory::protcol::common::Statistitc
+      \return Error code
+    */
+    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
 
 
     //! Ensures that the object host memory contains an updated copy of the data
     /*!
       \return Error code
     */
-    gmacError_t toHost() const;
+    gmacError_t toHost();
 
     //! Ensures that the object accelerator memory contains an updated copy of the data
     /*!
       \return Error code
     */
-    gmacError_t toAccelerator() const;
+    gmacError_t toAccelerator();
 
     //! Signal handler for faults caused due to memory reads
     /*!
       \param addr Host memory address causing the fault
       \return Error code
     */
-    TESTABLE gmacError_t signalRead(hostptr_t addr) const;
+    TESTABLE gmacError_t signalRead(hostptr_t addr);
 
     //! Signal handler for faults caused due to memory writes
     /*!
       \param addr Host memory address causing the fault
       \return Error code
     */
-    TESTABLE gmacError_t signalWrite(hostptr_t addr) const;
+    TESTABLE gmacError_t signalWrite(hostptr_t addr);
 
     //! Copies the data from the object to an I/O buffer
     /*!
@@ -228,7 +258,7 @@ public:
         \return Error code
     */
     TESTABLE gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t size,
-                                      size_t bufferOffset = 0, size_t objectOffset = 0) const;
+                                      size_t bufferOffset = 0, size_t objectOffset = 0);
 
     //! Copies the data from an I/O buffer to the object
     /*!
@@ -239,7 +269,7 @@ public:
         \return Error code
     */
     TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size,
-                                        size_t bufferOffset = 0, size_t objectOffset = 0) const;
+                                        size_t bufferOffset = 0, size_t objectOffset = 0);
 
     //! Initializes a memory range within the object to a specific value
     /*!
@@ -248,7 +278,7 @@ public:
         \param size Size (in bytes) of the memory region to be initialized
         \return Error code
     */
-    TESTABLE gmacError_t memset(size_t offset, int v, size_t size) const;
+    TESTABLE gmacError_t memset(size_t offset, int v, size_t size);
 
     //! Adds the object to the coherence domain.
     /*!

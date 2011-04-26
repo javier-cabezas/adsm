@@ -83,68 +83,42 @@ Node::removeEntries(long_t startIndex, long_t endIndex)
 }
 
 inline
-StoreHost::StoreHost(Bitmap &root, size_t size, bool alloc) :
-    root_(root),
-    size_(size)
-{
-    TRACE(LOCAL, "StoreHost constructor");
-    if (alloc) {
-        entriesHost_ = hostptr_t(::malloc(size));
-        TRACE(LOCAL, "Allocating memory: %p", entriesHost_);
-        ::memset(entriesHost_, 0, size);
-    } else {
-        TRACE(LOCAL, "NOT Allocating memory");
-        entriesHost_ = NULL;
-    }
-}
-
-inline
-StoreHost::~StoreHost()
-{
-    TRACE(LOCAL, "StoreHost destructor");
-
-    if (entriesHost_ != NULL) {
-        ::free(entriesHost_);
-    }
-}
-
-inline
 bool
-StoreShared::isSynced() const
+Node::isSynced() const
 {
     return synced_;
 }
 
 inline
 void
-StoreShared::setSynced(bool synced)
+Node::setSynced(bool synced)
 {
     synced_ = synced;
 }
 
 inline
 accptr_t
-StoreShared::getAccAddr() const
+Node::getAccAddr() const
 {
     return entriesAcc_;
 }
 
 inline bool
-StoreShared::isDirty() const
+Node::isDirty() const
 {
     return dirty_;
 }
 
 inline
 void
-StoreShared::setDirty(bool dirty)
+Node::setDirty(bool dirty)
 {
     dirty_ = dirty;
 }
 
 inline
 void
-StoreShared::addDirtyEntry(long_t index)
+Node::addDirtyEntry(long_t index)
 {
     if (isDirty() == false) {
         firstDirtyEntry_ = index;
@@ -158,7 +132,7 @@ StoreShared::addDirtyEntry(long_t index)
 
 inline
 void
-StoreShared::addDirtyEntries(long_t startIndex, long_t endIndex)
+Node::addDirtyEntries(long_t startIndex, long_t endIndex)
 {
     if (isDirty() == false) {
         firstDirtyEntry_ = startIndex;
@@ -170,42 +144,46 @@ StoreShared::addDirtyEntries(long_t startIndex, long_t endIndex)
     }
 }
 
+#if 0
 inline
-StoreShared::StoreShared(Bitmap &root, size_t size, bool allocHost) :
-    StoreHost(root, size, allocHost),
-    entriesAccHost_(hostptr_t(::malloc(size))),
-    entriesAcc_(NULL),
+Node::StoreShared(Bitmap &root, size_t size, bool allocHost) :
     dirty_(false),
     synced_(true)
 {
     TRACE(LOCAL, "StoreShared constructor");
-    ::memset(entriesAccHost_, 0, size);
-}
+
+    }
+
+StoreShared::~StoreShared()
+{
+    TRACE(LOCAL, "StoreShared destructor");
+    }
+#endif
 
 template <typename T>
 inline void
-StoreShared::syncToHost(long_t startIndex, long_t endIndex)
+Node::syncToHost(long_t startIndex, long_t endIndex)
 {
     syncToHost(startIndex, endIndex, sizeof(T));
 }
 
 template <typename T>
 inline void
-StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex)
+Node::syncToAccelerator(long_t startIndex, long_t endIndex)
 {
     syncToAccelerator(startIndex, endIndex, sizeof(T));
 }
 
 inline
 long_t
-StoreShared::getFirstDirtyEntry()
+Node::getFirstDirtyEntry()
 {
     return firstDirtyEntry_;
 }
 
 inline
 long_t
-StoreShared::getLastDirtyEntry()
+Node::getLastDirtyEntry()
 {
     return lastDirtyEntry_;
 }
@@ -234,125 +212,94 @@ Node::getNextIndex(long_t index) const
     return index & ~mask_;
 }
 
-template <typename S>
-NodeStore<S>::NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
+#if 0
+Node::NodeStore(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
     Node(level, nEntries, nextEntries),
-    S(root, nEntries * (nextEntries.size() == 0? sizeof(uint8_t): sizeof(Node *)), nextEntries.size() > 0) // TODO: fix this. It does not work for StoreHost
+    NodeShared(root, nEntries * (nextEntries.size() == 0? sizeof(uint8_t):
+                                                          sizeof(Node *)),
+    nextEntries.size() > 0)
 {
     TRACE(LOCAL, "NodeStore constructor");
 }
+#endif
 
-template <typename S>
-Node *
-NodeStore<S>::getNode(long_t index)
+inline Node *
+Node::getNode(long_t index)
 {
     return reinterpret_cast<Node **>(this->entriesHost_)[index];
 }
 
-template <typename S>
-Node *&
-NodeStore<S>::getNodeRef(long_t index)
+inline Node *&
+Node::getNodeRef(long_t index)
 {
     return reinterpret_cast<Node **>(this->entriesHost_)[index];
 }
 
+template <typename T>
 inline
-BitmapState
-NodeHost::getLeaf(long_t index)
-{
-    abort();
-    uint8_t val = reinterpret_cast<uint8_t *>(this->entriesHost_)[index];
-    return BitmapState(val);
-}
-
-inline
-BitmapState
-NodeShared::getLeaf(long_t index)
+T
+Node::getLeaf(long_t index)
 {
     uint8_t val = reinterpret_cast<uint8_t *>(this->entriesAccHost_)[index];
-    return BitmapState(val);
+    return T(val);
 }
 
 inline
 uint8_t &
-NodeHost::getLeafRef(long_t index)
-{
-    abort();
-    return static_cast<uint8_t *>(this->entriesHost_)[index];
-}
-
-inline
-uint8_t &
-NodeShared::getLeafRef(long_t index)
+Node::getLeafRef(long_t index)
 {
     return static_cast<uint8_t *>(this->entriesAccHost_)[index];
 }
 
 inline
-NodeHost::NodeHost(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
-    NodeStore<StoreHost>(level, root, nEntries, nextEntries)
+Node *&
+Node::getNodeAccHostRef(long_t index)
 {
-    TRACE(LOCAL, "NodeHost constructor");
+    return reinterpret_cast<Node **>(this->entriesAccHost_)[index];
 }
 
 inline
-NodeShared *&
-NodeShared::getNodeRef(long_t index)
+Node *
+Node::getNodeAccAddr(long_t index)
 {
-    return reinterpret_cast<NodeShared **>(this->entriesHost_)[index];
+    return (Node *) (reinterpret_cast<Node **>((void *) this->entriesAcc_) + index);
 }
 
-inline
-NodeShared *&
-NodeShared::getNodeAccHostRef(long_t index)
-{
-    return reinterpret_cast<NodeShared **>(this->entriesAccHost_)[index];
-}
-
-inline
-NodeShared *
-NodeShared::getNodeAccAddr(long_t index)
-{
-    return (NodeShared *) (reinterpret_cast<NodeShared **>((void *) this->entriesAcc_) + index);
-}
-
-
+#if 0
 inline
 NodeShared::NodeShared(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> nextEntries) :
     NodeStore<StoreShared>(level, root, nEntries, nextEntries)
 {
     TRACE(LOCAL, "NodeShared constructor");
 }
+#endif
 
-inline
-NodeShared::~NodeShared()
+template <typename T>
+T
+Node::getEntry(long_t index)
 {
-    TRACE(LOCAL, "NodeShared destructor");
-    freeAcc(getLevel() == 0);
-}
+    sync();
 
-
-template <typename S>
-BitmapState
-NodeStore<S>::getEntry(long_t index)
-{
     long_t localIndex = this->getLocalIndex(index);
 
     TRACE(LOCAL, "getEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
-        return getLeaf(localIndex);
+        return getLeaf<T>(localIndex);
     } else {
         long_t nextIndex = this->getNextIndex(index);
         Node *node = getNode(localIndex);
-        return node->getEntry(nextIndex);
+        return node->getEntry<T>(nextIndex);
     }
 }
 
-template <typename S>
-BitmapState
-NodeStore<S>::getAndSetEntry(long_t index, BitmapState state)
+template <typename T>
+T
+Node::getAndSetEntry(long_t index, T state)
 {
-    long_t localIndex = this->getLocalIndex(index);
+    sync();
+
+    long_t localIndex = getLocalIndex(index);
+    addDirtyEntry(localIndex);
 
     TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
@@ -367,11 +314,15 @@ NodeStore<S>::getAndSetEntry(long_t index, BitmapState state)
     }
 }
 
-template <typename S>
+template <typename T>
 void
-NodeStore<S>::setEntry(long_t index, BitmapState state)
+Node::setEntry(long_t index, T state)
 {
-    long_t localIndex = this->getLocalIndex(index);
+    sync();
+
+    long_t localIndex = getLocalIndex(index);
+    TRACE(LOCAL, "setEntry 0x%lx", localIndex);
+    addDirtyEntry(localIndex);
 
     TRACE(LOCAL, "setEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
@@ -385,13 +336,17 @@ NodeStore<S>::setEntry(long_t index, BitmapState state)
     }
 }
 
-template <typename S>
+template <typename T>
 void
-NodeStore<S>::setEntryRange(long_t startIndex, long_t endIndex, BitmapState state)
+Node::setEntryRange(long_t startIndex, long_t endIndex, T state)
 {
+    sync();
+
     long_t localStartIndex = this->getLocalIndex(startIndex);
     long_t localEndIndex = this->getLocalIndex(endIndex);
  
+    addDirtyEntries(localStartIndex, localEndIndex);
+
     TRACE(LOCAL, "setEntryRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
         for (long_t i = localStartIndex; i <= localEndIndex; i++) {
@@ -415,17 +370,19 @@ NodeStore<S>::setEntryRange(long_t startIndex, long_t endIndex, BitmapState stat
     } while (i <= localEndIndex);
 }
 
-template <typename S>
+template <typename T>
 bool
-NodeStore<S>::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state)
+Node::isAnyInRange(long_t startIndex, long_t endIndex, T state)
 {
+    sync();
+
     long_t localStartIndex = this->getLocalIndex(startIndex);
     long_t localEndIndex = this->getLocalIndex(endIndex);
  
     TRACE(LOCAL, "isAnyInRange 0x%lx 0x%lx", localStartIndex, localEndIndex);
     if (this->nextEntries_.size() == 0) {
         for (long_t i = localStartIndex; i <= localEndIndex; i++) {
-            if (getLeaf(i) == state) return true;
+            if (getLeaf<T>(i) == state) return true;
         }
         return false;
     }
@@ -449,67 +406,8 @@ NodeStore<S>::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state
 
 
 inline
-BitmapState
-NodeShared::getEntry(long_t index)
-{
-    sync(); 
-
-    TRACE(LOCAL, "getEntry 0x%lx", getLocalIndex(index));
-
-    return NodeStore<StoreShared>::getEntry(index);
-}
-
-inline
-BitmapState
-NodeShared::getAndSetEntry(long_t index, BitmapState state)
-{
-    sync();
-
-    long_t localIndex = getLocalIndex(index);
-    TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
-    addDirtyEntry(localIndex);
-
-    return NodeStore<StoreShared>::getAndSetEntry(index, state);
-}
-
-inline
 void
-NodeShared::setEntry(long_t index, BitmapState state)
-{
-    sync();
-
-    long_t localIndex = getLocalIndex(index);
-    TRACE(LOCAL, "setEntry 0x%lx", localIndex);
-    addDirtyEntry(localIndex);
-
-    NodeStore<StoreShared>::setEntry(index, state);
-}
-
-inline
-void
-NodeShared::setEntryRange(long_t startIndex, long_t endIndex, BitmapState state)
-{
-    sync();
-
-    addDirtyEntries(getLocalIndex(startIndex), getLocalIndex(endIndex));
-
-    NodeStore<StoreShared>::setEntryRange(startIndex, endIndex, state);
-}
-
-inline
-bool
-NodeShared::isAnyInRange(long_t startIndex, long_t endIndex, BitmapState state)
-{
-    sync();
-
-    TRACE(LOCAL, "isAnyInRange 0x%lx 0x%lx", getLocalIndex(startIndex), getLocalIndex(endIndex));
-
-    return NodeStore<StoreShared>::isAnyInRange(startIndex, endIndex, state);
-}
-
-inline
-void
-NodeShared::sync()
+Node::sync()
 {
     TRACE(LOCAL, "sync");
 
@@ -523,25 +421,27 @@ NodeShared::sync()
     }
 }
 
+template <typename T>
 inline
 void
-Bitmap::setEntry(const accptr_t addr, BitmapState state)
+Bitmap::setEntry(const accptr_t addr, T state)
 {
     TRACE(LOCAL, "setEntry %p", (void *) addr);
 
     long_t entry = getIndex(addr);
-    root_->setEntry(entry, state);
+    root_->setEntry<T>(entry, state);
 }
 
+template <typename T>
 inline
 void
-Bitmap::setEntryRange(const accptr_t addr, size_t bytes, BitmapState state)
+Bitmap::setEntryRange(const accptr_t addr, size_t bytes, T state)
 {
     TRACE(LOCAL, "setEntryRange %p %zd", (void *) addr, bytes);
 
     long_t firstEntry = getIndex(addr);
     long_t lastEntry = getIndex(addr + bytes - 1);
-    root_->setEntryRange(firstEntry, lastEntry, state);
+    root_->setEntryRange<T>(firstEntry, lastEntry, state);
 }
 
 inline
@@ -554,54 +454,57 @@ Bitmap::getIndex(const accptr_t _ptr) const
     return index;
 }
 
+template <typename T>
 inline
-BitmapState
+T
 Bitmap::getEntry(const accptr_t addr) const
 {
     TRACE(LOCAL, "getEntry %p", (void *) addr);
     long_t entry = getIndex(addr);
-    BitmapState state = root_->getEntry(entry);
+    T state = root_->getEntry<T>(entry);
     TRACE(LOCAL, "getEntry ret: %d", state);
     return state;
 }
 
+template <typename T>
 inline
-BitmapState
-Bitmap::getAndSetEntry(const accptr_t addr, BitmapState state)
+T
+Bitmap::getAndSetEntry(const accptr_t addr, T state)
 {
     TRACE(LOCAL, "getAndSetEntry %p", (void *) addr);
     long_t entry = getIndex(addr);
-    BitmapState ret= root_->getAndSetEntry(entry, state);
+    T ret= root_->getAndSetEntry<T>(entry, state);
     TRACE(LOCAL, "getAndSetEntry ret: %d", ret);
     return ret;
 }
 
 
+template <typename T>
 inline
 bool
-Bitmap::isAnyInRange(const accptr_t addr, size_t size, BitmapState state)
+Bitmap::isAnyInRange(const accptr_t addr, size_t size, T state)
 {
     TRACE(LOCAL, "isAnyInRange %p %zd", (void *) addr, size);
 
     long_t firstEntry = getIndex(addr);
     long_t lastEntry = getIndex(addr + size - 1);
-    return root_->isAnyInRange(firstEntry, lastEntry, state);
+    return root_->isAnyInRange<T>(firstEntry, lastEntry, state);
 }
 
 inline void
-BitmapShared::acquire()
+Bitmap::acquire()
 {
     TRACE(LOCAL, "Acquire");
 
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring");
-        ((NodeShared *)root_)->acquire();
+        root_->acquire();
         released_ = false;
     }
 }
 
 inline void
-BitmapShared::release()
+Bitmap::release()
 {
     TRACE(LOCAL, "Release");
 
@@ -611,14 +514,14 @@ BitmapShared::release()
         syncToAccelerator();
 
         // Sync the bitmap contents
-        ((NodeShared *)root_)->release();
+        root_->release();
 
         released_ = true;
     }
 }
 
 inline bool
-BitmapShared::isReleased() const
+Bitmap::isReleased() const
 {
     return released_;
 }

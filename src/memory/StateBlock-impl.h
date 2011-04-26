@@ -3,23 +3,12 @@
 
 namespace __impl { namespace memory { 
 
-template<typename T>
-inline StateBlock<T>::StateBlock(Protocol &protocol, hostptr_t addr, 
-                                 hostptr_t shadow, size_t size, T init) :
+template<typename State>
+inline StateBlock<State>::StateBlock(Protocol &protocol, hostptr_t addr, 
+                               hostptr_t shadow, size_t size, typename State::ProtocolState init) :
 	gmac::memory::Block(protocol, addr, shadow, size),
-	state_(init)
-{}
-
-template<typename T>
-inline const T &StateBlock<T>::getState() const
+    State(init, *this)
 {
-	return state_;
-}
-
-template<typename T>
-inline void StateBlock<T>::setState(const T &s)
-{
-	state_ = s;
 }
 
 }}

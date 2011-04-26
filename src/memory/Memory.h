@@ -43,10 +43,12 @@ namespace __impl { namespace memory {
 
 extern size_t BlockSize_;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+extern unsigned SubBlocks_;
 extern size_t SubBlockSize_;
 extern unsigned BlockShift_;
 extern unsigned SubBlockShift_;
 extern long_t SubBlockMask_;
+
 #endif
 
 class GMAC_LOCAL Memory {
@@ -59,10 +61,12 @@ public:
 };
 
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
+
+template <typename T>
 static inline
-long_t log2(long_t n)
+T log2(T n)
 {
-    long_t ret = 0;
+    T ret = 0;
     while (n != 1) {
         ASSERTION((n & 0x1) == 0);
         n >>= 1;
@@ -71,18 +75,7 @@ long_t log2(long_t n)
     return ret;
 }
 
-static inline
-unsigned log2(unsigned n)
-{
-    unsigned ret = 0;
-    while (n != 1) {
-        ASSERTION((n & 0x1) == 0);
-        n >>= 1;
-        ret++;
-    }
-    return ret;
-}
-
+#if 0
 static inline
 long_t
 GetSubBlock(const hostptr_t _addr)
@@ -90,6 +83,8 @@ GetSubBlock(const hostptr_t _addr)
     long_t addr = long_t(_addr);
     return (addr >> SubBlockShift_) & SubBlockMask_;
 }
+#endif
+
 
 static inline
 long_t

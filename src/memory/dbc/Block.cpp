@@ -34,7 +34,7 @@ Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &b
 
 
 gmacError_t
-Block::memset(int v, size_t size, size_t blockOffset) const
+Block::memset(int v, size_t size, size_t blockOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

@@ -50,8 +50,8 @@ namespace core {
 
 namespace memory {
 
-template<typename T>
-class GMAC_LOCAL SharedBlock : public StateBlock<T> {
+template<typename State>
+class GMAC_LOCAL SharedBlock : public StateBlock<State> {
 protected:
     //! Owner of the block
     core::Mode &owner_;
@@ -71,7 +71,7 @@ public:
         \param init Initial block state
     */
     SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
-                hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, T init);
+                hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init);
 
     //! Default destructor
     virtual ~SharedBlock();
@@ -95,9 +95,9 @@ public:
     */
     accptr_t acceleratorAddr(core::Mode &current) const;
 
-    gmacError_t toHost() const;
+    gmacError_t toAccelerator(unsigned blockOffset, size_t count);
 
-    gmacError_t toAccelerator();
+    gmacError_t toHost(unsigned blockOffset, size_t count);
 
     gmacError_t copyToHost(const hostptr_t src, size_t size,
                            size_t blockOffset = 0) const;

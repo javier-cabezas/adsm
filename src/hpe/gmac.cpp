@@ -9,6 +9,7 @@
 #include "config/config.h"
 #include "config/order.h"
 
+#include "util/Atomics.h"
 #include "util/Logger.h"
 
 #include "core/IOBuffer.h"
@@ -19,6 +20,9 @@
 
 #include "memory/Manager.h"
 #include "memory/Allocator.h"
+#ifdef DEBUG
+#include "memory/protocol/common/BlockState.h"
+#endif
 
 #include "trace/Tracer.h"
 
@@ -46,6 +50,15 @@ static long getpagesize (void) {
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
 
+#ifdef DEBUG
+static Atomic StatDumps_ = 0;
+
+unsigned GetStatDump()
+{
+    return AtomicInc(StatDumps_);
+}
+
+#endif
 
 unsigned APICALL gmacGetNumberOfAccelerators()
 {
@@ -179,10 +192,20 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
     gmacError_t ret = gmacSuccess;
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
+    __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
+#ifdef DEBUG
+    unsigned dump = GetStatDump();
+    std::stringstream ss(std::stringstream::out);
+    ss << dump << "-" << "gmacFree";
+
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_FAULTS, hostptr_t(cpuPtr));
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, hostptr_t(cpuPtr));
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, hostptr_t(cpuPtr));
+#endif
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if(allocator.free(gmac::core::hpe::Mode::getCurrent(), hostptr_t(cpuPtr)) == false) {
+    if(allocator.free(mode, hostptr_t(cpuPtr)) == false) {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-        ret = manager.free(gmac::core::hpe::Mode::getCurrent(), hostptr_t(cpuPtr));
+        ret = manager.free(mode, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
 	gmac::exitGmac();
@@ -234,7 +257,17 @@ gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
         ret = gmacLaunch(*launch);
         delete launch;
     }
-    
+
+#ifdef DEBUG
+    unsigned dump = GetStatDump();
+    std::stringstream ss(std::stringstream::out);
+    ss << dump << "-" << mode.getKernelName(k);
+
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_FAULTS);
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
+    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+#endif
+
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();
 

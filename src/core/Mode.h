@@ -36,6 +36,9 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
+#ifdef USE_VM
+#include "memory/vm/Bitmap.h"
+#endif
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
 #include "util/Atomics.h"
@@ -63,7 +66,12 @@ protected:
     memory::Protocol *protocol_;
 
     bool releasedObjects_;
+
     gmacError_t error_;
+
+#ifdef USE_VM
+    __impl::memory::vm::Bitmap bitmap_;
+#endif
 
     virtual memory::ObjectMap &getObjectMap() = 0;
     virtual const memory::ObjectMap &getObjectMap() const = 0;
@@ -133,7 +141,8 @@ public:
      *   \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEachObject(memory::ObjectMap::ConstObjectOp op) const;
+    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void));
+    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void) const) const;
 
     /**
      * Tells if the objects of the mode have been already released to the
@@ -277,6 +286,11 @@ public:
      * on the accelerator
      */
     virtual void memInfo(size_t &free, size_t &total) = 0;
+
+#ifdef USE_VM
+    memory::vm::Bitmap &getBitmap();
+    const memory::vm::Bitmap &getBitmap() const;
+#endif
 };
 
 }}

@@ -15,8 +15,7 @@ Object::~Object()
 }
 
 gmacError_t
-Object::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, 
-                 size_t bufferOffset, size_t objectOffset) const
+Object::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -56,7 +55,7 @@ Object::blockEnd(size_t offset) const
 }
 
 gmacError_t
-Object::signalRead(hostptr_t addr) const
+Object::signalRead(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);
@@ -69,7 +68,7 @@ Object::signalRead(hostptr_t addr) const
 }
 
 gmacError_t
-Object::signalWrite(hostptr_t addr) const
+Object::signalWrite(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);
@@ -83,7 +82,7 @@ Object::signalWrite(hostptr_t addr) const
 
 gmacError_t
 Object::copyToBuffer(__impl::core::IOBuffer &buffer, size_t size, 
-        size_t bufferOffset, size_t objectOffset) const
+        size_t bufferOffset, size_t objectOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -98,7 +97,7 @@ Object::copyToBuffer(__impl::core::IOBuffer &buffer, size_t size,
 
 gmacError_t
 Object::copyFromBuffer(__impl::core::IOBuffer &buffer, size_t size, 
-        size_t bufferOffset, size_t objectOffset) const
+        size_t bufferOffset, size_t objectOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -112,7 +111,7 @@ Object::copyFromBuffer(__impl::core::IOBuffer &buffer, size_t size,
 }
 
 gmacError_t
-Object::memset(size_t offset, int v, size_t size) const
+Object::memset(size_t offset, int v, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

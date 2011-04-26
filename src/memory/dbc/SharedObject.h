@@ -36,14 +36,14 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace memory {
 
-template<typename T>
+template<typename State>
 class GMAC_LOCAL SharedObject :
-    public __impl::memory::SharedObject<T>,
+    public __impl::memory::SharedObject<State>,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::SharedObject<T>)
+    DBC_TESTED(__impl::memory::SharedObject<State>)
 
 public:
-	SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, T init);
+	SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init);
     virtual ~SharedObject();
 };
 

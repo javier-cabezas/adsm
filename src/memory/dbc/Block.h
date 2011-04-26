@@ -47,7 +47,7 @@ protected:
 public:
 
 	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
-    gmacError_t memset(int v, size_t size, size_t blockOffset = 0) const;
+    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
 };
 
 }}

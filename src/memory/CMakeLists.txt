@@ -24,6 +24,7 @@ set(memory_SRC
     Object-impl.h
     Object.cpp
     ObjectMap.h
+    ObjectMap-impl.h
     ObjectMap.cpp
     Protocol.h
     Protocol.cpp
@@ -48,6 +49,14 @@ set(memory_SRC
     protocol/Lazy.h
     protocol/Lazy-impl.h
     protocol/Lazy.cpp
+    protocol/common/BlockList.h
+    protocol/common/BlockList-impl.h
+    protocol/common/BlockState.h
+    protocol/common/BlockState-impl.h
+    protocol/common/BlockState.cpp
+    protocol/lazy/BlockState.h
+    protocol/lazy/BlockState-impl.h
+    protocol/lazy/LazyTypes.h
 )
 
 set(memory_DBC

@@ -145,6 +145,28 @@ Mode::releaseObjects()
     return error_;
 }
 
+inline gmacError_t
+Mode::dump(std::string name, memory::protocol::common::Statistic stat, hostptr_t ptr)
+{
+#ifdef DEBUG
+    if (ptr == NULL) {
+        map_.dumpObjects(name, stat);
+    } else {
+        map_.dumpObject(name, stat, ptr);
+#if 0
+        std::ofstream out(name.str().c_str(), std::ios_base::trunc);
+        ASSERTION(out.good());
+        memory::Object *obj = getObject(addr);
+        ASSERTION(obj != NULL);
+        obj->dump(out);
+        out.close();
+#endif
+    }
+
+#endif
+    return gmacSuccess;
+}
+
 inline gmacError_t 
 Mode::acquireObjects()
 {

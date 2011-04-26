@@ -11,6 +11,9 @@ inline
 Mode::Mode() :
     id_(AtomicInc(Count_)),
     releasedObjects_(false)
+#ifdef USE_VM
+    , bitmap_(*this)
+#endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
     trace::StartThread(THREAD_T(id_), "GPU");
@@ -76,11 +79,32 @@ Mode::getObject(const hostptr_t addr, size_t size) const
 }
 
 inline gmacError_t
-Mode::forEachObject(memory::ObjectMap::ConstObjectOp op) const
+Mode::forEachObject(gmacError_t (memory::Object::*f)(void) const) const
 {
-    gmacError_t ret = getObjectMap().forEach(op);
-	return ret;
+    gmacError_t ret = getObjectMap().forEachObject(f);
+    return ret;
 }
+
+inline gmacError_t
+Mode::forEachObject(gmacError_t (memory::Object::*f)(void))
+{
+    gmacError_t ret = getObjectMap().forEachObject(f);
+    return ret;
+}
+
+#ifdef USE_VM
+inline memory::vm::Bitmap&
+Mode::getBitmap()
+{
+    return bitmap_;
+}
+
+inline const memory::vm::Bitmap&
+Mode::getBitmap() const
+{
+    return bitmap_;
+}
+#endif
 
 
 } }
