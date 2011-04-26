@@ -72,16 +72,17 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {
 #ifndef USE_MULTI_CONTEXT
-    if(core::hpe::Process::isValid() == false) return;
-    pushContext();
+    if(core::hpe::Process::isValid()) pushContext();
     ModuleVector::iterator i;
     for(i = modules_.begin(); i != modules_.end(); i++) {
         delete *i;
     }
     modules_.clear();
-    popContext();
-    CUresult ret = cuCtxDestroy(ctx_);
-    ASSERTION(ret == CUDA_SUCCESS);
+    if(core::hpe::Process::isValid()) {
+        popContext();
+        CUresult ret = cuCtxDestroy(ctx_);
+        ASSERTION(ret == CUDA_SUCCESS);
+    }
 #endif
 }
 
