@@ -221,7 +221,6 @@ do_stencil(void * ptr)
 
     size_t localSize[2] = {32, 8};
     size_t globalSize[2];
-    size_t offset[2] = {STENCIL, STENCIL};
     globalSize[0] = descr->dimElems - 2 * STENCIL;
     globalSize[1] = descr->dimElems - 2 * STENCIL;
 

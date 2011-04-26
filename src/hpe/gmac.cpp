@@ -74,7 +74,6 @@ unsigned APICALL gmacGetNumberOfAccelerators()
 
 size_t APICALL gmacGetFreeMemory()
 {
-    gmacError_t ret = gmacSuccess;
     gmac::enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
     size_t free;

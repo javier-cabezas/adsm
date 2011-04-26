@@ -319,7 +319,7 @@ cl_int SYMBOL(clEnqueueNDRangeKernel)(
     if(__opencl_clEnqueueNDRangeKernel == NULL) openclInit();
     enterGmac();
     cl_int ret = releaseMemoryObjects(command_queue);
-    cl_event *user_event = NULL;
+    /* cl_event *user_event = NULL; */
     if(ret != CL_SUCCESS) goto do_exit;
     /*
     if(event == NULL) user_event = new cl_event();
@@ -345,7 +345,7 @@ cl_int SYMBOL(clEnqueueTask)(
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueTask == NULL) openclInit();
     enterGmac();
-    cl_event *user_event = NULL;
+    /* cl_event *user_event = NULL; */
     cl_int ret = releaseMemoryObjects(command_queue);
     if(ret != CL_SUCCESS) goto do_exit;
     /*
@@ -375,7 +375,7 @@ cl_int SYMBOL(clEnqueueNativeKernel)(
 {
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueNativeKernel == NULL) openclInit();
-    cl_event *user_event = NULL;
+    /* cl_event *user_event = NULL; */
     cl_int ret = releaseMemoryObjects(command_queue);
     if(ret != CL_SUCCESS) goto do_exit;
     /*

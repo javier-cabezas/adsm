@@ -99,7 +99,6 @@ void Memory::unshadow(hostptr_t addr, size_t count)
 void Memory::unmap(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
-    char tmp[FILENAME_MAX];
     FileMapEntry entry = Files.find(addr);
     if(Files.remove(addr) == false) {
         trace::ExitCurrentFunction();

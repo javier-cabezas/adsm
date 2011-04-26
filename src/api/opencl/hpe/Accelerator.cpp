@@ -291,7 +291,6 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
 
     if (&__ocl_code_start != NULL &&
         &__ocl_code_end   != NULL) {
-        size_t size = size_t(&__ocl_code_end - &__ocl_code_start);
         char *code = &__ocl_code_start;
         char *cursor = strstr(code, CL_MAGIC);
 

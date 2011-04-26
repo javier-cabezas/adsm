@@ -91,7 +91,6 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
     HostMappedObject *object = new HostMappedObject(mode, size);
     *addr = object->addr();
     if(*addr == NULL) {
