@@ -46,7 +46,7 @@ void apiInit(void)
     delete[] platforms;
     initialized = true;
 
-    gmacError_t compileRet = __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
+    __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
 }
 
 }}

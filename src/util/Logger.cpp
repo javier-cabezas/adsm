@@ -62,7 +62,6 @@ void Logger::Init()
 #ifdef DEBUG
 	Private<char>::init(Buffer_);
 	Buffer_.set(new char[BufferSize_]);
-    char *buffer = Buffer_.get();
 
     Tags_ = new std::list<std::string>();
     Level_ = new Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");

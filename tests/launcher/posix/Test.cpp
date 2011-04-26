@@ -63,7 +63,7 @@ Test::TestCase::run(const std::string &exec)
             buf = NULL;
         }
 
-        int ret = ::wait(&status_); 
+        ::wait(&status_); 
         fclose(file);
     }
     return stats;

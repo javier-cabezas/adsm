@@ -239,6 +239,22 @@ GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k);
 #include <stdlib.h>
 #endif
 
+static const char *error[] = {
+	"No error",
+	"Memory allocation",
+	"Launch failure",
+	"Accelerator is not ready",
+	"Accelerator is not present",
+	"Invalid value",
+	"Invalid accelerator",
+	"Invalid accelerator function",
+	"Invalid size",
+	"GMAC general failure",
+    "Feature not supported with the current configure configuration",
+    "Insufficient memory in the accelerator",
+	"Uknown error"
+};
+
 /**
  * Returns a description of the given error
  * \param err An error code 

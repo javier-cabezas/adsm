@@ -173,7 +173,6 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     ret = map_.forEachObject(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
