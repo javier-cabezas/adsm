@@ -13,6 +13,7 @@ Arena::Arena(core::Mode &mode, size_t objSize) :
     size_(0),
     mode_(mode)
 {
+    mode_.use();
     gmacError_t ret = Manager::getInstance().alloc(mode_, &ptr_, memory::BlockSize_);
     CFATAL(ret == gmacSuccess, "Unable to allocate memory in the accelerator");
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
@@ -26,6 +27,7 @@ Arena::~Arena()
     CFATAL(objects_.size() == size_, "Destroying non-full Arena");
     objects_.clear();
 	Manager::getInstance().free(mode_, ptr_);
+    mode_.release();
 }
 
 
