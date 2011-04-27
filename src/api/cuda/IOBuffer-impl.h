@@ -67,7 +67,10 @@ IOBuffer::started()
     EventMap::iterator it;
     it = map_.find(mode_);
     ASSERTION(state_ != Idle && it != map_.end());
-    CUresult ret = cuEventRecord(it->second.second, stream_);
+#ifdef DEBUG
+    CUresult ret =
+#endif
+        cuEventRecord(it->second.second, stream_);
     ASSERTION(ret == CUDA_SUCCESS);
 }
 

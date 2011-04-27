@@ -5,6 +5,7 @@
 #include "util/Parameter.h"
 #include "util/Private.h"
 #include "util/Logger.h"
+#include "util/FileSystem.h"
 
 #include "trace/Tracer.h"
 
@@ -38,6 +39,10 @@ static Atomic gmacFini__ = -1;
 #endif
 #endif
 
+#ifdef DEBUG
+GMAC_API std::string StatsDir = "";
+#endif
+
 static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
@@ -69,6 +74,22 @@ static void init(void)
 
     TRACE(GLOBAL, "Initializing API");
     core::apiInit();
+
+#ifdef DEBUG
+    PROCESS_T pid = __impl::util::GetProcessId();
+
+    std::stringstream ss(std::stringstream::out);
+#if defined(_MSC_VER)
+    char tmpDir[256];
+    GetTempPath(256, tmpDir);
+    ss << tmpDir << "\\" << pid << "\\";
+#else
+    ss << ".gmac-" << pid << "/";
+#endif
+    bool created = __impl::util::MakeDir(ss.str());
+    ASSERTION(created == true);
+    StatsDir = ss.str();
+#endif
 
     exitGmac();
 }

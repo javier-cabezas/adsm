@@ -3,7 +3,12 @@
 
 #include "Object.h"
 
-namespace __impl { namespace memory {
+namespace __impl {
+#ifdef  DEBUG
+extern std::string StatsDir;
+#endif
+    
+    namespace memory {
 
 inline
 gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void) const) const
@@ -80,7 +85,7 @@ gmacError_t ObjectMap::dumpObjects(std::string prefix, protocol::common::Statist
     for(i = begin(); i != end(); i++) {
         Object &obj = *(i->second);
         std::stringstream name;
-        name << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+        name << StatsDir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
 
         std::ofstream out(name.str().c_str(), std::ios_base::trunc);
         ASSERTION(out.good());
@@ -101,7 +106,7 @@ gmacError_t ObjectMap::dumpObject(std::string prefix, protocol::common::Statisti
     lockRead();
     ASSERTION(obj != NULL);
     std::stringstream name;
-    name << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+    name << StatsDir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
 
     std::ofstream out(name.str().c_str(), std::ios_base::trunc);
     ASSERTION(out.good());

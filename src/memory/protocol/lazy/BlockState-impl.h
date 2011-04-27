@@ -107,8 +107,6 @@ BlockTreeInfo::increment(unsigned subBlock)
     unsigned children  = 1;
     unsigned inc       = 1;
 
-    unsigned unblock = subBlock;
-
     Pair ret;
     do {
         // printf("TREE! Level: %u (%u + %u)\n", level, levelOff, levelPos);

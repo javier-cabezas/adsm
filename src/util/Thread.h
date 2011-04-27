@@ -50,6 +50,8 @@ THREAD_T GetThreadId();
 */
 PROCESS_T GetProcessId();
 
+long_t GetTimeStamp();
+
 }}
 
 #if defined(POSIX)

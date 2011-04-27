@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,37 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_POSIX_FILELOCK_H_
-#define GMAC_UTIL_POSIX_FILELOCK_H_
+#ifndef GMAC_UTIL_FILESYSTEM_H_
+#define GMAC_UTIL_FILESYSTEM_H_
 
-#if 0
-#include <cstdio>
-
-
-#include "config/config.h"
-#include "util/Lock.h"
-#include "util/Logger.h"
+#include <sys/stat.h>
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL FileLock : public __impl::util::__Lock {
-protected:
-    FILE * _file;
-    int _fd;
-public:
-	FileLock(const char * fname, const char *name);
-	~FileLock();
+bool MakeDir(std::string path);
 
-	void lock();
-	void unlock();
+#if defined(POSIX)
 
-    FILE * file();
-};
+inline
+bool MakeDir(std::string path)
+{
+    int ret = mkdir(path.c_str(), S_IRWXU | S_IRWXG);
+    return ret == 0;
+}
+
+#elif defined(WINDOWS)
+
+inline
+bool MakeDir(std::string path)
+{
+    BOOL ret = CreateDirectory(path.c_str(), NULL);
+    return ret != 0;
+}
+
+#endif
 
 }}
 
-#include "FileLock-impl.h"
+#endif /* FILESYSTEM_H */
 
-#endif
-
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
