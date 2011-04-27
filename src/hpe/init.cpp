@@ -76,19 +76,21 @@ static void init(void)
     core::apiInit();
 
 #ifdef DEBUG
-    PROCESS_T pid = __impl::util::GetProcessId();
+    if (__impl::util::params::ParamStats) {
+        PROCESS_T pid = __impl::util::GetProcessId();
 
-    std::stringstream ss(std::stringstream::out);
+        std::stringstream ss(std::stringstream::out);
 #if defined(_MSC_VER)
-    char tmpDir[256];
-    GetTempPath(256, tmpDir);
-    ss << tmpDir << "\\" << pid << "\\";
+        char tmpDir[256];
+        GetTempPath(256, tmpDir);
+        ss << tmpDir << "\\" << pid << "\\";
 #else
-    ss << ".gmac-" << pid << "/";
+        ss << ".gmac-" << pid << "/";
 #endif
-    bool created = __impl::util::MakeDir(ss.str());
-    ASSERTION(created == true);
-    StatsDir = ss.str();
+        bool created = __impl::util::MakeDir(ss.str());
+        ASSERTION(created == true);
+        StatsDir = ss.str();
+    }
 #endif
 
     exitGmac();
