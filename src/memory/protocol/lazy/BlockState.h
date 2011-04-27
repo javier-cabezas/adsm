@@ -205,7 +205,7 @@ protected:
 
     // Global statistis
     unsigned faultsRead_;
-    unsigned faultsReadWrite_;
+    unsigned faultsWrite_;
     unsigned transfersToAccelerator_;
     unsigned transfersToHost_;
 
