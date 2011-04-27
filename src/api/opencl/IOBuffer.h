@@ -43,20 +43,43 @@ namespace __impl { namespace opencl {
 
 class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
-	cl_mem base_;
-	size_t offset_;
+    /** OpenCL event to query for the finalization of any ongoing data transfer */
     cl_event event_;
+
+    /** Execution mode using the I/O buffer */
     Mode *mode_;
+
+    /** Signal is there are ongoing data transfers */
     bool started_;
 
 public:
+    /** Default constructor
+     * \param mode Execution mode using the I/O buffer
+     * \param addr Host memory address where to allocated the I/O buffer 
+     * \param size Size (in bytes) of the I/O buffer
+     * \param async Enable asynchronous data transfers using the I/O buffer
+     * \return Error code
+     */
     IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async);
 
+    /** Set the transfer direction from device to host
+     * \param mode Execution mode performing the data transfer
+     */
     void toHost(Mode &mode);
+
+    /** Set the transfer direction from host to device
+     * \param mode Execution mode performing the data transfer
+     */
     void toAccelerator(Mode &mode);
 
+    /** Set the event defining the start of a data transfer using the I/O buffer
+     * \param event OpenCL event defining the starting time of a data transfer
+     */
     void started(cl_event event);
 
+    /** Waits for any incoming data transfers to finish
+     * \return Error code
+     */
     gmacError_t wait();
 };
 
