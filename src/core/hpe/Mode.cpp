@@ -60,7 +60,8 @@ void Mode::removeObject(memory::Object &obj)
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "remove";
 
-        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS, obj.addr());
+        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
+        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
         map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
         map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
     }
@@ -76,7 +77,8 @@ gmacError_t Mode::releaseObjects()
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "release";
 
-        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS);
+        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ);
+        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE);
         map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
         map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }

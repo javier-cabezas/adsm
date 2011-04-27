@@ -44,7 +44,11 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
 
 
 KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, const KernelConfig & c) :
+#ifdef DEBUG
+    core::hpe::KernelLaunch(mode, k.key()),
+#else
     core::hpe::KernelLaunch(mode),
+#endif
     KernelConfig(c),
     kernel_(k),
     f_(k.f_)
