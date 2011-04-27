@@ -43,9 +43,8 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
 
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
-    ASSERTION(ioMemory_ != NULL);
-
     if (buffer.async()) {
+        ASSERTION(ioMemory_ != NULL);
         ioMemory_->put(buffer.addr(), buffer.size());
     } else {
         ::free(buffer.addr());
