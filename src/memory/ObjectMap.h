@@ -142,8 +142,10 @@ public:
     gmacError_t forEachObject(gmacError_t (Object::*f)(void));
     gmacError_t forEachObject(gmacError_t (Object::*f)(void) const) const;
 
-    gmacError_t dumpObjects(std::string prefix, protocol::common::Statistic stat) const;
-    gmacError_t dumpObject(std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
+#ifdef DEBUG
+    gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
+    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
+#endif
 
     /**
      * Execute an operation on all the objects in the map passing an argument

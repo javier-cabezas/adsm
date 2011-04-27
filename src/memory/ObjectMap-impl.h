@@ -3,12 +3,7 @@
 
 #include "Object.h"
 
-namespace __impl {
-#ifdef  DEBUG
-extern std::string StatsDir;
-#endif
-    
-    namespace memory {
+namespace __impl { namespace memory {
 
 inline
 gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void) const) const
@@ -76,16 +71,17 @@ gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1)
     return gmacSuccess;
 }
 
-inline
-gmacError_t ObjectMap::dumpObjects(std::string prefix, protocol::common::Statistic stat) const
-{
+
 #ifdef DEBUG
+inline
+gmacError_t ObjectMap::dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const
+{
     lockRead();
     const_iterator i;
     for(i = begin(); i != end(); i++) {
         Object &obj = *(i->second);
         std::stringstream name;
-        name << StatsDir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
 
         std::ofstream out(name.str().c_str(), std::ios_base::trunc);
         ASSERTION(out.good());
@@ -94,19 +90,17 @@ gmacError_t ObjectMap::dumpObjects(std::string prefix, protocol::common::Statist
         out.close();
     }
     unlock();
-#endif
     return gmacSuccess;
 }
 
 inline
-gmacError_t ObjectMap::dumpObject(std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
+gmacError_t ObjectMap::dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
 {
-#ifdef DEBUG
     Object *obj = get(ptr, 1);
     lockRead();
     ASSERTION(obj != NULL);
     std::stringstream name;
-    name << StatsDir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
 
     std::ofstream out(name.str().c_str(), std::ios_base::trunc);
     ASSERTION(out.good());
@@ -114,9 +108,9 @@ gmacError_t ObjectMap::dumpObject(std::string prefix, protocol::common::Statisti
 
     out.close();
     unlock();
-#endif
     return gmacSuccess;
 }
+#endif
 
 
 }}
