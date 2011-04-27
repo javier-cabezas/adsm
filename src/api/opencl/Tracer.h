@@ -41,13 +41,51 @@ namespace __impl {
 
 namespace opencl { 
 
+/** Trace a data communication between threads
+ * \param src Source CPU thread
+ * \param dst Destination CPU thread
+ * \param start OpenCL event defining the start of the data transfer
+ * \param end OpenCL event defining the end of the data transfer
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommunication(THREAD_T src, THREAD_T dst, cl_event start, cl_event end, size_t size);
+
+/** Trace a data communication from the source thread
+ * \param tid Destination CPU thread
+ * \param start OpenCL event defining the start of the data transfer
+ * \param end OpenCL event defining the end of the data transfer
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommunication(THREAD_T tid, cl_event start, cl_event end, size_t size);
 
+/** Trace data communication to the accelerator
+ * \param mode Destination execution mode
+ * \param start OpenCL event defining the start of the data transfer
+ * \param end OpenCL event defining the end of the data transfer
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommToAccelerator(Mode &mode, cl_event start, cl_event end, size_t size);
+
+/** Trace zero-time data communication to the accelerator
+ * \param mode Destination execution mode
+ * \param event OpenCL event defining the start of the data communication
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommToAccelerator(Mode &mode, cl_event event, size_t size);
 
+/** Trace data communication to the host
+ * \param mode Source execution mode
+ * \param start OpenCL event definig the start of the data communication
+ * \param end OpenCL event defining the end of the data communication
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommToHost(Mode &mode, cl_event start, cl_event end, size_t size);
+
+/** Trace zero-time data communication to the host
+ * \param mode Source execution mode
+ * \param event OpenCL defining the start of the data communication
+ * \param size Size (in bytes) of the data transfer
+ */
 void DataCommToHost(Mode &mode, cl_event event, size_t size);
 }}
 
