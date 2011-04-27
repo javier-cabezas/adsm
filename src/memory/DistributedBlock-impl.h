@@ -33,10 +33,7 @@ inline void DistributedBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
         it->second.push_back(&mode);
 
         if(StateBlock<State>::protocol_.needUpdate(*this) == true) {
-#ifdef DEBUG
-            gmacError_t ret =
-#endif
-                mode.copyToAccelerator(addr, StateBlock<State>::shadow_, StateBlock<State>::size_);
+            gmacError_t ret = mode.copyToAccelerator(addr, StateBlock<State>::shadow_, StateBlock<State>::size_);
             ASSERTION(ret == gmacSuccess);
         }
     } else {

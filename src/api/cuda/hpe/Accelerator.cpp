@@ -80,10 +80,7 @@ Accelerator::~Accelerator()
     modules_.clear();
     if(core::hpe::Process::isValid()) {
         popContext();
-#ifdef DEBUG
-        CUresult ret =
-#endif
-            cuCtxDestroy(ctx_);
+        CUresult ret = cuCtxDestroy(ctx_);
         ASSERTION(ret == CUDA_SUCCESS);
     }
 #endif
@@ -228,10 +225,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     accptr_t addr(0);
     size_t s;
 
-#ifdef DEBUG
-    bool hasMapping =
-#endif
-        allocations_.find(host, addr, s);
+    bool hasMapping = allocations_.find(host, addr, s);
     ASSERTION(hasMapping == true);
     ASSERTION(s == size);
     allocations_.erase(host, size);

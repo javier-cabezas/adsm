@@ -26,10 +26,7 @@ inline Object::~Object()
 {
     BlockMap::iterator i;
     lockWrite();
-#ifdef DEBUG
-    gmacError_t ret =
-#endif
-    coherenceOp(&Protocol::deleteBlock);
+    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
     ASSERTION(ret == gmacSuccess);
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         i->second->release();
