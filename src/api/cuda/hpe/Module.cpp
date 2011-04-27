@@ -22,10 +22,7 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
     unsigned int tmp;
 #endif
     TRACE(LOCAL, "Creating new accelerator variable: %s", v.getName());
-#ifdef DEBUG
-    CUresult ret =
-#endif
-        cuModuleGetGlobal(&ptr_, &tmp, mod, getName());
+    CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, getName());
     ASSERTION(ret == CUDA_SUCCESS);
     size_ = tmp;
 }
@@ -33,10 +30,7 @@ Variable::Variable(const VariableDescriptor & v, CUmodule mod) :
 Texture::Texture(const TextureDescriptor & t, CUmodule mod) :
     TextureDescriptor(t.getName(), t.key())
 {
-#ifdef DEBUG
-    CUresult ret =
-#endif
-        cuModuleGetTexRef(&texRef_, mod, getName());
+    CUresult ret = cuModuleGetTexRef(&texRef_, mod, getName());
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
@@ -142,10 +136,7 @@ Module::~Module()
     if(core::Process::isValid()) {
         std::vector<CUmodule>::const_iterator m;
         for(m = mods_.begin(); m != mods_.end(); m++) {
-#ifdef DEBUG
-            CUresult ret =
-#endif
-                cuModuleUnload(*m);
+            CUresult ret = cuModuleUnload(*m);
             ASSERTION(ret == CUDA_SUCCESS);
         }
     }

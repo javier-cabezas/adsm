@@ -27,10 +27,7 @@ inline void Reference::use() const
 inline void Reference::release()
 {
     if (AtomicDec(ref_) == 0) {
-#ifdef DEBUG
-        gmacError_t ret =
-#endif
-        cleanUp();
+        gmacError_t ret = cleanUp();
         ASSERTION(ret == gmacSuccess);
         delete this;
     }

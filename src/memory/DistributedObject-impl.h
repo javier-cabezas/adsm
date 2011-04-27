@@ -108,26 +108,22 @@ inline gmacError_t DistributedObject<State>::addOwner(core::Mode &mode)
     gmacError_t ret = 
 		mode.map(acceleratorAddr, addr_, size_);
 #endif
-    TRACE(LOCAL, "CUCU1");
     if(ret != gmacSuccess) return ret;
 
     lockWrite();
 
     AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
     if (it == acceleratorAddr_.end()) {
-        TRACE(LOCAL, "CUCU2a");
         acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::Mode *>()));
         AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
         it->second.push_back(&mode);
 
         
     } else {
-        TRACE(LOCAL, "CUCU2b");
         it->second.push_back(&mode);
     }
     BlockMap::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        TRACE(LOCAL, "CUCU_BLOCKS");
         ptroff_t offset = ptroff_t(i->second->addr() - addr_);
         DistributedBlock<State> &block = dynamic_cast<DistributedBlock<State> &>(*i->second);
         block.addOwner(mode, acceleratorAddr + offset);
