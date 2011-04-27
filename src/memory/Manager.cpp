@@ -115,7 +115,6 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
             return ret;
         }
     }
-
     Protocol *protocol = proc.protocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
     Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_READ, 0);
