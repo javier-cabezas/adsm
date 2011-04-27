@@ -115,13 +115,13 @@ public:
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
-    void addObject(memory::Object &obj);
+    virtual void addObject(memory::Object &obj);
 
     /**
      * Removes an object from the map of the mode
      * \param obj A reference to the object to be removed
      */
-    void removeObject(memory::Object &obj);
+    virtual void removeObject(memory::Object &obj);
 
     /**
      * Gets the first object that belongs to the memory range

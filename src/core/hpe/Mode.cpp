@@ -1,7 +1,6 @@
 #include "memory/Manager.h"
 #include "memory/Object.h"
 
-
 #include "core/IOBuffer.h"
 
 #include "core/hpe/Accelerator.h"
@@ -10,10 +9,17 @@
 #include "core/hpe/Context.h"
 #include "core/hpe/Process.h"
 
+#include "util/FileSystem.h"
+
 namespace __impl { namespace core { namespace hpe {
 
 util::Private<Mode> Mode::key;
 
+#ifdef DEBUG
+Atomic Mode::StatsInit_ = 0;
+Atomic Mode::StatDumps_ = 0;
+std::string Mode::StatsDir_ = "";
+#endif
 
 Mode::Mode(Process &proc, Accelerator &acc) :
     proc_(proc),
@@ -26,6 +32,9 @@ Mode::Mode(Process &proc, Accelerator &acc) :
     , bitmap_(*this)
 #endif
 {
+#ifdef DEBUG
+    if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();
+#endif
 }
 
 Mode::~Mode()
@@ -42,6 +51,54 @@ void Mode::finiThread()
     if(mode == NULL) return;
     mode->release();
 }
+
+void Mode::removeObject(memory::Object &obj)
+{
+#if defined(DEBUG)
+    if (__impl::util::params::ParamStats) {
+        unsigned dump = AtomicInc(StatDumps_);
+        std::stringstream ss(std::stringstream::out);
+        ss << dump << "-" << "remove";
+
+        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS, obj.addr());
+        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
+        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+    }
+#endif
+    core::Mode::removeObject(obj);
+}
+
+gmacError_t Mode::releaseObjects()
+{
+#ifdef DEBUG
+    if (__impl::util::params::ParamStats) {
+        unsigned dump = AtomicInc(StatDumps_);
+        std::stringstream ss(std::stringstream::out);
+        ss << dump << "-" << "release";
+
+        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS);
+        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
+        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+    }
+#endif
+
+    switchIn();
+    releasedObjects_ = true;
+    switchOut();
+    return error_;
+}
+
+
+
+gmacError_t Mode::acquireObjects()
+{
+    switchIn();
+    releasedObjects_ = false;
+    error_ = contextMap_.waitForCall();
+    switchOut();
+    return error_;
+}
+
 
 void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {
@@ -204,6 +261,27 @@ gmacError_t Mode::cleanUp()
 #endif
     return ret;
 }
+
+#ifdef DEBUG
+void Mode::statsInit()
+{
+    if (__impl::util::params::ParamStats) {
+        PROCESS_T pid = __impl::util::GetProcessId();
+
+        std::stringstream ss(std::stringstream::out);
+#if defined(_MSC_VER)
+        char tmpDir[256];
+        GetTempPath(256, tmpDir);
+        ss << tmpDir << "\\" << pid << "\\";
+#else
+        ss << ".gmac-" << pid << "/";
+#endif
+        bool created = __impl::util::MakeDir(ss.str());
+        ASSERTION(created == true);
+        StatsDir_ = ss.str();
+    }
+}
+#endif
 
 
 }}}

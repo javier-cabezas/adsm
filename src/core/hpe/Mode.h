@@ -116,6 +116,13 @@ protected:
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;
 
+#ifdef DEBUG
+    static Atomic StatsInit_;
+    static Atomic StatDumps_;
+    static std::string StatsDir_;
+    static void statsInit();
+#endif
+
     /**
      * Releases the resources used by the contexts associated to the mode
     */
@@ -172,6 +179,12 @@ public:
      *         assigned
      */
     static bool hasCurrent();
+
+    /**
+     * Removes an object from the map of the mode
+     * \param obj A reference to the object to be removed
+     */
+    void removeObject(memory::Object &obj);
 
     /**
      * Gets a reference to the accelerator which the mode belongs to
@@ -333,7 +346,6 @@ public:
      */
     TESTABLE gmacError_t releaseObjects();
 
-    gmacError_t dump(std::string name, memory::protocol::common::Statistic stat, hostptr_t ptr = NULL);
 
     /**
      * Waits for kernel execution and acquires the ownership of the objects
