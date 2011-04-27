@@ -615,7 +615,8 @@ inline
 BlockState::BlockState(ProtocolState init, lazy::Block &block) :
     common::BlockState<lazy::State>(init),
     block_(block),
-    faults_(0),
+    faultsRead_(0),
+    faultsWrite_(0),
     transfersToAccelerator_(0),
     transfersToHost_(0)
 {
@@ -641,13 +642,14 @@ inline
 void
 BlockState::read(const hostptr_t /*addr*/)
 {
+    faultsRead_++;
 }
 
 inline
 void
 BlockState::write(const hostptr_t /*addr*/)
 {
-    faults_++;
+    faultsWrite_++;
 }
 
 inline
@@ -675,7 +677,8 @@ inline
 void
 BlockState::acquired()
 {
-    faults_ = 0;
+    faultsRead_ = 0;
+    faultsWrite_ = 0;
 }
 
 inline
@@ -689,12 +692,18 @@ gmacError_t
 BlockState::dump(std::ostream &stream, common::Statistic stat)
 {
 #ifdef DEBUG
-    if (stat == common::PAGE_FAULTS) {
+    if (stat == common::PAGE_FAULTS_READ) {
         std::ostringstream oss;
-        oss << faults_ << " ";
+        oss << faultsRead_ << " ";
         stream << oss.str();
 
-        faults_ = 0;
+        faultsRead_ = 0;
+    } else if (stat == common::PAGE_FAULTS_WRITE) {
+        std::ostringstream oss;
+        oss << faultsWrite_ << " ";
+        stream << oss.str();
+
+        faultsWrite_ = 0;
     } else if (stat == common::PAGE_TRANSFERS_TO_ACCELERATOR) {
         std::ostringstream oss;
         oss << transfersToAccelerator_ << " ";
