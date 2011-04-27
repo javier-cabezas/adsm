@@ -1,5 +1,6 @@
 #include "FileLock.h"
 
+#if 0
 namespace __impl { namespace util {
 
 FileLock::FileLock(const char * fname, const char *_name) :
@@ -16,3 +17,5 @@ FileLock::~FileLock()
 }
 
 }}
+
+#endif

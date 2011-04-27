@@ -314,7 +314,10 @@ Manager::read(core::Mode &mode, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Read access for object %p", obj->addr());
-	gmacError_t err = obj->signalRead(addr);
+#ifdef DEBUG
+	gmacError_t err =
+#endif
+        obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
 	obj->release();
     trace::ExitCurrentFunction();

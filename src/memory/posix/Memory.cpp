@@ -24,7 +24,7 @@ int Memory::protect(hostptr_t addr, size_t count, GmacProtection prot)
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, addr + count);
     int ret = mprotect(addr, count, ProtBits[prot]);
-    ASSERTION(ret == 0);
+    CFATAL(ret == 0);
     trace::ExitCurrentFunction();
     return 0;
 }

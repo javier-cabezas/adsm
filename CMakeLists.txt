@@ -124,7 +124,7 @@ import_gmac_libraries()
 
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -Werror -Wunreachable-code")
+    set(CMAKE_C_FLAGS "-Wall -Werror")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -g -fomit-frame-pointer")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -DDEBUG -O0")
 elseif(MSVC)

@@ -1,6 +1,7 @@
 #ifndef GMAC_UTIL_POSIX_THREAD_IMPL_H_
 #define GMAC_UTIL_POSIX_THREAD_IMPL_H_
 
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -14,6 +15,18 @@ inline THREAD_T GetThreadId()
 inline PROCESS_T GetProcessId()
 {
 	return getpid();
+}
+
+inline
+long_t GetTimeStamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL); 
+
+    long_t ret;
+
+    ret = tv.tv_sec * 1000000 + tv.tv_usec;
+    return ret;
 }
 
 }}
