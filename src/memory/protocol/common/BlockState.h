@@ -42,9 +42,10 @@ namespace __impl {
 namespace memory { namespace protocol { namespace common {
 
 enum Statistic {
-    PAGE_FAULTS    = 0,
-    PAGE_TRANSFERS_TO_ACCELERATOR = 1,
-    PAGE_TRANSFERS_TO_HOST        = 2
+    PAGE_FAULTS_READ              = 0,
+    PAGE_FAULTS_WRITE             = 1,
+    PAGE_TRANSFERS_TO_ACCELERATOR = 2,
+    PAGE_TRANSFERS_TO_HOST        = 3
 };
 extern const char *StatisticName[];
 

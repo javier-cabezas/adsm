@@ -261,13 +261,15 @@ BlockState::BlockState(lazy::State init, lazy::Block &block) :
     subBlockState_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
 #endif
 #ifdef DEBUG
-    subBlockFaults_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockFaultsRead_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockFaultsWrite_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
     transfersToAccelerator_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
     transfersToHost_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
 #endif
     strideInfo_(block),
     treeInfo_(block),
-    faults_(0)
+    faultsRead_(0),
+    faultsWrite_(0)
 { 
     // Initialize subblock states
 #ifndef USE_VM
@@ -275,7 +277,8 @@ BlockState::BlockState(lazy::State init, lazy::Block &block) :
 #endif
 
 #ifdef DEBUG
-    ::memset(&subBlockFaults_[0],         0, subBlockFaults_.size() * sizeof(long_t));
+    ::memset(&subBlockFaultsRead_[0],     0, subBlockFaultsRead_.size() * sizeof(long_t));
+    ::memset(&subBlockFaultsWrite_[0],    0, subBlockFaultsWrite_.size() * sizeof(long_t));
     ::memset(&transfersToAccelerator_[0], 0, transfersToAccelerator_.size() * sizeof(long_t));
     ::memset(&transfersToHost_[0],        0, transfersToHost_.size() * sizeof(long_t));
 #endif
@@ -324,9 +327,6 @@ BlockState::syncToAccelerator()
     for (unsigned i = 0; i != subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
 #endif
-#ifdef DEBUG
-            transfersToAccelerator_[i]++;
-#endif
             if (!inGroup) {
                 groupStart = i;
                 inGroup = true;
@@ -339,6 +339,11 @@ BlockState::syncToAccelerator()
                 gaps++;
             } else {
                 ret = block_.toAccelerator(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
+#ifdef DEBUG
+                for (unsigned j = groupStart; j <= groupEnd; j++) { 
+                    transfersToAccelerator_[j]++;
+                }
+#endif
                 gaps = 0;
                 inGroup = false;
                 if (ret != gmacSuccess) break;
@@ -349,6 +354,12 @@ BlockState::syncToAccelerator()
     if (inGroup) {
         ret = block_.toAccelerator(groupStart * SubBlockSize_,
                                    SubBlockSize_ * (groupEnd - groupStart + 1));
+#ifdef DEBUG
+        for (unsigned j = groupStart; j <= groupEnd; j++) { 
+            transfersToAccelerator_[j]++;
+        }
+#endif
+
     }
 
     reset();
@@ -360,6 +371,12 @@ BlockState::syncToHost()
 {
 #ifndef USE_VM
     gmacError_t ret = block_.toHost();
+#ifdef DEBUG
+    for (unsigned i = 0; i < subBlockState_.size(); i++) { 
+        transfersToHost_[i]++;
+    }
+#endif
+
 #else
     gmacError_t ret = gmacSuccess;
 
@@ -405,6 +422,13 @@ BlockState::syncToHost()
 inline void
 BlockState::read(const hostptr_t addr)
 {
+    faultsRead_++;
+
+#ifdef DEBUG
+    long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
+    subBlockFaultsRead_[currentSubBlock]++;
+#endif
+
     return;
 }
 
@@ -413,12 +437,12 @@ BlockState::write(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
 
-    faults_++;
+    faultsWrite_++;
 
     setSubBlock(currentSubBlock, lazy::Dirty);
 
 #ifdef DEBUG
-    subBlockFaults_[currentSubBlock]++;
+    subBlockFaultsWrite_[currentSubBlock]++;
 #endif
     strideInfo_.signalWrite(addr);
 
@@ -431,7 +455,7 @@ BlockState::write(const hostptr_t addr)
         }
     } else {
         treeInfo_.signalWrite(addr);
-        if (faults_ > STRIDE_THRESHOLD) {
+        if (faultsWrite_ > STRIDE_THRESHOLD) {
             BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
 
             for (unsigned i = info.first; i < info.first + info.second; i++) {
@@ -459,13 +483,12 @@ BlockState::is(ProtocolState state) const
 inline void
 BlockState::reset()
 {
-    if (faults_ > 0) {
-        setAll(lazy::ReadOnly);
-        faults_ = 0;
+    setAll(lazy::ReadOnly);
+    faultsRead_  = 0;
+    faultsWrite_ = 0;
 
-        strideInfo_.reset();
-        treeInfo_.reset();
-    }
+    strideInfo_.reset();
+    treeInfo_.reset();
 }
 
 inline int
@@ -541,14 +564,23 @@ gmacError_t
 BlockState::dump(std::ostream &stream, common::Statistic stat)
 {
 #ifdef DEBUG
-    if (stat == common::PAGE_FAULTS) {
-        for (unsigned i = 0; i < subBlockFaults_.size(); i++) {
+    if (stat == common::PAGE_FAULTS_READ) {
+        for (unsigned i = 0; i < subBlockFaultsRead_.size(); i++) {
             std::ostringstream oss;
-            oss << subBlockFaults_[i] << " ";
+            oss << subBlockFaultsRead_[i] << " ";
 
             stream << oss.str();
         }
-        ::memset(&subBlockFaults_[0], 0, subBlockFaults_.size() * sizeof(long_t));
+        ::memset(&subBlockFaultsRead_[0], 0, subBlockFaultsRead_.size() * sizeof(long_t));
+    } else if (stat == common::PAGE_FAULTS_WRITE) {
+        for (unsigned i = 0; i < subBlockFaultsWrite_.size(); i++) {
+            std::ostringstream oss;
+            oss << subBlockFaultsWrite_[i] << " ";
+
+            stream << oss.str();
+        }
+        ::memset(&subBlockFaultsWrite_[0], 0, subBlockFaultsWrite_.size() * sizeof(long_t));
+
     } else if (stat == common::PAGE_TRANSFERS_TO_ACCELERATOR) {
         for (unsigned i = 0; i < transfersToAccelerator_.size(); i++) {
             std::ostringstream oss;

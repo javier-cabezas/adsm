@@ -62,11 +62,21 @@ public:
 class GMAC_LOCAL KernelLaunch {
 protected:
     Mode &mode_;
+#ifdef DEBUG
+    gmac_kernel_id_t k_;
+#endif
+#ifdef DEBUG
+    KernelLaunch(Mode &mode, gmac_kernel_id_t k);
+#else
     KernelLaunch(Mode &mode);
+#endif
 public:
     virtual ~KernelLaunch() {};
     virtual gmacError_t execute() = 0;
     Mode &getMode();
+#ifdef DEBUG
+    gmac_kernel_id_t getKernelId() const;
+#endif
 };
 
 }}}
