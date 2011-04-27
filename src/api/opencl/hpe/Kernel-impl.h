@@ -108,7 +108,11 @@ KernelConfig::setArgument(const void *arg, size_t size, unsigned index)
 
 inline
 KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream) :
+#ifdef DEBUG
+    core::hpe::KernelLaunch(dynamic_cast<core::hpe::Mode &>(mode), k.key()),
+#else
     core::hpe::KernelLaunch(dynamic_cast<core::hpe::Mode &>(mode)),
+#endif
     KernelConfig(k.nArgs_),
     f_(k.f_),
     stream_(stream)
