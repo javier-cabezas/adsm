@@ -51,8 +51,8 @@ std::list<std::string> *Logger::Tags_ = NULL;
 Private<char> Logger::Buffer_;    
 #endif
 
-
-static void DESTRUCTOR fini()
+DESTRUCTOR(fini);
+static void fini()
 {
     Logger::Fini();
 }

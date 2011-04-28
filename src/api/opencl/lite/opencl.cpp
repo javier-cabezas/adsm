@@ -107,29 +107,12 @@ SYM(cl_int, __opencl_clEnqueueNativeKernel,
 
 SYM(cl_int, __opencl_clFinish, cl_command_queue);
 
-static void openclInit()
-{
-    LOAD_SYM(__opencl_clCreateContext, clCreateContext);
-    LOAD_SYM(__opencl_clCreateContextFromType, clCreateContextFromType);
-    LOAD_SYM(__opencl_clRetainContext, clRetainContext);
-    LOAD_SYM(__opencl_clReleaseContext, clReleaseContext);
-
-    LOAD_SYM(__opencl_clCreateCommandQueue, clCreateCommandQueue);
-    LOAD_SYM(__opencl_clRetainCommandQueue, clRetainCommandQueue);
-    LOAD_SYM(__opencl_clReleaseCommandQueue, clReleaseCommandQueue);
-
-    LOAD_SYM(__opencl_clEnqueueNDRangeKernel, clEnqueueNDRangeKernel);
-    LOAD_SYM(__opencl_clEnqueueTask, clEnqueueTask);
-    LOAD_SYM(__opencl_clEnqueueNativeKernel, clEnqueueNativeKernel);
-
-    LOAD_SYM(__opencl_clFinish, clFinish);
-}
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static void CONSTRUCTOR init();
+CONSTRUCTOR(init);
+void openclInit();
 
 static void enterGmac()
 {
@@ -474,7 +457,26 @@ GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
     return ret.get();
 }
 
-static void CONSTRUCTOR init()
+static void openclInit()
+{
+    LOAD_SYM(__opencl_clCreateContext, clCreateContext);
+    LOAD_SYM(__opencl_clCreateContextFromType, clCreateContextFromType);
+    LOAD_SYM(__opencl_clRetainContext, clRetainContext);
+    LOAD_SYM(__opencl_clReleaseContext, clReleaseContext);
+
+    LOAD_SYM(__opencl_clCreateCommandQueue, clCreateCommandQueue);
+    LOAD_SYM(__opencl_clRetainCommandQueue, clRetainCommandQueue);
+    LOAD_SYM(__opencl_clReleaseCommandQueue, clReleaseCommandQueue);
+
+    LOAD_SYM(__opencl_clEnqueueNDRangeKernel, clEnqueueNDRangeKernel);
+    LOAD_SYM(__opencl_clEnqueueTask, clEnqueueTask);
+    LOAD_SYM(__opencl_clEnqueueNativeKernel, clEnqueueNativeKernel);
+
+    LOAD_SYM(__opencl_clFinish, clFinish);
+}
+
+
+static void init()
 {
     Private<const char>::init(inGmac_);
     AtomicInc(gmacInit_);
@@ -488,6 +490,29 @@ static void CONSTRUCTOR init()
     Process::create<Process>();
     exitGmac();
 }
+
+#if defined(_WIN32)
+#include <windows.h>
+
+
+// DLL entry function (called on load, unload, ...)
+BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
+{
+	switch(dwReason) {
+		case DLL_PROCESS_ATTACH:
+			openclInit();
+            break;
+		case DLL_PROCESS_DETACH:            
+			break;
+		case DLL_THREAD_ATTACH:
+			break;
+		case DLL_THREAD_DETACH:			
+			break;
+	};
+    return TRUE;
+}
+
+#endif
 
 #ifdef __cplusplus
 }
