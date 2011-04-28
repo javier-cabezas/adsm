@@ -11,9 +11,15 @@ Kernel::Kernel(const KernelDescriptor & k) :
 {
 }
 
+#ifdef DEBUG
+inline
+KernelLaunch::KernelLaunch(Mode &mode, gmac_kernel_id_t k) :
+    mode_(mode), k_(k)
+#else
 inline
 KernelLaunch::KernelLaunch(Mode &mode) :
     mode_(mode)
+#endif
 { }
 
 
@@ -24,6 +30,14 @@ KernelLaunch::getMode()
     return mode_;
 }
 
+#ifdef DEBUG
+inline
+gmac_kernel_id_t
+KernelLaunch::getKernelId() const
+{
+    return k_;
+}
+#endif
 
 }}}
 

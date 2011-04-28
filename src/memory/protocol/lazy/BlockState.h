@@ -150,7 +150,8 @@ protected:
 #endif
 
 #ifdef DEBUG
-    SubBlockCounters subBlockFaults_; 
+    SubBlockCounters subBlockFaultsRead_; 
+    SubBlockCounters subBlockFaultsWrite_; 
     SubBlockCounters transfersToAccelerator_; 
     SubBlockCounters transfersToHost_; 
 #endif
@@ -164,7 +165,8 @@ protected:
     void setAll(ProtocolState state);
 
     // Global statistis
-    unsigned faults_;
+    unsigned faultsRead_;
+    unsigned faultsWrite_;
 
     void reset();
 
@@ -202,7 +204,8 @@ protected:
     lazy::Block &block_;
 
     // Global statistis
-    unsigned faults_;
+    unsigned faultsRead_;
+    unsigned faultsWrite_;
     unsigned transfersToAccelerator_;
     unsigned transfersToHost_;
 

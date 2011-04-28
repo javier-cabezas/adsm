@@ -50,15 +50,6 @@ static long getpagesize (void) {
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
 
-#ifdef DEBUG
-static Atomic StatDumps_ = 0;
-
-unsigned GetStatDump()
-{
-    return AtomicInc(StatDumps_);
-}
-
-#endif
 
 unsigned APICALL gmacGetNumberOfAccelerators()
 {
@@ -74,7 +65,6 @@ unsigned APICALL gmacGetNumberOfAccelerators()
 
 size_t APICALL gmacGetFreeMemory()
 {
-    gmacError_t ret = gmacSuccess;
     gmac::enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
     size_t free;
@@ -193,15 +183,6 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	gmac::enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
-#ifdef DEBUG
-    unsigned dump = GetStatDump();
-    std::stringstream ss(std::stringstream::out);
-    ss << dump << "-" << "gmacFree";
-
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_FAULTS, hostptr_t(cpuPtr));
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, hostptr_t(cpuPtr));
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, hostptr_t(cpuPtr));
-#endif
     __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
     if(allocator.free(mode, hostptr_t(cpuPtr)) == false) {
     	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
@@ -257,16 +238,6 @@ gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
         ret = gmacLaunch(*launch);
         delete launch;
     }
-
-#ifdef DEBUG
-    unsigned dump = GetStatDump();
-    std::stringstream ss(std::stringstream::out);
-    ss << dump << "-" << mode.getKernelName(k);
-
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_FAULTS);
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
-    mode.dump(ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
-#endif
 
     gmac::trace::ExitCurrentFunction();
     gmac::exitGmac();

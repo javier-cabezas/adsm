@@ -34,7 +34,6 @@ template<typename State>
 gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
-    hostptr_t mark = addr_;
     ptroff_t offset = 0;
     for(BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
         SharedBlock<State> &oldBlock = *dynamic_cast<SharedBlock<State> *>(i->second);

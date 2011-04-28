@@ -61,6 +61,9 @@ do
     --enable-subblock)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_SUBBLOCK_TRACKING=ON"
         ;;
+    --enable-coverage)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_COVERAGE=ON"
+        ;;
     --enable-mpi)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;

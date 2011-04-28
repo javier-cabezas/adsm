@@ -44,17 +44,23 @@ namespace __impl { namespace opencl {
 //! A Mode represents a virtual accelerator 
 class GMAC_LOCAL Mode {
 public:
-    //! Default destructor
+    /** Default destructor */
     virtual ~Mode() { };
 
-    //! Block the CPU thread until an event happens
-    /*!
-        \param event Event to wait for
-        \return Error code
-    */
+    /** Block the CPU thread until an event happens
+     *
+     *  \param event Event to wait for
+     *  \return Error code
+     */
     virtual gmacError_t waitForEvent(cl_event event) = 0;
 
-
+    /** Return the time elapsed between two events
+     *
+     * \param t Reference where the elapsed time is returned
+     * \param start OpenCL event defining the start
+     * \param end OpenCL event defininf the end
+     * \return Error code
+     */
     virtual gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end) = 0;
 };
 
