@@ -61,20 +61,48 @@ public:
 
 class GMAC_LOCAL KernelLaunch {
 protected:
+    /** Execution mode where the kernel will be executed */
     Mode &mode_;
 #ifdef DEBUG
+    /** Kernel ID */
     gmac_kernel_id_t k_;
-#endif
-#ifdef DEBUG
+
+    /**
+     * Default constructor
+     * \param mode Execution mode where the kernel will be executed
+     * \param k Identifier of the kernel to be execute
+     */
     KernelLaunch(Mode &mode, gmac_kernel_id_t k);
 #else
+    /**
+     * Default constructor
+     * \param mode Execution mode where the kernel will be executed
+     */
     KernelLaunch(Mode &mode);
 #endif
 public:
+    /**
+     * Default destructor
+     */
     virtual ~KernelLaunch() {};
+
+    /**
+     * Execute the kernel
+     * \return Error code
+     */
     virtual gmacError_t execute() = 0;
+
+    /**
+     * Get the execution mode associated to the kernel
+     * \return Execution mode
+     */
     Mode &getMode();
+
 #ifdef DEBUG
+    /**
+     * Get the execution kernel id
+     * \return Kernel identified
+     */
     gmac_kernel_id_t getKernelId() const;
 #endif
 };
