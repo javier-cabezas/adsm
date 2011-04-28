@@ -66,45 +66,117 @@ class KernelLaunch;
 
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
 protected:
+    /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
 
-	typedef std::map<void *, void *> AddressMap;
-	static AddressMap HostMem_;
-
+    /** OpenCL command queue to request kernel executions */
     cl_command_queue streamLaunch_;
+    /** OpenCL command queue to request data transfers to the acelerator */
     cl_command_queue streamToAccelerator_;
+    /** OpenCL command queue to request data transfers to the host */
     cl_command_queue streamToHost_;
+    /** Default OpenCL command queue */
     cl_command_queue streamAccelerator_;
 
+    /** I/O buffer used by the context for data transfers */
     IOBuffer *buffer_;
 
+    /**
+     * Initialized the OpenCL commmand queues
+     */
     void setupCLstreams();
+
+    /**
+     * Destroy the OpenCL command queues
+     */
     void cleanCLstreams();
+
+    /**
+     * Wait for all commands in the OpenCL command queue to finish
+     * \param stream OpenCL command queue
+     * \return Error code
+     */
     gmacError_t syncCLstream(cl_command_queue stream);
 
 public:
+    /**
+     * Default OpenCL context constructor
+     * \param acc OpenCL accelerator associated to the context
+     * \param mode OpenCL execution mode associated to the context
+     */
 	Context(Accelerator &acc, Mode &mode);
+
+    /**
+     * Default OpenCL context destructor
+     */
 	~Context();
 
+    /**
+     * Get the accelerator associated to the context
+     * \return Reference to an OpenCL accelerator
+     */
+    Accelerator & accelerator();
+
+    /**
+     * Copy data from an I/O buffer to the accelerator memory
+     * \param dst Accelerator memory address to copy data to
+     * \param buffer I/O buffer to copy data from
+     * \param size Size (in bytes) of the data to be transferred
+     * \param off  Offset within the I/O buffer to start transferring data from
+     */
+    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
+
+    /**
+     * Copy data from the accelerator to an I/O buffer
+     * \param buffer I/O buffer to copy the data to
+     * \param dst Accelerator memory address to copy data from
+     * \param size Size (in bytes) of the data to be copied
+     * \param off Offset within the I/O buffer to start transferring data to
+     */
+    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
+
+
+    /**
+     * Create a descriptor of a kernel invocation
+     * \param kernel OpenCL kernel to be executed
+     * \return Descriptor of the kernel invocation
+     */
+    KernelLaunch &launch(Kernel &kernel);
+
+    /**
+     * Wait for the accelerator to finish activities in all OpenCL command queues
+     * \return Error code
+     */
+    gmacError_t waitAccelerator();
+
+    /**
+     * Wait for an OpenCL event to be completed
+     * \param e OpenCL event to wait for
+     * \return Error code
+     */
+    gmacError_t waitForEvent(cl_event e);
+
+    /**
+     * Get the default OpenCL command queue to request events
+     * \return Default OpenCL command queue
+     */
+    const cl_command_queue eventStream() const;
+
+
+    /* core/hpe/Context.h Interface */
 	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+
 	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+
 	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    KernelLaunch &launch(Kernel &kernel);
     gmacError_t prepareForCall();
+
     gmacError_t waitForCall();
+
     gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
-
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-    gmacError_t waitAccelerator();
-
-    const cl_command_queue eventStream() const;
-
-    Accelerator & accelerator();
-    gmacError_t waitForEvent(cl_event e);
 };
 
 }}}

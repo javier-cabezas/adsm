@@ -10,8 +10,6 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Context::AddressMap Context::HostMem_;
-
 Context::Context(Accelerator &acc, Mode &mode) :
     gmac::core::hpe::Context(acc, mode, mode.id()),
     buffer_(NULL)
