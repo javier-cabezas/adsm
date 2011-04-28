@@ -112,7 +112,7 @@ extern "C" {
 #endif
 
 CONSTRUCTOR(init);
-void openclInit();
+static void openclInit();
 
 static void enterGmac()
 {
