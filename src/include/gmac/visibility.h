@@ -61,8 +61,8 @@ struct __destructor {
 #    define GMAC_DLL_EXPORT
 #    define GMAC_DLL_LOCAL
 #  endif
-#  define CONSTRUCTOR(fn) void fn(void) __attribute__((constructor))
-#  define DESTRUCTOR(fn)  void fn(void) __attribute__((destructor))
+#  define CONSTRUCTOR(fn) static void fn(void) __attribute__((constructor))
+#  define DESTRUCTOR(fn)  static void fn(void) __attribute__((destructor))
 #  define APICALL
 #endif
 
