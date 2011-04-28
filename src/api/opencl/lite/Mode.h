@@ -70,18 +70,13 @@ public:
     void remove(cl_command_queue queue);
 };
 
-//! Visual studio produces a stupid warning due to the complex diamond inheritance
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 4250 )
-#endif
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode :
     public opencl::Mode,
     public core::Mode,
     public gmac::util::Lock
 {
-    friend class IOBuffer;
+	friend class core::IOBuffer;
     friend class ModeMap;
 protected:
     cl_context context_;
@@ -292,9 +287,7 @@ public:
 
 
 };
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
+
 }}}
 
 #include "Mode-impl.h"

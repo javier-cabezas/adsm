@@ -7,7 +7,7 @@ template<typename State>
 inline StateBlock<State>::StateBlock(Protocol &protocol, hostptr_t addr, 
                                hostptr_t shadow, size_t size, typename State::ProtocolState init) :
 	gmac::memory::Block(protocol, addr, shadow, size),
-    State(init, *this)
+    State(init)
 {
 }
 

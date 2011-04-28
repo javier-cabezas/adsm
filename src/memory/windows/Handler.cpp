@@ -22,7 +22,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	
 	bool writeAccess = false;
 	if(ex->ExceptionRecord->ExceptionInformation[0] == 1) writeAccess = true;
-	else if(ex->ExceptionRecord->ExceptionInformation[0] != 0) { exitGmac(); return EXCEPTION_CONTINUE_SEARCH; }
+	else if(ex->ExceptionRecord->ExceptionInformation[0] != 0) { Handler::Exit(); return EXCEPTION_CONTINUE_SEARCH; }
 	
 	void *addr = (void *)ex->ExceptionRecord->ExceptionInformation[1];
 
@@ -40,7 +40,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	if(resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
 		abort();
-		exitGmac();
+		Handler::Exit();
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 

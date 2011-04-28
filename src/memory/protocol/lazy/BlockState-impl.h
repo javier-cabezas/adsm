@@ -224,7 +224,7 @@ inline
 void
 BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
 {
-    setSubBlock(GetSubBlockIndex(block_.addr(), addr), state);
+    setSubBlock(GetSubBlockIndex(block().addr(), addr), state);
 }
 
 inline
@@ -232,8 +232,8 @@ void
 BlockState::setSubBlock(long_t subBlock, ProtocolState state)
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
-    bitmap.setEntry(block_.acceleratorAddr(block_.addr() + subBlock * SubBlockSize_), state);
+    vm::Bitmap &bitmap = block().owner().getBitmap();
+    bitmap.setEntry(block().acceleratorAddr(block().addr() + subBlock * SubBlockSize_), state);
 #else
     subBlockState_[subBlock] = uint8_t(state);
 #endif
@@ -244,27 +244,26 @@ void
 BlockState::setAll(ProtocolState state)
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
-    bitmap.setEntryRange(block_.acceleratorAddr(block_.addr()), block_.size(), state);
+    vm::Bitmap &bitmap = block().owner().getBitmap();
+    bitmap.setEntryRange(block().acceleratorAddr(block().addr()), block().size(), state);
 #else
     ::memset(&subBlockState_[0], uint8_t(state), subBlockState_.size() * sizeof(uint8_t));
 #endif
 }
 
 inline
-BlockState::BlockState(lazy::State init, lazy::Block &block) :
+BlockState::BlockState(lazy::State init) :
     common::BlockState<lazy::State>(init),
-    block_(block),
 #ifdef USE_VM
-    subBlocks_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlocks_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
 #else
-    subBlockState_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockState_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
 #endif
 #ifdef DEBUG
-    subBlockFaultsRead_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
-    subBlockFaultsWrite_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
-    transfersToAccelerator_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
-    transfersToHost_(block_.size()/SubBlockSize_ + ((block_.size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockFaultsRead_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockFaultsWrite_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
+    transfersToAccelerator_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
+    transfersToHost_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
 #endif
     strideInfo_(block),
     treeInfo_(block),
@@ -287,27 +286,27 @@ BlockState::BlockState(lazy::State init, lazy::Block &block) :
 inline hostptr_t
 BlockState::getSubBlockAddr(const hostptr_t addr) const
 {
-    return GetSubBlockAddr(block_.addr(), addr);
+    return GetSubBlockAddr(block().addr(), addr);
 }
 
 inline hostptr_t
 BlockState::getSubBlockAddr(unsigned index) const
 {
-    return GetSubBlockAddr(block_.addr(), block_.addr() + index * SubBlockSize_);
+    return GetSubBlockAddr(block().addr(), block().addr() + index * SubBlockSize_);
 }
 
 inline unsigned
 BlockState::getSubBlocks() const
 {
-    unsigned subBlocks = block_.size()/SubBlockSize_;
-    if (block_.size() % SubBlockSize_ != 0) subBlocks++;
+    unsigned subBlocks = block().size()/SubBlockSize_;
+    if (block().size() % SubBlockSize_ != 0) subBlocks++;
     return subBlocks;
 }
 
 inline size_t
 BlockState::getSubBlockSize() const
 {
-    return block_.size() < SubBlockSize_? block_.size(): SubBlockSize_;
+    return block().size() < SubBlockSize_? block().size(): SubBlockSize_;
 }
 
 inline gmacError_t
@@ -320,9 +319,9 @@ BlockState::syncToAccelerator()
     bool inGroup = false;
 
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
+    vm::Bitmap &bitmap = block().owner().getBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block_.acceleratorAddr() + i * SubBlockSize_) == lazy::Dirty) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_) == lazy::Dirty) {
 #else
     for (unsigned i = 0; i != subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
@@ -338,7 +337,7 @@ BlockState::syncToAccelerator()
                     vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
                 gaps++;
             } else {
-                ret = block_.toAccelerator(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
+                ret = block().toAccelerator(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
 #ifdef DEBUG
                 for (unsigned j = groupStart; j <= groupEnd; j++) { 
                     transfersToAccelerator_[j]++;
@@ -352,7 +351,7 @@ BlockState::syncToAccelerator()
     }
 
     if (inGroup) {
-        ret = block_.toAccelerator(groupStart * SubBlockSize_,
+        ret = block().toAccelerator(groupStart * SubBlockSize_,
                                    SubBlockSize_ * (groupEnd - groupStart + 1));
 #ifdef DEBUG
         for (unsigned j = groupStart; j <= groupEnd; j++) { 
@@ -370,7 +369,7 @@ inline gmacError_t
 BlockState::syncToHost()
 {
 #ifndef USE_VM
-    gmacError_t ret = block_.toHost();
+    gmacError_t ret = block().toHost();
 #ifdef DEBUG
     for (unsigned i = 0; i < subBlockState_.size(); i++) { 
         transfersToHost_[i]++;
@@ -384,9 +383,9 @@ BlockState::syncToHost()
     unsigned gaps = 0;
     bool inGroup = false;
 
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
+    vm::Bitmap &bitmap = block().owner().getBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block_.acceleratorAddr() + i * SubBlockSize_) == lazy::Invalid) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_) == lazy::Invalid) {
 #ifdef DEBUG
             transfersToHost_[i]++;
 #endif
@@ -401,7 +400,7 @@ BlockState::syncToHost()
                     vm::cost<vm::MODEL_TOHOST>(SubBlockSize_, 1)) {
                 gaps++;
             } else {
-                ret = block_.toHost(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
+                ret = block().toHost(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
                 gaps = 0;
                 inGroup = false;
                 if (ret != gmacSuccess) break;
@@ -410,7 +409,7 @@ BlockState::syncToHost()
     }
 
     if (inGroup) {
-        ret = block_.toHost(groupStart * SubBlockSize_,
+        ret = block().toHost(groupStart * SubBlockSize_,
                             SubBlockSize_ * (groupEnd - groupStart + 1));
     }
 
@@ -425,7 +424,7 @@ BlockState::read(const hostptr_t addr)
     faultsRead_++;
 
 #ifdef DEBUG
-    long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
+    long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     subBlockFaultsRead_[currentSubBlock]++;
 #endif
 
@@ -435,7 +434,7 @@ BlockState::read(const hostptr_t addr)
 inline void
 BlockState::write(const hostptr_t addr)
 {
-    long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
+    long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
 
     faultsWrite_++;
 
@@ -447,10 +446,10 @@ BlockState::write(const hostptr_t addr)
     strideInfo_.signalWrite(addr);
 
     if (strideInfo_.isStrided()) {
-        for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block_.addr() &&
-                                                         cur < (block_.addr() + block_.size());
+        for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
+                                                         cur < (block().addr() + block().size());
             cur += strideInfo_.getStride()) {
-            long_t subBlock = GetSubBlockIndex(block_.addr(), cur);
+            long_t subBlock = GetSubBlockIndex(block().addr(), cur);
             setSubBlock(subBlock, lazy::Dirty);
         }
     } else {
@@ -469,8 +468,8 @@ inline bool
 BlockState::is(ProtocolState state) const
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
-    return bitmap.isAnyInRange(block_.acceleratorAddr(block_.addr()), block_.size(), state);
+    vm::Bitmap &bitmap = block().owner().getBitmap();
+    return bitmap.isAnyInRange(block().acceleratorAddr(block().addr()), block().size(), state);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         if (subBlockState_[i] == state) return true;
@@ -496,14 +495,14 @@ BlockState::unprotect()
 {
     int ret = 0;
 #if 0
-    ret = Memory::protect(block_.addr(), block_.size(), prot);
+    ret = Memory::protect(block().addr(), block().size(), prot);
 #else
     unsigned start = 0;
     unsigned size = 0;
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block_.owner().getBitmap();
+    vm::Bitmap &bitmap = block().owner().getBitmap();
     for (unsigned i = 0; i < subBlocks_; i++) {
-        ProtocolState state = bitmap.getEntry<ProtocolState>(block_.acceleratorAddr() + i * SubBlockSize_);
+        ProtocolState state = bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         ProtocolState state = ProtocolState(subBlockState_[i]);
@@ -529,7 +528,7 @@ BlockState::protect(GmacProtection prot)
 {
     int ret = 0;
 #if 1
-    ret = Memory::protect(block_.addr(), block_.size(), prot);
+    ret = Memory::protect(block().addr(), block().size(), prot);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
@@ -612,9 +611,14 @@ namespace protocol {
 namespace lazy {
 
 inline
-BlockState::BlockState(ProtocolState init, lazy::Block &block) :
+Block &BlockState::block()
+{
+	return dynamic_cast<Block &>(*this);
+}
+
+inline
+BlockState::BlockState(ProtocolState init) :
     common::BlockState<lazy::State>(init),
-    block_(block),
     faultsRead_(0),
     faultsWrite_(0),
     transfersToAccelerator_(0),
@@ -627,7 +631,7 @@ gmacError_t
 BlockState::syncToAccelerator()
 {
     transfersToAccelerator_++;
-    return block_.toAccelerator();
+    return block().toAccelerator();
 }
 
 inline
@@ -635,7 +639,7 @@ gmacError_t
 BlockState::syncToHost()
 {
     transfersToHost_++;
-    return block_.toHost();
+    return block().toHost();
 }
 
 inline
@@ -663,14 +667,14 @@ inline
 int
 BlockState::protect(GmacProtection prot)
 {
-    return Memory::protect(block_.addr(), block_.size(), prot);
+    return Memory::protect(block().addr(), block().size(), prot);
 }
 
 inline
 int
 BlockState::unprotect()
 {
-    return Memory::protect(block_.addr(), block_.size(), GMAC_PROT_READWRITE);
+    return Memory::protect(block().addr(), block().size(), GMAC_PROT_READWRITE);
 }
 
 inline
