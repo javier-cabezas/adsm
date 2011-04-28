@@ -50,7 +50,11 @@ struct Friend
 template <typename State>
 class GMAC_LOCAL StateBlock : public gmac::memory::Block,
                               public State {
+#ifdef _MSC_VER
+    friend typename Friend<State>::Type;
+#else
     friend class Friend<State>::Type;
+#endif
 
 protected:
     //! Default construcutor

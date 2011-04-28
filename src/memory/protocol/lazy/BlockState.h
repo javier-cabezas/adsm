@@ -201,7 +201,7 @@ class GMAC_LOCAL BlockState :
     public common::BlockState<lazy::State> {
 
 protected:
-    lazy::Block &block_;
+    lazy::Block &block();
 
     // Global statistis
     unsigned faultsRead_;
@@ -210,7 +210,7 @@ protected:
     unsigned transfersToHost_;
 
 public:
-    BlockState(ProtocolState init, lazy::Block &block);
+    BlockState(ProtocolState init);
 
     gmacError_t syncToAccelerator();
     gmacError_t syncToHost();
