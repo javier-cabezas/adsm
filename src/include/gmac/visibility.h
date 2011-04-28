@@ -40,8 +40,16 @@ WITH THE SOFTWARE.  */
 #  define GMAC_DLL_IMPORT __declspec(dllimport)
 #  define GMAC_DLL_EXPORT __declspec(dllexport)
 #  define GMAC_DLL_LOCAL
-#  define CONSTRUCTOR
-#  define DESTRUCTOR
+struct __constructor { 
+	__constructor(void (*fn)(void)) { fn(); }
+};
+#  define CONSTRUCTOR(fn) void fn(); static __constructor __constructor_##fn(fn)
+struct __destructor { 
+	void (*fn_)(void);
+	__destructor(void (*fn)(void)) : fn_(fn) { };
+	~__destructor() { fn_(); }
+};
+#  define DESTRUCTOR(fn) void fn(); static __destructor __destructor_##fn(fn)
 #  define APICALL __stdcall
 #else
 #  if __GNUC__ >= 4
@@ -53,8 +61,8 @@ WITH THE SOFTWARE.  */
 #    define GMAC_DLL_EXPORT
 #    define GMAC_DLL_LOCAL
 #  endif
-#  define CONSTRUCTOR __attribute__((constructor))
-#  define DESTRUCTOR  __attribute__((destructor))
+#  define CONSTRUCTOR(fn) void fn(void) __attribute__((constructor))
+#  define DESTRUCTOR(fn)  void fn(void) __attribute__((destructor))
 #  define APICALL
 #endif
 

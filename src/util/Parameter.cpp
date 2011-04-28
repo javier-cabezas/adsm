@@ -26,7 +26,7 @@ ParameterCtor ParamCtorList[] = {
     {NULL, NULL}
 };
 
-void CONSTRUCTOR init()
+static void init()
 {
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         ParamCtorList[i].param = ParamCtorList[i].ctor();
@@ -39,6 +39,9 @@ void CONSTRUCTOR init()
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         delete ParamCtorList[i].param;
 }
+
+#ifdef _MSC_VER
+#endif
 
 }}}
 

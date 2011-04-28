@@ -104,8 +104,8 @@ char inGmac()
 }
 
 
-
-static void DESTRUCTOR fini(void)
+DESTRUCTOR(fini);
+static void fini(void)
 {
 	gmac::enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
