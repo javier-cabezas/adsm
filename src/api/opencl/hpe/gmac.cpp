@@ -28,7 +28,6 @@ GMAC_API gmacError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t work
         size_t *globalWorkSize, size_t *localWorkSize)
 {
     gmac::enterGmac();
-    Mode &mode = Mode::getCurrent();
     ((__impl::opencl::hpe::KernelLaunch *)kernel->launch_)->setConfiguration(cl_int(workDim),
             globalWorkOffset, globalWorkSize, localWorkSize);
     gmac::exitGmac();
@@ -98,7 +97,6 @@ gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, OclKernel *kernel)
 {
     gmac::enterGmac();
     __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     __impl::core::hpe::KernelLaunch *launch;
     gmacError_t ret = mode.launch(id, launch);
     if (ret == gmacSuccess) {

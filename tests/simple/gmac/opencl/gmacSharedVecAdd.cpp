@@ -46,7 +46,6 @@ void *addVector(void *ptr)
 
 	ret = oclMalloc((void **)&p->ptr, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
-
 	// Call the kernel
 	getTime(&s);
 
@@ -79,13 +78,12 @@ void *addVector(void *ptr)
 	float error = 0;
 	for(unsigned i = 0; i < vecSize; i++) {
 		error += p->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
-		//error += (a[i] - b[i]);
+		//error += p->ptr[i] - 1.0f;
 	}
 	getTime(&t);
     snprintf(buffer, 1024, "%s-CheckFull: ", prefix);
 	printTime(&s, &t, buffer, "\n");
-
-    //assert(error == 0);
+    assert(error == 0);
 
 	return NULL;
 }

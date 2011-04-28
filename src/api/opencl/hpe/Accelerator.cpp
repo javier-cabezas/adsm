@@ -291,7 +291,6 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
 
     if (&__ocl_code_start != NULL &&
         &__ocl_code_end   != NULL) {
-        size_t size = size_t(&__ocl_code_end - &__ocl_code_start);
         char *code = &__ocl_code_start;
         char *cursor = strstr(code, CL_MAGIC);
 
@@ -480,6 +479,10 @@ gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
 
 gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
+    // There is not reliable way to get zero-copy memory
+    addr = NULL;
+    return gmacErrorMemoryAllocation;
+#if 0
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
     addr = NULL;
@@ -500,10 +503,14 @@ gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
     }
     trace::ExitCurrentFunction();
     return error(ret);
+#endif
 }
 
 gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
+    // There is not reliable way to get zero-copy memory
+    return gmacErrorMemoryAllocation;
+#if 0
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
     if(core::Process::isValid()) {
@@ -518,10 +525,14 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     
     trace::ExitCurrentFunction();
     return error(ret);
+#endif
 }
 
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
+    // There is not reliable way to get zero-copy memory
+    return accptr_t(0, 0);
+#if 0
     cl_mem device;
     size_t size = 0;
     if(localHostAlloc_.translate(addr, device, size) == false) {
@@ -529,6 +540,7 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
                "Error translating address %p", (void *) addr);
     }
     return accptr_t(device, 0);
+#endif
 }
 
 void Accelerator::memInfo(size_t &free, size_t &total) const

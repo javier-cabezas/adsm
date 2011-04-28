@@ -91,7 +91,6 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
     trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
     HostMappedObject *object = new HostMappedObject(mode, size);
     *addr = object->addr();
     if(*addr == NULL) {
@@ -116,7 +115,6 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
             return ret;
         }
     }
-
     Protocol *protocol = proc.protocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
     Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_READ, 0);

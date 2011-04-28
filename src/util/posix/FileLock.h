@@ -34,7 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_POSIX_FILELOCK_H_
 #define GMAC_UTIL_POSIX_FILELOCK_H_
 
+#if 0
 #include <cstdio>
+
 
 #include "config/config.h"
 #include "util/Lock.h"
@@ -59,5 +61,7 @@ public:
 }}
 
 #include "FileLock-impl.h"
+
+#endif
 
 #endif

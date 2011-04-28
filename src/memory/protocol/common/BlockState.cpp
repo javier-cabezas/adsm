@@ -4,9 +4,10 @@ namespace __impl {
 namespace memory { namespace protocol { namespace common {
 
 const char *StatisticName[] = {
-    "faults",
-    "transferstoacc",
-    "transferstohost"
+    "faults_read",
+    "faults_write",
+    "transfers_toacc",
+    "transfers_tohost"
 };
 
 }}}}

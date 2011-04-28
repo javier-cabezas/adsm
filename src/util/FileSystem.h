@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,90 +31,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_KERNEL_H_
-#define GMAC_CORE_HPE_KERNEL_H_
+#ifndef GMAC_UTIL_FILESYSTEM_H_
+#define GMAC_UTIL_FILESYSTEM_H_
 
-#include <vector>
+#include <sys/stat.h>
 
+namespace __impl { namespace util {
 
-#include "config/common.h"
-#include "include/gmac/types.h"
+bool MakeDir(std::string path);
 
-#include "util/ReusableObject.h"
+#if defined(POSIX)
 
-#include "Descriptor.h"
+inline
+bool MakeDir(std::string path)
+{
+    int ret = mkdir(path.c_str(), S_IRWXU | S_IRWXG);
+    return ret == 0;
+}
 
-namespace __impl { namespace core { namespace hpe {
+#elif defined(WINDOWS)
 
-class Mode;
-class KernelLaunch;
-
-typedef Descriptor<gmac_kernel_id_t> KernelDescriptor;
-
-class GMAC_LOCAL Kernel : public KernelDescriptor{
-     DBC_FORCE_TEST(Kernel)
-
-public:
-    Kernel(const KernelDescriptor &k);
-    virtual ~Kernel() {};
-};
-
-class GMAC_LOCAL KernelLaunch {
-protected:
-    /** Execution mode where the kernel will be executed */
-    Mode &mode_;
-#ifdef DEBUG
-    /** Kernel ID */
-    gmac_kernel_id_t k_;
-
-    /**
-     * Default constructor
-     * \param mode Execution mode where the kernel will be executed
-     * \param k Identifier of the kernel to be execute
-     */
-    KernelLaunch(Mode &mode, gmac_kernel_id_t k);
-#else
-    /**
-     * Default constructor
-     * \param mode Execution mode where the kernel will be executed
-     */
-    KernelLaunch(Mode &mode);
-#endif
-public:
-    /**
-     * Default destructor
-     */
-    virtual ~KernelLaunch() {};
-
-    /**
-     * Execute the kernel
-     * \return Error code
-     */
-    virtual gmacError_t execute() = 0;
-
-    /**
-     * Get the execution mode associated to the kernel
-     * \return Execution mode
-     */
-    Mode &getMode();
-
-#ifdef DEBUG
-    /**
-     * Get the execution kernel id
-     * \return Kernel identified
-     */
-    gmac_kernel_id_t getKernelId() const;
-#endif
-};
-
-}}}
-
-#include "Kernel-impl.h"
-
-#ifdef USE_DBC
-#include "core/hpe/dbc/Kernel.h"
-#endif
+inline
+bool MakeDir(std::string path)
+{
+    BOOL ret = CreateDirectory(path.c_str(), NULL);
+    return ret != 0;
+}
 
 #endif
+
+}}
+
+#endif /* FILESYSTEM_H */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

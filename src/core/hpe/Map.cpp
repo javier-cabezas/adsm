@@ -69,8 +69,6 @@ bool Map::insert(memory::Object &obj)
 
 bool Map::remove(memory::Object &obj)
 {
-    void *addr = obj.addr();
-
     bool ret = memory::ObjectMap::remove(obj);
 
     // Shared object
@@ -78,7 +76,7 @@ bool Map::remove(memory::Object &obj)
     memory::ObjectMap &shared = proc.shared();
     ret = shared.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Shared Object %p", addr);
+        TRACE(LOCAL,"Removed Shared Object %p", obj.addr());
         return true;
     }
 
@@ -86,7 +84,7 @@ bool Map::remove(memory::Object &obj)
     memory::ObjectMap &global = proc.global();
     ret = global.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Global Object %p", addr);
+        TRACE(LOCAL,"Removed Global Object %p", obj.addr());
         return true;
     }
 
@@ -94,7 +92,7 @@ bool Map::remove(memory::Object &obj)
     memory::ObjectMap &orphans = proc.orphans();
     ret = orphans.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Orphan Object %p", addr);
+        TRACE(LOCAL,"Removed Orphan Object %p", obj.addr());
     }
 
     return ret;

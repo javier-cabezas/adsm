@@ -68,7 +68,6 @@ TEST_F(IOBufferTest, ToHost) {
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5b, Size_));
     
     ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(*Buffer_, addr, Size_));
-    ASSERT_EQ(IOBuffer::ToHost, Buffer_->state());
 
     ASSERT_EQ(gmacSuccess, Buffer_->wait());
     ASSERT_EQ(IOBuffer::Idle, Buffer_->state());

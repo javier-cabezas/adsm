@@ -55,8 +55,11 @@ class KernelLaunch;
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
     DBC_FORCE_TEST(Context)
 protected:
+    /** Accelerator associated to the context */
     Accelerator &acc_;
+    /** Execution mode owning the context */
     Mode &mode_;
+    /** Context ID */
     unsigned id_;
 
     /**

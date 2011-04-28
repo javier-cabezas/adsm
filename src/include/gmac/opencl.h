@@ -132,66 +132,138 @@ GMAC_API oclError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, si
 
 
 /* Wrappers to GMAC native calls */
+/** Get the number of accelerators in the system
+ * \return Number of accelerators
+ */
 static inline
 unsigned oclGetNumberOfAccelerators() { return gmacGetNumberOfAccelerators(); }
 
+/** Get the amount of available accelerator memory
+ * \return Size (in bytes) of the available accelerator memory
+ */
 static inline
 size_t oclGetFreeMemory() { return gmacGetFreeMemory(); }
 
+/** Attach the calling CPU thread to a different accelerator
+ * \param acc Accelerator to attach the current CPU thread
+ * \return Error code
+ */
 static inline
 oclError_t oclMigrate(unsigned acc) { return gmacMigrate(acc); }
 
+/** Map host memory in the accelerator
+ * \param cpuPtr Host memory address to map
+ * \param count Size (in bytes) to be mapped in accelerator memory
+ * \param prot Desired memory protection of the mapping
+ * \return Error code
+ */
 static inline
 oclError_t oclMemoryMap(void *cpuPtr, size_t count, OclProtection prot) {
     return gmacMemoryMap(cpuPtr, count, prot);
 }
 
+/** Unmap host memory from the accelerator
+ * \param cpuPtr Host memory address to be unmmaped
+ * \param count Size (in bytes) to be unmmaped
+ * \return Error code
+ */
 static inline
 oclError_t oclMemoryUnmap(void *cpuPtr, size_t count) { return gmacMemoryUnmap(cpuPtr, count); }
 
+/** Allocate shared memory
+ * \param devPtr Memory address of the pointer to store the allocated memory
+ * \param count Size (in bytes) of the memory to be allocated
+ * \return Error code
+ */
 static inline
 oclError_t oclMalloc(void **devPtr, size_t count) { return gmacMalloc(devPtr, count); }
 
+/** Allocate shared memory accessible from all accelerators
+ * \param devPtr Memory address of the pointer to store the allocated memory
+ * \param count Size (in bytes) of the memory to be allocated
+ * \param hint Type of desired global memory
+ * \return Error code
+ */
 static inline
 oclError_t oclGlobalMalloc(void **devPtr, size_t count, OclMemoryHint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
     return gmacGlobalMalloc(devPtr, count, hint);
 }
 
+/** Get the OpenCL memory object associated to a shared memory address
+ * \param cpuPtr Host shared memory address
+ * \return Associated OpenCL buffer
+ */
 static inline
 cl_mem oclPtr(const void *cpuPtr) { return gmacPtr(cpuPtr); }
 
+/** Release shared memory
+ * \param cpuPtr Shared memory address to be released
+ * \return Error code
+ */
 static inline
 oclError_t oclFree(void *cpuPtr) { return gmacFree(cpuPtr); }
 
+/** Wait until all previous accelerator calls are completed
+ * \return Error code
+ */
 static inline
 oclError_t oclThreadSynchronize() { return gmacThreadSynchronize(); }
 
+/** Get the last error produced by GMAC
+ * \return Error code
+ */
 static inline
 oclError_t oclGetLastError() { return gmacGetLastError(); }
 
+/** Initialize a shared memory region
+ * \param cpuPtr Starting shared memory address 
+ * \param c Value used to be initialized
+ * \param count Size (in bytes) of the shared memory region to be initialized
+ * \return Shared memory address that has been initialized
+ */
 static inline
 void *oclMemset(void *cpuPtr, int c, size_t count) { return gmacMemset(cpuPtr, c, count); }
 
+/** Copy data between shared memory regions
+ * \param cpuDstPtr Destination shared memory
+ * \param cpuSrcPtr Source shared memory
+ * \param count Size (in bytes) to be copied
+ * \return Destination shared memory address
+ */
 static inline
 void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
     return gmacMemcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
+/** Send the execution mode associated to the current CPU thread to another CPU thread
+ * \param tid Thread ID of the destionation CPU thread
+ */
 static inline
 void oclSend(THREAD_T tid) { return gmacSend(tid); }
 
+/** Receive an execution mode from another CPU thread */
 static inline
 void oclReceive(void) { return gmacReceive(); }
 
+/** Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+ * \param tid Thread ID of the destination CPU thread
+ */
 static inline
 void oclSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
 
+/** Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+ * \param tid Thread ID of the destination CPU thread
+ */
 static inline
 void oclCopy(THREAD_T tid) { return gmacCopy(tid); }
 
 #ifdef __cplusplus
 }
 
+/** Get the OpenCL memory object associated to a shared memory address
+ * \param cpuPtr Host shared memory address
+ * \return Associated OpenCL buffer
+ */
 template<typename T>
 static inline cl_mem oclPtr(const T *addr) {
     return gmacPtr((const void *)addr);

@@ -7,6 +7,7 @@ PARAM(ParamAutoSync, bool, false, "GMAC_AUTOSYNC")
 
 // GMAC debug settings
 PARAM(ParamDebug, const char *, "none", "GMAC_DEBUG")
+PARAM(ParamStats, bool, false, "GMAC_STATS")
 //PARAM(ParamDebugFile, const char *, NULL, "GMAC_DEBUG_FILE")
 
 // GMAC tracing
