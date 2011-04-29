@@ -154,8 +154,7 @@ cl_context SYMBOL(clCreateContext)(
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
 
     enterGmac();
-    Process &proc = Process::getInstance<Process>();
-    proc.createMode(ret, num_devices, devices);
+    Process_->createMode(ret, num_devices, devices);
     exitGmac();
 
     return ret;
@@ -180,7 +179,7 @@ cl_int SYMBOL(clRetainContext)(cl_context context)
     cl_int ret = __opencl_clRetainContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
     enterGmac();
-    Process::getInstance<Process>().getMode(context);
+    Process_->getMode(context);
     exitGmac();
     return ret;
 }
@@ -191,7 +190,7 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
     cl_int ret = __opencl_clReleaseContext(context);
     if(inGmac() || ret != CL_SUCCESS) return ret;
     enterGmac();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
+    Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
         mode->release();
         // We release the mode twice to effectively decrease the usage count
@@ -211,7 +210,7 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     cl_command_queue ret = __opencl_clCreateCommandQueue(context, device, properties,  errcode_ret);
     if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
     enterGmac();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
+    Mode *mode = Process_->getMode(context);
     if(mode == NULL) return ret;
     mode->addQueue(ret);
     mode->release();
@@ -241,7 +240,7 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
     ret = __opencl_clRetainCommandQueue(command_queue);
     if(inGmac() || ret != CL_SUCCESS || count > 1) return ret;
     enterGmac();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
+    Mode *mode = Process_->getMode(context);
     if(mode == NULL) return ret;
     mode->removeQueue(command_queue);
     mode->release();
@@ -281,10 +280,10 @@ static cl_int releaseMemoryObjects(cl_command_queue command_queue)
     cl_context context;
     ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_CONTEXT, sizeof(cl_context), &context, NULL);
     if(ret == CL_SUCCESS) {
-        Mode *mode = Process::getInstance<Process>().getMode(context);
+        Mode *mode = Process_->getMode(context);
         if(mode != NULL) {
             mode->setActiveQueue(command_queue);
-            gmac::memory::Manager::getInstance().releaseObjects(*mode);
+            Manager_->releaseObjects(*mode);
             mode->deactivateQueue();
             mode->release();
         }
@@ -391,10 +390,10 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
     ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_CONTEXT, sizeof(cl_context), &context, NULL);
 
     if(ret == CL_SUCCESS) {
-        Mode *mode = Process::getInstance<Process>().getMode(context);
+        Mode *mode = Process_->getMode(context);
         if(mode != NULL) {
             mode->setActiveQueue(command_queue);
-            gmac::memory::Manager::getInstance().acquireObjects(*mode);
+            Manager_->acquireObjects(*mode);
             mode->deactivateQueue();
             mode->release();
         }
@@ -412,16 +411,14 @@ GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count)
 
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
+    Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
-        __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
         if(count < (__impl::util::params::ParamBlockSize / 2)) {
-            *addr = allocator.alloc(*mode, count, hostptr_t(RETURN_ADDRESS));
+            *addr = Allocator_->alloc(*mode, count, hostptr_t(RETURN_ADDRESS));
         }
         else {
-        	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     	    count = (int(count) < getpagesize())? getpagesize(): count;
-            ret = manager.alloc(*mode, (hostptr_t *) addr, count);
+            ret = Manager_->alloc(*mode, (hostptr_t *) addr, count);
             mode->release();
         }
     }
@@ -436,12 +433,10 @@ GMAC_API cl_int clFree(cl_context context, void *addr)
     cl_int ret = CL_SUCCESS;
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
+    Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
-        __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-        if(allocator.free(*mode, hostptr_t(addr)) == false) {
-        	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-            ret = manager.free(*mode, hostptr_t(addr));
+        if(Allocator_->free(*mode, hostptr_t(addr)) == false) {
+            ret = Manager_->free(*mode, hostptr_t(addr));
         }
         mode->release();
     }
@@ -457,8 +452,8 @@ GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();
-    Mode *mode = Process::getInstance<Process>().getMode(context);
-    if(mode != NULL) ret = __impl::memory::Manager::getInstance().translate(*mode, hostptr_t(ptr));
+    Mode *mode = Process_->getMode(context);
+    if(mode != NULL) ret = Manager_->translate(*mode, hostptr_t(ptr));
     exitGmac();
     return ret.get();
 }
