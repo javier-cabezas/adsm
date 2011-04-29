@@ -81,7 +81,7 @@ static void init(void)
 
     TRACE(GLOBAL, "Initializing memory");
     Manager_ = new Manager(*Process_);
-    Allocator_ = new Slab();
+    Allocator_ = new Slab(*Manager_);
 
     TRACE(GLOBAL, "Initializing API");
     core::apiInit();

@@ -7,7 +7,7 @@ namespace __impl { namespace memory { namespace allocator {
 
 Cache &Slab::createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size)
 {
-    Cache *cache = new __impl::memory::allocator::Cache(mode, size);
+    Cache *cache = new __impl::memory::allocator::Cache(manager_, mode, size);
     map.insert(CacheMap::value_type(key, cache));
     return *cache;
 }

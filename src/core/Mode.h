@@ -124,6 +124,12 @@ public:
     virtual void removeObject(memory::Object &obj);
 
     /**
+     * Insert an object into the orphan list
+     * \param obj Object to be inserted
+     */
+    virtual void insertOrphan(memory::Object &obj) = 0;
+
+    /**
      * Gets the first object that belongs to the memory range
      * \param addr Starting address of the memory range
      * \param size Size of the memory range

@@ -46,10 +46,11 @@ void Arena::put(hostptr_t obj)
 }
 
 inline
-Cache::Cache(core::Mode &mode, size_t size) :
+Cache::Cache(Manager &manager, core::Mode &mode, size_t size) :
     gmac::util::Lock("Cache"),
     objectSize(size),
     arenaSize(memory::BlockSize_),
+    manager_(manager),
     mode_(mode)
 { }
 
