@@ -148,12 +148,6 @@ public:
 };
 #endif
 
-//! Initialize the tracing utilities
-void InitTracer();
-
-//! Finalize the tracing utilities
-void FiniTracer();
-
 //! Notify the creation of a new thread
 /**
     \param tid Thread ID of the new thread

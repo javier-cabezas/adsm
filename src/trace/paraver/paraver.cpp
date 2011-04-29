@@ -2,14 +2,8 @@
 #include "Pcf.h"
 
 #include <config/debug.h>
+#include <config/common.h>
 
-#if defined(__GNUC__)
-#	define CONSTRUCTOR __attribute__((constructor))
-#	define DESTRUCTOR  __attribute__((destructor))
-# else
-#	define CONSTRUCTOR
-#	define DESTRUCTOR
-#endif
 
 #if defined(_MSC_VER)
 static inline const char *__getenv(const char *name)
@@ -31,7 +25,8 @@ int init = 0;
 static const char *paraverVar = "PARAVER_OUTPUT";
 static const char *defaultOut = "paraver";
 
-static void CONSTRUCTOR init(void)
+CONSTRUCTOR(init);
+static void init(void)
 {
 	TRACE("Paraver Tracing");
 	const char *__file = __getenv(paraverVar);
@@ -41,7 +36,8 @@ static void CONSTRUCTOR init(void)
 	init = 0;
 }
 
-static void DESTRUCTOR fini(void)
+DESTRUCTOR(fini);
+static void fini(void)
 {
 	const char *__file = __getenv(paraverVar);
 	if(__file == NULL) __file = defaultOut;
