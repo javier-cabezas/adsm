@@ -7,9 +7,8 @@ Tracer *tracer = NULL;
 Atomic threads_;
 util::Private<int32_t> tid_;
 
-CONSTRUCTOR(InitTracer);
-
-static void InitTracer()
+CONSTRUCTOR(init);
+static void init()
 {
 #if defined(USE_TRACE)
     util::Private<int32_t>::init(tid_);
@@ -18,8 +17,8 @@ static void InitTracer()
 #endif
 }
 
-DESTRUCTOR(FiniTracer);
-static void FiniTracer()
+DESTRUCTOR(fini);
+static void fini()
 {
 #if defined(USE_TRACE)
 	FiniApiTracer();
