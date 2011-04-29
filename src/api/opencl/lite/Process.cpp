@@ -6,7 +6,6 @@ namespace __impl { namespace opencl { namespace lite {
 
 Process::Process()
 {
-    memory::Init();
 }
 
 Process::~Process()

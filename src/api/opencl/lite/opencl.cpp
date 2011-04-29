@@ -11,6 +11,7 @@
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
+#include "memory/allocator/Slab.h"
 #include "util/Logger.h"
 #include "util/Parameter.h"
 
@@ -35,6 +36,8 @@ static long getpagesize (void) {
 
 
 using __impl::memory::Handler;
+using gmac::memory::Manager;
+using __impl::memory::allocator::Slab;
 using __impl::opencl::lite::Process;
 using __impl::opencl::lite::Mode;
 using __impl::util::Private;
@@ -44,6 +47,9 @@ static const char gmacCode = 1;
 static const char userCode = 0;
 static Atomic gmacInit_ = 0;
 
+static Process *Process_ = NULL;
+static Manager *Manager_ = NULL;
+static Slab *Allocator_ = NULL;
 
 
 SYM(cl_context, __opencl_clCreateContext,
@@ -475,7 +481,6 @@ static void openclInit()
     LOAD_SYM(__opencl_clFinish, clFinish);
 }
 
-
 static void init()
 {
     Private<const char>::init(inGmac_);
@@ -487,7 +492,9 @@ static void init()
     Handler::setExit(exitGmac);
 
     TRACE(GLOBAL, "Initializing Process");
-    Process::create<Process>();
+    Process_ = new Process();
+    Manager_ = new Manager(*Process_);
+    Allocator_ = new Slab();
     exitGmac();
 }
 

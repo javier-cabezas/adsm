@@ -272,12 +272,14 @@ public:
     /**
      * Releases the ownership of the objects of the mode to the accelerator
      * and waits for pending transfers
+     * \return Error code
      */
     gmacError_t releaseObjects();
 
     /**
      * Waits for kernel execution and acquires the ownership of the objects
      * of the mode from the accelerator
+     * \return Error code
      */
     virtual gmacError_t acquireObjects();
 

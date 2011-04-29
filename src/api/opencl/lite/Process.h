@@ -51,11 +51,12 @@ protected:
 
     ModeMap map_;
 
+public:
     /**
      * Constructs the process
      */
     Process();
-public:
+
     /**
      * Destroys the process and releases the resources used by it
      */
