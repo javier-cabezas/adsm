@@ -102,11 +102,13 @@ inline void Mode::cleanUpContexts()
 inline void Mode::init()
 {
     util::Private<Mode>::init(key);
+    util::Private<Process>::init(parent);
 }
 
-inline void Mode::initThread()
+inline void Mode::initThread(Process &proc)
 {
     key.set(NULL);
+    parent.set(&proc);
 }
 
 inline bool

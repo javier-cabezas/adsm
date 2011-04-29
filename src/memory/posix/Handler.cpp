@@ -18,8 +18,13 @@ int Handler::Signum_ = SIGSEGV;
 int Handler::Signum_ = SIGBUS;
 #endif
 
+static core::Process *Process_ = NULL;
+static Manager *Manager_ = NULL;
+
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
+    if(Process_ == NULL || Manager_ == NULL) return defaultAction.sa_sigaction(s, info, ctx);
+       
     Handler::Entry();
     trace::EnterCurrentFunction();
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
@@ -35,11 +40,10 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-    core::Mode *mode = core::Process::getInstance().owner(addr);
+    core::Mode *mode = Process_->owner(addr);
     if(mode != NULL) {
-    	Manager &manager = Manager::getInstance();
-	    if(!writeAccess) resolved = manager.read(*mode, addr);
-    	else resolved = manager.write(*mode, addr);
+	    if(!writeAccess) resolved = Manager_->read(*mode, addr);
+    	else resolved = Manager_->write(*mode, addr);
     }
 
 	if(resolved == false) {
@@ -80,5 +84,14 @@ void Handler::restoreHandler()
 	TRACE(GLOBAL, "Old signal handler restored");
 }
 
+void Handler::setProcess(core::Process &proc)
+{
+    Process_ = &proc;
+}
+
+void Handler::setManager(Manager &manager)
+{
+    Manager_ = &manager;
+}
 
 }}

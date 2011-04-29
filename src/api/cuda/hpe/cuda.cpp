@@ -12,13 +12,10 @@
 #include <string>
 #include <list>
 
-namespace __impl { namespace core {
-
 static bool initialized = false;
 
-void apiInit(void)
+void GMAC_API CUDA(gmac::core::hpe::Process &proc)
 {
-    core::hpe::Process &proc = getProcess();
     if(initialized)
         FATAL("GMAC double initialization not allowed");
 
@@ -63,5 +60,3 @@ void apiInit(void)
 
     initialized = true;
 }
-
-}}

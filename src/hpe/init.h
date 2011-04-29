@@ -37,9 +37,16 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 
 #include "config/common.h"
-#include "core/Process.h"
-#include "memory/Manager.h"
-#include "memory/Allocator.h"
+
+namespace __impl {
+    namespace core {
+        namespace hpe { class Process; }
+    }
+    namespace memory {
+        class Allocator;
+        class Manager;
+    }
+}
 
 void enterGmac() GMAC_LOCAL;
 void enterGmacExclusive() GMAC_LOCAL;

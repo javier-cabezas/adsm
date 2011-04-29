@@ -38,7 +38,13 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-namespace __impl { namespace memory {
+namespace __impl {
+
+namespace core { class Process; }
+
+namespace memory {
+
+class Manager;
 
 //! Handler for Read/Write faults
 class GMAC_LOCAL Handler {
@@ -46,7 +52,7 @@ public:
     typedef void (*CallBack)(void);
 private:
     //! Activate the fault handler
-	void setHandler(void);
+	void setHandler();
 
     //! Deactivate the fault handler
 	void restoreHandler(void);
@@ -92,6 +98,10 @@ public:
     static inline void Exit() {
         if(Exit_ != NULL) Exit_();
     }
+
+    static void setProcess(core::Process &proc);
+
+    static void setManager(Manager &manager);
 };
 
 }}

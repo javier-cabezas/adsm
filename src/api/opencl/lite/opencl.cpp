@@ -260,10 +260,10 @@ static void acquireMemoryObjects(cl_event event, cl_int status, void *user_data)
     ret = clGetEventInfo(event, CL_EVENT_COMMAND_QUEUE, sizeof(cl_command_queue), &queue, NULL);
     if(ret != CL_SUCCESS) goto do_exit;
 
-    mode = Process::getInstance<Process>().getMode(context);
+    mode = Process_->getMode(context);
     if(mode != NULL) {
         mode->setActiveQueue(queue);
-        gmac::memory::Manager::getInstance().acquireObjects(*mode);
+        Manager_->acquireObjects(*mode);
         mode->deactivateQueue();
         mode->release();
     }

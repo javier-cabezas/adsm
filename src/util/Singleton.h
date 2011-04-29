@@ -53,11 +53,6 @@ public:
 
 	static void destroy();
 
-    static T &getInstance();
-
-    template<typename S>
-	static S &getInstance();
-
     static bool isValid();
 };
 

@@ -14,6 +14,7 @@
 namespace __impl { namespace core { namespace hpe {
 
 util::Private<Mode> Mode::key;
+util::Private<Process> Mode::parent;
 
 #ifdef DEBUG
 Atomic Mode::StatsInit_ = 0;
@@ -123,7 +124,9 @@ Mode &Mode::getCurrent()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
-        mode = Process::getInstance<Process>().createMode();
+        Process *proc = Mode::parent.get();
+        CFATAL(proc != NULL, "Trying to create an execution mode without a valid process");
+        mode = proc->createMode();
     }
     ASSERTION(mode != NULL);
     return *mode;

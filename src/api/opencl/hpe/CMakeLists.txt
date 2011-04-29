@@ -1,9 +1,9 @@
 set(arch_hpe_api_SRC
     gmac.cpp
-    opencl.cpp
 )
 
 set(arch_hpe_SRC
+    opencl.cpp
     Accelerator.h
     Accelerator-impl.h
     Accelerator.cpp

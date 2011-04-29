@@ -1,10 +1,10 @@
 set(arch_hpe_api_SRC
     compat.cpp
-    cuda.cpp
     driver.cpp
 )
 
 set(arch_hpe_SRC
+    cuda.cpp
     Accelerator.h
     Accelerator-impl.hs
     Accelerator.cpp

@@ -2,9 +2,10 @@
 #include "core/Mode.h"
 #include "core/Process.h"
 
-#include "Manager.h"
-#include "Object.h"
-#include "HostMappedObject.h"
+#include "memory/Handler.h"
+#include "memory/HostMappedObject.h"
+#include "memory/Manager.h"
+#include "memory/Object.h"
 
 namespace __impl { namespace memory {
 
@@ -12,6 +13,7 @@ Manager::Manager(core::Process &proc) :
     proc_(proc)
 {
     TRACE(LOCAL,"Memory manager starts");
+    Handler::setManager(*this);
 }
 
 Manager::~Manager()
@@ -19,53 +21,6 @@ Manager::~Manager()
     TRACE(LOCAL,"Memory manager finishes");
 }
 
-#if 0
-gmacError_t
-Manager::map(hostptr_t addr, size_t size, GmacProtection prot)
-{
-    core::Mode &mode = core::Mode::getCurrent();
-
-    // Create new shared object
-    Object *object = protocol_->createSharedObject(size, addr, prot);
-    if(object == NULL) {
-        return gmacErrorMemoryAllocation;
-    }
-
-    // Insert object into memory maps
-    mode.addObject(*object);
-
-    return gmacSuccess;
-}
-
-gmacError_t Manager::unmap(hostptr_t addr, size_t size)
-{
-    // TODO implement partial unmapping
-    gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::getCurrent();
-    Object *object = mode.getObjectWrite(addr);
-    if(object != NULL)  {
-        if (object->isInAccelerator()) {
-            ret = protocol_->toHost(*object);
-            if (ret != gmacSuccess) { 
-                mode.putObject(*object);
-                return ret;
-            }
-            protocol_->deleteObject(*object);
-            if (ret != gmacSuccess) { 
-                mode.putObject(*object);
-                return ret;
-            }
-        }
-        // TODO capture all the possible errors
-        mode.removeObject(*object);
-        mode.putObject(*object);
-        object->fini();
-        delete object;
-    }
-    else ret = gmacErrorInvalidValue;
-    return ret;
-}
-#endif
 
 gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
