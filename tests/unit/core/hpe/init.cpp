@@ -48,11 +48,10 @@ void FiniMode()
 
 void InitModel()
 {
+    Process *proc = new Process();
     InitAccelerator();
-    Process::create<Process>();
-    Process &proc = Process::getInstance<Process>();
-    proc.addAccelerator(*Accelerator_);
-    Mode_ = dynamic_cast<__impl::core::Mode *>(proc.createMode(0));
+    proc->addAccelerator(*Accelerator_);
+    Mode_ = dynamic_cast<__impl::core::Mode *>(proc->createMode(0));
 }
 
 

@@ -51,9 +51,8 @@ class GMAC_LOCAL Manager :
 
     // Needed to let Singleton call the protected constructor
     friend class __impl::util::Singleton<Manager>;
-protected:
-    Manager();
 public:
+    Manager(__impl::core::Process &proc);
     ~Manager();
 #if 0
     gmacError_t map(void *addr, size_t size, GmacProtection prot);

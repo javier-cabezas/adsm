@@ -46,9 +46,8 @@ class GMAC_LOCAL Process :
     
     // Needed to let Singleton call the protected constructor
     friend class __impl::util::Singleton<__impl::core::Process>;
-protected:
-    Process();
 public:
+    Process();
     virtual ~Process();
     void initThread();
     void finiThread();

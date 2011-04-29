@@ -6,8 +6,8 @@
 
 namespace __dbc { namespace memory {
 
-Manager::Manager() :
-    __impl::memory::Manager()
+Manager::Manager(__impl::core::Process &proc) :
+    __impl::memory::Manager(proc)
 {
 }
 

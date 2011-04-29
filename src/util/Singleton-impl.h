@@ -9,19 +9,17 @@ namespace __impl { namespace util {
 template<typename T> T *Singleton<T>::Singleton_ = NULL;
 template<typename T> bool Singleton<T>::Valid_ = false;
 
+template<typename T>
+inline Singleton<T>::Singleton()
+{
+    CFATAL(Singleton_ == NULL, "Double initialization of singleton class");
+    Singleton_ = static_cast<T *>(this);
+    Valid_ = true;
+}
 
 template <typename T>
 inline Singleton<T>::~Singleton()
 {
-}
-
-template <typename T>
-template <typename S>
-inline void Singleton<T>::create()
-{
-    ASSERTION(Singleton_ == NULL);
-    Singleton_ = new S();
-    Valid_ = true;
 }
 
 template <typename T>

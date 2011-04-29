@@ -42,7 +42,7 @@ Mode::~Mode()
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
     acc_->unregisterMode(*this); 
-    Process::getInstance<Process>().removeMode(*this);
+    proc_.removeMode(*this);
 }
 
 void Mode::finiThread()
@@ -123,8 +123,7 @@ Mode &Mode::getCurrent()
 {
     Mode *mode = Mode::key.get();
     if(mode == NULL) {
-        Process &proc = Process::getInstance<Process>();
-        mode = proc.createMode();
+        mode = Process::getInstance<Process>().createMode();
     }
     ASSERTION(mode != NULL);
     return *mode;

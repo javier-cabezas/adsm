@@ -30,12 +30,10 @@ unsigned SubBlockShift_;
 long_t SubBlockMask_;
 #endif
 
-void Init(void)
-{
-	TRACE(GLOBAL, "Initializing Memory Subsystem");
-    Manager::create<gmac::memory::Manager>();
-    Allocator::create<__impl::memory::allocator::Slab>();
 
+CONSTRUCTOR(init);
+static void init()
+{
     BlockSize_     = util::params::ParamBlockSize;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
     SubBlocks_     = util::params::ParamSubBlocks;
@@ -45,6 +43,7 @@ void Init(void)
     SubBlockMask_  = util::params::ParamSubBlocks - 1;
 
 #if defined(USE_VM)
+    // TODO: Remove static initialization
     vm::Bitmap::Init();
 #endif
 #endif
@@ -91,11 +90,5 @@ Protocol *ProtocolInit(unsigned flags)
     return ret;
 }
 
-void Fini(void)
-{
-	TRACE(GLOBAL, "Cleaning Memory Subsystem");
-    Allocator::destroy();
-    Manager::destroy();
-}
 
 }}
