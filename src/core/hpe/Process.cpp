@@ -124,7 +124,7 @@ void Process::initThread()
     ThreadQueue * q = new ThreadQueue();
     queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
-    Mode::initThread();
+    Mode::initThread(*this);
 }
 
 void Process::finiThread()
@@ -270,7 +270,7 @@ void Process::sendReceive(THREAD_T id)
 {
     Mode &mode = Mode::getCurrent();
     queues_.push(id, mode);
-    Mode::initThread();
+    Mode::initThread(*this);
     queues_.attach();
 }
 

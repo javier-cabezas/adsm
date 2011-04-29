@@ -3,15 +3,9 @@
 #include "core/hpe/Process.h"
 #include "api/opencl/hpe/Accelerator.h"
 
-#include "hpe/init.h"
-
-namespace __impl { namespace core {
-
 static bool initialized = false;
-
-void apiInit(void)
+void OpenCL(gmac::core::hpe::Process &proc)
 {
-    core::hpe::Process &proc = core::Process::getInstance<gmac::core::hpe::Process>();
     if(initialized) FATAL("GMAC double initialization not allowed");
 
     TRACE(GLOBAL, "Initializing OpenCL API");
@@ -48,5 +42,3 @@ void apiInit(void)
 
     __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
 }
-
-}}

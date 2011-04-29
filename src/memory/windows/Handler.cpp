@@ -11,11 +11,16 @@ namespace __impl { namespace memory {
 
 unsigned Handler::Count_ = 0;
 
+static core::Process *Process_ = NULL;
+static Manager *Manager_ = NULL;
+
 static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 {
 	/* Check that we are getting an access violation exception */
 	if(ex->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
 		return EXCEPTION_CONTINUE_SEARCH;
+
+    if(Process_ == NULL | Manager_ == NULL) return EXCEPTION_CONTINUE_SEARCH;
 
 	Handler::Entry();
 	trace::EnterCurrentFunction();
@@ -30,11 +35,10 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-	core::Mode *mode = core::Process::getInstance().owner((const hostptr_t)addr);
+	core::Mode *mode = Process_->owner((const hostptr_t)addr);
     if(mode != NULL) {
-    	Manager &manager = Manager::getInstance();
-	    if(!writeAccess) resolved = manager.read(*mode, (hostptr_t)addr);
-    	else resolved = manager.write(*mode, (hostptr_t)addr);
+	    if(!writeAccess) resolved = Manager_->read(*mode, (hostptr_t)addr);
+    	else resolved = Manager_->write(*mode, (hostptr_t)addr);
     }
 
 	if(resolved == false) {
@@ -65,6 +69,17 @@ void Handler::restoreHandler()
 	Handler_ = NULL;
 	TRACE(GLOBAL, "Old signal handler restored");
 }
+
+void Handler::setProcess(core::Process &proc)
+{
+    Process_ = &proc;
+}
+
+void Handler::setManager(Manager &manager)
+{
+    Manager_ = &manager;
+}
+
 
 
 }}

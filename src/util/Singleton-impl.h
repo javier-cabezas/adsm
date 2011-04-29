@@ -32,21 +32,6 @@ inline void Singleton<T>::destroy()
 }
 
 template<typename T>
-inline T &Singleton<T>::getInstance()
-{
-	ASSERTION(Singleton_ != NULL);
-	return *Singleton_;
-}
-
-template <typename T>
-template <typename S>
-inline S& Singleton<T>::getInstance()
-{
-	ASSERTION(Singleton_ != NULL);
-	return dynamic_cast<S &>(*Singleton_);
-}
-
-template<typename T>
 inline bool Singleton<T>::isValid()
 {
     return Valid_;

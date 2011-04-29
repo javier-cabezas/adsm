@@ -19,6 +19,7 @@ template<typename T>
 inline memory::Object *Gather<T>::createObject(size_t size, hostptr_t cpuPtr, 
                                                GmacProtection prot, unsigned flags)
 {
+    // TODO: get mode as parameter
     Object *ret = new T(*this, core::Mode::getCurrent(), cpuPtr, 
 		size, state(prot));
 	if(ret == NULL) return ret;

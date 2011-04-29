@@ -157,7 +157,6 @@ gmacError_t LazyBase::acquireWithBitmap(Block &b)
 {
     /// \todo Change this to the new BlockState 
     gmacError_t ret = gmacSuccess;
-    core::Mode &mode = core::Mode::getCurrent();
     lazy::Block &block = dynamic_cast<lazy::Block &>(b);
     switch(block.getState()) {
         case lazy::Invalid:

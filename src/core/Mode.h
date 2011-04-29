@@ -47,7 +47,9 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace memory { class Protocol; }
+namespace memory {
+class Protocol;
+}
 
 namespace core {
 

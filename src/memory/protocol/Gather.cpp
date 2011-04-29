@@ -188,6 +188,7 @@ gmacError_t GatherBase::acquire(Block &b)
 gmacError_t GatherBase::acquireWithBitmap(Block &b)
 {
     gmacError_t ret = gmacSuccess;
+    // TODO: Get mode as parameter
     core::Mode &mode = core::Mode::getCurrent();
     vm::BitmapShared &acceleratorBitmap = mode.acceleratorDirtyBitmap();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -273,6 +274,7 @@ template<typename T>
 inline gmacError_t SharedBlock<T>::toGatherBuffer(Block &b, GatherBufferCache &buffers)
 {
     gmacError_t ret = gmacSuccess;
+    // TODO: get mode as parameter
     core::Mode &mode = core::Mode::getCurrent();
 #ifdef USE_SUBBLOCK_TRACKING
     vm::BitmapHost &bitmap   = mode.acceleratorDirtyBitmap();

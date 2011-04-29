@@ -45,6 +45,9 @@ static Process *Process_ = NULL;
 static Manager *Manager_ = NULL;
 static Allocator *Allocator_ = NULL;
 
+extern void CUDA(Process &);
+extern void OpenCL(Process &);
+
 static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
@@ -73,13 +76,18 @@ static void init(void)
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
     Process_ = new Process();
+#if defined(USE_CUDA)
+    CUDA(*Process_);
+#endif
+#if defined(USE_OPENCL)
+    OpenCL(*Process_);
+#endif
 
     TRACE(GLOBAL, "Initializing memory");
     Manager_ = new Manager(*Process_);
     Allocator_ = new Slab(*Manager_);
 
     TRACE(GLOBAL, "Initializing API");
-    __impl::core::apiInit();
 
     exitGmac();
 }

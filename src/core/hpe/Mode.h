@@ -89,6 +89,7 @@ class GMAC_LOCAL Mode : public virtual core::Mode {
 
 protected:
     static util::Private<Mode> key;
+    static util::Private<Process> parent;
 
     Process &proc_;
     // Must be a pointer since the Mode can change the accelerator on which it is running
@@ -159,7 +160,7 @@ public:
      * Function called on thread creation to initialize thread-specific
      * variables
      */
-    static void initThread();
+    static void initThread(Process &proc);
 
     /**
      * Function called on thread destruction to release the Mode resources
