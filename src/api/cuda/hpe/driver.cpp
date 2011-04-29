@@ -20,11 +20,7 @@
 extern "C" {
 #endif
 
-using __impl::enterGmac;
-using __impl::exitGmac;
-
 using __impl::core::hpe::KernelDescriptor;
-using __impl::core::hpe::Process;
 
 using __impl::cuda::hpe::Mode;
 using __impl::cuda::hpe::ModuleDescriptor;

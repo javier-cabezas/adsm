@@ -15,13 +15,10 @@
 #include <string>
 #include <list>
 
-using __impl::core::hpe::Process;
 using __impl::cuda::hpe::Mode;
 using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
 using __impl::cuda::hpe::Variable;
-using __impl::enterGmac;
-using __impl::exitGmac;
 
 static inline int __getChannelSize(CUarray_format format)
 {
