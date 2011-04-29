@@ -32,15 +32,13 @@ struct gmac_thread_t {
     bool __do_exit;
 };
 
-using __impl::core::Process;
-
 static void *gmac_pthread(void *arg)
 {
     gmac::trace::StartThread("CPU");
 	enterGmac();
 	gmac_thread_t *gthread = (gmac_thread_t *)arg;
     bool do_exit = gthread->__do_exit;
-    gmac::core::hpe::Process &proc = Process::getInstance<gmac::core::hpe::Process>();
+    Process &proc = getProcess();
     proc.initThread();
     gmac::trace::SetThreadState(gmac::trace::Running);
 	if(do_exit) exitGmac();

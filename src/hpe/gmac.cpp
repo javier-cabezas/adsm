@@ -56,8 +56,7 @@ unsigned APICALL gmacGetNumberOfAccelerators()
     unsigned ret;
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
-    ret = unsigned(proc.nAccelerators());
+    ret = unsigned(getProcess().nAccelerators());
     gmac::trace::ExitCurrentFunction();
 	exitGmac();
 	return ret;
@@ -82,7 +81,7 @@ gmacError_t APICALL gmacMigrate(unsigned acc)
 	gmacError_t ret = gmacSuccess;
 	enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
+    Process &proc = getProcess();
     if(gmac::core::hpe::Mode::hasCurrent()) {
         ret = proc.migrate(gmac::core::hpe::Mode::getCurrent(), acc);
     } else {
@@ -105,10 +104,9 @@ gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection pro
     }
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     // TODO Remove alignment constraints
     count = (int(count) < getpagesize())? getpagesize(): count;
-    ret = manager.map(cpuPtr, count, prot);
+    ret = getManager().map(cpuPtr, count, prot);
     gmac::trace::ExitCurrentFunction();
 	exitGmac();
     return ret;
@@ -126,10 +124,9 @@ gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count)
     }
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
     // TODO Remove alignment constraints
     count = (int(count) < getpagesize())? getpagesize(): count;
-    ret = manager.unmap(cpuPtr, count);
+    ret = getManager().unmap(cpuPtr, count);
     gmac::trace::ExitCurrentFunction();
 	exitGmac();
     return ret;
@@ -147,14 +144,12 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
     }
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
     if(count < (ParamBlockSize / 2)) {
-        *cpuPtr = allocator.alloc(gmac::core::hpe::Mode::getCurrent(), count, hostptr_t(RETURN_ADDRESS));
+        *cpuPtr = getAllocator().alloc(gmac::core::hpe::Mode::getCurrent(), count, hostptr_t(RETURN_ADDRESS));
     }
     else {
-    	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
 	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = manager.alloc(gmac::core::hpe::Mode::getCurrent(), (hostptr_t *) cpuPtr, count);
+	    ret = getManager().alloc(gmac::core::hpe::Mode::getCurrent(), (hostptr_t *) cpuPtr, count);
     }
     gmac::trace::ExitCurrentFunction();
 	exitGmac();
@@ -171,7 +166,7 @@ gmacError_t APICALL gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMall
     enterGmac();
     gmac::trace::EnterCurrentFunction();
 	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = gmac::memory::Manager::getInstance().globalAlloc(gmac::core::hpe::Mode::getCurrent(), (hostptr_t *)cpuPtr, count, hint);
+	ret = getManager().globalAlloc(gmac::core::hpe::Mode::getCurrent(), (hostptr_t *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
@@ -183,10 +178,8 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
-    __impl::memory::Allocator &allocator = __impl::memory::Allocator::getInstance();
-    if(allocator.free(mode, hostptr_t(cpuPtr)) == false) {
-    	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-        ret = manager.free(mode, hostptr_t(cpuPtr));
+    if(getAllocator().free(mode, hostptr_t(cpuPtr)) == false) {
+        ret = getManager().free(mode, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
 	exitGmac();
@@ -197,7 +190,7 @@ __gmac_accptr_t APICALL gmacPtr(const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();
-    ret = __impl::memory::Manager::getInstance().translate(gmac::core::hpe::Mode::getCurrent(), hostptr_t(ptr));
+    ret = getManager().translate(gmac::core::hpe::Mode::getCurrent(), hostptr_t(ptr));
     exitGmac();
     TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get());
     return ret.get();
@@ -207,7 +200,7 @@ gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     __impl::core::hpe::Mode &mode = launch.getMode();
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
+    Manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     ret = manager.releaseObjects(mode);
     CFATAL(ret == gmacSuccess, "Error releasing objects");
@@ -252,8 +245,7 @@ gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &la
         __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
         mode.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-        ret = manager.acquireObjects(mode);
+        ret = getManager().acquireObjects(mode);
     }
     return ret;
 }
@@ -268,8 +260,7 @@ gmacError_t APICALL gmacThreadSynchronize()
         __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
         mode.wait();
         TRACE(GLOBAL, "Memory Sync");
-        gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-        ret = manager.acquireObjects(mode);
+        ret = getManager().acquireObjects(mode);
     }
 
     gmac::trace::ExitCurrentFunction();
@@ -289,8 +280,7 @@ void * APICALL gmacMemset(void *s, int c, size_t size)
 {
     enterGmac();
     void *ret = s;
-    gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memset(gmac::core::hpe::Mode::getCurrent(), hostptr_t(s), c, size);
+    getManager().memset(gmac::core::hpe::Mode::getCurrent(), hostptr_t(s), c, size);
 	exitGmac();
     return ret;
 }
@@ -301,15 +291,14 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
 	void *ret = dst;
 
 	// Locate memory regions (if any)
-    __impl::core::Process &proc = __impl::core::Process::getInstance();
+    Process &proc = getProcess();
     __impl::core::Mode *dstMode = proc.owner(hostptr_t(dst), size);
     __impl::core::Mode *srcMode = proc.owner(hostptr_t(src), size);
     if (dstMode == NULL && srcMode == NULL) {
         exitGmac();
         return ::memcpy(dst, src, size);
     }
-	gmac::memory::Manager &manager = gmac::memory::Manager::getInstance();
-    manager.memcpy(gmac::core::hpe::Mode::getCurrent(), hostptr_t(dst), hostptr_t(src), size);
+    getManager().memcpy(gmac::core::hpe::Mode::getCurrent(), hostptr_t(dst), hostptr_t(src), size);
 
 	exitGmac();
 	return ret;
@@ -318,31 +307,27 @@ void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
 void APICALL gmacSend(THREAD_T id)
 {
     enterGmac();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
-    proc.send((THREAD_T)id);
+    getProcess().send((THREAD_T)id);
     exitGmac();
 }
 
 void APICALL gmacReceive()
 {
     enterGmac();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
-    proc.receive();
+    getProcess().receive();
     exitGmac();
 }
 
 void APICALL gmacSendReceive(THREAD_T id)
 {
 	enterGmac();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
-	proc.sendReceive((THREAD_T)id);
+	getProcess().sendReceive((THREAD_T)id);
 	exitGmac();
 }
 
 void APICALL gmacCopy(THREAD_T id)
 {
     enterGmac();
-    __impl::core::hpe::Process &proc = __impl::core::Process::getInstance<gmac::core::hpe::Process>();
-    proc.copy((THREAD_T)id);
+    getProcess().copy((THREAD_T)id);
     exitGmac();
 }

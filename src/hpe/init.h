@@ -37,12 +37,21 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 
 #include "config/common.h"
+#include "core/Process.h"
+#include "memory/Manager.h"
+#include "memory/Allocator.h"
 
 void enterGmac() GMAC_LOCAL;
 void enterGmacExclusive() GMAC_LOCAL;
 void exitGmac() GMAC_LOCAL;
 char inGmac() GMAC_LOCAL;
 
+using gmac::core::hpe::Process;
+Process &getProcess() GMAC_LOCAL;
+using gmac::memory::Manager;
+Manager &getManager() GMAC_LOCAL;
+using __impl::memory::Allocator;
+Allocator &getAllocator() GMAC_LOCAL;
 
 
 #endif

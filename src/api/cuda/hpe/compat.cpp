@@ -305,7 +305,7 @@ extern "C" {
 
 GMAC_API cudaError_t APICALL cudaGetDeviceProperties(struct cudaDeviceProp *prop, int devNum)
 {
-    if (devNum < 0 || unsigned(devNum) >= Process::getInstance<Process &>().nAccelerators())
+    if (devNum < 0 || unsigned(devNum) >= getProcess().nAccelerators())
         return cudaErrorInvalidDevice;
 
     CUdevice device;
@@ -477,7 +477,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	ASSERTION(kind == cudaMemcpyHostToDevice);
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Process &proc = Process::getInstance<Process &>();
+    Process &proc = getProcess();
     __impl::cuda::Mode *mode = dynamic_cast<__impl::cuda::Mode *>(proc.owner(hostptr_t(src)));
     if(mode == NULL) {
 #if CUDA_VERSION >= 3020

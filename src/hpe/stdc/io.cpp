@@ -23,9 +23,6 @@
 
 using __impl::core::IOBuffer;
 using __impl::core::Mode;
-using __impl::core::Process;
-
-using __impl::memory::Manager;
 
 using __impl::util::params::ParamBlockSize;
 
@@ -42,8 +39,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
     enterGmac();
-    Process &proc = Process::getInstance<Process>();
-    Mode *dstMode = proc.owner(hostptr_t(buf), size);
+    Mode *dstMode = getProcess().owner(hostptr_t(buf), size);
 
     if(dstMode == NULL) {
         exitGmac();
@@ -64,7 +60,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
     IOBuffer *active  = buffer1;
     IOBuffer *passive = buffer2;
 
@@ -109,8 +105,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
 	enterGmac();
-    Process &proc = Process::getInstance();
-    Mode *srcMode = proc.owner(hostptr_t(buf), size);
+    Mode *srcMode = getProcess().owner(hostptr_t(buf), size);
 
     if(srcMode == NULL) {
         exitGmac();
@@ -131,7 +126,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
     IOBuffer *active  = buffer1;
     IOBuffer *passive = buffer2;
 
