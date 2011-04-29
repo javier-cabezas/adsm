@@ -194,7 +194,7 @@ gmacError_t Manager::releaseObjects(core::Mode &mode)
     }
     if(ret == gmacSuccess) {
         // Release global per-process objects
-        Protocol *protocol = core::Process::getInstance().protocol();
+        Protocol *protocol = proc_.protocol();
         if(protocol != NULL) protocol->releaseObjects();
     }
     trace::ExitCurrentFunction();

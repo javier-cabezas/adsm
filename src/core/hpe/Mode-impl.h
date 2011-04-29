@@ -116,6 +116,12 @@ Mode::hasCurrent()
 }
 
 inline
+void Mode::insertOrphan(memory::Object &obj)
+{
+    proc_.insertOrphan(obj);
+}
+
+inline
 Accelerator &
 Mode::getAccelerator() const
 {

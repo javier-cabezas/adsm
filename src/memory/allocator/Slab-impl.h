@@ -3,7 +3,7 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-inline Slab::Slab() {}
+inline Slab::Slab(Manager &manager) : manager_(manager) {}
 
 inline Slab::~Slab()
 {

@@ -494,7 +494,7 @@ static void init()
     TRACE(GLOBAL, "Initializing Process");
     Process_ = new Process();
     Manager_ = new Manager(*Process_);
-    Allocator_ = new Slab();
+    Allocator_ = new Slab(*Manager_);
     exitGmac();
 }
 

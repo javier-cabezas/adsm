@@ -187,6 +187,13 @@ public:
     void removeObject(memory::Object &obj);
 
     /**
+     * Insert an object into the orphan list
+     * \param obj Object to be inserted
+     */
+    void insertOrphan(memory::Object &obj);
+
+
+    /**
      * Gets a reference to the accelerator which the mode belongs to
      * \return A reference to the accelerator which the mode belongs to
      */

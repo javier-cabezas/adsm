@@ -68,8 +68,10 @@ protected:
     Cache &get(core::Mode &current, long_t key, size_t size);
     void cleanup(core::Mode &current);
 
+    Manager &manager_;
+
 public:
-    Slab();
+    Slab(Manager &manager);
     virtual ~Slab();
     
     virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr);

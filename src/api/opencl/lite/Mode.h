@@ -281,7 +281,14 @@ public:
      * of the mode from the accelerator
      * \return Error code
      */
-    virtual gmacError_t acquireObjects();
+    gmacError_t acquireObjects();
+
+
+    /**
+     * Insert an object into the orphan list
+     * \param obj Object to be inserted
+     */
+    void insertOrphan(memory::Object &obj);
 
 
     /** Returns the memory information of the accelerator on which the mode runs
