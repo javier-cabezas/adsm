@@ -41,7 +41,7 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
         if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
             FATAL("Unable to access CUDA device");
         if(attr != CU_COMPUTEMODE_PROHIBITED) {
-            cuda::hpe::Accelerator *accelerator = new gmac::cuda::hpe::Accelerator(i, cuDev);
+            gmac::cuda::hpe::Accelerator *accelerator = new gmac::cuda::hpe::Accelerator(i, cuDev);
             CFATAL(accelerator != NULL, "Error allocating resources for the accelerator");
             proc.addAccelerator(*accelerator);
             devRealCount++;
@@ -56,7 +56,7 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
         FATAL("No CUDA-enabled devices found");
 
     // Initialize the private per-thread variables
-    cuda::hpe::Accelerator::init();
+    gmac::cuda::hpe::Accelerator::init();
 
     initialized = true;
 }
