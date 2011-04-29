@@ -37,18 +37,6 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 
 #include "config/common.h"
-#include "util/Lock.h"
-#include "util/Thread.h"
-#include "util/Private.h"
-#include "util/Atomics.h"
-#include "util/Logger.h"
-
-namespace __impl {
-
-namespace memory {
-class Allocator;
-}
-
 
 void enterGmac() GMAC_LOCAL;
 void enterGmacExclusive() GMAC_LOCAL;
@@ -56,6 +44,5 @@ void exitGmac() GMAC_LOCAL;
 char inGmac() GMAC_LOCAL;
 
 
-}
 
 #endif

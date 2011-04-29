@@ -38,15 +38,15 @@ extern "C"
 size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 {
 	if(__libc_fread == NULL) stdcIoInit();
-	if((gmac::inGmac() == 1) ||
+	if((inGmac() == 1) ||
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
-    gmac::enterGmac();
+    enterGmac();
     Process &proc = Process::getInstance<Process>();
     Mode *dstMode = proc.owner(hostptr_t(buf), size);
 
     if(dstMode == NULL) {
-        gmac::exitGmac();
+        exitGmac();
         return  __libc_fread(buf, size, nmemb, stream);
     }
 
@@ -93,7 +93,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
-	gmac::exitGmac();
+	exitGmac();
 
     return ret;
 }
@@ -105,15 +105,15 @@ extern "C"
 size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 {
     if(__libc_fwrite == NULL) stdcIoInit();
-	if((gmac::inGmac() == 1) ||
+	if((inGmac() == 1) ||
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
-	gmac::enterGmac();
+	enterGmac();
     Process &proc = Process::getInstance();
     Mode *srcMode = proc.owner(hostptr_t(buf), size);
 
     if(srcMode == NULL) {
-        gmac::exitGmac();
+        exitGmac();
         return __libc_fwrite(buf, size, nmemb, stream);
     }
 
@@ -173,7 +173,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         mode.destroyIOBuffer(*buffer2);
     }
 	gmac::trace::SetThreadState(gmac::trace::Running);
-	gmac::exitGmac();
+	exitGmac();
 
     return ret;
 }

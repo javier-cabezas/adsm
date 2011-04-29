@@ -50,7 +50,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 {
     printf("MPI Sendrecv\n");
 
-	if(gmac::inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest,   sendtag,
+	if(inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest,   sendtag,
                                                   recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
@@ -65,7 +65,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     printf("MPI Sendrecv\n");
 
-    gmac::enterGmac();
+    enterGmac();
 
     Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
@@ -162,7 +162,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 exit:
     mode.destroyIOBuffer(buffer);
 
-	gmac::exitGmac();
+	exitGmac();
 
     return ret;
 }
@@ -171,7 +171,7 @@ extern "C"
 int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm,
     int (*func)(void *, int, MPI_Datatype, int, int, MPI_Comm))
 {
-	if(gmac::inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
+	if(inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
     if(__MPI_Send == NULL) mpiInit();
 
     Process &proc = Process::getInstance();
@@ -184,7 +184,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     printf("MPI Send\n");
 
-    gmac::enterGmac();
+    enterGmac();
 
     Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
@@ -235,7 +235,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 exit:
     mode.destroyIOBuffer(buffer);
 
-	gmac::exitGmac();
+	exitGmac();
 
     return ret;
 }
@@ -268,7 +268,7 @@ int MPI_Bsend( void *buf, int count, MPI_Datatype datatype, int dest, int tag, M
 extern "C"
 int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status )
 {
-	if(gmac::inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
+	if(inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     if(__MPI_Recv == NULL) mpiInit();
 
     Process &proc = Process::getInstance();
@@ -281,7 +281,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     printf("MPI Recv\n");
 
-    gmac::enterGmac();
+    enterGmac();
 
     Mode &mode = Mode::getCurrent();
     Manager &manager = Manager::getInstance();
@@ -339,7 +339,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 exit:
     mode.destroyIOBuffer(buffer);
 
-	gmac::exitGmac();
+	exitGmac();
 
     return ret;
 }
