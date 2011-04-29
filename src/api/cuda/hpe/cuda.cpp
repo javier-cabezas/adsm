@@ -18,7 +18,7 @@ static bool initialized = false;
 
 void apiInit(void)
 {
-    core::hpe::Process &proc = core::Process::getInstance<core::hpe::Process &>();
+    core::hpe::Process &proc = getProcess();
     if(initialized)
         FATAL("GMAC double initialization not allowed");
 

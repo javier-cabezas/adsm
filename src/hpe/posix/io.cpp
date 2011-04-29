@@ -20,9 +20,6 @@
 
 using __impl::core::IOBuffer;
 using __impl::core::Mode;
-using __impl::core::Process;
-
-using __impl::memory::Manager;
 
 using __impl::util::params::ParamBlockSize;
 
@@ -49,8 +46,7 @@ ssize_t read(int fd, void *buf, size_t count)
 	if(inGmac() == 1 || count == 0) return __libc_read(fd, buf, count);
 
     enterGmac();
-    Process &proc = Process::getInstance();
-    Mode *dstMode = proc.owner(hostptr_t(buf));
+    Mode *dstMode = getProcess().owner(hostptr_t(buf));
 
     if(dstMode == NULL) {
         exitGmac();
@@ -68,7 +64,7 @@ ssize_t read(int fd, void *buf, size_t count)
         buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
     IOBuffer *active  = buffer1;
     IOBuffer *passive = buffer2;
 
@@ -109,8 +105,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	if(inGmac() == 1 || count == 0) return __libc_write(fd, buf, count);
 
 	enterGmac();
-    Process &proc = Process::getInstance();
-    Mode *srcMode = proc.owner(hostptr_t(buf));
+    Mode *srcMode = getProcess().owner(hostptr_t(buf));
 
     if(srcMode == NULL) {
         exitGmac();
@@ -130,7 +125,7 @@ ssize_t write(int fd, const void *buf, size_t count)
         buffer2 = &mode.createIOBuffer(bufferSize);
     }
 
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
     IOBuffer *active  = buffer1;
     IOBuffer *passive = buffer2;
 

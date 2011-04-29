@@ -54,7 +54,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
                                                   recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
-    Process &proc = Process::getInstance();
+    Process &proc = getProcess();
 	// Check if GMAC owns any of the buffers to be transferred
 	Mode *srcMode = proc.owner(hostptr_t(sendbuf));
 	Mode *dstMode = proc.owner(hostptr_t(recvbuf));
@@ -68,7 +68,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     enterGmac();
 
     Mode &mode = Mode::getCurrent();
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
 
     gmacError_t err;
     int ret, ret2;
@@ -174,9 +174,8 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 	if(inGmac() == 1) return func(buf, count, datatype, dest, tag, comm);
     if(__MPI_Send == NULL) mpiInit();
 
-    Process &proc = Process::getInstance();
 	// Check if GMAC owns any of the buffers to be transferred
-	Mode *srcMode = proc.owner(hostptr_t(buf));
+	Mode *srcMode = getProcess().owner(hostptr_t(buf));
 
 	if (srcMode == NULL) {
         return func(buf, count, datatype, dest, tag, comm);
@@ -187,7 +186,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     enterGmac();
 
     Mode &mode = Mode::getCurrent();
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
 
     gmacError_t err;
     int ret;
@@ -271,9 +270,8 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 	if(inGmac() == 1) return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     if(__MPI_Recv == NULL) mpiInit();
 
-    Process &proc = Process::getInstance();
 	// Locate memory regions (if any)
-	Mode *dstMode = proc.owner(hostptr_t(buf));
+	Mode *dstMode = getProcess().owner(hostptr_t(buf));
 
 	if (dstMode == NULL) {
         return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
@@ -284,7 +282,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     enterGmac();
 
     Mode &mode = Mode::getCurrent();
-    Manager &manager = Manager::getInstance();
+    Manager &manager = getManager();
 
     gmacError_t err;
     int ret;

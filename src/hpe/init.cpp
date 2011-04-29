@@ -13,9 +13,6 @@
 
 #include "init.h"
 
-using gmac::core::hpe::Process;
-using gmac::memory::Manager;
-using __impl::memory::Allocator;
 using __impl::memory::allocator::Slab;
 
 class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
@@ -116,6 +113,20 @@ char inGmac()
     return 0;
 }
 
+Process &getProcess()
+{
+    return *Process_;
+}
+
+Manager &getManager()
+{
+    return *Manager_;
+}
+
+Allocator &getAllocator()
+{
+    return *Allocator_;
+}
 
 DESTRUCTOR(fini);
 static void fini(void)
@@ -139,8 +150,7 @@ static void InitThread()
 {
 	gmac::trace::StartThread("CPU");
 	enterGmac();
-	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
-	proc.initThread();
+	getProcess().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
 	exitGmac();
 }
@@ -150,8 +160,7 @@ static void FiniThread()
 	enterGmac();
 	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
-	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
-	proc.finiThread();
+	getProcess().finiThread();
 	exitGmac();
 }
 
