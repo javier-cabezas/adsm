@@ -1,6 +1,9 @@
 #include "core/hpe/Process.h"
 
+#include "memory/Allocator.h"
 #include "memory/Handler.h"
+#include "memory/Manager.h"
+#include "memory/allocator/Slab.h"
 
 #include "util/Parameter.h"
 #include "util/Private.h"
@@ -9,6 +12,11 @@
 #include "trace/Tracer.h"
 
 #include "init.h"
+
+using gmac::core::hpe::Process;
+using gmac::memory::Manager;
+using __impl::memory::Allocator;
+using __impl::memory::allocator::Slab;
 
 namespace __impl {
 
@@ -38,6 +46,10 @@ static Atomic gmacFini__ = -1;
 #endif
 #endif
 
+static Process *Process_ = NULL;
+static Manager *Manager_ = NULL;
+static Allocator *Allocator_ = NULL;
+
 static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
@@ -65,7 +77,11 @@ static void init(void)
 
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    __impl::core::Process::create<gmac::core::hpe::Process>();
+    Process_ = new Process();
+
+    TRACE(GLOBAL, "Initializing memory");
+    Manager_ = new Manager(*Process_);
+    Allocator_ = new Slab();
 
     TRACE(GLOBAL, "Initializing API");
     core::apiInit();
@@ -110,7 +126,9 @@ static void fini(void)
 	gmac::enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
         TRACE(GLOBAL, "Cleaning GMAC");
-        core::Process::destroy();
+        Allocator::destroy();
+        Manager::destroy();
+        Process::destroy();
         delete inGmacLock;
     }
 	// TODO: Clean-up logger

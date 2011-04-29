@@ -47,11 +47,10 @@ private:
 	static T *Singleton_;
     static bool Valid_;
 protected:
-public:
+    Singleton();
 	virtual ~Singleton();
+public:
 
-    template<typename S>
-	static void create();
 	static void destroy();
 
     static T &getInstance();

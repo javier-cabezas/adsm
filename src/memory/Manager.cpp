@@ -8,7 +8,8 @@
 
 namespace __impl { namespace memory {
 
-Manager::Manager()
+Manager::Manager(core::Process &proc) :
+    proc_(proc)
 {
     TRACE(LOCAL,"Memory manager starts");
 }
@@ -105,7 +106,6 @@ gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t s
 gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     trace::EnterCurrentFunction();
-    core::Process &proc = core::Process::getInstance();
 
     // If a centralized object is requested, try creating it
     if(hint == GMAC_GLOBAL_MALLOC_CENTRALIZED) {
@@ -115,7 +115,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
             return ret;
         }
     }
-    Protocol *protocol = proc.protocol();
+    Protocol *protocol = proc_.protocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
     Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     *addr = object->addr();
@@ -124,7 +124,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
         trace::ExitCurrentFunction();
         return hostMappedAlloc(mode, addr, size); // Try using a host mapped object
     }
-    gmacError_t ret = proc.globalMalloc(*object);
+    gmacError_t ret = proc_.globalMalloc(*object);
     object->release();
     trace::ExitCurrentFunction();
     return ret;
@@ -157,8 +157,7 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
 accptr_t Manager::translate(core::Mode &mode, const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
-    __impl::core::Process &proc = __impl::core::Process::getInstance();
-    accptr_t ret = proc.translate(addr);
+    accptr_t ret = proc_.translate(addr);
     if(ret == 0) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) {
@@ -207,12 +206,11 @@ gmacError_t Manager::toIOBuffer(core::Mode &mode, core::IOBuffer &buffer, size_t
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
-    core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::Mode * mode = proc.owner(addr + off);
+        core::Mode * mode = proc_.owner(addr + off);
         if (mode == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -254,12 +252,11 @@ gmacError_t Manager::fromIOBuffer(core::Mode &mode, hostptr_t addr, core::IOBuff
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
-    core::Process &proc = core::Process::getInstance();
     gmacError_t ret = gmacSuccess;
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::Mode *mode = proc.owner(addr + off);
+        core::Mode *mode = proc_.owner(addr + off);
         if (mode == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -349,8 +346,7 @@ gmacError_t
 Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
 {
     trace::EnterCurrentFunction();
-    core::Process &proc = core::Process::getInstance();
-    core::Mode *owner = proc.owner(s, size);
+    core::Mode *owner = proc_.owner(s, size);
 	if (owner == NULL) {
         ::memset(s, c, size);
         trace::ExitCurrentFunction();
@@ -622,9 +618,8 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
                 size_t size)
 {
     trace::EnterCurrentFunction();
-    core::Process &proc = core::Process::getInstance();
-    core::Mode *dstMode = proc.owner(dst, size);
-    core::Mode *srcMode = proc.owner(src, size);
+    core::Mode *dstMode = proc_.owner(dst, size);
+    core::Mode *srcMode = proc_.owner(src, size);
 
     if(dstMode == NULL && srcMode == NULL) {
         ::memcpy(dst, src, size);

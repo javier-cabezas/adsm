@@ -98,7 +98,6 @@ Process::Process() :
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
-    memory::Init();
     // Create the private per-thread variables for the implicit thread
     Mode::init();
     initThread();
@@ -118,7 +117,6 @@ Process::~Process()
     accs_.clear();
     queues_.cleanup();
     delete &protocol_;
-    memory::Fini();
 }
 
 void Process::initThread()

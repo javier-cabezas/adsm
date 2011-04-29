@@ -41,8 +41,9 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-class IOBuffer;
+class Process;
 class Mode;
+class IOBuffer;
 }
 
 namespace memory {
@@ -122,16 +123,19 @@ protected:
      */
     size_t hostMemory(hostptr_t addr, size_t size, const Object *obj) const;
 
-    /**
-     * Default constructor
-     */
-    Manager();
+    core::Process &proc_;
+
 
     /**
      * Default destructor
      */
     virtual ~Manager();
 public:
+    /**
+     * Default constructor
+     */
+    Manager(core::Process &proc);
+
     //TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
     //TESTABLE gmacError_t unmap(void *addr, size_t size);
 

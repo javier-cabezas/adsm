@@ -133,6 +133,24 @@ namespace gmac = __impl;
 #define DBC_TESTED(c)
 #endif
 
+/* Generic helper definitions for shared library support */
+#if defined _WIN32 || defined __CYGWIN__
+struct __constructor { 
+	__constructor(void (*fn)(void)) { fn(); }
+};
+#  define CONSTRUCTOR(fn) void fn(); static __constructor __constructor_##fn(fn)
+struct __destructor { 
+	void (*fn_)(void);
+	__destructor(void (*fn)(void)) : fn_(fn) { };
+	~__destructor() { fn_(); }
+};
+#  define DESTRUCTOR(fn) void fn(); static __destructor __destructor_##fn(fn)
+#else
+#  define CONSTRUCTOR(fn) static void fn(void) __attribute__((constructor))
+#  define DESTRUCTOR(fn)  static void fn(void) __attribute__((destructor))
+#endif
+
+
 #include "include/gmac/visibility.h"
 #include "config/common.h"
 
