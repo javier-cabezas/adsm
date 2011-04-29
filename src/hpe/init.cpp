@@ -18,8 +18,6 @@ using gmac::memory::Manager;
 using __impl::memory::Allocator;
 using __impl::memory::allocator::Slab;
 
-namespace __impl {
-
 class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
 public:
     GMACLock() : gmac::util::RWLock("Process") {}
@@ -29,7 +27,7 @@ public:
     void unlock()    const { gmac::util::RWLock::unlock();   }
 };
 
-static util::Private<const char> inGmac_;
+static __impl::util::Private<const char> inGmac_;
 static GMACLock * inGmacLock;
 
 static const char gmacCode = 1;
@@ -54,7 +52,7 @@ static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
     inGmacLock = new GMACLock();
-    util::Private<const char>::init(inGmac_);
+    __impl::util::Private<const char>::init(inGmac_);
     enterGmac();
 
     /* Call initialization of interpose libraries */
@@ -68,8 +66,8 @@ static void init(void)
     mpiInit();
 #endif
 
-    TRACE(GLOBAL, "Using %s memory manager", util::params::ParamProtocol);
-    TRACE(GLOBAL, "Using %s memory allocator", util::params::ParamAllocator);
+    TRACE(GLOBAL, "Using %s memory manager", __impl::util::params::ParamProtocol);
+    TRACE(GLOBAL, "Using %s memory allocator", __impl::util::params::ParamAllocator);
 
     // Set the entry and exit points for Manager
     __impl::memory::Handler::setEntry(enterGmac);
@@ -84,11 +82,10 @@ static void init(void)
     Allocator_ = new Slab(*Manager_);
 
     TRACE(GLOBAL, "Initializing API");
-    core::apiInit();
+    __impl::core::apiInit();
 
     exitGmac();
 }
-
 
 void enterGmac()
 {
@@ -123,7 +120,7 @@ char inGmac()
 DESTRUCTOR(fini);
 static void fini(void)
 {
-	gmac::enterGmac();
+	enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
         TRACE(GLOBAL, "Cleaning GMAC");
         Allocator::destroy();
@@ -134,7 +131,6 @@ static void fini(void)
 	// TODO: Clean-up logger
 }
 
-}
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -142,21 +138,21 @@ static void fini(void)
 static void InitThread()
 {
 	gmac::trace::StartThread("CPU");
-	gmac::enterGmac();
+	enterGmac();
 	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
 	proc.initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
-	gmac::exitGmac();
+	exitGmac();
 }
 
 static void FiniThread()
 {
-	gmac::enterGmac();
+	enterGmac();
 	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
 	__impl::core::hpe::Process &proc = __impl::core::Process::getInstance<__impl::core::hpe::Process>();
 	proc.finiThread();
-	gmac::exitGmac();
+	exitGmac();
 }
 
 // DLL entry function (called on load, unload, ...)
