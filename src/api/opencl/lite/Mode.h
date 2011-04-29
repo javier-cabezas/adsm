@@ -226,8 +226,13 @@ public:
      */
     static Mode & getCurrent();
 
+	/**
+	 * Get the time elapsed between tow events
+	 * \param t Reference to store the elapsed time
+	 * \param start Starting event
+	 * \param end Ending event
+	 */
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
-
 
     /**
      * Copies data from system memory to accelerator memory

@@ -67,7 +67,7 @@ public:
      * \param object Reference to the object to be registered
      * \return Error code
      */
-    virtual gmacError_t globalMalloc(memory::Object &object);
+    gmacError_t globalMalloc(memory::Object &object);
 
     /**
      * Unregisters a global object from the process
@@ -75,7 +75,7 @@ public:
      * \param object Reference to the object to be unregistered
      * \return Error code
      */
-    virtual gmacError_t globalFree(memory::Object &object);
+    gmacError_t globalFree(memory::Object &object);
 
     /**
      * Translates a host address to an accelerator address
@@ -83,7 +83,7 @@ public:
      * \param addr Host address to be translated
      * \return Accelerator address
      */
-    virtual accptr_t translate(const hostptr_t addr);
+    accptr_t translate(const hostptr_t addr);
 
     /**
      * Gets the protocol used by the process for the global objects
@@ -91,13 +91,13 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::Protocol *protocol();
+    memory::Protocol *protocol();
 
     /**
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    virtual void insertOrphan(memory::Object &obj);
+    void insertOrphan(memory::Object &obj);
 
     /**
      * Returns the owner of the object with the smallest address within the
@@ -108,7 +108,7 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    virtual core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
+    core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
 
 
     Mode *createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
