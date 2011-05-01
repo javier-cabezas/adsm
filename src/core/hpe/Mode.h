@@ -86,7 +86,8 @@ public:
  */
 class GMAC_LOCAL Mode : public virtual core::Mode {
     DBC_FORCE_TEST(Mode)
-
+    friend class ContextMap;    
+    friend class Accelerator;
 protected:
     static util::Private<Mode> key;
     static util::Private<Process> parent;
@@ -113,6 +114,7 @@ protected:
 
     virtual void reload() = 0;
     virtual Context &getContext() = 0;
+    static void destroyContext(Context &context);
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;
@@ -135,7 +137,7 @@ protected:
      * \return gmacSuccess on success. An error code on failure
     */
     TESTABLE gmacError_t cleanUp();
-public:
+
     /**
      * Mode constructor
      *
@@ -150,6 +152,7 @@ public:
      */
     virtual ~Mode();
 
+public:
     /**
      * Function called on process initialization to register thread-specific
      * variables
@@ -192,7 +195,6 @@ public:
      * \param obj Object to be inserted
      */
     void insertOrphan(memory::Object &obj);
-
 
     /**
      * Gets a reference to the accelerator which the mode belongs to

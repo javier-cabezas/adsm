@@ -101,8 +101,6 @@ public:
 class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 
-    // Needed to let Singleton call the protected constructor
-    //friend class util::Singleton<__impl::core::Process>;
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;

@@ -1,6 +1,7 @@
 #ifndef GMAC_CORE_HPE_ACCELERATOR_IMPL_H_
 #define GMAC_CORE_HPE_ACCELERATOR_IMPL_H_
 
+#include "core/hpe/Mode.h"
 #include "util/Logger.h"
 
 namespace __impl { namespace core { namespace hpe {
@@ -43,6 +44,14 @@ Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
     // For now, we require the mappings to match in size
 	if (ret == true) { ASSERTION(s == size); }
     return ret;
+}
+
+
+inline void
+Accelerator::migrateMode(Mode &mode, Accelerator &acc)
+{
+    unregisterMode(mode);
+    acc.registerMode(mode);
 }
 
 }}}

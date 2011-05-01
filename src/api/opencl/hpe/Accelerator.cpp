@@ -56,7 +56,6 @@ Accelerator::~Accelerator()
         cl_int ret = clReleaseProgram(*i);
         ASSERTION(ret == CL_SUCCESS);
     }
-    }
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
         delete Accelerators_;

@@ -41,6 +41,5 @@ TEST_F(ProcessTest, ModeMap) {
 	ASSERT_TRUE(mm.remove(*mode) == 1);
 	ASSERT_TRUE(mm.remove(*mode) == 0);
 
-    mode->detach();
     proc->destroy();
 }

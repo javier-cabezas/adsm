@@ -81,6 +81,7 @@ class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual opencl::Mod
     DBC_FORCE_TEST(Mode)
 
     friend class IOBuffer;
+    friend class Accelerator;
 protected:
     //! Switch to accelerator mode
     void switchIn();
@@ -99,7 +100,8 @@ protected:
 
     cl_program program_;
     KernelList kernelList_;
-public:
+
+
     //! Default constructor
     /*!
         \param proc Process where the mode is attached
@@ -110,6 +112,7 @@ public:
     //! Default destructor
     virtual ~Mode();
 
+public:
     //! Allocate GPU-accessible host memory
     /*!
         \param addr Pointer of the memory to be mapped to the accelerator

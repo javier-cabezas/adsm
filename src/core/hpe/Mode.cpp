@@ -42,8 +42,7 @@ Mode::~Mode()
 {    
     if(this == key.get()) key.set(NULL);
     contextMap_.clean();
-    acc_->unregisterMode(*this); 
-    proc_.removeMode(*this);
+    acc_->unregisterMode(*this);
 }
 
 void Mode::finiThread()
@@ -240,9 +239,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     contextMap_.clean();
 
     TRACE(LOCAL,"Registering mode in new accelerator");
-    acc_->unregisterMode(*this);
-    acc_ = &acc;
-    acc_->registerMode(*this);
+    acc_->migrateMode(*this, acc);
     
     TRACE(LOCAL,"Reallocating objects");
     //map_.reallocObjects(*this);

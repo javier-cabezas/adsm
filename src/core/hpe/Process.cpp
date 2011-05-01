@@ -108,6 +108,8 @@ Process::~Process()
     TRACE(LOCAL,"Cleaning process");
     while(modes_.empty() == false) {
         Mode *mode = modes_.begin()->first;
+        ASSERTION(mode != NULL);
+        modes_.remove(*mode);
         mode->release(); 
     }
 
@@ -174,6 +176,7 @@ void Process::removeMode(Mode &mode)
     lockWrite();
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
     modes_.remove(mode);
+    mode.release();
     unlock();
 }
 
