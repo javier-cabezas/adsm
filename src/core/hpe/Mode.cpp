@@ -13,9 +13,6 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-util::Private<Mode> Mode::key;
-util::Private<Process> Mode::parent;
-
 #ifdef DEBUG
 Atomic Mode::StatsInit_ = 0;
 Atomic Mode::StatDumps_ = 0;
@@ -40,17 +37,10 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 
 Mode::~Mode()
 {    
-    if(this == key.get()) key.set(NULL);
     contextMap_.clean();
     acc_->unregisterMode(*this);
 }
 
-void Mode::finiThread()
-{
-    Mode *mode = key.get();
-    if(mode == NULL) return;
-    mode->release();
-}
 
 void Mode::removeObject(memory::Object &obj)
 {
@@ -117,33 +107,6 @@ std::string Mode::getKernelName(gmac_kernel_id_t k) const
     i = kernels_.find(k);
     ASSERTION(i != kernels_.end());
     return std::string(i->second->getName());
-}
-
-Mode &Mode::getCurrent()
-{
-    Mode *mode = Mode::key.get();
-    if(mode == NULL) {
-        Process *proc = Mode::parent.get();
-        CFATAL(proc != NULL, "Trying to create an execution mode without a valid process");
-        mode = proc->createMode();
-    }
-    ASSERTION(mode != NULL);
-    return *mode;
-}
-
-void Mode::attach()
-{
-    Mode *mode = Mode::key.get();
-    if(mode == this) return;
-    if(mode != NULL) mode->release();
-    key.set(this);
-}
-
-void Mode::detach()
-{
-    Mode *mode = Mode::key.get();
-    if(mode != NULL) mode->release();
-    key.set(NULL);
 }
 
 gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)

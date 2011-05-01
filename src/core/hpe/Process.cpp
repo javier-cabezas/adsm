@@ -69,13 +69,15 @@ void QueueMap::push(THREAD_T id, Mode &mode)
     unlock();
 }
 
-void QueueMap::attach()
+Mode *QueueMap::pop()
 {
+	Mode *ret = NULL;
     lockRead();
     iterator q = Parent::find(util::GetThreadId());
     if(q != Parent::end())
-        q->second->queue->pop()->attach();
+        ret = q->second->queue->pop();
     unlock();
+	return ret;
 }
 
 void QueueMap::erase(THREAD_T id)
@@ -99,13 +101,12 @@ Process::Process() :
     current_(0)
 {
     // Create the private per-thread variables for the implicit thread
-    Mode::init();
+	util::Private<Mode>::init(CurrentMode_);
     initThread();
 }
 
 Process::~Process()
 {
-    TRACE(LOCAL,"Cleaning process");
     while(modes_.empty() == false) {
         Mode *mode = modes_.begin()->first;
         ASSERTION(mode != NULL);
@@ -126,13 +127,15 @@ void Process::initThread()
     ThreadQueue * q = new ThreadQueue();
     queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
-    Mode::initThread(*this);
+    CurrentMode_.set(NULL);
 }
 
 void Process::finiThread()
 {
     queues_.erase(util::GetThreadId());
-    Mode::finiThread();
+	Mode *mode = CurrentMode_.get();
+	mode->release();
+	CurrentMode_.set(NULL);
 }
 
 Mode *Process::createMode(int acc)
@@ -162,11 +165,8 @@ Mode *Process::createMode(int acc)
     modes_.insert(mode, accs_[usedAcc]);
     unlock();
 
-    mode->attach();
-
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
     Map::addOwner(*this, *mode);
-
 
     return mode;
 }
@@ -180,6 +180,14 @@ void Process::removeMode(Mode &mode)
     unlock();
 }
 
+Mode &Process::getCurrentMode()
+{
+	Mode *mode = CurrentMode_.get();
+	if(mode != NULL) return *mode;
+	mode = createMode();
+	CurrentMode_.set(mode);
+	return *mode;
+}
 
 gmacError_t Process::globalMalloc(memory::Object &object)
 {
@@ -245,53 +253,55 @@ void Process::addAccelerator(Accelerator &acc)
 
 accptr_t Process::translate(const hostptr_t addr)
 {
-    Mode &mode = Mode::getCurrent();
-    memory::Object *object = mode.getObject(addr);
+    Mode *mode = CurrentMode_.get();
+	if(mode == NULL) return accptr_t(0);
+    memory::Object *object = mode->getObject(addr);
     if(object == NULL) return accptr_t(0);
-    accptr_t ptr = object->acceleratorAddr(mode, addr);
+    accptr_t ptr = object->acceleratorAddr(*mode, addr);
     object->release();
     return ptr;
 }
 
 void Process::send(THREAD_T id)
 {
-    Mode &mode = Mode::getCurrent();
-    queues_.push(id, mode);
-    mode.use();
-    mode.detach();
+    Mode *mode = CurrentMode_.get();
+	if(mode == NULL) return;
+    queues_.push(id, *mode);
+	CurrentMode_.set(NULL);
 }
 
 void Process::receive()
 {
     // Get current context and destroy (if necessary)
-    Mode::getCurrent().detach();
+	Mode *mode = CurrentMode_.get();
+	if(mode != NULL) mode->release();
     // Get a fresh context
-    queues_.attach();
+    CurrentMode_.set(queues_.pop());
 }
 
 void Process::sendReceive(THREAD_T id)
 {
-    Mode &mode = Mode::getCurrent();
-    queues_.push(id, mode);
-    Mode::initThread(*this);
-    queues_.attach();
+    Mode *mode = CurrentMode_.get();
+    if(mode != NULL) queues_.push(id, *mode);
+    CurrentMode_.set(queues_.pop());
 }
 
 void Process::copy(THREAD_T id)
 {
-    Mode &mode = Mode::getCurrent();
-    queues_.push(id, mode);
-    mode.use();
+    Mode *mode = CurrentMode_.get();
+	if(mode == NULL) return;
+    queues_.push(id, *mode);
+    mode->use();
 }
 
-core::Mode *Process::owner(const hostptr_t addr, size_t size) const
+core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
     // We consider global objects for ownership,
     // since it contains distributed objects not found in shared_
     memory::Object *object = shared_.get(addr, size);
     if(object == NULL) object = global_.get(addr, size);
     if(object == NULL) return NULL;
-    core::Mode &ret = object->owner(Mode::getCurrent(), addr);
+    core::Mode &ret = object->owner(getCurrentMode(), addr);
     object->release();
     return &ret;
 }

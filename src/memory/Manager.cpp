@@ -18,7 +18,6 @@ Manager::Manager(core::Process &proc) :
 
 Manager::~Manager()
 {
-    TRACE(LOCAL,"Memory manager finishes");
 }
 
 

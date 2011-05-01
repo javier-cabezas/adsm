@@ -143,7 +143,6 @@ static void fini(void)
 {
 	enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
-        TRACE(GLOBAL, "Cleaning GMAC");
         Allocator_->destroy();
         Manager_->destroy();
         Process_->destroy();
@@ -181,7 +180,9 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 		case DLL_PROCESS_ATTACH:
             break;
 		case DLL_PROCESS_DETACH:
-            __impl::fini();
+			// Really ugly hack -- Stupid windows do not allow calling DLLs from static
+			// destructors, so we cannot release resources at termination time
+			AtomicInc(gmacFini__);
 			break;
 		case DLL_THREAD_ATTACH:
 			InitThread();

@@ -49,8 +49,6 @@ public:
     Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc);
     virtual ~Mode();
 
-    void detach();
-
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t size);
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);

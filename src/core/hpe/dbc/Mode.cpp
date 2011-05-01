@@ -27,11 +27,6 @@ Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc
 {
 }
 
-void
-Mode::detach()
-{
-    __impl::core::hpe::Mode::detach();
-}
 
 gmacError_t
 Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)

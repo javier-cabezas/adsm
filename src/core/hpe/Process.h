@@ -44,6 +44,7 @@ WITH THE SOFTWARE.  */
 #include "memory/ObjectMap.h"
 
 #include "util/Singleton.h"
+#include "util/Private.h"
 
 #include "core/Process.h"
 #include "core/allocator/Buddy.h"
@@ -58,7 +59,6 @@ class Accelerator;
 class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
 {
     friend class Process;
-
 private:
     typedef std::map<Mode *, Accelerator *> Parent;
 
@@ -93,14 +93,13 @@ public:
     void cleanup();
     std::pair<iterator, bool> insert(THREAD_T, ThreadQueue *);
     void push(THREAD_T id, Mode &mode);
-    void attach();
+    Mode *pop();
     void erase(THREAD_T id);
 };
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
-
 protected:
     std::vector<Accelerator *> accs_;
     ModeMap modes_;
@@ -109,6 +108,8 @@ protected:
     memory::ObjectMap shared_;
     memory::ObjectMap global_;
     memory::ObjectMap orphans_;
+
+	util::Private<Mode> CurrentMode_;
 
     unsigned current_;
 
@@ -150,6 +151,12 @@ public:
      * \param mode A reference to the mode to be removed from the process
      */
     TESTABLE void removeMode(Mode &mode); 
+
+	/**
+	 * Get the execution mode bound to the current CPU thread
+	 * \return Execution mode bound to the current CPU thread
+	 */
+	Mode &getCurrentMode();
 
     /**
      * Registers a global object in the process
@@ -326,7 +333,7 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
+    core::Mode *owner(const hostptr_t addr, size_t size = 0);
 };
 
 }}}

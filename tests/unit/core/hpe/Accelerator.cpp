@@ -39,7 +39,7 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
     accptr_t device(0);
-    unsigned count = Process_->nAccelerators();
+    size_t count = Process_->nAccelerators();
     for(unsigned n = 0; n < count; n++) {
         Accelerator *acc = Process_->getAccelerator(n);
         ASSERT_TRUE(acc != NULL);
@@ -60,7 +60,7 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
 TEST_F(AcceleratorTest, AcceleratorAligment) {
     const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
-    unsigned count = Process_->nAccelerators();
+    size_t count = Process_->nAccelerators();
     for(unsigned i = 0; i < count; i++) {
         Accelerator *acc = Process_->getAccelerator(i);
         ASSERT_TRUE(acc != NULL);
@@ -77,7 +77,7 @@ TEST_F(AcceleratorTest, AcceleratorAligment) {
 
 TEST_F(AcceleratorTest, CreateMode) {
 
-    unsigned n = Process_->nAccelerators();
+    size_t n = Process_->nAccelerators();
     for(unsigned i = 0; i < n; i++) {
         Accelerator *acc = Process_->getAccelerator(i);
         ASSERT_TRUE(acc != NULL);
