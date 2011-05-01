@@ -134,7 +134,7 @@ void Process::finiThread()
 {
     queues_.erase(util::GetThreadId());
 	Mode *mode = CurrentMode_.get();
-	mode->release();
+	removeMode(*mode);
 	CurrentMode_.set(NULL);
 }
 
@@ -176,7 +176,6 @@ void Process::removeMode(Mode &mode)
     lockWrite();
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
     modes_.remove(mode);
-    mode.release();
     unlock();
 }
 
@@ -199,6 +198,7 @@ gmacError_t Process::globalMalloc(memory::Object &object)
     unlock();
     global_.insert(object);
     return gmacSuccess;
+
 cleanup:
     ModeMap::iterator j;
     for(j = modes_.begin(); j != i; j++) {
