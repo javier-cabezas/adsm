@@ -70,6 +70,7 @@ class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual cuda::Mode 
     DBC_FORCE_TEST(Mode)
 
     friend class Switch;
+    friend class Accelerator;
 protected:
 #ifdef USE_MULTI_CONTEXT
     //! Associated CUDA context
@@ -102,7 +103,6 @@ protected:
     //! Reload CUDA kernels
     void reload();
 
-public:
     //! Default constructor
     /*!
         \param proc Process where the mode is attached
@@ -113,6 +113,7 @@ public:
     //! Default destructor
     virtual ~Mode();
 
+public:
     //! Allocated GPU-accessible host memory
     /*!
         \param addr Memory address of the pointer where the starting host memory address will be stored

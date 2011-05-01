@@ -29,7 +29,7 @@ void ModeTest::SetUpTestCase() {
 }
 
 void ModeTest::TearDownTestCase() {
-    Mode_->detach();
+    Process_->removeMode(*Mode_);
     Process_->destroy();
     Mode_ = NULL;
     Process_ = NULL;
