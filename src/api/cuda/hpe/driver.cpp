@@ -27,6 +27,12 @@ using __impl::cuda::hpe::ModuleDescriptor;
 using __impl::cuda::hpe::TextureDescriptor;
 using __impl::cuda::hpe::VariableDescriptor;
 
+static inline Mode &getCurrentCUDAMode()
+{
+    return dynamic_cast<Mode &>(getCurrentMode());
+}
+
+
 /*!
  * @returns Module **
  */
@@ -99,7 +105,7 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 		size_t sharedMem, cudaStream_t tokens)
 {
 	enterGmac();
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
 	mode.call(gridDim, blockDim, sharedMem, tokens);
 	exitGmac();
 	return cudaSuccess;
@@ -108,7 +114,7 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 GMAC_API cudaError_t APICALL cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	enterGmac();
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
 	mode.argument(arg, count, (off_t)offset);
 	exitGmac();
 	return cudaSuccess;

@@ -20,6 +20,11 @@ using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
 using __impl::cuda::hpe::Variable;
 
+static inline Mode &getCurrentCUDAMode()
+{
+    return dynamic_cast<Mode &>(getCurrentMode());
+}
+
 static inline int __getChannelSize(CUarray_format format)
 {
 	switch(format) {
@@ -514,7 +519,7 @@ GMAC_API cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *
 {
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
 	const Variable *variable = mode.constant(symbol);
 	ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -579,7 +584,7 @@ GMAC_API cudaError_t APICALL cudaBindTexture(size_t *offset, const struct textur
      const void *devPtr, const struct cudaChannelFormatDesc *desc, size_t size = UINT_MAX)
 {
     enterGmac();
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
     Switch::in();
@@ -623,7 +628,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	enterGmac();
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
     Switch::in();
@@ -665,7 +670,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 GMAC_API cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 {
 	enterGmac();
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getCurrentCUDAMode();
     const Texture * texture = mode.texture(texref);
     Switch::in();
 	CUresult r = cuTexRefDestroy(texture->texRef());
@@ -722,7 +727,7 @@ GMAC_API cudaError_t APICALL cudaEventQuery(cudaEvent_t event)
 
 GMAC_API cudaError_t APICALL cudaEventRecord(cudaEvent_t event, cudaStream_t /*stream*/)
 {
-    CUresult ret = cuEventRecord((CUevent) event, Mode::getCurrent().eventStream());
+    CUresult ret = cuEventRecord((CUevent) event, getCurrentCUDAMode().eventStream());
     return __getCUDAError(ret);
 }
 

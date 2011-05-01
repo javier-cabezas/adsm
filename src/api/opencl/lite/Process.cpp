@@ -55,7 +55,7 @@ void Process::insertOrphan(memory::Object &)
     FATAL("Orphan Objects not supported in GMAC-lite");
 }
 
-core::Mode *Process::owner(const hostptr_t addr, size_t size) const
+core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
     return map_.owner(addr, size);
     

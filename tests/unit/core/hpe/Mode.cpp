@@ -36,12 +36,6 @@ void ModeTest::TearDownTestCase() {
 }
 
 
-TEST_F(ModeTest, ModeCurrent) {
-    Mode_->attach();
-    Mode &current = Mode::getCurrent();
-    ASSERT_TRUE(&current == Mode_);
-}
-
 TEST_F(ModeTest, ModeMemory) {
     hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);

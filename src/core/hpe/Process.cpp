@@ -222,20 +222,25 @@ gmacError_t Process::globalFree(memory::Object &object)
 }
 
 // This function owns the global lock
-gmacError_t Process::migrate(core::Mode &current, int acc)
+gmacError_t Process::migrate(int acc)
 {
     if (acc >= int(accs_.size())) return gmacErrorInvalidValue;
-    Mode &mode = dynamic_cast<Mode &>(current);
+    Mode *mode = CurrentMode_.get();
+    if(mode == NULL) {
+        mode = createMode(acc);
+        CurrentMode_.set(mode);
+        return gmacSuccess;
+    }
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
-    if (int(mode.getAccelerator().id()) != acc) {
+    if (int(mode->getAccelerator().id()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
-        ret = mode.moveTo(*accs_[acc]);
+        ret = mode->moveTo(*accs_[acc]);
 
         if (ret == gmacSuccess) {
-            modes_[&mode] = accs_[acc];
+            modes_[mode] = accs_[acc];
         }
     }
 #else
