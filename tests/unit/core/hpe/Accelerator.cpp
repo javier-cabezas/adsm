@@ -13,6 +13,7 @@ Process *AcceleratorTest::Process_ = NULL;
 std::vector<Accelerator *> Accelerators_;
 
 extern void OpenCL(Process &);
+extern void CUDA(Process &);
 
 void AcceleratorTest::SetUpTestCase()
 {

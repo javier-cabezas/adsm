@@ -52,11 +52,10 @@ Accelerator::~Accelerator()
     std::vector<cl_program>::const_iterator i;
     // We cannot call OpenCL at destruction time because the library
     // might have been unloaded
-    if(core::Process::isValid()) {
-        for(i = programs.begin(); i != programs.end(); i++) {
-            cl_int ret = clReleaseProgram(*i);
-            ASSERTION(ret == CL_SUCCESS);
-        }
+    for(i = programs.begin(); i != programs.end(); i++) {
+        cl_int ret = clReleaseProgram(*i);
+        ASSERTION(ret == CL_SUCCESS);
+    }
     }
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
@@ -67,7 +66,7 @@ Accelerator::~Accelerator()
     }
 
     cl_int ret = CL_SUCCESS;
-    if(core::Process::isValid()) ret = clReleaseContext(ctx_);
+    ret = clReleaseContext(ctx_);
     ASSERTION(ret == CL_SUCCESS);
 }
 
@@ -123,7 +122,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 
     trace::SetThreadState(trace::Wait);
     cl_int ret = CL_SUCCESS;
-    if(core::Process::isValid()) ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.base_);
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -423,7 +422,7 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 	// We cannot remove the command queue because the OpenCL DLL might
 	// have been already unloaded
     cl_int ret = CL_SUCCESS;
-    if(core::Process::isValid()) ret = clReleaseCommandQueue(stream);
+    ret = clReleaseCommandQueue(stream);
     CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
 
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
@@ -513,14 +512,12 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 #if 0
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
-    if(core::Process::isValid()) {
-        cl_mem mem = NULL;
-        size_t size;
-        if(localHostAlloc_.translate(addr, mem, size) == true) {
-            localHostAlloc_.remove(addr); 
-            Accelerator::GlobalHostAlloc_->remove(addr);
-            ret = clReleaseMemObject(mem);
-        }
+    cl_mem mem = NULL;
+    size_t size;
+    if(localHostAlloc_.translate(addr, mem, size) == true) {
+        localHostAlloc_.remove(addr); 
+        Accelerator::GlobalHostAlloc_->remove(addr);
+        ret = clReleaseMemObject(mem);
     }
     
     trace::ExitCurrentFunction();

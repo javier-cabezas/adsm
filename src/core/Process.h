@@ -36,9 +36,14 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/order.h"
-#include "include/gmac/types.h"
-
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#include "os/windows/loader.h"
+#endif
 #include "util/Singleton.h"
+
+#include <vector>
 
 namespace __impl {
 
@@ -53,6 +58,8 @@ class GMAC_LOCAL Process : public util::Singleton<Process> {
     friend class util::Singleton<Process>;
 protected:
 
+    std::vector<library_t> handlers_;
+
     /**
      * Constructs the process
      */
@@ -63,6 +70,11 @@ protected:
     virtual ~Process();
 
 public:
+    /**
+     * Adds a library handler to be unloaded on process destruction
+     */
+    void addHandler(library_t handler);
+
     /**
      * Registers a global object in the process
      *

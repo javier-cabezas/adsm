@@ -43,8 +43,6 @@ WITH THE SOFTWARE.  */
 #define EXPECTS(a)  __dbc::Contract::Expects(__FILE__, __LINE__, #a, a)
 #define ASSERT(a)   __dbc::Contract::Assert(__FILE__, __LINE__, #a, a)
 
-#define ISVALID() isValid(__FILE__, __LINE__)
-
 namespace __dbc {
 
 class GMAC_LOCAL Contract {

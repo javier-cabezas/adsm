@@ -13,9 +13,6 @@ extern void OpenCL(Process &);
 
 void ContextTest::SetUpTestCase() {
     Process_ = new Process();
-#if defined(USE_CUDA)
-    CUDA(*Process_);
-#endif
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif

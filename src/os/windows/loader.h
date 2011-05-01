@@ -47,6 +47,13 @@ WITH THE SOFTWARE.  */
 
 #define SYMBOL(name) __gmac_##name
 
+typedef HMODULE library_t;
+#define USE_LIBRARY(name) LoadLibrary(name".dll")
+#define RELEASE_LIBRARY(handler) \
+    do {\
+        if(handler != NULL) FreeLibrary(handler);\
+    } while(0)
+
 namespace __impl { namespace loader {
 extern void LoadSymbol(PVOID *symbol, PVOID hook, const char *name);
 }}

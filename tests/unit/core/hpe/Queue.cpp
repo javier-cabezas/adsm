@@ -14,6 +14,7 @@ using __impl::core::hpe::ThreadQueue;
 Process *QueueTest::Process_ = NULL;
 
 extern void OpenCL(Process &);
+extern void CUDA(Process &);
 
 void QueueTest::SetUpTestCase() {
     Process_ = new Process();
