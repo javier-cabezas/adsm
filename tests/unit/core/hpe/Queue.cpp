@@ -1,4 +1,3 @@
-#include "unit/init.h"
 #include "unit/core/hpe/Queue.h"
 
 
@@ -7,31 +6,42 @@
 
 #include "gtest/gtest.h"
 
-using gmac::core::hpe::Mode;
+using __impl::core::hpe::Mode;
 using __impl::core::hpe::Queue;
-using __impl::core::hpe::Process;
+using gmac::core::hpe::Process;
 using __impl::core::hpe::ThreadQueue;
 
-Mode *QueueTest::Mode_ = NULL;
+Process *QueueTest::Process_ = NULL;
 
-void QueueTest::SetUpTestCase()
-{
-     InitProcess();
-     if(Mode_ != NULL) return;
-	 Process &proc = dynamic_cast<Process &>(__impl::core::Process::getInstance());
-	 Mode_ = dynamic_cast<Mode *>(proc.createMode(0));
-     ASSERT_TRUE(Mode_ != NULL);
-     Mode_->initThread();
+extern void OpenCL(Process &);
+
+void QueueTest::SetUpTestCase() {
+    Process_ = new Process();
+    if(Process_ == NULL) return;
+#if defined(USE_CUDA)
+    CUDA(*Process_);
+#endif
+#if defined(USE_OPENCL)
+    OpenCL(*Process_);
+#endif
 }
+
+void QueueTest::TearDownTestCase() {
+    Process_->destroy();
+    Process_ = NULL;
+}
+
+
 TEST_F(QueueTest,MemberFun)
 {
-    ThreadQueue temp_; 
-    ASSERT_TRUE(temp_.queue != NULL);
-    temp_.queue->push(Mode_);
-    Mode *last = dynamic_cast<gmac::core::hpe::Mode *>(temp_.queue->pop());
-    ASSERT_EQ(Mode_,last);
-    //Queue actual_("ThreadQueue");
-    //ASSERT_EQ(*temp_.queue,actual_);
+    ThreadQueue threadQueue; 
+    ASSERT_TRUE(threadQueue.queue != NULL);
+    Mode *mode = Process_->createMode(0);
+    ASSERT_TRUE(mode != NULL);
+    threadQueue.queue->push(mode);
+    Mode *last = threadQueue.queue->pop();
+    ASSERT_EQ(mode, last);
+    mode->detach();
 }
 
 

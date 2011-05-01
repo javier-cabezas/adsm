@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_CORE_MODE_H_
 #define TEST_UNIT_CORE_MODE_H_
 
-#include "unit/init.h"
 #include "gtest/gtest.h"
 
 #include "core/hpe/Mode.h"
@@ -42,11 +41,11 @@ WITH THE SOFTWARE.  */
 class ModeTest : public testing::Test {
 public:
 	static __impl::core::hpe::Mode *Mode_;
+    static gmac::core::hpe::Process *Process_;
 
     const static size_t Size_ = 4 * 1024 * 1024;
-
+    
     static void SetUpTestCase();
-
     static void TearDownTestCase();
 };
 

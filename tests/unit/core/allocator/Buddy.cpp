@@ -1,5 +1,3 @@
-#include "unit/init.h"
-
 #include "core/allocator/Buddy.h"
 
 #include "gtest/gtest.h"
@@ -17,7 +15,6 @@ public:
     static void *BasePtr_;
 
     static void SetUpTestCase() {
-        InitTrace();
     }
 
     static void TearDownTestCase() {

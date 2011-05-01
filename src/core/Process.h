@@ -57,12 +57,12 @@ protected:
      * Constructs the process
      */
     Process();
-public:
     /**
      * Destroys the process and releases the resources used by it
      */
     virtual ~Process();
 
+public:
     /**
      * Registers a global object in the process
      *

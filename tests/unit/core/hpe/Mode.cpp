@@ -1,4 +1,3 @@
-#include "unit/init.h"
 #include "unit/core/hpe/Mode.h"
 
 #include "core/hpe/Process.h"
@@ -6,24 +5,33 @@
 
 #include "gtest/gtest.h"
 
-using __impl::core::hpe::Mode;
 using gmac::core::hpe::Process;
+using __impl::core::hpe::Mode;
 
 Mode *ModeTest::Mode_ = NULL;
+Process *ModeTest::Process_ = NULL;
+
+extern void OpenCL(Process &);
 
 void ModeTest::SetUpTestCase() {
-    InitProcess();
-    if(Mode_ != NULL) return;
-	Process &proc = dynamic_cast<Process &>(Process::getInstance());
-    Mode_ = dynamic_cast<Mode *>(proc.createMode(0));
+    Process_ = new Process();
+    if(Process_ == NULL) return;
+#if defined(USE_CUDA)
+    CUDA(*Process_);
+#endif
+#if defined(USE_OPENCL)
+    OpenCL(*Process_);
+#endif
+    ASSERT_TRUE(Mode_ == NULL);
+    Mode_ = Process_->createMode(0);
     ASSERT_TRUE(Mode_ != NULL);
-    Mode_->initThread();
 }
 
 void ModeTest::TearDownTestCase() {
     Mode_->detach();
-    FiniProcess();
+    Process_->destroy();
     Mode_ = NULL;
+    Process_ = NULL;
 }
 
 
