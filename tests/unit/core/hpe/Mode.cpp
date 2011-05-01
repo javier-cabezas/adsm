@@ -12,6 +12,7 @@ Mode *ModeTest::Mode_ = NULL;
 Process *ModeTest::Process_ = NULL;
 
 extern void OpenCL(Process &);
+extern void CUDA(Process &);
 
 void ModeTest::SetUpTestCase() {
     Process_ = new Process();

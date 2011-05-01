@@ -6,9 +6,8 @@
 
 #include <CL/cl.h>
 
+using __impl::core::hpe::Process;
 using __impl::opencl::hpe::Accelerator;
-using __impl::opencl::hpe::Mode;
-using __impl::opencl::hpe::Context;
 
 void OpenCL(Process &proc)
 {

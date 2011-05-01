@@ -2,10 +2,19 @@
 #include "memory/Protocol.h"
 #include "util/Logger.h"
 
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#include "os/windows/loader.h"
+#endif
+
 namespace __impl { namespace opencl { namespace lite {
 
 Process::Process()
 {
+    library_t handler = USE_LIBRARY("OpenCL");
+    CFATAL(handler != NULL, "Unable to get handler to OpenCL");
+    addHanderl(handler);
 }
 
 Process::~Process()

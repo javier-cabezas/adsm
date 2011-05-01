@@ -25,7 +25,6 @@ Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
 Mode::~Mode()
 {
     // If process is not valid, OpenCL might have been unloaded
-    if(Process::isValid() == false) return;
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
@@ -78,7 +77,7 @@ gmacError_t Mode::unmap(hostptr_t host, size_t size)
     ASSERTION(hasMapping == true);
     ASSERTION(s == size);
     cl_int ret = CL_SUCCESS;
-    if(core::Process::isValid()) ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.base_);
     return error(ret);
 }
 

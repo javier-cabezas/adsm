@@ -49,7 +49,7 @@ Mode::~Mode()
     modules.clear();
 #endif
     if(ioMemory_ != NULL) {
-        if(core::hpe::Process::isValid()) hostFree(ioMemory_->addr());
+        hostFree(ioMemory_->addr());
         delete ioMemory_;
         ioMemory_ = NULL;
     }

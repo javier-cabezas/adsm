@@ -7,6 +7,12 @@
 
 #include "hpe/init.h"
 
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#include "os/windows/loader.h"
+#endif
+
 #include <cuda.h>
 
 #include <string>
@@ -16,11 +22,8 @@ static bool initialized = false;
 
 void GMAC_API CUDA(gmac::core::hpe::Process &proc)
 {
-    if(initialized)
-        FATAL("GMAC double initialization not allowed");
-
     TRACE(GLOBAL, "Initializing CUDA Driver API");
-    if(cuInit(0) != CUDA_SUCCESS)
+    if(initialized == false && cuInit(0) != CUDA_SUCCESS)
         FATAL("Unable to init CUDA");
 
     int devCount = 0;
@@ -57,6 +60,10 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
 
     // Initialize the private per-thread variables
     gmac::cuda::hpe::Accelerator::init();
+
+    library_t handler = USE_LIBRARY("cuda");
+    CFATAL(handler != NULL, "Unable to get handler to CUDA");
+    proc.addHandler(handler);
 
     initialized = true;
 }

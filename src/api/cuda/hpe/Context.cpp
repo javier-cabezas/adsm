@@ -40,12 +40,10 @@ void Context::setupCUstreams()
 
 void Context::cleanCUstreams()
 {
-    if(core::hpe::Process::isValid()) { 
-        accelerator().destroyCUstream(streamLaunch_);
-        accelerator().destroyCUstream(streamToAccelerator_);
-        accelerator().destroyCUstream(streamToHost_);
-        accelerator().destroyCUstream(streamAccelerator_);
-    }
+    accelerator().destroyCUstream(streamLaunch_);
+    accelerator().destroyCUstream(streamToAccelerator_);
+    accelerator().destroyCUstream(streamToHost_);
+    accelerator().destroyCUstream(streamAccelerator_);
 }
 
 gmacError_t Context::syncCUstream(CUstream _stream)

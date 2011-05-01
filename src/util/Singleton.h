@@ -45,15 +45,12 @@ template <typename T>
 class GMAC_LOCAL Singleton {
 private:
 	static T *Singleton_;
-    static bool Valid_;
 protected:
     Singleton();
 	virtual ~Singleton();
 public:
 
 	void destroy();
-
-    static bool isValid();
 };
 
 }}

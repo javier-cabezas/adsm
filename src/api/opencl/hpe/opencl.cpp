@@ -6,8 +6,6 @@
 static bool initialized = false;
 void OpenCL(gmac::core::hpe::Process &proc)
 {
-    if(initialized) FATAL("GMAC double initialization not allowed");
-
     TRACE(GLOBAL, "Initializing OpenCL API");
     cl_uint platformSize = 0;
     cl_int ret;
@@ -39,6 +37,10 @@ void OpenCL(gmac::core::hpe::Process &proc)
     }
     delete[] platforms;
     initialized = true;
+
+    library_t handler = USE_LIBRARY("OpenCL");
+    CFATAL(handler != NULL, "Unable to get handler to OpenCL");
+    proc.addHandler(handler);
 
     __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
 }
