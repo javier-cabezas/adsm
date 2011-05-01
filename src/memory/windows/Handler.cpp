@@ -20,7 +20,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 	if(ex->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION)
 		return EXCEPTION_CONTINUE_SEARCH;
 
-    if(Process_ == NULL | Manager_ == NULL) return EXCEPTION_CONTINUE_SEARCH;
+    if(Process_ == NULL || Manager_ == NULL) return EXCEPTION_CONTINUE_SEARCH;
 
 	Handler::Entry();
 	trace::EnterCurrentFunction();

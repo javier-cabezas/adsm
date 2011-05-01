@@ -89,9 +89,6 @@ class GMAC_LOCAL Mode : public virtual core::Mode {
     friend class ContextMap;    
     friend class Accelerator;
 protected:
-    static util::Private<Mode> key;
-    static util::Private<Process> parent;
-
     Process &proc_;
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
@@ -154,37 +151,6 @@ protected:
 
 public:
     /**
-     * Function called on process initialization to register thread-specific
-     * variables
-     */
-    static void init();
-
-    /**
-     * Function called on thread creation to initialize thread-specific
-     * variables
-     */
-    static void initThread(Process &proc);
-
-    /**
-     * Function called on thread destruction to release the Mode resources
-     */
-    static void finiThread();
-
-    /**
-     * Gets the Mode for the calling thread
-     * \return A reference to the Mode for the calling thread. If the thread has
-     *         no Mode yet, a new one is created
-     */
-    static Mode &getCurrent();
-
-    /**
-     * Tells if the calling thread already has a Mode assigned
-     * \return A boolean that tells if the calling thread already has a Mode
-     *         assigned
-     */
-    static bool hasCurrent();
-
-    /**
      * Removes an object from the map of the mode
      * \param obj A reference to the object to be removed
      */
@@ -201,16 +167,6 @@ public:
      * \return A reference to the accelerator which the mode belongs to
      */
     Accelerator &getAccelerator() const;
-
-    /**
-     * Attaches the execution mode to the current thread
-     */
-    void attach();
-
-    /**
-     * Dettaches the execution mode to the current thread
-     */
-    TESTABLE void detach();
 
     /**
      * Maps the given host memory on the accelerator memory

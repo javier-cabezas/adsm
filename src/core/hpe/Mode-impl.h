@@ -105,24 +105,6 @@ inline void Mode::cleanUpContexts()
     contextMap_.clean();
 }
 
-inline void Mode::init()
-{
-    util::Private<Mode>::init(key);
-    util::Private<Process>::init(parent);
-}
-
-inline void Mode::initThread(Process &proc)
-{
-    key.set(NULL);
-    parent.set(&proc);
-}
-
-inline bool
-Mode::hasCurrent()
-{
-    return key.get() != NULL;
-}
-
 inline
 void Mode::insertOrphan(memory::Object &obj)
 {

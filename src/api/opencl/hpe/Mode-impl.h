@@ -117,14 +117,6 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
     return ret;
 }
 
-
-inline Mode &
-Mode::getCurrent()
-{
-    return static_cast<Mode &>(core::hpe::Mode::getCurrent());
-}
-
-
 inline Accelerator &
 Mode::getAccelerator() const
 {
