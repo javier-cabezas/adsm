@@ -15,6 +15,11 @@
 using __impl::opencl::hpe::Accelerator;
 using __impl::opencl::hpe::Mode;
 
+static inline Mode &getCurrentOpenCLMode()
+{
+	return dynamic_cast<Mode &>(getCurrentMode());
+}
+
 GMAC_API gmacError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index)
 {
     enterGmac();
@@ -96,7 +101,7 @@ gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t siz
 gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, OclKernel *kernel)
 {
     enterGmac();
-    __impl::core::hpe::Mode &mode = gmac::core::hpe::Mode::getCurrent();
+    __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
     __impl::core::hpe::KernelLaunch *launch;
     gmacError_t ret = mode.launch(id, launch);
     if (ret == gmacSuccess) {
