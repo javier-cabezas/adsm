@@ -9,8 +9,6 @@ add_subdirectory(core)
 add_subdirectory(api)
 
 set(all_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/init.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp
     ${unit_SRC})
 add_gmac_groups(${all_SRC})

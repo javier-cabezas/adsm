@@ -1,8 +1,7 @@
 add_subdirectory(allocator)
 add_subdirectory(hpe)
 set(core_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/init.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/init.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/IOBuffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/IOBuffer.cpp
 )  
 

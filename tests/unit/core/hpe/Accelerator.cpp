@@ -5,12 +5,32 @@
 #include "core/hpe/Process.h"
 #include "core/hpe/Mode.h"
 
-using __impl::core::hpe::Mode;
 using gmac::core::hpe::Process;
+using __impl::core::hpe::Mode;
+using __impl::core::hpe::Accelerator;
 
+Process *AcceleratorTest::Process_ = NULL;
+std::vector<Accelerator *> Accelerators_;
 
-//check virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc,size_t size)=0
-//check virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)=0
+extern void OpenCL(Process &);
+
+void AcceleratorTest::SetUpTestCase()
+{
+    Process_ = new Process();
+#if defined(USE_CUDA)
+    CUDA(*Process_);
+#endif
+#if defined(USE_OPENCL)
+    OpenCL(*Process_);
+#endif
+}
+
+void AcceleratorTest::TearDownTestCase()
+{
+    if(Process_ != NULL) delete Process_;
+    Process_ = NULL;
+}
+
 TEST_F(AcceleratorTest, AcceleratorMemory) {
     int *buffer = new int[Size_];
     int *canary = new int[Size_];
@@ -18,12 +38,17 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
     accptr_t device(0);
-    ASSERT_TRUE(GetAccelerator().map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(device != 0);
-    ASSERT_TRUE(GetAccelerator().copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
-    ASSERT_TRUE(GetAccelerator().copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
-    ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
-    ASSERT_TRUE(GetAccelerator().unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+    unsigned count = Process_->nAccelerators();
+    for(unsigned n = 0; n < count; n++) {
+        Accelerator *acc = Process_->getAccelerator(n);
+        ASSERT_TRUE(acc != NULL);
+        ASSERT_TRUE(acc->map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+        ASSERT_TRUE(device != 0);
+        ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
+        ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
+        ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
+        ASSERT_TRUE(acc->unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+    }
     delete[] canary;
     delete[] buffer;
 }
@@ -31,53 +56,40 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
 
 
 
-//check gmacError_t__impl::core::Accelerator::malloc(accptr_t& addr ,size_t size, unsigned align=1)
-// the alignment of mem alloc must be a power of two
 TEST_F(AcceleratorTest, AcceleratorAligment) {
     const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
-    for(int n = 1; n < max; n <<= 1) {
-        accptr_t device(0);
-        ASSERT_TRUE(GetAccelerator().map(device, fakePtr, Size_, n) == gmacSuccess);
-        ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(GetAccelerator().unmap(fakePtr, Size_) == gmacSuccess);
+    unsigned count = Process_->nAccelerators();
+    for(unsigned i = 0; i < count; i++) {
+        Accelerator *acc = Process_->getAccelerator(i);
+        ASSERT_TRUE(acc != NULL);
+        for(int n = 1; n < max; n <<= 1) {
+            accptr_t device(0);
+            ASSERT_TRUE(acc->map(device, fakePtr, Size_, n) == gmacSuccess);
+            ASSERT_TRUE(device != 0);
+            ASSERT_TRUE(acc->unmap(fakePtr, Size_) == gmacSuccess);
+        }
     }
 
 }
 
-TEST_F(AcceleratorTest, AcceleratorAligmentExt) {
-    const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
-    const int max = 32 * 1024 * 1024;
-    for(int n = 1; n < max; n <<= 1) {
-        accptr_t device(0);
-        ASSERT_TRUE(GetAccelerator().map(device, fakePtr, Size2_, n) == gmacSuccess); 
-        ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(GetAccelerator().unmap(fakePtr, Size2_) == gmacSuccess);
+
+TEST_F(AcceleratorTest, CreateMode) {
+
+    unsigned n = Process_->nAccelerators();
+    for(unsigned i = 0; i < n; i++) {
+        Accelerator *acc = Process_->getAccelerator(i);
+        ASSERT_TRUE(acc != NULL);
+        unsigned load = acc->load();
+        Mode *mode = acc->createMode(*Process_);
+        ASSERT_TRUE(mode != NULL);
+        ASSERT_TRUE(acc->load() == load + 1);
+
+        acc->unregisterMode(*mode);
+        ASSERT_TRUE(acc->load() == load);
+
+        delete mode;
     }
-
-}
-
-//check virtual Mode* createMode(Process &proc)=0 
-//check void registerMode(Mode &mode)
-//check void unregisterMode(Mode &mode)
-TEST_F(AcceleratorTest, CreateMode){
-
-     Process &proc= dynamic_cast<Process &>(Process::getInstance());
-
-     ASSERT_TRUE(&proc != NULL);
-
-     unsigned load = GetAccelerator().load();
-     Mode *mode_ = GetAccelerator().createMode(proc);
-     ASSERT_TRUE(mode_!=NULL);
-     ASSERT_TRUE(GetAccelerator().load() == load + 1) << "the value is :" << GetAccelerator().load();
-     GetAccelerator().unregisterMode(*mode_);
-      
-     ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
-     GetAccelerator().registerMode(*mode_);
-     ASSERT_TRUE(GetAccelerator().load() == load + 1) << "the value is :" << GetAccelerator().load(); 
-
-     delete mode_;
-     ASSERT_TRUE(GetAccelerator().load() == load) << "the value is :" << GetAccelerator().load(); 
 }
 
 

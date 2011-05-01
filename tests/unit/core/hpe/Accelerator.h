@@ -36,20 +36,22 @@ WITH THE SOFTWARE.  */
 
 #ifndef USE_MULTI_CONTEXT
 
-#include "unit/init.h"
 #include "gtest/gtest.h"
+#include "core/hpe/Process.h"
+
+#include <vector>
 
 class AcceleratorTest : public testing::Test {
 protected:
     static const int Size_ = 4 * 1024 * 1024;
-    static const int Size2_= 32 * 1024 *1024; //added 
 
-    static void SetUpTestCase() {
-        InitProcess();
-    }
-    static void TearDownTestCase() {
-        FiniProcess();
-    }
+    static gmac::core::hpe::Process *Process_;
+    static std::vector<__impl::core::hpe::Accelerator *> Accelerators_;
+
+    static void SetUpCUDA();
+    static void SetUpOpenCL();
+    static void SetUpTestCase();
+    static void TearDownTestCase();
 };
 
 #endif

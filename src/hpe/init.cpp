@@ -144,9 +144,9 @@ static void fini(void)
 	enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
         TRACE(GLOBAL, "Cleaning GMAC");
-        Allocator::destroy();
-        Manager::destroy();
-        Process::destroy();
+        Allocator_->destroy();
+        Manager_->destroy();
+        Process_->destroy();
         delete inGmacLock;
     }
 	// TODO: Clean-up logger

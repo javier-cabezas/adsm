@@ -11,18 +11,9 @@
 
 
 class ProcessTest: public testing::Test {
-
+protected:
+    static gmac::core::hpe::Process *createProcess();
 public:
-
-	static void SetUpTestCase() {
-        InitProcess();
-    }
-
-	static void TearDownTestCase() {
-		FiniProcess();
-	}
-
-
 
 };
 

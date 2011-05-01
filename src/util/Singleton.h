@@ -51,7 +51,7 @@ protected:
 	virtual ~Singleton();
 public:
 
-	static void destroy();
+	void destroy();
 
     static bool isValid();
 };
