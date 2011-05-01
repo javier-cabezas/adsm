@@ -37,8 +37,8 @@ TEST_F(OpenCLContextTest, ContextMemory){
 
         ContextMemory(*mode, *ctx)
 
-        delete ctx; ctx = NULL;
-        mode->detach(); mode = NULL;
+        delete ctx; 
+        Process_->removeMode(*mode);
     }
 }
 
