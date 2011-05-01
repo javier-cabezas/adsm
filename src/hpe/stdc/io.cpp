@@ -53,7 +53,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = gmac::core::hpe::Mode::getCurrent();
+    Mode &mode = getCurrentMode();
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -119,7 +119,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = gmac::core::hpe::Mode::getCurrent();
+    Mode &mode = getCurrentMode();
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -143,7 +143,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
         if (left > 0) {
             bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(gmac::core::hpe::Mode::getCurrent(), *passive, 0, hostptr_t(buf) + off, bytesPassive);
+            err = manager.toIOBuffer(getCurrentMode(), *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
         err = active->wait();

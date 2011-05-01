@@ -109,7 +109,7 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    core::Mode *owner(const hostptr_t addr, size_t size = 0) const;
+    core::Mode *owner(const hostptr_t addr, size_t size = 0);
 
 
     Mode *createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);

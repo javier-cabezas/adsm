@@ -40,7 +40,10 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
     namespace core {
-        namespace hpe { class Process; }
+        namespace hpe {
+            class Mode;
+            class Process;
+        }
     }
     namespace memory {
         class Allocator;
@@ -59,6 +62,6 @@ using gmac::memory::Manager;
 Manager &getManager() GMAC_LOCAL;
 using __impl::memory::Allocator;
 Allocator &getAllocator() GMAC_LOCAL;
-
+__impl::core::hpe::Mode &getCurrentMode() GMAC_LOCAL;
 
 #endif

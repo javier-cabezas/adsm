@@ -115,12 +115,6 @@ gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
     return ret;
 }
 
-inline Mode &
-Mode::getCurrent()
-{
-    return static_cast<Mode &>(core::hpe::Mode::getCurrent());
-}
-
 inline Accelerator &
 Mode::getAccelerator() const
 {

@@ -122,7 +122,7 @@ public:
      * \return The owner of the object with the smallest address within the
      * given memory range
      */
-    virtual Mode *owner(const hostptr_t addr, size_t size = 0) const = 0;
+    virtual Mode *owner(const hostptr_t addr, size_t size = 0) = 0;
 };
 
 }}

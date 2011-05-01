@@ -138,6 +138,11 @@ Allocator &getAllocator()
     return *Allocator_;
 }
 
+__impl::core::hpe::Mode &getCurrentMode()
+{
+    return Process_->getCurrentMode();
+}
+
 DESTRUCTOR(fini);
 static void fini(void)
 {

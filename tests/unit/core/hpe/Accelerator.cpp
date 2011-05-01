@@ -45,8 +45,8 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
         ASSERT_TRUE(acc != NULL);
         ASSERT_TRUE(acc->map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
         ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
-        ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Mode::getCurrent()) == gmacSuccess);
+        ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
+        ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
         ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
         ASSERT_TRUE(acc->unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
     }

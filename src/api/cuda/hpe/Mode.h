@@ -166,7 +166,6 @@ public:
 
     CUstream eventStream();
 
-    static Mode &getCurrent();
     Accelerator &getAccelerator() const;
 
     gmacError_t waitForEvent(CUevent event, bool fromCUDA);
