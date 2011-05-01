@@ -56,8 +56,8 @@ typedef std::map<hostptr_t, PairAlloc> MapAlloc;
 
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
-      DBC_FORCE_TEST(Accelerator)
-
+    DBC_FORCE_TEST(Accelerator)
+    friend class Mode;
 protected:
     /** Identifier of the accelerator */
     unsigned id_;
@@ -77,6 +77,21 @@ protected:
 
     /** Map of allocations in the device */
     AllocationMap allocations_;
+
+    /**
+     * Registers a mode to be run on the accelerator. The mode must not be
+     * already registered in the accelerator
+     * \param mode A reference to the mode to be registered
+     */
+    TESTABLE void registerMode(Mode &mode);
+
+    /**
+     * Unegisters a mode from the accelerator. The mode must be already
+     * registered in the accelerator
+     * \param mode A reference to the mode to be unregistered
+     */
+    TESTABLE void unregisterMode(Mode &mode);
+
 
 public:
     /**
@@ -105,18 +120,10 @@ public:
     virtual Mode *createMode(Process &proc) = 0;
 
     /**
-     * Registers a mode to be run on the accelerator. The mode must not be
-     * already registered in the accelerator
-     * \param mode A reference to the mode to be registered
+     * Migrate an execution mode to another accelerator
+     * \param mode Execution mode to be migrated
      */
-    TESTABLE void registerMode(Mode &mode);
-
-    /**
-     * Unegisters a mode from the accelerator. The mode must be already
-     * registered in the accelerator
-     * \param mode A reference to the mode to be unregistered
-     */
-    TESTABLE void unregisterMode(Mode &mode);
+    virtual void migrateMode(Mode &mode, Accelerator &acc);
 
     /**
      * Returns a value that indicates the load of the accelerator

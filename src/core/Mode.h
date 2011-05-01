@@ -77,7 +77,7 @@ protected:
 
     virtual memory::ObjectMap &getObjectMap() = 0;
     virtual const memory::ObjectMap &getObjectMap() const = 0;
-public:
+
     /**
      * Mode constructor
      */
@@ -87,6 +87,8 @@ public:
      * Mode destructor
      */
     virtual ~Mode();
+
+public:
 
     /**
      * Gets a reference to the memory protocol used by the mode

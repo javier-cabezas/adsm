@@ -42,7 +42,7 @@ TEST_F(QueueTest,MemberFun)
     threadQueue.queue->push(mode);
     Mode *last = threadQueue.queue->pop();
     ASSERT_EQ(mode, last);
-    mode->detach();
+    Process_->removeMode(*mode);
 }
 
 

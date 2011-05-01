@@ -122,6 +122,7 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
     return ret;
 }
 
+
 inline const cl_context
 Accelerator::getCLcontext() const
 {

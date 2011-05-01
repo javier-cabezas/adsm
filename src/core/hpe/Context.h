@@ -54,6 +54,7 @@ class KernelLaunch;
  */
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
     DBC_FORCE_TEST(Context)
+    friend class Mode;
 protected:
     /** Accelerator associated to the context */
     Accelerator &acc_;
@@ -71,12 +72,13 @@ protected:
      * \param id Context identifier
      */
     Context(Accelerator &acc, Mode &mode, unsigned id);
-public:
+
     /**
      * Destroys the resources used by the context
      */
     virtual ~Context();
 
+public:
     /**
      * Initialization method called on library initialization
      */

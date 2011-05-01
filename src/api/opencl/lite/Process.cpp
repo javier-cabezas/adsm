@@ -14,7 +14,7 @@ Process::Process()
 {
     library_t handler = USE_LIBRARY("OpenCL");
     CFATAL(handler != NULL, "Unable to get handler to OpenCL");
-    addHanderl(handler);
+    addHandler(handler);
 }
 
 Process::~Process()

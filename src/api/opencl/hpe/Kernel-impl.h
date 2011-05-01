@@ -31,7 +31,7 @@ Kernel::Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel) :
 inline
 Kernel::~Kernel()
 {
-    ret = clReleaseKernel(f_);
+    cl_int ret = clReleaseKernel(f_);
     ASSERTION(ret == CL_SUCCESS);
 }
 

@@ -65,6 +65,7 @@ class KernelLaunch;
 
 
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
+    friend class Mode;
 protected:
     /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
@@ -98,7 +99,6 @@ protected:
      */
     gmacError_t syncCLstream(cl_command_queue stream);
 
-public:
     /**
      * Default OpenCL context constructor
      * \param acc OpenCL accelerator associated to the context
@@ -111,6 +111,7 @@ public:
      */
 	~Context();
 
+public:
     /**
      * Get the accelerator associated to the context
      * \return Reference to an OpenCL accelerator
