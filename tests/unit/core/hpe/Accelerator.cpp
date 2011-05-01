@@ -28,7 +28,7 @@ void AcceleratorTest::SetUpTestCase()
 
 void AcceleratorTest::TearDownTestCase()
 {
-    if(Process_ != NULL) delete Process_;
+    if(Process_ != NULL) Process_->destroy();
     Process_ = NULL;
 }
 
