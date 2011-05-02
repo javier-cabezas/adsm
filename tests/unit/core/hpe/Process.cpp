@@ -34,12 +34,11 @@ TEST_F(ProcessTest, ModeMap) {
 	ASSERT_TRUE(mode != NULL);
 
 	ModeMap mm;
-	typedef std::map<__impl::core::hpe::Mode *, Accelerator *> Parent;
+	typedef std::map<__impl::core::hpe::Mode *, unsigned> Parent;
 	typedef Parent::iterator iterator;
-	std::pair<iterator, bool> ib = mm.insert(mode, &mode->getAccelerator());
+	std::pair<iterator, bool> ib = mm.insert(mode);
 	ASSERT_TRUE(ib.second);
-	ASSERT_TRUE(mm.remove(*mode) == 1);
-	ASSERT_TRUE(mm.remove(*mode) == 0);
+	mm.remove(*mode);
 
     proc->destroy();
 }
