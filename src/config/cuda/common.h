@@ -44,11 +44,13 @@ struct accptr_t {
 
     template<typename T>
     inline accptr_t(T * ptr) :
-        ptr_(CUdeviceptr(ptr))
+        ptr_(CUdeviceptr(ptr)),
+        pasId_(0)
     {}
 
     inline accptr_t(CUdeviceptr ptr) :
-        ptr_(ptr)
+        ptr_(ptr),
+        pasId_(0)
     {}
     
     inline operator CUdeviceptr() const { return ptr_; }
@@ -85,9 +87,9 @@ struct accptr_t {
 };
 
 inline
-static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
+static bool operator<(const accptr_t &a, const accptr_t &b)
 {
-    return ptr.pasId_ < ptr2.pasId_ || (ptr.pasId_ == ptr2.pasId_ && ptr.ptr_ < ptr2.ptr_);
+    return a.pasId_ < b.pasId_ || (a.pasId_ == b.pasId_ && a.ptr_ < b.ptr_);
 }
 
 
