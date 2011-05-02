@@ -138,7 +138,7 @@ void Process::finiThread()
 {
     queues_.erase(util::GetThreadId());
 	Mode *mode = CurrentMode_.get();
-	removeMode(*mode);
+	if(mode != NULL) removeMode(*mode);
 	CurrentMode_.set(NULL);
 }
 
