@@ -46,28 +46,32 @@ namespace __impl { namespace memory {
 
 //! Class that allocates small chunks of shared memory
 class GMAC_LOCAL Allocator : public __impl::util::Singleton<Allocator> {
-	// Needed to let Singleton call the protected constructor
-	friend class util::Singleton<Allocator>;
 protected:
-    //! Default constructor
+    /**
+     * Default constructor
+     */
     Allocator();
 public:
-    //! Degault destructor
+    /**
+     * Default destructor
+     */
     virtual ~Allocator();
 
-    //! Alloc shared memory
-    /*!
-        \param size Size (in bytes) of the memory to be allocated
-        \param addr Host memory address where the memory should be allocated. 
-        NULL to let the allocator choose the host memory address.
-        \return Host memory address where the data was allocated
-    */
+    /**
+     *  Alloc shared memory
+     * \param current Execution mode where the data is allocated
+     * \param size Size (in bytes) of the memory to be allocated
+     * \param addr Host memory address where the memory should be allocated. 
+     * NULL to let the allocator choose the host memory address.
+     * \return Host memory address where the data was allocated
+     */
     virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr = NULL) = 0;
 
-    //! Release shared memory
-    /*!
-        \param addr Host memory address of the chunk of data to be release
-    */
+    /**
+     * Release shared memory
+     * \param current Execution mode where the data is released
+     * \param addr Host memory address of the chunk of data to be release
+     */
     virtual bool free(core::Mode &current, hostptr_t addr) = 0;
 };
 

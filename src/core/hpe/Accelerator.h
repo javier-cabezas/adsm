@@ -122,6 +122,7 @@ public:
     /**
      * Migrate an execution mode to another accelerator
      * \param mode Execution mode to be migrated
+     * \param acc Accelerator where to migrate the execution mode
      */
     virtual void migrateMode(Mode &mode, Accelerator &acc);
 

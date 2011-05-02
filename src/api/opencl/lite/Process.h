@@ -98,7 +98,7 @@ public:
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    void insertOrphan(memory::Object &obj);
+    void insertOrphan(memory::Object &object);
 
     /**
      * Returns the owner of the object with the smallest address within the

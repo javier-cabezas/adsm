@@ -61,6 +61,7 @@ public:
 
     //! Creates a new object that will be manged by this protocol
     /*!
+        \param current Execution mode requesting the operation
         \param size Size (in bytes) of the new object
         \param cpuPtr Host address where the object will be create. NULL to let the protocol choose
         \param prot Memory protection for the object host memory after it is created

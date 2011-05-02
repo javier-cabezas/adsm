@@ -45,7 +45,7 @@ extern "C" {
 /**
  *  Allocates a OpenCL memory buffer accessible from the host
  *  \param context OpenCL context where the obejct will be allocated
- *  \param adddr Reference to the host memory address where the data will be accessible
+ *  \param addr Reference to the host memory address where the data will be accessible
  *  \param count Size (in bytes) of the data to be allocated
  *  \return OpenCL memory buffer
  */

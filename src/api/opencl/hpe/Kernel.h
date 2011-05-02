@@ -209,6 +209,7 @@ protected:
     /**
      * Default constructor
      * \param mode Execution mode executing the kernel
+     * \param k OpenCL kernel object
      * \param stream OpenCL command queue executing the kernel
      */
     KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream);

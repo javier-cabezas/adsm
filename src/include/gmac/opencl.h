@@ -57,9 +57,10 @@ typedef enum GmacProtection OclProtection;
 #define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
 #define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
 
-/*!
- *  Adds an argument to be used by the following call to __oclLaunch()
- *  \param index Index of the parameter being added in the parameter list
+/**
+ *  Gets a OpenCL kernel descriptor
+ *  \param id Kernel identifier
+ *  \param kernel Pointer to store the address to the kernel descriptor
  *  \return Error code
 */
 GMAC_API oclError_t APICALL __oclKernelGet(ocl_kernel_id_t id, OclKernel *kernel);

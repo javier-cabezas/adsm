@@ -84,7 +84,8 @@ public:
 
     //! Get memory block address at the accelerator
     /*!
-     * \param addr Address within the block
+        \param current Execution mode requesting the operation
+        \param addr Address within the block
         \return Accelerator memory address of the block
     */
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;

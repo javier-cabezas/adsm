@@ -24,7 +24,7 @@ template <typename T>
 inline void Singleton<T>::destroy()
 {
 	ASSERTION(Singleton_ != NULL);
-	delete Singleton_;
+	delete static_cast<Singleton<T> *>(Singleton_);
 	Singleton_ = NULL;
 }
 

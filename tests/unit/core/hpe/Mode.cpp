@@ -2,11 +2,14 @@
 
 #include "core/hpe/Process.h"
 #include "core/hpe/Mode.h"
+#include "core/IOBuffer.h"
 
 #include "gtest/gtest.h"
 
 using gmac::core::hpe::Process;
 using __impl::core::hpe::Mode;
+using __impl::core::IOBuffer;
+using __impl::memory::Object;
 
 Mode *ModeTest::Mode_ = NULL;
 Process *ModeTest::Process_ = NULL;
@@ -35,8 +38,25 @@ void ModeTest::TearDownTestCase() {
     Process_ = NULL;
 }
 
+TEST_F(ModeTest, MemoryObject) {
+    Object *obj = Mode_->protocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+    ASSERT_TRUE(obj != NULL);
+    Mode_->addObject(*obj);
+    const hostptr_t addr = obj->addr();
+    ASSERT_TRUE(addr != 0);
+    obj->release();
 
-TEST_F(ModeTest, ModeMemory) {
+    Object *ref = Mode_->getObject(addr);
+    ASSERT_TRUE(ref != NULL);
+    ASSERT_EQ(obj, ref);
+    Mode_->removeObject(*obj);
+    
+    ASSERT_EQ(addr, ref->addr());
+    ref->release();
+}
+
+
+TEST_F(ModeTest, Memory) {
     hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
@@ -75,4 +95,28 @@ TEST_F(ModeTest, MemorySet) {
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));
     delete[] dst;
+}
+
+TEST_F(ModeTest, IOBuffer) {
+    int *mem = new int[Size_];
+    ASSERT_TRUE(mem != NULL);
+    memset(mem, 0x5a, Size_ * sizeof(int));
+
+    IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int));
+    ASSERT_EQ(buffer.addr(), memcpy(buffer.addr(), mem, Size_ * sizeof(int)));
+    ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
+
+    accptr_t addr(0);
+    hostptr_t fakePtr = (uint8_t *)0xcafecafe;
+    ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->bufferToAccelerator(addr, buffer, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, buffer.wait());
+
+    ASSERT_EQ(buffer.addr(), memset(buffer.addr(), 0xa5, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(buffer, addr, Size_ * sizeof(int)));
+    ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
+
+    ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));
+    Mode_->destroyIOBuffer(buffer);
+    delete[] mem;
 }

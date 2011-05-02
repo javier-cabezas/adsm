@@ -56,13 +56,10 @@ class Protocol;
 //! Memory Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
-
-    // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<gmac::memory::Manager>;
 protected:
     /**
      * Allocates a host mapped memory
-     *
+     * \param mode Execution mode requesting the allocation
      * \param addr Pointer to the variable that will store the begining of the
      * allocated memory
      * \param size Size (in bytes) of the memory to be allocated
@@ -72,7 +69,7 @@ protected:
 
     /**
      * Copies data from host memory to an object
-     *
+     * \param mode Execution mode requesting the memory copy
      * \param obj Destination object
      * \param objOffset Offset (in bytes) from the begining of the object to
      * copy the data to
@@ -85,7 +82,7 @@ protected:
                                const hostptr_t src, size_t size);
 
     /** Copy data from object to object
-     *
+     * \param mode Execution mode requesting the memory copy
      * \param dstObj Destination object
      * \param dstOffset Offset (in bytes) from the begining of the destination
      * object to copy data to
@@ -102,6 +99,7 @@ protected:
 
     /**
      * Copies data from an object to host memory
+     * \param mode Execution mode requesing the memory copy
      * \param dst Destination object
      * \param obj Source object
      * \param objOffset Offset (in bytes) from the begining of the source object
@@ -115,7 +113,6 @@ protected:
 
     /**
      * Gets the number of bytes at the begining of a range that are in host memory
-     *
      * \param addr Starting address of the memory range
      * \param size Size (in bytes) of the memory range
      * \param obj First object within the range
@@ -123,8 +120,8 @@ protected:
      */
     size_t hostMemory(hostptr_t addr, size_t size, const Object *obj) const;
 
+    /** Process where the memory manager is being used */
     core::Process &proc_;
-
 
     /**
      * Default destructor
@@ -136,14 +133,11 @@ public:
      */
     Manager(core::Process &proc);
 
-    //TESTABLE gmacError_t map(void *addr, size_t size, GmacProtection prot);
-    //TESTABLE gmacError_t unmap(void *addr, size_t size);
-
     /**
      * Allocate private shared memory.
      * Memory allocated with this call is only accessible by the accelerator
      * associated to the execution thread requesting the allocation
-     *
+     * \param mode Execution mode where to allocate memory
      * \param addr Memory address of a pointer to store the host address of the
      * allocated memory
      * \param size Size (in bytes) of shared memory to be allocated
@@ -155,7 +149,7 @@ public:
      * Allocate public shared read-only memory.
      * Memory allocated with this call is accessible (read-only) from any
      * accelerator
-     *
+     * \param mode Execution mode where to allocate memory
      * \param addr Memory address of a pointer to store the host address of the
      * allocated memory
      * \param size Size (in bytes) of shared memory to be allocated
@@ -166,14 +160,14 @@ public:
 
     /**
      * Release shared memory
-     *
+     * \param mode Execution mode where to release the memory
      * \param addr Memory address of the shared memory chunk to be released
      * \return Error code
      */
     TESTABLE gmacError_t free(core::Mode &mode, hostptr_t addr);
 
     /** Get the accelerator address associated to a shared memory address
-     *
+     * \param mode Execution mode requesting the translation
      * \param addr Host shared memory address
      * \return Accelerator memory address
      */
@@ -181,7 +175,7 @@ public:
 
     /**
      * Get the CPU ownership of all objects bound to the current execution mode
-     *
+     * \param mode Execution mode acquiring the memory objects
      * \return Error code
      */
     gmacError_t acquireObjects(core::Mode &mode);
@@ -189,21 +183,21 @@ public:
     /**
      * Release the CPU ownership of all objects bound to the current execution
      * mode
-     *
+     * \param mode Execution mode releasing the objects
      * \return Error code
      */
     gmacError_t releaseObjects(core::Mode &mode);
 
     /** Invalidate the host memory of all objects bound to the current execution
      * mode
-     *
+     * \param mode Execution mode invalidating the data objects
      * \return Error code
      */
     gmacError_t invalidate(core::Mode &mode);
 
     /**
      * Notify a memory fault caused by a load operation
-     *
+     * \param mode Execution mode causing the fault
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
@@ -211,7 +205,7 @@ public:
 
     /**
      * Notify a memory fault caused by a store operation
-     *
+     * \param mode Execution mode causing the fault
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
@@ -219,7 +213,7 @@ public:
 
     /**
      * Copy data from a memory object to an I/O buffer
-     *
+     * \param mode Execution mode requesting the transfer
      * \param buffer Destionation I/O buffer to copy the data to
      * \param bufferOff Offset within the buffer to copy data to
      * \param addr Host memory address corresponding to a memory object to copy
@@ -231,7 +225,7 @@ public:
 
     /**
      * Copy data from an I/O buffer to a memory object
-     *
+     * \param mode Execution mode requesting the transfer
      * \param addr Host memory address corresponding to a memory object to copy
      * data to
      * \param buffer Source I/O buffer to copy the data from
@@ -244,7 +238,7 @@ public:
     /**
      * Initialize to a given value the contents of a host address of a memory
      * object
-     *
+     * \param mode Execution mode requesting the operation
      * \param dst Host memory address corresponding to a memory object to set
      * the memory contents
      * \param c Value used to initialize memory
@@ -255,7 +249,7 @@ public:
 
     /**
      * Copy data from and/or to host memory addresses of memory objects
-     *
+     * \param mode Execution mode requesting the operation
      * \param dst Destination host memory addrees of a memory objec to copy the
      * data to
      * \param src Source host memory address that might or might not correspond
@@ -263,10 +257,6 @@ public:
      * \param size Size (in bytes) of the amoun of data to be copied
      */
     TESTABLE gmacError_t memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src, size_t size);
-
-#if 0
-    gmacError_t moveTo(void *addr, __impl::core::Mode &mode);
-#endif
 
 };
 

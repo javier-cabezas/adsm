@@ -71,7 +71,6 @@ public:
     /**
      * Inserts a mode/accelerator pair in the map
      * \param mode Mode to be inserted
-     * \param acc Accelerator where the inserted mode resides
      * \return A pair that contains the position where the items have been
      * allocated and a boolean that tells if the items have been actually
      * inserted
@@ -216,7 +215,6 @@ public:
     /**
      * Migrates the given mode to the given accelerator
      *
-     * \param mode Reference to the mode to be migrated
      * \param acc Identifier of the destination accelerator
      * \return Error code
      */
@@ -312,7 +310,7 @@ public:
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    void insertOrphan(memory::Object &obj);
+    void insertOrphan(memory::Object &object);
 
     /**
      * Gets the object map that contains all the objects that have been orphaned

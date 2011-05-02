@@ -88,7 +88,7 @@ protected:
         \sa __impl::memory::Block::toHost
         \sa __impl::memory::Block::toAccelerator
     */
-    gmacError_t coherenceOp(gmacError_t (Protocol::*f)(Block &));
+    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &));
 
     //! Execute a memory operation involving an I/O buffer on all the blocks of the object
     /*!
@@ -106,15 +106,16 @@ protected:
 	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
                                   core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 
-    /** Execute an operation on all the blocks of the object
-     *
+    /**
+     * Execute an operation on all the blocks of the object
      * \param f Operation to be performed
-     * \param p1 Parameter to be passed
+     * \param t Parameter to be passed
+     * \param s Parameter to be passed
      * \return Error code
      * \sa __impl::memory::Block::dump
      */
-    template <typename P1, typename P2>
-    gmacError_t forEachBlock(gmacError_t (Block::*f)(P1 &, P2), P1 &p1, P2 p2);
+    template <typename T, typename S>
+    gmacError_t forEachBlock(gmacError_t (Block::*f)(T &, S), T &t, S s);
 
     //! Default constructor
     /*!
@@ -175,6 +176,7 @@ public:
 
     //! Get the accelerator memory address where a host memory address from the object is mapped
     /*!
+        \param current Execution mode requesting the translation
         \param addr Host memory address within the object
         \return Accelerator memory address within the object
     */
@@ -182,6 +184,8 @@ public:
 
     //! Get the owner of the object
     /*!
+        \param current Execution mode requesting the operation
+        \param addr Memory address within the object
         \return The owner of the object
     */
     virtual core::Mode &owner(core::Mode &current, const hostptr_t addr) const = 0;
