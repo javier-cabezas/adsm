@@ -146,12 +146,23 @@ public:
      * Applies a constant memory operation to all the objects that belong to
      * the mode
      * \param op Memory operation to be executed
-     *   \sa __impl::memory::Object::acquire
-     *   \sa __impl::memory::Object::toHost
-     *   \sa __impl::memory::Object::toAccelerator
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void));
+
+
+    /**
+     * Applies a constant memory operation to all the objects that belong to
+     * the mode
+     * \param op Memory operation to be executed
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
+     * \return Error code
+     */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
 
     /**
