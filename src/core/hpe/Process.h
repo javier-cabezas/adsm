@@ -56,11 +56,10 @@ namespace __impl { namespace core { namespace hpe {
 class Accelerator;
 
 /** Map that contains in which accelerator resides a mode */
-class GMAC_LOCAL ModeMap : private std::map<Mode *, Accelerator *>, gmac::util::RWLock
-{
+class GMAC_LOCAL ModeMap : private std::map<Mode *, unsigned>, gmac::util::Lock {
     friend class Process;
 private:
-    typedef std::map<Mode *, Accelerator *> Parent;
+    typedef std::map<Mode *, unsigned> Parent;
 
 public:
     /** Constructs the ModeMap */
@@ -77,8 +76,8 @@ public:
      * allocated and a boolean that tells if the items have been actually
      * inserted
      */
-    std::pair<iterator, bool> insert(Mode *mode, Accelerator *acc);
-    size_t remove(Mode &mode);
+    std::pair<iterator, bool> insert(Mode *mode);
+    void remove(Mode &mode);
 };
 
 class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock

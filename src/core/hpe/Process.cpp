@@ -14,24 +14,28 @@
 namespace __impl { namespace core { namespace hpe {
 
 ModeMap::ModeMap() :
-    gmac::util::RWLock("ModeMap")
+    gmac::util::Lock("ModeMap")
 {}
 
 std::pair<ModeMap::iterator, bool>
-ModeMap::insert(Mode *mode, Accelerator *acc)
+ModeMap::insert(Mode *mode)
 {
-    lockWrite();
-    std::pair<iterator, bool> ret = Parent::insert(value_type(mode, acc));
+    lock();
+    std::pair<iterator, bool> ret = Parent::insert(value_type(mode, 1));
+    if(ret.second == false) ret.first->second++;
     unlock();
     return ret;
 }
 
-size_t ModeMap::remove(Mode &mode)
+void ModeMap::remove(Mode &mode)
 {
-    lockWrite();
-    size_type ret = Parent::erase(&mode);
+    lock();
+    iterator i = Parent::find(&mode);
+    if(i != Parent::end()) {
+        i->second--;
+        if(i->second == 0) Parent::erase(i);
+    }
     unlock();
-    return ret;
 }
 
 QueueMap::QueueMap() :
@@ -162,7 +166,7 @@ Mode *Process::createMode(int acc)
 
     // Initialize the global shared memory for the context
     Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this));
-    modes_.insert(mode, accs_[usedAcc]);
+    modes_.insert(mode);
     unlock();
 
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
@@ -176,6 +180,7 @@ void Process::removeMode(Mode &mode)
     lockWrite();
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
     modes_.remove(mode);
+    mode.release();
     unlock();
 }
 
@@ -238,10 +243,6 @@ gmacError_t Process::migrate(int acc)
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
         ret = mode->moveTo(*accs_[acc]);
-
-        if (ret == gmacSuccess) {
-            modes_[mode] = accs_[acc];
-        }
     }
 #else
     FATAL("Migration not implemented when using mmap");
