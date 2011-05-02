@@ -43,9 +43,6 @@ class GMAC_LOCAL Process :
     public __impl::core::hpe::Process,
     public virtual Contract {
     DBC_TESTED(__impl::core::hpe::Process)
-    
-    // Needed to let Singleton call the protected constructor
-    friend class __impl::util::Singleton<__impl::core::Process>;
 public:
     Process();
     virtual ~Process();

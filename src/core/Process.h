@@ -55,7 +55,6 @@ namespace core {
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process> {
     // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<Process>;
 protected:
 
     std::vector<library_t> handlers_;
