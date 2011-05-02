@@ -77,7 +77,7 @@ bool Map::remove(memory::Object &obj)
     ret = shared.remove(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Shared Object %p", obj.addr());
-        return true;
+        //return true;
     }
 
     // Replicated object
@@ -85,7 +85,7 @@ bool Map::remove(memory::Object &obj)
     ret = global.remove(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Global Object %p", obj.addr());
-        return true;
+        //return true;
     }
 
     // Orphan object
