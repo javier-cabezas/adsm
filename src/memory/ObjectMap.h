@@ -156,10 +156,10 @@ public:
      * \sa __impl::memory::Object::realloc
      * \return Error code
      */
-    template <typename P1>
-    gmacError_t forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1);
-    template <typename P1>
-    gmacError_t forEachObject(gmacError_t (Object::*f)(P1 &) const, P1 &p1) const;
+    template <typename T>
+    gmacError_t forEachObject(gmacError_t (Object::*f)(T &), T &p);
+    template <typename T>
+    gmacError_t forEachObject(gmacError_t (Object::*f)(T &) const, T &p) const;
 };
 
 }}

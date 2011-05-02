@@ -152,16 +152,26 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
 {
     lockWrite();
     if(owner_ == &owner) {
+        // Put myself in the orphan map
+        owner.insertOrphan(*this);
+
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
         if(acceleratorAddr_ != 0) {
-            gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
+            gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+            ASSERTION(ret == gmacSuccess);
+            ret = coherenceOp(&Protocol::unmapFromAccelerator);
             ASSERTION(ret == gmacSuccess);
             owner_->unmap(addr_, size_);
         }
+        // Clean-up 
+        BlockMap::iterator i;
+        for(i = blocks_.begin(); i != blocks_.end(); i++) {
+            i->second->release();
+        }
+        blocks_.clear();
+
         acceleratorAddr_ = accptr_t(0);
         owner_ = NULL;
-        // Put myself in the orphan map
-        owner.insertOrphan(*this);
     }
     unlock();
 	return gmacSuccess;

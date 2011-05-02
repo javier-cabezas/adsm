@@ -298,6 +298,7 @@ void Process::copy(THREAD_T id)
 	if(mode == NULL) return;
     queues_.push(id, *mode);
     mode->use();
+    modes_.insert(mode);
 }
 
 core::Mode *Process::owner(const hostptr_t addr, size_t size)

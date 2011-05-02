@@ -65,6 +65,9 @@ inline void
 Process::insertOrphan(memory::Object &obj)
 {
     orphans_.insert(obj);
+    shared_.remove(obj);
+    // We decrease the count because it gets incremented when inserted
+    obj.release();
 }
 
 }}}
