@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 #define SYMBOL(name) name
 
 typedef void * library_t;
-#define USE_LIBRARY(name) dlopen("lib"name".so", RTLD_LAZY)
+#define USE_LIBRARY(name) dlopen("lib"name".so", RTLD_NOW)
 #define RELEASE_LIBRARY(handler) \
     do {\
         if(handler != NULL) dlclose(handler);\
