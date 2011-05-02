@@ -45,8 +45,6 @@ class Mode;
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public core::Process {
-    // Needed to let Singleton call the protected constructor
-    friend class util::Singleton<core::Process>;
 protected:
 
     ModeMap map_;

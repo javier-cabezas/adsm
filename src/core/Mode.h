@@ -297,9 +297,6 @@ public:
      */
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
 
-
-
-
     /** Returns the memory information of the accelerator on which the mode runs
      * \param free A reference to a variable to store the memory available on the
      * accelerator
