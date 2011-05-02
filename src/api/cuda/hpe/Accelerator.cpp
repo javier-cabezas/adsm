@@ -9,14 +9,14 @@ namespace __impl { namespace cuda { namespace hpe {
 util::Private<CUcontext> Accelerator::Ctx_;
 #endif
 
-void Switch::in()
+void Switch::in(Mode &mode)
 {
-//    Mode::getCurrent().getAccelerator().pushContext();
+    mode.getAccelerator().pushContext();
 }
 
-void Switch::out()
+void Switch::out(Mode &mode)
 {
-//    Mode::getCurrent().getAccelerator().popContext();
+    mode.getAccelerator().popContext();
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :

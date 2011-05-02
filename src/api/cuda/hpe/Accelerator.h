@@ -55,8 +55,8 @@ class ModuleDescriptor;
 
 class GMAC_LOCAL Switch {
 public:
-    static void in();
-    static void out();
+    static void in(Mode &mode);
+    static void out(Mode &mode);
 };
 
 typedef CUstream Stream;

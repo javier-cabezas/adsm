@@ -223,7 +223,7 @@ static cudaError_t __cudaMemcpyToArray(CUarray array, unsigned wOffset,
 #endif
 {
 	CUDA_ARRAY_DESCRIPTOR desc;
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuArrayGetDescriptor(&desc, array);
 	if(r != CUDA_SUCCESS) return __getCUDAError(r);
 #if CUDA_VERSION >= 3020
@@ -233,7 +233,7 @@ static cudaError_t __cudaMemcpyToArray(CUarray array, unsigned wOffset,
 #endif
 		offset = hOffset * desc.Width + wOffset;
 	r = cuMemcpyHtoA(array, offset, src, count);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	return __getCUDAError(r);
 }
 
@@ -261,9 +261,9 @@ static cudaError_t __cudaMemcpy2D(CUarray dst, unsigned wOffset, unsigned hOffse
 	cuCopy.srcXInBytes = wOffset;
 	cuCopy.srcY = hOffset;
 
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuMemcpy2D(&cuCopy);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	ASSERTION(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
@@ -293,9 +293,9 @@ static cudaError_t __cudaInternalMemcpy2D(CUarray dst, unsigned wOffset, unsigne
 	cuCopy.srcXInBytes = wOffset;
 	cuCopy.srcY = hOffset;
 
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuMemcpy2DUnaligned(&cuCopy);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	ASSERTION(r == CUDA_SUCCESS);
 	return __getCUDAError(r);
 
@@ -399,9 +399,9 @@ GMAC_API cudaError_t APICALL cudaGetChannelDesc(struct cudaChannelFormatDesc *de
 {
 	enterGmac();
 	CUDA_ARRAY_DESCRIPTOR cuDesc;
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuArrayGetDescriptor(&cuDesc, (CUarray)array);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	if(r != CUDA_SUCCESS) {
 		exitGmac();
 		return __getCUDAError(r);
@@ -439,9 +439,9 @@ GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 	TRACE(GLOBAL, "cudaMallocArray: "FMT_SIZE" "FMT_SIZE" with format 0x%x and %u channels",
 			width, height, cuDesc.Format, cuDesc.NumChannels);
 	enterGmac();
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuArrayCreate((CUarray *)array, &cuDesc);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	exitGmac();
 	return __getCUDAError(r);
 }
@@ -449,9 +449,9 @@ GMAC_API cudaError_t APICALL cudaMallocArray(struct cudaArray **array,
 GMAC_API cudaError_t APICALL cudaFreeArray(struct cudaArray *array)
 {
 	enterGmac();
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuArrayDestroy((CUarray)array);
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	exitGmac();
 	return __getCUDAError(r);
 }
@@ -528,13 +528,13 @@ GMAC_API cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *
 	switch(kind) {
 		case cudaMemcpyHostToDevice:
 			TRACE(GLOBAL, "cudaMemcpyToSymbol HostToDevice %p to 0x%x ("FMT_SIZE" bytes)", src, ptr, count);
-            Switch::in();
+            Switch::in(getCurrentCUDAMode());
 #if CUDA_VERSION >= 3020
             r = cuMemcpyHtoD(ptr, src, count);
 #else
             r = cuMemcpyHtoD(ptr, src, unsigned(count));
 #endif
-            Switch::out();
+            Switch::out(getCurrentCUDAMode());
             ret = __getCUDAError(r);
             break;
 
@@ -587,24 +587,24 @@ GMAC_API cudaError_t APICALL cudaBindTexture(size_t *offset, const struct textur
     Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	for(int i = 0; i < 3; i++) {
 		r = cuTexRefSetAddressMode(texture->texRef(), i, __getAddressMode(texref->addressMode[i]));
 		if(r != CUDA_SUCCESS) {
-            Switch::out();
+            Switch::out(getCurrentCUDAMode());
 			exitGmac();
 			return __getCUDAError(r);
 		}
 	}
 	r = cuTexRefSetFlags(texture->texRef(), CU_TRSF_READ_AS_INTEGER);
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetFilterMode(texture->texRef(), __getFilterMode(texref->filterMode));
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
@@ -612,13 +612,13 @@ GMAC_API cudaError_t APICALL cudaBindTexture(size_t *offset, const struct textur
 			__getChannelFormatKind(&texref->channelDesc),
 			__getNumberOfChannels(&texref->channelDesc));
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetAddress(offset, texture->texRef(), CUdeviceptr(devPtr), size);
 
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	exitGmac();
 	return __getCUDAError(r);
 }
@@ -631,24 +631,24 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
     Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	for(int i = 0; i < 3; i++) {
 		r = cuTexRefSetAddressMode(texture->texRef(), i, __getAddressMode(texref->addressMode[i]));
 		if(r != CUDA_SUCCESS) {
-            Switch::out();
+            Switch::out(getCurrentCUDAMode());
 			exitGmac();
 			return __getCUDAError(r);
 		}
 	}
 	r = cuTexRefSetFlags(texture->texRef(), CU_TRSF_READ_AS_INTEGER);
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetFilterMode(texture->texRef(), __getFilterMode(texref->filterMode));
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
@@ -656,13 +656,13 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 			__getChannelFormatKind(&texref->channelDesc),
 			__getNumberOfChannels(&texref->channelDesc));
 	if(r != CUDA_SUCCESS) {
-        Switch::out();
+        Switch::out(getCurrentCUDAMode());
 		exitGmac();
 		return __getCUDAError(r);
 	}
 	r = cuTexRefSetArray(texture->texRef(), (CUarray)array, CU_TRSA_OVERRIDE_FORMAT);
 
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	exitGmac();
 	return __getCUDAError(r);
 }
@@ -672,9 +672,9 @@ GMAC_API cudaError_t APICALL cudaUnbindTexture(const struct textureReference *te
 	enterGmac();
     Mode &mode = getCurrentCUDAMode();
     const Texture * texture = mode.texture(texref);
-    Switch::in();
+    Switch::in(getCurrentCUDAMode());
 	CUresult r = cuTexRefDestroy(texture->texRef());
-    Switch::out();
+    Switch::out(getCurrentCUDAMode());
 	exitGmac();
 	return __getCUDAError(r);
 }
