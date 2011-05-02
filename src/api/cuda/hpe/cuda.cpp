@@ -22,6 +22,10 @@ static bool initialized = false;
 
 void GMAC_API CUDA(gmac::core::hpe::Process &proc)
 {
+    library_t handler = USE_LIBRARY("cuda");
+    CFATAL(handler != NULL, "Unable to get handler to CUDA");
+    proc.addHandler(handler);
+
     TRACE(GLOBAL, "Initializing CUDA Driver API");
     if(initialized == false && cuInit(0) != CUDA_SUCCESS)
         FATAL("Unable to init CUDA");
@@ -61,9 +65,6 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
     // Initialize the private per-thread variables
     gmac::cuda::hpe::Accelerator::init();
 
-    library_t handler = USE_LIBRARY("cuda");
-    CFATAL(handler != NULL, "Unable to get handler to CUDA");
-    proc.addHandler(handler);
 
     initialized = true;
 }

@@ -1,17 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
-
-#include <pthread.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <semaphore.h>
 
 #include <gmac/cuda.h>
 
 #include "utils.h"
-#include "debug.h"
+#include "semaphore.h"
 
 const char *nIterStr = "GMAC_NITER";
 const char *vecSizeStr = "GMAC_VECSIZE";
@@ -26,7 +20,7 @@ size_t vecSize = 0;
 unsigned rounds = 0;
 const size_t blockSize = 512;
 
-static pthread_t *nThread;
+static thread_t *nThread;
 static int *ids;
 static float **a;
 static sem_t init;
@@ -60,7 +54,7 @@ void *chain(void *ptr)
         if(current < 0) current += nIter;
         // Call the kernel
         inc<<<Dg, Db>>>(gmacPtr(a[current]), *id, vecSize);
-        if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+        if(gmacThreadSynchronize() != gmacSuccess) abort();
 
         // Pass the context
         n++;
@@ -94,13 +88,13 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&rounds, roundsStr, roundsDefault);
     sem_init(&init, 0);
 
-	nThread = (pthread_t *)malloc(nIter * sizeof(pthread_t));
+	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
 	ids = (int *)malloc(nIter * sizeof(int));
 	a = (float **)malloc(nIter * sizeof(float **));
 
 	for(n = 0; n < nIter; n++) {
 		ids[n] = n;
-		pthread_create(&nThread[n], NULL, chain, &ids[n]);
+		nThread[n] = thread_create(chain, &ids[n]);
 	}
 
     fprintf(stderr,"Ready... Steady\n");
@@ -108,7 +102,7 @@ int main(int argc, char *argv[])
     fprintf(stderr,"Go!\n");
 	
 	for(n = 0; n < nIter; n++) {
-		pthread_join(nThread[n], NULL);
+		thread_wait(nThread[n]);
 	}
     fprintf(stderr,"Done!\n");
 
