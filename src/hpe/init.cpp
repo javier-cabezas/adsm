@@ -143,6 +143,9 @@ __impl::core::hpe::Mode &getCurrentMode()
     return Process_->getCurrentMode();
 }
 
+// We cannot call the destructor because CUDA might have
+// been uninitialized
+#if 0
 DESTRUCTOR(fini);
 static void fini(void)
 {
@@ -155,6 +158,7 @@ static void fini(void)
     }
 	// TODO: Clean-up logger
 }
+#endif
 
 
 #if defined(_WIN32)
