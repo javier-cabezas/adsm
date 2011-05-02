@@ -225,8 +225,8 @@ public:
 
     /**
      * Creates a KernelLaunch object that can be executed by the mode
-     * \param id Handler to the kernel to be launched
      * \param kernel Handler of the kernel to be launched
+     * \param launch Refernce to store the executable kernel
      * \return Reference to the KernelLaunch object
      */
     virtual gmacError_t launch(gmac_kernel_id_t kernel, KernelLaunch *&launch) = 0;
@@ -294,7 +294,6 @@ public:
      * Returns the kernel name identified by k
      *
      * \param k A key that identifies the kernel object
-     * \param kernel A reference to the kernel to be registered
      */
     std::string getKernelName(gmac_kernel_id_t k) const;
 

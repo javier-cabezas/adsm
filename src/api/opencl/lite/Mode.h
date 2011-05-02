@@ -96,6 +96,8 @@ public:
     /**
      * Default constructor
      *  \param ctx A OpenCL context
+     *  \param numDevices Number of OpenCL devices in the execution mode
+     *  \param devices Array of OpenCL devices in the execution mode
      */
     Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
 

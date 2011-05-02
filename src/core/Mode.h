@@ -151,8 +151,8 @@ public:
      *   \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void));
-    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(void) const) const;
+    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void));
+    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
 
     /**
      * Tells if the objects of the mode have been already released to the

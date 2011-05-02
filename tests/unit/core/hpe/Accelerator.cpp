@@ -32,7 +32,7 @@ void AcceleratorTest::TearDownTestCase()
     Process_ = NULL;
 }
 
-TEST_F(AcceleratorTest, AcceleratorMemory) {
+TEST_F(AcceleratorTest, Memory) {
     int *buffer = new int[Size_];
     int *canary = new int[Size_];
 
@@ -54,10 +54,7 @@ TEST_F(AcceleratorTest, AcceleratorMemory) {
     delete[] buffer;
 }
 
-
-
-
-TEST_F(AcceleratorTest, AcceleratorAligment) {
+TEST_F(AcceleratorTest, Aligment) {
     const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
     size_t count = Process_->nAccelerators();

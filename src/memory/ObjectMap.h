@@ -149,9 +149,8 @@ public:
 
     /**
      * Execute an operation on all the objects in the map passing an argument
-     *
      * \param f Operation to be executed
-     * \param p1 Parameter to be passed
+     * \param p Parameter to be passed
      * \sa __impl::memory::Object::removeOwner
      * \sa __impl::memory::Object::realloc
      * \return Error code

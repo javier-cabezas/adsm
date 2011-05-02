@@ -109,6 +109,7 @@ protected:
 public:
     //! Default constructor
     /*!
+        \param mode Execution mode creating the object
         \param size Size (in bytes) of the object being created
     */
 	HostMappedObject(core::Mode &mode, size_t size);

@@ -109,7 +109,7 @@ public:
     /** Insert a new entry in the map
      * \param host Host memory address
      * \param acc OpenCL object
-     * \param Size (in bytes) of the object
+     * \param size (in bytes) of the object
      */
     void insert(hostptr_t host, cl_mem acc, size_t size);
 

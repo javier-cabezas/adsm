@@ -49,29 +49,78 @@ class GMAC_LOCAL Manager :
     public virtual Contract {
     DBC_TESTED(__impl::memory::Manager)
 
-    // Needed to let Singleton call the protected constructor
-    friend class __impl::util::Singleton<Manager>;
-public:
-    Manager(__impl::core::Process &proc);
+protected:
+
+    /**
+     * Default destructor
+     */
     ~Manager();
-#if 0
-    gmacError_t map(void *addr, size_t size, GmacProtection prot);
-    gmacError_t unmap(void *addr, size_t size);
-#endif
+public:
+    /**
+     * Default constructor
+     */
+    Manager(__impl::core::Process &proc);
+
+    /**
+     * Allocate private shared memory.
+     * Memory allocated with this call is only accessible by the accelerator
+     * associated to the execution thread requesting the allocation
+     * \param mode Execution mode requesing the allocation
+     * \param addr Memory address of a pointer to store the host address of the
+     * allocated memory
+     * \param size Size (in bytes) of shared memory to be allocated
+     * \return Error code
+     */
     gmacError_t alloc(__impl::core::Mode &mode, hostptr_t *addr, size_t size);
 
-    //gmacError_t globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint);
+    /**
+     * Release shared memory
+     * \param mode Execution mode requesting the memory release
+     * \param addr Memory address of the shared memory chunk to be released
+     * \return Error code
+     */
     gmacError_t free(__impl::core::Mode &mode, hostptr_t addr);
 
+    /**
+     * Notify a memory fault caused by a load operation
+     * \param mode Execution mode causing the fault
+     * \param addr Host memory address causing the memory fault
+     * \return True if the Manager was able to fix the fault condition
+     */
     bool read(__impl::core::Mode &mode, hostptr_t addr);
+
+    /**
+     * Notify a memory fault caused by a store operation
+     * \param mode Execution mode causing the fault
+     * \param addr Host memory address causing the memory fault
+     * \return True if the Manager was able to fix the fault condition
+     */
     bool write(__impl::core::Mode &mode, hostptr_t addr);
 
+    /**
+     * Copy data from a memory object to an I/O buffer
+     * \param mode Execution mode requesting the data transfer
+     * \param buffer Destionation I/O buffer to copy the data to
+     * \param bufferOff Offset within the buffer to copy data to
+     * \param addr Host memory address corresponding to a memory object to copy
+     * data from
+     * \param size Size (in bytes) of the data to be copied
+     * \return Error code
+     */
     gmacError_t toIOBuffer(__impl::core::Mode &mode, __impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+
+
+    /**
+     * Copy data from an I/O buffer to a memory object
+     * \param mode Execution mode requesting the data transfer
+     * \param addr Host memory address corresponding to a memory object to copy
+     * data to
+     * \param buffer Source I/O buffer to copy the data from
+     * \param bufferOff Offset within the buffer to copy data from
+     * \param size Size (in bytes) of the data to be copied
+     * \return Error code
+     */
     gmacError_t fromIOBuffer(__impl::core::Mode &mode, hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
-#if 0
-    gmacError_t memcpy(void * dst, const void * src, size_t n);
-    gmacError_t memset(void * dst, int c, size_t n);
-#endif
 };
 
 }}
