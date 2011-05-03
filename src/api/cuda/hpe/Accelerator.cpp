@@ -94,7 +94,7 @@ void Accelerator::init()
 __impl::core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = new gmac::cuda::hpe::Mode(proc, *this);
+    core::hpe::Mode *mode = ModeFactory::create(proc, *this);
     if (mode != NULL) {
         registerMode(*mode);
     }

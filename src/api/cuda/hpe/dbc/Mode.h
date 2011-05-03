@@ -35,17 +35,21 @@ WITH THE SOFTWARE.
 #ifndef GMAC_API_CUDA_HPE_DBC_MODE_H_
 #define GMAC_API_CUDA_HPE_DBC_MODE_H_
 
+#include "api/cuda/hpe/ModeFactory.h"
+
 namespace __dbc { namespace cuda { namespace hpe {
 
 class GMAC_LOCAL Mode :
     public __impl::cuda::hpe::Mode,
     public virtual Contract {
+    
+    friend class __impl::cuda::hpe::ModeFactory;
     DBC_TESTED(__impl::cuda::hpe::Mode)
 
-public:
+protected:
     Mode(__impl::core::hpe::Process &proc, __impl::cuda::hpe::Accelerator &acc);
     ~Mode();
-
+public:
     gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 };
