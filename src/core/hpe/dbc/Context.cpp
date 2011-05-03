@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace core { namespace hpe {
 
-Context::Context(__impl::core::hpe::Accelerator &acc, __impl::core::hpe::Mode &mode, unsigned id) :
-    __impl::core::hpe::Context(acc, mode, id)
+Context::Context(__impl::core::hpe::Mode &mode, unsigned id) :
+    __impl::core::hpe::Context(mode, id)
 {
 }
 

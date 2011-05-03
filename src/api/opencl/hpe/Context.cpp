@@ -10,8 +10,8 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::hpe::Context(acc, mode, mode.id()),
+Context::Context(Mode &mode) :
+    gmac::core::hpe::Context(mode, mode.id()),
     buffer_(NULL)
 {
     setupCLstreams();
@@ -69,6 +69,12 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
 
     return Accelerator::error(ret);
 }
+
+Accelerator & Context::accelerator()
+{
+    return dynamic_cast<Accelerator &>(acc_);
+}
+
 
 gmacError_t Context::waitForEvent(cl_event e)
 {
