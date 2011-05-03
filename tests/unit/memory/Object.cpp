@@ -1,68 +1,50 @@
 #include "unit/memory/Object.h"
-#include <iostream>
 
-using namespace std;
+#include "core/Mode.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
+#include "memory/Object.h"
 
+using __impl::core::Mode;
+using __impl::memory::Object;
 
-Protocol* ObjectTest::Protocol_=NULL;
-Object* ObjectTest::Object_=NULL;
+extern void OpenCL(gmac::core::hpe::Process &);
+extern void CUDA(gmac::core::hpe::Process &);
 
+gmac::core::hpe::Process *ObjectTest::Process_ = NULL;
+const size_t ObjectTest::Size_ = 4 * 1024 * 1024;
 
-
-TEST_F(ObjectTest,SizeFuncTest)
+void ObjectTest::SetUpTestCase()
 {
-	hostptr_t addr_=NULL,end_ = NULL;
-	addr_=Object_->addr();
-	ASSERT_TRUE(addr_ != NULL);
-	end_=Object_->end();
-	ASSERT_TRUE(end_ != NULL);
-	size_t range=end_ - addr_;
-	ASSERT_GT(range,0U);
-	size_t size=Object_->size();
-	ASSERT_GT(size,0U);
-	ASSERT_EQ(range,size);
+    Process_ = new gmac::core::hpe::Process();
+    ASSERT_TRUE(Process_ != NULL);
+#if defined(USE_CUDA)
+    CUDA(*Process_);
+#endif
+#if defined(USE_OPENCL)
+    OpenCL(*Process_);
+#endif
 }
 
-
-TEST_F(ObjectTest,BlockSizeFuncTest)
+void ObjectTest::TearDownTestCase()
 {
-	for(int i=0;i<Size_;i++)
-	{	
-		size_t begin_=Object_->blockBase(i);
-		size_t en_=Object_->blockEnd(i);
-		size_t size=Object_->blockSize();
-		ASSERT_EQ(size,en_-begin_)<<"en_:"<<en_\
-			<<"begin_:"<<begin_<<"size :"<<size<<endl;
-
-	}
-	ASSERT_TRUE(Object_->valid());
+    ASSERT_TRUE(Process_ != NULL);
+    Process_->destroy();
+    Process_ = NULL;
 }
 
-
-
-TEST_F(ObjectTest,OwnerFuncTest)
+TEST_F(ObjectTest, Creation)
 {
-	hostptr_t addr_=NULL,end_ = NULL;
-	addr_=Object_->addr();
-	ASSERT_TRUE(addr_ != NULL);
- 	end_=Object_->end();
- 	ASSERT_TRUE(end_ != NULL);
+    ASSERT_TRUE(Process_ != NULL);
+    Mode &mode = Process_->getCurrentMode();
+    Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    ASSERT_TRUE(object != NULL);
+    ASSERT_TRUE(object->addr() != NULL);
+    ASSERT_TRUE(object->end() != NULL);
+    ASSERT_EQ(Size_, size_t(object->end() - object->addr()));
+    ASSERT_EQ(Size_, object->size());
 
-	Mode &mode_=Mode::getCurrent();
-	Mode *om_=&Object_->owner(addr_);
-	ASSERT_TRUE(om_!= NULL);
- 	Mode *om2_=&Object_->owner(--end_);
- 	ASSERT_TRUE(om2_ != NULL);
-
-	ASSERT_EQ(&mode_ ,om_);
-	ASSERT_EQ(om_,om2_);
-
-	
-	ASSERT_TRUE(Object_->removeOwner(*om_) == gmacSuccess);
-	ASSERT_TRUE(Object_->removeOwner(*om2_) == gmacSuccess);
-	//ASSERT_TRUE(Object_->addOwner(mode_) == gmacSuccess);
-
-// 	om_=&Object_->owner(addr_);
-//  	ASSERT_NE(om2_ , om_);
-
+    mode.removeObject(*object);
+    object->release();
 }
+
