@@ -142,7 +142,9 @@ class GMAC_LOCAL BlockState :
     public common::BlockState<lazy::State> {
 
 protected:
-    lazy::Block &block_;
+    lazy::Block &block();
+    const lazy::Block &block() const;
+    //const lazy::Block &block();
 #ifdef USE_VM
     unsigned subBlocks_;
 #else
@@ -176,7 +178,7 @@ protected:
     size_t getSubBlockSize() const;
 
 public:
-    BlockState(lazy::State init, lazy::Block &block);
+    BlockState(lazy::State init);
 
     gmacError_t syncToAccelerator();
     gmacError_t syncToHost();
