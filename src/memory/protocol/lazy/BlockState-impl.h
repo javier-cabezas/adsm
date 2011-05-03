@@ -221,6 +221,20 @@ StrideInfo::signalWrite(hostptr_t addr)
 }
 
 inline
+Block &
+BlockState::block()
+{
+	return dynamic_cast<Block &>(*this);
+}
+
+inline
+const Block &
+BlockState::block() const
+{
+	return dynamic_cast<const Block &>(*this);
+}
+
+inline
 void
 BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
 {
@@ -265,8 +279,8 @@ BlockState::BlockState(lazy::State init) :
     transfersToAccelerator_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
     transfersToHost_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
 #endif
-    strideInfo_(block),
-    treeInfo_(block),
+    strideInfo_(block()),
+    treeInfo_(block()),
     faultsRead_(0),
     faultsWrite_(0)
 { 
