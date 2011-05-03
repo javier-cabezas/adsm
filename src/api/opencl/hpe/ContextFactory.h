@@ -31,28 +31,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DBC_CONTEXT_H_
-#define GMAC_CORE_HPE_DBC_CONTEXT_H_
+#ifndef GMAC_API_OPENCL_HPE_CONTEXTFACTORY_H_
+#define GMAC_API_OPENCL_HPE_CONTEXTFACTORY_H_
 
-namespace __dbc { namespace core { namespace hpe {
+#include "config/common.h"
+#include "config/config.h"
 
-class GMAC_LOCAL Context :
-    public __impl::core::hpe::Context,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::hpe::Context)
+namespace __impl {
 
+namespace opencl { namespace hpe {
+
+class Context;
+class Mode;
+
+class GMAC_LOCAL ContextFactory {
 protected:
-    Context(__impl::core::hpe::Mode &mode, unsigned id);
-    virtual ~Context();
-public:
-
-    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    Context *create(Mode &mode) const;
+    void destroy(Context &context) const;
 };
 
 }}}
 
-#endif /* BLOCK_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif
