@@ -11,7 +11,7 @@ typedef struct {
     int value;
     pthread_cond_t cond;
     pthread_mutex_t mutex;
-} sem_t;
+} gmac_sem_t;
 
 
 #ifdef __cplusplus
