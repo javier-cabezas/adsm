@@ -29,8 +29,8 @@ const unsigned blockSize = 16;
 static float *quant_in, *idct_in;
 
 static pthread_t dct_id, quant_id, idct_id;
-static sem_t quant_data, idct_data;
-static sem_t quant_free, idct_free;
+static gmac_sem_t quant_data, idct_data;
+static gmac_sem_t quant_free, idct_free;
 
 
 void __randInit(float *a, unsigned size)
@@ -73,9 +73,9 @@ void *dct_thread(void *args)
         printTime(&s, &t, "DCT:Run: ", "\n");
 
         getTime(&s);
-		sem_wait(&quant_free, 1); /* Wait for quant to use its data */
+		gmac_sem_wait(&quant_free, 1); /* Wait for quant to use its data */
 		gmacMemcpy(quant_in, out, width * height * sizeof(float));
-		sem_post(&quant_data, 1); /* Notify to Quant that data is ready */
+		gmac_sem_post(&quant_data, 1); /* Notify to Quant that data is ready */
         getTime(&t);
         printTime(&s, &t, "DCT:Copy: ", "\n");
 	}
@@ -108,11 +108,11 @@ void *quant_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	sem_post(&quant_free, 1);
+	gmac_sem_post(&quant_free, 1);
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
-		sem_wait(&quant_data, 1);	/* Wait for data to be processed */
+		gmac_sem_wait(&quant_data, 1);	/* Wait for data to be processed */
 		quant<<<Dg, Db>>>(gmacPtr(quant_in), gmacPtr(out), width, height, 1e-6);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
@@ -120,10 +120,10 @@ void *quant_thread(void *args)
         printTime(&s, &t, "Quant:Run: " , "\n");
 		
         getTime(&s);
-		sem_wait(&idct_free, 1); /* Wait for IDCT to use its data */
+		gmac_sem_wait(&idct_free, 1); /* Wait for IDCT to use its data */
 		gmacMemcpy(idct_in, out, width * height * sizeof(float));
-		sem_post(&quant_free, 1); /* Notify to DCT that Quant is waiting for data */
-		sem_post(&idct_data, 1); /* Nodify to IDCT that data is ready */
+		gmac_sem_post(&quant_free, 1); /* Notify to DCT that Quant is waiting for data */
+		gmac_sem_post(&idct_data, 1); /* Nodify to IDCT that data is ready */
         getTime(&t);
         printTime(&s, &t, "Quant:Copy: ", "\n");
 	}
@@ -156,16 +156,16 @@ void *idct_thread(void *args)
 	if(width % blockSize) Dg.x++;
 	if(height % blockSize) Dg.y++;
 
-	sem_post(&idct_free, 1);
+	gmac_sem_post(&idct_free, 1);
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
-		sem_wait(&idct_data, 1);
+		gmac_sem_wait(&idct_data, 1);
 		idct<<<Dg, Db>>>(gmacPtr(idct_in), gmacPtr(out), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
 
-		sem_post(&idct_free, 1);
+		gmac_sem_post(&idct_free, 1);
         getTime(&t);
         printTime(&s, &t, "IDCT:Run: ", "\n");
 	}
@@ -188,10 +188,10 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&height, heightStr, heightDefault);
 	setParam<unsigned>(&frames, framesStr, framesDefault);
 
-	sem_init(&quant_data, 0); 
-	sem_init(&quant_free, 0); 
-	sem_init(&idct_data,  0); 
-	sem_init(&idct_free,  0); 
+	gmac_sem_init(&quant_data, 0); 
+	gmac_sem_init(&quant_free, 0); 
+	gmac_sem_init(&idct_data,  0); 
+	gmac_sem_init(&idct_free,  0); 
 
 	srand(time(NULL));
 

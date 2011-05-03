@@ -1,14 +1,14 @@
 #include "semaphore.h"
 #include <windows.h>
 
-void sem_init(sem_t *sem, int value)
+void gmac_sem_init(gmac_sem_t *sem, int value)
 {
     InitializeConditionVariable(&sem->cond);
     InitializeCriticalSection(&sem->mutex);
     sem->value = value;
 }
 
-void sem_post(sem_t *sem, int v)
+void gmac_sem_post(gmac_sem_t *sem, int v)
 {
     int i;
     EnterCriticalSection(&sem->mutex);
@@ -20,7 +20,7 @@ void sem_post(sem_t *sem, int v)
     LeaveCriticalSection(&sem->mutex);
 }
 
-void sem_wait(sem_t *sem, int v)
+void gmac_sem_wait(gmac_sem_t *sem, int v)
 {
     EnterCriticalSection(&sem->mutex);
 
@@ -32,7 +32,7 @@ void sem_wait(sem_t *sem, int v)
     LeaveCriticalSection(&sem->mutex);
 }
 
-void sem_destroy(sem_t *sem)
+void gmac_sem_destroy(gmac_sem_t *sem)
 {
     DeleteCriticalSection(&sem->mutex);
 }

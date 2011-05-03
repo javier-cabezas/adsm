@@ -11,7 +11,7 @@ typedef struct {
     int value;
     CONDITION_VARIABLE cond;
     CRITICAL_SECTION mutex;
-} sem_t;
+} gmac_sem_t;
 
 
 #ifdef __cplusplus

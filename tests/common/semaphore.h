@@ -11,10 +11,10 @@
 extern "C" {
 #endif
 
-void sem_init(sem_t *, int);
-void sem_post(sem_t *, int );
-void sem_wait(sem_t *, int );
-void sem_destroy(sem_t *);
+void gmac_sem_init(gmac_sem_t *, int);
+void gmac_sem_post(gmac_sem_t *, int );
+void gmac_sem_wait(gmac_sem_t *, int );
+void gmac_sem_destroy(gmac_sem_t *);
 
 
 #ifdef __cplusplus
