@@ -33,11 +33,11 @@ void QueueTest::TearDownTestCase() {
 }
 
 
-TEST_F(QueueTest,MemberFun)
+TEST_F(QueueTest,PushPop)
 {
     ThreadQueue threadQueue; 
     ASSERT_TRUE(threadQueue.queue != NULL);
-    Mode *mode = Process_->createMode(0);
+    Mode *mode = Process_->createMode();
     ASSERT_TRUE(mode != NULL);
     threadQueue.queue->push(mode);
     Mode *last = threadQueue.queue->pop();
