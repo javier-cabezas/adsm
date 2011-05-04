@@ -31,27 +31,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef TEST_UNIT_CORE_ACCELERATOR_H_
-#define TEST_UNIT_CORE_ACCELERATOR_H_
-
-#ifndef USE_MULTI_CONTEXT
-
 #include "gtest/gtest.h"
-#include "core/hpe/Process.h"
+#include "core/AllocationMap.h"
 
-#include <vector>
-
-class AcceleratorTest : public testing::Test {
-protected:
-    static const int Size_ = 4 * 1024 * 1024;
-
-    static gmac::core::hpe::Process *Process_;
-    static std::vector<__impl::core::hpe::Accelerator *> Accelerators_;
-
-    static void SetUpTestCase();
-    static void TearDownTestCase();
+class AllocationMapTest : public testing::Test {
+public:
 };
 
-#endif
+TEST_F(AllocationMapTest, Insertion)
+{
+    gmac::core::AllocationMap map_;
+    hostptr_t host((hostptr_t)0xcafecafe);
+    accptr_t device((cl_mem)0xcacacaca);
+    size_t size = 1024;
+    map_.insert(host, device, size);
 
-#endif
+    accptr_t retDevice;
+    size_t retSize;
+    ASSERT_TRUE(map_.find(host, retDevice, retSize));
+    ASSERT_TRUE(device == retDevice);
+    ASSERT_EQ(size, retSize);
+    
+    map_.erase(host, size);
+    ASSERT_FALSE(map_.find(host, retDevice, retSize));
+}
