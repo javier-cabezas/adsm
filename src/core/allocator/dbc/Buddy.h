@@ -31,31 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_DBC_IOBUFFER_H_
-#define GMAC_CORE_DBC_IOBUFFER_H_
+#ifndef GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
+#define GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
 
 #include "dbc/types.h"
 #include "dbc/Contract.h"
 
-#include "core/IOBuffer.h"
+#include "core/allocator/Buddy.h"
 
-namespace __dbc { namespace core {
+namespace __dbc { namespace core { namespace allocator {
 
-class GMAC_LOCAL IOBuffer: 
-    public __impl::core::IOBuffer, 
+class GMAC_LOCAL Buddy :
+    public __impl::core::allocator::Buddy,
     public virtual Contract {
-    DBC_TESTED(__impl::core::IOBuffer)
-protected: 
-    IOBuffer(void *addr, size_t size, bool async);
+    DBC_TESTED(__impl::core::allocator::Buddy)
+protected:
+    off_t getFromList(uint8_t i);
+    void putToList(off_t addr, uint8_t i);
 public:
-    virtual ~IOBuffer();
-
-    uint8_t *addr() const;
-    uint8_t *end() const;
-    size_t size() const;
+    Buddy(hostptr_t addr, size_t size);
+    hostptr_t get(size_t &size);
+    void put(hostptr_t addr, size_t size);
 };
-      
-}}
+
+}}}
+
 #endif
-
-

@@ -44,6 +44,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace core { namespace allocator {
 
 class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
+    DBC_FORCE_TEST(__impl::core::allocator::Buddy)
 protected:
     hostptr_t addr_;
     uint32_t size_;
@@ -57,19 +58,22 @@ protected:
     typedef std::map<uint8_t, List> Tree;
 
     Tree _tree;
-    off_t getFromList(uint8_t i);
-    void putToList(off_t addr, uint8_t i);
+    TESTABLE off_t getFromList(uint8_t i);
+    TESTABLE void putToList(off_t addr, uint8_t i);
 public:
     Buddy(hostptr_t addr, size_t size);
     ~Buddy();
 
     inline hostptr_t addr() const { return addr_; }
-    hostptr_t get(size_t &size);
-    void put(hostptr_t addr, size_t size);
+    TESTABLE hostptr_t get(size_t &size);
+    TESTABLE void put(hostptr_t addr, size_t size);
 };
 
 }}}
 
+#if defined(USE_DBC)
+#include "dbc/Buddy.h"
+#endif
 
 #endif /* BUDDY_H */
 
