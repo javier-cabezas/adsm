@@ -1,3 +1,4 @@
+#if 0
 #ifdef USE_VM
 
 #include "Gather.h"
@@ -442,4 +443,5 @@ gmacError_t GatherBase::memset(const Block &b, int v, size_t size, size_t blockO
 
 }}}
 
+#endif
 #endif

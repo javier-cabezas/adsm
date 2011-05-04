@@ -1,8 +1,8 @@
 #ifdef USE_VM
 
-#include "api/cuda/Accelerator.h"
-#include "api/cuda/Mode.h"
-#include "api/cuda/Module.h"
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
+#include "api/cuda/hpe/Module.h"
 
 #include "memory/vm/Bitmap.h"
 
@@ -19,42 +19,42 @@ static const char * ACC_VM_MASK_L3 = "__gmac_vm_mask_l3";
 #endif
 
 void
-StoreShared::allocAcc(bool isRoot)
+Node::allocAcc(bool isRoot)
 {
-    accptr_t addr;
-    cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+    accptr_t addr(NULL);
+    cuda::hpe::Mode &mode = reinterpret_cast<cuda::hpe::Mode &>(root_.mode_);
 
     if (isRoot == false) {
-        gmacError_t ret = mode.map(addr, entriesAccHost_, size_);
+        gmacError_t ret = mode.map(addr, entriesAccHost_, nEntries_);
         ASSERTION(ret == gmacSuccess);
-        TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
+        TRACE(LOCAL,"Allocating a node in the accelerator. Size %zd. Addr %p", nEntries_, (void *)addr);
     } else {
-        const cuda::Variable *var = mode.variableByName(ACC_VM_ROOT_VAR);
+        const cuda::hpe::Variable *var = mode.variableByName(ACC_VM_ROOT_VAR);
         ASSERTION(var != NULL);
         addr = var->devPtr();
-        TRACE(LOCAL,"Using a node in the accelerator. Size %zd. Addr %p", size_, (void *)addr);
+        TRACE(LOCAL,"Using a node in the accelerator. Size %zd. Addr %p", nEntries_, (void *)addr);
     }
     entriesAcc_ = addr;
 }
 
 void
-StoreShared::freeAcc(bool isRoot)
+Node::freeAcc(bool isRoot)
 {
-    cuda::Mode &mode = reinterpret_cast<cuda::Mode &>(root_.mode_);
+    cuda::hpe::Mode &mode = reinterpret_cast<cuda::hpe::Mode &>(root_.mode_);
     if (isRoot == false) {
-        gmacError_t ret = mode.unmap(entriesAccHost_, size_);
+        gmacError_t ret = mode.unmap(entriesAccHost_, nEntries_);
         ASSERTION(ret == gmacSuccess);
-        TRACE(LOCAL,"Freeing a node in the accelerator. Size %zd. Addr %p", size_, (void *)entriesAcc_);
+        TRACE(LOCAL,"Freeing a node in the accelerator. Size %u. Addr %p", nEntries_, (void *)entriesAcc_);
     }
 }
 
 
 void
-StoreShared::syncToHost(long_t startIndex, long_t endIndex, size_t elemSize)
+Node::syncToHost(long_t startIndex, long_t endIndex, size_t elemSize)
 {
 #ifndef USE_HOSTMAP_VM
     TRACE(LOCAL,"Syncing SharedBitmap");
-    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
+    cuda::hpe::Mode &mode = reinterpret_cast<cuda::hpe::Mode &>(root_.mode_);
     gmacError_t ret;
     size_t size = (endIndex - startIndex + 1) * elemSize;
     hostptr_t host = entriesAccHost_ + startIndex * elemSize;
@@ -66,10 +66,10 @@ StoreShared::syncToHost(long_t startIndex, long_t endIndex, size_t elemSize)
 }
 
 void
-StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize)
+Node::syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize)
 {
-    cuda::Mode &mode = static_cast<cuda::Mode &>(root_.mode_);
-    cuda::Accelerator &acc = mode.getAccelerator();
+    cuda::hpe::Mode &mode = reinterpret_cast<cuda::hpe::Mode &>(root_.mode_);
+    cuda::hpe::Accelerator &acc = mode.getAccelerator();
 
 #ifndef USE_HOSTMAP_VM
     if (isDirty()) {
@@ -89,19 +89,13 @@ StoreShared::syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSi
 #endif
 }
 
-StoreShared::~StoreShared()
-{
-    TRACE(LOCAL, "StoreShared destructor");
-    ::free(entriesAccHost_);
-}
-
 
 void
-BitmapShared::syncToAccelerator()
+Bitmap::syncToAccelerator()
 {
 #ifndef USE_MULTI_CONTEXT
-    cuda::Mode &mode = static_cast<cuda::Mode &>(mode_);
-    cuda::Accelerator &acc = mode.getAccelerator();
+    cuda::hpe::Mode &mode = reinterpret_cast<cuda::hpe::Mode &>(mode_);
+    cuda::hpe::Accelerator &acc = mode.getAccelerator();
 
     cuda::Mode *last = acc.getLastMode();
 

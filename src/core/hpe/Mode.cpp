@@ -26,10 +26,10 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #	pragma warning( disable : 4355 )
 #endif
     map_("ModeMemoryMap", *this),
-    contextMap_(*this)
 #ifdef USE_VM
-    , bitmap_(*this)
+    bitmap_(*this),
 #endif
+    contextMap_(*this)
 {
 #ifdef DEBUG
     if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();

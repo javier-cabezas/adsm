@@ -180,7 +180,7 @@ if(MAKE_STATIC)
 else(MAKE_STATIC)
     add_gmac_library(gmac SHARED ${gmac-hpe_SRC})
 endif(MAKE_STATIC)
-target_link_libraries(gmac gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory ${gmac_LIBS})
+target_link_libraries(gmac gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe ${gmac_LIBS})
 set_target_properties(gmac PROPERTIES
     VERSION 0.3.0 SOVERSION 1
 )

@@ -40,6 +40,12 @@ WITH THE SOFTWARE.  */
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 
+#ifdef USE_VM
+#include "hpe/init.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
+#endif
+
 #include "memory/Memory.h"
 #include "memory/vm/Model.h"
 
@@ -241,13 +247,16 @@ BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
     setSubBlock(GetSubBlockIndex(block().addr(), addr), state);
 }
 
+#define GetMode() (*(core::hpe::Mode *)(void *) &block().owner(getProcess().getCurrentMode()))
+#define GetBitmap() GetMode().getBitmap()
+
 inline
 void
 BlockState::setSubBlock(long_t subBlock, ProtocolState state)
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block().owner().getBitmap();
-    bitmap.setEntry(block().acceleratorAddr(block().addr() + subBlock * SubBlockSize_), state);
+    vm::Bitmap &bitmap = GetBitmap();
+    bitmap.setEntry(block().acceleratorAddr(GetMode(), block().addr() + subBlock * SubBlockSize_), state);
 #else
     subBlockState_[subBlock] = uint8_t(state);
 #endif
@@ -258,8 +267,8 @@ void
 BlockState::setAll(ProtocolState state)
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block().owner().getBitmap();
-    bitmap.setEntryRange(block().acceleratorAddr(block().addr()), block().size(), state);
+    vm::Bitmap &bitmap = GetBitmap();
+    bitmap.setEntryRange(block().acceleratorAddr(GetMode(), block().addr()), block().size(), state);
 #else
     ::memset(&subBlockState_[0], uint8_t(state), subBlockState_.size() * sizeof(uint8_t));
 #endif
@@ -333,9 +342,9 @@ BlockState::syncToAccelerator()
     bool inGroup = false;
 
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block().owner().getBitmap();
+    vm::Bitmap &bitmap = GetBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_) == lazy::Dirty) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy::Dirty) {
 #else
     for (unsigned i = 0; i != subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
@@ -397,9 +406,9 @@ BlockState::syncToHost()
     unsigned gaps = 0;
     bool inGroup = false;
 
-    vm::Bitmap &bitmap = block().owner().getBitmap();
+    vm::Bitmap &bitmap = GetBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_) == lazy::Invalid) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy::Invalid) {
 #ifdef DEBUG
             transfersToHost_[i]++;
 #endif
@@ -482,8 +491,8 @@ inline bool
 BlockState::is(ProtocolState state) const
 {
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block().owner().getBitmap();
-    return bitmap.isAnyInRange(block().acceleratorAddr(block().addr()), block().size(), state);
+    vm::Bitmap &bitmap = GetBitmap();
+    return bitmap.isAnyInRange(block().acceleratorAddr(GetMode(), block().addr()), block().size(), state);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         if (subBlockState_[i] == state) return true;
@@ -514,9 +523,9 @@ BlockState::unprotect()
     unsigned start = 0;
     unsigned size = 0;
 #ifdef USE_VM
-    vm::Bitmap &bitmap = block().owner().getBitmap();
+    vm::Bitmap &bitmap = GetBitmap();
     for (unsigned i = 0; i < subBlocks_; i++) {
-        ProtocolState state = bitmap.getEntry<ProtocolState>(block().acceleratorAddr() + i * SubBlockSize_);
+        ProtocolState state = bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         ProtocolState state = ProtocolState(subBlockState_[i]);

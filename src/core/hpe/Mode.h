@@ -339,8 +339,8 @@ public:
     void memInfo(size_t &free, size_t &total);
 
 #ifdef USE_VM
-    memory::vm::BitmapShared &acceleratorDirtyBitmap();
-    const memory::vm::BitmapShared &acceleratorDirtyBitmap() const;
+    memory::vm::Bitmap &getDirtyBitmap();
+    const memory::vm::Bitmap &getDirtyBitmap() const;
 #endif
 
 };

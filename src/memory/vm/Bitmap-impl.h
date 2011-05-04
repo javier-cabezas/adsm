@@ -96,12 +96,14 @@ Node::setSynced(bool synced)
     synced_ = synced;
 }
 
+/*
 inline
 accptr_t
 Node::getAccAddr() const
 {
     return entriesAcc_;
 }
+*/
 
 inline bool
 Node::isDirty() const
@@ -176,14 +178,14 @@ Node::syncToAccelerator(long_t startIndex, long_t endIndex)
 
 inline
 long_t
-Node::getFirstDirtyEntry()
+Node::getFirstDirtyEntry() const
 {
     return firstDirtyEntry_;
 }
 
 inline
 long_t
-Node::getLastDirtyEntry()
+Node::getLastDirtyEntry() const
 {
     return lastDirtyEntry_;
 }
@@ -304,7 +306,7 @@ Node::getAndSetEntry(long_t index, T state)
     TRACE(LOCAL, "getAndSetEntry 0x%lx", localIndex);
     if (this->nextEntries_.size() == 0) {
         uint8_t &ref = getLeafRef(localIndex);
-        BitmapState val = BitmapState(ref);
+        T val = T(ref);
         ref = state;
         return val;
     } else {

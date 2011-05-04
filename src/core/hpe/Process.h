@@ -43,7 +43,6 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 #include "memory/ObjectMap.h"
 
-#include "util/Singleton.h"
 #include "util/Private.h"
 
 #include "core/Process.h"
