@@ -13,6 +13,8 @@ set(core_SRC
 )
 
 set(core_DBC
+    dbc/AllocationMap.h
+    dbc/AllocationMap.cpp
     dbc/IOBuffer.h
     dbc/IOBuffer.cpp
 )

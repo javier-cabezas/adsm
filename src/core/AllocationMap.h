@@ -51,14 +51,17 @@ class GMAC_LOCAL AllocationMap :
     protected gmac::util::RWLock {
 public:
     AllocationMap();
-    void insert(hostptr_t key, accptr_t val, size_t size);
-    void erase(hostptr_t key, size_t size);
-    bool find(hostptr_t key, accptr_t &val, size_t &size);
+    TESTABLE void insert(hostptr_t key, accptr_t val, size_t size);
+    TESTABLE void erase(hostptr_t key, size_t size);
+    TESTABLE bool find(hostptr_t key, accptr_t &val, size_t &size);
 };
 
 
 }}
 
 #include "AllocationMap-impl.h"
+#ifdef USE_DBC
+#include "core/dbc/AllocationMap.h"
+#endif
 
 #endif
