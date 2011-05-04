@@ -76,7 +76,7 @@ void Accelerator::init()
 core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = new gmac::opencl::hpe::Mode(dynamic_cast<core::hpe::Process &>(proc), *this);
+    core::hpe::Mode *mode = ModeFactory::create(dynamic_cast<core::hpe::Process &>(proc), *this);
     if (mode != NULL) {
         registerMode(*mode);
     }

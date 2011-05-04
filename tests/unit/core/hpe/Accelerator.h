@@ -48,8 +48,6 @@ protected:
     static gmac::core::hpe::Process *Process_;
     static std::vector<__impl::core::hpe::Accelerator *> Accelerators_;
 
-    static void SetUpCUDA();
-    static void SetUpOpenCL();
     static void SetUpTestCase();
     static void TearDownTestCase();
 };

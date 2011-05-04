@@ -23,7 +23,7 @@ const size_t blockSize = 512;
 static thread_t *nThread;
 static int *ids;
 static float **a;
-static sem_t init;
+static gmac_sem_t init;
 
 __global__ void inc(float *a, float f, size_t size)
 {
@@ -47,7 +47,7 @@ void *chain(void *ptr)
     dim3 Dg(vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
 
-    sem_wait(&init, 1);
+    gmac_sem_wait(&init, 1);
 
     for(unsigned i = 0; i < rounds; i++) {
         int current = *id - i;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	setParam<int>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 	setParam<unsigned>(&rounds, roundsStr, roundsDefault);
-    sem_init(&init, 0);
+    gmac_sem_init(&init, 0);
 
 	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
 	ids = (int *)malloc(nIter * sizeof(int));
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	}
 
     fprintf(stderr,"Ready... Steady\n");
-	for(n = 0; n < nIter; n++) sem_post(&init, 1);
+	for(n = 0; n < nIter; n++) gmac_sem_post(&init, 1);
     fprintf(stderr,"Go!\n");
 	
 	for(n = 0; n < nIter; n++) {

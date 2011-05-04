@@ -43,6 +43,7 @@ WITH THE SOFTWARE.
 #include "config/common.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Accelerator.h"
+#include "api/cuda/hpe/ModeFactory.h"
 #include "util/Lock.h"
 
 #include "Module.h"
@@ -74,9 +75,10 @@ public:
     ~AlignmentMap() { lockWrite(); }
 };
 
-class GMAC_LOCAL Accelerator : public gmac::core::hpe::Accelerator {
+class GMAC_LOCAL Accelerator :
+    public ModeFactory,
+    public gmac::core::hpe::Accelerator {
     DBC_FORCE_TEST(Accelerator)
-
     friend class Switch;
 protected:
     CUdevice device_;

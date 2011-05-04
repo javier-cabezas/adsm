@@ -76,7 +76,7 @@ protected:
     unsigned load_;
 
     /** Map of allocations in the device */
-    AllocationMap allocations_;
+    gmac::core::AllocationMap allocations_;
 
     /**
      * Registers a mode to be run on the accelerator. The mode must not be

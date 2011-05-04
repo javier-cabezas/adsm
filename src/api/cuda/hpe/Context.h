@@ -62,7 +62,7 @@ namespace hpe {
 
 class Accelerator;
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
-    friend class Mode;
+    friend class ContextFactory;
 protected:
     static void * FatBin_;
 	static const unsigned USleepLaunch_ = 100;
@@ -83,7 +83,7 @@ protected:
     void cleanCUstreams();
     gmacError_t syncCUstream(CUstream);
 
-	Context(Accelerator &acc, Mode &mode);
+	Context(Mode &mode);
 	~Context();
 
 public:

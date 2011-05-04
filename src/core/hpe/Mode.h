@@ -68,8 +68,9 @@ class Process;
 class GMAC_LOCAL ContextMap : protected std::map<THREAD_T, Context *>, gmac::util::RWLock {
 protected:
     typedef std::map<THREAD_T, Context *> Parent;
+    Mode &owner_;
 public:
-    ContextMap() : gmac::util::RWLock("ContextMap") {}
+    ContextMap(Mode &owner) : gmac::util::RWLock("ContextMap"), owner_(owner) {}
     void add(THREAD_T id, Context *ctx);
     Context *find(THREAD_T id);
     void remove(THREAD_T id);
@@ -111,7 +112,7 @@ protected:
 
     virtual void reload() = 0;
     virtual Context &getContext() = 0;
-    static void destroyContext(Context &context);
+    virtual void destroyContext(Context &context) const = 0;
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;

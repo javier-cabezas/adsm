@@ -31,28 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DBC_CONTEXT_H_
-#define GMAC_CORE_HPE_DBC_CONTEXT_H_
+#ifndef GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
+#define GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
 
-namespace __dbc { namespace core { namespace hpe {
+#include "dbc/types.h"
+#include "dbc/Contract.h"
 
-class GMAC_LOCAL Context :
-    public __impl::core::hpe::Context,
+#include "core/allocator/Buddy.h"
+
+namespace __dbc { namespace core { namespace allocator {
+
+class GMAC_LOCAL Buddy :
+    public __impl::core::allocator::Buddy,
     public virtual Contract {
-    DBC_TESTED(__impl::core::hpe::Context)
-
+    DBC_TESTED(__impl::core::allocator::Buddy)
 protected:
-    Context(__impl::core::hpe::Mode &mode, unsigned id);
-    virtual ~Context();
+    off_t getFromList(uint8_t i);
+    void putToList(off_t addr, uint8_t i);
 public:
-
-    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    Buddy(hostptr_t addr, size_t size);
+    hostptr_t get(size_t &size);
+    void put(hostptr_t addr, size_t size);
 };
 
 }}}
 
-#endif /* BLOCK_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif

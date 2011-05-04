@@ -1,10 +1,7 @@
-# Files required to test gmac::memory::Memory
 set(memory_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Memory.cpp
-
-
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Object.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Object.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Object.h
 )
 
 # Export tests one level up

@@ -1,8 +1,6 @@
 #include "api/cuda/hpe/Accelerator.h"
-#include "api/cuda/hpe/Context.h"
 #include "api/cuda/hpe/Mode.h"
-
-
+#include "api/cuda/hpe/Context.h"
 #include "api/cuda/IOBuffer.h"
 
 namespace __impl { namespace cuda { namespace hpe {
@@ -31,7 +29,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     hostptr_t addr = NULL;
     gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
+        ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
     switchOut();
 }
@@ -115,7 +113,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new cuda::hpe::Context(getAccelerator(), *this);
+    context = ContextFactory::create(*this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -124,6 +122,11 @@ core::hpe::Context &Mode::getContext()
 Context &Mode::getCUDAContext()
 {
     return dynamic_cast<Context &>(getContext());
+}
+
+void Mode::destroyContext(core::hpe::Context &context) const
+{
+    ContextFactory::destroy(dynamic_cast<Context &>(context));
 }
 
 gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)

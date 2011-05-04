@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "api/opencl/Mode.h"
+#include "api/opencl/hpe/ContextFactory.h"
 #include "core/hpe/Mode.h"
 
 namespace __impl {
@@ -71,17 +72,16 @@ public:
 };
 
 
-//! Visual studio produces a stupid warning due to the complex diamond inheritance
-#if defined(_MSC_VER)
-#pragma warning( push )
-#pragma warning( disable : 4250 )
-#endif
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual opencl::Mode {
+class GMAC_LOCAL Mode :
+    public ContextFactory,
+    public gmac::core::hpe::Mode,
+    public virtual opencl::Mode {
+
     DBC_FORCE_TEST(Mode)
 
     friend class IOBuffer;
-    friend class Accelerator;
+    friend class ModeFactory;
 protected:
     //! Switch to accelerator mode
     void switchIn();
@@ -97,6 +97,7 @@ protected:
     */
     core::hpe::Context &getContext();
     Context &getCLContext();
+    void destroyContext(core::hpe::Context &context) const;
 
     cl_program program_;
     KernelList kernelList_;
@@ -221,9 +222,6 @@ public:
 
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };
-#if defined(_MSC_VER)
-#pragma warning( pop )
-#endif
 }}}
 
 #include "Mode-impl.h"

@@ -45,7 +45,7 @@ WITH THE SOFTWARE.
 
 #include "config/common.h"
 #include "core/hpe/Accelerator.h"
-
+#include "api/opencl/hpe/ModeFactory.h"
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
@@ -128,7 +128,9 @@ public:
 };
 
 /** An OpenCL capable accelerator */
-class GMAC_LOCAL Accelerator : public gmac::core::hpe::Accelerator {
+class GMAC_LOCAL Accelerator :
+    protected ModeFactory,
+    public gmac::core::hpe::Accelerator {
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     /** Map of the OpenCL accelerators in the system and the associated OpenCL programs */

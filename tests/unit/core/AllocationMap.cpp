@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,28 +31,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DBC_CONTEXT_H_
-#define GMAC_CORE_HPE_DBC_CONTEXT_H_
+#include "gtest/gtest.h"
+#include "core/AllocationMap.h"
 
-namespace __dbc { namespace core { namespace hpe {
-
-class GMAC_LOCAL Context :
-    public __impl::core::hpe::Context,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::hpe::Context)
-
-protected:
-    Context(__impl::core::hpe::Mode &mode, unsigned id);
-    virtual ~Context();
+class AllocationMapTest : public testing::Test {
 public:
-
-    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 };
 
-}}}
+TEST_F(AllocationMapTest, Insertion)
+{
+    gmac::core::AllocationMap map_;
+    hostptr_t host((hostptr_t)0xcafecafe);
+    accptr_t device((cl_mem)0xcacacaca);
+    size_t size = 1024;
+    map_.insert(host, device, size);
 
-#endif /* BLOCK_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+    accptr_t retDevice;
+    size_t retSize;
+    ASSERT_TRUE(map_.find(host, retDevice, retSize));
+    ASSERT_TRUE(device == retDevice);
+    ASSERT_EQ(size, retSize);
+    
+    map_.erase(host, size);
+    ASSERT_FALSE(map_.find(host, retDevice, retSize));
+}

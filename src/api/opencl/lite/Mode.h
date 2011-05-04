@@ -86,7 +86,7 @@ protected:
     cl_command_queue active_;
 
     memory::ObjectMap map_;
-    core::AllocationMap allocations_;
+    gmac::core::AllocationMap allocations_;
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;

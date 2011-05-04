@@ -41,8 +41,8 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "core/hpe/Mode.h"
-
 #include "api/cuda/Mode.h"
+#include "api/cuda/hpe/ContextFactory.h"
 
 #include "Module.h"
 
@@ -66,11 +66,15 @@ class Texture;
 class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
-class GMAC_LOCAL Mode : public gmac::core::hpe::Mode, public virtual cuda::Mode {
+class GMAC_LOCAL Mode :
+    public ContextFactory,
+    public gmac::core::hpe::Mode,
+    public virtual cuda::Mode {
+
     DBC_FORCE_TEST(Mode)
 
     friend class Switch;
-    friend class Accelerator;
+    friend class ModeFactory;
 protected:
 #ifdef USE_MULTI_CONTEXT
     //! Associated CUDA context
@@ -88,6 +92,7 @@ protected:
     */
     core::hpe::Context &getContext();
     Context &getCUDAContext();
+    void destroyContext(core::hpe::Context &context) const;
 
 #ifdef USE_MULTI_CONTEXT
     //! CUDA modules active on this mode
