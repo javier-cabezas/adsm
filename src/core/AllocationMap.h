@@ -49,6 +49,7 @@ typedef std::map<hostptr_t, PairAlloc> MapAlloc;
 class GMAC_LOCAL AllocationMap :
     protected MapAlloc,
     protected gmac::util::RWLock {
+    DBC_FORCE_TEST(__impl::core::AllocationMap)
 public:
     AllocationMap();
     TESTABLE void insert(hostptr_t key, accptr_t val, size_t size);

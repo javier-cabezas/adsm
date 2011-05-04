@@ -12,7 +12,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     hostptr_t addr = NULL;
     gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
+        ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
     else ioMemory_ = NULL;
 }
 
