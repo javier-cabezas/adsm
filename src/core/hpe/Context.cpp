@@ -7,9 +7,9 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-Context::Context(Accelerator &acc, Mode &mode, unsigned id) :
+Context::Context(Mode &mode, unsigned id) :
     gmac::util::RWLock("Context"),
-    acc_(acc),
+    acc_(mode.getAccelerator()),
     mode_(mode),
     id_(id)
 {

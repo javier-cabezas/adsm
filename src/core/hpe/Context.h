@@ -54,7 +54,6 @@ class KernelLaunch;
  */
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
     DBC_FORCE_TEST(Context)
-    friend class Mode;
 protected:
     /** Accelerator associated to the context */
     Accelerator &acc_;
@@ -71,7 +70,7 @@ protected:
      * \param mode Reference to the parent mode of the context
      * \param id Context identifier
      */
-    Context(Accelerator &acc, Mode &mode, unsigned id);
+    Context(Mode &mode, unsigned id);
 
     /**
      * Destroys the resources used by the context

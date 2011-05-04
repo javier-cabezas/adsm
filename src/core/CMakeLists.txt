@@ -13,8 +13,12 @@ set(core_SRC
 )
 
 set(core_DBC
+    dbc/AllocationMap.h
+    dbc/AllocationMap.cpp
     dbc/IOBuffer.h
     dbc/IOBuffer.cpp
+    allocator/dbc/Buddy.h
+    allocator/dbc/Buddy.cpp
 )
 
 add_gmac_sources(gmac-core ${core_SRC} ${core_DBC})

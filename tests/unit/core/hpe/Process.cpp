@@ -8,6 +8,9 @@ using __impl::core::hpe::Mode;
 using __impl::core::hpe::ModeMap;
 using gmac::core::hpe::Process;
 
+using __impl::memory::Object;
+using __impl::memory::Protocol;
+
 extern void CUDA(Process &);
 extern void OpenCL(Process &);
 
@@ -40,5 +43,23 @@ TEST_F(ProcessTest, ModeMap) {
 	ASSERT_TRUE(ib.second);
 	mm.remove(*mode);
 
+    proc->destroy();
+}
+
+TEST_F(ProcessTest, GlobalMemory) {
+    Process *proc = createProcess();
+
+    const size_t size = 4 * 1024 * 1024;
+    Protocol *protocol = proc->protocol();
+    ASSERT_TRUE(protocol != NULL);
+    Object *object = protocol->createObject(proc->getCurrentMode(), size, NULL, GMAC_PROT_READ, 0);
+    ASSERT_TRUE(object != NULL);
+    ASSERT_EQ(gmacSuccess, proc->globalMalloc(*object));
+    ASSERT_TRUE(object->addr() != NULL);
+    ASSERT_TRUE(proc->translate(object->addr()) != accptr_t(0));
+    ASSERT_EQ(gmacSuccess, proc->globalFree(*object));
+    ASSERT_TRUE(proc->translate(object->addr()) == accptr_t(0));
+
+    object->release();
     proc->destroy();
 }

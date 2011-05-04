@@ -74,21 +74,21 @@ public:
      *
      * \return The starting address of the buffer memory
      */
-    virtual uint8_t *addr() const;
+    TESTABLE uint8_t *addr() const;
 
     /**
      * Returns the end address of the buffer memory
      *
      * \return The end address of the buffer memory
      */
-    virtual uint8_t *end() const;
+    TESTABLE uint8_t *end() const;
 
     /**
      * Returns the size in bytes of the buffer
      *
      * \return The size in bytes of the buffer
      */
-    size_t size() const;
+    TESTABLE size_t size() const;
 
     /**
      * Tells if the buffer can be used in asynchronous memory transfers

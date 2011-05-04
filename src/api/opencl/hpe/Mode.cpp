@@ -12,7 +12,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     hostptr_t addr = NULL;
     gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
     if(ret == gmacSuccess)
-        ioMemory_ = new core::allocator::Buddy(addr, util::params::ParamIOMemory);
+        ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
     else ioMemory_ = NULL;
 }
 
@@ -61,7 +61,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = new opencl::hpe::Context(getAccelerator(), *this);
+    context = ContextFactory::create(*this);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -70,6 +70,11 @@ core::hpe::Context &Mode::getContext()
 Context &Mode::getCLContext()
 {
     return dynamic_cast<Context &>(getContext());
+}
+
+void Mode::destroyContext(core::hpe::Context &context) const
+{
+    ContextFactory::destroy(dynamic_cast<Context &>(context));
 }
 
 gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
@@ -95,6 +100,37 @@ accptr_t Mode::hostMapAddr(const hostptr_t addr)
     switchOut();
     return ret;
 }
+
+gmacError_t Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch *&launch)
+{
+    KernelMap::iterator i = kernels_.find(name);
+    Kernel *k = NULL;
+    if (i == kernels_.end()) {
+        k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
+        if(k == NULL) return gmacErrorInvalidValue;
+        registerKernel(name, *k);
+        kernelList_.insert(k);
+    }
+    else k = dynamic_cast<Kernel *>(i->second);
+    switchIn();
+    launch = &(getCLContext().launch(*k));
+    switchOut();
+    return gmacSuccess;
+}
+
+
+gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
+{
+    switchIn();
+    gmacError_t ret = getContext().prepareForCall();
+    if(ret == gmacSuccess) {
+        trace::SetThreadState(THREAD_T(id_), trace::Running);
+        ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+    }
+    switchOut();
+    return ret;
+}
+
 
 cl_command_queue Mode::eventStream()
 {
@@ -123,5 +159,19 @@ gmacError_t Mode::waitForEvent(cl_event event)
     return Accelerator::error(ret);
 #endif
 }
+
+Accelerator & Mode::getAccelerator() const
+{
+    return *static_cast<Accelerator *>(acc_);
+}
+
+gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
+{
+    switchIn();
+    gmacError_t ret = getAccelerator().timeCLevents(t, start, end);
+    switchOut();
+    return ret; 
+}
+
 
 }}}

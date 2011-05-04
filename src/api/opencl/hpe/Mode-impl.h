@@ -41,36 +41,7 @@ void Mode::switchOut()
 {
 }
 
-inline gmacError_t
-Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch *&launch)
-{
-    KernelMap::iterator i = kernels_.find(name);
-    Kernel *k = NULL;
-    if (i == kernels_.end()) {
-        k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
-        if(k == NULL) return gmacErrorInvalidValue;
-        registerKernel(name, *k);
-        kernelList_.insert(k);
-    }
-    else k = dynamic_cast<Kernel *>(i->second);
-    switchIn();
-    launch = &(getCLContext().launch(*k));
-    switchOut();
-    return gmacSuccess;
-}
 
-inline gmacError_t
-Mode::execute(core::hpe::KernelLaunch & launch)
-{
-    switchIn();
-    gmacError_t ret = getContext().prepareForCall();
-    if(ret == gmacSuccess) {
-        trace::SetThreadState(THREAD_T(id_), trace::Running);
-        ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
-    }
-    switchOut();
-    return ret;
-}
 
 inline gmacError_t
 Mode::wait(core::hpe::KernelLaunch &launch)
@@ -117,21 +88,7 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
     return ret;
 }
 
-inline Accelerator &
-Mode::getAccelerator() const
-{
-    return *static_cast<Accelerator *>(acc_);
-}
 
-
-inline gmacError_t
-Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
-{
-    switchIn();
-    gmacError_t ret = getAccelerator().timeCLevents(t, start, end);
-    switchOut();
-    return ret; 
-}
 
 }}}
 

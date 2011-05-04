@@ -10,8 +10,8 @@ namespace __impl { namespace cuda { namespace hpe {
 Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
-Context::Context(Accelerator &acc, Mode &mode) :
-    gmac::core::hpe::Context(acc, mode, mode.id()),
+Context::Context(Mode &mode) :
+    gmac::core::hpe::Context(mode, mode.id()),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL, NULL)
 {

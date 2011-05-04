@@ -146,12 +146,23 @@ public:
      * Applies a constant memory operation to all the objects that belong to
      * the mode
      * \param op Memory operation to be executed
-     *   \sa __impl::memory::Object::acquire
-     *   \sa __impl::memory::Object::toHost
-     *   \sa __impl::memory::Object::toAccelerator
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void));
+
+
+    /**
+     * Applies a constant memory operation to all the objects that belong to
+     * the mode
+     * \param op Memory operation to be executed
+     * \sa __impl::memory::Object::acquire
+     * \sa __impl::memory::Object::toHost
+     * \sa __impl::memory::Object::toAccelerator
+     * \return Error code
+     */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
 
     /**
@@ -285,9 +296,6 @@ public:
      * \param off Offset within the buffer
      */
     virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
-
-
-
 
     /** Returns the memory information of the accelerator on which the mode runs
      * \param free A reference to a variable to store the memory available on the

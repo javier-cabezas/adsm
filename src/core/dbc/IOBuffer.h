@@ -45,12 +45,14 @@ class GMAC_LOCAL IOBuffer:
     public __impl::core::IOBuffer, 
     public virtual Contract {
     DBC_TESTED(__impl::core::IOBuffer)
-
 protected: 
     IOBuffer(void *addr, size_t size, bool async);
-
 public:
     virtual ~IOBuffer();
+
+    uint8_t *addr() const;
+    uint8_t *end() const;
+    size_t size() const;
 };
       
 }}

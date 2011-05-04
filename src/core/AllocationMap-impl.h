@@ -25,9 +25,7 @@ inline
 void AllocationMap::erase(hostptr_t key, size_t size)
 {
     lockWrite();
-    MapAlloc::iterator it = MapAlloc::find(key);
-    ASSERTION(it != end());
-    MapAlloc::erase(it);
+    MapAlloc::erase(key);
     unlock();
 }
 

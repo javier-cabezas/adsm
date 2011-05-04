@@ -29,7 +29,7 @@ const unsigned blockSize = 16;
 
 typedef struct stage {
 	thread_t id;
-	sem_t free;
+	gmac_sem_t free;
 	float *in;
 	float *out;
 	float *next_in;
@@ -49,7 +49,7 @@ void __randInit(float *a, size_t size)
 void nextStage(stage_t *current, stage_t *next)
 {
 	if(next != NULL) {
-		sem_wait(&next->free, 1);
+		gmac_sem_wait(&next->free, 1);
 		next->next_in = current->out;
 		next->next_out = current->in;
 		gmacSendReceive(next->id);
@@ -57,7 +57,7 @@ void nextStage(stage_t *current, stage_t *next)
 	if(current != NULL) {
 		current->in = current->next_in;
 		current->out = current->next_out;
-		sem_post(&current->free, 1);
+		gmac_sem_post(&current->free, 1);
 	}
 }
 
@@ -98,7 +98,7 @@ void *dct_thread(void *args)
         printTime(&s, &t, "DCT:Run: ", "\n");
 
         getTime(&s);
-		sem_wait(&s_quant.free, 1);
+		gmac_sem_wait(&s_quant.free, 1);
 		s_quant.next_in = s_dct.out;
 		s_quant.next_out = s_dct.in;
 		gmacSendReceive(s_quant.id);
@@ -115,7 +115,7 @@ void *dct_thread(void *args)
     printTime(&s, &t, "DCT:Malloc: ", "\n");
 
     getTime(&s);
-	sem_wait(&s_quant.free, 1);
+	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
@@ -131,7 +131,7 @@ void *dct_thread(void *args)
     printTime(&s, &t, "DCT:Malloc: ", "\n");
 
     getTime(&s);
-	sem_wait(&s_quant.free, 1);
+	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
@@ -154,7 +154,7 @@ void *quant_thread(void *args)
 	if(height % blockSize) Dg.y++;
 
     getTime(&s);
-	sem_post(&s_quant.free, 1);
+	gmac_sem_post(&s_quant.free, 1);
 	nextStage(&s_quant, &s_idct);
     getTime(&t);
     printTime(&s, &t, "Quant:SendRecv: ", "\n");
@@ -195,7 +195,7 @@ void *idct_thread(void *args)
 	if(height % blockSize) Dg.y++;
 
     getTime(&s);
-	sem_post(&s_idct.free, 1);
+	gmac_sem_post(&s_idct.free, 1);
 	gmacSendReceive(s_dct.id);
 	nextStage(&s_idct, NULL);
     getTime(&t);
@@ -247,9 +247,8 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&height, heightStr, heightDefault);
 	setParam<unsigned>(&frames, framesStr, framesDefault);
 
-	//sem_init(&s_dct.free, 0, 0);
-	sem_init(&s_quant.free, 0);
-	sem_init(&s_idct.free, 0);
+	gmac_sem_init(&s_quant.free, 0);
+	gmac_sem_init(&s_idct.free, 0);
 
 	srand(time(NULL));
 

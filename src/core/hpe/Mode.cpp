@@ -25,7 +25,8 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 #if defined(_MSC_VER)
 #	pragma warning( disable : 4355 )
 #endif
-    map_("ModeMemoryMap", *this)
+    map_("ModeMemoryMap", *this),
+    contextMap_(*this)
 #ifdef USE_VM
     , bitmap_(*this)
 #endif

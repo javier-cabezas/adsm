@@ -10,6 +10,8 @@ set(arch_hpe_SRC
     Context.h
     Context-impl.h
     Context.cpp
+    ContextFactory.h
+    ContextFactory.cpp
     Error.cpp
     Kernel.h
     Kernel-impl.h
@@ -17,6 +19,8 @@ set(arch_hpe_SRC
     Mode.h
     Mode-impl.h
     Mode.cpp
+    ModeFactory.h
+    ModeFactory.cpp
 )
 
 set(arch_hpe_DBC
