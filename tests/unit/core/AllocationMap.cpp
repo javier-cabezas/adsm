@@ -42,11 +42,11 @@ TEST_F(AllocationMapTest, Insertion)
 {
     gmac::core::AllocationMap map_;
     hostptr_t host((hostptr_t)0xcafecafe);
-    accptr_t device((cl_mem)0xcacacaca);
+    accptr_t device((accptr_t)0xcacacaca);
     size_t size = 1024;
     map_.insert(host, device, size);
 
-    accptr_t retDevice;
+    accptr_t retDevice(0);
     size_t retSize;
     ASSERT_TRUE(map_.find(host, retDevice, retSize));
     ASSERT_TRUE(device == retDevice);
