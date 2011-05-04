@@ -244,7 +244,7 @@ void Accelerator::popContext() const
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
 inline
-cuda::Mode *
+cuda::hpe::Mode *
 Accelerator::getLastMode()
 {
     return lastMode_;
@@ -252,7 +252,7 @@ Accelerator::getLastMode()
 
 inline
 void
-Accelerator::setLastMode(cuda::Mode &mode)
+Accelerator::setLastMode(cuda::hpe::Mode &mode)
 {
     lastMode_ = &mode;
 }

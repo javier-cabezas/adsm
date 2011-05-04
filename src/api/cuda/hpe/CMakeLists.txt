@@ -25,6 +25,7 @@ set(arch_hpe_SRC
     Module.h
     Module-impl.h
     Module.cpp
+    memory/Bitmap.cpp
 )
 
 set(arch_hpe_DBC
@@ -36,3 +37,5 @@ set(arch_hpe_DBC
 
 add_gmac_sources(gmac-arch-hpe ${arch_hpe_SRC} ${arch_hpe_DBC})
 add_gmac_sources(gmac-arch-hpe-api ${arch_hpe_api_SRC})
+
+add_gmac_sources(gmac-memory ${arch_memory_SRC})

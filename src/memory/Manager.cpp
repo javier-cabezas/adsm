@@ -308,11 +308,11 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     }
 
 #ifdef USE_VM
-    CFATAL(mode->releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::Bitmap &bitmap = mode->getBitmap();
+    CFATAL(owner->releasedObjects() == false, "Acquiring bitmap on released objects");
+    vm::Bitmap &bitmap = owner->getBitmap();
     if (bitmap.isReleased()) {
         bitmap.acquire();
-        mode->forEachObject(&Object::acquireWithBitmap);
+        owner->forEachObject(&Object::acquireWithBitmap);
     }
 #endif
 

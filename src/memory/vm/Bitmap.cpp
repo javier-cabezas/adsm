@@ -102,7 +102,7 @@ Node::registerRange(long_t startIndex, long_t endIndex)
     if (nextEntries_.size() == 0) {
         for (long_t i = localStartIndex; i <= localEndIndex; i++) {
             uint8_t &leaf = getLeafRef(i);
-            leaf = uint8_t(BITMAP_UNSET);
+            leaf = uint8_t(0);
         }
         return;
     }
@@ -166,7 +166,7 @@ Node::unregisterRange(long_t startIndex, long_t endIndex)
 
 
 Node *
-Node::createChild()
+Node::createChild() const
 {
     if (nextEntries_.size() == 0) return NULL;
 
@@ -254,11 +254,6 @@ Bitmap::Bitmap(core::Mode &mode) :
     }
 
     root_ = new Node(0, *this, L1Entries_, nextEntries);
-}
-
-Bitmap::~Bitmap()
-{
-    TRACE(LOCAL, "Bitmap destructor");
 }
 
 void

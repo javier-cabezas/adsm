@@ -113,16 +113,16 @@ Mode::getAccelerator() const
 }
 
 #ifdef USE_VM
-inline memory::vm::BitmapShared &
-Mode::acceleratorDirtyBitmap()
+inline memory::vm::Bitmap &
+Mode::getDirtyBitmap()
 {
-    return acceleratorBitmap_;
+    return bitmap_;
 }
 
-inline const memory::vm::BitmapShared &
-Mode::acceleratorDirtyBitmap() const
+inline const memory::vm::Bitmap &
+Mode::getDirtyBitmap() const
 {
-    return acceleratorBitmap_;
+    return bitmap_;
 }
 #endif
 

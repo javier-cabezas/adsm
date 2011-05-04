@@ -111,8 +111,8 @@ public:
 
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
-    cuda::Mode *getLastMode();
-    void setLastMode(cuda::Mode &mode);
+    cuda::hpe::Mode *getLastMode();
+    void setLastMode(cuda::hpe::Mode &mode);
 #endif
 #endif
 
