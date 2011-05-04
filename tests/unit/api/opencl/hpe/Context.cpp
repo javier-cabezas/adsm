@@ -1,45 +1,53 @@
 #include "Context.h"
-#include "unit/core/hpe/Context.h"
-#include "core/hpe/Context.h"
-#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
+#include "api/opencl/hpe/Context.h"
+#include "api/opencl/hpe/Mode.h"
 
 using gmac::core::hpe::Process;
-using __impl::core::hpe::Mode;
+using __impl::opencl::hpe::Mode;
 using __impl::opencl::hpe::Context;
-
-Process *ContextTest::Process_ = NULL;
+using __impl::opencl::hpe::ContextFactory;
 
 extern void OpenCL(Process &);
 
-void ContextTest::SetUpTestCase() {
+void OpenCLContextTest::SetUpTestCase() {
     Process_ = new Process();
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
 }
 
-void ContextTest::TearDownTestCase() {
-    delete Process_;
+void OpenCLContextTest::TearDownTestCase() {
+    Process_->destroy();
     Process_ = NULL;
 }
 
 
-TEST_F(OpenCLContextTest, ContextMemory){
-	
+/* We need to use this ugly hack because GTF will declare class
+ * methods with default visibility
+ */
+#if defined(__GNUC__)
+#pragma GCC visibility push(hidden)
+#endif
 
+TEST_F(OpenCLContextTest, ContextMemory)
+{
     unsigned count = Process_->nAccelerators();
     for(unsigned i = 0; i < count; i++) {
-        Mode *mode = Process_->createMode(i);
+        Mode *mode = dynamic_cast<Mode *>(Process_->createMode(i));
         ASSERT_TRUE(mode != NULL);
 
-        Context *ctx = new Context(mode->getAccelerator(), *mode);
+        Context *ctx = ContextFactory::create(*mode);
         ASSERT_TRUE(ctx != NULL);
 
-        ContextMemory(*mode, *ctx)
+        ContextTest::Memory(*mode, *ctx);
 
-        delete ctx; 
+        ContextFactory::destroy(*ctx);
         Process_->removeMode(*mode);
     }
 }
 
+#if defined(__GNUC__)
+#pragma GCC visibility pop
+#endif
 

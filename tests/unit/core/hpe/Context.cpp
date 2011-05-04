@@ -48,7 +48,6 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
 	delete[] canary;
 	delete[] buffer;
 	delete[] bufferExt;
-
 }
 
 

@@ -43,9 +43,10 @@ class GMAC_LOCAL Process :
     public __impl::core::hpe::Process,
     public virtual Contract {
     DBC_TESTED(__impl::core::hpe::Process)
+protected:
+    virtual ~Process();
 public:
     Process();
-    virtual ~Process();
     void initThread();
     void finiThread();
 #define ACC_AUTO_BIND -1 
