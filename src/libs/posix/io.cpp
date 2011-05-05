@@ -1,8 +1,10 @@
+#if !defined(_MSC_VER)
 #include <unistd.h>
-#include <cstdio>
 #include <stdint.h>
 #include <dlfcn.h>
+#endif
 
+#include <cstdio>
 #include <errno.h>
 
 #if defined(POSIX)
@@ -19,7 +21,6 @@
 
 #include "memory/Manager.h"
 
-
 #include "posix.h"
 
 using namespace __impl::core;
@@ -29,21 +30,12 @@ using __impl::util::params::ParamBlockSize;
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
-void posixIoInit(void)
-{
-	TRACE(GLOBAL, "Overloading I/O POSIX functions");
-	LOAD_SYM(__libc_read, read);
-	LOAD_SYM(__libc_write, write);
-}
-
-
-
 /* System call wrappers */
 
 #ifdef __cplusplus
 extern "C"
 #endif
-ssize_t read(int fd, void *buf, size_t count)
+ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
 	if(inGmac() == 1 || count == 0) return __libc_read(fd, buf, count);
@@ -72,7 +64,7 @@ ssize_t read(int fd, void *buf, size_t count)
     IOBuffer *passive = buffer2;
 
     size_t left = count;
-    off_t  off  = 0;
+    size_t  off  = 0;
     while (left != 0) {
         err = active->wait();
         ASSERTION(err == gmacSuccess);
@@ -102,7 +94,7 @@ ssize_t read(int fd, void *buf, size_t count)
 #ifdef __cplusplus
 extern "C"
 #endif
-ssize_t write(int fd, const void *buf, size_t count)
+ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
 	if(inGmac() == 1 || count == 0) return __libc_write(fd, buf, count);
@@ -119,7 +111,7 @@ ssize_t write(int fd, const void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
 
-    off_t  off  = 0;
+    size_t off  = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = getMode(*srcMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
@@ -171,4 +163,11 @@ ssize_t write(int fd, const void *buf, size_t count)
 	exitGmac();
 
     return ret;
+}
+
+void posixIoInit(void)
+{
+	TRACE(GLOBAL, "Overloading I/O POSIX functions");
+	LOAD_SYM(__libc_read, read);
+	LOAD_SYM(__libc_write, write);
 }
