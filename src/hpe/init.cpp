@@ -104,7 +104,7 @@ static void InitThread()
 {
 	gmac::trace::StartThread("CPU");
 	enterGmac();
-	getProcess().initThread();
+	__impl::core::hpe::getProcess().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
 	exitGmac();
 }
@@ -114,7 +114,7 @@ static void FiniThread()
 	enterGmac();
 	gmac::trace::SetThreadState(gmac::trace::Idle);	
 	// Modes and Contexts already destroyed in Process destructor
-	getProcess().finiThread();
+	__impl::core::hpe::getProcess().finiThread();
 	exitGmac();
 }
 
@@ -125,9 +125,6 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 		case DLL_PROCESS_ATTACH:
             break;
 		case DLL_PROCESS_DETACH:
-			// Really ugly hack -- Stupid windows do not allow calling DLLs from static
-			// destructors, so we cannot release resources at termination time
-			AtomicInc(gmacFini__);
 			break;
 		case DLL_THREAD_ATTACH:
 			InitThread();
