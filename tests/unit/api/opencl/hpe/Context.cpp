@@ -32,7 +32,7 @@ void OpenCLContextTest::TearDownTestCase() {
 
 TEST_F(OpenCLContextTest, ContextMemory)
 {
-    unsigned count = Process_->nAccelerators();
+    unsigned count = unsigned(Process_->nAccelerators());
     for(unsigned i = 0; i < count; i++) {
         Mode *mode = dynamic_cast<Mode *>(Process_->createMode(i));
         ASSERT_TRUE(mode != NULL);
