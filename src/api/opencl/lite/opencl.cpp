@@ -118,7 +118,7 @@ cl_context SYMBOL(clCreateContext)(
 {
     if(__opencl_clCreateContext == NULL) openclInit();
     cl_context ret = __opencl_clCreateContext(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
-    if(inGmac() || num_devices != 1 || *errcode_ret != CL_SUCCESS) return ret;
+    if(num_devices != 1 || *errcode_ret != CL_SUCCESS) return ret;
 
     enterGmac();
     Process_->createMode(ret, num_devices, devices);
@@ -136,7 +136,7 @@ cl_context SYMBOL(clCreateContextFromType)(
 {
     if(__opencl_clCreateContext == NULL) openclInit();
     cl_context ret = __opencl_clCreateContextFromType(properties, device_type, pfn_notify, user_data, errcode_ret);
-    if(inGmac() || *errcode_ret != CL_SUCCESS) return ret;
+    if(*errcode_ret != CL_SUCCESS) return ret;
 
     cl_uint num_devices;
     cl_int err = clGetContextInfo(ret, CL_CONTEXT_NUM_DEVICES, sizeof(cl_uint), &num_devices, NULL);

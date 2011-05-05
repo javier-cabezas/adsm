@@ -22,17 +22,18 @@ static const char userCode = 0;
 static Atomic gmacInit__ = 0;
 static Atomic gmacFini__ = -1;
 
+CONSTRUCTOR(init);
 static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
     inGmacLock = new GMACLock();
     __impl::util::Private<const char>::init(inGmac_);
-    return initGmac();
 }
+    
 
 void enterGmac()
 {
-	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
     inGmac_.set(&gmacCode);
     inGmacLock->lockRead();
 }
