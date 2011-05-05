@@ -20,6 +20,7 @@ group_gmac_sources(gmac-trace gmac-trace)
 group_gmac_sources(gmac-memory gmac-memory)
 group_gmac_sources(gmac-core gmac-core gmac-arch)
 group_gmac_sources(gmac-libs gmac-libs)
+group_gmac_sources(gmac-include gmac-include)
 
 group_gmac_sources(gmac-core-hpe gmac-core-hpe gmac-arch-hpe)
 group_gmac_sources(gmac-hpe gmac-hpe-api gmac-arch-hpe-api)
