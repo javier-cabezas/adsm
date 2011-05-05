@@ -8,16 +8,11 @@
 #include "api/opencl/hpe/Kernel.h"
 #include "memory/Manager.h"
 
-#if defined(GMAC_DLL)
 #include "hpe/init.h"
-#endif
 
-using __impl::opencl::hpe::Accelerator;
-using __impl::opencl::hpe::Mode;
-
-static inline Mode &getCurrentOpenCLMode()
+static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 {
-	return dynamic_cast<Mode &>(getCurrentMode());
+	return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
 GMAC_API gmacError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index)
@@ -61,7 +56,7 @@ GMAC_API gmacError_t APICALL __oclKernelWait(OclKernel *kernel)
 GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags)
 {
     enterGmac();
-    gmacError_t ret = Accelerator::prepareCLCode(code, flags);
+    gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
     exitGmac();
 
     return ret;
@@ -92,7 +87,7 @@ GMAC_API gmacError_t APICALL __oclPrepareCLCodeFromFile(const char *path, const 
 gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags)
 {
     enterGmac();
-    gmacError_t ret = Accelerator::prepareCLBinary(binary, size, flags);
+    gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLBinary(binary, size, flags);
     exitGmac();
 
     return ret;

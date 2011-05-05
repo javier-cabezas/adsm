@@ -1,3 +1,4 @@
+#include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 
 #include "memory/Allocator.h"
@@ -6,53 +7,21 @@
 #include "memory/allocator/Slab.h"
 
 #include "util/Parameter.h"
-#include "util/Private.h"
 #include "util/Logger.h"
 
 #include "trace/Tracer.h"
 
 #include "init.h"
 
-using __impl::memory::allocator::Slab;
+static gmac::core::hpe::Process *Process_ = NULL;
+static gmac::memory::Manager *Manager_ = NULL;
+static __impl::memory::Allocator *Allocator_ = NULL;
 
-class GMAC_LOCAL GMACLock : public gmac::util::RWLock {
-public:
-    GMACLock() : gmac::util::RWLock("Process") {}
+extern void CUDA(gmac::core::hpe::Process &);
+extern void OpenCL(gmac::core::hpe::Process &);
 
-    void lockRead()  const { gmac::util::RWLock::lockRead();  }
-    void lockWrite() const { gmac::util::RWLock::lockWrite(); }
-    void unlock()    const { gmac::util::RWLock::unlock();   }
-};
-
-static __impl::util::Private<const char> inGmac_;
-static GMACLock * inGmacLock;
-
-static const char gmacCode = 1;
-static const char userCode = 0;
-
-static Atomic gmacInit__ = 0;
-static Atomic gmacFini__ = -1;
-
-#ifdef LINUX 
-#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
-#else
-#ifdef DARWIN
-#define GLOBAL_FILE_LOCK "/tmp/gmacSystemLock"
-#endif
-#endif
-
-static Process *Process_ = NULL;
-static Manager *Manager_ = NULL;
-static Allocator *Allocator_ = NULL;
-
-extern void CUDA(Process &);
-extern void OpenCL(Process &);
-
-static void init(void)
+void initGmac(void)
 {
-    /* Create GMAC enter lock and set GMAC as initialized */
-    inGmacLock = new GMACLock();
-    __impl::util::Private<const char>::init(inGmac_);
     enterGmac();
 
     /* Call initialization of interpose libraries */
@@ -75,11 +44,11 @@ static void init(void)
 
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    Process_ = new Process();
+    Process_ = new gmac::core::hpe::Process();
 
     TRACE(GLOBAL, "Initializing memory");
-    Manager_ = new Manager(*Process_);
-    Allocator_ = new Slab(*Manager_);
+    Manager_ = new gmac::memory::Manager(*Process_);
+    Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
 
 #if defined(USE_CUDA)
     TRACE(GLOBAL, "Initializing CUDA");
@@ -90,58 +59,25 @@ static void init(void)
     OpenCL(*Process_);
 #endif
 
-
     exitGmac();
 }
 
-void enterGmac()
-{
-	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) init();
-    inGmac_.set(&gmacCode);
-    inGmacLock->lockRead();
+
+namespace __impl {
+    namespace core {
+        namespace hpe {
+            Mode &getCurrentMode() { return Process_->getCurrentMode(); }
+            Process &getProcess() { return *Process_; } 
+        }
+        Mode &getMode(Mode &mode) { return Process_->getCurrentMode(); }
+        Process &getProcess() { return *Process_; }
+    }
+    namespace memory {
+        Manager &getManager() { return *Manager_; }
+        Allocator &getAllocator() { return *Allocator_; }
+    }
 }
 
-
-void enterGmacExclusive()
-{
-    inGmac_.set(&gmacCode);
-    inGmacLock->lockWrite();
-}
-
-void exitGmac()
-{
-    inGmacLock->unlock();
-    inGmac_.set(&userCode);
-}
-
-char inGmac()
-{ 
-    if(gmacInit__ == 0) return 1;
-    char *ret = (char  *)inGmac_.get();
-    if(ret == NULL) return 0;
-    else if(*ret == gmacCode) return 1;
-    return 0;
-}
-
-Process &getProcess()
-{
-    return *Process_;
-}
-
-Manager &getManager()
-{
-    return *Manager_;
-}
-
-Allocator &getAllocator()
-{
-    return *Allocator_;
-}
-
-__impl::core::hpe::Mode &getCurrentMode()
-{
-    return Process_->getCurrentMode();
-}
 
 // We cannot call the destructor because CUDA might have
 // been uninitialized
@@ -206,10 +142,5 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 #endif
 
-
-namespace __impl {
-
-
-}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

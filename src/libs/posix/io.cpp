@@ -1,14 +1,3 @@
-
-#include "core/IOBuffer.h"
-#include "core/hpe/Mode.h"
-#include "core/hpe/Process.h"
-
-#include "memory/Manager.h"
-
-#include "hpe/init.h"
-
-#include "os/posix/loader.h"
-
 #include <unistd.h>
 #include <cstdio>
 #include <stdint.h>
@@ -16,10 +5,25 @@
 
 #include <errno.h>
 
+#if defined(POSIX)
+#include "os/posix/loader.h"
+#elif defined(WINDOWS)
+#include "os/windows/loader.h"
+#endif
+
+#include "core/IOBuffer.h"
+#include "core/hpe/Mode.h"
+#include "core/hpe/Process.h"
+
+#include "libs/common.h"
+
+#include "memory/Manager.h"
+
+
 #include "posix.h"
 
-using __impl::core::IOBuffer;
-using __impl::core::Mode;
+using namespace __impl::core;
+using namespace __impl::memory;
 using __impl::util::params::ParamBlockSize;
 
 SYM(ssize_t, __libc_read, int, void *, size_t);
@@ -56,7 +60,7 @@ ssize_t read(int fd, void *buf, size_t count)
     gmacError_t err;
     size_t ret = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
-    Mode &mode = getCurrentMode();
+    Mode &mode = getMode(*dstMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
@@ -117,7 +121,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 
     off_t  off  = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
-    Mode &mode = getCurrentMode();
+    Mode &mode = getMode(*srcMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
@@ -141,7 +145,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 
         if (left > 0) {
             bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(getCurrentMode(), *passive, 0, hostptr_t(buf) + off, bytesPassive);
+            err = manager.toIOBuffer(mode, *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
 

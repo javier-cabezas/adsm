@@ -47,9 +47,11 @@ static long getpagesize (void) {
 }
 #endif
 
+using namespace __impl::core::hpe;
+using namespace __impl::memory;
+
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
-
 
 unsigned APICALL gmacGetNumberOfAccelerators()
 {

@@ -7,13 +7,13 @@
 #include "os/windows/loader.h"
 #endif
 
-#include "hpe/init.h"
+#include "core/IOBuffer.h"
+#include "core/Process.h"
+#include "core/Mode.h"
+
+#include "libs/common.h"
 
 #include "memory/Manager.h"
-
-#include "core/IOBuffer.h"
-#include "core/hpe/Process.h"
-#include "core/hpe/Mode.h"
 
 #include "trace/Tracer.h"
 
@@ -21,9 +21,8 @@
 
 #include "stdc.h"
 
-using __impl::core::IOBuffer;
-using __impl::core::Mode;
-
+using namespace __impl::core;
+using namespace __impl::memory;
 using __impl::util::params::ParamBlockSize;
 
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
@@ -53,7 +52,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = getCurrentMode();
+    Mode &mode = getMode(*dstMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -119,7 +118,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    Mode &mode = getCurrentMode();
+    Mode &mode = getMode(*srcMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
@@ -143,7 +142,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
         if (left > 0) {
             bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(getCurrentMode(), *passive, 0, hostptr_t(buf) + off, bytesPassive);
+            err = manager.toIOBuffer(mode, *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
         err = active->wait();

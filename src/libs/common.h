@@ -31,20 +31,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_GMAC_STDC_H_
-#define GMAC_GMAC_STDC_H_
+#ifndef GMAC_LIBS_COMMON_H_
+#define GMAC_LIBS_COMMON_H_
 
 #include "config/common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace __impl {
+    namespace core {
+        class Mode;
+        Mode &getMode(Mode &mode) GMAC_LOCAL;
+        class Process;
+        Process &getProcess() GMAC_LOCAL;
+    }
+    namespace memory {
+        class Allocator;
+        Allocator &getAllocator() GMAC_LOCAL;
 
-void stdcMemInit() GMAC_LOCAL;
-void stdcIoInit() GMAC_LOCAL;
-
-#ifdef __cplusplus
+        class Manager;
+        Manager &getManager() GMAC_LOCAL;
+    }
 }
-#endif
+
+void initGmac() GMAC_LOCAL;
+void enterGmac() GMAC_LOCAL;
+void enterGmacExclusive() GMAC_LOCAL;
+void exitGmac() GMAC_LOCAL;
+char inGmac() GMAC_LOCAL;
 
 #endif
