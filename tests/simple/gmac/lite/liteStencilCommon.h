@@ -1,7 +1,9 @@
 #ifndef GMAC_STENCIL_COMMON_H_
 #define GMAC_STENCIL_COMMON_H_
 
-#include "gmac/opencl.h"
+#include <cassert>
+#include <cstring>
+#include "gmac/lite.h"
 
 #define STENCIL 4
 
@@ -180,6 +182,14 @@ struct JobDescriptor {
 
 };
 
+static cl_platform_id platform;
+static cl_device_id device;
+static cl_int error_code;
+static cl_context context;
+static cl_command_queue command_queue;
+static cl_program program;
+static cl_kernel kernel;
+
 #define ITERATIONS 50
 
 void *
@@ -193,15 +203,12 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	if(gmacMalloc((void **)&descr->u2, descr->size()) != gmacSuccess)
-		CUFATAL();
-	gmacMemset(descr->u2, 0, descr->size());
-	if(gmacMalloc((void **)&descr->u3, descr->size()) != gmacSuccess)
-		CUFATAL();
-    gmacMemset(descr->u3, 0, descr->size());
+	assert(clMalloc(context, (void **)&descr->u2, descr->size()) == CL_SUCCESS);
+	memset(descr->u2, 0, descr->size());
+	assert(clMalloc(context, (void **)&descr->u3, descr->size()) == CL_SUCCESS);
+    memset(descr->u3, 0, descr->size());
 
-    if(gmacMalloc((void **) &v, descr->realSize()) != gmacSuccess)
-		CUFATAL();
+    assert(clMalloc(context, (void **) &v, descr->realSize()) == CL_SUCCESS);
 
     for (size_t k = 0; k < descr->slices; k++) {        
         for (size_t j = 0; j < descr->dimRealElems; j++) {        
@@ -226,39 +233,40 @@ do_stencil(void * ptr)
 
 	getTime(&s);
 
-    OclKernel kernel;
-    
-    assert(__oclKernelGet("kernelStencil", &kernel) == gmacSuccess);
-    assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == gmacSuccess);
-    cl_mem tmpMem = cl_mem(oclPtr(v));
-    tmpMem = cl_mem(oclPtr(v));
-    assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 2) == gmacSuccess);
+    cl_mem tmpMem = clBuffer(context, v);
+    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
     float dt2 = 0.08f;
-    assert(__oclKernelSetArg(&kernel, &dt2, sizeof(dt2), 3) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->dimElems,     sizeof(descr->dimElems    ), 4) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->dimRealElems, sizeof(descr->dimRealElems), 5) == gmacSuccess);
+    assert(clSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == CL_SUCCESS);
+    assert(clSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == CL_SUCCESS);
+    assert(clSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == CL_SUCCESS);
     unsigned intTmp = descr->sliceElems();
-    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 6) == gmacSuccess);
+    assert(clSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == CL_SUCCESS);
     intTmp = descr->sliceRealElems();
-    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 7) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->slices, sizeof(descr->slices), 8) == gmacSuccess);
+    assert(clSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == CL_SUCCESS);
+    assert(clSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == CL_SUCCESS);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         float * tmp;
         
         // Call the kernel
-        tmpMem = cl_mem(oclPtr(descr->u2));
-        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 0) == gmacSuccess);
-        tmpMem = cl_mem(oclPtr(descr->u3));
-        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 1) == gmacSuccess);
+        tmpMem = clBuffer(context, descr->u2);
+        assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
+        tmpMem = clBuffer(context, descr->u3);                            
+        assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
         
+#if 0
+        assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == CL_SUCCESS);
         oclError_t ret;
         ret = __oclKernelLaunch(&kernel);
-        assert(ret == gmacSuccess);
+        assert(ret == CL_SUCCESS);
+#endif
 
+        assert(clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL) == CL_SUCCESS);
+
+#if 0
         if(descr->gpus > 1) {
-            assert(__oclKernelWait(&kernel) == gmacSuccess);
+            assert(clFinish(command_queue) == CL_SUCCESS);
             barrier_wait(&barrier);
 
             // Send data
@@ -275,13 +283,14 @@ do_stencil(void * ptr)
 
             barrier_wait(&barrier);
         }
+#endif
 
         tmp = descr->u3;
         descr->u3 = descr->u2;
         descr->u2 = tmp;
     }
 
-    assert(oclThreadSynchronize() == gmacSuccess);
+    assert(clFinish(command_queue) == CL_SUCCESS);
     if(descr->gpus > 1) {
         barrier_wait(&barrier);
     }
@@ -290,9 +299,9 @@ do_stencil(void * ptr)
 	printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-	gmacFree(descr->u2);
-	gmacFree(descr->u3);
-	gmacFree(v);
+	clFree(context, descr->u2);
+	clFree(context, descr->u3);
+	clFree(context, v);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
