@@ -79,13 +79,6 @@ typedef uint8_t * hostptr_t;
 
 
 namespace __impl {
-#if defined(GMAC_DLL)
-    void enterGmac();
-    void enterGmacExclusive();
-    void exitGmac();
-    char inGmac();
-#endif
-
     namespace cuda {}
     namespace core {}
     namespace util {}
@@ -97,13 +90,6 @@ namespace __impl {
 
 #ifdef USE_DBC
 namespace __dbc {
-#if defined(GMAC_DLL)
-    using __impl::enterGmac;
-    using __impl::enterGmacExclusive;
-    using __impl::exitGmac;
-    using __impl::inGmac;
-#endif
-
     namespace cuda {}
     namespace core {
         // Singleton classes need to be predeclared
