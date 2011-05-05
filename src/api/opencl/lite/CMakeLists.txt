@@ -2,6 +2,7 @@ message(STATUS "Compiling GMAC/Lite for OpenCL")
 
 set(arch_lite_api_SRC
     opencl.cpp
+    lite.cpp
 )
 
 set(arch_lite_SRC

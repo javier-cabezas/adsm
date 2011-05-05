@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_LITE_H_
 
 #include <CL/cl.h>
-#include "opencl_types.h"
+#include "lite_types.h"
 #include "visibility.h"
 
 #ifdef __cplusplus
@@ -47,7 +47,7 @@ extern "C" {
  *  \param context OpenCL context where the obejct will be allocated
  *  \param addr Reference to the host memory address where the data will be accessible
  *  \param count Size (in bytes) of the data to be allocated
- *  \return OpenCL memory buffer
+ *  \return OpenCL error code
  */
 GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count);
 
@@ -56,7 +56,7 @@ GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count);
  *  Release the OpenCL buffer associated to a host memory address
  *  \param context OpenCL context where the obejct was allocated
  *  \param addr Host memory address
- *  \return OpenCL memory buffer
+ *  \return OpenCL error code
  */
 GMAC_API cl_int clFree(cl_context context, void *addr);
 
@@ -65,9 +65,30 @@ GMAC_API cl_int clFree(cl_context context, void *addr);
  *  Returns the OpenCL buffer associated to a host memory address
  *  \param context OpenCL context where the obejct was allocated
  *  \param addr Host memory address
- *  \return OpenCL memory buffer
+ *  \return OpenCL error code
  */
 GMAC_API cl_mem clBuffer(cl_context context, const void *addr);
+
+/**
+ * Initialize a OpenCL/Lite state
+ * \param state OpenCL state to be initialized
+ * \return OpenCL error code
+ */
+GMAC_API cl_int clLiteInit(cl_lite *state);
+
+/**
+ * Release an OpenCL/Lite state
+ * \param state OpenCL/Lite state to be released
+ * \return OpenCL error code
+ */
+GMAC_API cl_int clLiteRelease(cl_lite state);
+
+/**
+ * Load a set of kernels from a file
+ * \param state OpenCL/Lite state where the OpenCL program is loaded
+ * \return OpenCL error code
+ */
+GMAC_API cl_program clLiteLoadFile(cl_context context, const char *file_name, cl_int *error_code);
 
 
 #ifdef __cplusplus

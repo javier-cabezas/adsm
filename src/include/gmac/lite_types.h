@@ -31,31 +31,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#include "gtest/gtest.h"
-#include "core/AllocationMap.h"
 
-class AllocationMapTest : public testing::Test {
-public:
-};
+#ifndef GMAC_INCLUDE_LITE_TYPES_H_
+#define GMAC_INCLUDE_LITE_TYPES_H_
 
-TEST_F(AllocationMapTest, Insertion)
-{
-    gmac::core::AllocationMap map_;
-    hostptr_t host((hostptr_t)0xcafecafe);
-#if defined(USE_CUDA)
-    accptr_t device((accptr_t)0xcacacaca);
-#elif defined(USE_OPENCL)
-    accptr_t device((cl_mem)0xcacacaca);
+#include <CL/cl.h>
+
+typedef struct {
+    cl_platform_id platform;
+    cl_uint num_devices;
+    cl_device_id *devices;
+    cl_context *contexts;
+    cl_command_queue *command_queues;
+} cl_lite;
+
+
 #endif
-    size_t size = 1024;
-    map_.insert(host, device, size);
-
-    accptr_t retDevice(0);
-    size_t retSize;
-    ASSERT_TRUE(map_.find(host, retDevice, retSize));
-    ASSERT_TRUE(device == retDevice);
-    ASSERT_EQ(size, retSize);
-    
-    map_.erase(host, size);
-    ASSERT_FALSE(map_.find(host, retDevice, retSize));
-}
