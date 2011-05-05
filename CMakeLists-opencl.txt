@@ -1,5 +1,5 @@
 option(USE_OPENCL "Enable OpenCL backend" OFF)
-option(USE_LITE "Enable OpenCL/Lite library" OFF)
+option(USE_LITE "Enable OpenCL/Lite library" ON)
 if(USE_OPENCL)
     # Identify API being used
     set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
