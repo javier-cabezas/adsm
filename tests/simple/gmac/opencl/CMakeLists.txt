@@ -35,6 +35,8 @@ source_group(${current_GROUP} FILES
     gmacSharedVecAdd.cpp
     gmacStencil.cpp
     gmacStencilCommon.h
+    gmacMatrixMul.cpp
+    gmacMatrixMulKernel.cl
 )
 
 add_executable(gmacInit ${common_SRC} gmacInit.cpp)
@@ -67,6 +69,8 @@ target_link_libraries(gmacSharedVecAdd gmac)
 add_executable(gmacStencil ${common_SRC} gmacStencil.cpp)
 target_link_libraries(gmacStencil gmac)
 
+add_executable(gmacMatrixMul ${common_SRC} gmacMatrixMul.cpp gmacMatrixMulKernel.cl)
+target_link_libraries(gmacMatrixMul gmac)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 

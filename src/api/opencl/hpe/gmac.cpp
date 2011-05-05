@@ -67,7 +67,7 @@ GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *fl
     return ret;
 }
 
-GMAC_API gmacError_t APICALL __oclPrepareCLCodeFile(const char *path, const char *flags)
+GMAC_API gmacError_t APICALL __oclPrepareCLCodeFromFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
