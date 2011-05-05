@@ -77,7 +77,9 @@ GMAC_API cl_int clLiteRelease(cl_lite state)
 }
 
 
-GMAC_API cl_program clLiteLoadFile(cl_context context, const char *file_name, cl_int *error_code)
+static const char *build_flags = "-I.";
+
+GMAC_API cl_program clProgramFromFile(cl_lite state, const char *file_name, cl_int *error_code)
 {
     /* Let's all thank Microsoft for such a great compatibility */
 #if defined(_MSC_VER)
@@ -89,6 +91,7 @@ GMAC_API cl_program clLiteLoadFile(cl_context context, const char *file_name, cl
     struct stat file_stats;
     char *buffer = NULL;
     size_t read_bytes;
+    cl_uint i = 0;
 
     if(stat(file_name, &file_stats) < 0) { *error_code = CL_INVALID_VALUE; return ret; }
 #if defined(_MSC_VER)
@@ -107,7 +110,12 @@ GMAC_API cl_program clLiteLoadFile(cl_context context, const char *file_name, cl
         goto cleanup;
     }
 
-    ret = clCreateProgramWithSource(context, 1, (const char **)&buffer, &read_bytes, error_code);
+    for(i = 0; i < state.num_devices; i++) {
+        ret = clCreateProgramWithSource(state.contexts[i], 1, (const char **)&buffer, &read_bytes, error_code);
+        if(*error_code != CL_SUCCESS) goto cleanup;
+    }
+
+    *error_code = clBuildProgram(ret, state.num_devices, state.devices, build_flags, NULL, NULL);
 
 cleanup:
     free(buffer);

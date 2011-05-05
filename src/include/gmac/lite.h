@@ -88,7 +88,7 @@ GMAC_API cl_int clLiteRelease(cl_lite state);
  * \param state OpenCL/Lite state where the OpenCL program is loaded
  * \return OpenCL error code
  */
-GMAC_API cl_program clLiteLoadFile(cl_context context, const char *file_name, cl_int *error_code);
+GMAC_API cl_program clLiteProgram(cl_lite state, const char *file_name, cl_int *error_code);
 
 
 #ifdef __cplusplus
