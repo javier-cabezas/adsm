@@ -41,7 +41,6 @@ WITH THE SOFTWARE.  */
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 
 #ifdef USE_VM
-#include "hpe/init.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 #endif
