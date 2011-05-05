@@ -121,7 +121,7 @@ GMAC_API oclError_t APICALL __oclPrepareCLCode(const char *code, const char *fla
  * \param path String pointing to the file with the code to be added
  * \param flags Compilation flags or NULL
  */
-GMAC_API oclError_t APICALL __oclPrepareCLCodeFile(const char *path, const char *flags = NULL);
+GMAC_API oclError_t APICALL __oclPrepareCLCodeFromFile(const char *path, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application

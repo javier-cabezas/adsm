@@ -204,9 +204,9 @@ static inline error_t __prepareCLCode(std::string code, const char *flags = NULL
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCodeFile(const char *path, const char *flags = NULL)
+static inline error_t __prepareCLCodeFromFile(const char *path, const char *flags = NULL)
 {
-    return ::__oclPrepareCLCodeFile(path, flags);
+    return ::__oclPrepareCLCodeFromFile(path, flags);
 }
 
 /**
@@ -214,7 +214,7 @@ static inline error_t __prepareCLCodeFile(const char *path, const char *flags = 
  * \param in Input stream that reads the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCodeFile(std::istream &in, const char *flags = NULL)
+static inline error_t __prepareCLCodeFromFile(std::istream &in, const char *flags = NULL)
 {
     if (!in.good()) return gmacErrorInvalidValue;
     in.seekg (0, std::ios::end);

@@ -27,6 +27,8 @@ source_group(${current_GROUP} FILES
     liteVecAdd.cpp
     liteStencil.cpp
     liteStencilCommon.h
+    liteMatrixMul.cpp
+    liteMatrixMulKernel.cl
 )
 
 add_executable(liteVecAdd ${common_SRC} liteVecAdd.cpp)
@@ -34,3 +36,6 @@ target_link_libraries(liteVecAdd gmac-lite)
 
 add_executable(liteStencil ${common_SRC} liteStencil.cpp liteStencilCommon.h)
 target_link_libraries(liteStencil gmac-lite)
+
+add_executable(liteMatrixMul ${common_SRC} liteMatrixMul.cpp liteMatrixMulKernel.cl)
+target_link_libraries(liteMatrixMul gmac-lite)
