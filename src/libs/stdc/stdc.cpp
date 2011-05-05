@@ -2,6 +2,5 @@
 
 void stdcInit(void)
 {
-//    stdcMemInit();
     stdcIoInit();
 }

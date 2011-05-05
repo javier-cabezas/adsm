@@ -8,6 +8,7 @@
 
 #include "api/opencl/lite/Process.h"
 #include "include/gmac/lite.h"
+#include "libs/common.h"
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
@@ -34,23 +35,9 @@ static long getpagesize (void) {
 }
 #endif
 
-
-using __impl::memory::Handler;
-using gmac::memory::Manager;
-using __impl::memory::allocator::Slab;
-using __impl::opencl::lite::Process;
-using __impl::opencl::lite::Mode;
-using __impl::util::Private;
-
-static Private<const char> inGmac_;
-static const char gmacCode = 1;
-static const char userCode = 0;
-static Atomic gmacInit_ = 0;
-
-static Process *Process_ = NULL;
-static Manager *Manager_ = NULL;
-static Slab *Allocator_ = NULL;
-
+static __impl::opencl::lite::Process *Process_ = NULL;
+static gmac::memory::Manager *Manager_ = NULL;
+static __impl::memory::allocator::Slab *Allocator_ = NULL;
 
 SYM(cl_context, __opencl_clCreateContext,
         const cl_context_properties *,
@@ -113,33 +100,13 @@ SYM(cl_int, __opencl_clEnqueueNativeKernel,
 
 SYM(cl_int, __opencl_clFinish, cl_command_queue);
 
+using __impl::opencl::lite::Mode;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-CONSTRUCTOR(init);
 static void openclInit();
-
-static void enterGmac()
-{
-    if(AtomicTestAndSet(gmacInit_, 0, 1) == 0) init();
-    inGmac_.set(&gmacCode);
-}
-
-static void exitGmac()
-{
-    inGmac_.set(&userCode);
-}
-
-static bool inGmac()
-{
-    if(gmacInit_ == 0) return 1;
-    char *ret = (char *)inGmac_.get();
-    if(ret == NULL) return false;
-    else if(*ret == gmacCode) return true;
-    return false;
-}
-
 
 cl_context SYMBOL(clCreateContext)(
         const cl_context_properties *properties,
@@ -471,6 +438,11 @@ GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
     return ret.get();
 }
 
+#ifdef __cplusplus
+}
+#endif
+
+
 static void openclInit()
 {
     LOAD_SYM(__opencl_clCreateContext, clCreateContext);
@@ -489,22 +461,33 @@ static void openclInit()
     LOAD_SYM(__opencl_clFinish, clFinish);
 }
 
-static void init()
+void initGmac()
 {
-    Private<const char>::init(inGmac_);
-    AtomicInc(gmacInit_);
     enterGmac();
 
     TRACE(GLOBAL, "Initializing Memory Manager");
-    Handler::setEntry(enterGmac);
-    Handler::setExit(exitGmac);
+    __impl::memory::Handler::setEntry(enterGmac);
+    __impl::memory::Handler::setExit(exitGmac);
 
     TRACE(GLOBAL, "Initializing Process");
-    Process_ = new Process();
-    Manager_ = new Manager(*Process_);
-    Allocator_ = new Slab(*Manager_);
+    Process_ = new __impl::opencl::lite::Process();
+    Manager_ = new gmac::memory::Manager(*Process_);
+    Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
     exitGmac();
 }
+
+
+namespace __impl {
+    namespace core {
+        Mode &getMode(Mode &mode) { return mode; }
+        Process &getProcess() { return *Process_; }
+    }
+    namespace memory {
+        Manager &getManager() { return *Manager_; }
+        Allocator &getAllocator() { return *Allocator_; }
+    }
+}
+
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -529,6 +512,4 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+

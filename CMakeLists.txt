@@ -180,7 +180,7 @@ if(MAKE_STATIC)
 else(MAKE_STATIC)
     add_gmac_library(gmac SHARED ${gmac-hpe_SRC})
 endif(MAKE_STATIC)
-target_link_libraries(gmac gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe ${gmac_LIBS})
+target_link_libraries(gmac gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe gmac-libs ${gmac_LIBS})
 set_target_properties(gmac PROPERTIES
     VERSION 0.3.0 SOVERSION 1
 )
@@ -194,6 +194,8 @@ set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/lite_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
     ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
 )

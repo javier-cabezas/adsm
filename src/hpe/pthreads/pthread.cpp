@@ -15,6 +15,8 @@
 #include <pthread.h>
 
 
+using namespace __impl::core::hpe;
+
 SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
