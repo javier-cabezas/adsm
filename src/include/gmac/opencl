@@ -46,7 +46,7 @@ WITH THE SOFTWARE.  */
 
 namespace ocl {
 
-typedef oclError_t error_t;
+typedef ocl_error error_t;
 typedef ocl_kernel_id kernel_id_t;
 
 typedef ocl_memory_hint MemoryHint;
@@ -255,23 +255,23 @@ static inline
 error_t migrate(unsigned acc) { return ::oclMigrate(acc); }
 
 static inline
-oclError_t memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot) {
+ocl_error memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot) {
     return ::oclMemoryMap(cpuPtr, count, prot);
 }
 
 static inline
-oclError_t memoryUnmap(void *cpuPtr, size_t count) { return ::oclMemoryUnmap(cpuPtr, count); }
+ocl_error memoryUnmap(void *cpuPtr, size_t count) { return ::oclMemoryUnmap(cpuPtr, count); }
 
 static inline
-oclError_t malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
+ocl_error malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
 
 static inline
-oclError_t globalMalloc(void **devPtr, size_t count, MemoryHint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
+ocl_error globalMalloc(void **devPtr, size_t count, MemoryHint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
     return ::oclGlobalMalloc(devPtr, count, hint);
 }
 
 static inline
-oclError_t free(void *cpuPtr) { return ::oclFree(cpuPtr); }
+ocl_error free(void *cpuPtr) { return ::oclFree(cpuPtr); }
 
 static inline
 error_t threadSynchronize() { return ::oclThreadSynchronize(); }

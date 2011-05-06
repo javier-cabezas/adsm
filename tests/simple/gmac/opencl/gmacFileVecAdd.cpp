@@ -59,17 +59,17 @@ float doTest(float *a, float *b, float *c, float *orig)
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(c));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == oclSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 	gmactime_t s, t;
     float error1, error2, error3;
 
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
 
     // Alloc output data
-    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
 
     //////////////////////
@@ -111,9 +111,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"SHARED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"REPLICATED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
+    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
         CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
+    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -157,9 +157,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"CENTRALIZED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
+    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
         CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
+    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");

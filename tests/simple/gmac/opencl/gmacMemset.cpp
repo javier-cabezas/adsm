@@ -27,9 +27,9 @@ int main(int argc, char *argv[])
 {
 	long *ptr;
 
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
-	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == gmacSuccess);
+	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == oclSuccess);
 
 	// Call the kernel
     size_t localSize = blockSize;
@@ -43,13 +43,13 @@ int main(int argc, char *argv[])
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("reset", &kernel) == gmacSuccess);
+    assert(__oclKernelGet("reset", &kernel) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == oclSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
 
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 

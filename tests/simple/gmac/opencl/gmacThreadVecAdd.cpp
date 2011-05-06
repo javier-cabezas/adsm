@@ -34,20 +34,20 @@ void *addVector(void *ptr)
 	float *a, *b;
 	float **c = (float **)ptr;
 	gmactime_t s, t;
-	oclError_t ret = gmacSuccess;
+	ocl_error ret = oclSuccess;
 
 	getTime(&s);
 	// Alloc & init input data
 	ret = oclMalloc((void **)&a, vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 	valueInit(a, 1.0, vecSize);
 	ret = oclMalloc((void **)&b, vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 	valueInit(b, 1.0, vecSize);
 
 	// Alloc output data
 	ret = oclMalloc((void **)c, vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -61,17 +61,17 @@ void *addVector(void *ptr)
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(*c));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == oclSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;

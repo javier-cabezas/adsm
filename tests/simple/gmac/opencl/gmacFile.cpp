@@ -73,11 +73,11 @@ void *doTest(void *)
     globalSize *= localSize;
 
     // Alloc & init input data
-    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
 
     oclMemset(a, 0, vecSize * sizeof(float));
@@ -87,51 +87,51 @@ void *doTest(void *)
 
     ocl_kernel kernelSet;
 
-    assert(__oclKernelGet("vecSet", &kernelSet) == gmacSuccess);
+    assert(__oclKernelGet("vecSet", &kernelSet) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernelSet, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernelSet, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernelSet, &vecSize, sizeof(vecSize), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelSet, &tmp, sizeof(cl_mem), 0) == oclSuccess);
+    assert(__oclKernelSetArg(&kernelSet, &vecSize, sizeof(vecSize), 1) == oclSuccess);
 
     ocl_kernel kernelMove;
 
-    assert(__oclKernelGet("vecMove", &kernelMove) == gmacSuccess);
+    assert(__oclKernelGet("vecMove", &kernelMove) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernelMove, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernelMove, 1, NULL, &globalSize, &localSize) == oclSuccess);
     tmp = cl_mem(oclPtr(c));
-    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernelMove, &vecSize, sizeof(vecSize), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelMove, &tmp, sizeof(cl_mem), 1) == oclSuccess);
+    assert(__oclKernelSetArg(&kernelMove, &vecSize, sizeof(vecSize), 2) == oclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
         float val = float(i);
-        assert(__oclKernelSetArg(&kernelSet, &val, sizeof(val), 2) == gmacSuccess);
-        assert(__oclKernelLaunch(&kernelSet) == gmacSuccess);
+        assert(__oclKernelSetArg(&kernelSet, &val, sizeof(val), 2) == oclSuccess);
+        assert(__oclKernelLaunch(&kernelSet) == oclSuccess);
 
         barrier_wait(&ioAfter);
-        assert(__oclKernelLaunch(&kernelMove) == gmacSuccess);
+        assert(__oclKernelLaunch(&kernelMove) == oclSuccess);
         barrier_wait(&ioBefore);
     }
 
     barrier_wait(&ioBefore);
 
     ocl_kernel kernelAccum;
-    assert(__oclKernelGet("vecAccum", &kernelAccum) == gmacSuccess);
+    assert(__oclKernelGet("vecAccum", &kernelAccum) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernelAccum, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernelAccum, 1, NULL, &globalSize, &localSize) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernelAccum, &vecSize, sizeof(vecSize), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernelAccum, &tmp, sizeof(cl_mem), 1) == oclSuccess);
+    assert(__oclKernelSetArg(&kernelAccum, &vecSize, sizeof(vecSize), 2) == oclSuccess);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
 
-        assert(__oclKernelLaunch(&kernelAccum) == gmacSuccess);
+        assert(__oclKernelLaunch(&kernelAccum) == oclSuccess);
     }
 
 
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 {
     thread_t tid, tidIO;
 
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 

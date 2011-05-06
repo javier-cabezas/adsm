@@ -32,19 +32,19 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    assert(ocl::__prepareCLCode(kernel) == gmacSuccess);
+    assert(ocl::__prepareCLCode(kernel) == oclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
     // Alloc & init input data
-    if(ocl::malloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
+    if(ocl::malloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
-    if(ocl::malloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
+    if(ocl::malloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
     // Alloc output data
-    if(ocl::malloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
+    if(ocl::malloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -69,13 +69,13 @@ int main(int argc, char *argv[])
     globalSize *= localSize;
 
     ocl::KernelLaunch kernel;
-    assert(kernel.get("vecAdd") == gmacSuccess);
-    assert(kernel.configure(1, NULL, &globalSize, &localSize) == gmacSuccess);
-    assert(kernel.setArg(c, 0) == gmacSuccess);
-    assert(kernel.setArg(a, 1) == gmacSuccess);
-    assert(kernel.setArg(b, 2) == gmacSuccess);
-    assert(kernel.setArg(vecSize, 3) == gmacSuccess);
-    assert(kernel.launch() == gmacSuccess);
+    assert(kernel.get("vecAdd") == oclSuccess);
+    assert(kernel.configure(1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(kernel.setArg(c, 0) == oclSuccess);
+    assert(kernel.setArg(a, 1) == oclSuccess);
+    assert(kernel.setArg(b, 2) == oclSuccess);
+    assert(kernel.setArg(vecSize, 3) == oclSuccess);
+    assert(kernel.launch() == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
