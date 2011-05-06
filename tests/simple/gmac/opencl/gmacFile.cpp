@@ -85,7 +85,7 @@ void *doTest(void *)
 
     barrier_wait(&ioBefore);
 
-    OclKernel kernelSet;
+    ocl_kernel kernelSet;
 
     assert(__oclKernelGet("vecSet", &kernelSet) == gmacSuccess);
 
@@ -94,7 +94,7 @@ void *doTest(void *)
     assert(__oclKernelSetArg(&kernelSet, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
     assert(__oclKernelSetArg(&kernelSet, &vecSize, sizeof(vecSize), 1) == gmacSuccess);
 
-    OclKernel kernelMove;
+    ocl_kernel kernelMove;
 
     assert(__oclKernelGet("vecMove", &kernelMove) == gmacSuccess);
 
@@ -109,17 +109,15 @@ void *doTest(void *)
         float val = float(i);
         assert(__oclKernelSetArg(&kernelSet, &val, sizeof(val), 2) == gmacSuccess);
         assert(__oclKernelLaunch(&kernelSet) == gmacSuccess);
-        assert(__oclKernelWait(&kernelSet) == gmacSuccess);
 
         barrier_wait(&ioAfter);
         assert(__oclKernelLaunch(&kernelMove) == gmacSuccess);
-        assert(__oclKernelWait(&kernelMove) == gmacSuccess);
         barrier_wait(&ioBefore);
     }
 
     barrier_wait(&ioBefore);
 
-    OclKernel kernelAccum;
+    ocl_kernel kernelAccum;
     assert(__oclKernelGet("vecAccum", &kernelAccum) == gmacSuccess);
 
     assert(__oclKernelConfigure(&kernelAccum, 1, NULL, &globalSize, &localSize) == gmacSuccess);
@@ -134,7 +132,6 @@ void *doTest(void *)
         barrier_wait(&ioAfter);
 
         assert(__oclKernelLaunch(&kernelAccum) == gmacSuccess);
-        assert(__oclKernelWait(&kernelAccum) == gmacSuccess);
     }
 
 

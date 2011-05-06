@@ -15,7 +15,7 @@ static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 	return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
-GMAC_API gmacError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index)
+GMAC_API gmacError_t APICALL __oclKernelSetArg(ocl_kernel *kernel, const void *addr, size_t size, unsigned index)
 {
     enterGmac();
     ((__impl::opencl::hpe::KernelLaunch *)kernel->launch_)->setArgument(addr, size, index);
@@ -24,7 +24,7 @@ GMAC_API gmacError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *ad
     return gmacSuccess;
 }
 
-GMAC_API gmacError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t workDim, size_t *globalWorkOffset,
+GMAC_API gmacError_t APICALL __oclKernelConfigure(ocl_kernel *kernel, size_t workDim, size_t *globalWorkOffset,
         size_t *globalWorkSize, size_t *localWorkSize)
 {
     enterGmac();
@@ -35,22 +35,27 @@ GMAC_API gmacError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t work
 }
 
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
-GMAC_API gmacError_t APICALL __oclKernelLaunch(OclKernel *kernel)
+gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
+GMAC_API gmacError_t APICALL __oclKernelLaunch(ocl_kernel *kernel)
 {
     enterGmac();
     gmacError_t ret = gmacLaunch(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
+    if(ret == gmacSuccess)
+        ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
     exitGmac();
     return ret;
 }
 
-gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
-GMAC_API gmacError_t APICALL __oclKernelWait(OclKernel *kernel)
+
+#if 0
+GMAC_API gmacError_t APICALL __oclKernelWait(ocl_kernel *kernel)
 {
     enterGmac();
     gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
     exitGmac();
     return ret;
 }
+#endif
 
 
 GMAC_API gmacError_t APICALL __oclPrepareCLCode(const char *code, const char *flags)
@@ -93,7 +98,7 @@ gmacError_t APICALL __oclPrepareCLBinary(const unsigned char *binary, size_t siz
     return ret;
 }
 
-gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, OclKernel *kernel)
+gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, ocl_kernel *kernel)
 {
     enterGmac();
     __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
@@ -108,7 +113,7 @@ gmacError_t APICALL __oclKernelGet(gmac_kernel_id_t id, OclKernel *kernel)
     return gmacSuccess;
 }
 
-gmacError_t APICALL __oclKernelDestroy(OclKernel *kernel)
+gmacError_t APICALL __oclKernelDestroy(ocl_kernel *kernel)
 {
     enterGmac();
     if (kernel->launch_ != NULL) {

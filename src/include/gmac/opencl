@@ -47,10 +47,10 @@ WITH THE SOFTWARE.  */
 namespace ocl {
 
 typedef oclError_t error_t;
-typedef ocl_kernel_id_t kernel_id_t;
+typedef ocl_kernel_id kernel_id_t;
 
-typedef OclMemoryHint MemoryHint;
-typedef OclProtection Protection;
+typedef ocl_memory_hint MemoryHint;
+typedef ocl_protection Protection;
 
 /*!
 	Adds an argument to be used by the following call to oclLaunch()
@@ -62,12 +62,12 @@ typedef OclProtection Protection;
 class KernelLaunch {
 private:
     inline
-    static error_t getKernel(std::string name, ::OclKernel &kernel)
+    static error_t getKernel(std::string name, ::ocl_kernel &kernel)
     {
         return ::__oclKernelGet(name.c_str(), &kernel);
     }
 
-    ::OclKernel kernel_;
+    ::ocl_kernel kernel_;
     bool initialized_;
 
     template <typename T>
@@ -171,12 +171,13 @@ public:
     {
         return ::__oclKernelLaunch(&kernel_);
     }
-
+#if 0
     inline
     error_t wait()
     {
         return ::__oclKernelWait(&kernel_);
     }
+#endif
 };
 
 /**

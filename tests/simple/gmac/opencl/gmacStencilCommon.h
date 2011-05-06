@@ -226,7 +226,7 @@ do_stencil(void * ptr)
 
 	getTime(&s);
 
-    OclKernel kernel;
+    ocl_kernel kernel;
     
     assert(__oclKernelGet("kernelStencil", &kernel) == gmacSuccess);
     assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == gmacSuccess);
@@ -258,7 +258,6 @@ do_stencil(void * ptr)
         assert(ret == gmacSuccess);
 
         if(descr->gpus > 1) {
-            assert(__oclKernelWait(&kernel) == gmacSuccess);
             barrier_wait(&barrier);
 
             // Send data
