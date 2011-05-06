@@ -1,10 +1,11 @@
 % rubber:rules templates/extra/rubberrules.ini
 
-\documentclass[letterpaper,twoside,final]{memoir}
+\documentclass[letterpaper,twoside,11pt,final]{memoir}
 
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{xspace}
+\usepackage{hyphenat}
 \usepackage{hyperref}
 
 \newcommand{\eg}{e.g.,\xspace}
@@ -16,11 +17,7 @@
 \chapterstyle{bianchi}
 
 \begin{document}
-
-\title{GMAC User Manual}
-\author{Multicoreware Inc.}
-\date{May 2011}
-\maketitle
+\input{title}
 
 \frontmatter
 
