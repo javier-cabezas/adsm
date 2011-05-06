@@ -32,13 +32,13 @@ int main(int argc, char *argv[])
 	int *a;
 	gmactime_t s, t;
 
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
     setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
     // Alloc & init input data
-    if(oclMalloc((void **)&a, vecSize * sizeof(int)) != gmacSuccess)
+    if(oclMalloc((void **)&a, vecSize * sizeof(int)) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -51,13 +51,13 @@ int main(int argc, char *argv[])
     globalSize = globalSize * localSize;
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
+    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernel, 1, 0, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, 8, 1) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, 8, 1) == oclSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

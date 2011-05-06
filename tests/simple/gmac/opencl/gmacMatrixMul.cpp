@@ -66,13 +66,13 @@ matrixMulThread(void * ptr)
     gmactime_t s, t;
 
     getTime(&s);
-    assert(gmacMalloc((void**) &p->ptr, sizeC) == gmacSuccess); 
+    assert(gmacMalloc((void**) &p->ptr, sizeC) == oclSuccess); 
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     // Call the kernel
     getTime(&s);
-	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+	if(gmacThreadSynchronize() != oclSuccess) CUFATAL();
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
@@ -82,7 +82,7 @@ matrixMulThread(void * ptr)
 int
 main(int argc, char** argv)
 {
-    assert(__oclPrepareCLCode(code) == gmacSuccess);
+    assert(__oclPrepareCLCode(code) == oclSuccess);
 	setParam<unsigned>(&WA, WAStr, WADefault);
 	setParam<unsigned>(&HA, HAStr, HADefault);
 	setParam<unsigned>(&WB, WBStr, WBDefault);
@@ -101,9 +101,9 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    assert(gmacMalloc((void**) &A, sizeA) == gmacSuccess);
-    assert(gmacMalloc((void**) &B, sizeB) == gmacSuccess);
-    assert(gmacMalloc((void**) &C, sizeC) == gmacSuccess);
+    assert(gmacMalloc((void**) &A, sizeA) == oclSuccess);
+    assert(gmacMalloc((void**) &B, sizeB) == oclSuccess);
+    assert(gmacMalloc((void**) &C, sizeC) == oclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -122,20 +122,20 @@ main(int argc, char** argv)
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("matrixMulSimple", &kernel) == gmacSuccess);
-    assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == gmacSuccess);
+    assert(__oclKernelGet("matrixMulSimple", &kernel) == oclSuccess);
+    assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(C));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(A));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == oclSuccess);
     tmp = cl_mem(oclPtr(B));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == oclSuccess);
     int param = int(WA);
-    assert(__oclKernelSetArg(&kernel, &param, sizeof(int), 3) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &param, sizeof(int), 3) == oclSuccess);
     param     = int(WB);
-    assert(__oclKernelSetArg(&kernel, &param, sizeof(int), 4) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &param, sizeof(int), 4) == oclSuccess);
 
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

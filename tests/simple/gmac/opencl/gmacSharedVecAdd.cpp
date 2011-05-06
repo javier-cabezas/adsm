@@ -42,10 +42,10 @@ void *addVector(void *ptr)
 	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
     char *prefix = p->prefix;
-	oclError_t ret = gmacSuccess;
+	ocl_error ret = oclSuccess;
 
 	ret = oclMalloc((void **)&p->ptr, vecSize * sizeof(float));
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 	// Call the kernel
 	getTime(&s);
 
@@ -56,18 +56,18 @@ void *addVector(void *ptr)
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
+    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
+    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(p->ptr));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == oclSuccess);
+    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == oclSuccess);
     unsigned offset = p->i * long(vecSize);
-    assert(__oclKernelSetArg(&kernel, &offset, sizeof(offset), 4) == gmacSuccess);
-    assert(__oclKernelLaunch(&kernel) == gmacSuccess);
+    assert(__oclKernelSetArg(&kernel, &offset, sizeof(offset), 4) == oclSuccess);
+    assert(__oclKernelLaunch(&kernel) == oclSuccess);
 
 	getTime(&t);
     snprintf(buffer, 1024, "%s-Run: ", prefix);
@@ -92,7 +92,7 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
     static char buffer[1024];
 	thread_t *nThread;
 	unsigned n = 0;
-	gmacError_t ret = gmacSuccess;
+	ocl_error ret = oclSuccess;
 
 	gmactime_t s, t;
 
@@ -102,9 +102,9 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 	getTime(&s);
 	// Alloc & init input data
 	ret = oclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 	ret = oclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
-	assert(ret == gmacSuccess);
+	assert(ret == oclSuccess);
 
 	// Alloc output data
 	getTime(&t);
@@ -164,7 +164,7 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 int main(int argc, char *argv[])
 {
-    assert(__oclPrepareCLCode(kernel) == gmacSuccess);
+    assert(__oclPrepareCLCode(kernel) == oclSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
