@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     assert(kernel.setArg(b, 2) == gmacSuccess);
     assert(kernel.setArg(vecSize, 3) == gmacSuccess);
     assert(kernel.launch() == gmacSuccess);
-    assert(kernel.wait() == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

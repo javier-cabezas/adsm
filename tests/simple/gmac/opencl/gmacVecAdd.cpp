@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    OclKernel kernel;
+    ocl_kernel kernel;
 
     assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
     assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
     assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
     assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

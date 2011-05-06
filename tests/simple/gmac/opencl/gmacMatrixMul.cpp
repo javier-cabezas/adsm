@@ -120,7 +120,7 @@ main(int argc, char** argv)
     globalSize[0] = WC;
     globalSize[1] = HC;
 
-    OclKernel kernel;
+    ocl_kernel kernel;
 
     assert(__oclKernelGet("matrixMulSimple", &kernel) == gmacSuccess);
     assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == gmacSuccess);
@@ -136,7 +136,6 @@ main(int argc, char** argv)
     assert(__oclKernelSetArg(&kernel, &param, sizeof(int), 4) == gmacSuccess);
 
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

@@ -50,9 +50,9 @@ extern "C" {
 #endif
 
 typedef gmacError_t oclError_t;
-typedef gmac_kernel_id_t ocl_kernel_id_t;
-typedef enum GmacGlobalMallocType OclMemoryHint;
-typedef enum GmacProtection OclProtection;
+typedef gmac_kernel_id_t ocl_kernel_id;
+typedef enum GmacGlobalMallocType ocl_memory_hint;
+typedef enum GmacProtection ocl_protection;
 
 #define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
 #define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
@@ -63,7 +63,7 @@ typedef enum GmacProtection OclProtection;
  *  \param kernel Pointer to store the address to the kernel descriptor
  *  \return Error code
 */
-GMAC_API oclError_t APICALL __oclKernelGet(ocl_kernel_id_t id, OclKernel *kernel);
+GMAC_API oclError_t APICALL __oclKernelGet(ocl_kernel_id id, ocl_kernel *kernel);
 
 
 /**
@@ -74,7 +74,7 @@ GMAC_API oclError_t APICALL __oclKernelGet(ocl_kernel_id_t id, OclKernel *kernel
  *  \param index Index of the parameter being added in the parameter list
  *  \return Error code
  */
-GMAC_API oclError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *addr, size_t size, unsigned index);
+GMAC_API oclError_t APICALL __oclKernelSetArg(ocl_kernel *kernel, const void *addr, size_t size, unsigned index);
 
 /**
  *  Configures the next call
@@ -85,7 +85,7 @@ GMAC_API oclError_t APICALL __oclKernelSetArg(OclKernel *kernel, const void *add
  *  \param localWorkSize
  *  \return Error code
  */
-GMAC_API oclError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t workDim, size_t *globalWorkOffset,
+GMAC_API oclError_t APICALL __oclKernelConfigure(ocl_kernel *kernel, size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
 
 /**
@@ -93,21 +93,23 @@ GMAC_API oclError_t APICALL __oclKernelConfigure(OclKernel *kernel, size_t workD
  * \param kernel Handler of the kernel to be executed at the GPU
  * \return Error code
  */
-GMAC_API oclError_t APICALL __oclKernelLaunch(OclKernel *kernel);
+GMAC_API oclError_t APICALL __oclKernelLaunch(ocl_kernel *kernel);
 
+#if 0
 /**
  * Waits for kernel execution finalization
  * \param kernel Handler of the kernel to wait for
  * \return Error code
  */
-GMAC_API oclError_t APICALL __oclKernelWait(OclKernel *kernel);
+GMAC_API oclError_t APICALL __oclKernelWait(ocl_kernel *kernel);
+#endif
 
 /**
  * Launches a kernel execution
  * \param kernel Handler of the kernel to be executed at the GPU
  * \return Error code
  */
-GMAC_API oclError_t APICALL __oclKernelDestroy(OclKernel *kernel);
+GMAC_API oclError_t APICALL __oclKernelDestroy(ocl_kernel *kernel);
 
 /**
  * Prepares the OpenCL code to be used by the application
@@ -159,7 +161,7 @@ oclError_t oclMigrate(unsigned acc) { return gmacMigrate(acc); }
  * \return Error code
  */
 static inline
-oclError_t oclMemoryMap(void *cpuPtr, size_t count, OclProtection prot) {
+oclError_t oclMemoryMap(void *cpuPtr, size_t count, ocl_protection prot) {
     return gmacMemoryMap(cpuPtr, count, prot);
 }
 
@@ -186,7 +188,7 @@ oclError_t oclMalloc(void **devPtr, size_t count) { return gmacMalloc(devPtr, co
  * \return Error code
  */
 static inline
-oclError_t oclGlobalMalloc(void **devPtr, size_t count, OclMemoryHint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
+oclError_t oclGlobalMalloc(void **devPtr, size_t count, ocl_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
     return gmacGlobalMalloc(devPtr, count, hint);
 }
 

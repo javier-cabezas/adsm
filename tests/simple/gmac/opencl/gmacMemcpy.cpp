@@ -31,7 +31,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 {
     int error = 0;
 
-    OclKernel kernel;
+    ocl_kernel kernel;
     size_t globalSize = 1;
     size_t localSize = 1;
 
@@ -69,7 +69,6 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
                 if (callKernel) {
                     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-                    assert(__oclKernelWait(&kernel) == gmacSuccess);
                 }
                 memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
                 memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));

@@ -39,12 +39,9 @@ int main(int argc, char *argv[])
     cl_mem tmp = cl_mem(oclPtr(ptr));
     long val = 1;
 
-	fprintf(stderr,"GMAC_MEMSET\n");
-	fprintf(stderr,"===========\n");
-	fprintf(stderr,"Test full memset: ");
     oclMemset(ptr, 0, size * sizeof(long));
 
-    OclKernel kernel;
+    ocl_kernel kernel;
 
     assert(__oclKernelGet("reset", &kernel) == gmacSuccess);
 
@@ -53,7 +50,6 @@ int main(int argc, char *argv[])
     assert(__oclKernelSetArg(&kernel, &size, sizeof(size), 1) == gmacSuccess);
     assert(__oclKernelSetArg(&kernel, &val, sizeof(val), 2) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -61,14 +57,10 @@ int main(int argc, char *argv[])
 	oclMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
-	fprintf(stderr,"\n");
-	fprintf(stderr,"LIBC MEMSET\n");
-	fprintf(stderr,"===========\n");
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
 
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 

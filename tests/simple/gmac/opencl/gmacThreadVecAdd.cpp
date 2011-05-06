@@ -59,7 +59,7 @@ void *addVector(void *ptr)
     globalSize *= localSize;
 
 
-    OclKernel kernel;
+    ocl_kernel kernel;
 
     assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
 
@@ -72,7 +72,6 @@ void *addVector(void *ptr)
     assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == gmacSuccess);
     assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 

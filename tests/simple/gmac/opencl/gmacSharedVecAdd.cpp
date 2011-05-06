@@ -54,7 +54,7 @@ void *addVector(void *ptr)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    OclKernel kernel;
+    ocl_kernel kernel;
 
     assert(__oclKernelGet("vecAdd", &kernel) == gmacSuccess);
     assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == gmacSuccess);
@@ -68,7 +68,6 @@ void *addVector(void *ptr)
     unsigned offset = p->i * long(vecSize);
     assert(__oclKernelSetArg(&kernel, &offset, sizeof(offset), 4) == gmacSuccess);
     assert(__oclKernelLaunch(&kernel) == gmacSuccess);
-    assert(__oclKernelWait(&kernel) == gmacSuccess);
 
 	getTime(&t);
     snprintf(buffer, 1024, "%s-Run: ", prefix);
