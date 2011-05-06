@@ -76,6 +76,15 @@ Note that data structures used by the kernel need to be first converted to valid
 using \texttt{oclPtr()}, which takes the CPU memory address returned by \texttt{oclMalloc()}.
 
 \subsection{Final Details}
+After calling the vector addition kernel, the application writes the output vector to a file, and 
+releases the allocated memory using \texttt{oclFree()}, as shown in Listing~\ref{lst:hpe:release}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code to write the output vector and release memory.},
+    label={lst:hpe:release}]{hpe/end.c}
+
 
 
 % vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:
