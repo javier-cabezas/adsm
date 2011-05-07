@@ -29,7 +29,7 @@ using __impl::cuda::hpe::VariableDescriptor;
 
 static inline Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<Mode &>(getCurrentMode());
+    return dynamic_cast<Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
 
@@ -40,7 +40,7 @@ GMAC_API void ** APICALL __cudaRegisterFatBinary(void *fatCubin)
 {
     TRACE(GLOBAL, "CUDA Fat binary: %p", fatCubin);
     enterGmac();
-    ASSERTION(getProcess().nAccelerators() > 0);
+    ASSERTION(__impl::core::hpe::getProcess().nAccelerators() > 0);
     // Use the first GPU to load the fat binary
     void **ret = (void **) new __impl::cuda::hpe::ModuleDescriptor(fatCubin);
 	exitGmac();
