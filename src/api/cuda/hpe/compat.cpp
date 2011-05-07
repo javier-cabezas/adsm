@@ -15,14 +15,13 @@
 #include <string>
 #include <list>
 
-using __impl::cuda::hpe::Mode;
 using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
 using __impl::cuda::hpe::Variable;
 
-static inline Mode &getCurrentCUDAMode()
+static inline __impl::cuda::hpe::Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<Mode &>(getCurrentMode());
+    return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
 static inline int __getChannelSize(CUarray_format format)
@@ -307,7 +306,7 @@ extern "C" {
 
 GMAC_API cudaError_t APICALL cudaGetDeviceProperties(struct cudaDeviceProp *prop, int devNum)
 {
-    if (devNum < 0 || unsigned(devNum) >= getProcess().nAccelerators())
+    if (devNum < 0 || unsigned(devNum) >= __impl::core::hpe::getProcess().nAccelerators())
         return cudaErrorInvalidDevice;
 
     CUdevice device;
@@ -479,7 +478,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	ASSERTION(kind == cudaMemcpyHostToDevice);
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Process &proc = getProcess();
+    __impl::core::Process &proc = __impl::core::getProcess();
     __impl::cuda::Mode *mode = dynamic_cast<__impl::cuda::Mode *>(proc.owner(hostptr_t(src)));
     if(mode == NULL) {
 #if CUDA_VERSION >= 3020
@@ -519,7 +518,7 @@ GMAC_API cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *
 {
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    Mode &mode = getCurrentCUDAMode();
+    __impl::cuda::hpe::Mode &mode = getCurrentCUDAMode();
 	const Variable *variable = mode.constant(symbol);
 	ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -584,7 +583,7 @@ GMAC_API cudaError_t APICALL cudaBindTexture(size_t *offset, const struct textur
      const void *devPtr, const struct cudaChannelFormatDesc *desc, size_t size = UINT_MAX)
 {
     enterGmac();
-    Mode &mode = getCurrentCUDAMode();
+    __impl::cuda::hpe::Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
     Switch::in(getCurrentCUDAMode());
@@ -628,7 +627,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	enterGmac();
-    Mode &mode = getCurrentCUDAMode();
+    __impl::cuda::hpe::Mode &mode = getCurrentCUDAMode();
 	CUresult r;
     const Texture * texture = mode.texture(texref);
     Switch::in(getCurrentCUDAMode());
@@ -670,7 +669,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 GMAC_API cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 {
 	enterGmac();
-    Mode &mode = getCurrentCUDAMode();
+    __impl::cuda::hpe::Mode &mode = getCurrentCUDAMode();
     const Texture * texture = mode.texture(texref);
     Switch::in(getCurrentCUDAMode());
 	CUresult r = cuTexRefDestroy(texture->texRef());
