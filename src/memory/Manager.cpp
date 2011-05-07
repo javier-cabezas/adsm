@@ -28,8 +28,9 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
     // TODO: ask process instead
     // if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
 
-    // Create new shared object
-    Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    // Create new shared object. We set the memory as invalid to avoid stupid data transfers
+    // to non-initialized objects
+    Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -71,7 +72,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
     }
     Protocol *protocol = proc_.protocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
-    Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->release();
