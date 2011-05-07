@@ -14,6 +14,7 @@ source_group(${current_GROUP} FILES
     cudaThreadVecAdd.cu
     gmacSharedVecAdd.cu
     gmacFileVecAdd.cu
+    cudaFileVecAdd.cu
     gmacMatrixMul.cu
     gmacSharedMatrixMul.cu
     gmacMemcpy.cu
@@ -73,6 +74,11 @@ target_link_libraries(gmacSharedVecAdd test-common gmac)
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
 add_executable(gmacFileVecAdd ${fileVecAdd}  gmacFileVecAdd.cu)
 target_link_libraries(gmacFileVecAdd test-common gmac)
+
+# cudaFileVecAdd
+cuda_compile(fileVecAdd cudaFileVecAdd.cu)
+add_executable(cudaFileVecAdd ${fileVecAdd} cudaFileVecAdd.cu)
+target_link_libraries(cudaFileVecAdd test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # gmacMatrixMul
 cuda_compile(matrixMul gmacMatrixMul.cu)

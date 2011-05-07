@@ -57,7 +57,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     dim3 Dg(vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
-    if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+    assert(gmacThreadSynchronize() == gmacSuccess);
     getTime(&t);
     snprintf(buffer, 1024, "%s:Run: ", name);
     printTime(&s, &t, buffer, "\n");
@@ -87,15 +87,12 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
 
     // Alloc output data
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    assert(gmacMalloc((void **)&c, vecSize * sizeof(float)) == gmacSuccess);
 
     getTime(&s);
     // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    assert(gmacMalloc((void **)&a, vecSize * sizeof(float)) == gmacSuccess);
+    assert(gmacMalloc((void **)&b, vecSize * sizeof(float)) == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Shared:Alloc: ", "\n");
 
@@ -107,7 +104,7 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
     fclose(fC);
     getTime(&t);
-    printTime(&s, &t, "Shared::Write: ", "\n");
+    printTime(&s, &t, "Shared:Write: ", "\n");
 
     getTime(&s);
     gmacFree(a);
@@ -117,10 +114,8 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
-        CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != gmacSuccess)
-        CUFATAL();
+    assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == gmacSuccess);
+    assert(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Distributed:Alloc: ", "\n");
 
@@ -142,10 +137,8 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
-        CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != gmacSuccess)
-        CUFATAL();
+    assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == gmacSuccess);
+    assert(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Centralized:Alloc: ", "\n");
 
