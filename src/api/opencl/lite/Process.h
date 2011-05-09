@@ -116,5 +116,9 @@ public:
 
 }}}
 
+namespace __dbc { namespace opencl { namespace lite {
+typedef __impl::opencl::lite::Process Process;
+}}}
+
 
 #endif

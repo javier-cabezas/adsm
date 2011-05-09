@@ -306,6 +306,10 @@ public:
 
 }}}
 
+namespace __dbc { namespace opencl { namespace lite {
+typedef __impl::opencl::lite::Mode Mode;
+}}}
+
 #include "Mode-impl.h"
 
 #endif

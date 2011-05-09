@@ -189,13 +189,14 @@ include("CMakeLists-lite.txt" OPTIONAL)
 
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER
     ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/lite_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
+    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
     ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
 )
