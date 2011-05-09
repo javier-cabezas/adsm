@@ -258,23 +258,23 @@ void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
  * \param tid Thread ID of the destionation CPU thread
  */
 static inline
-void oclSend(THREAD_T tid) { return gmacSend(tid); }
+void oclDeviceSend(THREAD_T tid) { return gmacSend(tid); }
 
 /** Receive an execution mode from another CPU thread */
 static inline
-void oclReceive(void) { return gmacReceive(); }
+void oclDeviceReceive(void) { return gmacReceive(); }
 
 /** Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
+void oclDeviceSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
 
 /** Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclCopy(THREAD_T tid) { return gmacCopy(tid); }
+void oclDeviceCopy(THREAD_T tid) { return gmacCopy(tid); }
 
 #ifdef __cplusplus
 }
