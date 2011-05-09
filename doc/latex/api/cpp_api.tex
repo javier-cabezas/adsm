@@ -1,14 +1,14 @@
-\section{GMAC C++ types for OpenCL}
+\section{GMAC\slash HPE C++ types for OpenCL}
 
 All symbols in the C++ API are nested in the \texttt{ocl} namespace.
 
 \subsection{\texttt{ocl::error\_t}}
 
 Most GMAC calls return an error code. \texttt{oclSuccess} is returned on success.
-
-\begin{tabular}{|l|l|}
+\vspace{11pt}\\
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
-  Value & Description \\
+  \textnormal{Value} & Description \\
   \hline
   \hline
   oclSuccess                            & No error                             \\
@@ -28,7 +28,7 @@ Most GMAC calls return an error code. \texttt{oclSuccess} is returned on success
                                           operation                            \\
   oclErrorUnknown                       & Unknown error                        \\
   \hline
-\end{tabular}
+\end{tabularx}
 
 \subsection{\texttt{ocl::kernel\_id\_t}}
 
@@ -36,23 +36,23 @@ Constant string with the name of a function to be executed on an accelerator.
 
 \subsection{\texttt{ocl::memory\_hint}}
 
-\begin{tabular}{|l|l|}
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
-  Value & Description \\
+  \textnormal{Value} & Description \\
   \hline
   \hline
   OCL\_GLOBAL\_MALLOC\_CENTRALIZED & Prefer centralized (host\hyp{}mapped) implementation for global 
   malloc \\
   OCL\_GLOBAL\_MALLOC\_DISTRIBUTED & Prefer distributed copies implementation for global malloc \\
   \hline
-\end{tabular}
+\end{tabularx}
 
 
 \subsection{\texttt{ocl::protection}}
 
-\begin{tabular}{|l|l|}
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
-  Value & Description \\
+  \textnormal{Value} & Description \\
   \hline
   \hline
   OCL\_PROT\_NONE  & No access rights for the mapping \\
@@ -60,9 +60,9 @@ Constant string with the name of a function to be executed on an accelerator.
   OCL\_PROT\_WRITE & Write\hyp{}only access rights for the mapping \\
   OCL\_PROT\_READWRITE & Read\slash{}Write access rights for the mapping \\
   \hline
-\end{tabular}
+\end{tabularx}
 
-\section{GMAC C++ API}
+\section{GMAC\slash HPE C++ API}
 
 \subsection{\texttt{ocl::error\_t ocl::KernelLaunch::KernelLaunch()}}
 
