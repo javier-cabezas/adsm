@@ -1,0 +1,54 @@
+\section{Single\hyp{}Threaded Applications}
+
+\subsection{Initialization}
+GMAC\slash Lite requires data allocations to be performed over single\hyp{}device OpenCL contexts.  
+This simple restriction allows the initialization of GMAC\slash Lite applications to be greatly 
+simplified compared to regular OpenCL applications (Listing~\ref{lst:opencl:init}). GMAC\slash Lite 
+offers a convenient API call (\texttt{oclLiteInit()}). This API call can be also combined with 
+\texttt{oclLiteProgram()} to further simplify the load and compilation of OpenCL kernels from 
+external files. The combination of these both GMAC\slash Lite API calls can be combined as 
+illustrated in Listing~\ref{lst:lite:load}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash Lite code to make OpenCL code available to the application.},
+    label={lst:lite:load}]{lite/load.c}
+
+
+\subsection{Memory Allocation}
+Memory allocation in GMAC\slash Lite is done using the \texttt{clMalloc()} API call, which returns a 
+CPU pointer that can be used in any place of the CPU code. Listing~\ref{lst:lite:load} shows the 
+GMAC\slash Lite code to allocate data structures using \texttt{clMalloc()}. In this example we use 
+the same \texttt{load\_vector()} function used in Listing~\ref{lst:hpe:load}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash Lite code to allocate and initialized the input and output vectors.},
+    label={lst:lite:alloc}]{lite/alloc.c}
+
+\subsection{Kernel Calls}
+Kernel calls in GMAC\slash Lite is very similar to both GMAC\slash HPE and OpenCL\@.  
+Listing~\ref{lst:lite:call} shows the code to perform the kernel call, which uses 
+\texttt{clBuffer()} to get the \texttt{cl\_mem} object associated to memory allocated through calls 
+to \texttt{clMalloc()}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash Lite code to call the vector addition kernel.},
+    label={lst:lite:call}]{lite/call.c}
+
+\subsection{Memory Release}
+Listing~\ref{lst:lite:release} shows the source code to release resources in GMAC\slash Lite. Memory 
+is released calling \texttt{clFree()}, while all data structures associated with OpenCL are released 
+calling to \texttt{clLiteRelease()}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash Lite code to write the output vector and release memory.},
+    label={lst:lite:release}]{lite/release.c}
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:
