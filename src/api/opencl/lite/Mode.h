@@ -306,9 +306,11 @@ public:
 
 }}}
 
+#if defined(USE_DBC)
 namespace __dbc { namespace opencl { namespace lite {
 typedef __impl::opencl::lite::Mode Mode;
 }}}
+#endif
 
 #include "Mode-impl.h"
 
