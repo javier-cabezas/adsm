@@ -288,16 +288,16 @@ void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
 }
 
 static inline
-void send(THREAD_T tid) { return ::oclSend(tid); }
+void deviceSend(THREAD_T tid) { return ::oclDeviceSend(tid); }
 
 static inline
-void receive(void) { return ::oclReceive(); }
+void deviceReceive(void) { return ::oclDeviceReceive(); }
 
 static inline
-void sendReceive(THREAD_T tid) { return ::oclSendReceive(tid); }
+void deviceSendReceive(THREAD_T tid) { return ::oclDeviceSendReceive(tid); }
 
 static inline
-void copy(THREAD_T tid) { return ::oclCopy(tid); }
+void deviceCopy(THREAD_T tid) { return ::oclDeviceCopy(tid); }
 
 template<typename T>
 static inline cl_mem ptr(const T *addr) {
