@@ -1,0 +1,265 @@
+\section{GMAC C types for OpenCL}
+
+\subsection{\texttt{ocl\_error}}
+
+Most GMAC calls return an error code. \texttt{oclSuccess} is returned on success.
+
+\begin{tabular}{|l|l|}
+  \hline
+  Value & Description \\
+  \hline
+  \hline
+  oclSuccess                            & No error                             \\
+  oclErrorMemoryAllocation              & Error allocating memory              \\
+  oclErrorLaunchFailure                 & Error launching the kernel           \\
+  oclErrorNotReady                      &                                      \\
+  oclErrorNoAccelerator                 &                                      \\
+  oclErrorInvalidValue                  & Invalid value passed to the function \\
+  oclErrorInvalidAccelerator            & Invalid accelerator specified        \\
+  oclErrorInvalidAcceleratorFunction    & Invalid accelerator function         \\
+  oclErrorInvalidSize                   &                                      \\
+  oclErrorAlreadyBound                  &                                      \\
+  oclErrorApiFailureBase                &                                      \\
+  oclErrorFeatureNotSupported           & Feature not supported by the hardware\slash{}compilation
+                                          settings                             \\
+  oclErrorInsufficientAcceleratorMemory & Not enough accelerator memory available to perform the 
+                                          operation                            \\
+  oclErrorUnknown                       & Unknown error                        \\
+  \hline
+\end{tabular}
+
+\subsection{\texttt{ocl\_kernel\_id}}
+
+Constant string with the name of a function to be executed on an accelerator.
+
+\subsection{\texttt{ocl\_memory\_hint}}
+
+\begin{tabular}{|l|l|}
+  \hline
+  Value & Description \\
+  \hline
+  \hline
+  OCL\_GLOBAL\_MALLOC\_CENTRALIZED & Prefer centralized (host\hyp{}mapped) implementation for global 
+  malloc \\
+  OCL\_GLOBAL\_MALLOC\_DISTRIBUTED & Prefer distributed copies implementation for global malloc \\
+  \hline
+\end{tabular}
+
+
+\subsection{\texttt{ocl\_protection}}
+
+\begin{tabular}{|l|l|}
+  \hline
+  Value & Description \\
+  \hline
+  \hline
+  OCL\_PROT\_NONE  & No access rights for the mapping \\
+  OCL\_PROT\_READ  & Read\hyp{}only access rights for the mapping \\
+  OCL\_PROT\_WRITE & Write\hyp{}only access rights for the mapping \\
+  OCL\_PROT\_READWRITE & Read\slash{}Write access rights for the mapping \\
+  \hline
+\end{tabular}
+
+\section{GMAC C API}
+
+\subsection{\texttt{ocl\_error \_\_oclKernelGet(ocl\_kernel\_id id, ocl\_kernel *kernel)}}
+
+\textbf{Description}: Gets a OpenCL kernel handler. \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{id}: Kernel identifier
+  \item \texttt{kernel}: Pointer to store the address to the kernel handler
+\end{itemize}
+\textbf{Returns} Error code
+
+
+\subsection{\texttt{ocl\_error \_\_oclKernelSetArg(ocl\_kernel *kernel, const void *addr, size\_t size, unsigned index)}}
+
+\textbf{Description}: Adds an argument to be used by the following call to \_\_oclLaunch()\\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{kernel}: Kernel handler
+  \item \texttt{addr}: Memory address where the param is stored
+  \item \texttt{size}: Size, in bytes, of the argument
+  \item \texttt{index}: Index of the parameter being added in the parameter list
+\end{itemize}
+\textbf{Returns} Error code
+
+
+\subsection{\texttt{ocl\_error \_\_oclKernelConfigure(ocl\_kernel *kernel, size\_t workDim, size\_t *globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
+
+\textbf{Description}: Configures the next call to the given kernel) \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{kernel}: Kernel handler of the kernel to be configured
+  \item \texttt{workDim}: Number of elements for the work size arrays.
+  \item \texttt{globalWorkOffset}: Array of \emph{workDim} unsigned elements that specifies the work 
+    offset for the work items.
+  \item \texttt{globalWorkSize}: Array of \emph{workDim} unsigned elements that specifies the global 
+    number of work items.
+  \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
+    of work items per work group.
+\end{itemize}
+\textbf{Returns} Error code
+
+\subsection{\texttt{ocl\_error \_\_oclKernelLaunch(ocl\_kernel *kernel)}}
+
+\textbf{Description}: Launches a kernel execution\\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{kernel}: Kernel handler of the kernel to be executed on the accelerator
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{ocl\_error \_\_oclKernelDestroy(ocl\_kernel *kernel)}}
+
+\textbf{Description}: Releases the resources of the given kernel handler. \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{kernel}: Handler of the kernel to be released
+\end{itemize}
+\textbf{Returns}: Error code
+
+
+\subsection{\texttt{ocl\_error \_\_oclPrepareCLCode(const char *code, const char *flags = NULL)}}
+
+\textbf{Description}: Prepares the OpenCL code to be used by the application. \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{code} Pointer to the NULL-terminated string that contains the code
+  \item \texttt{flags} Compilation flags or NULL
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{ocl\_error \_\_oclPrepareCLCodeFromFile(const char *path, const char *flags = NULL)}}
+
+\textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the code 
+ to be prepared
+  \item \texttt{flags}: \end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{ocl\_error \_\_oclPrepareCLBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
+
+\textbf{Description}: Prepares the OpenCL binary to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{binary}: Pointer to the array that contains the binary code
+  \item \texttt{size}: Size in bytes of the array that contains the binary code
+  \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or 
+NULL
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{unsigned oclGetNumberOfAccelerators()}}
+
+\textbf{Description}: Get the number of available accelerators in the system
+\textbf{Returns}: Number of accelerators
+
+\subsection{\texttt{unsigned oclGetFreeMemory()}}
+
+\textbf{Description}: Gets the amount of available accelerator memory in bytes
+\textbf{Returns}: Amount (in bytes) of the available accelerator memory
+
+\subsection{\texttt{ocl\_error oclMigrate(unsigned acc)}}
+
+\textbf{Description}: Attach the calling CPU thread to the given accelerator
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{acc}: Id of the accelerator to attach to
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{ocl\_error oclMalloc(void **devPtr, size\_t count)}}
+
+\textbf{Description}: Allocate shared memory
+\begin{itemize}
+  \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
+  \item \texttt{count}: Size (in bytes) of the memory to be allocated
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{oclGlobalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint hint \_\_dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
+
+\textbf{Description}: Allocate shared memory accessible from all accelerators
+\begin{itemize}
+  \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
+  \item \texttt{count}: Size (in bytes) of the memory to be allocated
+  \item \texttt{hint}: Type of desired global memory
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{cl\_mem oclPtr(const void *cpuPtr)}}
+
+\textbf{Description}: Get the OpenCL memory object associated to a shared memory address
+\begin{itemize}
+  \item \texttt{cpuPtr}: Host shared memory address
+\end{itemize}
+\textbf{Returns}: Associated OpenCL buffer
+
+\subsection{\texttt{oclFree(const void *cpuPtr)}}
+
+\textbf{Description}: Release shared memory
+\begin{itemize}
+  \item \texttt{cpuPtr}: Shared memory address to be released
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{oclThreadSynchronize()}}
+
+\textbf{Description}: Wait until all previous accelerator calls are completed
+\textbf{Returns}: Error code
+
+\subsection{\texttt{oclGetLastError()}}
+
+\textbf{Description}: Get the last error produced by GMAC
+\textbf{Returns}: Error code
+
+\subsection{\texttt{void *oclMemset(void *cpuPtr, int c, size\_t count)}}
+
+\textbf{Description}: Initialize a shared memory region
+\begin{itemize}
+  \item \texttt{cpuPtr}: Starting shared memory address.
+  \item \texttt{c}: Value used to be initialized
+  \item \texttt{count}: Size (in bytes) of the shared memory region to be initialized
+\end{itemize}
+\textbf{Returns}: Shared memory address that has been initialized
+
+\subsection{\texttt{void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size\_t count)}}
+
+\textbf{Description}: Copy data between shared memory regions
+\begin{itemize}
+  \item \texttt{cpuDstPtr}: Destination shared memory
+  \item \texttt{cpuSrcPtr}: Source shared memory
+  \item \texttt{count}: Size (in bytes) to be copied
+\end{itemize}
+\textbf{Returns}: Destination shared memory address
+
+\subsection{\texttt{void oclSend(THREAD\_T tid)}}
+
+\textbf{Description}: Send the execution mode associated to the current CPU thread to another CPU thread
+\begin{itemize}
+  \item \texttt{tid}: Thread ID of the destionation CPU thread
+\end{itemize}
+
+\subsection{\texttt{void oclReceive()}}
+
+\textbf{Description}: Receive an execution mode from another CPU thread */
+
+\subsection{\texttt{void oclSendReceive(THREAD\_T tid)}}
+
+\textbf{Description}: Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+\begin{itemize}
+  \item \texttt{tid}: Thread ID of the destination CPU thread
+\end{itemize}
+
+\subsection{\texttt{void oclCopy(THREAD\_T tid)}}
+
+\textbf{Description}: Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+\begin{itemize}
+  \item \texttt{tid}: Thread ID of the destination CPU thread
+\end{itemize}
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:
