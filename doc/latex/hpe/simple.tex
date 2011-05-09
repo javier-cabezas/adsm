@@ -17,7 +17,7 @@ called \texttt{vecadd.cl} in the same directory than the application binary.
     caption={Vector addition kernel code.},
     label={lst:hpe:vecadd}]{hpe/vecadd.cl}
 
-A minor comment about the code in Listing~\ref{fig:hpe:vecadd} is the usage of \texttt{\_\_global 
+A minor comment about the code in Listing~\ref{lst:hpe:vecadd} is the usage of \texttt{\_\_global 
 float const * restrict} for the input  vectors \texttt{a} and \texttt{b}. By explicitly specifying 
 that the input vectors are constant during the kernel execution (\ie \texttt{const}) and no other 
 pointers are used to access them (\ie \texttt{restrict}), the GPU will cache the contents of that 
@@ -38,10 +38,10 @@ Listing~\ref{lst:hpe:load}.
     label={lst:hpe:load}]{hpe/load.c}
 
 \subsection{Allocating and Releasing Data Structures}
-Data structures used by kernels are allocated using the \texttt{clMalloc(void **, size\_t)} API 
+Data structures used by kernels are allocated using the \texttt{oclMalloc(void **, size\_t)} API 
 call. The first parameter is a pointer to the variable which will hold the CPU pointer used to 
 access the allocated data structure. The second parameter is the size, in bytes, of the memory to be 
-allocated. Finally, \texttt{clMalloc()} returns an error code specifying whether the allocation 
+allocated. Finally, \texttt{oclMalloc()} returns an error code specifying whether the allocation 
 succeeded (\texttt{oclSuccess}) or the condition that prevented the memory allocation.  
 Listing~\ref{lst:hpe:alloc} shows the source code required to allocate the input and output vectors.  
 
@@ -53,8 +53,8 @@ Listing~\ref{lst:hpe:alloc} shows the source code required to allocate the input
 
 Note that the CPU pointer returned by GMAC can be passed as a parameter to any other function (\eg 
 \texttt{fread()} in Listing~\ref{lst:hpe:alloc}). This code also uses the GMAC API call 
-\texttt{clFree(void *)}, which is used to release the memory allocated by calls to 
-\texttt{clMalloc()}.
+\texttt{oclFree(void *)}, which is used to release the memory allocated by calls to 
+\texttt{oclMalloc()}.
 
 \subsection{Calling Kernels}
 GMAC\slash HPE uses a kernel call interface similar to OpenCL\@. The programmer is required to set 
