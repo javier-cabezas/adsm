@@ -65,6 +65,10 @@ public:
 
 }}}
 
+namespace __dbc { namespace opencl { namespace lite {
+typedef __impl::opencl::lite::ModeMap ModeMap;
+}}}
+
 
 #include "ModeMap-impl.h"
 

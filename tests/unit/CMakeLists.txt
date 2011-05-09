@@ -13,6 +13,6 @@ set(all_SRC
     ${unit_SRC})
 add_gmac_groups(${all_SRC})
 add_executable(UnitTests ${all_SRC})
-target_link_libraries(UnitTests gmac-core-hpe gmac-core gmac-memory gmac-common gmac-trace ${gmac_test_LIB} ${gmac_LIBS})
+target_link_libraries(UnitTests gmac-core-hpe gmac-core-lite gmac-core gmac-memory gmac-common gmac-trace ${gmac_test_LIB} ${gmac_LIBS})
 set_target_properties(UnitTests PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
