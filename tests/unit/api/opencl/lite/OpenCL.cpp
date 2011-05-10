@@ -5,7 +5,7 @@
 bool CreateOpenCLContext(cl_device_id &device, cl_context &context)
 {
     cl_int error_code;
-    cl_uint num_devices;
+    /** cl_uint num_devices; */
     cl_platform_id platform;
     
     error_code = clGetPlatformIDs(1, &platform, NULL);
@@ -19,9 +19,12 @@ bool CreateOpenCLContext(cl_device_id &device, cl_context &context)
     context = clCreateContextFromType(context_properties, CL_DEVICE_TYPE_GPU, NULL, NULL, &error_code);
     if(error_code != CL_SUCCESS) return false;
 
+    /** Commented out because NVIDIA OpenCL returns CL_INVALID_VALUE on this call */
+#if 0
     error_code = clGetContextInfo(context, CL_CONTEXT_NUM_DEVICES,
             sizeof(cl_uint), &num_devices, NULL);
     if(error_code != CL_SUCCESS || num_devices != 1) goto context_cleanup;
+#endif
 
     error_code = clGetContextInfo(context, CL_CONTEXT_DEVICES,
             sizeof(cl_device_id), &device, NULL);

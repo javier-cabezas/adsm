@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 class ModeMapTest : public testing::Test {
 protected:
-    static const size_t num_modes = 4;
+    static const size_t num_modes = 8;
 
     static void CreateContexts(std::list<cl_context> &contexts, gmac::opencl::lite::ModeMap &map, size_t num_modes);
     static void CleanUpContexts(std::list<cl_context> &contexts, gmac::opencl::lite::ModeMap &map);
