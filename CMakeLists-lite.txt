@@ -20,6 +20,7 @@ install(TARGETS gmac-lite
      RESOURCE DESTINATION share
      PUBLIC_HEADER DESTINATION include/gmac)
 
+set(gmac-core-lite_LIB gmac-core-lite)
 
 endif(MAKE_LITE)
 
