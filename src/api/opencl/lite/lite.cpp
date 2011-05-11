@@ -102,10 +102,10 @@ GMAC_API cl_program clProgramFromFile(cl_lite state, const char *file_name, cl_i
     if(buffer == NULL) { *error_code = CL_OUT_OF_HOST_MEMORY; return ret; }
 
 #if defined(_MSC_VER)
-	if(fopen_s(&fp, file_name, "rt") != 0) { *error_code = CL_INVALID_VALUE; return ret; }
+	if(fopen_s(&fp, file_name, "rt") != 0) { *error_code = CL_INVALID_VALUE; free(buffer); return ret; }
 #else
     fp = fopen(file_name, "rt");
-    if(fp == NULL) { *error_code = CL_INVALID_VALUE; return ret; }
+    if(fp == NULL) { *error_code = CL_INVALID_VALUE; free(buffer); return ret; }
 #endif
     read_bytes = fread(buffer, file_stats.st_size, sizeof(char), fp);
     fclose(fp);
