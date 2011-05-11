@@ -1,3 +1,7 @@
+#include <gmac/lite.h>
+
+. . .
+
     cl_lite lite;
     cl_program program;
     cl_int error_code;
