@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
     FILE * fO = fopen(VECTORC, "rb");
     size_t ret = fread(orig, sizeof(float), vecSize, fO);
     assert(ret == vecSize);
+    fclose(fO);
 
     // Alloc output data
     if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
