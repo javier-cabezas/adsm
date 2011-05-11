@@ -114,6 +114,8 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
         free(baseDst);
     }
 
+    return error;
+
 exit_test:
 
     if (type == GMAC_TO_GMAC) {
