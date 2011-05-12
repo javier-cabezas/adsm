@@ -340,4 +340,7 @@ public:
 #include "core/hpe/dbc/Process.h"
 #endif
 
+
+#include "core/hpe/Mode.h"
+
 #endif

@@ -2,6 +2,7 @@ set(memory_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Object.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Slab.cpp
 )
 
 # Export tests one level up
