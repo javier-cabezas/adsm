@@ -51,12 +51,12 @@ protected:
      * Default constructor
      */
     Allocator();
-public:
     /**
      * Default destructor
      */
     virtual ~Allocator();
 
+public:
     /**
      *  Alloc shared memory
      * \param current Execution mode where the data is allocated
@@ -65,16 +65,22 @@ public:
      * NULL to let the allocator choose the host memory address.
      * \return Host memory address where the data was allocated
      */
-    virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr = NULL) = 0;
+    virtual hostptr_t alloc(core::Mode &current, const size_t size, const hostptr_t addr = NULL) = 0;
 
     /**
      * Release shared memory
      * \param current Execution mode where the data is released
      * \param addr Host memory address of the chunk of data to be release
      */
-    virtual bool free(core::Mode &current, hostptr_t addr) = 0;
+    virtual bool free(core::Mode &current, const hostptr_t addr) = 0;
 };
 
 }}
+
+#if defined(USE_DBC)
+namespace __dbc { namespace memory {
+typedef __impl::memory::Allocator Allocator;
+}}
+#endif
 
 #endif

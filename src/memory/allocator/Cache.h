@@ -64,6 +64,7 @@ public:
     hostptr_t key() const;
     const ObjectList &objects() const;
 
+    bool valid() const;
     bool full() const;
     bool empty() const;
 

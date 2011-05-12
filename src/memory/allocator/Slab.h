@@ -70,16 +70,22 @@ protected:
 
     Manager &manager_;
 
+    virtual ~Slab();
 public:
     Slab(Manager &manager);
-    virtual ~Slab();
     
-    virtual hostptr_t alloc(core::Mode &current, size_t size, hostptr_t addr);
-    virtual bool free(core::Mode &current, hostptr_t addr);
+    virtual hostptr_t alloc(core::Mode &current, const size_t size, const hostptr_t addr);
+    virtual bool free(core::Mode &current, const hostptr_t addr);
 };
 
 }}}
 
 #include "Slab-impl.h"
+
+#if defined(USE_DBC)
+namespace __dbc { namespace memory { namespace allocator {
+typedef __impl::memory::allocator::Slab Slab;
+}}}
+#endif
 
 #endif
