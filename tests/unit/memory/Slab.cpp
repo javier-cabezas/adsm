@@ -60,7 +60,7 @@ TEST_F(SlabTest, SmallObject)
     allocator::Slab *slab = new allocator::Slab(*Manager_);
 
     const size_t objectSize = 1024;
-    const unsigned numObjects = 4 * 1024;
+    const unsigned numObjects = 128 * 1024;
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {
         hostptr_t ptr = slab->alloc(Process_->getCurrentMode(), objectSize, hostptr_t(0x1000));
@@ -112,7 +112,7 @@ TEST_F(SlabTest, MultiKeyObject)
     ASSERT_TRUE(slab != NULL);
 
     const size_t objectSize = 1024;
-    const unsigned numObjects = 64 * 1024;
+    const unsigned numObjects = 4 * 1020;
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {
         hostptr_t ptr = slab->alloc(Process_->getCurrentMode(), objectSize, hostptr_t((n + 1) * 0x1000));
@@ -137,8 +137,8 @@ TEST_F(SlabTest, MultiSizeKeyObject)
     ASSERT_TRUE(slab != NULL);
 
     const size_t minObjectSize = 64;
-    const size_t maxObjectSize = 64 * 1024;
-    const unsigned numObjects = 64 * 1024;
+    const size_t maxObjectSize = 16 * 1024;
+    const unsigned numObjects = 4 * 1024;
     const unsigned keys = 16;
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {

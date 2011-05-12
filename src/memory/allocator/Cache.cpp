@@ -16,7 +16,7 @@ Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
 {
     mode_.use();
     gmacError_t ret = manager_.alloc(mode_, &ptr_, memory::BlockSize_);
-    if(ret != gmacSuccess) { ptr_ = NULL; mode_.release(); return; }
+    if(ret != gmacSuccess) { ptr_ = NULL; return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
         objects_.push_back(ptr_ + s);
@@ -26,9 +26,11 @@ Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
 Arena::~Arena()
 {
     CFATAL(objects_.size() == size_, "Destroying non-full Arena");
-    if(ptr_ == NULL) return;
     objects_.clear();
-    manager_.free(mode_, ptr_);
+    if(ptr_ != NULL) {
+        gmacError_t ret = manager_.free(mode_, ptr_);
+        ASSERTION(ret == gmacSuccess);
+    }
     mode_.release();
 }
 

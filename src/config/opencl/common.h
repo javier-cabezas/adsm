@@ -100,7 +100,7 @@ struct _opencl_ptr_t {
         return base_ != ptr.base_ || offset_ != ptr.offset_;
     }
 
-    inline operator void*() { return (void *)offset_; }
+    inline operator void*() { return (void *)base_; }
 
     inline cl_mem get() const { return base_; }
 };
