@@ -16,7 +16,7 @@ Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
 {
     mode_.use();
     gmacError_t ret = manager_.alloc(mode_, &ptr_, memory::BlockSize_);
-    if(ret != gmacSuccess) return;
+    if(ret != gmacSuccess) { ptr_ = NULL; mode_.release(); return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
         objects_.push_back(ptr_ + s);
@@ -55,8 +55,7 @@ hostptr_t Cache::get()
     // There are no free objects in any arena
     Arena *arena = new Arena(manager_, mode_, objectSize);
     if(arena->valid() == false) {
-        delete arena;
-        unlock();
+        delete arena; unlock();
         return NULL;
     }
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
