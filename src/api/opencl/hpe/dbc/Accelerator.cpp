@@ -16,7 +16,7 @@ Accelerator::~Accelerator()
 {
 }
 
-gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
+gmacError_t Accelerator::copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(acc  != nullaccptr);
@@ -30,7 +30,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     return ret;
 }
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t &acc, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
     REQUIRES(host != NULL);
@@ -44,7 +44,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
     return ret;
 }
 
-gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
+gmacError_t Accelerator::copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(src != nullaccptr);
@@ -58,7 +58,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     return ret;
 }
 
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(const accptr_t &acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
@@ -74,7 +74,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IO
     return ret;
 }
 
-gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
+gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t &acc, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);

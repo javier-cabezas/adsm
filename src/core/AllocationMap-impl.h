@@ -13,12 +13,17 @@ AllocationMap::AllocationMap() :
 }
 
 inline
-void AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
+const accptr_t &AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
 {
     lockWrite();
     ASSERTION(MapAlloc::find(key) == end());
-    MapAlloc::insert(MapAlloc::value_type(key, PairAlloc((val.get()), size)));
+    std::pair<MapAlloc::const_iterator, bool> ret = 
+        MapAlloc::insert(MapAlloc::value_type(key, PairAlloc((val.get()), size)));
+    ASSERTION(ret.second == true);
+    const accptr_t &ref = ret.first->second.first;
+    ASSERTION(ref != nullaccptr);
     unlock();
+    return ref;
 }
 
 inline

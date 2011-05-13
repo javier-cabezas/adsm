@@ -8,7 +8,7 @@ AllocationMap::~AllocationMap()
     EXPECTS(empty() == true);
 }
 
-void AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
+const accptr_t &AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
 {
     REQUIRES(key != NULL);
     REQUIRES(val != nullaccptr);
@@ -16,7 +16,9 @@ void AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
     lockRead();
     REQUIRES(__impl::core::MapAlloc::find(key) == end());
     unlock();
-    __impl::core::AllocationMap::insert(key, val, size);
+    const accptr_t &ret = __impl::core::AllocationMap::insert(key, val, size);
+    ENSURES(ret != nullaccptr);
+    return ret;
 }
 
 void AllocationMap::erase(hostptr_t key, size_t size)

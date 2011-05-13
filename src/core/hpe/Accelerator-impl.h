@@ -36,15 +36,14 @@ Accelerator::integrated() const
     return integrated_;
 }
 
-inline bool
-Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
+inline const accptr_t &
+Accelerator::getMapping(hostptr_t addr, size_t size)
 {
     size_t s;
     const accptr_t &ref = allocations_.find(addr, s);
     // For now, we require the mappings to match in size
 	if(nullaccptr != ref) { ASSERTION(s == size); }
-    acc = ref;
-    return (nullaccptr != ref);
+    return ref;
 }
 
 

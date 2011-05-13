@@ -38,12 +38,13 @@ TEST_F(AcceleratorTest, Memory) {
 
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
-    accptr_t device(0);
     size_t count = Process_->nAccelerators();
     for(unsigned n = 0; n < count; n++) {
         Accelerator *acc = Process_->getAccelerator(n);
         ASSERT_TRUE(acc != NULL);
-        ASSERT_TRUE(acc->map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+        gmacError_t err = gmacSuccess;
+        const accptr_t &device = acc->map(err, hostptr_t(buffer), Size_ * sizeof(int));
+        ASSERT_EQ(gmacSuccess, err);
         ASSERT_TRUE(device != nullaccptr);
         ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
         ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
@@ -62,8 +63,9 @@ TEST_F(AcceleratorTest, Aligment) {
         Accelerator *acc = Process_->getAccelerator(i);
         ASSERT_TRUE(acc != NULL);
         for(int n = 1; n < max; n <<= 1) {
-            accptr_t device(0);
-            ASSERT_TRUE(acc->map(device, fakePtr, Size_, n) == gmacSuccess);
+            gmacError_t err = gmacSuccess;
+            const accptr_t &device = acc->map(err, fakePtr, Size_, n);
+            ASSERT_EQ(gmacSuccess, err);
             ASSERT_TRUE(device != nullaccptr);
             ASSERT_TRUE(acc->unmap(fakePtr, Size_) == gmacSuccess);
         }
