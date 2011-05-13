@@ -47,9 +47,9 @@ class GMAC_LOCAL AllocationMap :
     DBC_TESTED(__impl::core::AllocationMap)
 public:
     ~AllocationMap();
-    void insert(hostptr_t key, accptr_t val, size_t size);
+    void insert(hostptr_t key, const accptr_t &val, size_t size);
     void erase(hostptr_t key, size_t size);
-    bool find(hostptr_t key, accptr_t &val, size_t &size);
+    std::pair<const accptr_t &, bool> find(hostptr_t key, size_t &size);
 };
 
 }}

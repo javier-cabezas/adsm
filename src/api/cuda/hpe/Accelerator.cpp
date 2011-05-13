@@ -220,19 +220,18 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
-    accptr_t addr(0);
     size_t s;
 
-    bool hasMapping = allocations_.find(host, addr, s);
-    ASSERTION(hasMapping == true);
+    std::pair<const accptr_t &, bool> addr = allocations_.find(host, s);
+    ASSERTION(addr.second == true);
     ASSERTION(s == size);
     allocations_.erase(host, size);
 
-    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.get());
+    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.first.get());
 
     AlignmentMap::iterator i;
     alignMap_.lockWrite();
-    i = alignMap_.find(addr);
+    i = alignMap_.find(addr.first);
     if (i == alignMap_.end()) {
         alignMap_.unlock();
         trace::ExitCurrentFunction();

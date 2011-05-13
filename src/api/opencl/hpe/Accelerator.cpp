@@ -109,19 +109,17 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
-    accptr_t addr;
     size_t s;
-
-    bool hasMapping = allocations_.find(host, addr, s);
-    ASSERTION(hasMapping == true);
+    std::pair<const accptr_t &, bool> addr = allocations_.find(host, s);
+    ASSERTION(addr.second == true);
     ASSERTION(s == size);
     allocations_.erase(host, size);
 
-    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
+    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.first.base_);
 
     trace::SetThreadState(trace::Wait);
     cl_int ret = CL_SUCCESS;
-    ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.first.base_);
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
