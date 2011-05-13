@@ -16,7 +16,7 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
 
     accptr_t device(0);
     ASSERT_TRUE(mode.map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess); 
-    ASSERT_TRUE(device != 0);
+    ASSERT_TRUE(device != nullaccptr);
 
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
@@ -34,7 +34,7 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
 
     accptr_t dstDevice(0);
     ASSERT_TRUE(mode.map(dstDevice, hostptr_t(bufferExt), Size_*sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(dstDevice != 0);
+    ASSERT_TRUE(dstDevice != nullaccptr);
     ASSERT_TRUE(ctx.copyToHost(hostptr_t(buffer), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
 

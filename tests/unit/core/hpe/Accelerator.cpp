@@ -44,7 +44,7 @@ TEST_F(AcceleratorTest, Memory) {
         Accelerator *acc = Process_->getAccelerator(n);
         ASSERT_TRUE(acc != NULL);
         ASSERT_TRUE(acc->map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
-        ASSERT_TRUE(device != 0);
+        ASSERT_TRUE(device != nullaccptr);
         ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
         ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
         ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
@@ -64,7 +64,7 @@ TEST_F(AcceleratorTest, Aligment) {
         for(int n = 1; n < max; n <<= 1) {
             accptr_t device(0);
             ASSERT_TRUE(acc->map(device, fakePtr, Size_, n) == gmacSuccess);
-            ASSERT_TRUE(device != 0);
+            ASSERT_TRUE(device != nullaccptr);
             ASSERT_TRUE(acc->unmap(fakePtr, Size_) == gmacSuccess);
         }
     }

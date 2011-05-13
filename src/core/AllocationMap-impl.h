@@ -29,20 +29,19 @@ void AllocationMap::erase(hostptr_t key, size_t size)
     unlock();
 }
 
-inline std::pair<const accptr_t &, bool>
-AllocationMap::find(hostptr_t key, size_t &size)
+inline
+const accptr_t &AllocationMap::find(hostptr_t key, size_t &size)
 {
     lockRead();
     MapAlloc::const_iterator it = MapAlloc::find(key);
     if(it != MapAlloc::end()) {
         size = it->second.second;
-        std::pair<const accptr_t &, bool> ret =
-            std::make_pair(it->second.first, true);
+        const accptr_t &ref = it->second.first;
         unlock();
-        return ret;
+        return ref;
     }
     unlock();
-    return std::make_pair(nullaccptr, false);
+    return nullaccptr;
 }
 
 

@@ -16,7 +16,7 @@ Accelerator::~Accelerator()
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
-    REQUIRES(acc  != 0);
+    REQUIRES(acc  != nullaccptr);
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
@@ -31,7 +31,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 {
     // PRECONDITIONS
     REQUIRES(host != NULL);
-    REQUIRES(acc  != 0);
+    REQUIRES(acc  != nullaccptr);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::cuda::hpe::Accelerator::copyToHost(host, acc, size, mode);
@@ -44,8 +44,8 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     // PRECONDITIONS
-    REQUIRES(src != 0);
-    REQUIRES(dst != 0);
+    REQUIRES(src != nullaccptr);
+    REQUIRES(dst != nullaccptr);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::cuda::hpe::Accelerator::copyAccelerator(dst, src, size);
@@ -60,7 +60,7 @@ count, __impl::core::hpe::Mode &mode, CUstream stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
-    REQUIRES(acc != 0);
+    REQUIRES(acc != nullaccptr);
     REQUIRES(buffer.addr() != NULL);
     REQUIRES(buffer.size() > 0);
     REQUIRES(bufferOff + count <= buffer.size());
@@ -77,7 +77,7 @@ count, __impl::core::hpe::Mode &mode, CUstream stream)
 {
     // PRECONDITIONS
     REQUIRES(count > 0);
-    REQUIRES(acc != 0);
+    REQUIRES(acc != nullaccptr);
     REQUIRES(buffer.addr() != NULL);
     REQUIRES(buffer.size() > 0);
     REQUIRES(bufferOff + count <= buffer.size());

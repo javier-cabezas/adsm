@@ -16,7 +16,7 @@ gmacError_t
 Mode::bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(dst != 0);
+    REQUIRES(dst != nullaccptr);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::cuda::hpe::Mode::bufferToAccelerator(dst, buffer, size, off);
@@ -28,7 +28,7 @@ gmacError_t
 Mode::acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(src != 0);
+    REQUIRES(src != nullaccptr);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::cuda::hpe::Mode::acceleratorToBuffer(buffer, src, size, off);

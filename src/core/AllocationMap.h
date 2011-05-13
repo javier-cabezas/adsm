@@ -54,7 +54,7 @@ public:
     AllocationMap();
     TESTABLE void insert(hostptr_t key, const accptr_t &val, size_t size);
     TESTABLE void erase(hostptr_t key, size_t size);
-    TESTABLE std::pair<const accptr_t &, bool> find(hostptr_t key, size_t &size);
+    TESTABLE const accptr_t &find(hostptr_t key, size_t &size);
 };
 
 
