@@ -114,14 +114,14 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     switchIn();
 
-    const accptr_t &acc = acc_->getMapping(src, size);
-    if(acc != nullaccptr) {
+    accptr_t acc(0);
+    bool hasMapping = acc_->getMapping(acc, src, size);
+    if (hasMapping == true) {
         error_ = gmacSuccess;
         dst = acc;
         TRACE(LOCAL,"Mapping for address %p: %p", src, dst.get());
     } else {
-        const accptr_t &ext = acc_->map(error_, src, size, align);
-        dst = ext;
+        error_ = acc_->map(dst, src, size, align);
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
 

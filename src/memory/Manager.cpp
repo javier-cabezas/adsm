@@ -113,7 +113,7 @@ accptr_t Manager::translate(core::Mode &mode, const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     accptr_t ret = proc_.translate(addr);
-    if(ret == nullaccptr) {
+    if(ret == 0) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) {
             ret = object->acceleratorAddr(addr);

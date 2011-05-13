@@ -173,9 +173,10 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-const accptr_t &Accelerator::map(gmacError_t &err, hostptr_t src, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
+    dst = accptr_t(0);
 #if CUDA_VERSION >= 3020
     size_t gpuSize = size;
 #else
@@ -190,20 +191,20 @@ const accptr_t &Accelerator::map(gmacError_t &err, hostptr_t src, size_t size, u
     popContext();
     if(ret != CUDA_SUCCESS) {
         trace::ExitCurrentFunction();
-        err = error(ret);
-        return nullaccptr;
+        return error(ret);
     }
 
     CUdeviceptr gpuPtr = ptr;
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
     }
-    accptr_t dst(gpuPtr);
+    dst = gpuPtr;
+
 #ifndef USE_MULTI_CONTEXT
     dst.pasId_ = id_;
 #endif
 
-    const accptr_t &ref = allocations_.insert(src, dst, size);
+    allocations_.insert(src, dst, size);
 
     alignMap_.lockWrite();
 
@@ -211,8 +212,7 @@ const accptr_t &Accelerator::map(gmacError_t &err, hostptr_t src, size_t size, u
     alignMap_.unlock();
     TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) dst, ptr, gpuSize, size, align);
     trace::ExitCurrentFunction();
-    err = error(ret);
-    return ref;
+    return error(ret);
 }
 
 gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
@@ -220,18 +220,19 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
+    accptr_t addr(0);
     size_t s;
 
-    const accptr_t &addr = allocations_.find(host, s);
-    ASSERTION(addr != nullaccptr);
+    bool hasMapping = allocations_.find(host, addr, s);
+    ASSERTION(hasMapping == true);
     ASSERTION(s == size);
+    allocations_.erase(host, size);
 
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.get());
 
     AlignmentMap::iterator i;
     alignMap_.lockWrite();
     i = alignMap_.find(addr);
-    allocations_.erase(host, size);
     if (i == alignMap_.end()) {
         alignMap_.unlock();
         trace::ExitCurrentFunction();
@@ -249,7 +250,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     return error(ret);
 }
 
-gmacError_t Accelerator::memset(const accptr_t &addr, int c, size_t size)
+gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 {
     trace::EnterCurrentFunction();
     CUresult ret = CUDA_SUCCESS;
@@ -319,111 +320,21 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     return error(r);
 }
 
-const accptr_t &Accelerator::hostMap(const hostptr_t addr)
+accptr_t Accelerator::hostMap(const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
     CUdeviceptr device;
     pushContext();
     CUresult ret = cuMemHostGetDevicePointer(&device, addr, 0);
-    if(ret == CUDA_SUCCESS) hostMem_.push_back(accptr_t(device));
-    const accptr_t &ref = (ret == CUDA_SUCCESS) ? hostMem_.back() : nullaccptr;
     popContext();
 #else
-    const accptr_t &ref = nullaccptr;
     CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
+    if(ret != CUDA_SUCCESS) device = 0;
     trace::ExitCurrentFunction();
-    return ref;
+    return accptr_t(device);
 }
-
-gmacError_t Accelerator::copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
-{
-    trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
-    trace::SetThreadState(trace::Wait);
-    pushContext();
-#if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoD(acc, host, size);
-#else
-	CUresult ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
-#endif
-    popContext();
-    trace::SetThreadState(trace::Running);
-    // TODO: add communication
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-gmacError_t Accelerator::copyToAcceleratorAsync(const accptr_t &acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, CUstream stream)
-{
-    trace::EnterCurrentFunction();
-    uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
-    pushContext();
-
-    buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
-#if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
-#else
-    CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
-#endif
-    buffer.started();
-    popContext();
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t &acc, size_t size, core::hpe::Mode &mode)
-{
-    trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
-    trace::SetThreadState(trace::Wait);
-    pushContext();
-#if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoH(host, acc, size);
-#else
-	CUresult ret = cuMemcpyDtoH(host, acc, unsigned(size));
-#endif
-    popContext();
-    trace::SetThreadState(trace::Running);
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t &acc, size_t count, core::Mode &mode, CUstream stream)
-{
-    trace::EnterCurrentFunction();
-    uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
-    pushContext();
-    buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
-#if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
-#else
-	CUresult ret = cuMemcpyDtoHAsync(host, acc, unsigned(count), stream);
-#endif
-    buffer.started();
-    popContext();
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-gmacError_t Accelerator::copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size)
-{
-    trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
-    pushContext();
-#if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoD(dst, src, size);
-#else
-	CUresult ret = cuMemcpyDtoD(dst, src, unsigned(size));
-#endif
-    popContext();
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
 
 void Accelerator::memInfo(size_t &free, size_t &total) const
 {

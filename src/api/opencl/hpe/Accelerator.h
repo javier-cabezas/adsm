@@ -247,7 +247,7 @@ public:
      * \param addr Host memory address to be mapped to the accelerator
      * \return Accelerator memory address
      */
-    const accptr_t &hostMapAddr(hostptr_t addr);
+    accptr_t hostMapAddr(hostptr_t addr);
 
     /**
      * Asynchronously copy an I/O buffer to the accelerator
@@ -259,7 +259,7 @@ public:
      * \param stream OpenCL command queue where to issue the data transfer request
      * \return Error code
      */
-    gmacError_t copyToAcceleratorAsync(const accptr_t &acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 
     /**
      * Asynchronously copy data from accelerator to an I/O buffer
@@ -271,7 +271,7 @@ public:
      * \param stream OpenCL command queue where to issue the data transfer request
      * \return Error code
      */
-    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t &acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 
     /**
      * Create an OpenCL command queue
@@ -331,19 +331,19 @@ public:
 
 
     /* core/hpe/Accelerator.h Interface */
-    const accptr_t &map(gmacError_t &ret, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
     gmacError_t unmap(hostptr_t addr, size_t size);
 
     gmacError_t sync();
 
     gmacError_t
-        copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
+        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
 
-    gmacError_t copyToHost(hostptr_t host, const accptr_t &acc, size_t size, core::hpe::Mode &mode);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
 
-    gmacError_t copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size);
-    gmacError_t memset(const accptr_t &addr, int c, size_t size);
+    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size);
     void memInfo(size_t &free, size_t &total) const;
 
 };

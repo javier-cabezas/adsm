@@ -86,22 +86,22 @@ core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
     return mode;
 }
 
-const accptr_t &Accelerator::map(gmacError_t &ret, hostptr_t src, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
 {
     trace::EnterCurrentFunction();
 
-    cl_int err = CL_SUCCESS;
+    cl_int ret = CL_SUCCESS;
     trace::SetThreadState(trace::Wait);
-    cl_mem buffer = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &err);
+    dst.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
     trace::SetThreadState(trace::Running);
+    dst.offset_ = 0;
 
-    const accptr_t &dst = allocations_.insert(src, accptr_t(buffer), size);
+    allocations_.insert(src, dst, size);
 
     TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.base_);
 
     trace::ExitCurrentFunction();
-    ret = error(err);
-    return dst;
+    return error(ret);
 }
 
 gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
@@ -109,24 +109,26 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
+    accptr_t addr;
     size_t s;
-    const accptr_t &addr = allocations_.find(host, s);
-    ASSERTION(addr != nullaccptr);
+
+    bool hasMapping = allocations_.find(host, addr, s);
+    ASSERTION(hasMapping == true);
     ASSERTION(s == size);
+    allocations_.erase(host, size);
 
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
 
     trace::SetThreadState(trace::Wait);
     cl_int ret = CL_SUCCESS;
     ret = clReleaseMemObject(addr.base_);
-    allocations_.erase(host, size);
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
 
-gmacError_t Accelerator::copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
@@ -144,7 +146,7 @@ gmacError_t Accelerator::copyToAccelerator(const accptr_t &acc, const hostptr_t 
 }
 
 
-gmacError_t Accelerator::copyToAcceleratorAsync(const accptr_t &acc, IOBuffer &buffer,
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
@@ -166,7 +168,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(const accptr_t &acc, IOBuffer &b
 }
 
 
-gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t &acc, size_t count, core::hpe::Mode &mode)
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
@@ -184,7 +186,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t &acc, size_t 
 }
 
 gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
-    const accptr_t &acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
+    const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
@@ -204,7 +206,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     return error(ret);
 }
 
-gmacError_t Accelerator::copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size)
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
@@ -226,7 +228,7 @@ gmacError_t Accelerator::copyAccelerator(const accptr_t &dst, const accptr_t &sr
 }
 
 
-gmacError_t Accelerator::memset(const accptr_t &addr, int c, size_t size)
+gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 {
     trace::EnterCurrentFunction();
     // TODO: This is a very inefficient implementation. We might consider
@@ -522,10 +524,10 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 #endif
 }
 
-const accptr_t &Accelerator::hostMapAddr(const hostptr_t addr)
+accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     // There is not reliable way to get zero-copy memory
-    return nullaccptr;
+    return accptr_t(0, 0);
 #if 0
     cl_mem device;
     size_t size = 0;

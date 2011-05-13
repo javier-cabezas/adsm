@@ -92,11 +92,11 @@ struct _opencl_ptr_t {
         return tmp;
     }
 
-    inline bool operator==(const _opencl_ptr_t &ptr) const {
-        return this->base_ == ptr.base_ && this->pasId_ == ptr.pasId_;
+    inline const bool operator!=(const hostptr_t addr) const {
+        return base_ != cl_mem(addr - offset_);
     }
 
-    inline bool operator!=(const _opencl_ptr_t &ptr) const {
+    inline const bool operator!=(const _opencl_ptr_t ptr) const {
         return base_ != ptr.base_ || offset_ != ptr.offset_;
     }
 
@@ -105,7 +105,7 @@ struct _opencl_ptr_t {
     inline cl_mem get() const { return base_; }
 };
 
-typedef struct _opencl_ptr_t accptr_t;
+typedef _opencl_ptr_t accptr_t;
 
 inline
 static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
@@ -113,6 +113,6 @@ static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
     return ptr.base_ < ptr2.base_;
 }
 
-extern const _opencl_ptr_t nullaccptr;
+
 
 #endif

@@ -50,12 +50,12 @@ TEST_F(AllocationMapTest, Insertion)
     size_t size = 1024;
     map_.insert(host, device, size);
 
+    accptr_t retDevice(0);
     size_t retSize;
-    const accptr_t &ret = map_.find(host, retSize);
-    ASSERT_TRUE(ret != nullaccptr);
-    ASSERT_TRUE(device == ret);
+    ASSERT_TRUE(map_.find(host, retDevice, retSize));
+    ASSERT_TRUE(device == retDevice);
     ASSERT_EQ(size, retSize);
     
     map_.erase(host, size);
-    ASSERT_TRUE(map_.find(host, retSize) == nullaccptr);
+    ASSERT_FALSE(map_.find(host, retDevice, retSize));
 }

@@ -16,7 +16,7 @@ gmacError_t
 Mode::bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(dst != nullaccptr);
+    REQUIRES(dst != NULL);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::opencl::hpe::Mode::bufferToAccelerator(dst, buffer, size, off);
@@ -28,7 +28,7 @@ gmacError_t
 Mode::acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(src != nullaccptr);
+    REQUIRES(src != NULL);
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::opencl::hpe::Mode::acceleratorToBuffer(buffer, src, size, off);
