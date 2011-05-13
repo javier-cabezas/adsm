@@ -87,7 +87,6 @@ protected:
     int minor_;
 
     AlignmentMap alignMap_;
-    std::list<accptr_t> hostMem_;
 
 #ifdef USE_VM
 #ifndef USE_MULTI_CONTEXT
@@ -139,17 +138,17 @@ public:
     int major() const;
     int minor() const;
 
-    const accptr_t &map(gmacError_t &ret, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t size);
 
     /* Synchronous interface */
-    TESTABLE gmacError_t copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
-    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t &acc, size_t size, core::hpe::Mode &mode);
-    TESTABLE gmacError_t copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    TESTABLE gmacError_t copyToAcceleratorAsync(const accptr_t &acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, CUstream stream);
-    TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t &acc, size_t count, core::Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::Mode &mode, CUstream stream);
 
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
@@ -162,13 +161,13 @@ public:
 
     gmacError_t execute(KernelLaunch &launch);
 
-    gmacError_t memset(const accptr_t &addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size);
 
     gmacError_t sync();
 
     gmacError_t hostAlloc(hostptr_t *addr, size_t size);
     gmacError_t hostFree(hostptr_t addr);
-    const accptr_t &hostMap(const hostptr_t addr);
+    accptr_t hostMap(const hostptr_t addr);
 
     static gmacError_t error(CUresult r);
 

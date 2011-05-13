@@ -51,6 +51,9 @@ class KernelLaunch;
 class Mode;
 class Process;
 
+typedef std::pair<accptr_t, size_t> PairAlloc;
+typedef std::map<hostptr_t, PairAlloc> MapAlloc;
+
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
     DBC_FORCE_TEST(Accelerator)
@@ -137,7 +140,7 @@ public:
      * \param size The number of bytes of the allocation
      * \return Error code
      */
-    const accptr_t &getMapping(hostptr_t addr, size_t size);
+    bool getMapping(accptr_t &acc, hostptr_t addr, size_t size);
 
     /**
      * Maps host memory on the accelerator memory
@@ -149,7 +152,7 @@ public:
      * of two
      * \return Error code
      */
-    virtual const accptr_t &map(gmacError_t &error, hostptr_t src, size_t size, unsigned align = 1) = 0;
+    virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
 
     /**
      * Unmaps memory previously mapped by map
@@ -174,7 +177,7 @@ public:
      * \return Error code
      */
     virtual gmacError_t
-        copyToAccelerator(const accptr_t &acc, const hostptr_t host, size_t size, Mode &mode) = 0;
+        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, Mode &mode) = 0;
 
     /**
      * Copies data from accelerator memory to host memory
@@ -184,7 +187,7 @@ public:
      * \param mode Mode that sends the data
      * \return Error code
      */
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t &acc, size_t size, Mode &mode) = 0;
+    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, Mode &mode) = 0;
 
     /**
      * Copies data from accelerator memory to accelerator memory
@@ -193,7 +196,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    virtual gmacError_t copyAccelerator(const accptr_t &dst, const accptr_t &src, size_t size) = 0;
+    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
 
     /**
      * Gets the memory information for the accelerator

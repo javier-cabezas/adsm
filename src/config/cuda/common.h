@@ -60,18 +60,17 @@ struct accptr_t {
     inline void *get() const { return (void *)(ptr_); }
 
     inline
-    bool operator==(const accptr_t &ptr) const
+    bool operator==(accptr_t ptr)
     {
         return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
     }
 
     inline
-    bool operator!=(const accptr_t &ptr) const
+    bool operator!=(accptr_t ptr)
     {
         return this->ptr_ != ptr.ptr_ || this->pasId_ != ptr.pasId_;
     }
 
-#if 0
     template <typename T>
     inline
     bool operator==(T ptr)
@@ -85,10 +84,7 @@ struct accptr_t {
     {
         return (((T)this->ptr_) != ptr);
     }
-#endif
 };
-
-extern const accptr_t nullaccptr;
 
 inline
 static bool operator<(const accptr_t &a, const accptr_t &b)
