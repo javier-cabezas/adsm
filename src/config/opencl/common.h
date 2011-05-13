@@ -113,6 +113,6 @@ static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
     return ptr.base_ < ptr2.base_;
 }
 
-
+extern const _opencl_ptr_t nullaccptr;
 
 #endif

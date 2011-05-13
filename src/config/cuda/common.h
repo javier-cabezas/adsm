@@ -86,6 +86,8 @@ struct accptr_t {
     }
 };
 
+extern const accptr_t nullaccptr;
+
 inline
 static bool operator<(const accptr_t &a, const accptr_t &b)
 {

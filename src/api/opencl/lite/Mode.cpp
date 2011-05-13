@@ -71,13 +71,12 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 gmacError_t Mode::unmap(hostptr_t host, size_t size)
 {
     ASSERTION(host != NULL);
-    accptr_t addr;
     size_t s;
-    bool hasMapping = allocations_.find(host, addr, s);
-    ASSERTION(hasMapping == true);
+    std::pair<const accptr_t &, bool> addr = allocations_.find(host, s);
+    ASSERTION(addr.second == true);
     ASSERTION(s == size);
     cl_int ret = CL_SUCCESS;
-    ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.first.base_);
     return error(ret);
 }
 

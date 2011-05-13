@@ -40,10 +40,11 @@ inline bool
 Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
 {
     size_t s;
-    bool ret = allocations_.find(addr, acc, s);
+    std::pair<const accptr_t &, bool> ret = allocations_.find(addr, s);
     // For now, we require the mappings to match in size
-	if (ret == true) { ASSERTION(s == size); }
-    return ret;
+	if (ret.second == true) { ASSERTION(s == size); }
+    acc = ret.first;
+    return ret.second;
 }
 
 
