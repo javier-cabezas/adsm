@@ -49,7 +49,7 @@ public:
     ~AllocationMap();
     void insert(hostptr_t key, const accptr_t &val, size_t size);
     void erase(hostptr_t key, size_t size);
-    std::pair<const accptr_t &, bool> find(hostptr_t key, size_t &size);
+    const accptr_t &find(hostptr_t key, size_t &size);
 };
 
 }}

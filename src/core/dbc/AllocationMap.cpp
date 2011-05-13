@@ -11,7 +11,7 @@ AllocationMap::~AllocationMap()
 void AllocationMap::insert(hostptr_t key, const accptr_t &val, size_t size)
 {
     REQUIRES(key != NULL);
-    REQUIRES(val != 0);
+    REQUIRES(val != nullaccptr);
     REQUIRES(size > 0);
     lockRead();
     REQUIRES(__impl::core::MapAlloc::find(key) == end());
@@ -29,8 +29,7 @@ void AllocationMap::erase(hostptr_t key, size_t size)
     __impl::core::AllocationMap::erase(key, size);
 }
 
-std::pair<const accptr_t &, bool>
-AllocationMap::find(hostptr_t key, size_t &size)
+const accptr_t &AllocationMap::find(hostptr_t key, size_t &size)
 {
     REQUIRES(key != NULL);
     return __impl::core::AllocationMap::find(key, size);

@@ -75,7 +75,7 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
     if (valid_ == true) {
         // Allocate accelerator memory
         acceleratorAddr_ = allocAcceleratorMemory(owner, addr_, size);
-        valid_ = (acceleratorAddr_ != 0);
+        valid_ = (acceleratorAddr_ != nullaccptr);
     }
 
     // Free allocated memory if there has been an error
@@ -113,7 +113,7 @@ SharedObject<State>::~SharedObject()
 #endif
 
 	// If the object creation failed, this address will be NULL
-    if (acceleratorAddr_ != 0) owner_->unmap(addr_, size_);
+    if (acceleratorAddr_ != nullaccptr) owner_->unmap(addr_, size_);
     if (valid_) Memory::unshadow(shadow_, size_);
     if (addr_ != NULL) Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
@@ -124,7 +124,7 @@ inline accptr_t SharedObject<State>::acceleratorAddr(core::Mode &current, const 
 {
     accptr_t ret = accptr_t(0);
     lockRead();
-    if(acceleratorAddr_ != 0) {
+    if(acceleratorAddr_ != nullaccptr) {
         ptroff_t offset = ptroff_t(addr - addr_);
         ret = acceleratorAddr_ + offset;
     }
@@ -157,7 +157,7 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
         owner.insertOrphan(*this);
 
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
-        if(acceleratorAddr_ != 0) {
+        if(acceleratorAddr_ != nullaccptr) {
             gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
             ASSERTION(ret == gmacSuccess);
             ret = coherenceOp(&Protocol::unmapFromAccelerator);
@@ -200,7 +200,7 @@ inline gmacError_t SharedObject<State>::mapToAccelerator()
 
     // Allocate accelerator memory in the new mode
     accptr_t newAcceleratorAddr = allocAcceleratorMemory(*owner_, addr_, size_);
-    valid_ = (newAcceleratorAddr != 0);
+    valid_ = (newAcceleratorAddr != nullaccptr);
 
     if (valid_) {
         acceleratorAddr_ = newAcceleratorAddr;

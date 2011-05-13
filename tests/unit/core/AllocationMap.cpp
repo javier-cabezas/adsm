@@ -51,12 +51,11 @@ TEST_F(AllocationMapTest, Insertion)
     map_.insert(host, device, size);
 
     size_t retSize;
-    std::pair<const accptr_t &, bool> ret = map_.find(host, retSize);
-    const accptr_t &retDevice = ret.first;
-    ASSERT_TRUE(ret.second);
-    ASSERT_TRUE(device.get() == retDevice.get());
+    const accptr_t &ret = map_.find(host, retSize);
+    ASSERT_TRUE(ret != nullaccptr);
+    ASSERT_TRUE(device == ret);
     ASSERT_EQ(size, retSize);
     
     map_.erase(host, size);
-    ASSERT_FALSE(map_.find(host, retSize).second);
+    ASSERT_TRUE(map_.find(host, retSize) == nullaccptr);
 }
