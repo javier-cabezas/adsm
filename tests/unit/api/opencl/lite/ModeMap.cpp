@@ -74,9 +74,12 @@ TEST_F(ModeMapTest, Insertion)
     gmac::opencl::lite::ModeMap map; 
     std::list<cl_context> contexts;
 
+    SCOPED_TRACE("CreateContext");
     CreateContexts(contexts, map, num_modes);
+    if(HasFatalFailure()) return;
+    SCOPED_TRACE("CleanUpContext");
     CleanUpContexts(contexts, map);
-
+    if(HasFatalFailure()) return;
 }
 
 TEST_F(ModeMapTest, Removal)
@@ -85,7 +88,9 @@ TEST_F(ModeMapTest, Removal)
     gmac::opencl::lite::ModeMap map; 
     std::list<cl_context> contexts;
 
+    SCOPED_TRACE("CreateContext");
     CreateContexts(contexts, map, num_modes);
+    if(HasFatalFailure()) return;
         
     std::list<cl_context>::iterator i;
     for(n = 0, i = contexts.begin(); i != contexts.end(); n++) {
@@ -101,6 +106,8 @@ TEST_F(ModeMapTest, Removal)
         ASSERT_TRUE(map.get(*i) != NULL);
     }
 
+    SCOPED_TRACE("CleanUpContext");
     CleanUpContexts(contexts, map);
+    if(HasFatalFailure()) return;
 }
 

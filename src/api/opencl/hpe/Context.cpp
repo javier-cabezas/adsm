@@ -85,7 +85,7 @@ gmacError_t Context::waitForEvent(cl_event e)
 
 gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.base_);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.get());
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
@@ -119,7 +119,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
 
 gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.base_, host);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.get(), host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));

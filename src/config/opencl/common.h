@@ -42,7 +42,9 @@ WITH THE SOFTWARE.  */
 typedef cl_context AddressSpace;
 
 struct _opencl_ptr_t {
+private:
     cl_mem base_;
+public:
     unsigned pasId_;
 
     inline _opencl_ptr_t() :
@@ -53,12 +55,31 @@ struct _opencl_ptr_t {
     inline _opencl_ptr_t(cl_mem base) :
         base_(base),
         pasId_(0)
-    {}
+    {  clRetainMemObject(base_); }
 
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
         base_(ptr.base_),
         pasId_(0)
-    { }
+    { if(base_ != 0) clRetainMemObject(base_); }
+
+    inline ~_opencl_ptr_t() {
+        if(base_ != 0) clReleaseMemObject(base_);
+    }
+
+    inline void operator()(cl_mem mem) {
+        base_ = mem;
+        clRetainMemObject(base_);
+    }
+
+    inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr) {
+        if(this != &ptr) {
+            clReleaseMemObject(base_);
+            base_ = ptr.base_;
+            pasId_ = ptr.pasId_;
+            clRetainMemObject(base_);
+        }
+        return *this;
+    }
 
     inline bool operator==(const _opencl_ptr_t &ptr) const {
         return base_ == ptr.base_;
@@ -81,16 +102,7 @@ struct _opencl_ptr_t {
     // TODO: handle this correctly
     template <typename T>
     inline const _opencl_ptr_t operator+(const T &off) const {
-        _opencl_ptr_t tmp;
-        tmp.base_   = base_;
-        return tmp;
-    }
-
-    // TODO: handle this correctly
-    template <typename T>
-    inline const _opencl_ptr_t operator-(const T &off) const {
-        _opencl_ptr_t tmp;
-        tmp.base_   = base_;
+        _opencl_ptr_t tmp(base_);
         return tmp;
     }
 
