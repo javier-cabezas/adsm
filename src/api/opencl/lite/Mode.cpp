@@ -63,7 +63,6 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     cl_int ret = CL_SUCCESS;
     dst.base_ = clCreateBuffer(context_, CL_MEM_READ_WRITE, size, NULL, &ret);
-    dst.offset_ = 0;
     allocations_.insert(src, dst, size);
     return error(ret);
 }
@@ -107,7 +106,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueWriteBuffer(i->first, acc.base_,
-            CL_TRUE, acc.offset_, size, host, 0, NULL, &event);
+            CL_TRUE, 0, size, host, 0, NULL, &event);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         trace::SetThreadState(trace::Running);
         DataCommToAccelerator(*this, event, size);
@@ -131,7 +130,7 @@ gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
     trace::SetThreadState(trace::Wait);
     cl_event event;
     cl_int ret = clEnqueueReadBuffer(active_, acc.base_,
-        CL_TRUE, acc.offset_, count, host, 0, NULL, &event);
+        CL_TRUE, 0, count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(*this, event, count);
@@ -156,11 +155,11 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueReadBuffer(i->first, src.base_, CL_TRUE,
-            src.offset_, size, tmp, 0, NULL, NULL);
+            0, size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         if(ret == CL_SUCCESS) {
             ret = clEnqueueWriteBuffer(i->first, dst.base_, CL_TRUE,
-                    dst.offset_, size, tmp, 0, NULL, NULL);
+                    0, size, tmp, 0, NULL, NULL);
             CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
     }
@@ -181,7 +180,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueWriteBuffer(i->first, addr.base_,
-            CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
+            CL_TRUE, 0, size, tmp, 0, NULL, NULL);
     }
     ::free(tmp);
     trace::ExitCurrentFunction();
