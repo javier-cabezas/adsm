@@ -75,13 +75,6 @@ struct _cuda_ptr_t {
         return ret;
     }
 
-    template <typename T>
-    inline _cuda_ptr_t operator-(T b) {
-        _cuda_ptr_t ret(ptr_ - CUdeviceptr(b));
-        ret.pasId_ = pasId_;
-        return ret;
-    }
-
     inline operator void *() const { return (void *)(ptr_); }
 
     inline void *get() const { return (void *)(ptr_); }
