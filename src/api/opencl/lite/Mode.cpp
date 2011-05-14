@@ -106,7 +106,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueWriteBuffer(i->first, acc.get(),
-            CL_TRUE, 0, size, host, 0, NULL, &event);
+            CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         trace::SetThreadState(trace::Running);
         DataCommToAccelerator(*this, event, size);
@@ -130,7 +130,7 @@ gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
     trace::SetThreadState(trace::Wait);
     cl_event event;
     cl_int ret = clEnqueueReadBuffer(active_, acc.get(),
-        CL_TRUE, 0, count, host, 0, NULL, &event);
+        CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(*this, event, count);
@@ -155,11 +155,11 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueReadBuffer(i->first, src.get(), CL_TRUE,
-            0, size, tmp, 0, NULL, NULL);
+            src.offset(), size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         if(ret == CL_SUCCESS) {
             ret = clEnqueueWriteBuffer(i->first, dst.get(), CL_TRUE,
-                    0, size, tmp, 0, NULL, NULL);
+                    dst.offset(), size, tmp, 0, NULL, NULL);
             CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
     }
@@ -180,7 +180,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
         ret = clEnqueueWriteBuffer(i->first, addr.get(),
-            CL_TRUE, 0, size, tmp, 0, NULL, NULL);
+            CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
     }
     ::free(tmp);
     trace::ExitCurrentFunction();

@@ -48,7 +48,9 @@ void initGmac(void)
 
     TRACE(GLOBAL, "Initializing memory");
     Manager_ = new gmac::memory::Manager(*Process_);
+#if !defined(USE_OPENCL)
     Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
+#endif
 
 #if defined(USE_CUDA)
     TRACE(GLOBAL, "Initializing CUDA");
@@ -74,6 +76,7 @@ namespace __impl {
     }
     namespace memory {
         Manager &getManager() { return *Manager_; }
+        bool hasAllocator() { return Allocator_ != NULL; }
         Allocator &getAllocator() { return *Allocator_; }
     }
 }
