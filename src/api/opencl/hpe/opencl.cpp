@@ -38,9 +38,5 @@ void OpenCL(gmac::core::hpe::Process &proc)
     delete[] platforms;
     initialized = true;
 
-    library_t handler = USE_LIBRARY("OpenCL");
-    CFATAL(handler != NULL, "Unable to get handler to OpenCL");
-    proc.addHandler(handler);
-
     __impl::opencl::hpe::Accelerator::prepareEmbeddedCLCode();
 }
