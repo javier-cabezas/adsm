@@ -351,8 +351,8 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
 		case lazy::ReadOnly:
 			ret = block.copyToAccelerator(buffer, size, bufferOffset, blockOffset);
 			if(ret != gmacSuccess) break;
-			/* ret = block.copyToHost(buffer, size, bufferOffset, blockOffset); */
-            block.setState(lazy::Invalid);
+			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset); 
+            /* block.setState(lazy::Invalid); */
 			break;
 		case lazy::Dirty:			
         case lazy::HostOnly:
