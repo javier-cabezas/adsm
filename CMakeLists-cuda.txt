@@ -1,9 +1,10 @@
 option(USE_CUDA "Enable CUDA backend" ON)
 if(USE_CUDA)
+    set(CUDA_BIN_PATH "/usr/local/cuda/bin" CACHE PATH "CUDA directory")
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
     find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
-              HINTS ENV "CUDA_BIN_PATH")
+              HINTS ${CUDA_BIN_PATH} ENV "CUDA_BIN_PATH")
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
