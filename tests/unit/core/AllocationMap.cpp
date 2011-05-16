@@ -36,7 +36,53 @@ WITH THE SOFTWARE.  */
 
 class AllocationMapTest : public testing::Test {
 public:
+#if defined(USE_OPENCL)
+    static cl_context Context_;
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+
+    static cl_mem Allocate(size_t size = 4096);
+    static void Release(cl_mem mem);
+#endif
+
 };
+
+#if defined(USE_OPENCL)
+cl_context AllocationMapTest::Context_ = NULL;
+
+void AllocationMapTest::SetUpTestCase()
+{
+    cl_platform_id platform;
+    cl_device_id device;
+    cl_int error_code = CL_SUCCESS;
+    
+    ASSERT_EQ(CL_SUCCESS, clGetPlatformIDs(1, &platform, NULL));
+    ASSERT_EQ(CL_SUCCESS, clGetDeviceIDs(platform, CL_DEVICE_TYPE_DEFAULT, 1, &device, NULL));
+    Context_ = clCreateContext(NULL, 1, &device, NULL, NULL, &error_code);
+    ASSERT_EQ(CL_SUCCESS, error_code);
+}
+
+void AllocationMapTest::TearDownTestCase()
+{
+    if(Context_ != NULL) clReleaseContext(Context_);
+    Context_ = NULL;
+}
+
+cl_mem AllocationMapTest::Allocate(size_t size)
+{
+    cl_mem ret = NULL;
+    cl_int error_code = CL_SUCCESS;
+    if(Context_ == NULL) return cl_mem(NULL);
+    ret = clCreateBuffer(Context_, CL_MEM_READ_WRITE, size, NULL, &error_code);
+    if(error_code != CL_SUCCESS) return cl_mem(NULL);
+    return ret;
+}
+
+void AllocationMapTest::Release(cl_mem mem)
+{
+    if(mem != NULL) clReleaseMemObject(mem);
+}
+#endif
 
 TEST_F(AllocationMapTest, Insertion)
 {
@@ -45,7 +91,8 @@ TEST_F(AllocationMapTest, Insertion)
 #if defined(USE_CUDA)
     accptr_t device((accptr_t)0xcacacaca);
 #elif defined(USE_OPENCL)
-    accptr_t device((cl_mem)0xcacacaca);
+    accptr_t device(Allocate());
+    ASSERT_NE(device, 0);
 #endif
     size_t size = 1024;
     map_.insert(host, device, size);
@@ -58,4 +105,7 @@ TEST_F(AllocationMapTest, Insertion)
     
     map_.erase(host, size);
     ASSERT_FALSE(map_.find(host, retDevice, retSize));
+#if defined(USE_OPENCL)
+    Release(device.get());
+#endif
 }

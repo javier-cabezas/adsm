@@ -138,7 +138,7 @@ gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
     }
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
-    if(count < (ParamBlockSize / 2)) {
+    if(hasAllocator() && count < (ParamBlockSize / 2)) {
         *cpuPtr = getAllocator().alloc(getCurrentMode(), count, hostptr_t(RETURN_ADDRESS));
     }
     else {
@@ -172,7 +172,7 @@ gmacError_t APICALL gmacFree(void *cpuPtr)
 	enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = getCurrentMode();
-    if(getAllocator().free(mode, hostptr_t(cpuPtr)) == false) {
+    if(hasAllocator() == false || getAllocator().free(mode, hostptr_t(cpuPtr)) == false) {
         ret = getManager().free(mode, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();

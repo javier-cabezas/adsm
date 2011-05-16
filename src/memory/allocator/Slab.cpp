@@ -8,17 +8,20 @@ namespace __impl { namespace memory { namespace allocator {
 Cache &Slab::createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size)
 {
     Cache *cache = new __impl::memory::allocator::Cache(manager_, mode, size);
-    map.insert(CacheMap::value_type(key, cache));
+    std::pair<CacheMap::iterator, bool> ret = map.insert(CacheMap::value_type(key, cache));
+    ASSERTION(ret.second == true);
     return *cache;
 }
 
 Cache &Slab::get(core::Mode &current, long_t key, size_t size)
 {
+    CacheMap *map = NULL;
     ModeMap::iterator i;
     modes.lockRead();
     i = modes.find(&current);
+    if(i != modes.end()) map = &(i->second);
     modes.unlock();
-    if(i == modes.end()) {
+    if(map == NULL) {
         modes.lockWrite();
         Cache &ret = createCache(current, modes[&current], key, size);
         modes.unlock();
@@ -26,9 +29,9 @@ Cache &Slab::get(core::Mode &current, long_t key, size_t size)
     }
     else {
         CacheMap::iterator j;
-        j = i->second.find(key);
-        if(j == i->second.end())
-            return createCache(current, i->second, key, size);
+        j = map->find(key);
+        if(j == map->end())
+            return createCache(current, *map, key, size);
         else
             return *j->second;
     }
@@ -53,9 +56,10 @@ void Slab::cleanup(core::Mode &current)
 
 hostptr_t Slab::alloc(core::Mode &current, size_t size, hostptr_t addr)
 {
-    Cache &cache = get(current, long_t(addr) ^ size, size);
+    Cache &cache = get(current, long_t(addr), size);
     TRACE(LOCAL,"Using cache %p", &cache);
     hostptr_t ret = cache.get();
+    if(ret == NULL) return NULL;
     addresses.lockWrite();
     addresses.insert(AddressMap::value_type(ret, &cache));
     addresses.unlock();
@@ -73,9 +77,10 @@ bool Slab::free(core::Mode &current, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Inserting %p in cache %p", addr, i->second);
-    i->second->put(addr);
+    Cache &cache = *(i->second);
     addresses.erase(i);
     addresses.unlock();
+    cache.put(addr);
     return true;
 }
 

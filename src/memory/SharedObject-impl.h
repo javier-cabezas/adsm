@@ -65,7 +65,8 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
     // Allocate memory (if necessary)
     if(hostAddr == NULL) {
         addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-        valid_ =  addr_ != NULL;
+        valid_ = (addr_ != NULL);
+        if(valid_ == false) return;
     }
     else {
         addr_ = hostAddr;

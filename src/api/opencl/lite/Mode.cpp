@@ -62,8 +62,7 @@ void Mode::removeQueue(cl_command_queue queue)
 gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     cl_int ret = CL_SUCCESS;
-    dst.base_ = clCreateBuffer(context_, CL_MEM_READ_WRITE, size, NULL, &ret);
-    dst.offset_ = 0;
+    dst(clCreateBuffer(context_, CL_MEM_READ_WRITE, size, NULL, &ret));
     allocations_.insert(src, dst, size);
     return error(ret);
 }
@@ -77,21 +76,21 @@ gmacError_t Mode::unmap(hostptr_t host, size_t size)
     ASSERTION(hasMapping == true);
     ASSERTION(s == size);
     cl_int ret = CL_SUCCESS;
-    ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.get());
     return error(ret);
 }
 
 
 gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
 {
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.base_, len);
+    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
     gmacError_t ret = gmacSuccess;
     return ret;
 }
 
 gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.base_, buffer.addr(), len);
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), len);
     gmacError_t ret = gmacSuccess;
     return ret;
 }
@@ -100,14 +99,14 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
 gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.get());
     trace::SetThreadState(trace::Wait);
     StreamMap::const_iterator i;
     cl_event event;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueWriteBuffer(i->first, acc.base_,
-            CL_TRUE, acc.offset_, size, host, 0, NULL, &event);
+        ret = clEnqueueWriteBuffer(i->first, acc.get(),
+            CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         trace::SetThreadState(trace::Running);
         DataCommToAccelerator(*this, event, size);
@@ -127,11 +126,11 @@ do_exit:
 gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    cl_int ret = clEnqueueReadBuffer(active_, acc.base_,
-        CL_TRUE, acc.offset_, count, host, 0, NULL, &event);
+    cl_int ret = clEnqueueReadBuffer(active_, acc.get(),
+        CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(*this, event, count);
@@ -147,7 +146,7 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
-        src.base_, dst.base_);
+        src.get(), dst.get());
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
@@ -155,12 +154,12 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueReadBuffer(i->first, src.base_, CL_TRUE,
-            src.offset_, size, tmp, 0, NULL, NULL);
+        ret = clEnqueueReadBuffer(i->first, src.get(), CL_TRUE,
+            src.offset(), size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         if(ret == CL_SUCCESS) {
-            ret = clEnqueueWriteBuffer(i->first, dst.base_, CL_TRUE,
-                    dst.offset_, size, tmp, 0, NULL, NULL);
+            ret = clEnqueueWriteBuffer(i->first, dst.get(), CL_TRUE,
+                    dst.offset(), size, tmp, 0, NULL, NULL);
             CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
     }
@@ -180,8 +179,8 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
-        ret = clEnqueueWriteBuffer(i->first, addr.base_,
-            CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(i->first, addr.get(),
+            CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
     }
     ::free(tmp);
     trace::ExitCurrentFunction();

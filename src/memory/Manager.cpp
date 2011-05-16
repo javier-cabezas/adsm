@@ -30,7 +30,7 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
+    Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
