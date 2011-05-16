@@ -16,7 +16,7 @@ Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
 {
     mode_.use();
     gmacError_t ret = manager_.alloc(mode_, &ptr_, memory::BlockSize_);
-    CFATAL(ret == gmacSuccess, "Unable to allocate memory in the accelerator");
+    if(ret != gmacSuccess) { ptr_ = NULL; return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
         objects_.push_back(ptr_ + s);
@@ -27,7 +27,10 @@ Arena::~Arena()
 {
     CFATAL(objects_.size() == size_, "Destroying non-full Arena");
     objects_.clear();
-    manager_.free(mode_, ptr_);
+    if(ptr_ != NULL) {
+        gmacError_t ret = manager_.free(mode_, ptr_);
+        ASSERTION(ret == gmacSuccess);
+    }
     mode_.release();
 }
 
@@ -53,6 +56,10 @@ hostptr_t Cache::get()
     }
     // There are no free objects in any arena
     Arena *arena = new Arena(manager_, mode_, objectSize);
+    if(arena->valid() == false) {
+        delete arena; unlock();
+        return NULL;
+    }
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
     arenas.insert(ArenaMap::value_type(arena->key() , arena));
     hostptr_t ptr = arena->get();

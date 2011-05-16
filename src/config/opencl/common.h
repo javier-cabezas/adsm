@@ -42,8 +42,10 @@ WITH THE SOFTWARE.  */
 typedef cl_context AddressSpace;
 
 struct _opencl_ptr_t {
+private:
     cl_mem base_;
     size_t offset_;
+public:
     unsigned pasId_;
 
     inline _opencl_ptr_t() :
@@ -56,63 +58,69 @@ struct _opencl_ptr_t {
         base_(base),
         offset_(0),
         pasId_(0)
-    {}
+    {  clRetainMemObject(base_); }
 
-    inline _opencl_ptr_t(cl_mem base, size_t offset) :
-        base_(base),
-        offset_(offset),
-        pasId_(0)
-    { }
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
         base_(ptr.base_),
         offset_(ptr.offset_),
-        pasId_(0)
-    { }
+        pasId_(ptr.pasId_)
+    { if(base_ != 0) clRetainMemObject(base_); }
 
-    inline const _opencl_ptr_t & operator=(const _opencl_ptr_t &ptr) {
-        base_   = ptr.base_;
-        offset_ = ptr.offset_;
+    inline ~_opencl_ptr_t() {
+        if(base_ != 0) clReleaseMemObject(base_);
+    }
+
+    inline void operator()(cl_mem mem) {
+        base_ = mem;
+        clRetainMemObject(base_);
+    }
+
+    inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr) {
+        if(this != &ptr) {
+            clReleaseMemObject(base_);
+            base_ = ptr.base_;
+            pasId_ = ptr.pasId_;
+            clRetainMemObject(base_);
+        }
         return *this;
     }
 
-    template <typename T>
-    inline const _opencl_ptr_t operator+(const T off) const {
-        _opencl_ptr_t tmp;
-        tmp.base_   = base_;
-        tmp.offset_ = offset_ + off;
-        return tmp;
+    inline bool operator==(const _opencl_ptr_t &ptr) const {
+        return base_ == ptr.base_ && offset_ == ptr.offset_;
+    }
+    inline bool operator==(int i) const {
+        return base_ == cl_mem(i);
     }
 
-    template <typename T>
-    inline const _opencl_ptr_t operator-(const T off) const {
-        assert(off < offset_);
-        _opencl_ptr_t tmp;
-        tmp.base_   = base_;
-        tmp.offset_ = offset_ - off;
-        return tmp;
-    }
-
-    inline const bool operator!=(const hostptr_t addr) const {
-        return base_ != cl_mem(addr - offset_);
-    }
-
-    inline const bool operator!=(const _opencl_ptr_t ptr) const {
+    inline bool operator!=(const _opencl_ptr_t &ptr) const {
         return base_ != ptr.base_ || offset_ != ptr.offset_;
     }
+    inline bool operator!=(int i) const {
+        return base_ != cl_mem(i);
+    }
 
-    inline operator void*() { return (void *)offset_; }
+    inline bool operator<(const _opencl_ptr_t &ptr) const {
+        return base_ < ptr.base_;
+    }
+
+    // TODO: handle this correctly
+    template <typename T>
+    inline _opencl_ptr_t operator+(const T &off) const {
+        _opencl_ptr_t ret(*this);
+        ret.offset_ += off;
+        return ret;
+    }
+
+    inline operator void*() const { return (void *)base_; }
 
     inline cl_mem get() const { return base_; }
+
+    inline size_t offset() const { return offset_; }
 };
 
+//#include "common-impl.h"
+
 typedef _opencl_ptr_t accptr_t;
-
-inline
-static bool operator<(const accptr_t &ptr, const accptr_t &ptr2)
-{
-    return ptr.base_ < ptr2.base_;
-}
-
 
 
 #endif

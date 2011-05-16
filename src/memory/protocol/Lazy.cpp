@@ -343,7 +343,7 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
 							   size_t bufferOffset, size_t blockOffset)
 {
 	gmacError_t ret = gmacSuccess;
-	const lazy::Block &block = dynamic_cast<const lazy::Block &>(b);
+	lazy::Block &block = dynamic_cast<lazy::Block &>(b);
 	switch(block.getState()) {
 		case lazy::Invalid:
 			ret = block.copyToAccelerator(buffer, size, bufferOffset, blockOffset);
@@ -351,7 +351,8 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
 		case lazy::ReadOnly:
 			ret = block.copyToAccelerator(buffer, size, bufferOffset, blockOffset);
 			if(ret != gmacSuccess) break;
-			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset);
+			ret = block.copyToHost(buffer, size, bufferOffset, blockOffset); 
+            /* block.setState(lazy::Invalid); */
 			break;
 		case lazy::Dirty:			
         case lazy::HostOnly:

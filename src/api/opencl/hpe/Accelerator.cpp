@@ -92,13 +92,12 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
 
     cl_int ret = CL_SUCCESS;
     trace::SetThreadState(trace::Wait);
-    dst.base_ = clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret);
+    dst(clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret));
     trace::SetThreadState(trace::Running);
-    dst.offset_ = 0;
 
     allocations_.insert(src, dst, size);
 
-    TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.base_);
+    TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.get());
 
     trace::ExitCurrentFunction();
     return error(ret);
@@ -117,11 +116,11 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     ASSERTION(s == size);
     allocations_.erase(host, size);
 
-    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.base_);
+    TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.get());
 
     trace::SetThreadState(trace::Wait);
     cl_int ret = CL_SUCCESS;
-    ret = clReleaseMemObject(addr.base_);
+    ret = clReleaseMemObject(addr.get());
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -131,11 +130,11 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.base_);
+    TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.base_,
-        CL_TRUE, acc.offset_, size, host, 0, NULL, &event);
+    cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.get(),
+        CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(dynamic_cast<opencl::Mode &>(mode), event, size);
@@ -151,12 +150,12 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
     cl_event event;
     buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
-    cl_int ret = clEnqueueWriteBuffer(stream, acc.base_, CL_FALSE,
-        acc.offset_, count, host, 0, NULL, &event);
+    cl_int ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
+        acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(event);
 #ifdef _MSC_VER
@@ -171,11 +170,11 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.base_,
-        CL_TRUE, acc.offset_, count, host, 0, NULL, &event);
+    cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.get(),
+        CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
     DataCommToAccelerator(dynamic_cast<opencl::Mode &>(mode), event, count);
@@ -190,12 +189,12 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 {
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.base_);
+    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
     cl_event event;
     buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
-    cl_int ret = clEnqueueReadBuffer(stream, acc.base_, CL_FALSE,
-        acc.offset_, count, host, 0, NULL, &event);
+    cl_int ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
+        acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(event);
 #ifdef _MSC_VER
@@ -210,16 +209,16 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
-        src.base_, dst.base_);
+        src.get(), dst.get());
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
-    cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.base_, CL_TRUE,
-        src.offset_, size, tmp, 0, NULL, NULL);
+    cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.get(), CL_TRUE,
+        src.offset(), size, tmp, 0, NULL, NULL);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     if(ret == CL_SUCCESS) {
-        ret = clEnqueueWriteBuffer(cmd_.front(), dst.base_, CL_TRUE,
-                dst.offset_, size, tmp, 0, NULL, NULL);
+        ret = clEnqueueWriteBuffer(cmd_.front(), dst.get(), CL_TRUE,
+                dst.offset(), size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
     ::free(tmp);
@@ -235,8 +234,8 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
     // using a kernel for this task
     void *tmp = ::malloc(size);
     ::memset(tmp, c, size);
-    cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.base_,
-        CL_TRUE, addr.offset_, size, tmp, 0, NULL, NULL);
+    cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.get(),
+        CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -527,7 +526,7 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     // There is not reliable way to get zero-copy memory
-    return accptr_t(0, 0);
+    return accptr_t(0);
 #if 0
     cl_mem device;
     size_t size = 0;

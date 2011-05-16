@@ -33,21 +33,29 @@ void Context::setupCLstreams()
     Accelerator &acc = accelerator();
     streamLaunch_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
+#if defined(SEPARATE_COMMAND_QUEUES)
     streamToAccelerator_ = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToAccelerator_, &acc);
     streamToHost_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
     streamAccelerator_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
+#else
+    streamToAccelerator_ = streamLaunch_;
+    streamToHost_ = streamLaunch_;
+    streamAccelerator_ = streamLaunch_;
+#endif
 }
 
 void Context::cleanCLstreams()
 {
     Accelerator &acc = accelerator();
     acc.destroyCLstream(streamLaunch_);
+#if defined(SEPARATE_COMMAND_QUEUES)
     acc.destroyCLstream(streamToAccelerator_);
     acc.destroyCLstream(streamToHost_);
     acc.destroyCLstream(streamAccelerator_);
+#endif
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
@@ -85,7 +93,7 @@ gmacError_t Context::waitForEvent(cl_event e)
 
 gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.base_);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.get());
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
@@ -119,7 +127,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
 
 gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
-    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.base_, host);
+    TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.get(), host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));

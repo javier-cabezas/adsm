@@ -38,14 +38,14 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
     assert(__oclKernelGet("null", &kernel) == oclSuccess);
     assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
+    long *baseSrc, *baseDst;
+    long *gmacSrc, *gmacDst;
+
 
     for (size_t count = minCount; count <= maxCount; count *= 2) {
         fprintf(stderr, "ALLOC: %zd\n", count * sizeof(long));
-        long *baseSrc = (long *)malloc(count * sizeof(long));
-        long *baseDst = (long *)malloc(count * sizeof(long));
-
-        long *gmacSrc;
-        long *gmacDst;
+        baseSrc = (long *)malloc(count * sizeof(long));
+        baseDst = (long *)malloc(count * sizeof(long));
 
         if (type == GMAC_TO_GMAC) {
             assert(gmacMalloc((void **)&gmacSrc, count * sizeof(long)) == oclSuccess);
@@ -114,7 +114,24 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
         free(baseDst);
     }
 
+    return error;
+
 exit_test:
+
+    if (type == GMAC_TO_GMAC) {
+        assert(gmacFree(gmacSrc) == oclSuccess);
+        assert(gmacFree(gmacDst) == oclSuccess);
+    } else if (type == HOST_TO_GMAC) {
+        free(gmacSrc);
+        assert(gmacFree(gmacDst) == oclSuccess);
+    } else if (type == GMAC_TO_HOST) {
+        assert(gmacFree(gmacSrc) == oclSuccess);
+        free(gmacDst);
+    }
+
+    free(baseSrc);
+    free(baseDst);
+
     return error;
 }
 

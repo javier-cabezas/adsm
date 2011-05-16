@@ -38,78 +38,49 @@ WITH THE SOFTWARE.  */
 
 typedef CUcontext AddressSpace;
 
-struct accptr_t {
+struct _cuda_ptr_t {
     CUdeviceptr ptr_;
     unsigned pasId_;
 
-    template<typename T>
-    inline accptr_t(T * ptr) :
-        ptr_(CUdeviceptr(ptr)),
-        pasId_(0)
-    {}
-
-    inline accptr_t(CUdeviceptr ptr) :
+    inline _cuda_ptr_t(CUdeviceptr ptr) :
         ptr_(ptr),
         pasId_(0)
     {}
     
     inline operator CUdeviceptr() const { return ptr_; }
 
+    inline bool operator==(const _cuda_ptr_t &ptr) const {
+        return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
+    }
+    inline bool operator==(int i) const {
+        return this->ptr_ == CUdeviceptr(i);
+    }
+
+    inline bool operator!=(const _cuda_ptr_t &ptr) const {
+        return this->ptr_ != ptr.ptr_ || this->pasId_ != ptr.pasId_;
+    }
+
+    inline bool operator!=(int i) const {
+        return this->ptr_ != CUdeviceptr(i);
+    }
+
+    inline bool operator<(const _cuda_ptr_t &ptr) const {
+        return pasId_ < ptr.pasId_ || (pasId_ == ptr.pasId_ && ptr_ < ptr.ptr_);
+    }
+
+    template <typename T>
+    inline _cuda_ptr_t operator+(T b) {
+        _cuda_ptr_t ret(ptr_ + CUdeviceptr(b));
+        ret.pasId_ = pasId_;
+        return ret;
+    }
+
     inline operator void *() const { return (void *)(ptr_); }
 
     inline void *get() const { return (void *)(ptr_); }
 
-    inline
-    bool operator==(accptr_t ptr)
-    {
-        return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
-    }
-
-    inline
-    bool operator!=(accptr_t ptr)
-    {
-        return this->ptr_ != ptr.ptr_ || this->pasId_ != ptr.pasId_;
-    }
-
-    template <typename T>
-    inline
-    bool operator==(T ptr)
-    {
-        return (((T)this->ptr_) == ptr);
-    }
-
-    template <typename T>
-    inline
-    bool operator!=(T ptr)
-    {
-        return (((T)this->ptr_) != ptr);
-    }
 };
 
-inline
-static bool operator<(const accptr_t &a, const accptr_t &b)
-{
-    return a.pasId_ < b.pasId_ || (a.pasId_ == b.pasId_ && a.ptr_ < b.ptr_);
-}
-
-
-
-template <typename T>
-static inline
-accptr_t operator+(const accptr_t &a, T b)
-{
-    accptr_t ret(a.ptr_ + CUdeviceptr(b));
-    ret.pasId_ = a.pasId_;
-    return ret;
-}
-
-template <typename T>
-static inline
-accptr_t operator-(const accptr_t &a, T b)
-{
-    accptr_t ret(a.ptr_ - CUdeviceptr(b));
-    ret.pasId_ = a.pasId_;
-    return ret;
-}
+typedef _cuda_ptr_t accptr_t;
 
 #endif

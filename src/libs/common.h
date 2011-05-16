@@ -46,6 +46,7 @@ namespace __impl {
     namespace memory {
         class Allocator;
         Allocator &getAllocator() GMAC_LOCAL;
+        bool hasAllocator() GMAC_LOCAL;
 
         class Manager;
         Manager &getManager() GMAC_LOCAL;

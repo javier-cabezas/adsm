@@ -8,30 +8,41 @@ namespace __impl { namespace memory { namespace allocator {
 inline
 hostptr_t Arena::key() const
 {
+    ASSERTION(ptr_ != NULL);
     return ptr_ + memory::BlockSize_;
 }
 
 inline
 const ObjectList &Arena::objects() const
 {
+    ASSERTION(ptr_ != NULL);
     return objects_;
+}
+
+inline
+bool Arena::valid() const
+{
+    return ptr_ != NULL;
 }
 
 inline
 bool Arena::full() const
 {
+    ASSERTION(ptr_ != NULL);
     return objects_.size() == size_;
 }
 
 inline
 bool Arena::empty() const
 {
+    ASSERTION(ptr_ != NULL);
     return objects_.empty();
 }
 
 inline
 hostptr_t Arena::get()
 {
+    ASSERTION(ptr_ != NULL);
     ASSERTION(objects_.empty() == false);
     hostptr_t ret = objects_.front();
     objects_.pop_front();
@@ -42,6 +53,7 @@ hostptr_t Arena::get()
 inline
 void Arena::put(hostptr_t obj)
 {
+    ASSERTION(ptr_ != NULL);
     objects_.push_back(obj);
 }
 
