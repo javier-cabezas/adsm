@@ -33,21 +33,29 @@ void Context::setupCLstreams()
     Accelerator &acc = accelerator();
     streamLaunch_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
+#if defined(SEPARATE_COMMAND_QUEUES)
     streamToAccelerator_ = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToAccelerator_, &acc);
     streamToHost_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
     streamAccelerator_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
+#else
+    streamToAccelerator_ = streamLaunch_;
+    streamToHost_ = streamLaunch_;
+    streamAccelerator_ = streamLaunch_;
+#endif
 }
 
 void Context::cleanCLstreams()
 {
     Accelerator &acc = accelerator();
     acc.destroyCLstream(streamLaunch_);
+#if defined(SEPARATE_COMMAND_QUEUES)
     acc.destroyCLstream(streamToAccelerator_);
     acc.destroyCLstream(streamToHost_);
     acc.destroyCLstream(streamAccelerator_);
+#endif
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
