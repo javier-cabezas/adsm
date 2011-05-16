@@ -2,6 +2,7 @@ option(USE_CUDA "Enable CUDA backend" ON)
 if(USE_CUDA)
     set(CUDA_PATH "/usr/local/cuda" CACHE PATH "CUDA directory")
     set(CUDA_BIN_PATH "${CUDA_PATH}/bin" CACHE PATH "CUDA binary directory")
+    set(CUDA_TOOLKIT_ROOT_DIR "${CUDA_PATH}/bin")
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
     find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
