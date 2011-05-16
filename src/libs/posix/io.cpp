@@ -50,7 +50,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
-    size_t ret = 0;
+    ssize_t ret = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = getMode(*dstMode);
     IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
@@ -109,7 +109,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
     gmacError_t err;
-    size_t ret = 0;
+    ssize_t ret = 0;
 
     size_t off  = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
