@@ -49,9 +49,11 @@ void SlabTest::TearDownTestCase()
 TEST_F(SlabTest, Creation)
 {
     ASSERT_TRUE(Manager_ != NULL);
-    allocator::Slab *slab = new allocator::Slab(*Manager_);
-    ASSERT_TRUE(slab != NULL);
-    slab->destroy();
+    for(int i = 0; i < 16; i++) {
+        allocator::Slab *slab = new allocator::Slab(*Manager_);
+        ASSERT_TRUE(slab != NULL);
+        slab->destroy();
+    }
 }
 
 TEST_F(SlabTest, SmallObject)

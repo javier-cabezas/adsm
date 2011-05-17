@@ -81,8 +81,8 @@ TEST_F(ObjectTest, Blocks)
     ASSERT_GT(blockSize, 0U);
 
     for(size_t offset = 0; offset < object->size(); offset += blockSize) {
-        ASSERT_EQ(0, object->blockBase(offset));
-        ASSERT_EQ(blockSize, object->blockEnd(offset));
+        EXPECT_EQ(0, object->blockBase(offset));
+        EXPECT_EQ(blockSize, object->blockEnd(offset));
     }
 
     mode.removeObject(*object);
@@ -108,7 +108,7 @@ TEST_F(ObjectTest, Coherence)
     mode.memset(object->acceleratorAddr(mode, object->addr()), 0, Size_);
 
     for(size_t s = 0; s < object->size(); s++) {
-        ASSERT_EQ(ptr[s], 0);
+        EXPECT_EQ(ptr[s], 0);
     }
 
     mode.removeObject(*object);
@@ -135,7 +135,7 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_EQ(gmacSuccess, object->copyToBuffer(buffer, Size_));
     ASSERT_EQ(gmacSuccess, buffer.wait());
     for(size_t s = 0; s < buffer.size(); s++) {
-        ASSERT_EQ(ptr[s], (s & 0xff));
+        EXPECT_EQ(ptr[s], (s & 0xff));
     }
 
     mode.destroyIOBuffer(buffer);
