@@ -91,7 +91,7 @@ Test::TestCase::report(std::ofstream &outfile) const
 {
     outfile << "<testcase ";
     outfile << "name=\"" << name_ << "\" ";
-    outfile << "status=\"" << (run_? "run": "notrun") << "\"";
+    outfile << "status=\"" << (run_? "run": "notrun") << "\" ";
     outfile << "time=\"" << getElapsedTime() << "\"";
     outfile << ">" << std::endl;
     if (status_ != 0) {
