@@ -31,7 +31,7 @@ Test::TestCase::run(const std::string &exec)
         WaitForSingleObject(processInfo.hProcess, INFINITE);
 
         ::getTime(&end);
-        setElapsedTime((end.sec - start.sec) * 1000000 + (end.usec - start.usec));
+        setElapsedTime(((end.sec - start.sec) * 1000000 + (end.usec - start.usec)) / 1000);
 
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
