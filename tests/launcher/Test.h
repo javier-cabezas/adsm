@@ -10,6 +10,8 @@
 #include <map>
 #include <vector>
 
+#include "utils.h"
+
 #include "Variable.h"
 
 class Test
@@ -53,6 +55,7 @@ private:
         std::string name_;
         int status_;
         bool run_;
+        uint64_t time_;
 
         void setEnvironment();
 
@@ -68,6 +71,9 @@ private:
 
         Stats run(const std::string &exec);
         void report(std::ofstream &outfile) const;
+
+        void setElapsedTime(uint64_t time);
+        uint64_t getElapsedTime() const;
     };
 
     class Stats {
@@ -111,6 +117,8 @@ public:
 
     unsigned getNumberOfTestCases() const;
     unsigned getNumberOfFailures() const;
+
+    uint64_t getElapsedTime() const;
     
     void report(std::ofstream &outfile) const;
 };
@@ -131,6 +139,8 @@ public:
 
     unsigned getNumberOfTestCases() const;
     unsigned getNumberOfFailures() const;
+
+    uint64_t getElapsedTime() const;
 
     void report();
 };

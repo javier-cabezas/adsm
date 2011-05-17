@@ -1,6 +1,22 @@
 #include <stdio.h>
 #include <gmac/cuda.h>
 
+#include "utils.h"
+
+enum MemcpyType {
+    GMAC_TO_GMAC = 1,
+    HOST_TO_GMAC = 2,
+    GMAC_TO_HOST = 3,
+};
+
+int type;
+int typeDefault = GMAC_TO_GMAC;
+const char *typeStr = "GMAC_MEMCPY_TYPE";
+
+bool memcpyFn;
+bool memcpyFnDefault = false;
+const char *memcpyFnStr = "GMAC_MEMCPY_GMAC";
+
 const size_t minCount = 1024;
 const size_t maxCount = 2 * 1024 * 1024;
 
@@ -15,12 +31,6 @@ void init(long *ptr, int s, long v)
 		ptr[i] = v;
 	}
 }
-
-enum MemcpyType {
-    GMAC_TO_GMAC = 1,
-    HOST_TO_GMAC = 2,
-    GMAC_TO_HOST = 3,
-};
 
 int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, const void *, size_t n))
 {
@@ -112,20 +122,18 @@ static void *gmacMemcpyWrapper(void *dst, const void *src, size_t size)
 
 int main(int argc, char *argv[])
 {
-    int           ret = memcpyTest(GMAC_TO_GMAC, false, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, true, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, false, memcpy);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_GMAC, true, memcpy);
+	setParam<int>(&type, typeStr, typeDefault);
+	setParam<bool>(&memcpyFn, memcpyFnStr, memcpyFnDefault);
 
-    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, false, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, true, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, false, memcpy);
-    if (ret == 0) ret = memcpyTest(HOST_TO_GMAC, true, memcpy);
-
-    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, false, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, true, gmacMemcpyWrapper);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, false, memcpy);
-    if (ret == 0) ret = memcpyTest(GMAC_TO_HOST, true, memcpy);
+    int ret;
+    
+    if (memcpyFn == true) {
+        ret = memcpyTest(MemcpyType(type), false, gmacMemcpyWrapper);
+        if (ret == 0) ret = memcpyTest(MemcpyType(type), true, gmacMemcpyWrapper);
+    } else {
+        ret = memcpyTest(MemcpyType(type), false, memcpy);
+        if (ret == 0) ret = memcpyTest(MemcpyType(type), true, memcpy);
+    }
 
     return ret;
 }

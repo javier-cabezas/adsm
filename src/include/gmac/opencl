@@ -49,8 +49,8 @@ namespace ocl {
 typedef ocl_error error_t;
 typedef ocl_kernel_id kernel_id_t;
 
-typedef ocl_memory_hint MemoryHint;
-typedef ocl_protection Protection;
+typedef ocl_memory_hint memory_hint;
+typedef ocl_protection protection;
 
 /*!
 	Adds an argument to be used by the following call to oclLaunch()
@@ -134,9 +134,9 @@ public:
 
     template <typename T>
     inline
-    error_t setArg(const T &addr, size_t size, unsigned index)
+    error_t setArg(const T *addr, size_t size, unsigned index)
     {
-        return ::__oclKernelSetArg(&kernel_, &addr, size, index);
+        return ::__oclKernelSetArg(&kernel_, addr, size, index);
     } 
 
     template <typename T>
@@ -144,6 +144,7 @@ public:
     error_t setArg(T val, unsigned index)
     {
         Param<T> p(val);
+        printf("Param size: %zd\n", sizeof(p.value_));
         return ::__oclKernelSetArg(&kernel_, &p.value_, sizeof(p.value_), index);
     }
 
@@ -171,6 +172,29 @@ public:
     {
         return ::__oclKernelLaunch(&kernel_);
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+private:
+    template <typename P1, typename ...Pn>
+    error_t __launch(unsigned index, P1 p1, Pn ...pn)
+    {
+        error_t ret = setArg(p1, index);
+        if (ret != gmacSuccess) return ret;
+        return __launch(index + 1, pn...);
+    }
+
+    error_t __launch(unsigned index)
+    {
+        return ::__oclKernelLaunch(&kernel_);
+    }
+
+public:
+    template <typename P1, typename ...Pn>
+    error_t launch(P1 p1, Pn ...pn)
+    {
+        return __launch(0, p1, pn...);
+    }
+#endif
 #if 0
     inline
     error_t wait()
@@ -255,7 +279,7 @@ static inline
 error_t migrate(unsigned acc) { return ::oclMigrate(acc); }
 
 static inline
-ocl_error memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot) {
+ocl_error memoryMap(void *cpuPtr, size_t count, protection prot) {
     return ::oclMemoryMap(cpuPtr, count, prot);
 }
 
@@ -266,7 +290,7 @@ static inline
 ocl_error malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
 
 static inline
-ocl_error globalMalloc(void **devPtr, size_t count, MemoryHint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
+ocl_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
     return ::oclGlobalMalloc(devPtr, count, hint);
 }
 
@@ -288,16 +312,16 @@ void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
 }
 
 static inline
-void deviceSend(THREAD_T tid) { return ::oclDeviceSend(tid); }
+void deviceSend(THREAD_T tid) { ::oclDeviceSend(tid); }
 
 static inline
-void deviceReceive(void) { return ::oclDeviceReceive(); }
+void deviceReceive(void) { ::oclDeviceReceive(); }
 
 static inline
-void deviceSendReceive(THREAD_T tid) { return ::oclDeviceSendReceive(tid); }
+void deviceSendReceive(THREAD_T tid) { ::oclDeviceSendReceive(tid); }
 
 static inline
-void deviceCopy(THREAD_T tid) { return ::oclDeviceCopy(tid); }
+void deviceCopy(THREAD_T tid) { ::oclDeviceCopy(tid); }
 
 template<typename T>
 static inline cl_mem ptr(const T *addr) {
