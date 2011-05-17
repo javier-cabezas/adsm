@@ -20,11 +20,19 @@ Test::TestCase::run(const std::string &exec)
     TCHAR tmpCmdLine[MAX_PATH * 2];
     const char *appName = exec.c_str();
     ::memcpy(tmpCmdLine, appName, strlen(appName) + 1);
+
+    gmactime_t start, end;
+    ::getTime(&start);
+
     BOOL created = ::CreateProcess(NULL, tmpCmdLine, NULL, NULL, FALSE,
         0, NULL, NULL, &startupInfo, &processInfo);
     if (created) {
         // Wait until child processes exit.
         WaitForSingleObject(processInfo.hProcess, INFINITE);
+
+        ::getTime(&end);
+        setElapsedTime((end.sec - start.sec) * 1000000 + (end.usec - start.usec));
+
         CloseHandle(processInfo.hProcess);
         CloseHandle(processInfo.hThread);
     } else {

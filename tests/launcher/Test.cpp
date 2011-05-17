@@ -1,5 +1,7 @@
 #include "Test.h"
 
+#include <iostream>
+
 Test::TestCase::Stats::Stats()
 {}
 
@@ -11,6 +13,7 @@ Test::TestCase::Stats::addPair(std::string name, float val)
     }
     ListValues &vals = stats_[name];
     vals.push_back(val);
+    std::cout << name << ":" << val << std::endl;
 }
 
 Test::TestCase::Stats::ListNames
@@ -37,7 +40,8 @@ Test::TestCase::Stats::getValues(std::string name) const
 
 Test::TestCase::TestCase() :
     name_(""),
-    run_(false)
+    run_(false),
+    time_(0)
 {}
 
 Test::TestCase::TestCase(const TestCase &testCase) :
@@ -88,11 +92,24 @@ Test::TestCase::report(std::ofstream &outfile) const
     outfile << "<testcase ";
     outfile << "name=\"" << name_ << "\" ";
     outfile << "status=\"" << (run_? "run": "notrun") << "\"";
+    outfile << "time=\"" << getElapsedTime() << "\"";
     outfile << ">" << std::endl;
     if (status_ != 0) {
         outfile << "<failure message=\"Exit code: " << status_ << "\"/>" << std::endl;
     }
     outfile << "</testcase>" << std::endl;
+}
+
+void
+Test::TestCase::setElapsedTime(uint64_t time)
+{
+    time_ = time;
+}
+
+uint64_t
+Test::TestCase::getElapsedTime() const
+{
+    return time_;
 }
 
 Test::Stats::Stats()
@@ -245,6 +262,16 @@ Test::getNumberOfFailures() const
     return failures;
 }
 
+uint64_t
+Test::getElapsedTime() const
+{
+    uint64_t elapsedTime = 0;
+    for (size_t i = 0; i < testCases_.size(); i++) {
+        elapsedTime += testCases_[i].getElapsedTime();
+    }
+    return elapsedTime;
+}
+
 void
 Test::report(std::ofstream &outfile) const
 {
@@ -252,6 +279,7 @@ Test::report(std::ofstream &outfile) const
     outfile << "name=\"" << name_ << "\" ";
     outfile << "tests=\"" << getNumberOfTestCases() << "\" ";
     outfile << "failures=\"" << getNumberOfFailures() << "\" ";
+    outfile << "time=\"" << getElapsedTime() << "\" ";
     outfile << "errors=\"0\" ";
     outfile << ">" << std::endl;
 
@@ -308,6 +336,16 @@ TestSuite::getNumberOfFailures() const
     return failures;
 }
 
+uint64_t
+TestSuite::getElapsedTime() const
+{
+    unsigned elapsedTime = 0;
+    for (size_t i = 0; i < tests_.size(); i++) {
+        elapsedTime += tests_[i].getElapsedTime();
+    }
+    return elapsedTime;
+}
+
 void
 TestSuite::report()
 {
@@ -318,6 +356,7 @@ TestSuite::report()
     outfile_ << "name=\"" << name_ << "\" ";
     outfile_ << "tests=\"" << getNumberOfTestCases() << "\" ";
     outfile_ << "failures=\"" << getNumberOfFailures() << "\" ";
+    outfile_ << "time=\"" << getElapsedTime() << "\" ";
     outfile_ << "errors=\"0\"";
     outfile_ << ">" << std::endl;
 

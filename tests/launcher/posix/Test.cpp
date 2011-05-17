@@ -17,6 +17,9 @@ Test::TestCase::run(const std::string &exec)
     int ret = pipe(fd);
     assert(ret == 0);
 
+    gmactime_t start, end;
+
+    ::getTime(&start);
     pid_t pid = fork();
     if (pid == 0) {
         setEnvironment();
@@ -64,6 +67,8 @@ Test::TestCase::run(const std::string &exec)
         }
 
         ::wait(&status_); 
+        ::getTime(&end);
+        setElapsedTime((end.sec - start.sec) * 1000000 + (end.usec - start.usec));
         fclose(file);
     }
     return stats;

@@ -71,11 +71,15 @@ int main(int argc, char *argv[])
     ocl::KernelLaunch kernel;
     assert(kernel.get("vecAdd") == oclSuccess);
     assert(kernel.configure(1, NULL, &globalSize, &localSize) == oclSuccess);
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
     assert(kernel.setArg(c, 0) == oclSuccess);
     assert(kernel.setArg(a, 1) == oclSuccess);
     assert(kernel.setArg(b, 2) == oclSuccess);
     assert(kernel.setArg(vecSize, 3) == oclSuccess);
     assert(kernel.launch() == oclSuccess);
+#else
+    assert(kernel.launch(c, a, b, vecSize) == oclSuccess);
+#endif
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
