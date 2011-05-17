@@ -339,7 +339,7 @@ TestSuite::getNumberOfFailures() const
 double
 TestSuite::getElapsedTime() const
 {
-    unsigned elapsedTime = 0;
+    double elapsedTime = 0;
     for (size_t i = 0; i < tests_.size(); i++) {
         elapsedTime += tests_[i].getElapsedTime();
     }
