@@ -68,7 +68,7 @@ Test::TestCase::run(const std::string &exec)
 
         ::wait(&status_); 
         ::getTime(&end);
-        setElapsedTime((end.sec - start.sec) * 1000000 + (end.usec - start.usec));
+        setElapsedTime(((end.sec - start.sec) * 1000000 + (end.usec - start.usec)) / 1000);
         fclose(file);
     }
     return stats;
