@@ -55,7 +55,7 @@ private:
         std::string name_;
         int status_;
         bool run_;
-        uint64_t time_;
+        double time_;
 
         void setEnvironment();
 
@@ -72,8 +72,8 @@ private:
         Stats run(const std::string &exec);
         void report(std::ofstream &outfile) const;
 
-        void setElapsedTime(uint64_t time);
-        uint64_t getElapsedTime() const;
+        void setElapsedTime(double time);
+        double getElapsedTime() const;
     };
 
     class Stats {
@@ -118,7 +118,7 @@ public:
     unsigned getNumberOfTestCases() const;
     unsigned getNumberOfFailures() const;
 
-    uint64_t getElapsedTime() const;
+    double getElapsedTime() const;
     
     void report(std::ofstream &outfile) const;
 };
@@ -140,7 +140,7 @@ public:
     unsigned getNumberOfTestCases() const;
     unsigned getNumberOfFailures() const;
 
-    uint64_t getElapsedTime() const;
+    double getElapsedTime() const;
 
     void report();
 };

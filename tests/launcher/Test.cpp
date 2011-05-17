@@ -41,7 +41,7 @@ Test::TestCase::Stats::getValues(std::string name) const
 Test::TestCase::TestCase() :
     name_(""),
     run_(false),
-    time_(0)
+    time_(0.0)
 {}
 
 Test::TestCase::TestCase(const TestCase &testCase) :
@@ -101,12 +101,12 @@ Test::TestCase::report(std::ofstream &outfile) const
 }
 
 void
-Test::TestCase::setElapsedTime(uint64_t time)
+Test::TestCase::setElapsedTime(double time)
 {
     time_ = time;
 }
 
-uint64_t
+double
 Test::TestCase::getElapsedTime() const
 {
     return time_;
@@ -262,10 +262,10 @@ Test::getNumberOfFailures() const
     return failures;
 }
 
-uint64_t
+double
 Test::getElapsedTime() const
 {
-    uint64_t elapsedTime = 0;
+    double elapsedTime = 0;
     for (size_t i = 0; i < testCases_.size(); i++) {
         elapsedTime += testCases_[i].getElapsedTime();
     }
@@ -336,7 +336,7 @@ TestSuite::getNumberOfFailures() const
     return failures;
 }
 
-uint64_t
+double
 TestSuite::getElapsedTime() const
 {
     unsigned elapsedTime = 0;
