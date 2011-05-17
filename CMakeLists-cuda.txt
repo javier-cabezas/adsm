@@ -4,7 +4,7 @@ if(USE_CUDA)
     add_definitions(-DUSE_CUDA)
     # Default compilation for CUDA
     find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
-              HINTS ${CUDA_BIN_PATH} ENV "CUDA_BIN_PATH")
+              HINTS "${CUDA_PATH}/bin" ENV "CUDA_BIN_PATH")
     if(EXISTS ${NVCC})
         message(STATUS "Compiling for NVIDIA CUDA: ${NVCC}")
         set(API_DIR "cuda")
