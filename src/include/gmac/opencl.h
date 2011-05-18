@@ -66,7 +66,6 @@ typedef gmacError_t ocl_error;
 #define oclErrorUnknown gmacErrorUnknown
 
 
-typedef gmac_kernel_id_t ocl_kernel_id;
 typedef enum GmacGlobalMallocType ocl_memory_hint;
 typedef enum GmacProtection ocl_protection;
 
@@ -79,7 +78,7 @@ typedef enum GmacProtection ocl_protection;
  *  \param kernel Pointer to store the address to the kernel descriptor
  *  \return Error code
 */
-GMAC_API ocl_error APICALL __oclKernelGet(ocl_kernel_id id, ocl_kernel *kernel);
+GMAC_API ocl_error APICALL __oclKernelGet(const char *id, ocl_kernel *kernel);
 
 
 /**

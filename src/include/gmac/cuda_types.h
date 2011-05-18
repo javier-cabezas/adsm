@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 #define GMAC_INCLUDE_CUDA_TYPES_H_
 
 typedef void * __gmac_accptr_t;
-typedef const char * gmac_kernel_id_t;
 
 #endif
 
