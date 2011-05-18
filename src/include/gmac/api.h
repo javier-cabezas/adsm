@@ -225,7 +225,7 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
  * \param kernel descriptor for the kernel to be launched
  * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
  */
-GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t kernel);
+GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 
 
 

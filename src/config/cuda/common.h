@@ -82,5 +82,6 @@ struct _cuda_ptr_t {
 };
 
 typedef _cuda_ptr_t accptr_t;
+typedef const char * gmac_kernel_id_t;
 
 #endif

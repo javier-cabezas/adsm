@@ -121,6 +121,6 @@ public:
 //#include "common-impl.h"
 
 typedef _opencl_ptr_t accptr_t;
-
+typedef const char * gmac_kernel_id_t;
 
 #endif

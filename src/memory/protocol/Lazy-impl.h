@@ -27,6 +27,7 @@ inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, h
 		return NULL;
 	}
 	Memory::protect(ret->addr(), ret->size(), prot);
+    limit_ += 2;
 	return ret;
 }
 

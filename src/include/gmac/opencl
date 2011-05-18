@@ -47,7 +47,6 @@ WITH THE SOFTWARE.  */
 namespace ocl {
 
 typedef ocl_error error_t;
-typedef ocl_kernel_id kernel_id_t;
 
 typedef ocl_memory_hint memory_hint;
 typedef ocl_protection protection;
@@ -62,12 +61,12 @@ typedef ocl_protection protection;
 class KernelLaunch {
 private:
     inline
-    static error_t getKernel(std::string name, ::ocl_kernel &kernel)
+    static error_t getKernel(std::string name, ocl_kernel &kernel)
     {
         return ::__oclKernelGet(name.c_str(), &kernel);
     }
 
-    ::ocl_kernel kernel_;
+    ocl_kernel kernel_;
     bool initialized_;
 
     template <typename T>
