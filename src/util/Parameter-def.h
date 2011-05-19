@@ -27,8 +27,11 @@ PARAM(ParamOpenCLSources, const char *, "", "GMAC_OPENCL_SOURCES")
 PARAM(ParamOpenCLFlags,   const char *, "", "GMAC_OPENCL_FLAGS")
 
 // Bitmap Parameters
+PARAM(ParamSubBlockSize, unsigned, 4 * 1024, "GMAC_SUBBLOCK_SIZE", PARAM_NONZERO)
+PARAM(ParamSubBlockStride, bool, true, "GMAC_SUBBLOCK_STRIDE", PARAM_NONZERO)
+PARAM(ParamSubBlockTree, bool, true, "GMAC_SUBBLOCK_TREE", PARAM_NONZERO)
+
 PARAM(ParamGatherRatio, float, 0.2f, "GMAC_GATHER_RATIO")
-PARAM(ParamSubBlocks, unsigned, 512, "GMAC_SUBBLOCKS", PARAM_NONZERO)
 PARAM(ParamBitmapLevels, unsigned, 3, "GMAC_BITMAP_LEVELS", PARAM_NONZERO)
 PARAM(ParamBitmapL1Entries, unsigned, 512, "GMAC_BITMAP_L1ENTRIES", PARAM_NONZERO)
 PARAM(ParamBitmapL2Entries, unsigned, 128, "GMAC_BITMAP_L2ENTRIES", PARAM_NONZERO)

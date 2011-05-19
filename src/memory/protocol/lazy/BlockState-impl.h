@@ -59,26 +59,6 @@ BlockTreeState::BlockTreeState() :
 {
 }
 
-#if 0
-inline
-void
-BlockTreeState::incrementPath(long_t subBlock)
-{
-    counter_++;
-    if      (subBlock  < value_ && left_  != NULL) left_->incrementPath(subBlock);
-    else if (subBlock >= value_ && right_ != NULL) right_->incrementPath(subBlock);
-}
-
-inline
-void
-BlockTreeState::reset()
-{
-    counter_ = 0;
-    if      (left_  != NULL) left_->reset();
-    else if (right_ != NULL) right_->reset();
-}
-#endif
-
 inline
 BlockTreeInfo::BlockTreeInfo(lazy::Block &block) :
     block_(block)
@@ -211,7 +191,7 @@ StrideInfo::signalWrite(hostptr_t addr)
     } else if (stridedFaults_ == 1) {
         stride_ = addr - lastAddr_;
         stridedFaults_ = 2;
-        //printf("STRIDE 2\n");
+        //printf("STRIDE 2: %lu\n", stride_);
     } else {
         if (addr == lastAddr_ + stride_) {
             stridedFaults_++;
@@ -219,7 +199,7 @@ StrideInfo::signalWrite(hostptr_t addr)
         } else {
             stride_ = addr - lastAddr_;
             stridedFaults_ = 2;
-            //printf("STRIDE 3b\n");
+            //printf("STRIDE 3b: %lu\n", stride_);
         }
     }
     lastAddr_ = addr;
@@ -229,14 +209,16 @@ inline
 Block &
 BlockState::block()
 {
-	return dynamic_cast<Block &>(*this);
+	//return reinterpret_cast<Block &>(*this);
+	return *(Block *)this;
 }
 
 inline
 const Block &
 BlockState::block() const
 {
-	return dynamic_cast<const Block &>(*this);
+	//return reinterpret_cast<const Block &>(*this);
+	return *(const Block *)this;
 }
 
 inline
@@ -246,8 +228,10 @@ BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
     setSubBlock(GetSubBlockIndex(block().addr(), addr), state);
 }
 
-#define GetMode() (*(core::hpe::Mode *)(void *) &block().owner(getProcess().getCurrentMode()))
+#ifdef USE_VM
+#define GetMode() (*(core::hpe::Mode *)(void *) &block_.owner(getProcess().getCurrentMode()))
 #define GetBitmap() GetMode().getBitmap()
+#endif
 
 inline
 void
@@ -454,6 +438,33 @@ BlockState::read(const hostptr_t addr)
 }
 
 inline void
+BlockState::writeStride(const hostptr_t addr)
+{
+    strideInfo_.signalWrite(addr);
+    if (strideInfo_.isStrided()) {
+        for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
+                cur < (block().addr() + block().size());
+                cur += strideInfo_.getStride()) {
+            long_t subBlock = GetSubBlockIndex(block().addr(), cur);
+            setSubBlock(subBlock, lazy::Dirty);
+        }
+    }
+}
+
+inline void
+BlockState::writeTree(const hostptr_t addr)
+{
+    treeInfo_.signalWrite(addr);
+    if (faultsWrite_ > STRIDE_THRESHOLD) {
+        BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
+
+        for (unsigned i = info.first; i < info.first + info.second; i++) {
+            setSubBlock(i, lazy::Dirty);
+        }
+    }
+}
+
+inline void
 BlockState::write(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
@@ -465,24 +476,14 @@ BlockState::write(const hostptr_t addr)
 #ifdef DEBUG
     subBlockFaultsWrite_[currentSubBlock]++;
 #endif
-    strideInfo_.signalWrite(addr);
 
-    if (strideInfo_.isStrided()) {
-        for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
-                                                         cur < (block().addr() + block().size());
-            cur += strideInfo_.getStride()) {
-            long_t subBlock = GetSubBlockIndex(block().addr(), cur);
-            setSubBlock(subBlock, lazy::Dirty);
+    if (util::params::ParamSubBlockStride) {
+        writeStride(addr);
+        if (util::params::ParamSubBlockTree && !strideInfo_.isStrided()) {
+            writeTree(addr);
         }
-    } else {
-        treeInfo_.signalWrite(addr);
-        if (faultsWrite_ > STRIDE_THRESHOLD) {
-            BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
-
-            for (unsigned i = info.first; i < info.first + info.second; i++) {
-                setSubBlock(i, lazy::Dirty);
-            }
-        }
+    } else if (util::params::ParamSubBlockTree) {
+        writeTree(addr);
     }
 }
 
@@ -508,17 +509,14 @@ BlockState::reset()
     faultsRead_  = 0;
     faultsWrite_ = 0;
 
-    strideInfo_.reset();
-    treeInfo_.reset();
+    if (util::params::ParamSubBlockStride) strideInfo_.reset();
+    if (util::params::ParamSubBlockTree) treeInfo_.reset();
 }
 
 inline int
 BlockState::unprotect()
 {
     int ret = 0;
-#if 0
-    ret = Memory::protect(block().addr(), block().size(), prot);
-#else
     unsigned start = 0;
     unsigned size = 0;
 #ifdef USE_VM
@@ -541,7 +539,6 @@ BlockState::unprotect()
     if (size > 0) {
         ret = Memory::protect(getSubBlockAddr(start), SubBlockSize_ * size, GMAC_PROT_READWRITE);
     }
-#endif
     return ret;
 }
 
@@ -635,7 +632,7 @@ namespace lazy {
 inline
 Block &BlockState::block()
 {
-	return dynamic_cast<Block &>(*this);
+	return static_cast<Block &>(*this);
 }
 
 inline
