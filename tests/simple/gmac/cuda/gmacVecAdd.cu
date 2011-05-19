@@ -55,10 +55,10 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    //randInit(a, vecSize);
-    //randInit(b, vecSize);
-    init(a, int(vecSize), 1.f);
-    init(b, int(vecSize), 1.f);
+    randInit(a, vecSize);
+    randInit(b, vecSize);
+    //init(a, int(vecSize), 1.f);
+    //init(b, int(vecSize), 1.f);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -83,10 +83,10 @@ int main(int argc, char *argv[])
         error += c[i] - (a[i] + b[i]);
         check += a[i] + b[i];
     }
-    assert(sum == check);
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
-
+    //printf("%g vs %g\n", double(sum), double(check));
+    assert(sum == check);
 
     getTime(&s);
     gmacFree(a);

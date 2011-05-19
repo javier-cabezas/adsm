@@ -113,6 +113,14 @@ public:
     virtual bool remove(Object &obj);
 
     /**
+     * Tells if an object belongs to the map
+     *
+     * \param obj Object to be checked
+     * \return True if the object belongs to the map
+     */
+    bool hasObject(Object &obj) const;
+
+    /**
      * Find the firs object in a memory range
      *
      * \param addr Starting address of the memory range where the object is

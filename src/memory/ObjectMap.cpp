@@ -57,6 +57,13 @@ bool ObjectMap::remove(Object &obj)
     return ret;
 }
 
+bool ObjectMap::hasObject(Object &obj) const
+{
+    Object *ret = NULL;
+    ret = mapFind(obj.addr(), obj.size());
+    return ret == &obj;
+}
+
 Object *ObjectMap::get(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;

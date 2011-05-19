@@ -36,11 +36,11 @@ static void init()
 {
     BlockSize_     = util::params::ParamBlockSize;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
-    SubBlocks_     = util::params::ParamSubBlocks;
-    SubBlockSize_  = util::params::ParamBlockSize/util::params::ParamSubBlocks;
-    BlockShift_    = (unsigned) log2(util::params::ParamBlockSize);
-    SubBlockShift_ = (unsigned) log2(util::params::ParamBlockSize/util::params::ParamSubBlocks);
-    SubBlockMask_  = util::params::ParamSubBlocks - 1;
+    SubBlockSize_  = util::params::ParamSubBlockSize;
+    SubBlocks_     = BlockSize_/SubBlockSize_;
+    BlockShift_    = (unsigned) log2(BlockSize_);
+    SubBlockShift_ = (unsigned) log2(SubBlockSize_);
+    SubBlockMask_  = SubBlocks_ - 1;
 
 #if defined(USE_VM)
     // TODO: Remove static initialization

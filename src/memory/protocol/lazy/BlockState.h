@@ -177,6 +177,9 @@ protected:
     unsigned getSubBlocks() const;
     size_t getSubBlockSize() const;
 
+    void writeStride(const hostptr_t addr);
+    void writeTree(const hostptr_t addr);
+
 public:
     BlockState(lazy::State init);
 
