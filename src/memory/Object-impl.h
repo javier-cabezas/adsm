@@ -157,8 +157,8 @@ inline gmacError_t Object::toAccelerator()
 inline gmacError_t Object::signalRead(hostptr_t addr)
 {
 	gmacError_t ret = gmacSuccess;
-    validate();
 	lockRead();
+    validate();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
@@ -170,8 +170,8 @@ inline gmacError_t Object::signalRead(hostptr_t addr)
 inline gmacError_t Object::signalWrite(hostptr_t addr)
 {
 	gmacError_t ret = gmacSuccess;
-    validate();
 	lockRead();
+    validate();
 	BlockMap::const_iterator i = blocks_.upper_bound(addr);
 	if(i == blocks_.end()) ret = gmacErrorInvalidValue;
 	else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;

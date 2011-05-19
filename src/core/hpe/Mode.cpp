@@ -86,9 +86,9 @@ gmacError_t Mode::releaseObjects()
 gmacError_t Mode::acquireObjects()
 {
     switchIn();
+    invalidObjects_ = true;
     releasedObjects_ = false;
     error_ = contextMap_.waitForCall();
-    invalidObjects_ = true;
     switchOut();
     return error_;
 }

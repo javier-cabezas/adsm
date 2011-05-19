@@ -129,6 +129,7 @@ gmacError_t Manager::acquireObjects(core::Mode &mode)
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     if(mode.releasedObjects() == true && mode.invalidObjects() == false) {
+        fprintf(stderr,"Acquiring Objects\n");
         mode.forEachObject(&Object::acquire);
         mode.acquireObjects();
     }
@@ -141,7 +142,7 @@ gmacError_t Manager::releaseObjects(core::Mode &mode)
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Releasing Objects");
     gmacError_t ret = gmacSuccess;
-    if (mode.releasedObjects() == false) {
+    if(mode.releasedObjects() == false) {
         // Release per-mode objects
         ret = mode.protocol().releaseObjects();
         mode.releaseObjects();

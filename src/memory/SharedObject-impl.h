@@ -10,7 +10,7 @@ namespace __impl { namespace memory {
 template<typename State>
 void SharedObject<State>::validate()
 {
-    owner_->validateObjects();
+    if(owner_ != NULL) owner_->validateObjects();
 }
 
 template<typename State>
