@@ -174,6 +174,9 @@ public:
     */
 	bool valid() const;
 
+    //! Ensure the owner(s) invalidate memory when acquiring objects
+    virtual void validate() = 0;
+
     //! Get the accelerator memory address where a host memory address from the object is mapped
     /*!
         \param current Execution mode requesting the translation

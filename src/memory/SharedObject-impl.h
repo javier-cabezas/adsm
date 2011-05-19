@@ -8,6 +8,12 @@
 namespace __impl { namespace memory {
 
 template<typename State>
+void SharedObject<State>::validate()
+{
+    owner_->validateObjects();
+}
+
+template<typename State>
 accptr_t SharedObject<State>::allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size)
 {
     accptr_t acceleratorAddr(0);

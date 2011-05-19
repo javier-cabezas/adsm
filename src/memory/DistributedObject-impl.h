@@ -7,6 +7,19 @@
 namespace __impl { namespace memory {
 
 template<typename State>
+inline void DistributedObject<State>::validate()
+{
+    AcceleratorMap::iterator i;
+    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
+        std::list<core::Mode *> modes = i->second;
+        std::list<core::Mode *>::iterator j;
+        for(j = i->second.begin(); j != i->second.end(); j++) {
+            (*j)->validateObjects();
+        }
+    }
+}
+
+template<typename State>
 inline DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
 											   hostptr_t cpuAddr, size_t size, typename State::ProtocolState init) :
     Object(cpuAddr, size)
