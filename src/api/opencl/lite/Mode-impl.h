@@ -115,9 +115,9 @@ gmacError_t Mode::releaseObjects()
 inline
 gmacError_t Mode::acquireObjects()
 {
-    cl_int ret = clFinish(active_);
     releasedObjects_ = false;
     invalidObjects_ = true;
+    cl_int ret = clFinish(active_);
     return error(ret);
 }
 

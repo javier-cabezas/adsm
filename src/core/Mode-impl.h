@@ -70,12 +70,14 @@ inline
 void Mode::validateObjects()
 {
     invalidObjects_ = false;
+    releasedObjects_ = false;
 }
 
 inline void
 Mode::addObject(memory::Object &obj)
 {
     getObjectMap().insert(obj);
+    validateObjects();
 }
 
 inline void 
