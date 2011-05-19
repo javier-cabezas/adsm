@@ -68,6 +68,7 @@ protected:
     memory::Protocol *protocol_;
 
     bool releasedObjects_;
+    bool invalidObjects_;
 
     gmacError_t error_;
 
@@ -172,6 +173,19 @@ public:
      * released to the accelerator
      */
     bool releasedObjects() const;
+
+    /**
+     * Tells if the objects of the mode have been already invalidated to the
+     * accelerator
+     * \return Boolean that tells if objects of the mode have been already
+     * released to the accelerator
+     */
+    bool invalidObjects() const;
+
+    /**
+     * Notifies the mode that one (or several) of its objects have been validated
+     */
+    void validateObjects();
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator

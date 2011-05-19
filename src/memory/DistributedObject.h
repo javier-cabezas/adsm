@@ -45,6 +45,8 @@ protected:
     uint8_t *shadow_;
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
+
+    void validate();
 public:
     DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
                       size_t size, typename State::ProtocolState init);

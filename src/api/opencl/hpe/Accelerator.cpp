@@ -181,7 +181,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
         CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(dynamic_cast<opencl::Mode &>(mode), event, count);
+    DataCommToHost(dynamic_cast<opencl::Mode &>(mode), event, count);
     cl_int clret = clReleaseEvent(event);
     ASSERTION(clret == CL_SUCCESS);
     trace::ExitCurrentFunction();

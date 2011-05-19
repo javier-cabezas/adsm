@@ -117,6 +117,7 @@ gmacError_t Mode::acquireObjects()
 {
     cl_int ret = clFinish(active_);
     releasedObjects_ = false;
+    invalidObjects_ = true;
     return error(ret);
 }
 

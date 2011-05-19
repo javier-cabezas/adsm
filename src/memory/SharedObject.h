@@ -54,6 +54,8 @@ protected:
 
     static accptr_t allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size);
     gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
+
+    void validate();
 public:
 	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init);
     virtual ~SharedObject();

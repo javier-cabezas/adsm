@@ -128,7 +128,7 @@ gmacError_t Manager::acquireObjects(core::Mode &mode)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    if(mode.releasedObjects() == true) {
+    if(mode.releasedObjects() == true && mode.invalidObjects() == false) {
         mode.forEachObject(&Object::acquire);
         mode.acquireObjects();
     }
