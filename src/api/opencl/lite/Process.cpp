@@ -12,9 +12,6 @@ namespace __impl { namespace opencl { namespace lite {
 
 Process::Process()
 {
-    library_t handler = USE_LIBRARY("OpenCL");
-    CFATAL(handler != NULL, "Unable to get handler to OpenCL");
-    addHandler(handler);
 }
 
 Process::~Process()

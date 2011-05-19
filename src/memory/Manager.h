@@ -188,13 +188,6 @@ public:
      */
     gmacError_t releaseObjects(core::Mode &mode);
 
-    /** Invalidate the host memory of all objects bound to the current execution
-     * mode
-     * \param mode Execution mode invalidating the data objects
-     * \return Error code
-     */
-    gmacError_t invalidate(core::Mode &mode);
-
     /**
      * Notify a memory fault caused by a load operation
      * \param mode Execution mode causing the fault

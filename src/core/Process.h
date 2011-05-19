@@ -56,9 +56,6 @@ namespace core {
 class GMAC_LOCAL Process : public util::Singleton<Process> {
     // Needed to let Singleton call the protected constructor
 protected:
-
-    std::vector<library_t> handlers_;
-
     /**
      * Constructs the process
      */
@@ -69,11 +66,6 @@ protected:
     virtual ~Process();
 
 public:
-    /**
-     * Adds a library handler to be unloaded on process destruction
-     */
-    void addHandler(library_t handler);
-
     /**
      * Registers a global object in the process
      *
