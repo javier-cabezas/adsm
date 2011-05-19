@@ -9,7 +9,6 @@
 #include "api/opencl/lite/Process.h"
 #include "include/gmac/lite.h"
 #include "libs/common.h"
-#include "memory/Allocator.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "memory/allocator/Slab.h"
@@ -37,7 +36,6 @@ static long getpagesize (void) {
 
 static __impl::opencl::lite::Process *Process_ = NULL;
 static gmac::memory::Manager *Manager_ = NULL;
-static __impl::memory::allocator::Slab *Allocator_ = NULL;
 
 SYM(cl_context, __opencl_clCreateContext,
         const cl_context_properties *,
@@ -393,14 +391,9 @@ GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count)
     gmac::trace::EnterCurrentFunction();
     Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
-        if(count < (__impl::util::params::ParamBlockSize / 2)) {
-            *addr = Allocator_->alloc(*mode, count, hostptr_t(RETURN_ADDRESS));
-        }
-        else {
-    	    count = (int(count) < getpagesize())? getpagesize(): count;
-            ret = Manager_->alloc(*mode, (hostptr_t *) addr, count);
-            mode->release();
-        }
+        count = (int(count) < getpagesize())? getpagesize(): count;
+        ret = Manager_->alloc(*mode, (hostptr_t *) addr, count);
+        mode->release();
     }
     else ret = CL_INVALID_CONTEXT;
     gmac::trace::ExitCurrentFunction();
@@ -415,9 +408,7 @@ GMAC_API cl_int clFree(cl_context context, void *addr)
     gmac::trace::EnterCurrentFunction();
     Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
-        if(Allocator_->free(*mode, hostptr_t(addr)) == false) {
-            ret = Manager_->free(*mode, hostptr_t(addr));
-        }
+        ret = Manager_->free(*mode, hostptr_t(addr));
         mode->release();
     }
     else ret = CL_INVALID_CONTEXT;
@@ -472,7 +463,6 @@ void initGmac()
     TRACE(GLOBAL, "Initializing Process");
     Process_ = new __impl::opencl::lite::Process();
     Manager_ = new gmac::memory::Manager(*Process_);
-    Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
     exitGmac();
 }
 
@@ -484,7 +474,6 @@ namespace __impl {
     }
     namespace memory {
         Manager &getManager() { return *Manager_; }
-        Allocator &getAllocator() { return *Allocator_; }
     }
 }
 
