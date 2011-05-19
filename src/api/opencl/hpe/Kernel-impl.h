@@ -116,7 +116,8 @@ KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream
 #endif
     KernelConfig(k.nArgs_),
     f_(k.f_),
-    stream_(stream)
+    stream_(stream),
+    lastEvent_(NULL)
 {
     clRetainKernel(f_);
 }

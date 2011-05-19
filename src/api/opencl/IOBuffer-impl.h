@@ -8,6 +8,7 @@ namespace __impl { namespace opencl {
 inline
 IOBuffer::IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async) :
     gmac::core::IOBuffer(addr, size, async), 
+    event_(NULL),
 	mode_(NULL), 
 	started_(false)
 {
@@ -39,7 +40,6 @@ IOBuffer::started(cl_event event)
 	TRACE(LOCAL,"Buffer %p starts", this);
     ASSERTION(started_ == false);
     ASSERTION(mode_ != NULL);
-
     event_ = event;
     started_ = true;
 }
