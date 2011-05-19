@@ -41,7 +41,11 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
 
     cl_command_queue stream;
-    stream = clCreateCommandQueue(ctx_, device_, 0, &ret);
+    cl_command_queue_properties properties = 0;
+#if defined(USE_TRACE)
+    properties |= CL_QUEUE_PROFILING_ENABLE;
+#endif
+    stream = clCreateCommandQueue(ctx_, device_, properties, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL stream");
     cmd_.add(stream);
 }
@@ -463,12 +467,13 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
 {
     uint64_t startTime, endTime;
+    t = 0;
     cl_int ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_QUEUED,
         sizeof(startTime), &startTime, NULL);
-    if(ret == CL_SUCCESS) {
-        ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END,
-            sizeof(endTime), &endTime, NULL);
-    }
+    if(ret != CL_SUCCESS) return error(CL_SUCCESS);
+    ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END,
+        sizeof(endTime), &endTime, NULL);
+    if(ret != CL_SUCCESS) return error(CL_SUCCESS);
     t = (endTime - startTime) / 1000;
     return error(ret);
 }
