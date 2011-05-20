@@ -289,6 +289,33 @@ BlockState::BlockState(lazy::State init) :
 #endif
 }
 
+#if 0
+common::BlockState<lazy::State>::ProtocolState
+BlockState::getState(hostptr_t addr) const
+{
+    return ProtocolState(subBlockState_[GetSubBlockIndex(block().addr(), addr)]);
+}
+#endif
+
+inline void
+BlockState::setState(ProtocolState state, hostptr_t addr)
+{
+    if (addr == NULL) {
+        setAll(state);
+        state_ = state;
+    } else {
+        if (state == lazy::Dirty) {
+            state_ = lazy::Dirty;
+        } else if (state == lazy::ReadOnly) {
+            if (state_ != lazy::Dirty) state_ = lazy::ReadOnly;
+        } else {
+            FATAL("Wrong state transition");
+        }
+
+        subBlockState_[GetSubBlockIndex(block().addr(), addr)] = state;
+    }
+}
+
 inline hostptr_t
 BlockState::getSubBlockAddr(const hostptr_t addr) const
 {
@@ -323,6 +350,8 @@ BlockState::syncToAccelerator()
     unsigned groupStart = 0, groupEnd = 0;
     unsigned gaps = 0;
     bool inGroup = false;
+
+    TRACE(LOCAL, "Transfer block to accelerator: %p", block().addr());
 
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
@@ -367,13 +396,14 @@ BlockState::syncToAccelerator()
 
     }
 
-    reset();
 	return ret;
 }
 
 inline gmacError_t
 BlockState::syncToHost()
 {
+    TRACE(LOCAL, "Transfer block to host: %p", block().addr());
+
 #ifndef USE_VM
     gmacError_t ret = block().toHost();
 #ifdef DEBUG
@@ -509,7 +539,6 @@ BlockState::is(ProtocolState state) const
 inline void
 BlockState::reset()
 {
-    setAll(lazy::ReadOnly);
     faultsRead_  = 0;
     faultsWrite_ = 0;
 
@@ -567,6 +596,8 @@ inline
 void
 BlockState::acquired()
 {
+    //setAll(lazy::Invalid);   
+    //state_ = lazy::Invalid;
 #ifdef DEBUG
     //::memset(&subBlockFaults_[0], 0, subBlockFaults_.size() * sizeof(long_t));
 #endif
@@ -576,6 +607,9 @@ inline
 void
 BlockState::released()
 {
+    //setAll(lazy::ReadOnly);   
+    state_ = lazy::ReadOnly;
+    reset();
 #ifdef DEBUG
     //::memset(&subBlockFaults_[0], 0, subBlockFaults_.size() * sizeof(long_t));
 #endif
@@ -649,10 +683,26 @@ BlockState::BlockState(ProtocolState init) :
 {
 }
 
+#if 0
+ProtocolState
+BlockState::getState(hostptr_t /* addr */) const
+{
+    return state_;
+}
+#endif
+
+inline void
+BlockState::setState(ProtocolState state, hostptr_t /* addr */)
+{
+    state_ = state;
+}
+
 inline
 gmacError_t
 BlockState::syncToAccelerator()
 {
+    TRACE(LOCAL, "Transfer block to accelerator: %p", block().addr());
+
     transfersToAccelerator_++;
     return block().toAccelerator();
 }
@@ -661,6 +711,8 @@ inline
 gmacError_t
 BlockState::syncToHost()
 {
+    TRACE(LOCAL, "Transfer block to host: %p", block().addr());
+
     transfersToHost_++;
     return block().toHost();
 }
@@ -706,12 +758,18 @@ BlockState::acquired()
 {
     faultsRead_ = 0;
     faultsWrite_ = 0;
+
+    state_ = lazy::Invalid;
 }
 
 inline
 void
 BlockState::released()
 {
+    faultsRead_ = 0;
+    faultsWrite_ = 0;
+
+    state_ = lazy::ReadOnly;
 }
 
 inline

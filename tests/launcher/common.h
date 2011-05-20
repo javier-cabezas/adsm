@@ -7,7 +7,7 @@
 #include "Test.h"
 #include "Variable.h"
 
-void ReadConf(TestSuite &suite);
+void ReadConf(TestSuite &suite, const char *varsPath, const char *testsPath);
 
 #endif /* COMMON_H */
 

@@ -78,8 +78,8 @@ ReadTests(std::string fileName, TestSuite &suite)
 }
 
 void
-ReadConf(TestSuite &suite)
+ReadConf(TestSuite &suite, const char *varsPath, const char *testsPath)
 {
-    ReadVars("vars.spec");
-    ReadTests("tests.spec", suite);
+    ReadVars(varsPath);
+    ReadTests(testsPath, suite);
 }

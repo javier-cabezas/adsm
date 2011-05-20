@@ -121,7 +121,7 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
             break;
     }
     block.unprotect();
-    block.setState(lazy::Dirty);
+    block.setState(lazy::Dirty, addr);
     addDirty(block);
     TRACE(LOCAL,"Setting block %p to dirty state", block.addr());
     //ret = addDirty(block);
@@ -141,6 +141,7 @@ gmacError_t LazyBase::acquire(Block &b)
                 FATAL("Unable to set memory permissions");
 #ifndef USE_VM
             block.setState(lazy::Invalid);
+            //block.acquired();
 #endif
             break;
         case lazy::Dirty:
@@ -259,6 +260,7 @@ gmacError_t LazyBase::release(Block &b)
 			if(block.protect(GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             block.setState(lazy::ReadOnly);
+            block.released();
             break;
         case lazy::Invalid:
         case lazy::ReadOnly:
@@ -301,6 +303,7 @@ gmacError_t LazyBase::toHost(Block &b)
     return ret;
 }
 
+#if 0
 gmacError_t LazyBase::toAccelerator(Block &b)
 {
     TRACE(LOCAL,"Sending block to accelerator: %p", b.addr());
@@ -327,6 +330,7 @@ gmacError_t LazyBase::toAccelerator(Block &b)
     }
     return ret;
 }
+#endif
 
 gmacError_t LazyBase::copyToBuffer(Block &b, core::IOBuffer &buffer, size_t size,
 							   size_t bufferOffset, size_t blockOffset)
