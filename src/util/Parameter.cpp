@@ -14,7 +14,7 @@
         return __##v;\
     }
 namespace __impl { namespace util { namespace params {
-#include "Parameter-def.h"
+#include "util/Parameter-def.h"
 
 // This CPP directives will create the constructor table for all
 // parameters defined by the programmer
@@ -22,7 +22,7 @@ namespace __impl { namespace util { namespace params {
 #define PARAM(v, t, d, ...) \
     { __init__##v, __##v },
 ParameterCtor ParamCtorList[] = {
-#include "Parameter-def.h"
+#include "util/Parameter-def.h"
     {NULL, NULL}
 };
 

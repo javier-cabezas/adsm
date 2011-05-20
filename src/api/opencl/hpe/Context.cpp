@@ -87,6 +87,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
+#if defined(SEPARATED_COMMAND_QUEUES)
     if(buffer_->async() == false) {
         mode_.destroyIOBuffer(*buffer_);
         buffer_ = NULL;
@@ -94,6 +95,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         trace::ExitCurrentFunction();
         return core::hpe::Context::copyToAccelerator(acc, host, size);
     }
+#endif
     gmacError_t ret = buffer_->wait();;
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
@@ -120,6 +122,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
+#if defined(SEPARATED_COMMAND_QUEUES)
     if(buffer_->async() == false) {
         mode_.destroyIOBuffer(*buffer_);
         buffer_ = NULL;
@@ -127,7 +130,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         trace::ExitCurrentFunction();
         return core::hpe::Context::copyToHost(host, acc, size);
     }
-
+#endif
     gmacError_t ret = buffer_->wait();
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ptroff_t offset = 0;

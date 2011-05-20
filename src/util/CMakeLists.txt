@@ -1,5 +1,7 @@
 add_subdirectory(${OS_DIR})
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Parameter-def.h.in ${CMAKE_CURRENT_BINARY_DIR}/Parameter-def.h)
+
 set(util_SRC
     Atomics.h
     FileLock.h

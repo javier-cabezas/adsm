@@ -22,4 +22,6 @@ if(USE_CUDA)
     else(EXISTS ${NVCC})
         message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
     endif(EXISTS ${NVCC})
+
+    set(GMAC_BLOCK_SIZE "512 * 1024")
 endif(USE_CUDA)
