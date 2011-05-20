@@ -65,8 +65,8 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
                 if (callKernel) {
                     null<<<1, 1>>>();
+                    assert(gmacThreadSynchronize() == gmacSuccess);
                 }
-                assert(gmacThreadSynchronize() == gmacSuccess);
                 memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
                 memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));
 
