@@ -105,7 +105,7 @@ extern ParameterCtor ParamCtorList[];
 
 #define PARAM(v, t, d, ...)  extern t v;
 
-#include "Parameter-def.h"
+#include "util/Parameter-def.h"
 }
 
 }}
