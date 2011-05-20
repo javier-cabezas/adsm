@@ -16,7 +16,7 @@ set_target_properties(gmac-lite PROPERTIES
 install(TARGETS gmac-lite 
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
-     RUNTIME DESTINATION bin
+     RUNTIME DESTINATION lib
      RESOURCE DESTINATION share
      PUBLIC_HEADER DESTINATION include/gmac)
 
