@@ -74,10 +74,6 @@ gmacError_t Mode::releaseObjects()
         map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
-
-    switchIn();
-    releasedObjects_ = true;
-    switchOut();
     return error_;
 }
 
@@ -86,8 +82,7 @@ gmacError_t Mode::releaseObjects()
 gmacError_t Mode::acquireObjects()
 {
     switchIn();
-    invalidObjects_ = true;
-    releasedObjects_ = false;
+    validObjects_ = false;
     error_ = contextMap_.waitForCall();
     switchOut();
     return error_;

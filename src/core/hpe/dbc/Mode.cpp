@@ -115,24 +115,24 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 gmacError_t
 Mode::releaseObjects()
 {
-    REQUIRES(releasedObjects() == false);
+    REQUIRES(validObjects() == true);
 
     gmacError_t ret;
     ret = __impl::core::hpe::Mode::releaseObjects();
 
-    ENSURES(releasedObjects() == true);
+    ENSURES(validObjects() == true);
     return ret;
 }
 
 gmacError_t
 Mode::acquireObjects()
 {
-    REQUIRES(releasedObjects() == true);
+    REQUIRES(validObjects() == true);
 
     gmacError_t ret;
     ret = __impl::core::hpe::Mode::acquireObjects();
 
-    ENSURES(releasedObjects() == false);
+    ENSURES(validObjects() == false);
     return ret;
 }
 

@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "CL/cl.h"
 #include "opencl_types.h"
 
-#include "api.h"
+#include <gmac/api.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -10,8 +10,7 @@ namespace __impl { namespace core {
 inline
 Mode::Mode() :
     id_(AtomicInc(Count_)),
-    releasedObjects_(false),
-    invalidObjects_(false)
+    validObjects_(false)
 #ifdef USE_VM
     , bitmap_(*this)
 #endif
@@ -55,22 +54,22 @@ void Mode::error(gmacError_t err)
 }
 
 inline
-bool Mode::releasedObjects() const
+bool Mode::validObjects() const
 {
-    return releasedObjects_;
+    return validObjects_;
 }
 
 inline
-bool Mode::invalidObjects() const
+void Mode::invalidateObjects()
 {
-    return invalidObjects_;
+    validObjects_ = false;
 }
+
 
 inline
 void Mode::validateObjects()
 {
-    invalidObjects_ = false;
-    releasedObjects_ = false;
+    validObjects_ = true;
 }
 
 inline void
