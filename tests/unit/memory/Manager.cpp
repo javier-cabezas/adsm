@@ -114,18 +114,23 @@ TEST_F(ManagerTest, Coherence)
 	ASSERT_TRUE(Process_->getCurrentMode().validObjects());
 
     for(int n = 0; n < 16; n++) {
+
 	    for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = (s & 0xff);
 	    }
+        ASSERT_TRUE(Process_->getCurrentMode().validObjects());
 	
-        if(Process_->getCurrentMode().validObjects()) {
-    	    ASSERT_EQ(gmacSuccess, manager->releaseObjects(Process_->getCurrentMode()));
-    	    ASSERT_EQ(gmacSuccess, manager->acquireObjects(Process_->getCurrentMode()));
-        }
+    	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Process_->getCurrentMode()));
+        ASSERT_TRUE(Process_->getCurrentMode().releasedObjects());
+        
+    	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Process_->getCurrentMode()));
+        ASSERT_FALSE(Process_->getCurrentMode().releasedObjects());
 	    ASSERT_FALSE(Process_->getCurrentMode().validObjects());
+
 	    for(size_t s = 0; s < Size_; s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));
 	    }
+        ASSERT_TRUE(Process_->getCurrentMode().validObjects());
     }
 
     ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
