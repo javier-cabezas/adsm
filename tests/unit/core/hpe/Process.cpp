@@ -24,6 +24,7 @@ Process *ProcessTest::createProcess()
 #if defined(USE_OPENCL)
     OpenCL(*proc);
 #endif
+    __impl::memory::Init();
     return proc;
 }
 

@@ -13,6 +13,7 @@ Manager::Manager(core::Process &proc) :
     proc_(proc)
 {
     TRACE(LOCAL,"Memory manager starts");
+    Init();
     Handler::setManager(*this);
 }
 
