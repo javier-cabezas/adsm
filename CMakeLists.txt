@@ -16,6 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 # Setup GMAC as main target
 include_directories(${CMAKE_SOURCE_DIR}/src
                     ${CMAKE_BINARY_DIR}/src
+                    ${CMAKE_SOURCE_DIR}/src/include
                     ${CMAKE_BINARY_DIR}/src/include)
 # GMAC is a DLL
 add_definitions(-DGMAC_DLL)
@@ -109,6 +110,17 @@ if(USE_VM)
 else(USE_VM)
     set(USE_VM_BITMAP "0")
 endif(USE_VM)
+
+# Setup configuration options
+option(USE_INTERNAL_API "Enable internal functions to tweak GMAC" OFF)
+if(USE_INTERNAL_API)
+    message(STATUS "Compiling with internal API support")
+    add_definitions(-DUSE_INTERNAL_API)
+    set(USE_INTERNAL_API_HEADER "1")
+else(USE_INTERNAL_API)
+    set(USE_INTERNAL_API_HEADER "0")
+endif(USE_INTERNAL_API)
+
 
 # Setup configuration options
 option(USE_SUBBLOCK_TRACKING "Enable subblock modification tracking" OFF)

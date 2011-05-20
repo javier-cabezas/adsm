@@ -265,7 +265,7 @@ Manager::read(core::Mode &mode, hostptr_t addr)
         trace::ExitCurrentFunction();
         return false;
     }
-    TRACE(LOCAL,"Read access for object %p", obj->addr());
+    TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
 	gmacError_t err = obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
 	obj->release();
@@ -291,7 +291,7 @@ Manager::write(core::Mode &mode, hostptr_t addr)
         trace::ExitCurrentFunction();
         return false;
     }
-    TRACE(LOCAL,"Write access for object %p", obj->addr());
+    TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
 	if(obj->signalWrite(addr) != gmacSuccess) ret = false;
 	obj->release();
     trace::ExitCurrentFunction();
@@ -644,6 +644,22 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
     if(srcObject != NULL) srcObject->release();
 
     trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t
+Manager::flushDirty(core::Mode &mode)
+{
+    gmacError_t ret;
+    TRACE(LOCAL,"Flushing Objects");
+    // Release per-mode objects
+    ret = mode.protocol().flushDirty();
+
+    if(ret == gmacSuccess) {
+        // Release global per-process objects
+        Protocol *protocol = proc_.protocol();
+        if(protocol != NULL) protocol->flushDirty();
+    }
     return ret;
 }
 

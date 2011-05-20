@@ -60,8 +60,8 @@ WITH THE SOFTWARE.  */
 
 #include <stddef.h>
 
-#include "types.h"
-#include "visibility.h"
+#include <gmac/types.h>
+#include <gmac/visibility.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -269,6 +269,13 @@ static inline const char *gmacGetErrorString(gmacError_t err) {
     }
     return NULL;
 }
+
+#define USE_INTERNAL_API_HEADER @USE_INTERNAL_API_HEADER@
+#if USE_INTERNAL_API_HEADER == 1
+
+GMAC_API gmacError_t APICALL __gmacFlushDirty();
+
+#endif
 
 #ifdef __cplusplus
 }

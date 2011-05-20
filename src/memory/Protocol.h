@@ -213,6 +213,8 @@ public:
     virtual gmacError_t memset(const Block &block, int v, size_t size, 
         size_t blockOffset) = 0;
 
+    virtual gmacError_t flushDirty() = 0;
+
     virtual gmacError_t dump(Block &block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
 	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);

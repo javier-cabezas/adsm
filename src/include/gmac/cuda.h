@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "cuda_types.h"
 
-#include "api.h"
+#include <gmac/api.h>
 
 #endif /* CUDA_H */
 

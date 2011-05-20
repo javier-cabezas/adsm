@@ -229,6 +229,11 @@ void LazyBase::addDirty(Block &block)
     return;
 }
 
+gmacError_t LazyBase::flushDirty()
+{
+    return releaseObjects();
+}
+
 gmacError_t LazyBase::releaseObjects()
 {
     // We need to make sure that this operations is done before we
@@ -236,7 +241,8 @@ gmacError_t LazyBase::releaseObjects()
     lock(); 
     while(dbl_.empty() == false) {
         Block &b = dbl_.pop();
-        b.coherenceOp(&Protocol::release);
+        gmacError_t ret = b.coherenceOp(&Protocol::release);
+        ASSERTION(ret == gmacSuccess);
     }
     unlock();
     return gmacSuccess;

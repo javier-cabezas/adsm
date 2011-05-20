@@ -1,3 +1,4 @@
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/api.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/api.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/vm.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/vm.h)
 
 set(gmac_include_SRC
