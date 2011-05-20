@@ -31,8 +31,8 @@ long_t SubBlockMask_;
 #endif
 
 
-CONSTRUCTOR(init);
-static void init()
+//CONSTRUCTOR(init);
+void Init()
 {
     BlockSize_     = util::params::ParamBlockSize;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)

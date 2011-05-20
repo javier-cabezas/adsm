@@ -86,15 +86,14 @@ gmacError_t LazyBase::signalRead(Block &b, hostptr_t addr)
         goto exit_func;
     }
 
-    if (block.getState() != lazy::Invalid) {
-        goto exit_func; // Somebody already fixed it
+    if (block.getState() == lazy::Invalid) {
+        ret = block.syncToHost();
+        if(ret != gmacSuccess) goto exit_func;
+        block.setState(lazy::ReadOnly);
     }
 
-    ret = block.syncToHost();
-    if(ret != gmacSuccess) goto exit_func;
     if(block.protect(GMAC_PROT_READ) < 0)
         FATAL("Unable to set memory permissions");
-    block.setState(lazy::ReadOnly);
 
 exit_func:
     trace::ExitCurrentFunction();

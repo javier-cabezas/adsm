@@ -41,6 +41,8 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory {
 
+void Init();
+
 extern size_t BlockSize_;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
 extern unsigned SubBlocks_;
