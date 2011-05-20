@@ -53,12 +53,10 @@ template <typename T>
 class GMAC_LOCAL BlockState {
 public:
     typedef T ProtocolState;
-    
-protected:
     T state_;
-
+    
 public:
-    BlockState(ProtocolState init);
+    BlockState(ProtocolState state);
 
     virtual gmacError_t syncToAccelerator() = 0;
     virtual gmacError_t syncToHost() = 0;
@@ -66,7 +64,7 @@ public:
     virtual bool is(ProtocolState state) const = 0;
 
     ProtocolState getState() const;
-    void setState(ProtocolState state);
+    virtual void setState(ProtocolState state, hostptr_t addr = NULL) = 0;
 
     virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };

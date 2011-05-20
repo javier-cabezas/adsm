@@ -123,7 +123,9 @@ public:
 
 	gmacError_t toHost(Block &block);
 
+#if 0
     gmacError_t toAccelerator(Block &block);
+#endif
 
 	gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size, 
 		size_t bufferOffset, size_t blockOffset);

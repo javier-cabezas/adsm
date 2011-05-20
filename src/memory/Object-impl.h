@@ -149,7 +149,7 @@ inline gmacError_t Object::toHost()
 inline gmacError_t Object::toAccelerator()
 {
     lockRead();
-	gmacError_t ret = coherenceOp(&Protocol::toAccelerator);
+	gmacError_t ret = coherenceOp(&Protocol::release);
     unlock();
     return ret;
 }

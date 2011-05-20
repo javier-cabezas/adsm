@@ -39,8 +39,8 @@ namespace memory { namespace protocol { namespace common {
 
 template <typename T>
 inline
-BlockState<T>::BlockState(ProtocolState init) :
-    state_(init)
+BlockState<T>::BlockState(ProtocolState state) :
+    state_(state)
 {
 }
 
@@ -52,6 +52,7 @@ BlockState<T>::getState() const
     return state_;
 }
 
+#if 0
 template <typename T>
 inline
 void
@@ -59,6 +60,7 @@ BlockState<T>::setState(ProtocolState state)
 {
     state_ = state;
 }
+#endif
 
 }}}}
 

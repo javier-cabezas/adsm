@@ -167,6 +167,7 @@ public:
     */
     virtual gmacError_t toHost(Block &block) = 0;
 
+#if 0
     //! Ensures that the accelerator memory of a block contains an updated copy of the data
     /*!
         \param block Memory block whose accelerator memory is being updated
@@ -174,6 +175,7 @@ public:
         \warning This method assumes that the block is not modified during its execution
     */
     virtual gmacError_t toAccelerator(Block &block) = 0;
+#endif
 
     //! Copy the contents of a memory block to an I/O buffer
     /*!

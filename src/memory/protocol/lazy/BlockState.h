@@ -183,6 +183,10 @@ protected:
 public:
     BlockState(lazy::State init);
 
+    void setState(ProtocolState state, hostptr_t addr = NULL);
+
+    bool hasState(ProtocolState state) const;
+
     gmacError_t syncToAccelerator();
     gmacError_t syncToHost();
 
@@ -216,6 +220,8 @@ protected:
 
 public:
     BlockState(ProtocolState init);
+
+    void setState(ProtocolState state, hostptr_t addr = NULL);
 
     gmacError_t syncToAccelerator();
     gmacError_t syncToHost();
