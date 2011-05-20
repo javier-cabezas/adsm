@@ -372,7 +372,9 @@ BlockState::syncToAccelerator()
                     vm::cost<vm::MODEL_TODEVICE>(SubBlockSize_, 1)) {
                 gaps++;
             } else {
-                ret = block().toAccelerator(groupStart * SubBlockSize_, SubBlockSize_ * (groupEnd - groupStart + 1) );
+                size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
+                if (sizeTransfer > block().size()) sizeTransfer = block().size();
+                ret = block().toAccelerator(groupStart * SubBlockSize_, sizeTransfer);
 #ifdef DEBUG
                 for (unsigned j = groupStart; j <= groupEnd; j++) { 
                     transfersToAccelerator_[j]++;
@@ -386,8 +388,10 @@ BlockState::syncToAccelerator()
     }
 
     if (inGroup) {
-        ret = block().toAccelerator(groupStart * SubBlockSize_,
-                                   SubBlockSize_ * (groupEnd - groupStart + 1));
+        size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
+        if (sizeTransfer > block().size()) sizeTransfer = block().size();
+        ret = block().toAccelerator(groupStart * SubBlockSize_, sizeTransfer);
+                                    
 #ifdef DEBUG
         for (unsigned j = groupStart; j <= groupEnd; j++) { 
             transfersToAccelerator_[j]++;
