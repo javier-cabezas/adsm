@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         if (ret == 0) ret = memcpyTest(MemcpyType(type), true, gmacMemcpyWrapper);
     } else {
         fprintf(stderr, "Using stdc memcpy\n");
-        //ret = memcpyTest(MemcpyType(type), false, memcpy);
+        ret = memcpyTest(MemcpyType(type), false, memcpy);
         if (ret == 0) ret = memcpyTest(MemcpyType(type), true, memcpy);
     }
 
