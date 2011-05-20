@@ -33,18 +33,12 @@ void Context::setupCLstreams()
     Accelerator &acc = accelerator();
     streamLaunch_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
-#if defined(SEPARATE_COMMAND_QUEUES)
     streamToAccelerator_ = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToAccelerator_, &acc);
     streamToHost_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
     streamAccelerator_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
-#else
-    streamToAccelerator_ = streamLaunch_;
-    streamToHost_ = streamLaunch_;
-    streamAccelerator_ = streamLaunch_;
-#endif
 }
 
 void Context::cleanCLstreams()
@@ -67,11 +61,6 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
     trace::SetThreadState(trace::Wait);
     ret = acc.syncCLstream(stream);
     trace::SetThreadState(trace::Running);
-#if 0
-    while ((ret = accelerator().queryCLstream(stream)) == CUDA_ERROR_NOT_READY) {
-        // TODO: add delay here
-    }
-#endif
     if (ret == CL_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
 
@@ -187,11 +176,11 @@ KernelLaunch &Context::launch(Kernel &kernel)
 gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
+#if defined(SEPARATE_COMMAND_QUEUES)
     trace::EnterCurrentFunction();	
-
     ret = syncCLstream(streamToAccelerator_);
-
     trace::ExitCurrentFunction();
+#endif
     return ret;
 }
 

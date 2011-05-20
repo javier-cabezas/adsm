@@ -7,6 +7,8 @@
 #include "memory/Manager.h"
 #include "memory/Object.h"
 
+using __impl::util::params::ParamAutoSync;
+
 namespace __impl { namespace memory {
 
 Manager::Manager(core::Process &proc) :

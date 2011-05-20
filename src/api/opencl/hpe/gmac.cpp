@@ -10,6 +10,8 @@
 
 #include "hpe/init.h"
 
+using __impl::util::params::ParamAutoSync;
+
 static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 {
 	return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
@@ -40,8 +42,13 @@ GMAC_API gmacError_t APICALL __oclKernelLaunch(ocl_kernel *kernel)
 {
     enterGmac();
     gmacError_t ret = gmacLaunch(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
-    if(ret == gmacSuccess)
+    if(ret == gmacSuccess) {
+#if defined(SEPARATE_COMMAND_QUEUES)
         ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->launch_);
+#else
+        ret = __impl::memory::getManager().acquireObjects(getCurrentOpenCLMode());
+#endif
+    }
     exitGmac();
     return ret;
 }

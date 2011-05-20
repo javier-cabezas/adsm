@@ -46,6 +46,9 @@ namespace __impl {
             Mode &getCurrentMode() GMAC_LOCAL;
         }
     }
+    namespace memory {
+        Manager &getManager();
+    }
 }
 
 
