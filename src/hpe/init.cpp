@@ -43,8 +43,6 @@ void initGmac(void)
     __impl::memory::Handler::setEntry(enterGmac);
     __impl::memory::Handler::setExit(exitGmac);
 
-    __impl::memory::Init();
-
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
     Process_ = new gmac::core::hpe::Process();
