@@ -202,7 +202,7 @@ set_target_properties(gmac PROPERTIES
 include("CMakeLists-lite.txt" OPTIONAL)
 
 set_property(TARGET gmac PROPERTY PUBLIC_HEADER
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/api.h
+    ${CMAKE_BINARY_DIR}/src/include/gmac/api.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
     ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
