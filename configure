@@ -70,6 +70,9 @@ do
     --enable-cxx0x)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X"
         ;;
+    --enable-internal)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_INTERNAL_API=ON"
+        ;;
     --with-vm-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DVM_BITMAP=${size}"

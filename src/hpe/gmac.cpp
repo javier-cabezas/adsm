@@ -325,3 +325,15 @@ void APICALL gmacCopy(THREAD_T id)
     getProcess().copy((THREAD_T)id);
     exitGmac();
 }
+
+#ifdef USE_INTERNAL_API
+
+gmacError_t APICALL __gmacFlushDirty()
+{
+    enterGmac();
+    gmacError_t ret = getManager().flushDirty(getCurrentMode());
+    exitGmac();
+    return ret;
+}
+
+#endif

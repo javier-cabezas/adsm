@@ -251,6 +251,7 @@ public:
      */
     TESTABLE gmacError_t memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src, size_t size);
 
+    gmacError_t flushDirty(core::Mode &mode);
 };
 
 }}

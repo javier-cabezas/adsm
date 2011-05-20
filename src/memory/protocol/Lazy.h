@@ -134,6 +134,8 @@ public:
     gmacError_t memset(const Block &block, int v, size_t size, 
         size_t blockOffset);
 
+    gmacError_t flushDirty();
+
     gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
 };
 

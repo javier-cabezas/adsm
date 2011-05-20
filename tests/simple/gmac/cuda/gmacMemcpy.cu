@@ -55,7 +55,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
         }
 
         for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
-            for (size_t copyCount = 0, j = 1; copyCount < count/3; copyCount = j, j *= 2) {
+            for (size_t copyCount = 1; copyCount < count/3; copyCount *= 2) {
                 init(baseSrc, int(count), 1);
                 init(baseDst, int(count), 0);
 
@@ -70,7 +70,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
                 memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
                 memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));
 
-                int ret = memcmp(gmacDst, baseDst, count * sizeof(long));
+                int ret = memcmp(gmacDst, baseDst, copyCount * sizeof(long));
 
                 if (ret != 0) {
 #if 0
@@ -125,13 +125,15 @@ int main(int argc, char *argv[])
 	setParam<int>(&type, typeStr, typeDefault);
 	setParam<bool>(&memcpyFn, memcpyFnStr, memcpyFnDefault);
 
-    int ret;
+    int ret = 0;
     
     if (memcpyFn == true) {
+        fprintf(stderr, "Using GMAC memcpy\n");
         ret = memcpyTest(MemcpyType(type), false, gmacMemcpyWrapper);
         if (ret == 0) ret = memcpyTest(MemcpyType(type), true, gmacMemcpyWrapper);
     } else {
-        ret = memcpyTest(MemcpyType(type), false, memcpy);
+        fprintf(stderr, "Using stdc memcpy\n");
+        //ret = memcpyTest(MemcpyType(type), false, memcpy);
         if (ret == 0) ret = memcpyTest(MemcpyType(type), true, memcpy);
     }
 
