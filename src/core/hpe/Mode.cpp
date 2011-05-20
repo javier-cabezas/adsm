@@ -74,6 +74,9 @@ gmacError_t Mode::releaseObjects()
         map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
+    switchIn();
+    releasedObjects_ = true;
+    switchOut();
     return error_;
 }
 

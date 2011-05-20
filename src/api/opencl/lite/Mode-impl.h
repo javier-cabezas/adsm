@@ -108,7 +108,7 @@ gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
 inline
 gmacError_t Mode::releaseObjects()
 {
-    validObjects_ = true;
+    releasedObjects_ = true;
     return error_;
 }
 
@@ -116,6 +116,7 @@ inline
 gmacError_t Mode::acquireObjects()
 {
     cl_int ret = clFinish(active_);
+    validObjects_ = false;
     return error(ret);
 }
 

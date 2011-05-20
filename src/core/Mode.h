@@ -68,6 +68,7 @@ protected:
     memory::Protocol *protocol_;
 
     bool validObjects_;
+    bool releasedObjects_;
 
     gmacError_t error_;
 
@@ -166,10 +167,9 @@ public:
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
 
     /**
-     * Tells if the objects of the mode have been already invalidated to the
-     * accelerator
+     * Tells if the objects of the mode have been already invalidated
      * \return Boolean that tells if objects of the mode have been already
-     * released to the accelerator
+     * invalidated 
      */
     bool validObjects() const;
 
@@ -182,6 +182,14 @@ public:
      * Notifies the mode that one (or several) of its objects has been invalidated
      */
     void invalidateObjects();
+
+    /**
+     * Tells if the objects of the mode have been already released to the
+     * accelerator
+     * \return Boolean that tells if objects of the mode have been already
+     * released to the accelerator
+     */
+    bool releasedObjects() const;
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator

@@ -10,7 +10,8 @@ namespace __impl { namespace core {
 inline
 Mode::Mode() :
     id_(AtomicInc(Count_)),
-    validObjects_(false)
+    validObjects_(false),
+    releasedObjects_(false)
 #ifdef USE_VM
     , bitmap_(*this)
 #endif
@@ -70,6 +71,13 @@ inline
 void Mode::validateObjects()
 {
     validObjects_ = true;
+    releasedObjects_ = false;
+}
+
+inline
+bool Mode::releasedObjects() const
+{
+    return releasedObjects_;
 }
 
 inline void
