@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
     for(unsigned i = 0; i < vecSize; i++) {
         sum += a[i] + b[i];
     }
-    __gmacFlushDirty();
     
     // Call the kernel
     getTime(&s);
