@@ -427,12 +427,14 @@ BlockState::syncToHost()
 inline void
 BlockState::read(const hostptr_t addr)
 {
+    long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     faultsRead_++;
 
+    setSubBlock(currentSubBlock, lazy::ReadOnly);
 #ifdef DEBUG
-    long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     subBlockFaultsRead_[currentSubBlock]++;
 #endif
+    TRACE(LOCAL, "");
 
     return;
 }
@@ -477,13 +479,15 @@ BlockState::write(const hostptr_t addr)
     subBlockFaultsWrite_[currentSubBlock]++;
 #endif
 
-    if (util::params::ParamSubBlockStride) {
-        writeStride(addr);
-        if (util::params::ParamSubBlockTree && !strideInfo_.isStrided()) {
+    if (subBlockState_.size() > STRIDE_THRESHOLD) {
+        if (util::params::ParamSubBlockStride) {
+            writeStride(addr);
+            if (util::params::ParamSubBlockTree && !strideInfo_.isStrided()) {
+                writeTree(addr);
+            }
+        } else if (util::params::ParamSubBlockTree) {
             writeTree(addr);
         }
-    } else if (util::params::ParamSubBlockTree) {
-        writeTree(addr);
     }
 }
 

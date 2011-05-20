@@ -4,6 +4,7 @@
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
+#include "memory/Memory.h"
 #include "memory/allocator/Slab.h"
 
 #include "util/Parameter.h"
@@ -41,6 +42,8 @@ void initGmac(void)
     // Set the entry and exit points for Manager
     __impl::memory::Handler::setEntry(enterGmac);
     __impl::memory::Handler::setExit(exitGmac);
+
+    __impl::memory::Init();
 
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");

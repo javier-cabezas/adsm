@@ -41,7 +41,7 @@ PARAM(ParamBitmapL3Entries, unsigned, 4096, "GMAC_BITMAP_L3ENTRIES", PARAM_NONZE
 PARAM(ParamModelToHostConfig, float, 40.0, "GMAC_MODEL_TOHOSTCONFIG")       // DMA configuration costs
 PARAM(ParamModelToHostTransferL1, float, 0.0007f, "GMAC_MODEL_TOHOSTTRANSFER_L1") // Transfer costs for data that fits in the L1 cache
 PARAM(ParamModelToHostTransferL2, float, 0.0008f, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that fits in the L2 cache
-PARAM(ParamModelToHostTransferMem, float, 0.0010f, "GMAC_MODEL_TOHOSTTRANSFER_L2") // Transfer costs for data that does not fit in the L2 cache
+PARAM(ParamModelToHostTransferMem, float, 0.0010f, "GMAC_MODEL_TOHOSTTRANSFER_MEM") // Transfer costs for data that does not fit in the L2 cache
 PARAM(ParamModelToDeviceConfig, float, 40.0, "GMAC_MODEL_TODEVICECONFIG")       // DMA configuration costs
 PARAM(ParamModelToDeviceTransferL1, float, 0.0007f, "GMAC_MODEL_TODEVICETRANSFER_L1") // Transfer costs for data that fits in the L1 cache
 PARAM(ParamModelToDeviceTransferL2, float, 0.0008f, "GMAC_MODEL_TODEVICETRANSFER_L2") // Transfer costs for data that fits in the L2 cache
