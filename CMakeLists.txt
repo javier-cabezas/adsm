@@ -216,10 +216,11 @@ include("CMakeLists-lite.txt" OPTIONAL)
 install(TARGETS ${GMAC_TARGET_NAME}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION lib
-        RESOURCE DESTINATION share
-        PUBLIC_HEADER DESTINATION include/gmac
         COMPONENT libraries)
+
+install(TARGETS ${GMAC_TARGET_NAME}
+	RUNTIME DESTINATION lib
+        COMPONENT runtime)
 
 install(FILES ${GMAC_HEADERS}
         DESTINATION include/gmac
