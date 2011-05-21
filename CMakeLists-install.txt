@@ -1,0 +1,60 @@
+option(MAKE_INSTALLER "Generate installer" OFF)
+
+if(MAKE_INSTALLER)
+    set(CPACK_PACKAGE_VENDOR "Multicoreware Inc.")
+    set(CPACK_PACKAGE_VERSION ${GMAC_VERSION})
+
+    if(INSTALLER MATCHES "deb")
+        set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Isaac Gelado <isaac@multicorewareinc.com>")
+        set(CPACK_DEBIAN_PACKAGE_NAME "lib${GMAC_TARGET_NAME}")
+        set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library for easy OpenCL development")
+        set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+
+        set(CPACK_DEBIAN_PACKAGE_VERSION "${GMAC_VERSION}")
+
+        if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+            set(GMAC_ARCH "amd64")
+        elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "i686")
+            set(GMAC_ARCH "i386")
+        endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+
+        set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${GMAC_ARCH})
+
+        set(CPACK_PACKAGE_FILE_NAME "lib${GMAC_TARGET_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
+    elseif(INSTALLER MATCHES "rpm")
+        set(CPACK_RPM_COMPONENT_INSTALL ON)
+        set(CPACK_COMPONENTS_ALL libraries headers)
+
+        set(CPACK_COMPONENT_LIBRARIES_GROUP "lib")
+        set(CPACK_COMPONENT_HEADERS_GROUP "devel")
+
+        set(CPACK_RPM_PACKAGE_NAME "lib${GMAC_TARGET_NAME}")
+        set(CPACK_RPM_PACKAGE_SUMMARY "Library for easy OpenCL development")
+        set(CPACK_RPM_PACKAGE_DESCRIPTION "Library for easy OpenCL development")
+        set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
+
+        set(CPACK_RPM_PACKAGE_VERSION "${GMAC_VERSION}")
+
+        if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+            set(GMAC_ARCH "x86_64")
+        elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "i686")
+            set(GMAC_ARCH "i386")
+        endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+
+        set(CPACK_RPM_PACKAGE_ARCHITECTURE ${GMAC_ARCH})
+
+        set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
+    elseif(INSTALLER MATCHES "win")
+        set(CPACK_NSIS_MUI_ICON "installer/logo_transparent.ico")
+        set(CPACK_NSIS_MUI_UNIICON "installer/logo_transparent.ico")
+        set(CPACK_PACKAGE_ICON "installer/mcw-logo.bmp")
+        set(CPACK_NSIS_CONTACT "isaac@multicorewareinc.com")
+        set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
+    elseif(INSTALLER MATCHES "tgz")
+    endif(INSTALLER MATCHES "deb")
+
+    set(CPACK_STRIP_FILES TRUE)
+
+    include(CPack)
+
+endif(MAKE_INSTALLER)
