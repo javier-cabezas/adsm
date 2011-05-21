@@ -17,12 +17,15 @@ set(GMAC_HEADERS ${GMAC_HEADERS}
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/lite_types.h)
 
-install(TARGETS gmac-lite 
-     LIBRARY DESTINATION lib
-     ARCHIVE DESTINATION lib
-     RUNTIME DESTINATION lib
-     RESOURCE DESTINATION share
-     PUBLIC_HEADER DESTINATION include/gmac)
+
+set(GMAC_TARGET_NAME ${GMAC_TARGET_NAME} gmac-lite)
+
+#install(TARGETS gmac-lite 
+#     LIBRARY DESTINATION lib
+#     ARCHIVE DESTINATION lib
+#     RUNTIME DESTINATION lib
+#     RESOURCE DESTINATION share
+#     PUBLIC_HEADER DESTINATION include/gmac)
 
 set(gmac-core-lite_LIB gmac-core-lite)
 
