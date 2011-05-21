@@ -10,7 +10,7 @@ else(MAKE_STATIC)
 endif(MAKE_STATIC)
 target_link_libraries(gmac-lite gmac-common gmac-trace gmac-core gmac-core-lite gmac-memory gmac-core-lite gmac-libs ${gmac_LIBS})
 set_target_properties(gmac-lite PROPERTIES
-    VERSION 0.3.0 SOVERSION 1
+    VERSION ${GMAC_VERSION} SOVERSION 1
 )
 
 set(GMAC_HEADERS ${GMAC_HEADERS} 
