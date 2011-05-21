@@ -19,4 +19,11 @@ if(USE_OPENCL)
     endif(USE_LITE)
 
     set(GMAC_BLOCK_SIZE "4 * 1024 * 1024")
+
+    set(GMAC_HEADERS ${GMAC_HEADERS} 
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h)
+
+    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-cl")
 endif(USE_OPENCL)

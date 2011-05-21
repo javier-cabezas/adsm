@@ -6,6 +6,7 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
+
 # Set the configuration being built
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -52,6 +53,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DDARWIN)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+# Add version-specific headers in the included files
+set(GMAC_HEADERS ${CMAKE_BINARY_DIR}/src/include/gmac/api.h
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h)
+set(GMAC_TARGET_NAME "gmac")
 
 include("CMakeLists-windows.txt" OPTIONAL)
 include("CMakeLists-opencl.txt" OPTIONAL)
@@ -190,38 +197,33 @@ link_directories(${gmac_LIBDIR})
 option(MAKE_STATIC "Build GMAC as a static library")
 include("CMakeLists-libs.txt")
 if(MAKE_STATIC)
-    add_gmac_library(gmac STATIC ${gmac-hpe_SRC} ${gmac-include_SRC})
+    add_gmac_library(${GMAC_TARGET_NAME} STATIC ${gmac-hpe_SRC} ${gmac-include_SRC})
 else(MAKE_STATIC)
-    add_gmac_library(gmac SHARED ${gmac-hpe_SRC} ${gmac-include_SRC})
+    add_gmac_library(${GMAC_TARGET_NAME} SHARED ${gmac-hpe_SRC} ${gmac-include_SRC})
 endif(MAKE_STATIC)
-target_link_libraries(gmac gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe gmac-libs ${gmac_LIBS})
-set_target_properties(gmac PROPERTIES
-    VERSION 0.3.0 SOVERSION 1
+target_link_libraries(${GMAC_TARGET_NAME} gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe gmac-libs ${gmac_LIBS})
+
+set(GMAC_VERSION "0.9.0")
+
+set_target_properties(${GMAC_TARGET_NAME} PROPERTIES
+    VERSION ${GMAC_VERSION} SOVERSION 1
 )
 
 include("CMakeLists-lite.txt" OPTIONAL)
 
-set_property(TARGET gmac PROPERTY PUBLIC_HEADER
-    ${CMAKE_BINARY_DIR}/src/include/gmac/api.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/lite_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/opencl_types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
-    ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h
-    ${CMAKE_BINARY_DIR}/src/include/gmac/vm.h
-)
+# set_property(TARGET ${GMAC_TARGET_NAME} PROPERTY PUBLIC_HEADER ${GMAC_HEADERS})
 
-install(TARGETS gmac 
-     LIBRARY DESTINATION lib
-     ARCHIVE DESTINATION lib
-     RUNTIME DESTINATION lib
-     RESOURCE DESTINATION share
-     PUBLIC_HEADER DESTINATION include/gmac)
+install(TARGETS ${GMAC_TARGET_NAME}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION lib
+        RESOURCE DESTINATION share
+        PUBLIC_HEADER DESTINATION include/gmac
+        COMPONENT libraries)
 
+install(FILES ${GMAC_HEADERS}
+        DESTINATION include/gmac
+        COMPONENT headers)
 
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
@@ -238,5 +240,4 @@ if(MAKE_TOOLS)
     add_subdirectory(tools)
 endif(MAKE_TOOLS)
 
-
-include(CPack)
+include(CMakeLists-install.txt)

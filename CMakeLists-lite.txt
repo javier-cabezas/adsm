@@ -13,6 +13,10 @@ set_target_properties(gmac-lite PROPERTIES
     VERSION 0.3.0 SOVERSION 1
 )
 
+set(GMAC_HEADERS ${GMAC_HEADERS} 
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/lite.h
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/lite_types.h)
+
 install(TARGETS gmac-lite 
      LIBRARY DESTINATION lib
      ARCHIVE DESTINATION lib
