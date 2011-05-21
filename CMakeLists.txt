@@ -213,14 +213,26 @@ include("CMakeLists-lite.txt" OPTIONAL)
 
 # set_property(TARGET ${GMAC_TARGET_NAME} PROPERTY PUBLIC_HEADER ${GMAC_HEADERS})
 
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 install(TARGETS ${GMAC_TARGET_NAME}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         COMPONENT libraries)
 
 install(TARGETS ${GMAC_TARGET_NAME}
-	RUNTIME DESTINATION lib
+        RUNTIME DESTINATION lib
         COMPONENT runtime)
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+install(TARGETS ${GMAC_TARGET_NAME}
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RESOURCE DESTINATION share 
+        COMPONENT libraries)
+
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 install(FILES ${GMAC_HEADERS}
         DESTINATION include/gmac
