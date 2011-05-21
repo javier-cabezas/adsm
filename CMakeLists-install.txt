@@ -4,6 +4,13 @@ if(MAKE_INSTALLER)
     set(CPACK_PACKAGE_VENDOR "Multicoreware Inc.")
     set(CPACK_PACKAGE_VERSION ${GMAC_VERSION})
 
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    	set(INSTALLER "win" CACHE STRING "Installer type")
+    else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    	set(INSTALLER "deb" CACHE STRING "Installer type")
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	
+    
     if(INSTALLER MATCHES "deb")
         set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Isaac Gelado <isaac@multicorewareinc.com>")
         set(CPACK_DEBIAN_PACKAGE_NAME "lib${GMAC_TARGET_NAME}")
@@ -45,10 +52,38 @@ if(MAKE_INSTALLER)
 
         set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
     elseif(INSTALLER MATCHES "win")
-        set(CPACK_NSIS_MUI_ICON "installer/logo_transparent.ico")
-        set(CPACK_NSIS_MUI_UNIICON "installer/logo_transparent.ico")
-        set(CPACK_PACKAGE_ICON "installer/mcw-logo.bmp")
+        set(CPACK_COMPONENTS_ALL libraries runtime headers)
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(GMAC_ARCH "x86_64")
+	    set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+	else()
+            set(GMAC_ARCH "x86")
+	    set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+	endif()
+
+	set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "GMAC run-time library")
+	set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "GMAC development library")
+	set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "GMAC headers")
+
+	set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "GMAC DLL needed to run programs that use GMAC")
+	set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC LIB file needed to develop programs that use GMAC")
+	set(CPACK_COMPONENT_HEADERS_DESCRIPTION "GMAC header files needed to develop programs that use GMAC")
+
+	set(CPACK_ALL_INSTALL_TYPES Normal Developer)
+
+	set(CPACK_COMPONENT_RUNTIME_INSTALL_TYPES Normal Developer)
+	set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Developer)
+	set(CPACK_COMPONENT_HEADERS_INSTALL_TYPES Developer)
+
+	set(CPACK_COMPONENT_LIBRARIES_GROUP "Development")
+	set(CPACK_COMPONENT_HEADERS_GROUP "Development")
+
+	set(CPACK_NSIS_PACKAGE_NAME "GMAC ${GMAC_VERSION}")
+	#set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/installer/logo.ico")
+	#set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/installer/logo.ico")
+	set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\installer\\\\mcw-logo.bmp")
         set(CPACK_NSIS_CONTACT "isaac@multicorewareinc.com")
+
         set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
     elseif(INSTALLER MATCHES "tgz")
     endif(INSTALLER MATCHES "deb")
