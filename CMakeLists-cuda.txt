@@ -24,4 +24,9 @@ if(USE_CUDA)
     endif(EXISTS ${NVCC})
 
     set(GMAC_BLOCK_SIZE "512 * 1024")
+
+    set(GMAC_HEADERS ${GMAC_HEADERS} 
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h)
+    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-cuda")
 endif(USE_CUDA)
