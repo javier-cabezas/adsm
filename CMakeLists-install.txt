@@ -3,6 +3,7 @@ option(MAKE_INSTALLER "Generate installer" OFF)
 if(MAKE_INSTALLER)
     set(CPACK_PACKAGE_VENDOR "Multicoreware Inc.")
     set(CPACK_PACKAGE_VERSION ${GMAC_VERSION})
+    set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     	set(INSTALLER "win" CACHE STRING "Installer type")
