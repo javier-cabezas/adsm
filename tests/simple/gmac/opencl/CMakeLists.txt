@@ -40,37 +40,37 @@ source_group(${current_GROUP} FILES
 )
 
 add_executable(gmacInit ${common_SRC} gmacInit.cpp)
-target_link_libraries(gmacInit ${GMAC_TARGET_NAME})
+target_link_libraries(gmacInit gmac-cl)
 
 add_executable(gmacVecAdd ${common_SRC} gmacVecAdd.cpp)
-target_link_libraries(gmacVecAdd ${GMAC_TARGET_NAME})
+target_link_libraries(gmacVecAdd gmac-cl)
 
 add_executable(gmacVecAdd_cplusplus ${common_SRC} gmacVecAdd_cplusplus.cpp)
-target_link_libraries(gmacVecAdd_cplusplus ${GMAC_TARGET_NAME})
+target_link_libraries(gmacVecAdd_cplusplus gmac-cl)
 
 add_executable(gmacThreadVecAdd ${common_SRC} gmacThreadVecAdd.cpp)
-target_link_libraries(gmacThreadVecAdd ${GMAC_TARGET_NAME})
+target_link_libraries(gmacThreadVecAdd gmac-cl)
 
 add_executable(gmacMemcpy ${common_SRC} gmacMemcpy.cpp)
-target_link_libraries(gmacMemcpy ${GMAC_TARGET_NAME})
+target_link_libraries(gmacMemcpy gmac-cl)
 
 add_executable(gmacMemset ${common_SRC} gmacMemset.cpp)
-target_link_libraries(gmacMemset ${GMAC_TARGET_NAME})
+target_link_libraries(gmacMemset gmac-cl)
 
 add_executable(gmacFile ${common_SRC} gmacFile.cpp)
-target_link_libraries(gmacFile ${GMAC_TARGET_NAME})
+target_link_libraries(gmacFile gmac-cl)
 
 add_executable(gmacFileVecAdd ${common_SRC} gmacFileVecAdd.cpp)
-target_link_libraries(gmacFileVecAdd ${GMAC_TARGET_NAME})
+target_link_libraries(gmacFileVecAdd gmac-cl)
 
 add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
-target_link_libraries(gmacSharedVecAdd ${GMAC_TARGET_NAME})
+target_link_libraries(gmacSharedVecAdd gmac-cl)
 
 add_executable(gmacStencil ${common_SRC} gmacStencil.cpp)
-target_link_libraries(gmacStencil ${GMAC_TARGET_NAME})
+target_link_libraries(gmacStencil gmac-cl)
 
 add_executable(gmacMatrixMul ${common_SRC} gmacMatrixMul.cpp gmacMatrixMulKernel.cl)
-target_link_libraries(gmacMatrixMul ${GMAC_TARGET_NAME})
+target_link_libraries(gmacMatrixMul gmac-cl)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
