@@ -55,7 +55,7 @@ if(MAKE_INSTALLER)
 
         set(CPACK_RPM_PACKAGE_ARCHITECTURE ${GMAC_ARCH})
 
-        set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_SHORT_NAME}_${GMAC_VERSION}_${GMAC_ARCH}")
+        set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_SHORT_NAME}_${GMAC_VERSION}.${GMAC_ARCH}")
     elseif(INSTALLER MATCHES "win")
         message(STATUS "Generating Windows package")
         set(CPACK_COMPONENTS_ALL libraries runtime headers)
