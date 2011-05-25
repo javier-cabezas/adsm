@@ -8,18 +8,19 @@
 
 namespace __impl { namespace trace {
 
+static LARGE_INTEGER TicksPerMicroSecond_ = { 0 };
+
 #if defined(USE_TRACE)
 uint64_t Tracer::timeMark() const
 {
-	FILETIME ft;
-	GetSystemTimeAsFileTime(&ft);
+	LARGE_INTEGER tick;
+	if(TicksPerMicroSecond_.QuadPart == 0) {
+		QueryPerformanceFrequency(&TicksPerMicroSecond_);
+		TicksPerMicroSecond_.QuadPart /= 1000000;
+	}
+	QueryPerformanceCounter(&tick);
+	uint64_t ret = tick.QuadPart / TicksPerMicroSecond_.QuadPart;
 
-	uint64_t ret = 0;
-	ret |= ft.dwHighDateTime;
-	ret <<= 32;
-	ret |= ft.dwLowDateTime;
-	ret -= DELTA_EPOCH_IN_MICROSECS;
-	ret /= 10;
 	return ret - base_;
 }
 #endif
