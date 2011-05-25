@@ -156,6 +156,7 @@ elseif(MSVC)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
+option(USE_CXX0X "Enable experimental support provided by the C++0x standard" OFF)
 if(USE_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++0x")
 endif(USE_CXX0X)

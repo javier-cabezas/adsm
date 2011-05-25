@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 	setParam<int>(&type, typeStr, typeDefault);
 	setParam<bool>(&memcpyFn, memcpyFnStr, memcpyFnDefault);
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
     int ret;
     

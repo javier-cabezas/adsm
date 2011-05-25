@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    assert(ocl::prepareCLCode(kernel) == oclSuccess);
+    assert(ocl::compileSource(kernel) == oclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);

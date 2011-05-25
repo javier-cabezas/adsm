@@ -62,7 +62,7 @@ GMAC_API gmacError_t APICALL __oclKernelWait(ocl_kernel *kernel)
 #endif
 
 
-GMAC_API gmacError_t APICALL oclPrepareCLCode(const char *code, const char *flags)
+GMAC_API gmacError_t APICALL oclCompileSource(const char *code, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
@@ -71,7 +71,7 @@ GMAC_API gmacError_t APICALL oclPrepareCLCode(const char *code, const char *flag
     return ret;
 }
 
-GMAC_API gmacError_t APICALL oclPrepareCLCodeFromFile(const char *path, const char *flags)
+GMAC_API gmacError_t APICALL oclCompileSourceFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
@@ -85,7 +85,7 @@ GMAC_API gmacError_t APICALL oclPrepareCLCodeFromFile(const char *path, const ch
     in.read(buffer,length);
     buffer[length] = '\0';
     in.close();
-    gmacError_t ret = oclPrepareCLCode(buffer, flags);
+    gmacError_t ret = oclCompileSource(buffer, flags);
     in.close();
     delete [] buffer;
 
@@ -93,11 +93,32 @@ GMAC_API gmacError_t APICALL oclPrepareCLCodeFromFile(const char *path, const ch
 }
 
 
-gmacError_t APICALL oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags)
+gmacError_t APICALL oclCompileBinary(const unsigned char *binary, size_t size, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLBinary(binary, size, flags);
     exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL oclCompileBinaryFile(const char *path, const char *flags)
+{
+    std::ifstream in(path, std::ios_base::in);
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+	if (length == std::streampos(0)) return gmacSuccess;
+    // Allocate memory for the code
+    unsigned char *buffer = new unsigned char[int(length)+1];
+    // Read data as a block
+    in.read((char *) buffer,length);
+    buffer[length] = '\0';
+    in.close();
+    gmacError_t ret = oclCompileBinary(buffer, length, flags);
+    in.close();
+    delete [] buffer;
 
     return ret;
 }

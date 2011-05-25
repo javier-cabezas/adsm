@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	gmactime_t s, t;
     float error1, error2, error3;
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
