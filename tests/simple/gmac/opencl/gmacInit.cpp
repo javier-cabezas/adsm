@@ -11,13 +11,13 @@
 const char *vecSizeStr = "GMAC_VECSIZE";
 const size_t vecSizeDefault = 16 * 1024 * 1024;
 
-size_t vecSize = 0;
-const size_t blockSize = 512;
+unsigned vecSize = 0;
+const unsigned blockSize = 512;
 
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd( __global int *a, unsigned long size)\
+__kernel void vecAdd( __global int *a, unsigned size)\
 {\
     int i = get_global_id(0);\
     if(i >= size) return;\
@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
 	int *a;
 	gmactime_t s, t;
 
-    assert(__oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclPrepareCLCode(kernel) == oclSuccess);
 
-    setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+    setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
     // Alloc & init input data
@@ -51,13 +51,13 @@ int main(int argc, char *argv[])
     globalSize = globalSize * localSize;
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
+    assert(oclKernelGet("vecAdd", &kernel) == oclSuccess);
 
-    assert(__oclKernelConfigure(&kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, 8, 1) == oclSuccess);
-    assert(__oclKernelLaunch(&kernel) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
+
+    assert(oclKernelLaunch(kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

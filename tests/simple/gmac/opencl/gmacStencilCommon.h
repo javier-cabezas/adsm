@@ -228,20 +228,19 @@ do_stencil(void * ptr)
 
     ocl_kernel kernel;
     
-    assert(__oclKernelGet("kernelStencil", &kernel) == oclSuccess);
-    assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == oclSuccess);
+    assert(oclKernelGet("kernelStencil", &kernel) == oclSuccess);
     cl_mem tmpMem = cl_mem(oclPtr(v));
     tmpMem = cl_mem(oclPtr(v));
-    assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 2) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 2, &tmpMem, sizeof(cl_mem)) == oclSuccess);
     float dt2 = 0.08f;
-    assert(__oclKernelSetArg(&kernel, &dt2, sizeof(dt2), 3) == oclSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->dimElems,     sizeof(descr->dimElems    ), 4) == oclSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->dimRealElems, sizeof(descr->dimRealElems), 5) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 3, &dt2, sizeof(dt2)) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 4, &descr->dimElems,     sizeof(descr->dimElems    )) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 5, &descr->dimRealElems, sizeof(descr->dimRealElems)) == oclSuccess);
     unsigned intTmp = descr->sliceElems();
-    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 6) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 6, &intTmp, sizeof(intTmp)) == oclSuccess);
     intTmp = descr->sliceRealElems();
-    assert(__oclKernelSetArg(&kernel, &intTmp, sizeof(intTmp), 7) == oclSuccess);
-    assert(__oclKernelSetArg(&kernel, &descr->slices, sizeof(descr->slices), 8) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 7, &intTmp, sizeof(intTmp)) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 8, &descr->slices, sizeof(descr->slices)) == oclSuccess);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
@@ -249,12 +248,12 @@ do_stencil(void * ptr)
         
         // Call the kernel
         tmpMem = cl_mem(oclPtr(descr->u2));
-        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 0) == oclSuccess);
+        assert(oclKernelSetArg(kernel, 0, &tmpMem, sizeof(cl_mem)) == oclSuccess);
         tmpMem = cl_mem(oclPtr(descr->u3));
-        assert(__oclKernelSetArg(&kernel, &tmpMem, sizeof(cl_mem), 1) == oclSuccess);
+        assert(oclKernelSetArg(kernel, 1, &tmpMem, sizeof(cl_mem)) == oclSuccess);
         
         ocl_error ret;
-        ret = __oclKernelLaunch(&kernel);
+        ret = oclKernelLaunch(kernel, 2, NULL, globalSize, localSize);
         assert(ret == oclSuccess);
 
         if(descr->gpus > 1) {
@@ -280,7 +279,6 @@ do_stencil(void * ptr)
         descr->u2 = tmp;
     }
 
-    assert(oclThreadSynchronize() == oclSuccess);
     if(descr->gpus > 1) {
         barrier_wait(&barrier);
     }

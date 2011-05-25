@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-    assert(__oclPrepareCLCode(stencilCode) == oclSuccess);
+    assert(oclPrepareCLCode(stencilCode) == oclSuccess);
 
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 

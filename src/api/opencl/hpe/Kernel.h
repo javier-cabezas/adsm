@@ -117,6 +117,8 @@ public:
      * \return Invocable kernel
      */
     KernelLaunch *launch(Mode &mode, cl_command_queue stream);
+
+    unsigned getNArgs() const;
 };
 
 

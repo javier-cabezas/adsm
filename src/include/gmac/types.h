@@ -76,6 +76,7 @@ typedef enum {
 	gmacErrorApiFailureBase,
     gmacErrorFeatureNotSupported,
     gmacErrorInsufficientAcceleratorMemory,
+    gmacErrorInvalidKernelName,
 	gmacErrorUnknown
 } gmacError_t;
 

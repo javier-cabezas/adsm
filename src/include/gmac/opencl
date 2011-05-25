@@ -46,28 +46,14 @@ WITH THE SOFTWARE.  */
 
 namespace ocl {
 
-typedef ocl_error error_t;
+typedef ocl_error error;
 
 typedef ocl_memory_hint memory_hint;
 typedef ocl_protection protection;
 
-/*!
-	Adds an argument to be used by the following call to oclLaunch()
-	\param addr Memory address where the param is stored
-	\param size Size, in bytes, of the argument
-	\param index Index of the parameter being added in the parameter list
-*/
-
-class KernelLaunch {
+class kernel {
 private:
-    inline
-    static error_t getKernel(std::string name, ocl_kernel &kernel)
-    {
-        return ::__oclKernelGet(name.c_str(), &kernel);
-    }
-
     ocl_kernel kernel_;
-    bool initialized_;
 
     template <typename T>
     struct Param {
@@ -87,116 +73,135 @@ private:
         }
     };
 
+    inline
+    error getByName(std::string name)
+    {
+        return getByName(name.c_str());
+    }
+
+    inline
+    error getByName(const char *name)
+    {
+        error ret = ::oclKernelGet(name, &kernel_);
+        return ret;
+    }
+
+    inline
+    kernel()
+    {
+    }
+
+    inline
+    kernel(const char *name)
+    {
+        get(name);
+    }
+
 public:
-    inline
-    KernelLaunch() :
-        initialized_(false)
+    inline static
+    kernel *get(std::string name)
     {
-        kernel_.id_ = NULL;
-        kernel_.launch_ = NULL;
+        return kernel::get(name.c_str());
+    }
+
+    inline static
+    kernel *get(const char *name)
+    {
+        kernel *launch = new kernel();
+        if (launch->getByName(name) == oclSuccess) return launch;
+        delete launch;
+        return NULL;
     }
 
     inline
-    KernelLaunch(std::string name)
+    kernel(std::string name, error &err)
     {
-        get(name);
+        err = oclSuccess;
+        if (getByName(name) == oclSuccess) err = oclErrorInvalidKernelName;
     }
 
     inline
-    KernelLaunch(const char *name)
+    kernel(const char *name, error &err)
     {
-        get(name);
+        err = oclSuccess;
+        if (getByName(name) == oclSuccess) err = oclErrorInvalidKernelName;
     }
 
     inline
-    ~KernelLaunch()
+    ~kernel()
     {
-        if (initialized_) ::__oclKernelDestroy(&kernel_);
+        oclKernelDestroy(kernel_);
     }
 
     inline
-    error_t get(std::string name)
+    ocl::kernel &operator+(const kernel &launch)
     {
-        error_t ret = KernelLaunch::getKernel(name, kernel_);
-        if (ret == gmacSuccess) initialized_ = true;
-
-        return ret;
-    }
-
-    inline
-    error_t get(const char *name)
-    {
-        gmacError_t ret = KernelLaunch::getKernel(std::string(name), kernel_);
-
-        return ret;
+        kernel_ = launch.kernel_;
+        return *this;
     }
 
     template <typename T>
     inline
-    error_t setArg(const T *addr, size_t size, unsigned index)
+    error setArg(unsigned index, const T *addr, size_t size)
     {
-        return ::__oclKernelSetArg(&kernel_, addr, size, index);
+        return ::oclKernelSetArg(kernel_, index, addr, size);
     } 
 
     template <typename T>
     inline
-    error_t setArg(T val, unsigned index)
+    error setArg(unsigned index, T val)
     {
         Param<T> p(val);
         printf("Param size: %zd\n", sizeof(p.value_));
-        return ::__oclKernelSetArg(&kernel_, &p.value_, sizeof(p.value_), index);
-    }
-
-    /*!
-      Configures the next call
-      \param workDim
-      \param globalWorkOffset
-      \param globalWorkSize
-      \param localWorkSize
-      \return Error code
-     */
-    inline
-    error_t configure(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize)
-    {
-        return ::__oclKernelConfigure(&kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+        return ::oclKernelSetArg(kernel_, index, &p.value_, sizeof(p.value_));
     }
 
     /**
      * Launches a kernel execution
-     * \param k Handler of the kernel to be executed at the GPU
+     *
+     * \param workDim
+     * \param globalWorkOffset
+     * \param globalWorkSize
+     * \param localWorkSize
      */
     inline
-    error_t launch()
+    error launch(size_t workDim, size_t *globalWorkOffset,
+                 size_t *globalWorkSize, size_t *localWorkSize)
     {
-        return ::__oclKernelLaunch(&kernel_);
+        error ret = ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+        return ret;
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 private:
     template <typename P1, typename ...Pn>
-    error_t __launch(unsigned index, P1 p1, Pn ...pn)
+    error __launch(size_t workDim, size_t *globalWorkOffset,
+                   size_t *globalWorkSize, size_t *localWorkSize, 
+                   unsigned index, P1 p1, Pn ...pn)
     {
-        error_t ret = setArg(p1, index);
+        error ret = setArg(index, p1);
         if (ret != gmacSuccess) return ret;
-        return __launch(index + 1, pn...);
+        return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, index + 1, pn...);
     }
 
-    error_t __launch(unsigned index)
+    error __launch(size_t workDim, size_t *globalWorkOffset,
+                   size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
     {
-        return ::__oclKernelLaunch(&kernel_);
+        return ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
     }
 
 public:
     template <typename P1, typename ...Pn>
-    error_t launch(P1 p1, Pn ...pn)
+    error launch(size_t workDim, size_t *globalWorkOffset,
+                 size_t *globalWorkSize, size_t *localWorkSize,
+                 P1 p1, Pn ...pn)
     {
-        return __launch(0, p1, pn...);
+        return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
     }
 #endif
 #if 0
     inline
-    error_t wait()
+    error wait()
     {
         return ::__oclKernelWait(&kernel_);
     }
@@ -208,9 +213,9 @@ public:
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCode(const char *code, const char *flags = NULL)
+static inline error prepareCLCode(const char *code, const char *flags = NULL)
 {
-    return ::__oclPrepareCLCode(code, flags);
+    return ::oclPrepareCLCode(code, flags);
 }
 
 /**
@@ -218,9 +223,9 @@ static inline error_t __prepareCLCode(const char *code, const char *flags = NULL
  * \param code String that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCode(std::string code, const char *flags = NULL)
+static inline error prepareCLCode(std::string code, const char *flags = NULL)
 {
-    return ::__oclPrepareCLCode(code.c_str(), flags);
+    return ::oclPrepareCLCode(code.c_str(), flags);
 }
 
 /**
@@ -228,9 +233,9 @@ static inline error_t __prepareCLCode(std::string code, const char *flags = NULL
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCodeFromFile(const char *path, const char *flags = NULL)
+static inline error prepareCLCodeFromFile(const char *path, const char *flags = NULL)
 {
-    return ::__oclPrepareCLCodeFromFile(path, flags);
+    return ::oclPrepareCLCodeFromFile(path, flags);
 }
 
 /**
@@ -238,7 +243,7 @@ static inline error_t __prepareCLCodeFromFile(const char *path, const char *flag
  * \param in Input stream that reads the code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLCodeFromFile(std::istream &in, const char *flags = NULL)
+static inline error prepareCLCodeFromFile(std::istream &in, const char *flags = NULL)
 {
     if (!in.good()) return gmacErrorInvalidValue;
     in.seekg (0, std::ios::end);
@@ -250,7 +255,7 @@ static inline error_t __prepareCLCodeFromFile(std::istream &in, const char *flag
     // Read data as a block
     in.read(buffer,length);
     buffer[length] = '\0';
-    error_t ret = ::__oclPrepareCLCode(buffer, flags);
+    error ret = ::oclPrepareCLCode(buffer, flags);
     delete [] buffer;
     return ret;
 }
@@ -261,9 +266,9 @@ static inline error_t __prepareCLCodeFromFile(std::istream &in, const char *flag
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  */
-static inline error_t __prepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
+static inline error prepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
 {
-    return ::__oclPrepareCLBinary(binary, size, flags);
+    return ::oclPrepareCLBinary(binary, size, flags);
 }
 
 
@@ -275,7 +280,7 @@ static inline
 size_t getFreeMemory() { return ::oclGetFreeMemory(); }
 
 static inline
-error_t migrate(unsigned acc) { return ::oclMigrate(acc); }
+error migrate(unsigned acc) { return ::oclMigrate(acc); }
 
 static inline
 ocl_error memoryMap(void *cpuPtr, size_t count, protection prot) {
@@ -297,10 +302,7 @@ static inline
 ocl_error free(void *cpuPtr) { return ::oclFree(cpuPtr); }
 
 static inline
-error_t threadSynchronize() { return ::oclThreadSynchronize(); }
-
-static inline
-error_t getLastError() { return ::oclGetLastError(); }
+error getLastError() { return ::oclGetLastError(); }
 
 static inline
 void *memset(void *cpuPtr, int c, size_t count) { return ::oclMemset(cpuPtr, c, count); }
@@ -324,7 +326,7 @@ void deviceCopy(THREAD_T tid) { ::oclDeviceCopy(tid); }
 
 template<typename T>
 static inline cl_mem ptr(const T *addr) {
-    return ::oclPtr(addr);
+    return ::oclPtr((const void *)addr);
 }
 
 #ifdef __cplusplus

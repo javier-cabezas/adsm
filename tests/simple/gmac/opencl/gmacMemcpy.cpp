@@ -45,8 +45,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
     size_t globalSize = 1;
     size_t localSize = 1;
 
-    assert(__oclKernelGet("null", &kernel) == oclSuccess);
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(oclKernelGet("null", &kernel) == oclSuccess);
 
     long *baseSrc, *baseDst;
     long *gmacSrc, *gmacDst;
@@ -78,7 +77,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
                 assert(stride + copyCount <= count);
 
                 if (callKernel) {
-                    assert(__oclKernelLaunch(&kernel) == oclSuccess);
+                    assert(oclKernelLaunch(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
                 }
                 memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
                 memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));
@@ -155,7 +154,7 @@ int main(int argc, char *argv[])
 	setParam<int>(&type, typeStr, typeDefault);
 	setParam<bool>(&memcpyFn, memcpyFnStr, memcpyFnDefault);
 
-    assert(__oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclPrepareCLCode(kernel) == oclSuccess);
 
     int ret;
     
