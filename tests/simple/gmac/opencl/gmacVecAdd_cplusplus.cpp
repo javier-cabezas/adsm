@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    assert(ocl::__prepareCLCode(kernel) == oclSuccess);
+    assert(ocl::prepareCLCode(kernel) == oclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
@@ -68,17 +68,17 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    ocl::KernelLaunch kernel;
-    assert(kernel.get("vecAdd") == oclSuccess);
-    assert(kernel.configure(1, NULL, &globalSize, &localSize) == oclSuccess);
+    ocl::error err;
+    ocl::kernel kernel("vecAdd", err);
+    assert(err == oclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-    assert(kernel.setArg(c, 0) == oclSuccess);
-    assert(kernel.setArg(a, 1) == oclSuccess);
-    assert(kernel.setArg(b, 2) == oclSuccess);
-    assert(kernel.setArg(vecSize, 3) == oclSuccess);
-    assert(kernel.launch() == oclSuccess);
+    assert(kernel.setArg(0, c) == oclSuccess);
+    assert(kernel.setArg(1, a) == oclSuccess);
+    assert(kernel.setArg(2, b) == oclSuccess);
+    assert(kernel.setArg(3, vecSize) == oclSuccess);
+    assert(kernel.launch(1, NULL, &globalSize, &localSize) == oclSuccess);
 #else
-    assert(kernel.launch(c, a, b, vecSize) == oclSuccess);
+    assert(kernel.launch(1, NULL, &globalSize, &localSize, c, a, b, vecSize) == oclSuccess);
 #endif
 
     getTime(&t);

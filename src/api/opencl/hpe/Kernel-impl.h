@@ -44,6 +44,13 @@ Kernel::launch(Mode &mode, cl_command_queue stream)
 }
 
 inline
+unsigned
+Kernel::getNArgs() const
+{
+    return nArgs_;
+}
+
+inline
 KernelConfig::KernelConfig(unsigned nArgs) :
     ArgsVector(nArgs),
     workDim_(0),

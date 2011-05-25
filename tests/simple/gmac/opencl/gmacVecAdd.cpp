@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    assert(__oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclPrepareCLCode(kernel) == oclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
@@ -70,16 +70,15 @@ int main(int argc, char *argv[])
 
     ocl_kernel kernel;
 
-    assert(__oclKernelGet("vecAdd", &kernel) == oclSuccess);
-    assert(__oclKernelConfigure(&kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(oclKernelGet("vecAdd", &kernel) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(c));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 0) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 1) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(__oclKernelSetArg(&kernel, &tmp, sizeof(cl_mem), 2) == oclSuccess);
-    assert(__oclKernelSetArg(&kernel, &vecSize, sizeof(vecSize), 3) == oclSuccess);
-    assert(__oclKernelLaunch(&kernel) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclKernelSetArg(kernel, 3, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclKernelLaunch(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

@@ -38,8 +38,7 @@ WITH THE SOFTWARE.  */
 typedef cl_mem __gmac_accptr_t;
 
 struct ocl_kernel {
-    const char *id_;
-    void *launch_;
+    void *impl_;
 };
 
 
