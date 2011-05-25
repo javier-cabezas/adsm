@@ -131,6 +131,12 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
     return ret;
 }
 
+gmacError_t Mode::acquireObjects()
+{
+    validObjects_ = false;
+    releasedObjects_ = false;
+    return error_;
+}
 
 cl_command_queue Mode::eventStream()
 {

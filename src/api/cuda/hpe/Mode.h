@@ -150,7 +150,15 @@ public:
         \param launch Structure defining the kernel to be executed
         \return Error code
     */
-	gmacError_t execute(core::hpe::KernelLaunch &launch);
+    gmacError_t execute(core::hpe::KernelLaunch &launch);
+
+
+    /**
+     * Waits for kernel execution and acquires the ownership of the objects
+     * of the mode from the accelerator
+     */
+    virtual gmacError_t acquireObjects();
+
 
     gmacError_t wait(core::hpe::KernelLaunch &launch);
     gmacError_t wait();

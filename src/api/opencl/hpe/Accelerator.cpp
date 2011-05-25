@@ -161,7 +161,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     cl_int ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
         acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-    buffer.started(event);
+    buffer.started(event, count);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
@@ -194,13 +194,12 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
-
     cl_event event;
     buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
     cl_int ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
         acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-    buffer.started(event);
+    buffer.started(event, count);
 #ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
@@ -464,7 +463,16 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Accelerator waiting for all pending events");
-    cl_int ret = clWaitForEvents(1, &event);
+
+#if defined(OPENCL_1_1)
+	cl_int status = 0;
+	cl_int ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);	
+	while(ret == CL_SUCCESS && status > 0) {
+		ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);
+	}
+#else
+	cl_int ret = clWaitForEvents(1, &event);
+#endif
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();
     return error(ret);

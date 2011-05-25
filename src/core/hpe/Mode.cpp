@@ -82,15 +82,7 @@ gmacError_t Mode::releaseObjects()
 
 
 
-gmacError_t Mode::acquireObjects()
-{
-    switchIn();
-    validObjects_ = false;
-    releasedObjects_ = false;
-    error_ = contextMap_.waitForCall();
-    switchOut();
-    return error_;
-}
+
 
 
 void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)

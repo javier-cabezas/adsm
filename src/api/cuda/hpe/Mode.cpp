@@ -55,7 +55,17 @@ Mode::~Mode()
     switchOut();
 }
 
-inline
+gmacError_t Mode::acquireObjects()
+{
+    switchIn();
+    validObjects_ = false;
+    releasedObjects_ = false;
+    error_ = contextMap_.waitForCall();
+    switchOut();
+    return error_;
+}
+
+
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     IOBuffer *ret;
@@ -69,7 +79,6 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
     return *ret;
 }
 
-inline
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
     ASSERTION(ioMemory_ != NULL);
