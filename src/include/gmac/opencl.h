@@ -93,7 +93,7 @@ GMAC_API ocl_error APICALL oclKernelGet(const char *id, ocl_kernel *kernel);
  */
 GMAC_API ocl_error APICALL oclKernelSetArg(ocl_kernel kernel, unsigned index, const void *addr, size_t size);
 
-#define oclSetKernelArg oclKernelSetArg
+#define oclSetKernelArg(k,i,s,a) oclKernelSetArg(k,i,a,s)
 
 /**
  * Launches a kernel execution
