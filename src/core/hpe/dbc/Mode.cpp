@@ -124,18 +124,6 @@ Mode::releaseObjects()
     return ret;
 }
 
-gmacError_t
-Mode::acquireObjects()
-{
-    REQUIRES(validObjects() == true);
-
-    gmacError_t ret;
-    ret = __impl::core::hpe::Mode::acquireObjects();
-
-    ENSURES(validObjects() == false);
-    return ret;
-}
-
 }}}
 
 #endif

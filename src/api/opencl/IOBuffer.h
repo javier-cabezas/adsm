@@ -52,6 +52,9 @@ protected:
     /** Signal is there are ongoing data transfers */
     bool started_;
 
+	/** Last transfer size */
+	size_t last_;
+
 public:
     /** Default constructor
      * \param mode Execution mode using the I/O buffer
@@ -75,7 +78,7 @@ public:
     /** Set the event defining the start of a data transfer using the I/O buffer
      * \param event OpenCL event defining the starting time of a data transfer
      */
-    void started(cl_event event);
+    void started(cl_event event, size_t size);
 
     /** Waits for any incoming data transfers to finish
      * \return Error code

@@ -57,7 +57,6 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
     gmacError_t moveTo(__impl::core::hpe::Accelerator &acc);
     gmacError_t releaseObjects();
-    gmacError_t acquireObjects();
 };
 
 }}}

@@ -312,13 +312,6 @@ public:
      */
     TESTABLE gmacError_t releaseObjects();
 
-
-    /**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     */
-    TESTABLE gmacError_t acquireObjects();
-
     /**
      * Returns the process which the mode belongs to
      * \return A reference to the process which the mode belongs to
