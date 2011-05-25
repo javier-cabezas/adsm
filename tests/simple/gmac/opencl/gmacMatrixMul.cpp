@@ -82,7 +82,7 @@ matrixMulThread(void * ptr)
 int
 main(int argc, char** argv)
 {
-    assert(oclPrepareCLCode(code) == oclSuccess);
+    assert(oclCompileSource(code) == oclSuccess);
 	setParam<unsigned>(&WA, WAStr, WADefault);
 	setParam<unsigned>(&HA, HAStr, HADefault);
 	setParam<unsigned>(&WB, WBStr, WBDefault);

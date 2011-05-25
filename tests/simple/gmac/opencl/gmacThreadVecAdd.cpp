@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;

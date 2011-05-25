@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 {
     thread_t tid, tidIO;
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 

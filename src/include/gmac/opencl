@@ -117,14 +117,14 @@ public:
     kernel(std::string name, error &err)
     {
         err = oclSuccess;
-        if (getByName(name) == oclSuccess) err = oclErrorInvalidKernelName;
+        if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
     }
 
     inline
     kernel(const char *name, error &err)
     {
         err = oclSuccess;
-        if (getByName(name) == oclSuccess) err = oclErrorInvalidKernelName;
+        if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
     }
 
     inline
@@ -134,7 +134,7 @@ public:
     }
 
     inline
-    ocl::kernel &operator+(const kernel &launch)
+    ocl::kernel &operator=(const kernel &launch)
     {
         kernel_ = launch.kernel_;
         return *this;
@@ -152,7 +152,6 @@ public:
     error setArg(unsigned index, T val)
     {
         Param<T> p(val);
-        printf("Param size: %zd\n", sizeof(p.value_));
         return ::oclKernelSetArg(kernel_, index, &p.value_, sizeof(p.value_));
     }
 
@@ -213,9 +212,9 @@ public:
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error prepareCLCode(const char *code, const char *flags = NULL)
+static inline error compileSource(const char *code, const char *flags = NULL)
 {
-    return ::oclPrepareCLCode(code, flags);
+    return ::oclCompileSource(code, flags);
 }
 
 /**
@@ -223,9 +222,9 @@ static inline error prepareCLCode(const char *code, const char *flags = NULL)
  * \param code String that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error prepareCLCode(std::string code, const char *flags = NULL)
+static inline error compileSource(std::string code, const char *flags = NULL)
 {
-    return ::oclPrepareCLCode(code.c_str(), flags);
+    return compileSource(code.c_str(), flags);
 }
 
 /**
@@ -233,9 +232,9 @@ static inline error prepareCLCode(std::string code, const char *flags = NULL)
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or NULL
  */
-static inline error prepareCLCodeFromFile(const char *path, const char *flags = NULL)
+static inline error compileSourceFile(const char *path, const char *flags = NULL)
 {
-    return ::oclPrepareCLCodeFromFile(path, flags);
+    return ::oclCompileSourceFile(path, flags);
 }
 
 /**
@@ -243,7 +242,7 @@ static inline error prepareCLCodeFromFile(const char *path, const char *flags = 
  * \param in Input stream that reads the code
  * \param flags Compilation flags or NULL
  */
-static inline error prepareCLCodeFromFile(std::istream &in, const char *flags = NULL)
+static inline error compileSourceStream(std::istream &in, const char *flags = NULL)
 {
     if (!in.good()) return gmacErrorInvalidValue;
     in.seekg (0, std::ios::end);
@@ -255,7 +254,7 @@ static inline error prepareCLCodeFromFile(std::istream &in, const char *flags = 
     // Read data as a block
     in.read(buffer,length);
     buffer[length] = '\0';
-    error ret = ::oclPrepareCLCode(buffer, flags);
+    error ret = ::oclCompileSource(buffer, flags);
     delete [] buffer;
     return ret;
 }
@@ -266,9 +265,41 @@ static inline error prepareCLCodeFromFile(std::istream &in, const char *flags = 
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  */
-static inline error prepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
+static inline error compileBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
 {
-    return ::oclPrepareCLBinary(binary, size, flags);
+    return ::oclCompileBinary(binary, size, flags);
+}
+
+/**
+ * Prepares the OpenCL binary code to be used by the applications 
+ * \param path String with the path of the file that contains the binary code
+ * \param flags Compilation flags or NULL
+ */
+static inline error compileBinaryFile(const char *path, const char *flags = NULL)
+{
+    return ::oclCompileBinaryFile(path, flags);
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications 
+ * \param in Input stream that reads the code
+ * \param flags Compilation flags or NULL
+ */
+static inline error compileBinaryStream(std::istream &in, const char *flags = NULL)
+{
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == std::streampos(0)) return gmacSuccess;
+    // Allocate memory for the code
+    unsigned char *buffer = new unsigned char[int(length)+1];
+    // Read data as a block
+    in.read((char *) buffer,length);
+    buffer[length] = '\0';
+    error ret = ::oclCompileBinary(buffer, length, flags);
+    delete [] buffer;
+    return ret;
 }
 
 

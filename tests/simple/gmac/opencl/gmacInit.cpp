@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 	int *a;
 	gmactime_t s, t;
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
     setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 

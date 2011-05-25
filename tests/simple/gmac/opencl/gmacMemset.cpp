@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 {
 	long *ptr;
 
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
 	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == oclSuccess);
 

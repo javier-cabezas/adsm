@@ -163,7 +163,7 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 int main(int argc, char *argv[])
 {
-    assert(oclPrepareCLCode(kernel) == oclSuccess);
+    assert(oclCompileSource(kernel) == oclSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);

@@ -92,6 +92,8 @@ GMAC_API ocl_error APICALL oclKernelGet(const char *id, ocl_kernel *kernel);
  */
 GMAC_API ocl_error APICALL oclKernelSetArg(ocl_kernel kernel, unsigned index, const void *addr, size_t size);
 
+#define oclSetKernelArg oclKernelSetArg
+
 /**
  * Launches a kernel execution
  * \param kernel Handler of the kernel to be executed at the GPU
@@ -104,6 +106,8 @@ GMAC_API ocl_error APICALL oclKernelSetArg(ocl_kernel kernel, unsigned index, co
 GMAC_API ocl_error APICALL oclKernelLaunch(ocl_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
+
+#define oclEnqueueNDRange oclKernelLaunch
 
 #if 0
 /**
@@ -121,19 +125,21 @@ GMAC_API ocl_error APICALL oclKernelWait(ocl_kernel *kernel);
  */
 GMAC_API ocl_error APICALL oclKernelDestroy(ocl_kernel kernel);
 
+#define oclDestroyKernel oclKernelDestroy
+
 /**
  * Prepares the OpenCL code to be used by the application
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  */
-GMAC_API ocl_error APICALL oclPrepareCLCode(const char *code, const char *flags = NULL);
+GMAC_API ocl_error APICALL oclCompileSource(const char *code, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL code in the specified fie to be used by the application
  * \param path String pointing to the file with the code to be added
  * \param flags Compilation flags or NULL
  */
-GMAC_API ocl_error APICALL oclPrepareCLCodeFromFile(const char *path, const char *flags = NULL);
+GMAC_API ocl_error APICALL oclCompileSourceFile(const char *path, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application
@@ -141,7 +147,14 @@ GMAC_API ocl_error APICALL oclPrepareCLCodeFromFile(const char *path, const char
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  */
-GMAC_API ocl_error APICALL oclPrepareCLBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+GMAC_API ocl_error APICALL oclCompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+
+/**
+ * Prepares the OpenCL binary to be used by the application
+ * \param path String pointing to the file with the binary code to be added
+ * \param flags Compilation flags or NULL
+ */
+GMAC_API ocl_error APICALL oclCompileBinaryFile(const char *path, const char *flags = NULL);
 
 
 /* Wrappers to GMAC native calls */

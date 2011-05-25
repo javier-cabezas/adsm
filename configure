@@ -72,7 +72,7 @@ do
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;
     --enable-cxx0x)
-        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X"
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X=ON"
         ;;
     --enable-internal)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_INTERNAL_API=ON"
