@@ -87,48 +87,48 @@ void *doTest(void *)
 
     ocl_kernel kernelSet;
 
-    assert(oclKernelGet("vecSet", &kernelSet) == oclSuccess);
+    assert(oclGetKernel("vecSet", &kernelSet) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(oclKernelSetArg(kernelSet, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernelSet, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelSet, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelSet, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
 
     ocl_kernel kernelMove;
 
-    assert(oclKernelGet("vecMove", &kernelMove) == oclSuccess);
+    assert(oclGetKernel("vecMove", &kernelMove) == oclSuccess);
 
     tmp = cl_mem(oclPtr(c));
-    assert(oclKernelSetArg(kernelMove, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(oclKernelSetArg(kernelMove, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernelMove, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
         float val = float(i);
-        assert(oclKernelSetArg(kernelSet, 2, &val, sizeof(val)) == oclSuccess);
-        assert(oclKernelLaunch(kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(oclSetKernelArg(kernelSet, 2, &val, sizeof(val)) == oclSuccess);
+        assert(oclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
         barrier_wait(&ioAfter);
-        assert(oclKernelLaunch(kernelMove, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(oclCallNDRange(kernelMove, 1, NULL, &globalSize, &localSize) == oclSuccess);
         barrier_wait(&ioBefore);
     }
 
     barrier_wait(&ioBefore);
 
     ocl_kernel kernelAccum;
-    assert(oclKernelGet("vecAccum", &kernelAccum) == oclSuccess);
+    assert(oclGetKernel("vecAccum", &kernelAccum) == oclSuccess);
 
     tmp = cl_mem(oclPtr(b));
-    assert(oclKernelSetArg(kernelAccum, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(oclKernelSetArg(kernelAccum, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernelAccum, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
 
-        assert(oclKernelLaunch(kernelAccum, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(oclCallNDRange(kernelAccum, 1, NULL, &globalSize, &localSize) == oclSuccess);
     }
 
 
