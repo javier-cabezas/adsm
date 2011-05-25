@@ -81,6 +81,7 @@ typedef enum GmacProtection ocl_protection;
 */
 GMAC_API ocl_error APICALL oclKernelGet(const char *id, ocl_kernel *kernel);
 
+#define oclGetKernel oclKernelGet
 
 /**
  *  Adds an argument to be used by the following call to oclLaunch()
@@ -107,7 +108,7 @@ GMAC_API ocl_error APICALL oclKernelLaunch(ocl_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
 
-#define oclEnqueueNDRange oclKernelLaunch
+#define oclCallNDRange oclKernelLaunch
 
 #if 0
 /**
