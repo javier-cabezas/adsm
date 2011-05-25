@@ -59,16 +59,16 @@ float doTest(float *a, float *b, float *c, float *orig)
 
     ocl_kernel kernel;
 
-    assert(oclKernelGet("vecAdd", &kernel) == oclSuccess);
+    assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(c));
-    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(oclKernelSetArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(b));
-    assert(oclKernelSetArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 3, &vecSize, sizeof(vecSize)) == oclSuccess);
-    assert(oclKernelLaunch(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 3, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

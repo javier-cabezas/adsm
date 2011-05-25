@@ -43,12 +43,12 @@ int main(int argc, char *argv[])
 
     ocl_kernel kernel;
 
-    assert(oclKernelGet("reset", &kernel) == oclSuccess);
+    assert(oclGetKernel("reset", &kernel) == oclSuccess);
 
-    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 1, &size, sizeof(size)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 2, &val, sizeof(val)) == oclSuccess);
-    assert(oclKernelLaunch(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 1, &size, sizeof(size)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 2, &val, sizeof(val)) == oclSuccess);
+    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
 
-    assert(oclKernelLaunch(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 

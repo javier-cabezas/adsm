@@ -228,19 +228,19 @@ do_stencil(void * ptr)
 
     ocl_kernel kernel;
     
-    assert(oclKernelGet("kernelStencil", &kernel) == oclSuccess);
+    assert(oclGetKernel("kernelStencil", &kernel) == oclSuccess);
     cl_mem tmpMem = cl_mem(oclPtr(v));
     tmpMem = cl_mem(oclPtr(v));
-    assert(oclKernelSetArg(kernel, 2, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 2, &tmpMem, sizeof(cl_mem)) == oclSuccess);
     float dt2 = 0.08f;
-    assert(oclKernelSetArg(kernel, 3, &dt2, sizeof(dt2)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 4, &descr->dimElems,     sizeof(descr->dimElems    )) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 5, &descr->dimRealElems, sizeof(descr->dimRealElems)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 3, &dt2, sizeof(dt2)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 4, &descr->dimElems,     sizeof(descr->dimElems    )) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 5, &descr->dimRealElems, sizeof(descr->dimRealElems)) == oclSuccess);
     unsigned intTmp = descr->sliceElems();
-    assert(oclKernelSetArg(kernel, 6, &intTmp, sizeof(intTmp)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 6, &intTmp, sizeof(intTmp)) == oclSuccess);
     intTmp = descr->sliceRealElems();
-    assert(oclKernelSetArg(kernel, 7, &intTmp, sizeof(intTmp)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 8, &descr->slices, sizeof(descr->slices)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 7, &intTmp, sizeof(intTmp)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 8, &descr->slices, sizeof(descr->slices)) == oclSuccess);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
@@ -248,12 +248,12 @@ do_stencil(void * ptr)
         
         // Call the kernel
         tmpMem = cl_mem(oclPtr(descr->u2));
-        assert(oclKernelSetArg(kernel, 0, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+        assert(oclSetKernelArg(kernel, 0, &tmpMem, sizeof(cl_mem)) == oclSuccess);
         tmpMem = cl_mem(oclPtr(descr->u3));
-        assert(oclKernelSetArg(kernel, 1, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+        assert(oclSetKernelArg(kernel, 1, &tmpMem, sizeof(cl_mem)) == oclSuccess);
         
         ocl_error ret;
-        ret = oclKernelLaunch(kernel, 2, NULL, globalSize, localSize);
+        ret = oclCallNDRange(kernel, 2, NULL, globalSize, localSize);
         assert(ret == oclSuccess);
 
         if(descr->gpus > 1) {

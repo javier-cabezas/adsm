@@ -122,19 +122,19 @@ main(int argc, char** argv)
 
     ocl_kernel kernel;
 
-    assert(oclKernelGet("matrixMulSimple", &kernel) == oclSuccess);
+    assert(oclGetKernel("matrixMulSimple", &kernel) == oclSuccess);
     cl_mem tmp = cl_mem(oclPtr(C));
-    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(A));
-    assert(oclKernelSetArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
     tmp = cl_mem(oclPtr(B));
-    assert(oclKernelSetArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
     int param = int(WA);
-    assert(oclKernelSetArg(kernel, 3, &param, sizeof(int)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 3, &param, sizeof(int)) == oclSuccess);
     param     = int(WB);
-    assert(oclKernelSetArg(kernel, 4, &param, sizeof(int)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 4, &param, sizeof(int)) == oclSuccess);
 
-    assert(oclKernelLaunch(kernel, 2, NULL, globalSize, localSize) == oclSuccess);
+    assert(oclCallNDRange(kernel, 2, NULL, globalSize, localSize) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

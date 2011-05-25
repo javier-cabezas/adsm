@@ -76,13 +76,7 @@ private:
     inline
     error getByName(std::string name)
     {
-        return getByName(name.c_str());
-    }
-
-    inline
-    error getByName(const char *name)
-    {
-        error ret = ::oclKernelGet(name, &kernel_);
+        error ret = ::oclKernelGet(name.c_str(), &kernel_);
         return ret;
     }
 
@@ -101,27 +95,13 @@ public:
     inline static
     kernel *get(std::string name)
     {
-        return kernel::get(name.c_str());
-    }
-
-    inline static
-    kernel *get(const char *name)
-    {
         kernel *launch = new kernel();
         if (launch->getByName(name) == oclSuccess) return launch;
         delete launch;
-        return NULL;
     }
 
     inline
     kernel(std::string name, error &err)
-    {
-        err = oclSuccess;
-        if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
-    }
-
-    inline
-    kernel(const char *name, error &err)
     {
         err = oclSuccess;
         if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
@@ -140,9 +120,8 @@ public:
         return *this;
     }
 
-    template <typename T>
     inline
-    error setArg(unsigned index, const T *addr, size_t size)
+    error setArg(unsigned index, const void *addr, size_t size)
     {
         return ::oclKernelSetArg(kernel_, index, addr, size);
     } 
@@ -168,6 +147,14 @@ public:
                  size_t *globalWorkSize, size_t *localWorkSize)
     {
         error ret = ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+        return ret;
+    }
+
+    inline
+    error callNDRange(size_t workDim, size_t *globalWorkOffset,
+                      size_t *globalWorkSize, size_t *localWorkSize)
+    {
+        error ret = launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
         return ret;
     }
 
@@ -197,6 +184,15 @@ public:
     {
         return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
     }
+
+    template <typename P1, typename ...Pn>
+    error callNDRange(size_t workDim, size_t *globalWorkOffset,
+                      size_t *globalWorkSize, size_t *localWorkSize,
+                      P1 p1, Pn ...pn)
+    {
+        return launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, p1, pn...);
+    }
+
 #endif
 #if 0
     inline
@@ -210,39 +206,29 @@ public:
 /**
  * Prepares the OpenCL code to be used by the applications 
  * \param code Pointer to the NULL-terminated string that contains the code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileSource(const char *code, const char *flags = NULL)
+static inline error compileSource(std::string code, std::string flags = "")
 {
-    return ::oclCompileSource(code, flags);
-}
-
-/**
- * Prepares the OpenCL code to be used by the applications 
- * \param code String that contains the code
- * \param flags Compilation flags or NULL
- */
-static inline error compileSource(std::string code, const char *flags = NULL)
-{
-    return compileSource(code.c_str(), flags);
+    return ::oclCompileSource(code.c_str(), flags.c_str());
 }
 
 /**
  * Prepares the OpenCL code to be used by the applications 
  * \param path String with the path of the file that contains the code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileSourceFile(const char *path, const char *flags = NULL)
+static inline error compileSourceFile(std::string path, std::string flags = "")
 {
-    return ::oclCompileSourceFile(path, flags);
+    return ::oclCompileSourceFile(path.c_str(), flags.c_str());
 }
 
 /**
  * Prepares the OpenCL code to be used by the applications 
  * \param in Input stream that reads the code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileSourceStream(std::istream &in, const char *flags = NULL)
+static inline error compileSourceStream(std::istream &in, std::string flags = "")
 {
     if (!in.good()) return gmacErrorInvalidValue;
     in.seekg (0, std::ios::end);
@@ -254,7 +240,7 @@ static inline error compileSourceStream(std::istream &in, const char *flags = NU
     // Read data as a block
     in.read(buffer,length);
     buffer[length] = '\0';
-    error ret = ::oclCompileSource(buffer, flags);
+    error ret = ::oclCompileSource(buffer, flags.c_str());
     delete [] buffer;
     return ret;
 }
@@ -263,29 +249,29 @@ static inline error compileSourceStream(std::istream &in, const char *flags = NU
  * Prepares the OpenCL binary to be used by the applications 
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileBinary(const unsigned char *binary, size_t size, const char *flags = NULL)
+static inline error compileBinary(const unsigned char *binary, size_t size, std::string flags = "")
 {
-    return ::oclCompileBinary(binary, size, flags);
+    return ::oclCompileBinary(binary, size, flags.c_str());
 }
 
 /**
  * Prepares the OpenCL binary code to be used by the applications 
  * \param path String with the path of the file that contains the binary code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileBinaryFile(const char *path, const char *flags = NULL)
+static inline error compileBinaryFile(std::string path, std::string flags = "")
 {
-    return ::oclCompileBinaryFile(path, flags);
+    return ::oclCompileBinaryFile(path.c_str(), flags.c_str());
 }
 
 /**
  * Prepares the OpenCL code to be used by the applications 
  * \param in Input stream that reads the code
- * \param flags Compilation flags or NULL
+ * \param flags Compilation flags or empty string
  */
-static inline error compileBinaryStream(std::istream &in, const char *flags = NULL)
+static inline error compileBinaryStream(std::istream &in, std::string flags = "")
 {
     if (!in.good()) return gmacErrorInvalidValue;
     in.seekg (0, std::ios::end);
@@ -297,7 +283,7 @@ static inline error compileBinaryStream(std::istream &in, const char *flags = NU
     // Read data as a block
     in.read((char *) buffer,length);
     buffer[length] = '\0';
-    error ret = ::oclCompileBinary(buffer, length, flags);
+    error ret = ::oclCompileBinary(buffer, length, flags.c_str());
     delete [] buffer;
     return ret;
 }

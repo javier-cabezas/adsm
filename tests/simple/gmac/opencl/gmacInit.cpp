@@ -51,13 +51,13 @@ int main(int argc, char *argv[])
     globalSize = globalSize * localSize;
     ocl_kernel kernel;
 
-    assert(oclKernelGet("vecAdd", &kernel) == oclSuccess);
+    assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(oclKernelSetArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclKernelSetArg(kernel, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
 
-    assert(oclKernelLaunch(kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
+    assert(oclCallNDRange(kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
