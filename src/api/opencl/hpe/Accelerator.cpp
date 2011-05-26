@@ -76,8 +76,8 @@ void CLBufferPool::putCLMem(size_t size, cl_mem mem, hostptr_t addr)
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 
-Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    gmac::core::hpe::Accelerator(n), platform_(platform), device_(device)
+Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
+    gmac::core::hpe::Accelerator(n), ctx_(context), device_(device)
 {
     // Not used for now
     busId_ = 0;
@@ -88,12 +88,6 @@ Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
         sizeof(val), NULL, NULL);
     if(ret == CL_SUCCESS) integrated_ = (val == CL_TRUE);
     else integrated_ = false;
-
-    cl_context_properties prop[] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)platform_, 0 };
-
-    ctx_ = clCreateContext(prop, 1, &device_, NULL, NULL, &ret);
-    CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
 
     cl_command_queue stream;
     cl_command_queue_properties properties = 0;

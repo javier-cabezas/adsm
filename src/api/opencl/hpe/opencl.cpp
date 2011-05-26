@@ -27,8 +27,17 @@ void OpenCL(gmac::core::hpe::Process &proc)
             deviceSize, devices, NULL);
         ASSERTION(ret == CL_SUCCESS);
         TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", deviceSize, i);
+
+        cl_context ctx;
+        if (deviceSize > 0) {
+            cl_context_properties prop[] = {
+                CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[i], 0 };
+
+            ctx = clCreateContext(prop, deviceSize, devices, NULL, NULL, &ret);
+            CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
+        }
         for(unsigned j = 0; j < deviceSize; j++) {
-            gmac::opencl::hpe::Accelerator *acc = new gmac::opencl::hpe::Accelerator(n++, platforms[i], devices[j]);
+            gmac::opencl::hpe::Accelerator *acc = new gmac::opencl::hpe::Accelerator(n++, ctx, devices[j]);
             proc.addAccelerator(*acc);
             // Nedded for OpenCL code compilation
             __impl::opencl::hpe::Accelerator::addAccelerator(*acc);
