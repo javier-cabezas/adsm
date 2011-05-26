@@ -130,9 +130,11 @@ TEST_F(ObjectTest, IOBuffer)
     }
     ASSERT_EQ(gmacSuccess, object->copyFromBuffer(buffer, Size_));
 
+	ptr = buffer.addr();
     memset(ptr, 0, Size_);
     ASSERT_EQ(gmacSuccess, object->copyToBuffer(buffer, Size_));
     ASSERT_EQ(gmacSuccess, buffer.wait());
+	ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {
         EXPECT_EQ(ptr[s], (s & 0xff));
     }
