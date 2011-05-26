@@ -155,14 +155,14 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     trace::EnterCurrentFunction();
     //TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
-    cl_event event;
+    cl_event start, end;
     cl_int ret;
 
     if (buffer.async() == true) {
         cl_mem mem = buffer.getCLBuffer();
 
         cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
-                0, NULL, NULL);
+                0, NULL, &start);
 
         ASSERTION(err == CL_SUCCESS);
 
@@ -171,10 +171,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
                 acc.offset(), count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &event, &err);
+                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
-        buffer.started(event, count);
+        buffer.started(start, end, count);
         buffer.setAddr(addr);
 #ifdef _MSC_VER
         ret = clFlush(stream);
@@ -185,9 +185,9 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
 
         buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
         ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
-                acc.offset(), count, host, 0, NULL, &event);
+                acc.offset(), count, host, 0, NULL, &start);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-        buffer.started(event, count);
+        buffer.started(start, count);
 #ifdef _MSC_VER
         ret = clFlush(stream);
         CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
@@ -221,14 +221,14 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 {
     trace::EnterCurrentFunction();
     //TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
-    cl_event event;
+    cl_event start, end;
     cl_int ret;
 
     if (buffer.async() == true) {
         cl_mem mem = buffer.getCLBuffer();
 
         cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
-                0, NULL, NULL);
+                0, NULL, &start);
 
         ASSERTION(err == CL_SUCCESS);
 
@@ -237,10 +237,10 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
                 acc.offset(), bufferOff, count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &event, &err);
+                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
-        buffer.started(event, count);
+        buffer.started(start, end, count);
         buffer.setAddr(addr);
 #ifdef _MSC_VER
         ret = clFlush(stream);
@@ -251,9 +251,9 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 
         buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
         ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
-                acc.offset(), count, host, 0, NULL, &event);
+                acc.offset(), count, host, 0, NULL, &start);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-        buffer.started(event, count);
+        buffer.started(start, count);
 #ifdef _MSC_VER
         ret = clFlush(stream);
         CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
@@ -541,7 +541,7 @@ gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
     cl_int ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_START,
         sizeof(startTime), &startTime, NULL);
     if(ret != CL_SUCCESS) return error(CL_SUCCESS);
-    ret = clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END,
+    ret = clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END,
         sizeof(endTime), &endTime, NULL);
     if(ret != CL_SUCCESS) return error(CL_SUCCESS);
     t = (endTime - startTime) / 1000;

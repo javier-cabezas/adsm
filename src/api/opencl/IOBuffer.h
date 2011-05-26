@@ -45,6 +45,9 @@ class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
     cl_mem mem_;
 
+	/** OpenCL event to query for the finalization of any ongoing data transfer */
+    cl_event start_;
+
     /** OpenCL event to query for the finalization of any ongoing data transfer */
     cl_event event_;
 
@@ -81,6 +84,11 @@ public:
      * \param event OpenCL event defining the starting time of a data transfer
      */
     void started(cl_event event, size_t size);
+
+	/** Set the event defining the start of a data transfer using the I/O buffer
+     * \param event OpenCL event defining the starting time of a data transfer
+     */
+    void started(cl_event start, cl_event end, size_t size);
 
     /** Waits for any incoming data transfers to finish
      * \return Error code
