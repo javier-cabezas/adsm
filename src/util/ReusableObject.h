@@ -41,52 +41,61 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-/*! \todo Delete ? */
-template <typename Type>
+template <typename T>
 class GMAC_LOCAL Pool {
-    template <typename Type2> friend class ReusableObject;
 public:
-    Pool()
-        : freeList(NULL)
-        {}
-
-    ~Pool()
-        {
-            Object * next, * tmp;
-            for (next = freeList; next; next = tmp) {
-                tmp = next->next;
-                delete next;
-            }
-        }
-
     union Object {
-        char shit[sizeof(Type)];
+        char dummy[sizeof(T)];
         Object * next;
     };
 
-private:
-    Object * freeList;
+    Pool()
+    : freeList_(NULL)
+    {}
 
+    ~Pool()
+    {
+        Object * next, * tmp;
+        for (next = freeList_; next; next = tmp) {
+            tmp = next->next;
+            delete next;
+        }
+    }
+
+    T *get()
+    {
+        Object *ret = freeList_;
+        if (ret) freeList_ = ret->next;
+        return (T *) ret;
+    }
+
+    void put(T *ptr)
+    {
+        ((Object *) ptr)->next = freeList_;
+        freeList_ = (Object *) ptr;
+    }
+
+
+private:
+    Object * freeList_;
 };
 
-/*! \todo Delete ? */
-template <typename Type>
+template <typename T>
 class GMAC_LOCAL ReusableObject {
 public:
-    void * operator new (size_t bytes)
-        {
-            typename Pool<Type>::Object * res = pool.freeList;
-            return res? (pool.freeList = pool.freeList->next, res) : new typename Pool<Type>::Object;
-        }
+    void *operator new(size_t bytes)
+    {
+        T *res = pool.get();
+        return res? res : (T *) new typename Pool<T>::Object;
+    }
 
-    void operator delete (void *ptr)
-        {
-            ((typename Pool<Type>::Object *) ptr)->next = pool.freeList;
-            pool.freeList = (typename Pool<Type>::Object *) ptr;
-        }
+    void operator delete(void *ptr)
+    {
+        pool.put((T *) ptr);
+    }
 
 protected:
-    static Pool<Type> pool;
+    static Pool<T> pool;
 };
 
 // Static initialization
