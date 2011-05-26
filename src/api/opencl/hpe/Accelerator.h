@@ -127,6 +127,71 @@ public:
     bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
+class GMAC_LOCAL CLMem :
+    protected std::map<size_t, std::list<cl_mem> >,
+    protected gmac::util::Lock {
+
+    typedef std::list<cl_mem> CLMemList;
+    typedef std::map<size_t, CLMemList> CLMemMap;
+public:
+    CLMem() : CLMemMap(), gmac::util::Lock("CLMem") {}
+
+    ~CLMem()
+    {
+        CLMemMap::iterator it;
+        
+        for(it = begin(); it != end(); it++) {
+            CLMemList::iterator it2;
+            CLMemList list = it->second;
+            for (it2 = list.begin(); it2 != list.end(); it2++) {
+                cl_int ret;
+                ret = clReleaseMemObject(*it2);
+                ASSERTION(ret == CL_SUCCESS);
+            }
+        }
+    }
+
+    bool getCLMem(size_t size, cl_mem &mem)
+    {
+        lock(); 
+
+        bool ret = false;
+
+        CLMemMap::iterator it = find(size);
+        
+        if (it != end())  {
+            CLMemList &list = it->second;
+            if (it->second.size() > 0) {
+                mem = list.front();
+                list.pop_front();
+                ret = true;
+            }
+        }
+        unlock();
+
+        return ret;
+    }
+
+    void putCLMem(size_t size, cl_mem mem)
+    {
+        lock(); 
+
+        CLMemMap::iterator it = find(size);
+        
+        if (it != end())  {
+            CLMemList &list = it->second;
+            if (it->second.size() > 0) {
+                list.push_back(mem);
+            }
+        } else {
+            CLMemList list;
+            list.push_back(mem);
+            insert(CLMemMap::value_type(size, list));
+        }
+        unlock();
+    }
+};
+
 /** An OpenCL capable accelerator */
 class GMAC_LOCAL Accelerator :
     protected ModeFactory,
@@ -137,6 +202,8 @@ protected:
     static AcceleratorMap *Accelerators_;
     /** Host memory allocations associated to any OpenCL accelerator */
     static HostMap *GlobalHostAlloc_;
+
+    CLMem clMem_;
 
     /** OpenCL plaform ID for the accelertor */
     cl_platform_id platform_;
@@ -244,7 +311,7 @@ public:
      */
     gmacError_t hostFree(hostptr_t addr);
 
-    gmacError_t freeCLBuffer(cl_mem mem);
+    gmacError_t freeCLBuffer(cl_mem mem, size_t size);
 
     /**
      * Get the accelerator memory address where pinned host memory can be accessed
