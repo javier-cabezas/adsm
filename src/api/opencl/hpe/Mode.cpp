@@ -37,7 +37,7 @@ void Mode::destroyIOBuffer(core::IOBuffer &_buffer)
 {
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     if (buffer.async()) {
-        getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.size());
+		getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.addr(), buffer.size());
     } else {
         ::free(buffer.addr());
     }
