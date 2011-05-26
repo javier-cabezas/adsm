@@ -43,7 +43,7 @@ class GMAC_LOCAL Accelerator :
     DBC_TESTED(__impl::opencl::hpe::Accelerator)
 
 public:
-	Accelerator(int n, cl_platform_id platform, cl_device_id device);
+	Accelerator(int n, cl_context context, cl_device_id device);
     ~Accelerator();
 
     /* Synchronous interface */
