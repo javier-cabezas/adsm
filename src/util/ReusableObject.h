@@ -39,18 +39,22 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
+#include "Lock.h"
+
 namespace __impl { namespace util {
 
 template <typename T>
-class GMAC_LOCAL Pool {
+class GMAC_LOCAL Pool :
+    protected gmac::util::Lock {
 public:
     union Object {
         char dummy[sizeof(T)];
         Object * next;
     };
 
-    Pool()
-    : freeList_(NULL)
+    Pool() :
+        gmac::util::Lock("ReusableObjectPool"),
+        freeList_(NULL)
     {}
 
     ~Pool()
@@ -64,15 +68,19 @@ public:
 
     T *get()
     {
+        lock();
         Object *ret = freeList_;
         if (ret) freeList_ = ret->next;
+        unlock();
         return (T *) ret;
     }
 
     void put(T *ptr)
     {
+        lock();
         ((Object *) ptr)->next = freeList_;
         freeList_ = (Object *) ptr;
+        unlock();
     }
 
 
