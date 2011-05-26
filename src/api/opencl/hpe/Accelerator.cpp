@@ -583,6 +583,12 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
 
+    cl_mem tmp;
+    if (clMem_.getCLMem(size, tmp)) {
+        mem = tmp;
+        goto exit;
+    }
+
     // Get a memory object in the host memory
     mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
             size, NULL, &ret);
@@ -593,6 +599,8 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
         // Insert the object in the allocation map for the accelerator
         if(ret != CL_SUCCESS) clReleaseMemObject(mem);
     }
+
+exit:
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -618,13 +626,13 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 #endif
 }
 
-gmacError_t Accelerator::freeCLBuffer(cl_mem mem)
+gmacError_t Accelerator::freeCLBuffer(cl_mem mem, size_t size)
 {
     trace::EnterCurrentFunction();
-    cl_int ret = CL_SUCCESS;
-    ret = clReleaseMemObject(mem);
+    clMem_.putCLMem(size, mem);
     trace::ExitCurrentFunction();
-    return error(ret);
+
+    return error(CL_SUCCESS);
 }
 
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
