@@ -523,7 +523,6 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Accelerator waiting for all pending events");
-#define OPENCL_1_1
 #if defined(OPENCL_1_1)
 	cl_int status = 0;
 	cl_int ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);	
