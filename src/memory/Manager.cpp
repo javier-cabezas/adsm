@@ -381,8 +381,17 @@ Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const h
     gmacError_t ret = gmacSuccess;
 
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active  = &mode.createIOBuffer(obj.blockSize());
-    core::IOBuffer *passive = &mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *active;
+    core::IOBuffer *passive;
+
+    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+
+    if (size > obj.blockSize()) {
+        passive = &mode.createIOBuffer(obj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Control variables
     size_t left = size;
@@ -415,10 +424,14 @@ Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const h
         passive = tmp;
     }
     // Clean up buffers after they are idle
-    passive->wait();
-    mode.destroyIOBuffer(*passive);
-    active->wait();
-    mode.destroyIOBuffer(*active);
+    if (passive != NULL) {
+        passive->wait();
+        mode.destroyIOBuffer(*passive);
+    }
+    if (active  != NULL) {
+        active->wait();
+        mode.destroyIOBuffer(*active);
+    }
 
     trace::ExitCurrentFunction();
     return ret;
@@ -433,8 +446,17 @@ Manager::memcpyToObject(core::Mode &mode,
     gmacError_t ret = gmacSuccess;
 
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active  = &mode.createIOBuffer(dstObj.blockSize());
-    core::IOBuffer *passive = &mode.createIOBuffer(dstObj.blockSize());
+    core::IOBuffer *active;
+    core::IOBuffer *passive;
+
+    size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+
+    if (size > dstObj.blockSize()) {
+        passive = &mode.createIOBuffer(dstObj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Control variables
     size_t left = size;
@@ -496,10 +518,14 @@ Manager::memcpyToObject(core::Mode &mode,
         }
     }
     // Clean up buffers after they are idle
-    passive->wait();
-    mode.destroyIOBuffer(*passive);
-    active->wait();
-    mode.destroyIOBuffer(*active);
+    if (passive != NULL) {
+        passive->wait();
+        mode.destroyIOBuffer(*passive);
+    }
+    if (active  != NULL) {
+        active->wait();
+        mode.destroyIOBuffer(*active);
+    }
 
     trace::ExitCurrentFunction();
     return ret;
@@ -513,8 +539,17 @@ Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
     gmacError_t ret = gmacSuccess;
 
     // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active  = &mode.createIOBuffer(obj.blockSize());
-    core::IOBuffer *passive = &mode.createIOBuffer(obj.blockSize());
+    core::IOBuffer *active;
+    core::IOBuffer *passive;
+
+    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+
+    if (size > obj.blockSize()) {
+        passive = &mode.createIOBuffer(obj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Control variables
     size_t left = size;
@@ -551,9 +586,9 @@ Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
         passive = tmp;
     }
     // No need to wait for the buffers because we waited for them before ::memcpy
-    mode.destroyIOBuffer(*passive);
-    mode.destroyIOBuffer(*active);
-    
+    if (passive != NULL) mode.destroyIOBuffer(*passive);
+    if (active  != NULL) mode.destroyIOBuffer(*active);
+
     trace::ExitCurrentFunction();
     return ret;
 }
