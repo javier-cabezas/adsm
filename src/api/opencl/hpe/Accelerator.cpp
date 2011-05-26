@@ -153,19 +153,47 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-    uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    //TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
     cl_event event;
-    buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
-    cl_int ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
-        acc.offset(), count, host, 0, NULL, &event);
-    CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-    buffer.started(event, count);
+    cl_int ret;
+
+    if (buffer.async() == true) {
+        cl_mem mem = buffer.getCLBuffer();
+
+        cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
+                0, NULL, NULL);
+
+        ASSERTION(err == CL_SUCCESS);
+
+        buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
+        ret = clEnqueueCopyBuffer(stream, mem, acc.get(), bufferOff,
+                acc.offset(), count, 0, NULL, NULL);
+        CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
+        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
+                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &event, &err);
+        ASSERTION(err == CL_SUCCESS);
+
+        buffer.started(event, count);
+        buffer.setAddr(addr);
 #ifdef _MSC_VER
-    ret = clFlush(stream);
-    CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
+        ret = clFlush(stream);
+        CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
 #endif
+    } else {
+        uint8_t *host = buffer.addr() + bufferOff;
+
+        buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
+        ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
+                acc.offset(), count, host, 0, NULL, &event);
+        CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
+        buffer.started(event, count);
+#ifdef _MSC_VER
+        ret = clFlush(stream);
+        CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
+#endif
+    }
+
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -192,18 +220,46 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-    uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    //TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     cl_event event;
-    buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
-    cl_int ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
-        acc.offset(), count, host, 0, NULL, &event);
-    CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-    buffer.started(event, count);
+    cl_int ret;
+
+    if (buffer.async() == true) {
+        cl_mem mem = buffer.getCLBuffer();
+
+        cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
+                0, NULL, NULL);
+
+        ASSERTION(err == CL_SUCCESS);
+
+        buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
+        ret = clEnqueueCopyBuffer(stream, acc.get(), mem,
+                acc.offset(), bufferOff, count, 0, NULL, NULL);
+        CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
+                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &event, &err);
+        ASSERTION(err == CL_SUCCESS);
+
+        buffer.started(event, count);
+        buffer.setAddr(addr);
 #ifdef _MSC_VER
-    ret = clFlush(stream);
-    CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
+        ret = clFlush(stream);
+        CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
 #endif
+    } else {
+        uint8_t *host = buffer.addr() + bufferOff;
+
+        buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
+        ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
+                acc.offset(), count, host, 0, NULL, &event);
+        CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+        buffer.started(event, count);
+#ifdef _MSC_VER
+        ret = clFlush(stream);
+        CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
+#endif
+    }
+
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -216,7 +272,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
-    cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.get(), CL_TRUE,
+    cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.get(), CL_FALSE,
         src.offset(), size, tmp, 0, NULL, NULL);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     if(ret == CL_SUCCESS) {
@@ -504,12 +560,12 @@ gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
     addr = NULL;
 
     // Get a memory object in the host memory
-	cl_mem mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-        size, NULL, &ret);
+    cl_mem mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+            size, NULL, &ret);
     if(ret == CL_SUCCESS) {
         // Get the host pointer for the memory object
-	    addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
-            CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
+                CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
         // Insert the object in the allocation map for the accelerator
         if(ret != CL_SUCCESS) clReleaseMemObject(mem);
         else {
@@ -521,6 +577,26 @@ gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
     return error(ret);
 #endif
 }
+
+gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
+{
+    trace::EnterCurrentFunction();
+    cl_int ret = CL_SUCCESS;
+
+    // Get a memory object in the host memory
+    mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
+            size, NULL, &ret);
+    if(ret == CL_SUCCESS) {
+        // Get the host pointer for the memory object
+        addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
+                CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        // Insert the object in the allocation map for the accelerator
+        if(ret != CL_SUCCESS) clReleaseMemObject(mem);
+    }
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
 
 gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
@@ -540,6 +616,15 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     trace::ExitCurrentFunction();
     return error(ret);
 #endif
+}
+
+gmacError_t Accelerator::freeCLBuffer(cl_mem mem)
+{
+    trace::EnterCurrentFunction();
+    cl_int ret = CL_SUCCESS;
+    ret = clReleaseMemObject(mem);
+    trace::ExitCurrentFunction();
+    return error(ret);
 }
 
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)

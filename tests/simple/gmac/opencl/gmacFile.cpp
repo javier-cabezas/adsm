@@ -90,22 +90,22 @@ void *doTest(void *)
     assert(oclGetKernel("vecSet", &kernelSet) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelSet, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclSetKernelArg(kernelSet, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelSet, 0, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(oclSetKernelArg(kernelSet, 1, sizeof(vecSize), &vecSize) == oclSuccess);
 
     ocl_kernel kernelMove;
 
     assert(oclGetKernel("vecMove", &kernelMove) == oclSuccess);
 
     tmp = cl_mem(oclPtr(c));
-    assert(oclSetKernelArg(kernelMove, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 0, sizeof(cl_mem), &tmp) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelMove, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclSetKernelArg(kernelMove, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 1, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(oclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == oclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
         float val = float(i);
-        assert(oclSetKernelArg(kernelSet, 2, &val, sizeof(val)) == oclSuccess);
+        assert(oclSetKernelArg(kernelSet, 2, sizeof(val), &val) == oclSuccess);
         assert(oclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
         barrier_wait(&ioAfter);
@@ -119,10 +119,10 @@ void *doTest(void *)
     assert(oclGetKernel("vecAccum", &kernelAccum) == oclSuccess);
 
     tmp = cl_mem(oclPtr(b));
-    assert(oclSetKernelArg(kernelAccum, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 0, sizeof(cl_mem), &tmp) == oclSuccess);
     tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelAccum, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclSetKernelArg(kernelAccum, 2, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 1, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(oclSetKernelArg(kernelAccum, 2, sizeof(vecSize), &vecSize) == oclSuccess);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);

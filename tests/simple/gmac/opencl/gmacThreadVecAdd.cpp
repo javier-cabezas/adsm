@@ -63,12 +63,12 @@ void *addVector(void *ptr)
     assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(*c));
-    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernel, 1, &tmp, sizeof(cl_mem)) == oclSuccess);
-    tmp = cl_mem(oclPtr(b));
-    assert(oclSetKernelArg(kernel, 2, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 3, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
+    tmp = cl_mem(oclPtr(a));                        
+    assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == oclSuccess);
+    tmp = cl_mem(oclPtr(b));                        
+    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == oclSuccess);
     assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");

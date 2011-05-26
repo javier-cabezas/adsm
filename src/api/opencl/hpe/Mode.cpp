@@ -10,42 +10,34 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     gmac::core::hpe::Mode(proc, acc)
 {
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
-    if(ret == gmacSuccess)
-        ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
-    else ioMemory_ = NULL;
 }
 
 Mode::~Mode()
 {
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
-
-    if(ioMemory_ != NULL) {
-        hostFree(ioMemory_->addr());
-        delete ioMemory_;
-        ioMemory_ = NULL;
-    }
 }
 
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     IOBuffer *ret;
-    void *addr = NULL;
-    if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
-        addr = ::malloc(size);
-        ret = new IOBuffer(*this, hostptr_t(addr), size, false);
+    hostptr_t addr(NULL);
+    cl_mem mem;
+    gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size);
+    if(err != gmacSuccess) {
+        addr = hostptr_t(::malloc(size));
+        ret = new IOBuffer(*this, addr, size, NULL);
     } else {
-        ret = new IOBuffer(*this, hostptr_t(addr), size, true);
+        ret = new IOBuffer(*this, addr, size, mem);
     }
     return *ret;
 }
 
-void Mode::destroyIOBuffer(core::IOBuffer &buffer)
+void Mode::destroyIOBuffer(core::IOBuffer &_buffer)
 {
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     if (buffer.async()) {
-        ASSERTION(ioMemory_ != NULL);
-        ioMemory_->put(buffer.addr(), buffer.size());
+        getAccelerator().freeCLBuffer(buffer.getCLBuffer());
     } else {
         ::free(buffer.addr());
     }

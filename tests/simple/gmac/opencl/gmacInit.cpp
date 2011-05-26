@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
     assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
 
     cl_mem tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernel, 0, &tmp, sizeof(cl_mem)) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 1, &vecSize, sizeof(vecSize)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 1, sizeof(vecSize), &vecSize) == oclSuccess);
 
     assert(oclCallNDRange(kernel, 1, 0, &globalSize, &localSize) == oclSuccess);
 

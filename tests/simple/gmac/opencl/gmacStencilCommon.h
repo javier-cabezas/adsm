@@ -231,16 +231,16 @@ do_stencil(void * ptr)
     assert(oclGetKernel("kernelStencil", &kernel) == oclSuccess);
     cl_mem tmpMem = cl_mem(oclPtr(v));
     tmpMem = cl_mem(oclPtr(v));
-    assert(oclSetKernelArg(kernel, 2, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == oclSuccess);
     float dt2 = 0.08f;
-    assert(oclSetKernelArg(kernel, 3, &dt2, sizeof(dt2)) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 4, &descr->dimElems,     sizeof(descr->dimElems    )) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 5, &descr->dimRealElems, sizeof(descr->dimRealElems)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == oclSuccess);
     unsigned intTmp = descr->sliceElems();
-    assert(oclSetKernelArg(kernel, 6, &intTmp, sizeof(intTmp)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == oclSuccess);
     intTmp = descr->sliceRealElems();
-    assert(oclSetKernelArg(kernel, 7, &intTmp, sizeof(intTmp)) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 8, &descr->slices, sizeof(descr->slices)) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == oclSuccess);
+    assert(oclSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == oclSuccess);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
@@ -248,9 +248,9 @@ do_stencil(void * ptr)
         
         // Call the kernel
         tmpMem = cl_mem(oclPtr(descr->u2));
-        assert(oclSetKernelArg(kernel, 0, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+        assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == oclSuccess);
         tmpMem = cl_mem(oclPtr(descr->u3));
-        assert(oclSetKernelArg(kernel, 1, &tmpMem, sizeof(cl_mem)) == oclSuccess);
+        assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == oclSuccess);
         
         ocl_error ret;
         ret = oclCallNDRange(kernel, 2, NULL, globalSize, localSize);
