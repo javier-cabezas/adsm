@@ -18,6 +18,61 @@ extern "C" {
 
 namespace __impl { namespace opencl { namespace hpe {
 
+CLBufferPool::~CLBufferPool()
+{
+    CLMemMap::iterator it;
+
+    for(it = begin(); it != end(); it++) {
+        CLMemList::iterator jt;
+        CLMemList list = it->second;
+        for (jt = list.begin(); jt != list.end(); jt++) {
+            cl_int ret;
+            ret = clReleaseMemObject(jt->first);
+            ASSERTION(ret == CL_SUCCESS);
+        }
+    }
+}
+
+bool
+CLBufferPool::getCLMem(size_t size, cl_mem &mem, hostptr_t &addr)
+{
+    lock(); 
+
+    bool ret = false;
+
+    CLMemMap::iterator it = find(size);
+
+    if (it != end())  {
+        CLMemList &list = it->second;
+        if (it->second.size() > 0) {
+            mem = list.front().first;
+            addr = list.front().second;
+            list.pop_front();
+            ret = true;
+        }
+    }
+    unlock();
+
+    return ret;
+}
+
+void CLBufferPool::putCLMem(size_t size, cl_mem mem, hostptr_t addr)
+{
+    lock(); 
+
+    CLMemMap::iterator it = find(size);
+
+    if (it != end())  {
+        CLMemList &list = it->second;
+        list.push_back(std::make_pair(mem, addr));
+    } else {
+        CLMemList list;
+        list.push_back(std::make_pair(mem, addr));
+        insert(CLMemMap::value_type(size, list));
+    }
+    unlock();
+}
+
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 

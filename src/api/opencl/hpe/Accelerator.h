@@ -127,68 +127,39 @@ public:
     bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
-class GMAC_LOCAL CLMem :
+/** A pool of OpenCL buffers */
+class GMAC_LOCAL CLBufferPool :
 	protected std::map<size_t, std::list<std::pair<cl_mem, hostptr_t> > >,
     protected gmac::util::Lock {
 
 	typedef std::list<std::pair<cl_mem, hostptr_t> > CLMemList;
     typedef std::map<size_t, CLMemList> CLMemMap;
 public:
-    CLMem() : gmac::util::Lock("CLMem") {}
+    /** Constructs a pool of OpenCL buffers */
+    CLBufferPool();
 
-    ~CLMem()
-    {
-        CLMemMap::iterator it;
-        
-        for(it = begin(); it != end(); it++) {
-            CLMemList::iterator jt;
-            CLMemList list = it->second;
-            for (jt = list.begin(); jt != list.end(); jt++) {
-                cl_int ret;
-                ret = clReleaseMemObject(jt->first);
-                ASSERTION(ret == CL_SUCCESS);
-            }
-        }
-    }
+    /** Releases the OpenCL buffers in the pool */
+    ~CLBufferPool();
 
-    bool getCLMem(size_t size, cl_mem &mem, hostptr_t &addr)
-    {
-        lock(); 
+    /**
+     * Gets an OpenCL buffer from the pool
+     *
+     * \param size Requested size (in bytes) for the buffer
+     * \param mem Reference to store the cl_mem descriptor of the buffer
+     * \param addr Reference to store the host address of the buffer
+     *
+     * \return true if a buffer was found, false otherwise
+     */
+    bool getCLMem(size_t size, cl_mem &mem, hostptr_t &addr);
 
-        bool ret = false;
-
-        CLMemMap::iterator it = find(size);
-        
-        if (it != end())  {
-            CLMemList &list = it->second;
-            if (it->second.size() > 0) {
-                mem = list.front().first;
-				addr = list.front().second;
-                list.pop_front();
-                ret = true;
-            }
-        }
-        unlock();
-
-        return ret;
-    }
-
-    void putCLMem(size_t size, cl_mem mem, hostptr_t addr)
-    {
-        lock(); 
-
-        CLMemMap::iterator it = find(size);
-        
-        if (it != end())  {
-            CLMemList &list = it->second;
-			list.push_back(std::make_pair(mem, addr));
-        } else {
-            CLMemList list;
-			list.push_back(std::make_pair(mem, addr));
-            insert(CLMemMap::value_type(size, list));
-        }
-        unlock();
-    }
+    /**
+     * Inserts an OpenCL buffer to the pool
+     *
+     * \param size Size (in bytes) of the buffer
+     * \param mem cl_mem descriptor of the buffer
+     * \param addr Host address of the buffer
+     */
+    void putCLMem(size_t size, cl_mem mem, hostptr_t addr);
 };
 
 /** An OpenCL capable accelerator */
@@ -202,7 +173,7 @@ protected:
     /** Host memory allocations associated to any OpenCL accelerator */
     static HostMap *GlobalHostAlloc_;
 
-    CLMem clMem_;
+    CLBufferPool clMem_;
 
     /** OpenCL plaform ID for the accelertor */
     cl_platform_id platform_;
@@ -296,11 +267,18 @@ public:
     /**
      * Allocate pinned accelerator-accessible host memory
      * \param addr Reference to store the memory address of the allocated memory
-     * \param size Size (in bytes) of the memoty to be allocated
+     * \param size Size (in bytes) of the memory to be allocated
      * \return Error code
      */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
+    /**
+     * Allocate a host-accessible OpenCL buffer
+     * \param mem Reference to store the cl_mem descriptor of the buffer
+     * \param addr Reference to store the host address of the OpenCL buffer
+     * \param size Size (in bytes) of the memory to be allocated
+     * \return Error code
+     */
     gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size);
 
     /**
@@ -310,6 +288,13 @@ public:
      */
     gmacError_t hostFree(hostptr_t addr);
 
+    /**
+     * Free a host-accessible OpenCL buffer
+     * \param mem cl_mem descriptor of the buffer
+     * \param addr Host address of the OpenCL buffer
+     * \param size Size (in bytes) of the memory to be allocated
+     * \return Error code
+     */
     gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size);
 
     /**
