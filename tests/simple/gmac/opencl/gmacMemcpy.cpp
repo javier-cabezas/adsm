@@ -52,7 +52,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
 
     for (size_t count = minCount; count <= maxCount; count *= 2) {
-        fprintf(stderr, "ALLOC: %zd\n", count * sizeof(long));
+        fprintf(stderr, "ALLOC: "FMT_SIZE"\n", count * sizeof(long));
         baseSrc = (long *)malloc(count * sizeof(long));
         baseDst = (long *)malloc(count * sizeof(long));
 
