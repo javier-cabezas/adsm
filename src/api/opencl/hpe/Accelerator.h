@@ -235,12 +235,16 @@ public:
      */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
+    gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size);
+
     /**
      * Release pinned accelerator-accessible host memory
      * \param addr Host memory address to be released
      * \return Error code
      */
     gmacError_t hostFree(hostptr_t addr);
+
+    gmacError_t freeCLBuffer(cl_mem mem);
 
     /**
      * Get the accelerator memory address where pinned host memory can be accessed

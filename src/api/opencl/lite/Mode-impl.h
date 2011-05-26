@@ -80,7 +80,7 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     core::IOBuffer *ret;
     void *addr = ::malloc(size);
-    ret = new IOBuffer(*this, hostptr_t(addr), size, false);
+    ret = new IOBuffer(*this, hostptr_t(addr), size, NULL);
     return *ret;
 }
 

@@ -43,6 +43,8 @@ namespace __impl { namespace opencl {
 
 class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
 protected:
+    cl_mem mem_;
+
     /** OpenCL event to query for the finalization of any ongoing data transfer */
     cl_event event_;
 
@@ -60,10 +62,10 @@ public:
      * \param mode Execution mode using the I/O buffer
      * \param addr Host memory address where to allocated the I/O buffer 
      * \param size Size (in bytes) of the I/O buffer
-     * \param async Enable asynchronous data transfers using the I/O buffer
+     * \param mem cl_mem buffer
      * \return Error code
      */
-    IOBuffer(Mode &mode, hostptr_t addr, size_t size, bool async);
+    IOBuffer(Mode &mode, hostptr_t addr, size_t size, cl_mem mem);
 
     /** Set the transfer direction from device to host
      * \param mode Execution mode performing the data transfer
@@ -84,6 +86,10 @@ public:
      * \return Error code
      */
     gmacError_t wait();
+
+    cl_mem getCLBuffer() { return mem_; }
+
+    void setAddr(hostptr_t addr) { addr_ = addr; }
 };
 
 }}
