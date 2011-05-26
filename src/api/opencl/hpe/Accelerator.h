@@ -180,9 +180,7 @@ public:
         
         if (it != end())  {
             CLMemList &list = it->second;
-            if (it->second.size() > 0) {
-                list.push_back(mem);
-            }
+            list.push_back(mem);
         } else {
             CLMemList list;
             list.push_back(mem);
