@@ -1,12 +1,3 @@
-#include "hpe/init.h"
-
-#include "memory/Manager.h"
-#include "core/hpe/Process.h"
-
-#include "api/cuda/hpe/Accelerator.h"
-#include "api/cuda/hpe/Mode.h"
-#include "api/cuda/hpe/Module.h"
-
 #include <cuda.h>
 #define __stdcall GMAC_API __stdcall
 #include <driver_types.h>
@@ -14,6 +5,15 @@
 
 #include <string>
 #include <list>
+
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
+#include "api/cuda/hpe/Module.h"
+
+#include "hpe/init.h"
+
+#include "memory/Manager.h"
+#include "core/hpe/Process.h"
 
 using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
