@@ -175,13 +175,11 @@ protected:
 
     CLBufferPool clMem_;
 
-    /** OpenCL plaform ID for the accelertor */
-    cl_platform_id platform_;
+    /** OpenCL context associated to the accelerator */
+    cl_context ctx_;
     /** OpenCL device ID for the accelerator */
     cl_device_id device_;
 
-    /** OpenCL context associated to the accelerator */
-    cl_context ctx_;
     /** List of command queues associated to the accelerator */
     CommandList cmd_;
     /** Host memory allocations associated to the accelerator */
@@ -190,10 +188,10 @@ protected:
 public:
     /** Default constructor
      * \param n Accelerator number
-     * \param platform OpenCL platform ID for the accelerator
+     * \param context OpenCL context the accelerator belongs to
      * \param device OpenCL device ID for the accelerator
      */
-    Accelerator(int n, cl_platform_id platform, cl_device_id device);
+    Accelerator(int n, cl_context context, cl_device_id device);
     /** Default destructor */
     virtual ~Accelerator();
 
