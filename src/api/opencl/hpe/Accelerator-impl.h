@@ -105,6 +105,12 @@ inline bool HostMap::translate(hostptr_t host, cl_mem &acc, size_t &size) const
     return (i != Parent::end());
 }
 
+inline
+CLBufferPool::CLBufferPool() :
+    gmac::util::Lock("CLBufferPool")
+{
+}
+
 inline cl_device_id
 Accelerator::device() const
 {
