@@ -96,7 +96,6 @@ TEST_F(ObjectTest, Coherence)
     Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     mode.addObject(*object);
-    object->release();
 
     hostptr_t ptr = object->addr();
     for(size_t s = 0; s < object->size(); s++) {
