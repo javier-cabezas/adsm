@@ -89,6 +89,9 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
     if(ret == CL_SUCCESS) integrated_ = (val == CL_TRUE);
     else integrated_ = false;
 
+    ret = clRetainContext(ctx_);
+    CFATAL(ret == CL_SUCCESS, "Unable to retain OpenCL context");
+
     cl_command_queue stream;
     cl_command_queue_properties properties = 0;
 #if defined(USE_TRACE)
