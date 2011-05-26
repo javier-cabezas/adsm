@@ -153,6 +153,7 @@ inline gmacError_t DistributedObject<State>::removeOwner(core::Mode &mode)
 
 	lockWrite();
     AcceleratorMap::iterator i;
+	bool ownerFound = false;
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         std::list<core::Mode *> &list = i->second;
         std::list<core::Mode *>::iterator j = std::find(list.begin(), list.end(), &mode);
@@ -162,11 +163,12 @@ inline gmacError_t DistributedObject<State>::removeOwner(core::Mode &mode)
                 acceleratorAddr_.erase(i);
                 mode.unmap(addr_, size_);
             }
+			ownerFound = true;
             break;
         }
     }
 
-    ASSERTION(i != acceleratorAddr_.end());
+    ASSERTION(ownerFound == true);
 
     BlockMap::iterator j;
     for(j = blocks_.begin(); j != blocks_.end(); j++) {
