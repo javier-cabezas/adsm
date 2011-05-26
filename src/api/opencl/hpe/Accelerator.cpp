@@ -583,9 +583,7 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
 
-    cl_mem tmp;
-    if (clMem_.getCLMem(size, tmp)) {
-        mem = tmp;
+    if (clMem_.getCLMem(size, mem, addr)) {
         goto exit;
     }
 
@@ -626,10 +624,10 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 #endif
 }
 
-gmacError_t Accelerator::freeCLBuffer(cl_mem mem, size_t size)
+gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size)
 {
     trace::EnterCurrentFunction();
-    clMem_.putCLMem(size, mem);
+    clMem_.putCLMem(size, mem, addr);
     trace::ExitCurrentFunction();
 
     return error(CL_SUCCESS);

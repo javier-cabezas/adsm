@@ -128,30 +128,30 @@ public:
 };
 
 class GMAC_LOCAL CLMem :
-    protected std::map<size_t, std::list<cl_mem> >,
+	protected std::map<size_t, std::list<std::pair<cl_mem, hostptr_t> > >,
     protected gmac::util::Lock {
 
-    typedef std::list<cl_mem> CLMemList;
+	typedef std::list<std::pair<cl_mem, hostptr_t> > CLMemList;
     typedef std::map<size_t, CLMemList> CLMemMap;
 public:
-    CLMem() : CLMemMap(), gmac::util::Lock("CLMem") {}
+    CLMem() : gmac::util::Lock("CLMem") {}
 
     ~CLMem()
     {
         CLMemMap::iterator it;
         
         for(it = begin(); it != end(); it++) {
-            CLMemList::iterator it2;
+            CLMemList::iterator jt;
             CLMemList list = it->second;
-            for (it2 = list.begin(); it2 != list.end(); it2++) {
+            for (jt = list.begin(); jt != list.end(); jt++) {
                 cl_int ret;
-                ret = clReleaseMemObject(*it2);
+                ret = clReleaseMemObject(jt->first);
                 ASSERTION(ret == CL_SUCCESS);
             }
         }
     }
 
-    bool getCLMem(size_t size, cl_mem &mem)
+    bool getCLMem(size_t size, cl_mem &mem, hostptr_t &addr)
     {
         lock(); 
 
@@ -162,7 +162,8 @@ public:
         if (it != end())  {
             CLMemList &list = it->second;
             if (it->second.size() > 0) {
-                mem = list.front();
+                mem = list.front().first;
+				addr = list.front().second;
                 list.pop_front();
                 ret = true;
             }
@@ -172,7 +173,7 @@ public:
         return ret;
     }
 
-    void putCLMem(size_t size, cl_mem mem)
+    void putCLMem(size_t size, cl_mem mem, hostptr_t addr)
     {
         lock(); 
 
@@ -180,10 +181,10 @@ public:
         
         if (it != end())  {
             CLMemList &list = it->second;
-            list.push_back(mem);
+			list.push_back(std::make_pair(mem, addr));
         } else {
             CLMemList list;
-            list.push_back(mem);
+			list.push_back(std::make_pair(mem, addr));
             insert(CLMemMap::value_type(size, list));
         }
         unlock();
@@ -309,7 +310,7 @@ public:
      */
     gmacError_t hostFree(hostptr_t addr);
 
-    gmacError_t freeCLBuffer(cl_mem mem, size_t size);
+    gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size);
 
     /**
      * Get the accelerator memory address where pinned host memory can be accessed
