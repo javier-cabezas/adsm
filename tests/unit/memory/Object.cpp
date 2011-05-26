@@ -121,25 +121,29 @@ TEST_F(ObjectTest, IOBuffer)
     Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     mode.addObject(*object);
-    object->release();
 
     __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_);
+
     hostptr_t ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {
         ptr[s] = (s & 0xff);
     }
+
     ASSERT_EQ(gmacSuccess, object->copyFromBuffer(buffer, Size_));
 
 	ptr = buffer.addr();
     memset(ptr, 0, Size_);
+
     ASSERT_EQ(gmacSuccess, object->copyToBuffer(buffer, Size_));
     ASSERT_EQ(gmacSuccess, buffer.wait());
+
 	ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {
         EXPECT_EQ(ptr[s], (s & 0xff));
     }
 
     mode.destroyIOBuffer(buffer);
+
     mode.removeObject(*object);
     object->release();
 }
