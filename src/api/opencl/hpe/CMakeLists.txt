@@ -1,5 +1,6 @@
 set(arch_hpe_api_SRC
     gmac.cpp
+    compat.cpp
 )
 
 set(arch_hpe_SRC

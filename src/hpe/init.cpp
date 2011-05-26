@@ -83,7 +83,7 @@ namespace __impl {
 }
 
 
-// We cannot call the destructor because CUDA might have
+// We cannot call the destructor because the backend might have
 // been uninitialized
 #if 0
 DESTRUCTOR(fini);

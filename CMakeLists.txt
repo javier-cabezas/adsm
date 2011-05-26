@@ -6,6 +6,7 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
+set(GMAC_VERSION "0.9.0")
 
 # Set the configuration being built
 if(NOT CMAKE_BUILD_TYPE)
@@ -203,8 +204,6 @@ else(MAKE_STATIC)
     add_gmac_library(${GMAC_TARGET_NAME} SHARED ${gmac-hpe_SRC} ${gmac-include_SRC})
 endif(MAKE_STATIC)
 target_link_libraries(${GMAC_TARGET_NAME} gmac-common gmac-trace gmac-core gmac-core-hpe gmac-memory gmac-core-hpe gmac-libs ${gmac_LIBS})
-
-set(GMAC_VERSION "0.9.0")
 
 set_target_properties(${GMAC_TARGET_NAME} PROPERTIES
     VERSION ${GMAC_VERSION} SOVERSION 1
