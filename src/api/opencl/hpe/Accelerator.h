@@ -262,7 +262,13 @@ public:
      *  Get the OpenCL context associated to the accelerator
      * \return OpenCL context
      */
-    const cl_context getCLcontext() const;
+    const cl_context getCLContext() const;
+
+    /**
+     *  Get the OpenCL context associated to the accelerator
+     * \return OpenCL context
+     */
+    cl_context getCLContext();
 
     /**
      * Allocate pinned accelerator-accessible host memory
