@@ -152,8 +152,10 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
+    hostptr_t host = buffer.addr() + bufferOff;
+
     trace::EnterCurrentFunction();
-    //TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
     cl_event start, end;
     cl_int ret;
@@ -171,7 +173,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
                 acc.offset(), count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &end, &err);
+                CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
         buffer.started(start, end, count);
@@ -219,8 +221,10 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
 gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
+    hostptr_t host = buffer.addr() + bufferOff;
+
     trace::EnterCurrentFunction();
-    //TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     cl_event start, end;
     cl_int ret;
 
@@ -237,7 +241,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
                 acc.offset(), bufferOff, count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, count, 0, NULL, &end, &err);
+                CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
         buffer.started(start, end, count);

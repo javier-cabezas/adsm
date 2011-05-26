@@ -449,20 +449,20 @@ Manager::memcpyToObject(core::Mode &mode,
     core::IOBuffer *active;
     core::IOBuffer *passive;
 
-    size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-
-    if (size > dstObj.blockSize()) {
-        passive = &mode.createIOBuffer(dstObj.blockSize());
-    } else {
-        passive = NULL;
-    }
-
     // Control variables
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
     size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+
+    size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+
+    if (copySize < size) {
+        passive = &mode.createIOBuffer(dstObj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Single copy from the source to fill the buffer
     if (copySize <= srcObj.blockEnd(srcOffset)) {
