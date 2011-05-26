@@ -42,6 +42,10 @@ void OpenCL(gmac::core::hpe::Process &proc)
             // Nedded for OpenCL code compilation
             __impl::opencl::hpe::Accelerator::addAccelerator(*acc);
         }
+        if (deviceSize > 0) {
+            ret = clReleaseContext(ctx);
+            CFATAL(ret == CL_SUCCESS, "Unable to release OpenCL context after accelerator initialization");
+        }
         delete[] devices;
     }
     delete[] platforms;
