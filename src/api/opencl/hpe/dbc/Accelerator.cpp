@@ -6,8 +6,8 @@
 
 namespace __dbc { namespace opencl { namespace hpe {
 
-Accelerator::Accelerator(int n, cl_platform_id platform, cl_device_id device) :
-    __impl::opencl::hpe::Accelerator(n, platform, device)
+Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
+    __impl::opencl::hpe::Accelerator(n, context, device)
 {
     REQUIRES(n >= 0);
 }
