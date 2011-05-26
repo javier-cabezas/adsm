@@ -38,10 +38,13 @@ WITH THE SOFTWARE.  */
 
 #include "api/opencl/Mode.h"
 #include "core/IOBuffer.h"
+#include "util/ReusableObject.h"
 
 namespace __impl { namespace opencl {
 
-class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
+class GMAC_LOCAL IOBuffer :
+    public gmac::core::IOBuffer,
+    public __impl::util::ReusableObject<IOBuffer> {
 protected:
     cl_mem mem_;
 
