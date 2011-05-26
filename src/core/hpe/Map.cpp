@@ -70,29 +70,29 @@ bool Map::insert(memory::Object &obj)
 bool Map::remove(memory::Object &obj)
 {
     bool ret = memory::ObjectMap::remove(obj);
-
+	hostptr_t addr = obj.addr();
     // Shared object
     Process &proc = parent_.process();
     memory::ObjectMap &shared = proc.shared();
     ret = shared.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Shared Object %p", obj.addr());
-        //return true;
+        TRACE(LOCAL,"Removed Shared Object %p", addr);
+        return true;
     }
 
     // Replicated object
     memory::ObjectMap &global = proc.global();
     ret = global.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Global Object %p", obj.addr());
-        //return true;
+        TRACE(LOCAL,"Removed Global Object %p", addr);
+        return true;
     }
 
     // Orphan object
     memory::ObjectMap &orphans = proc.orphans();
     ret = orphans.remove(obj);
     if(ret == true) {
-        TRACE(LOCAL,"Removed Orphan Object %p", obj.addr());
+        TRACE(LOCAL,"Removed Orphan Object %p", addr);
     }
 
     return ret;
