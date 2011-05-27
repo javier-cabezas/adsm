@@ -196,7 +196,7 @@ inline
 kernel::kernel(std::string name, error &err)
 {
     err = oclSuccess;
-    if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
+    if (getByName(name) != oclSuccess) err = oclErrorInvalidAcceleratorFunction;
 }
 
 inline

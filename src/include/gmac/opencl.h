@@ -63,7 +63,6 @@ typedef gmacError_t ocl_error;
 #define oclErrorApiFailureBase gmacErrorApiFailureBase
 #define oclErrorFeatureNotSupported gmacErrorFeatureNotSupported
 #define oclErrorInsufficientAcceleratorMemory gmacErrorInsufficientAcceleratorMemory
-#define oclErrorInvalidKernelName gmacErrorInvalidKernelName
 #define oclErrorUnknown gmacErrorUnknown
 
 
