@@ -1,3 +1,5 @@
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/gmac.cpp)
+
 set(arch_hpe_api_SRC
     gmac.cpp
     compat.cpp

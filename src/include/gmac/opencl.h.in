@@ -34,9 +34,9 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_OPENCL_H_
 #define GMAC_OPENCL_H_
 
-#include "CL/cl.h"
-#include "opencl_types.h"
+#include <CL/cl.h>
 
+#include <gmac/opencl_types.h>
 #include <gmac/api.h>
 
 #ifdef __cplusplus
@@ -49,25 +49,25 @@ extern "C" {
 #   define __dv(a)
 #endif
 
-typedef gmacError_t ocl_error;
-#define oclSuccess gmacSuccess
-#define oclErrorMemoryAllocation gmacErrorMemoryAllocation
-#define oclErrorLaunchFailure gmacErrorLaunchFailure
-#define oclErrorNotReady gmacErrorNotReady
-#define oclErrorNoAccelerator gmacErrorNoAccelerator
-#define oclErrorInvalidValue gmacErrorInvalidValue
-#define oclErrorInvalidAccelerator gmacErrorInvalidAccelerator
-#define oclErrorInvalidAcceleratorFunction gmacErrorInvalidAcceleratorFunction
-#define oclErrorInvalidSize gmacErrorInvalidSize
-#define oclErrorAlreadyBound gmacErrorAlreadyBound
-#define oclErrorApiFailureBase gmacErrorApiFailureBase
-#define oclErrorFeatureNotSupported gmacErrorFeatureNotSupported
-#define oclErrorInsufficientAcceleratorMemory gmacErrorInsufficientAcceleratorMemory
-#define oclErrorUnknown gmacErrorUnknown
+typedef gmacError_t @OPENCL_API_PREFIX@_error;
 
+#define @OPENCL_API_PREFIX@Success                            gmacSuccess
+#define @OPENCL_API_PREFIX@ErrorMemoryAllocation              gmacErrorMemoryAllocation
+#define @OPENCL_API_PREFIX@ErrorLaunchFailure                 gmacErrorLaunchFailure
+#define @OPENCL_API_PREFIX@ErrorNotReady                      gmacErrorNotReady
+#define @OPENCL_API_PREFIX@ErrorNoAccelerator                 gmacErrorNoAccelerator
+#define @OPENCL_API_PREFIX@ErrorInvalidValue                  gmacErrorInvalidValue
+#define @OPENCL_API_PREFIX@ErrorInvalidAccelerator            gmacErrorInvalidAccelerator
+#define @OPENCL_API_PREFIX@ErrorInvalidAcceleratorFunction    gmacErrorInvalidAcceleratorFunction
+#define @OPENCL_API_PREFIX@ErrorInvalidSize                   gmacErrorInvalidSize
+#define @OPENCL_API_PREFIX@ErrorAlreadyBound                  gmacErrorAlreadyBound
+#define @OPENCL_API_PREFIX@ErrorApiFailureBase                gmacErrorApiFailureBase
+#define @OPENCL_API_PREFIX@ErrorFeatureNotSupported           gmacErrorFeatureNotSupported
+#define @OPENCL_API_PREFIX@ErrorInsufficientAcceleratorMemory gmacErrorInsufficientAcceleratorMemory
+#define @OPENCL_API_PREFIX@ErrorUnknown                       gmacErrorUnknown
 
-typedef enum GmacGlobalMallocType ocl_memory_hint;
-typedef enum GmacProtection ocl_protection;
+typedef enum GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
+typedef enum GmacProtection @OPENCL_API_PREFIX@_protection;
 
 #define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
 #define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
@@ -78,23 +78,23 @@ typedef enum GmacProtection ocl_protection;
  * \param id Kernel identifier
  * \param kernel Pointer to store the address to the kernel descriptor
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelGet(const char *id, ocl_kernel *kernel);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@GetKernel(const char *id, @OPENCL_API_PREFIX@_kernel *kernel);
 
-#define oclGetKernel oclKernelGet
+//#define @OPENCL_API_PREFIX@GetKernel @OPENCL_API_PREFIX@KernelGet
 
 /**
- * Sets an argument to be used by the following call to oclCallNDRange()
+ * Sets an argument to be used by the following call to @OPENCL_API_PREFIX@CallNDRange()
  *
  * \param kernel Kernel descriptor
  * \param index Index of the parameter being set in the parameter list
  * \param size Size, in bytes, of the argument
  * \param addr Memory address where the argument is stored
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclSetKernelArg(ocl_kernel kernel, unsigned index, size_t size, const void *addr);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr);
 
 /**
  * Launches a kernel execution
@@ -108,9 +108,9 @@ GMAC_API ocl_error APICALL oclSetKernelArg(ocl_kernel kernel, unsigned index, si
  * \param localWorkSize Array of workDim elements that represent the number of work-items
  * per work-group for the kernel execution
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclCallNDRange(ocl_kernel kernel,
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
 
@@ -118,9 +118,9 @@ GMAC_API ocl_error APICALL oclCallNDRange(ocl_kernel kernel,
 /**
  * Waits for kernel execution finalization
  * \param kernel Handler of the kernel to wait for
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelWait(ocl_kernel *kernel);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel);
 #endif
 
 /**
@@ -128,11 +128,9 @@ GMAC_API ocl_error APICALL oclKernelWait(ocl_kernel *kernel);
  *
  * \param kernel Handler of the kernel to be executed at the GPU
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelRelease(ocl_kernel kernel);
-
-#define oclReleaseKernel oclKernelRelease
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel);
 
 /**
  * Prepares the OpenCL code to be used by the application
@@ -140,9 +138,9 @@ GMAC_API ocl_error APICALL oclKernelRelease(ocl_kernel kernel);
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclCompileSource(const char *code, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL code in the specified fie to be used by the application
@@ -150,9 +148,9 @@ GMAC_API ocl_error APICALL oclCompileSource(const char *code, const char *flags 
  * \param path String pointing to the file with the code to be added
  * \param flags Compilation flags or NULL
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclCompileSourceFile(const char *path, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application
@@ -161,9 +159,9 @@ GMAC_API ocl_error APICALL oclCompileSourceFile(const char *path, const char *fl
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
  * 
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclCompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application
@@ -171,9 +169,9 @@ GMAC_API ocl_error APICALL oclCompileBinary(const unsigned char *binary, size_t 
  * \param path String pointing to the file with the binary code to be added
  * \param flags Compilation flags or NULL
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclCompileBinaryFile(const char *path, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags = NULL);
 
 
 /* Wrappers to GMAC native calls */
@@ -183,7 +181,7 @@ GMAC_API ocl_error APICALL oclCompileBinaryFile(const char *path, const char *fl
  * \return Number of accelerators
  */
 static inline
-unsigned oclGetNumberOfAccelerators()
+unsigned @OPENCL_API_PREFIX@GetNumberOfAccelerators()
 {
     return gmacGetNumberOfAccelerators();
 }
@@ -194,7 +192,7 @@ unsigned oclGetNumberOfAccelerators()
  * \return Size (in bytes) of the available accelerator memory
  */
 static inline
-size_t oclGetFreeMemory()
+size_t @OPENCL_API_PREFIX@GetFreeMemory()
 {
     return gmacGetFreeMemory();
 }
@@ -204,10 +202,10 @@ size_t oclGetFreeMemory()
  *
  * \param acc Accelerator to attach the current CPU thread
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclMigrate(unsigned acc)
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@Migrate(unsigned acc)
 {
     return gmacMigrate(acc);
 }
@@ -219,10 +217,10 @@ ocl_error oclMigrate(unsigned acc)
  * \param count Size (in bytes) to be mapped in accelerator memory
  * \param prot Desired memory protection of the mapping
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclMemoryMap(void *cpuPtr, size_t count, ocl_protection prot)
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@MemoryMap(void *cpuPtr, size_t count, @OPENCL_API_PREFIX@_protection prot)
 {
     return gmacMemoryMap(cpuPtr, count, prot);
 }
@@ -233,10 +231,10 @@ ocl_error oclMemoryMap(void *cpuPtr, size_t count, ocl_protection prot)
  * \param cpuPtr Host memory address to be unmmaped
  * \param count Size (in bytes) to be unmmaped
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclMemoryUnmap(void *cpuPtr, size_t count)
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@MemoryUnmap(void *cpuPtr, size_t count)
 {
     return gmacMemoryUnmap(cpuPtr, count);
 }
@@ -247,10 +245,10 @@ ocl_error oclMemoryUnmap(void *cpuPtr, size_t count)
  * \param devPtr Memory address of the pointer to store the allocated memory
  * \param count Size (in bytes) of the memory to be allocated
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclMalloc(void **devPtr, size_t count)
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@Malloc(void **devPtr, size_t count)
 {
     return gmacMalloc(devPtr, count);
 }
@@ -262,10 +260,10 @@ ocl_error oclMalloc(void **devPtr, size_t count)
  * \param count Size (in bytes) of the memory to be allocated
  * \param hint Type of desired global memory
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclGlobalMalloc(void **devPtr, size_t count, ocl_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED))
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@GlobalMalloc(void **devPtr, size_t count, @OPENCL_API_PREFIX@_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED))
 {
     return gmacGlobalMalloc(devPtr, count, hint);
 }
@@ -278,7 +276,7 @@ ocl_error oclGlobalMalloc(void **devPtr, size_t count, ocl_memory_hint hint __dv
  * \return Associated OpenCL buffer
  */
 static inline
-cl_mem oclPtr(const void *cpuPtr)
+cl_mem @OPENCL_API_PREFIX@Ptr(const void *cpuPtr)
 {
     return gmacPtr(cpuPtr);
 }
@@ -288,10 +286,10 @@ cl_mem oclPtr(const void *cpuPtr)
  *
  * \param cpuPtr Shared memory address to be released
  *
- * \return oclSuccess on success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-ocl_error oclFree(void *cpuPtr)
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@Free(void *cpuPtr)
 {
     return gmacFree(cpuPtr);
 }
@@ -302,7 +300,7 @@ ocl_error oclFree(void *cpuPtr)
  * \return The error code of the last operation performed by GMAC
  */
 static inline
-ocl_error oclGetLastError()
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@GetLastError()
 {
     return gmacGetLastError();
 }
@@ -317,7 +315,7 @@ ocl_error oclGetLastError()
  * \return Shared memory address that has been initialized
  */
 static inline
-void *oclMemset(void *cpuPtr, int c, size_t count)
+void *@OPENCL_API_PREFIX@Memset(void *cpuPtr, int c, size_t count)
 {
     return gmacMemset(cpuPtr, c, count);
 }
@@ -332,7 +330,7 @@ void *oclMemset(void *cpuPtr, int c, size_t count)
  * \return Destination shared memory address
  */
 static inline
-void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
+void *@OPENCL_API_PREFIX@Memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
 {
     return gmacMemcpy(cpuDstPtr, cpuSrcPtr, count);
 }
@@ -343,14 +341,14 @@ void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
  * \param tid Thread ID of the destionation CPU thread
  */
 static inline
-void oclDeviceSend(THREAD_T tid)
+void @OPENCL_API_PREFIX@DeviceSend(THREAD_T tid)
 {
     return gmacSend(tid);
 }
 
 /** Receive an execution mode from another CPU thread */
 static inline
-void oclDeviceReceive(void)
+void @OPENCL_API_PREFIX@DeviceReceive(void)
 {
     return gmacReceive();
 }
@@ -361,7 +359,7 @@ void oclDeviceReceive(void)
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclDeviceSendReceive(THREAD_T tid)
+void @OPENCL_API_PREFIX@DeviceSendReceive(THREAD_T tid)
 {
     return gmacSendReceive(tid);
 }
@@ -372,7 +370,7 @@ void oclDeviceSendReceive(THREAD_T tid)
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclDeviceCopy(THREAD_T tid)
+void @OPENCL_API_PREFIX@DeviceCopy(THREAD_T tid)
 {
     return gmacCopy(tid);
 }

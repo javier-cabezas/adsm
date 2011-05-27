@@ -44,17 +44,17 @@ WITH THE SOFTWARE.  */
 
 #include "opencl.h"
 
-namespace ocl {
+namespace @OPENCL_API_PREFIX@ {
 
-typedef ocl_error error;
+typedef @OPENCL_API_PREFIX@_error error;
 
-typedef ocl_memory_hint memory_hint;
-typedef ocl_protection protection;
+typedef @OPENCL_API_PREFIX@_memory_hint memory_hint;
+typedef @OPENCL_API_PREFIX@_protection protection;
 
 class kernel {
 private:
     /** "C" kernel handler used by the object */
-    ocl_kernel kernel_;
+    @OPENCL_API_PREFIX@_kernel kernel_;
 
     /** Helper class used to detect pointer parameters for setArg */
     template <typename T>
@@ -71,7 +71,7 @@ private:
     struct Param<T *> {
         cl_mem value_;
         Param(T *init) :
-            value_(oclPtr(init))
+            value_(@OPENCL_API_PREFIX@Ptr(init))
         {
         }
     };
@@ -81,7 +81,7 @@ private:
      *
      * \param name Name of the kernel
      *
-     * \return oclSuccess on success, an error code otherwise
+     * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
      */
     error getByName(std::string name);
 
@@ -100,7 +100,7 @@ public:
      * Constructs C++ kernel handler for the specified kernel
      *
      * \param name Name of the kernel
-     * \param err A reference to set the return value. oclSuccess on success, an error code otherwise
+     * \param err A reference to set the return value. @OPENCL_API_PREFIX@Success on success, an error code otherwise
      */
     kernel(std::string name, error &err);
 
@@ -114,7 +114,7 @@ public:
      *
      * \return A reference to the current C++ descriptor
      */
-    ocl::kernel &operator=(const kernel &handler);
+    @OPENCL_API_PREFIX@::kernel &operator=(const kernel &handler);
 
     /**
      * Sets an argument to be used by the following call to callNDRange()
@@ -149,7 +149,7 @@ public:
      * \param localWorkSize Array of workDim elements that represent the number of work-items
      * per work-group for the kernel execution
      *
-     * \return oclSuccess if success, an error code otherwise
+     * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
      */
     error callNDRange(size_t workDim, size_t *globalWorkOffset,
                       size_t *globalWorkSize, size_t *localWorkSize);
@@ -179,7 +179,7 @@ public:
 inline
 error kernel::getByName(std::string name)
 {
-    error ret = ::oclKernelGet(name.c_str(), &kernel_);
+    error ret = ::@OPENCL_API_PREFIX@GetKernel(name.c_str(), &kernel_);
     return ret;
 }
 
@@ -188,21 +188,21 @@ kernel *kernel::get(std::string name)
 {
     error err;
     kernel *launch = new kernel(name, err);
-    if (err == oclSuccess) return launch;
+    if (err == @OPENCL_API_PREFIX@Success) return launch;
     delete launch;
 }
 
 inline
 kernel::kernel(std::string name, error &err)
 {
-    err = oclSuccess;
-    if (getByName(name) != oclSuccess) err = oclErrorInvalidAcceleratorFunction;
+    err = @OPENCL_API_PREFIX@Success;
+    if (getByName(name) != @OPENCL_API_PREFIX@Success) err = @OPENCL_API_PREFIX@ErrorInvalidAcceleratorFunction;
 }
 
 inline
 kernel::~kernel()
 {
-    oclKernelRelease(kernel_);
+    @OPENCL_API_PREFIX@ReleaseKernel(kernel_);
 }
 
 inline
@@ -215,7 +215,7 @@ kernel &kernel::operator=(const kernel &handler)
 inline
 error kernel::setArg(unsigned index, size_t size, const void *addr)
 {
-    return ::oclSetKernelArg(kernel_, index, size, addr);
+    return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, size, addr);
 }
 
 template <typename T>
@@ -223,14 +223,14 @@ inline
 error kernel::setArg(unsigned index, T val)
 {
     Param<T> p(val);
-    return ::oclSetKernelArg(kernel_, index, sizeof(p.value_), &p.value_);
+    return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, sizeof(p.value_), &p.value_);
 }
 
 inline
 error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
                           size_t *globalWorkSize, size_t *localWorkSize)
 {
-    error ret = ::oclCallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
     return ret;
 }
 
@@ -248,7 +248,7 @@ error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
 error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
                        size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
 {
-    return ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
 }
 
 template <typename P1, typename ...Pn>
@@ -270,11 +270,11 @@ error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileSource(std::string code, std::string flags = "")
 {
-    return ::oclCompileSource(code.c_str(), flags.c_str());
+    return ::@OPENCL_API_PREFIX@CompileSource(code.c_str(), flags.c_str());
 }
 
 /**
@@ -283,11 +283,11 @@ static inline error compileSource(std::string code, std::string flags = "")
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileSourceFile(std::string path, std::string flags = "")
 {
-    return ::oclCompileSourceFile(path.c_str(), flags.c_str());
+    return ::@OPENCL_API_PREFIX@CompileSourceFile(path.c_str(), flags.c_str());
 }
 
 /**
@@ -296,7 +296,7 @@ static inline error compileSourceFile(std::string path, std::string flags = "")
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileSourceStream(std::istream &in, std::string flags = "")
 {
@@ -310,7 +310,7 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
     // Read data as a block
     in.read(buffer,length);
     buffer[length] = '\0';
-    error ret = ::oclCompileSource(buffer, flags.c_str());
+    error ret = ::@OPENCL_API_PREFIX@CompileSource(buffer, flags.c_str());
     delete [] buffer;
     return ret;
 }
@@ -322,11 +322,11 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileBinary(const unsigned char *binary, size_t size, std::string flags = "")
 {
-    return ::oclCompileBinary(binary, size, flags.c_str());
+    return ::@OPENCL_API_PREFIX@CompileBinary(binary, size, flags.c_str());
 }
 
 /**
@@ -335,11 +335,11 @@ static inline error compileBinary(const unsigned char *binary, size_t size, std:
  * \param path String with the path of the file that contains the binary code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileBinaryFile(std::string path, std::string flags = "")
 {
-    return ::oclCompileBinaryFile(path.c_str(), flags.c_str());
+    return ::@OPENCL_API_PREFIX@CompileBinaryFile(path.c_str(), flags.c_str());
 }
 
 /**
@@ -348,7 +348,7 @@ static inline error compileBinaryFile(std::string path, std::string flags = "")
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
  *
- * \return oclSuccess if success, an error code otherwise
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
  */
 static inline error compileBinaryStream(std::istream &in, std::string flags = "")
 {
@@ -362,7 +362,7 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
     // Read data as a block
     in.read((char *) buffer,length);
     buffer[length] = '\0';
-    error ret = ::oclCompileBinary(buffer, length, flags.c_str());
+    error ret = ::@OPENCL_API_PREFIX@CompileBinary(buffer, length, flags.c_str());
     delete [] buffer;
     return ret;
 }
@@ -370,98 +370,98 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
 static inline
 unsigned getNumberOfAccelerators()
 {
-    return ::oclGetNumberOfAccelerators();
+    return ::@OPENCL_API_PREFIX@GetNumberOfAccelerators();
 }
 
 static inline
 size_t getFreeMemory()
 {
-    return ::oclGetFreeMemory();
+    return ::@OPENCL_API_PREFIX@GetFreeMemory();
 }
 
 static inline
 error migrate(unsigned acc)
 {
-    return ::oclMigrate(acc);
+    return ::@OPENCL_API_PREFIX@Migrate(acc);
 }
 
 static inline
-ocl_error memoryMap(void *cpuPtr, size_t count, protection prot)
+@OPENCL_API_PREFIX@_error memoryMap(void *cpuPtr, size_t count, protection prot)
 {
-    return ::oclMemoryMap(cpuPtr, count, prot);
+    return ::@OPENCL_API_PREFIX@MemoryMap(cpuPtr, count, prot);
 }
 
 static inline
-ocl_error memoryUnmap(void *cpuPtr, size_t count)
+@OPENCL_API_PREFIX@_error memoryUnmap(void *cpuPtr, size_t count)
 {
-    return ::oclMemoryUnmap(cpuPtr, count);
+    return ::@OPENCL_API_PREFIX@MemoryUnmap(cpuPtr, count);
 }
 
 static inline
-ocl_error malloc(void **devPtr, size_t count)
+@OPENCL_API_PREFIX@_error malloc(void **devPtr, size_t count)
 {
-    return ::oclMalloc(devPtr, count);
+    return ::@OPENCL_API_PREFIX@Malloc(devPtr, count);
 }
 
 static inline
-ocl_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED)
+@OPENCL_API_PREFIX@_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED)
 {
-    return ::oclGlobalMalloc(devPtr, count, hint);
+    return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
 }
 
 static inline
-ocl_error free(void *cpuPtr)
+@OPENCL_API_PREFIX@_error free(void *cpuPtr)
 {
-    return ::oclFree(cpuPtr);
+    return ::@OPENCL_API_PREFIX@Free(cpuPtr);
 }
 
 static inline
 error getLastError()
 {
-    return ::oclGetLastError();
+    return ::@OPENCL_API_PREFIX@GetLastError();
 }
 
 static inline
 void *memset(void *cpuPtr, int c, size_t count)
 {
-    return ::oclMemset(cpuPtr, c, count);
+    return ::@OPENCL_API_PREFIX@Memset(cpuPtr, c, count);
 }
 
 static inline
 void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
 {
-    return ::oclMemcpy(cpuDstPtr, cpuSrcPtr, count);
+    return ::@OPENCL_API_PREFIX@Memcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
 static inline
 void deviceSend(THREAD_T tid)
 {
-    ::oclDeviceSend(tid);
+    ::@OPENCL_API_PREFIX@DeviceSend(tid);
 }
 
 static inline
 void deviceReceive(void)
 {
-    ::oclDeviceReceive();
+    ::@OPENCL_API_PREFIX@DeviceReceive();
 }
 
 static inline
 void deviceSendReceive(THREAD_T tid)
 {
-    ::oclDeviceSendReceive(tid);
+    ::@OPENCL_API_PREFIX@DeviceSendReceive(tid);
 }
 
 static inline
 void deviceCopy(THREAD_T tid)
 {
-    ::oclDeviceCopy(tid);
+    ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
 template<typename T>
 static inline
 cl_mem ptr(const T *addr)
 {
-    return ::oclPtr((const void *)addr);
+    return ::@OPENCL_API_PREFIX@Ptr((const void *)addr);
 }
 
 #ifdef __cplusplus
