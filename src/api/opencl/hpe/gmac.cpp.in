@@ -17,7 +17,7 @@ static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 	return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
-GMAC_API gmacError_t APICALL oclSetKernelArg(ocl_kernel kernel, unsigned index, size_t size, const void *addr)
+GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
 {
     enterGmac();
     ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
@@ -29,7 +29,7 @@ GMAC_API gmacError_t APICALL oclSetKernelArg(ocl_kernel kernel, unsigned index, 
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
 gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
 
-GMAC_API gmacError_t APICALL oclCallNDRange(ocl_kernel kernel,
+GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize)
 {
@@ -52,7 +52,7 @@ GMAC_API gmacError_t APICALL oclCallNDRange(ocl_kernel kernel,
 
 
 #if 0
-GMAC_API gmacError_t APICALL __oclKernelWait(ocl_kernel *kernel)
+GMAC_API gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel)
 {
     enterGmac();
     gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->impl_);
@@ -62,7 +62,7 @@ GMAC_API gmacError_t APICALL __oclKernelWait(ocl_kernel *kernel)
 #endif
 
 
-GMAC_API gmacError_t APICALL oclCompileSource(const char *code, const char *flags)
+GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
@@ -71,7 +71,7 @@ GMAC_API gmacError_t APICALL oclCompileSource(const char *code, const char *flag
     return ret;
 }
 
-GMAC_API gmacError_t APICALL oclCompileSourceFile(const char *path, const char *flags)
+GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
@@ -85,7 +85,7 @@ GMAC_API gmacError_t APICALL oclCompileSourceFile(const char *path, const char *
     in.read(buffer,length);
     buffer[length] = '\0';
     in.close();
-    gmacError_t ret = oclCompileSource(buffer, flags);
+    gmacError_t ret = @OPENCL_API_PREFIX@CompileSource(buffer, flags);
     in.close();
     delete [] buffer;
 
@@ -93,7 +93,7 @@ GMAC_API gmacError_t APICALL oclCompileSourceFile(const char *path, const char *
 }
 
 
-gmacError_t APICALL oclCompileBinary(const unsigned char *binary, size_t size, const char *flags)
+gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLBinary(binary, size, flags);
@@ -102,7 +102,7 @@ gmacError_t APICALL oclCompileBinary(const unsigned char *binary, size_t size, c
     return ret;
 }
 
-gmacError_t APICALL oclCompileBinaryFile(const char *path, const char *flags)
+gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
@@ -116,14 +116,14 @@ gmacError_t APICALL oclCompileBinaryFile(const char *path, const char *flags)
     in.read((char *) buffer,length);
     buffer[length] = '\0';
     in.close();
-    gmacError_t ret = oclCompileBinary(buffer, length, flags);
+    gmacError_t ret = @OPENCL_API_PREFIX@CompileBinary(buffer, length, flags);
     in.close();
     delete [] buffer;
 
     return ret;
 }
 
-gmacError_t APICALL oclGetKernel(gmac_kernel_id_t id, ocl_kernel *kernel)
+gmacError_t APICALL @OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t id, @OPENCL_API_PREFIX@_kernel *kernel)
 {
     enterGmac();
     __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
@@ -137,7 +137,7 @@ gmacError_t APICALL oclGetKernel(gmac_kernel_id_t id, ocl_kernel *kernel)
     return gmacSuccess;
 }
 
-gmacError_t APICALL oclReleaseKernel(ocl_kernel kernel)
+gmacError_t APICALL @OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
 {
     enterGmac();
     if (kernel.impl_ != NULL) {

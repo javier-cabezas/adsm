@@ -65,8 +65,6 @@ protected:
     /**
      * Constructs a context for the calling thread on the given accelerator
      *
-     * \param acc Reference to the accelerator where the thread is going to
-     * perform operations on
      * \param mode Reference to the parent mode of the context
      * \param id Context identifier
      */

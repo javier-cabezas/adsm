@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 
 typedef cl_mem __gmac_accptr_t;
 
-struct ocl_kernel {
+struct @OPENCL_API_PREFIX@_kernel {
     void *impl_;
 };
 
