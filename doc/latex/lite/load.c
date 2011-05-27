@@ -11,7 +11,7 @@
     if(lite.num_devices == 0) return -1;
 
     /* Load and compile the OpenCL kernel */
-    program = clLiteLoad(lite, kernel_file, &error_code);
+    program = clLiteLoadProgramFromFile(lite, kernel_file, &error_code);
     if(error_code != CL_SUCCESS) {
         clLiteRelease(lite);
         return -1;

@@ -25,6 +25,7 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     liteVecAdd.cpp
+    liteVecAdd_cplusplus.cpp
     liteStencil.cpp
     liteStencilCommon.h
     liteMatrixMul.cpp
@@ -33,6 +34,9 @@ source_group(${current_GROUP} FILES
 
 add_executable(liteVecAdd ${common_SRC} liteVecAdd.cpp)
 target_link_libraries(liteVecAdd gmac-lite)
+
+add_executable(liteVecAdd_cplusplus ${common_SRC} liteVecAdd_cplusplus.cpp)
+target_link_libraries(liteVecAdd_cplusplus gmac-lite)
 
 add_executable(liteStencil ${common_SRC} liteStencil.cpp liteStencilCommon.h)
 target_link_libraries(liteStencil gmac-lite)

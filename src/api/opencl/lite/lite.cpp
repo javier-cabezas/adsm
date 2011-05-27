@@ -79,7 +79,7 @@ GMAC_API cl_int clLiteRelease(cl_lite state)
 
 static const char *build_flags = "-I.";
 
-GMAC_API cl_program clProgramFromFile(cl_lite state, const char *file_name, cl_int *error_code)
+GMAC_API cl_program clLiteLoadProgramFromFile(cl_lite state, const char *file_name, cl_int *error_code)
 {
     /* Let's all thank Microsoft for such a great compatibility */
 #if defined(_MSC_VER)
