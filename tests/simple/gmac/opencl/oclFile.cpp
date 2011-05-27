@@ -138,6 +138,10 @@ void *doTest(void *)
     }
     fprintf(stderr,"Error: %f\n", error1);
 
+    oclReleaseKernel(kernelSet);
+    oclReleaseKernel(kernelMove);
+    oclReleaseKernel(kernelAccum);
+
     oclFree(a);
     oclFree(b);
 

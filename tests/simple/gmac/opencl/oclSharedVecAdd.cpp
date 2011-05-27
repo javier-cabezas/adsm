@@ -78,6 +78,9 @@ void *addVector(void *ptr)
 		error += p->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
 		//error += p->ptr[i] - 1.0f;
 	}
+
+    oclReleaseKernel(kernel);
+
 	getTime(&t);
     snprintf(buffer, 1024, "%s-CheckFull: ", prefix);
 	printTime(&s, &t, buffer, "\n");

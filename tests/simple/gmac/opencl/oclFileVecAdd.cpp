@@ -82,6 +82,8 @@ float doTest(float *a, float *b, float *c, float *orig)
     fprintf(stderr, "Error: %f\n", error);
     printTime(&s, &t, "Check: ", "\n");
 
+    oclReleaseKernel(kernel);
+
     return error;
 }
 
@@ -135,9 +137,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"REPLICATED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
+    if(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
         CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
+    if(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -157,9 +159,9 @@ int main(int argc, char *argv[])
     fprintf(stderr,"CENTRALIZED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
+    if(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
         CUFATAL();
-    if(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
+    if(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");

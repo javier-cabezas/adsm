@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
 	memset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
+    oclReleaseKernel(kernel);
+
 	oclFree(ptr);
 
     return 0;

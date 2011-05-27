@@ -53,8 +53,10 @@ typedef ocl_protection protection;
 
 class kernel {
 private:
+    /** "C" kernel handler used by the object */
     ocl_kernel kernel_;
 
+    /** Helper class used to detect pointer parameters for setArg */
     template <typename T>
     struct Param {
         T value_;
@@ -64,6 +66,7 @@ private:
         }
     };
 
+    /** Helper class used to detect pointer parameters for setArg */
     template <typename T>
     struct Param<T *> {
         cl_mem value_;
@@ -73,140 +76,201 @@ private:
         }
     };
 
-    inline
-    error getByName(std::string name)
-    {
-        error ret = ::oclKernelGet(name.c_str(), &kernel_);
-        return ret;
-    }
-
-    inline
-    kernel()
-    {
-    }
-
-    inline
-    kernel(const char *name)
-    {
-        get(name);
-    }
+    /**
+     * Gets a "C" kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     *
+     * \return oclSuccess on success, an error code otherwise
+     */
+    error getByName(std::string name);
 
 public:
-    inline static
-    kernel *get(std::string name)
-    {
-        kernel *launch = new kernel();
-        if (launch->getByName(name) == oclSuccess) return launch;
-        delete launch;
-    }
+    /**
+     * Creates an returns a pointer to a C++ kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     *
+     * \return A pointer C++ kernel handler on success, NULL otherwise
+     */
+    static
+    kernel *get(std::string name);
 
-    inline
-    kernel(std::string name, error &err)
-    {
-        err = oclSuccess;
-        if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
-    }
+    /**
+     * Constructs C++ kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     * \param err A reference to set the return value. oclSuccess on success, an error code otherwise
+     */
+    kernel(std::string name, error &err);
 
-    inline
-    ~kernel()
-    {
-        oclKernelDestroy(kernel_);
-    }
+    /** Releases the resources used by the C++ kernel handler */
+    ~kernel();
 
-    inline
-    ocl::kernel &operator=(const kernel &launch)
-    {
-        kernel_ = launch.kernel_;
-        return *this;
-    }
+    /**
+     * Assigns a C++ kernel handler to the object
+     *
+     * \param launch Constant reference to the C++ handler to be assigned
+     *
+     * \return A reference to the current C++ descriptor
+     */
+    ocl::kernel &operator=(const kernel &handler);
 
-    inline
-    error setArg(unsigned index, const void *addr, size_t size)
-    {
-        return ::oclKernelSetArg(kernel_, index, addr, size);
-    } 
+    /**
+     * Sets an argument to be used by the following call to callNDRange()
+     *
+     * \param index Index of the parameter being set in the parameter list
+     * \param size Size, in bytes, of the argument
+     * \param addr Memory address where the argument is stored
+     *
+     * \return Error code
+     */
+    error setArg(unsigned index, size_t size, const void *addr);
 
+    /**
+     * Sets an argument to be used by the following call to callNDRange()
+     *
+     * \param index Index of the parameter being set in the parameter list
+     * \param val Value to be set
+     *
+     * \return Error code
+     */
     template <typename T>
-    inline
-    error setArg(unsigned index, T val)
-    {
-        Param<T> p(val);
-        return ::oclKernelSetArg(kernel_, index, &p.value_, sizeof(p.value_));
-    }
+    error setArg(unsigned index, T val);
 
     /**
      * Launches a kernel execution
      *
-     * \param workDim
-     * \param globalWorkOffset
-     * \param globalWorkSize
-     * \param localWorkSize
+     * \param workDim Number of dimensions of the work
+     * \param globalWorkOffset Array of workDim elements that represent the work offset for the
+     * kernel execution, or NULL
+     * \param globalWorkSize Array of workDim elements that represent the global number of
+     * work-items for the kernel execution
+     * \param localWorkSize Array of workDim elements that represent the number of work-items
+     * per work-group for the kernel execution
+     *
+     * \return oclSuccess if success, an error code otherwise
      */
-    inline
-    error launch(size_t workDim, size_t *globalWorkOffset,
-                 size_t *globalWorkSize, size_t *localWorkSize)
-    {
-        error ret = ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
-        return ret;
-    }
-
-    inline
     error callNDRange(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize)
-    {
-        error ret = launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize);
-        return ret;
-    }
+                      size_t *globalWorkSize, size_t *localWorkSize);
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 private:
     template <typename P1, typename ...Pn>
     error __launch(size_t workDim, size_t *globalWorkOffset,
                    size_t *globalWorkSize, size_t *localWorkSize, 
-                   unsigned index, P1 p1, Pn ...pn)
-    {
-        error ret = setArg(index, p1);
-        if (ret != gmacSuccess) return ret;
-        return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, index + 1, pn...);
-    }
+                   unsigned index, P1 p1, Pn ...pn);
 
     error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
-    {
-        return ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
-    }
+                   size_t *globalWorkSize, size_t *localWorkSize, unsigned index);
 
 public:
     template <typename P1, typename ...Pn>
-    error launch(size_t workDim, size_t *globalWorkOffset,
-                 size_t *globalWorkSize, size_t *localWorkSize,
-                 P1 p1, Pn ...pn)
-    {
-        return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
-    }
-
-    template <typename P1, typename ...Pn>
     error callNDRange(size_t workDim, size_t *globalWorkOffset,
                       size_t *globalWorkSize, size_t *localWorkSize,
-                      P1 p1, Pn ...pn)
-    {
-        return launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, p1, pn...);
-    }
-
-#endif
-#if 0
-    inline
-    error wait()
-    {
-        return ::__oclKernelWait(&kernel_);
-    }
+                      P1 p1, Pn ...pn);
 #endif
 };
 
+/*
+ * BEGIN CLASS IMPLEMENTATION
+ */
+
+inline
+error kernel::getByName(std::string name)
+{
+    error ret = ::oclKernelGet(name.c_str(), &kernel_);
+    return ret;
+}
+
+inline
+kernel *kernel::get(std::string name)
+{
+    error err;
+    kernel *launch = new kernel(name, err);
+    if (err == oclSuccess) return launch;
+    delete launch;
+}
+
+inline
+kernel::kernel(std::string name, error &err)
+{
+    err = oclSuccess;
+    if (getByName(name) != oclSuccess) err = oclErrorInvalidKernelName;
+}
+
+inline
+kernel::~kernel()
+{
+    oclKernelRelease(kernel_);
+}
+
+inline
+kernel &kernel::operator=(const kernel &handler)
+{
+    kernel_ = handler.kernel_;
+    return *this;
+}
+
+inline
+error kernel::setArg(unsigned index, size_t size, const void *addr)
+{
+    return ::oclSetKernelArg(kernel_, index, size, addr);
+}
+
+template <typename T>
+inline
+error kernel::setArg(unsigned index, T val)
+{
+    Param<T> p(val);
+    return ::oclSetKernelArg(kernel_, index, sizeof(p.value_), &p.value_);
+}
+
+inline
+error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
+                          size_t *globalWorkSize, size_t *localWorkSize)
+{
+    error ret = ::oclCallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    return ret;
+}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+template <typename P1, typename ...Pn>
+error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
+                       size_t *globalWorkSize, size_t *localWorkSize, 
+                       unsigned index, P1 p1, Pn ...pn)
+{
+    error ret = setArg(index, p1);
+    if (ret != gmacSuccess) return ret;
+    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, index + 1, pn...);
+}
+
+error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
+                       size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
+{
+    return ::oclKernelLaunch(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+}
+
+template <typename P1, typename ...Pn>
+error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
+                         size_t *globalWorkSize, size_t *localWorkSize,
+                         P1 p1, Pn ...pn)
+{
+    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
+}
+#endif
+
+/*
+ * END CLASS IMPLEMENTATION
+ */
+
 /**
  * Prepares the OpenCL code to be used by the applications 
+ *
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileSource(std::string code, std::string flags = "")
 {
@@ -215,8 +279,11 @@ static inline error compileSource(std::string code, std::string flags = "")
 
 /**
  * Prepares the OpenCL code to be used by the applications 
+ *
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileSourceFile(std::string path, std::string flags = "")
 {
@@ -225,8 +292,11 @@ static inline error compileSourceFile(std::string path, std::string flags = "")
 
 /**
  * Prepares the OpenCL code to be used by the applications 
+ *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileSourceStream(std::istream &in, std::string flags = "")
 {
@@ -247,9 +317,12 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
 
 /**
  * Prepares the OpenCL binary to be used by the applications 
+ *
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileBinary(const unsigned char *binary, size_t size, std::string flags = "")
 {
@@ -258,8 +331,11 @@ static inline error compileBinary(const unsigned char *binary, size_t size, std:
 
 /**
  * Prepares the OpenCL binary code to be used by the applications 
+ *
  * \param path String with the path of the file that contains the binary code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileBinaryFile(std::string path, std::string flags = "")
 {
@@ -268,8 +344,11 @@ static inline error compileBinaryFile(std::string path, std::string flags = "")
 
 /**
  * Prepares the OpenCL code to be used by the applications 
+ *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
+ *
+ * \return oclSuccess if success, an error code otherwise
  */
 static inline error compileBinaryStream(std::istream &in, std::string flags = "")
 {
@@ -288,61 +367,100 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
     return ret;
 }
 
-
-/* Wrappers to GMAC native calls */
 static inline
-unsigned getNumberOfAccelerators() { return ::oclGetNumberOfAccelerators(); }
-
-static inline
-size_t getFreeMemory() { return ::oclGetFreeMemory(); }
+unsigned getNumberOfAccelerators()
+{
+    return ::oclGetNumberOfAccelerators();
+}
 
 static inline
-error migrate(unsigned acc) { return ::oclMigrate(acc); }
+size_t getFreeMemory()
+{
+    return ::oclGetFreeMemory();
+}
 
 static inline
-ocl_error memoryMap(void *cpuPtr, size_t count, protection prot) {
+error migrate(unsigned acc)
+{
+    return ::oclMigrate(acc);
+}
+
+static inline
+ocl_error memoryMap(void *cpuPtr, size_t count, protection prot)
+{
     return ::oclMemoryMap(cpuPtr, count, prot);
 }
 
 static inline
-ocl_error memoryUnmap(void *cpuPtr, size_t count) { return ::oclMemoryUnmap(cpuPtr, count); }
+ocl_error memoryUnmap(void *cpuPtr, size_t count)
+{
+    return ::oclMemoryUnmap(cpuPtr, count);
+}
 
 static inline
-ocl_error malloc(void **devPtr, size_t count) { return ::oclMalloc(devPtr, count); }
+ocl_error malloc(void **devPtr, size_t count)
+{
+    return ::oclMalloc(devPtr, count);
+}
 
 static inline
-ocl_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED) {
+ocl_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED)
+{
     return ::oclGlobalMalloc(devPtr, count, hint);
 }
 
 static inline
-ocl_error free(void *cpuPtr) { return ::oclFree(cpuPtr); }
+ocl_error free(void *cpuPtr)
+{
+    return ::oclFree(cpuPtr);
+}
 
 static inline
-error getLastError() { return ::oclGetLastError(); }
+error getLastError()
+{
+    return ::oclGetLastError();
+}
 
 static inline
-void *memset(void *cpuPtr, int c, size_t count) { return ::oclMemset(cpuPtr, c, count); }
+void *memset(void *cpuPtr, int c, size_t count)
+{
+    return ::oclMemset(cpuPtr, c, count);
+}
 
 static inline
-void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
+void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
+{
     return ::oclMemcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
 static inline
-void deviceSend(THREAD_T tid) { ::oclDeviceSend(tid); }
+void deviceSend(THREAD_T tid)
+{
+    ::oclDeviceSend(tid);
+}
 
 static inline
-void deviceReceive(void) { ::oclDeviceReceive(); }
+void deviceReceive(void)
+{
+    ::oclDeviceReceive();
+}
 
 static inline
-void deviceSendReceive(THREAD_T tid) { ::oclDeviceSendReceive(tid); }
+void deviceSendReceive(THREAD_T tid)
+{
+    ::oclDeviceSendReceive(tid);
+}
 
 static inline
-void deviceCopy(THREAD_T tid) { ::oclDeviceCopy(tid); }
+void deviceCopy(THREAD_T tid)
+{
+    ::oclDeviceCopy(tid);
+}
 
 template<typename T>
-static inline cl_mem ptr(const T *addr) {
+static inline
+cl_mem ptr(const T *addr)
+{
     return ::oclPtr((const void *)addr);
 }
 

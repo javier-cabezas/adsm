@@ -193,14 +193,14 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	if(gmacMalloc((void **)&descr->u2, descr->size()) != oclSuccess)
+	if(oclMalloc((void **)&descr->u2, descr->size()) != oclSuccess)
 		CUFATAL();
-	gmacMemset(descr->u2, 0, descr->size());
-	if(gmacMalloc((void **)&descr->u3, descr->size()) != oclSuccess)
+	oclMemset(descr->u2, 0, descr->size());
+	if(oclMalloc((void **)&descr->u3, descr->size()) != oclSuccess)
 		CUFATAL();
-    gmacMemset(descr->u3, 0, descr->size());
+    oclMemset(descr->u3, 0, descr->size());
 
-    if(gmacMalloc((void **) &v, descr->realSize()) != oclSuccess)
+    if(oclMalloc((void **) &v, descr->realSize()) != oclSuccess)
 		CUFATAL();
 
     for (size_t k = 0; k < descr->slices; k++) {        
@@ -261,12 +261,12 @@ do_stencil(void * ptr)
 
             // Send data
             if (descr->prev != NULL) {
-                gmacMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
+                oclMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
                            descr->u3 + STENCIL * descr->sliceElems(),
                            descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                gmacMemcpy(descr->next->u3,
+                oclMemcpy(descr->next->u3,
                            descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
                            descr->sliceElems() * STENCIL * sizeof(float));                
             }
@@ -286,10 +286,12 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
+    oclReleaseKernel(kernel);
+
     getTime(&s);
-	gmacFree(descr->u2);
-	gmacFree(descr->u3);
-	gmacFree(v);
+	oclFree(descr->u2);
+	oclFree(descr->u3);
+	oclFree(v);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
