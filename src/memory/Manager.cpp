@@ -384,20 +384,21 @@ Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const h
     core::IOBuffer *active;
     core::IOBuffer *passive;
 
-    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-
-    if (size > obj.blockSize()) {
-        passive = &mode.createIOBuffer(obj.blockSize());
-    } else {
-        passive = NULL;
-    }
-
     // Control variables
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
     size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
+
+    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+    ASSERTION(bufSize >= copySize);
+
+    if (copySize < size) {
+        passive = &mode.createIOBuffer(obj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Copy the data to the first block
     ::memcpy(active->addr(), src, copySize);
@@ -415,6 +416,7 @@ Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const h
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : passive->size();
+            ASSERTION(bufSize >= copySize);
             passive->wait(); // Avoid overwritten a buffer that is already in use
             ::memcpy(passive->addr(), ptr, copySize);
         }
@@ -457,6 +459,7 @@ Manager::memcpyToObject(core::Mode &mode,
 
     size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
     active = &mode.createIOBuffer(bufSize);
+    ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
         passive = &mode.createIOBuffer(dstObj.blockSize());
@@ -472,6 +475,7 @@ Manager::memcpyToObject(core::Mode &mode,
     else { // Two copies from the source to fill the buffer
         size_t firstCopySize = srcObj.blockEnd(srcOffset);
         size_t secondCopySize = copySize - firstCopySize;
+        ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
         ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
@@ -492,6 +496,7 @@ Manager::memcpyToObject(core::Mode &mode,
         dstOffset += copySize;
         if(left > 0) {
             copySize = (left < dstObj.blockSize()) ? left: dstObj.blockSize();
+            ASSERTION(bufSize >= copySize);
             // Avoid overwritting a buffer that is already in use
             passive->wait();
 
@@ -504,6 +509,7 @@ Manager::memcpyToObject(core::Mode &mode,
             else { // Two copies from the source to fill the buffer
                 size_t firstCopySize = srcObj.blockEnd(srcOffset);
                 size_t secondCopySize = copySize - firstCopySize;
+                ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
                 ret = srcObj.copyToBuffer(*passive, firstCopySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
@@ -540,22 +546,23 @@ Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
 
     // We need to I/O buffers to double-buffer the copy
     core::IOBuffer *active;
-    core::IOBuffer *passive;
-
-    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-
-    if (size > obj.blockSize()) {
-        passive = &mode.createIOBuffer(obj.blockSize());
-    } else {
-        passive = NULL;
-    }
+    core::IOBuffer *passive; 
 
     // Control variables
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
     size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
+
+    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
+    active = &mode.createIOBuffer(bufSize);
+    ASSERTION(bufSize >= copySize);
+
+    if (copySize < size) {
+        passive = &mode.createIOBuffer(obj.blockSize());
+    } else {
+        passive = NULL;
+    }
 
     // Copy the data to the first block
     ret = obj.copyToBuffer(*active, copySize, 0, objOffset);
@@ -569,6 +576,7 @@ Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : passive->size();
+            ASSERTION(bufSize >= copySize);
             // No need to wait for the buffer, because ::memcpy is a
             // synchronous call
             ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
