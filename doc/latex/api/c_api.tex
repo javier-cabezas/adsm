@@ -59,9 +59,9 @@ Constant string with the name of a function to be executed on an accelerator.
 
 \section{GMAC\slash HPE C API}
 
-\subsection{\texttt{ocl\_error \_\_oclKernelGet(ocl\_kernel\_id id, ocl\_kernel *kernel)}}
+\subsection{\texttt{ocl\_error oclGetKernel(ocl\_kernel\_id id, ocl\_kernel *kernel)}}
 
-\textbf{Description}: Gets a OpenCL kernel handler. \\
+\textbf{Description}: Gets an OpenCL kernel handler. \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{id}: Kernel identifier
@@ -70,25 +70,27 @@ Constant string with the name of a function to be executed on an accelerator.
 \textbf{Returns} Error code
 
 
-\subsection{\texttt{ocl\_error \_\_oclKernelSetArg(ocl\_kernel *kernel, const void *addr, size\_t size, unsigned index)}}
+\subsection{\texttt{ocl\_error oclSetKernelArg(ocl\_kernel kernel, unsigned index, size\_t size, 
+const void *addr)}}
 
-\textbf{Description}: Adds an argument to be used by the following call to \_\_oclLaunch()\\
+\textbf{Description}: Adds an argument to be used by the following call to oclCallNDRange() on 
+the specified kernel \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{kernel}: Kernel handler
-  \item \texttt{addr}: Memory address where the param is stored
-  \item \texttt{size}: Size, in bytes, of the argument
   \item \texttt{index}: Index of the parameter being added in the parameter list
+  \item \texttt{size}: Size, in bytes, of the argument
+  \item \texttt{addr}: Memory address where the param is stored
 \end{itemize}
 \textbf{Returns} Error code
 
+\subsection{\texttt{ocl\_error oclCallNDRange(ocl\_kernel kernel, size\_t workDim, size\_t 
+*globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
 
-\subsection{\texttt{ocl\_error \_\_oclKernelConfigure(ocl\_kernel *kernel, size\_t workDim, size\_t *globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
-
-\textbf{Description}: Configures the next call to the given kernel) \\
+\textbf{Description}: Launches a kernel execution with the specified device work configuration\\
 \textbf{Parameters}
 \begin{itemize}
-  \item \texttt{kernel}: Kernel handler of the kernel to be configured
+  \item \texttt{kernel}: Kernel handler of the kernel to be executed on the accelerator
   \item \texttt{workDim}: Number of elements for the work size arrays.
   \item \texttt{globalWorkOffset}: Array of \emph{workDim} unsigned elements that specifies the work 
     offset for the work items.
@@ -97,18 +99,9 @@ Constant string with the name of a function to be executed on an accelerator.
   \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
     of work items per work group.
 \end{itemize}
-\textbf{Returns} Error code
-
-\subsection{\texttt{ocl\_error \_\_oclKernelLaunch(ocl\_kernel *kernel)}}
-
-\textbf{Description}: Launches a kernel execution\\
-\textbf{Parameters}
-\begin{itemize}
-  \item \texttt{kernel}: Kernel handler of the kernel to be executed on the accelerator
-\end{itemize}
 \textbf{Returns}: Error code
 
-\subsection{\texttt{ocl\_error \_\_oclKernelDestroy(ocl\_kernel *kernel)}}
+\subsection{\texttt{ocl\_error oclKernelRelease(ocl\_kernel kernel)}}
 
 \textbf{Description}: Releases the resources of the given kernel handler. \\
 \textbf{Parameters}
@@ -118,7 +111,7 @@ Constant string with the name of a function to be executed on an accelerator.
 \textbf{Returns}: Error code
 
 
-\subsection{\texttt{ocl\_error \_\_oclPrepareCLCode(const char *code, const char *flags = NULL)}}
+\subsection{\texttt{ocl\_error oclCompileSource(const char *code, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL code to be used by the application. \\
 \textbf{Parameters}
@@ -128,7 +121,7 @@ Constant string with the name of a function to be executed on an accelerator.
 \end{itemize}
 \textbf{Returns}: Error code
 
-\subsection{\texttt{ocl\_error \_\_oclPrepareCLCodeFromFile(const char *path, const char *flags = NULL)}}
+\subsection{\texttt{ocl\_error oclCompileSourceFile(const char *path, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
 \textbf{Parameters}
@@ -138,7 +131,7 @@ Constant string with the name of a function to be executed on an accelerator.
   \item \texttt{flags}: \end{itemize}
 \textbf{Returns}: Error code
 
-\subsection{\texttt{ocl\_error \_\_oclPrepareCLBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
+\subsection{\texttt{ocl\_error oclCompileBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL binary to be used by the application.  \\
 \textbf{Parameters}
@@ -147,6 +140,18 @@ Constant string with the name of a function to be executed on an accelerator.
   \item \texttt{size}: Size in bytes of the array that contains the binary code
   \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or 
 NULL
+\end{itemize}
+\textbf{Returns}: Error code
+
+\subsection{\texttt{ocl\_error oclCompileBinaryFile(const unsigned char *binary, const char 
+*flags = NULL)}}
+
+\textbf{Description}: Prepares the OpenCL binary in the specified file to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the binary 
+  code to be prepared
+  \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or NULL
 \end{itemize}
 \textbf{Returns}: Error code
 
@@ -178,7 +183,7 @@ NULL
 \end{itemize}
 \textbf{Returns}: Error code
 
-\subsection{\texttt{oclGlobalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint hint \_\_dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
+\subsection{\texttt{oclGlobalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 
 \textbf{Description}: Allocate shared memory accessible from all accelerators
 \begin{itemize}

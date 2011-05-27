@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "Error: %f\n", error);
 
+    oclReleaseKernel(kernel);
     oclFree(a);
 
     return error != 0;

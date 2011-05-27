@@ -8,7 +8,7 @@
 #include "debug.h"
 #include "utils.h"
 
-#include "gmacMatrixMulKernel.cl"
+#include "oclMatrixMulKernel.cl"
 
 #define BLOCK_SIZE 8
 
@@ -57,28 +57,6 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
         }
 }
 
-void *
-matrixMulThread(void * ptr)
-{
-	struct param *p = (struct param *) ptr;
-
-    // timers
-    gmactime_t s, t;
-
-    getTime(&s);
-    assert(gmacMalloc((void**) &p->ptr, sizeC) == oclSuccess); 
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-    // Call the kernel
-    getTime(&s);
-	if(gmacThreadSynchronize() != oclSuccess) CUFATAL();
-	getTime(&t);
-	printTime(&s, &t, "Run: ", "\n");
-
-    return NULL;
-}
-
 int
 main(int argc, char** argv)
 {
@@ -101,9 +79,9 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    assert(gmacMalloc((void**) &A, sizeA) == oclSuccess);
-    assert(gmacMalloc((void**) &B, sizeB) == oclSuccess);
-    assert(gmacMalloc((void**) &C, sizeC) == oclSuccess);
+    assert(oclMalloc((void**) &A, sizeA) == oclSuccess);
+    assert(oclMalloc((void**) &B, sizeB) == oclSuccess);
+    assert(oclMalloc((void**) &C, sizeC) == oclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -152,10 +130,12 @@ main(int argc, char** argv)
 
     free(reference);
 
+    oclReleaseKernel(kernel);
+
     getTime(&s);
-	gmacFree(A);
-	gmacFree(B);
-	gmacFree(C);
+	oclFree(A);
+	oclFree(B);
+	oclFree(C);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

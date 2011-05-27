@@ -74,209 +74,309 @@ typedef enum GmacProtection ocl_protection;
 #define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
 
 /**
- *  Gets a OpenCL kernel descriptor
- *  \param id Kernel identifier
- *  \param kernel Pointer to store the address to the kernel descriptor
- *  \return Error code
-*/
+ * Gets a OpenCL kernel descriptor
+ *
+ * \param id Kernel identifier
+ * \param kernel Pointer to store the address to the kernel descriptor
+ *
+ * \return oclSuccess on success, an error code otherwise
+ */
 GMAC_API ocl_error APICALL oclKernelGet(const char *id, ocl_kernel *kernel);
 
 #define oclGetKernel oclKernelGet
 
 /**
- *  Adds an argument to be used by the following call to oclLaunch()
- *  \param kernel Kernel descriptor
- *  \param index Index of the parameter being added in the parameter list
- *  \param addr Memory address where the param is stored
- *  \param size Size, in bytes, of the argument
- *  \return Error code
+ * Sets an argument to be used by the following call to oclCallNDRange()
+ *
+ * \param kernel Kernel descriptor
+ * \param index Index of the parameter being set in the parameter list
+ * \param size Size, in bytes, of the argument
+ * \param addr Memory address where the argument is stored
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelSetArg(ocl_kernel kernel, unsigned index, const void *addr, size_t size);
-
-#define oclSetKernelArg(k,i,s,a) oclKernelSetArg(k,i,a,s)
+GMAC_API ocl_error APICALL oclSetKernelArg(ocl_kernel kernel, unsigned index, size_t size, const void *addr);
 
 /**
  * Launches a kernel execution
+ *
  * \param kernel Handler of the kernel to be executed at the GPU
- *  \param workDim
- *  \param globalWorkOffset
- *  \param globalWorkSize
- *  \param localWorkSize
- * \return Error code
+ * \param workDim Number of dimensions of the work
+ * \param globalWorkOffset Array of workDim elements that represent the work offset for the
+ * kernel execution, or NULL
+ * \param globalWorkSize Array of workDim elements that represent the global number of
+ * work-items for the kernel execution
+ * \param localWorkSize Array of workDim elements that represent the number of work-items
+ * per work-group for the kernel execution
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelLaunch(ocl_kernel kernel,
+GMAC_API ocl_error APICALL oclCallNDRange(ocl_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize);
-
-#define oclCallNDRange oclKernelLaunch
 
 #if 0
 /**
  * Waits for kernel execution finalization
  * \param kernel Handler of the kernel to wait for
- * \return Error code
+ * \return oclSuccess on success, an error code otherwise
  */
 GMAC_API ocl_error APICALL oclKernelWait(ocl_kernel *kernel);
 #endif
 
 /**
- * Launches a kernel execution
+ * Releases the resources used by the specified kernel handler
+ *
  * \param kernel Handler of the kernel to be executed at the GPU
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
-GMAC_API ocl_error APICALL oclKernelDestroy(ocl_kernel kernel);
+GMAC_API ocl_error APICALL oclKernelRelease(ocl_kernel kernel);
 
-#define oclDestroyKernel oclKernelDestroy
+#define oclReleaseKernel oclKernelRelease
 
 /**
  * Prepares the OpenCL code to be used by the application
+ *
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or NULL
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 GMAC_API ocl_error APICALL oclCompileSource(const char *code, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL code in the specified fie to be used by the application
+ *
  * \param path String pointing to the file with the code to be added
  * \param flags Compilation flags or NULL
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 GMAC_API ocl_error APICALL oclCompileSourceFile(const char *path, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application
+ *
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
+ * 
+ * \return oclSuccess on success, an error code otherwise
  */
 GMAC_API ocl_error APICALL oclCompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
 
 /**
  * Prepares the OpenCL binary to be used by the application
+ *
  * \param path String pointing to the file with the binary code to be added
  * \param flags Compilation flags or NULL
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 GMAC_API ocl_error APICALL oclCompileBinaryFile(const char *path, const char *flags = NULL);
 
 
 /* Wrappers to GMAC native calls */
-/** Get the number of accelerators in the system
+/** 
+ * Get the number of accelerators in the system
+ *
  * \return Number of accelerators
  */
 static inline
-unsigned oclGetNumberOfAccelerators() { return gmacGetNumberOfAccelerators(); }
+unsigned oclGetNumberOfAccelerators()
+{
+    return gmacGetNumberOfAccelerators();
+}
 
-/** Get the amount of available accelerator memory
+/**
+ * Get the amount of available accelerator memory
+ *
  * \return Size (in bytes) of the available accelerator memory
  */
 static inline
-size_t oclGetFreeMemory() { return gmacGetFreeMemory(); }
+size_t oclGetFreeMemory()
+{
+    return gmacGetFreeMemory();
+}
 
-/** Attach the calling CPU thread to a different accelerator
+/**
+ * Attach the calling CPU thread to a different accelerator
+ *
  * \param acc Accelerator to attach the current CPU thread
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclMigrate(unsigned acc) { return gmacMigrate(acc); }
+ocl_error oclMigrate(unsigned acc)
+{
+    return gmacMigrate(acc);
+}
 
-/** Map host memory in the accelerator
+/** 
+ * Map host memory in the accelerator
+ *
  * \param cpuPtr Host memory address to map
  * \param count Size (in bytes) to be mapped in accelerator memory
  * \param prot Desired memory protection of the mapping
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclMemoryMap(void *cpuPtr, size_t count, ocl_protection prot) {
+ocl_error oclMemoryMap(void *cpuPtr, size_t count, ocl_protection prot)
+{
     return gmacMemoryMap(cpuPtr, count, prot);
 }
 
-/** Unmap host memory from the accelerator
+/**
+ * Unmap host memory from the accelerator
+ *
  * \param cpuPtr Host memory address to be unmmaped
  * \param count Size (in bytes) to be unmmaped
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclMemoryUnmap(void *cpuPtr, size_t count) { return gmacMemoryUnmap(cpuPtr, count); }
+ocl_error oclMemoryUnmap(void *cpuPtr, size_t count)
+{
+    return gmacMemoryUnmap(cpuPtr, count);
+}
 
-/** Allocate shared memory
+/**
+ * Allocate shared memory
+ *
  * \param devPtr Memory address of the pointer to store the allocated memory
  * \param count Size (in bytes) of the memory to be allocated
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclMalloc(void **devPtr, size_t count) { return gmacMalloc(devPtr, count); }
+ocl_error oclMalloc(void **devPtr, size_t count)
+{
+    return gmacMalloc(devPtr, count);
+}
 
-/** Allocate shared memory accessible from all accelerators
+/**
+ * Allocate shared memory accessible from all accelerators
+ *
  * \param devPtr Memory address of the pointer to store the allocated memory
  * \param count Size (in bytes) of the memory to be allocated
  * \param hint Type of desired global memory
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclGlobalMalloc(void **devPtr, size_t count, ocl_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED)) {
+ocl_error oclGlobalMalloc(void **devPtr, size_t count, ocl_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED))
+{
     return gmacGlobalMalloc(devPtr, count, hint);
 }
 
-/** Get the OpenCL memory object associated to a shared memory address
+/**
+ * Get the OpenCL memory object associated to a shared memory address
+ *
  * \param cpuPtr Host shared memory address
+ *
  * \return Associated OpenCL buffer
  */
 static inline
-cl_mem oclPtr(const void *cpuPtr) { return gmacPtr(cpuPtr); }
+cl_mem oclPtr(const void *cpuPtr)
+{
+    return gmacPtr(cpuPtr);
+}
 
-/** Release shared memory
+/**
+ * Release shared memory
+ *
  * \param cpuPtr Shared memory address to be released
- * \return Error code
+ *
+ * \return oclSuccess on success, an error code otherwise
  */
 static inline
-ocl_error oclFree(void *cpuPtr) { return gmacFree(cpuPtr); }
+ocl_error oclFree(void *cpuPtr)
+{
+    return gmacFree(cpuPtr);
+}
 
-/** Get the last error produced by GMAC
- * \return Error code
+/**
+ * Get the last error produced by GMAC
+ *
+ * \return The error code of the last operation performed by GMAC
  */
 static inline
-ocl_error oclGetLastError() { return gmacGetLastError(); }
+ocl_error oclGetLastError()
+{
+    return gmacGetLastError();
+}
 
-/** Initialize a shared memory region
+/**
+ * Initialize a shared memory region
+ *
  * \param cpuPtr Starting shared memory address 
  * \param c Value used to be initialized
  * \param count Size (in bytes) of the shared memory region to be initialized
+ *
  * \return Shared memory address that has been initialized
  */
 static inline
-void *oclMemset(void *cpuPtr, int c, size_t count) { return gmacMemset(cpuPtr, c, count); }
+void *oclMemset(void *cpuPtr, int c, size_t count)
+{
+    return gmacMemset(cpuPtr, c, count);
+}
 
-/** Copy data between shared memory regions
+/**
+ * Copy data between shared memory regions
+ *
  * \param cpuDstPtr Destination shared memory
  * \param cpuSrcPtr Source shared memory
  * \param count Size (in bytes) to be copied
+ *
  * \return Destination shared memory address
  */
 static inline
-void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count) {
+void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
+{
     return gmacMemcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
-/** Send the execution mode associated to the current CPU thread to another CPU thread
+/**
+ * Send the execution mode associated to the current CPU thread to another CPU thread
+ *
  * \param tid Thread ID of the destionation CPU thread
  */
 static inline
-void oclDeviceSend(THREAD_T tid) { return gmacSend(tid); }
+void oclDeviceSend(THREAD_T tid)
+{
+    return gmacSend(tid);
+}
 
 /** Receive an execution mode from another CPU thread */
 static inline
-void oclDeviceReceive(void) { return gmacReceive(); }
+void oclDeviceReceive(void)
+{
+    return gmacReceive();
+}
 
-/** Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+/**
+ * Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+ *
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclDeviceSendReceive(THREAD_T tid) { return gmacSendReceive(tid); }
+void oclDeviceSendReceive(THREAD_T tid)
+{
+    return gmacSendReceive(tid);
+}
 
-/** Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+/**
+ * Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+ *
  * \param tid Thread ID of the destination CPU thread
  */
 static inline
-void oclDeviceCopy(THREAD_T tid) { return gmacCopy(tid); }
+void oclDeviceCopy(THREAD_T tid)
+{
+    return gmacCopy(tid);
+}
 
 #ifdef __cplusplus
 }

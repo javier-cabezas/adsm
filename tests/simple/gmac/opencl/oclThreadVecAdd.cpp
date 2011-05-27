@@ -82,6 +82,8 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
+    oclReleaseKernel(kernel);
+
 	oclFree(a);
 	oclFree(b);
 	oclFree(*c);

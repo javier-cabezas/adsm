@@ -24,53 +24,53 @@ string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
-    gmacInit.cpp
-    gmacVecAdd.cpp
-    gmacVecAdd_cplusplus.cpp
-    gmacThreadVecAdd.cpp
-    gmacMemcpy.cpp
-    gmacMemset.cpp
-    gmacFile.cpp
-    gmacFileVecAdd.cpp
-    gmacSharedVecAdd.cpp
-    gmacStencil.cpp
-    gmacStencilCommon.h
-    gmacMatrixMul.cpp
-    gmacMatrixMulKernel.cl
+    oclInit.cpp
+    oclVecAdd.cpp
+    oclVecAdd_cplusplus.cpp
+    oclThreadVecAdd.cpp
+    oclMemcpy.cpp
+    oclMemset.cpp
+    oclFile.cpp
+    oclFileVecAdd.cpp
+    oclSharedVecAdd.cpp
+    oclStencil.cpp
+    oclStencilCommon.h
+    oclMatrixMul.cpp
+    oclMatrixMulKernel.cl
 )
 
-add_executable(gmacInit ${common_SRC} gmacInit.cpp)
-target_link_libraries(gmacInit gmac-cl)
+add_executable(oclInit ${common_SRC} oclInit.cpp)
+target_link_libraries(oclInit gmac-cl)
 
-add_executable(gmacVecAdd ${common_SRC} gmacVecAdd.cpp)
-target_link_libraries(gmacVecAdd gmac-cl)
+add_executable(oclVecAdd ${common_SRC} oclVecAdd.cpp)
+target_link_libraries(oclVecAdd gmac-cl)
 
-add_executable(gmacVecAdd_cplusplus ${common_SRC} gmacVecAdd_cplusplus.cpp)
-target_link_libraries(gmacVecAdd_cplusplus gmac-cl)
+add_executable(oclVecAdd_cplusplus ${common_SRC} oclVecAdd_cplusplus.cpp)
+target_link_libraries(oclVecAdd_cplusplus gmac-cl)
 
-add_executable(gmacThreadVecAdd ${common_SRC} gmacThreadVecAdd.cpp)
-target_link_libraries(gmacThreadVecAdd gmac-cl)
+add_executable(oclThreadVecAdd ${common_SRC} oclThreadVecAdd.cpp)
+target_link_libraries(oclThreadVecAdd gmac-cl)
 
-add_executable(gmacMemcpy ${common_SRC} gmacMemcpy.cpp)
-target_link_libraries(gmacMemcpy gmac-cl)
+add_executable(oclMemcpy ${common_SRC} oclMemcpy.cpp)
+target_link_libraries(oclMemcpy gmac-cl)
 
-add_executable(gmacMemset ${common_SRC} gmacMemset.cpp)
-target_link_libraries(gmacMemset gmac-cl)
+add_executable(oclMemset ${common_SRC} oclMemset.cpp)
+target_link_libraries(oclMemset gmac-cl)
 
-add_executable(gmacFile ${common_SRC} gmacFile.cpp)
-target_link_libraries(gmacFile gmac-cl)
+add_executable(oclFile ${common_SRC} oclFile.cpp)
+target_link_libraries(oclFile gmac-cl)
 
-add_executable(gmacFileVecAdd ${common_SRC} gmacFileVecAdd.cpp)
-target_link_libraries(gmacFileVecAdd gmac-cl)
+add_executable(oclFileVecAdd ${common_SRC} oclFileVecAdd.cpp)
+target_link_libraries(oclFileVecAdd gmac-cl)
 
-add_executable(gmacSharedVecAdd ${common_SRC} gmacSharedVecAdd.cpp)
-target_link_libraries(gmacSharedVecAdd gmac-cl)
+add_executable(oclSharedVecAdd ${common_SRC} oclSharedVecAdd.cpp)
+target_link_libraries(oclSharedVecAdd gmac-cl)
 
-add_executable(gmacStencil ${common_SRC} gmacStencil.cpp)
-target_link_libraries(gmacStencil gmac-cl)
+add_executable(oclStencil ${common_SRC} oclStencil.cpp)
+target_link_libraries(oclStencil gmac-cl)
 
-add_executable(gmacMatrixMul ${common_SRC} gmacMatrixMul.cpp gmacMatrixMulKernel.cl)
-target_link_libraries(gmacMatrixMul gmac-cl)
+add_executable(oclMatrixMul ${common_SRC} oclMatrixMul.cpp oclMatrixMulKernel.cl)
+target_link_libraries(oclMatrixMul gmac-cl)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
