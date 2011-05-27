@@ -26,7 +26,6 @@ Most GMAC calls return an error code. \texttt{oclSuccess} is returned on success
                                           settings                             \\
   oclErrorInsufficientAcceleratorMemory & Not enough accelerator memory available to perform the 
                                           operation                            \\
-  oclErrorInvalidKernelName             & Invalid kernel name                  \\
   oclErrorUnknown                       & Unknown error                        \\
   \hline
 \end{tabularx}
@@ -69,41 +68,15 @@ Constant string with the name of a function to be executed on an accelerator.
 
 \textbf{Description}: Creates a OpenCL kernel handler.
 
-\subsection{\texttt{ocl::error\_t ocl::kernel::kernel(std::string name)}}
+\subsection{\texttt{ocl::kernel::kernel(std::string name, ocl::error &err)}}
 
 \textbf{Description}: Creates and gets an OpenCL kernel handler. \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{name}: string with the name of the OpenCL kernel to be retrieved
+  \item \texttt{err}: Reference to store the error code. oclSuccess on succes, an error code 
+  otherwise
 \end{itemize}
-
-\subsection{\texttt{ocl::error\_t ocl::kernel::kernel(const char *name)}}
-
-\textbf{Description}: Creates and gets an OpenCL kernel handler. \\
-\textbf{Parameters}
-\begin{itemize}
-  \item \texttt{name}: Pointer to a NULL\hyp{}terminated string with the name of the OpenCL kernel 
-to be retrieved
-\end{itemize}
-
-\subsection{\texttt{ocl::error\_t ocl::kernel::get(std::string name)}}
-
-\textbf{Description}: Gets a OpenCL kernel handler. \\
-\textbf{Parameters}
-\begin{itemize}
-  \item \texttt{name}: string with the name of the OpenCL kernel to be retrieved
-\end{itemize}
-\textbf{Returns} Error code
-
-\subsection{\texttt{ocl::error\_t ocl::kernel::get(const char *name)}}
-
-\textbf{Description}: Gets an OpenCL kernel handler. \\
-\textbf{Parameters}
-\begin{itemize}
-  \item \texttt{name}: Pointer to a NULL\hyp{}terminated string with the name of the OpenCL kernel 
-to be retrieved
-\end{itemize}
-\textbf{Returns} Error code
 
 \subsection{\texttt{template <typename T>\\ocl::error\_t ocl::kernel::setArg(unsigned index, size\_t 
 size, const T *addr)}}
@@ -115,7 +88,7 @@ size, const T *addr)}}
   \item \texttt{size}: Size, in bytes, of the argument
   \item \texttt{addr}: Memory address where the param is stored
 \end{itemize}
-\textbf{Returns} Error code
+\textbf{Returns}: oclSucces on success, an error code otherwise
 
 \subsection{\texttt{template <typename T>\\ocl::error\_t ocl::kernel::setArg(unsigned index, T 
 val)}}
@@ -126,7 +99,7 @@ val)}}
   \item \texttt{index}: Index of the parameter being added to the parameter list
   \item \texttt{val}: Parameter to be stored
 \end{itemize}
-\textbf{Returns} Error code
+\textbf{Returns}: oclSucces on success, an error code otherwise
 
 \subsection{\texttt{ocl::error\_t callNDRange(size\_t workDim, size\_t *globalWorkOffset, size\_t 
 *globalWorkSize, size\_t *localWorkSize)}}
@@ -140,9 +113,9 @@ val)}}
   \item \texttt{globalWorkSize}: Array of \emph{workDim} unsigned elements that specifies the global 
   number of work items.
   \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
-of work items per work group.
+  of work items per work group.
 \end{itemize}
-\textbf{Returns} Error code
+\textbf{Returns}: oclSucces on success, an error code otherwise
 
 
 \subsection{\texttt{ocl::error ocl::compileSource(const char *code, std::string flags = "")}}
@@ -153,7 +126,7 @@ of work items per work group.
   \item \texttt{code} String that contains the code to be prepared
   \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::compileSourceFile(std::string path, std::string flags = "")}}
 
@@ -163,7 +136,7 @@ of work items per work group.
   \item \texttt{path}: String that contains the path to the file with the source code to be prepared
   \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::compileSourceStream(std::istream \&in, std::string flags = "")}}
 
@@ -172,9 +145,9 @@ application.  \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{path}: Reference to an input stream
-  \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string that contains the compilation flags or NULL
+  \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::compileBinary(const unsigned char *binary, size\_t size, 
 std::string flags = "")}}
@@ -186,7 +159,7 @@ std::string flags = "")}}
   \item \texttt{size}: Size in bytes of the array that contains the binary code
   \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::compileBinaryFile(std::string path, std::string flags = "")}}
 
@@ -196,7 +169,7 @@ std::string flags = "")}}
   \item \texttt{path}: String that contains the path to the file with the binary code to be prepared
   \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::compileBinaryStream(std::istream \&in, std::string flags = "")}}
 
@@ -207,7 +180,7 @@ application.  \\
   \item \texttt{in}: Reference to an input stream that contains the binary code
   \item \texttt{flags}: String that contains the compilation flags or empty string
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 
 \subsection{\texttt{unsigned ocl::getNumberOfAccelerators()}}
@@ -227,7 +200,7 @@ application.  \\
 \begin{itemize}
   \item \texttt{acc}: Id of the accelerator to attach to
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::malloc(void **devPtr, size\_t count)}}
 
@@ -236,7 +209,7 @@ application.  \\
   \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::globalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint 
 hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
@@ -247,7 +220,7 @@ hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
   \item \texttt{hint}: Type of desired global memory
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{template <typename T>\\cl\_mem ocl::ptr(const T *cpuPtr)}}
 
@@ -263,17 +236,17 @@ hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 \begin{itemize}
   \item \texttt{cpuPtr}: Shared memory address to be released
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::threadSynchronize()}}
 
 \textbf{Description}: Wait until all previous accelerator calls are completed
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl::error ocl::getLastError()}}
 
 \textbf{Description}: Get the last error produced by GMAC
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{void *ocl::memset(void *cpuPtr, int c, size\_t count)}}
 
