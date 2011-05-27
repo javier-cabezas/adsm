@@ -138,9 +138,12 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_EQ(gmacSuccess, buffer.wait());
 
 	ptr = buffer.addr();
+    int error = 0;
     for(size_t s = 0; s < buffer.size(); s++) {
-        EXPECT_EQ(ptr[s], (s & 0xff));
+        //EXPECT_EQ(ptr[s], (s & 0xff));
+        error += (ptr[s] - (s & 0xff));
     }
+    EXPECT_EQ(error, 0);
 
     mode.destroyIOBuffer(buffer);
 
