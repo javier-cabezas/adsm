@@ -85,11 +85,14 @@ public:
 
     /** Set the event defining the start of a data transfer using the I/O buffer
      * \param event OpenCL event defining the starting time of a data transfer
+     * \param size Size (in bytes) of the I/O transfer
      */
     void started(cl_event event, size_t size);
 
 	/** Set the event defining the start of a data transfer using the I/O buffer
-     * \param event OpenCL event defining the starting time of a data transfer
+     * \param start OpenCL event defining the starting time of a data transfer
+     * \param end OpenCL event defining the end of a data transfer
+     * \param size Size (in bytes) of the I/O transfer
      */
     void started(cl_event start, cl_event end, size_t size);
 
