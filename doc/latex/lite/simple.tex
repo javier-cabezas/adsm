@@ -5,8 +5,8 @@ GMAC\slash Lite requires data allocations to be performed over single\hyp{}devic
 This simple restriction allows the initialization of GMAC\slash Lite applications to be greatly 
 simplified compared to regular OpenCL applications (Listing~\ref{lst:opencl:init}). GMAC\slash Lite 
 offers a convenient API call (\texttt{oclLiteInit()}). This API call can be also combined with 
-\texttt{oclLiteProgram()} to further simplify the load and compilation of OpenCL kernels from 
-external files. The combination of these both GMAC\slash Lite API calls can be combined as 
+\texttt{oclLiteLoadProgramFromFile()} to further simplify the load and compilation of OpenCL kernels 
+from external files. The combination of these both GMAC\slash Lite API calls can be combined as 
 illustrated in Listing~\ref{lst:lite:load}.
 
 \lstinputlisting[float,
@@ -54,9 +54,10 @@ to \texttt{clMalloc()}.
     caption={GMAC\slash Lite code to call the vector addition kernel.},
     label={lst:lite:call}]{lite/call.c}
 
-Calls to \texttt{clBuffer()} takes as singe parameter a CPU pointer returned by \texttt{clMalloc()}.  
-If any other pointer is passed as a parameter, \texttt{clBuffer()} returns a \texttt{cl\_mem} object 
-initialized to \texttt{NULL} to signal the error condition.
+Calls to \texttt{clBuffer()} takes as first parameter the context which the memory belongs to, and 
+as a second parameter, a CPU pointer returned by \texttt{clMalloc()}.  If an invalid pointer is 
+passed as a parameter, \texttt{clBuffer()} returns a \texttt{cl\_mem} object initialized to 
+\texttt{NULL} to signal the error condition.
 
 \subsection{Memory Release}
 Listing~\ref{lst:lite:release} shows the source code to release resources in GMAC\slash Lite. Memory 

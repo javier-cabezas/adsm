@@ -34,13 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_LITE_H_
 #define GMAC_LITE_H_
 
-#include <CL/cl.h>
-#include "lite_types.h"
-#include "visibility.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stddef.h>
+
+#include <CL/cl.h>
+#include "lite_types.h"
+#include "visibility.h"
 
 /**
  *  Allocates a OpenCL memory buffer accessible from the host
@@ -88,14 +90,15 @@ GMAC_API cl_int clLiteRelease(cl_lite state);
  * \param state OpenCL/Lite state where the OpenCL program is loaded
  * \return OpenCL error code
  */
-GMAC_API cl_program clLiteProgram(cl_lite state, const char *file_name, cl_int *error_code);
+GMAC_API cl_program clLiteLoadProgramFromFile(cl_lite state, const char *file_name, cl_int *error_code);
 
 
 #ifdef __cplusplus
 }
 
 template<typename T>
-static inline cl_mem clBuffer(cl_context context, const T *addr) {
+static inline cl_mem clBuffer(cl_context context, const T *addr)
+{
     return clBuffer(context, (const void *)addr);
 }
 

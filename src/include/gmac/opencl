@@ -471,6 +471,6 @@ cl_mem ptr(const T *addr)
 
 #undef __dv
 
-#endif /* OPENCL_H */
+#endif /* GMAC_OPENCL_CPP_H_ */
 
 /* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

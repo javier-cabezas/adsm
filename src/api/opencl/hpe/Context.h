@@ -101,7 +101,6 @@ protected:
 
     /**
      * Default OpenCL context constructor
-     * \param acc OpenCL accelerator associated to the context
      * \param mode OpenCL execution mode associated to the context
      */
 	Context(Mode &mode);
