@@ -6,7 +6,7 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
-set(GMAC_VERSION "0.9.0")
+set(GMAC_VERSION "1.0")
 
 # Set the configuration being built
 if(NOT CMAKE_BUILD_TYPE)
