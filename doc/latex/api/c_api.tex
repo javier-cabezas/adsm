@@ -59,16 +59,15 @@ Constant string with the name of a function to be executed on an accelerator.
 
 \section{GMAC\slash HPE C API}
 
-\subsection{\texttt{ocl\_error oclGetKernel(ocl\_kernel\_id id, ocl\_kernel *kernel)}}
+\subsection{\texttt{ocl\_error oclGetKernel(const char *name, ocl\_kernel *kernel)}}
 
-\textbf{Description}: Gets an OpenCL kernel handler. \\
+\textbf{Description}: Gets a kernel handler for the speficied OpenCL kernel. \\
 \textbf{Parameters}
 \begin{itemize}
-  \item \texttt{id}: Kernel identifier
+  \item \texttt{name}: Pointer to a NULL\hyp{}terminated string that contains the name of the kernel
   \item \texttt{kernel}: Pointer to store the address to the kernel handler
 \end{itemize}
-\textbf{Returns} Error code
-
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclSetKernelArg(ocl\_kernel kernel, unsigned index, size\_t size, 
 const void *addr)}}
@@ -82,7 +81,7 @@ the specified kernel \\
   \item \texttt{size}: Size, in bytes, of the argument
   \item \texttt{addr}: Memory address where the param is stored
 \end{itemize}
-\textbf{Returns} Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclCallNDRange(ocl\_kernel kernel, size\_t workDim, size\_t 
 *globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
@@ -99,7 +98,7 @@ the specified kernel \\
   \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
     of work items per work group.
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclKernelRelease(ocl\_kernel kernel)}}
 
@@ -108,7 +107,7 @@ the specified kernel \\
 \begin{itemize}
   \item \texttt{kernel}: Handler of the kernel to be released
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 
 \subsection{\texttt{ocl\_error oclCompileSource(const char *code, const char *flags = NULL)}}
@@ -116,10 +115,10 @@ the specified kernel \\
 \textbf{Description}: Prepares the OpenCL code to be used by the application. \\
 \textbf{Parameters}
 \begin{itemize}
-  \item \texttt{code} Pointer to the NULL-terminated string that contains the code
+  \item \texttt{code} Pointer to the NULL\hyp{}terminated string that contains the code
   \item \texttt{flags} Compilation flags or NULL
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclCompileSourceFile(const char *path, const char *flags = NULL)}}
 
@@ -129,7 +128,7 @@ the specified kernel \\
   \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the code 
  to be prepared
   \item \texttt{flags}: \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclCompileBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
 
@@ -141,7 +140,7 @@ the specified kernel \\
   \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or 
 NULL
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclCompileBinaryFile(const unsigned char *binary, const char 
 *flags = NULL)}}
@@ -153,7 +152,7 @@ NULL
   code to be prepared
   \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or NULL
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{unsigned oclGetNumberOfAccelerators()}}
 
@@ -172,7 +171,7 @@ NULL
 \begin{itemize}
   \item \texttt{acc}: Id of the accelerator to attach to
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{ocl\_error oclMalloc(void **devPtr, size\_t count)}}
 
@@ -181,7 +180,7 @@ NULL
   \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{oclGlobalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 
@@ -191,7 +190,7 @@ NULL
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
   \item \texttt{hint}: Type of desired global memory
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{cl\_mem oclPtr(const void *cpuPtr)}}
 
@@ -207,17 +206,17 @@ NULL
 \begin{itemize}
   \item \texttt{cpuPtr}: Shared memory address to be released
 \end{itemize}
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{oclThreadSynchronize()}}
 
 \textbf{Description}: Wait until all previous accelerator calls are completed
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{oclGetLastError()}}
 
 \textbf{Description}: Get the last error produced by GMAC
-\textbf{Returns}: Error code
+\textbf{Returns}: oclSuccess on success, an error code otherwise
 
 \subsection{\texttt{void *oclMemset(void *cpuPtr, int c, size\_t count)}}
 
