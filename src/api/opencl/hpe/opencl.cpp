@@ -1,7 +1,51 @@
 #include "config/order.h"
 
 #include "core/hpe/Process.h"
-#include "api/opencl/hpe/Accelerator.h"
+#include "api/opencl/hpe/gpu/amd/Accelerator.h"
+#include "api/opencl/hpe/gpu/nvidia/Accelerator.h"
+
+enum GMAC_LOCAL OpenCLVendor {
+    AMD,
+    NVIDIA,
+    INTEL,
+    UNKNOWN
+};
+
+static std::string getVendorName(cl_platform_id id)
+{
+    size_t len;
+    cl_int err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, 0, NULL, &len);
+    CFATAL(err == CL_SUCCESS);
+    char *vendor = new char[len + 1];
+    err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, len, vendor, NULL);
+    CFATAL(err == CL_SUCCESS);
+    vendor[len] = '\0';
+    std::string ret(vendor);
+
+    delete [] vendor;
+
+    return ret;
+}
+
+OpenCLVendor getVendor(cl_platform_id id)
+{
+    static const std::string amd("Advanced Micro Devices, Inc.");
+    static const std::string nvidia("NVIDIA Corporation");
+    static const std::string intel("Intel Corporation");
+
+    std::string vendorName = getVendorName(id);
+
+    if (vendorName.compare(amd) == 0) {
+        return AMD;
+    } else if (vendorName.compare(nvidia) == 0) {
+        return NVIDIA;
+    } else if (vendorName.compare(intel) == 0) {
+        return INTEL;
+    } else {
+        return UNKNOWN;
+    }
+}
+
 
 static bool initialized = false;
 void OpenCL(gmac::core::hpe::Process &proc)
@@ -10,10 +54,10 @@ void OpenCL(gmac::core::hpe::Process &proc)
     cl_uint platformSize = 0;
     cl_int ret;
     ret = clGetPlatformIDs(0, NULL, &platformSize);
-    ASSERTION(ret == CL_SUCCESS);
+    CFATAL(ret == CL_SUCCESS);
     cl_platform_id * platforms = new cl_platform_id[platformSize];
     ret = clGetPlatformIDs(platformSize, platforms, NULL);
-    ASSERTION(ret == CL_SUCCESS);
+    CFATAL(ret == CL_SUCCESS);
     TRACE(GLOBAL, "Found %d OpenCL platforms", platformSize);
 
     unsigned n = 0;
@@ -37,7 +81,19 @@ void OpenCL(gmac::core::hpe::Process &proc)
             CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
         }
         for(unsigned j = 0; j < deviceSize; j++) {
-            gmac::opencl::hpe::Accelerator *acc = new gmac::opencl::hpe::Accelerator(n++, ctx, devices[j]);
+            gmac::opencl::hpe::Accelerator *acc;
+
+            switch (getVendor(platforms[i])) {
+                case AMD:
+                    acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j]);
+                    break;
+                case NVIDIA:
+                    acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j]);
+                    break;
+                case INTEL:
+                case UNKNOWN:
+                    FATAL("Platform not supported\n");
+            }
             proc.addAccelerator(*acc);
             // Nedded for OpenCL code compilation
             __impl::opencl::hpe::Accelerator::addAccelerator(*acc);

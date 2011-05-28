@@ -1,3 +1,5 @@
+add_subdirectory(gpu)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/gmac.cpp)
 
 set(arch_hpe_api_SRC
@@ -33,5 +35,6 @@ set(arch_hpe_DBC
     dbc/Mode.cpp
 )
 
-add_gmac_sources(gmac-arch-hpe ${arch_hpe_SRC} ${arch_hpe_DBC})
+add_gmac_sources(gmac-arch-hpe-common ${arch_hpe_SRC} ${arch_hpe_DBC})
 add_gmac_sources(gmac-arch-hpe-api ${arch_hpe_api_SRC})
+add_gmac_sources(gmac-arch-hpe-gpu)

@@ -58,6 +58,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     return ret;
 }
 
+#if 0
 gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
 {
     // PRECONDITIONS
@@ -89,6 +90,7 @@ gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_
 
     return ret;
 }
+#endif
 
 }}}
 #endif

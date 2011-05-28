@@ -32,35 +32,32 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.
 */
 
-#ifndef GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
-#define GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
- 
-namespace __dbc { namespace opencl { namespace hpe {
+#ifndef GMAC_API_OPENCL_HPE_GPU_NVIDIA_ACCELERATOR_H_
+#define GMAC_API_OPENCL_HPE_GPU_NVIDIA_ACCELERATOR_H_
 
+#include "api/opencl/hpe/Accelerator.h"
+
+namespace __impl { namespace opencl { namespace hpe { namespace gpu { namespace nvidia {
+
+/** An OpenCL capable accelerator */
 class GMAC_LOCAL Accelerator :
-    public __impl::opencl::hpe::Accelerator,
-    public virtual Contract {
-    DBC_TESTED(__impl::opencl::hpe::Accelerator)
+    public gmac::opencl::hpe::Accelerator {
 
 public:
-	Accelerator(int n, cl_context context, cl_device_id device);
-    ~Accelerator();
+    /** Default constructor
+     * \param n Accelerator number
+     * \param context OpenCL context the accelerator belongs to
+     * \param device OpenCL device ID for the accelerator
+     */
+    Accelerator(int n, cl_context context, cl_device_id device);
+    /** Default destructor */
+    virtual ~Accelerator();
 
-    /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
-
-    /* Asynchronous interface */
-#if 0
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream);
-    gmacError_t copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream);
-#endif
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 };
 
+}}}}}
 
-}}}
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
