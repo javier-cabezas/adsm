@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cassert>
 
-#include "gmac/lite"
+#include "gmac/cl"
 
 #include "utils.h"
 #include "debug.h"
@@ -30,8 +30,6 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 
 int main(int argc, char *argv[])
 {
-    cl_platform_id platform;
-    cl_device_id device;
     cl_int error_code;
 	float *a, *b, *c;
 	gmactime_t s, t;

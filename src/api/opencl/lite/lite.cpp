@@ -1,5 +1,5 @@
 #include <config/common.h>
-#include <include/gmac/lite.h>
+#include <include/gmac/cl.h>
 
 #include <stdio.h>
 #include <sys/stat.h>

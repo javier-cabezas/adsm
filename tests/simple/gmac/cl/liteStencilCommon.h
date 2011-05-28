@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <cstring>
-#include "gmac/lite.h"
+#include "gmac/cl.h"
 
 #define STENCIL 4
 

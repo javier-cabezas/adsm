@@ -8,8 +8,9 @@ set(gmac_include_SRC
     gmac/api.h
     gmac/cuda.h
     gmac/cuda_types.h
-    gmac/lite.h
-    gmac/lite_types.h
+    gmac/cl
+    gmac/cl.h
+    gmac/cl_types.h
     gmac/opencl
     gmac/opencl.h
     gmac/opencl_types.h

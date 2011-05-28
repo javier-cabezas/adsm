@@ -33,13 +33,15 @@ source_group(${current_GROUP} FILES
 )
 
 add_executable(liteVecAdd ${common_SRC} liteVecAdd.cpp)
-target_link_libraries(liteVecAdd gmac-lite)
+target_link_libraries(liteVecAdd ${GMAC_CL})
 
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 add_executable(liteVecAdd_cplusplus ${common_SRC} liteVecAdd_cplusplus.cpp)
-target_link_libraries(liteVecAdd_cplusplus gmac-lite)
+target_link_libraries(liteVecAdd_cplusplus ${GMAC_CL})
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 add_executable(liteStencil ${common_SRC} liteStencil.cpp liteStencilCommon.h)
-target_link_libraries(liteStencil gmac-lite)
+target_link_libraries(liteStencil ${GMAC_CL})
 
 add_executable(liteMatrixMul ${common_SRC} liteMatrixMul.cpp liteMatrixMulKernel.cl)
-target_link_libraries(liteMatrixMul gmac-lite)
+target_link_libraries(liteMatrixMul ${GMAC_CL})
