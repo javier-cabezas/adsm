@@ -85,6 +85,7 @@ gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
     gmacError_t ret = gmacSuccess;
+    FATAL("bufferToAccelerator cannot be used in lite");
     return ret;
 }
 
@@ -92,6 +93,7 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), len);
     gmacError_t ret = gmacSuccess;
+    FATAL("acceleratorToBuffer cannot be used in lite");
     return ret;
 }
 

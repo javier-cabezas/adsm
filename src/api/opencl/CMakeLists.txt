@@ -10,7 +10,7 @@ set(arch_SRC
 
 add_gmac_sources(gmac-arch ${arch_SRC})
 
-add_gmac_sources(gmac-arch-hpe)
+group_gmac_sources(gmac-arch-hpe gmac-arch-hpe-common gmac-arch-hpe-gpu)
 add_gmac_sources(gmac-arch-hpe-api)
 
 if(MAKE_CL)
