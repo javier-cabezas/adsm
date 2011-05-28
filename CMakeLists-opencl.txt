@@ -1,7 +1,5 @@
 option(USE_OPENCL "Enable OpenCL backend" OFF)
 if(USE_OPENCL)
-    #option(USE_LITE "Enable OpenCL/Lite library" ON)
-    # Identify API being used
     set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
     set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
     add_definitions(-DUSE_OPENCL)
@@ -17,7 +15,7 @@ if(USE_OPENCL)
 
     set(OPENCL_API_PREFIX "ocl" CACHE PATH "Prefix for API functions in the OpenCL GMAC version")
 
-    set(MAKE_LITE ON)
+    set(MAKE_CL ON)
 
     set(GMAC_BLOCK_SIZE "4 * 1024 * 1024")
 
@@ -26,5 +24,5 @@ if(USE_OPENCL)
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl.h
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl_types.h)
 
-    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-cl")
+    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-hpe")
 endif(USE_OPENCL)

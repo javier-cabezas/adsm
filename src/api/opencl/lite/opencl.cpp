@@ -7,7 +7,7 @@
 #include "config/config.h"
 
 #include "api/opencl/lite/Process.h"
-#include "include/gmac/lite.h"
+#include "include/gmac/cl.h"
 #include "libs/common.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"

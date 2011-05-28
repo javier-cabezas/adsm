@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_LITE_H_
-#define GMAC_LITE_H_
+#ifndef GMAC_CL_H_
+#define GMAC_CL_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +41,7 @@ extern "C" {
 #include <stddef.h>
 
 #include <CL/cl.h>
-#include "lite_types.h"
+#include "cl_types.h"
 #include "visibility.h"
 
 /**

@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cmath>
 
-#include <gmac/lite.h>
+#include <gmac/cl.h>
 
 #include "debug.h"
 #include "utils.h"

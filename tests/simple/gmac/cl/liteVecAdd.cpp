@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cassert>
 
-#include "gmac/lite.h"
+#include "gmac/cl.h"
 
 #include "utils.h"
 #include "debug.h"

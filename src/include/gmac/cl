@@ -36,11 +36,11 @@ WITH THE SOFTWARE.  */
 #error "This header can only be included in C++ programs"
 #endif
 
-#ifndef GMAC_LITE_CPP_H_
-#define GMAC_LITE_CPP_H_
+#ifndef GMAC_CL_CPP_H_
+#define GMAC_CL_CPP_H_
 
 #include <CL/cl.hpp>
-#include "lite.h"
+#include "cl.h"
 
 namespace cl {
 

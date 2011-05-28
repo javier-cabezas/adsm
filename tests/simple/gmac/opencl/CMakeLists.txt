@@ -40,37 +40,37 @@ source_group(${current_GROUP} FILES
 )
 
 add_executable(oclInit ${common_SRC} oclInit.cpp)
-target_link_libraries(oclInit gmac-cl)
+target_link_libraries(oclInit gmac-hpe)
 
 add_executable(oclVecAdd ${common_SRC} oclVecAdd.cpp)
-target_link_libraries(oclVecAdd gmac-cl)
+target_link_libraries(oclVecAdd gmac-hpe)
 
 add_executable(oclVecAdd_cplusplus ${common_SRC} oclVecAdd_cplusplus.cpp)
-target_link_libraries(oclVecAdd_cplusplus gmac-cl)
+target_link_libraries(oclVecAdd_cplusplus gmac-hpe)
 
 add_executable(oclThreadVecAdd ${common_SRC} oclThreadVecAdd.cpp)
-target_link_libraries(oclThreadVecAdd gmac-cl)
+target_link_libraries(oclThreadVecAdd gmac-hpe)
 
 add_executable(oclMemcpy ${common_SRC} oclMemcpy.cpp)
-target_link_libraries(oclMemcpy gmac-cl)
+target_link_libraries(oclMemcpy gmac-hpe)
 
 add_executable(oclMemset ${common_SRC} oclMemset.cpp)
-target_link_libraries(oclMemset gmac-cl)
+target_link_libraries(oclMemset gmac-hpe)
 
 add_executable(oclFile ${common_SRC} oclFile.cpp)
-target_link_libraries(oclFile gmac-cl)
+target_link_libraries(oclFile gmac-hpe)
 
 add_executable(oclFileVecAdd ${common_SRC} oclFileVecAdd.cpp)
-target_link_libraries(oclFileVecAdd gmac-cl)
+target_link_libraries(oclFileVecAdd gmac-hpe)
 
 add_executable(oclSharedVecAdd ${common_SRC} oclSharedVecAdd.cpp)
-target_link_libraries(oclSharedVecAdd gmac-cl)
+target_link_libraries(oclSharedVecAdd gmac-hpe)
 
 add_executable(oclStencil ${common_SRC} oclStencil.cpp)
-target_link_libraries(oclStencil gmac-cl)
+target_link_libraries(oclStencil gmac-hpe)
 
 add_executable(oclMatrixMul ${common_SRC} oclMatrixMul.cpp oclMatrixMulKernel.cl)
-target_link_libraries(oclMatrixMul gmac-cl)
+target_link_libraries(oclMatrixMul gmac-hpe)
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
