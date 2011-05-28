@@ -21,7 +21,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
 
-    cl_event start, end;
+    cl_event start;
     cl_int ret;
 
     buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
@@ -41,7 +41,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
 
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
-    cl_event start, end;
+    cl_event start;
     cl_int ret;
 
     buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
