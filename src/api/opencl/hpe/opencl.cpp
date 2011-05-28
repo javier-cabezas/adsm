@@ -81,7 +81,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
             CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
         }
         for(unsigned j = 0; j < deviceSize; j++) {
-            gmac::opencl::hpe::Accelerator *acc;
+            gmac::opencl::hpe::Accelerator *acc = NULL;
 
             switch (getVendor(platforms[i])) {
                 case AMD:

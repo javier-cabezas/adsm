@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     assert(error_code == CL_SUCCESS);
     cl::Context context(devices, NULL, NULL, NULL, &error_code);
     assert(error_code == CL_SUCCESS);
-    cl::CommandQueue command_queue(context, devices[0], NULL, &error_code);
+    cl::CommandQueue command_queue(context, devices[0], 0, &error_code);
     assert(error_code == CL_SUCCESS);
     cl::Program::Sources sources;
     sources.push_back(std::pair<const char *, ::size_t>(kernel_source, strlen(kernel_source)));
