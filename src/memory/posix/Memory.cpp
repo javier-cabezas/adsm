@@ -84,7 +84,7 @@ hostptr_t Memory::shadow(hostptr_t addr, size_t count)
         return NULL;
     }
     off_t offset = off_t(addr - entry.address());
-    hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED, entry.fd(), offset));
+    hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED | MAP_POPULATE, entry.fd(), offset));
     trace::ExitCurrentFunction();
     return ret;
 } 
