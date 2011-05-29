@@ -163,13 +163,4 @@ Accelerator & Mode::getAccelerator() const
     return *static_cast<Accelerator *>(acc_);
 }
 
-gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
-{
-    switchIn();
-    gmacError_t ret = getAccelerator().timeCLevents(t, start, end);
-    switchOut();
-    return ret; 
-}
-
-
 }}}

@@ -148,7 +148,7 @@ void Paraver::setThreadState(uint64_t t, THREAD_T tid, const State state)
 
 void Paraver::dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
-    trace_.pushCommunication(t - delta, 1, src, t, 1, dst, size);
+    trace_.pushCommunication(t, 1, src, t + delta, 1, dst, size);
 }
 
 }}

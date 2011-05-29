@@ -44,8 +44,10 @@ WITH THE SOFTWARE.
 #include <vector>
 
 #include "config/common.h"
-#include "core/hpe/Accelerator.h"
+
+#include "api/opencl/Tracer.h"
 #include "api/opencl/hpe/ModeFactory.h"
+#include "core/hpe/Accelerator.h"
 #include "util/Lock.h"
 
 namespace __impl { namespace opencl {
@@ -184,6 +186,9 @@ protected:
     CommandList cmd_;
     /** Host memory allocations associated to the accelerator */
     HostMap localHostAlloc_;
+
+    /** Tracer for data communications */
+    DataCommunication trace_;
 
 public:
     /** Default constructor

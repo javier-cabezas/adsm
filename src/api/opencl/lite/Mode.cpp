@@ -107,11 +107,12 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     cl_event event;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {
+        trace_.init(trace_.getThreadId(), trace_.getModeId(*this));
         ret = clEnqueueWriteBuffer(i->first, acc.get(),
             CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
         trace::SetThreadState(trace::Running);
-        DataCommToAccelerator(*this, event, size);
+        trace_.trace(event, event, size);
         ret = clReleaseEvent(event);
         if(ret != CL_SUCCESS) goto do_exit;
     }
@@ -131,11 +132,12 @@ gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
+    trace_.init(trace_.getModeId(*this), trace_.getThreadId());
     cl_int ret = clEnqueueReadBuffer(active_, acc.get(),
         CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(*this, event, count);
+    trace_.trace(event, event, count);
     ret = clReleaseEvent(event);
     ASSERTION(ret == CL_SUCCESS);
     ret = clFinish(active_);

@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include <CL/cl.h>
 
 #include "api/opencl/Mode.h"
+#include "api/opencl/Tracer.h"
 #include "core/IOBuffer.h"
 #include "util/ReusableObject.h"
 
@@ -62,6 +63,9 @@ protected:
 
 	/** Last transfer size */
 	size_t last_;
+
+    /** Tracer */
+    DataCommunication trace_;
 
 public:
     /** Default constructor
