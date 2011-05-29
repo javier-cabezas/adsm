@@ -19,20 +19,22 @@ inline void
 IOBuffer::toHost(Mode &mode)
 {
     ASSERTION(started_ == false);
-
+    ASSERTION(state_ == Idle);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     mode_   = &mode;
+    trace_.init(trace_.getModeId(*mode_), trace_.getThreadId());
 }
 
 inline void
 IOBuffer::toAccelerator(Mode &mode)
 {
     ASSERTION(started_ == false);
-
+    ASSERTION(state_ == Idle);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     mode_   = &mode;
+    trace_.init(trace_.getThreadId(), trace_.getModeId(*mode_));
 }
 
 inline void
@@ -69,14 +71,12 @@ IOBuffer::wait()
         ret = mode_->waitForEvent(event_);
         trace::SetThreadState(trace::Running);
         ASSERTION(ret == gmacSuccess);
-        if(state_ == ToHost) DataCommToHost(*mode_, start_, event_, last_);
-        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start_, event_, last_);
+        trace_.trace(start_, event_, last_);
 		cl_int clret = CL_SUCCESS;
 		if(event_ != start_) clret = clReleaseEvent(start_);
         clret |= clReleaseEvent(event_);
         ASSERTION(clret == CL_SUCCESS);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
-
 
         state_ = Idle;
         event_ = NULL;

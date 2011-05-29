@@ -39,54 +39,39 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
+
 namespace opencl { 
 
-/** Trace a data communication between threads
- * \param src Source CPU thread
- * \param dst Destination CPU thread
- * \param start OpenCL event defining the start of the data transfer
- * \param end OpenCL event defining the end of the data transfer
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommunication(THREAD_T src, THREAD_T dst, cl_event start, cl_event end, size_t size);
+class Mode;
 
-/** Trace a data communication from the source thread
- * \param tid Destination CPU thread
- * \param start OpenCL event defining the start of the data transfer
- * \param end OpenCL event defining the end of the data transfer
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommunication(THREAD_T tid, cl_event start, cl_event end, size_t size);
+class DataCommunication {
+protected:
+#if defined(USE_TRACE)
+    uint64_t stamp_;
+    THREAD_T src_, dst_;
+#endif
+public:
+    /** Default constructor */
+    DataCommunication();
 
-/** Trace data communication to the accelerator
- * \param mode Destination execution mode
- * \param start OpenCL event defining the start of the data transfer
- * \param end OpenCL event defining the end of the data transfer
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommToAccelerator(Mode &mode, cl_event start, cl_event end, size_t size);
+    /**
+     * Initialize a data communication that will be traced later on
+     * \param src Source thread
+     * \param dst Destination thread
+     * \param size Size (in bytes) transferred
+     */
+    void init(THREAD_T src, THREAD_T dst);
 
-/** Trace zero-time data communication to the accelerator
- * \param mode Destination execution mode
- * \param event OpenCL event defining the start of the data communication
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommToAccelerator(Mode &mode, cl_event event, size_t size);
+    THREAD_T getThreadId() const;
+    THREAD_T getModeId(const Mode &mode) const;
+    
+    /** Trace a data communication
+     * \param start OpenCL event starting the communication
+     * \param end OpenCL event ending the communication
+     */
+    void trace(cl_event start, cl_event end, size_t size) const;
+};
 
-/** Trace data communication to the host
- * \param mode Source execution mode
- * \param start OpenCL event definig the start of the data communication
- * \param end OpenCL event defining the end of the data communication
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommToHost(Mode &mode, cl_event start, cl_event end, size_t size);
-
-/** Trace zero-time data communication to the host
- * \param mode Source execution mode
- * \param event OpenCL defining the start of the data communication
- * \param size Size (in bytes) of the data transfer
- */
-void DataCommToHost(Mode &mode, cl_event event, size_t size);
 }}
 
 #include "Tracer-impl.h"

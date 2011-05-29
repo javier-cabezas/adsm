@@ -38,6 +38,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "api/opencl/Mode.h"
+#include "api/opencl/Tracer.h"
 #include "core/AllocationMap.h"
 #include "memory/ObjectMap.h"
 #include "util/Atomics.h"
@@ -87,6 +88,8 @@ protected:
 
     memory::ObjectMap map_;
     gmac::core::AllocationMap allocations_;
+
+    DataCommunication trace_;
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;

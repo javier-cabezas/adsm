@@ -225,8 +225,6 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
-
-    gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 };
 }}}
 
