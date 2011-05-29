@@ -49,15 +49,15 @@ public:
     Console();
     ~Console();
 
-    void startThread(THREAD_T tid, const char *name);
-    void endThread(THREAD_T tid);
+    void startThread(uint64_t t, THREAD_T tid, const char *name);
+    void endThread(uint64_t t, THREAD_T tid);
 
-    void enterFunction(THREAD_T tid, const char *name);
-    void exitFunction(THREAD_T tid, const char *name);
+    void enterFunction(uint64_t t, THREAD_T tid, const char *name);
+    void exitFunction(uint64_t t, THREAD_T tid, const char *name);
 
-    void setThreadState(THREAD_T tid, const State state);
+    void setThreadState(uint64_t t, THREAD_T tid, const State state);
 
-    void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
+    void dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
 };
 
 }}

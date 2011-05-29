@@ -21,34 +21,33 @@ Console::Console() :
 Console::~Console()
 {}
 
-void Console::startThread(THREAD_T tid, const char *name)
+void Console::startThread(uint64_t t, THREAD_T tid, const char *name)
 {
-	os << "@THREAD:START:" << timeMark() << ":" << tid << ":" << name << "@" << std::endl;
+	os << "@THREAD:START:" << t << ":" << tid << ":" << name << "@" << std::endl;
 }
 
-void Console::endThread(THREAD_T tid)
+void Console::endThread(uint64_t t, THREAD_T tid)
 {
-	os << "@THREAD:END:" << timeMark() << ":" << tid << "@" << std::endl;
+	os << "@THREAD:END:" << t << ":" << tid << "@" << std::endl;
 }
 
-void Console::enterFunction(THREAD_T tid, const char *name)
+void Console::enterFunction(uint64_t t, THREAD_T tid, const char *name)
 {
-	os << "@FUNCTION:START:" << timeMark() << ":" << tid << ":" << name << "@" << std::endl;
+	os << "@FUNCTION:START:" << t << ":" << tid << ":" << name << "@" << std::endl;
 }
 
-void Console::exitFunction(THREAD_T tid, const char *name)
+void Console::exitFunction(uint64_t t, THREAD_T tid, const char *name)
 {
-	os << "@FUNCTION:END:" << timeMark() << ":" << tid << ":" << name << "@" << std::endl;
+	os << "@FUNCTION:END:" << t << ":" << tid << ":" << name << "@" << std::endl;
 }
 
-void Console::setThreadState(THREAD_T tid, State state)
+void Console::setThreadState(uint64_t t, THREAD_T tid, State state)
 {
-	os << "@STATE:" << timeMark() << ":" << tid << ":" << state << "@" << std::endl;
+	os << "@STATE:" << t << ":" << tid << ":" << state << "@" << std::endl;
 }
 
-void Console::dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
+void Console::dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
-    uint64_t t = timeMark();
     os << "@COMM:" << t - delta << ":" << src << ":" << t << ":" << dst << ":" << size << "@" << std::endl;
 }
 

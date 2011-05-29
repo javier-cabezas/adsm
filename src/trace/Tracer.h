@@ -71,65 +71,74 @@ public:
     /**
         \param tid Thread ID for the created thread
         \param name Name for the created thread
+        \param t Timestamp
     */
-	virtual void startThread(THREAD_T tid, const char *name) = 0;
+	virtual void startThread(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace the destruction of a thread
     /**
         \param tid Thread ID for the destroyed thread
+        \param t Timestamp
     */
-	virtual void endThread(THREAD_T tid) = 0;
+	virtual void endThread(uint64_t t, THREAD_T tid) = 0;
 
     //! Trace entering a GMAC function
     /**
         \param tid Thread ID entering the function
         \param name Name of the function
+        \param t Timestamp
     */
-	virtual void enterFunction(THREAD_T tid, const char *name) = 0;
+	virtual void enterFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace exiting from a GMAC function
     /**
         \param tid Thread existing the function
         \param name Name of the function being exited
+        \param t Timestamp
     */
-	virtual void exitFunction(THREAD_T tid, const char *name) = 0;
+	virtual void exitFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
 
 #ifdef USE_TRACE_LOCKS
     //! Trace requesting a GMAC lock 
     /**
         \param tid Thread ID aquiring the lock 
         \param name Name of the lock 
+        \param t Timestamp
     */
-	virtual void requestLock(THREAD_T tid, const char *name) = 0;
+	virtual void requestLock(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace acquiring a GMAC exclusive lock 
     /**
         \param tid Thread ID aquiring the lock 
         \param name Name of the lock being acquired
+        \param t Timestamp
     */
-	virtual void acquireLockExclusive(THREAD_T tid, const char *name) = 0;
+	virtual void acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace acquiring a GMAC shared lock 
     /**
         \param tid Thread existing the lock 
         \param name Name of the lock being acquired
+        \param t Timestamp
     */
-	virtual void acquireLockShared(THREAD_T tid, const char *name) = 0;
+	virtual void acquireLockShared(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace releasing a GMAC lock
     /**
         \param tid Thread existing the lock 
         \param name Name of the lock being released
+        \param t Timestamp
     */
-	virtual void exitLock(THREAD_T tid, const char *name) = 0;
+	virtual void exitLock(uint64_t t, THREAD_T tid, const char *name) = 0;
 #endif
 
     //! Trace a change in the thread state
     /**
         \param tid Thread ID of the thread chaning its state
         \param state New thread's state
+        \param t Timestamp
     */
-	virtual void setThreadState(THREAD_T tid, const State state) = 0;
+	virtual void setThreadState(uint64_t t, THREAD_T tid, const State state) = 0;
 
     //! Trace a data communication between threads
     /**
@@ -137,8 +146,9 @@ public:
         \param dst ID of the thread getting the data
         \param delta Time taken to transfer the data
         \param size Size (in bytes) of the data being transferred
+        \param t Timestamp
     */
-    virtual void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
+    virtual void dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size) = 0;
 
     //! Get the current system time
     /**
