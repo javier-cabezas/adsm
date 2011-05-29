@@ -82,7 +82,7 @@ GMAC_API cl_int clInitHelpers(size_t *platforms)
         helper.num_devices = 0;
         helper.devices = NULL;
         helper.contexts = NULL;
-        helper.contexts = command_queues;
+        helper.command_queues = NULL;
         error_code = clHelperInitPlatform(tmp_platforms[i], helper);
         if (error_code != CL_SUCCESS) goto cleanup;
         helpers.push_back(helper);
