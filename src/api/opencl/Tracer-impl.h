@@ -77,6 +77,69 @@ void DataCommunication::trace(cl_event start, cl_event end, size_t size) const
 }
 
 
+#if defined(USE_TRACE)
+inline
+KernelExecution::KernelExecution() :
+    stamp_(0), thread_(0)
+{ }
+#else
+inline
+KernelExecution::KernelExecution()
+{
+}
+#endif
+
+inline
+void KernelExecution::init(THREAD_T thread)
+{
+#if defined(USE_TRACE)
+    if(trace::tracer == NULL) return;
+    thread_ = thread;
+    stamp_ = trace::tracer->timeMark();
+#endif
+}
+
+inline
+void KernelExecution::trace(cl_kernel kernel, cl_event event) const
+{
+#if defined(USE_TRACE)
+    TracePoint *data = new TracePoint();
+    data->stamp = stamp_;
+    data->thread = thread_;
+    clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, TracePoint::NameSize, data->name, NULL);
+    clSetEventCallback(event, CL_COMPLETE, KernelExecution::Callback, data);
+#endif
+}
+
+
+#if defined(USE_TRACE)
+inline
+void KernelExecution::Callback(cl_event event, cl_int status, void *data)
+{
+    if(trace::tracer == NULL) return;
+    TracePoint *point = (TracePoint *)data;
+    uint64_t delay = 0, delta = 0;
+    uint64_t queued = 0, started = 0, ended = 0;
+
+    cl_int ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(queued), &queued, NULL);
+    if(ret != CL_SUCCESS) return;
+    ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(started), &started, NULL);
+    if(ret != CL_SUCCESS) return;
+    delay = (started - queued) / 1000;
+    ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(ended), &ended, NULL);
+    if(ret != CL_SUCCESS) return;
+    delta = (ended - started) / 1000;
+    clReleaseEvent(event);
+    
+    trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
+    trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
+
+    trace::tracer->enterFunction(point->stamp + delay, point->thread, point->name);
+    trace::tracer->exitFunction(point->stamp + delay + delta, point->thread, point->name);
+
+    delete point;
+}
+#endif
 
 }}
 

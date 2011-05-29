@@ -40,6 +40,8 @@ WITH THE SOFTWARE.  */
 #include <list>
 
 #include "config/common.h"
+
+#include "api/opencl/Tracer.h"
 #include "core/hpe/Kernel.h"
 #include "util/NonCopyable.h"
 
@@ -207,6 +209,9 @@ protected:
     cl_command_queue stream_;
     /** OpenCL event defining when the kernel execution completes */
     cl_event lastEvent_;
+
+    /** Tracer */
+    KernelExecution trace_;
 
     /**
      * Default constructor

@@ -149,6 +149,7 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
     cl_int ret = CL_SUCCESS;
     trace::SetThreadState(trace::Wait);
     dst(clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret));
+    if(ret != CL_SUCCESS) return error(ret);
     trace::SetThreadState(trace::Running);
 
     allocations_.insert(src, dst, size);

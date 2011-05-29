@@ -62,14 +62,63 @@ public:
      */
     void init(THREAD_T src, THREAD_T dst);
 
+    /** Get the curren thread ID
+     * \return Thread ID
+     */
     THREAD_T getThreadId() const;
+
+    /** 
+     * Get the thread ID associated to a mode 
+     * \param mode Mode to get the ID from
+     * \return Thread ID
+     */
     THREAD_T getModeId(const Mode &mode) const;
     
-    /** Trace a data communication
+    /**
+     * Trace a data communication
      * \param start OpenCL event starting the communication
      * \param end OpenCL event ending the communication
      */
     void trace(cl_event start, cl_event end, size_t size) const;
+};
+
+class KernelExecution {
+protected:
+#if defined(USE_TRACE)
+    uint64_t stamp_;
+    THREAD_T thread_;
+
+    struct TracePoint {
+        uint64_t stamp;
+        THREAD_T thread;
+        static const size_t NameSize = 512;
+        char name[NameSize];
+    };
+    static void Callback(cl_event event, cl_int status, void *data);
+#endif
+public:
+    /** Default constructor */
+    KernelExecution();
+
+    /**
+     * Initialize a kernel execution that will be traced later on
+     * \param thread GPU where the kernel is executed
+     */
+    void init(THREAD_T thread);
+
+    /** 
+     * Get the thread ID associated to a mode 
+     * \param mode Mode to get the ID from
+     * \return Thread ID
+     */
+    THREAD_T getModeId(const Mode &mode) const;
+
+    /**
+     * Trace a data communication
+     * \param event OpenCL event starting the communication
+     */
+    void trace(cl_kernel kernel, cl_event event) const;
+
 };
 
 }}

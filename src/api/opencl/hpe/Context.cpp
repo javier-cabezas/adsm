@@ -60,7 +60,7 @@ gmacError_t Context::syncCLstream(cl_command_queue stream)
     TRACE(LOCAL, "Sync stream %p on accelerator %p", stream, &acc);
     trace::SetThreadState(trace::Wait);
     ret = acc.syncCLstream(stream);
-    trace::SetThreadState(trace::Running);
+    trace::SetThreadState(trace::Idle);
     if (ret == CL_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
     else { TRACE(LOCAL,"Sync: error: %d", ret); }
 
