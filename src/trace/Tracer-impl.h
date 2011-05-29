@@ -40,8 +40,8 @@ inline void StartThread(THREAD_T tid, const char *name)
 {
 #if defined(USE_TRACE)
 	if(tracer != NULL) {		
-		tracer->startThread(tid, name);
-		tracer->setThreadState(tid, Init);
+		tracer->startThread(tracer->timeMark(), tid, name);
+		tracer->setThreadState(tracer->timeMark(), tid, Init);
 	}
 #endif
 }
@@ -56,7 +56,7 @@ inline void StartThread(const char *name)
 inline void EndThread(THREAD_T tid)
 {
 #if defined(USE_TRACE)	
-	if(tracer != NULL) tracer->endThread(tid);
+	if(tracer != NULL) tracer->endThread(tracer->timeMark(), tid);
 #endif
 }
 
@@ -70,7 +70,7 @@ inline void EndThread()
 inline void EnterFunction(THREAD_T tid, const char *name)
 {
 #if defined(USE_TRACE)
-	if(tracer != NULL) tracer->enterFunction(tid, name);
+	if(tracer != NULL) tracer->enterFunction(tracer->timeMark(), tid, name);
 #endif
 }
 
@@ -84,7 +84,7 @@ inline void EnterFunction(const char *name)
 inline void ExitFunction(THREAD_T tid, const char *name)
 {
 #if defined(USE_TRACE)
-	if(tracer != NULL) tracer->exitFunction(tid, name);
+	if(tracer != NULL) tracer->exitFunction(tracer->timeMark(), tid, name);
 #endif
 }
 
@@ -98,35 +98,35 @@ inline void ExitFunction(const char *name)
 inline void RequestLock(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->requestLock(GetThreadId(), name);
+	if(tracer != NULL) tracer->requestLock(tracer->timeMark(), GetThreadId(), name);
 #endif
 }
 
 inline void AcquireLockExclusive(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->acquireLockExclusive(GetThreadId(), name);
+	if(tracer != NULL) tracer->acquireLockExclusive(tracer->timeMark(), GetThreadId(), name);
 #endif
 }
 
 inline void AcquireLockShared(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->acquireLockShared(GetThreadId(), name);
+	if(tracer != NULL) tracer->acquireLockShared(tracer->timeMark(), GetThreadId(), name);
 #endif
 }
 
 inline void ExitLock(const char *name)
 {
 #if defined(USE_TRACE_LOCKS)
-	if(tracer != NULL) tracer->exitLock(GetThreadId(), name);
+	if(tracer != NULL) tracer->exitLock(tracer->timeMark(), GetThreadId(), name);
 #endif
 }
 
 inline void SetThreadState(THREAD_T tid, const State &state)
 {
 #if defined(USE_TRACE)
-	if(tracer != NULL) tracer->setThreadState(tid, state);
+	if(tracer != NULL) tracer->setThreadState(tracer->timeMark(), tid, state);
 #endif
 }
 
@@ -140,7 +140,7 @@ inline void SetThreadState(const State &state)
 inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
 #if defined(USE_TRACE)
-    if(tracer != NULL) tracer->dataCommunication(src, dst, delta, size);
+    if(tracer != NULL) tracer->dataCommunication(tracer->timeMark(), src, dst, delta, size);
 #endif
 }
 

@@ -74,22 +74,22 @@ public:
     Paraver();
     ~Paraver();
 
-    void startThread(THREAD_T tid, const char *name);
-    void endThread(THREAD_T tid);
+    void startThread(uint64_t t, THREAD_T tid, const char *name);
+    void endThread(uint64_t t, THREAD_T tid);
 
-    void enterFunction(THREAD_T tid, const char *name);
-    void exitFunction(THREAD_T tid, const char *name);
+    void enterFunction(uint64_t t, THREAD_T tid, const char *name);
+    void exitFunction(uint64_t t, THREAD_T tid, const char *name);
 
 #ifdef USE_TRACE_LOCKS
-    void requestLock(THREAD_T tid, const char *name);
-    void acquireLockExclusive(THREAD_T tid, const char *name);
-    void acquireLockShared(THREAD_T tid, const char *name);
-    void exitLock(THREAD_T tid, const char *name);
+    void requestLock(uint64_t t, THREAD_T tid, const char *name);
+    void acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name);
+    void acquireLockShared(uint64_t t, THREAD_T tid, const char *name);
+    void exitLock(uint64_t t, THREAD_T tid, const char *name);
 #endif
 
-    void setThreadState(THREAD_T tid, const State state);
+    void setThreadState(uint64_t t, THREAD_T tid, const State state);
     
-    void dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
+    void dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
 };
 
 } }

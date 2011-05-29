@@ -51,16 +51,16 @@ Paraver::~Paraver()
     pcf.close();
 }
 
-void Paraver::startThread(THREAD_T tid, const char *name)
+void Paraver::startThread(uint64_t t, THREAD_T tid, const char *name)
 {
     trace_.addThread(1, tid);
 }
 
-void Paraver::endThread(THREAD_T tid)
+void Paraver::endThread(uint64_t t, THREAD_T tid)
 {
 }
 
-void Paraver::enterFunction(THREAD_T tid, const char *name)
+void Paraver::enterFunction(uint64_t t, THREAD_T tid, const char *name)
 {
     int32_t id = 0;
     mutex_.lock();
@@ -72,19 +72,18 @@ void Paraver::enterFunction(THREAD_T tid, const char *name)
     }
     else id = i->second;
     mutex_.unlock();
-    trace_.pushEvent(timeMark(), 1, tid, *FunctionEvent_, id);
+    trace_.pushEvent(t, 1, tid, *FunctionEvent_, id);
 }
 
-void Paraver::exitFunction(THREAD_T tid, const char *name)
+void Paraver::exitFunction(uint64_t t, THREAD_T tid, const char *name)
 {
-    trace_.pushEvent(timeMark(), 1, tid, *FunctionEvent_, 0);
+    trace_.pushEvent(t, 1, tid, *FunctionEvent_, 0);
 }
 
 #ifdef USE_TRACE_LOCKS
-void Paraver::requestLock(THREAD_T tid, const char *name)
+void Paraver::requestLock(uint64_t t, THREAD_T tid, const char *name)
 {
     int32_t id = 0;
-    int64_t mark = timeMark();
     mutex_.lock();
     LockMap::const_iterator i = locksRequest_.find(std::string(name));
     if(i == locksRequest_.end()) {
@@ -94,14 +93,13 @@ void Paraver::requestLock(THREAD_T tid, const char *name)
     }
     else id = i->second;
     mutex_.unlock();
-    trace_.pushEvent(mark, 1, tid, *LockEventRequest_, id);
+    trace_.pushEvent(t, 1, tid, *LockEventRequest_, id);
 }
 
-void Paraver::acquireLockExclusive(THREAD_T tid, const char *name)
+void Paraver::acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name)
 {
     int32_t id = 0;
-    uint64_t mark = timeMark();
-    trace_.pushEvent(mark, 1, tid, *LockEventRequest_, 0);
+    trace_.pushEvent(t, 1, tid, *LockEventRequest_, 0);
     mutex_.lock();
     LockMap::const_iterator i = locksExclusive_.find(std::string(name));
     if(i == locksExclusive_.end()) {
@@ -111,14 +109,13 @@ void Paraver::acquireLockExclusive(THREAD_T tid, const char *name)
     }
     else id = i->second;
     mutex_.unlock();
-    trace_.pushEvent(mark, 1, tid, *LockEventAcquireExclusive_, id);
+    trace_.pushEvent(t, 1, tid, *LockEventAcquireExclusive_, id);
 }
 
-void Paraver::acquireLockShared(THREAD_T tid, const char *name)
+void Paraver::acquireLockShared(uint64_t t, THREAD_T tid, const char *name)
 {
     int32_t id = 0;
-    uint64_t mark = timeMark();
-    trace_.pushEvent(mark, 1, tid, *LockEventRequest_, 0);
+    trace_.pushEvent(t, 1, tid, *LockEventRequest_, 0);
     mutex_.lock();
     LockMap::const_iterator i = locksShared_.find(std::string(name));
     if(i == locksShared_.end()) {
@@ -128,32 +125,30 @@ void Paraver::acquireLockShared(THREAD_T tid, const char *name)
     }
     else id = i->second;
     mutex_.unlock();
-    trace_.pushEvent(mark, 1, tid, *LockEventAcquireShared_, id);
+    trace_.pushEvent(t, 1, tid, *LockEventAcquireShared_, id);
 }
 
-void Paraver::exitLock(THREAD_T tid, const char *name)
+void Paraver::exitLock(uint64_t t, THREAD_T tid, const char *name)
 {
-    uint64_t mark = timeMark();
     mutex_.lock();
     LockMap::const_iterator i = locksExclusive_.find(std::string(name));
     if(i == locksExclusive_.end()) {
-        trace_.pushEvent(mark, 1, tid, *LockEventAcquireExclusive_, 0);
+        trace_.pushEvent(t, 1, tid, *LockEventAcquireExclusive_, 0);
     } else if(locksShared_.find(std::string(name)) != locksShared_.end()) {
-        trace_.pushEvent(mark, 1, tid, *LockEventAcquireShared_, 0);
+        trace_.pushEvent(t, 1, tid, *LockEventAcquireShared_, 0);
     }
     mutex_.unlock();
 }
 #endif
 
-void Paraver::setThreadState(THREAD_T tid, const State state)
+void Paraver::setThreadState(uint64_t t, THREAD_T tid, const State state)
 {
-    trace_.pushState(timeMark(), 1, tid, *states_[state]);
+    trace_.pushState(t, 1, tid, *states_[state]);
 }
 
-void Paraver::dataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
+void Paraver::dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
-    uint64_t current = timeMark();
-    trace_.pushCommunication(current - delta, 1, src, current, 1, dst, size);
+    trace_.pushCommunication(t - delta, 1, src, t, 1, dst, size);
 }
 
 }}
