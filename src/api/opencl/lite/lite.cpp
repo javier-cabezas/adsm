@@ -65,7 +65,6 @@ GMAC_API cl_int clInitHelpers(size_t *platforms)
 {
     cl_int error_code;
     cl_uint num_platforms = 0;
-    cl_uint i, num_devices = 0, num_contexts = 0, num_queues = 0;
 
     error_code = clGetPlatformIDs(0, NULL, &num_platforms);
     if(error_code != CL_SUCCESS) return error_code;
@@ -79,6 +78,11 @@ GMAC_API cl_int clInitHelpers(size_t *platforms)
 
     for (size_t i = 0; i < num_platforms; i++) {
         cl_helper helper;
+        helper.platform = 0;
+        helper.num_devices = 0;
+        helper.devices = NULL;
+        helper.contexts = NULL;
+        helper.contexts = command_queues;
         error_code = clHelperInitPlatform(tmp_platforms[i], helper);
         if (error_code != CL_SUCCESS) goto cleanup;
         helpers.push_back(helper);
