@@ -121,11 +121,11 @@ main(int argc, char** argv)
     globalSize[0] = WC;
     globalSize[1] = HC;
 
-    cl_mem tmp = clBuffer(context, C);
+    cl_mem tmp = clGetBuffer(context, C);
     assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == CL_SUCCESS);
-    tmp = clBuffer(context, A);
+    tmp = clGetBuffer(context, A);
     assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == CL_SUCCESS);
-    tmp = clBuffer(context, B);
+    tmp = clGetBuffer(context, B);
     assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == CL_SUCCESS);
     int param = int(WA);
     assert(clSetKernelArg(kernel, 3, sizeof(int), &param) == CL_SUCCESS);

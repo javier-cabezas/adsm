@@ -43,7 +43,7 @@ typedef struct {
     cl_device_id *devices;
     cl_context *contexts;
     cl_command_queue *command_queues;
-} cl_lite;
+} cl_helper;
 
 
 #endif

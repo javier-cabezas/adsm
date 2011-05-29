@@ -381,7 +381,7 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
 }
 
 
-GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count)
+cl_int APICALL clMalloc(cl_context context, void **addr, size_t count)
 {
     cl_int ret = CL_SUCCESS;
     *addr = NULL;
@@ -401,7 +401,7 @@ GMAC_API cl_int clMalloc(cl_context context, void **addr, size_t count)
 	return ret;
 }
 
-GMAC_API cl_int clFree(cl_context context, void *addr)
+cl_int APICALL clFree(cl_context context, void *addr)
 {
     cl_int ret = CL_SUCCESS;
 	enterGmac();
@@ -419,7 +419,7 @@ GMAC_API cl_int clFree(cl_context context, void *addr)
 
 }
 
-GMAC_API cl_mem clBuffer(cl_context context, const void *ptr)
+cl_mem APICALL clGetBuffer(cl_context context, const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();

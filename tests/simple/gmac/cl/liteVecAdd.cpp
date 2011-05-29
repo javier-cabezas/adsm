@@ -89,11 +89,11 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) global_size++;
     global_size *= local_size;
 
-    cl_mem c_device = clBuffer(context, c);
+    cl_mem c_device = clGetBuffer(context, c);
     assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &c_device) == CL_SUCCESS);
-    cl_mem a_device = clBuffer(context, a);
+    cl_mem a_device = clGetBuffer(context, a);
     assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &a_device) == CL_SUCCESS);
-    cl_mem b_device = clBuffer(context, b);
+    cl_mem b_device = clGetBuffer(context, b);
     assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &b_device) == CL_SUCCESS);
     assert(clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == CL_SUCCESS);
 
