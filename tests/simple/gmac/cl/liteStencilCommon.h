@@ -233,7 +233,7 @@ do_stencil(void * ptr)
 
 	getTime(&s);
 
-    cl_mem tmpMem = clBuffer(context, v);
+    cl_mem tmpMem = clGetBuffer(context, v);
     assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
     float dt2 = 0.08f;
     assert(clSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == CL_SUCCESS);
@@ -250,9 +250,9 @@ do_stencil(void * ptr)
         float * tmp;
         
         // Call the kernel
-        tmpMem = clBuffer(context, descr->u2);
+        tmpMem = clGetBuffer(context, descr->u2);
         assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
-        tmpMem = clBuffer(context, descr->u3);                            
+        tmpMem = clGetBuffer(context, descr->u3);                            
         assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
         
 #if 0

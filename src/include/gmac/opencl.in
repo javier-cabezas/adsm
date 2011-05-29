@@ -116,6 +116,7 @@ public:
      */
     @OPENCL_API_PREFIX@::kernel &operator=(const kernel &handler);
 
+#if 0
     /**
      * Sets an argument to be used by the following call to callNDRange()
      *
@@ -126,6 +127,7 @@ public:
      * \return Error code
      */
     error setArg(unsigned index, size_t size, const void *addr);
+#endif
 
     /**
      * Sets an argument to be used by the following call to callNDRange()
@@ -212,11 +214,13 @@ kernel &kernel::operator=(const kernel &handler)
     return *this;
 }
 
+#if 0
 inline
 error kernel::setArg(unsigned index, size_t size, const void *addr)
 {
     return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, size, addr);
 }
+#endif
 
 template <typename T>
 inline
@@ -457,12 +461,14 @@ void deviceCopy(THREAD_T tid)
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
+#if 0
 template<typename T>
 static inline
 cl_mem ptr(const T *addr)
 {
     return ::@OPENCL_API_PREFIX@Ptr((const void *)addr);
 }
+#endif
 
 #ifdef __cplusplus
 }

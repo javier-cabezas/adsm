@@ -17,7 +17,7 @@ static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 	return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
-GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
+gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
 {
     enterGmac();
     ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
@@ -29,7 +29,7 @@ GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
 gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
 
-GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
+gmacError_t APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize)
 {
@@ -52,7 +52,7 @@ GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_
 
 
 #if 0
-GMAC_API gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel)
+gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel)
 {
     enterGmac();
     gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->impl_);
@@ -62,7 +62,7 @@ GMAC_API gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@
 #endif
 
 
-GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags)
+gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
@@ -71,7 +71,7 @@ GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, 
     return ret;
 }
 
-GMAC_API gmacError_t APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
+gmacError_t APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;

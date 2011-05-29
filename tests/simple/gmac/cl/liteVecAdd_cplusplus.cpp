@@ -37,32 +37,34 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-    VECTOR_CLASS<cl::Platform> platforms;
-    VECTOR_CLASS<cl::Device> devices;
+    error_code = cl::Helper::init();
+    assert(error_code == CL_SUCCESS);
 
-    error_code = cl::Platform::get(&platforms);
+    VECTOR_CLASS<cl::Helper> &platforms = cl::Helper::getPlatforms();
+    assert(platforms.size() > 0);
+
+    VECTOR_CLASS<cl::Device> &devices = platforms[0].getDevices();
+    assert(devices.size() > 0);
+
+    VECTOR_CLASS<cl::Context> &contexts = platforms[0].getContexts();
+    assert(contexts.size() > 0);
+
+    VECTOR_CLASS<cl::CommandQueue> &queues= platforms[0].getCommandQueues();
+    assert(queues.size() > 0);
+
+    VECTOR_CLASS<cl::Program> programs = platforms[0].buildProgram(kernel_source, &error_code);
     assert(error_code == CL_SUCCESS);
-    error_code = platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices);
-    assert(error_code == CL_SUCCESS);
-    cl::Context context(devices, NULL, NULL, NULL, &error_code);
-    assert(error_code == CL_SUCCESS);
-    cl::CommandQueue command_queue(context, devices[0], 0, &error_code);
-    assert(error_code == CL_SUCCESS);
-    cl::Program::Sources sources;
-    sources.push_back(std::pair<const char *, ::size_t>(kernel_source, strlen(kernel_source)));
-    cl::Program program(context, sources, &error_code);
-    assert(error_code == CL_SUCCESS);
-    error_code = program.build(devices);
-    assert(error_code == CL_SUCCESS);
-    cl::Kernel kernel(program, "vecAdd", &error_code);
+    assert(programs.size() > 0);
+
+    cl::Kernel kernel(programs[0], "vecAdd", &error_code);
     assert(error_code == CL_SUCCESS);
 
     getTime(&s);
     // Alloc & init input data
-    assert(cl::malloc(context, (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
-    assert(cl::malloc(context, (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(cl::malloc(contexts[0], (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(cl::malloc(contexts[0], (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
     // Alloc output data
-    assert(cl::malloc(context, (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(cl::malloc(contexts[0], (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -86,18 +88,18 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) global_size++;
     global_size *= local_size;
 
-    assert(kernel.setArg(0, cl::getBuffer(context, c)) == CL_SUCCESS);
-    assert(kernel.setArg(1, cl::getBuffer(context, a)) == CL_SUCCESS);
-    assert(kernel.setArg(2, cl::getBuffer(context, b)) == CL_SUCCESS);
+    assert(kernel.setArg(0, cl::getBuffer(contexts[0], c)) == CL_SUCCESS);
+    assert(kernel.setArg(1, cl::getBuffer(contexts[0], a)) == CL_SUCCESS);
+    assert(kernel.setArg(2, cl::getBuffer(contexts[0], b)) == CL_SUCCESS);
     assert(kernel.setArg(3, vecSize) == CL_SUCCESS);
 
     cl::NDRange offset(0);
     cl::NDRange local(local_size);
     cl::NDRange global(global_size);
 
-    assert(command_queue.enqueueNDRangeKernel(kernel, offset, global, local) == CL_SUCCESS);
+    assert(queues[0].enqueueNDRangeKernel(kernel, offset, global, local) == CL_SUCCESS);
 
-    assert(command_queue.finish() == CL_SUCCESS);
+    assert(queues[0].finish() == CL_SUCCESS);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -119,8 +121,8 @@ int main(int argc, char *argv[])
         abort();
     }
 
-    cl::free(context, a);
-    cl::free(context, b);
-    cl::free(context, c);
+    cl::free(contexts[0], a);
+    cl::free(contexts[0], b);
+    cl::free(contexts[0], c);
     return 0;
 }
