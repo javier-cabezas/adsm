@@ -64,7 +64,7 @@ cleanup_contexts:
 GMAC_API cl_int clInitHelpers(size_t *platforms)
 {
     cl_int error_code;
-    cl_uint num_platforms;
+    cl_uint num_platforms = 0;
     cl_uint i, num_devices = 0, num_contexts = 0, num_queues = 0;
 
     error_code = clGetPlatformIDs(0, NULL, &num_platforms);
