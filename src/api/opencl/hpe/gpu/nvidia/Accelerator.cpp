@@ -29,6 +29,8 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
             acc.offset(), count, host, 0, NULL, &start);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     buffer.started(start, count);
+    ret = clFlush(stream);
+    CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
 
     trace::ExitCurrentFunction();
     return error(ret);
@@ -49,10 +51,8 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
             acc.offset(), count, host, 0, NULL, &start);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     buffer.started(start, count);
-#ifdef _MSC_VER
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
-#endif
 
     trace::ExitCurrentFunction();
     return error(ret);
