@@ -108,11 +108,11 @@ GMAC_API cl_int clReleaseHelpers()
     cl_int error_code = CL_SUCCESS;
     for (size_t i = 0; i < helpers.size(); i++) {
         cl_helper &helper = helpers[i];
-        cl_uint i;
-        for(i = 0; i < helper.num_devices; i++) {
-            error_code = clReleaseCommandQueue(helper.command_queues[i]);
+        cl_uint j;
+        for(j = 0; j < helper.num_devices; j++) {
+            error_code = clReleaseCommandQueue(helper.command_queues[j]);
             if(error_code != CL_SUCCESS) return error_code;
-            error_code = clReleaseContext(helper.contexts[i]);
+            error_code = clReleaseContext(helper.contexts[j]);
             if(error_code != CL_SUCCESS) return error_code;
         }
 
