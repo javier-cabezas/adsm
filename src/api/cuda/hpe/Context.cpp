@@ -74,8 +74,9 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, (void *) acc);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
+#ifndef EXPERIMENTAL
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
+    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize, host));
     if(buffer_->async() == false) {
         mode_.destroyIOBuffer(*buffer_);
         buffer_ = NULL;
@@ -100,6 +101,25 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         if(ret != gmacSuccess) break;
         offset += len;
     }
+#else
+    if (buffer_ != NULL) {
+        buffer_->waitFromCUDA();
+        mode_.destroyIOBuffer(*buffer_);
+    }
+    buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(size, host));
+    gmacError_t ret = gmacSuccess;
+    size_t offset = 0;
+    while(offset < size) {
+        if(ret != gmacSuccess) break;
+        size_t len = buffer_->size();
+        if((size - offset) < buffer_->size()) len = size - offset;
+        ASSERTION(len <= util::params::ParamBlockSize);
+        ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, offset, len, mode_, streamToAccelerator_);
+        ASSERTION(ret == gmacSuccess);
+        if(ret != gmacSuccess) break;
+        offset += len;
+    }
+#endif
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -108,6 +128,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, (void *) acc, host);
     trace::EnterCurrentFunction();
+#ifndef EXPERIMENTAL
     if(size == 0) return gmacSuccess;
     if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
     if(buffer_->async() == false) {
@@ -133,6 +154,27 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
         trace::ExitCurrentFunction();
         offset += len;
     }
+#else
+    if (buffer_ != NULL) {
+        buffer_->waitFromCUDA();
+        mode_.destroyIOBuffer(*buffer_);
+    }
+    buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(size, host));
+    gmacError_t ret = gmacSuccess;
+    size_t offset = 0;
+    while(offset < size) {
+        size_t len = buffer_->size();
+        if((size - offset) < buffer_->size()) len = size - offset;
+        ret = accelerator().copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, streamToHost_);
+        ASSERTION(ret == gmacSuccess);
+        if(ret != gmacSuccess) break;
+        ret = buffer_->waitFromCUDA();
+        if(ret != gmacSuccess) break;
+        offset += len;
+    }
+    mode_.destroyIOBuffer(*buffer_);
+    buffer_ = NULL;
+#endif
     trace::ExitCurrentFunction();
     return ret;
 }
