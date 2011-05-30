@@ -375,6 +375,37 @@ void @OPENCL_API_PREFIX@DeviceCopy(THREAD_T tid)
     return gmacCopy(tid);
 }
 
+GMAC_API cl_mem APICALL
+@OPENCL_API_PREFIX@CreateFromGLBuffer(cl_mem_flags flags, cl_GLuint bufobj, cl_int *errcode_ret);
+
+GMAC_API cl_mem APICALL
+@OPENCL_API_PREFIX@CreateFromGLTexture2D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint miplevel, cl_GLuint texture, cl_int *errcode_ret);
+
+GMAC_API cl_mem APICALL
+@OPENCL_API_PREFIX@CreateFromGLTexture3D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint miplevel, cl_GLuint texture, cl_int *errcode_ret);
+
+GMAC_API cl_mem APICALL
+@OPENCL_API_PREFIX@CreateFromGLRenderbuffer(cl_mem_flags flags, cl_GLuint renderbuffer, cl_int *errcode_ret);
+
+GMAC_API cl_int APICALL
+@OPENCL_API_PREFIX@EnqueueAcquireGLObjects(cl_uint num_objects, const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
+    
+GMAC_API cl_int APICALL
+@OPENCL_API_PREFIX@AcquireGLObjects(cl_uint num_objects, const cl_mem *mem_objects);
+
+GMAC_API cl_int APICALL
+@OPENCL_API_PREFIX@EnqueueReleaseGLObjects(cl_uint num_objects,  const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
+    
+GMAC_API cl_int APICALL
+@OPENCL_API_PREFIX@ReleaseGLObjects(cl_uint num_objects,  const cl_mem *mem_objects);
+
+#ifdef USE_KHR_EXTENSIONS
+GMAC_API cl_event APICALL
+@OPENCL_API_PREFIX@CreateEventFromGLsyncKHR(cl_GLsync sync, cl_int *errcode_ret);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
