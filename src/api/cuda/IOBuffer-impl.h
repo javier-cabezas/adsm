@@ -31,10 +31,6 @@ IOBuffer::toHost(Mode &mode, CUstream s)
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
     stream_ = s;
     mode_   = &mode;
-
-#ifdef EXPERIMENTAL
-    map();
-#endif
 }
 
 inline void
@@ -63,10 +59,6 @@ IOBuffer::toAccelerator(Mode &mode, CUstream s)
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
     stream_ = s;
     mode_   = &mode;
-
-#ifdef EXPERIMENTAL
-    map();
-#endif
 }
 
 inline void

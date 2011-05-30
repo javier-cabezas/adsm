@@ -395,7 +395,7 @@ Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const h
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(obj.blockSize());
+        passive = &mode.createIOBuffer(bufSize);
     } else {
         passive = NULL;
     }
@@ -462,7 +462,7 @@ Manager::memcpyToObject(core::Mode &mode,
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(dstObj.blockSize());
+        passive = &mode.createIOBuffer(bufSize);
     } else {
         passive = NULL;
     }
@@ -559,7 +559,7 @@ Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(obj.blockSize());
+        passive = &mode.createIOBuffer(bufSize);
     } else {
         passive = NULL;
     }
