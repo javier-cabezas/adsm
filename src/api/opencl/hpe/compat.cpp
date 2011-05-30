@@ -3,7 +3,6 @@
 
 #include "api/opencl/hpe/Mode.h"
 
-#if 0
 static inline __impl::opencl::hpe::Mode &getCurrentCLMode()
 {
     return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
@@ -135,6 +134,5 @@ oclCreateEventFromGLsyncKHR(cl_GLsync sync, cl_int *errcode_ret)
 }
 #endif
 
-#endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

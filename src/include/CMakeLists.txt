@@ -5,18 +5,18 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/opencl.h.in ${CMAKE_CURRENT_BINA
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/opencl.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/opencl)
 
 set(gmac_include_SRC
-    gmac/api.h
+    gmac/api.h.in
     gmac/cuda.h
     gmac/cuda_types.h
     gmac/cl
     gmac/cl.h
     gmac/cl_types.h
-    gmac/opencl
-    gmac/opencl.h
-    gmac/opencl_types.h
+    gmac/opencl.in
+    gmac/opencl.h.in
+    gmac/opencl_types.h.in
     gmac/types.h
     gmac/visibility.h
-    gmac/vm.h
+    gmac/vm.h.in
 )
 
 add_gmac_sources(gmac-include ${gmac_include_SRC})
