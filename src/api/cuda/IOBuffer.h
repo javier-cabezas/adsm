@@ -61,18 +61,9 @@ protected:
     CUevent end_;
     CUstream stream_;
     Mode *mode_;
-#ifdef EXPERIMENTAL
-    size_t registerSize_;
-    hostptr_t registerBase_;
-#endif
 
     typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
     EventMap map_;
-
-#ifdef EXPERIMENTAL
-    void map();
-    void unmap();
-#endif
 
 public:
     IOBuffer(void *addr, size_t size, bool async) :
@@ -80,10 +71,6 @@ public:
         __impl::util::ReusableObject<IOBuffer>(),
         mode_(NULL)
     {
-#ifdef EXPERIMENTAL
-        registerBase_ = hostptr_t(long_t(addr) & (~long_t(0x111)));
-        registerSize_ = size + (hostptr_t(addr) - registerBase_);
-#endif
     }
 
     ~IOBuffer()

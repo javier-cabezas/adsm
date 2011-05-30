@@ -70,18 +70,6 @@ core::IOBuffer &Mode::createIOBuffer(size_t size, hostptr_t addr)
 {
     ASSERTION(addr != hostptr_t(NULL));
     IOBuffer *ret;
-#ifdef EXPERIMENTAL
-    //gmacError_t err = getAccelerator().allocCUDABuffer(addr, size);
-    gmacError_t err = gmacSuccess;
-    if(err != gmacSuccess) {
-        FATAL("Wrong path");
-        addr = hostptr_t(::malloc(size));
-        ret = new IOBuffer(addr, size, false);
-    } else {
-        ret = new IOBuffer(addr, size, true);
-    }
-    return *ret;
-#else
     if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
         addr = hostptr_t(::malloc(size));
         ret = new IOBuffer(addr, size, false);
@@ -89,19 +77,16 @@ core::IOBuffer &Mode::createIOBuffer(size_t size, hostptr_t addr)
         ret = new IOBuffer(addr, size, true);
     }
     return *ret;
-#endif
 }
 
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
-#ifndef EXPERIMENTAL
     ASSERTION(ioMemory_ != NULL);
     if (buffer.async()) {
         ioMemory_->put(buffer.addr(), buffer.size());
     } else {
         ::free(buffer.addr());
     }
-#endif
     delete &buffer;
 }
 
