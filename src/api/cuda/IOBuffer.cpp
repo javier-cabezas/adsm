@@ -1,7 +1,23 @@
 #include "IOBuffer.h"
 #include "Mode.h"
 
+#include "hpe/Mode.h"
+
 namespace __impl { namespace cuda {
+
+#ifdef EXPERIMENTAL
+void
+IOBuffer::map()
+{
+    dynamic_cast<hpe::Mode *>(mode_)->getAccelerator().registerMem(registerBase_, registerSize_);
+}
+
+void
+IOBuffer::unmap()
+{
+    dynamic_cast<hpe::Mode *>(mode_)->getAccelerator().unregisterMem(registerBase_);
+}
+#endif
 
 gmacError_t
 IOBuffer::wait(bool fromCUDA)
@@ -23,6 +39,9 @@ IOBuffer::wait(bool fromCUDA)
         else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, size_);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
+#ifdef EXPERIMENTAL
+        unmap();
+#endif
         mode_  = NULL;
     } else {
         ASSERTION(mode_ == NULL);

@@ -133,6 +133,30 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
 }
 
 inline
+gmacError_t Accelerator::registerMem(hostptr_t ptr, size_t size)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Executing KernelLaunch");
+    CUresult ret = cuMemHostRegister(ptr, size, CU_MEMHOSTREGISTER_PORTABLE);
+    CFATAL(ret == CUDA_SUCCESS);
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+inline
+gmacError_t Accelerator::unregisterMem(hostptr_t ptr)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Executing KernelLaunch");
+    pushContext();
+    CUresult ret = cuMemHostUnregister(ptr);
+    CFATAL(ret == CUDA_SUCCESS);
+    popContext();
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+inline
 CUstream Accelerator::createCUstream()
 {
     trace::EnterCurrentFunction();

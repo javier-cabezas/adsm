@@ -171,7 +171,7 @@ public:
         \param size Size (in bytes) of the IO buffer
         \return Pointer to the created I/O buffer or NULL if not enough memory
     */
-    core::IOBuffer &createIOBuffer(size_t size);
+    core::IOBuffer &createIOBuffer(size_t size, hostptr_t addr = NULL);
 
     //! Destroy (release) an I/O buffer
     /*!

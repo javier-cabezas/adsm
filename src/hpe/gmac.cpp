@@ -190,7 +190,7 @@ GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *ptr)
     return ret.get();
 }
 
-GMAC_API gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
+gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     __impl::core::hpe::Mode &mode = launch.getMode();
@@ -232,7 +232,7 @@ GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
     return ret;
 }
 
-GMAC_API gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
+gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     if(ParamAutoSync == false) {

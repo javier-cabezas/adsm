@@ -39,6 +39,9 @@ WITH THE SOFTWARE.  */
 #include "core/IOBuffer.h"
 #include "config/common.h"
 
+#include "util/Logger.h"
+#include "util/ReusableObject.h"
+
 //include "core/dbc/IOBuffer.h"
 //using  __impl::core::IOBuffer;
 //using gmac::core::IOBuffer;
@@ -47,7 +50,9 @@ namespace __impl { namespace cuda {
 
 class Mode;
 
-class GMAC_LOCAL IOBuffer : public gmac::core::IOBuffer {
+class GMAC_LOCAL IOBuffer :
+    public gmac::core::IOBuffer,
+    public __impl::util::ReusableObject<IOBuffer> {
 private:
     gmacError_t wait(bool fromCUDA);
 
@@ -56,14 +61,29 @@ protected:
     CUevent end_;
     CUstream stream_;
     Mode *mode_;
+#ifdef EXPERIMENTAL
+    size_t registerSize_;
+    hostptr_t registerBase_;
+#endif
 
     typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
     EventMap map_;
 
+#ifdef EXPERIMENTAL
+    void map();
+    void unmap();
+#endif
+
 public:
     IOBuffer(void *addr, size_t size, bool async) :
-        gmac::core::IOBuffer(addr, size, async), mode_(NULL)
+        gmac::core::IOBuffer(addr, size, async),
+        __impl::util::ReusableObject<IOBuffer>(),
+        mode_(NULL)
     {
+#ifdef EXPERIMENTAL
+        registerBase_ = hostptr_t(long_t(addr) & (~long_t(0x111)));
+        registerSize_ = size + (hostptr_t(addr) - registerBase_);
+#endif
     }
 
     ~IOBuffer()

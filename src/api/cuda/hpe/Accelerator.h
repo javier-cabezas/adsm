@@ -141,6 +141,9 @@ public:
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t size);
 
+    gmacError_t registerMem(hostptr_t ptr, size_t size);
+    gmacError_t unregisterMem(hostptr_t ptr);
+
     /* Synchronous interface */
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
