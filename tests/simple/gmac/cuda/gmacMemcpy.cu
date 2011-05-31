@@ -18,66 +18,77 @@ bool memcpyFnDefault = false;
 const char *memcpyFnStr = "GMAC_MEMCPY_GMAC";
 
 const size_t minCount = 1024;
-const size_t maxCount = 2 * 1024 * 1024;
+const size_t maxCount = 16 * 1024 * 1024;
 
 __global__ void null()
 {
 	return;
 }
 
-void init(long *ptr, int s, long v)
+inline
+void init(uint8_t *ptr, int s, uint8_t v)
 {
+#if 0
 	for(int i = 0; i < s; i++) {
 		ptr[i] = v;
 	}
+#endif
+    ::memset(ptr, v, s);
 }
 
 int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, const void *, size_t n))
 {
     int error = 0;
-    for (size_t count = minCount; count <= maxCount; count *= 2) {
-        fprintf(stderr, "ALLOC: %zd\n", count * sizeof(long));
-        long *baseSrc = (long *)malloc(count * sizeof(long));
-        long *baseDst = (long *)malloc(count * sizeof(long));
-        init(baseSrc, int(count), -1);
 
-        long *gmacSrc;
-        long *gmacDst;
+    uint8_t *baseSrc = NULL;
+    uint8_t *gmacSrc = NULL;
+    uint8_t *gmacDst = NULL;
+
+    baseSrc = (uint8_t *)malloc(maxCount);
+    init(baseSrc, int(maxCount), 0xca);
+    for (size_t count = minCount; count <= maxCount; count *= 2) {
+        fprintf(stderr, "ALLOC: "FMT_SIZE"\n", count);
 
         if (type == GMAC_TO_GMAC) {
-            assert(gmacMalloc((void **)&gmacSrc, count * sizeof(long)) == gmacSuccess);
-            assert(gmacMalloc((void **)&gmacDst, count * sizeof(long)) == gmacSuccess);
+            assert(gmacMalloc((void **)&gmacSrc, count) == gmacSuccess);
+            assert(gmacMalloc((void **)&gmacDst, count) == gmacSuccess);
         } else if (type == HOST_TO_GMAC) {
-            gmacSrc = (long *)malloc(count * sizeof(long));
-            assert(gmacMalloc((void **)&gmacDst, count * sizeof(long)) == gmacSuccess);
+            gmacSrc = (uint8_t *)malloc(count);
+            assert(gmacMalloc((void **)&gmacDst, count) == gmacSuccess);
         } else if (type == GMAC_TO_HOST) {
-            assert(gmacMalloc((void **)&gmacSrc, count * sizeof(long)) == gmacSuccess);
-            gmacDst = (long *)malloc(count * sizeof(long));
+            assert(gmacMalloc((void **)&gmacSrc, count) == gmacSuccess);
+            gmacDst = (uint8_t *)malloc(count);
         }
 
-        for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
+        for (size_t stride = 0, i = 1; stride < count/3; stride = i, i =  i * 2 - (i == 1? 0: 1)) {
             for (size_t copyCount = 1; copyCount < count/3; copyCount *= 2) {
-                init(baseDst, int(count), 0);
-
-                init(gmacSrc, int(count), -1);
-                init(gmacDst, int(count), 0);
+                init(gmacSrc + stride, int(copyCount), 0xca);
+                if (stride == 0) {
+                    init(gmacDst + stride, int(copyCount) + 1, 0);
+                } else {
+                    init(gmacDst + stride - 1, int(copyCount) + 2, 0);
+                }
                 assert(stride + copyCount <= count);
 
                 if (callKernel) {
                     null<<<1, 1>>>();
                     assert(gmacThreadSynchronize() == gmacSuccess);
                 }
-                memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
-                memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount * sizeof(long));
+                memcpy_fn(gmacDst + stride, gmacSrc + stride, copyCount);
 
-                int ret = memcmp(gmacDst, baseDst, copyCount * sizeof(long));
+                int ret = memcmp(gmacDst + stride, baseSrc + stride, copyCount);
+                if (stride == 0) {
+                    ret = ret && (gmacDst[stride + copyCount] == 0);
+                } else {
+                    ret = ret && (gmacDst[stride - 1] == 0 && gmacDst[stride + copyCount] == 0);
+                }
 
                 if (ret != 0) {
 #if 0
                     fprintf(stderr, "Error: gmacToGmacTest size: %zd, stride: %zd, copy: %zd\n",
-                            count     * sizeof(long),
-                            stride    * sizeof(long),
-                            copyCount * sizeof(long));
+                            count    ,
+                            stride   ,
+                            copyCount);
 #endif
                     error = 1;
                     goto exit_test;
@@ -86,9 +97,9 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
                 for (unsigned k = 0; k < count; k++) {
                     int ret = baseDst[k] != gmacDst[k];
                     if (ret != 0) {
-                        fprintf(stderr, "Error: gmacToGmacTest size: %zd, stride: %zd, copy: %zd. Pos %u\n", count     * sizeof(long),
-                                stride    * sizeof(long),
-                                copyCount * sizeof(long), k);
+                        fprintf(stderr, "Error: gmacToGmacTest size: %zd, stride: %zd, copy: %zd. Pos %u\n", count    ,
+                                stride   ,
+                                copyCount, k);
                         error = 1;
                     }
                 }
@@ -106,12 +117,25 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
             assert(gmacFree(gmacSrc) == gmacSuccess);
             free(gmacDst);
         }
-
-        free(baseSrc);
-        free(baseDst);
     }
+    free(baseSrc);
+
+    return error;
 
 exit_test:
+    if (type == GMAC_TO_GMAC) {
+        assert(gmacFree(gmacSrc) == gmacSuccess);
+        assert(gmacFree(gmacDst) == gmacSuccess);
+    } else if (type == HOST_TO_GMAC) {
+        free(gmacSrc);
+        assert(gmacFree(gmacDst) == gmacSuccess);
+    } else if (type == GMAC_TO_HOST) {
+        assert(gmacFree(gmacSrc) == gmacSuccess);
+        free(gmacDst);
+    }
+
+    free(baseSrc);
+
     return error;
 }
 
