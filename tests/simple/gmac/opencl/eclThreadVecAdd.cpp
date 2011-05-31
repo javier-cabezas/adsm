@@ -34,20 +34,20 @@ void *addVector(void *ptr)
 	float *a, *b;
 	float **c = (float **)ptr;
 	gmactime_t s, t;
-	ocl_error ret = oclSuccess;
+	ecl_error ret = eclSuccess;
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = oclMalloc((void **)&a, vecSize * sizeof(float));
-	assert(ret == oclSuccess);
+	ret = eclMalloc((void **)&a, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
 	valueInit(a, 1.0, vecSize);
-	ret = oclMalloc((void **)&b, vecSize * sizeof(float));
-	assert(ret == oclSuccess);
+	ret = eclMalloc((void **)&b, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
 	valueInit(b, 1.0, vecSize);
 
 	// Alloc output data
-	ret = oclMalloc((void **)c, vecSize * sizeof(float));
-	assert(ret == oclSuccess);
+	ret = eclMalloc((void **)c, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -58,18 +58,18 @@ void *addVector(void *ptr)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    ocl_kernel kernel;
+    ecl_kernel kernel;
 
-    assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
+    assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
 
-    cl_mem tmp = cl_mem(oclPtr(*c));
-    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));                        
-    assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(b));                        
-    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == oclSuccess);
-    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    cl_mem tmp = cl_mem(eclPtr(*c));
+    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(a));                        
+    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(b));                        
+    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
@@ -82,11 +82,11 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stdout, "Error: %.02f\n", error);
 
-    oclReleaseKernel(kernel);
+    eclReleaseKernel(kernel);
 
-	oclFree(a);
-	oclFree(b);
-	oclFree(*c);
+	eclFree(a);
+	eclFree(b);
+	eclFree(*c);
 
     assert(error == 0.f);
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 
-    assert(oclCompileSource(kernel) == oclSuccess);
+    assert(eclCompileSource(kernel) == eclSuccess);
 
 	vecSize = vecSize / nIter;
 	if(vecSize % nIter) vecSize++;

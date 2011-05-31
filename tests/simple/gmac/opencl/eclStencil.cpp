@@ -6,12 +6,12 @@
 #include "debug.h"
 #include "barrier.h"
 
-#include "oclStencilCommon.h"
+#include "eclStencilCommon.h"
 
 
 int main(int argc, char *argv[])
 {
-    assert(oclCompileSource(stencilCode) == oclSuccess);
+    assert(eclCompileSource(stencilCode) == eclSuccess);
 
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 

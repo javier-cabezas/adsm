@@ -8,7 +8,7 @@
 #include "debug.h"
 #include "utils.h"
 
-#include "oclMatrixMulKernel.cl"
+#include "eclMatrixMulKernel.cl"
 
 #define BLOCK_SIZE 8
 
@@ -60,7 +60,7 @@ computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned 
 int
 main(int argc, char** argv)
 {
-    assert(oclCompileSource(code) == oclSuccess);
+    assert(eclCompileSource(code) == eclSuccess);
 	setParam<unsigned>(&WA, WAStr, WADefault);
 	setParam<unsigned>(&HA, HAStr, HADefault);
 	setParam<unsigned>(&WB, WBStr, WBDefault);
@@ -79,9 +79,9 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    assert(oclMalloc((void**) &A, sizeA) == oclSuccess);
-    assert(oclMalloc((void**) &B, sizeB) == oclSuccess);
-    assert(oclMalloc((void**) &C, sizeC) == oclSuccess);
+    assert(eclMalloc((void**) &A, sizeA) == eclSuccess);
+    assert(eclMalloc((void**) &B, sizeB) == eclSuccess);
+    assert(eclMalloc((void**) &C, sizeC) == eclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -98,21 +98,21 @@ main(int argc, char** argv)
     globalSize[0] = WC;
     globalSize[1] = HC;
 
-    ocl_kernel kernel;
+    ecl_kernel kernel;
 
-    assert(oclGetKernel("matrixMulSimple", &kernel) == oclSuccess);
-    cl_mem tmp = cl_mem(oclPtr(C));
-    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(A));                              
-    assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(B));                              
-    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == oclSuccess);
+    assert(eclGetKernel("matrixMulSimple", &kernel) == eclSuccess);
+    cl_mem tmp = cl_mem(eclPtr(C));
+    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(A));                              
+    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(B));                              
+    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
     int param = int(WA);
-    assert(oclSetKernelArg(kernel, 3, sizeof(int), &param) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 3, sizeof(int), &param) == eclSuccess);
     param     = int(WB);                                 
-    assert(oclSetKernelArg(kernel, 4, sizeof(int), &param) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 4, sizeof(int), &param) == eclSuccess);
 
-    assert(oclCallNDRange(kernel, 2, NULL, globalSize, localSize) == oclSuccess);
+    assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -130,12 +130,12 @@ main(int argc, char** argv)
 
     free(reference);
 
-    oclReleaseKernel(kernel);
+    eclReleaseKernel(kernel);
 
     getTime(&s);
-	oclFree(A);
-	oclFree(B);
-	oclFree(C);
+	eclFree(A);
+	eclFree(B);
+	eclFree(C);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

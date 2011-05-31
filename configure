@@ -8,7 +8,6 @@ BUILD_TYPE="Release"
 
 FRONTEND="-DUSE_CUDA=ON -DUSE_OPENCL=OFF"
 
-for i in $*
 do
     case $i in
     --enable-debug)
@@ -80,6 +79,10 @@ do
     --enable-internal)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_INTERNAL_API=ON"
         ;;
+    --with-block-size=*)
+        size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DGMAC_BLOCK_SIZE=${size}"
+        ;;
     --with-vm-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DVM_BITMAP=${size}"
@@ -93,5 +96,8 @@ done
 
 CMAKE_ARGS="${CMAKE_ARGS} ${FRONTEND} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
+echo "$0 $*" > ${SCRIPT_NAME}.log
 echo ${COMMAND} > ${SCRIPT_NAME}.log
+
+for i in $@
 ${COMMAND}

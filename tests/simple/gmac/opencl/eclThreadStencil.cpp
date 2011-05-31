@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "debug.h"
 
-#include "oclStencilCommon.h"
+#include "eclStencilCommon.h"
 
 const char * nIterStr = "GMAC_NITER";
 const unsigned nIterDefault        = 4;
@@ -17,7 +17,7 @@ static unsigned nIter = 0;
 
 int main(int argc, char *argv[])
 {
-    assert(oclCompileSource(stencilCode) == oclSuccess);
+    assert(eclCompileSource(stencilCode) == eclSuccess);
 
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);

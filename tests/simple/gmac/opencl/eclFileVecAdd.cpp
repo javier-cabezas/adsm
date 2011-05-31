@@ -61,18 +61,18 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    ocl_kernel kernel;
+    ecl_kernel kernel;
 
-    assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
+    assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
 
-    cl_mem tmp = cl_mem(oclPtr(c));
-    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));                              
-    assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(b));                              
-    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == oclSuccess);
-    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    cl_mem tmp = cl_mem(eclPtr(c));
+    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(a));                              
+    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(b));                              
+    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
 
     getTime(&t);
     snprintf(buffer, 1024, "%s:Run: ", name);
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     gmactime_t s, t;
     float error_shared, error_distributed, error_centralized;
 
-    assert(oclCompileSource(kernel) == oclSuccess);
+    assert(eclCompileSource(kernel) == eclSuccess);
 
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
@@ -105,15 +105,15 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
 
     // Alloc output data
-    assert(oclMalloc((void **)&c, vecSize * sizeof(float)) == oclSuccess);
+    assert(eclMalloc((void **)&c, vecSize * sizeof(float)) == eclSuccess);
 
     //////////////////////
     // Test shared objects
     //////////////////////
     getTime(&s);
     // Alloc & init input data
-    assert(oclMalloc((void **)&a, vecSize * sizeof(float)) == oclSuccess);
-    assert(oclMalloc((void **)&b, vecSize * sizeof(float)) == oclSuccess);
+    assert(eclMalloc((void **)&a, vecSize * sizeof(float)) == eclSuccess);
+    assert(eclMalloc((void **)&b, vecSize * sizeof(float)) == eclSuccess);
     getTime(&t);
     printTime(&s, &t, "Shared:Alloc: ", "\n");
 
@@ -129,8 +129,8 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Shared:Write: ", "\n");
 
     getTime(&s);
-    oclFree(a);
-    oclFree(b);
+    eclFree(a);
+    eclFree(b);
     getTime(&t);
     printTime(&s, &t, "Shared:Free: ", "\n");
 
@@ -139,8 +139,8 @@ int main(int argc, char *argv[])
     //////////////////////////
     getTime(&s);
     // Alloc & init input data
-    assert(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == oclSuccess);
-    assert(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == oclSuccess);
+    assert(eclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == eclSuccess);
+    assert(eclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == eclSuccess);
     getTime(&t);
     printTime(&s, &t, "Distributed:Alloc: ", "\n");
 
@@ -155,8 +155,8 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Distributed:Write: ", "\n");
 
     getTime(&s);
-    oclFree(a);
-    oclFree(b);
+    eclFree(a);
+    eclFree(b);
     getTime(&t);
     printTime(&s, &t, "Distributed:Free: ", "\n");
 
@@ -165,8 +165,8 @@ int main(int argc, char *argv[])
     ///////////////////////////
     getTime(&s);
     // Alloc & init input data
-    assert(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == oclSuccess);
-    assert(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == oclSuccess);
+    assert(eclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == eclSuccess);
+    assert(eclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == eclSuccess);
     getTime(&t);
     printTime(&s, &t, "Centralized:Alloc: ", "\n");
 
@@ -181,12 +181,12 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Centralized:Write: ", "\n");
 
     getTime(&s);
-    oclFree(a);
-    oclFree(b);
+    eclFree(a);
+    eclFree(b);
     getTime(&t);
     printTime(&s, &t, "Centralized:Write: ", "\n");
 
-    oclFree(c);
+    eclFree(c);
     free(orig);
     return error_shared != 0.f && error_distributed != 0.f && error_centralized != 0.f;
 }

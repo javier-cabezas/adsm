@@ -27,39 +27,39 @@ int main(int argc, char *argv[])
 {
 	long *ptr;
 
-    assert(oclCompileSource(kernel) == oclSuccess);
+    assert(eclCompileSource(kernel) == eclSuccess);
 
-	assert(oclMalloc((void **)&ptr, size * sizeof(long)) == oclSuccess);
+	assert(eclMalloc((void **)&ptr, size * sizeof(long)) == eclSuccess);
 
 	// Call the kernel
     size_t localSize = blockSize;
     size_t globalSize = size / blockSize;
     if(size % blockSize) globalSize++;
     globalSize *= localSize;
-    cl_mem tmp = cl_mem(oclPtr(ptr));
+    cl_mem tmp = cl_mem(eclPtr(ptr));
     long val = 1;
 
-    oclMemset(ptr, 0, size * sizeof(long));
+    eclMemset(ptr, 0, size * sizeof(long));
 
-    ocl_kernel kernel;
+    ecl_kernel kernel;
 
-    assert(oclGetKernel("reset", &kernel) == oclSuccess);
+    assert(eclGetKernel("reset", &kernel) == eclSuccess);
 
-    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 1, sizeof(size), &size) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 2, sizeof(val), &val) == oclSuccess);
-    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 1, sizeof(size), &size) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 2, sizeof(val), &val) == eclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
 	fprintf(stderr, "Test partial memset: ");
-	oclMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
+	eclMemset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	fprintf(stderr,"Test full memset: ");
     memset(ptr, 0, size * sizeof(long));
 
-    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
 
 	fprintf(stderr,"%d\n", check(ptr, size));
 
@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
 	memset(&ptr[size / 8], 0, 3 * size / 4 * sizeof(long));
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
-    oclReleaseKernel(kernel);
+    eclReleaseKernel(kernel);
 
-	oclFree(ptr);
+	eclFree(ptr);
 
     return 0;
 }

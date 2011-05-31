@@ -193,14 +193,14 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	if(oclMalloc((void **)&descr->u2, descr->size()) != oclSuccess)
+	if(eclMalloc((void **)&descr->u2, descr->size()) != eclSuccess)
 		CUFATAL();
-	oclMemset(descr->u2, 0, descr->size());
-	if(oclMalloc((void **)&descr->u3, descr->size()) != oclSuccess)
+	eclMemset(descr->u2, 0, descr->size());
+	if(eclMalloc((void **)&descr->u3, descr->size()) != eclSuccess)
 		CUFATAL();
-    oclMemset(descr->u3, 0, descr->size());
+    eclMemset(descr->u3, 0, descr->size());
 
-    if(oclMalloc((void **) &v, descr->realSize()) != oclSuccess)
+    if(eclMalloc((void **) &v, descr->realSize()) != eclSuccess)
 		CUFATAL();
 
     for (size_t k = 0; k < descr->slices; k++) {        
@@ -226,47 +226,47 @@ do_stencil(void * ptr)
 
 	getTime(&s);
 
-    ocl_kernel kernel;
+    ecl_kernel kernel;
     
-    assert(oclGetKernel("kernelStencil", &kernel) == oclSuccess);
-    cl_mem tmpMem = cl_mem(oclPtr(v));
-    tmpMem = cl_mem(oclPtr(v));
-    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == oclSuccess);
+    assert(eclGetKernel("kernelStencil", &kernel) == eclSuccess);
+    cl_mem tmpMem = cl_mem(eclPtr(v));
+    tmpMem = cl_mem(eclPtr(v));
+    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == eclSuccess);
     float dt2 = 0.08f;
-    assert(oclSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == eclSuccess);
     unsigned intTmp = descr->sliceElems();
-    assert(oclSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == eclSuccess);
     intTmp = descr->sliceRealElems();
-    assert(oclSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == oclSuccess);
+    assert(eclSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == eclSuccess);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
         float * tmp;
         
         // Call the kernel
-        tmpMem = cl_mem(oclPtr(descr->u2));
-        assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == oclSuccess);
-        tmpMem = cl_mem(oclPtr(descr->u3));
-        assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == oclSuccess);
+        tmpMem = cl_mem(eclPtr(descr->u2));
+        assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == eclSuccess);
+        tmpMem = cl_mem(eclPtr(descr->u3));
+        assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == eclSuccess);
         
-        ocl_error ret;
-        ret = oclCallNDRange(kernel, 2, NULL, globalSize, localSize);
-        assert(ret == oclSuccess);
+        ecl_error ret;
+        ret = eclCallNDRange(kernel, 2, NULL, globalSize, localSize);
+        assert(ret == eclSuccess);
 
         if(descr->gpus > 1) {
             barrier_wait(&barrier);
 
             // Send data
             if (descr->prev != NULL) {
-                oclMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
+                eclMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
                            descr->u3 + STENCIL * descr->sliceElems(),
                            descr->sliceElems() * STENCIL * sizeof(float));
             }
             if (descr->next != NULL) {
-                oclMemcpy(descr->next->u3,
+                eclMemcpy(descr->next->u3,
                            descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
                            descr->sliceElems() * STENCIL * sizeof(float));                
             }
@@ -286,12 +286,12 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
-    oclReleaseKernel(kernel);
+    eclReleaseKernel(kernel);
 
     getTime(&s);
-	oclFree(descr->u2);
-	oclFree(descr->u3);
-	oclFree(v);
+	eclFree(descr->u2);
+	eclFree(descr->u3);
+	eclFree(v);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
