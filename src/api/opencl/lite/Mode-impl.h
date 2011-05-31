@@ -76,10 +76,10 @@ accptr_t Mode::hostMapAddr(const hostptr_t)
 
 
 inline
-core::IOBuffer &Mode::createIOBuffer(size_t size, hostptr_t addr)
+core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     core::IOBuffer *ret;
-    addr = hostptr_t(::malloc(size));
+    void *addr = ::malloc(size);
     ret = new IOBuffer(*this, hostptr_t(addr), size, NULL);
     return *ret;
 }
