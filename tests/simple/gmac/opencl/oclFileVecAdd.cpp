@@ -105,8 +105,7 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
 
     // Alloc output data
-    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
-        CUFATAL();
+    assert(oclMalloc((void **)&c, vecSize * sizeof(float)) == oclSuccess);
 
     //////////////////////
     // Test shared objects
@@ -122,6 +121,7 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     FILE * fC = fopen("vectorC_shared", "wb");
+    assert(fC != NULL);
     ret = fwrite(c, sizeof(float), vecSize, fC);
     assert(ret == vecSize);
     fclose(fC);
