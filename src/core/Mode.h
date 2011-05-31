@@ -290,7 +290,7 @@ public:
      * \return A pointer to the created IOBuffer or NULL if there is not enough
      *         memory
      */
-    virtual IOBuffer &createIOBuffer(size_t size, hostptr_t ptr = NULL) = 0;
+    virtual IOBuffer &createIOBuffer(size_t size) = 0;
 
     /**
      * Destroys an IOBuffer

@@ -66,10 +66,10 @@ gmacError_t Mode::acquireObjects()
 }
 
 
-core::IOBuffer &Mode::createIOBuffer(size_t size, hostptr_t addr)
+core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
-    ASSERTION(addr != hostptr_t(NULL));
     IOBuffer *ret;
+    hostptr_t addr = NULL;
     if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
         addr = hostptr_t(::malloc(size));
         ret = new IOBuffer(addr, size, false);

@@ -163,7 +163,7 @@ public:
     gmacError_t wait(core::hpe::KernelLaunch &launch);
     gmacError_t wait();
 
-    core::IOBuffer &createIOBuffer(size_t size, hostptr_t addr = NULL);
+    core::IOBuffer &createIOBuffer(size_t size);
     void destroyIOBuffer(core::IOBuffer &buffer);
     TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
     TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);

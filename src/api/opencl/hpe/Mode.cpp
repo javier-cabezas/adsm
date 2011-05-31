@@ -18,7 +18,7 @@ Mode::~Mode()
     cleanUpContexts();
 }
 
-core::IOBuffer &Mode::createIOBuffer(size_t size, hostptr_t /*addr*/)
+core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     IOBuffer *ret;
     hostptr_t addr(NULL);
