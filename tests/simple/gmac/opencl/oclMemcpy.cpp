@@ -21,7 +21,7 @@ bool memcpyFnDefault = false;
 const char *memcpyFnStr = "GMAC_MEMCPY_GMAC";
 
 const size_t minCount = 1024;
-const size_t maxCount = 2 * 1024 * 1024;
+const size_t maxCount = 16 * 1024 * 1024;
 
 const char *kernel = "\
 __kernel void null()\
@@ -30,7 +30,7 @@ __kernel void null()\
 }\
 ";
 
-void init(long *ptr, int s, long v)
+void init(uint8_t *ptr, int s, uint8_t v)
 {
 	for(int i = 0; i < s; i++) {
 		ptr[i] = v;
@@ -47,50 +47,54 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
     assert(oclGetKernel("null", &kernel) == oclSuccess);
 
-    long *baseSrc, *baseDst;
-    long *oclSrc, *oclDst;
+    uint8_t *baseSrc = NULL;
+    uint8_t *oclSrc = NULL;
+    uint8_t *oclDst = NULL;
 
-
+    baseSrc = (uint8_t *)malloc(maxCount);
+    init(baseSrc, int(maxCount), 0xca);
     for (size_t count = minCount; count <= maxCount; count *= 2) {
-        fprintf(stderr, "ALLOC: "FMT_SIZE"\n", count * sizeof(long));
-        baseSrc = (long *)malloc(count * sizeof(long));
-        baseDst = (long *)malloc(count * sizeof(long));
-
-        init(baseSrc, int(count), 1);
+        fprintf(stderr, "ALLOC: "FMT_SIZE"\n", count);
 
         if (type == GMAC_TO_GMAC) {
-            assert(oclMalloc((void **)&oclSrc, count * sizeof(long)) == oclSuccess);
-            assert(oclMalloc((void **)&oclDst, count * sizeof(long)) == oclSuccess);
+            assert(oclMalloc((void **)&oclSrc, count) == oclSuccess);
+            assert(oclMalloc((void **)&oclDst, count) == oclSuccess);
         } else if (type == HOST_TO_GMAC) {
-            oclSrc = (long *)malloc(count * sizeof(long));
-            assert(oclMalloc((void **)&oclDst, count * sizeof(long)) == oclSuccess);
+            oclSrc = (uint8_t *)malloc(count);
+            assert(oclMalloc((void **)&oclDst, count) == oclSuccess);
         } else if (type == GMAC_TO_HOST) {
-            assert(oclMalloc((void **)&oclSrc, count * sizeof(long)) == oclSuccess);
-            oclDst = (long *)malloc(count * sizeof(long));
+            assert(oclMalloc((void **)&oclSrc, count) == oclSuccess);
+            oclDst = (uint8_t *)malloc(count);
         }
 
-        for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
-            for (size_t copyCount = 0, j = 1; copyCount < count/3; copyCount = j, j *= 2) {
-                init(baseDst, int(count), 0);
-
-                init(oclSrc, int(count), 1);
-                init(oclDst, int(count), 0);
+        for (size_t stride = 0, i = 1; stride < count/3; stride = i, i =  i * 2 - (i == 1? 0: 1)) {
+            for (size_t copyCount = 1; copyCount < count/3; copyCount *= 2) {
+                init(oclSrc + stride, int(copyCount), 0xca);
+                if (stride == 0) {
+                    init(oclDst + stride, int(copyCount) + 1, 0);
+                } else {
+                    init(oclDst + stride - 1, int(copyCount) + 2, 0);
+                }
                 assert(stride + copyCount <= count);
 
                 if (callKernel) {
                     assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
                 }
-                memcpy   (baseDst + stride, baseSrc + stride, copyCount * sizeof(long));
-                memcpy_fn(oclDst + stride, oclSrc + stride, copyCount * sizeof(long));
+                memcpy_fn(oclDst + stride, oclSrc + stride, copyCount);
 
-                int ret = memcmp(oclDst, baseDst, count * sizeof(long));
+                int ret = memcmp(oclDst + stride, baseSrc + stride, copyCount);
+                if (stride == 0) {
+                ret = ret && (oclDst[stride - 1] == 0 && oclDst[stride + copyCount] == 0);
+                } else {
+                    ret = ret && (oclDst[stride - 1] == 0 && oclDst[stride + copyCount] == 0);
+                }
 
                 if (ret != 0) {
 #if 0
                     fprintf(stderr, "Error: oclToGmacTest size: %zd, stride: %zd, copy: %zd\n",
-                            count     * sizeof(long),
-                            stride    * sizeof(long),
-                            copyCount * sizeof(long));
+                            count    ,
+                            stride   ,
+                            copyCount);
 #endif
                     error = 1;
                     goto exit_test;
@@ -99,9 +103,9 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
                 for (unsigned k = 0; k < count; k++) {
                     int ret = baseDst[k] != oclDst[k];
                     if (ret != 0) {
-                        fprintf(stderr, "Error: oclToGmacTest size: %zd, stride: %zd, copy: %zd. Pos %u\n", count     * sizeof(long),
-                                stride    * sizeof(long),
-                                copyCount * sizeof(long), k);
+                        fprintf(stderr, "Error: oclToGmacTest size: %zd, stride: %zd, copy: %zd. Pos %u\n", count    ,
+                                stride   ,
+                                copyCount, k);
                         error = 1;
                     }
                 }
@@ -119,17 +123,14 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
             assert(oclFree(oclSrc) == oclSuccess);
             free(oclDst);
         }
-
-        free(baseSrc);
-        free(baseDst);
     }
+    free(baseSrc);
 
     oclReleaseKernel(kernel);
 
     return error;
 
 exit_test:
-
     if (type == GMAC_TO_GMAC) {
         assert(oclFree(oclSrc) == oclSuccess);
         assert(oclFree(oclDst) == oclSuccess);
@@ -142,7 +143,6 @@ exit_test:
     }
 
     free(baseSrc);
-    free(baseDst);
 
     return error;
 }
