@@ -21,7 +21,7 @@ const unsigned WADefault = (32 * BLOCK_SIZE); // Matrix A width
 const unsigned HADefault = (32 * BLOCK_SIZE); // Matrix A height
 const unsigned WBDefault = (32 * BLOCK_SIZE); // Matrix B width
 const unsigned HBDefault = (32 * BLOCK_SIZE); // Matrix B height
-const int checkDefault = false; // Matrix B height
+const int checkDefault = true; // Matrix B height
 
 static unsigned WA = 0; // Matrix A width
 static unsigned HA = 0; // Matrix A height

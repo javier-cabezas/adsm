@@ -15,7 +15,7 @@ const size_t vecSizeDefault = 1024 * 1024;
 
 unsigned nIter = 0;
 unsigned vecSize = 0;
-const size_t blockSize = 32;
+const size_t blockSize = 256;
 
 
 static float *a, *b;
@@ -46,14 +46,14 @@ void *addVector(void *ptr)
 
 	ret = oclMalloc((void **)&p->ptr, vecSize * sizeof(float));
 	assert(ret == oclSuccess);
-	// Call the kernel
-	getTime(&s);
 
+	// Call the kernel
     size_t localSize = blockSize;
     size_t globalSize = vecSize / blockSize;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
+	getTime(&s);
     ocl_kernel kernel;
 
     assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
@@ -181,5 +181,5 @@ int main(int argc, char *argv[])
     error = do_test(GMAC_GLOBAL_MALLOC_CENTRALIZED, "Centralized");
     if (error != 0.f) abort();
     
-    return error != 0;
+    return 0;
 }

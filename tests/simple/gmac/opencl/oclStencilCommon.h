@@ -133,7 +133,7 @@ kernelStencil(__global const float * u2,\
 barrier_t barrier;
 
 struct JobDescriptor {
-    const static int DEFAULT_DIM = 32;
+    const static int DEFAULT_DIM = 256;
     int gpus;
     int gpuId;
 
