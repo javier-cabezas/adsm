@@ -37,11 +37,11 @@ output vector. This design allows us to re\hyp{}use the single\hyp{}threaded ver
 addition; each worker thread executes that code, with the exception that the file pointer is 
 advanced to the offset corresponding to the tile the thread is computing for each file.  
 Listing~\ref{lst:hpe:control} shows the code for the control thread, which uses 
-\texttt{ocl\-Get\-Number\-Of\-Accelerators()} to get the number of GPUs present in the system.
+\texttt{ecl\-Get\-Number\-Of\-Accelerators()} to get the number of GPUs present in the system.
 
 Often time, data exchange between domains is necessary. In such as case, common synchronization 
 primitives (\eg semaphores) become necessary to ensure that the data is not being modified by any 
-thread. Data exchange in GMAC\slash HPE is implemented through calls to \texttt{oclMemcpy()} which 
+thread. Data exchange in GMAC\slash HPE is implemented through calls to \texttt{eclMemcpy()} which 
 takes the common destination, source, and size parameters.
 
 % vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

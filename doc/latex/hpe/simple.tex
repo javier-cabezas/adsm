@@ -38,11 +38,11 @@ Listing~\ref{lst:hpe:load}.
     label={lst:hpe:load}]{hpe/load.c}
 
 \subsection{Allocating and Releasing Data Structures}
-Data structures used by kernels are allocated using the \texttt{oclMalloc(void **, size\_t)} API 
+Data structures used by kernels are allocated using the \texttt{eclMalloc(void **, size\_t)} API 
 call. The first parameter is a pointer to the variable which will hold the CPU pointer used to 
 access the allocated data structure. The second parameter is the size, in bytes, of the memory to be 
-allocated. Finally, \texttt{oclMalloc()} returns an error code specifying whether the allocation 
-succeeded (\texttt{oclSuccess}) or the condition that prevented the memory allocation.  
+allocated. Finally, \texttt{eclMalloc()} returns an error code specifying whether the allocation 
+succeeded (\texttt{eclSuccess}) or the condition that prevented the memory allocation.  
 Listing~\ref{lst:hpe:alloc} shows the source code required to allocate the input and output vectors.  
 
 \lstinputlisting[float,
@@ -53,8 +53,8 @@ Listing~\ref{lst:hpe:alloc} shows the source code required to allocate the input
 
 Note that the CPU pointer returned by GMAC can be passed as a parameter to any other function (\eg 
 \texttt{fread()} in Listing~\ref{lst:hpe:alloc}). This code also uses the GMAC API call 
-\texttt{oclFree(void *)}, which is used to release the memory allocated by calls to 
-\texttt{oclMalloc()}.
+\texttt{eclFree(void *)}, which is used to release the memory allocated by calls to 
+\texttt{eclMalloc()}.
 
 \subsection{Calling Kernels}
 GMAC\slash HPE uses a kernel call interface similar to OpenCL\@. The programmer is required to set 
@@ -67,17 +67,16 @@ shows the code required to invoke the vector addition kernel.
     caption={GMAC\slash HPE code to call the vector addition kernel.},
     label={lst:hpe:call}]{hpe/call.c}
 
-First, a handler to the kernel to be called is obtained using \texttt{\_\_oclKernelGet()}. This 
-handler is used to set the kernel dimensions (\texttt{\_\_oclKernelConfigure()}), pass the 
-parameters to the kernel (\texttt{\_\_oclKernelSetArg()}, and call the kernel 
-(\texttt{\_\_oclKernelLaunch()}).
+First, a handler to the kernel to be called is obtained using \texttt{\_\_eclKernelGet()}. This 
+handler is used to pass the parameters to the kernel (\texttt{\_\_eclKernelSetArg()}, and set the 
+kernel dimensions and call the kernel (\texttt{\_\_eclKernelLaunch()}).
 
 Note that data structures used by the kernel need to be first converted to valid OpenCL objects 
-using \texttt{oclPtr()}, which takes the CPU memory address returned by \texttt{oclMalloc()}.
+using \texttt{eclPtr()}, which takes the CPU memory address returned by \texttt{eclMalloc()}.
 
 \subsection{Final Details}
 After calling the vector addition kernel, the application writes the output vector to a file, and 
-releases the allocated memory using \texttt{oclFree()}, as shown in Listing~\ref{lst:hpe:release}.
+releases the allocated memory using \texttt{eclFree()}, as shown in Listing~\ref{lst:hpe:release}.
 
 \lstinputlisting[float,
     language=C,

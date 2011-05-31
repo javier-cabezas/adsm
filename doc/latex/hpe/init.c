@@ -2,7 +2,7 @@ int allocate_vector_block(vector_block_t *v)
 {
     if(sem_init(&v->ready, 0, 0) < 0) return -1;
     if(sem_init(&v->reuse, 0, 0) < 0) goto ready_cleanup;
-    if(oclMalloc((void *)&v->ptr, vector_block_size) != oclSuccess)
+    if(eclMalloc((void *)&v->ptr, vector_block_size) != eclSuccess)
         goto reuse_cleanup;
 
     return 0;
