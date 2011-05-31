@@ -22,6 +22,6 @@
                                         NULL, &global_size, NULL,
                                         0, NULL, NULL);
     if(error_code != CL_SUCCESS) return error(error_code);
-    error_code = clFinish(lite.command_queue[0]);
+    error_code = clFinish(helper.command_queue[0]);
     if(error_code != CL_SUCCESS) return error(error_code);
 

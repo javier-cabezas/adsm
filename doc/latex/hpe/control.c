@@ -10,7 +10,7 @@ struct thread_work {
     int ret;
     struct thread_work *threads;
 
-    num_gpus = oclGetNumberOfAccelerators();
+    num_gpus = eclGetNumberOfAccelerators();
     items_per_thread = vector_size / num_gpus;
     if(vector_size % num_gpus) items_per_thread++;
 

@@ -408,7 +408,7 @@ static inline
 }
 
 static inline
-@OPENCL_API_PREFIX@_error globalMalloc(void **devPtr, size_t count, memory_hint hint = OCL_GLOBAL_MALLOC_CENTRALIZED)
+@OPENCL_API_PREFIX@_error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
 {
     return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
 }

@@ -69,8 +69,8 @@ typedef gmacError_t @OPENCL_API_PREFIX@_error;
 typedef enum GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
 typedef enum GmacProtection @OPENCL_API_PREFIX@_protection;
 
-#define OCL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
-#define OCL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
+#define ECL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
+#define ECL_GLOBAL_MALLOC_DISTRIBUTED GMAC_GLOBAL_MALOOC_DISTRIBUTED
 
 /**
  * Gets a OpenCL kernel descriptor
@@ -263,7 +263,7 @@ static inline
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 static inline
-@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@GlobalMalloc(void **devPtr, size_t count, @OPENCL_API_PREFIX@_memory_hint hint __dv(OCL_GLOBAL_MALLOC_CENTRALIZED))
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@GlobalMalloc(void **devPtr, size_t count, @OPENCL_API_PREFIX@_memory_hint hint __dv(ECL_GLOBAL_MALLOC_CENTRALIZED))
 {
     return gmacGlobalMalloc(devPtr, count, hint);
 }

@@ -79,17 +79,17 @@ A final consideration is the case where a tasks execute kernels that take as inp
 structures produced by other tasks. The GMAC memory model only allows kernels to access data 
 structures allocated by the CPU thread performing the allocation. Hence, all these tasks should be 
 executed by the same CPU thread. To overcome this difficulty, the application might use the
-\texttt{ocl\-Device\-Copy()} and \texttt{ocl\-Device\-Receive()} GMAC calls. The former makes a copy 
+\texttt{ecl\-Device\-Copy()} and \texttt{ecl\-Device\-Receive()} GMAC calls. The former makes a copy 
 of the virtual GPU associated to the calling CPU thread and sends it to a destination CPU thread.  
 The latter discards the virtual GPU associated to the calling thread, and waits for another thread 
 to send a virtual GPU\@. The combination of these two GMAC calls provides a simple mechanism for 
 several CPU threads to shared the same virtual GPU.
 
-Two additional GMAC calls related to virtual GPU management are \texttt{ocl\-Device\-Send()} and 
-\texttt{ocl\-Device\-Send\-Receive()}. The former sends the virtual GPU associated to the calling 
+Two additional GMAC calls related to virtual GPU management are \texttt{ecl\-Device\-Send()} and 
+\texttt{ecl\-Device\-Send\-Receive()}. The former sends the virtual GPU associated to the calling 
 thread to a destination thread, and, thus, the caller cannot uses its virtual GPU any more. If a new 
 GMAC call is performed by the caller, a new virtual GPU will be created and associated to that CPU 
-thread. The latter, \texttt{ocl\-Device\-Send\-Receive()} allows the caller CPU thread to sends its 
+thread. The latter, \texttt{ecl\-Device\-Send\-Receive()} allows the caller CPU thread to sends its 
 virtual GPU to a destination CPU thread, and waits for another CPU thread to send or copy its 
 virtual GPU to the caller. 
 

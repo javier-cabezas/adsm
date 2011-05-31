@@ -1,65 +1,65 @@
 \section{GMAC\slash HPE C types for OpenCL}
 
-\subsection{\texttt{ocl\_error}}
-Most GMAC calls return an error code. \texttt{oclSuccess} is returned on success.
+\subsection{\texttt{ecl\_error}}
+Most GMAC calls return an error code. \texttt{eclSuccess} is returned on success.
 \vspace{11pt}\\
 \begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
   \textnormal{Value} & Description \\
   \hline
   \hline
-  oclSuccess                            & No error                             \\
-  oclErrorMemoryAllocation              & Error allocating memory              \\
-  oclErrorLaunchFailure                 & Error launching the kernel           \\
-  oclErrorNotReady                      &                                      \\
-  oclErrorNoAccelerator                 &                                      \\
-  oclErrorInvalidValue                  & Invalid value passed to the function \\
-  oclErrorInvalidAccelerator            & Invalid accelerator specified        \\
-  oclErrorInvalidAcceleratorFunction    & Invalid accelerator function         \\
-  oclErrorInvalidSize                   &                                      \\
-  oclErrorAlreadyBound                  &                                      \\
-  oclErrorApiFailureBase                &                                      \\
-  oclErrorFeatureNotSupported           & Feature not supported by the hardware\slash{}compilation
+  eclSuccess                            & No error                             \\
+  eclErrorMemoryAllocation              & Error allocating memory              \\
+  eclErrorLaunchFailure                 & Error launching the kernel           \\
+  eclErrorNotReady                      &                                      \\
+  eclErrorNoAccelerator                 &                                      \\
+  eclErrorInvalidValue                  & Invalid value passed to the function \\
+  eclErrorInvalidAccelerator            & Invalid accelerator specified        \\
+  eclErrorInvalidAcceleratorFunction    & Invalid accelerator function         \\
+  eclErrorInvalidSize                   &                                      \\
+  eclErrorAlreadyBound                  &                                      \\
+  eclErrorApiFailureBase                &                                      \\
+  eclErrorFeatureNotSupported           & Feature not supported by the hardware\slash{}compilation
                                           settings                             \\
-  oclErrorInsufficientAcceleratorMemory & Not enough accelerator memory available to perform the 
+  eclErrorInsufficientAcceleratorMemory & Not enough accelerator memory available to perform the 
                                           operation                            \\
-  oclErrorUnknown                       & Unknown error                        \\
+  eclErrorUnknown                       & Unknown error                        \\
   \hline
 \end{tabularx}
 
-\subsection{\texttt{ocl\_kernel\_id}}
+\subsection{\texttt{ecl\_kernel\_id}}
 
 Constant string with the name of a function to be executed on an accelerator.
 
-\subsection{\texttt{ocl\_memory\_hint}}
+\subsection{\texttt{ecl\_memory\_hint}}
 \begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
   \textnormal{Value} & Description \\
   \hline
   \hline
-  OCL\_GLOBAL\_MALLOC\_CENTRALIZED & Prefer centralized (host\hyp{}mapped) implementation for global 
+  ECL\_GLOBAL\_MALLOC\_CENTRALIZED & Prefer centralized (host\hyp{}mapped) implementation for global 
   malloc \\
-  OCL\_GLOBAL\_MALLOC\_DISTRIBUTED & Prefer distributed copies implementation for global malloc \\
+  ECL\_GLOBAL\_MALLOC\_DISTRIBUTED & Prefer distributed copies implementation for global malloc \\
   \hline
 \end{tabularx}
 
 
-\subsection{\texttt{ocl\_protection}}
+\subsection{\texttt{ecl\_protection}}
 \begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
   \hline
   \textnormal{Value} & Description \\
   \hline
   \hline
-  OCL\_PROT\_NONE  & No access rights for the mapping \\
-  OCL\_PROT\_READ  & Read\hyp{}only access rights for the mapping \\
-  OCL\_PROT\_WRITE & Write\hyp{}only access rights for the mapping \\
-  OCL\_PROT\_READWRITE & Read\slash{}Write access rights for the mapping \\
+  ECL\_PROT\_NONE  & No access rights for the mapping \\
+  ECL\_PROT\_READ  & Read\hyp{}only access rights for the mapping \\
+  ECL\_PROT\_WRITE & Write\hyp{}only access rights for the mapping \\
+  ECL\_PROT\_READWRITE & Read\slash{}Write access rights for the mapping \\
   \hline
 \end{tabularx}
 
 \section{GMAC\slash HPE C API}
 
-\subsection{\texttt{ocl\_error oclGetKernel(const char *name, ocl\_kernel *kernel)}}
+\subsection{\texttt{ecl\_error eclGetKernel(const char *name, ecl\_kernel *kernel)}}
 
 \textbf{Description}: Gets a kernel handler for the speficied OpenCL kernel. \\
 \textbf{Parameters}
@@ -67,12 +67,12 @@ Constant string with the name of a function to be executed on an accelerator.
   \item \texttt{name}: Pointer to a NULL\hyp{}terminated string that contains the name of the kernel
   \item \texttt{kernel}: Pointer to store the address to the kernel handler
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclSetKernelArg(ocl\_kernel kernel, unsigned index, size\_t size, 
+\subsection{\texttt{ecl\_error eclSetKernelArg(ecl\_kernel kernel, unsigned index, size\_t size, 
 const void *addr)}}
 
-\textbf{Description}: Adds an argument to be used by the following call to oclCallNDRange() on 
+\textbf{Description}: Adds an argument to be used by the following call to eclCallNDRange() on 
 the specified kernel \\
 \textbf{Parameters}
 \begin{itemize}
@@ -81,9 +81,9 @@ the specified kernel \\
   \item \texttt{size}: Size, in bytes, of the argument
   \item \texttt{addr}: Memory address where the param is stored
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclCallNDRange(ocl\_kernel kernel, size\_t workDim, size\_t 
+\subsection{\texttt{ecl\_error eclCallNDRange(ecl\_kernel kernel, size\_t workDim, size\_t 
 *globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
 
 \textbf{Description}: Launches a kernel execution with the specified device work configuration\\
@@ -98,19 +98,19 @@ the specified kernel \\
   \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
     of work items per work group.
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclReleaseRelease(ocl\_kernel kernel)}}
+\subsection{\texttt{ecl\_error eclReleaseRelease(ecl\_kernel kernel)}}
 
 \textbf{Description}: Releases the resources of the given kernel handler. \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{kernel}: Handler of the kernel to be released
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
 
-\subsection{\texttt{ocl\_error oclCompileSource(const char *code, const char *flags = NULL)}}
+\subsection{\texttt{ecl\_error eclCompileSource(const char *code, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL code to be used by the application. \\
 \textbf{Parameters}
@@ -118,9 +118,9 @@ the specified kernel \\
   \item \texttt{code} Pointer to the NULL\hyp{}terminated string that contains the code
   \item \texttt{flags} Compilation flags or NULL
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclCompileSourceFile(const char *path, const char *flags = NULL)}}
+\subsection{\texttt{ecl\_error eclCompileSourceFile(const char *path, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
 \textbf{Parameters}
@@ -128,9 +128,9 @@ the specified kernel \\
   \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the code 
  to be prepared
   \item \texttt{flags}: \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclCompileBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
+\subsection{\texttt{ecl\_error eclCompileBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL binary to be used by the application.  \\
 \textbf{Parameters}
@@ -140,9 +140,9 @@ the specified kernel \\
   \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or 
 NULL
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclCompileBinaryFile(const unsigned char *binary, const char 
+\subsection{\texttt{ecl\_error eclCompileBinaryFile(const unsigned char *binary, const char 
 *flags = NULL)}}
 
 \textbf{Description}: Prepares the OpenCL binary in the specified file to be used by the application.  \\
@@ -152,37 +152,37 @@ NULL
   code to be prepared
   \item \texttt{flags}: Pointer to a NULL\hyp{}terminated string with the compilation flags or NULL
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{unsigned oclGetNumberOfAccelerators()}}
+\subsection{\texttt{unsigned eclGetNumberOfAccelerators()}}
 
 \textbf{Description}: Get the number of available accelerators in the system
 \textbf{Returns}: Number of accelerators
 
-\subsection{\texttt{unsigned oclGetFreeMemory()}}
+\subsection{\texttt{unsigned eclGetFreeMemory()}}
 
 \textbf{Description}: Gets the amount of available accelerator memory in bytes
 \textbf{Returns}: Amount (in bytes) of the available accelerator memory
 
-\subsection{\texttt{ocl\_error oclMigrate(unsigned acc)}}
+\subsection{\texttt{ecl\_error eclMigrate(unsigned acc)}}
 
 \textbf{Description}: Attach the calling CPU thread to the given accelerator
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{acc}: Id of the accelerator to attach to
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{ocl\_error oclMalloc(void **devPtr, size\_t count)}}
+\subsection{\texttt{ecl\_error eclMalloc(void **devPtr, size\_t count)}}
 
 \textbf{Description}: Allocate shared memory
 \begin{itemize}
   \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{oclGlobalMalloc(void **devPtr, size\_t count, ocl\_memory\_hint hint dv(OCL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
+\subsection{\texttt{eclGlobalMalloc(void **devPtr, size\_t count, ecl\_memory\_hint hint dv(ECL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 
 \textbf{Description}: Allocate shared memory accessible from all accelerators
 \begin{itemize}
@@ -190,9 +190,9 @@ NULL
   \item \texttt{count}: Size (in bytes) of the memory to be allocated
   \item \texttt{hint}: Type of desired global memory
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{cl\_mem oclPtr(const void *cpuPtr)}}
+\subsection{\texttt{cl\_mem eclPtr(const void *cpuPtr)}}
 
 \textbf{Description}: Get the OpenCL memory object associated to a shared memory address
 \begin{itemize}
@@ -200,25 +200,25 @@ NULL
 \end{itemize}
 \textbf{Returns}: Associated OpenCL buffer
 
-\subsection{\texttt{oclFree(const void *cpuPtr)}}
+\subsection{\texttt{eclFree(const void *cpuPtr)}}
 
 \textbf{Description}: Release shared memory
 \begin{itemize}
   \item \texttt{cpuPtr}: Shared memory address to be released
 \end{itemize}
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{oclThreadSynchronize()}}
+\subsection{\texttt{eclThreadSynchronize()}}
 
 \textbf{Description}: Wait until all previous accelerator calls are completed
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{oclGetLastError()}}
+\subsection{\texttt{eclGetLastError()}}
 
 \textbf{Description}: Get the last error produced by GMAC
-\textbf{Returns}: oclSuccess on success, an error code otherwise
+\textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{void *oclMemset(void *cpuPtr, int c, size\_t count)}}
+\subsection{\texttt{void *eclMemset(void *cpuPtr, int c, size\_t count)}}
 
 \textbf{Description}: Initialize a shared memory region
 \begin{itemize}
@@ -228,7 +228,7 @@ NULL
 \end{itemize}
 \textbf{Returns}: Shared memory address that has been initialized
 
-\subsection{\texttt{void *oclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size\_t count)}}
+\subsection{\texttt{void *eclMemcpy(void *cpuDstPtr, const void *cpuSrcPtr, size\_t count)}}
 
 \textbf{Description}: Copy data between shared memory regions
 \begin{itemize}
@@ -238,25 +238,25 @@ NULL
 \end{itemize}
 \textbf{Returns}: Destination shared memory address
 
-\subsection{\texttt{void oclSend(THREAD\_T tid)}}
+\subsection{\texttt{void eclSend(THREAD\_T tid)}}
 
 \textbf{Description}: Send the execution mode associated to the current CPU thread to another CPU thread
 \begin{itemize}
   \item \texttt{tid}: Thread ID of the destionation CPU thread
 \end{itemize}
 
-\subsection{\texttt{void oclReceive()}}
+\subsection{\texttt{void eclReceive()}}
 
 \textbf{Description}: Receive an execution mode from another CPU thread */
 
-\subsection{\texttt{void oclSendReceive(THREAD\_T tid)}}
+\subsection{\texttt{void eclSendReceive(THREAD\_T tid)}}
 
 \textbf{Description}: Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
 \begin{itemize}
   \item \texttt{tid}: Thread ID of the destination CPU thread
 \end{itemize}
 
-\subsection{\texttt{void oclCopy(THREAD\_T tid)}}
+\subsection{\texttt{void eclCopy(THREAD\_T tid)}}
 
 \textbf{Description}: Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
 \begin{itemize}
