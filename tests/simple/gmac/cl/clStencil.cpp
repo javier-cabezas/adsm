@@ -6,7 +6,7 @@
 #include "debug.h"
 #include "barrier.h"
 
-#include "liteStencilCommon.h"
+#include "clStencilCommon.h"
 
 
 int main(int argc, char *argv[])

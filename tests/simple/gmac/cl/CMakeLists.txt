@@ -24,22 +24,25 @@ string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
-    liteVecAdd.cpp
-    liteVecAdd_cplusplus.cpp
-    liteStencil.cpp
-    liteStencilCommon.h
-    liteMatrixMul.cpp
-    liteMatrixMulKernel.cl
+    clVecAdd.cpp
+    clVecAdd_cplusplus.cpp
+    clStencil.cpp
+    clStencilCommon.h
+    clMatrixMul.cpp
+    clMatrixMulKernel.cl
 )
 
-add_executable(liteVecAdd ${common_SRC} liteVecAdd.cpp)
-target_link_libraries(liteVecAdd ${GMAC_CL})
+add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
+target_link_libraries(clVecAdd ${GMAC_CL})
 
-#add_executable(liteVecAdd_cplusplus ${common_SRC} liteVecAdd_cplusplus.cpp)
-#target_link_libraries(liteVecAdd_cplusplus ${GMAC_CL})
+#add_executable(clVecAdd_cplusplus ${common_SRC} clVecAdd_cplusplus.cpp)
+#target_link_libraries(clVecAdd_cplusplus ${GMAC_CL})
 
-add_executable(liteStencil ${common_SRC} liteStencil.cpp liteStencilCommon.h)
-target_link_libraries(liteStencil ${GMAC_CL})
+add_executable(clStencil ${common_SRC} clStencil.cpp clStencilCommon.h)
+target_link_libraries(clStencil ${GMAC_CL})
 
-add_executable(liteMatrixMul ${common_SRC} liteMatrixMul.cpp liteMatrixMulKernel.cl)
-target_link_libraries(liteMatrixMul ${GMAC_CL})
+add_executable(clMatrixMul ${common_SRC} clMatrixMul.cpp clMatrixMulKernel.cl)
+target_link_libraries(clMatrixMul ${GMAC_CL})
+
+file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
+
