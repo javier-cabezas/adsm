@@ -9,7 +9,7 @@
 #include "debug.h"
 #include "utils.h"
 
-#include "liteMatrixMulKernel.cl"
+#include "clMatrixMulKernel.cl"
 
 #define BLOCK_SIZE 8
 
