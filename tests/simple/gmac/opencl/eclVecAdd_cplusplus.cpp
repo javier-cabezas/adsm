@@ -1,18 +1,18 @@
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-#include <gmac/opencl.h>
+#include <gmac/opencl>
 
 #include "utils.h"
 #include "debug.h"
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 32 * 1024 * 1024;
 unsigned vecSize = 0;
 
-const size_t blockSize = 256;
+const size_t blockSize = 32;
 
 const char *msg = "Done!";
 
@@ -32,19 +32,19 @@ int main(int argc, char *argv[])
 	float *a, *b, *c;
 	gmactime_t s, t;
 
-    assert(oclCompileSource(kernel) == oclSuccess);
+    assert(ecl::compileSource(kernel) == eclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
     // Alloc & init input data
-    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
+    if(ecl::malloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
+    if(ecl::malloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
     // Alloc output data
-    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
+    if(ecl::malloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
@@ -52,10 +52,8 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    randInit(a, vecSize);
-    randInit(b, vecSize);
-    //init(a, int(vecSize), 1.f);
-    //init(b, int(vecSize), 1.f);
+    valueInit(a, 1.f, vecSize);
+    valueInit(b, 1.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -70,17 +68,18 @@ int main(int argc, char *argv[])
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
-    ocl_kernel kernel;
-
-    assert(oclGetKernel("vecAdd", &kernel) == oclSuccess);
-    cl_mem tmp = cl_mem(oclPtr(c));
-    assert(oclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));                        
-    assert(oclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(b));                        
-    assert(oclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == oclSuccess);
-    assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
+    ecl::error err;
+    ecl::kernel kernel("vecAdd", err);
+    assert(err == eclSuccess);
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+    assert(kernel.setArg(0, c) == eclSuccess);
+    assert(kernel.setArg(1, a) == eclSuccess);
+    assert(kernel.setArg(2, b) == eclSuccess);
+    assert(kernel.setArg(3, vecSize) == eclSuccess);
+    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize) == eclSuccess);
+#else
+    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize, c, a, b, vecSize) == eclSuccess);
+#endif
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -101,11 +100,9 @@ int main(int argc, char *argv[])
         abort();
     }
 
-    oclReleaseKernel(kernel);
-
-    oclFree(a);
-    oclFree(b);
-    oclFree(c);
+    ecl::free(a);
+    ecl::free(b);
+    ecl::free(c);
 
     //return error != 0;
     return 0;

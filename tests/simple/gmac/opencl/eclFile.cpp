@@ -83,52 +83,52 @@ void *doTest(void *)
 
     // Alloc & init input data
     getTime(&s);
-    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
+    if(eclMalloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
+    if(eclMalloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
-    if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
+    if(eclMalloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
         CUFATAL();
     getTime(&t);
     timeAlloc += getTimeStamp(t) - getTimeStamp(s);
 
     getTime(&s);
-    oclMemset(a, 0, vecSize * sizeof(float));
-    oclMemset(b, 0, vecSize * sizeof(float));
+    eclMemset(a, 0, vecSize * sizeof(float));
+    eclMemset(b, 0, vecSize * sizeof(float));
     getTime(&t);
     timeMemset += getTimeStamp(t) - getTimeStamp(s);
 
     barrier_wait(&ioBefore);
 
-    ocl_kernel kernelSet;
+    ecl_kernel kernelSet;
 
-    assert(oclGetKernel("vecSet", &kernelSet) == oclSuccess);
+    assert(eclGetKernel("vecSet", &kernelSet) == eclSuccess);
 
-    cl_mem tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelSet, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernelSet, 1, sizeof(vecSize), &vecSize) == oclSuccess);
+    cl_mem tmp = cl_mem(eclPtr(a));
+    assert(eclSetKernelArg(kernelSet, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernelSet, 1, sizeof(vecSize), &vecSize) == eclSuccess);
 
-    ocl_kernel kernelMove;
+    ecl_kernel kernelMove;
 
-    assert(oclGetKernel("vecMove", &kernelMove) == oclSuccess);
+    assert(eclGetKernel("vecMove", &kernelMove) == eclSuccess);
 
-    tmp = cl_mem(oclPtr(c));
-    assert(oclSetKernelArg(kernelMove, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelMove, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == oclSuccess);
+    tmp = cl_mem(eclPtr(c));
+    assert(eclSetKernelArg(kernelMove, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(a));
+    assert(eclSetKernelArg(kernelMove, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == eclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
         getTime(&s);
         float val = float(i);
-        assert(oclSetKernelArg(kernelSet, 2, sizeof(val), &val) == oclSuccess);
-        assert(oclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(eclSetKernelArg(kernelSet, 2, sizeof(val), &val) == eclSuccess);
+        assert(eclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == eclSuccess);
 
         getTime(&t);
         timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioAfter);
         getTime(&s);
-        assert(oclCallNDRange(kernelMove, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(eclCallNDRange(kernelMove, 1, NULL, &globalSize, &localSize) == eclSuccess);
         getTime(&t);
         timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioBefore);
@@ -136,20 +136,20 @@ void *doTest(void *)
 
     barrier_wait(&ioBefore);
 
-    ocl_kernel kernelAccum;
-    assert(oclGetKernel("vecAccum", &kernelAccum) == oclSuccess);
+    ecl_kernel kernelAccum;
+    assert(eclGetKernel("vecAccum", &kernelAccum) == eclSuccess);
 
-    tmp = cl_mem(oclPtr(b));
-    assert(oclSetKernelArg(kernelAccum, 0, sizeof(cl_mem), &tmp) == oclSuccess);
-    tmp = cl_mem(oclPtr(a));
-    assert(oclSetKernelArg(kernelAccum, 1, sizeof(cl_mem), &tmp) == oclSuccess);
-    assert(oclSetKernelArg(kernelAccum, 2, sizeof(vecSize), &vecSize) == oclSuccess);
+    tmp = cl_mem(eclPtr(b));
+    assert(eclSetKernelArg(kernelAccum, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    tmp = cl_mem(eclPtr(a));
+    assert(eclSetKernelArg(kernelAccum, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernelAccum, 2, sizeof(vecSize), &vecSize) == eclSuccess);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
         getTime(&s);
-        assert(oclCallNDRange(kernelAccum, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        assert(eclCallNDRange(kernelAccum, 1, NULL, &globalSize, &localSize) == eclSuccess);
         getTime(&t);
         timeRun += getTimeStamp(t) - getTimeStamp(s);
     }
@@ -163,12 +163,12 @@ void *doTest(void *)
     getTime(&t);
     timeCheck += getTimeStamp(t) - getTimeStamp(s);
     getTime(&s);
-    oclReleaseKernel(kernelSet);
-    oclReleaseKernel(kernelMove);
-    oclReleaseKernel(kernelAccum);
+    eclReleaseKernel(kernelSet);
+    eclReleaseKernel(kernelMove);
+    eclReleaseKernel(kernelAccum);
 
-    oclFree(a);
-    oclFree(b);
+    eclFree(a);
+    eclFree(b);
     getTime(&t);
     timeFree += getTimeStamp(t) - getTimeStamp(s);
 
@@ -178,7 +178,7 @@ void *doTest(void *)
 static void
 setPath(char *name, size_t len, int it)
 {
-    static const char path_base[] = "_ocl_file_";
+    static const char path_base[] = "_ecl_file_";
     memset(name, '\0', len);
     sprintf(name, "%s%d", path_base, it);
 }
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 {
     thread_t tid, tidIO;
 
-    assert(oclCompileSource(kernel) == oclSuccess);
+    assert(eclCompileSource(kernel) == eclSuccess);
 
     barrier_init(&ioAfter,2);
     barrier_init(&ioBefore, 2);
