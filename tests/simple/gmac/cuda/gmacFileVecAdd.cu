@@ -45,6 +45,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     assert(ret == vecSize);
     ret = fread(b, sizeof(float), vecSize, fB);
     assert(ret == vecSize);
+
     fclose(fA);
     fclose(fB);
     getTime(&t);
@@ -89,6 +90,9 @@ int main(int argc, char *argv[])
     // Alloc output data
     assert(gmacMalloc((void **)&c, vecSize * sizeof(float)) == gmacSuccess);
 
+    //////////////////////
+    // Test shared objects
+    //////////////////////
     getTime(&s);
     // Alloc & init input data
     assert(gmacMalloc((void **)&a, vecSize * sizeof(float)) == gmacSuccess);
@@ -112,6 +116,9 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Shared:Free: ", "\n");
 
+    //////////////////////////
+    // Test replicated objects
+    //////////////////////////
     getTime(&s);
     // Alloc & init input data
     assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == gmacSuccess);
@@ -135,6 +142,9 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Distributed:Free: ", "\n");
 
+    ///////////////////////////
+    // Test centralized objects
+    ///////////////////////////
     getTime(&s);
     // Alloc & init input data
     assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == gmacSuccess);
@@ -146,7 +156,8 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     fC = fopen("vectorC_centralized", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
     getTime(&t);
     printTime(&s, &t, "Centralized:Write: ", "\n");

@@ -33,22 +33,26 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 }\
 ";
 
-float doTest(float *a, float *b, float *c, float *orig)
+float doTest(float *a, float *b, float *c, float *orig, const char *name)
 {
     gmactime_t s, t;
+    static char buffer[1024];
 
     FILE * fA = fopen(VECTORA, "rb");
+    assert(fA != NULL);
     FILE * fB = fopen(VECTORB, "rb");
+    assert(fB != NULL);
     getTime(&s);
     size_t ret = fread(a, sizeof(float), vecSize, fA);
     assert(ret == vecSize);
     ret = fread(b, sizeof(float), vecSize, fB);
     assert(ret == vecSize);
 
-    getTime(&t);
     fclose(fA);
     fclose(fB);
-    printTime(&s, &t, "Init: ", "\n");
+    getTime(&t);
+    snprintf(buffer, 1024, "%s:Init: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     // Call the kernel
     getTime(&s);
@@ -71,7 +75,8 @@ float doTest(float *a, float *b, float *c, float *orig)
     assert(oclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
     getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
+    snprintf(buffer, 1024, "%s:Run: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     getTime(&s);
     float error = 0.f;
@@ -79,29 +84,25 @@ float doTest(float *a, float *b, float *c, float *orig)
         error += orig[i] - (c[i]);
     }
     getTime(&t);
-    fprintf(stderr, "Error: %f\n", error);
-    printTime(&s, &t, "Check: ", "\n");
-
-    oclReleaseKernel(kernel);
+    snprintf(buffer, 1024, "%s:Check: ", name);
+    printTime(&s, &t, buffer, "\n");
 
     return error;
 }
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t;
-    float error1, error2, error3;
+    float *a, *b, *c;
+    gmactime_t s, t;
+    float error_shared, error_distributed, error_centralized;
 
     assert(oclCompileSource(kernel) == oclSuccess);
 
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
-
     float * orig = (float *) malloc(vecSize * sizeof(float));
     FILE * fO = fopen(VECTORC, "rb");
+    assert(fO != NULL);
     size_t ret = fread(orig, sizeof(float), vecSize, fO);
     assert(ret == vecSize);
-    fclose(fO);
 
     // Alloc output data
     if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
@@ -110,72 +111,82 @@ int main(int argc, char *argv[])
     //////////////////////
     // Test shared objects
     //////////////////////
-    fprintf(stderr,"SHARED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
-        CUFATAL();
-    if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
-        CUFATAL();
+    assert(oclMalloc((void **)&a, vecSize * sizeof(float)) == oclSuccess);
+    assert(oclMalloc((void **)&b, vecSize * sizeof(float)) == oclSuccess);
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Shared:Alloc: ", "\n");
 
-    error1 = doTest(a, b, c, orig);
+    error_shared = doTest(a, b, c, orig, "Shared");
 
+    getTime(&s);
     FILE * fC = fopen("vectorC_shared", "wb");
     ret = fwrite(c, sizeof(float), vecSize, fC);
     assert(ret == vecSize);
-
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Shared:Write: ", "\n");
 
+    getTime(&s);
     oclFree(a);
     oclFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Shared:Free: ", "\n");
 
     //////////////////////////
     // Test replicated objects
     //////////////////////////
-    fprintf(stderr,"REPLICATED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
-        CUFATAL();
-    if(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) != oclSuccess)
-        CUFATAL();
+    assert(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == oclSuccess);
+    assert(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == oclSuccess);
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Distributed:Alloc: ", "\n");
 
-    error2 = doTest(a, b, c, orig);
+    error_distributed = doTest(a, b, c, orig, "Distributed");
 
+    getTime(&s);
     fC = fopen("vectorC_replicated", "wb");
-    fwrite(c, sizeof(float), vecSize, fC);
+    ret = fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Distributed:Write: ", "\n");
 
+    getTime(&s);
     oclFree(a);
     oclFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Distributed:Free: ", "\n");
 
     ///////////////////////////
     // Test centralized objects
     ///////////////////////////
-    fprintf(stderr,"CENTRALIZED OBJECTS\n");
     getTime(&s);
     // Alloc & init input data
-    if(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
-        CUFATAL();
-    if(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) != oclSuccess)
-        CUFATAL();
+    assert(oclGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == oclSuccess);
+    assert(oclGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == oclSuccess);
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    printTime(&s, &t, "Centralized:Alloc: ", "\n");
 
-    error3 = doTest(a, b, c, orig);
+    error_centralized = doTest(a, b, c, orig, "Centralized");
 
+    getTime(&s);
     fC = fopen("vectorC_centralized", "wb");
     fwrite(c, sizeof(float), vecSize, fC);
+    assert(ret == vecSize);
     fclose(fC);
+    getTime(&t);
+    printTime(&s, &t, "Centralized:Write: ", "\n");
 
+    getTime(&s);
     oclFree(a);
     oclFree(b);
+    getTime(&t);
+    printTime(&s, &t, "Centralized:Write: ", "\n");
 
     oclFree(c);
     free(orig);
-    return error1 != 0.f && error2 != 0.f && error3 != 0.f;
+    return error_shared != 0.f && error_distributed != 0.f && error_centralized != 0.f;
 }

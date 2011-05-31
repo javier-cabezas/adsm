@@ -25,9 +25,8 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     oclInit.cpp
-    oclVecAdd.cpp
-    oclVecAdd_cplusplus.cpp
-    oclThreadVecAdd.cpp
+    oclMatrixMul.cpp
+    oclMatrixMulKernel.cl
     oclMemcpy.cpp
     oclMemset.cpp
     oclFile.cpp
@@ -35,8 +34,10 @@ source_group(${current_GROUP} FILES
     oclSharedVecAdd.cpp
     oclStencil.cpp
     oclStencilCommon.h
-    oclMatrixMul.cpp
-    oclMatrixMulKernel.cl
+    oclThreadVecAdd.cpp
+    oclThreadStencil.cpp
+    oclVecAdd.cpp
+    oclVecAdd_cplusplus.cpp
 )
 
 add_executable(oclInit ${common_SRC} oclInit.cpp)
@@ -68,6 +69,9 @@ target_link_libraries(oclSharedVecAdd gmac-hpe)
 
 add_executable(oclStencil ${common_SRC} oclStencil.cpp)
 target_link_libraries(oclStencil gmac-hpe)
+
+add_executable(oclThreadStencil ${common_SRC} oclThreadStencil.cpp)
+target_link_libraries(oclThreadStencil gmac-hpe)
 
 add_executable(oclMatrixMul ${common_SRC} oclMatrixMul.cpp oclMatrixMulKernel.cl)
 target_link_libraries(oclMatrixMul gmac-hpe)
