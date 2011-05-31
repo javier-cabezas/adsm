@@ -39,6 +39,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
         fprintf(stderr, "ALLOC: %zd\n", count * sizeof(long));
         long *baseSrc = (long *)malloc(count * sizeof(long));
         long *baseDst = (long *)malloc(count * sizeof(long));
+        init(baseSrc, int(count), -1);
 
         long *gmacSrc;
         long *gmacDst;
@@ -56,10 +57,9 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
         for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
             for (size_t copyCount = 1; copyCount < count/3; copyCount *= 2) {
-                init(baseSrc, int(count), 1);
                 init(baseDst, int(count), 0);
 
-                init(gmacSrc, int(count), 1);
+                init(gmacSrc, int(count), -1);
                 init(gmacDst, int(count), 0);
                 assert(stride + copyCount <= count);
 
