@@ -5,12 +5,10 @@
 
 #include "common.h"
 
-TestSuite Tests("GMAC");
-
 static void
-LaunchTests(const char *varsPath, const char *testsPath)
+LaunchTests(const char *suiteName, const char *varsPath, const char *testsPath)
 {
-    TestSuite suite("GMAC");
+    TestSuite suite(suiteName);
     ReadConf(suite, varsPath, testsPath);
 
     suite.launch();
@@ -20,12 +18,12 @@ LaunchTests(const char *varsPath, const char *testsPath)
 int main(int argc, char *argv[])
 {
     if (argc == 1) {
-        LaunchTests("vars.spec", "tests.spec");
-    } else if (argc == 3) {
-        LaunchTests(argv[1], argv[2]);
+        LaunchTests("GMAC", "vars.spec", "tests.spec");
+    } else if (argc == 4) {
+        LaunchTests(argv[1], argv[2], argv[3]);
     } else {
         std::cerr << "Error: wrong number of parameters" << std::endl;
-        std::cerr << " > launcher [ vars_file tests_file ]" << std::endl;
+        std::cerr << " > launcher [ suite_name vars_file tests_file ]" << std::endl;
     }
 
     return 0;
