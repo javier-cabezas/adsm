@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     FILE * fC = fopen("vectorC_shared", "wb");
+    assert(fC != NULL);
     ret = fwrite(c, sizeof(float), vecSize, fC);
     assert(ret == vecSize);
     fclose(fC);

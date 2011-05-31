@@ -1,5 +1,12 @@
 #include "utils.h"
 
+double getTimeStamp(gmactime_t time)
+{
+	double t;
+	t = 1e6 * time.sec + (time.usec);
+	return t;
+}
+
 void printTime(gmactime_t *start, gmactime_t *end, const char *pre, const char *post)
 {
 	double s, e;

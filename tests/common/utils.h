@@ -34,6 +34,8 @@ typedef struct {
 	unsigned long usec;
 } gmactime_t;
 
+double getTimeStamp(gmactime_t);
+
 void getTime(gmactime_t *);
 
 void printTime(gmactime_t *, gmactime_t *, const char *, const char *);

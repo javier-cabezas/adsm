@@ -61,6 +61,14 @@ float *a, *b, *c;
 
 float error_compute, error_io;
 
+double timeAlloc  = 0.0;
+double timeMemset = 0.0;
+double timeRun    = 0.0;
+double timeCheck  = 0.0;
+double timeFree   = 0.0;
+double timeWrite  = 0.0;
+double timeRead   = 0.0;
+
 void *doTest(void *)
 {
     dim3 Db(blockSize);
@@ -76,13 +84,13 @@ void *doTest(void *)
     if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
         CUFATAL();
     getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
+    timeAlloc += getTimeStamp(t) - getTimeStamp(s);
 
     getTime(&s);
     gmacMemset(a, 0, vecSize * sizeof(float));
     gmacMemset(b, 0, vecSize * sizeof(float));
     getTime(&t);
-    printTime(&s, &t, "Memset: ", "\n");
+    timeMemset += getTimeStamp(t) - getTimeStamp(s);
 
     barrier_wait(&ioBefore);
 
@@ -92,14 +100,13 @@ void *doTest(void *)
         getTime(&s);
         vecSet<<<Dg, Db>>>(gmacPtr(a), vecSize, float(i));
         getTime(&t);
-        printTime(&s, &t, "Run: ", "\n");
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioAfter);
-
         getTime(&s);
         vecMove<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
         getTime(&t);
-        printTime(&s, &t, "Run: ", "\n");
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioBefore);
     }
 
@@ -112,7 +119,7 @@ void *doTest(void *)
         vecAccum<<<Dg, Db>>>(gmacPtr(b), gmacPtr(a), vecSize);
         gmacThreadSynchronize();
         getTime(&t);
-        printTime(&s, &t, "Run: ", "\n");
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
     }
 
 
@@ -122,13 +129,12 @@ void *doTest(void *)
         error_compute += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
     }
     getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
-
+    timeCheck += getTimeStamp(t) - getTimeStamp(s);
     getTime(&s);
     gmacFree(a);
     gmacFree(b);
     getTime(&t);
-    printTime(&s, &t, "Free: ", "\n");
+    timeFree += getTimeStamp(t) - getTimeStamp(s);
 
     return &error_compute;
 }
@@ -154,7 +160,7 @@ writeFile(float *v, unsigned nmemb, int it)
     assert(fwrite(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
     getTime(&t);
-    printTime(&s, &t, "Write: ", "\n");
+    timeWrite += getTimeStamp(t) - getTimeStamp(s);
 }
 
 static void
@@ -170,7 +176,7 @@ readFile(float *v, unsigned nmemb, int it)
     assert(fread(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
     getTime(&t);
-    printTime(&s, &t, "Read: ", "\n");
+    timeRead += getTimeStamp(t) - getTimeStamp(s);
 }
 
 void *doTestIO(void *)
@@ -210,6 +216,14 @@ int main(int argc, char *argv[])
 
     barrier_destroy(&ioAfter);
     barrier_destroy(&ioBefore);
+
+    fprintf(stdout, "Alloc: %f\n", timeAlloc);
+    fprintf(stdout, "Memset: %f\n", timeMemset);
+    fprintf(stdout, "Run: %f\n", timeRun);
+    fprintf(stdout, "Check: %f\n", timeCheck);
+    fprintf(stdout, "Free: %f\n", timeFree);
+    fprintf(stdout, "Write: %f\n", timeWrite);
+    fprintf(stdout, "Read: %f\n", timeRead);
 
     return error_io != 0.f;
 }

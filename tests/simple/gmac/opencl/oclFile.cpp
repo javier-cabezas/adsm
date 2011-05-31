@@ -21,7 +21,7 @@
 #endif
 
 const unsigned vecSize = 1024 * 1024;
-const unsigned blockSize = 32;
+const unsigned blockSize = 256;
 
 const char *msg = "Done!";
 
@@ -63,25 +63,40 @@ readFile(float *v, unsigned nmemb, int it);
 
 float *a, *b, *c;
 
-float error1, error2;
+float error_compute, error_io;
+
+double timeAlloc  = 0.0;
+double timeMemset = 0.0;
+double timeRun    = 0.0;
+double timeCheck  = 0.0;
+double timeFree   = 0.0;
+double timeWrite  = 0.0;
+double timeRead   = 0.0;
 
 void *doTest(void *)
 {
     size_t localSize = blockSize;
     size_t globalSize = vecSize / blockSize;
+    gmactime_t s, t;
     if(vecSize % blockSize) globalSize++;
     globalSize *= localSize;
 
     // Alloc & init input data
+    getTime(&s);
     if(oclMalloc((void **)&a, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
     if(oclMalloc((void **)&b, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
     if(oclMalloc((void **)&c, vecSize * sizeof(float)) != oclSuccess)
         CUFATAL();
+    getTime(&t);
+    timeAlloc += getTimeStamp(t) - getTimeStamp(s);
 
+    getTime(&s);
     oclMemset(a, 0, vecSize * sizeof(float));
     oclMemset(b, 0, vecSize * sizeof(float));
+    getTime(&t);
+    timeMemset += getTimeStamp(t) - getTimeStamp(s);
 
     barrier_wait(&ioBefore);
 
@@ -104,12 +119,18 @@ void *doTest(void *)
     assert(oclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == oclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
+        getTime(&s);
         float val = float(i);
         assert(oclSetKernelArg(kernelSet, 2, sizeof(val), &val) == oclSuccess);
         assert(oclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == oclSuccess);
 
+        getTime(&t);
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioAfter);
+        getTime(&s);
         assert(oclCallNDRange(kernelMove, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        getTime(&t);
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
         barrier_wait(&ioBefore);
     }
 
@@ -127,25 +148,31 @@ void *doTest(void *)
     for (int i = ITERATIONS - 1; i >= 0; i--) {
         barrier_wait(&ioBefore);
         barrier_wait(&ioAfter);
-
+        getTime(&s);
         assert(oclCallNDRange(kernelAccum, 1, NULL, &globalSize, &localSize) == oclSuccess);
+        getTime(&t);
+        timeRun += getTimeStamp(t) - getTimeStamp(s);
     }
 
 
-    error1 = 0.f;
+    error_compute = 0.f;
+    getTime(&s);
     for(unsigned i = 0; i < vecSize; i++) {
-        error1 += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
+        error_compute += b[i] - (ITERATIONS - 1)*(ITERATIONS / 2);
     }
-    fprintf(stderr,"Error: %f\n", error1);
-
+    getTime(&t);
+    timeCheck += getTimeStamp(t) - getTimeStamp(s);
+    getTime(&s);
     oclReleaseKernel(kernelSet);
     oclReleaseKernel(kernelMove);
     oclReleaseKernel(kernelAccum);
 
     oclFree(a);
     oclFree(b);
+    getTime(&t);
+    timeFree += getTimeStamp(t) - getTimeStamp(s);
 
-    return &error1;
+    return &error_compute;
 }
 
 static void
@@ -161,11 +188,15 @@ writeFile(float *v, unsigned nmemb, int it)
 {
     char path[256];
     setPath(path, 256, it);
+    gmactime_t s, t;
 
+    getTime(&s);
     FILE * f = fopen(path, "wb");
     assert(f != NULL);
     assert(fwrite(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
+    getTime(&t);
+    timeWrite += getTimeStamp(t) - getTimeStamp(s);
 }
 
 static void
@@ -173,15 +204,20 @@ readFile(float *v, unsigned nmemb, int it)
 {
     char path[256];
     setPath(path, 256, it);
+    gmactime_t s, t;
 
+    getTime(&s);
     FILE * f = fopen(path, "rb");
     assert(f != NULL);
     assert(fread(v, sizeof(float), nmemb, f) == nmemb);
     fclose(f);
+    getTime(&t);
+    timeRead += getTimeStamp(t) - getTimeStamp(s);
 }
 
 void *doTestIO(void *)
 {
+    error_io = 0.0f;
     barrier_wait(&ioBefore);
 
     for (int i = 0; i < ITERATIONS; i++) {
@@ -198,7 +234,7 @@ void *doTestIO(void *)
         barrier_wait(&ioAfter);
     }
 
-    return &error2;
+    return &error_io;
 }
 
 int main(int argc, char *argv[])
@@ -206,8 +242,6 @@ int main(int argc, char *argv[])
     thread_t tid, tidIO;
 
     assert(oclCompileSource(kernel) == oclSuccess);
-
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     barrier_init(&ioAfter,2);
     barrier_init(&ioBefore, 2);
@@ -221,5 +255,13 @@ int main(int argc, char *argv[])
     barrier_destroy(&ioAfter);
     barrier_destroy(&ioBefore);
 
-    return error2 != 0.f;
+    fprintf(stdout, "Alloc: %f\n", timeAlloc);
+    fprintf(stdout, "Memset: %f\n", timeMemset);
+    fprintf(stdout, "Run: %f\n", timeRun);
+    fprintf(stdout, "Check: %f\n", timeCheck);
+    fprintf(stdout, "Free: %f\n", timeFree);
+    fprintf(stdout, "Write: %f\n", timeWrite);
+    fprintf(stdout, "Read: %f\n", timeRead);
+
+    return error_io != 0.f;
 }
