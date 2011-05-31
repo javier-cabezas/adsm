@@ -56,6 +56,8 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
         baseSrc = (long *)malloc(count * sizeof(long));
         baseDst = (long *)malloc(count * sizeof(long));
 
+        init(baseSrc, int(count), 1);
+
         if (type == GMAC_TO_GMAC) {
             assert(oclMalloc((void **)&oclSrc, count * sizeof(long)) == oclSuccess);
             assert(oclMalloc((void **)&oclDst, count * sizeof(long)) == oclSuccess);
@@ -69,7 +71,6 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 
         for (size_t stride = 0, i = 1; stride < count/3; stride = i, i *= 2) {
             for (size_t copyCount = 0, j = 1; copyCount < count/3; copyCount = j, j *= 2) {
-                init(baseSrc, int(count), 1);
                 init(baseDst, int(count), 0);
 
                 init(oclSrc, int(count), 1);
