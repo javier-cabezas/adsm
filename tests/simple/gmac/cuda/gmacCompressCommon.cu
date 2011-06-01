@@ -1,6 +1,3 @@
-#include "gmacCompress.h"
-
-
 #define PI 3.14159265358979
 
 const size_t blockSize = 16;

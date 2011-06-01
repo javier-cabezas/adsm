@@ -6,12 +6,12 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include <gmac/cuda.h>
+#include <gmac/opencl>
 
 #include "utils.h"
 #include "debug.h"
 
-#include "gmacCompress.h"
+#include "eclCompressCommon.cl"
 
 const char *widthStr = "GMAC_WIDTH";
 const char *heightStr = "GMAC_HEIGHT";
@@ -46,17 +46,29 @@ void *dct_thread(void *args)
     gmactime_t s, t;
 
     getTime(&s);
-	ret = gmacMalloc((void **)&in, width * height * sizeof(float));
+	ret = eclMalloc((void **)&in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = eclMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "DCT:Alloc: ", "\n");
 
-	dim3 Db(blockSize, blockSize);
-	dim3 Dg(width / blockSize, height / blockSize);
-	if(width % blockSize) Dg.x++;
-	if(height % blockSize) Dg.y++;
+    size_t localSize[2];
+    size_t globalSize[2];
+    localSize[0] = blockSize;
+    localSize[1] = blockSize;
+    globalSize[0] = width;
+    globalSize[1] = height;
+	if(width  % blockSize) globalSize[0] += blockSize;
+	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::error err;
+    ecl::kernel k("dct", err);
+    assert(err == eclSuccess);
+
+    assert(k.setArg(0, out)    == eclSuccess);
+    assert(k.setArg(1, in)     == eclSuccess);
+    assert(k.setArg(2, width)  == eclSuccess);
+    assert(k.setArg(3, height) == eclSuccess);
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
@@ -65,23 +77,21 @@ void *dct_thread(void *args)
         printTime(&s, &t, "DCT:Init: ", "\n");
 
         getTime(&s);
-		dct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
-		ret = gmacThreadSynchronize();
-		assert(ret == gmacSuccess);
+        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "DCT:Run: ", "\n");
 
         getTime(&s);
 		gmac_sem_wait(&quant_free, 1); /* Wait for quant to use its data */
-		gmacMemcpy(quant_in, out, width * height * sizeof(float));
+		eclMemcpy(quant_in, out, width * height * sizeof(float));
 		gmac_sem_post(&quant_data, 1); /* Notify to Quant that data is ready */
         getTime(&t);
         printTime(&s, &t, "DCT:Copy: ", "\n");
 	}
 
     getTime(&s);
-	gmacFree(in);
-	gmacFree(out);
+	eclFree(in);
+	eclFree(out);
     getTime(&t);
     printTime(&s, &t, "DCT:Free: ", "\n");
 
@@ -95,32 +105,43 @@ void *quant_thread(void *args)
     gmactime_t s, t;
 
     getTime(&s);
-	ret = gmacMalloc((void **)&quant_in, width * height * sizeof(float));
+	ret = eclMalloc((void **)&quant_in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = eclMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Quant:Alloc: ", "\n");
 
-	dim3 Db(blockSize, blockSize);
-	dim3 Dg(width / blockSize, height / blockSize);
-	if(width % blockSize) Dg.x++;
-	if(height % blockSize) Dg.y++;
+    size_t localSize[2];
+    size_t globalSize[2];
+    localSize[0] = blockSize;
+    localSize[1] = blockSize;
+    globalSize[0] = width;
+    globalSize[1] = height;
+	if(width  % blockSize) globalSize[0] += blockSize;
+	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::error err;
+    ecl::kernel k("quant", err);
+    assert(err == eclSuccess);
+
+    assert(k.setArg(0, quant_in)    == eclSuccess);
+    assert(k.setArg(1, out)         == eclSuccess);
+    assert(k.setArg(2, width)       == eclSuccess);
+    assert(k.setArg(3, height)      == eclSuccess);
+    assert(k.setArg(4, float(1e-6)) == eclSuccess);
 
 	gmac_sem_post(&quant_free, 1);
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
 		gmac_sem_wait(&quant_data, 1);	/* Wait for data to be processed */
-		quant<<<Dg, Db>>>(gmacPtr(quant_in), gmacPtr(out), width, height, 1e-6);
-		ret = gmacThreadSynchronize();
-		assert(ret == gmacSuccess);
+        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "Quant:Run: " , "\n");
 		
         getTime(&s);
 		gmac_sem_wait(&idct_free, 1); /* Wait for IDCT to use its data */
-		gmacMemcpy(idct_in, out, width * height * sizeof(float));
+		eclMemcpy(idct_in, out, width * height * sizeof(float));
 		gmac_sem_post(&quant_free, 1); /* Notify to DCT that Quant is waiting for data */
 		gmac_sem_post(&idct_data, 1); /* Nodify to IDCT that data is ready */
         getTime(&t);
@@ -128,8 +149,8 @@ void *quant_thread(void *args)
 	}
 
     getTime(&s);
-	gmacFree(quant_in);
-	gmacFree(out);
+	eclFree(quant_in);
+	eclFree(out);
     getTime(&t);
     printTime(&s, &t, "Quant:Free: ", "\n");
 
@@ -143,36 +164,44 @@ void *idct_thread(void *args)
     gmactime_t s, t;
 
     getTime(&s);
-	ret = gmacMalloc((void **)&idct_in, width * height * sizeof(float));
+	ret = eclMalloc((void **)&idct_in, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
-	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
+	ret = eclMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "IDCT:Alloc: ", "\n");
 
-	dim3 Db(blockSize, blockSize);
-	dim3 Dg(width / blockSize, height / blockSize);
-	if(width % blockSize) Dg.x++;
-	if(height % blockSize) Dg.y++;
+    size_t localSize[2];
+    size_t globalSize[2];
+    localSize[0] = blockSize;
+    localSize[1] = blockSize;
+    globalSize[0] = width;
+    globalSize[1] = height;
+	if(width  % blockSize) globalSize[0] += blockSize;
+	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::error err;
+    ecl::kernel k("idct", err);
+    assert(err == eclSuccess);
+
+    assert(k.setArg(0, idct_in) == eclSuccess);
+    assert(k.setArg(1, out)     == eclSuccess);
+    assert(k.setArg(2, width)   == eclSuccess);
+    assert(k.setArg(3, height)  == eclSuccess);
 
 	gmac_sem_post(&idct_free, 1);
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
 		gmac_sem_wait(&idct_data, 1);
-		idct<<<Dg, Db>>>(gmacPtr(idct_in), gmacPtr(out), width, height);
-		ret = gmacThreadSynchronize();
-		assert(ret == gmacSuccess);
-
+        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
 		gmac_sem_post(&idct_free, 1);
         getTime(&t);
         printTime(&s, &t, "IDCT:Run: ", "\n");
 	}
 
-
     getTime(&s);
-	gmacFree(idct_in);
-	gmacFree(out);
+	eclFree(idct_in);
+	eclFree(out);
     getTime(&t);
     printTime(&s, &t, "IDCT:Free: ", "\n");
 
@@ -186,6 +215,8 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&width, widthStr, widthDefault);
 	setParam<unsigned>(&height, heightStr, heightDefault);
 	setParam<unsigned>(&frames, framesStr, framesDefault);
+
+    assert(eclCompileSource(kernel_code) == eclSuccess);
 
 	gmac_sem_init(&quant_data, 0); 
 	gmac_sem_init(&quant_free, 0); 
