@@ -217,6 +217,7 @@ void *idct_thread(void *args)
     printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
     getTime(&s);
+	gmac_sem_post(&s_idct.free, 1);
 	eclDeviceSendReceive(s_dct.id);
     getTime(&t);
 	nextStage(&s_idct, NULL);
