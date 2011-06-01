@@ -32,6 +32,21 @@ static pthread_t dct_id, quant_id, idct_id;
 static gmac_sem_t quant_data, idct_data;
 static gmac_sem_t quant_free, idct_free;
 
+double timeDCTAlloc = 0.0;
+double timeDCTInit  = 0.0;
+double timeDCTCopy  = 0.0;
+double timeDCTRun   = 0.0;
+double timeDCTFree  = 0.0;
+
+double timeQuantAlloc = 0.0;
+double timeQuantCopy  = 0.0;
+double timeQuantRun   = 0.0;
+double timeQuantFree  = 0.0;
+
+double timeIDCTAlloc = 0.0;
+double timeIDCTRun   = 0.0;
+double timeIDCTFree  = 0.0;
+
 void __randInit(float *a, unsigned size)
 {
 	for(unsigned i = 0; i < size; i++) {
@@ -51,7 +66,7 @@ void *dct_thread(void *args)
 	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "DCT:Alloc: ", "\n");
+    timeDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -62,28 +77,28 @@ void *dct_thread(void *args)
         getTime(&s);
 		__randInit(in, width * height);
         getTime(&t);
-        printTime(&s, &t, "DCT:Init: ", "\n");
+        timeDCTInit += getTimeStamp(t) - getTimeStamp(s);
 
         getTime(&s);
 		dct<<<Dg, Db>>>(gmacPtr(out), gmacPtr(in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "DCT:Run: ", "\n");
+        timeDCTRun += getTimeStamp(t) - getTimeStamp(s);
 
         getTime(&s);
 		gmac_sem_wait(&quant_free, 1); /* Wait for quant to use its data */
 		gmacMemcpy(quant_in, out, width * height * sizeof(float));
 		gmac_sem_post(&quant_data, 1); /* Notify to Quant that data is ready */
         getTime(&t);
-        printTime(&s, &t, "DCT:Copy: ", "\n");
+        timeDCTCopy += getTimeStamp(t) - getTimeStamp(s);
 	}
 
     getTime(&s);
 	gmacFree(in);
 	gmacFree(out);
     getTime(&t);
-    printTime(&s, &t, "DCT:Free: ", "\n");
+    timeDCTFree += getTimeStamp(t) - getTimeStamp(s);
 
 	return NULL;
 }
@@ -100,7 +115,7 @@ void *quant_thread(void *args)
 	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "Quant:Alloc: ", "\n");
+    timeQuantAlloc += getTimeStamp(t) - getTimeStamp(s);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -116,7 +131,7 @@ void *quant_thread(void *args)
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "Quant:Run: " , "\n");
+        timeQuantRun += getTimeStamp(t) - getTimeStamp(s);
 		
         getTime(&s);
 		gmac_sem_wait(&idct_free, 1); /* Wait for IDCT to use its data */
@@ -124,14 +139,14 @@ void *quant_thread(void *args)
 		gmac_sem_post(&quant_free, 1); /* Notify to DCT that Quant is waiting for data */
 		gmac_sem_post(&idct_data, 1); /* Nodify to IDCT that data is ready */
         getTime(&t);
-        printTime(&s, &t, "Quant:Copy: ", "\n");
+        timeQuantCopy += getTimeStamp(t) - getTimeStamp(s);
 	}
 
     getTime(&s);
 	gmacFree(quant_in);
 	gmacFree(out);
     getTime(&t);
-    printTime(&s, &t, "Quant:Free: ", "\n");
+    timeQuantFree += getTimeStamp(t) - getTimeStamp(s);
 
 	return NULL;
 }
@@ -148,7 +163,7 @@ void *idct_thread(void *args)
 	ret = gmacMalloc((void **)&out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "IDCT:Alloc: ", "\n");
+    timeIDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
 	dim3 Db(blockSize, blockSize);
 	dim3 Dg(width / blockSize, height / blockSize);
@@ -166,15 +181,14 @@ void *idct_thread(void *args)
 
 		gmac_sem_post(&idct_free, 1);
         getTime(&t);
-        printTime(&s, &t, "IDCT:Run: ", "\n");
+        timeIDCTRun += getTimeStamp(t) - getTimeStamp(s);
 	}
-
 
     getTime(&s);
 	gmacFree(idct_in);
 	gmacFree(out);
     getTime(&t);
-    printTime(&s, &t, "IDCT:Free: ", "\n");
+    timeIDCTFree += getTimeStamp(t) - getTimeStamp(s);
 
 	return NULL;
 }
@@ -205,6 +219,21 @@ int main(int argc, char *argv[])
 	pthread_join(idct_id, NULL);
 
 	getTime(&t);
+
+	fprintf(stdout, "DCT:Alloc: %f\n", timeDCTAlloc);
+	fprintf(stdout, "DCT:Init: %f\n", timeDCTInit);
+	fprintf(stdout, "DCT:Run: %f\n", timeDCTRun);
+	fprintf(stdout, "DCT:Copy: %f\n", timeDCTCopy);
+	fprintf(stdout, "DCT:Free: %f\n", timeDCTFree);
+
+	fprintf(stdout, "Quant:Alloc: %f\n", timeQuantAlloc);
+	fprintf(stdout, "Quant:Run: %f\n", timeQuantRun);
+	fprintf(stdout, "Quant:Copy: %f\n", timeQuantCopy);
+	fprintf(stdout, "Quant:Free: %f\n", timeQuantFree);
+
+	fprintf(stdout, "IDCT:Alloc: %f\n", timeIDCTAlloc);
+	fprintf(stdout, "IDCT:Run: %f\n", timeIDCTRun);
+	fprintf(stdout, "IDCT:Free: %f\n", timeIDCTFree);
 
 	printTime(&s, &t, "Total: ", "\n");
 
