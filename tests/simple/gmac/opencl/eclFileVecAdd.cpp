@@ -187,6 +187,8 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Centralized:Write: ", "\n");
 
     eclFree(c);
+
+    fclose(fO);
     free(orig);
     return error_shared != 0.f && error_distributed != 0.f && error_centralized != 0.f;
 }
