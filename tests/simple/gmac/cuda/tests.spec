@@ -1,5 +1,6 @@
 gmacConstant:
 gmacTexture:
+gmacCompress:GMAC_BLOCK_SIZE
 gmacFile:GMAC_BLOCK_SIZE
 gmacFileVecAdd:GMAC_BLOCK_SIZE
 gmacMatrixMul:GMAC_BLOCK_SIZE,GMAC_ROLL_SIZE
