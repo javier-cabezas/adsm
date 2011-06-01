@@ -30,6 +30,7 @@ source_group(${current_GROUP} FILES
     eclInit.cpp
     eclCompress.cpp
     eclCompressCommon.cl
+    eclCompressSend.cl
     eclMatrixMul.cpp
     eclMatrixMulKernel.cl
     eclMemcpy.cpp
@@ -51,6 +52,9 @@ target_link_libraries(eclInit gmac-hpe)
 
 add_executable(eclCompress ${common_SRC} eclCompress.cpp eclCompressCommon.cl)
 target_link_libraries(eclCompress gmac-hpe)
+
+add_executable(eclCompressSend ${common_SRC} eclCompressSend.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompressSend gmac-hpe)
 
 add_executable(eclVecAdd ${common_SRC} eclVecAdd.cpp)
 target_link_libraries(eclVecAdd gmac-hpe)
