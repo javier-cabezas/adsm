@@ -3,12 +3,15 @@ set(common_ROOT ${CMAKE_SOURCE_DIR}/tests/common)
 include_directories(${PROJECT_SOURCE_DIR}/src/include ${PROJECT_BINARY_DIR}/src/include ${common_ROOT})
 
 set(common_SRC
-     ${common_ROOT}/debug.h
-     ${common_ROOT}/utils.h ${common_ROOT}/utils-impl.h ${common_ROOT}/utils.cpp 
-     ${common_ROOT}/barrier.h
-     ${common_ROOT}/cycle.h)
+    ${common_ROOT}/debug.h
+    ${common_ROOT}/utils.h ${common_ROOT}/utils-impl.h ${common_ROOT}/utils.cpp 
+    ${common_ROOT}/barrier.h
+    ${common_ROOT}/semaphore.h
+    ${common_ROOT}/cycle.h)
 set(common_os_SRC
         ${common_ROOT}/${OS_DIR}/utils.cpp
+        ${common_ROOT}/${OS_DIR}/semaphore.h
+        ${common_ROOT}/${OS_DIR}/semaphore.c
         ${common_ROOT}/${OS_DIR}/barrier.h
         ${common_ROOT}/${OS_DIR}/barrier.c)
 # Set source group for common files
@@ -31,6 +34,7 @@ source_group(${current_GROUP} FILES
     eclMemset.cpp
     eclFile.cpp
     eclFileVecAdd.cpp
+    eclPingPong.cpp
     eclSharedVecAdd.cpp
     eclStencil.cpp
     eclStencilCommon.h
@@ -63,6 +67,9 @@ target_link_libraries(eclFile gmac-hpe)
 
 add_executable(eclFileVecAdd ${common_SRC} eclFileVecAdd.cpp)
 target_link_libraries(eclFileVecAdd gmac-hpe)
+
+add_executable(eclPingPong ${common_SRC} eclPingPong.cpp)
+target_link_libraries(eclPingPong gmac-hpe)
 
 add_executable(eclSharedVecAdd ${common_SRC} eclSharedVecAdd.cpp)
 target_link_libraries(eclSharedVecAdd gmac-hpe)
