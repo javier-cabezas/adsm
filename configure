@@ -8,6 +8,7 @@ BUILD_TYPE="Release"
 
 FRONTEND="-DUSE_CUDA=ON -DUSE_OPENCL=OFF"
 
+for i in $@
 do
     case $i in
     --enable-debug)
@@ -97,7 +98,5 @@ done
 CMAKE_ARGS="${CMAKE_ARGS} ${FRONTEND} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}"
 COMMAND="${CMAKE} ${CMAKE_ARGS} ${CMAKE_HOME}"
 echo "$0 $*" > ${SCRIPT_NAME}.log
-echo ${COMMAND} > ${SCRIPT_NAME}.log
-
-for i in $@
+echo ${COMMAND} >> ${SCRIPT_NAME}.log
 ${COMMAND}

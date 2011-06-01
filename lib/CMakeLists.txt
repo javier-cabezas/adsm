@@ -1,17 +1,15 @@
 if(MAKE_TESTS)
     # Add Google Testing Framework Dependency
-    set(gtest_DIR gtest-1.5.0)
+    set(gtest_DIR gtest-1.6.0)
+    set(gmock_DIR gmock-1.6.0)
     set(gtest_SRC
-        ${gtest_DIR}/src/gtest-internal-inl.h
-        ${gtest_DIR}/src/gtest.cc
-        ${gtest_DIR}/src/gtest-death-test.cc
-        ${gtest_DIR}/src/gtest-filepath.cc
-        ${gtest_DIR}/src/gtest-port.cc
-        ${gtest_DIR}/src/gtest-test-part.cc
-        ${gtest_DIR}/src/gtest-typed-test.cc)
+        ${gtest_DIR}/src/gtest-all.cc
+        ${gmock_DIR}/src/gmock-all.cc)
 
-    include_directories(${gtest_DIR}/include ${gtest_DIR})
+    include_directories(${gtest_DIR}/include ${gtest_DIR}
+                        ${gmock_DIR}/include ${gmock_DIR})
     add_library(gtest STATIC ${gtest_SRC})
-    add_gmac_test_include(${CMAKE_CURRENT_SOURCE_DIR}/${gtest_DIR}/include) 
+    add_gmac_test_include(${CMAKE_CURRENT_SOURCE_DIR}/${gtest_DIR}/include
+                          ${CMAKE_CURRENT_SOURCE_DIR}/${gmock_DIR}/include) 
     add_gmac_test_library(gtest)
 endif(MAKE_TESTS)
