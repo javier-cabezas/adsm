@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
     getTime(&t);
 	printTime(&s, &t, "Total: ", "\n");
 
-    delete descriptors;
-    delete nThread;
+    delete [] descriptors;
+    delete [] nThread;
 
     return 0;
 }
