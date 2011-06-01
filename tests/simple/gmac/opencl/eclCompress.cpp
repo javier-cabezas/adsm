@@ -71,6 +71,7 @@ void *dct_thread(void *args)
     assert(k.setArg(3, height) == eclSuccess);
 
 	for(unsigned i = 0; i < frames; i++) {
+        printf("Frame %d\n", i);
         getTime(&s);
 		__randInit(in, width * height);
         getTime(&t);
