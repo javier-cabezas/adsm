@@ -9,6 +9,7 @@ void gmac_sem_init(gmac_sem_t *sem, int value)
 
 void gmac_sem_post(gmac_sem_t *sem, int v)
 {
+#if 0
     int i;
     pthread_mutex_lock(&sem->mutex);
 
@@ -17,10 +18,16 @@ void gmac_sem_post(gmac_sem_t *sem, int v)
         if(sem->value > 0) pthread_cond_signal(&sem->cond);
 
     pthread_mutex_unlock(&sem->mutex);
+#endif
+    pthread_mutex_lock(&(sem->mutex));
+    sem->value++;
+    pthread_cond_broadcast(&(sem->cond));
+    pthread_mutex_unlock(&(sem->mutex));
 }
 
 void gmac_sem_wait(gmac_sem_t *sem, int v)
 {
+#if 0
     pthread_mutex_lock(&sem->mutex);
 
     sem->value -= v;
@@ -29,6 +36,13 @@ void gmac_sem_wait(gmac_sem_t *sem, int v)
     }
 
     pthread_mutex_unlock(&sem->mutex);
+#endif
+    pthread_mutex_lock(&(sem->mutex));
+    while (sem->value == 0) {
+        pthread_cond_wait(&(sem->cond), &(sem->mutex));
+    }
+    sem->value--;
+    pthread_mutex_unlock(&(sem->mutex));
 }
 
 void gmac_sem_destroy(gmac_sem_t *sem)

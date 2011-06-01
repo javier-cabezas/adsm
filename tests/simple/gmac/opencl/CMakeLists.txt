@@ -28,6 +28,8 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     eclInit.cpp
+    eclCompress.cpp
+    eclCompressCommon.cl
     eclMatrixMul.cpp
     eclMatrixMulKernel.cl
     eclMemcpy.cpp
@@ -46,6 +48,9 @@ source_group(${current_GROUP} FILES
 
 add_executable(eclInit ${common_SRC} eclInit.cpp)
 target_link_libraries(eclInit gmac-hpe)
+
+add_executable(eclCompress ${common_SRC} eclCompress.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompress gmac-hpe)
 
 add_executable(eclVecAdd ${common_SRC} eclVecAdd.cpp)
 target_link_libraries(eclVecAdd gmac-hpe)
@@ -74,10 +79,10 @@ target_link_libraries(eclPingPong gmac-hpe)
 add_executable(eclSharedVecAdd ${common_SRC} eclSharedVecAdd.cpp)
 target_link_libraries(eclSharedVecAdd gmac-hpe)
 
-add_executable(eclStencil ${common_SRC} eclStencil.cpp)
+add_executable(eclStencil ${common_SRC} eclStencil.cpp eclStencilCommon.h)
 target_link_libraries(eclStencil gmac-hpe)
 
-add_executable(eclThreadStencil ${common_SRC} eclThreadStencil.cpp)
+add_executable(eclThreadStencil ${common_SRC} eclThreadStencil.cpp eclStencilCommon.h)
 target_link_libraries(eclThreadStencil gmac-hpe)
 
 add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
