@@ -125,13 +125,13 @@ public:
     gmacError_t toAccelerator(Block &block);
 #endif
 
-	gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size, 
+	TESTABLE gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size, 
 		size_t bufferOffset, size_t blockOffset);
 	
-	gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+	TESTABLE gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
 		size_t bufferOffset, size_t blockOffset);
 
-    gmacError_t memset(const Block &block, int v, size_t size, 
+    TESTABLE gmacError_t memset(const Block &block, int v, size_t size, 
         size_t blockOffset);
 
     TESTABLE gmacError_t flushDirty();

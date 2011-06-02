@@ -94,6 +94,43 @@ Lazy<T>::toHost(BlockImpl &_block)
 
 template <typename T>
 gmacError_t
+Lazy<T>::copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size, 
+    size_t bufferOffset, size_t blockOffset)
+{
+    REQUIRES(blockOffset  + size <= block.size());
+    REQUIRES(bufferOffset + size <= buffer.size());
+
+    gmacError_t ret = Parent::copyToBuffer(block, buffer, size, bufferOffset, blockOffset);
+
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+Lazy<T>::copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+    size_t bufferOffset, size_t blockOffset)
+{
+    REQUIRES(blockOffset  + size <= block.size());
+    REQUIRES(bufferOffset + size <= buffer.size());
+
+    gmacError_t ret = Parent::copyFromBuffer(block, buffer, size, bufferOffset, blockOffset);
+
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+Lazy<T>::memset(const BlockImpl &block, int v, size_t size, size_t blockOffset)
+{
+    REQUIRES(blockOffset + size <= block.size());
+
+    gmacError_t ret = Parent::memset(block, v, size, blockOffset);
+
+    return ret;
+}
+
+template <typename T>
+gmacError_t
 Lazy<T>::flushDirty()
 {
     gmacError_t ret = Parent::flushDirty();
