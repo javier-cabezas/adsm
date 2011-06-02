@@ -52,25 +52,18 @@ Kernel::getNArgs() const
 
 inline
 KernelConfig::KernelConfig(unsigned nArgs) :
-    ArgsVector(nArgs),
-    workDim_(0),
-    globalWorkOffset_(NULL),
-    globalWorkSize_(NULL),
-    localWorkSize_(NULL)
+    ArgsVector(nArgs)
 {
 }
 
 inline
 KernelConfig::~KernelConfig()
 {
-    if (globalWorkOffset_) delete [] globalWorkOffset_;
-    if (globalWorkSize_) delete [] globalWorkSize_;
-    if (localWorkSize_) delete [] localWorkSize_;
 }
 
 
 inline void
-KernelConfig::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
+KernelLaunch::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
         size_t *globalWorkSize, size_t *localWorkSize)
 {
     if(workDim_ < work_dim) {
@@ -124,7 +117,10 @@ KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream
     KernelConfig(k.nArgs_),
     f_(k.f_),
     stream_(stream),
-    lastEvent_(NULL)
+    workDim_(0),
+    globalWorkOffset_(NULL),
+    globalWorkSize_(NULL),
+    localWorkSize_(NULL)
 {
     clRetainKernel(f_);
 }
@@ -133,14 +129,18 @@ inline
 KernelLaunch::~KernelLaunch()
 {
     clReleaseKernel(f_);
+
+    if (globalWorkOffset_) delete [] globalWorkOffset_;
+    if (globalWorkSize_) delete [] globalWorkSize_;
+    if (localWorkSize_) delete [] localWorkSize_;
 }
 
-inline cl_event
+inline
+cl_event
 KernelLaunch::getCLEvent()
 {
-    return lastEvent_;
+    return event_;
 }
-
 
 }}}
 

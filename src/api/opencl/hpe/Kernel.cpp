@@ -11,21 +11,6 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &config)
 {
     if(this == &config) return *this;
 
-    workDim_ = config.workDim_;
-    globalWorkOffset_ = NULL;
-    globalWorkSize_ = NULL;
-    localWorkSize_ = NULL;
-
-    if(config.globalWorkOffset_) globalWorkOffset_ = new size_t[workDim_];
-    if(config.globalWorkSize_) globalWorkSize_ = new size_t[workDim_];
-    if(config.localWorkSize_) localWorkSize_ = new size_t[workDim_];
-
-    for(unsigned i = 0; i < workDim_; i++) {
-        if(globalWorkOffset_) globalWorkOffset_[i] = config.globalWorkOffset_[i];
-        if(globalWorkSize_) globalWorkSize_[i] = config.globalWorkSize_[i];
-        if(localWorkSize_) localWorkSize_[i] = config.localWorkSize_[i];
-    }
-
     resize(config.size());
 
     for(unsigned i = 0; i < config.size(); i++) {
@@ -46,12 +31,10 @@ KernelLaunch::execute()
         CFATAL(ret == CL_SUCCESS, "OpenCL Error setting parameters: %d", ret);
     }
 
-
     trace_.init(mode_.id());
-    cl_event event;
-    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, workDim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, &event);
+    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, workDim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, &event_);
 	clFlush(stream_);
-    trace_.trace(f_, event);
+    trace_.trace(f_, event_);
 
     return Accelerator::error(ret);
 }

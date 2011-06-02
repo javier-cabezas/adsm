@@ -128,15 +128,7 @@ class GMAC_LOCAL KernelConfig : protected std::vector<Argument> {
 protected:
     /** Type containing a vector of arguments for a kernel */
     typedef std::vector<Argument> ArgsVector;
-    /** Number of dimensions the kernel will execute */
-    cl_uint workDim_;
-    /** Index offsets for each kernel dimension */
-    size_t *globalWorkOffset_;
-    /** Number of elements per kernel dimension */
-    size_t *globalWorkSize_;
-    /** Number of elements per kernel work-group dimension */
-    size_t *localWorkSize_;
-
+    
 public:
     /**
      * Default constructor
@@ -148,16 +140,6 @@ public:
      * Default destructor
      */
     ~KernelConfig();
-
-    /**
-     * Set the configuration parameters for a kernel
-     * \param workDim Number of dimensions for the kernel
-     * \param globalWorkOffset Index offsets for each dimenssion
-     * \param globalWorkSize Number of elements per dimension
-     * \param localWorkSize Number of work-group items per dimension
-     */
-    void setConfiguration(cl_uint workDim, size_t *globalWorkOffset,
-        size_t *globalWorkSize, size_t *localWorkSize);
 
     /**
      * Set a new argument for the kernel
@@ -173,30 +155,6 @@ public:
      * \return New kernel configuration object
      */
     KernelConfig &operator=(const KernelConfig &config);
-
-    /**
-     * Get the number of dimensions
-     * \return Number of dimensions
-     */
-    cl_uint workDim() const { return workDim_; }
-
-    /**
-     * Get global offsets
-     * \return Global offsets
-     */
-    size_t *globalWorkOffset() const { return globalWorkOffset_; }
-
-    /**
-     * Get global work size
-     * \return Global work size
-     */
-    size_t *globalWorkSize() const { return globalWorkSize_; }
-
-    /**
-     * Get local work size
-     * \return Local work size
-     */
-    size_t *localWorkSize() const { return localWorkSize_; }
 };
 
 /** An OpenCL kernel that can be executed */
@@ -207,8 +165,17 @@ protected:
     cl_kernel f_;
     /** OpenCL command queue where the kernel is executed */
     cl_command_queue stream_;
-    /** OpenCL event defining when the kernel execution completes */
-    cl_event lastEvent_;
+
+    cl_event event_;
+
+    /** Number of dimensions the kernel will execute */
+    cl_uint workDim_;
+    /** Index offsets for each kernel dimension */
+    size_t *globalWorkOffset_;
+    /** Number of elements per kernel dimension */
+    size_t *globalWorkSize_;
+    /** Number of elements per kernel work-group dimension */
+    size_t *localWorkSize_;
 
     /** Tracer */
     KernelExecution trace_;
@@ -237,6 +204,18 @@ public:
      * \return OpenCL event which is completed after the kernel execution is done
      */
     cl_event getCLEvent();
+
+    /**
+     * Set the configuration parameters for a kernel
+     * \param workDim Number of dimensions for the kernel
+     * \param globalWorkOffset Index offsets for each dimenssion
+     * \param globalWorkSize Number of elements per dimension
+     * \param localWorkSize Number of work-group items per dimension
+     */
+    void setConfiguration(cl_uint workDim, size_t *globalWorkOffset,
+        size_t *globalWorkSize, size_t *localWorkSize);
+
+
 };
 
 }}}

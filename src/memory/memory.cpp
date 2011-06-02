@@ -62,23 +62,23 @@ Protocol *ProtocolInit(unsigned flags)
             rollSize = (size_t)-1;
         }
         if(0 != (flags & 0x1)) {
-            ret = new protocol::Lazy<
+            ret = new gmac::memory::protocol::Lazy<
                 DistributedObject<protocol::lazy::BlockState> >(rollSize);
         }
         else {
-            ret = new protocol::Lazy<
+            ret = new gmac::memory::protocol::Lazy<
                 gmac::memory::SharedObject<protocol::lazy::BlockState> >(rollSize);
         }
     }
 #ifdef USE_VM
     else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new protocol::Lazy<
+            ret = new gmac::memory::protocol::Lazy<
                 DistributedObject<protocol::lazy::BlockState> >(
                 (size_t)-1);
         }
         else {
-            ret = new protocol::Lazy<
+            ret = new gmac::memory::protocol::Lazy<
                 gmac::memory::SharedObject<protocol::lazy::BlockState> >(
                 (size_t)-1);
         }
