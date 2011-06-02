@@ -47,6 +47,7 @@ class GMAC_LOCAL Lazy :
     typedef __impl::memory::protocol::Lazy<T> Parent;
     typedef __impl::memory::Block BlockImpl;
     typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
+    typedef __impl::core::IOBuffer IOBufferImpl;
 
 protected:
 public:
@@ -62,6 +63,17 @@ public:
     gmacError_t releaseObjects();
 
 	gmacError_t toHost(BlockImpl &block);
+
+    gmacError_t copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size, 
+		size_t bufferOffset, size_t blockOffset);
+	
+	gmacError_t copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+		size_t bufferOffset, size_t blockOffset);
+
+    gmacError_t memset(const BlockImpl &block, int v, size_t size, 
+        size_t blockOffset);
+
+
     gmacError_t flushDirty();
 };
 
