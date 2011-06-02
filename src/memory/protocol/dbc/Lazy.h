@@ -34,53 +34,34 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_DBC_LAZY_H_
 #define GMAC_MEMORY_PROTOCOL_DBC_LAZY_H_
 
-#include "memory/protocol/Lazy.h"
 #include "dbc/types.h"
 
 namespace __dbc { namespace memory { namespace protocol {
 
-using __impl::core::IOBuffer;
-
-using __impl::memory::Block;
-using __impl::memory::Object;
-using __impl::memory::StateObject;
-
+template <typename T>
 class GMAC_LOCAL Lazy :
-    public __impl::memory::protocol::Lazy,
+    public __impl::memory::protocol::Lazy<T>,
     public virtual Contract {
-    DBC_TESTED(memory_protocol_Lazy)
+    DBC_TESTED(__impl::memory::protocol::Lazy<T>)
+
+    typedef __impl::memory::protocol::Lazy<T> Parent;
+    typedef __impl::memory::Block BlockImpl;
+    typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
 
 protected:
-    gmacError_t copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
-    gmacError_t copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                   const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
-    gmacError_t copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                  const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
-
-    gmacError_t copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                       const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
-    gmacError_t copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                          const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
-    gmacError_t copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                         const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count);
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
 
-    gmacError_t signalRead(const Object &obj, void *addr);
-    gmacError_t signalWrite(const Object &obj, void *addr);
+    gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
+    gmacError_t signalWrite(BlockImpl &block, hostptr_t addr);
 
-    gmacError_t toIOBuffer(IOBuffer &buffer, size_t bufferOff, const Object &obj, size_t objectOff, size_t n);
-    gmacError_t fromIOBuffer(const Object &obj, size_t objectOff, IOBuffer &buffer, size_t bufferOff, size_t n);
-
-    gmacError_t toPointer(void *dst, const Object &objSrc, size_t objectOff, size_t n);
-    gmacError_t fromPointer(const Object &dstObj, size_t objectOff, const void *src, size_t n);
-
-    gmacError_t copy(const Object &objDst, size_t offDst, const Object &objSrc, size_t offSrc, size_t count);
-    gmacError_t memset(const Object &obj, size_t objectOff, int c, size_t count);
+    gmacError_t acquire(BlockImpl &obj);
+    gmacError_t release(BlockImpl &block);
 };
 
 }}}
+
+#include "memory/protocol/dbc/Lazy-impl.h"
 
 #endif

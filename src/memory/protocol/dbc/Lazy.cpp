@@ -1,10 +1,10 @@
-#if 0
+#ifdef USE_DBC
 
-#include "core/IOBuffer.h"
-
-#include "Lazy.h"
+#include "memory/protocol/Lazy.h"
 
 namespace __dbc { namespace memory { namespace protocol {
+
+#if 0
 
 gmacError_t
 Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
@@ -94,15 +94,6 @@ Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &block
     // POSTCONDITIONS
 
     return ret;
-}
-
-Lazy::Lazy(unsigned limit) :
-    __impl::memory::protocol::Lazy(limit)
-{
-}
-
-Lazy::~Lazy()
-{
 }
 
 gmacError_t
@@ -208,7 +199,8 @@ Lazy::memset(const Object &obj, size_t objectOff, int c, size_t count)
     // POSTCONDITIONS
     return ret;
 }
+#endif
 
 }}}
 
-#endif
+#endif // USE_DBC

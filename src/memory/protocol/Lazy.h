@@ -101,19 +101,19 @@ public:
     
     bool needUpdate(const Block &block) const;
 
-    gmacError_t signalRead(Block &block, hostptr_t addr);
+    TESTABLE gmacError_t signalRead(Block &block, hostptr_t addr);
 
-    gmacError_t signalWrite(Block &block, hostptr_t addr);
+    TESTABLE gmacError_t signalWrite(Block &block, hostptr_t addr);
 
-    gmacError_t acquire(Block &obj);
+    TESTABLE gmacError_t acquire(Block &block);
 
 #ifdef USE_VM
-    gmacError_t acquireWithBitmap(Block &obj);
+    gmacError_t acquireWithBitmap(Block &block);
 #endif
 
     gmacError_t releaseObjects();
 
-    gmacError_t release(Block &block);
+    TESTABLE gmacError_t release(Block &block);
 
     gmacError_t mapToAccelerator(Block &block);
 
@@ -143,11 +143,14 @@ public:
 
 template <typename T>
 class GMAC_LOCAL Lazy : public LazyBase {
+    DBC_FORCE_TEST(Lazy<T>)
+
 public:
-    //! Default constructor
-    /*!
-        \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
-    */
+    /**
+     * Default constructor
+     * 
+     * \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
+     */
     Lazy(size_t limit);
 
     //! Default destructor
@@ -163,7 +166,7 @@ public:
 #include "Lazy-impl.h"
 
 #ifdef USE_DBC
-//#include "dbc/Lazy.h"
+#include "dbc/Lazy.h"
 #endif
 
 #endif
