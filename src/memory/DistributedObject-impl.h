@@ -31,29 +31,9 @@ inline DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mod
 
     // Create a shadow mapping for the host memory
     shadow_ = Memory::shadow(addr_, size_);
-
+    if(shadow_ == NULL) { Memory::unmap(addr_, size_); return; }
     valid_ = true;
 
-#if 0
-    accptr_t acceleratorAddr = accptr_t(NULL);
-
-#ifdef USE_VM
-    // Allocate accelerator memory
-    gmacError_t ret = 
-        owner.map(acceleratorAddr, addr_, size, unsigned(SubBlockSize_));
-#else
-    // Allocate accelerator memory
-    gmacError_t ret = 
-        owner.map(acceleratorAddr, addr_, size);
-#endif
-
-    if(ret == gmacSuccess) valid_ = true;
-
-    // Populate the block-set
-    acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::Mode *>()));
-    AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
-    it->second.push_back(&owner);
-#endif
 
     hostptr_t mark = addr_;
     int offset = 0;
