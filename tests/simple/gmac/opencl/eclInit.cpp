@@ -12,7 +12,7 @@ const char *vecSizeStr = "GMAC_VECSIZE";
 const size_t vecSizeDefault = 16 * 1024 * 1024;
 
 unsigned vecSize = 0;
-const unsigned blockSize = 512;
+const unsigned blockSize = 256;
 
 const char *msg = "Done!";
 

@@ -3,7 +3,7 @@
 #include <gmac/opencl.h>
 
 const size_t size = 4 * 1024 * 1024;
-const size_t blockSize = 32;
+const size_t blockSize = 512;
 
 const char *kernel = "\
 __kernel void reset(__global long *a, unsigned long size, long v)\
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     assert(eclGetKernel("reset", &kernel) == eclSuccess);
 
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 0, sizeof(mem), &tmp) == eclSuccess);
     assert(eclSetKernelArg(kernel, 1, sizeof(size), &size) == eclSuccess);
     assert(eclSetKernelArg(kernel, 2, sizeof(val), &val) == eclSuccess);
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
