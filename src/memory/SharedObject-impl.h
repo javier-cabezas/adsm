@@ -91,8 +91,14 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
 
     if (valid_ == true) {
         // Create a shadow mapping for the host memory
-        // TODO: check address
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
+        if(shadow_ == NULL) {
+            valid_ = false;;
+            // We do not need to release memory, because the object 
+            // destructor will do it for us
+            return;
+        }
+
         // Populate the block-set
         hostptr_t mark = addr_;
         ptroff_t offset = 0;
