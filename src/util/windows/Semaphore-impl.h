@@ -7,8 +7,7 @@ Semaphore::post()
     EnterCriticalSection(&mutex_);
 
     val_++;
-    if(val_ >= 0)
-        WakeConditionVariable(&cond_);
+    WakeConditionVariable(&cond_);
 
     LeaveCriticalSection(&mutex_);
 }

@@ -52,7 +52,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
 {
     TRACE(GLOBAL, "Initializing OpenCL API");
     cl_uint platformSize = 0;
-    cl_int ret;
+    cl_int ret = CL_SUCCESS;
     ret = clGetPlatformIDs(0, NULL, &platformSize);
     CFATAL(ret == CL_SUCCESS);
     cl_platform_id * platforms = new cl_platform_id[platformSize];

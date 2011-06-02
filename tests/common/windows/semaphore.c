@@ -14,8 +14,8 @@ void gmac_sem_post(gmac_sem_t *sem, int v)
     EnterCriticalSection(&sem->mutex);
 
     sem->value += v;
-    for(i = 0; i < sem->value; i++)
-        if(sem->value > 0) WakeConditionVariable(&sem->cond);
+    for(i = 0; i < v; i++)
+        WakeConditionVariable(&sem->cond);
 
     LeaveCriticalSection(&sem->mutex);
 }

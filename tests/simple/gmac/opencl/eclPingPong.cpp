@@ -42,7 +42,7 @@ void *chain(void *ptr)
 
     ret = eclMalloc((void **)&a[*id], vecSize * sizeof(float));
     assert(ret == eclSuccess);
-    valueInit(a[*id], *id, vecSize);
+    valueInit(a[*id], float(*id), vecSize);
     int next = (*id == nIter - 1) ? 0 : *id + 1;
     size_t globalSize = vecSize;
 
