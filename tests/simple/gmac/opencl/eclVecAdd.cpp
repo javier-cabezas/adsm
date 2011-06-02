@@ -9,7 +9,7 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault =  16 * 1024 * 1024;
 unsigned vecSize = 0;
 
 const size_t blockSize = 256;
@@ -17,10 +17,9 @@ const size_t blockSize = 256;
 const char *msg = "Done!";
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
+__kernel void vecAdd(__global float *c, __global float *a, __global float *b, unsigned size)\
 {\
     unsigned i = get_global_id(0);\
-    if(i >= size) return;\
 \
     c[i] = a[i] + b[i];\
 }\
@@ -52,10 +51,10 @@ int main(int argc, char *argv[])
     float sum = 0.f;
 
     getTime(&s);
-    randInit(a, vecSize);
-    randInit(b, vecSize);
-    //init(a, int(vecSize), 1.f);
-    //init(b, int(vecSize), 1.f);
+    randInitMax(a, 1.f, vecSize);
+    randInitMax(b, 1.f, vecSize);
+    //valueInit(a, 1000.f, vecSize);
+    //valueInit(b, 0.001f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -65,12 +64,8 @@ int main(int argc, char *argv[])
     
     // Call the kernel
     getTime(&s);
-    size_t localSize = blockSize;
-    size_t globalSize = vecSize / blockSize;
-    if(vecSize % blockSize) globalSize++;
-    globalSize *= localSize;
-
     ecl_kernel kernel;
+    size_t globalSize = vecSize;
 
     assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
     cl_mem tmp = cl_mem(eclPtr(c));
@@ -80,7 +75,7 @@ int main(int argc, char *argv[])
     tmp = cl_mem(eclPtr(b));                        
     assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
     assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
-    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
