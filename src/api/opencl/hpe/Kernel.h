@@ -123,42 +123,10 @@ public:
     unsigned getNArgs() const;
 };
 
-
-class GMAC_LOCAL KernelConfig : protected std::vector<Argument> {
-protected:
-    /** Type containing a vector of arguments for a kernel */
-    typedef std::vector<Argument> ArgsVector;
-    
-public:
-    /**
-     * Default constructor
-     * \param nArgs Number of arguments for the kernel
-     */
-    KernelConfig(unsigned nArgs);
-
-    /**
-     * Default destructor
-     */
-    ~KernelConfig();
-
-    /**
-     * Set a new argument for the kernel
-     * \param arg Pointer to the value for the argument
-     * \param size Size (in bytes) of the argument
-     * \param index Index of the argument in the argument list
-     */
-    void setArgument(const void * arg, size_t size, unsigned index);
-
-    /**
-     * Default assugment operator
-     * \param config Kernel configuration to be assigned
-     * \return New kernel configuration object
-     */
-    KernelConfig &operator=(const KernelConfig &config);
-};
-
 /** An OpenCL kernel that can be executed */
-class GMAC_LOCAL KernelLaunch : public core::hpe::KernelLaunch, public KernelConfig, public util::NonCopyable {
+class GMAC_LOCAL KernelLaunch :
+    public core::hpe::KernelLaunch,
+    public util::NonCopyable {
     friend class Kernel;
 protected:
     /** OpenCL kernel code */
@@ -215,6 +183,13 @@ public:
     void setConfiguration(cl_uint workDim, size_t *globalWorkOffset,
         size_t *globalWorkSize, size_t *localWorkSize);
 
+    /**
+     * Set a new argument for the kernel
+     * \param arg Pointer to the value for the argument
+     * \param size Size (in bytes) of the argument
+     * \param index Index of the argument in the argument list
+     */
+    cl_int setArgument(const void * arg, size_t size, unsigned index);
 
 };
 

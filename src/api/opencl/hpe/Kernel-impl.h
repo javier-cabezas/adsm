@@ -50,18 +50,6 @@ Kernel::getNArgs() const
     return nArgs_;
 }
 
-inline
-KernelConfig::KernelConfig(unsigned nArgs) :
-    ArgsVector(nArgs)
-{
-}
-
-inline
-KernelConfig::~KernelConfig()
-{
-}
-
-
 inline void
 KernelLaunch::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
         size_t *globalWorkSize, size_t *localWorkSize)
@@ -101,10 +89,12 @@ KernelLaunch::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
 
 }
 
-inline void
-KernelConfig::setArgument(const void *arg, size_t size, unsigned index)
+inline cl_int
+KernelLaunch::setArgument(const void *arg, size_t size, unsigned index)
 {
-    ArgsVector::at(index).setArgument(arg, size);
+    TRACE(LOCAL, "Setting param %u @ %p ("FMT_SIZE")", index, arg, size);
+    cl_int ret = clSetKernelArg(f_, index, size, arg);
+    return ret;
 }
 
 inline
@@ -114,7 +104,6 @@ KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream
 #else
     core::hpe::KernelLaunch(dynamic_cast<core::hpe::Mode &>(mode)),
 #endif
-    KernelConfig(k.nArgs_),
     f_(k.f_),
     stream_(stream),
     workDim_(0),
