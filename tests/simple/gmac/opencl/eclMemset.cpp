@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	fprintf(stderr,"%d\n", check(ptr, size / 4));
 
 	fprintf(stderr,"Test full memset: ");
-    memset(ptr, 0, size * sizeof(long));
+    memset(ptr, 0, size * sizeof(unsigned));
 
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
 
