@@ -194,14 +194,14 @@ do_stencil(void * ptr)
 
 	// Alloc 3 volumes for 2-degree time integration
 	if(eclMalloc((void **)&descr->u2, descr->size()) != eclSuccess)
-		CUFATAL();
+		abort();
 	eclMemset(descr->u2, 0, descr->size());
 	if(eclMalloc((void **)&descr->u3, descr->size()) != eclSuccess)
-		CUFATAL();
+		abort();
     eclMemset(descr->u3, 0, descr->size());
 
     if(eclMalloc((void **) &v, descr->realSize()) != eclSuccess)
-		CUFATAL();
+		abort();
 
     for (size_t k = 0; k < descr->slices; k++) {        
         for (size_t j = 0; j < descr->dimRealElems; j++) {        
@@ -219,7 +219,7 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-    size_t localSize[2] = {32, 8};
+    size_t localSize[2] = {64, 4};
     size_t globalSize[2];
     globalSize[0] = descr->dimElems - 2 * STENCIL;
     globalSize[1] = descr->dimElems - 2 * STENCIL;
