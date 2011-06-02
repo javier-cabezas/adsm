@@ -20,10 +20,10 @@ static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
 {
     enterGmac();
-    ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
+    gmacError_t ret = ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
     exitGmac();
 
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);

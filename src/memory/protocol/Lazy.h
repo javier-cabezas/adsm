@@ -58,42 +58,40 @@ class Block;
 template <typename State> class StateBlock;
 
 namespace protocol { 
-//! A lazy memory coherence protocol
-/*! This protocol eagerly transfer data from host to accelerator memory if the user
-    sets up a limit, otherwise data is transferred when the use requests a
-    release operation. Data is transferred from accelerator memory to host memory
-    lazily, whenever it is needed by the application
-*/
+/**
+ * A lazy memory coherence protocol
+ * This protocol eagerly transfer data from host to accelerator memory if the user
+ * sets up a limit, otherwise data is transferred when the use requests a
+ * release operation. Data is transferred from accelerator memory to host memory
+ * lazily, whenever it is needed by the application
+ */
 class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
 protected:
-    //! Return the state corresponding to a memory protection
-    /*!
-        \param prot Memory protection
-        \return Protocol state
-    */
+    /** Return the state corresponding to a memory protection
+     * 
+     * \param prot Memory protection
+     * \return Protocol state
+     */
     lazy::State state(GmacProtection prot) const;
 
-    //! Maximum number of blocks in dirty state
+    /// Maximum number of blocks in dirty state
     size_t limit_;
 
-    //! Dirty block list
-    //! List of all memory blocks in Dirty state
+    /// Dirty block list. List of all memory blocks in Dirty state
     BlockList dbl_;
 
-    //! Add a new block to the Dirty Block List
+    /// Add a new block to the Dirty Block List
     void addDirty(Block &block);
 
-    //! Default constructor
-    /*!
-        \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
-    */
+    /** Default constructor
+     * 
+     * \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
+     */
     LazyBase(size_t limit);
 
-    //! Default destructor
+    /// Default destructor
     virtual ~LazyBase();
-
-    gmacError_t copyToAccelerator(lazy::Block &block);
 
 public:
     // Protocol Interface
@@ -107,13 +105,13 @@ public:
 
     TESTABLE gmacError_t acquire(Block &block);
 
+    TESTABLE gmacError_t release(Block &block);
+
 #ifdef USE_VM
     gmacError_t acquireWithBitmap(Block &block);
 #endif
 
-    gmacError_t releaseObjects();
-
-    TESTABLE gmacError_t release(Block &block);
+    TESTABLE gmacError_t releaseObjects();
 
     gmacError_t mapToAccelerator(Block &block);
 
@@ -121,7 +119,7 @@ public:
 
     gmacError_t deleteBlock(Block &block);
 
-	gmacError_t toHost(Block &block);
+	TESTABLE gmacError_t toHost(Block &block);
 
 #if 0
     gmacError_t toAccelerator(Block &block);
@@ -136,7 +134,7 @@ public:
     gmacError_t memset(const Block &block, int v, size_t size, 
         size_t blockOffset);
 
-    gmacError_t flushDirty();
+    TESTABLE gmacError_t flushDirty();
 
     gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
 };
@@ -153,7 +151,7 @@ public:
      */
     Lazy(size_t limit);
 
-    //! Default destructor
+    /// Default destructor
     virtual ~Lazy();
 
     // Protocol Interface
