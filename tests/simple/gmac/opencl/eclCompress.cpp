@@ -1,9 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
-#include <pthread.h>
 #include <semaphore.h>
 
 #include <gmac/opencl>
@@ -28,7 +26,7 @@ const unsigned blockSize = 16;
 
 static float *quant_in, *idct_in;
 
-static pthread_t dct_id, quant_id, idct_id;
+static thread_t dct_id, quant_id, idct_id;
 static gmac_sem_t quant_data, idct_data;
 static gmac_sem_t quant_free, idct_free;
 
@@ -50,7 +48,7 @@ double timeIDCTFree  = 0.0;
 void __randInit(float *a, unsigned size)
 {
 	for(unsigned i = 0; i < size; i++) {
-		a[i] = 10.0 * rand() / RAND_MAX;
+		a[i] = 10.0f * rand() / RAND_MAX;
 	}
 }
 
@@ -238,17 +236,17 @@ int main(int argc, char *argv[])
 	gmac_sem_init(&idct_data,  0); 
 	gmac_sem_init(&idct_free,  0); 
 
-	srand(time(NULL));
+	srand(unsigned(time(NULL)));
 
 	getTime(&s);
 
-	pthread_create(&dct_id, NULL, dct_thread, NULL);
-	pthread_create(&quant_id, NULL, quant_thread, NULL);
-	pthread_create(&idct_id, NULL, idct_thread, NULL);
+	dct_id = thread_create(dct_thread, NULL);
+	quant_id = thread_create(quant_thread, NULL);
+	idct_id = thread_create(idct_thread, NULL);
 
-	pthread_join(dct_id, NULL);
-	pthread_join(quant_id, NULL);
-	pthread_join(idct_id, NULL);
+	thread_wait(dct_id);
+	thread_wait(quant_id);
+	thread_wait(idct_id);
 
 	getTime(&t);
 

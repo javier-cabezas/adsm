@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #include <semaphore.h>
 
@@ -41,7 +40,7 @@ stage_t s_dct, s_quant, s_idct;
 void __randInit(float *a, size_t size)
 {
 	for(unsigned i = 0; i < size; i++) {
-		a[i] = 10.0 * rand() / RAND_MAX;
+		a[i] = 10.0f * rand() / RAND_MAX;
 	}
 }
 
@@ -152,7 +151,6 @@ void *dct_thread(void *args)
 
 void *quant_thread(void *args)
 {
-	gmacError_t ret;
     gmactime_t s, t;
 
     barrier_wait(&barrierInit);
@@ -204,7 +202,6 @@ void *quant_thread(void *args)
 
 void *idct_thread(void *args)
 {
-	gmacError_t ret;
     gmactime_t s, t;
 
     barrier_wait(&barrierInit);
@@ -282,7 +279,7 @@ int main(int argc, char *argv[])
 	gmac_sem_init(&s_quant.free, 0);
 	gmac_sem_init(&s_idct.free, 0);
 
-	srand(time(NULL));
+	srand(unsigned(time(NULL)));
 
 	getTime(&s);
 

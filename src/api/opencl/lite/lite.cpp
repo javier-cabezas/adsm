@@ -61,7 +61,7 @@ cleanup_contexts:
     return error_code;
 }
 
-GMAC_API cl_int clInitHelpers(size_t *platforms)
+cl_int APICALL clInitHelpers(size_t *platforms)
 {
     cl_int error_code;
     cl_uint num_platforms = 0;
@@ -94,7 +94,7 @@ cleanup:
     return error_code;
 }
 
-GMAC_API cl_helper *clGetHelpers()
+cl_helper * APICALL clGetHelpers()
 {
     cl_helper *ret = new cl_helper[helpers.size()];
     for (size_t i = 0; i < helpers.size(); i++) {
@@ -103,7 +103,7 @@ GMAC_API cl_helper *clGetHelpers()
     return ret;
 }
 
-GMAC_API cl_int clReleaseHelpers()
+cl_int APICALL clReleaseHelpers()
 {
     cl_int error_code = CL_SUCCESS;
     for (size_t i = 0; i < helpers.size(); i++) {
@@ -129,7 +129,7 @@ GMAC_API cl_int clReleaseHelpers()
 
 static const char *build_flags = "-I.";
 
-GMAC_API cl_program clHelperLoadProgramFromFile(cl_helper state, const char *file_name, cl_int *error_code)
+cl_program APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_name, cl_int *error_code)
 {
     /* Let's all thank Microsoft for such a great compatibility */
 #if defined(_MSC_VER)
