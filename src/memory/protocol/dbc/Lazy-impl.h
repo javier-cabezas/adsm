@@ -69,6 +69,40 @@ Lazy<T>::release(BlockImpl &_block)
     return ret;
 }
 
+template <typename T>
+gmacError_t
+Lazy<T>::releaseObjects()
+{
+    gmacError_t ret = Parent::releaseObjects();
+
+    ENSURES(Parent::dbl_.size() == 0);
+
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+Lazy<T>::toHost(BlockImpl &_block)
+{
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+    gmacError_t ret = Parent::toHost(block);
+
+    ENSURES(block.getState() != __impl::memory::protocol::lazy::Invalid);
+
+    return ret;
+}
+
+template <typename T>
+gmacError_t
+Lazy<T>::flushDirty()
+{
+    gmacError_t ret = Parent::flushDirty();
+
+    ENSURES(Parent::dbl_.size() == 0);
+
+    return ret;
+}
+
 }}}
 
 #endif //GMAC_MEMORY_PROTOCOL_DBC_LAZY_IMPL_H_

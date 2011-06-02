@@ -8,18 +8,6 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-inline 
-Argument::Argument() :
-    size_(0)
-{}
-
-inline void
-Argument::setArgument(const void *ptr, size_t size)
-{
-    size_ = size;
-    ::memcpy(stack_, ptr, size);
-}
-
 inline
 Kernel::Kernel(const core::hpe::KernelDescriptor & k, cl_kernel kernel) :
     gmac::core::hpe::Kernel(k), f_(kernel)
@@ -89,12 +77,12 @@ KernelLaunch::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
 
 }
 
-inline cl_int
+inline gmacError_t
 KernelLaunch::setArgument(const void *arg, size_t size, unsigned index)
 {
     TRACE(LOCAL, "Setting param %u @ %p ("FMT_SIZE")", index, arg, size);
     cl_int ret = clSetKernelArg(f_, index, size, arg);
-    return ret;
+    return Accelerator::error(ret);
 }
 
 inline

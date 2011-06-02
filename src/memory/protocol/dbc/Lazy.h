@@ -58,6 +58,11 @@ public:
 
     gmacError_t acquire(BlockImpl &obj);
     gmacError_t release(BlockImpl &block);
+
+    gmacError_t releaseObjects();
+
+	gmacError_t toHost(BlockImpl &block);
+    gmacError_t flushDirty();
 };
 
 }}}

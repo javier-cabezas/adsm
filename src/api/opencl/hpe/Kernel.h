@@ -52,45 +52,6 @@ class Mode;
 class KernelConfig;
 class KernelLaunch;
 
-/** Argument stack for a kernel call */
-class GMAC_LOCAL Argument : public util::ReusableObject<Argument> {
-	friend class Kernel;
-protected:
-    /** Maximun size of argument passed to the kernel */
-    static const unsigned StackSize_ = 4096;
-
-    /** Size (in bytes) of the arument passed to the kernel */
-    size_t size_;
-
-    /** Memory pool to store kernel argument */
-    uint8_t stack_[StackSize_];
-public:
-    /**
-     * Default constructor
-     */
-    Argument();
-
-    /**
-     * Sets an argument
-     * \param ptr Pointer to memory where the argument value is
-     * \param size Size (in bytes) of the argument
-     */
-    void setArgument(const void *ptr, size_t size);
-
-    /**
-     * Get the start of the memory pool where the artument is stored
-     * \return Pointer to the first argument
-     */
-    const void * ptr() const { return stack_; }
-
-    /**
-     * Get the size (in bytes) of the argument
-     * \return Size (in bytes) of the argument
-     */
-    size_t size() const { return size_; }
-};
-
-
 /** A kernel that can be executed by an OpenCL accelerator */
 class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
     friend class KernelLaunch;
@@ -189,7 +150,7 @@ public:
      * \param size Size (in bytes) of the argument
      * \param index Index of the argument in the argument list
      */
-    cl_int setArgument(const void * arg, size_t size, unsigned index);
+    gmacError_t setArgument(const void * arg, size_t size, unsigned index);
 
 };
 
