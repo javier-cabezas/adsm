@@ -219,7 +219,7 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-    size_t localSize[2] = {64, 4};
+    size_t localSize[2] = {32, 4};
     size_t globalSize[2];
     globalSize[0] = descr->dimElems - 2 * STENCIL;
     globalSize[1] = descr->dimElems - 2 * STENCIL;

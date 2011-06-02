@@ -28,7 +28,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
         cl_mem mem = buffer.getCLBuffer();
 
         buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
-        cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
+        cl_int err = clEnqueueUnmapMemObject(stream, mem, buffer.addr(),
                 0, NULL, &start);
 
         ASSERTION(err == CL_SUCCESS);
@@ -36,7 +36,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
         ret = clEnqueueCopyBuffer(stream, mem, acc.get(), bufferOff,
                 acc.offset(), count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
-        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
+        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
@@ -74,7 +74,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
         cl_mem mem = buffer.getCLBuffer();
 
         buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
-        cl_int err = clEnqueueUnmapMemObject(cmd_.front(), mem, buffer.addr(),
+        cl_int err = clEnqueueUnmapMemObject(stream, mem, buffer.addr(),
                 0, NULL, &start);
 
         ASSERTION(err == CL_SUCCESS);
@@ -82,7 +82,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
         ret = clEnqueueCopyBuffer(stream, acc.get(), mem,
                 acc.offset(), bufferOff, count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_FALSE,
+        hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
 
