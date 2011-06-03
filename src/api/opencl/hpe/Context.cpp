@@ -165,7 +165,8 @@ gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
-    ret = syncCLstream(stream_);
+    //ret = syncCLstream(stream_);
+	if(buffer_ != NULL) ret = buffer_->wait();
     trace::ExitCurrentFunction();
     return ret;
 }
