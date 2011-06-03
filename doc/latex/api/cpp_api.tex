@@ -74,7 +74,7 @@ Constant string with the name of a function to be executed on an accelerator.
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{name}: string with the name of the OpenCL kernel to be retrieved
-  \item \texttt{err}: Reference to store the error code. eclSuccess on succes, an error code 
+  \item \texttt{err}: Reference to store the error code.\ eclSuccess on success, an error code
   otherwise
 \end{itemize}
 
@@ -268,29 +268,29 @@ hint dv(ECL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 \end{itemize}
 \textbf{Returns}: Destination shared memory address
 
-\subsection{\texttt{void ecl::send(THREAD\_T tid)}}
-
-\textbf{Description}: Send the execution mode associated to the current CPU thread to another CPU thread
-\begin{itemize}
-  \item \texttt{tid}: Thread ID of the destionation CPU thread
-\end{itemize}
-
-\subsection{\texttt{void ecl::receive()}}
-
-\textbf{Description}: Receive an execution mode from another CPU thread
-
-\subsection{\texttt{void ecl::sendReceive(THREAD\_T tid)}}
-
-\textbf{Description}: Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
-\begin{itemize}
-  \item \texttt{tid}: Thread ID of the destination CPU thread
-\end{itemize}
-
-\subsection{\texttt{void ecl::copy(THREAD\_T tid)}}
-
-\textbf{Description}: Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
-\begin{itemize}
-  \item \texttt{tid}: Thread ID of the destination CPU thread
-\end{itemize}
+%\subsection{\texttt{void ecl::send(THREAD\_T tid)}}
+%
+%\textbf{Description}: Send the execution mode associated to the current CPU thread to another CPU thread
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destionation CPU thread
+%\end{itemize}
+%
+%\subsection{\texttt{void ecl::receive()}}
+%
+%\textbf{Description}: Receive an execution mode from another CPU thread
+%
+%\subsection{\texttt{void ecl::sendReceive(THREAD\_T tid)}}
+%
+%\textbf{Description}: Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destination CPU thread
+%\end{itemize}
+%
+%\subsection{\texttt{void ecl::copy(THREAD\_T tid)}}
+%
+%\textbf{Description}: Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destination CPU thread
+%\end{itemize}
 
 % vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:
