@@ -93,6 +93,8 @@ public:
      * \return Error code
      */
     cl_int sync() const;
+
+    bool empty() const;
 };
 
 /** A map of host memory addresses associated to OpenCL memory objects */

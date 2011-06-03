@@ -189,6 +189,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
+    if (cmd_.empty() == true) createCLstream();
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
@@ -207,6 +208,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t count, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
+    if (cmd_.empty() == true) createCLstream();
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
@@ -225,6 +227,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
+    if (cmd_.empty() == true) createCLstream();
     TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
         src.get(), dst.get());
     // TODO: This is a very inefficient implementation. We might consider
@@ -247,6 +250,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
 gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
 {
     trace::EnterCurrentFunction();
+    if (cmd_.empty() == true) createCLstream();
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
@@ -537,6 +541,7 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
     if (clMem_.getCLMem(size, mem, addr)) {
         goto exit;
     }
+    if (cmd_.empty() == true) createCLstream();
 
     // Get a memory object in the host memory
     mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
