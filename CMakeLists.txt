@@ -238,6 +238,7 @@ install(FILES ${GMAC_HEADERS}
         DESTINATION include/gmac
         COMPONENT headers)
 
+
 # Check if tests must be compiled
 option(MAKE_TESTS "Compile GMAC tests" OFF)
 if(MAKE_TESTS)

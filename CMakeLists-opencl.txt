@@ -25,4 +25,9 @@ if(USE_OPENCL)
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl_types.h)
 
     set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-hpe")
+
+
+    install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf
+	    DESTINATION doc COMPONENT documentation)
+
 endif(USE_OPENCL)
