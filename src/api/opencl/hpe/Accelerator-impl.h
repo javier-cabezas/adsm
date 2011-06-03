@@ -58,6 +58,15 @@ inline cl_int CommandList::sync() const
     return ret;
 }
 
+inline bool CommandList::empty() const
+{
+    bool ret;
+    lockRead();
+    ret = Parent::empty();
+    unlock();
+    return ret;
+}
+
 
 inline HostMap::~HostMap()
 {
