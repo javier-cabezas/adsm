@@ -454,6 +454,7 @@ gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Waiting for stream %p in Accelerator %p", stream, this);
+    CFATAL(clFlush(stream) == CL_SUCCESS);
     cl_int ret = clFinish(stream);
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_command_queue: %d", ret);
     trace::ExitCurrentFunction();
