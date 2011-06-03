@@ -58,29 +58,29 @@ public:
         base_(base),
         offset_(0),
         pasId_(0)
-    {  clRetainMemObject(base_); }
+    {  /*clRetainMemObject(base_);*/ }
 
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
         base_(ptr.base_),
         offset_(ptr.offset_),
         pasId_(ptr.pasId_)
-    { if(base_ != 0) clRetainMemObject(base_); }
+    { /*if(base_ != 0) clRetainMemObject(base_);*/ }
 
     inline ~_opencl_ptr_t() {
-        if(base_ != 0) clReleaseMemObject(base_);
+        //if(base_ != 0) clReleaseMemObject(base_); 
     }
 
     inline void operator()(cl_mem mem) {
         base_ = mem;
-        clRetainMemObject(base_);
+        //clRetainMemObject(base_);
     }
 
     inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr) {
         if(this != &ptr) {
-            clReleaseMemObject(base_);
+            //clReleaseMemObject(base_);
             base_ = ptr.base_;
             pasId_ = ptr.pasId_;
-            clRetainMemObject(base_);
+            //clRetainMemObject(base_);
         }
         return *this;
     }
