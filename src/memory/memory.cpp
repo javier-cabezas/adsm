@@ -63,11 +63,11 @@ Protocol *ProtocolInit(unsigned flags)
         }
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
-                DistributedObject<protocol::lazy::BlockState> >(rollSize);
+                DistributedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
         }
         else {
             ret = new gmac::memory::protocol::Lazy<
-                gmac::memory::SharedObject<protocol::lazy::BlockState> >(rollSize);
+                gmac::memory::SharedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
         }
     }
 #ifdef USE_VM
