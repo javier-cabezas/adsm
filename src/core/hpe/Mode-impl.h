@@ -145,6 +145,14 @@ Mode::memInfo(size_t &free, size_t &total)
     switchOut();
 }
 
+inline gmacError_t
+Mode::prepareForCall()
+{
+    switchIn();
+    return contextMap_.prepareForCall();
+    switchOut();
+}
+
 }}}
 
 #endif

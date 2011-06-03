@@ -21,7 +21,7 @@ Context::argument(const void *arg, size_t size, unsigned index)
 inline const cl_command_queue
 Context::eventStream() const
 {
-    return streamLaunch_;
+    return stream_;
 }
 
 }}}

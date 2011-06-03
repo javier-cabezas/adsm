@@ -19,7 +19,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     hostptr_t host = buffer.addr() + bufferOff;
 
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    TRACE(LOCAL, "Async copy to accelerator: %p ("FMT_SIZE") @ %p, using stream %p", host, count, acc.get(), stream);
 
     cl_event start;
     cl_int ret;
@@ -42,7 +42,7 @@ gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
     hostptr_t host = buffer.addr() + bufferOff;
 
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
+    TRACE(LOCAL, "Async copy to host: %p ("FMT_SIZE") @ %p, using stream %p", host, count, acc.get(), stream);
     cl_event start;
     cl_int ret;
 

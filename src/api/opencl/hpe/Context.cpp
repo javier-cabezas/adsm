@@ -31,29 +31,14 @@ Context::~Context()
 void Context::setupCLstreams()
 {
     Accelerator &acc = accelerator();
-#if defined(SEPARATE_COMMAND_QUEUES)
-    streamLaunch_   = acc.createCLstream();
-    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
-    streamToAccelerator_ = acc.createCLstream();
-    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToAccelerator_, &acc);
-    streamToHost_   = acc.createCLstream();
-    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
-    streamAccelerator_   = acc.createCLstream();
-    TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
-#else
-    streamLaunch_ = streamToAccelerator_ = streamToHost_ = streamAccelerator_ = acc.getCLstream();
-#endif
+    stream_   = acc.createCLstream();
+    TRACE(LOCAL, "cl_command_queue %p created for acc %p", stream_, &acc);
 }
 
 void Context::cleanCLstreams()
 {
-#if defined(SEPARATE_COMMAND_QUEUES)
     Accelerator &acc = accelerator();
-    acc.destroyCLstream(streamLaunch_);
-    acc.destroyCLstream(streamToAccelerator_);
-    acc.destroyCLstream(streamToHost_);
-    acc.destroyCLstream(streamAccelerator_);
-#endif
+    acc.destroyCLstream(stream_);
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
@@ -109,7 +94,7 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
         ::memcpy(buffer_->addr(), host + offset, len);
         trace::ExitCurrentFunction();
         ASSERTION(size_t(len) <= util::params::ParamBlockSize);
-        ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
+        ret = accelerator().copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, stream_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         offset += len;
@@ -137,7 +122,7 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     while(size_t(offset) < size) {
         ptroff_t len = ptroff_t(buffer_->size());
         if((size - offset) < buffer_->size()) len = ptroff_t(size - offset);
-        ret = accelerator().copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, streamToHost_);
+        ret = accelerator().copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, stream_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         ret = buffer_->wait();
@@ -170,7 +155,7 @@ gmacError_t Context::memset(accptr_t addr, int c, size_t size)
 KernelLaunch &Context::launch(Kernel &kernel)
 {
     trace::EnterCurrentFunction();
-    KernelLaunch *ret = kernel.launch(dynamic_cast<Mode &>(mode_), streamLaunch_);
+    KernelLaunch *ret = kernel.launch(dynamic_cast<Mode &>(mode_), stream_);
     ASSERTION(ret != NULL);
     trace::ExitCurrentFunction();
     return *ret;
@@ -179,11 +164,9 @@ KernelLaunch &Context::launch(Kernel &kernel)
 gmacError_t Context::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
-#if defined(SEPARATE_COMMAND_QUEUES)
     trace::EnterCurrentFunction();	
-    ret = syncCLstream(streamToAccelerator_);
+    ret = syncCLstream(stream_);
     trace::ExitCurrentFunction();
-#endif
     return ret;
 }
 
@@ -191,7 +174,7 @@ gmacError_t Context::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();	
-    ret = syncCLstream(streamLaunch_);
+    ret = syncCLstream(stream_);
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
     trace::ExitCurrentFunction();
     return ret;
@@ -218,7 +201,7 @@ gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer,
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
     gmacError_t ret;
-    ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
+    ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, stream_);
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -233,7 +216,7 @@ gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t
     ASSERTION(off >= 0);
     size_t bytes = (len < buffer.size()) ? len : buffer.size();
     gmacError_t ret;
-    ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
+    ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, stream_);
     trace::ExitCurrentFunction();
     return ret;
 }

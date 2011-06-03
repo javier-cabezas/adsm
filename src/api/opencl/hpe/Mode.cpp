@@ -114,7 +114,8 @@ gmacError_t Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch *&launch
 gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = getContext().prepareForCall();
+    gmacError_t ret = proc_.prepareForCall();
+        
     if(ret == gmacSuccess) {
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     }

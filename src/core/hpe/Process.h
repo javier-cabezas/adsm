@@ -330,6 +330,13 @@ public:
      * given memory range
      */
     core::Mode *owner(const hostptr_t addr, size_t size = 0);
+
+    /**
+     * Waits for pending operations before a kernel call (needed for distributed objects)
+     *
+     * \return gmacSuccess on success, an error code otherwise
+     */
+    gmacError_t prepareForCall();
 };
 
 }}}

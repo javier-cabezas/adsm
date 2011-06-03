@@ -92,6 +92,7 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
     ret = clRetainContext(ctx_);
     CFATAL(ret == CL_SUCCESS, "Unable to retain OpenCL context");
 
+#if 0
     cl_command_queue stream;
     cl_command_queue_properties properties = 0;
 #if defined(USE_TRACE)
@@ -100,6 +101,7 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
     stream = clCreateCommandQueue(ctx_, device_, properties, &ret);
     CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL stream");
     cmd_.add(stream);
+#endif
 }
 
 Accelerator::~Accelerator()
@@ -468,7 +470,7 @@ cl_int Accelerator::queryCLevent(cl_event event)
 gmacError_t Accelerator::syncCLevent(cl_event event)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL, "Accelerator waiting for all pending events");
+    TRACE(LOCAL, "Accelerator waiting for event");
 #if defined(OPENCL_1_1)
 	cl_int status = 0;
 	cl_int ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);	
