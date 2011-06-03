@@ -326,7 +326,7 @@ bool Process::allIntegrated()
 gmacError_t
 Process::prepareForCall()
 {
-    gmacError_t ret;
+    gmacError_t ret = gmacSuccess;
     ModeMap::iterator i;
     lockRead();
     if (global_.size() > 0) {
