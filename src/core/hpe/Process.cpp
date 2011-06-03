@@ -323,4 +323,22 @@ bool Process::allIntegrated()
     return ret;
 }
 
+gmacError_t
+Process::prepareForCall()
+{
+    gmacError_t ret;
+    ModeMap::iterator i;
+    lockRead();
+    if (global_.size() > 0) {
+        for(i = modes_.begin(); i != modes_.end(); i++) {
+            ret = i->first->prepareForCall();
+            if (ret != gmacSuccess) break;
+        }
+    }
+    unlock();
+
+    return ret;
+}
+
+
 }}}

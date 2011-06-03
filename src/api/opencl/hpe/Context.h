@@ -70,14 +70,8 @@ protected:
     /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
 
-    /** OpenCL command queue to request kernel executions */
-    cl_command_queue streamLaunch_;
-    /** OpenCL command queue to request data transfers to the acelerator */
-    cl_command_queue streamToAccelerator_;
-    /** OpenCL command queue to request data transfers to the host */
-    cl_command_queue streamToHost_;
-    /** Default OpenCL command queue */
-    cl_command_queue streamAccelerator_;
+    /** OpenCL command queue to request operations */
+    cl_command_queue stream_;
 
     /** I/O buffer used by the context for data transfers */
     IOBuffer *buffer_;

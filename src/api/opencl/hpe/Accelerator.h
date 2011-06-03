@@ -337,7 +337,7 @@ public:
      */
     virtual gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream) = 0;
 
-	/**
+    /**
      * Gets the default OpenCL command queue
      * \return OpenCL command queue
      */
