@@ -128,6 +128,11 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
     return ret;
 }
 
+inline cl_command_queue
+Accelerator::getCLstream()
+{
+	return cmd_.front();
+}
 
 inline const cl_context
 Accelerator::getCLContext() const
