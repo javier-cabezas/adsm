@@ -415,7 +415,6 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
 cl_command_queue Accelerator::createCLstream()
 {
     trace::EnterCurrentFunction();
-#if defined(SEPARATED_COMMAND_QUEUES)
     cl_command_queue stream;
     cl_int error;
     cl_command_queue_properties prop = 0;
@@ -426,9 +425,6 @@ cl_command_queue Accelerator::createCLstream()
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
     TRACE(LOCAL, "Created OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.add(stream);
-#else
-    cl_command_queue stream = cmd_.front();
-#endif
     trace::ExitCurrentFunction();
     return stream;
 }
@@ -436,7 +432,6 @@ cl_command_queue Accelerator::createCLstream()
 void Accelerator::destroyCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-#if defined(SEPARATED_COMMAND_QUEUES)
 	// We cannot remove the command queue because the OpenCL DLL might
 	// have been already unloaded
     cl_int ret = CL_SUCCESS;
@@ -445,7 +440,6 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 
     TRACE(LOCAL, "Destroyed OpenCL stream %p, in Accelerator %p", stream, this);
     cmd_.remove(stream);
-#endif
     trace::ExitCurrentFunction();
 }
 

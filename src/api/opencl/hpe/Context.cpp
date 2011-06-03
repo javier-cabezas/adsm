@@ -31,6 +31,7 @@ Context::~Context()
 void Context::setupCLstreams()
 {
     Accelerator &acc = accelerator();
+#if defined(SEPARATE_COMMAND_QUEUES)
     streamLaunch_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamLaunch_, &acc);
     streamToAccelerator_ = acc.createCLstream();
@@ -39,6 +40,9 @@ void Context::setupCLstreams()
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamToHost_, &acc);
     streamAccelerator_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", streamAccelerator_, &acc);
+#else
+    streamLaunch_ = streamToAccelerator_ = streamToHost_ = streamAccelerator_ = acc.createCLstream();
+#endif
 }
 
 void Context::cleanCLstreams()
