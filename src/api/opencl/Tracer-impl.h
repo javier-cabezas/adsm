@@ -108,6 +108,8 @@ void KernelExecution::trace(cl_kernel kernel, cl_event event) const
     data->thread = thread_;
     clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, TracePoint::NameSize, data->name, NULL);
     clSetEventCallback(event, CL_COMPLETE, KernelExecution::Callback, data);
+#else
+    clReleaseEvent(event);
 #endif
 }
 

@@ -37,12 +37,14 @@ TEST_F(OpenCLContextTest, ContextMemory)
         Mode *mode = dynamic_cast<Mode *>(Process_->createMode(i));
         ASSERT_TRUE(mode != NULL);
 
-        Context *ctx = ContextFactory::create(*mode);
+        cl_command_queue queue = mode->getAccelerator().createCLstream();
+        Context *ctx = ContextFactory::create(*mode, queue);
         ASSERT_TRUE(ctx != NULL);
 
         ContextTest::Memory(*mode, *ctx);
 
         ContextFactory::destroy(*ctx);
+        mode->getAccelerator().destroyCLstream(queue);
         Process_->removeMode(*mode);
     }
 }
