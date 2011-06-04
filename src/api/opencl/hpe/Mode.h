@@ -89,6 +89,8 @@ protected:
     //! Switch back to CPU mode
     void switchOut();
 
+    cl_command_queue stream_;
+
     void reload();
 
     //! Get the main mode context
@@ -101,7 +103,6 @@ protected:
 
     cl_program program_;
     KernelList kernelList_;
-
 
     //! Default constructor
     /*!

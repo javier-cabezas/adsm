@@ -5,8 +5,8 @@
 #include "barrier.h"
 #include "utils.h"
 
-#define THREADS 16
-#define ITERATIONS 100
+#define THREADS 8
+#define ITERATIONS 50
 
 const unsigned size = 1024 * 1024;
 const unsigned totalSize = THREADS * size;
@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
 {
     assert(eclCompileSource(kernel) == eclSuccess);
 
-	assert(eclMalloc((void **)&ptr, totalSize * sizeof(unsigned)) == eclSuccess);
+    assert(eclMalloc((void **)&ptr, totalSize * sizeof(unsigned)) == eclSuccess);
 
-	// Call the kernel
+    // Call the kernel
     size_t globalSize = size_t(totalSize);
     cl_mem tmp = cl_mem(eclPtr(ptr));
 
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     for (unsigned i = 0; i < ITERATIONS; i++) {
         assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
         sentinel++;
+        printf("Iteration %u\n", i);
         barrier_wait(&barrier);
         barrier_wait(&barrier);
     }
@@ -89,10 +90,10 @@ int main(int argc, char *argv[])
          thread_wait(threads[i]);
     }
 
-printf("Sentinel %u\n", sentinel);
+    printf("Sentinel %u\n", sentinel);
     for (unsigned i = 0; i < totalSize; i++) {
         if (ptr[i] != 2 * ITERATIONS) {
-            printf("%u vs %u\n", ptr[i], 2 * ITERATIONS);
+            printf("Pos: %u. %u vs %u\n", i, ptr[i], 2 * ITERATIONS);
             abort();
         }
     }

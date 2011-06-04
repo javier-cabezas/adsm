@@ -97,12 +97,12 @@ protected:
      * Default OpenCL context constructor
      * \param mode OpenCL execution mode associated to the context
      */
-	Context(Mode &mode);
+    Context(Mode &mode, cl_command_queue stream);
 
     /**
      * Default OpenCL context destructor
      */
-	~Context();
+    ~Context();
 
 public:
     /**
