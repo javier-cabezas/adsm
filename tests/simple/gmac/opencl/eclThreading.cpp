@@ -5,7 +5,7 @@
 #include "barrier.h"
 #include "utils.h"
 
-#define THREADS 8
+#define THREADS 16
 #define ITERATIONS 50
 
 const unsigned size = 1024 * 1024;

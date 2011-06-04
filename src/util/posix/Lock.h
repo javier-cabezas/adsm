@@ -48,7 +48,6 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 class GMAC_API SpinLock : public __impl::util::__Lock {
-    DBC_FORCE_TEST(SpinLock)
 
 protected:
 	mutable pthread_spinlock_t spinlock_;
