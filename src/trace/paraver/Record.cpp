@@ -50,7 +50,7 @@ Event::Event(Thread *thread, uint64_t when, uint64_t event, int64_t value) :
 	when_(when),
 	event_(event),
 	value_(value)
-{}
+{ }
 
 Communication::Communication(Thread *src, Thread *dst, uint64_t start, uint64_t end, uint64_t size) :
 	src_(src->getTask(), src->getApp(), src->getId()),
