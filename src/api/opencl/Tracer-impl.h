@@ -130,7 +130,7 @@ void KernelExecution::Callback(cl_event event, cl_int status, void *data)
     if(ret != CL_SUCCESS) return;
     delta = (ended - started) / 1000;
     clReleaseEvent(event);
-    
+
     trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
     trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
 

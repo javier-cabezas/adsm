@@ -46,7 +46,7 @@ inline gmacError_t ContextMap::prepareForCall()
 {
     Parent::iterator i;
     gmacError_t ret = gmacSuccess;
-    lockRead();
+    lockWrite();
     for(i = begin(); i != end(); i++) {
         ret = i->second->prepareForCall();
         if(ret != gmacSuccess) break;
