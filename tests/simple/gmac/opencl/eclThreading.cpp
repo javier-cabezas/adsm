@@ -93,12 +93,10 @@ int main(int argc, char *argv[])
     printf("Sentinel %u\n", sentinel);
     for (unsigned i = 0; i < totalSize; i++) {
         if (ptr[i] != 2 * ITERATIONS) {
-            printf("Pos: %u. %u vs %u\n", i, ptr[i], 2 * ITERATIONS);
+            printf("Pos: %u (%u). %u vs %u\n", i, i % size, ptr[i], 2 * ITERATIONS);
             abort();
         }
     }
-
-
 
     eclReleaseKernel(kernel);
 
