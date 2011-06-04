@@ -226,6 +226,8 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
+
+	gmacError_t prepareForCall();
 };
 }}}
 

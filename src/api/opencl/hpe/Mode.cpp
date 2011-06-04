@@ -126,8 +126,10 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 
 gmacError_t Mode::acquireObjects()
 {
+	lock();
     validObjects_ = false;
     releasedObjects_ = false;
+	unlock();
     return error_;
 }
 

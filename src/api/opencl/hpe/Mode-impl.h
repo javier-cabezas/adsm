@@ -88,7 +88,14 @@ gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src
     return ret;
 }
 
-
+inline gmacError_t
+Mode::prepareForCall()
+{
+    switchIn();
+    gmacError_t ret = getAccelerator().syncCLstream(stream_);
+    switchOut();
+	return ret;
+}
 
 }}}
 
