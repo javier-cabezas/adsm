@@ -43,14 +43,14 @@ gmacError_t Mode::setActiveQueue(cl_command_queue queue)
     bool valid = queues_.exists(queue);
     if(valid == false) return gmacErrorInvalidValue;
     active_ = queue;
-    lock();
+	util::Lock::lock();
     return gmacSuccess;
 }
 
 void Mode::deactivateQueue()
 {
     /* active_ = cl_command_queue(0); */
-    core::Mode::unlock();
+	util::Lock::unlock();
 }
 
 void Mode::removeQueue(cl_command_queue queue)

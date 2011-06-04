@@ -337,7 +337,7 @@ public:
     const memory::vm::Bitmap &getDirtyBitmap() const;
 #endif
 
-    gmacError_t prepareForCall();
+    virtual gmacError_t prepareForCall();
 };
 
 }}}
