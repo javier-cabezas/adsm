@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
 #endif
+#include "util/Lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
 #include "util/Atomics.h"
@@ -60,7 +61,7 @@ class Process;
  * A Mode represents the address space of a thread in an accelerator. Each
  * thread has one mode per accelerator type in the system
  */
-class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable {
+class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable, public gmac::util::RWLock {
 protected:
     static Atomic Count_;
 

@@ -50,7 +50,7 @@ gmacError_t Mode::setActiveQueue(cl_command_queue queue)
 void Mode::deactivateQueue()
 {
     /* active_ = cl_command_queue(0); */
-    unlock();
+    core::Mode::unlock();
 }
 
 void Mode::removeQueue(cl_command_queue queue)

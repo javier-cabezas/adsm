@@ -9,9 +9,11 @@ namespace __impl { namespace core {
 
 inline
 Mode::Mode() :
+    gmac::util::RWLock("Mode"),
     id_(AtomicInc(Count_)),
     validObjects_(false),
-    releasedObjects_(false)
+    releasedObjects_(false),
+    error_(gmacSuccess)
 #ifdef USE_VM
     , bitmap_(*this)
 #endif
@@ -57,27 +59,37 @@ void Mode::error(gmacError_t err)
 inline
 bool Mode::validObjects() const
 {
-    return validObjects_;
+    lockRead();
+    bool ret = validObjects_;
+    unlock();
+    return ret;
 }
 
 inline
 void Mode::invalidateObjects()
 {
+    lockWrite();
     validObjects_ = false;
+    unlock();
 }
 
 
 inline
 void Mode::validateObjects()
 {
+    lockWrite();
     validObjects_ = true;
     releasedObjects_ = false;
+    unlock();
 }
 
 inline
 bool Mode::releasedObjects() const
 {
-    return releasedObjects_;
+    lockRead();
+    bool ret = releasedObjects_;
+    unlock();
+    return ret;
 }
 
 inline void
