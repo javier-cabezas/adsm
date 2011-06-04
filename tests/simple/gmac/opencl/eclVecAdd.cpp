@@ -102,6 +102,5 @@ int main(int argc, char *argv[])
     eclFree(b);
     eclFree(c);
 
-    //return error != 0;
-    return 0;
+   return error != 0;
 }

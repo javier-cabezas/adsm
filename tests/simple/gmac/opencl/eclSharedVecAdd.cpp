@@ -122,7 +122,6 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
     printTime(&s, &t, buffer, "\n");
 
 	for(n = 0; n < nIter; n++) {
-        printf("Creating thread %d\n", n);
 		param[n].i = n;
 		param[n].prefix = (char *) prefix;
 		nThread[n] = thread_create(addVector, &(param[n]));
