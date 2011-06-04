@@ -10,6 +10,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     gmac::core::hpe::Mode(proc, acc)
 {
     hostptr_t addr = NULL;
+    stream_ = getAccelerator().createCLstream();
 }
 
 Mode::~Mode()
@@ -53,7 +54,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = ContextFactory::create(*this);
+    context = ContextFactory::create(*this, stream_);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -115,8 +116,7 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
     gmacError_t ret = proc_.prepareForCall();
-    if(ret == gmacSuccess) ret = contextMap_.prepareForCall();
-        
+
     if(ret == gmacSuccess) {
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     }

@@ -10,11 +10,12 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Context::Context(Mode &mode) :
+Context::Context(Mode &mode, cl_command_queue stream) :
     gmac::core::hpe::Context(mode, mode.id()),
+    stream_(stream),
     buffer_(NULL)
 {
-    setupCLstreams();
+    //setupCLstreams();
 }
 
 Context::~Context()
@@ -25,20 +26,24 @@ Context::~Context()
     	mode_.destroyIOBuffer(*buffer_);
     }
 
-    cleanCLstreams();
+    //cleanCLstreams();
 }
 
 void Context::setupCLstreams()
 {
+#if 0
     Accelerator &acc = accelerator();
     stream_   = acc.createCLstream();
     TRACE(LOCAL, "cl_command_queue %p created for acc %p", stream_, &acc);
+#endif
 }
 
 void Context::cleanCLstreams()
 {
+#if  0
     Accelerator &acc = accelerator();
     acc.destroyCLstream(stream_);
+#endif
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
