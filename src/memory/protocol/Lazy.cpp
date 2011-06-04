@@ -120,8 +120,8 @@ gmacError_t LazyBase::signalWrite(Block &b, hostptr_t addr)
         case lazy::ReadOnly:
             break;
     }
-    block.unprotect();
     block.setState(lazy::Dirty, addr);
+    block.unprotect();
     addDirty(block);
     TRACE(LOCAL,"Setting block %p to dirty state", block.addr());
     //ret = addDirty(block);
@@ -255,10 +255,10 @@ gmacError_t LazyBase::release(Block &b)
     gmacError_t ret = gmacSuccess;
     switch(block.getState()) {
         case lazy::Dirty:
+	    if(block.protect(GMAC_PROT_READ) < 0)
+                FATAL("Unable to set memory permissions");
             ret = block.syncToAccelerator();
             if(ret != gmacSuccess) break;
-			if(block.protect(GMAC_PROT_READ) < 0)
-                FATAL("Unable to set memory permissions");
             block.setState(lazy::ReadOnly);
             block.released();
             break;
