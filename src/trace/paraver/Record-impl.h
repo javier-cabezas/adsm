@@ -15,9 +15,11 @@ inline
 bool RecordPredicate::operator()(const Record *a, const Record *b)
 {
     if(a->getTime() < b->getTime()) return true;
-    if(a->getTime() == b->getTime()) {
-        if(a->getType() > b->getType()) return true;
-            return a->getId() < b->getId();
+	else if(a->getTime() > b->getTime()) return false;
+	else {
+        if(a->getType() < b->getType()) return true;
+		else if(a->getType() > b->getType()) return false;
+		else if(a->getId() < b->getId()) return true;
     }
     return false;
 }

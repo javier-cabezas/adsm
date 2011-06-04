@@ -118,17 +118,19 @@ void KernelExecution::Callback(cl_event event, cl_int status, void *data)
 {
     if(trace::tracer == NULL) return;
     TracePoint *point = (TracePoint *)data;
-    uint64_t delay = 0, delta = 0;
-    uint64_t queued = 0, started = 0, ended = 0;
+    int64_t delay = 0, delta = 0;
+    cl_ulong queued = 0, started = 0, ended = 0;
 
     cl_int ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(queued), &queued, NULL);
     if(ret != CL_SUCCESS) return;
     ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(started), &started, NULL);
     if(ret != CL_SUCCESS) return;
     delay = (started - queued) / 1000;
+	ASSERTION(delay > 0);
     ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(ended), &ended, NULL);
     if(ret != CL_SUCCESS) return;
     delta = (ended - started) / 1000;
+	ASSERTION(delta > 0);
     clReleaseEvent(event);
 
     trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
