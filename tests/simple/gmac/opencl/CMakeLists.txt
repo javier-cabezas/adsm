@@ -41,6 +41,7 @@ source_group(${current_GROUP} FILES
     eclSharedVecAdd.cpp
     eclStencil.cpp
     eclStencilCommon.h
+    eclThreading.cpp
     eclThreadVecAdd.cpp
     eclThreadStencil.cpp
     eclVecAdd.cpp
@@ -88,6 +89,9 @@ target_link_libraries(eclStencil gmac-hpe)
 
 add_executable(eclThreadStencil ${common_SRC} eclThreadStencil.cpp eclStencilCommon.h)
 target_link_libraries(eclThreadStencil gmac-hpe)
+
+add_executable(eclThreading ${common_SRC} eclThreading.cpp)
+target_link_libraries(eclThreading gmac-hpe)
 
 add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
 target_link_libraries(eclMatrixMul gmac-hpe)
