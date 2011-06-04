@@ -22,7 +22,7 @@ gmacError_t
 Lazy<T>::signalRead(BlockImpl &_block, hostptr_t addr)
 {
     LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
-    REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
+    //REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
 
     gmacError_t ret = Parent::signalRead(block, addr);
 
