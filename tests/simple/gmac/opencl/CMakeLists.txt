@@ -38,6 +38,7 @@ source_group(${current_GROUP} FILES
     eclFile.cpp
     eclFileVecAdd.cpp
     eclPingPong.cpp
+    eclBarr.cpp
     eclSharedVecAdd.cpp
     eclStencil.cpp
     eclStencilCommon.h
@@ -92,6 +93,9 @@ target_link_libraries(eclThreadStencil gmac-hpe)
 
 add_executable(eclThreading ${common_SRC} eclThreading.cpp)
 target_link_libraries(eclThreading gmac-hpe)
+
+add_executable(eclBarr ${common_SRC} eclBarr.cpp)
+target_link_libraries(eclBarr gmac-hpe)
 
 add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
 target_link_libraries(eclMatrixMul gmac-hpe)
