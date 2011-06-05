@@ -64,39 +64,6 @@ Mode::wait()
     return error_;
 }
 
-
-inline
-gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
-{
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
-    switchIn();
-    Context &ctx = getCLContext();
-    gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
-    switchOut();
-    return ret;
-}
-
-inline
-gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
-{
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), len);
-    switchIn();
-    // Implement a function to remove these casts
-    Context &ctx = getCLContext();
-    gmacError_t ret = ctx.acceleratorToBuffer(buffer, src, len, off);
-    switchOut();
-    return ret;
-}
-
-inline gmacError_t
-Mode::prepareForCall()
-{
-    switchIn();
-    gmacError_t ret = getAccelerator().syncCLstream(stream_);
-    switchOut();
-	return ret;
-}
-
 }}}
 
 #endif

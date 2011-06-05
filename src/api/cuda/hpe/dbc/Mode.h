@@ -50,8 +50,6 @@ protected:
     Mode(__impl::core::hpe::Process &proc, __impl::cuda::hpe::Accelerator &acc);
     ~Mode();
 public:
-    gmacError_t bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 };
 
 

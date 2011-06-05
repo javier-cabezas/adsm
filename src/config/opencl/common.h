@@ -40,6 +40,8 @@ WITH THE SOFTWARE.  */
 #include <cstdlib>
 
 typedef cl_context AddressSpace;
+typedef cl_command_queue stream_t;
+typedef cl_event event;
 
 struct _opencl_ptr_t {
 private:

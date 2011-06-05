@@ -450,7 +450,7 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 }
 
 
-gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
+gmacError_t Accelerator::syncStream(stream_t stream)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Waiting for stream %p in Accelerator %p", stream, this);

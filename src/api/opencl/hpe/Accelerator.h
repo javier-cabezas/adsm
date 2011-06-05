@@ -317,30 +317,7 @@ public:
      */
     accptr_t hostMapAddr(hostptr_t addr);
 
-    /**
-     * Asynchronously copy an I/O buffer to the accelerator
-     * \param acc Accelerator memory address where to copy the data to
-     * \param buffer I/O buffer containing the data to be copied
-     * \param bufferOff Offset from the starting of the I/O buffer to start copying data from
-     * \param count Size (in bytes) to be copied
-     * \param mode Execution mode associated to the data transfer
-     * \param stream OpenCL command queue where to issue the data transfer request
-     * \return Error code
-     */
-    virtual gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream) = 0;
-
-    /**
-     * Asynchronously copy data from accelerator to an I/O buffer
-     * \param buffer I/O buffer where to copy the data to
-     * \param bufferOff Offset from the starting of the I/O buffer to start copying data to
-     * \param acc Accelerator memory address where to start copying data from
-     * \param count Size (in bytes) to be copied
-     * \param mode Execution mode associated to the data transfer
-     * \param stream OpenCL command queue where to issue the data transfer request
-     * \return Error code
-     */
-    virtual gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream) = 0;
-
+    
     /**
      * Gets the default OpenCL command queue
      * \return OpenCL command queue
@@ -371,7 +348,7 @@ public:
      * \param stream OpenCL command queue
      * \return Error code
      */
-    gmacError_t syncCLstream(cl_command_queue stream);
+    gmacError_t syncStream(stream_t stream);
 
     /**
      * Query for the state of an OpenCL event

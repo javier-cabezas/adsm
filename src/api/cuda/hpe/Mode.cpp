@@ -55,17 +55,6 @@ Mode::~Mode()
     switchOut();
 }
 
-gmacError_t Mode::acquireObjects()
-{
-    switchIn();
-    validObjects_ = false;
-    releasedObjects_ = false;
-    error_ = contextMap_.waitForCall();
-    switchOut();
-    return error_;
-}
-
-
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
     IOBuffer *ret;
@@ -122,7 +111,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = ContextFactory::create(*this);
+    context = ContextFactory::create(*this, streamLaunch_, streamToAccelerator_, streamToHost_, streamToAccelerator_);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;

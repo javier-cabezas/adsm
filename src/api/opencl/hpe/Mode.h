@@ -89,8 +89,6 @@ protected:
     //! Switch back to CPU mode
     void switchOut();
 
-    cl_command_queue stream_;
-
     void reload();
 
     //! Get the main mode context
@@ -99,7 +97,6 @@ protected:
     */
     core::hpe::Context &getContext();
     Context &getCLContext();
-    void destroyContext(core::hpe::Context &context) const;
 
     cl_program program_;
     KernelList kernelList_;
@@ -180,27 +177,6 @@ public:
     */
     void destroyIOBuffer(core::IOBuffer &buffer);
 
-    /** Send data from an I/O buffer to the accelerator
-     *
-     *  \param dst Accelerator memory where data will be written to
-     *  \param buffer I/O buffer where data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
-     *  \return Error code
-     */
-    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
-
-    /** Fill I/O buffer with data from the accelerator
-     *
-     *  \param buffer I/O buffer where data will be stored
-     *  \param src Accelerator memory where the data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
-     *  \return Error code
-     */
-    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
-
     //! Get the accelerator stream where events are recorded
     /*!
         \return Command queue where events are recorded
@@ -226,8 +202,6 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
-
-	gmacError_t prepareForCall();
 };
 }}}
 

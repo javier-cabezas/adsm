@@ -150,13 +150,13 @@ public:
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, CUstream stream);
-    TESTABLE gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, CUstream stream);
+    TESTABLE gmacError_t copyToHostAsync(core::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, CUstream stream);
 
     CUstream createCUstream();
     void destroyCUstream(CUstream stream);
     CUresult queryCUstream(CUstream stream);
-    gmacError_t syncCUstream(CUstream stream);
+    gmacError_t syncStream(CUstream stream);
 
     CUresult queryCUevent(CUevent event);
     gmacError_t syncCUevent(CUevent event);
