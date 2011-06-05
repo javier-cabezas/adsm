@@ -77,16 +77,6 @@ protected:
     IOBuffer *buffer_;
 
     /**
-     * Initialized the OpenCL commmand queues
-     */
-    void setupCLstreams();
-
-    /**
-     * Destroy the OpenCL command queues
-     */
-    void cleanCLstreams();
-
-    /**
      * Wait for all commands in the OpenCL command queue to finish
      * \param stream OpenCL command queue
      * \return Error code

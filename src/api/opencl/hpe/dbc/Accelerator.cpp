@@ -16,6 +16,22 @@ Accelerator::~Accelerator()
 {
 }
 
+gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
+{
+    REQUIRES(host != NULL);
+    REQUIRES(size > 0);
+    accptr_t addr;
+    size_t s;
+    bool hasMapping = allocations_.find(host, addr, s);
+    ENSURES(hasMapping == true);
+    ENSURES(s == size);
+    cl_uint count = 0;
+    cl_int ret = clGetMemObjectInfo(addr.get(), CL_MEM_REFERENCE_COUNT, sizeof(count), &count, NULL);
+    ENSURES(ret == CL_SUCCESS);
+    ENSURES(count == 1);
+    return __impl::opencl::hpe::Accelerator::unmap(host, size);
+}
+
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
@@ -58,39 +74,6 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     return ret;
 }
 
-#if 0
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, __impl::opencl::IOBuffer &buffer, size_t bufferOff, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
-{
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(acc != 0);
-    REQUIRES(buffer.addr() != NULL);
-    REQUIRES(buffer.size() > 0);
-    REQUIRES(bufferOff + count <= buffer.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::opencl::hpe::Accelerator::copyToAcceleratorAsync(acc, buffer, bufferOff, count, mode, stream);
-    // POSTCONDITIONS
-    ENSURES(ret == gmacSuccess);
-
-    return ret;
-}
-
-gmacError_t Accelerator::copyToHostAsync(__impl::opencl::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, __impl::core::hpe::Mode &mode, cl_command_queue stream)
-{
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(acc != 0);
-    REQUIRES(buffer.addr() != NULL);
-    REQUIRES(buffer.size() > 0);
-    REQUIRES(bufferOff + count <= buffer.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::opencl::hpe::Accelerator::copyToHostAsync(buffer, bufferOff, acc, count, mode, stream);
-    // POSTCONDITIONS
-    ENSURES(ret == gmacSuccess);
-
-    return ret;
-}
-#endif
 
 }}}
 #endif
