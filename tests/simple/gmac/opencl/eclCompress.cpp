@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 
 #include <semaphore.h>
@@ -212,6 +213,7 @@ void *idct_thread(void *args)
         timeIDCTRun += getTimeStamp(t) - getTimeStamp(s);
 	}
 
+    memset(out, 0, width * height * sizeof(float));
     getTime(&s);
 	eclFree(idct_in);
 	eclFree(out);
