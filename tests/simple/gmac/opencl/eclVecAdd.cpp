@@ -53,8 +53,6 @@ int main(int argc, char *argv[])
     getTime(&s);
     randInitMax(a, 1.f, vecSize);
     randInitMax(b, 1.f, vecSize);
-    //valueInit(a, 1000.f, vecSize);
-    //valueInit(b, 0.001f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
