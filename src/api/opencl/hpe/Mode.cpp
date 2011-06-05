@@ -17,6 +17,7 @@ Mode::~Mode()
 {
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
+    getAccelerator().destroyCLstream(stream_);
 }
 
 core::IOBuffer &Mode::createIOBuffer(size_t size)
