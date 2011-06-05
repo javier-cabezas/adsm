@@ -164,8 +164,6 @@ public:
     const Variable *variableByName(std::string name) const;
     const Texture *texture(gmacTexture_t key) const;
 
-    CUstream eventStream();
-
     Accelerator &getAccelerator() const;
 
     gmacError_t waitForEvent(CUevent event, bool fromCUDA);

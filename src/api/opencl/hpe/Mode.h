@@ -177,13 +177,6 @@ public:
     */
     void destroyIOBuffer(core::IOBuffer &buffer);
 
-    //! Get the accelerator stream where events are recorded
-    /*!
-        \return Command queue where events are recorded
-    */
-    cl_command_queue eventStream();
-
-
     //! Block the CPU thread until an event happens
     /*!
         \param event Event to wait for

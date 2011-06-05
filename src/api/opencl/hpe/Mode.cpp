@@ -11,7 +11,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
 {
     hostptr_t addr = NULL;
     streamLaunch_ = getAccelerator().createCLstream();
-    streamToHost_ = streamToAccelerator_ = streamLaunch_;
+    streamToHost_ = streamToAccelerator_ = stramAccelerator_ = streamLaunch_;
 }
 
 Mode::~Mode()
@@ -127,12 +127,6 @@ gmacError_t Mode::acquireObjects()
     releasedObjects_ = false;
 	unlock();
     return error_;
-}
-
-cl_command_queue Mode::eventStream()
-{
-    Context &ctx = getCLContext();
-    return ctx.eventStream();
 }
 
 gmacError_t Mode::waitForEvent(cl_event event)

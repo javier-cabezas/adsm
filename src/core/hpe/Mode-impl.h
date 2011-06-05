@@ -209,6 +209,11 @@ Mode::wait()
     return error_;
 }
 
+inline stream_t
+Mode::eventStream()
+{
+    return streamLaunch_;
+}
 
 }}}
 
