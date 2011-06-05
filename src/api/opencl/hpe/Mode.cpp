@@ -11,7 +11,7 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
 {
     hostptr_t addr = NULL;
     streamLaunch_ = getAccelerator().createCLstream();
-    streamToHost_ = streamToAccelerator_ = stramAccelerator_ = streamLaunch_;
+    streamToHost_ = streamToAccelerator_ = streamLaunch_;
 }
 
 Mode::~Mode()
