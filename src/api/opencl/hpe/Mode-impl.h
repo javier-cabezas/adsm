@@ -41,7 +41,7 @@ void Mode::switchOut()
 {
 }
 
-
+#if 0
 
 inline gmacError_t
 Mode::wait(core::hpe::KernelLaunch &launch)
@@ -63,6 +63,7 @@ Mode::wait()
 
     return error_;
 }
+#endif
 
 }}}
 
