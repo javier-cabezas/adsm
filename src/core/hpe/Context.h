@@ -70,12 +70,12 @@ protected:
      */
     Context(Mode &mode, unsigned id);
 
+public:
     /**
      * Destroys the resources used by the context
      */
     virtual ~Context();
 
-public:
     /**
      * Initialization method called on library initialization
      */
@@ -118,20 +118,6 @@ public:
      * \return Error code
      */
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
-
-    /**
-     * Waits for pending memory transfers before kernel execution
-     *
-     * \return Error code
-     */
-    virtual gmacError_t prepareForCall() = 0;
-
-    /**
-     * Waits for all kernels to finish execution on the accelerator
-     *
-     * \return Error code returned by the kernel
-     */
-    virtual gmacError_t waitForCall() = 0;
 
     /**
      * Waits for a kernel to finish execution on the accelerator

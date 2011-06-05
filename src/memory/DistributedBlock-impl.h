@@ -28,11 +28,13 @@ inline void DistributedBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
 
     TRACE(LOCAL, "Adding owner for address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
     if (it == acceleratorAddr_.end()) {
+        TRACE(LOCAL, "Adding new address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
         acceleratorAddr_.insert(AcceleratorMap::value_type(addr, std::list<core::Mode *>()));
         AcceleratorMap::iterator it = acceleratorAddr_.find(addr);
         it->second.push_back(&mode);
 
-        if(StateBlock<State>::protocol_.needUpdate(*this) == true) {
+        if(StateBlock<State>::protocol_.needUpdate(*this) == true &&
+           acceleratorAddr_.size() > 1) {
             gmacError_t ret = mode.copyToAccelerator(addr, StateBlock<State>::shadow_, StateBlock<State>::size_);
             ASSERTION(ret == gmacSuccess);
         }

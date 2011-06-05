@@ -55,7 +55,6 @@ namespace opencl {
 
 class IOBuffer;
 
-
 namespace hpe {
 
 class Accelerator;
@@ -76,12 +75,14 @@ protected:
     /** I/O buffer used by the context for data transfers */
     IOBuffer *buffer_;
 
+#if 0
     /**
      * Wait for all commands in the OpenCL command queue to finish
      * \param stream OpenCL command queue
      * \return Error code
      */
     gmacError_t syncCLstream(cl_command_queue stream);
+#endif
 
     /**
      * Default OpenCL context constructor
@@ -89,36 +90,17 @@ protected:
      */
     Context(Mode &mode, cl_command_queue stream);
 
+public:
     /**
      * Default OpenCL context destructor
      */
     ~Context();
 
-public:
     /**
      * Get the accelerator associated to the context
      * \return Reference to an OpenCL accelerator
      */
     Accelerator & accelerator();
-
-    /**
-     * Copy data from an I/O buffer to the accelerator memory
-     * \param dst Accelerator memory address to copy data to
-     * \param buffer I/O buffer to copy data from
-     * \param size Size (in bytes) of the data to be transferred
-     * \param off  Offset within the I/O buffer to start transferring data from
-     */
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
-    /**
-     * Copy data from the accelerator to an I/O buffer
-     * \param buffer I/O buffer to copy the data to
-     * \param dst Accelerator memory address to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param off Offset within the I/O buffer to start transferring data to
-     */
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-
 
     /**
      * Create a descriptor of a kernel invocation
@@ -156,9 +138,11 @@ public:
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
+#if 0
     gmacError_t prepareForCall();
 
     gmacError_t waitForCall();
+#endif
 
     gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
 };

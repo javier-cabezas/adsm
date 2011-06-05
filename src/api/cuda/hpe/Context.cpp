@@ -10,12 +10,16 @@ namespace __impl { namespace cuda { namespace hpe {
 Context::AddressMap Context::HostMem_;
 void * Context::FatBin_;
 
-Context::Context(Mode &mode) :
+Context::Context(Mode &mode, CUstream streamLaunch, CUstream streamToAccelerator,
+                             CUstream streamToHost, CUstream streamAccelerator) :
     gmac::core::hpe::Context(mode, mode.id()),
+    streamLaunch_(streamLaunch),
+    streamToAccelerator_(streamToAccelerator),
+    streamToHost_(streamToHost),
+    streamAccelerator_(streamAccelerator),
     buffer_(NULL),
     call_(dim3(0), dim3(0), 0, NULL, NULL)
 {
-    setupCUstreams();
     call_ = KernelConfig(dim3(0), dim3(0), 0, NULL, streamLaunch_);
 }
 
@@ -26,40 +30,6 @@ Context::~Context()
         TRACE(LOCAL,"Destroying I/O buffer");
     	mode_.destroyIOBuffer(*buffer_);
     }
-
-    cleanCUstreams();
-}
-
-void Context::setupCUstreams()
-{
-    streamLaunch_   = accelerator().createCUstream();
-    streamToAccelerator_ = accelerator().createCUstream();
-    streamToHost_   = accelerator().createCUstream();
-    streamAccelerator_   = accelerator().createCUstream();
-}
-
-void Context::cleanCUstreams()
-{
-    accelerator().destroyCUstream(streamLaunch_);
-    accelerator().destroyCUstream(streamToAccelerator_);
-    accelerator().destroyCUstream(streamToHost_);
-    accelerator().destroyCUstream(streamAccelerator_);
-}
-
-gmacError_t Context::syncCUstream(CUstream _stream)
-{
-    CUresult ret = CUDA_SUCCESS;
-
-    trace::SetThreadState(trace::Wait);
-    while ((ret = accelerator().queryCUstream(_stream)) == CUDA_ERROR_NOT_READY) {
-        // TODO: add delay here
-    }
-    trace::SetThreadState(trace::Running);
-
-    if (ret == CUDA_SUCCESS) { TRACE(LOCAL,"Sync: success"); }
-    else { TRACE(LOCAL,"Sync: error: %d", ret); }
-
-    return Accelerator::error(ret);
 }
 
 gmacError_t Context::waitForEvent(CUevent e)
@@ -162,25 +132,6 @@ KernelLaunch &Context::launch(Kernel &kernel)
     return *ret;
 }
 
-gmacError_t Context::prepareForCall()
-{
-    gmacError_t ret = gmacSuccess;
-    trace::EnterCurrentFunction();
-    syncCUstream(streamToAccelerator_);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t Context::waitForCall()
-{
-    gmacError_t ret = gmacSuccess;
-    trace::EnterCurrentFunction();	
-    ret = syncCUstream(streamLaunch_);
-    trace::SetThreadState(THREAD_T(id_), trace::Idle);    
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
 gmacError_t Context::waitForCall(core::hpe::KernelLaunch &_launch)
 {
     KernelLaunch &launch = dynamic_cast<KernelLaunch &>(_launch);
@@ -188,37 +139,6 @@ gmacError_t Context::waitForCall(core::hpe::KernelLaunch &_launch)
     trace::EnterCurrentFunction();	
     ret = accelerator().syncCUevent(launch.getCUevent());
     trace::SetThreadState(THREAD_T(id_), trace::Idle);    
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-
-gmacError_t Context::bufferToAccelerator(accptr_t dst, core::IOBuffer &_buffer, 
-                                         size_t len, size_t off)
-{
-    if (_buffer.async() == false) return copyToAccelerator(dst, _buffer.addr() + off, len);
-    trace::EnterCurrentFunction();
-    IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    ASSERTION(off + len <= buffer.size());
-    ASSERTION(off >= 0);
-    size_t bytes = (len < buffer.size()) ? len : buffer.size();
-    gmacError_t ret;
-    ret = accelerator().copyToAcceleratorAsync(dst, buffer, off, bytes, mode_, streamToAccelerator_);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t Context::acceleratorToBuffer(core::IOBuffer &_buffer, const accptr_t src, 
-                                         size_t len, size_t off)
-{
-    if (_buffer.async() == false) return copyToHost(_buffer.addr() + off, src, len);
-    trace::EnterCurrentFunction();
-    IOBuffer &buffer = static_cast<IOBuffer &>(_buffer);
-    ASSERTION(off + len <= buffer.size());
-    ASSERTION(off >= 0);
-    size_t bytes = (len < buffer.size()) ? len : buffer.size();
-    gmacError_t ret;
-    ret = accelerator().copyToHostAsync(buffer, off, src, bytes, mode_, streamToHost_);
     trace::ExitCurrentFunction();
     return ret;
 }

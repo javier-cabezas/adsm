@@ -37,6 +37,8 @@ WITH THE SOFTWARE.  */
 #include <cuda.h>
 
 typedef CUcontext AddressSpace;
+typedef CUstream stream_t;
+typedef CUevent event;
 
 struct _cuda_ptr_t {
     CUdeviceptr ptr_;

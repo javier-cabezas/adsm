@@ -52,9 +52,9 @@ public:
 	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /* Asynchronous interface */
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::cuda::IOBuffer &buffer, size_t bufferOff, size_t count,
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t count,
 __impl::core::hpe::Mode &mode, CUstream stream);
-    gmacError_t copyToHostAsync(__impl::cuda::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count,
+    gmacError_t copyToHostAsync(__impl::core::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count,
 __impl::core::hpe::Mode &mode, CUstream stream);
 };
 

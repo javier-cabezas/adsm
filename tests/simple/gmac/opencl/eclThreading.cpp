@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         barrier_wait(&barrier);
     }
 
-        for (unsigned i = 0; i < THREADS; i++) {
+    for (unsigned i = 0; i < THREADS; i++) {
          thread_wait(threads[i]);
     }
 

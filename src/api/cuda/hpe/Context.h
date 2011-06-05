@@ -79,28 +79,28 @@ protected:
 
     KernelConfig call_;
 
-    void setupCUstreams();
-    void cleanCUstreams();
-    gmacError_t syncCUstream(CUstream);
-
-	Context(Mode &mode);
+	Context(Mode &mode, CUstream streamLaunch_, CUstream streamToAccelerator_, CUstream streamToHost_, CUstream streamAccelerator_);
 	~Context();
 
 public:
+
+    KernelLaunch &launch(Kernel &kernel);
+
+    gmacError_t waitAccelerator();
 	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+
 	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+
 	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    KernelLaunch &launch(Kernel &kernel);
+#if 0
     gmacError_t prepareForCall();
-    gmacError_t waitForCall();
-    gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
 
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-    gmacError_t waitAccelerator();
+    gmacError_t waitForCall();
+#endif
+    gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
 
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);
