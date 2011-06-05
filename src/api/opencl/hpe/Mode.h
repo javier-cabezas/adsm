@@ -144,19 +144,6 @@ public:
     */
 	gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-     /**
-     * Waits for kernel execution
-     * \param launch Reference to a KernelLaunch object
-     * \return Error code
-     */
-    virtual gmacError_t wait(core::hpe::KernelLaunch &launch);
-
-    /**
-     * Waits for all kernels execution
-     * \return Error code
-     */
-    virtual gmacError_t wait();
-
 	/**
      * Waits for kernel execution and acquires the ownership of the objects
      * of the mode from the accelerator

@@ -76,9 +76,9 @@ public:
     void remove(THREAD_T id);
     void clean();
 
-    gmacError_t prepareForCall();
+    //gmacError_t prepareForCall();
     //gmacError_t prepareForCall(THREAD_T id);
-    gmacError_t waitForCall();
+    //gmacError_t waitForCall();
     gmacError_t waitForCall(KernelLaunch &launch);
 };
 

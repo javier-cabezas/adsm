@@ -43,10 +43,10 @@ inline void ContextMap::clean()
     unlock();
 }
 
+#if 0
 inline gmacError_t ContextMap::prepareForCall()
 {
     gmacError_t ret = gmacSuccess;
-#if 0
     Parent::iterator i;
     lockWrite();
     for(i = begin(); i != end(); i++) {
@@ -54,14 +54,12 @@ inline gmacError_t ContextMap::prepareForCall()
         if(ret != gmacSuccess) break;
     }
     unlock();
-#endif
     return ret;
 }
 
 inline gmacError_t ContextMap::waitForCall()
 {
     gmacError_t ret = gmacSuccess;
-#if 0
     Parent::iterator i;
     lockRead();
     for(i = begin(); i != end(); i++) {
@@ -69,9 +67,9 @@ inline gmacError_t ContextMap::waitForCall()
         if(ret != gmacSuccess) break;
     }
     unlock();
-#endif
     return ret;
 }
+#endif
 
 inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
 {
@@ -197,7 +195,6 @@ Mode::wait(core::hpe::KernelLaunch &launch)
 
     return error_;
 }
-
 
 inline gmacError_t
 Mode::wait()

@@ -41,7 +41,7 @@ inline gmacError_t
 Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = contextMap_.prepareForCall();
+    gmacError_t ret = prepareForCall();
     if(ret == gmacSuccess) {
         trace::SetThreadState(THREAD_T(id_), trace::Running);
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
