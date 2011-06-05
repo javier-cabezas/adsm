@@ -25,10 +25,6 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     bool hasMapping = allocations_.find(host, addr, s);
     ENSURES(hasMapping == true);
     ENSURES(s == size);
-    cl_uint count = 0;
-    cl_int ret = clGetMemObjectInfo(addr.get(), CL_MEM_REFERENCE_COUNT, sizeof(count), &count, NULL);
-    ENSURES(ret == CL_SUCCESS);
-    ENSURES(count == 1);
     return __impl::opencl::hpe::Accelerator::unmap(host, size);
 }
 
