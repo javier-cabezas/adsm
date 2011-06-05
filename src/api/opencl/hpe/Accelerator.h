@@ -170,6 +170,8 @@ public:
 class GMAC_LOCAL Accelerator :
     protected ModeFactory,
     public gmac::core::hpe::Accelerator {
+
+    DBC_FORCE_TEST(Accelerator);
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     /** Map of the OpenCL accelerators in the system and the associated OpenCL programs */
@@ -405,16 +407,13 @@ public:
     /* core/hpe/Accelerator.h Interface */
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
-    gmacError_t unmap(hostptr_t addr, size_t size);
+    TESTABLE gmacError_t unmap(hostptr_t addr, size_t size);
 
     gmacError_t sync();
 
-    gmacError_t
-        copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
-
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
-
-    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
     void memInfo(size_t &free, size_t &total) const;
 

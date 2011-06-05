@@ -15,7 +15,6 @@ Context::Context(Mode &mode, cl_command_queue stream) :
     stream_(stream),
     buffer_(NULL)
 {
-    //setupCLstreams();
 }
 
 Context::~Context()
@@ -26,24 +25,6 @@ Context::~Context()
     	mode_.destroyIOBuffer(*buffer_);
     }
 
-    //cleanCLstreams();
-}
-
-void Context::setupCLstreams()
-{
-#if 0
-    Accelerator &acc = accelerator();
-    stream_   = acc.createCLstream();
-    TRACE(LOCAL, "cl_command_queue %p created for acc %p", stream_, &acc);
-#endif
-}
-
-void Context::cleanCLstreams()
-{
-#if  0
-    Accelerator &acc = accelerator();
-    acc.destroyCLstream(stream_);
-#endif
 }
 
 gmacError_t Context::syncCLstream(cl_command_queue stream)
