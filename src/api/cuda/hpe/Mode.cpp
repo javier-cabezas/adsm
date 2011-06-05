@@ -31,6 +31,10 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     if(ret == gmacSuccess)
         ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
+    streamLaunch_        = getAccelerator().createCUstream();
+    streamToAccelerator_ = getAccelerator().createCUstream();
+    streamToHost_        = getAccelerator().createCUstream();
+
     switchOut();
 }
 
@@ -40,6 +44,10 @@ Mode::~Mode()
 
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
+
+    getAccelerator().destroyCUstream(streamLaunch_);
+    getAccelerator().destroyCUstream(streamToAccelerator_);
+    getAccelerator().destroyCUstream(streamToHost_);
 
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
@@ -242,12 +250,6 @@ const Texture *Mode::texture(gmacTexture_t key) const
         if(tex != NULL) return tex;
     }
     return NULL;
-}
-
-CUstream Mode::eventStream()
-{
-    Context &ctx = getCUDAContext();
-    return ctx.eventStream();
 }
 
 gmacError_t Mode::waitForEvent(CUevent event, bool fromCUDA)
