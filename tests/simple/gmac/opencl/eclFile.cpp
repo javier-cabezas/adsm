@@ -255,13 +255,13 @@ int main(int argc, char *argv[])
     barrier_destroy(&ioAfter);
     barrier_destroy(&ioBefore);
 
-    fprintf(stdout, "Alloc: %f\n", timeAlloc);
-    fprintf(stdout, "Memset: %f\n", timeMemset);
-    fprintf(stdout, "Run: %f\n", timeRun);
-    fprintf(stdout, "Check: %f\n", timeCheck);
-    fprintf(stdout, "Free: %f\n", timeFree);
-    fprintf(stdout, "Write: %f\n", timeWrite);
-    fprintf(stdout, "Read: %f\n", timeRead);
+    fprintf(stdout, "Alloc: %f\n", timeAlloc /1e6);
+    fprintf(stdout, "Memset: %f\n", timeMemset /1e6);
+    fprintf(stdout, "Run: %f\n", timeRun /1e6);
+    fprintf(stdout, "Check: %f\n", timeCheck /1e6);
+    fprintf(stdout, "Free: %f\n", timeFree /1e6);
+    fprintf(stdout, "Write: %f\n", timeWrite /1e6);
+    fprintf(stdout, "Read: %f\n", timeRead /1e6);
 
     return error_io != 0.f;
 }
