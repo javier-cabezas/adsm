@@ -131,16 +131,16 @@ void KernelExecution::Callback(cl_event event, cl_int status, void *data)
 	ASSERTION(delay > 0);
     ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(ended), &ended, NULL);
     if(ret != CL_SUCCESS) return;
-    delta = (ended - started) / 1000;
+    delta = (ended - started) / 1000;	
 	ASSERTION(delta > 0);
     clReleaseEvent(event);
+	if(delta > 0) {
+		trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
+		trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
 
-    trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
-    trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
-
-    trace::tracer->enterFunction(point->stamp + delay, point->thread, point->name);
-    trace::tracer->exitFunction(point->stamp + delay + delta, point->thread, point->name);
-
+		trace::tracer->enterFunction(point->stamp + delay, point->thread, point->name);
+		trace::tracer->exitFunction(point->stamp + delay + delta, point->thread, point->name);
+	}
     delete point;
 }
 #endif
