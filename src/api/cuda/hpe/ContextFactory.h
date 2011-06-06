@@ -46,7 +46,8 @@ class Mode;
 
 class GMAC_LOCAL ContextFactory {
 protected:
-    Context *create(Mode &mode) const;
+    Context *create(Mode &mode, CUstream streamLaunch, CUstream streamToAccelerator,
+                                CUstream streamToHost, CUstream streamAccelerator) const;
     void destroy(Context &context) const;
 };
 

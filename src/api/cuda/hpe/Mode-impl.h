@@ -41,56 +41,11 @@ inline gmacError_t
 Mode::execute(core::hpe::KernelLaunch & launch)
 {
     switchIn();
-    gmacError_t ret = contextMap_.prepareForCall();
+    gmacError_t ret = prepareForCall();
     if(ret == gmacSuccess) {
         trace::SetThreadState(THREAD_T(id_), trace::Running);
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     }
-    switchOut();
-    return ret;
-}
-
-inline gmacError_t
-Mode::wait(core::hpe::KernelLaunch &launch)
-{
-    switchIn();
-    error_ = contextMap_.waitForCall(launch);
-    switchOut();
-
-    return error_;
-}
-
-
-inline gmacError_t
-Mode::wait()
-{
-    switchIn();
-    error_ = contextMap_.waitForCall();
-    switchOut();
-
-    return error_;
-}
-
-
-inline
-gmacError_t Mode::bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t len, size_t off)
-{
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), (void *) dst, len);
-    switchIn();
-    Context &ctx = getCUDAContext();
-    gmacError_t ret = ctx.bufferToAccelerator(dst, buffer, len, off);
-    switchOut();
-    return ret;
-}
-
-inline
-gmacError_t Mode::acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
-{
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", (void *) src, buffer.addr(), len);
-    switchIn();
-    // Implement a function to remove these casts
-    Context &ctx = getCUDAContext();
-    gmacError_t ret = ctx.acceleratorToBuffer(buffer, src, len, off);
     switchOut();
     return ret;
 }

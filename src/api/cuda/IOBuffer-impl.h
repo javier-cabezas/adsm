@@ -71,20 +71,6 @@ IOBuffer::started()
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
-inline gmacError_t
-IOBuffer::wait()
-{
-    return wait(false);
-}
-
-inline gmacError_t
-IOBuffer::waitFromCUDA()
-{
-    return wait(true);
-}
-
-
-
 }}
 
 #endif

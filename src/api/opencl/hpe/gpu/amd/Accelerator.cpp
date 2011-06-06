@@ -13,9 +13,10 @@ Accelerator::~Accelerator()
 {
 }
 
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_buffer,
     size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     hostptr_t host = buffer.addr() + bufferOff;
 
     trace::EnterCurrentFunction();
@@ -60,9 +61,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer,
     return error(ret);
 }
 
-gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff,
+gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferOff,
     const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     hostptr_t host = buffer.addr() + bufferOff;
 
     trace::EnterCurrentFunction();

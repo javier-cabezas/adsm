@@ -48,8 +48,9 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
 }
 
 inline
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, CUstream stream)
 {
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
@@ -86,8 +87,9 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 }
 
 inline
-gmacError_t Accelerator::copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::Mode &mode, CUstream stream)
+gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, CUstream stream)
 {
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
     TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
@@ -192,7 +194,7 @@ CUresult Accelerator::queryCUstream(CUstream stream)
 }
 
 inline
-gmacError_t Accelerator::syncCUstream(CUstream stream)
+gmacError_t Accelerator::syncStream(CUstream stream)
 {
     trace::EnterCurrentFunction();
     pushContext();

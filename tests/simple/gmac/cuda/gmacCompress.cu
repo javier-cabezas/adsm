@@ -220,20 +220,20 @@ int main(int argc, char *argv[])
 
 	getTime(&t);
 
-	fprintf(stdout, "DCT:Alloc: %f\n", timeDCTAlloc);
-	fprintf(stdout, "DCT:Init: %f\n", timeDCTInit);
-	fprintf(stdout, "DCT:Run: %f\n", timeDCTRun);
-	fprintf(stdout, "DCT:Copy: %f\n", timeDCTCopy);
-	fprintf(stdout, "DCT:Free: %f\n", timeDCTFree);
+	fprintf(stdout, "DCT-Alloc: %f\n", timeDCTAlloc);
+	fprintf(stdout, "DCT-Init: %f\n", timeDCTInit);
+	fprintf(stdout, "DCT-Run: %f\n", timeDCTRun);
+	fprintf(stdout, "DCT-Copy: %f\n", timeDCTCopy);
+	fprintf(stdout, "DCT-Free: %f\n", timeDCTFree);
 
-	fprintf(stdout, "Quant:Alloc: %f\n", timeQuantAlloc);
-	fprintf(stdout, "Quant:Run: %f\n", timeQuantRun);
-	fprintf(stdout, "Quant:Copy: %f\n", timeQuantCopy);
-	fprintf(stdout, "Quant:Free: %f\n", timeQuantFree);
+	fprintf(stdout, "Quant-Alloc: %f\n", timeQuantAlloc);
+	fprintf(stdout, "Quant-Run: %f\n", timeQuantRun);
+	fprintf(stdout, "Quant-Copy: %f\n", timeQuantCopy);
+	fprintf(stdout, "Quant-Free: %f\n", timeQuantFree);
 
-	fprintf(stdout, "IDCT:Alloc: %f\n", timeIDCTAlloc);
-	fprintf(stdout, "IDCT:Run: %f\n", timeIDCTRun);
-	fprintf(stdout, "IDCT:Free: %f\n", timeIDCTFree);
+	fprintf(stdout, "IDCT-Alloc: %f\n", timeIDCTAlloc);
+	fprintf(stdout, "IDCT-Run: %f\n", timeIDCTRun);
+	fprintf(stdout, "IDCT-Free: %f\n", timeIDCTFree);
 
 	printTime(&s, &t, "Total: ", "\n");
 

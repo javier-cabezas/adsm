@@ -154,7 +154,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 elseif(MSVC)
     set(CMAKE_C_FLAGS " /W3 /WX /EHsc")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} /Zi /O2 /MD")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd /Ge")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} /DDEBUG /Zi /Od /MDd /Gs")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 option(USE_CXX0X "Enable experimental support provided by the C++0x standard" OFF)

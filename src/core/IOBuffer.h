@@ -109,9 +109,10 @@ public:
     /**
      * Waits for the transfer that uses the buffer
      *
+     * \param internal Tells whether the function has been called within the execution layer or not
      * \return gmacSuccess on success. An error code otherwise
      */
-    virtual gmacError_t wait() = 0;
+    virtual gmacError_t wait(bool internal = false) = 0;
 };
 
 }}

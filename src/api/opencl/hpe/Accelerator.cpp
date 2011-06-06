@@ -156,6 +156,8 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
 
     allocations_.insert(src, dst, size);
 
+    dst.pasId_ = id_;
+
     TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.get());
 
     trace::ExitCurrentFunction();
@@ -450,7 +452,7 @@ void Accelerator::destroyCLstream(cl_command_queue stream)
 }
 
 
-gmacError_t Accelerator::syncCLstream(cl_command_queue stream)
+gmacError_t Accelerator::syncStream(stream_t stream)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Waiting for stream %p in Accelerator %p", stream, this);

@@ -53,8 +53,8 @@ public:
     /** Default destructor */
     virtual ~Accelerator();
 
-    gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
-    gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(core::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 };
 
 }}}}}

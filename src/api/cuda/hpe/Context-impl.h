@@ -22,7 +22,7 @@ Context::argument(const void *arg, size_t size, off_t offset)
     return gmacSuccess;
 }
 
-inline const CUstream
+inline const stream_t
 Context::eventStream() const
 {
     return streamLaunch_;

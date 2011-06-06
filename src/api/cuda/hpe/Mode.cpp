@@ -31,6 +31,10 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     if(ret == gmacSuccess)
         ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
 
+    streamLaunch_        = getAccelerator().createCUstream();
+    streamToAccelerator_ = getAccelerator().createCUstream();
+    streamToHost_        = getAccelerator().createCUstream();
+
     switchOut();
 }
 
@@ -40,6 +44,10 @@ Mode::~Mode()
 
     // We need to ensure that contexts are destroyed before the Mode
     cleanUpContexts();
+
+    getAccelerator().destroyCUstream(streamLaunch_);
+    getAccelerator().destroyCUstream(streamToAccelerator_);
+    getAccelerator().destroyCUstream(streamToHost_);
 
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
@@ -54,17 +62,6 @@ Mode::~Mode()
 
     switchOut();
 }
-
-gmacError_t Mode::acquireObjects()
-{
-    switchIn();
-    validObjects_ = false;
-    releasedObjects_ = false;
-    error_ = contextMap_.waitForCall();
-    switchOut();
-    return error_;
-}
-
 
 core::IOBuffer &Mode::createIOBuffer(size_t size)
 {
@@ -122,7 +119,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = ContextFactory::create(*this);
+    context = ContextFactory::create(*this, streamLaunch_, streamToAccelerator_, streamToHost_, streamToAccelerator_);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -152,29 +149,6 @@ gmacError_t Mode::hostFree(hostptr_t addr)
     gmacError_t ret = getAccelerator().hostFree(addr);
     switchOut();
     return ret;
-}
-
-gmacError_t
-Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
-{
-    switchIn();
-
-    accptr_t acc(0);
-    bool hasMapping = acc_->getMapping(acc, src, size);
-    if (hasMapping == true) {
-        error_ = gmacSuccess;
-        dst = acc;
-        TRACE(LOCAL,"Mapping for address %p: %u:%p", src, dst.pasId_, dst.get());
-    } else {
-        error_ = acc_->map(dst, src, size, align);
-        TRACE(LOCAL,"New Mapping for address %p: %u:%p", src, dst.pasId_, dst.get());
-    }
-#ifdef USE_MULTI_CONTEXT
-    dst.pasId_ = id_;
-#endif
-
-    switchOut();
-    return error_;
 }
 
 accptr_t Mode::hostMapAddr(const hostptr_t addr)
@@ -253,12 +227,6 @@ const Texture *Mode::texture(gmacTexture_t key) const
         if(tex != NULL) return tex;
     }
     return NULL;
-}
-
-CUstream Mode::eventStream()
-{
-    Context &ctx = getCUDAContext();
-    return ctx.eventStream();
 }
 
 gmacError_t Mode::waitForEvent(CUevent event, bool fromCUDA)

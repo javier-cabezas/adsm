@@ -6,7 +6,7 @@
 namespace __impl { namespace cuda {
 
 gmacError_t
-IOBuffer::wait(bool fromCUDA)
+IOBuffer::wait(bool internal)
 {
     EventMap::iterator it;
     it = map_.find(mode_);
@@ -19,7 +19,7 @@ IOBuffer::wait(bool fromCUDA)
         CUevent start = it->second.first;
         CUevent end   = it->second.second;
         trace::SetThreadState(trace::Wait);
-        ret = mode_->waitForEvent(end, fromCUDA);
+        ret = mode_->waitForEvent(end, internal);
         trace::SetThreadState(trace::Running);
         if(state_ == ToHost) DataCommToHost(*mode_, start, end, size_);
         else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, size_);
