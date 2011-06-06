@@ -2,7 +2,7 @@ The system is: Windows - 6.1 - x86
 Determining if the C compiler works passed with the following output:
 Change Dir: C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/CMakeTmp
 
-Run Build Command:c:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
+Run Build Command:C:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
 
 Microsoft (R) Visual Studio Version 9.0.30729.1.
 Copyright (C) Microsoft Corp. All rights reserved.
@@ -28,7 +28,7 @@ Copyright (C) Microsoft Corp. All rights reserved.
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/CMakeTmp
 
-Run Build Command:c:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
+Run Build Command:C:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
 
 Microsoft (R) Visual Studio Version 9.0.30729.1.
 Copyright (C) Microsoft Corp. All rights reserved.
@@ -54,7 +54,7 @@ Copyright (C) Microsoft Corp. All rights reserved.
 Determining if the CXX compiler works passed with the following output:
 Change Dir: C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/CMakeTmp
 
-Run Build Command:c:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
+Run Build Command:C:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
 
 Microsoft (R) Visual Studio Version 9.0.30729.1.
 Copyright (C) Microsoft Corp. All rights reserved.
@@ -80,7 +80,7 @@ Copyright (C) Microsoft Corp. All rights reserved.
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/CMakeTmp
 
-Run Build Command:c:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
+Run Build Command:C:\PROGRA~2\MICROS~1.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec
 
 Microsoft (R) Visual Studio Version 9.0.30729.1.
 Copyright (C) Microsoft Corp. All rights reserved.

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="eclVecAdd"
-	ProjectGUID="{B564544C-0879-461D-B9D8-6E030555FA37}"
+	ProjectGUID="{05F069E7-D84B-4B10-95CC-F6BE90A8C7A5}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions=" /Zm1000"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				BasicRuntimeChecks="3"
 				CompileAs="2"
 				DebugInformationFormat="3"
@@ -40,7 +40,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;CMAKE_INTDIR=\&quot;Debug\&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -84,7 +84,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions=" /Zm1000"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				CompileAs="2"
 				ExceptionHandling="1"
 				InlineFunctionExpansion="2"
@@ -101,7 +101,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;Release\&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions=" /Zm1000"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				CompileAs="2"
 				ExceptionHandling="1"
 				InlineFunctionExpansion="1"
@@ -161,7 +161,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -204,7 +204,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions=" /Zm1000"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				CompileAs="2"
 				DebugInformationFormat="3"
 				ExceptionHandling="1"
@@ -222,7 +222,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install-32\samples\..\include;C:\Users\igelado\code\install-32\samples\common;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -258,41 +258,41 @@
 	</Configurations>
 	<Files>
 			<File
-				RelativePath="C:\Users\igelado\code\install\samples\CMakeLists.txt">
+				RelativePath="C:\Users\igelado\code\install-32\samples\CMakeLists.txt">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
-					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Description="Building Custom Rule C:/Users/igelado/code/install-32/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install-32/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install-32\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install-32\samples\CMakeLists.txt;"
 					Outputs="C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
-					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Description="Building Custom Rule C:/Users/igelado/code/install-32/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install-32/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install-32\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install-32\samples\CMakeLists.txt;"
 					Outputs="C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="MinSizeRel|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
-					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Description="Building Custom Rule C:/Users/igelado/code/install-32/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install-32/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install-32\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install-32\samples\CMakeLists.txt;"
 					Outputs="C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="RelWithDebInfo|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
-					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Description="Building Custom Rule C:/Users/igelado/code/install-32/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install-32/samples -BC:/Users/igelado/code/install-32/samples/VS_x86 --check-stamp-file C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install-32\samples\CMakeLists.txt;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeSystem.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCCompiler.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;C:\Users\igelado\code\install-32\samples\CMakeLists.txt;"
 					Outputs="C:\Users\igelado\code\install-32\samples\VS_x86\CMakeFiles\generate.stamp"/>
 				</FileConfiguration>
 			</File>
@@ -300,7 +300,7 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="C:\Users\igelado\code\install\samples\ecl\eclVecAdd.cpp">
+				RelativePath="C:\Users\igelado\code\install-32\samples\ecl\eclVecAdd.cpp">
 			</File>
 		</Filter>
 	</Files>

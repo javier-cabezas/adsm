@@ -746,7 +746,7 @@ struct GetInfoHelper<Func, VECTOR_CLASS<char *> >
  	  {
 		if( binary_sizes[i] != 0 )
 		{     		 
-			values[i]= (char *)malloc( sizeof(char)*binary_sizes[i]);
+			values[i]= (char *)::malloc( sizeof(char)*binary_sizes[i]);
 		}
 		else
 		{
