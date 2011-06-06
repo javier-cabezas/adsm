@@ -7,22 +7,18 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-
-#if 0
-inline gmacError_t
-Context::argument(const void *arg, size_t size, unsigned index)
-{
-    call_.setArgument(arg, size, index);
-    // TODO: perform some checking
-    return gmacSuccess;
-}
-#endif
-
-inline const cl_command_queue
+inline const stream_t
 Context::eventStream() const
 {
-    return stream_;
+    return streamLaunch_;
 }
+
+inline Accelerator &
+Context::accelerator()                                                          
+{                                                                                             
+    return dynamic_cast<Accelerator &>(acc_);
+}   
+
 
 }}}
 

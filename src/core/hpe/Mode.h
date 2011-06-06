@@ -79,7 +79,7 @@ public:
     //gmacError_t prepareForCall();
     //gmacError_t prepareForCall(THREAD_T id);
     //gmacError_t waitForCall();
-    gmacError_t waitForCall(KernelLaunch &launch);
+    //gmacError_t waitForCall(KernelLaunch &launch);
 };
 
 /**
@@ -117,6 +117,7 @@ protected:
 
     virtual void reload() = 0;
     virtual Context &getContext() = 0;
+    virtual void destroyContext(Context &context) const = 0;
 
     memory::ObjectMap &getObjectMap();
     const memory::ObjectMap &getObjectMap() const;
@@ -183,7 +184,7 @@ public:
      * power of two
      * \return Error code
      */
-    TESTABLE VIRTUAL gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
     /**
      * Unmaps the memory previously mapped by map

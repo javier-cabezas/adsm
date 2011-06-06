@@ -97,6 +97,7 @@ protected:
     */
     core::hpe::Context &getContext();
     Context &getCLContext();
+    void destroyContext(core::hpe::Context &context) const;
 
     cl_program program_;
     KernelList kernelList_;

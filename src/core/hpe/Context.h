@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 #include "util/Private.h"
 
 namespace __impl { namespace core { 
+class IOBuffer;
 
 namespace hpe {
 class Accelerator;
@@ -59,8 +60,16 @@ protected:
     Accelerator &acc_;
     /** Execution mode owning the context */
     Mode &mode_;
-    /** Context ID */
-    unsigned id_;
+
+    /** Accelerator streams to request operations */
+    stream_t streamLaunch_;
+    stream_t streamToAccelerator_;
+    stream_t streamToHost_;
+    stream_t streamAccelerator_;
+
+
+    /** I/O buffer used by the context for data transfers */
+    IOBuffer *buffer_;
 
     /**
      * Constructs a context for the calling thread on the given accelerator
@@ -68,7 +77,7 @@ protected:
      * \param mode Reference to the parent mode of the context
      * \param id Context identifier
      */
-    Context(Mode &mode, unsigned id);
+    Context(Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator, stream_t streamToHost, stream_t streamAccelerator);
 
 public:
     /**
@@ -89,7 +98,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE VIRTUAL gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
     /**
      * Copies size bytes from accelerator memory to host memory
      *
@@ -98,7 +107,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE VIRTUAL gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     /**
      * Copies size bytes from accelerator memory to accelerator memory
      *
@@ -107,7 +116,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE VIRTUAL gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /**
      * Fills size bytes of accelerator memory with the given value
@@ -118,14 +127,6 @@ public:
      * \return Error code
      */
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
-
-    /**
-     * Waits for a kernel to finish execution on the accelerator
-     * 
-     * \param launch Kernel to wait for
-     * \return Error code returned by the kernel
-     */
-    virtual gmacError_t waitForCall(core::hpe::KernelLaunch &launch) = 0;
 };
 
 }}}

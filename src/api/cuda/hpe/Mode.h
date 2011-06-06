@@ -134,8 +134,6 @@ public:
     */
     gmacError_t hostFree(hostptr_t addr);
 
-    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-
     //! Get the GPU memory address where GPU-accessible host memory is mapped
     /*!
         \param addr Host memory address

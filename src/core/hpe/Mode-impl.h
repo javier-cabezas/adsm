@@ -38,7 +38,7 @@ inline void ContextMap::clean()
 {
     Parent::iterator i;
     lockWrite();
-    for(i = begin(); i != end(); i++) delete i->second;
+    for(i = begin(); i != end(); i++) owner_.destroyContext(*i->second);
     Parent::clear();
     unlock();
 }
@@ -69,7 +69,6 @@ inline gmacError_t ContextMap::waitForCall()
     unlock();
     return ret;
 }
-#endif
 
 inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
 {
@@ -83,6 +82,7 @@ inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
     unlock();
     return ret;
 }
+#endif
 
 inline
 memory::ObjectMap &Mode::getObjectMap()

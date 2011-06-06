@@ -47,7 +47,7 @@ class Mode;
 class GMAC_LOCAL ContextFactory {
 protected:
     Context *create(Mode &mode, cl_command_queue stream) const;
-    //void destroy(Context &context) const;
+    void destroy(Context &context) const;
 };
 
 }}}
