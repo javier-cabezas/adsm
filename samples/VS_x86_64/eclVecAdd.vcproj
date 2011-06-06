@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="eclVecAdd"
+	ProjectGUID="{267D0DEE-53F1-401A-A45B-305CE5A335C7}"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform
+			Name="x64"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="Debug"
+			IntermediateDirectory="eclVecAdd.dir\Debug"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions=" /Zm1000"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				BasicRuntimeChecks="3"
+				CompileAs="2"
+				DebugInformationFormat="3"
+				ExceptionHandling="1"
+				InlineFunctionExpansion="0"
+				Optimization="0"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;CMAKE_INTDIR=\&quot;Debug\&quot;"
+				AssemblerListingLocation="Debug"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="C:\Users\igelado\code\install\samples\VS_x86_64\Debug/eclVecAdd.pdb"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;CMAKE_INTDIR=\&quot;Debug\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="3"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalOptions=" /STACK:10000000 /machine:x64 /debug"
+				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  ../../lib/gmac-hpe.lib "
+				OutputFile="C:\Users\igelado\code\install\samples\VS_x86_64\Debug\eclVecAdd.exe"
+				Version="0.0"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile="C:\Users\igelado\code\install\samples\VS_x86_64\Debug/eclVecAdd.pdb"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				ImportLibrary="C:\Users\igelado\code\install\samples\VS_x86_64\Debug\eclVecAdd.lib"/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="Release"
+			IntermediateDirectory="eclVecAdd.dir\Release"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions=" /Zm1000"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				CompileAs="2"
+				ExceptionHandling="1"
+				InlineFunctionExpansion="2"
+				Optimization="2"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;Release\&quot;"
+				AssemblerListingLocation="Release"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="C:\Users\igelado\code\install\samples\VS_x86_64\Release/eclVecAdd.pdb"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;Release\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="3"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalOptions=" /STACK:10000000 /machine:x64"
+				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  ../../lib/gmac-hpe.lib "
+				OutputFile="C:\Users\igelado\code\install\samples\VS_x86_64\Release\eclVecAdd.exe"
+				Version="0.0"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile="C:\Users\igelado\code\install\samples\VS_x86_64\Release/eclVecAdd.pdb"
+				SubSystem="1"
+				ImportLibrary="C:\Users\igelado\code\install\samples\VS_x86_64\Release\eclVecAdd.lib"/>
+		</Configuration>
+		<Configuration
+			Name="MinSizeRel|x64"
+			OutputDirectory="MinSizeRel"
+			IntermediateDirectory="eclVecAdd.dir\MinSizeRel"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions=" /Zm1000"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				CompileAs="2"
+				ExceptionHandling="1"
+				InlineFunctionExpansion="1"
+				Optimization="1"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"
+				AssemblerListingLocation="MinSizeRel"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="C:\Users\igelado\code\install\samples\VS_x86_64\MinSizeRel/eclVecAdd.pdb"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;MinSizeRel\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="3"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalOptions=" /STACK:10000000 /machine:x64"
+				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  ../../lib/gmac-hpe.lib "
+				OutputFile="C:\Users\igelado\code\install\samples\VS_x86_64\MinSizeRel\eclVecAdd.exe"
+				Version="0.0"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile="C:\Users\igelado\code\install\samples\VS_x86_64\MinSizeRel/eclVecAdd.pdb"
+				SubSystem="1"
+				ImportLibrary="C:\Users\igelado\code\install\samples\VS_x86_64\MinSizeRel\eclVecAdd.lib"/>
+		</Configuration>
+		<Configuration
+			Name="RelWithDebInfo|x64"
+			OutputDirectory="RelWithDebInfo"
+			IntermediateDirectory="eclVecAdd.dir\RelWithDebInfo"
+			ConfigurationType="1"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions=" /Zm1000"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				CompileAs="2"
+				DebugInformationFormat="3"
+				ExceptionHandling="1"
+				InlineFunctionExpansion="1"
+				Optimization="2"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="TRUE"
+				WarningLevel="3"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"
+				AssemblerListingLocation="RelWithDebInfo"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="C:\Users\igelado\code\install\samples\VS_x86_64\RelWithDebInfo/eclVecAdd.pdb"
+/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="C:\Users\igelado\code\install\samples\..\include;C:\Users\igelado\code\install\samples\common;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\&quot;RelWithDebInfo\&quot;"/>
+			<Tool
+				Name="VCMIDLTool"
+				MkTypLibCompatible="FALSE"
+				TargetEnvironment="3"
+				GenerateStublessProxies="TRUE"
+				TypeLibraryName="$(InputName).tlb"
+				OutputDirectory="$(IntDir)"
+				HeaderFileName="$(InputName).h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="$(InputName)_i.c"
+				ProxyFileName="$(InputName)_p.c"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalOptions=" /STACK:10000000 /machine:x64 /debug"
+				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib  ../../lib/gmac-hpe.lib "
+				OutputFile="C:\Users\igelado\code\install\samples\VS_x86_64\RelWithDebInfo\eclVecAdd.exe"
+				Version="0.0"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
+				ProgramDatabaseFile="C:\Users\igelado\code\install\samples\VS_x86_64\RelWithDebInfo/eclVecAdd.pdb"
+				GenerateDebugInformation="TRUE"
+				SubSystem="1"
+				ImportLibrary="C:\Users\igelado\code\install\samples\VS_x86_64\RelWithDebInfo\eclVecAdd.lib"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+			<File
+				RelativePath="C:\Users\igelado\code\install\samples\CMakeLists.txt">
+				<FileConfiguration
+					Name="Debug|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install/samples/VS_x86_64 --check-stamp-file C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystem.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeSystem.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Outputs="C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install/samples/VS_x86_64 --check-stamp-file C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystem.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeSystem.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Outputs="C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MinSizeRel|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install/samples/VS_x86_64 --check-stamp-file C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystem.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeSystem.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Outputs="C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="RelWithDebInfo|x64">
+					<Tool
+					Name="VCCustomBuildTool"
+					Description="Building Custom Rule C:/Users/igelado/code/install/samples/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\CMake 2.8\bin\cmake.exe&quot; -HC:/Users/igelado/code/install/samples -BC:/Users/igelado/code/install/samples/VS_x86_64 --check-stamp-file C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp&#x0D;&#x0A;if errorlevel 1 goto :VCReportError"
+					AdditionalDependencies="C:\Users\igelado\code\install\samples\CMakeLists.txt;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystem.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeSystem.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeFindBinUtils.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeSystemSpecificInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeGenericSystem.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\WindowsPaths.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeRCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeRCInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestRCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake.in&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCCompiler.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXInformation.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\Windows-cl.cmake&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCPlatform.cmake;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXPlatform.cmake;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\Platform\cl.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCommonLanguageInclude.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCXXCompiler.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeTestCompilerCommon.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeDetermineCompilerABI.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeParseImplicitLinkInfo.cmake&quot;;&quot;C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompiler.cmake.in&quot;;C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\CMakeCXXCompiler.cmake;C:\Users\igelado\code\install\samples\CMakeLists.txt;"
+					Outputs="C:\Users\igelado\code\install\samples\VS_x86_64\CMakeFiles\generate.stamp"/>
+				</FileConfiguration>
+			</File>
+		<Filter
+			Name="Source Files"
+			Filter="">
+			<File
+				RelativePath="C:\Users\igelado\code\install\samples\ecl\eclVecAdd.cpp">
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
