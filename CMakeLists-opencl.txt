@@ -27,10 +27,13 @@ if(USE_OPENCL)
     set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-hpe")
 
 
-    install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf
-	    DESTINATION doc COMPONENT documentation)
 
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/samples
-            DESTINATION . COMPONENT samples PATTERN ".svn" EXCLUDE)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf
+	            DESTINATION doc COMPONENT documentation)
+
+        install(DIRECTORY ${CMAKE_SOURCE_DIR}/samples
+                DESTINATION . COMPONENT samples PATTERN ".svn" EXCLUDE)
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 endif(USE_OPENCL)
