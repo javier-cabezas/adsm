@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     }
 
     // Call the kernel
+    size_t globalSize = vecSize;
     ecl_kernel kernel;
     assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
     cl_mem d_c = cl_mem(eclPtr(c));
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
     assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &d_a) == eclSuccess);
     cl_mem d_b = cl_mem(eclPtr(b));                        
     assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &d_b) == eclSuccess);
-    assert(eclCallNDRange(kernel, 1, NULL, &vecSize, NULL) == eclSuccess);
+    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
 
     // Check the result in the CPU
     float error = 0.f;
