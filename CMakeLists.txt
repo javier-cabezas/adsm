@@ -221,7 +221,7 @@ install(TARGETS ${GMAC_TARGET_NAME}
         COMPONENT libraries)
 
 install(TARGETS ${GMAC_TARGET_NAME}
-        RUNTIME DESTINATION lib
+        RUNTIME DESTINATION bin
         COMPONENT runtime)
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
