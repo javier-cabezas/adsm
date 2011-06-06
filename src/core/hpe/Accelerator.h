@@ -42,6 +42,7 @@
 
 #include "config/common.h"
 #include "core/AllocationMap.h"
+#include "core/IOBuffer.h"
 #include "util/Lock.h"
 
 
@@ -197,6 +198,37 @@ public:
      * \return Error code
      */
     virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
+
+    /**
+     * Asynchronously copy an I/O buffer to the accelerator
+     * \param acc Accelerator memory address where to copy the data to
+     * \param buffer I/O buffer containing the data to be copied
+     * \param bufferOff Offset from the starting of the I/O buffer to start copying data from
+     * \param count Size (in bytes) to be copied
+     * \param mode Execution mode associated to the data transfer
+     * \param stream OpenCL command queue where to issue the data transfer request
+     * \return Error code
+     */
+    virtual gmacError_t copyToAcceleratorAsync(accptr_t acc, IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, stream_t stream) = 0;
+
+    /**
+     * Asynchronously copy data from accelerator to an I/O buffer
+     * \param buffer I/O buffer where to copy the data to
+     * \param bufferOff Offset from the starting of the I/O buffer to start copying data to
+     * \param acc Accelerator memory address where to start copying data from
+     * \param count Size (in bytes) to be copied
+     * \param mode Execution mode associated to the data transfer
+     * \param stream OpenCL command queue where to issue the data transfer request
+     * \return Error code
+     */
+    virtual gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, stream_t stream) = 0;
+
+    /**
+     * Wait for all commands in a command queue to be completed
+     * \param stream OpenCL command queue
+     * \return Error code
+     */
+    virtual gmacError_t syncStream(stream_t stream) = 0;
 
     /**
      * Gets the memory information for the accelerator

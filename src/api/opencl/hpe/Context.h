@@ -47,14 +47,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace core {
-class IOBuffer;
-}
-
 namespace opencl {
-
-class IOBuffer;
-
 
 namespace hpe {
 
@@ -70,22 +63,10 @@ protected:
     /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
 
-    /** OpenCL command queue to request operations */
-    cl_command_queue stream_;
-
-    /** I/O buffer used by the context for data transfers */
-    IOBuffer *buffer_;
-
-    /**
-     * Wait for all commands in the OpenCL command queue to finish
-     * \param stream OpenCL command queue
-     * \return Error code
-     */
-    gmacError_t syncCLstream(cl_command_queue stream);
-
     /**
      * Default OpenCL context constructor
      * \param mode OpenCL execution mode associated to the context
+     * \param stream OpenCL command queue to perform operations
      */
     Context(Mode &mode, cl_command_queue stream);
 
@@ -94,31 +75,13 @@ protected:
      */
     ~Context();
 
+
 public:
     /**
      * Get the accelerator associated to the context
      * \return Reference to an OpenCL accelerator
      */
     Accelerator & accelerator();
-
-    /**
-     * Copy data from an I/O buffer to the accelerator memory
-     * \param dst Accelerator memory address to copy data to
-     * \param buffer I/O buffer to copy data from
-     * \param size Size (in bytes) of the data to be transferred
-     * \param off  Offset within the I/O buffer to start transferring data from
-     */
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
-    /**
-     * Copy data from the accelerator to an I/O buffer
-     * \param buffer I/O buffer to copy the data to
-     * \param dst Accelerator memory address to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param off Offset within the I/O buffer to start transferring data to
-     */
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-
 
     /**
      * Create a descriptor of a kernel invocation
@@ -134,33 +97,12 @@ public:
     gmacError_t waitAccelerator();
 
     /**
-     * Wait for an OpenCL event to be completed
-     * \param e OpenCL event to wait for
-     * \return Error code
-     */
-    gmacError_t waitForEvent(cl_event e);
-
-    /**
      * Get the default OpenCL command queue to request events
      * \return Default OpenCL command queue
      */
-    const cl_command_queue eventStream() const;
-
-
-    /* core/hpe/Context.h Interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    const stream_t eventStream() const;
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
-
-    gmacError_t prepareForCall();
-
-    gmacError_t waitForCall();
-
-    gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
 };
 
 }}}

@@ -272,6 +272,7 @@ void Process::send(THREAD_T id)
 {
     Mode *mode = CurrentMode_.get();
 	if(mode == NULL) return;
+    mode->wait();
     queues_.push(id, *mode);
 	CurrentMode_.set(NULL);
 }
@@ -288,7 +289,10 @@ void Process::receive()
 void Process::sendReceive(THREAD_T id)
 {
     Mode *mode = CurrentMode_.get();
-    if(mode != NULL) queues_.push(id, *mode);
+    if(mode != NULL) {
+        mode->wait();
+        queues_.push(id, *mode);
+    }
     CurrentMode_.set(queues_.pop());
 }
 

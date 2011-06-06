@@ -78,7 +78,7 @@ typedef std::vector<Argument> ArgsVector;
 
 class GMAC_LOCAL KernelConfig : public ArgsVector {
 protected:
-    static const unsigned StackSize_ = 4096;
+    static const unsigned StackSize_ = 1024;
 
     uint8_t stack_[StackSize_];
     size_t argsSize_;

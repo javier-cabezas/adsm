@@ -38,7 +38,6 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 
 Mode::~Mode()
 {    
-    contextMap_.clean();
     acc_->unregisterMode(*this);
 }
 
@@ -80,10 +79,14 @@ gmacError_t Mode::releaseObjects()
     return error_;
 }
 
-
-
-
-
+gmacError_t Mode::acquireObjects()
+{
+    lock();
+    validObjects_ = false;
+    releasedObjects_ = false;
+    unlock();
+    return error_;
+}
 
 void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {
@@ -116,6 +119,10 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
         error_ = acc_->map(dst, src, size, align);
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
+
+#ifdef USE_MULTI_CONTEXT
+    dst.pasId_ = id_;
+#endif
 
     switchOut();
     return error_;
@@ -213,6 +220,7 @@ gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
     Map::removeOwner(proc_, *this);
+    contextMap_.clean();
 #ifdef USE_VM
     bitmap_.cleanUp();
 #endif

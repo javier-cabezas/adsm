@@ -50,13 +50,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace core {
-class IOBuffer;
-}
-
 namespace cuda { 
-
-class IOBuffer;
 
 namespace hpe {
 
@@ -64,51 +58,56 @@ class Accelerator;
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
     friend class ContextFactory;
 protected:
-    static void * FatBin_;
+    /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
-
-	typedef std::map<void *, void *> AddressMap;
-	static AddressMap HostMem_;
-
-    CUstream streamLaunch_;
-    CUstream streamToAccelerator_;
-    CUstream streamToHost_;
-    CUstream streamAccelerator_;
-
-    IOBuffer *buffer_;
-
+ 
     KernelConfig call_;
 
-    void setupCUstreams();
-    void cleanCUstreams();
-    gmacError_t syncCUstream(CUstream);
+    /**
+     * Default CUDA context constructor
+     * \param mode CUDA execution mode associated to the context
+     * \param streamLaunch CUDA command queue to perform kernel related operations
+     * \param streamToAccelerator CUDA command queue to perform to accelerator transfers
+     * \param streamToHost CUDA command queue to perform to host transfers
+     * \param streamAccelerator CUDA command queue to perform accelerator to accelerator transfers
+     */
+	Context(Mode &mode, CUstream streamLaunch, CUstream streamToAccelerator, CUstream streamToHost, CUstream streamAccelerator);
 
-	Context(Mode &mode);
+    /**
+     * Default OpenCL context destructor
+     */
 	~Context();
 
 public:
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    /**
+     * Get the accelerator associated to the context
+     * \return Reference to an OpenCL accelerator
+     */
+    Accelerator & accelerator();
+
+    /**
+     * Create a descriptor of a kernel invocation
+     * \param kernel OpenCL kernel to be executed
+     * \return Descriptor of the kernel invocation
+     */
+    KernelLaunch &launch(Kernel &kernel);
+
+    /**
+     * Wait for the accelerator to finish activities in all OpenCL command queues
+     * \return Error code
+     */
+    gmacError_t waitAccelerator();
+
+    /**
+     * Get the default OpenCL command queue to request events
+     * \return Default OpenCL command queue
+     */
+    const stream_t eventStream() const;
 
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
-    KernelLaunch &launch(Kernel &kernel);
-    gmacError_t prepareForCall();
-    gmacError_t waitForCall();
-    gmacError_t waitForCall(core::hpe::KernelLaunch &launch);
-
-    gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
-    gmacError_t waitAccelerator();
-
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);
-
-    const CUstream eventStream() const;
-
-    Accelerator & accelerator();
-    gmacError_t waitForEvent(CUevent e);
 };
 
 }}}

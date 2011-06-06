@@ -76,10 +76,10 @@ public:
     void remove(THREAD_T id);
     void clean();
 
-    gmacError_t prepareForCall();
+    //gmacError_t prepareForCall();
     //gmacError_t prepareForCall(THREAD_T id);
-    gmacError_t waitForCall();
-    gmacError_t waitForCall(KernelLaunch &launch);
+    //gmacError_t waitForCall();
+    //gmacError_t waitForCall(KernelLaunch &launch);
 };
 
 /**
@@ -96,6 +96,10 @@ protected:
     Accelerator *acc_;
 
     Map map_;
+
+    stream_t streamToHost_;
+    stream_t streamToAccelerator_;
+    stream_t streamLaunch_;
 
     allocator::Buddy *ioMemory_;
 
@@ -180,7 +184,7 @@ public:
      * power of two
      * \return Error code
      */
-    TESTABLE VIRTUAL gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
     /**
      * Unmaps the memory previously mapped by map
@@ -245,13 +249,13 @@ public:
      * \param launch Reference to KernelLaunch object
      * \return Error code
      */
-    virtual gmacError_t wait(KernelLaunch &launch) = 0;
+    gmacError_t wait(KernelLaunch &launch);
 
     /**
      * Waits for all kernels to finish execution
      * \return Error code
      */
-    virtual gmacError_t wait() = 0;
+    gmacError_t wait();
 
     /**
      * Creates an IOBuffer
@@ -273,7 +277,7 @@ public:
      * \param size Number of bytes to be copied
      * \param off Offset within the buffer
      */
-    virtual gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, size_t off = 0) = 0;
+    gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, size_t off = 0);
 
     /**
      * Copies size bytes from accelerator memory to a IOBuffer
@@ -282,7 +286,7 @@ public:
      * \param size Number of bytes to be copied
      * \param off Offset within the buffer
      */
-    virtual gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0) = 0;
+    gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
 
     /**
      * Registers a new kernel that can be executed by the owner thread of the mode
@@ -313,6 +317,9 @@ public:
      */
     TESTABLE gmacError_t releaseObjects();
 
+
+    gmacError_t acquireObjects();
+
     /**
      * Returns the process which the mode belongs to
      * \return A reference to the process which the mode belongs to
@@ -337,7 +344,9 @@ public:
     const memory::vm::Bitmap &getDirtyBitmap() const;
 #endif
 
-    virtual gmacError_t prepareForCall();
+    gmacError_t prepareForCall();
+    
+    stream_t eventStream();
 };
 
 }}}

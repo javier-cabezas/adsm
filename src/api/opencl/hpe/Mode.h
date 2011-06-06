@@ -89,8 +89,6 @@ protected:
     //! Switch back to CPU mode
     void switchOut();
 
-    cl_command_queue stream_;
-
     void reload();
 
     //! Get the main mode context
@@ -147,19 +145,6 @@ public:
     */
 	gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-     /**
-     * Waits for kernel execution
-     * \param launch Reference to a KernelLaunch object
-     * \return Error code
-     */
-    virtual gmacError_t wait(core::hpe::KernelLaunch &launch);
-
-    /**
-     * Waits for all kernels execution
-     * \return Error code
-     */
-    virtual gmacError_t wait();
-
 	/**
      * Waits for kernel execution and acquires the ownership of the objects
      * of the mode from the accelerator
@@ -180,34 +165,6 @@ public:
     */
     void destroyIOBuffer(core::IOBuffer &buffer);
 
-    /** Send data from an I/O buffer to the accelerator
-     *
-     *  \param dst Accelerator memory where data will be written to
-     *  \param buffer I/O buffer where data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start reading data from
-     *  \return Error code
-     */
-    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
-
-    /** Fill I/O buffer with data from the accelerator
-     *
-     *  \param buffer I/O buffer where data will be stored
-     *  \param src Accelerator memory where the data will be read from
-     *  \param size Size (in bytes) of the data to be copied
-     *  \param off Offset (in bytes) in the I/O buffer where to start writing data to
-     *  \return Error code
-     */
-    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
-
-    //! Get the accelerator stream where events are recorded
-    /*!
-        \return Command queue where events are recorded
-    */
-    cl_command_queue eventStream();
-
-
     //! Block the CPU thread until an event happens
     /*!
         \param event Event to wait for
@@ -226,8 +183,6 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
-
-	gmacError_t prepareForCall();
 };
 }}}
 

@@ -6,6 +6,7 @@
 #include "core/hpe/Accelerator.h"
 #include "core/hpe/Process.h"
 #include "core/hpe/Context.h"
+#include "core/IOBuffer.h"
 
 namespace __impl { namespace core { namespace hpe {
 
@@ -37,15 +38,16 @@ inline void ContextMap::clean()
 {
     Parent::iterator i;
     lockWrite();
-    for(i = begin(); i != end(); i++) owner_.destroyContext(*(i->second));
+    for(i = begin(); i != end(); i++) owner_.destroyContext(*i->second);
     Parent::clear();
     unlock();
 }
 
+#if 0
 inline gmacError_t ContextMap::prepareForCall()
 {
-    Parent::iterator i;
     gmacError_t ret = gmacSuccess;
+    Parent::iterator i;
     lockWrite();
     for(i = begin(); i != end(); i++) {
         ret = i->second->prepareForCall();
@@ -57,8 +59,8 @@ inline gmacError_t ContextMap::prepareForCall()
 
 inline gmacError_t ContextMap::waitForCall()
 {
-    Parent::iterator i;
     gmacError_t ret = gmacSuccess;
+    Parent::iterator i;
     lockRead();
     for(i = begin(); i != end(); i++) {
         ret = i->second->waitForCall();
@@ -80,6 +82,7 @@ inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
     unlock();
     return ret;
 }
+#endif
 
 inline
 memory::ObjectMap &Mode::getObjectMap()
@@ -145,12 +148,68 @@ Mode::memInfo(size_t &free, size_t &total)
     switchOut();
 }
 
-inline gmacError_t
+inline
+gmacError_t
 Mode::prepareForCall()
 {
     switchIn();
-    return contextMap_.prepareForCall();
+    trace::SetThreadState(trace::Wait);
+    gmacError_t ret = acc_->syncStream(streamToAccelerator_);
+    trace::SetThreadState(trace::Idle);
     switchOut();
+    return ret;
+}
+
+inline
+gmacError_t Mode::bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t len, size_t off)
+{
+    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
+    trace::EnterCurrentFunction();
+    switchIn();
+    gmacError_t ret = acc_->copyToAcceleratorAsync(dst, buffer, off, len, *this, streamToAccelerator_);
+    switchOut();
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+inline
+gmacError_t Mode::acceleratorToBuffer(IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
+{
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), len);
+    trace::EnterCurrentFunction();
+    switchIn();
+    // Implement a function to remove these casts
+    gmacError_t ret = acc_->copyToHostAsync(buffer, off, src, len, *this, streamToHost_);
+    switchOut();
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+inline gmacError_t
+Mode::wait(core::hpe::KernelLaunch &launch)
+{
+    switchIn();
+    // TODO: use an event for this
+    error_ = acc_->syncStream(streamLaunch_);
+    switchOut();
+
+    return error_;
+}
+
+inline gmacError_t
+Mode::wait()
+{
+    switchIn();
+    error_ = acc_->syncStream(streamLaunch_);
+    switchOut();
+
+    return error_;
+}
+
+inline stream_t
+Mode::eventStream()
+{
+    return streamLaunch_;
 }
 
 }}}

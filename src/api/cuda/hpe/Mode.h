@@ -134,8 +134,6 @@ public:
     */
     gmacError_t hostFree(hostptr_t addr);
 
-    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-
     //! Get the GPU memory address where GPU-accessible host memory is mapped
     /*!
         \param addr Host memory address
@@ -152,21 +150,8 @@ public:
     */
     gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-
-    /**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     */
-    virtual gmacError_t acquireObjects();
-
-
-    gmacError_t wait(core::hpe::KernelLaunch &launch);
-    gmacError_t wait();
-
     core::IOBuffer &createIOBuffer(size_t size);
     void destroyIOBuffer(core::IOBuffer &buffer);
-    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-    TESTABLE gmacError_t acceleratorToBuffer(core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off = 0);
 
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);
@@ -176,8 +161,6 @@ public:
     const Variable *constantByName(std::string name) const;
     const Variable *variableByName(std::string name) const;
     const Texture *texture(gmacTexture_t key) const;
-
-    CUstream eventStream();
 
     Accelerator &getAccelerator() const;
 

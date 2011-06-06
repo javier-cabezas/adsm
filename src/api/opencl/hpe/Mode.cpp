@@ -10,14 +10,14 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     gmac::core::hpe::Mode(proc, acc)
 {
     hostptr_t addr = NULL;
-    stream_ = getAccelerator().createCLstream();
+    streamLaunch_ = getAccelerator().createCLstream();
+    streamToHost_ = streamToAccelerator_ = streamLaunch_;
 }
 
 Mode::~Mode()
 {
     // We need to ensure that contexts are destroyed before the Mode
-    cleanUpContexts();
-    getAccelerator().destroyCLstream(stream_);
+    getAccelerator().destroyCLstream(streamLaunch_);
 }
 
 core::IOBuffer &Mode::createIOBuffer(size_t size)
@@ -55,7 +55,7 @@ core::hpe::Context &Mode::getContext()
 {
 	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
-    context = ContextFactory::create(*this, stream_);
+    context = ContextFactory::create(*this, streamLaunch_);
     CFATAL(context != NULL, "Error creating new context");
 	contextMap_.add(util::GetThreadId(), context);
     return *context;
@@ -132,12 +132,6 @@ gmacError_t Mode::acquireObjects()
     releasedObjects_ = false;
 	unlock();
     return error_;
-}
-
-cl_command_queue Mode::eventStream()
-{
-    Context &ctx = getCLContext();
-    return ctx.eventStream();
 }
 
 gmacError_t Mode::waitForEvent(cl_event event)
