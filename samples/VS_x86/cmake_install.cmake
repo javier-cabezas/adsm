@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/igelado/code/install/samples
+# Install script for directory: C:/Users/igelado/code/install-32/samples
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
