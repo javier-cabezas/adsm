@@ -82,19 +82,19 @@ void *dct_thread(void *args)
 		ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "DCT:Malloc: ", "\n");
+        printTime(&s, &t, "DCT-Malloc: ", "\n");
 
         getTime(&s);
 		__randInit(s_dct.in, width * height);
         getTime(&t);
-        printTime(&s, &t, "DCT:Init: ", "\n");
+        printTime(&s, &t, "DCT-Init: ", "\n");
 
         getTime(&s);
 		dct<<<Dg, Db>>>(gmacPtr(s_dct.out), gmacPtr(s_dct.in), width, height);
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "DCT:Run: ", "\n");
+        printTime(&s, &t, "DCT-Run: ", "\n");
 
         getTime(&s);
 		gmac_sem_wait(&s_quant.free, 1);
@@ -102,7 +102,7 @@ void *dct_thread(void *args)
 		s_quant.next_out = s_dct.in;
 		gmacSendReceive(s_quant.id);
         getTime(&t);
-        printTime(&s, &t, "DCT:SendRecv: ", "\n");
+        printTime(&s, &t, "DCT-SendRecv: ", "\n");
 	}
 
     getTime(&s);
@@ -111,7 +111,7 @@ void *dct_thread(void *args)
 	ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "DCT:Malloc: ", "\n");
+    printTime(&s, &t, "DCT-Malloc: ", "\n");
 
     getTime(&s);
 	gmac_sem_wait(&s_quant.free, 1);
@@ -119,7 +119,7 @@ void *dct_thread(void *args)
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
     getTime(&t);
-    printTime(&s, &t, "DCT:SendRecv: ", "\n");
+    printTime(&s, &t, "DCT-SendRecv: ", "\n");
 
     getTime(&s);
 	ret = gmacMalloc((void **)&s_dct.in, width * height * sizeof(float));
@@ -127,7 +127,7 @@ void *dct_thread(void *args)
 	ret = gmacMalloc((void **)&s_dct.out, width * height * sizeof(float));
 	assert(ret == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "DCT:Malloc: ", "\n");
+    printTime(&s, &t, "DCT-Malloc: ", "\n");
 
     getTime(&s);
 	gmac_sem_wait(&s_quant.free, 1);
@@ -135,7 +135,7 @@ void *dct_thread(void *args)
 	s_quant.next_out = s_dct.in;
 	gmacSendReceive(s_quant.id);
     getTime(&t);
-    printTime(&s, &t, "DCT:SendRecv: ", "\n");
+    printTime(&s, &t, "DCT-SendRecv: ", "\n");
 
 	return NULL;
 }
@@ -156,7 +156,7 @@ void *quant_thread(void *args)
 	gmac_sem_post(&s_quant.free, 1);
 	nextStage(&s_quant, &s_idct);
     getTime(&t);
-    printTime(&s, &t, "Quant:SendRecv: ", "\n");
+    printTime(&s, &t, "Quant-SendRecv: ", "\n");
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
@@ -164,19 +164,19 @@ void *quant_thread(void *args)
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "Quant:Run: ", "\n");
+        printTime(&s, &t, "Quant-Run: ", "\n");
 		
         getTime(&s);
 		nextStage(&s_quant, &s_idct);
         getTime(&t);
-        printTime(&s, &t, "Quant:SendRecv: ", "\n");
+        printTime(&s, &t, "Quant-SendRecv: ", "\n");
 	}
 
 	// Move one stage the pipeline stages the pipeline
 	getTime(&s);
 	nextStage(&s_quant, &s_idct);
     getTime(&t);
-    printTime(&s, &t, "Quant:SendRecv: ", "\n");
+    printTime(&s, &t, "Quant-SendRecv: ", "\n");
 
 	return NULL;
 }
@@ -198,14 +198,14 @@ void *idct_thread(void *args)
 	gmacSendReceive(s_dct.id);
 	nextStage(&s_idct, NULL);
     getTime(&t);
-    printTime(&s, &t, "IDCT:SendRecv: ", "\n");
+    printTime(&s, &t, "IDCT-SendRecv: ", "\n");
 
     getTime(&s);
 	gmacSendReceive(s_dct.id);
     getTime(&t);
 	nextStage(&s_idct, NULL);
     getTime(&t);
-    printTime(&s, &t, "IDCT:SendRecv: ", "\n");
+    printTime(&s, &t, "IDCT-SendRecv: ", "\n");
 
 
 	for(unsigned i = 0; i < frames; i++) {
@@ -214,26 +214,26 @@ void *idct_thread(void *args)
 		ret = gmacThreadSynchronize();
 		assert(ret == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "IDCT:Run: ", "\n");
+        printTime(&s, &t, "IDCT-Run: ", "\n");
 
         getTime(&s);
 		assert(gmacFree(s_idct.in) == gmacSuccess);
 		assert(gmacFree(s_idct.out) == gmacSuccess);
         getTime(&t);
-        printTime(&s, &t, "IDCT:Free: ", "\n");
+        printTime(&s, &t, "IDCT-Free: ", "\n");
 
         getTime(&s);
 		gmacSendReceive(s_dct.id);
 		nextStage(&s_idct, NULL);
         getTime(&t);
-        printTime(&s, &t, "IDCT:SendRecv: ", "\n");
+        printTime(&s, &t, "IDCT-SendRecv: ", "\n");
 	}
 
     getTime(&s);
 	gmacFree(s_idct.in);
 	gmacFree(s_idct.out);
     getTime(&t);
-    printTime(&s, &t, "IDCT:Free: ", "\n");
+    printTime(&s, &t, "IDCT-Free: ", "\n");
 
 	return NULL;
 }

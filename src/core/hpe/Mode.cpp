@@ -120,6 +120,10 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
 
+#ifdef USE_MULTI_CONTEXT
+    dst.pasId_ = id_;
+#endif
+
     switchOut();
     return error_;
 }

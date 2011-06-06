@@ -56,7 +56,7 @@ IOBuffer::started(cl_event start, cl_event end, size_t size)
 }
 
 inline gmacError_t
-IOBuffer::wait()
+IOBuffer::wait(bool internal)
 {
 	TRACE(LOCAL,"Buffer %p waits: %d", this, state_ == Idle || started_ == true);
     ASSERTION(state_ == Idle || started_ == true);

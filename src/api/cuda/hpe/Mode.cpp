@@ -151,29 +151,6 @@ gmacError_t Mode::hostFree(hostptr_t addr)
     return ret;
 }
 
-gmacError_t
-Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
-{
-    switchIn();
-
-    accptr_t acc(0);
-    bool hasMapping = acc_->getMapping(acc, src, size);
-    if (hasMapping == true) {
-        error_ = gmacSuccess;
-        dst = acc;
-        TRACE(LOCAL,"Mapping for address %p: %u:%p", src, dst.pasId_, dst.get());
-    } else {
-        error_ = acc_->map(dst, src, size, align);
-        TRACE(LOCAL,"New Mapping for address %p: %u:%p", src, dst.pasId_, dst.get());
-    }
-#ifdef USE_MULTI_CONTEXT
-    dst.pasId_ = id_;
-#endif
-
-    switchOut();
-    return error_;
-}
-
 accptr_t Mode::hostMapAddr(const hostptr_t addr)
 {
     switchIn();

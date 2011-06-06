@@ -49,7 +49,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     fclose(fA);
     fclose(fB);
     getTime(&t);
-    snprintf(buffer, 1024, "%s:Init: ", name);
+    snprintf(buffer, 1024, "%s-Init: ", name);
     printTime(&s, &t, buffer, "\n");
 
     // Call the kernel
@@ -60,7 +60,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
     assert(gmacThreadSynchronize() == gmacSuccess);
     getTime(&t);
-    snprintf(buffer, 1024, "%s:Run: ", name);
+    snprintf(buffer, 1024, "%s-Run: ", name);
     printTime(&s, &t, buffer, "\n");
 
     getTime(&s);
@@ -69,7 +69,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
         error += orig[i] - (c[i]);
     }
     getTime(&t);
-    snprintf(buffer, 1024, "%s:Check: ", name);
+    snprintf(buffer, 1024, "%s-Check: ", name);
     printTime(&s, &t, buffer, "\n");
 
     return error;
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     assert(gmacMalloc((void **)&a, vecSize * sizeof(float)) == gmacSuccess);
     assert(gmacMalloc((void **)&b, vecSize * sizeof(float)) == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "Shared:Alloc: ", "\n");
+    printTime(&s, &t, "Shared-Alloc: ", "\n");
 
     error_shared = doTest(a, b, c, orig, "Shared");
 
@@ -109,13 +109,13 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
     fclose(fC);
     getTime(&t);
-    printTime(&s, &t, "Shared:Write: ", "\n");
+    printTime(&s, &t, "Shared-Write: ", "\n");
 
     getTime(&s);
     gmacFree(a);
     gmacFree(b);
     getTime(&t);
-    printTime(&s, &t, "Shared:Free: ", "\n");
+    printTime(&s, &t, "Shared-Free: ", "\n");
 
     //////////////////////////
     // Test replicated objects
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == gmacSuccess);
     assert(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_REPLICATED) == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "Distributed:Alloc: ", "\n");
+    printTime(&s, &t, "Distributed-Alloc: ", "\n");
 
     error_distributed = doTest(a, b, c, orig, "Distributed");
 
@@ -135,13 +135,13 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
     fclose(fC);
     getTime(&t);
-    printTime(&s, &t, "Distributed:Write: ", "\n");
+    printTime(&s, &t, "Distributed-Write: ", "\n");
 
     getTime(&s);
     gmacFree(a);
     gmacFree(b);
     getTime(&t);
-    printTime(&s, &t, "Distributed:Free: ", "\n");
+    printTime(&s, &t, "Distributed-Free: ", "\n");
 
     ///////////////////////////
     // Test centralized objects
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     assert(gmacGlobalMalloc((void **)&a, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == gmacSuccess);
     assert(gmacGlobalMalloc((void **)&b, vecSize * sizeof(float), GMAC_GLOBAL_MALLOC_CENTRALIZED) == gmacSuccess);
     getTime(&t);
-    printTime(&s, &t, "Centralized:Alloc: ", "\n");
+    printTime(&s, &t, "Centralized-Alloc: ", "\n");
 
     error_centralized = doTest(a, b, c, orig, "Centralized");
 
@@ -161,13 +161,13 @@ int main(int argc, char *argv[])
     assert(ret == vecSize);
     fclose(fC);
     getTime(&t);
-    printTime(&s, &t, "Centralized:Write: ", "\n");
+    printTime(&s, &t, "Centralized-Write: ", "\n");
 
     getTime(&s);
     gmacFree(a);
     gmacFree(b);
     getTime(&t);
-    printTime(&s, &t, "Centralized:Write: ", "\n");
+    printTime(&s, &t, "Centralized-Write: ", "\n");
 
     gmacFree(c);
     free(orig);

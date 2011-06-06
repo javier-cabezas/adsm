@@ -43,7 +43,7 @@ TEST_F(OpenCLContextTest, ContextMemory)
 
         ContextTest::Memory(*mode, *ctx);
 
-        delete ctx;
+        ContextFactory::destroy(*ctx);
         mode->getAccelerator().destroyCLstream(queue);
         Process_->removeMode(*mode);
     }

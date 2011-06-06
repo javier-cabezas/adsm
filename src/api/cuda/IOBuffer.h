@@ -53,9 +53,6 @@ class Mode;
 class GMAC_LOCAL IOBuffer :
     public gmac::core::IOBuffer,
     public __impl::util::ReusableObject<IOBuffer> {
-private:
-    gmacError_t wait(bool fromCUDA);
-
 protected:
     CUevent start_;
     CUevent end_;
@@ -87,8 +84,7 @@ public:
 
     void started();
 
-    gmacError_t wait();
-    gmacError_t waitFromCUDA();
+    gmacError_t wait(bool internal = false);
 };
 
 }}

@@ -66,6 +66,11 @@ Context &Mode::getCLContext()
     return dynamic_cast<Context &>(getContext());
 }
 
+void Mode::destroyContext(core::hpe::Context &context) const
+{
+    ContextFactory::destroy(dynamic_cast<Context &>(context));
+}
+
 gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();

@@ -383,7 +383,6 @@ public:
 
     /* core/hpe/Accelerator.h Interface */
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-
     TESTABLE gmacError_t unmap(hostptr_t addr, size_t size);
 
     gmacError_t sync();

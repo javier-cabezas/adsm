@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace core { namespace hpe {
 
-Context::Context(__impl::core::hpe::Mode &mode, unsigned id) :
-    __impl::core::hpe::Context(mode, id)
+Context::Context(__impl::core::hpe::Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator, stream_t streamToHost, stream_t streamAccelerator) :
+    __impl::core::hpe::Context(mode, streamLaunch, streamToAccelerator, streamToHost, streamAccelerator)
 {
 }
 

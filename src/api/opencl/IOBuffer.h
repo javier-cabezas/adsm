@@ -103,7 +103,7 @@ public:
     /** Waits for any incoming data transfers to finish
      * \return Error code
      */
-    gmacError_t wait();
+    gmacError_t wait(bool internal = false);
 
     cl_mem getCLBuffer() { return mem_; }
 
