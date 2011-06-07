@@ -29,9 +29,10 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
         cl_mem mem = buffer.getCLBuffer();
 
         buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
+
+        lock();
         cl_int err = clEnqueueUnmapMemObject(stream, mem, buffer.addr(),
                 0, NULL, &start);
-
         ASSERTION(err == CL_SUCCESS);
 
         ret = clEnqueueCopyBuffer(stream, mem, acc.get(), bufferOff,
@@ -40,6 +41,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
+        unlock();
 
         buffer.started(start, end, count);
         buffer.setAddr(addr);
@@ -49,9 +51,12 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
         uint8_t *host = buffer.addr() + bufferOff;
 
         buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
+        lock();
         ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
                 acc.offset(), count, host, 0, NULL, &start);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
+        unlock();
+
         buffer.started(start, count);
         ret = clFlush(stream);
         CFATAL(ret == CL_SUCCESS, "Error issuing copy to accelerator: %d", ret);
@@ -76,6 +81,7 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
         cl_mem mem = buffer.getCLBuffer();
 
         buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
+        lock();
         cl_int err = clEnqueueUnmapMemObject(stream, mem, buffer.addr(),
                 0, NULL, &start);
 
@@ -86,6 +92,7 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
+        unlock();
         ASSERTION(err == CL_SUCCESS);
 
         buffer.started(start, end, count);
@@ -96,9 +103,11 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
         uint8_t *host = buffer.addr() + bufferOff;
 
         buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
+        lock();
         ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
                 acc.offset(), count, host, 0, NULL, &start);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+        unlock();
         buffer.started(start, count);
         ret = clFlush(stream);
         CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);

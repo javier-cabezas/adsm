@@ -10,11 +10,10 @@ gmacError_t
 KernelLaunch::execute()
 {
     trace_.init(mode_.id());
-    cl_int ret = clEnqueueNDRangeKernel(stream_, f_, workDim_, globalWorkOffset_, globalWorkSize_, localWorkSize_, 0, NULL, &event_);
-	clFlush(stream_);
+    gmacError_t ret = dynamic_cast<Mode &>(mode_).getAccelerator().execute(stream_, f_, workDim_,
+        globalWorkOffset_, globalWorkSize_, localWorkSize_, event_);
     trace_.trace(f_, event_);
-
-    return Accelerator::error(ret);
+    return ret;
 }
 
 }}}

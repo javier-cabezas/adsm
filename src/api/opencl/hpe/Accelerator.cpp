@@ -77,7 +77,9 @@ Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 
 Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
-    gmac::core::hpe::Accelerator(n), ctx_(context), device_(device)
+    util::SpinLock("Accelerator"),
+    gmac::core::hpe::Accelerator(n),
+    ctx_(context), device_(device)
 {
     // Not used for now
     busId_ = 0;
@@ -91,17 +93,6 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
 
     ret = clRetainContext(ctx_);
     CFATAL(ret == CL_SUCCESS, "Unable to retain OpenCL context");
-
-#if 0
-    cl_command_queue stream;
-    cl_command_queue_properties properties = 0;
-#if defined(USE_TRACE)
-    properties |= CL_QUEUE_PROFILING_ENABLE;
-#endif
-    stream = clCreateCommandQueue(ctx_, device_, properties, &ret);
-    CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL stream");
-    cmd_.add(stream);
-#endif
 }
 
 Accelerator::~Accelerator()
@@ -110,10 +101,12 @@ Accelerator::~Accelerator()
     std::vector<cl_program>::const_iterator i;
     // We cannot call OpenCL at destruction time because the library
     // might have been unloaded
+    lock();
     for(i = programs.begin(); i != programs.end(); i++) {
         cl_int ret = clReleaseProgram(*i);
         ASSERTION(ret == CL_SUCCESS);
     }
+    unlock();
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
         delete Accelerators_;
@@ -196,8 +189,10 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     trace::SetThreadState(trace::Wait);
     cl_event event;
     trace_.init(trace_.getThreadId(), mode.id());
+    lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
+    unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
     trace_.trace(event, event, size);
     trace::SetThreadState(trace::Running);
@@ -215,8 +210,10 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
     trace::SetThreadState(trace::Wait);
     cl_event event;
     trace_.init(mode.id(), trace_.getThreadId());
+    lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
+    unlock();
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
     trace_.trace(event, event, count);
     trace::SetThreadState(trace::Running);
@@ -235,6 +232,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
+    lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.get(), CL_FALSE,
         src.offset(), size, tmp, 0, NULL, NULL);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
@@ -243,6 +241,7 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
                 dst.offset(), size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
     }
+    unlock();
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -257,8 +256,10 @@ gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
     // using a kernel for this task
     void *tmp = ::malloc(size);
     ::memset(tmp, c, size);
+    lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.get(),
         CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
+    unlock();
     ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -293,7 +294,9 @@ Accelerator::getKernel(gmac_kernel_id_t k)
     cl_int err = CL_SUCCESS;
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
+        lock();
         cl_kernel kernel = clCreateKernel(*i, k, &err);
+        unlock();
         if(err != CL_SUCCESS) continue;
         return new Kernel(__impl::core::hpe::KernelDescriptor(k, k), kernel);
     }
@@ -360,7 +363,6 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
         cl_program program = clCreateProgramWithSource(
             it->first->ctx_, 1, &code, NULL, &ret);
         if (ret == CL_SUCCESS) {
-            // TODO use the callback parameter to allow background code compilation
             ret = clBuildProgram(program, 1, &it->first->device_, flags, NULL, NULL);
         }
         if (ret == CL_SUCCESS) {
@@ -368,13 +370,13 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
             TRACE(GLOBAL, "Compilation OK for accelerator: %d", it->first->device_);
         } else {
             size_t len;
-            cl_int ret2 = clGetProgramBuildInfo(program, it->first->device_,
+            cl_int tmp = clGetProgramBuildInfo(program, it->first->device_,
                     CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
-            ASSERTION(ret2 == CL_SUCCESS);
+            ASSERTION(tmp == CL_SUCCESS);
             char *msg = new char[len + 1];
-            ret2 = clGetProgramBuildInfo(program, it->first->device_,
+            tmp = clGetProgramBuildInfo(program, it->first->device_,
                     CL_PROGRAM_BUILD_LOG, len, msg, NULL);
-            ASSERTION(ret2 == CL_SUCCESS);
+            ASSERTION(tmp == CL_SUCCESS);
             msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s",
                 it->first->device_, msg);
@@ -404,11 +406,11 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
             TRACE(GLOBAL, "Compilation OK for accelerator: %d", it->first->device_);
         } else {
             size_t len;
-            cl_int ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
-            ASSERTION(ret2 == CL_SUCCESS);
+            cl_int tmp = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
+            ASSERTION(tmp == CL_SUCCESS);
             char *msg = new char[len + 1];
-            ret2 = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
-            ASSERTION(ret2 == CL_SUCCESS);
+            tmp = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
+            ASSERTION(tmp == CL_SUCCESS);
             msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code on accelerator %d\n%s", it->first->device_, msg);
             delete [] msg;
@@ -512,28 +514,6 @@ gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
     // There is not reliable way to get zero-copy memory
     addr = NULL;
     return gmacErrorMemoryAllocation;
-#if 0
-    trace::EnterCurrentFunction();
-    cl_int ret = CL_SUCCESS;
-    addr = NULL;
-
-    // Get a memory object in the host memory
-    cl_mem mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-            size, NULL, &ret);
-    if(ret == CL_SUCCESS) {
-        // Get the host pointer for the memory object
-        addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
-        // Insert the object in the allocation map for the accelerator
-        if(ret != CL_SUCCESS) clReleaseMemObject(mem);
-        else {
-            localHostAlloc_.insert(addr, mem, size);
-            Accelerator::GlobalHostAlloc_->insert(addr, mem, size);
-        }
-    }
-    trace::ExitCurrentFunction();
-    return error(ret);
-#endif
 }
 
 gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
@@ -551,8 +531,10 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
             size, NULL, &ret);
     if(ret == CL_SUCCESS) {
         // Get the host pointer for the memory object
+        lock();
         addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+        unlock();
         // Insert the object in the allocation map for the accelerator
         if(ret != CL_SUCCESS) clReleaseMemObject(mem);
     }
@@ -567,20 +549,6 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
     // There is not reliable way to get zero-copy memory
     return gmacErrorMemoryAllocation;
-#if 0
-    trace::EnterCurrentFunction();
-    cl_int ret = CL_SUCCESS;
-    cl_mem mem = NULL;
-    size_t size;
-    if(localHostAlloc_.translate(addr, mem, size) == true) {
-        localHostAlloc_.remove(addr); 
-        Accelerator::GlobalHostAlloc_->remove(addr);
-        ret = clReleaseMemObject(mem);
-    }
-    
-    trace::ExitCurrentFunction();
-    return error(ret);
-#endif
 }
 
 gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size)
@@ -596,15 +564,17 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
     // There is not reliable way to get zero-copy memory
     return accptr_t(0);
-#if 0
-    cl_mem device;
-    size_t size = 0;
-    if(localHostAlloc_.translate(addr, device, size) == false) {
-        CFATAL(Accelerator::GlobalHostAlloc_->translate(addr, device, size) == false,
-               "Error translating address %p", (void *) addr);
-    }
-    return accptr_t(device, 0);
-#endif
+}
+
+gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
+        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event event)
+{
+    lock();
+    cl_int ret = clEnqueueNDRangeKernel(stream, kernel, workDim, offset, globalSize, localSize,
+             0, NULL, &event);
+	clFlush(stream);
+    unlock();
+    return error(ret);
 }
 
 void Accelerator::memInfo(size_t &free, size_t &total) const

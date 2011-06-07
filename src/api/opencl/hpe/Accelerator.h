@@ -169,6 +169,7 @@ public:
 /** An OpenCL capable accelerator */
 class GMAC_LOCAL Accelerator :
     protected ModeFactory,
+    public util::SpinLock,
     public gmac::core::hpe::Accelerator {
 
     DBC_FORCE_TEST(Accelerator);
@@ -317,6 +318,19 @@ public:
      */
     accptr_t hostMapAddr(hostptr_t addr);
 
+    /**
+     * Executes a kernel in the accelerator
+     * \param stram OpenCL command queue
+     * \param kernel OpenCL kernel to execute
+     * \param workDim Number of dimensions in the work group
+     * \param offset Offset for the kernel
+     * \param globalSize Global size of the kernel to execute
+     * \param localSize Local size of the kernel to execute
+     * \param event OpenCL event to notify the end of execution
+     * \return Error code
+     */
+    gmacError_t execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
+        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event event);
     
     /**
      * Gets the default OpenCL command queue

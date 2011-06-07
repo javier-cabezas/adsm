@@ -26,9 +26,11 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
     cl_int ret;
 
     buffer.toAccelerator(dynamic_cast<opencl::Mode &>(mode));
+    lock();
     ret = clEnqueueWriteBuffer(stream, acc.get(), CL_FALSE,
             acc.offset(), count, host, 0, NULL, &start);
     CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
+    unlock();
     buffer.started(start, count);
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
@@ -49,9 +51,12 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
     cl_int ret;
 
     buffer.toHost(reinterpret_cast<opencl::hpe::Mode &>(mode));
+    lock();
     ret = clEnqueueReadBuffer(stream, acc.get(), CL_FALSE,
             acc.offset(), count, host, 0, NULL, &start);
     CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+    unlock();
+
     buffer.started(start, count);
     ret = clFlush(stream);
     CFATAL(ret == CL_SUCCESS, "Error issuing read to accelerator: %d", ret);
