@@ -45,6 +45,7 @@ source_group(${current_GROUP} FILES
     eclThreading.cpp
     eclThreadVecAdd.cpp
     eclThreadStencil.cpp
+    clVecAdd.cpp
     eclVecAdd.cpp
     eclVecAdd_cplusplus.cpp
 )
@@ -57,6 +58,9 @@ target_link_libraries(eclCompress gmac-hpe)
 
 add_executable(eclCompressSend ${common_SRC} eclCompressSend.cpp eclCompressCommon.cl)
 target_link_libraries(eclCompressSend gmac-hpe)
+
+add_executable(oclVecAdd ${common_SRC} oclVecAdd.cpp)
+target_link_libraries(oclVecAdd ${opencl_LIB})
 
 add_executable(eclVecAdd ${common_SRC} eclVecAdd.cpp)
 target_link_libraries(eclVecAdd gmac-hpe)

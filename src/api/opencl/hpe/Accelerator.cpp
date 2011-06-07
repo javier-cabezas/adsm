@@ -248,16 +248,16 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
 }
 
 
-gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
+gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size, stream_t stream)
 {
     trace::EnterCurrentFunction();
-    if (cmd_.empty() == true) createCLstream();
+    TRACE(LOCAL, "Setting accelerator memory ("FMT_SIZE") @ %p", size, addr.get());
     // TODO: This is a very inefficient implementation. We might consider
     // using a kernel for this task
     void *tmp = ::malloc(size);
     ::memset(tmp, c, size);
     lock();
-    cl_int ret = clEnqueueWriteBuffer(cmd_.front() , addr.get(),
+    cl_int ret = clEnqueueWriteBuffer(stream, addr.get(),
         CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
     unlock();
     ::free(tmp);
@@ -291,6 +291,7 @@ Accelerator::getKernel(gmac_kernel_id_t k)
     std::vector<cl_program> &programs = (*Accelerators_)[this];
     ASSERTION(programs.size() > 0);
 
+    TRACE(LOCAL, "Creating kernels");
     cl_int err = CL_SUCCESS;
     std::vector<cl_program>::const_iterator i;
     for(i = programs.begin(); i != programs.end(); i++) {
@@ -569,6 +570,7 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
         const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event *event)
 {
+    TRACE(LOCAL, "Executing kernel %p\n", kernel);
     lock();
     cl_int ret = clEnqueueNDRangeKernel(stream, kernel, workDim, offset, globalSize, localSize,
              0, NULL, event);

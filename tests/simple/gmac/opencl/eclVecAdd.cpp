@@ -12,10 +12,6 @@ const char *vecSizeStr = "GMAC_VECSIZE";
 const unsigned vecSizeDefault =  16 * 1024 * 1024;
 unsigned vecSize = 0;
 
-const size_t blockSize = 256;
-
-const char *msg = "Done!";
-
 const char *kernel = "\
 __kernel void vecAdd(__global float *c, __global float *a, __global float *b, unsigned size)\
 {\
@@ -29,26 +25,22 @@ __kernel void vecAdd(__global float *c, __global float *a, __global float *b, un
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
-	gmactime_t s, t;
-
-    assert(eclCompileSource(kernel) == eclSuccess);
+	gmactime_t s, t, S, T;
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
+    getTime(&S);
     getTime(&s);
+    assert(eclCompileSource(kernel) == eclSuccess);
+
     // Alloc & init input data
-    if(eclMalloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
-    if(eclMalloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    assert(eclMalloc((void **)&a, vecSize * sizeof(float)) == eclSuccess);
+    assert(eclMalloc((void **)&b, vecSize * sizeof(float)) == eclSuccess);
     // Alloc output data
-    if(eclMalloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    assert(eclMalloc((void **)&c, vecSize * sizeof(float)) == eclSuccess);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
-
-    float sum = 0.f;
 
     getTime(&s);
     randInitMax(a, 1.f, vecSize);
@@ -56,6 +48,7 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
+    float sum = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
         sum += a[i] + b[i];
     }
@@ -79,20 +72,15 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float error = 0.f;
     float check = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
-        error += c[i] - (a[i] + b[i]);
         check += c[i];
     }
     getTime(&t);
+    getTime(&T);
     printTime(&s, &t, "Check: ", "\n");
-    fprintf(stderr, "Error: %f\n", error);
-
-    if (sum != check) {
-        printf("Sum: %f vs %f\n", sum, check);
-        abort();
-    }
+    fprintf(stderr, "Error: %f\n", fabsf(sum - check));
+    printTime(&S, &T, "Total: ", "\n");
 
     eclReleaseKernel(kernel);
 
