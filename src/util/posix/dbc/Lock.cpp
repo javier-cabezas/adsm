@@ -4,6 +4,49 @@
 
 namespace __dbc { namespace util {
 
+SpinLock::SpinLock(const char *name) :
+    __impl::util::SpinLock(name),
+    locked_(false),
+    owner_(0)
+{
+    pthread_mutex_init(&internal_, NULL);
+}
+
+SpinLock::~SpinLock()
+{
+    pthread_mutex_destroy(&internal_);
+}
+
+void SpinLock::lock() const
+{
+    pthread_mutex_lock(&internal_);
+    REQUIRES(owner_ != pthread_self());
+    pthread_mutex_unlock(&internal_);
+
+    __impl::util::SpinLock::lock();
+
+    pthread_mutex_lock(&internal_);
+    ENSURES(owner_ == 0);
+    ENSURES(locked_ == false);
+    locked_ = true;
+    owner_ = pthread_self();
+    pthread_mutex_unlock(&internal_);
+}
+
+void SpinLock::unlock() const
+{
+    pthread_mutex_lock(&internal_);
+    REQUIRES(locked_ == true);
+    REQUIRES(owner_ == pthread_self());
+    owner_ = 0;
+    locked_ = false;
+
+    __impl::util::SpinLock::unlock();
+
+    pthread_mutex_unlock(&internal_);
+}
+
+
 Lock::Lock(const char *name) :
     __impl::util::Lock(name),
     locked_(false),
@@ -19,9 +62,9 @@ Lock::~Lock()
 
 void Lock::lock() const
 {
-    //pthread_mutex_lock(&internal_);
-    //REQUIRES(owner_ != pthread_self());
-    //pthread_mutex_unlock(&internal_);
+    pthread_mutex_lock(&internal_);
+    REQUIRES(owner_ != pthread_self());
+    pthread_mutex_unlock(&internal_);
 
     __impl::util::Lock::lock();
 

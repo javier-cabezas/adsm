@@ -169,7 +169,7 @@ public:
 /** An OpenCL capable accelerator */
 class GMAC_LOCAL Accelerator :
     protected ModeFactory,
-    public util::SpinLock,
+    public gmac::util::SpinLock,
     public gmac::core::hpe::Accelerator {
 
     DBC_FORCE_TEST(Accelerator);

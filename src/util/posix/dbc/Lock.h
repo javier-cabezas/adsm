@@ -45,6 +45,24 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util {
 
+class GMAC_API SpinLock :
+    public __impl::util::SpinLock,
+    public virtual Contract {
+    DBC_TESTED(__impl::util::SpinLock)
+
+protected:
+    mutable pthread_mutex_t internal_;
+    mutable bool locked_;
+    mutable pthread_t owner_;
+public:
+    SpinLock(const char *name);
+    virtual ~SpinLock();
+protected:
+    void lock() const;
+    void unlock() const;
+
+};
+
 class GMAC_API Lock :
     public __impl::util::Lock,
     public virtual Contract {

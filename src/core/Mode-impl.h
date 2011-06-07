@@ -9,7 +9,7 @@ namespace __impl { namespace core {
 
 inline
 Mode::Mode() :
-    util::SpinLock("Mode"),
+    gmac::util::SpinLock("Mode"),
     id_(AtomicInc(Count_)),
     validObjects_(false),
     releasedObjects_(false),

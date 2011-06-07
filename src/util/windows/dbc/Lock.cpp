@@ -4,7 +4,6 @@
 
 namespace __dbc { namespace util {
 
-#if 0
 SpinLock::SpinLock(const char *name) :
     __impl::util::SpinLock(name),
     locked_(false),
@@ -20,6 +19,10 @@ SpinLock::~SpinLock()
 
 void SpinLock::lock() const
 {
+    EnterCriticalSection(&internal_);
+    REQUIRES(owner_ != GetCurrentThreadId());
+    LeaveCriticalSection(&internal_);
+
     __impl::util::SpinLock::lock();
 
     EnterCriticalSection(&internal_);
@@ -41,7 +44,6 @@ void SpinLock::unlock() const
 
     LeaveCriticalSection(&internal_);
 }
-#endif
 
 
 Lock::Lock(const char *name) :
