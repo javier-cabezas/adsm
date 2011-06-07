@@ -330,7 +330,7 @@ public:
      * \return Error code
      */
     gmacError_t execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
-        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event event);
+        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event *event);
     
     /**
      * Gets the default OpenCL command queue

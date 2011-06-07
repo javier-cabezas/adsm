@@ -567,11 +567,11 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 }
 
 gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
-        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event event)
+        const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event *event)
 {
     lock();
     cl_int ret = clEnqueueNDRangeKernel(stream, kernel, workDim, offset, globalSize, localSize,
-             0, NULL, &event);
+             0, NULL, event);
 	clFlush(stream);
     unlock();
     return error(ret);
