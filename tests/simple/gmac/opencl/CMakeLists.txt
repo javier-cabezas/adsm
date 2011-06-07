@@ -60,7 +60,7 @@ add_executable(eclCompressSend ${common_SRC} eclCompressSend.cpp eclCompressComm
 target_link_libraries(eclCompressSend gmac-hpe)
 
 add_executable(oclVecAdd ${common_SRC} oclVecAdd.cpp)
-target_link_libraries(oclVecAdd ${opencl_LIB})
+target_link_libraries(oclVecAdd ${opencl_LIB} ${thread_LIB})
 
 add_executable(eclVecAdd ${common_SRC} eclVecAdd.cpp)
 target_link_libraries(eclVecAdd gmac-hpe)
