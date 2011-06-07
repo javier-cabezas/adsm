@@ -61,7 +61,10 @@ class Process;
  * A Mode represents the address space of a thread in an accelerator. Each
  * thread has one mode per accelerator type in the system
  */
-class GMAC_LOCAL Mode : public util::Reference, public util::NonCopyable, public util::SpinLock {
+class GMAC_LOCAL Mode :
+    public util::Reference,
+    public util::NonCopyable,
+    public gmac::util::SpinLock {
 protected:
     static Atomic Count_;
 

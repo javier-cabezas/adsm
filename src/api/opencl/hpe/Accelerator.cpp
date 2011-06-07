@@ -77,7 +77,7 @@ Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 
 Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
-    util::SpinLock("Accelerator"),
+    gmac::util::SpinLock("Accelerator"),
     gmac::core::hpe::Accelerator(n),
     ctx_(context), device_(device)
 {

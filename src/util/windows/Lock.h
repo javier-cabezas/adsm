@@ -43,6 +43,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 //! A spinlock
 class GMAC_LOCAL SpinLock : public __Lock {
+    DBC_FORCE_TEST(SpinLock)
 protected:
     //! Spin lock value
 	mutable long spinlock_;
