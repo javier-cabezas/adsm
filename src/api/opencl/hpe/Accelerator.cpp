@@ -76,10 +76,11 @@ void CLBufferPool::putCLMem(size_t size, cl_mem mem, hostptr_t addr)
 Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
 HostMap *Accelerator::GlobalHostAlloc_;
 
-Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
+Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor) :
     gmac::util::SpinLock("Accelerator"),
     gmac::core::hpe::Accelerator(n),
-    ctx_(context), device_(device)
+    ctx_(context), device_(device),
+    major_(major), minor_(minor)
 {
     // Not used for now
     busId_ = 0;
@@ -90,6 +91,8 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
         sizeof(val), NULL, NULL);
     if(ret == CL_SUCCESS) integrated_ = (val == CL_TRUE);
     else integrated_ = false;
+
+    TRACE(LOCAL, "Created OpenCL accelerator with capability %u.%u", major_, minor_);
 
     ret = clRetainContext(ctx_);
     CFATAL(ret == CL_SUCCESS, "Unable to retain OpenCL context");

@@ -43,7 +43,7 @@ class GMAC_LOCAL Accelerator :
     DBC_TESTED(__impl::opencl::hpe::Accelerator)
 
 public:
-    Accelerator(int n, cl_context context, cl_device_id device);
+    Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor);
     ~Accelerator();
 
     gmacError_t unmap(hostptr_t host, size_t size);

@@ -11,7 +11,8 @@ enum GMAC_LOCAL OpenCLVendor {
     UNKNOWN
 };
 
-static std::string getVendorName(cl_platform_id id)
+static
+std::string getVendorName(cl_platform_id id)
 {
     size_t len;
     cl_int err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, 0, NULL, &len);
@@ -27,7 +28,8 @@ static std::string getVendorName(cl_platform_id id)
     return ret;
 }
 
-OpenCLVendor getVendor(cl_platform_id id)
+static OpenCLVendor
+getVendor(cl_platform_id id)
 {
     static const std::string amd("Advanced Micro Devices, Inc.");
     static const std::string nvidia("NVIDIA Corporation");
@@ -46,6 +48,24 @@ OpenCLVendor getVendor(cl_platform_id id)
     }
 }
 
+typedef std::pair<unsigned, unsigned> OpenCLVersion;
+
+static OpenCLVersion
+getOpenCLVersion(cl_platform_id id)
+{
+    size_t len;
+    cl_int err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, 0, NULL, &len);
+    CFATAL(err == CL_SUCCESS);
+    char *version = new char[len + 1];
+    err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, len, version, NULL);
+    CFATAL(err == CL_SUCCESS);
+    version[len] = '\0';
+    unsigned major, minor;
+    sscanf(version, "OpenCL %u.%u", &major, &minor);
+    delete [] version;
+
+    return OpenCLVersion(major, minor);
+}
 
 static bool initialized = false;
 void OpenCL(gmac::core::hpe::Process &proc)
@@ -66,11 +86,13 @@ void OpenCL(gmac::core::hpe::Process &proc)
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
             0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
-        cl_device_id *devices = new cl_device_id[deviceSize];  
+        cl_device_id *devices = new cl_device_id[deviceSize];
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
             deviceSize, devices, NULL);
         ASSERTION(ret == CL_SUCCESS);
         TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", deviceSize, i);
+
+        OpenCLVersion clVersion = getOpenCLVersion(platforms[i]);
 
         cl_context ctx;
         if (deviceSize > 0) {
@@ -85,10 +107,12 @@ void OpenCL(gmac::core::hpe::Process &proc)
 
             switch (getVendor(platforms[i])) {
                 case AMD:
-                    acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j]);
+                    acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
+                                                                         clVersion.first, clVersion.second);
                     break;
                 case NVIDIA:
-                    acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j]);
+                    acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j],
+                                                                            clVersion.first, clVersion.second);
                     break;
                 case INTEL:
                 case UNKNOWN:
