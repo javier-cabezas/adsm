@@ -88,5 +88,5 @@ int main(int argc, char *argv[])
     eclFree(b);
     eclFree(c);
 
-   return error != 0;
+   return sum != check;
 }

@@ -80,7 +80,7 @@ class GMAC_LOCAL KernelConfig : public ArgsVector {
 protected:
     static const unsigned StackSize_ = 1024;
 
-    uint8_t stack_[StackSize_];
+    uint8_t *stack_;
     size_t argsSize_;
 
     dim3 grid_;
@@ -94,6 +94,7 @@ public:
     KernelConfig();
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
     KernelConfig(const KernelConfig & c);
+    virtual ~KernelConfig();
 
     void pushArgument(const void * arg, size_t size, long_t offset);
 
