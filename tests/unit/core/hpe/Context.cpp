@@ -38,7 +38,6 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
     ASSERT_TRUE(ctx.copyToHost(hostptr_t(buffer), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
 
-    ASSERT_TRUE(ctx.copyAccelerator(dstDevice, device, Size_*sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(ctx.copyToHost(hostptr_t(canary), dstDevice, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 

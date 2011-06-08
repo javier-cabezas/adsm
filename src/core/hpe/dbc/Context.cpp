@@ -35,17 +35,6 @@ Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     return ret;
 }
 
-gmacError_t
-Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
-{
-    REQUIRES(src != 0);
-    REQUIRES(dst != 0);
-    REQUIRES(size > 0);
-    gmacError_t ret;
-    ret = __impl::core::hpe::Context::copyAccelerator(dst, src, size);
-    return ret;
-}
-
 }}}
 
 #endif

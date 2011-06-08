@@ -106,15 +106,15 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
                                   typename StateBlock<State>::Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
-    if (src == StateBlock<State>::HOST &&
-        dst == StateBlock<State>::HOST) {
-        TRACE(LOCAL, "H -> H");
-        ::memcpy(Block::shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
-    } else if (src == StateBlock<State>::ACCELERATOR &&
-               dst == StateBlock<State>::ACCELERATOR) {
+    if (src == StateBlock<State>::ACCELERATOR &&
+        dst == StateBlock<State>::ACCELERATOR) {
         TRACE(LOCAL, "A -> A");
         ret = owner_.copyAccelerator(acceleratorAddr_ + dstOff, srcBlock.acceleratorAddr(srcBlock.owner(owner_)) + srcOff, size);
         TRACE(LOCAL, "RESULT: %d", ret);
+    } else if (src == StateBlock<State>::HOST &&
+               dst == StateBlock<State>::HOST) {
+        TRACE(LOCAL, "H -> H");
+        ::memcpy(Block::shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
     } else if (src == StateBlock<State>::HOST &&
                dst == StateBlock<State>::ACCELERATOR) {
         TRACE(LOCAL, "H -> A");
