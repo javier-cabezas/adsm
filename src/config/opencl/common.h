@@ -84,14 +84,14 @@ public:
     }
 
     inline bool operator==(const _opencl_ptr_t &ptr) const {
-        return base_ == ptr.base_ && offset_ == ptr.offset_;
+        return base_ == ptr.base_ && offset_ == ptr.offset_ & pasId_ == ptr.pasId_;
     }
     inline bool operator==(int i) const {
         return base_ == cl_mem(i);
     }
 
     inline bool operator!=(const _opencl_ptr_t &ptr) const {
-        return base_ != ptr.base_ || offset_ != ptr.offset_;
+        return base_ != ptr.base_ || offset_ != ptr.offset_ || pasId_ != ptr.pasId_;
     }
     inline bool operator!=(int i) const {
         return base_ != cl_mem(i);
@@ -103,7 +103,7 @@ public:
 
     // TODO: handle this correctly
     template <typename T>
-    inline _opencl_ptr_t operator+(const T &off) const {
+    inline const _opencl_ptr_t operator+(const T &off) const {
         _opencl_ptr_t ret(*this);
         ret.offset_ += off;
         return ret;
