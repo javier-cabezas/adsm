@@ -96,6 +96,7 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
                             stride   ,
                             copyCount);
 #endif
+                    abort();
                     error = 1;
                     goto exit_test;
                 }
