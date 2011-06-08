@@ -45,12 +45,9 @@ assert(ret == eclSuccess);
     ecl_kernel kernel;
     size_t globalSize = vecSize;
     assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
-    cl_mem d_c = cl_mem(eclPtr(*c));
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &d_c) == eclSuccess);
-    cl_mem d_a = cl_mem(eclPtr(a));                        
-    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &d_a) == eclSuccess);
-    cl_mem d_b = cl_mem(eclPtr(b));                        
-    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &d_b) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, c) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 1, a) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 2, b) == eclSuccess);
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
 
     // Check the result in the CPU
