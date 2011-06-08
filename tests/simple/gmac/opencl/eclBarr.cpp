@@ -83,8 +83,7 @@ int main(int argc, char *argv[])
 	    size_t globalSize = vecSize;
 	    ecl_kernel kernel;
 	    assert(eclGetKernel("accum", &kernel) == eclSuccess);
-	    cl_mem tmp = cl_mem(eclPtr(a));
-	    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+	    assert(eclSetKernelArgPtr(kernel, 0, a) == eclSuccess);
 	    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
         barrier_wait(&barr);
 

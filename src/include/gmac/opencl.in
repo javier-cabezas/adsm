@@ -64,15 +64,25 @@ private:
             value_(init)
         {
         }
+
+        error setArg(ecl_kernel kernel, unsigned index)
+        {
+            return ::@OPENCL_API_PREFIX@SetKernelArg(kernel, index, sizeof(value_), &value_);
+        }
     };
 
     /** Helper class used to detect pointer parameters for setArg */
     template <typename T>
     struct Param<T *> {
-        cl_mem value_;
+        T *ptr_;
         Param(T *init) :
-            value_(@OPENCL_API_PREFIX@Ptr(init))
+            ptr_(init)
         {
+        }
+
+        error setArg(ecl_kernel kernel, unsigned index)
+        {
+            return ::@OPENCL_API_PREFIX@SetKernelArgPtr(kernel, index, ptr_);
         }
     };
 
@@ -227,7 +237,7 @@ inline
 error kernel::setArg(unsigned index, T val)
 {
     Param<T> p(val);
-    return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, sizeof(p.value_), &p.value_);
+    return p.setArg(kernel_, index);
 }
 
 inline
@@ -460,15 +470,6 @@ void deviceCopy(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
-
-#if 0
-template<typename T>
-static inline
-cl_mem ptr(const T *addr)
-{
-    return ::@OPENCL_API_PREFIX@Ptr((const void *)addr);
-}
-#endif
 
 #ifdef __cplusplus
 }

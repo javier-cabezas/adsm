@@ -62,12 +62,9 @@ void *addVector(void *ptr)
 
     assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
 
-    cl_mem tmp = cl_mem(eclPtr(*c));
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(a));                        
-    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(b));                        
-    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, *c) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 1, a) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 2, b) == eclSuccess);
     assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
 	getTime(&t);

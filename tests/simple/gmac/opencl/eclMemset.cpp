@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 
 	// Call the kernel
     size_t globalSize = size;
-    cl_mem tmp = cl_mem(eclPtr(ptr));
     unsigned val = 1;
 
     eclMemset(ptr, 0, size * sizeof(unsigned));
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
 
     assert(eclGetKernel("reset", &kernel) == eclSuccess);
 
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, ptr) == eclSuccess);
     assert(eclSetKernelArg(kernel, 1, sizeof(size), &size) == eclSuccess);
     assert(eclSetKernelArg(kernel, 2, sizeof(val), &val) == eclSuccess);
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);

@@ -104,18 +104,15 @@ void *doTest(void *)
 
     assert(eclGetKernel("vecSet", &kernelSet) == eclSuccess);
 
-    cl_mem tmp = cl_mem(eclPtr(a));
-    assert(eclSetKernelArg(kernelSet, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernelSet, 0, a) == eclSuccess);
     assert(eclSetKernelArg(kernelSet, 1, sizeof(vecSize), &vecSize) == eclSuccess);
 
     ecl_kernel kernelMove;
 
     assert(eclGetKernel("vecMove", &kernelMove) == eclSuccess);
 
-    tmp = cl_mem(eclPtr(c));
-    assert(eclSetKernelArg(kernelMove, 0, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(a));
-    assert(eclSetKernelArg(kernelMove, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernelMove, 0, c) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernelMove, 1, a) == eclSuccess);
     assert(eclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == eclSuccess);
 
     for (int i = 0; i < ITERATIONS; i++) {
@@ -139,10 +136,8 @@ void *doTest(void *)
     ecl_kernel kernelAccum;
     assert(eclGetKernel("vecAccum", &kernelAccum) == eclSuccess);
 
-    tmp = cl_mem(eclPtr(b));
-    assert(eclSetKernelArg(kernelAccum, 0, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(a));
-    assert(eclSetKernelArg(kernelAccum, 1, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernelAccum, 0, c) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernelAccum, 1, a) == eclSuccess);
     assert(eclSetKernelArg(kernelAccum, 2, sizeof(vecSize), &vecSize) == eclSuccess);
 
     for (int i = ITERATIONS - 1; i >= 0; i--) {

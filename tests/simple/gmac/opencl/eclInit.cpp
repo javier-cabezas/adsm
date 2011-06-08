@@ -53,8 +53,7 @@ int main(int argc, char *argv[])
 
     assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
 
-    cl_mem tmp = cl_mem(eclPtr(a));
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, a) == eclSuccess);
     assert(eclSetKernelArg(kernel, 1, sizeof(vecSize), &vecSize) == eclSuccess);
 
     assert(eclCallNDRange(kernel, 1, 0, &globalSize, &localSize) == eclSuccess);
