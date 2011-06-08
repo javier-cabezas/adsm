@@ -84,7 +84,7 @@ public:
     }
 
     inline bool operator==(const _opencl_ptr_t &ptr) const {
-        return base_ == ptr.base_ && offset_ == ptr.offset_ & pasId_ == ptr.pasId_;
+        return base_ == ptr.base_ && offset_ == ptr.offset_ && pasId_ == ptr.pasId_;
     }
     inline bool operator==(int i) const {
         return base_ == cl_mem(i);
