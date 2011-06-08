@@ -90,11 +90,11 @@ protected:
     CUstream stream_;
 
 public:
-    /// \todo create a pool of objects to avoid mallocs/frees
     KernelConfig();
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
-    KernelConfig(const KernelConfig & c);
     virtual ~KernelConfig();
+
+    KernelConfig &operator=(const KernelConfig &);
 
     void pushArgument(const void * arg, size_t size, long_t offset);
 

@@ -19,20 +19,6 @@ Kernel::Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
-KernelConfig::KernelConfig(const KernelConfig & c) :
-    argsSize_(0),
-    grid_(c.grid_),
-    block_(c.block_),
-    shared_(c.shared_),
-    stream_(c.stream_)
-{
-    stack_ = new uint8_t[StackSize_];
-    ArgsVector::const_iterator it;
-    for (it = c.begin(); it != c.end(); it++) {
-        pushArgument(it->ptr(), it->size(), it->offset());
-    }
-}
-
 
 KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*tokens*/, CUstream stream) :
     argsSize_(0),
@@ -44,6 +30,20 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
     stack_ = new uint8_t[StackSize_];
 }
 
+KernelConfig &KernelConfig::operator=(const KernelConfig &c)
+{
+    if(&c == this) return *this;
+    argsSize_ = 0;
+    grid_ = c.grid_;
+    block_ = c.block_;
+    shared_ = c.shared_;
+    stream_ = c.stream_;
+    ArgsVector::const_iterator it;
+    for (it = c.begin(); it != c.end(); it++) {
+        pushArgument(it->ptr(), it->size(), it->offset());
+    }
+    return *this;
+}
 
 KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, const KernelConfig & c) :
 #ifdef DEBUG
