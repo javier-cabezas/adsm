@@ -92,6 +92,7 @@ protected:
 public:
     KernelConfig();
     KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t tokens, CUstream stream);
+    KernelConfig(const KernelConfig &c);
     virtual ~KernelConfig();
 
     KernelConfig &operator=(const KernelConfig &);
