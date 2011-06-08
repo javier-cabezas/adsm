@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-    getTime(&S);
     getTime(&s);
     error_code = clGetPlatformIDs(1, &platform, NULL);
     assert(error_code == CL_SUCCESS);
@@ -72,6 +71,7 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
+    getTime(&S);
     getTime(&s);
     randInitMax(a, 1.f, vecSize);
     randInitMax(b, 1.f, vecSize);
