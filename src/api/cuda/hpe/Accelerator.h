@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -147,7 +147,7 @@ public:
     /* Synchronous interface */
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
-    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
 
     /* Asynchronous interface */
     TESTABLE gmacError_t copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, CUstream stream);

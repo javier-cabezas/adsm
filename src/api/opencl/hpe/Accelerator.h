@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -133,10 +133,10 @@ public:
 
 /** A pool of OpenCL buffers */
 class GMAC_LOCAL CLBufferPool :
-	protected std::map<size_t, std::list<std::pair<cl_mem, hostptr_t> > >,
+    protected std::map<size_t, std::list<std::pair<cl_mem, hostptr_t> > >,
     protected gmac::util::Lock {
 
-	typedef std::list<std::pair<cl_mem, hostptr_t> > CLMemList;
+    typedef std::list<std::pair<cl_mem, hostptr_t> > CLMemList;
     typedef std::map<size_t, CLMemList> CLMemMap;
 public:
     /** Constructs a pool of OpenCL buffers */
@@ -331,7 +331,7 @@ public:
      */
     gmacError_t execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
         const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event *event);
-    
+
     /**
      * Gets the default OpenCL command queue
      * \return OpenCL command queue
@@ -403,7 +403,7 @@ public:
 
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
-    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
     void memInfo(size_t &free, size_t &total) const;
 

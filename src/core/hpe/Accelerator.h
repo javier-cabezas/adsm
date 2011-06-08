@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
  Universitat Politecnica de Catalunya
  All rights reserved.
 
@@ -197,7 +197,7 @@ public:
      * \param size Number of bytes to be copied
      * \return Error code
      */
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size) = 0;
+    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream) = 0;
 
     /**
      * Asynchronously copy an I/O buffer to the accelerator

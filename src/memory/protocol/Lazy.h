@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -50,14 +50,14 @@ namespace core {
     class IOBuffer;
     class Mode;
 }
-    
+
 namespace memory {
 class Object;
 class Block;
 
 template <typename State> class StateBlock;
 
-namespace protocol { 
+namespace protocol {
 /**
  * A lazy memory coherence protocol
  * This protocol eagerly transfer data from host to accelerator memory if the user
@@ -69,7 +69,7 @@ class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 public:
 protected:
     /** Return the state corresponding to a memory protection
-     * 
+     *
      * \param prot Memory protection
      * \return Protocol state
      */
@@ -85,7 +85,7 @@ protected:
     void addDirty(Block &block);
 
     /** Default constructor
-     * 
+     *
      * \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
      */
     LazyBase(size_t limit);
@@ -95,8 +95,8 @@ protected:
 
 public:
     // Protocol Interface
-	void deleteObject(Object &obj);
-    
+        void deleteObject(Object &obj);
+
     bool needUpdate(const Block &block) const;
 
     TESTABLE gmacError_t signalRead(Block &block, hostptr_t addr);
@@ -119,22 +119,25 @@ public:
 
     gmacError_t deleteBlock(Block &block);
 
-	TESTABLE gmacError_t toHost(Block &block);
+    TESTABLE gmacError_t toHost(Block &block);
 
 #if 0
     gmacError_t toAccelerator(Block &block);
 #endif
 
-	TESTABLE gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t blockOffset);
-	
-	TESTABLE gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
-		size_t bufferOffset, size_t blockOffset);
+    TESTABLE gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+                                      size_t bufferOffset, size_t blockOffset);
 
-    TESTABLE gmacError_t memset(const Block &block, int v, size_t size, 
-        size_t blockOffset);
+    TESTABLE gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+                                        size_t bufferOffset, size_t blockOffset);
+
+    TESTABLE gmacError_t memset(const Block &block, int v, size_t size,
+                                size_t blockOffset);
 
     TESTABLE gmacError_t flushDirty();
+
+    //bool isInAccelerator(Block &block);
+    gmacError_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count);
 
     gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
 };
@@ -146,7 +149,7 @@ class GMAC_LOCAL Lazy : public LazyBase {
 public:
     /**
      * Default constructor
-     * 
+     *
      * \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
      */
     Lazy(size_t limit);
@@ -155,7 +158,7 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr, 
+    memory::Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
         GmacProtection prot, unsigned flags);
 };
 

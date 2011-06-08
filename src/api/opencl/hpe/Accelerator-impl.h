@@ -12,8 +12,8 @@ namespace __impl { namespace opencl { namespace hpe {
 
 inline CommandList::~CommandList()
 {
-	// We cannot execute this code in Windows, because
-	// the OpenCL DLL might have been already unloaded
+    // We cannot execute this code in Windows, because
+    // the OpenCL DLL might have been already unloaded
 #ifndef _MSC_VER
     lockWrite();
     Parent::iterator i;
@@ -95,7 +95,7 @@ inline void HostMap::remove(hostptr_t host)
 {
     lockWrite();
     Parent::iterator i = Parent::find(host);
-	if(i != Parent::end()) {
+        if(i != Parent::end()) {
         Parent::erase(i);
     }
     unlock();

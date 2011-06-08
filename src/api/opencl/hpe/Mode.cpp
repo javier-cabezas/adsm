@@ -39,7 +39,7 @@ void Mode::destroyIOBuffer(core::IOBuffer &_buffer)
 {
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     if (buffer.async()) {
-		getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.addr(), buffer.size());
+        getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.addr(), buffer.size());
     } else {
         ::free(buffer.addr());
     }
@@ -53,11 +53,11 @@ void Mode::reload()
 
 core::hpe::Context &Mode::getContext()
 {
-	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
+    core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
     context = ContextFactory::create(*this, streamLaunch_);
     CFATAL(context != NULL, "Error creating new context");
-	contextMap_.add(util::GetThreadId(), context);
+    contextMap_.add(util::GetThreadId(), context);
     return *context;
 }
 
@@ -127,16 +127,16 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 
 gmacError_t Mode::acquireObjects()
 {
-	lock();
+        lock();
     validObjects_ = false;
     releasedObjects_ = false;
-	unlock();
+        unlock();
     return error_;
 }
 
 gmacError_t Mode::waitForEvent(cl_event event)
 {
-	switchIn();
+        switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
     gmacError_t ret = acc.syncCLevent(event);
@@ -150,7 +150,7 @@ gmacError_t Mode::waitForEvent(cl_event event)
         // TODO: add delay here
     }
 
-	switchOut();
+        switchOut();
 
     return Accelerator::error(ret);
 #endif

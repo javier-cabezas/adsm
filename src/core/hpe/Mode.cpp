@@ -37,7 +37,7 @@ Mode::Mode(Process &proc, Accelerator &acc) :
 }
 
 Mode::~Mode()
-{    
+{
     acc_->unregisterMode(*this);
 }
 
@@ -203,7 +203,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
 
     TRACE(LOCAL,"Registering mode in new accelerator");
     acc_->migrateMode(*this, acc);
-    
+
     TRACE(LOCAL,"Reallocating objects");
     //map_.reallocObjects(*this);
     ret = map_.forEachObject(&memory::Object::mapToAccelerator);

@@ -56,14 +56,14 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
     return ret;
 }
 
-gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
 {
     // PRECONDITIONS
     REQUIRES(src != 0);
     REQUIRES(dst != 0);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::opencl::hpe::Accelerator::copyAccelerator(dst, src, size);
+    gmacError_t ret = __impl::opencl::hpe::Accelerator::copyAccelerator(dst, src, size, stream);
     // POSTCONDITIONS
     ENSURES(ret == gmacSuccess);
 
