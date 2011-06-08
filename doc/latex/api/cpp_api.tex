@@ -222,14 +222,6 @@ hint dv(ECL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
 \end{itemize}
 \textbf{Returns}: eclSuccess on success, an error code otherwise
 
-\subsection{\texttt{template <typename T>\\cl\_mem ecl::ptr(const T *cpuPtr)}}
-
-\textbf{Description}: Get the OpenCL memory object associated to a shared memory address
-\begin{itemize}
-  \item \texttt{cpuPtr}: Host shared memory address
-\end{itemize}
-\textbf{Returns}: Associated OpenCL buffer
-
 \subsection{\texttt{ecl::error ecl:free(const void *cpuPtr)}}
 
 \textbf{Description}: Release shared memory

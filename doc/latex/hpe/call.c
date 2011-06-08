@@ -6,16 +6,13 @@
     error_code = eclGetKernel("vecAdd", &kernel);
     if(error_code != eclSuccess) return error(error_code);
 
-    mem = cl_mem(eclPtr(c));
-    error_code = eclSetKernelArg(&kernel, 0, sizeof(mem), &mem);
+    error_code = eclSetKernelArgPtr(&kernel, 0, c);
     if(mem == NULL || error_code != eclSuccess)
-        return error(error_code);                       
-    mem = cl_mem(eclPtr(a));                            
-    error_code = eclSetKernelArg(&kernel, 1, sizeof(mem), &mem);
+        return error(error_code);
+    error_code = eclSetKernelArgPtr(&kernel, 1, a);
     if(mem == NULL || error_code != eclSuccess)
-        return error(error_code);                       
-    mem = cl_mem(eclPtr(b));                            
-    error_code = eclSetKernelArg(&kernel, 2, sizeof(mem), &mem);
+        return error(error_code);
+    error_code = eclSetKernelArgPtr(&kernel, 2, b);
     if(mem == NULL || error_code != eclSuccess)
         return error(error_code);
 

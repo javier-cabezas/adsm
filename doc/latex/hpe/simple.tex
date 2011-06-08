@@ -67,12 +67,11 @@ shows the code required to invoke the vector addition kernel.
     caption={GMAC\slash HPE code to call the vector addition kernel.},
     label={lst:hpe:call}]{hpe/call.c}
 
-First, a handler to the kernel to be called is obtained using \texttt{\_\_eclKernelGet()}. This 
-handler is used to pass the parameters to the kernel (\texttt{\_\_eclKernelSetArg()}, and set the 
-kernel dimensions and call the kernel (\texttt{\_\_eclKernelLaunch()}).
-
-Note that data structures used by the kernel need to be first converted to valid OpenCL objects 
-using \texttt{eclPtr()}, which takes the CPU memory address returned by \texttt{eclMalloc()}.
+First, a handler to the kernel to be called is obtained using \texttt{eclGetKernel()}. This handler 
+is used to pass the parameters to the kernel (\texttt{eclSetKernelArg()} for values and 
+\texttt{eclSetKernelArgPtr()} for pointers returned by \texttt{eclMalloc} and 
+\texttt{eclGlobalMalloc}), and set the kernel dimensions and call the kernel 
+(\texttt{eclKernelLaunch()}).
 
 \subsection{Final Details}
 After calling the vector addition kernel, the application writes the output vector to a file, and 
