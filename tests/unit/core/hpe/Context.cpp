@@ -32,14 +32,8 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
     memset(canary,  0, Size_ * sizeof(int));
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
-    accptr_t dstDevice(0);
-    ASSERT_TRUE(mode.map(dstDevice, hostptr_t(bufferExt), Size_*sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(dstDevice != 0);
     ASSERT_TRUE(ctx.copyToHost(hostptr_t(buffer), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
-
-    ASSERT_TRUE(ctx.copyToHost(hostptr_t(canary), dstDevice, Size_ * sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
     ASSERT_TRUE(mode.unmap(hostptr_t(buffer),  Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(mode.unmap(hostptr_t(bufferExt), Size_ * sizeof(int)) == gmacSuccess);
