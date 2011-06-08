@@ -19,10 +19,10 @@ accptr_t SharedObject<State>::allocAcceleratorMemory(core::Mode &mode, hostptr_t
     accptr_t acceleratorAddr(0);
     // Allocate accelerator memory
 #ifdef USE_VM
-    gmacError_t ret = 
+    gmacError_t ret =
         mode.map(acceleratorAddr, addr, size, unsigned(SubBlockSize_));
 #else
-    gmacError_t ret = 
+    gmacError_t ret =
         mode.map(acceleratorAddr, addr, size);
 #endif
     if(ret == gmacSuccess) {
@@ -64,7 +64,7 @@ template<typename State>
 SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, typename State::ProtocolState init) :
     Object(hostAddr, size),
     acceleratorAddr_(0),
-	owner_(&owner)
+    owner_(&owner)
 {
     addr_ = NULL;
 
@@ -94,7 +94,7 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
         shadow_ = hostptr_t(Memory::shadow(addr_, size_));
         if(shadow_ == NULL) {
             valid_ = false;;
-            // We do not need to release memory, because the object 
+            // We do not need to release memory, because the object
             // destructor will do it for us
             return;
         }
@@ -105,8 +105,8 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
         while(size > 0) {
             size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
             mark += blockSize;
-            blocks_.insert(BlockMap::value_type(mark, 
-                           new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset), 
+            blocks_.insert(BlockMap::value_type(mark,
+                           new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset),
                             shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
             size -= blockSize;
             offset += ptroff_t(blockSize);
@@ -124,7 +124,7 @@ SharedObject<State>::~SharedObject()
     bitmap.unregisterRange(acceleratorAddr_, size_);
 #endif
 
-	// If the object creation failed, this address will be NULL
+    // If the object creation failed, this address will be NULL
     if (acceleratorAddr_ != 0) owner_->unmap(addr_, size_);
     if (valid_) Memory::unshadow(shadow_, size_);
     if (addr_ != NULL) Memory::unmap(addr_, size_);
@@ -156,7 +156,7 @@ inline core::Mode &SharedObject<State>::owner(core::Mode &current, const hostptr
 template<typename State>
 inline gmacError_t SharedObject<State>::addOwner(core::Mode &owner)
 {
-	return gmacErrorUnknown; // This kind of objects only accepts one owner
+    return gmacErrorUnknown; // This kind of objects only accepts one owner
 }
 
 template<typename State>
@@ -176,7 +176,7 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
             ASSERTION(ret == gmacSuccess);
             owner_->unmap(addr_, size_);
         }
-        // Clean-up 
+        // Clean-up
         BlockMap::iterator i;
         for(i = blocks_.begin(); i != blocks_.end(); i++) {
             i->second->release();
@@ -187,7 +187,7 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
         owner_ = NULL;
     }
     unlock();
-	return gmacSuccess;
+    return gmacSuccess;
 }
 
 template<typename State>
@@ -227,7 +227,7 @@ inline gmacError_t SharedObject<State>::mapToAccelerator()
 
 
     unlock();
-	return ret;
+    return ret;
 }
 
 }}

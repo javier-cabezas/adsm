@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -173,7 +173,7 @@ public:
     /**
      * Tells if the objects of the mode have been already invalidated
      * \return Boolean that tells if objects of the mode have been already
-     * invalidated 
+     * invalidated
      */
     bool validObjects() const;
 
@@ -228,7 +228,7 @@ public:
      */
     virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
 
-    /** Release GPU-accessible host memory 
+    /** Release GPU-accessible host memory
      *
      *  \param addr Starting address of the host memory to be released
      *  \return Error code

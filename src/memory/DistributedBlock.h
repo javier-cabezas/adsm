@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -42,10 +42,10 @@ WITH THE SOFTWARE.  */
 #include "Block.h"
 #include "StateBlock.h"
 
-namespace __impl { 
+namespace __impl {
 
 namespace core {
-	class Mode;
+        class Mode;
 }
 
 namespace memory {
@@ -54,7 +54,7 @@ template<typename State>
 class GMAC_LOCAL DistributedBlock : public StateBlock<State> {
 protected:
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
-	AcceleratorMap acceleratorAddr_;
+        AcceleratorMap acceleratorAddr_;
 
 public:
     //! Default construcutor
@@ -65,54 +65,66 @@ public:
         \param size Size (in bytes) of the memory block
         \param init Initial block state
     */
-	DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
+        DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
                      hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
     //! Default destructor
     virtual ~DistributedBlock();
 
-	void addOwner(core::Mode &owner, accptr_t addr);
+    //! Get memory block owner
+    /*!
+        \return A reference to the owner mode of the memory block
+    */
+    core::Mode &owner(core::Mode &current) const;
 
-	void removeOwner(core::Mode &owner);
+    //! Get memory block address at the accelerator
+    /*!
+        \param current Execution mode requesting the operation
+        \param addr Address within the block
+        \return Accelerator memory address of the block
+    */
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
 
-	core::Mode &owner(core::Mode &current) const;
+    //! Get memory block address at the accelerator
+    /*!
+        \return Accelerator memory address of the block
+    */
+    accptr_t acceleratorAddr(core::Mode &current) const;
 
-	accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
-
-	accptr_t acceleratorAddr(core::Mode &current) const;
-
-    gmacError_t toHost(unsigned blockOff, size_t count);
     gmacError_t toAccelerator(unsigned blockOff, size_t count);
 
-    gmacError_t copyToHost(const hostptr_t src, size_t size, 
+    gmacError_t toHost(unsigned blockOff, size_t count);
+
+    gmacError_t copyToHost(const hostptr_t src, size_t size,
         size_t blockOffset = 0) const;
 
-	gmacError_t copyToHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
-
-    gmacError_t copyToAccelerator(const hostptr_t src, size_t size, 
+    gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
         size_t blockOffset = 0) const;
 
-	gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
-	
     gmacError_t copyFromHost(hostptr_t dst, size_t size,
         size_t blockOffset = 0) const;
-
-	gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
 
     gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
         size_t blockOffset = 0) const;
 
-	gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset = 0, size_t blockOffset = 0) const;
+    gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
+                             size_t blockOff, size_t size, typename StateBlock<State>::Source src) const;
 
-    gmacError_t hostMemset(int v, size_t size, 
-        size_t blockOffset = 0) const;
+    gmacError_t copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
+                               size_t bufferOff, size_t size, typename StateBlock<State>::Destination dst) const;
 
-    gmacError_t acceleratorMemset(int v, size_t size,
-        size_t blockOffset = 0) const;
+    gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
+                              size_t srcOff, size_t size,
+                              typename StateBlock<State>::Source src,
+                              typename StateBlock<State>::Destination dst) const;
+
+    gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
+
+    gmacError_t acceleratorMemset(int v, size_t size, size_t blockOffset = 0) const;
+
+    void addOwner(core::Mode &owner, accptr_t addr);
+
+    void removeOwner(core::Mode &owner);
 };
 
 

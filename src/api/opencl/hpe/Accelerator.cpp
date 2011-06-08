@@ -36,7 +36,7 @@ CLBufferPool::~CLBufferPool()
 bool
 CLBufferPool::getCLMem(size_t size, cl_mem &mem, hostptr_t &addr)
 {
-    lock(); 
+    lock();
 
     bool ret = false;
 
@@ -58,7 +58,7 @@ CLBufferPool::getCLMem(size_t size, cl_mem &mem, hostptr_t &addr)
 
 void CLBufferPool::putCLMem(size_t size, cl_mem mem, hostptr_t addr)
 {
-    lock(); 
+    lock();
 
     CLMemMap::iterator it = find(size);
 
@@ -137,7 +137,7 @@ core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
     return mode;
 }
 
-gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     trace::EnterCurrentFunction();
 
@@ -223,26 +223,19 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
     return error(ret);
 }
 
-gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
 {
     trace::EnterCurrentFunction();
-    if (cmd_.empty() == true) createCLstream();
-    TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p - %p", size,
-        src.get(), dst.get());
-    // TODO: This is a very inefficient implementation. We might consider
-    // using a kernel for this task
-    void *tmp = ::malloc(size);
+    TRACE(LOCAL, "Copy accelerator-accelerator ("FMT_SIZE") @ %p:"FMT_SIZE" - %p:"FMT_SIZE, size,
+          src.get(), src.offset(),
+          dst.get(), src.offset());
     lock();
-    cl_int ret = clEnqueueReadBuffer(cmd_.front(), src.get(), CL_FALSE,
-        src.offset(), size, tmp, 0, NULL, NULL);
-    CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
-    if(ret == CL_SUCCESS) {
-        ret = clEnqueueWriteBuffer(cmd_.front(), dst.get(), CL_TRUE,
-                dst.offset(), size, tmp, 0, NULL, NULL);
-        CFATAL(ret == CL_SUCCESS, "Error copying to device: %d", ret);
-    }
+    cl_event event;
+    cl_int ret = clEnqueueCopyBuffer(stream, src.get(), dst.get(), src.offset(), dst.offset(), size, 0, NULL, &event);
+    ASSERTION(ret == CL_SUCCESS);
+    ret = clWaitForEvents(1, &event);
+    ASSERTION(ret == CL_SUCCESS);
     unlock();
-    ::free(tmp);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -443,8 +436,8 @@ cl_command_queue Accelerator::createCLstream()
 void Accelerator::destroyCLstream(cl_command_queue stream)
 {
     trace::EnterCurrentFunction();
-	// We cannot remove the command queue because the OpenCL DLL might
-	// have been already unloaded
+        // We cannot remove the command queue because the OpenCL DLL might
+        // have been already unloaded
     cl_int ret = CL_SUCCESS;
     ret = clReleaseCommandQueue(stream);
     CFATAL(ret == CL_SUCCESS, "Unable to destroy OpenCL stream");
@@ -482,13 +475,13 @@ gmacError_t Accelerator::syncCLevent(cl_event event)
     trace::EnterCurrentFunction();
     TRACE(LOCAL, "Accelerator waiting for event");
 #if defined(OPENCL_1_1)
-	cl_int status = 0;
-	cl_int ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);	
-	while(ret == CL_SUCCESS && status > 0) {
-		ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);
-	}
+        cl_int status = 0;
+        cl_int ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);
+        while(ret == CL_SUCCESS && status > 0) {
+                ret = clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(cl_int), &status, NULL);
+        }
 #else
-	cl_int ret = clWaitForEvents(1, &event);
+        cl_int ret = clWaitForEvents(1, &event);
 #endif
     CFATAL(ret == CL_SUCCESS, "Error syncing cl_event: %d", ret);
     trace::ExitCurrentFunction();
@@ -570,11 +563,11 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
         const size_t *offset, const size_t *globalSize, const size_t *localSize, cl_event *event)
 {
-    TRACE(LOCAL, "Executing kernel %p\n", kernel);
+    TRACE(LOCAL, "Executing kernel %p", kernel);
     lock();
     cl_int ret = clEnqueueNDRangeKernel(stream, kernel, workDim, offset, globalSize, localSize,
              0, NULL, event);
-	clFlush(stream);
+        clFlush(stream);
     unlock();
     return error(ret);
 }

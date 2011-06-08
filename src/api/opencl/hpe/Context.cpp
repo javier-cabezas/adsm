@@ -16,11 +16,11 @@ Context::Context(Mode &mode, cl_command_queue stream) :
 }
 
 Context::~Context()
-{ 
+{
     // Destroy context's private IOBuffer (if any)
     if(buffer_ != NULL) {
         TRACE(LOCAL,"Destroying I/O buffer");
-    	dynamic_cast<Mode &>(mode_).destroyIOBuffer(*buffer_);
+        dynamic_cast<Mode &>(mode_).destroyIOBuffer(*buffer_);
     }
 }
 

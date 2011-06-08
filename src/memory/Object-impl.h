@@ -130,11 +130,13 @@ template <typename P1, typename P2>
 gmacError_t
 Object::forEachBlock(gmacError_t (Block::*f)(P1 &, P2), P1 &p1, P2 p2)
 {
+	lockRead();
 	gmacError_t ret = gmacSuccess;
 	BlockMap::iterator i;
 	for(i = blocks_.begin(); i != blocks_.end(); i++) {
 		ret = (i->second->*f)(p1, p2);
 	}
+    unlock();
 	return ret;
 }
 
@@ -181,7 +183,7 @@ inline gmacError_t Object::signalWrite(hostptr_t addr)
 }
 
 inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size, 
-									  size_t bufferOffset, size_t objectOffset)
+                                        size_t bufferOffset, size_t objectOffset)
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyToBuffer, buffer, size, 
@@ -191,7 +193,7 @@ inline gmacError_t Object::copyToBuffer(core::IOBuffer &buffer, size_t size,
 }
 
 inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size, 
-										size_t bufferOffset, size_t objectOffset)
+                                          size_t bufferOffset, size_t objectOffset)
 {
     lockRead();
 	gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size, 
@@ -199,6 +201,20 @@ inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size,
     unlock();
     return ret;
 }
+
+#if 0
+inline gmacError_t Object::copyObjectToObject(Object &dst, size_t dstOff,
+                                              Object &src, size_t srcOff, size_t count)
+{
+    dst.lockWrite();
+    src.lockWrite();
+	gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size, 
+        bufferOffset, objectOffset);
+    dst.unlock();
+    src.unlock();
+    return ret;
+}
+#endif
 
 }}
 

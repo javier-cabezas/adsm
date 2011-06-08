@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -79,7 +79,7 @@ protected:
         \param objectOffset Offset (in bytes) from the begining of the object where the block is located
         \return Constant iterator pointing to the block
     */
-    BlockMap::const_iterator firstBlock(size_t &objectOffset) const;
+    BlockMap::const_iterator firstBlock(size_t objectOffset, size_t &blockOffset) const;
 
     //! Execute a coherence operation on all the blocks of the object
     /*!
@@ -103,7 +103,7 @@ protected:
         \sa __impl::memory::Block::copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
         \sa __impl::memory::Block::copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
     */
-	TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
+    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
                                   core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 
     /**
@@ -122,10 +122,10 @@ protected:
         \param addr Host memory address where the object begins
         \param size Size (in bytes) of the memory object
     */
-	Object(hostptr_t addr, size_t size);
+    Object(hostptr_t addr, size_t size);
 
     //! Default destructor
-	virtual ~Object();
+    virtual ~Object();
 public:
 #ifdef DEBUG
     unsigned getId() const;
@@ -172,7 +172,7 @@ public:
     /*!
         \return Validity of the object
     */
-	bool valid() const;
+        bool valid() const;
 
     //! Ensure the owner(s) invalidate memory when acquiring objects
     virtual void validate() = 0;
@@ -280,7 +280,7 @@ public:
 
     //! Initializes a memory range within the object to a specific value
     /*!
-        \param offset Offset within the object of the memory to be set 
+        \param offset Offset within the object of the memory to be set
         \param v Value to initialize the memory to
         \param size Size (in bytes) of the memory region to be initialized
         \return Error code
@@ -303,6 +303,49 @@ public:
         \return Error code
     */
     virtual gmacError_t unmapFromAccelerator() = 0;
+
+    /**
+     * Copies data from host memory to an object
+     * \param mode Execution mode requesting the memory copy
+     * \param objOffset Offset (in bytes) from the begining of the object to
+     * copy the data to
+     * \param src Source host memory address
+     * \param size Size (in bytes) of the data to be copied
+     * \return Error code
+     */
+    gmacError_t memcpyToObject(core::Mode &mode,
+                               size_t objOffset,
+                               const hostptr_t src, size_t size);
+
+    /** Copy data from object to object
+     * \param mode Execution mode requesting the memory copy
+     * \param dstObj Destination object
+     * \param dstOffset Offset (in bytes) from the begining of the destination
+     * object to copy data to
+     * \param srcObj Source object
+     * \param srcOffset Offset (in bytes) from the begining og the source
+     * object to copy data from
+     * \param size Size (in bytes) of the data to be copied
+     * \return Error code
+     */
+    gmacError_t memcpyObjectToObject(core::Mode &mode,
+                                     Object &dstObj, size_t dstOffset,
+                                     size_t srcOffset,
+                                     size_t size);
+
+    /**
+     * Copies data from an object to host memory
+     * \param mode Execution mode requesing the memory copy
+     * \param dst Destination object
+     * \param objOffset Offset (in bytes) from the begining of the source object
+     * to copy data from
+     * \param size Size (in bytes) of the data to be copied
+     * \return Error code
+     */
+    gmacError_t memcpyFromObject(core::Mode &mode,
+                                 hostptr_t dst,
+                                 size_t objOffset, size_t size);
+
 };
 
 }}

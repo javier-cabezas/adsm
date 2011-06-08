@@ -43,6 +43,7 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/Reference.h"
 
+/** Description for __impl. */
 namespace __impl {
 
 namespace core {
@@ -52,16 +53,16 @@ namespace core {
 
 namespace memory {
 
-    /** Memory block
-     * A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
-     * memory block has an unique host memory address, used by applications to access the shared data in the CPU code, and
-     * a shadow host memory address used by GMAC to update the contents of the block. Upon creation, a memory block also
-     * has one or more accelerator memory addresses, used by the application to access the data from the accelerator, and
-     * owners which are those execution modes allowed to access the memory block from the accelerator. However, a memory
-     * block might lose its owner and memory addresses (e.g., when the execution mode owning the memory block dies) and
-     * stil be accessible from the CPU.
-     * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
-     */
+/** Memory block
+ * A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
+ * memory block has an unique host memory address, used by applications to access the shared data in the CPU code, and
+ * a shadow host memory address used by GMAC to update the contents of the block. Upon creation, a memory block also
+ * has one or more accelerator memory addresses, used by the application to access the data from the accelerator, and
+ * owners which are those execution modes allowed to access the memory block from the accelerator. However, a memory
+ * block might lose its owner and memory addresses (e.g., when the execution mode owning the memory block dies) and
+ * stil be accessible from the CPU.
+ * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
+ */
 class GMAC_LOCAL Block : public gmac::util::Lock, public util::Reference {
     DBC_FORCE_TEST(Block)
 
@@ -144,7 +145,6 @@ protected:
      */
     virtual gmacError_t toHost(unsigned blockOff, size_t count) = 0;
 
-    
 public:
     /**
      * Initializes a memory range within the block to a specific value
@@ -156,11 +156,14 @@ public:
     TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
 
     /** Request a memory coherence operation
-     * 
+     *
      *  \param op Memory coherence operation to be executed
      *  \return Error code
      */
-    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &));
+    template <typename T>
+    T coherenceOp(T (Protocol::*op)(Block &));
+
+    gmacError_t copyOp(Protocol::CopyOp op, Block &dst, size_t dstOff, size_t srcOff, size_t count);
 
     /**
      *  Request a memory operation over an I/O buffer
@@ -180,7 +183,6 @@ public:
     TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
             core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 
-
     /**
      * Copy data from a GMAC object to the memory block
      *
@@ -192,7 +194,7 @@ public:
      * copy the data from
      * \return Error code
      */
-    gmacError_t memcpyFromObject(const Object &object, size_t size,
+    gmacError_t memcpyFromObject(const Object &obj, size_t size,
         size_t blockOffset = 0, size_t objectOffset = 0);
 
     /**
@@ -221,105 +223,6 @@ public:
      * \return Accelerator memory address of the block
      */
     virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
- 
-    /**
-     * Copy the data from a host memory location to the block host memory
-     * \param src Source host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyToHost(const hostptr_t src, size_t size,
-            size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy data from an I/O buffer to the block host memory
-     * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     */
-    virtual gmacError_t copyToHost(core::IOBuffer &buffer, size_t size,
-            size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy the data from a host memory location to the block accelerator memory
-     * \param src Source host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-            size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy data from an I/O buffer to the block accelerator memory
-     * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size,
-            size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy the data from the block host memory to a host memory location
-     * \param dst Destination host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-    */
-    virtual gmacError_t copyFromHost(hostptr_t dst, size_t size,
-            size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy data from the block host memory to an I/O buffer
-     * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size,
-            size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy the data from the block accelerator memory to a host memory location
-     * \param dst Destination host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-            size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy data from the block accelerator memory to an I/O buffer
-     * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size,
-            size_t bufferOffset = 0, size_t blockOffset = 0) const = 0;
 
     /**
      * Initializes a memory range within the block host memory to a specific value
@@ -345,7 +248,7 @@ public:
     /**
      * Get the protocool that is managing the block
      * \return Memory protocol
-     */  
+     */
     Protocol &getProtocol();
 
     /**
@@ -353,7 +256,7 @@ public:
      * \param param Stream to dump the statistics to
      * \param stat Statistic to be dumped
      * \return Error code
-     */ 
+     */
     gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
 };
 

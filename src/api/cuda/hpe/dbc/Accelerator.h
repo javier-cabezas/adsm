@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,13 +43,13 @@ class GMAC_LOCAL Accelerator :
     DBC_TESTED(__impl::cuda::hpe::Accelerator)
 
 public:
-	Accelerator(int n, CUdevice device);
+        Accelerator(int n, CUdevice device);
     ~Accelerator();
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
+    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
 
     /* Asynchronous interface */
     gmacError_t copyToAcceleratorAsync(accptr_t acc, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t count,

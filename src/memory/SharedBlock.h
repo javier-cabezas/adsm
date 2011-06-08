@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -51,7 +51,8 @@ namespace core {
 namespace memory {
 
 template<typename State>
-class GMAC_LOCAL SharedBlock : public StateBlock<State> {
+class GMAC_LOCAL SharedBlock :
+    public StateBlock<State> {
 protected:
     //! Owner of the block
     core::Mode &owner_;
@@ -96,33 +97,34 @@ public:
     */
     accptr_t acceleratorAddr(core::Mode &current) const;
 
-    gmacError_t toAccelerator(unsigned blockOffset, size_t count);
+    gmacError_t toAccelerator(unsigned blockOff, size_t count);
 
-    gmacError_t toHost(unsigned blockOffset, size_t count);
+    gmacError_t toHost(unsigned blockOff, size_t count);
 
+#if 0
     gmacError_t copyToHost(const hostptr_t src, size_t size,
-                           size_t blockOffset = 0) const;
-
-    gmacError_t copyToHost(core::IOBuffer &buffer, size_t size,
-                           size_t bufferOffset = 0, size_t blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
     gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-                                  size_t blockOffset = 0) const;
-
-    gmacError_t copyToAccelerator(core::IOBuffer &buffer, size_t size,
-                                  size_t bufferOffset = 0, size_t blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
     gmacError_t copyFromHost(hostptr_t dst, size_t size,
-                             size_t blockOffset = 0) const;
-
-    gmacError_t copyFromHost(core::IOBuffer &buffer, size_t size,
-                             size_t bufferOffset = 0, size_t blockOffset = 0) const;
+        size_t blockOffset = 0) const;
 
     gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
         size_t blockOffset = 0) const;
+#endif
 
-    gmacError_t copyFromAccelerator(core::IOBuffer &buffer, size_t size,
-                                    size_t bufferOffset = 0, size_t blockOffset = 0) const;
+    gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
+                             size_t blockOff, size_t size, typename StateBlock<State>::Source src) const;
+
+    gmacError_t copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
+                               size_t bufferOffset, size_t size, typename StateBlock<State>::Destination dst) const;
+
+    gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
+                              size_t srcOff, size_t size,
+                              typename StateBlock<State>::Source src,
+                              typename StateBlock<State>::Destination dst) const;
 
     gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
 

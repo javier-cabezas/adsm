@@ -66,51 +66,7 @@ protected:
      * \return Error code
      */
     gmacError_t hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size);
-
-    /**
-     * Copies data from host memory to an object
-     * \param mode Execution mode requesting the memory copy
-     * \param obj Destination object
-     * \param objOffset Offset (in bytes) from the begining of the object to
-     * copy the data to
-     * \param src Source host memory address
-     * \param size Size (in bytes) of the data to be copied
-     * \return Error code
-     */
-    gmacError_t memcpyToObject(core::Mode &mode,
-                               Object &obj, size_t objOffset,
-                               const hostptr_t src, size_t size);
-
-    /** Copy data from object to object
-     * \param mode Execution mode requesting the memory copy
-     * \param dstObj Destination object
-     * \param dstOffset Offset (in bytes) from the begining of the destination
-     * object to copy data to
-     * \param srcObj Source object
-     * \param srcOffset Offset (in bytes) from the begining og the source
-     * object to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \return Error code
-     */
-    gmacError_t memcpyToObject(core::Mode &mode,
-                               Object &dstObj, size_t dstOffset,
-                               Object &srcObj, size_t srcOffset,
-                               size_t size);
-
-    /**
-     * Copies data from an object to host memory
-     * \param mode Execution mode requesing the memory copy
-     * \param dst Destination object
-     * \param obj Source object
-     * \param objOffset Offset (in bytes) from the begining of the source object
-     * to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \return Error code
-     */
-    gmacError_t memcpyFromObject(core::Mode &mode,
-                                 hostptr_t dst, Object &obj,
-                                 size_t objOffset, size_t size);
-
+    
     /**
      * Gets the number of bytes at the begining of a range that are in host memory
      * \param addr Starting address of the memory range

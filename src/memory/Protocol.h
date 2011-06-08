@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -68,7 +68,7 @@ public:
         \param flags Protocool specific flags
         \return Pointer to the created object
     */
-    virtual Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr, 
+    virtual Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
         GmacProtection prot, unsigned flags) = 0;
 
     //! Deletes an object created by this protocol
@@ -113,7 +113,7 @@ public:
 #ifdef USE_VM
     virtual gmacError_t acquireWithBitmap(Block &block) = 0;
 #endif
-    
+
     //! Releases the CPU ownership of all objects belonging to this protocol
     /*!
         \return Error code
@@ -212,15 +212,18 @@ public:
         \return Error code
         \warning This method assumes that the block is not modified during its execution
     */
-    virtual gmacError_t memset(const Block &block, int v, size_t size, 
+    virtual gmacError_t memset(const Block &block, int v, size_t size,
         size_t blockOffset) = 0;
 
     virtual gmacError_t flushDirty() = 0;
 
+    virtual gmacError_t copyBlockToBlock(Block &dst, size_t dstOffset, Block &src, size_t srcOffset, size_t count) = 0;
+
     virtual gmacError_t dump(Block &block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
-	typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
-	typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::IOBuffer &, size_t, size_t, size_t);
+    typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
+    typedef gmacError_t (Protocol::*CopyOp)(Block &, size_t, Block &, size_t, size_t);
+    typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::IOBuffer &, size_t, size_t, size_t);
 };
 
 }}

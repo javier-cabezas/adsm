@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -34,7 +34,7 @@ WITH THE SOFTWARE.
 
 #ifndef GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
 #define GMAC_API_OPENCL_HPE_DBC_ACCELERATOR_H_
- 
+
 namespace __dbc { namespace opencl { namespace hpe {
 
 class GMAC_LOCAL Accelerator :
@@ -43,15 +43,15 @@ class GMAC_LOCAL Accelerator :
     DBC_TESTED(__impl::opencl::hpe::Accelerator)
 
 public:
-	Accelerator(int n, cl_context context, cl_device_id device);
+    Accelerator(int n, cl_context context, cl_device_id device);
     ~Accelerator();
 
     gmacError_t unmap(hostptr_t host, size_t size);
 
     /* Synchronous interface */
-	gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
-	gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
+    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
 
 };
 

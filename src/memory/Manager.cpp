@@ -193,8 +193,8 @@ gmacError_t Manager::toIOBuffer(core::Mode &mode, core::IOBuffer &buffer, size_t
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
-		ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
-		obj->release();
+                ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
+                obj->release();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -236,8 +236,8 @@ gmacError_t Manager::fromIOBuffer(core::Mode &mode, hostptr_t addr, core::IOBuff
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
-		ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
-		obj->release();        
+                ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
+                obj->release();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -268,9 +268,9 @@ Manager::read(core::Mode &mode, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
-	gmacError_t err = obj->signalRead(addr);
+    gmacError_t err = obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
-	obj->release();
+    obj->release();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -294,8 +294,8 @@ Manager::write(core::Mode &mode, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
-	if(obj->signalWrite(addr) != gmacSuccess) ret = false;
-	obj->release();
+    if(obj->signalWrite(addr) != gmacSuccess) ret = false;
+    obj->release();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -305,7 +305,7 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
 {
     trace::EnterCurrentFunction();
     core::Mode *owner = proc_.owner(s, size);
-	if (owner == NULL) {
+        if (owner == NULL) {
         ::memset(s, c, size);
         trace::ExitCurrentFunction();
         return gmacSuccess;
@@ -337,7 +337,7 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     // This code handles the case of the user initializing a portion of
     // memory that includes host memory and GMAC objects.
     size_t left = size;
-    while(left > 0) {        
+    while(left > 0) {
         // If there is no object, initialize the remaining host memory
         if(obj == NULL) {
             ::memset(s, c, left);
@@ -373,239 +373,11 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     return ret;
 }
 
-
-gmacError_t
-Manager::memcpyToObject(core::Mode &mode, Object &obj, size_t objOffset, const hostptr_t src, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-
-    // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active;
-    core::IOBuffer *passive;
-
-    // Control variables
-    size_t left = size;
-
-    // Adjust the first copy to deal with a single block
-    size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
-
-    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-    ASSERTION(bufSize >= copySize);
-
-    if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
-    } else {
-        passive = NULL;
-    }
-
-    // Copy the data to the first block
-    ::memcpy(active->addr(), src, copySize);
-
-    hostptr_t ptr = src;
-    while(left > 0) {
-        // We do not need for the active buffer to be full because ::memcpy() is
-        // a synchronous call
-        ret = obj.copyFromBuffer(*active, copySize, 0, objOffset);
-        ASSERTION(ret == gmacSuccess);
-        //if (ret != gmacSuccess) return ret;
-        ptr       += copySize;
-        left      -= copySize;
-        objOffset += copySize;
-        if(left > 0) {
-            // Start copying data from host memory to the passive I/O buffer
-            copySize = (left < passive->size()) ? left : passive->size();
-            ASSERTION(bufSize >= copySize);
-            passive->wait(); // Avoid overwritten a buffer that is already in use
-            ::memcpy(passive->addr(), ptr, copySize);
-        }
-        // Swap buffers
-        core::IOBuffer *tmp = active;
-        active = passive;
-        passive = tmp;
-    }
-    // Clean up buffers after they are idle
-    if (passive != NULL) {
-        passive->wait();
-        mode.destroyIOBuffer(*passive);
-    }
-    if (active  != NULL) {
-        active->wait();
-        mode.destroyIOBuffer(*active);
-    }
-
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t
-Manager::memcpyToObject(core::Mode &mode,
-                        Object &dstObj, size_t dstOffset,
-                        Object &srcObj, size_t srcOffset, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-
-    // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active;
-    core::IOBuffer *passive;
-
-    // Control variables
-    size_t left = size;
-
-    // Adjust the first copy to deal with a single block
-    size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
-
-    size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-    ASSERTION(bufSize >= copySize);
-
-    if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
-    } else {
-        passive = NULL;
-    }
-
-    // Single copy from the source to fill the buffer
-    if (copySize <= srcObj.blockEnd(srcOffset)) {
-        ret = srcObj.copyToBuffer(*active, copySize, 0, srcOffset);
-        ASSERTION(ret == gmacSuccess);
-    }
-    else { // Two copies from the source to fill the buffer
-        size_t firstCopySize = srcObj.blockEnd(srcOffset);
-        size_t secondCopySize = copySize - firstCopySize;
-        ASSERTION(bufSize >= firstCopySize + secondCopySize);
-
-        ret = srcObj.copyToBuffer(*active, firstCopySize, 0, srcOffset);
-        ASSERTION(ret == gmacSuccess);
-        ret = srcObj.copyToBuffer(*active, secondCopySize, firstCopySize, srcOffset + firstCopySize);
-        ASSERTION(ret == gmacSuccess);
-    }
-
-    // Copy first chunk of data
-    while(left > 0) {
-        active->wait(); // Wait for the active buffer to be full
-        ret = dstObj.copyFromBuffer(*active, copySize, 0, dstOffset);
-        if(ret != gmacSuccess) {
-            trace::ExitCurrentFunction();
-            return ret;
-        }
-        left -= copySize;
-        srcOffset += copySize;
-        dstOffset += copySize;
-        if(left > 0) {
-            copySize = (left < dstObj.blockSize()) ? left: dstObj.blockSize();
-            ASSERTION(bufSize >= copySize);
-            // Avoid overwritting a buffer that is already in use
-            passive->wait();
-
-            // Request the next copy
-            // Single copy from the source to fill the buffer
-            if (copySize <= srcObj.blockEnd(srcOffset)) {
-                ret = srcObj.copyToBuffer(*passive, copySize, 0, srcOffset);
-                ASSERTION(ret == gmacSuccess);
-            }
-            else { // Two copies from the source to fill the buffer
-                size_t firstCopySize = srcObj.blockEnd(srcOffset);
-                size_t secondCopySize = copySize - firstCopySize;
-                ASSERTION(bufSize >= firstCopySize + secondCopySize);
-
-                ret = srcObj.copyToBuffer(*passive, firstCopySize, 0, srcOffset);
-                ASSERTION(ret == gmacSuccess);
-                ret = srcObj.copyToBuffer(*passive, secondCopySize, firstCopySize, srcOffset + firstCopySize);
-                ASSERTION(ret == gmacSuccess);
-            }
-
-            // Swap buffers
-            core::IOBuffer *tmp = active;
-            active = passive;
-            passive = tmp;
-        }
-    }
-    // Clean up buffers after they are idle
-    if (passive != NULL) {
-        passive->wait();
-        mode.destroyIOBuffer(*passive);
-    }
-    if (active  != NULL) {
-        active->wait();
-        mode.destroyIOBuffer(*active);
-    }
-
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t
-Manager::memcpyFromObject(core::Mode &mode, hostptr_t dst,
-                          Object &obj, size_t objOffset, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-
-    // We need to I/O buffers to double-buffer the copy
-    core::IOBuffer *active;
-    core::IOBuffer *passive; 
-
-    // Control variables
-    size_t left = size;
-
-    // Adjust the first copy to deal with a single block
-    size_t copySize = size < obj.blockEnd(objOffset)? size: obj.blockEnd(objOffset);
-
-    size_t bufSize = size < obj.blockSize()? size: obj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
-    ASSERTION(bufSize >= copySize);
-
-    if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
-    } else {
-        passive = NULL;
-    }
-
-    // Copy the data to the first block
-    ret = obj.copyToBuffer(*active, copySize, 0, objOffset);
-    ASSERTION(ret == gmacSuccess);
-    //if(ret != gmacSuccess) return ret;
-    while(left > 0) {
-        // Save values to use when copying the buffer to host memory
-        size_t previousCopySize = copySize;
-        left      -= copySize;
-        objOffset += copySize;        
-        if(left > 0) {
-            // Start copying data from host memory to the passive I/O buffer
-            copySize = (left < passive->size()) ? left : passive->size();
-            ASSERTION(bufSize >= copySize);
-            // No need to wait for the buffer, because ::memcpy is a
-            // synchronous call
-            ret = obj.copyToBuffer(*passive, copySize, 0, objOffset);
-            ASSERTION(ret == gmacSuccess);
-        }        
-        // Wait for the active buffer to be full
-        active->wait();
-        // Copy the active buffer to host
-        ::memcpy(dst, active->addr(), previousCopySize);
-        dst += previousCopySize;
-
-        // Swap buffers
-        core::IOBuffer *tmp = active;
-        active = passive;
-        passive = tmp;
-    }
-    // No need to wait for the buffers because we waited for them before ::memcpy
-    if (passive != NULL) mode.destroyIOBuffer(*passive);
-    if (active  != NULL) mode.destroyIOBuffer(*active);
-
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
 size_t
 Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
 {
     // There is no object, so everything is in host memory
-    if(obj == NULL) return size; 
+    if(obj == NULL) return size;
 
     // The object starts after the memory range, return the difference
     if(addr < obj->addr()) return obj->addr() - addr;
@@ -663,13 +435,13 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
             size_t srcCopySize = srcObject->end() - src - offset;
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
             size_t srcObjectOffset = src + offset - srcObject->addr();
-            ret = memcpyFromObject(mode, dst + offset, *srcObject, srcObjectOffset, copySize);
+            ret = srcObject->memcpyFromObject(mode, dst + offset, srcObjectOffset, copySize);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
             size_t dstCopySize = dstObject->end() - dst - offset;
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(mode, *dstObject, dstObjectOffset, src + offset, copySize);
+            ret = dstObject->memcpyToObject(mode, dstObjectOffset, src + offset, copySize);
         }
         else { // Object-to-object memory copy
             size_t srcCopySize = srcObject->end() - src - offset;
@@ -678,7 +450,7 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
             copySize = (copySize < left) ? copySize : left;
             size_t srcObjectOffset = src + offset - srcObject->addr();
             size_t dstObjectOffset = dst + offset - dstObject->addr();
-            ret = memcpyToObject(mode, *dstObject, dstObjectOffset, *srcObject, srcObjectOffset, copySize);
+            ret = srcObject->memcpyObjectToObject(mode, *dstObject, dstObjectOffset, srcObjectOffset, copySize);
         }
 
         offset += copySize;
@@ -724,7 +496,7 @@ gmacError_t Manager::moveTo(hostptr_t addr, core::Mode &mode)
     }
 
     owner_->free(accelerator->addr());
-    
+
     StateObject<T>::unlock();
 #endif
     return gmacSuccess;

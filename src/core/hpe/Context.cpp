@@ -20,7 +20,7 @@ Context::Context(Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator
 }
 
 Context::~Context()
-{ 
+{
 }
 
 void
@@ -31,7 +31,7 @@ Context::init()
 gmacError_t Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     trace::EnterCurrentFunction();
-    gmacError_t ret = acc_.copyAccelerator(dst, src, size);
+    gmacError_t ret = acc_.copyAccelerator(dst, src, size, streamToAccelerator_);
     trace::ExitCurrentFunction();
     return ret;
 }
