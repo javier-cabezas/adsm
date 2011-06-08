@@ -49,6 +49,9 @@ getVendor(cl_platform_id id)
 }
 
 typedef std::pair<unsigned, unsigned> OpenCLVersion;
+#if defined(_MSC_VER)
+#define sscanf(...) sscanf_s(__VA_ARGS__)
+#endif
 
 static OpenCLVersion
 getOpenCLVersion(cl_platform_id id)
