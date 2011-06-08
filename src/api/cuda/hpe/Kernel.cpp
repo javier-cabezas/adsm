@@ -26,6 +26,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
     shared_(c.shared_),
     stream_(c.stream_)
 {
+    stack_ = new uint8_t[StackSize_];
     ArgsVector::const_iterator it;
     for (it = c.begin(); it != c.end(); it++) {
         pushArgument(it->ptr(), it->size(), it->offset());
@@ -40,6 +41,7 @@ KernelConfig::KernelConfig(dim3 grid, dim3 block, size_t shared, cudaStream_t /*
     shared_(shared),
     stream_(stream)
 {
+    stack_ = new uint8_t[StackSize_];
 }
 
 

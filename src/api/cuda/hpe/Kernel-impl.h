@@ -23,6 +23,13 @@ inline
 KernelConfig::KernelConfig() :
     argsSize_(0)
 {
+    stack_ = new uint8_t[StackSize_];
+}
+
+inline
+KernelConfig::~KernelConfig()
+{
+    delete [] stack_;
 }
 
 inline
