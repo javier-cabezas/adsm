@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CONFIG_CUDA_COMMON_H_
 #define GMAC_CONFIG_CUDA_COMMON_H_
 
+#include <cstdio>
 #include <cuda.h>
 
 typedef CUcontext AddressSpace;
@@ -48,7 +49,7 @@ struct _cuda_ptr_t {
         ptr_(ptr),
         pasId_(0)
     {}
-    
+
     inline operator CUdeviceptr() const { return ptr_; }
 
     inline bool operator==(const _cuda_ptr_t &ptr) const {
@@ -71,7 +72,7 @@ struct _cuda_ptr_t {
     }
 
     template <typename T>
-    inline _cuda_ptr_t operator+(T b) {
+    inline const _cuda_ptr_t operator+(const T &b) const {
         _cuda_ptr_t ret(ptr_ + CUdeviceptr(b));
         ret.pasId_ = pasId_;
         return ret;
