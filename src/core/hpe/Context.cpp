@@ -28,14 +28,6 @@ Context::init()
 {
 }
 
-gmacError_t Context::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = acc_.copyAccelerator(dst, src, size, streamToAccelerator_);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
 gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.get());

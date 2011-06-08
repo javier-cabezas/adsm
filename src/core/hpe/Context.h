@@ -108,15 +108,6 @@ public:
      * \return Error code
      */
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    /**
-     * Copies size bytes from accelerator memory to accelerator memory
-     *
-     * \param dst Destination pointer to accelerator memory
-     * \param src Source pointer to accelerator memory
-     * \param size Number of bytes to be copied
-     * \return Error code
-     */
-    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
 
     /**
      * Fills size bytes of accelerator memory with the given value

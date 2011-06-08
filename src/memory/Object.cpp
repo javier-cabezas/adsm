@@ -200,7 +200,7 @@ Object::memcpyObjectToObject(core::Mode &mode,
 
         TRACE(LOCAL, "Fast path finished!");
 
-        trace::EnterCurrentFunction();
+        trace::ExitCurrentFunction();
         return ret;
     }
 

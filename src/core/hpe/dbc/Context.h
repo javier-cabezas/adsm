@@ -46,9 +46,8 @@ protected:
     virtual ~Context();
 public:
 
-    virtual gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    virtual gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
 };
 
 }}}
