@@ -11,7 +11,6 @@ Process *ContextTest::Process_ = NULL;
 void ContextTest::Memory(Mode &mode, Context &ctx)
 {
 	int *buffer  = new int[Size_];
-	int *bufferExt = new int[Size_];
 	int *canary  = new int[Size_];
 
     accptr_t device(0);
@@ -26,9 +25,7 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
     ASSERT_TRUE(ctx.copyToHost(hostptr_t(canary), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
-
     memset(buffer,  0, Size_ * sizeof(int));
-    memset(bufferExt, 0, Size_ * sizeof(int));
     memset(canary,  0, Size_ * sizeof(int));
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
@@ -36,11 +33,9 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
 
     ASSERT_TRUE(mode.unmap(hostptr_t(buffer),  Size_ * sizeof(int)) == gmacSuccess);
-    ASSERT_TRUE(mode.unmap(hostptr_t(bufferExt), Size_ * sizeof(int)) == gmacSuccess);
 
 	delete[] canary;
 	delete[] buffer;
-	delete[] bufferExt;
 }
 
 
