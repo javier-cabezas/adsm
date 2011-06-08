@@ -4,8 +4,8 @@
 
 namespace __impl { namespace opencl { namespace hpe { namespace gpu { namespace nvidia {
 
-Accelerator::Accelerator(int n, cl_context context, cl_device_id device) :
-    gmac::opencl::hpe::Accelerator(n, context, device)
+Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor) :
+    gmac::opencl::hpe::Accelerator(n, context, device, major, minor)
 {
 }
 

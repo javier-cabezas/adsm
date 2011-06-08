@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -48,8 +48,10 @@ public:
      * \param n Accelerator number
      * \param context OpenCL context the accelerator belongs to
      * \param device OpenCL device ID for the accelerator
+     * \param major OpenCL major version supported by the accelerator
+     * \param minor OpenCL minor version supported by the accelerator
      */
-    Accelerator(int n, cl_context context, cl_device_id device);
+    Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor);
     /** Default destructor */
     virtual ~Accelerator();
 

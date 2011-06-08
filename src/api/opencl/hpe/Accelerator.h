@@ -187,6 +187,11 @@ protected:
     /** OpenCL device ID for the accelerator */
     cl_device_id device_;
 
+    /** OpenCL major version supported by the accelerator */
+    unsigned major_;
+    /** OpenCL minor version supported by the accelerator */
+    unsigned minor_;
+
     /** List of command queues associated to the accelerator */
     CommandList cmd_;
     /** Host memory allocations associated to the accelerator */
@@ -200,8 +205,10 @@ public:
      * \param n Accelerator number
      * \param context OpenCL context the accelerator belongs to
      * \param device OpenCL device ID for the accelerator
+     * \param major OpenCL major version supported by the accelerator
+     * \param minor OpenCL minor version supported by the accelerator
      */
-    Accelerator(int n, cl_context context, cl_device_id device);
+    Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor);
     /** Default destructor */
     virtual ~Accelerator();
 
