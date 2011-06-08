@@ -229,9 +229,7 @@ do_stencil(void * ptr)
     ecl_kernel kernel;
     
     assert(eclGetKernel("kernelStencil", &kernel) == eclSuccess);
-    cl_mem tmpMem = cl_mem(eclPtr(v));
-    tmpMem = cl_mem(eclPtr(v));
-    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 2, v) == eclSuccess);
     float dt2 = 0.08f;
     assert(eclSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == eclSuccess);
     assert(eclSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == eclSuccess);
@@ -247,10 +245,8 @@ do_stencil(void * ptr)
         float * tmp;
         
         // Call the kernel
-        tmpMem = cl_mem(eclPtr(descr->u2));
-        assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == eclSuccess);
-        tmpMem = cl_mem(eclPtr(descr->u3));
-        assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == eclSuccess);
+        assert(eclSetKernelArgPtr(kernel, 0, descr->u2) == eclSuccess);
+        assert(eclSetKernelArgPtr(kernel, 1, descr->u3) == eclSuccess);
         
         ecl_error ret;
         ret = eclCallNDRange(kernel, 2, NULL, globalSize, localSize);

@@ -101,12 +101,9 @@ main(int argc, char** argv)
     ecl_kernel kernel;
 
     assert(eclGetKernel("matrixMulSimple", &kernel) == eclSuccess);
-    cl_mem tmp = cl_mem(eclPtr(C));
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(A));                              
-    assert(eclSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == eclSuccess);
-    tmp = cl_mem(eclPtr(B));                              
-    assert(eclSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, C) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 1, A) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 2, B) == eclSuccess);
     int param = int(WA);
     assert(eclSetKernelArg(kernel, 3, sizeof(int), &param) == eclSuccess);
     param     = int(WB);                                 

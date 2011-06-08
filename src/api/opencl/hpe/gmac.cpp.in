@@ -26,6 +26,17 @@ gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel k
     return ret;
 }
 
+gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
+{
+    cl_mem tmp = gmacPtr(ptr);
+    if (tmp == NULL) return eclErrorInvalidValue;
+    enterGmac();
+    gmacError_t ret = ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(&tmp, sizeof(cl_mem), index);
+    exitGmac();
+
+    return ret;
+}
+
 gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
 gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
 

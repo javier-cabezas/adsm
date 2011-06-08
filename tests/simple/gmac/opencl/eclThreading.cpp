@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
 
     // Call the kernel
     size_t globalSize = size_t(totalSize);
-    cl_mem tmp = cl_mem(eclPtr(ptr));
 
     thread_t threads[THREADS];
     unsigned ids[THREADS];
@@ -75,7 +74,7 @@ int main(int argc, char *argv[])
 
     assert(eclGetKernel("inc", &kernel) == eclSuccess);
 
-    assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, ptr) == eclSuccess);
     assert(eclSetKernelArg(kernel, 1, sizeof(totalSize), &totalSize) == eclSuccess);
 
     for (unsigned i = 0; i < ITERATIONS; i++) {

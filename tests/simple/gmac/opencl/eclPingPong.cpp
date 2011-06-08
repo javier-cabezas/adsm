@@ -54,8 +54,7 @@ void *chain(void *ptr)
         int current = *id - i;
         if(current < 0) current += nIter;
         // Call the kernel
-        cl_mem tmp = eclPtr(a[current]);
-        assert(eclSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == eclSuccess);
+        assert(eclSetKernelArgPtr(kernel, 0, a[current]) == eclSuccess);
         assert(eclSetKernelArg(kernel, 1, sizeof(int), id) == eclSuccess);
         assert(eclSetKernelArg(kernel, 2, sizeof(unsigned), &vecSize) == eclSuccess);
 

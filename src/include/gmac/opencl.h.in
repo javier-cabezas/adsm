@@ -97,6 +97,17 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@GetKernel(const ch
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr);
 
 /**
+ * Sets a pointer to be used by the following call to @OPENCL_API_PREFIX@CallNDRange()
+ *
+ * \param kernel Kernel descriptor
+ * \param index Index of the parameter being set in the parameter list
+ * \param addr Memory pointer to be passed as argument
+ *
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
+ */
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr);
+
+/**
  * Launches a kernel execution
  *
  * \param kernel Handler of the kernel to be executed at the GPU
@@ -266,19 +277,6 @@ static inline
 @OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@GlobalMalloc(void **devPtr, size_t count, @OPENCL_API_PREFIX@_memory_hint hint __dv(ECL_GLOBAL_MALLOC_CENTRALIZED))
 {
     return gmacGlobalMalloc(devPtr, count, hint);
-}
-
-/**
- * Get the OpenCL memory object associated to a shared memory address
- *
- * \param cpuPtr Host shared memory address
- *
- * \return Associated OpenCL buffer
- */
-static inline
-cl_mem @OPENCL_API_PREFIX@Ptr(const void *cpuPtr)
-{
-    return gmacPtr(cpuPtr);
 }
 
 /**
