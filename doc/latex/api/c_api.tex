@@ -72,8 +72,9 @@ Constant string with the name of a function to be executed on an accelerator.
 \subsection{\texttt{ecl\_error eclSetKernelArg(ecl\_kernel kernel, unsigned index, size\_t size, 
 const void *addr)}}
 
-\textbf{Description}: Adds an argument to be used by the following call to eclCallNDRange() on 
-the specified kernel \\
+\textbf{Description}: Adds an argument to be used in the following call to eclCallNDRange() on the 
+specified kernel. NOTE: this function does not work for pointer arguments. See eclSetKernelArgPtr.  
+\\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{kernel}: Kernel handler
@@ -82,6 +83,20 @@ the specified kernel \\
   \item \texttt{addr}: Memory address where the param is stored
 \end{itemize}
 \textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl\_error eclSetKernelArgPtr(ecl\_kernel kernel, unsigned index, const void 
+*ptr)}}
+
+\textbf{Description}: Adds a pointer argument (returned by eclMalloc or eclGlobalMalloc) to be used 
+by the following call to eclCallNDRange() on the specified kernel \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{kernel}: Kernel handler
+  \item \texttt{index}: Index of the parameter being added in the parameter list
+  \item \texttt{ptr}: Pointer to be passed to the kernel
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
 
 \subsection{\texttt{ecl\_error eclCallNDRange(ecl\_kernel kernel, size\_t workDim, size\_t 
 *globalWorkOffset, size\_t *globalWorkSize, size\_t *localWorkSize)}}
@@ -112,7 +127,7 @@ the specified kernel \\
 
 \subsection{\texttt{ecl\_error eclCompileSource(const char *code, const char *flags = NULL)}}
 
-\textbf{Description}: Prepares the OpenCL code to be used by the application. \\
+\textbf{Description}: Prepares the OpenCL code to be used in the application. \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{code} Pointer to the NULL\hyp{}terminated string that contains the code
@@ -122,7 +137,7 @@ the specified kernel \\
 
 \subsection{\texttt{ecl\_error eclCompileSourceFile(const char *path, const char *flags = NULL)}}
 
-\textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
+\textbf{Description}: Prepares the OpenCL code in the specified file to be used in the application.  \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the code 
@@ -132,7 +147,7 @@ the specified kernel \\
 
 \subsection{\texttt{ecl\_error eclCompileBinary(const unsigned char *binary, size\_t size, const char *flags = NULL)}}
 
-\textbf{Description}: Prepares the OpenCL binary to be used by the application.  \\
+\textbf{Description}: Prepares the OpenCL binary to be used in the application.  \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{binary}: Pointer to the array that contains the binary code
@@ -145,7 +160,7 @@ NULL
 \subsection{\texttt{ecl\_error eclCompileBinaryFile(const unsigned char *binary, const char 
 *flags = NULL)}}
 
-\textbf{Description}: Prepares the OpenCL binary in the specified file to be used by the application.  \\
+\textbf{Description}: Prepares the OpenCL binary in the specified file to be used in the application.  \\
 \textbf{Parameters}
 \begin{itemize}
   \item \texttt{path}: Pointer to a NULL\hyp{}terminated string pointing to the file with the binary 
@@ -191,14 +206,6 @@ NULL
   \item \texttt{hint}: Type of desired global memory
 \end{itemize}
 \textbf{Returns}: eclSuccess on success, an error code otherwise
-
-\subsection{\texttt{cl\_mem eclPtr(const void *cpuPtr)}}
-
-\textbf{Description}: Get the OpenCL memory object associated to a shared memory address
-\begin{itemize}
-  \item \texttt{cpuPtr}: Host shared memory address
-\end{itemize}
-\textbf{Returns}: Associated OpenCL buffer
 
 \subsection{\texttt{eclFree(const void *cpuPtr)}}
 
