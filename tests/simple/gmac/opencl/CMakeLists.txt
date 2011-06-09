@@ -48,6 +48,10 @@ source_group(${current_GROUP} FILES
     clVecAdd.cpp
     eclVecAdd.cpp
     eclVecAdd_cplusplus.cpp
+    NBody/NBody.h
+    NBody/NBody.cpp
+    NBody_GMAC/NBody.h
+    NBody_GMAC/NBody.cpp
 )
 
 add_executable(eclInit ${common_SRC} eclInit.cpp)
@@ -104,9 +108,19 @@ target_link_libraries(eclBarr gmac-hpe)
 add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
 target_link_libraries(eclMatrixMul gmac-hpe)
 
+option(USE_OPENGL "Enable building OpenGL tests" OFF)
+if(USE_OPENGL)
+    add_executable(eclNBody ${common_SRC} NBody_GMAC/NBody.h NBody_GMAC/NBody.cpp)
+    target_link_libraries(eclNBody gmac-hpe "-lGLU -lglut  -lGLEW")
+
+    add_executable(oclNBody ${common_SRC} NBody/NBody.h NBody/NBody.cpp)
+    target_link_libraries(oclNBody ${opencl_LIB} ${thread_LIB} "-lGLU -lglut  -lGLEW")
+
+    file(COPY NBody/NBody_Kernels.cl DESTINATION ${PROJECT_BINARY_DIR})
+endif(USE_OPENGL)
+
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
 add_custom_target(InputSets ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../../input
     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/inputset)
-

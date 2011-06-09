@@ -41,6 +41,7 @@ inline void CommandList::remove(cl_command_queue stream)
 inline cl_command_queue &CommandList::front()
 {
     lockRead();
+    ASSERTION(Parent::empty() == false);
     cl_command_queue &ret = Parent::front();
     unlock();
     return ret;

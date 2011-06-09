@@ -506,14 +506,16 @@ gmacError_t Accelerator::timeCLevents(uint64_t &t, cl_event start, cl_event end)
 }
 
 
-gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size)
+gmacError_t
+Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
     // There is not reliable way to get zero-copy memory
     addr = NULL;
     return gmacErrorMemoryAllocation;
 }
 
-gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
+gmacError_t
+Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
@@ -527,9 +529,10 @@ gmacError_t Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size
     mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
             size, NULL, &ret);
     if(ret == CL_SUCCESS) {
+        stream_t stream = cmd_.front();
         // Get the host pointer for the memory object
         lock();
-        addr = (hostptr_t)clEnqueueMapBuffer(cmd_.front(), mem, CL_TRUE,
+        addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_TRUE,
                 CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
         unlock();
         // Insert the object in the allocation map for the accelerator

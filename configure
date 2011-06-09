@@ -74,6 +74,9 @@ do
     --enable-mpi)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;
+    --enable-gl)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_OPENGL=ON"
+        ;;
     --enable-cxx0x)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X=ON"
         ;;

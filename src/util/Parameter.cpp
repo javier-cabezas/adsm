@@ -37,6 +37,7 @@ static void init()
             ParamCtorList[i].param->print();
     }
 
+    // TODO: check this deletion. valgrind shows some errors
     for(int i = 0; ParamCtorList[i].ctor != NULL; i++)
         delete ParamCtorList[i].param;
 }

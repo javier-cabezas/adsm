@@ -23,8 +23,6 @@ extern void OpenCL(gmac::core::hpe::Process &);
 
 void initGmac(void)
 {
-    enterGmac();
-
     /* Call initialization of interpose libraries */
 #if defined(POSIX)
     osInit();
@@ -61,8 +59,6 @@ void initGmac(void)
     TRACE(GLOBAL, "Initializing OpenCL");
     OpenCL(*Process_);
 #endif
-
-    exitGmac();
 }
 
 
