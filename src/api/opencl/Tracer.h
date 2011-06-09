@@ -88,6 +88,9 @@ protected:
     uint64_t stamp_;
     THREAD_T thread_;
 
+    unsigned major_;
+    unsigned minor_;
+
     struct TracePoint {
         uint64_t stamp;
         THREAD_T thread;
@@ -98,7 +101,7 @@ protected:
 #endif
 public:
     /** Default constructor */
-    KernelExecution();
+    KernelExecution(unsigned majort, unsigned minor);
 
     /**
      * Initialize a kernel execution that will be traced later on

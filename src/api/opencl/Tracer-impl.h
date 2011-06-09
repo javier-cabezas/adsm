@@ -79,8 +79,8 @@ void DataCommunication::trace(cl_event start, cl_event end, size_t size) const
 
 #if defined(USE_TRACE)
 inline
-KernelExecution::KernelExecution() :
-    stamp_(0), thread_(0)
+KernelExecution::KernelExecution(unsigned major, unsigned minor) :
+    stamp_(0), thread_(0), major_(major), minor_(minor)
 { }
 #else
 inline
@@ -93,7 +93,7 @@ inline
 void KernelExecution::init(THREAD_T thread)
 {
 #if defined(USE_TRACE)
-    if(trace::tracer == NULL) return;
+    if(trace::tracer == NULL || minor_ < 1) return;
     thread_ = thread;
     stamp_ = trace::tracer->timeMark();
 #endif
@@ -103,6 +103,7 @@ inline
 void KernelExecution::trace(cl_kernel kernel, cl_event event) const
 {
 #if defined(USE_TRACE)
+    if(trace::tracer == NULL || minor_ < 1) return;
     TracePoint *data = new TracePoint();
     data->stamp = stamp_;
     data->thread = thread_;
