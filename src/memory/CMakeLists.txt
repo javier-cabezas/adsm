@@ -46,6 +46,7 @@ set(memory_SRC
     protocol/Gather.h
     protocol/Gather-impl.h
     protocol/Gather.cpp
+    protocol/LazyBase.h
     protocol/Lazy.h
     protocol/Lazy-impl.h
     protocol/Lazy.cpp

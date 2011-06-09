@@ -4,202 +4,147 @@
 
 namespace __dbc { namespace memory { namespace protocol {
 
-#if 0
+LazyBase::LazyBase(size_t limit) :
+    __impl::memory::protocol::LazyBase(limit)
+{
+}
+
+LazyBase::~LazyBase()
+{
+}
 
 gmacError_t
-Lazy::copyHostToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                      const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::signalRead(BlockImpl &_block, hostptr_t addr)
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyHostToDirty(objectDst, blockDst, blockOffDst,
-                                                    objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+    //REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
+
+    gmacError_t ret = Parent::signalRead(block, addr);
 
     return ret;
 }
 
 gmacError_t
-Lazy::copyHostToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                         const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::signalWrite(BlockImpl &_block, hostptr_t addr)
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyHostToReadOnly(objectDst, blockDst, blockOffDst,
-                                                       objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+    gmacError_t ret = Parent::signalWrite(block, addr);
+
+    ENSURES(block.getState() == __impl::memory::protocol::lazy::Dirty);
 
     return ret;
 }
 
 gmacError_t
-Lazy::copyHostToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                        const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::acquire(BlockImpl &_block)
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyHostToInvalid(objectDst, blockDst, blockOffDst,
-                                                      objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+
+    REQUIRES(block.getState() == __impl::memory::protocol::lazy::ReadOnly ||
+             block.getState() == __impl::memory::protocol::lazy::Invalid);
+
+    gmacError_t ret = Parent::acquire(block);
+
+    ENSURES(block.getState() == __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
 
 gmacError_t
-Lazy::copyAcceleratorToDirty(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                             const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::release(BlockImpl &_block)
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyAcceleratorToDirty(objectDst, blockDst, blockOffDst,
-                                                           objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+    gmacError_t ret = Parent::release(block);
+
+    ENSURES(block.getState() == __impl::memory::protocol::lazy::ReadOnly);
 
     return ret;
 }
 
 gmacError_t
-Lazy::copyAcceleratorToReadOnly(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                                const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::releaseObjects()
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyAcceleratorToReadOnly(objectDst, blockDst, blockOffDst,
-                                                              objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    gmacError_t ret = Parent::releaseObjects();
+
+    ENSURES(Parent::dbl_.size() == 0);
 
     return ret;
 }
 
 gmacError_t
-Lazy::copyAcceleratorToInvalid(const StateObject<State> &objectDst, Block &blockDst, size_t blockOffDst,
-                               const StateObject<State> &objectSrc, Block &blockSrc, size_t blockOffSrc, size_t count)
+LazyBase::toHost(BlockImpl &_block)
 {
-    // PRECONDITIONS
-    REQUIRES(blockOffDst + count <= blockDst.size());
-    REQUIRES(blockOffSrc + count <= blockSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copyAcceleratorToInvalid(objectDst, blockDst, blockOffDst,
-                                                             objectSrc, blockSrc, blockOffSrc, count);
-    // POSTCONDITIONS
+    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+    gmacError_t ret = Parent::toHost(block);
+
+    ENSURES(block.getState() != __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
 
 gmacError_t
-Lazy::signalRead(const Object &obj, void *addr)
+LazyBase::copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+    size_t bufferOffset, size_t blockOffset)
 {
-    // PRECONDITIONS
-    REQUIRES(addr >= obj.addr());
-    REQUIRES(addr < obj.end());
+    REQUIRES(blockOffset  + size <= block.size());
+    REQUIRES(bufferOffset + size <= buffer.size());
 
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::signalRead(obj, addr);
-    // POSTCONDITIONS
+    gmacError_t ret = Parent::copyToBuffer(block, buffer, size, bufferOffset, blockOffset);
+
     return ret;
 }
 
 gmacError_t
-Lazy::signalWrite(const Object &obj, void *addr)
+LazyBase::copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+    size_t bufferOffset, size_t blockOffset)
 {
-    // PRECONDITIONS
-    REQUIRES(addr >= obj.addr());
-    REQUIRES(addr < obj.end());
+    REQUIRES(blockOffset  + size <= block.size());
+    REQUIRES(bufferOffset + size <= buffer.size());
 
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::signalWrite(obj, addr);
-    // POSTCONDITIONS
+    gmacError_t ret = Parent::copyFromBuffer(block, buffer, size, bufferOffset, blockOffset);
+
     return ret;
 }
 
 gmacError_t
-Lazy::toIOBuffer(IOBuffer &buffer, size_t bufferOff, const Object &obj, size_t objectOff, size_t count)
+LazyBase::memset(const BlockImpl &block, int v, size_t size, size_t blockOffset)
 {
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(bufferOff + count <= buffer.size());
-    REQUIRES(objectOff + count <= obj.size());
+    REQUIRES(blockOffset + size <= block.size());
 
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::toIOBuffer(buffer, bufferOff, obj, objectOff, count);
-    // POSTCONDITIONS
+    gmacError_t ret = Parent::memset(block, v, size, blockOffset);
+
     return ret;
 }
 
 gmacError_t
-Lazy::fromIOBuffer(const Object &obj, size_t objectOff, IOBuffer &buffer, size_t bufferOff, size_t count)
+LazyBase::flushDirty()
 {
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(bufferOff + count <= buffer.size());
-    REQUIRES(objectOff + count <= obj.size());
+    gmacError_t ret = Parent::flushDirty();
 
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::fromIOBuffer(obj, objectOff, buffer, bufferOff, count);
-    // POSTCONDITIONS
+    ENSURES(Parent::dbl_.size() == 0);
+
     return ret;
 }
 
 gmacError_t
-Lazy::toPointer(void *dst, const Object &objSrc, size_t objectOff, size_t count)
+LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count)
 {
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(objectOff + count <= objSrc.size());
+    LazyBlockImpl &dst = dynamic_cast<LazyBlockImpl &>(d);
+    LazyBlockImpl &src = dynamic_cast<LazyBlockImpl &>(s);
 
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::toPointer(dst, objSrc, objectOff, count);
-    // POSTCONDITIONS
+    REQUIRES(dstOffset + count <= dst.size());
+    REQUIRES(srcOffset + count <= src.size());
+
+    StateImpl dstState = dst.getState();
+    StateImpl srcState = src.getState();
+
+    gmacError_t ret = Parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count);
+
+    ENSURES(dst.getState() == dstState);
+    ENSURES(src.getState() == srcState);
+
     return ret;
 }
-
-gmacError_t
-Lazy::fromPointer(const Object &objDst, size_t objectOff, const void *src, size_t count)
-{
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(objectOff + count <= objDst.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::fromPointer(objDst, objectOff, src, count);
-    // POSTCONDITIONS
-    return ret;
-}
-
-gmacError_t
-Lazy::copy(const Object &objDst, size_t offDst, const Object &objSrc, size_t offSrc, size_t count)
-{
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(offDst + count <= objDst.size());
-    REQUIRES(offSrc + count <= objSrc.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::copy(objDst, offDst, objSrc, offSrc, count);
-    // POSTCONDITIONS
-    return ret;
-}
-
-gmacError_t
-Lazy::memset(const Object &obj, size_t objectOff, int c, size_t count)
-{
-    // PRECONDITIONS
-    REQUIRES(count > 0);
-    REQUIRES(objectOff + count <= obj.size());
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::protocol::Lazy::memset(obj, objectOff, c, count);
-    // POSTCONDITIONS
-    return ret;
-}
-#endif
 
 }}}
 
