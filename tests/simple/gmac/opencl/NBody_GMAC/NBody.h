@@ -111,14 +111,6 @@ jurisdiction and venue of these courts.
 
 class NBody
 {
-    cl_double setupTime;                /**< time taken to setup OpenCL resources and building kernel */
-    cl_double kernelTime;               /**< time taken to run kernel and read result back */
-
-    size_t maxWorkGroupSize;            /**< Max allowed work-items in a group */
-    cl_uint maxDimensions;              /**< Max group dimensions allowed */
-    cl_ulong totalLocalMemory;          /**< Max local memory allowed */
-    cl_ulong usedLocalMemory;           /**< Used local memory */
-
     cl_float delT;                      /**< dT (timestep) */
     cl_float espSqr;                    /**< Softening Factor*/
     cl_float* initPos;                  /**< initial position */
@@ -147,8 +139,6 @@ public:
     * @param name name of sample (string)
     */
     explicit NBody(std::string name) :
-        setupTime(0),
-        kernelTime(0),
         delT(0.005f),
         espSqr(50.0f),
         initPos(NULL),
@@ -167,8 +157,6 @@ public:
     * @param name name of sample (const char*)
     */
     explicit NBody(const char* name) :
-        setupTime(0),
-        kernelTime(0),
         delT(0.005f),
         espSqr(50.0f),
         initPos(NULL),

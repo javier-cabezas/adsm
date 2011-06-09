@@ -136,7 +136,7 @@ float4 operator*(float4 a, float b)
 __global__
 void body_sim(float4* pos, float4* vel, int numBodies, float deltaTime, float epsSqr, float4* newPosition, float4* newVelocity)
 {
-    __shared__ float4 localPos[256];
+    __shared__ float4 localPos[512];
     unsigned int tid = threadIdx.x;
     unsigned int gid = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned int localSize = blockDim.x;
@@ -283,7 +283,7 @@ NBody::runCLKernels()
     /*
     * Enqueue a kernel run call.
     */
-    body_sim<<<dim3(numBodies/256), dim3(256)>>>(gmacPtr((float4 *) currPos), gmacPtr((float4 *) currVel),
+    body_sim<<<dim3(numBodies/512), dim3(512)>>>(gmacPtr((float4 *) currPos), gmacPtr((float4 *) currVel),
                                                  numBodies, delT, espSqr,
                                                  gmacPtr((float4 *) newPos), gmacPtr((float4 *) newVel));
 
