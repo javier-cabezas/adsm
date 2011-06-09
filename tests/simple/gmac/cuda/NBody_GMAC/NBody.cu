@@ -434,55 +434,6 @@ void displayfunc()
         totalElapsedTime = 0.0;
     }
 }
-#if 0
-void displayfunc()
-{
-    t1 = clock() * CLOCKS_PER_SEC;
-    frameCount++;
-
-    glClearColor(0.0 ,0.0, 0.0, 0.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    glPointSize(1.0);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glEnable(GL_BLEND);
-    glDepthMask(GL_FALSE);
-
-    glColor3f(1.0f,0.6f,0.0f);
-
-    //Calling kernel for calculatig subsequent positions
-    ((NBody*)me)->runCLKernels();
-
-    glBegin(GL_POINTS);
-    for(int i=0; i < numBodies; ++i)
-    {
-        //divided by 300 just for scaling
-        glVertex3d(pos[i*4+ 0]/300, pos[i*4+1]/300, pos[i*4+2]/300);
-    }
-    glEnd();
-
-    glFlush();
-    glutSwapBuffers();
-
-    t2 = clock() * CLOCKS_PER_SEC;
-    totalElapsedTime += (double)(t2 - t1);
-    if(frameCount > frameRefCount) {
-        // set GLUT Window Title
-        char title[256];
-        double fMs = (double)((totalElapsedTime / (double)CLOCKS_PER_SEC) / (double) frameCount);
-        int framesPerSec = (int)(1.0 / (fMs / CLOCKS_PER_SEC));
-#if defined (_WIN32) && !defined(__MINGW32__)
-        sprintf_s(title, 256, "OpenCL NBody | %d fps ", framesPerSec);
-#else 
-        sprintf(title, "OpenCL NBody | %d fps ", framesPerSec);
-#endif
-        glutSetWindowTitle(title);
-        frameCount = 0;
-        totalElapsedTime = 0.0;
-    }
-}
-#endif
 
 /* keyboard function */
 void
