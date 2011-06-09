@@ -8,7 +8,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 template<typename T>
 inline Lazy<T>::Lazy(size_t limit) :
-    LazyBase(limit)
+    gmac::memory::protocol::LazyBase(limit)
 {}
 
 template<typename T>
@@ -20,14 +20,14 @@ inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, h
                                              GmacProtection prot, unsigned flags)
 {
     Object *ret = new T(*this, current, cpuPtr, 
-		size, state(prot));
+		size, LazyBase::state(prot));
 	if(ret == NULL) return ret;
 	if(ret->valid() == false) {
 		ret->release();
 		return NULL;
 	}
 	Memory::protect(ret->addr(), ret->size(), prot);
-    limit_ += 2;
+    LazyBase::limit_ += 2;
 	return ret;
 }
 

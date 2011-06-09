@@ -31,39 +31,52 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_LAZY_H_
-#define GMAC_MEMORY_PROTOCOL_LAZY_H_
+#ifndef GMAC_MEMORY_PROTOCOL_DBC_LAZYBASE_H_
+#define GMAC_MEMORY_PROTOCOL_DBC_LAZYBASE_H_
 
-#include "LazyBase.h"
+#include "dbc/types.h"
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __dbc { namespace memory { namespace protocol {
 
-template <typename T>
-class GMAC_LOCAL Lazy : public gmac::memory::protocol::LazyBase {
-    DBC_FORCE_TEST(Lazy<T>)
+class GMAC_LOCAL LazyBase :
+    public __impl::memory::protocol::LazyBase,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::protocol::LazyBase)
+
+protected:
+    LazyBase(size_t limit);
+    virtual ~LazyBase();
+
+    typedef __impl::memory::protocol::LazyBase Parent;
+    typedef __impl::memory::Block BlockImpl;
+    typedef __impl::memory::protocol::lazy::State StateImpl;
+    typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
+    typedef __impl::core::IOBuffer IOBufferImpl;
 
 public:
-    /**
-     * Default constructor
-     *
-     * \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
-     */
-    Lazy(size_t limit);
+    gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
+    gmacError_t signalWrite(BlockImpl &block, hostptr_t addr);
 
-    /// Default destructor
-    virtual ~Lazy();
+    gmacError_t acquire(BlockImpl &obj);
+    gmacError_t release(BlockImpl &block);
 
-    // Protocol Interface
-    memory::Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
-                                 GmacProtection prot, unsigned flags);
+    gmacError_t releaseObjects();
+
+    gmacError_t toHost(BlockImpl &block);
+
+    gmacError_t copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+                             size_t bufferOffset, size_t blockOffset);
+
+    gmacError_t copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+                               size_t bufferOffset, size_t blockOffset);
+
+    gmacError_t memset(const BlockImpl &block, int v, size_t size, size_t blockOffset);
+
+    gmacError_t flushDirty();
+
+    gmacError_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count);
 };
 
 }}}
-
-#include "Lazy-impl.h"
-
-#ifdef USE_DBC
-#include "dbc/Lazy.h"
-#endif
 
 #endif

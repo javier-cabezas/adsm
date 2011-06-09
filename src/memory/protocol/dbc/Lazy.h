@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -45,36 +45,11 @@ class GMAC_LOCAL Lazy :
     DBC_TESTED(__impl::memory::protocol::Lazy<T>)
 
     typedef __impl::memory::protocol::Lazy<T> Parent;
-    typedef __impl::memory::Block BlockImpl;
-    typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
-    typedef __impl::core::IOBuffer IOBufferImpl;
 
 protected:
 public:
     Lazy(unsigned limit);
     virtual ~Lazy();
-
-    gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
-    gmacError_t signalWrite(BlockImpl &block, hostptr_t addr);
-
-    gmacError_t acquire(BlockImpl &obj);
-    gmacError_t release(BlockImpl &block);
-
-    gmacError_t releaseObjects();
-
-	gmacError_t toHost(BlockImpl &block);
-
-    gmacError_t copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size, 
-		size_t bufferOffset, size_t blockOffset);
-	
-	gmacError_t copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
-		size_t bufferOffset, size_t blockOffset);
-
-    gmacError_t memset(const BlockImpl &block, int v, size_t size, 
-        size_t blockOffset);
-
-
-    gmacError_t flushDirty();
 };
 
 }}}
