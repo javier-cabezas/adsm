@@ -286,10 +286,10 @@ NBody::runCLKernels()
     body_sim<<<dim3(numBodies/512), dim3(512)>>>(gmacPtr((float4 *) currPos), gmacPtr((float4 *) currVel),
                                                  numBodies, delT, espSqr,
                                                  gmacPtr((float4 *) newPos), gmacPtr((float4 *) newVel));
+    gmacThreadSynchronize();
 
     gmacMemcpy(currPos, newPos, sizeof(float4) * numBodies);
     gmacMemcpy(currVel, newVel, sizeof(float4) * numBodies);
-    gmacThreadSynchronize();
     return 0;
 }
 
