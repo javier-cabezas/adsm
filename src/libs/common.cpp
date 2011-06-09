@@ -1,3 +1,5 @@
+#include "config/order.h"
+
 #include "libs/common.h"
 
 #include "util/Atomics.h"
@@ -20,22 +22,37 @@ static const char userCode = 0;
 
 static Atomic gmacInit__ = 0;
 
+static GMACLock *lock;
+
+static volatile bool gmacIsInitialized = false;
+
 CONSTRUCTOR(init);
 static void init(void)
 {
     /* Create GMAC enter lock and set GMAC as initialized */
     __impl::util::Private<const char>::init(inGmac_);
+#ifdef POSIX
+    threadInit();
+#endif
 }
     
 void enterGmac()
 {
-	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) {
+        inGmac_.set(&gmacCode);
+        initGmac();
+        gmacIsInitialized = true;
+        inGmac_.set(&userCode);
+    } else {
+        while (!gmacIsInitialized);
+    }
     inGmac_.set(&gmacCode);
 }
 
 
 void enterGmacExclusive()
 {
+	if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
     inGmac_.set(&gmacCode);
 }
 
