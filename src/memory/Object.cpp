@@ -35,10 +35,6 @@ gmacError_t Object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
     return ret;
 }
 
-#if 0
-gmacError_t Object::memoryOp(Protocol::MemoryOp op, core::IOBuffer &buffer, size_t size,
-                                                         size_t bufferOffset, size_t objectOffset) const
-#endif
 gmacError_t Object::memoryOp(Protocol::MemoryOp op,
                              core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
