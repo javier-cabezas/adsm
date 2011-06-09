@@ -110,11 +110,24 @@ target_link_libraries(eclMatrixMul gmac-hpe)
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)
 if(USE_OPENGL)
+    set(GL_LIBRARY "/usr/lib" CACHE PATH "GL Library Files")
+    set(GLU_LIBRARY "/usr/lib" CACHE PATH "GLU Library Files")
+    set(GLUT_LIBRARY "/usr/lib" CACHE PATH "GLUT Library Files")
+    set(GLEW_LIBRARY "/usr/lib" CACHE PATH "GLEW Library Files")
+    find_library(gl_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}GL${CMAKE_SHARED_LIBRARY_SUFFIX})
+    find_library(glu_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}GLU${CMAKE_SHARED_LIBRARY_SUFFIX})
+    find_library(glut_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}glut${CMAKE_SHARED_LIBRARY_SUFFIX}
+        HINTS ${GLUT_LIBRARY} ${OPENCL_LIBRARY} ENV "OPENCL_LIBRARY_PATH")
+    find_library(glew_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}GLEW${CMAKE_SHARED_LIBRARY_SUFFIX}
+        HINTS ${GLEW_LIBRARY} ${OPENCL_LIBRARY} ENV "OPENCL_LIBRARY_PATH")
+
+    set(opengl_LIBS ${gl_LIB} ${glu_LIB} ${glut_LIB} ${glew_LIB})
+    message(STATUS "OpenGL Libraries: ${opengl_LIBS}")
     add_executable(eclNBody ${common_SRC} NBody_GMAC/NBody.h NBody_GMAC/NBody.cpp)
-    target_link_libraries(eclNBody gmac-hpe "-lGLU -lglut  -lGLEW")
+    target_link_libraries(eclNBody gmac-hpe ${opengl_LIBS})
 
     add_executable(oclNBody ${common_SRC} NBody/NBody.h NBody/NBody.cpp)
-    target_link_libraries(oclNBody ${opencl_LIB} ${thread_LIB} "-lGLU -lglut  -lGLEW")
+    target_link_libraries(oclNBody ${opencl_LIB} ${thread_LIB} ${opengl_LIBS})
 
     file(COPY NBody/NBody_Kernels.cl DESTINATION ${PROJECT_BINARY_DIR})
 endif(USE_OPENGL)

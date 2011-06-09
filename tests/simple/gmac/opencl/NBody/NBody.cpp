@@ -99,6 +99,8 @@ jurisdiction and venue of these courts.
 
 #include "NBody.h"
 
+#include "utils.h"
+
 int numBodies;      /**< No. of particles*/
 cl_float* pos;      /**< Output position */
 void* me;           /**< Pointing to NBody class */
@@ -258,12 +260,9 @@ NBody::setupCL()
     // Read data as a block
     in.read(source,length);
     source[length] = '\0';
-    std::cout << source << std::endl << length << std::endl;
     in.close();
 
     const char *constSrc = source;
-
-    std::cout << constSrc << std::endl << length << std::endl;
 
     program = clCreateProgramWithSource(context, 1, &constSrc, &length, &status);
     assert(status == CL_SUCCESS);
@@ -275,7 +274,6 @@ NBody::setupCL()
     
     /* get a kernel object handle for a kernel with the given name */
     kernel = clCreateKernel(program, "nbody_sim", &status);
-    printf("%d\n", status);
     assert(status == CL_SUCCESS);
 
     delete [] source;
@@ -440,7 +438,8 @@ reShape(int w,int h)
 */
 void displayfunc()
 {
-    t1 = clock() * CLOCKS_PER_SEC;
+    gmactime_t s, t;
+    getTime(&s);
     frameCount++;
 
     glClearColor(0.0 ,0.0, 0.0, 0.0);
@@ -468,17 +467,16 @@ void displayfunc()
     glFlush();
     glutSwapBuffers();
 
-    t2 = clock() * CLOCKS_PER_SEC;
-    totalElapsedTime += (double)(t2 - t1);
-    if(frameCount && frameCount > frameRefCount) {
+    getTime(&t);
+    totalElapsedTime += (getTimeStamp(t) - getTimeStamp(s)); //(double)(t2 - t1);
+    if(frameCount > frameRefCount) {
         // set GLUT Window Title
         char title[256];
-        double fMs = (double)((totalElapsedTime / (double)CLOCKS_PER_SEC) / (double) frameCount);
-        int framesPerSec = (int)(1.0 / (fMs / CLOCKS_PER_SEC));
+        int framesPerSec = (int)(frameCount / (totalElapsedTime / 1e6));
 #if defined (_WIN32) && !defined(__MINGW32__)
         sprintf_s(title, 256, "OpenCL NBody | %d fps ", framesPerSec);
 #else 
-        sprintf(title, "OpenCL NBody | %d fps ", framesPerSec);
+        sprintf(title, "OpenCL NBody | %d fps", framesPerSec);
 #endif
         glutSetWindowTitle(title);
         frameCount = 0;
