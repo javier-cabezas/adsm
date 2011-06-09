@@ -156,6 +156,18 @@ Accelerator::getCLContext()
     return ctx_;
 }
 
+inline unsigned
+Accelerator::getMajor() const
+{
+    return major_;
+}
+
+inline unsigned
+Accelerator::getMinor() const
+{
+    return minor_;
+}
+
 }}}
 
 #endif

@@ -401,6 +401,18 @@ public:
      */
     gmacError_t execute(KernelLaunch &launch);
 
+    /**
+     * Return OpenCL major number
+     * \return OpenCL major number
+     */
+    unsigned getMajor() const;
+
+    /**
+     * Return OpenCL minor number
+     * \return OpenCL minor number
+     */
+    unsigned getMinor() const;
+
 
     /* core/hpe/Accelerator.h Interface */
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);

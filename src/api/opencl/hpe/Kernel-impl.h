@@ -97,7 +97,8 @@ KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream
     workDim_(0),
     globalWorkOffset_(NULL),
     globalWorkSize_(NULL),
-    localWorkSize_(NULL)
+    localWorkSize_(NULL),
+    trace_(mode.getAccelerator().getMajor(), mode.getAccelerator().getMinor())
 {
     clRetainKernel(f_);
 }
