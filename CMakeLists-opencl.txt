@@ -17,7 +17,7 @@ if(USE_OPENCL)
 
     set(MAKE_CL ON)
 
-    set(GMAC_BLOCK_SIZE "4 * 1024 * 1024")
+    set(GMAC_BLOCK_SIZE "512 * 1024")
 
     set(GMAC_HEADERS ${GMAC_HEADERS} 
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl

@@ -298,9 +298,11 @@ public:
      * \param mem Reference to store the cl_mem descriptor of the buffer
      * \param addr Reference to store the host address of the OpenCL buffer
      * \param size Size (in bytes) of the memory to be allocated
+     * \param prot Tells wether the CL Buffer is going to be read or written
+     * from the host
      * \return Error code
      */
-    gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size);
+    gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtection prot);
 
     /**
      * Release pinned accelerator-accessible host memory

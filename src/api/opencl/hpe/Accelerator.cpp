@@ -515,7 +515,7 @@ Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 }
 
 gmacError_t
-Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
+Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
@@ -523,18 +523,25 @@ Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size)
     if (clMem_.getCLMem(size, mem, addr)) {
         goto exit;
     }
-    if (cmd_.empty() == true) createCLstream();
+    ASSERTION(cmd_.empty() == false);
 
     // Get a memory object in the host memory
     mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-            size, NULL, &ret);
+                         size, NULL, &ret);
     if(ret == CL_SUCCESS) {
         stream_t stream = cmd_.front();
         // Get the host pointer for the memory object
+        cl_int flags;
+        if (prot == GMAC_PROT_WRITE) {
+            flags = CL_MAP_WRITE;
+        } else {
+            flags = CL_MAP_WRITE | CL_MAP_READ;
+        }
         lock();
         addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_TRUE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);
+                                             flags, 0, size, 0, NULL, NULL, &ret);
         unlock();
+
         // Insert the object in the allocation map for the accelerator
         if(ret != CL_SUCCESS) clReleaseMemObject(mem);
     }
