@@ -67,6 +67,13 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
 #else
 #endif
+
+#if defined(USE_TRACE)
+    ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
+    ASSERT(ret == CUDA_SUCCESS);
+    ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
+    ASSERT(ret == CUDA_SUCCESS);
+#endif
 }
 
 Accelerator::~Accelerator()
@@ -81,6 +88,11 @@ Accelerator::~Accelerator()
     popContext();
     CUresult ret = cuCtxDestroy(ctx_);
     ASSERTION(ret == CUDA_SUCCESS);
+#endif
+
+#if defined(USE_TRACE)
+    cuEventDestroy(start_);
+    cuEventDestroy(end_);
 #endif
 }
 

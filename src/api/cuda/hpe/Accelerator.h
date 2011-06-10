@@ -102,6 +102,10 @@ protected:
 #endif
     AcceleratorLock mutex_;
 
+#if defined(USE_TRACE)
+    CUevent start_, end_;
+#endif
+
     void pushContext() const;
     void popContext() const;
 
