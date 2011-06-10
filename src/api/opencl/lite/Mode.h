@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -34,6 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_OPENCL_LITE_MODE_H_
 #define GMAC_API_OPENCL_LITE_MODE_H_
 
+#include <CL/cl.h>
+
+#include <map>
+#include <set>
+
 #include "config/common.h"
 #include "config/config.h"
 
@@ -44,13 +49,8 @@ WITH THE SOFTWARE.  */
 #include "util/Atomics.h"
 #include "util/Private.h"
 
-#include <CL/cl.h>
-
-#include <map>
-#include <set>
-
 namespace __impl {
-    
+
 namespace core {
 class IOBuffer;
 }
@@ -77,7 +77,7 @@ class GMAC_LOCAL Mode :
     public core::Mode,
     public gmac::util::Lock
 {
-	friend class core::IOBuffer;
+        friend class core::IOBuffer;
     friend class ModeMap;
 protected:
     cl_context context_;
@@ -154,7 +154,7 @@ public:
      */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
-    //! Release GPU-accessible host memory 
+    //! Release GPU-accessible host memory
     /*!
         \param addr Starting address of the host memory to be released
         \return Error code
@@ -178,12 +178,15 @@ public:
     gmacError_t unmap(hostptr_t addr, size_t size);
 
 
-    //! Create an IO buffer to sent / receive data from the accelerator
-    /*!
-        \param size Size (in bytes) of the IO buffer
-        \return Pointer to the created I/O buffer or NULL if not enough memory
-    */
-    core::IOBuffer &createIOBuffer(size_t size);
+    /** Create an IO buffer to sent / receive data from the accelerator
+     *
+     * \param size Size (in bytes) of the IO buffer
+     * \param prot Tells whether the requested buffer is going to be read or
+     * written on the host
+     *
+     * \return Pointer to the created I/O buffer or NULL if not enough memory
+     */
+    core::IOBuffer &createIOBuffer(size_t size, GmacProtection prot);
 
     //! Destroy (release) an I/O buffer
     /*!
@@ -231,12 +234,12 @@ public:
      */
     static Mode & getCurrent();
 
-	/**
-	 * Get the time elapsed between tow events
-	 * \param t Reference to store the elapsed time
-	 * \param start Starting event
-	 * \param end Ending event
-	 */
+        /**
+         * Get the time elapsed between tow events
+         * \param t Reference to store the elapsed time
+         * \param start Starting event
+         * \param end Ending event
+         */
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 
     /**

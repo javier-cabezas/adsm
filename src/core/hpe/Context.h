@@ -68,8 +68,9 @@ protected:
     stream_t streamAccelerator_;
 
 
-    /** I/O buffer used by the context for data transfers */
-    IOBuffer *buffer_;
+    /** I/O buffers used by the context for data transfers */
+    IOBuffer *bufferWrite_;
+    IOBuffer *bufferRead_;
 
     /**
      * Constructs a context for the calling thread on the given accelerator

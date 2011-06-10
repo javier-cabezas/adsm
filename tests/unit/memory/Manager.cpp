@@ -148,7 +148,7 @@ TEST_F(ManagerTest, IOBufferWrite)
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
 
-    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_);
+    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     for(size_t n = 0; n < 16; n++) {
 	    for(size_t s = 0; s < Size_; s++) {
@@ -179,7 +179,7 @@ TEST_F(ManagerTest, IOBufferRead)
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
 
-    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_);
+    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     for(size_t n = 0; n < 16; n++) {
 	    for(size_t s = n * 128; s < Size_; s++) {

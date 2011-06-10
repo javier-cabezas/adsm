@@ -20,7 +20,7 @@ Mode::~Mode()
     getAccelerator().destroyCLstream(streamLaunch_);
 }
 
-core::IOBuffer &Mode::createIOBuffer(size_t size)
+core::IOBuffer &Mode::createIOBuffer(size_t size, GmacProtection prot)
 {
     IOBuffer *ret;
     hostptr_t addr(NULL);
@@ -28,9 +28,9 @@ core::IOBuffer &Mode::createIOBuffer(size_t size)
     gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size);
     if(err != gmacSuccess) {
         addr = hostptr_t(::malloc(size));
-        ret = new IOBuffer(*this, addr, size, NULL);
+        ret = new IOBuffer(*this, addr, size, NULL, GMAC_PROT_READWRITE);
     } else {
-        ret = new IOBuffer(*this, addr, size, mem);
+        ret = new IOBuffer(*this, addr, size, mem, GMAC_PROT_READWRITE);
     }
     return *ret;
 }

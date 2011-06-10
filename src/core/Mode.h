@@ -94,6 +94,13 @@ protected:
     virtual ~Mode();
 
 public:
+    /** Allocate GPU-accessible host memory
+     *
+     *  \param addr Pointer of the memory to be mapped to the accelerator
+     *  \param size Size (in bytes) of the host memory to be mapped
+     *  \return Error code
+     */
+    virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
 
     /**
      * Gets a reference to the memory protocol used by the mode
@@ -220,14 +227,6 @@ public:
      */
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
 
-    /** Allocate GPU-accessible host memory
-     *
-     *  \param addr Pointer of the memory to be mapped to the accelerator
-     *  \param size Size (in bytes) of the host memory to be mapped
-     *  \return Error code
-     */
-    virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
-
     /** Release GPU-accessible host memory
      *
      *  \param addr Starting address of the host memory to be released
@@ -291,10 +290,12 @@ public:
     /**
      * Creates an IOBuffer
      * \param size Minimum size of the buffer
+     * \param prot Tells whether the requested buffer is going to be read or
+     * written on the host
      * \return A pointer to the created IOBuffer or NULL if there is not enough
      *         memory
      */
-    virtual IOBuffer &createIOBuffer(size_t size) = 0;
+    virtual IOBuffer &createIOBuffer(size_t size, GmacProtection prot) = 0;
 
     /**
      * Destroys an IOBuffer

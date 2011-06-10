@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -47,22 +47,25 @@ class GMAC_LOCAL IOBuffer :
 
 
 public:
-    typedef enum { Idle, ToHost, ToAccelerator } State;
+    enum State { Idle, ToHost, ToAccelerator };
+
 protected:
     void *addr_;
     size_t size_;
     bool async_;
-
     State state_;
+    GmacProtection prot_;
 
     /**
-     * Constructor of the buffer 
+     * Constructor of the buffer
      *
      * \param addr A pointer to the address to be used by the buffer
      * \param size The size of the buffer
-     * \param async Indicates if the buffer can be used in asynchronous transfers
+     * \param async Indicates if the buffer can be used in asynchronous
+     * transfers
+     * \param prot Tells if the buffer is going to be read or written in the host
      */
-    IOBuffer(void *addr, size_t size, bool async);
+    IOBuffer(void *addr, size_t size, bool async, GmacProtection prot);
 public:
     /**
      * Destructor of the buffer
@@ -113,6 +116,8 @@ public:
      * \return gmacSuccess on success. An error code otherwise
      */
     virtual gmacError_t wait(bool internal = false) = 0;
+
+    GmacProtection getProtection() const;
 };
 
 }}
@@ -121,7 +126,7 @@ public:
 
 #ifdef USE_DBC
 #include "core/dbc/IOBuffer.h"
-#endif 
+#endif
 
 #endif
 

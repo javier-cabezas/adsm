@@ -4,8 +4,8 @@
 namespace __impl { namespace core {
 
 inline
-IOBuffer::IOBuffer(void *addr, size_t size, bool async) :
-    addr_(addr), size_(size), async_(async), state_(Idle)
+IOBuffer::IOBuffer(void *addr, size_t size, bool async, GmacProtection prot) :
+    addr_(addr), size_(size), async_(async), state_(Idle), prot_(prot)
 {
 }
 
@@ -42,6 +42,12 @@ inline IOBuffer::State
 IOBuffer::state() const
 {
     return state_;
+}
+
+inline GmacProtection
+IOBuffer::getProtection() const
+{
+    return prot_;
 }
 
 }}

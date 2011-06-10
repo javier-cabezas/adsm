@@ -187,7 +187,7 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align) 
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     trace::EnterCurrentFunction();
     dst = accptr_t(0);
@@ -306,15 +306,19 @@ gmacError_t Accelerator::sync()
     return error(ret);
 }
 
-gmacError_t Accelerator::hostAlloc(hostptr_t *addr, size_t size)
+gmacError_t Accelerator::hostAlloc(hostptr_t &addr, size_t size, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
 #if CUDA_VERSION >= 2020
+    unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
+    if (prot == GMAC_PROT_WRITE) {
+        flags |= CU_MEMHOSTALLOC_WRITECOMBINED;
+    }
     pushContext();
-    CUresult ret = cuMemHostAlloc((void **) addr, size, CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP);
+    CUresult ret = cuMemHostAlloc((void **) &addr, size, flags);
     popContext();
 #else
-	CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
+        CUresult ret = CUDA_ERROR_OUT_OF_MEMORY;
 #endif
     trace::ExitCurrentFunction();
     return error(ret);

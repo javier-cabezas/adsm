@@ -122,7 +122,7 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_TRUE(object != NULL);
     mode.addObject(*object);
 
-    __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_);
+    __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     hostptr_t ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {

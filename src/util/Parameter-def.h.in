@@ -2,7 +2,7 @@
 PARAM(ParamProtocol, const char *, "Rolling", "GMAC_PROTOCOL")
 PARAM(ParamAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 //PARAM(ParamAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
-PARAM(ParamIOMemory, long_t, 16 * 1024 * 1024, "GMAC_IOMEMORY")
+PARAM(ParamIOMemory, unsigned, 16 * 1024 * 1024, "GMAC_IOMEMORY")
 PARAM(ParamAutoSync, bool, false, "GMAC_AUTOSYNC")
 
 // GMAC debug settings
@@ -20,7 +20,7 @@ PARAM(ParamBlockSize, long_t, @GMAC_BLOCK_SIZE@, "GMAC_BLOCK_SIZE", PARAM_NONZER
 PARAM(ParamMemcpyAccToAcc, bool, false, "GMAC_MEMCPY_ACCTOACC")
 
 // Rolling Manager specific settings
-PARAM(ParamRollSize, long_t, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
+PARAM(ParamRollSize, unsigned, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
 
 // Miscelaneous Parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")

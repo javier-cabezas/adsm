@@ -84,7 +84,7 @@ KernelExecution::KernelExecution(unsigned major, unsigned minor) :
 { }
 #else
 inline
-KernelExecution::KernelExecution()
+KernelExecution::KernelExecution(unsigned /*major*/, unsigned /*minor*/)
 {
 }
 #endif
