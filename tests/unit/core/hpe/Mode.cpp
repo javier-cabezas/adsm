@@ -105,7 +105,7 @@ TEST_F(ModeTest, IOBuffer) {
     ASSERT_TRUE(mem != NULL);
     memset(mem, 0x5a, Size_ * sizeof(int));
 
-    IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int));
+    IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int), GMAC_PROT_READWRITE);
     ASSERT_EQ(buffer.addr(), memcpy(buffer.addr(), mem, Size_ * sizeof(int)));
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 

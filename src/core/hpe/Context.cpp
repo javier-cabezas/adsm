@@ -15,7 +15,8 @@ Context::Context(Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator
     streamToAccelerator_(streamToAccelerator),
     streamToHost_(streamToHost),
     streamAccelerator_(streamAccelerator),
-    buffer_(NULL)
+    bufferWrite_(NULL),
+    bufferRead_(NULL)
 {
 }
 
@@ -34,27 +35,27 @@ gmacError_t Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess; /* Fast path */
     /* In case there is no page-locked memory available, use the slow path */
-    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
-    if(buffer_->async() == false) {
-        mode_.destroyIOBuffer(*buffer_);
-        buffer_ = NULL;
+    if(bufferWrite_ == NULL) bufferWrite_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize, GMAC_PROT_WRITE));
+    if(bufferWrite_->async() == false) {
+        mode_.destroyIOBuffer(*bufferWrite_);
+        bufferWrite_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         gmacError_t ret = acc_.copyToAccelerator(acc, host, size, mode_);
         trace::ExitCurrentFunction();
         return ret;
     }
-    gmacError_t ret = buffer_->wait(true);
+    gmacError_t ret = bufferWrite_->wait(true);
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
-        ret = buffer_->wait(true);
+        ret = bufferWrite_->wait(true);
         if(ret != gmacSuccess) break;
-        ptroff_t len = ptroff_t(buffer_->size());
-        if((size - offset) < buffer_->size()) len = ptroff_t(size - offset);
+        ptroff_t len = ptroff_t(bufferWrite_->size());
+        if((size - offset) < bufferWrite_->size()) len = ptroff_t(size - offset);
         trace::EnterCurrentFunction();
-        ::memcpy(buffer_->addr(), host + offset, len);
+        ::memcpy(bufferWrite_->addr(), host + offset, len);
         trace::ExitCurrentFunction();
         ASSERTION(size_t(len) <= util::params::ParamBlockSize);
-        ret = acc_.copyToAcceleratorAsync(acc + offset, *buffer_, 0, len, mode_, streamToAccelerator_);
+        ret = acc_.copyToAcceleratorAsync(acc + offset, *bufferWrite_, 0, len, mode_, streamToAccelerator_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
         offset += len;
@@ -68,38 +69,34 @@ gmacError_t Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.get(), host);
     trace::EnterCurrentFunction();
     if(size == 0) return gmacSuccess;
-    if(buffer_ == NULL) buffer_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize));
-    if(buffer_->async() == false) {
-        mode_.destroyIOBuffer(*buffer_);
-        buffer_ = NULL;
+    if(bufferRead_ == NULL) bufferRead_ = &static_cast<IOBuffer &>(mode_.createIOBuffer(util::params::ParamBlockSize, GMAC_PROT_READ));
+    if(bufferRead_->async() == false) {
+        mode_.destroyIOBuffer(*bufferRead_);
+        bufferRead_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         gmacError_t ret = acc_.copyToHost(host, acc, size, mode_);
         trace::ExitCurrentFunction();
         return ret;
     }
 
-    gmacError_t ret = buffer_->wait(true);
+    gmacError_t ret = bufferRead_->wait(true);
     if(ret != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
-        ptroff_t len = ptroff_t(buffer_->size());
-        if((size - offset) < buffer_->size()) len = ptroff_t(size - offset);
-        ret = acc_.copyToHostAsync(*buffer_, 0, acc + offset, len, mode_, streamToHost_);
+        ptroff_t len = ptroff_t(bufferRead_->size());
+        if((size - offset) < bufferRead_->size()) len = ptroff_t(size - offset);
+        ret = acc_.copyToHostAsync(*bufferRead_, 0, acc + offset, len, mode_, streamToHost_);
         ASSERTION(ret == gmacSuccess);
         if(ret != gmacSuccess) break;
-        ret = buffer_->wait(true);
+        ret = bufferRead_->wait(true);
         if(ret != gmacSuccess) break;
         trace::EnterCurrentFunction();
-        ::memcpy((uint8_t *)host + offset, buffer_->addr(), len);
+        ::memcpy((uint8_t *)host + offset, bufferRead_->addr(), len);
         trace::ExitCurrentFunction();
         offset += len;
     }
     trace::ExitCurrentFunction();
     return ret;
 }
-
-
-
-
 
 }}}

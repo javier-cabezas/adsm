@@ -53,10 +53,10 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = getMode(*dstMode);
-    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
-        buffer2 = &mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     }
 
     Manager &manager = getManager();
@@ -119,10 +119,10 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t off = 0;
     size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
     Mode &mode = getMode(*srcMode);
-    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     IOBuffer *buffer2 = NULL;
     if (n > buffer1->size()) {
-        buffer2 = &mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     }
 
     Manager &manager = getManager();

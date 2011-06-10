@@ -172,7 +172,7 @@ public:
 
     gmacError_t sync();
 
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size, GmacProtection prot);
     gmacError_t hostFree(hostptr_t addr);
     accptr_t hostMap(const hostptr_t addr);
 

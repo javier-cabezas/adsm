@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -88,7 +88,7 @@ public:
  */
 class GMAC_LOCAL Mode : public virtual core::Mode {
     DBC_FORCE_TEST(Mode)
-    friend class ContextMap;    
+    friend class ContextMap;
     friend class Accelerator;
 protected:
     Process &proc_;
@@ -100,9 +100,6 @@ protected:
     stream_t streamToHost_;
     stream_t streamToAccelerator_;
     stream_t streamLaunch_;
-
-    allocator::Buddy *ioMemory_;
-
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;
 #endif
@@ -258,14 +255,6 @@ public:
     gmacError_t wait();
 
     /**
-     * Creates an IOBuffer
-     * \param size Minimum size of the buffer
-     * \return A pointer to the created IOBuffer or NULL if there is not enough
-     *         memory
-     */
-    virtual IOBuffer &createIOBuffer(size_t size) = 0;
-
-    /**
      * Destroys an IOBuffer
      * \param buffer Pointer to the buffer to be destroyed
      */
@@ -345,7 +334,7 @@ public:
 #endif
 
     gmacError_t prepareForCall();
-    
+
     stream_t eventStream();
 };
 

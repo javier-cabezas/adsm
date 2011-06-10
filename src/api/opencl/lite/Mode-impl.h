@@ -18,7 +18,7 @@ inline
 void QueueSet::insert(cl_command_queue queue)
 {
     lockWrite();
-    Parent::insert(queue); 
+    Parent::insert(queue);
     unlock();
 }
 
@@ -76,11 +76,11 @@ accptr_t Mode::hostMapAddr(const hostptr_t)
 
 
 inline
-core::IOBuffer &Mode::createIOBuffer(size_t size)
+core::IOBuffer &Mode::createIOBuffer(size_t size, GmacProtection prot)
 {
     core::IOBuffer *ret;
     void *addr = ::malloc(size);
-    ret = new IOBuffer(*this, hostptr_t(addr), size, NULL);
+    ret = new IOBuffer(*this, hostptr_t(addr), size, NULL, prot);
     return *ret;
 }
 
@@ -102,7 +102,7 @@ inline
 gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
 {
     gmacError_t ret = gmacSuccess;
-    return ret; 
+    return ret;
 }
 
 inline

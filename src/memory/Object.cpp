@@ -86,11 +86,11 @@ Object::memcpyToObject(core::Mode &mode, size_t objOffset, const hostptr_t src, 
     size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
 
     size_t bufSize = size < blockSize()? size: blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_WRITE);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_WRITE);
     } else {
         passive = NULL;
     }
@@ -213,11 +213,11 @@ Object::memcpyObjectToObject(core::Mode &mode,
     size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
 
     size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_READWRITE);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_READWRITE);
     } else {
         passive = NULL;
     }
@@ -310,11 +310,11 @@ Object::memcpyFromObject(core::Mode &mode, hostptr_t dst,
     size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
 
     size_t bufSize = size < blockSize()? size: blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_READ);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_READ);
     } else {
         passive = NULL;
     }
