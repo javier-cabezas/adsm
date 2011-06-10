@@ -7,6 +7,7 @@
 #include "trace/Tracer.h"
 
 #include "api/cuda/IOBuffer.h"
+#include "api/cuda/hpe/Mode.h"
 
 namespace __impl { namespace cuda { namespace hpe {
 
@@ -37,7 +38,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     pushContext();
     CUresult ret = CUDA_SUCCESS;
 #if USE_TRACE
-    ret = cuEventRecord(start, 0);
+    ret = cuEventRecord(start_, 0);
     ASSERTION(ret == CUDA_SUCCESS);
     trace::SetThreadState(trace::Wait);
 #endif
@@ -47,10 +48,10 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
 #endif
 #if USE_TRACE
-    ret = cuEventRecord(end, 0);
-    ret = cuEventSynchronize(end);
+    ret = cuEventRecord(end_, 0);
+    ret = cuEventSynchronize(end_);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(mode, start_, end_, size);
+    DataCommToAccelerator(dynamic_cast<Mode &>(mode), start_, end_, size);
 #endif
     popContext();
     trace::SetThreadState(trace::Running);
@@ -87,22 +88,23 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
     TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
     trace::SetThreadState(trace::Wait);
     pushContext();
+    CUresult ret;
 #if USE_TRACE
-    ret = cuEventRecord(start, 0);
+    ret = cuEventRecord(start_, 0);
     ASSERTION(ret == CUDA_SUCCESS);
     trace::SetThreadState(trace::Wait);
 #endif
 
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoH(host, acc, size);
+    ret = cuMemcpyDtoH(host, acc, size);
 #else
-        CUresult ret = cuMemcpyDtoH(host, acc, unsigned(size));
+    ret = cuMemcpyDtoH(host, acc, unsigned(size));
 #endif
 #if USE_TRACE
-    ret = cuEventRecord(end, 0);
-    ret = cuEventSynchronize(end);
+    ret = cuEventRecord(end_, 0);
+    ret = cuEventSynchronize(end_);
     trace::SetThreadState(trace::Running);
-    DataCommToHost(mode, start_, end_, size);
+    DataCommToHost(dynamic_cast<Mode &>(mode), start_, end_, size);
 #endif
 
     popContext();
@@ -132,15 +134,15 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
 }
 
 inline
-gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t /*stream*/)
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
 {
     trace::EnterCurrentFunction();
     TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoD(dst, src, size);
+    CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
 #else
-    CUresult ret = cuMemcpyDtoD(dst, src, unsigned(size));
+    CUresult ret = cuMemcpyDtoDAsync(dst, src, unsigned(size), stream);
 #endif
     popContext();
     trace::ExitCurrentFunction();

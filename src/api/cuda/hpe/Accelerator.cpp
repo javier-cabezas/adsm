@@ -70,9 +70,9 @@ Accelerator::Accelerator(int n, CUdevice device) :
 
 #if defined(USE_TRACE)
     ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
-    ASSERT(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
     ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
-    ASSERT(ret == CUDA_SUCCESS);
+    ASSERTION(ret == CUDA_SUCCESS);
 #endif
 }
 
