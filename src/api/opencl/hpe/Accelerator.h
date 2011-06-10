@@ -142,9 +142,6 @@ public:
     /** Constructs a pool of OpenCL buffers */
     CLBufferPool();
 
-    /** Releases the OpenCL buffers in the pool */
-    ~CLBufferPool();
-
     /**
      * Gets an OpenCL buffer from the pool
      *
@@ -164,6 +161,9 @@ public:
      * \param addr Host address of the buffer
      */
     void putCLMem(size_t size, cl_mem mem, hostptr_t addr);
+
+    /** Releases the OpenCL buffers in the pool */
+    void cleanUp(stream_t stream);
 };
 
 /** An OpenCL capable accelerator */

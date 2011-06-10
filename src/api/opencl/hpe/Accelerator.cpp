@@ -18,7 +18,8 @@ extern "C" {
 
 namespace __impl { namespace opencl { namespace hpe {
 
-CLBufferPool::~CLBufferPool()
+void
+CLBufferPool::cleanUp(stream_t stream)
 {
     CLMemMap::iterator it;
 
@@ -27,10 +28,12 @@ CLBufferPool::~CLBufferPool()
         CLMemList list = it->second;
         for (jt = list.begin(); jt != list.end(); jt++) {
             cl_int ret;
+            clEnqueueUnmapMemObject(stream, jt->first, jt->second, 0, NULL, NULL);
             ret = clReleaseMemObject(jt->first);
             ASSERTION(ret == CL_SUCCESS);
         }
     }
+
 }
 
 bool
@@ -110,6 +113,10 @@ Accelerator::~Accelerator()
         ASSERTION(ret == CL_SUCCESS);
     }
     unlock();
+    stream_t tmpStream = createCLstream();
+    clMemWrite_.cleanUp(tmpStream);
+    clMemRead_.cleanUp(tmpStream);
+    destroyCLstream(tmpStream);
     Accelerators_->erase(this);
     if(Accelerators_->empty()) {
         delete Accelerators_;
