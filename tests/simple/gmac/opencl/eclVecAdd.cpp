@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
 
     getTime(&S);
     getTime(&s);
-    randInitMax(a, 1.f, vecSize);
-    randInitMax(b, 1.f, vecSize);
+    randInitMax(a, 10.f, vecSize);
+    randInitMax(b, 10.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
