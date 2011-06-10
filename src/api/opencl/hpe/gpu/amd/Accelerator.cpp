@@ -38,8 +38,14 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
         ret = clEnqueueCopyBuffer(stream, mem, acc.get(), bufferOff,
                 acc.offset(), count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to accelerator: %d", ret);
+        cl_int flags;
+        if (buffer.getProtection() == GMAC_PROT_WRITE) {
+            flags = CL_MAP_WRITE;
+        } else {
+            flags = CL_MAP_READ | CL_MAP_WRITE;
+        }
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
+                                                       flags, 0, buffer.size(), 0, NULL, &end, &err);
         ASSERTION(err == CL_SUCCESS);
         unlock();
 
@@ -90,8 +96,14 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
         ret = clEnqueueCopyBuffer(stream, acc.get(), mem,
                 acc.offset(), bufferOff, count, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
+        cl_int flags;
+        if (buffer.getProtection() == GMAC_PROT_WRITE) {
+            flags = CL_MAP_WRITE;
+        } else {
+            flags = CL_MAP_READ | CL_MAP_WRITE;
+        }
         hostptr_t addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_FALSE,
-                CL_MAP_READ | CL_MAP_WRITE, 0, buffer.size(), 0, NULL, &end, &err);
+                                                       flags, 0, buffer.size(), 0, NULL, &end, &err);
         unlock();
         ASSERTION(err == CL_SUCCESS);
 

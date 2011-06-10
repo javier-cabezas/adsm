@@ -40,25 +40,25 @@ IOBuffer::toAccelerator(Mode &mode)
 inline void
 IOBuffer::started(cl_event event, size_t size)
 {
-        started(event, event, size);
+    started(event, event, size);
 }
 
 inline void
 IOBuffer::started(cl_event start, cl_event end, size_t size)
 {
-        TRACE(LOCAL,"Buffer %p starts", this);
+    TRACE(LOCAL,"Buffer %p starts", this);
     ASSERTION(started_ == false);
     ASSERTION(mode_ != NULL);
     start_ = start;
-        event_ = end;
+    event_ = end;
     started_ = true;
-        last_ = size;
+    last_ = size;
 }
 
 inline gmacError_t
 IOBuffer::wait(bool internal)
 {
-        TRACE(LOCAL,"Buffer %p waits: %d", this, state_ == Idle || started_ == true);
+    TRACE(LOCAL,"Buffer %p waits: %d", this, state_ == Idle || started_ == true);
     ASSERTION(state_ == Idle || started_ == true);
 
     gmacError_t ret = gmacSuccess;

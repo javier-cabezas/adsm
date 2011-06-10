@@ -25,12 +25,12 @@ core::IOBuffer &Mode::createIOBuffer(size_t size, GmacProtection prot)
     IOBuffer *ret;
     hostptr_t addr(NULL);
     cl_mem mem;
-    gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size);
+    gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size, prot);
     if(err != gmacSuccess) {
         addr = hostptr_t(::malloc(size));
-        ret = new IOBuffer(*this, addr, size, NULL, GMAC_PROT_READWRITE);
+        ret = new IOBuffer(*this, addr, size, NULL, prot);
     } else {
-        ret = new IOBuffer(*this, addr, size, mem, GMAC_PROT_READWRITE);
+        ret = new IOBuffer(*this, addr, size, mem, prot);
     }
     return *ret;
 }
