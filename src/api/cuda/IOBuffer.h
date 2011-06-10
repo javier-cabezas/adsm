@@ -42,10 +42,6 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/ReusableObject.h"
 
-//include "core/dbc/IOBuffer.h"
-//using  __impl::core::IOBuffer;
-//using gmac::core::IOBuffer;
-
 namespace __impl { namespace cuda {
 
 class Mode;
@@ -62,11 +58,13 @@ protected:
     typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
     EventMap map_;
 
+    size_t xfer_;
+    bool started_;
 public:
     IOBuffer(void *addr, size_t size, bool async) :
         gmac::core::IOBuffer(addr, size, async),
         __impl::util::ReusableObject<IOBuffer>(),
-        mode_(NULL)
+        mode_(NULL), started_(false)
     {
     }
 
@@ -82,7 +80,7 @@ public:
     void toHost(Mode &mode, CUstream s);
     void toAccelerator(Mode &mode, CUstream s);
 
-    void started();
+    void started(size_t size);
 
     gmacError_t wait(bool internal = false);
 };

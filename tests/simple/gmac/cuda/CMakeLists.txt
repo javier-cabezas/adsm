@@ -10,6 +10,7 @@ string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacAlloc.cu
     gmacVecAdd.cu
+    cudaVecAdd.cu
     gmacThreadVecAdd.cu
     cudaThreadVecAdd.cu
     gmacThreading.cu
@@ -57,6 +58,11 @@ target_link_libraries(gmacAlloc test-common test-common gmac-cuda)
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd}  gmacVecAdd.cu)
 target_link_libraries(gmacVecAdd test-common test-common gmac-cuda)
+
+# cudaVecAdd
+cuda_compile(vecAdd cudaVecAdd.cu)
+add_executable(cudaVecAdd ${vecAdd} cudaVecAdd.cu)
+target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY})
 
 # gmacThreadVecAdd
 cuda_compile(threadVecAdd gmacThreadVecAdd.cu)
