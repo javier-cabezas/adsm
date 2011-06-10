@@ -155,6 +155,7 @@ Mode::prepareForCall()
     switchIn();
     trace::SetThreadState(trace::Wait);
     gmacError_t ret = acc_->syncStream(streamToAccelerator_);
+    if (ret == gmacSuccess) ret = acc_->syncStream(streamToHost_);
     trace::SetThreadState(trace::Idle);
     switchOut();
     return ret;
