@@ -472,9 +472,9 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
+    CUresult ret = cuMemcpyDtoD(dst, src, size);
 #else
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, unsigned(size), stream);
+    CUresult ret = cuMemcpyDtoD(dst, src, unsigned(size));
 #endif
     popContext();
     trace::ExitCurrentFunction();
