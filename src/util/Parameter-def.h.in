@@ -17,7 +17,7 @@ PARAM(ParamTrace, const char *, "trace", "GMAC_TRACE")
 PARAM(ParamBlockSize, long_t, @GMAC_BLOCK_SIZE@, "GMAC_BLOCK_SIZE", PARAM_NONZERO)
 
 // GMAC Memcpy settings
-PARAM(ParamMemcpyAccToAcc, bool, false, "GMAC_MEMCPY_ACCTOACC")
+PARAM(ParamMemcpyAccToAcc, bool, true, "GMAC_MEMCPY_ACCTOACC")
 
 // Rolling Manager specific settings
 PARAM(ParamRollSize, unsigned, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)

@@ -358,11 +358,19 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
         ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
         break;
     case lazy::ReadOnly:
+#ifdef USE_OPENCL
         // WARNING: copying to host first because the IOBuffer address can change in copyToAccelerator
         // if we do not wait
         ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
         if(ret != gmacSuccess) break;
         ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+        if(ret != gmacSuccess) break;
+#else
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+        if(ret != gmacSuccess) break;
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
+        if(ret != gmacSuccess) break;
+#endif
         /* block.setState(lazy::Invalid); */
         break;
     case lazy::Dirty:
@@ -461,17 +469,17 @@ LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffse
                                 lazy::Block::HOST,
                                 lazy::Block::ACCELERATOR);
     } else if (src.getState() == lazy::Dirty && dst.getState() == lazy::ReadOnly) {
-        TRACE(LOCAL, "D -> R");
-        // host-to-host
-        ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
-                          lazy::Block::HOST,
-                          lazy::Block::HOST);
         // host-to-acc
         if (ret == gmacSuccess) {
             ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
                                     lazy::Block::HOST,
                                     lazy::Block::ACCELERATOR);
         }
+        TRACE(LOCAL, "D -> R");
+        // host-to-host
+        ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
+                          lazy::Block::HOST,
+                          lazy::Block::HOST);
     } else if (src.getState() == lazy::ReadOnly && dst.getState() == lazy::Dirty) {
         TRACE(LOCAL, "R -> D");
         // host-to-host

@@ -161,7 +161,7 @@ gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
     switchIn();
-    error_ = acc_->copyAccelerator(dst, src, size, streamToAccelerator_);
+    error_ = acc_->copyAccelerator(dst, src, size, streamToHost_);
     switchOut();
     return error_;
 }
