@@ -62,13 +62,16 @@ IOBuffer::toAccelerator(Mode &mode, CUstream s)
 }
 
 inline void
-IOBuffer::started()
+IOBuffer::started(size_t size)
 {
     EventMap::iterator it;
     it = map_.find(mode_);
+    ASSERTION(started_ == false);
     ASSERTION(state_ != Idle && it != map_.end());
     CUresult ret = cuEventRecord(it->second.second, stream_);
     ASSERTION(ret == CUDA_SUCCESS);
+    started_ = true;
+    xfer_ = size;
 }
 
 }}

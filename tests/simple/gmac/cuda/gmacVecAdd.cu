@@ -14,8 +14,6 @@ const size_t vecSizeDefault = 16 * 1024 * 1024;
 size_t vecSize = 0;
 const size_t blockSize = 512;
 
-const char *msg = "Done!";
-
 __global__ void vecAdd(float *c, float *a, float *b, size_t size)
 {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -40,25 +38,20 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
-    begin = s;
     // Alloc & init input data
-    if(gmacMalloc((void **)&a, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
-    if(gmacMalloc((void **)&b, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    assert(gmacMalloc((void **)&a, vecSize * sizeof(float)) == gmacSuccess);
+    assert(gmacMalloc((void **)&b, vecSize * sizeof(float)) == gmacSuccess);
     // Alloc output data
-    if(gmacMalloc((void **)&c, vecSize * sizeof(float)) != gmacSuccess)
-        CUFATAL();
+    assert(gmacMalloc((void **)&c, vecSize * sizeof(float)) == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     float sum = 0.f;
 
     getTime(&s);
-    //randInit(a, vecSize);
-    //randInit(b, vecSize);
-    init(a, int(vecSize), 1.f);
-    init(b, int(vecSize), 1.f);
+    begin = s;
+    randInitMax(a, 1.f, vecSize);
+    randInitMax(b, 1.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -72,30 +65,26 @@ int main(int argc, char *argv[])
     dim3 Dg((unsigned long)vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
     vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
-    if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+    assert(gmacThreadSynchronize() == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float error = 0;
     float check = 0;
     for(unsigned i = 0; i < vecSize; i++) {
-        error += c[i] - (a[i] + b[i]);
-        check += a[i] + b[i];
+        check += c[i];
     }
     getTime(&t);
+    end = t;
     printTime(&s, &t, "Check: ", "\n");
-    //printf("%g vs %g\n", double(sum), double(check));
-    assert(sum == check);
 
     getTime(&s);
     gmacFree(a);
     gmacFree(b);
     gmacFree(c);
     getTime(&t);
-    end = t;
     printTime(&s, &t, "Free: ", "\n");
     printTime(&begin, &end, "Total: ", "\n");
 
-    return error != 0;
+    return sum == check;
 }

@@ -63,17 +63,19 @@ Accelerator::Accelerator(int n, CUdevice device) :
 
     ret = cuCtxCreate(&ctx_, flags, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
+
+#if defined(USE_TRACE)
+    ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
+    CFATAL(ret == CUDA_SUCCESS);
+    ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
+    CFATAL(ret == CUDA_SUCCESS);
+#endif
+
     ret = cuCtxPopCurrent(&tmp);
     CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
 #else
 #endif
 
-#if defined(USE_TRACE)
-    ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
-    ASSERTION(ret == CUDA_SUCCESS);
-    ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
-    ASSERTION(ret == CUDA_SUCCESS);
-#endif
 }
 
 Accelerator::~Accelerator()
@@ -360,5 +362,175 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
     CFATAL(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();
 }
+
+gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
+    trace::SetThreadState(trace::Wait);
+    pushContext();
+    CUresult ret = CUDA_SUCCESS;
+#if USE_TRACE
+    ret = cuEventRecord(start_, 0);
+    ASSERTION(ret == CUDA_SUCCESS);
+    trace::SetThreadState(trace::Wait);
+#endif
+#if CUDA_VERSION >= 3020
+    ret = cuMemcpyHtoD(acc, host, size);
+#else
+    ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
+#endif
+#if USE_TRACE
+    ret = cuEventRecord(end_, 0);
+    ret = cuEventSynchronize(end_);
+    trace::SetThreadState(trace::Running);
+    DataCommToAccelerator(dynamic_cast<Mode &>(mode), start_, end_, size);
+#endif
+    popContext();
+    trace::SetThreadState(trace::Running);
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, CUstream stream)
+{
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
+    trace::EnterCurrentFunction();
+    uint8_t *host = buffer.addr() + bufferOff;
+    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
+    pushContext();
+
+    buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
+#if CUDA_VERSION >= 3020
+    CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
+#else
+    CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
+#endif
+    buffer.started(count);
+    popContext();
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
+    trace::SetThreadState(trace::Wait);
+    pushContext();
+    CUresult ret;
+#if USE_TRACE
+    ret = cuEventRecord(start_, 0);
+    ASSERTION(ret == CUDA_SUCCESS);
+    trace::SetThreadState(trace::Wait);
+#endif
+
+#if CUDA_VERSION >= 3020
+    ret = cuMemcpyDtoH(host, acc, size);
+#else
+    ret = cuMemcpyDtoH(host, acc, unsigned(size));
+#endif
+#if USE_TRACE
+    ret = cuEventRecord(end_, 0);
+    ret = cuEventSynchronize(end_);
+    trace::SetThreadState(trace::Running);
+    DataCommToHost(dynamic_cast<Mode &>(mode), start_, end_, size);
+#endif
+
+    popContext();
+    trace::SetThreadState(trace::Running);
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, CUstream stream)
+{
+    IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
+    trace::EnterCurrentFunction();
+    uint8_t *host = buffer.addr() + bufferOff;
+    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
+    pushContext();
+    buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
+#if CUDA_VERSION >= 3020
+    CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
+#else
+    CUresult ret = cuMemcpyDtoHAsync(host, acc, unsigned(count), stream);
+#endif
+    buffer.started(count);
+    popContext();
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
+    pushContext();
+#if CUDA_VERSION >= 3020
+    CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
+#else
+    CUresult ret = cuMemcpyDtoDAsync(dst, src, unsigned(size), stream);
+#endif
+    popContext();
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::execute(KernelLaunch &launch)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Executing KernelLaunch");
+    pushContext();
+    gmacError_t ret = launch.execute();
+    popContext();
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t Accelerator::registerMem(hostptr_t ptr, size_t size)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Executing KernelLaunch");
+    CUresult ret = cuMemHostRegister(ptr, size, CU_MEMHOSTREGISTER_PORTABLE);
+    CFATAL(ret == CUDA_SUCCESS);
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+gmacError_t Accelerator::unregisterMem(hostptr_t ptr)
+{
+    trace::EnterCurrentFunction();
+    TRACE(LOCAL,"Executing KernelLaunch");
+    pushContext();
+    CUresult ret = cuMemHostUnregister(ptr);
+    CFATAL(ret == CUDA_SUCCESS);
+    popContext();
+    trace::ExitCurrentFunction();
+    return error(ret);
+}
+
+CUstream Accelerator::createCUstream()
+{
+    trace::EnterCurrentFunction();
+    CUstream stream;
+    pushContext();
+    CUresult ret = cuStreamCreate(&stream, 0);
+    popContext();
+    CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
+    trace::ExitCurrentFunction();
+    return stream;
+}
+
+void Accelerator::destroyCUstream(CUstream stream)
+{
+    trace::EnterCurrentFunction();
+    pushContext();
+    CUresult ret = cuStreamDestroy(stream);
+    popContext();
+    CFATAL(ret == CUDA_SUCCESS, "Unable to destroy CUDA stream");
+    trace::ExitCurrentFunction();
+}
+
 
 }}}
