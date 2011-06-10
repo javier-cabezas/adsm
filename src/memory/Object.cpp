@@ -163,8 +163,9 @@ Object::memcpyObjectToObject(core::Mode &mode,
         TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
         BlockMap::const_iterator j = dstObj.firstBlock(dstOffset, dummyOffset);
         TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, j->second->addr(), dstObj.addr() + dstOffset, size);
-        for (; j != dstObj.blocks_.end() && (j->second->addr() < dstObj.addr() + dstOffset + size); j++) {
-            size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+        size_t left = size;
+        while (left > 0) {
+            size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
             // Single copy from the source to fill the buffer
             if (copySize <= blockEnd(srcOffset)) {
                 TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
@@ -189,8 +190,10 @@ Object::memcpyObjectToObject(core::Mode &mode,
                                       secondCopySize);
                 ASSERTION(ret == gmacSuccess);
             }
+            left -= copySize;
             dstOffset += copySize;
             srcOffset += copySize;
+            j++;
         }
 
         dstObj.unlock();
