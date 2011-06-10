@@ -454,8 +454,6 @@ static void openclInit()
 
 void initGmac()
 {
-    enterGmac();
-
     TRACE(GLOBAL, "Initializing Memory Manager");
     __impl::memory::Handler::setEntry(enterGmac);
     __impl::memory::Handler::setExit(exitGmac);
@@ -463,7 +461,6 @@ void initGmac()
     TRACE(GLOBAL, "Initializing Process");
     Process_ = new __impl::opencl::lite::Process();
     Manager_ = new gmac::memory::Manager(*Process_);
-    exitGmac();
 }
 
 
