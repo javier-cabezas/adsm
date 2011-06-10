@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     begin = s;
-    randInitMax(a, 1.f, vecSize);
-    randInitMax(b, 1.f, vecSize);
+    randInitMax(a, 10.f, vecSize);
+    randInitMax(b, 10.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -86,5 +86,5 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Free: ", "\n");
     printTime(&begin, &end, "Total: ", "\n");
 
-    return sum == check;
+    return sum != check;
 }

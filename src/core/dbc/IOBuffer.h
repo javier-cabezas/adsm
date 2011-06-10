@@ -46,7 +46,7 @@ class GMAC_LOCAL IOBuffer:
     public virtual Contract {
     DBC_TESTED(__impl::core::IOBuffer)
 protected: 
-    IOBuffer(void *addr, size_t size, bool async);
+    IOBuffer(void *addr, size_t size, bool async, GmacProtection prot);
 public:
     virtual ~IOBuffer();
 

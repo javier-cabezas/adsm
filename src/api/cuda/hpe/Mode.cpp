@@ -97,7 +97,7 @@ Mode::createIOBuffer(size_t size, GmacProtection prot)
 
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
-    ASSERTION(ioMemory_ != NULL);
+    ASSERTION(ioMemoryWrite_ != NULL || ioMemoryRead_ != NULL);
     if (buffer.async()) {
         if (buffer.getProtection() == GMAC_PROT_WRITE) {
             ioMemoryWrite_->put(buffer.addr(), buffer.size());
