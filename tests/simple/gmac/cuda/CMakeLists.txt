@@ -62,7 +62,7 @@ target_link_libraries(gmacVecAdd test-common test-common gmac-cuda)
 # cudaVecAdd
 cuda_compile(vecAdd cudaVecAdd.cu)
 add_executable(cudaVecAdd ${vecAdd} cudaVecAdd.cu)
-target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # gmacThreadVecAdd
 cuda_compile(threadVecAdd gmacThreadVecAdd.cu)
