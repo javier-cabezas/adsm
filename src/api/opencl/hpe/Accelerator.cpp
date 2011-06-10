@@ -519,15 +519,23 @@ Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtec
 {
     trace::EnterCurrentFunction();
     cl_int ret = CL_SUCCESS;
+    cl_int flags = CL_MEM_ALLOC_HOST_PTR;
 
-    if (clMem_.getCLMem(size, mem, addr)) {
-        goto exit;
+    if (prot == GMAC_PROT_WRITE) {
+        if (clMemRead_.getCLMem(size, mem, addr)) {
+            goto exit;
+        }
+        flags |= CL_MEM_READ_ONLY;
+    } else {
+        if (clMemWrite_.getCLMem(size, mem, addr)) {
+            goto exit;
+        }
+        flags |= CL_MEM_WRITE_ONLY;
     }
     ASSERTION(cmd_.empty() == false);
 
     // Get a memory object in the host memory
-    mem = clCreateBuffer(ctx_, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-                         size, NULL, &ret);
+    mem = clCreateBuffer(ctx_, flags, size, NULL, &ret);
     if(ret == CL_SUCCESS) {
         stream_t stream = cmd_.front();
         // Get the host pointer for the memory object
@@ -558,10 +566,16 @@ gmacError_t Accelerator::hostFree(hostptr_t addr)
     return gmacErrorMemoryAllocation;
 }
 
-gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size)
+gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
-    clMem_.putCLMem(size, mem, addr);
+    if (prot == GMAC_PROT_WRITE) {
+        // clMemRead refers to the buffers readable in accelerator, written by host
+        clMemRead_.putCLMem(size, mem, addr);
+    } else {
+        // clMemWrite refers to the buffers writable in accelerator, readable by host
+        clMemWrite_.putCLMem(size, mem, addr);
+    }
     trace::ExitCurrentFunction();
 
     return error(CL_SUCCESS);

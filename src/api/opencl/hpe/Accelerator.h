@@ -180,7 +180,8 @@ protected:
     /** Host memory allocations associated to any OpenCL accelerator */
     static HostMap *GlobalHostAlloc_;
 
-    CLBufferPool clMem_;
+    CLBufferPool clMemRead_;
+    CLBufferPool clMemWrite_;
 
     /** OpenCL context associated to the accelerator */
     cl_context ctx_;
@@ -316,9 +317,10 @@ public:
      * \param mem cl_mem descriptor of the buffer
      * \param addr Host address of the OpenCL buffer
      * \param size Size (in bytes) of the memory to be allocated
+     * \param prot Tells wether the CL Buffer is going to be read or written
      * \return Error code
      */
-    gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size);
+    gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size, GmacProtection prot);
 
     /**
      * Get the accelerator memory address where pinned host memory can be accessed
