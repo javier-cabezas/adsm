@@ -31,13 +31,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+#ifndef GMAC_OPENCL_CPP_H_
+#define GMAC_OPENCL_CPP_H_
 
 #ifndef __cplusplus
 #error "This header can only be included in C++ programs"
 #endif
-
-#ifndef GMAC_OPENCL_CPP_H_
-#define GMAC_OPENCL_CPP_H_
 
 #include <string>
 #include <istream>
@@ -126,19 +125,6 @@ public:
      */
     @OPENCL_API_PREFIX@::kernel &operator=(const kernel &handler);
 
-#if 0
-    /**
-     * Sets an argument to be used by the following call to callNDRange()
-     *
-     * \param index Index of the parameter being set in the parameter list
-     * \param size Size, in bytes, of the argument
-     * \param addr Memory address where the argument is stored
-     *
-     * \return Error code
-     */
-    error setArg(unsigned index, size_t size, const void *addr);
-#endif
-
     /**
      * Sets an argument to be used by the following call to callNDRange()
      *
@@ -170,7 +156,7 @@ public:
 private:
     template <typename P1, typename ...Pn>
     error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize, 
+                   size_t *globalWorkSize, size_t *localWorkSize,
                    unsigned index, P1 p1, Pn ...pn);
 
     error __launch(size_t workDim, size_t *globalWorkOffset,
@@ -224,14 +210,6 @@ kernel &kernel::operator=(const kernel &handler)
     return *this;
 }
 
-#if 0
-inline
-error kernel::setArg(unsigned index, size_t size, const void *addr)
-{
-    return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, size, addr);
-}
-#endif
-
 template <typename T>
 inline
 error kernel::setArg(unsigned index, T val)
@@ -251,7 +229,7 @@ error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 template <typename P1, typename ...Pn>
 error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
-                       size_t *globalWorkSize, size_t *localWorkSize, 
+                       size_t *globalWorkSize, size_t *localWorkSize,
                        unsigned index, P1 p1, Pn ...pn)
 {
     error ret = setArg(index, p1);
@@ -279,7 +257,8 @@ error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
  */
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * \fn static inline error compileSource(std::string code, std::string flags = "")
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or empty string
@@ -292,7 +271,7 @@ static inline error compileSource(std::string code, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or empty string
@@ -305,7 +284,7 @@ static inline error compileSourceFile(std::string path, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
@@ -330,7 +309,7 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
 }
 
 /**
- * Prepares the OpenCL binary to be used by the applications 
+ * Prepares the OpenCL binary to be used by the applications
  *
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
@@ -344,7 +323,7 @@ static inline error compileBinary(const unsigned char *binary, size_t size, std:
 }
 
 /**
- * Prepares the OpenCL binary code to be used by the applications 
+ * Prepares the OpenCL binary code to be used by the applications
  *
  * \param path String with the path of the file that contains the binary code
  * \param flags Compilation flags or empty string
@@ -357,7 +336,7 @@ static inline error compileBinaryFile(std::string path, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
@@ -471,12 +450,7 @@ void deviceCopy(THREAD_T tid)
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
-#ifdef __cplusplus
 }
-#endif
-
-
-#undef __dv
 
 #endif /* GMAC_OPENCL_CPP_H_ */
 
