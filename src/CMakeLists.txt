@@ -8,14 +8,13 @@ add_subdirectory(trace)
 add_subdirectory(core)
 add_subdirectory(memory)
 
-add_subdirectory(os)
 add_subdirectory(api)
 
 add_subdirectory(libs)
 
 add_subdirectory(hpe)
 
-group_gmac_sources(gmac-common gmac-config gmac-util gmac-os gmac-dbc)
+group_gmac_sources(gmac-common gmac-config gmac-util gmac-dbc)
 group_gmac_sources(gmac-trace gmac-trace)
 group_gmac_sources(gmac-memory gmac-memory)
 group_gmac_sources(gmac-core gmac-core gmac-arch)

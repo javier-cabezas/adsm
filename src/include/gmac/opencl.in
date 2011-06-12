@@ -31,6 +31,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+/**
+ * \file gmac/opencl
+ *
+ * GMAC/OpenCL C++ interface
+ */
+
 #ifndef GMAC_OPENCL_CPP_H_
 #define GMAC_OPENCL_CPP_H_
 
@@ -119,7 +125,7 @@ public:
     /**
      * Assigns a C++ kernel handler to the object
      *
-     * \param launch Constant reference to the C++ handler to be assigned
+     * \param handler Constant reference to the C++ handler to be assigned
      *
      * \return A reference to the current C++ descriptor
      */
@@ -360,90 +366,144 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
     return ret;
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetNumberOfAccelerators
+ */
 static inline
 unsigned getNumberOfAccelerators()
 {
     return ::@OPENCL_API_PREFIX@GetNumberOfAccelerators();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetCurrentAcceleratorId
+ */
 static inline
-size_t getFreeMemory()
+unsigned getCurrentAcceleratorId()
 {
-    return ::@OPENCL_API_PREFIX@GetFreeMemory();
+    return ::@OPENCL_API_PREFIX@GetCurrentAcceleratorId();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetFreeMemory
+ */
+static inline
+error getFreeMemory(unsigned acc, size_t *freeMem)
+{
+    return ::@OPENCL_API_PREFIX@GetFreeMemory(acc, freeMem);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Migrate
+ */
 static inline
 error migrate(unsigned acc)
 {
     return ::@OPENCL_API_PREFIX@Migrate(acc);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryMap
+ */
 static inline
-@OPENCL_API_PREFIX@_error memoryMap(void *cpuPtr, size_t count, protection prot)
+error memoryMap(void *cpuPtr, size_t count, protection prot)
 {
     return ::@OPENCL_API_PREFIX@MemoryMap(cpuPtr, count, prot);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryUnmap
+ */
 static inline
-@OPENCL_API_PREFIX@_error memoryUnmap(void *cpuPtr, size_t count)
+error memoryUnmap(void *cpuPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@MemoryUnmap(cpuPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Malloc
+ */
 static inline
-@OPENCL_API_PREFIX@_error malloc(void **devPtr, size_t count)
+error malloc(void **devPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Malloc(devPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GlobalMalloc
+ */
 static inline
-@OPENCL_API_PREFIX@_error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
+error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
 {
     return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Free
+ */
 static inline
-@OPENCL_API_PREFIX@_error free(void *cpuPtr)
+error free(void *cpuPtr)
 {
     return ::@OPENCL_API_PREFIX@Free(cpuPtr);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetLastError
+ */
 static inline
 error getLastError()
 {
     return ::@OPENCL_API_PREFIX@GetLastError();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Memset
+ */
 static inline
 void *memset(void *cpuPtr, int c, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Memset(cpuPtr, c, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Memcpy
+ */
 static inline
 void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Memcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSend
+ */
 static inline
 void deviceSend(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceSend(tid);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceRelease
+ */
 static inline
 void deviceReceive(void)
 {
     ::@OPENCL_API_PREFIX@DeviceReceive();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSendReceive
+ */
 static inline
 void deviceSendReceive(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceSendReceive(tid);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceCopy
+ */
 static inline
 void deviceCopy(THREAD_T tid)
 {

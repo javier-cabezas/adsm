@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,6 +43,9 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core { namespace allocator {
 
+/**
+ * Simple buddy allocator
+ */
 class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
     DBC_FORCE_TEST(__impl::core::allocator::Buddy)
 protected:

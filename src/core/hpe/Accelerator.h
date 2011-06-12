@@ -195,6 +195,7 @@ public:
      * \param dst Destination pointer to accelerator memory
      * \param src Source pointer to accelerator memory
      * \param size Number of bytes to be copied
+     * \param stream OpenCL command queue to be used for the transfer
      * \return Error code
      */
     virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream) = 0;

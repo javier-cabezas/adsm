@@ -1,12 +1,7 @@
 #include "api/opencl/lite/Process.h"
 #include "memory/Protocol.h"
+#include "util/loader.h"
 #include "util/Logger.h"
-
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
 
 namespace __impl { namespace opencl { namespace lite {
 

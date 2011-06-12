@@ -52,6 +52,10 @@ namespace core {
 
 namespace memory {
 
+/**
+ * Base abstraction of the memory allocations managed by GMAC. Objects are
+ * divided into blocks, which are the unit of coherence
+ */
 class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
     DBC_FORCE_TEST(Object)
 protected:
@@ -77,6 +81,7 @@ protected:
     //! Returns the block corresponding to a given offest from the begining of the object
     /*!
         \param objectOffset Offset (in bytes) from the begining of the object where the block is located
+        \param blockOffset Returns the block offset of the object offset
         \return Constant iterator pointing to the block
     */
     BlockMap::const_iterator firstBlock(size_t objectOffset, size_t &blockOffset) const;
@@ -282,10 +287,10 @@ public:
     /*!
         \param offset Offset within the object of the memory to be set
         \param v Value to initialize the memory to
-        \param size Size (in bytes) of the memory region to be initialized
+        \param count Size (in bytes) of the memory region to be initialized
         \return Error code
     */
-    TESTABLE gmacError_t memset(size_t offset, int v, size_t size);
+    TESTABLE gmacError_t memset(size_t offset, int v, size_t count);
 
     //! Adds the object to the coherence domain.
     /*!
@@ -310,28 +315,27 @@ public:
      * \param objOffset Offset (in bytes) from the begining of the object to
      * copy the data to
      * \param src Source host memory address
-     * \param size Size (in bytes) of the data to be copied
+     * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
     gmacError_t memcpyToObject(core::Mode &mode,
                                size_t objOffset,
-                               const hostptr_t src, size_t size);
+                               const hostptr_t src, size_t count);
 
     /** Copy data from object to object
      * \param mode Execution mode requesting the memory copy
      * \param dstObj Destination object
      * \param dstOffset Offset (in bytes) from the begining of the destination
      * object to copy data to
-     * \param srcObj Source object
      * \param srcOffset Offset (in bytes) from the begining og the source
      * object to copy data from
-     * \param size Size (in bytes) of the data to be copied
+     * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
     gmacError_t memcpyObjectToObject(core::Mode &mode,
                                      Object &dstObj, size_t dstOffset,
                                      size_t srcOffset,
-                                     size_t size);
+                                     size_t count);
 
     /**
      * Copies data from an object to host memory
@@ -339,13 +343,12 @@ public:
      * \param dst Destination object
      * \param objOffset Offset (in bytes) from the begining of the source object
      * to copy data from
-     * \param size Size (in bytes) of the data to be copied
+     * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
     gmacError_t memcpyFromObject(core::Mode &mode,
                                  hostptr_t dst,
-                                 size_t objOffset, size_t size);
-
+                                 size_t objOffset, size_t count);
 };
 
 }}

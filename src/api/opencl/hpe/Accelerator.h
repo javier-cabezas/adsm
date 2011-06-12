@@ -162,7 +162,11 @@ public:
      */
     void putCLMem(size_t size, cl_mem mem, hostptr_t addr);
 
-    /** Releases the OpenCL buffers in the pool */
+    /**
+     * Releases the OpenCL buffers in the pool
+     *
+     * \param stream OpenCL stream to enqueue unmaps
+     */
     void cleanUp(stream_t stream);
 };
 
@@ -200,6 +204,8 @@ protected:
 
     /** Tracer for data communications */
     DataCommunication trace_;
+
+    size_t allocatedMemory_;
 
 public:
     /** Default constructor
@@ -331,7 +337,7 @@ public:
 
     /**
      * Executes a kernel in the accelerator
-     * \param stram OpenCL command queue
+     * \param stream OpenCL command queue
      * \param kernel OpenCL kernel to execute
      * \param workDim Number of dimensions in the work group
      * \param offset Offset for the kernel
@@ -426,6 +432,7 @@ public:
 
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
+
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
     void memInfo(size_t &free, size_t &total) const;

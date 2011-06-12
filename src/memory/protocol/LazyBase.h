@@ -59,7 +59,8 @@ template <typename State> class StateBlock;
 
 namespace protocol {
 /**
- * A lazy memory coherence protocol
+ * A lazy memory coherence protocol.
+ *
  * This protocol eagerly transfer data from host to accelerator memory if the user
  * sets up a limit, otherwise data is transferred when the use requests a
  * release operation. Data is transferred from accelerator memory to host memory

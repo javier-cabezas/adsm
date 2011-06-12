@@ -95,18 +95,6 @@ public:
 
     gmacError_t toHost(unsigned blockOff, size_t count);
 
-    gmacError_t copyToHost(const hostptr_t src, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyFromHost(hostptr_t dst, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-        size_t blockOffset = 0) const;
-
     gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
                              size_t blockOff, size_t size, typename StateBlock<State>::Source src) const;
 

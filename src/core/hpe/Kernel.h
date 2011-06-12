@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -51,14 +51,26 @@ class KernelLaunch;
 
 typedef Descriptor<gmac_kernel_id_t> KernelDescriptor;
 
+/**
+ * GMAC Kernel abstraction
+ */
 class GMAC_LOCAL Kernel : public KernelDescriptor{
-     DBC_FORCE_TEST(Kernel)
+    DBC_FORCE_TEST(Kernel)
 
 public:
+    /**
+     * Kernel constructor
+     *
+     * \param k A reference to a kernel descriptor
+     */
     Kernel(const KernelDescriptor &k);
-    virtual ~Kernel() {};
+
+    virtual ~Kernel() {}
 };
 
+/**
+ * GMAC descriptor for kernel execution
+ */
 class GMAC_LOCAL KernelLaunch {
 protected:
     /** Execution mode where the kernel will be executed */

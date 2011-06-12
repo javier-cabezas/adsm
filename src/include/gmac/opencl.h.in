@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -30,6 +30,12 @@ CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
+
+/**
+ * \file gmac/opencl.h
+ *
+ * GMAC/OpenCL C interface
+ */
 
 #ifndef GMAC_OPENCL_H_
 #define GMAC_OPENCL_H_
@@ -101,7 +107,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPEN
  *
  * \param kernel Kernel descriptor
  * \param index Index of the parameter being set in the parameter list
- * \param addr Memory pointer to be passed as argument
+ * \param ptr Memory pointer to be passed as argument
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
@@ -169,7 +175,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSourceFile(
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
  * \param flags Compilation flags or NULL
- * 
+ *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
@@ -186,7 +192,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinaryFile(
 
 
 /* Wrappers to GMAC native calls */
-/** 
+/**
  * Get the number of accelerators in the system
  *
  * \return Number of accelerators
@@ -198,14 +204,25 @@ unsigned @OPENCL_API_PREFIX@GetNumberOfAccelerators()
 }
 
 /**
- * Get the amount of available accelerator memory
- *
- * \return Size (in bytes) of the available accelerator memory
+ * Returns the ID of the accelerator the current thread is running on
+ * \return The number of available accelerators
  */
 static inline
-size_t @OPENCL_API_PREFIX@GetFreeMemory()
+unsigned @OPENCL_API_PREFIX@GetCurrentAcceleratorId()
 {
-    return gmacGetFreeMemory();
+    return gmacGetCurrentAcceleratorId();
+}
+
+/**
+ * Returns the amount of memory available in the given accelerator
+ *
+ * \param acc The identifier of the accelerator to query
+ * \param freeMem A pointer to the variable to store the amount of free memory
+ */
+static inline
+gmacError_t @OPENCL_API_PREFIX@GetFreeMemory(unsigned acc, size_t *freeMem)
+{
+    return gmacGetFreeMemory(acc, freeMem);
 }
 
 /**
@@ -221,7 +238,7 @@ static inline
     return gmacMigrate(acc);
 }
 
-/** 
+/**
  * Map host memory in the accelerator
  *
  * \param cpuPtr Host memory address to map
@@ -306,7 +323,7 @@ static inline
 /**
  * Initialize a shared memory region
  *
- * \param cpuPtr Starting shared memory address 
+ * \param cpuPtr Starting shared memory address
  * \param c Value used to be initialized
  * \param count Size (in bytes) of the shared memory region to be initialized
  *
@@ -388,14 +405,14 @@ GMAC_API cl_mem APICALL
 GMAC_API cl_int APICALL
 @OPENCL_API_PREFIX@EnqueueAcquireGLObjects(cl_uint num_objects, const cl_mem *mem_objects,
     cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
-    
+
 GMAC_API cl_int APICALL
 @OPENCL_API_PREFIX@AcquireGLObjects(cl_uint num_objects, const cl_mem *mem_objects);
 
 GMAC_API cl_int APICALL
 @OPENCL_API_PREFIX@EnqueueReleaseGLObjects(cl_uint num_objects,  const cl_mem *mem_objects,
     cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event);
-    
+
 GMAC_API cl_int APICALL
 @OPENCL_API_PREFIX@ReleaseGLObjects(cl_uint num_objects,  const cl_mem *mem_objects);
 

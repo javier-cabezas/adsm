@@ -1,12 +1,6 @@
 #include <cstdio>
 #include <errno.h>
 
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
-
 #include "core/IOBuffer.h"
 #include "core/Process.h"
 #include "core/Mode.h"
@@ -17,6 +11,7 @@
 
 #include "trace/Tracer.h"
 
+#include "util/loader.h"
 #include "util/Logger.h"
 
 #include "stdc.h"

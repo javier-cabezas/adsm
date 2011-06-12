@@ -43,10 +43,14 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace opencl {
 
+/**
+ * IOBuffer implementation for OpenCL
+ */
 class GMAC_LOCAL IOBuffer :
     public gmac::core::IOBuffer,
     public __impl::util::ReusableObject<IOBuffer> {
 protected:
+    /** OpenCL buffer descriptor of the memory used by the buffer */
     cl_mem mem_;
 
     /** OpenCL event to query for the finalization of any ongoing data transfer */

@@ -36,11 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/order.h"
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
+#include "util//loader.h"
 #include "util/Singleton.h"
 
 #include <vector>

@@ -1,8 +1,11 @@
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/api.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/api.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/opencl_types.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/opencl_types.h)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/vm.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/vm.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/opencl.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/opencl.h)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/opencl.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/opencl)
+
+if(NOT USE_OPENCL)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gmac/vm.h.in ${CMAKE_CURRENT_BINARY_DIR}/gmac/vm.h)
+endif(NOT USE_OPENCL)
 
 set(gmac_include_SRC
     gmac/api.h.in

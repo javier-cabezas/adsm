@@ -221,42 +221,6 @@ DistributedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBloc
 }
 
 template<typename State>
-inline gmacError_t DistributedBlock<State>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
-{
-    ::memcpy(StateBlock<State>::shadow_ + blockOffset, src, size);
-    return gmacSuccess;
-}
-
-template<typename State>
-inline gmacError_t DistributedBlock<State>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
-{
-    gmacError_t ret = gmacSuccess;
-    AcceleratorMap::const_iterator i;
-    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-        const std::list<core::Mode *> &list = i->second;
-        ASSERTION(list.size() > 0);
-        core::Mode *mode = list.front();
-        ret = mode->copyToAccelerator(i->first + ptroff_t(blockOffset), src, size);
-        if(ret != gmacSuccess) return ret;
-    }
-    return ret;
-}
-
-template<typename State>
-inline gmacError_t DistributedBlock<State>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
-{
-    ::memcpy(dst, StateBlock<State>::shadow_ + blockOffset, size);
-    return gmacSuccess;
-}
-
-template<typename State>
-inline gmacError_t DistributedBlock<State>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
-{
-    ::memcpy(dst, StateBlock<State>::shadow_ + blockOffset, size);
-    return gmacSuccess;
-}
-
-template<typename State>
 inline gmacError_t DistributedBlock<State>::hostMemset(int v, size_t size, size_t blockOffset) const
 {
     ::memset(StateBlock<State>::shadow_ + blockOffset, v, size);

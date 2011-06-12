@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,8 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_GMAC_INIT_H_
-#define GMAC_GMAC_INIT_H_
+/**
+ * \file init.h
+ *
+ * Headers needed by the initialization routines
+ */
+
+#ifndef GMAC_HPE_INIT_H_
+#define GMAC_HPE_INIT_H_
 
 #include "libs/common.h"
 
@@ -44,12 +50,13 @@ namespace __impl {
 
             class Mode;
             Mode &getCurrentMode() GMAC_LOCAL;
+
         }
     }
+
     namespace memory {
         Manager &getManager();
     }
 }
-
 
 #endif

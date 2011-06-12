@@ -1,3 +1,9 @@
+/**
+ * \file init.cpp
+ *
+ * Initialization routines
+ */
+
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 
@@ -66,7 +72,7 @@ namespace __impl {
     namespace core {
         namespace hpe {
             Mode &getCurrentMode() { return Process_->getCurrentMode(); }
-            Process &getProcess() { return *Process_; } 
+            Process &getProcess() { return *Process_; }
         }
         Mode &getMode(Mode &mode) { return Process_->getCurrentMode(); }
         Process &getProcess() { return *Process_; }
@@ -85,14 +91,14 @@ namespace __impl {
 DESTRUCTOR(fini);
 static void fini(void)
 {
-	enterGmac();
+    enterGmac();
     if(AtomicInc(gmacFini__) == 0) {
         Allocator_->destroy();
         Manager_->destroy();
         Process_->destroy();
         delete inGmacLock;
     }
-	// TODO: Clean-up logger
+    // TODO: Clean-up logger
 }
 #endif
 
@@ -102,37 +108,37 @@ static void fini(void)
 
 static void InitThread()
 {
-	gmac::trace::StartThread("CPU");
-	enterGmac();
-	__impl::core::hpe::getProcess().initThread();
+    gmac::trace::StartThread("CPU");
+    enterGmac();
+    __impl::core::hpe::getProcess().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
-	exitGmac();
+    exitGmac();
 }
 
 static void FiniThread()
 {
-	enterGmac();
-	gmac::trace::SetThreadState(gmac::trace::Idle);	
-	// Modes and Contexts already destroyed in Process destructor
-	__impl::core::hpe::getProcess().finiThread();
-	exitGmac();
+    enterGmac();
+    gmac::trace::SetThreadState(gmac::trace::Idle);
+    // Modes and Contexts already destroyed in Process destructor
+    __impl::core::hpe::getProcess().finiThread();
+    exitGmac();
 }
 
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
-	switch(dwReason) {
-		case DLL_PROCESS_ATTACH:
-            break;
-		case DLL_PROCESS_DETACH:
-			break;
-		case DLL_THREAD_ATTACH:
-			InitThread();
-			break;
-		case DLL_THREAD_DETACH:			
-			FiniThread();
-			break;
-	};
+    switch(dwReason) {
+    case DLL_PROCESS_ATTACH:
+        break;
+    case DLL_PROCESS_DETACH:
+        break;
+    case DLL_THREAD_ATTACH:
+        InitThread();
+        break;
+    case DLL_THREAD_DETACH:
+        FiniThread();
+        break;
+    };
     return TRUE;
 }
 

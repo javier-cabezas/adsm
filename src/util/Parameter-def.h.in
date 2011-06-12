@@ -1,3 +1,9 @@
+/**
+ * \file util/Parameter-def.h
+ *
+ * GMAC run-time parameters' definition
+ */
+
 // GMAC global settings
 PARAM(ParamProtocol, const char *, "Rolling", "GMAC_PROTOCOL")
 PARAM(ParamAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
