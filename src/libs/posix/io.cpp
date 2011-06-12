@@ -7,19 +7,12 @@
 #include <cstdio>
 #include <errno.h>
 
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
-
 #include "core/IOBuffer.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
-
 #include "libs/common.h"
-
 #include "memory/Manager.h"
+#include "util/loader.h"
 
 #include "posix.h"
 

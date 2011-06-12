@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 
-namespace opencl { 
+namespace opencl {
 
 class Mode;
 
@@ -58,7 +58,6 @@ public:
      * Initialize a data communication that will be traced later on
      * \param src Source thread
      * \param dst Destination thread
-     * \param size Size (in bytes) transferred
      */
     void init(THREAD_T src, THREAD_T dst);
 
@@ -67,17 +66,18 @@ public:
      */
     THREAD_T getThreadId() const;
 
-    /** 
-     * Get the thread ID associated to a mode 
+    /**
+     * Get the thread ID associated to a mode
      * \param mode Mode to get the ID from
      * \return Thread ID
      */
     THREAD_T getModeId(const Mode &mode) const;
-    
+
     /**
      * Trace a data communication
      * \param start OpenCL event starting the communication
      * \param end OpenCL event ending the communication
+     * \param size Size (in bytes) transferred
      */
     void trace(cl_event start, cl_event end, size_t size) const;
 };
@@ -109,8 +109,8 @@ public:
      */
     void init(THREAD_T thread);
 
-    /** 
-     * Get the thread ID associated to a mode 
+    /**
+     * Get the thread ID associated to a mode
      * \param mode Mode to get the ID from
      * \return Thread ID
      */
@@ -118,6 +118,7 @@ public:
 
     /**
      * Trace a data communication
+     * \param kernel OpenCL kernel handler to be traced
      * \param event OpenCL event starting the communication
      */
     void trace(cl_kernel kernel, cl_event event) const;

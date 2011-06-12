@@ -31,6 +31,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+/**
+ * \file core/IOBuffer.h
+ *
+ * I/O Buffer base abstraction
+ */
+
 #ifndef GMAC_CORE_IOBUFFER_H_
 #define GMAC_CORE_IOBUFFER_H_
 
@@ -41,19 +47,40 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core {
 
+/**
+ * Buffer used to optimize memory transfers
+ */
 class GMAC_LOCAL IOBuffer :
     public util::NonCopyable {
     DBC_FORCE_TEST(__impl::core::IOBuffer)
-
 
 public:
     enum State { Idle, ToHost, ToAccelerator };
 
 protected:
+    /**
+     * Address of the buffer's memory
+     */
     void *addr_;
+
+    /**
+     * Size of the buffer
+     */
     size_t size_;
+
+    /**
+     * Tells whether the buffer can be used in asynchronous transfers
+     */
     bool async_;
+
+    /**
+     * Status of the memory transfers performed on the buffer
+     */
     State state_;
+
+    /**
+     * Type of access performed on the buffer's memory
+     */
     GmacProtection prot_;
 
     /**

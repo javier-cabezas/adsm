@@ -186,7 +186,7 @@ public:
     /**
      * Copy data from a GMAC object to the memory block
      *
-     * \param object GMAC memory object to copy data from
+     * \param obj GMAC memory object to copy data from
      * \param size Size (in bytes) of the data to be copied
      * \param blockOffset Offset (in bytes) from the begining of the block to
      * copy the data to

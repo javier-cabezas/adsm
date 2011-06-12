@@ -1,8 +1,4 @@
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
+#include <CL/cl.h>
 
 #include "config/config.h"
 
@@ -12,10 +8,9 @@
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "memory/allocator/Slab.h"
+#include "util/loader.h"
 #include "util/Logger.h"
 #include "util/Parameter.h"
-
-#include <CL/cl.h>
 
 #if defined(__GNUC__)
 #define RETURN_ADDRESS __builtin_return_address(0)

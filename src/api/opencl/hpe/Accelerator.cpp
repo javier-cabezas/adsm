@@ -83,7 +83,8 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigne
     gmac::util::SpinLock("Accelerator"),
     gmac::core::hpe::Accelerator(n),
     ctx_(context), device_(device),
-    major_(major), minor_(minor)
+    major_(major), minor_(minor),
+    allocatedMemory_(0)
 {
     // Not used for now
     busId_ = 0;
@@ -147,7 +148,7 @@ core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
     return mode;
 }
 
-gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
+gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned /*align*/)
 {
     trace::EnterCurrentFunction();
 
@@ -156,6 +157,7 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
     dst(clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret));
     if(ret != CL_SUCCESS) return error(ret);
     trace::SetThreadState(trace::Running);
+    allocatedMemory_ += size;
 
     allocations_.insert(src, dst, size);
 
@@ -185,6 +187,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::SetThreadState(trace::Wait);
     cl_int ret = CL_SUCCESS;
     ret = clReleaseMemObject(addr.get());
+    allocatedMemory_ -= size;
     trace::SetThreadState(trace::Running);
     trace::ExitCurrentFunction();
     return error(ret);
@@ -559,6 +562,7 @@ Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtec
 
         // Insert the object in the allocation map for the accelerator
         if(ret != CL_SUCCESS) clReleaseMemObject(mem);
+        else allocatedMemory_ += size;
     }
 
 exit:
@@ -614,13 +618,7 @@ void Accelerator::memInfo(size_t &free, size_t &total) const
         sizeof(value), &value, NULL);
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     total = size_t(value);
-
-    // TODO: This is actually wrong, but OpenCL do not let us know the
-    // amount of free memory in the accelerator
-    ret = clGetDeviceInfo(device_, CL_DEVICE_MAX_MEM_ALLOC_SIZE,
-        sizeof(value), &value, NULL);
-    CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
-    free = size_t(value);
+    free = total - allocatedMemory_;
 }
 
 }}}

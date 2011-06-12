@@ -131,38 +131,6 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     return ret;
 }
 
-#if 0
-template<typename State>
-inline gmacError_t
-SharedBlock<State>::copyToHost(const hostptr_t src, size_t size, size_t blockOffset) const
-{
-    ::memcpy(StateBlock<State>::shadow_ + blockOffset, src, size);
-    return gmacSuccess;
-}
-
-template<typename State>
-inline gmacError_t
-SharedBlock<State>::copyToAccelerator(const hostptr_t src, size_t size,  size_t blockOffset) const
-{
-    return owner_.copyToAccelerator(acceleratorAddr_ + ptroff_t(blockOffset), src, size);
-}
-
-template<typename State>
-inline gmacError_t
-SharedBlock<State>::copyFromHost(hostptr_t dst, size_t size, size_t blockOffset) const
-{
-    ::memcpy(dst, StateBlock<State>::shadow_ + blockOffset, size);
-    return gmacSuccess;
-}
-
-template<typename State>
-inline gmacError_t
-SharedBlock<State>::copyFromAccelerator(hostptr_t dst, size_t size, size_t blockOffset) const
-{
-    return owner_.copyToHost(dst, acceleratorAddr_ + ptroff_t(blockOffset), size);
-}
-#endif
-
 template<typename State>
 inline gmacError_t
 SharedBlock<State>::hostMemset(int v, size_t size, size_t blockOffset) const

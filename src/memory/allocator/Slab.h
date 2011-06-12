@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -44,6 +44,9 @@ namespace core { class Mode; }
 
 namespace memory { namespace allocator {
 
+/**
+ * Simple slab allocator
+ */
 class GMAC_LOCAL Slab : public memory::Allocator {
 protected:
     class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::RWLock {
@@ -73,7 +76,7 @@ protected:
     virtual ~Slab();
 public:
     Slab(Manager &manager);
-    
+
     virtual hostptr_t alloc(core::Mode &current, const size_t size, const hostptr_t addr);
     virtual bool free(core::Mode &current, const hostptr_t addr);
 };

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "util/NonCopyable.h"
 #include "util/Private.h"
 
-namespace __impl { namespace core { 
+namespace __impl { namespace core {
 class IOBuffer;
 
 namespace hpe {
@@ -50,8 +50,7 @@ class Kernel;
 class KernelLaunch;
 
 /**
- * Generic Context Class.
- * Represents the per-thread operations' state in the accelerator
+ * Generic context class that represents the per-thread operations' state in the accelerator
  */
 class GMAC_LOCAL Context : public gmac::util::RWLock, public util::NonCopyable {
     DBC_FORCE_TEST(Context)
@@ -61,22 +60,27 @@ protected:
     /** Execution mode owning the context */
     Mode &mode_;
 
-    /** Accelerator streams to request operations */
+    /** Accelerator streams used to enqueue operations */
     stream_t streamLaunch_;
     stream_t streamToAccelerator_;
     stream_t streamToHost_;
     stream_t streamAccelerator_;
-
 
     /** I/O buffers used by the context for data transfers */
     IOBuffer *bufferWrite_;
     IOBuffer *bufferRead_;
 
     /**
-     * Constructs a context for the calling thread on the given accelerator
+     * Constructs a context for the calling thread on the given mode
      *
      * \param mode Reference to the parent mode of the context
-     * \param id Context identifier
+     * \param streamLaunch Command execution stream to be used to launch kernels
+     * \param streamToAccelerator Command execution stream to be used to perform
+     * host-to-acc transfers
+     * \param streamToHost Command execution stream to be used to perform
+     * acc-to-host transfers
+     * \param streamAccelerator Command execution stream to be used to perform
+     * acc-to-acc transfers
      */
     Context(Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator, stream_t streamToHost, stream_t streamAccelerator);
 
