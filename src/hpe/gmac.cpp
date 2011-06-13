@@ -95,7 +95,7 @@ gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
     if (accelerator == NULL || freeMemory == NULL) {
         ret = gmacErrorInvalidValue;
     } else {
-        accelerator->memInfo(*freeMemory, total);
+        accelerator->getMemInfo(*freeMemory, total);
     }
     gmac::trace::ExitCurrentFunction();
     exitGmac();

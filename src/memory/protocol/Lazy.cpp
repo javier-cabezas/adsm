@@ -387,16 +387,16 @@ gmacError_t LazyBase::memset(const Block &b, int v, size_t size, size_t blockOff
     const lazy::Block &block = dynamic_cast<const lazy::Block &>(b);
     switch(block.getState()) {
     case lazy::Invalid:
-        ret = b.acceleratorMemset(v, size, blockOffset);
+        ret = block.memset(v, size, blockOffset, lazy::Block::ACCELERATOR);
         break;
     case lazy::ReadOnly:
-        ret = b.acceleratorMemset(v, size, blockOffset);
+        ret = block.memset(v, size, blockOffset, lazy::Block::ACCELERATOR);
         if(ret != gmacSuccess) break;
-        ret = b.hostMemset(v, size, blockOffset);
+        ret = block.memset(v, size, blockOffset, lazy::Block::HOST);
         break;
     case lazy::Dirty:
     case lazy::HostOnly:
-        ret = b.hostMemset(v, size, blockOffset);
+        ret = block.memset(v, size, blockOffset, lazy::Block::HOST);
         break;
     }
     return ret;
@@ -453,27 +453,27 @@ LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffse
                                 lazy::Block::ACCELERATOR);
         if (ret == gmacSuccess) {
             ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
-                                    lazy::Block::ACCELERATOR,
-                                    lazy::Block::HOST);
+                                    lazy::Block::HOST,
+                                    lazy::Block::ACCELERATOR);
         }
     } else if (src.getState() == lazy::Invalid && dst.getState() == lazy::Dirty) {
         TRACE(LOCAL, "I -> D");
         // acc-to-host
         ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
-                                lazy::Block::ACCELERATOR,
-                                lazy::Block::HOST);
+                                lazy::Block::HOST,
+                                lazy::Block::ACCELERATOR);
     } else if (src.getState() == lazy::Dirty && dst.getState() == lazy::Invalid) {
         TRACE(LOCAL, "D -> I");
         // host-to-acc
         ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
-                                lazy::Block::HOST,
-                                lazy::Block::ACCELERATOR);
+                                lazy::Block::ACCELERATOR,
+                                lazy::Block::HOST);
     } else if (src.getState() == lazy::Dirty && dst.getState() == lazy::ReadOnly) {
         // host-to-acc
         if (ret == gmacSuccess) {
             ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
-                                    lazy::Block::HOST,
-                                    lazy::Block::ACCELERATOR);
+                                    lazy::Block::ACCELERATOR,
+                                    lazy::Block::HOST);
         }
         TRACE(LOCAL, "D -> R");
         // host-to-host
@@ -483,7 +483,6 @@ LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffse
     } else if (src.getState() == lazy::ReadOnly && dst.getState() == lazy::Dirty) {
         TRACE(LOCAL, "R -> D");
         // host-to-host
-        // memcpy
         ret = dst.copyFromBlock(dstOffset, src, srcOffset, count,
                                 lazy::Block::HOST,
                                 lazy::Block::HOST);

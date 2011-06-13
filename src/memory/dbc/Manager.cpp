@@ -6,8 +6,8 @@
 
 namespace __dbc { namespace memory {
 
-Manager::Manager(__impl::core::Process &proc) :
-    __impl::memory::Manager(proc)
+Manager::Manager(ProcessImpl &proc) :
+    Parent(proc)
 {
 }
 
@@ -21,7 +21,7 @@ Manager::map(void *addr, size_t size, GmacProtection prot)
     // PRECONDITIONS
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::map(addr, size, prot);
+    gmacError_t ret = Parent::map(addr, size, prot);
     // POSTCONDITIONS
 
     return ret;
@@ -34,19 +34,19 @@ Manager::unmap(void *addr, size_t size)
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::unmap(addr, size);
+    gmacError_t ret = Parent::unmap(addr, size);
     // POSTCONDITIONS
 
     return ret;
 }
 #endif
 gmacError_t
-Manager::alloc(__impl::core::Mode &mode, hostptr_t *addr, size_t size)
+Manager::alloc(ModeImpl &mode, hostptr_t *addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::alloc(mode, addr, size);
+    gmacError_t ret = Parent::alloc(mode, addr, size);
     // POSTCONDITIONS
 
     return ret;
@@ -59,7 +59,7 @@ Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
     // PRECONDITIONS
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::globalAlloc(addr, size, hint);
+    gmacError_t ret = Parent::globalAlloc(addr, size, hint);
     // POSTCONDITIONS
 
     return ret;
@@ -67,36 +67,36 @@ Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 #endif
 
 gmacError_t
-Manager::free(__impl::core::Mode &mode, hostptr_t addr)
+Manager::free(ModeImpl &mode, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::free(mode, addr);
+    gmacError_t ret = Parent::free(mode, addr);
     // POSTCONDITIONS
 
     return ret;
 }
 
 bool
-Manager::read(__impl::core::Mode &mode, hostptr_t addr)
+Manager::signalRead(ModeImpl &mode, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     // CALL IMPLEMENTATION
-    bool ret = __impl::memory::Manager::read(mode, addr);
+    bool ret = Parent::signalRead(mode, addr);
     // POSTCONDITIONS
 
     return ret;
 }
 
 bool
-Manager::write(__impl::core::Mode &mode, hostptr_t addr)
+Manager::signalWrite(ModeImpl &mode, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     // CALL IMPLEMENTATION
-    bool ret = __impl::memory::Manager::write(mode, addr);
+    bool ret = Parent::signalWrite(mode, addr);
     // POSTCONDITIONS
 
     return ret;
@@ -104,60 +104,59 @@ Manager::write(__impl::core::Mode &mode, hostptr_t addr)
 
 
 gmacError_t
-Manager::toIOBuffer(__impl::core::Mode &mode, __impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
-{
-    // PRECONDITIONS
-    REQUIRES(addr != NULL);
-    REQUIRES(size > 0);
-    REQUIRES(size <= buffer.size() - bufferOff);
-    // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::toIOBuffer(mode, buffer, bufferOff, addr, size);
-    // POSTCONDITIONS
-
-    return ret;
-}
-
-gmacError_t
-Manager::fromIOBuffer(__impl::core::Mode &mode, hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size)
+Manager::toIOBuffer(ModeImpl &mode, IOBufferImpl &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
     REQUIRES(size > 0);
     REQUIRES(size <= buffer.size() - bufferOff);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::fromIOBuffer(mode, addr, buffer, bufferOff, size);
+    gmacError_t ret = Parent::toIOBuffer(mode, buffer, bufferOff, addr, size);
     // POSTCONDITIONS
 
     return ret;
 }
-#if 0
+
 gmacError_t
-Manager::memcpy(void * dst, const void * src, size_t n)
+Manager::fromIOBuffer(ModeImpl &mode, hostptr_t addr, IOBufferImpl &buffer, size_t bufferOff, size_t size)
+{
+    // PRECONDITIONS
+    REQUIRES(addr != NULL);
+    REQUIRES(size > 0);
+    REQUIRES(size <= buffer.size() - bufferOff);
+    // CALL IMPLEMENTATION
+    gmacError_t ret = Parent::fromIOBuffer(mode, addr, buffer, bufferOff, size);
+    // POSTCONDITIONS
+
+    return ret;
+}
+gmacError_t
+Manager::memcpy(ModeImpl &mode, hostptr_t dst, const hostptr_t src, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(src != NULL);
     REQUIRES(dst != NULL);
     REQUIRES(n > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::memcpy(dst, src, n);
+    gmacError_t ret = Parent::memcpy(mode, dst, src, n);
     // POSTCONDITIONS
 
     return ret;
 }
 
 gmacError_t
-Manager::memset(void * dst, int c, size_t n)
+Manager::memset(ModeImpl &mode, hostptr_t dst, int c, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(dst != NULL);
     REQUIRES(n > 0);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Manager::memset(dst, c, n);
+    gmacError_t ret = Parent::memset(mode, dst, c, n);
     // POSTCONDITIONS
 
     return ret;
 }
-#endif
+
 }}
 
 #endif

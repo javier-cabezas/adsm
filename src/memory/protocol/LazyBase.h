@@ -90,7 +90,7 @@ protected:
      *
      * \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
      */
-    LazyBase(size_t limit);
+    explicit LazyBase(size_t limit);
 
     /// Default destructor
     virtual ~LazyBase();

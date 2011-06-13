@@ -305,9 +305,7 @@ public:
      * \param total A reference to a variable to store the total amount of memory
      * on the accelerator
      */
-    virtual void memInfo(size_t &free, size_t &total);
-
-
+    void getMemInfo(size_t &free, size_t &total);
 };
 
 }}}

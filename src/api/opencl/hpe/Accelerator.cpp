@@ -610,7 +610,7 @@ gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_u
     return error(ret);
 }
 
-void Accelerator::memInfo(size_t &free, size_t &total) const
+void Accelerator::getMemInfo(size_t &free, size_t &total) const
 {
     cl_int ret = CL_SUCCESS;
     cl_ulong value = 0;

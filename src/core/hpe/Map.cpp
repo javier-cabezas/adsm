@@ -37,7 +37,7 @@ memory::Object *Map::get(const hostptr_t addr, size_t size) const
     ret = get(*this, base, addr, size);
 
     // Check global maps
-    const Process &proc = parent_.process();
+    const Process &proc = parent_.getProcess();
     memory::Object *obj = NULL;
 
     if(base == addr) goto exit_func;
@@ -61,7 +61,7 @@ bool Map::insert(memory::Object &obj)
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
     bool ret = memory::ObjectMap::insert(obj);
     if(ret == false) return ret;
-    memory::ObjectMap &shared = parent_.process().shared();
+    memory::ObjectMap &shared = parent_.getProcess().shared();
     ret = shared.insert(obj);
     return ret;
 }
@@ -72,7 +72,7 @@ bool Map::remove(memory::Object &obj)
     bool ret = memory::ObjectMap::remove(obj);
 	hostptr_t addr = obj.addr();
     // Shared object
-    Process &proc = parent_.process();
+    Process &proc = parent_.getProcess();
     memory::ObjectMap &shared = proc.shared();
     ret = shared.remove(obj);
     if(ret == true) {

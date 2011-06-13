@@ -37,8 +37,8 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
     bool resolved = false;
     core::Mode *mode = Process_->owner((const hostptr_t)addr);
     if(mode != NULL) {
-        if(!writeAccess) resolved = Manager_->read(*mode, (hostptr_t)addr);
-        else resolved = Manager_->write(*mode, (hostptr_t)addr);
+        if(!writeAccess) resolved = Manager_->signalRead(*mode, (hostptr_t)addr);
+        else             resolved = Manager_->signalWrite(*mode, (hostptr_t)addr);
     }
 
     if(resolved == false) {

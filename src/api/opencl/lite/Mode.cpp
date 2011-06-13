@@ -191,7 +191,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     return error(ret);
 }
 
-void Mode::memInfo(size_t &free, size_t &total)
+void Mode::getMemInfo(size_t &free, size_t &total)
 {
     cl_int ret = CL_SUCCESS;
     cl_ulong value = 0;

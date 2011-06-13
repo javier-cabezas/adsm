@@ -104,8 +104,6 @@ public:
      */
     const stream_t eventStream() const;
 
-    gmacError_t memset(accptr_t addr, int c, size_t size);
-
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);
 };

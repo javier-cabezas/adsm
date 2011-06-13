@@ -103,11 +103,6 @@ public:
      * \return Default OpenCL command queue
      */
     const stream_t eventStream() const;
-
-    /**
-     * \todo: move this function to the generic context
-     */
-    gmacError_t memset(accptr_t addr, int c, size_t size);
 };
 
 }}}

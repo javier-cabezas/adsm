@@ -250,7 +250,7 @@ gmacError_t Manager::fromIOBuffer(core::Mode &mode, hostptr_t addr, core::IOBuff
 }
 
 bool
-Manager::read(core::Mode &mode, hostptr_t addr)
+Manager::signalRead(core::Mode &mode, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 #ifdef USE_VM
@@ -276,7 +276,7 @@ Manager::read(core::Mode &mode, hostptr_t addr)
 }
 
 bool
-Manager::write(core::Mode &mode, hostptr_t addr)
+Manager::signalWrite(core::Mode &mode, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 #ifdef USE_VM
@@ -373,8 +373,15 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     return ret;
 }
 
-size_t
-Manager::hostMemory(hostptr_t addr, size_t size, const Object *obj) const
+/**
+ * Gets the number of bytes at the begining of a range that are in host memory
+ * \param addr Starting address of the memory range
+ * \param size Size (in bytes) of the memory range
+ * \param obj First object within the range
+ * \return Number of bytes at the beginning of the range that are in host memory
+ */
+static size_t
+hostMemory(hostptr_t addr, size_t size, const Object *obj)
 {
     // There is no object, so everything is in host memory
     if(obj == NULL) return size;

@@ -109,12 +109,10 @@ public:
 
     gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
                               size_t srcOff, size_t size,
-                              typename StateBlock<State>::Source src,
-                              typename StateBlock<State>::Destination dst) const;
+                              typename StateBlock<State>::Destination dst,
+                              typename StateBlock<State>::Source src) const;
 
-    gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
-
-    gmacError_t acceleratorMemset(int v, size_t size, size_t blockOffset = 0) const;
+    gmacError_t memset(int v, size_t size, size_t blockOffset, typename StateBlock<State>::Destination dst) const;
 };
 
 

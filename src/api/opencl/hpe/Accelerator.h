@@ -435,7 +435,7 @@ public:
 
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
-    void memInfo(size_t &free, size_t &total) const;
+    void getMemInfo(size_t &free, size_t &total) const;
 
 };
 

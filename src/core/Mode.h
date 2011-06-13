@@ -326,7 +326,7 @@ public:
      * \param total A reference to a variable to store the total amount of memory
      * on the accelerator
      */
-    virtual void memInfo(size_t &free, size_t &total) = 0;
+    virtual void getMemInfo(size_t &free, size_t &total) = 0;
 
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();

@@ -29,14 +29,6 @@ Context::~Context()
     }
 }
 
-gmacError_t Context::memset(accptr_t addr, int c, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = accelerator().memset(addr, c, size);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
 KernelLaunch &Context::launch(Kernel &kernel)
 {
     trace::EnterCurrentFunction();

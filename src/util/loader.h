@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009,2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,49 +31,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DBC_MODE_H_
-#define GMAC_CORE_HPE_DBC_MODE_H_
+#ifndef GMAC_UTIL_LOADER_H_
+#define GMAC_UTIL_LOADER_H_
 
-namespace __dbc { namespace core { namespace hpe {
+#if defined(POSIX)
+#include "util/posix/loader.h"
+#elif defined(WINDOWS)
+#include "util/windows/loader.h"
+#endif
 
-class GMAC_LOCAL Mode :
-    public __impl::core::hpe::Mode,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::hpe::Mode)
-
-private:
-    typedef __impl::core::hpe::Mode Parent;
-
-    typedef __impl::core::IOBuffer IOBufferImpl;
-    typedef __impl::core::hpe::Accelerator AcceleratorImpl;
-    typedef __impl::core::hpe::Kernel KernelImpl;
-    typedef __impl::core::hpe::Process ProcessImpl;
-
-protected:
-    void cleanUpContexts();
-    gmacError_t cleanUp();
-
-public:
-    Mode(ProcessImpl &proc, AcceleratorImpl &acc);
-    virtual ~Mode();
-
-    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-    gmacError_t unmap(hostptr_t addr, size_t size);
-    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
-    gmacError_t memset(accptr_t addr, int c, size_t size);
-    gmacError_t bufferToAccelerator(accptr_t dst, IOBufferImpl &buffer, size_t size, size_t off = 0);
-    gmacError_t acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off = 0);
-    void registerKernel(gmac_kernel_id_t k, KernelImpl &kernel);
-    std::string getKernelName(gmac_kernel_id_t k) const;
-    gmacError_t moveTo(AcceleratorImpl &acc);
-    gmacError_t releaseObjects();
-    gmacError_t acquireObjects();
-};
-
-}}}
-
-#endif /* BLOCK_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif
