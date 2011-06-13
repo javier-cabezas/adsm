@@ -130,21 +130,21 @@ Mode::getDirtyBitmap() const
 #endif
 
 
-inline Process &Mode::process()
+inline Process &Mode::getProcess()
 {
     return proc_;
 }
 
-inline const Process &Mode::process() const
+inline const Process &Mode::getProcess() const
 {
     return proc_;
 }
 
 inline void
-Mode::memInfo(size_t &free, size_t &total)
+Mode::getMemInfo(size_t &free, size_t &total)
 {
     switchIn();
-    acc_->memInfo(free, total);
+    acc_->getMemInfo(free, total);
     switchOut();
 }
 

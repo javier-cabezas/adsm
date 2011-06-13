@@ -183,8 +183,8 @@ template<typename State>
 gmacError_t
 DistributedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
                                        size_t srcOff, size_t size,
-                                       typename StateBlock<State>::Source src,
-                                       typename StateBlock<State>::Destination dst) const
+                                       typename StateBlock<State>::Destination dst,
+                                       typename StateBlock<State>::Source src) const
 {
     gmacError_t ret = gmacSuccess;
     if (dst == StateBlock<State>::HOST) {
@@ -221,16 +221,13 @@ DistributedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBloc
 }
 
 template<typename State>
-inline gmacError_t DistributedBlock<State>::hostMemset(int v, size_t size, size_t blockOffset) const
-{
-    ::memset(StateBlock<State>::shadow_ + blockOffset, v, size);
-    return gmacSuccess;
-}
-
-template<typename State>
-inline gmacError_t DistributedBlock<State>::acceleratorMemset(int v, size_t size, size_t blockOffset) const
+gmacError_t
+DistributedBlock<State>::memset(int v, size_t size, size_t blockOffset, typename StateBlock<State>::Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
+    if (dst == StateBlock<State>::HOST) {
+        ::memset(StateBlock<State>::shadow_ + blockOffset, v, size);
+    } else  {
         AcceleratorMap::const_iterator i;
         for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         const std::list<core::Mode *> &list = i->second;
@@ -239,7 +236,8 @@ inline gmacError_t DistributedBlock<State>::acceleratorMemset(int v, size_t size
         ret = mode->memset(i->first + ptroff_t(blockOffset), v, size);
                 if(ret != gmacSuccess) break;
         }
-        return ret;
+    }
+    return ret;
 }
 
 }}

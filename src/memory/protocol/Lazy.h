@@ -48,7 +48,7 @@ public:
      *
      * \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
      */
-    Lazy(size_t limit);
+    explicit Lazy(size_t limit);
 
     /// Default destructor
     virtual ~Lazy();

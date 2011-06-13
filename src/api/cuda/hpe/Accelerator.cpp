@@ -9,12 +9,14 @@ namespace __impl { namespace cuda { namespace hpe {
 util::Private<CUcontext> Accelerator::Ctx_;
 #endif
 
-void Switch::in(Mode &mode)
+void
+Switch::in(Mode &mode)
 {
     mode.getAccelerator().pushContext();
 }
 
-void Switch::out(Mode &mode)
+void
+Switch::out(Mode &mode)
 {
     mode.getAccelerator().popContext();
 }
@@ -98,14 +100,16 @@ Accelerator::~Accelerator()
 #endif
 }
 
-void Accelerator::init()
+void
+Accelerator::init()
 {
 #ifdef USE_MULTI_CONTEXT
     util::Private<CUcontext>::init(Ctx_);
 #endif
 }
 
-__impl::core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
+core::hpe::Mode *
+Accelerator::createMode(core::hpe::Process &proc)
 {
     trace::EnterCurrentFunction();
     core::hpe::Mode *mode = ModeFactory::create(proc, *this);
@@ -150,7 +154,8 @@ Accelerator::destroyCUcontext(CUcontext ctx)
 #endif
 
 #ifdef USE_MULTI_CONTEXT
-ModuleVector Accelerator::createModules()
+ModuleVector
+Accelerator::createModules()
 {
     trace::EnterCurrentFunction();
     pushContext();
@@ -174,7 +179,8 @@ Accelerator::destroyModules(ModuleVector & modules)
 }
 
 #else
-ModuleVector *Accelerator::createModules()
+ModuleVector *
+Accelerator::createModules()
 {
     trace::EnterCurrentFunction();
     if(modules_.empty()) {
@@ -187,14 +193,15 @@ ModuleVector *Accelerator::createModules()
 }
 #endif
 
-gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
+gmacError_t
+Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 {
     trace::EnterCurrentFunction();
     dst = accptr_t(0);
 #if CUDA_VERSION >= 3020
-    size_t gpuSize = size;
+    size_t gpuSize = count;
 #else
-    unsigned gpuSize = unsigned(size);
+    unsigned gpuSize = unsigned(count);
 #endif
     if(align > 1) {
         gpuSize += align;
@@ -218,18 +225,19 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
     dst.pasId_ = id_;
 #endif
 
-    allocations_.insert(src, dst, size);
+    allocations_.insert(src, dst, count);
 
     alignMap_.lockWrite();
 
     alignMap_.insert(AlignmentMap::value_type(gpuPtr, ptr));
     alignMap_.unlock();
-    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) dst, ptr, gpuSize, size, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) dst, ptr, gpuSize, count, align);
     trace::ExitCurrentFunction();
     return error(ret);
 }
 
-gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
+gmacError_t
+Accelerator::unmap(hostptr_t host, size_t count)
 {
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
@@ -239,8 +247,8 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 
     bool hasMapping = allocations_.find(host, addr, s);
     ASSERTION(hasMapping == true);
-    ASSERTION(s == size);
-    allocations_.erase(host, size);
+    ASSERTION(s == count);
+    allocations_.erase(host, count);
 
     TRACE(LOCAL, "Releasing accelerator memory @ %p", addr.get());
 
@@ -264,31 +272,32 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     return error(ret);
 }
 
-gmacError_t Accelerator::memset(accptr_t addr, int c, size_t size)
+gmacError_t
+Accelerator::memset(accptr_t addr, int c, size_t count, stream_t /*stream*/)
 {
     trace::EnterCurrentFunction();
     CUresult ret = CUDA_SUCCESS;
     pushContext();
-    if(size % 4 == 0) {
+    if(count % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD32(addr, seed, size / 4);
+        ret = cuMemsetD32(addr, seed, count / 4);
 #else
-        ret = cuMemsetD32(addr, seed, unsigned(size / 4));
+        ret = cuMemsetD32(addr, seed, unsigned(count / 4));
 #endif
-    } else if(size % 2) {
+    } else if(count % 2) {
         short s = (short) c & 0xffff;
         short seed = s | (s << 8);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD16(addr, seed, size / 2);
+        ret = cuMemsetD16(addr, seed, count / 2);
 #else
-        ret = cuMemsetD16(addr, seed, unsigned(size / 2));
+        ret = cuMemsetD16(addr, seed, unsigned(count / 2));
 #endif
     } else {
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), size);
+        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), count);
 #else
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), unsigned(size));
+        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), unsigned(count));
 #endif
     }
     popContext();
@@ -354,7 +363,7 @@ accptr_t Accelerator::hostMap(const hostptr_t addr)
     return accptr_t(device);
 }
 
-void Accelerator::memInfo(size_t &free, size_t &total) const
+void Accelerator::getMemInfo(size_t &free, size_t &total) const
 {
     pushContext();
 

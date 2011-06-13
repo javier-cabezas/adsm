@@ -57,6 +57,9 @@ class Protocol;
 class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
 protected:
+    /** Process where the memory manager is being used */
+    core::Process &proc_;
+
     /**
      * Allocates a host mapped memory
      * \param mode Execution mode requesting the allocation
@@ -67,18 +70,6 @@ protected:
      */
     gmacError_t hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size);
     
-    /**
-     * Gets the number of bytes at the begining of a range that are in host memory
-     * \param addr Starting address of the memory range
-     * \param size Size (in bytes) of the memory range
-     * \param obj First object within the range
-     * \return Number of bytes at the beginning of the range that are in host memory
-     */
-    size_t hostMemory(hostptr_t addr, size_t size, const Object *obj) const;
-
-    /** Process where the memory manager is being used */
-    core::Process &proc_;
-
     /**
      * Default destructor
      */
@@ -150,7 +141,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool read(core::Mode &mode, hostptr_t addr);
+    TESTABLE bool signalRead(core::Mode &mode, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -158,7 +149,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool write(core::Mode &mode, hostptr_t addr);
+    TESTABLE bool signalWrite(core::Mode &mode, hostptr_t addr);
 
     /**
      * Copy data from a memory object to an I/O buffer

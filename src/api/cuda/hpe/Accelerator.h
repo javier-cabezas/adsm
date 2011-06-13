@@ -168,7 +168,7 @@ public:
 
     gmacError_t execute(KernelLaunch &launch);
 
-    gmacError_t memset(accptr_t addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
 
     gmacError_t sync();
 
@@ -178,7 +178,7 @@ public:
 
     static gmacError_t error(CUresult r);
 
-    void memInfo(size_t &free, size_t &total) const;
+    void getMemInfo(size_t &free, size_t &total) const;
 };
 
 }}}

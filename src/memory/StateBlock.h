@@ -119,15 +119,27 @@ public:
      * \param srcBlock Reference to the source block
      * \param srcOff Offset in bytes within the source block
      * \param count Size (in bytes) of the copy
-     * \param src The physical source of the memory copy (HOST or ACCELERATOR)
      * \param dst The physical destination of the memory copy (HOST or ACCELERATOR)
+     * \param src The physical source of the memory copy (HOST or ACCELERATOR)
      * \return Error code
      * \sa __impl::memory::Protocol
      * \warning This method should be only called from a Protocol class
      */
     virtual gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
                                       size_t srcOff, size_t count,
-                                      Source src, Destination dst) const = 0;
+                                      Destination dst, Source src) const = 0;
+
+    /**
+     * Initializes a memory range within the block host memory to a specific value
+     * \param v Value to initialize the memory to
+     * \param size Size (in bytes) of the memory region to be initialized
+     * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
+     * \param dst The physical destination of the memset (HOST or ACCELERATOR)
+     * \return Error code
+     * \warning This method should be only called from a Protocol class
+     * \sa __impl::memory::Protocol
+     */
+    virtual gmacError_t memset(int v, size_t size, size_t blockOffset, Destination dst) const = 0;
 };
 
 }}

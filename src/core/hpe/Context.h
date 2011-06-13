@@ -113,16 +113,6 @@ public:
      * \return Error code
      */
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-
-    /**
-     * Fills size bytes of accelerator memory with the given value
-     *
-     * \param addr Pointer to accelerator memory
-     * \param c Value to be used to fill the memory
-     * \param size Number of bytes to be filled
-     * \return Error code
-     */
-    virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
 };
 
 }}}

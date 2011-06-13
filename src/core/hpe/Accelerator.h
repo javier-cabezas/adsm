@@ -225,6 +225,16 @@ public:
     virtual gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, stream_t stream) = 0;
 
     /**
+     * Sets size bytes of the memory area pointed by the given address to the given value
+     *
+     * \param addr Address of the memory area to be set
+     * \param c Value to be set
+     * \param count Number of bytes to be set
+     * \param stream Execution queue to enqueue the command
+     */
+    virtual gmacError_t memset(accptr_t addr, int c, size_t count, stream_t stream) = 0;
+
+    /**
      * Wait for all commands in a command queue to be completed
      * \param stream OpenCL command queue
      * \return Error code
@@ -238,7 +248,7 @@ public:
      * \param total A reference to the variable where to store the total amount
      * of memory of the accelerator
      */
-    virtual void memInfo(size_t &free, size_t &total) const = 0;
+    virtual void getMemInfo(size_t &free, size_t &total) const = 0;
 
     // TODO: use this methods for something useful
     /**
