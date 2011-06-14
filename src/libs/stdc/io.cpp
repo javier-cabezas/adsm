@@ -64,7 +64,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         ASSERTION(err == gmacSuccess);
         size_t bytes = left < active->size()? left: active->size();
         size_t elems = __libc_fread(active->addr(), size, bytes/size, stream);
-        ASSERTION(elems * size == bytes);
+        if(elems == 0) break;
 		ret += elems;
         err = manager.fromIOBuffer(mode, (uint8_t *)buf + off, *active, 0, size * elems);
         ASSERTION(err == gmacSuccess);
@@ -144,7 +144,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
         ASSERTION(err == gmacSuccess);
 
         size_t elems = __libc_fwrite(active->addr(), size, bytesActive/size, stream);
-        ASSERTION(elems * size == bytesActive);
+        if(elems == 0) break;
         TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes written", elems * size, nmemb * size);
         ret += elems;
 
