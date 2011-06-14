@@ -157,7 +157,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@ReleaseKernel(@OPE
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags __dv(NULL));
 
 /**
  * Prepares the OpenCL code in the specified fie to be used by the application
@@ -167,7 +167,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSource(cons
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags __dv(NULL));
 
 /**
  * Prepares the OpenCL binary to be used by the application
@@ -178,7 +178,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileSourceFile(
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags __dv(NULL));
 
 /**
  * Prepares the OpenCL binary to be used by the application
@@ -188,7 +188,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinary(cons
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags = NULL);
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags __dv(NULL));
 
 
 /* Wrappers to GMAC native calls */
