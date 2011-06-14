@@ -42,10 +42,11 @@ WITH THE SOFTWARE.  */
 
 typedef cl_mem __gmac_accptr_t;
 
-struct @OPENCL_API_PREFIX@_kernel {
+struct __gmac_kernel {
     void *impl_;
 };
 
+typedef struct __gmac_kernel @OPENCL_API_PREFIX@_kernel;
 
 #endif
 
