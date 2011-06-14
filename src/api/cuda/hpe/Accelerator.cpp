@@ -501,6 +501,7 @@ gmacError_t Accelerator::execute(KernelLaunch &launch)
     return ret;
 }
 
+#if CUDA_VERSION >= 4000 
 gmacError_t Accelerator::registerMem(hostptr_t ptr, size_t size)
 {
     trace::EnterCurrentFunction();
@@ -510,6 +511,7 @@ gmacError_t Accelerator::registerMem(hostptr_t ptr, size_t size)
     trace::ExitCurrentFunction();
     return error(ret);
 }
+
 
 gmacError_t Accelerator::unregisterMem(hostptr_t ptr)
 {
@@ -522,6 +524,7 @@ gmacError_t Accelerator::unregisterMem(hostptr_t ptr)
     trace::ExitCurrentFunction();
     return error(ret);
 }
+#endif
 
 CUstream Accelerator::createCUstream()
 {
