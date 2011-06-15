@@ -26,21 +26,27 @@ gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel k
     return ret;
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
 {
     cl_mem tmp = gmacPtr(ptr);
     if (tmp == NULL) return gmacErrorInvalidValue;
     enterGmac();
+    printf("Using %p with %p\n", &kernel, kernel.impl_);
     gmacError_t ret = ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(&tmp, sizeof(cl_mem), index);
     exitGmac();
 
     return ret;
 }
 
-gmacError_t gmacLaunch(__impl::core::hpe::KernelLaunch &);
-gmacError_t gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
+gmacError_t
+gmacLaunch(__impl::core::hpe::KernelLaunch &);
 
-gmacError_t APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
+gmacError_t
+gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
     size_t workDim, size_t *globalWorkOffset,
     size_t *globalWorkSize, size_t *localWorkSize)
 {
@@ -73,7 +79,8 @@ gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *
 #endif
 
 
-gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileSource(const char *code, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
@@ -82,7 +89,8 @@ gmacError_t APICALL @OPENCL_API_PREFIX@CompileSource(const char *code, const cha
     return ret;
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
@@ -103,8 +111,8 @@ gmacError_t APICALL @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const
     return ret;
 }
 
-
-gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary, size_t size, const char *flags)
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLBinary(binary, size, flags);
@@ -113,7 +121,8 @@ gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinary(const unsigned char *binary
     return ret;
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags)
 {
     std::ifstream in(path, std::ios_base::in);
     if (!in.good()) return gmacErrorInvalidValue;
@@ -134,21 +143,24 @@ gmacError_t APICALL @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const
     return ret;
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t id, @OPENCL_API_PREFIX@_kernel *kernel)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t id, @OPENCL_API_PREFIX@_kernel *kernel)
 {
     enterGmac();
     __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
     __impl::core::hpe::KernelLaunch *launch;
     gmacError_t ret = mode.launch(id, launch);
     if (ret == gmacSuccess) {
+        printf("Initializing %p with %p\n", kernel, launch);
         kernel->impl_ = launch;
     }
     exitGmac();
 
-    return gmacSuccess;
+    return ret;
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
 {
     enterGmac();
     if (kernel.impl_ != NULL) {

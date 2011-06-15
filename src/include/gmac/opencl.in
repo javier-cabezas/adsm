@@ -250,7 +250,7 @@ error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
 }
 
 template <typename P1, typename ...Pn>
-error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
+error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
                          size_t *globalWorkSize, size_t *localWorkSize,
                          P1 p1, Pn ...pn)
 {
