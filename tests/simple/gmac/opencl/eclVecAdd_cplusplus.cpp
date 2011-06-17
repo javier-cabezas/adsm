@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     assert(kernel.setArg(1, a) == eclSuccess);
     assert(kernel.setArg(2, b) == eclSuccess);
     assert(kernel.setArg(3, vecSize) == eclSuccess);
-    assert(kernel(globalSize, blockSize) == eclSuccess);
+    assert(kernel.callNDRange(globalSize, blockSize) == eclSuccess);
 #else
     assert(kernel(globalSize, blockSize)(c, a, b, vecSize) == eclSuccess);
 #endif
