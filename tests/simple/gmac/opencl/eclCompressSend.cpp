@@ -68,14 +68,10 @@ void *dct_thread(void *args)
 
     barrier_wait(&barrierInit);
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+    if(width  % blockSize) globalSize.x += blockSize;
+    if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("dct", err);
     assert(err == eclSuccess);
@@ -101,7 +97,7 @@ void *dct_thread(void *args)
         getTime(&s);
         assert(k.setArg(0, s_dct.out)    == eclSuccess);
         assert(k.setArg(1, s_dct.in)     == eclSuccess);
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "DCT:Run: ", "\n");
 
@@ -161,14 +157,10 @@ void *quant_thread(void *args)
     getTime(&t);
     printTime(&s, &t, "Quant:SendRecv: ", "\n");
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+    if(width  % blockSize) globalSize.x += blockSize;
+    if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("quant", err);
     assert(err == eclSuccess);
@@ -181,7 +173,7 @@ void *quant_thread(void *args)
         getTime(&s);
         assert(k.setArg(0, s_quant.in)  == eclSuccess);
         assert(k.setArg(1, s_quant.out) == eclSuccess);
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "Quant:Run: ", "\n");
 		
@@ -221,14 +213,10 @@ void *idct_thread(void *args)
     getTime(&t);
     printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+    if(width  % blockSize) globalSize.x += blockSize;
+    if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("idct", err);
     assert(err == eclSuccess);
@@ -240,7 +228,7 @@ void *idct_thread(void *args)
         getTime(&s);
         assert(k.setArg(0, s_idct.in)  == eclSuccess);
         assert(k.setArg(1, s_idct.out) == eclSuccess);
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "IDCT:Run: ", "\n");
 

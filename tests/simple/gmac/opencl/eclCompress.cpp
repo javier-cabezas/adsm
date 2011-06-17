@@ -67,14 +67,10 @@ void *dct_thread(void *args)
     getTime(&t);
     timeDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+	if(width  % blockSize) globalSize.x += blockSize;
+	if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("dct", err);
     assert(err == eclSuccess);
@@ -91,7 +87,7 @@ void *dct_thread(void *args)
         timeDCTInit += getTimeStamp(t) - getTimeStamp(s);
 
         getTime(&s);
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
         getTime(&t);
         timeDCTRun += getTimeStamp(t) - getTimeStamp(s);
 
@@ -126,14 +122,10 @@ void *quant_thread(void *args)
     getTime(&t);
     timeQuantAlloc += getTimeStamp(t) - getTimeStamp(s);
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+	if(width  % blockSize) globalSize.x += blockSize;
+	if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("quant", err);
     assert(err == eclSuccess);
@@ -149,7 +141,7 @@ void *quant_thread(void *args)
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
 		gmac_sem_wait(&quant_data, 1);	/* Wait for data to be processed */
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
         getTime(&t);
         timeQuantRun += getTimeStamp(t) - getTimeStamp(s);
 		
@@ -185,14 +177,10 @@ void *idct_thread(void *args)
     getTime(&t);
     timeIDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
-    size_t localSize[2];
-    size_t globalSize[2];
-    localSize[0] = blockSize;
-    localSize[1] = blockSize;
-    globalSize[0] = width;
-    globalSize[1] = height;
-	if(width  % blockSize) globalSize[0] += blockSize;
-	if(height % blockSize) globalSize[1] += blockSize;
+    ecl::config localSize(blockSize, blockSize);
+    ecl::config globalSize(width, height);
+	if(width  % blockSize) globalSize.x += blockSize;
+	if(height % blockSize) globalSize.y += blockSize;
     ecl::error err;
     ecl::kernel k("idct", err);
     assert(err == eclSuccess);
@@ -207,7 +195,7 @@ void *idct_thread(void *args)
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
 		gmac_sem_wait(&idct_data, 1);
-        assert(k.callNDRange(2, NULL, globalSize, localSize) == eclSuccess);
+        assert(k.callNDRange(globalSize, localSize) == eclSuccess);
 		gmac_sem_post(&idct_free, 1);
         getTime(&t);
         timeIDCTRun += getTimeStamp(t) - getTimeStamp(s);

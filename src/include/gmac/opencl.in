@@ -100,8 +100,9 @@ private:
      */
     error getByName(std::string name);
 
+    
 public:
-    /**
+        /**
      * Creates an returns a pointer to a C++ kernel handler for the specified kernel
      *
      * \param name Name of the kernel
@@ -155,24 +156,30 @@ public:
      *
      * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
      */
-    error callNDRange(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize);
 
+    error callNDRange(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-private:
-    template <typename P1, typename ...Pn>
-    error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize,
-                   unsigned index, P1 p1, Pn ...pn);
+    class launch {
+        friend class kernel;
+    private:
+        kernel &kernel_;
+        config global_;
+        config local_;
+        config offset_;
 
-    error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize, unsigned index);
+        template <typename P1, typename ...Pn>
+        error __launch(unsigned index, P1 p1, Pn ...pn);
 
-public:
-    template <typename P1, typename ...Pn>
-    error callNDRange(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize,
-                      P1 p1, Pn ...pn);
+        error __launch(unsigned index);
+
+        launch(kernel &k, config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+    public:
+
+        template <typename P1, typename ...Pn>
+        error operator()(P1 p1, Pn ...pn);
+    };
+
+    kernel::launch operator()(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
 #endif
 };
 
@@ -225,37 +232,53 @@ error kernel::setArg(unsigned index, T val)
 }
 
 inline
-error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
-                          size_t *globalWorkSize, size_t *localWorkSize)
+error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
 {
-    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkOffset.getDims(),
+                                                          globalWorkOffset.getAddr(),
+                                                          globalWorkSize.getAddr(),
+                                                          localWorkSize.getAddr());
     return ret;
 }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+
 template <typename P1, typename ...Pn>
-error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
-                       size_t *globalWorkSize, size_t *localWorkSize,
-                       unsigned index, P1 p1, Pn ...pn)
+error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
 {
-    error ret = setArg(index, p1);
+    error ret = kernel_.setArg(index, p1);
     if (ret != gmacSuccess) return ret;
-    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, index + 1, pn...);
+    return __launch(index + 1, pn...);
 }
 
-error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
-                       size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
+error kernel::launch::__launch(unsigned index)
 {
-    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
+                                                             global_.getAddr(),
+                                                             local_.getAddr(),
+                                                             offset_.getAddr());
 }
 
 template <typename P1, typename ...Pn>
-error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
-                         size_t *globalWorkSize, size_t *localWorkSize,
-                         P1 p1, Pn ...pn)
+error kernel::launch::operator()(P1 p1, Pn ...pn)
 {
-    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
+    return __launch(0, p1, pn...);
 }
+
+kernel::launch::launch(kernel &k, config global, config local, config offset) :
+    kernel_(k),
+    global_(global),
+    local_(local),
+    offset_(offset)
+{
+}
+
+kernel::launch
+kernel::operator()(config globalWorkSize, config localWorkSize, config globalWorkOffset)
+{
+    return launch(*this, globalWorkSize, localWorkSize, globalWorkOffset);
+}
+
 #endif
 
 /*

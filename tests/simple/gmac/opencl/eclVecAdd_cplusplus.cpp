@@ -63,10 +63,8 @@ int main(int argc, char *argv[])
     
     // Call the kernel
     getTime(&s);
-    size_t localSize = blockSize;
-    size_t globalSize = vecSize / blockSize;
-    if(vecSize % blockSize) globalSize++;
-    globalSize *= localSize;
+    ecl::config globalSize(vecSize);
+    if(vecSize % blockSize) globalSize.x += blockSize;
 
     ecl::error err;
     ecl::kernel kernel("vecAdd", err);
@@ -76,9 +74,9 @@ int main(int argc, char *argv[])
     assert(kernel.setArg(1, a) == eclSuccess);
     assert(kernel.setArg(2, b) == eclSuccess);
     assert(kernel.setArg(3, vecSize) == eclSuccess);
-    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize) == eclSuccess);
+    assert(kernel(globalSize, blockSize) == eclSuccess);
 #else
-    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize, c, a, b, vecSize) == eclSuccess);
+    assert(kernel(globalSize, blockSize)(c, a, b, vecSize) == eclSuccess);
 #endif
 
     getTime(&t);
