@@ -234,7 +234,7 @@ error kernel::setArg(unsigned index, T val)
 inline
 error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
 {
-    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkOffset.getDims(),
+    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
                                                           globalWorkOffset.getAddr(),
                                                           globalWorkSize.getAddr(),
                                                           localWorkSize.getAddr());
