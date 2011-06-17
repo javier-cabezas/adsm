@@ -10,6 +10,10 @@
 
 #include "hpe/init.h"
 
+namespace @OPENCL_API_PREFIX@ {
+config config::null;
+}
+
 using __impl::util::params::ParamAutoSync;
 
 static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
@@ -32,7 +36,6 @@ gmacError_t APICALL
     cl_mem tmp = gmacPtr(ptr);
     if (tmp == NULL) return gmacErrorInvalidValue;
     enterGmac();
-    printf("Using %p with %p\n", &kernel, kernel.impl_);
     gmacError_t ret = ((__impl::opencl::hpe::KernelLaunch *)kernel.impl_)->setArgument(&tmp, sizeof(cl_mem), index);
     exitGmac();
 
@@ -151,7 +154,6 @@ gmacError_t APICALL
     __impl::core::hpe::KernelLaunch *launch;
     gmacError_t ret = mode.launch(id, launch);
     if (ret == gmacSuccess) {
-        printf("Initializing %p with %p\n", kernel, launch);
         kernel->impl_ = launch;
     }
     exitGmac();
