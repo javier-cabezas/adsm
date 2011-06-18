@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_PROTOCOL_H_
 
 #include <fstream>
+#include <list>
 
 #include "config/common.h"
 #include "include/gmac/types.h"
@@ -135,7 +136,9 @@ public:
      *
      * \return Error code
      */
-    virtual gmacError_t releaseObjects() = 0;
+    virtual gmacError_t releaseAll() = 0;
+
+    //virtual gmacError_t releaseObjects(const std::list<Object *> &objects) = 0;
 
     /**
      * Releases the CPU ownership of a memory block belonging to this protocol
@@ -278,6 +281,9 @@ public:
     typedef gmacError_t (Protocol::*CopyOp)(Block &, size_t, Block &, size_t, size_t);
     typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::IOBuffer &, size_t, size_t, size_t);
 };
+
+typedef std::list<Object *> ListObject;
+extern ListObject AllObjects;
 
 }}
 

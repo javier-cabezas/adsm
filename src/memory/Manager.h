@@ -51,6 +51,9 @@ namespace memory {
 class Object;
 class Protocol;
 
+typedef std::list<hostptr_t> ListAddr;
+extern ListAddr AllAddresses;
+
 //! Memory Manager Interface
 
 //! Memory Managers orchestate the data transfers between host and accelerator memories
@@ -69,7 +72,7 @@ protected:
      * \return Error code
      */
     gmacError_t hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size);
-    
+
     /**
      * Default destructor
      */
@@ -123,19 +126,21 @@ public:
     /**
      * Get the CPU ownership of all objects bound to the current execution mode
      * \param mode Execution mode acquiring the memory objects
+     * \param addrs List of addresses to be acquired, or the AllAddresses list if all
+     * objects are acquired
      * \return Error code
      */
-    gmacError_t acquireObjects(core::Mode &mode);
+    gmacError_t acquireObjects(core::Mode &mode, const ListAddr &addrs = AllAddresses);
 
     /**
      * Release the CPU ownership of all objects bound to the current execution
      * mode
      * \param mode Execution mode releasing the objects
+     * \param addrs List of addresses to be released, or the AllAddresses list if all
+     * objects are released
      * \return Error code
      */
-    gmacError_t releaseObjects(core::Mode &mode);
-
-    gmacError_t releaseObjects(core::Mode &mode, const std::list<hostptr_t> &objects);
+    gmacError_t releaseObjects(core::Mode &mode, const ListAddr &addrs = AllAddresses);
 
     /**
      * Notify a memory fault caused by a load operation

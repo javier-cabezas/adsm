@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -55,11 +55,11 @@ extern long_t SubBlockMask_;
 
 class GMAC_LOCAL Memory {
 public:
-	static int protect(hostptr_t addr, size_t count, GmacProtection prot);
-	static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
-	static hostptr_t shadow(hostptr_t addr, size_t count);
-	static void unshadow(hostptr_t addr, size_t count);
-	static void unmap(hostptr_t addr, size_t count);
+    static int protect(hostptr_t addr, size_t count, GmacProtection prot);
+    static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
+    static hostptr_t shadow(hostptr_t addr, size_t count);
+    static void unshadow(hostptr_t addr, size_t count);
+    static void unmap(hostptr_t addr, size_t count);
 };
 
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)

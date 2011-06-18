@@ -34,15 +34,15 @@ TEST_F(ProcessTest, ModeMap) {
     Process *proc = createProcess();
     ASSERT_TRUE(proc != NULL);
 
-	Mode *mode = proc->createMode(0);
-	ASSERT_TRUE(mode != NULL);
+    Mode *mode = proc->createMode(0);
+    ASSERT_TRUE(mode != NULL);
 
-	ModeMap mm;
-	typedef std::map<__impl::core::hpe::Mode *, unsigned> Parent;
-	typedef Parent::iterator iterator;
-	std::pair<iterator, bool> ib = mm.insert(mode);
-	ASSERT_TRUE(ib.second);
-	mm.remove(*mode);
+    ModeMap mm;
+    typedef std::map<__impl::core::hpe::Mode *, unsigned> Parent;
+    typedef Parent::iterator iterator;
+    std::pair<iterator, bool> ib = mm.insert(mode);
+    ASSERT_TRUE(ib.second);
+    mm.remove(*mode);
 
     proc->destroy();
 }
@@ -61,6 +61,6 @@ TEST_F(ProcessTest, GlobalMemory) {
     ASSERT_EQ(gmacSuccess, proc->globalFree(*object));
     ASSERT_TRUE(proc->translate(object->addr()) == accptr_t(0));
 
-    object->release();
+    object->decRef();
     proc->destroy();
 }

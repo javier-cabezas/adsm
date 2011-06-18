@@ -99,7 +99,7 @@ Mode::addObject(memory::Object &obj)
     validateObjects();
 }
 
-inline void 
+inline void
 Mode::removeObject(memory::Object &obj)
 {
     getObjectMap().remove(obj);
@@ -108,7 +108,7 @@ Mode::removeObject(memory::Object &obj)
 inline memory::Object *
 Mode::getObject(const hostptr_t addr, size_t size) const
 {
-	return getObjectMap().get(addr, size);
+    return getObjectMap().get(addr, size);
 }
 
 inline gmacError_t

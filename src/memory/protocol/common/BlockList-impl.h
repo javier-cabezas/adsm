@@ -6,11 +6,11 @@
 #include "memory/Block.h"
 #include "memory/vm/Model.h"
 
-namespace __impl { namespace memory { namespace protocol { 
+namespace __impl { namespace memory { namespace protocol {
 
 
 inline BlockList::BlockList() :
-    Lock("BlockList")
+    SpinLock("BlockList")
 {}
 
 inline BlockList::~BlockList()
@@ -34,20 +34,20 @@ inline size_t BlockList::size() const
 
 inline void BlockList::push(Block &block)
 {
+    block.incRef();
     lock();
-    block.use();
     Parent::push_back(&block);
     unlock();
 }
 
-inline Block &BlockList::pop()
+inline Block &BlockList::front()
 {
     ASSERTION(Parent::empty() == false);
     lock();
     Block *ret = Parent::front();
-    Parent::pop_front();
-    ret->release();
     unlock();
+    ASSERTION(ret != NULL);
+    ret->decRef();
     return *ret;
 }
 

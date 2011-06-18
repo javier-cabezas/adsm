@@ -78,9 +78,11 @@ protected:
     /// Collection of blocks forming the object
     BlockMap blocks_;
 
+    bool released_;
+
     /**
      * Returns the block corresponding to a given offest from the begining of the object
-     * 
+     *
      * \param objectOffset Offset (in bytes) from the begining of the object where the block is located
      * \param blockOffset Returns the block offset of the object offset
      * \return Constant iterator pointing to the block
@@ -133,7 +135,7 @@ protected:
     Object(hostptr_t addr, size_t size);
 
     //! Default destructor
-    virtual ~Object(); 
+    virtual ~Object();
 
 public:
 #ifdef DEBUG
@@ -242,16 +244,22 @@ public:
     gmacError_t acquireWithBitmap();
 #endif
 
+    /** Releases the ownership of the object for the CPU
+     *
+     * \return Error code
+     */
+    gmacError_t release();
+
     /**
      * Ensures that the object host memory contains an updated copy of the data
-     * 
+     *
      * \return Error code
      */
     gmacError_t toHost();
 
     /**
      * Ensures that the object accelerator memory contains an updated copy of the data
-     * 
+     *
      * \return Error code
      */
     gmacError_t toAccelerator();
@@ -259,14 +267,13 @@ public:
 
     /**
      * Dump object information to a file
-     * 
+     *
      * \param param std::ostream to write information to
      * \param stat protocol::commo
      *   \sa __impl::memory::protcol::common::Statistitc
      * \return Error code
      */
     gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
-
 
     /**
      * Signal handler for faults caused due to memory reads

@@ -19,12 +19,12 @@ inline gmacError_t Reference::cleanUp()
     return gmacSuccess;
 }
 
-inline void Reference::use() const
+inline void Reference::incRef() const
 {
     AtomicInc(ref_);
 }
 
-inline void Reference::release()
+inline void Reference::decRef()
 {
     if (AtomicDec(ref_) == 0) {
         gmacError_t ret = cleanUp();

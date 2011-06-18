@@ -54,7 +54,7 @@ class GMAC_LOCAL BlockState {
 public:
     typedef T ProtocolState;
     T state_;
-    
+
 public:
     BlockState(ProtocolState state);
 

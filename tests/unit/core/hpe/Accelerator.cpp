@@ -83,7 +83,7 @@ TEST_F(AcceleratorTest, CreateMode) {
         ASSERT_TRUE(mode != NULL);
         ASSERT_TRUE(acc->load() == load + 1);
 
-        mode->release();
+        mode->decRef();
         ASSERT_TRUE(acc->load() == load);
     }
 }

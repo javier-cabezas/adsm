@@ -52,7 +52,7 @@ memory::Object *Map::get(const hostptr_t addr, size_t size) const
     if(obj != NULL) ret = obj;
 
 exit_func:
-    if(ret != NULL) ret->use();
+    if(ret != NULL) ret->incRef();
     return ret;
 }
 
@@ -70,7 +70,7 @@ bool Map::insert(memory::Object &obj)
 bool Map::remove(memory::Object &obj)
 {
     bool ret = memory::ObjectMap::remove(obj);
-	hostptr_t addr = obj.addr();
+        hostptr_t addr = obj.addr();
     // Shared object
     Process &proc = parent_.getProcess();
     memory::ObjectMap &shared = proc.shared();
@@ -124,7 +124,7 @@ void Map::removeOwner(Process &proc, Mode &mode)
     memory::ObjectMap &shared = proc.shared();
     iterator j;
     shared.lockWrite();
-    for(j = shared.begin(); j != shared.end(); j++) {        
+    for(j = shared.begin(); j != shared.end(); j++) {
         j->second->removeOwner(mode);
     }
     shared.unlock();

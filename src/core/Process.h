@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,7 +46,7 @@ namespace __impl {
 namespace memory { class Object; }
 
 
-namespace core { 
+namespace core {
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process> {

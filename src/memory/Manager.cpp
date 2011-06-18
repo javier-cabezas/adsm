@@ -9,7 +9,10 @@
 
 using __impl::util::params::ParamAutoSync;
 
+
 namespace __impl { namespace memory {
+
+ListAddr AllAddresses;
 
 Manager::Manager(core::Process &proc) :
     proc_(proc)
@@ -42,7 +45,7 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 
     // Insert object into memory maps
     mode.addObject(*object);
-    object->release();
+    object->decRef();
     trace::ExitCurrentFunction();
     return gmacSuccess;
 }
@@ -78,12 +81,12 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
     Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
     if(*addr == NULL) {
-        object->release();
+        object->decRef();
         trace::ExitCurrentFunction();
         return hostMappedAlloc(mode, addr, size); // Try using a host mapped object
     }
     gmacError_t ret = proc_.globalMalloc(*object);
-    object->release();
+    object->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -95,18 +98,17 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
     Object *object = mode.getObject(addr);
     if(object != NULL)  {
         mode.removeObject(*object);
-        object->release();
-    }
-    else {
+        object->decRef();
+    } else {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
         if(hostMappedObject == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
-        hostMappedObject->release();
+        hostMappedObject->decRef();
         // We need to release the object twice to effectively destroy it
         HostMappedObject::remove(addr);
-        hostMappedObject->release();
+        hostMappedObject->decRef();
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -120,40 +122,7 @@ accptr_t Manager::translate(core::Mode &mode, const hostptr_t addr)
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) {
             ret = object->acceleratorAddr(addr);
-            object->release();
-        }
-    }
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t Manager::acquireObjects(core::Mode &mode)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-    if(mode.validObjects() && mode.releasedObjects()) {
-        TRACE(LOCAL,"Acquiring Objects");
-        mode.forEachObject(&Object::acquire);
-        mode.acquireObjects();
-    }
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t
-Manager::releaseObjects(core::Mode &mode)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-    if(mode.validObjects()) {
-        TRACE(LOCAL,"Releasing Objects");
-        // Release per-mode objects
-        ret = mode.protocol().releaseObjects();
-        mode.releaseObjects();
-        if(ret == gmacSuccess) {
-            // Release global per-process objects
-            Protocol *protocol = proc_.protocol();
-            if(protocol != NULL) protocol->releaseObjects();
+            object->decRef();
         }
     }
     trace::ExitCurrentFunction();
@@ -161,20 +130,55 @@ Manager::releaseObjects(core::Mode &mode)
 }
 
 gmacError_t
-Manager::releaseObjects(core::Mode &mode, const std::list<hostptr_t> &objects)
+Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
+{
+    trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+
+    if (addrs.size() == 0) {
+        if (mode.validObjects() && mode.releasedObjects()) {
+            TRACE(LOCAL,"Acquiring Objects");
+            ret = mode.forEachObject(&Object::acquire);
+            mode.acquireObjects();
+        }
+    } else {
+        TRACE(LOCAL,"Acquiring call Objects");
+        std::list<hostptr_t>::const_iterator it;
+        for (it = addrs.begin(); it != addrs.end(); it++) {
+            Object *obj = mode.getObject(*it);
+            ASSERTION(obj != NULL);
+            ret = obj->acquire();
+            ASSERTION(ret == gmacSuccess);
+            obj->decRef();
+        }
+    }
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+gmacError_t
+Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
 {
     // TODO: release the given objects only
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    if(mode.validObjects()) {
+    if (addrs.size() == 0) {
         TRACE(LOCAL,"Releasing Objects");
+        if (mode.validObjects()) {
+            ret = mode.forEachObject(&Object::release);
+            ASSERTION(ret == gmacSuccess);
+            mode.releaseObjects();
+        }
+    } else {
+        TRACE(LOCAL,"Releasing call Objects");
         // Release per-mode objects
-        ret = mode.protocol().releaseObjects();
-        mode.releaseObjects();
-        if(ret == gmacSuccess) {
-            // Release global per-process objects
-            Protocol *protocol = proc_.protocol();
-            if(protocol != NULL) protocol->releaseObjects();
+        ListAddr::const_iterator it;
+        for (it = addrs.begin(); it != addrs.end(); it++) {
+            Object *obj = mode.getObject(*it);
+            ASSERTION(obj != NULL);
+            ret = obj->release();
+            ASSERTION(ret == gmacSuccess);
+            obj->decRef();
         }
     }
     trace::ExitCurrentFunction();
@@ -214,8 +218,8 @@ gmacError_t Manager::toIOBuffer(core::Mode &mode, core::IOBuffer &buffer, size_t
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
-                ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
-                obj->release();
+        ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
+        obj->decRef();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -257,8 +261,8 @@ gmacError_t Manager::fromIOBuffer(core::Mode &mode, hostptr_t addr, core::IOBuff
         size_t objCount = obj->addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
-                ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
-                obj->release();
+        ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
+        obj->decRef();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -291,7 +295,7 @@ Manager::signalRead(core::Mode &mode, hostptr_t addr)
     TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
     gmacError_t err = obj->signalRead(addr);
     ASSERTION(err == gmacSuccess);
-    obj->release();
+    obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -316,7 +320,7 @@ Manager::signalWrite(core::Mode &mode, hostptr_t addr)
     }
     TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
     if(obj->signalWrite(addr) != gmacSuccess) ret = false;
-    obj->release();
+    obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -350,7 +354,7 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
     if(obj->addr() <= s && obj->end() >= (s + size)) {
         size_t objSize = (size < obj->size()) ? size : obj->size();
         ret = obj->memset(s - obj->addr(), c, objSize);
-        obj->release();
+        obj->decRef();
         trace::ExitCurrentFunction();
         return ret;
     }
@@ -363,8 +367,7 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
         if(obj == NULL) {
             ::memset(s, c, left);
             left = 0; // This will finish the loop
-        }
-        else {
+        } else {
             // Check if there is a memory gap of host memory at the begining of the
             // memory range that remains to be initialized
             int gap = int(obj->addr() - s);
@@ -384,10 +387,10 @@ Manager::memset(core::Mode &mode, hostptr_t s, int c, size_t size)
             if(ret != gmacSuccess) break;
             left -= objSize; // Account for the bytes initialized by the object
             s += objSize;  // Advance the pointer
-            obj->release();  // Release the object (it will not be needed anymore)
+            obj->decRef();  // Release the object (it will not be needed anymore)
         }
         // Get the next object in the memory range that remains to be initialized
-        obj = owner->getObject(s);
+        if (left > 0) obj = owner->getObject(s);
     }
 
     trace::ExitCurrentFunction();
@@ -442,11 +445,11 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
     while(left > 0) {
         // Get next objects involved, if necessary
         if(dstMode != NULL && dstObject != NULL && dstObject->end() < (dst + offset)) {
-            dstObject->release();
+            dstObject->decRef();
             dstObject = dstMode->getObject(dst + offset, left);
         }
         if(srcMode != NULL && srcObject != NULL && srcObject->end() < (src + offset)) {
-            srcObject->release();
+            srcObject->decRef();
             srcObject = srcMode->getObject(src + offset, left);
         }
 
@@ -485,8 +488,8 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
         left -= copySize;
     }
 
-    if(dstObject != NULL) dstObject->release();
-    if(srcObject != NULL) srcObject->release();
+    if(dstObject != NULL) dstObject->decRef();
+    if(srcObject != NULL) srcObject->decRef();
 
     trace::ExitCurrentFunction();
     return ret;

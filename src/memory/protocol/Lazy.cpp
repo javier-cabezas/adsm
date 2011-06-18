@@ -24,14 +24,13 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 LazyBase::LazyBase(size_t limit) :
-    gmac::util::Lock("Lazy"),
+    gmac::util::Lock("LazyBase"),
     limit_(limit)
 {
 }
 
 LazyBase::~LazyBase()
 {
-
 }
 
 lazy::State LazyBase::state(GmacProtection prot) const
@@ -51,7 +50,7 @@ lazy::State LazyBase::state(GmacProtection prot) const
 
 void LazyBase::deleteObject(Object &obj)
 {
-    obj.release();
+    obj.decRef();
     limit_ -= 2;
 }
 
@@ -219,8 +218,8 @@ void LazyBase::addDirty(Block &block)
         unlock();
         return;
     }
-    while(dbl_.size() > limit_) {
-        Block &b = dbl_.pop();
+    while (dbl_.size() > limit_) {
+        Block &b = dbl_.front();
         b.coherenceOp(&Protocol::release);
     }
     unlock();
@@ -229,19 +228,25 @@ void LazyBase::addDirty(Block &block)
 
 gmacError_t LazyBase::flushDirty()
 {
-    return releaseObjects();
+    return releaseAll();
 }
 
-gmacError_t LazyBase::releaseObjects()
+gmacError_t LazyBase::releaseAll()
 {
     // We need to make sure that this operations is done before we
     // let other modes to proceed
+
     lock();
+
+    // If the list of objects to be released is empty, assume a complete flush
+    TRACE(LOCAL, "Releasing all blocks");
+
     while(dbl_.empty() == false) {
-        Block &b = dbl_.pop();
+        Block &b = dbl_.front();
         gmacError_t ret = b.coherenceOp(&Protocol::release);
         ASSERTION(ret == gmacSuccess);
     }
+
     unlock();
     return gmacSuccess;
 }
@@ -259,6 +264,7 @@ gmacError_t LazyBase::release(Block &b)
         if(ret != gmacSuccess) break;
         block.setState(lazy::ReadOnly);
         block.released();
+        dbl_.remove(block);
         break;
     case lazy::Invalid:
     case lazy::ReadOnly:
