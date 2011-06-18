@@ -135,6 +135,8 @@ public:
      */
     gmacError_t releaseObjects(core::Mode &mode);
 
+    gmacError_t releaseObjects(core::Mode &mode, const std::list<hostptr_t> &objects);
+
     /**
      * Notify a memory fault caused by a load operation
      * \param mode Execution mode causing the fault

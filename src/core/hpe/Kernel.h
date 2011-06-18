@@ -36,11 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <vector>
 
-
 #include "config/common.h"
 #include "include/gmac/types.h"
-
-#include "util/ReusableObject.h"
 
 #include "Descriptor.h"
 
@@ -92,6 +89,9 @@ protected:
      */
     KernelLaunch(Mode &mode);
 #endif
+
+    std::list<hostptr_t> usedObjects_;
+
 public:
     /**
      * Default destructor
@@ -109,6 +109,20 @@ public:
      * \return Execution mode
      */
     Mode &getMode();
+
+    /**
+     * Adds a new object to the kernel launch
+     *
+     * \param ptr Address of the object to be added
+     */
+    void addObject(hostptr_t ptr);
+
+    /**
+     * Gets the list of objects being used by the kernel
+     *
+     * \param ptr Address of the object to be added
+     */
+    const std::list<hostptr_t> &getObjects() const;
 
 #ifdef DEBUG
     /**
