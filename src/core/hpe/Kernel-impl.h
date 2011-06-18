@@ -39,6 +39,20 @@ KernelLaunch::getKernelId() const
 }
 #endif
 
+inline
+void
+KernelLaunch::addObject(hostptr_t ptr)
+{
+    usedObjects_.push_back(ptr);
+}
+
+inline
+const std::list<hostptr_t> &
+KernelLaunch::getObjects() const
+{
+    return usedObjects_;
+}
+
 }}}
 
 #endif
