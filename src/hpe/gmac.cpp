@@ -232,11 +232,7 @@ gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
     const std::list<hostptr_t> &objects = launch.getObjects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
-    if (objects.size() == 0) {
-        ret = manager.releaseObjects(mode);
-    } else {
-        ret = manager.releaseObjects(mode, objects);
-    }
+    ret = manager.releaseObjects(mode, objects);
     CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
@@ -246,7 +242,7 @@ gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
         TRACE(GLOBAL, "Waiting for Kernel to complete");
         mode.wait();
         TRACE(GLOBAL, "Memory Sync");
-        ret = manager.acquireObjects(getCurrentMode());
+        ret = manager.acquireObjects(getCurrentMode(), objects);
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
@@ -280,7 +276,7 @@ gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
         __impl::core::hpe::Mode &mode = getCurrentMode();
         mode.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(mode);
+        ret = getManager().acquireObjects(mode, launch.getObjects());
     }
     return ret;
 }
@@ -291,7 +287,7 @@ gmacThreadSynchronize()
     enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-        gmacError_t ret = gmacSuccess;
+    gmacError_t ret = gmacSuccess;
     if (ParamAutoSync == false) {
         __impl::core::hpe::Mode &mode = getCurrentMode();
         mode.wait();

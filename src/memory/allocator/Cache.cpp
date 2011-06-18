@@ -14,7 +14,7 @@ Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
     manager_(manager),
     mode_(mode)
 {
-    mode_.use();
+    mode_.incRef();
     gmacError_t ret = manager_.alloc(mode_, &ptr_, memory::BlockSize_);
     if(ret != gmacSuccess) { ptr_ = NULL; return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
@@ -31,7 +31,7 @@ Arena::~Arena()
         gmacError_t ret = manager_.free(mode_, ptr_);
         ASSERTION(ret == gmacSuccess);
     }
-    mode_.release();
+    mode_.decRef();
 }
 
 
@@ -41,7 +41,6 @@ Cache::~Cache()
     for(i = arenas.begin(); i != arenas.end(); i++) {
         delete i->second;
     }
-  
 }
 
 hostptr_t Cache::get()

@@ -155,7 +155,7 @@ public:
     memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
     /**
-     * Applies a constant memory operation to all the objects that belong to
+     * Applies a memory operation to all the objects that belong to
      * the mode
      * \param op Memory operation to be executed
      * \sa __impl::memory::Object::acquire

@@ -54,7 +54,7 @@ gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &m
         offset += ptroff_t(oldBlock.size());
 
         // Decrement reference count
-        oldBlock.release();
+        oldBlock.decRef();
     }
 
     return gmacSuccess;
@@ -179,7 +179,7 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
         // Clean-up
         BlockMap::iterator i;
         for(i = blocks_.begin(); i != blocks_.end(); i++) {
-            i->second->release();
+            i->second->decRef();
         }
         blocks_.clear();
 

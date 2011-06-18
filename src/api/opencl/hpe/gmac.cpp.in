@@ -71,7 +71,7 @@ gmacError_t APICALL
 #if defined(SEPARATE_COMMAND_QUEUES)
         ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel.impl_);
 #else
-        ret = __impl::memory::getManager().acquireObjects(getCurrentOpenCLMode());
+        ret = __impl::memory::getManager().acquireObjects(getCurrentOpenCLMode(), launch->getObjects());
 #endif
     }
     exitGmac();

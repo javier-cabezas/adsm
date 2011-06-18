@@ -46,7 +46,7 @@ Mode *ModeMap::get(cl_context ctx) const
     Parent::const_iterator i = find(ctx);
     if(i != end()) {
         ret = i->second;
-        ret->use();
+        ret->incRef();
     }
     unlock();
     return ret;
@@ -63,7 +63,7 @@ Mode *ModeMap::owner(const hostptr_t addr, size_t size) const
         memory::Object *obj = map.get(addr, size);
         if(obj == NULL) continue;
         ret = &(dynamic_cast<Mode &>(obj->owner(*(i->second), addr)));
-        obj->release();
+        obj->decRef();
     }
     unlock();
     return ret;

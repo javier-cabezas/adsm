@@ -16,19 +16,19 @@ inline Lazy<T>::~Lazy()
 {}
 
 template<typename T>
-inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr, 
+inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
                                              GmacProtection prot, unsigned flags)
 {
-    Object *ret = new T(*this, current, cpuPtr, 
-		size, LazyBase::state(prot));
-	if(ret == NULL) return ret;
-	if(ret->valid() == false) {
-		ret->release();
-		return NULL;
-	}
-	Memory::protect(ret->addr(), ret->size(), prot);
+    Object *ret = new T(*this, current, cpuPtr,
+                        size, LazyBase::state(prot));
+    if(ret == NULL) return ret;
+    if(ret->valid() == false) {
+        ret->decRef();
+        return NULL;
+    }
+    Memory::protect(ret->addr(), ret->size(), prot);
     LazyBase::limit_ += 2;
-	return ret;
+    return ret;
 }
 
 }}}

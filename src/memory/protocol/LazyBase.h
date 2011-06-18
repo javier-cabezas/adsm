@@ -113,7 +113,7 @@ public:
     gmacError_t acquireWithBitmap(Block &block);
 #endif
 
-    TESTABLE gmacError_t releaseObjects();
+    TESTABLE gmacError_t releaseAll();
 
     gmacError_t mapToAccelerator(Block &block);
 

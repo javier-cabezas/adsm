@@ -62,9 +62,9 @@ LazyBase::release(BlockImpl &_block)
 }
 
 gmacError_t
-LazyBase::releaseObjects()
+LazyBase::releaseAll()
 {
-    gmacError_t ret = Parent::releaseObjects();
+    gmacError_t ret = Parent::releaseAll();
 
     ENSURES(Parent::dbl_.size() == 0);
 

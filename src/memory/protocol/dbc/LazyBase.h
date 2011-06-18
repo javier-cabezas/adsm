@@ -49,6 +49,7 @@ protected:
 
     typedef __impl::memory::protocol::LazyBase Parent;
     typedef __impl::memory::Block BlockImpl;
+    typedef __impl::memory::Object ObjectImpl;
     typedef __impl::memory::protocol::lazy::State StateImpl;
     typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
     typedef __impl::core::IOBuffer IOBufferImpl;
@@ -60,7 +61,7 @@ public:
     gmacError_t acquire(BlockImpl &obj);
     gmacError_t release(BlockImpl &block);
 
-    gmacError_t releaseObjects();
+    gmacError_t releaseAll();
 
     gmacError_t toHost(BlockImpl &block);
 

@@ -10,7 +10,7 @@ Process::nAccelerators() const
 {
     return accs_.size();
 }
-    
+
 inline Accelerator *
 Process::getAccelerator(unsigned i)
 {
@@ -67,7 +67,7 @@ Process::insertOrphan(memory::Object &obj)
     orphans_.insert(obj);
     shared_.remove(obj);
     // We decrease the count because it gets incremented when inserted
-    obj.release();
+    obj.decRef();
 }
 
 }}}

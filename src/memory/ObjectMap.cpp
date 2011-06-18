@@ -39,7 +39,7 @@ bool ObjectMap::insert(Object &obj)
 {
     lockWrite();
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
-    if(ret.second == true) obj.use();
+    if(ret.second == true) obj.incRef();
     unlock();
     return ret.second;
 }
@@ -50,7 +50,7 @@ bool ObjectMap::remove(Object &obj)
     iterator i = find(obj.end());
     bool ret = (i != end());
     if(ret == true) {
-        obj.release();
+        obj.decRef();
         Parent::erase(i);
     }
     unlock();
@@ -68,7 +68,7 @@ Object *ObjectMap::get(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;
     ret = mapFind(addr, size);
-    if(ret != NULL) ret->use();
+    if(ret != NULL) ret->incRef();
     return ret;
 }
 

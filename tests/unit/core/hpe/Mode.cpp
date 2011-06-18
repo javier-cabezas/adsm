@@ -28,7 +28,7 @@ void ModeTest::SetUpTestCase() {
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
-	__impl::memory::Init();
+    __impl::memory::Init();
     ASSERT_TRUE(Mode_ == NULL);
     Mode_ = Process_->createMode(0);
     ASSERT_TRUE(Mode_ != NULL);
@@ -47,15 +47,15 @@ TEST_F(ModeTest, MemoryObject) {
     Mode_->addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);
-    obj->release();
+    obj->decRef();
 
     Object *ref = Mode_->getObject(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
     Mode_->removeObject(*obj);
-    
+
     ASSERT_EQ(addr, ref->addr());
-    ref->release();
+    ref->decRef();
 }
 
 
@@ -117,7 +117,7 @@ TEST_F(ModeTest, IOBuffer) {
 
     ASSERT_EQ(buffer.addr(), memset(buffer.addr(), 0xa5, Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(buffer, addr, Size_ * sizeof(int)));
-	ASSERT_EQ(gmacSuccess, buffer.wait());
+        ASSERT_EQ(gmacSuccess, buffer.wait());
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));

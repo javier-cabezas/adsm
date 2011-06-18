@@ -11,7 +11,21 @@ namespace __impl { namespace memory {
 Atomic Object::Id_ = 0;
 #endif
 
-Object::BlockMap::const_iterator Object::firstBlock(size_t objectOffset, size_t &blockOffset) const
+Object::~Object()
+{
+    BlockMap::iterator i;
+    lockWrite();
+    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+    ASSERTION(ret == gmacSuccess);
+    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+        i->second->decRef();
+    }
+    blocks_.clear();
+    unlock();
+}
+
+Object::BlockMap::const_iterator
+Object::firstBlock(size_t objectOffset, size_t &blockOffset) const
 {
     BlockMap::const_iterator i = blocks_.begin();
     if(i == blocks_.end()) return i;

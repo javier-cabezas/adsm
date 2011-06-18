@@ -8,10 +8,10 @@ namespace __impl { namespace memory {
 
 bool HostMappedSet::insert(HostMappedObject *object)
 {
-    if(object == NULL) return false; 
+    if(object == NULL) return false;
     uint8_t *key = (uint8_t *)object->addr() + object->size();
     lockWrite();
-    std::pair<Parent::iterator, bool> ret = 
+    std::pair<Parent::iterator, bool> ret =
         Parent::insert(Parent::value_type(key, object));
     unlock();
     return ret.second;
@@ -25,7 +25,7 @@ HostMappedObject *HostMappedSet::get(hostptr_t addr) const
     bool ret = (i != end()) && (addr >= i->second->addr());
     if(ret) {
         object = i->second;
-        object->use();
+        object->incRef();
     }
     unlock();
     return object;
@@ -47,9 +47,9 @@ HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
     size_(size),
     mode_(mode)
 {
-	// Allocate memory (if necessary)
+        // Allocate memory (if necessary)
     addr_ = alloc(mode_);
-    if(addr_ == NULL) return; 
+    if(addr_ == NULL) return;
     set_.insert(this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_);
 }
@@ -95,4 +95,3 @@ HostMappedObject::getAccPtr(core::Mode &mode) const
 
 
 }}
-
