@@ -101,6 +101,7 @@ TEST_F(ObjectTest, Coherence)
     for(size_t s = 0; s < object->size(); s++) {
        ptr[s] = (s & 0xff);
     }
+    ASSERT_EQ(gmacSuccess, object->release());
     ASSERT_EQ(gmacSuccess, object->toAccelerator());
 
     ASSERT_EQ(gmacSuccess, object->acquire());
