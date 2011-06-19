@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     assert(gmacMalloc((void **)&ptr, totalSize * sizeof(unsigned)) == gmacSuccess);
 
     // Call the kernel
-    size_t globalSize = size_t(totalSize);
+    unsigned globalSize = totalSize;
 
     thread_t threads[THREADS];
     unsigned ids[THREADS];
