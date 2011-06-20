@@ -90,7 +90,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    memory::Protocol *protocol();
+    memory::Protocol *getProtocol();
 
     /**
      * Inserts an object into the orphan (objects without owner) list

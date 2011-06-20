@@ -33,7 +33,7 @@ Mode::~Mode()
 }
 
 inline
-memory::Protocol &Mode::protocol()
+memory::Protocol &Mode::getProtocol()
 {
     return *protocol_;
 }

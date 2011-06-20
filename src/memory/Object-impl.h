@@ -124,7 +124,7 @@ Object::releaseBlocks()
     }
     released_ = true;
     unlock();
-    return gmacSuccess;
+    return ret;
 }
 
 #ifdef USE_VM

@@ -106,7 +106,7 @@ public:
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    memory::Protocol &protocol();
+    memory::Protocol &getProtocol();
 
     /**
      * Gets a numeric identifier for the mode. This identifier must be unique.

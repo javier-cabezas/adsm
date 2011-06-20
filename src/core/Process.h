@@ -92,7 +92,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::Protocol *protocol() = 0;
+    virtual memory::Protocol *getProtocol() = 0;
 
     /**
      * Inserts an object into the orphan (objects without owner) list

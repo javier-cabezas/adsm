@@ -37,7 +37,7 @@ accptr_t Process::translate(const hostptr_t addr)
 }
 
 
-memory::Protocol *Process::protocol()
+memory::Protocol *Process::getProtocol()
 {
     return NULL;
 }

@@ -36,7 +36,7 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    Object *object = mode.protocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    Object *object = mode.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -76,7 +76,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
             return ret;
         }
     }
-    Protocol *protocol = proc_.protocol();
+    Protocol *protocol = proc_.getProtocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
     Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
@@ -169,11 +169,13 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
-            ret = mode.protocol().releaseAll();
+            ret = mode.getProtocol().releaseAll();
             ASSERTION(ret == gmacSuccess);
             // 2. Process protocol
-            ret = proc_.protocol()->releaseAll();
-            ASSERTION(ret == gmacSuccess);
+            if (proc_.getProtocol() != NULL) {
+                ret = proc_.getProtocol()->releaseAll();
+                ASSERTION(ret == gmacSuccess);
+            }
             mode.releaseObjects();
         }
     } else { // Release given objects
@@ -508,11 +510,11 @@ Manager::flushDirty(core::Mode &mode)
     gmacError_t ret;
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
-    ret = mode.protocol().flushDirty();
+    ret = mode.getProtocol().flushDirty();
 
     if(ret == gmacSuccess) {
         // Release global per-process objects
-        Protocol *protocol = proc_.protocol();
+        Protocol *protocol = proc_.getProtocol();
         if(protocol != NULL) protocol->flushDirty();
     }
     return ret;
