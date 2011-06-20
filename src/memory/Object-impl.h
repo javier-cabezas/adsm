@@ -106,7 +106,17 @@ inline gmacError_t
 Object::release()
 {
     lockWrite();
+    released_ = true;
+    unlock();
+    return gmacSuccess;
+}
+
+inline gmacError_t
+Object::releaseBlocks()
+{
+    lockWrite();
     gmacError_t ret = gmacSuccess;
+
     TRACE(LOCAL, "Releasing object %p?", addr_);
     if (released_ == false) {
         TRACE(LOCAL, "Releasing object %p", addr_);

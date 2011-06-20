@@ -71,7 +71,7 @@ class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 
 protected:
     /** Return the state corresponding to a memory protection
-     *
+     *ock
      * \param prot Memory protection
      * \return Protocol state
      */
