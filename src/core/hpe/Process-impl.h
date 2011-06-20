@@ -20,7 +20,7 @@ Process::getAccelerator(unsigned i)
 }
 
 inline memory::Protocol *
-Process::protocol()
+Process::getProtocol()
 {
     return &protocol_;
 }
