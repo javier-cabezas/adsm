@@ -250,6 +250,13 @@ public:
      */
     gmacError_t release();
 
+    /** Releases the ownership of the object for the CPU and notifies the
+     * protocol that all the blocks are released
+     *
+     * \return Error code
+     */
+    gmacError_t releaseBlocks();
+
     /**
      * Ensures that the object host memory contains an updated copy of the data
      *

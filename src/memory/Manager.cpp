@@ -159,24 +159,31 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
 gmacError_t
 Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
 {
-    // TODO: release the given objects only
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    if (addrs.size() == 0) {
+    if (addrs.size() == 0) { // Release all objects
         TRACE(LOCAL,"Releasing Objects");
         if (mode.validObjects()) {
+            // Mark objects as released
             ret = mode.forEachObject(&Object::release);
+            ASSERTION(ret == gmacSuccess);
+            // Flush protocols
+            // 1. Mode protocol
+            ret = mode.protocol().releaseAll();
+            ASSERTION(ret == gmacSuccess);
+            // 2. Process protocol
+            ret = proc_.protocol()->releaseAll();
             ASSERTION(ret == gmacSuccess);
             mode.releaseObjects();
         }
-    } else {
+    } else { // Release given objects
         TRACE(LOCAL,"Releasing call Objects");
-        // Release per-mode objects
         ListAddr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             Object *obj = mode.getObject(*it);
             ASSERTION(obj != NULL);
-            ret = obj->release();
+            // Release all the blocks in the object
+            ret = obj->releaseBlocks();
             ASSERTION(ret == gmacSuccess);
             obj->decRef();
         }
