@@ -127,10 +127,10 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 
 gmacError_t Mode::acquireObjects()
 {
-        lock();
-    validObjects_ = false;
+    lock();
+    modifiedObjects_ = false;
     releasedObjects_ = false;
-        unlock();
+    unlock();
     return error_;
 }
 

@@ -102,7 +102,6 @@ TEST_F(ManagerTest, GlobalAllocCentralized)
 
 TEST_F(ManagerTest, Coherence)
 {
-    static std::list<hostptr_t> dummy;
     ASSERT_TRUE(Process_ != NULL);
     Manager *manager = new Manager(*Process_);
     ASSERT_TRUE(manager != NULL);
@@ -112,26 +111,31 @@ TEST_F(ManagerTest, Coherence)
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
 
-	ASSERT_TRUE(Process_->getCurrentMode().validObjects());
+	ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
 
     for(int n = 0; n < 16; n++) {
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = (s & 0xff);
 	    }
-        ASSERT_TRUE(Process_->getCurrentMode().validObjects());
+        ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
 	
-    	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Process_->getCurrentMode(), dummy));
+    	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Process_->getCurrentMode()));
         ASSERT_TRUE(Process_->getCurrentMode().releasedObjects());
         
-    	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Process_->getCurrentMode(), dummy));
+    	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Process_->getCurrentMode()));
         ASSERT_FALSE(Process_->getCurrentMode().releasedObjects());
-	    ASSERT_FALSE(Process_->getCurrentMode().validObjects());
+	    ASSERT_FALSE(Process_->getCurrentMode().hasModifiedObjects());
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));
 	    }
-        ASSERT_TRUE(Process_->getCurrentMode().validObjects());
+        ASSERT_FALSE(Process_->getCurrentMode().hasModifiedObjects());
+
+        for(size_t s = 0; s < Size_; s++) {
+	        ptr[s] = 0x0;
+	    }
+        ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
     }
 
     ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));

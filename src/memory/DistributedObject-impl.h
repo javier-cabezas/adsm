@@ -7,14 +7,14 @@
 namespace __impl { namespace memory {
 
 template<typename State>
-inline void DistributedObject<State>::validate()
+inline void DistributedObject<State>::modifiedObject()
 {
     AcceleratorMap::iterator i;
     for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         std::list<core::Mode *> modes = i->second;
         std::list<core::Mode *>::iterator j;
         for(j = i->second.begin(); j != i->second.end(); j++) {
-            (*j)->validateObjects();
+            (*j)->modifiedObjects();
         }
     }
 }

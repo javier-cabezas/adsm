@@ -11,7 +11,7 @@ inline
 Mode::Mode() :
     gmac::util::SpinLock("Mode"),
     id_(AtomicInc(Count_)),
-    validObjects_(false),
+    modifiedObjects_(false),
     releasedObjects_(false),
     error_(gmacSuccess)
 #ifdef USE_VM
@@ -57,10 +57,10 @@ void Mode::error(gmacError_t err)
 }
 
 inline
-bool Mode::validObjects() const
+bool Mode::hasModifiedObjects() const
 {
     lock();
-    bool ret = validObjects_;
+    bool ret = modifiedObjects_;
     unlock();
     return ret;
 }
@@ -69,16 +69,16 @@ inline
 void Mode::invalidateObjects()
 {
     lock();
-    validObjects_ = false;
+    modifiedObjects_ = false;
     unlock();
 }
 
 
 inline
-void Mode::validateObjects()
+void Mode::modifiedObjects()
 {
     lock();
-    validObjects_ = true;
+    modifiedObjects_ = true;
     releasedObjects_ = false;
     unlock();
 }
@@ -96,7 +96,7 @@ inline void
 Mode::addObject(memory::Object &obj)
 {
     getObjectMap().insert(obj);
-    validateObjects();
+    modifiedObjects();
 }
 
 inline void

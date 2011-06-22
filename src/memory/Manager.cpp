@@ -136,7 +136,7 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
     gmacError_t ret = gmacSuccess;
 
     if (addrs.size() == 0) {
-        if (mode.validObjects() && mode.releasedObjects()) {
+        if (mode.hasModifiedObjects() && mode.releasedObjects()) {
             TRACE(LOCAL,"Acquiring Objects");
             ret = mode.forEachObject(&Object::acquire);
             mode.acquireObjects();
@@ -163,7 +163,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
     gmacError_t ret = gmacSuccess;
     if (addrs.size() == 0) { // Release all objects
         TRACE(LOCAL,"Releasing Objects");
-        if (mode.validObjects()) {
+        if (mode.hasModifiedObjects()) {
             // Mark objects as released
             ret = mode.forEachObject(&Object::release);
             ASSERTION(ret == gmacSuccess);
