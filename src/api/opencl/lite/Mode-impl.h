@@ -116,7 +116,7 @@ inline
 gmacError_t Mode::acquireObjects()
 {
     cl_int ret = clFinish(active_);
-    validObjects_ = false;
+    modifiedObjects_ = false;
     return error(ret);
 }
 

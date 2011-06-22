@@ -8,9 +8,9 @@
 namespace __impl { namespace memory {
 
 template<typename State>
-void SharedObject<State>::validate()
+void SharedObject<State>::modifiedObject()
 {
-    if(owner_ != NULL) owner_->validateObjects();
+    if(owner_ != NULL) owner_->modifiedObjects();
 }
 
 template<typename State>

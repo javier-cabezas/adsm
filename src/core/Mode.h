@@ -71,7 +71,7 @@ protected:
     unsigned id_;
     memory::Protocol *protocol_;
 
-    bool validObjects_;
+    bool modifiedObjects_;
     bool releasedObjects_;
 
     gmacError_t error_;
@@ -182,12 +182,12 @@ public:
      * \return Boolean that tells if objects of the mode have been already
      * invalidated
      */
-    bool validObjects() const;
+    bool hasModifiedObjects() const;
 
     /**
      * Notifies the mode that one (or several) of its objects have been validated
      */
-    void validateObjects();
+    void modifiedObjects();
 
     /**
      * Notifies the mode that one (or several) of its objects has been invalidated

@@ -83,7 +83,7 @@ gmacError_t
 Mode::acquireObjects()
 {
     lock();
-    validObjects_ = false;
+    modifiedObjects_ = false;
     releasedObjects_ = false;
     unlock();
     return error_;

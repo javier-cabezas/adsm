@@ -397,7 +397,7 @@ Object::signalWrite(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
     lockRead();
-    validate();
+    modifiedObject();
     BlockMap::const_iterator i = blocks_.upper_bound(addr);
     if(i == blocks_.end()) ret = gmacErrorInvalidValue;
     else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
