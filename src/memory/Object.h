@@ -78,10 +78,11 @@ protected:
     /// Collection of blocks forming the object
     BlockMap blocks_;
 
+    /// Tells whether the object has been released or not
     bool released_;
 
     /**
-     * Returns the block corresponding to a given offest from the begining of the object
+     * Returns the block corresponding to a given offset from the begining of the object
      *
      * \param objectOffset Offset (in bytes) from the begining of the object where the block is located
      * \param blockOffset Returns the block offset of the object offset
