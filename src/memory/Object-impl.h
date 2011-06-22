@@ -122,6 +122,7 @@ Object::releaseBlocks()
         TRACE(LOCAL, "Releasing object %p", addr_);
         ret = coherenceOp(&Protocol::release);
     }
+
     released_ = true;
     unlock();
     return ret;
@@ -137,25 +138,6 @@ Object::acquireWithBitmap()
     return ret;
 }
 #endif
-
-inline gmacError_t
-Object::dump(std::ostream &out, protocol::common::Statistic stat)
-{
-#ifdef DEBUG
-    lockWrite();
-    std::ostringstream oss;
-    oss << (void *) addr();
-    out << oss.str() << " ";
-    gmacError_t ret = forEachBlock(&Block::dump, out, stat);
-    out << std::endl;
-    unlock();
-    if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;
-    dumps_[stat]++;
-#else
-    gmacError_t ret = gmacSuccess;
-#endif
-    return ret;
-}
 
 template <typename P1, typename P2>
 gmacError_t
@@ -183,33 +165,6 @@ inline gmacError_t Object::toAccelerator()
 {
     lockRead();
     gmacError_t ret = coherenceOp(&Protocol::release);
-    unlock();
-    return ret;
-}
-
-inline gmacError_t Object::signalRead(hostptr_t addr)
-{
-    gmacError_t ret = gmacSuccess;
-    lockRead();
-    validate();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
-    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
-    else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-    else ret = i->second->signalRead(addr);
-    unlock();
-    return ret;
-}
-
-inline gmacError_t
-Object::signalWrite(hostptr_t addr)
-{
-    gmacError_t ret = gmacSuccess;
-    lockRead();
-    validate();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
-    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
-    else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
-    else ret = i->second->signalWrite(addr);
     unlock();
     return ret;
 }
