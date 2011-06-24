@@ -19,10 +19,11 @@ template<typename T>
 inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
                                              GmacProtection prot, unsigned flags)
 {
+    gmacError_t err;
     Object *ret = new T(*this, current, cpuPtr,
-                        size, LazyBase::state(prot));
+                        size, LazyBase::state(prot), err);
     if(ret == NULL) return ret;
-    if(ret->valid() == false) {
+    if(err != gmacSuccess) {
         ret->decRef();
         return NULL;
     }
