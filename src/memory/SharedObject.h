@@ -56,17 +56,17 @@ protected:
 
     void modifiedObject();
 public:
-	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~SharedObject();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
-	core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
+    core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
 
-	gmacError_t addOwner(core::Mode &owner);
-	gmacError_t removeOwner(core::Mode &owner);
+    gmacError_t addOwner(core::Mode &owner);
+    gmacError_t removeOwner(core::Mode &owner);
 
-    gmacError_t unmapFromAccelerator();
     gmacError_t mapToAccelerator();
+    gmacError_t unmapFromAccelerator();
 };
 
 }}

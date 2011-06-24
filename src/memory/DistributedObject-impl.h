@@ -20,45 +20,47 @@ inline void DistributedObject<State>::modifiedObject()
 }
 
 template<typename State>
-inline DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
-                                                   hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
-    Object(cpuAddr, size)
+inline
+DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
+                                            hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
+    Object(hostAddr, size)
 {
     shadow_ = NULL;
     err = gmacSuccess;
 
     // Allocate memory (if necessary)
-    if (cpuAddr == NULL)
+    if(hostAddr == NULL) {
         addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-    if(addr_ == NULL) {
-        err = gmacErrorMemoryAllocation;
-        return;
+        if (addr_ == NULL) {
+            err = gmacErrorMemoryAllocation;
+            return;
+        }
     }
 
     // Create a shadow mapping for the host memory
-    shadow_ = Memory::shadow(addr_, size_);
-    if(shadow_ == NULL) {
+    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
+    if (shadow_ == NULL) {
         err = gmacErrorMemoryAllocation;
         return;
     }
 
     hostptr_t mark = addr_;
-    int offset = 0;
+    ptroff_t offset = 0;
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
-            new DistributedBlock<State>(protocol, addr_ + offset, shadow_ + offset, blockSize, init)));
+                       new DistributedBlock<State>(protocol, addr_ + offset,
+                                                   shadow_ + offset, blockSize, init)));
         size -= blockSize;
-        offset += int(blockSize);
+        offset += ptroff_t(blockSize);
     }
-    TRACE(LOCAL, "Creating Distributed Object @ %p : shadow @ %p) ",
-        addr_, shadow_);
+    TRACE(LOCAL, "Creating Distributed Object @ %p : shadow @ %p) ", addr_, shadow_);
 }
 
 
 template<typename State>
-inline DistributedObject<State>::~DistributedObject()
+DistributedObject<State>::~DistributedObject()
 {
     AcceleratorMap::iterator i;
     for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -73,7 +75,8 @@ inline DistributedObject<State>::~DistributedObject()
 }
 
 template<typename State>
-inline accptr_t DistributedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+inline accptr_t
+DistributedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
     accptr_t ret = accptr_t(0);
     lockRead();
@@ -86,7 +89,8 @@ inline accptr_t DistributedObject<State>::acceleratorAddr(core::Mode &current, c
 }
 
 template<typename State>
-inline core::Mode &DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
+inline core::Mode &
+DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
     lockRead();
     BlockMap::const_iterator i = blocks_.upper_bound(addr);
@@ -96,9 +100,9 @@ inline core::Mode &DistributedObject<State>::owner(core::Mode &current, const ho
     return ret;
 }
 
-
 template<typename State>
-inline gmacError_t DistributedObject<State>::addOwner(core::Mode &mode)
+inline gmacError_t
+DistributedObject<State>::addOwner(core::Mode &mode)
 {
     accptr_t acceleratorAddr = accptr_t(0);
 #ifdef USE_VM
@@ -134,7 +138,8 @@ inline gmacError_t DistributedObject<State>::addOwner(core::Mode &mode)
 }
 
 template<typename State>
-inline gmacError_t DistributedObject<State>::removeOwner(core::Mode &mode)
+inline gmacError_t
+DistributedObject<State>::removeOwner(core::Mode &mode)
 {
     TRACE(LOCAL, "Remove owner %p Object @ %p", &mode, addr_);
 
@@ -166,20 +171,20 @@ inline gmacError_t DistributedObject<State>::removeOwner(core::Mode &mode)
     //if(acceleratorAddr_.empty()) Map::insertOrphan(*this);
 
     unlock();
-        return gmacSuccess;
+    return gmacSuccess;
 }
 
 template<typename State>
-inline
-gmacError_t DistributedObject<State>::mapToAccelerator()
+inline gmacError_t
+DistributedObject<State>::mapToAccelerator()
 {
     // TODO Fail
     return gmacSuccess;
 }
 
 template<typename State>
-inline
-gmacError_t DistributedObject<State>::unmapFromAccelerator()
+inline gmacError_t
+DistributedObject<State>::unmapFromAccelerator()
 {
     // TODO Fail
     return gmacSuccess;
