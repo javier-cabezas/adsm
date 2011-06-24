@@ -1,9 +1,8 @@
 #ifndef GMAC_MEMORY_SHAREDOBJECT_IMPL_H_
 #define GMAC_MEMORY_SHAREDOBJECT_IMPL_H_
 
+#include "core/Mode.h"
 #include "memory/SharedBlock.h"
-
-#include "core/Process.h"
 
 namespace __impl { namespace memory {
 
@@ -59,12 +58,12 @@ gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &m
 }
 
 template<typename State>
-SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
+SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner,
+                                  hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size),
     acceleratorAddr_(0),
     owner_(&owner)
 {
-    addr_ = NULL;
     shadow_ = NULL;
     err = gmacSuccess;
 
@@ -75,19 +74,20 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
             err = gmacErrorMemoryAllocation;
             return;
         }
-    } else {
-        addr_ = hostAddr;
+    }
+
+    // Create a shadow mapping for the host memory
+    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
+    if (shadow_ == NULL) {
+        err = gmacErrorMemoryAllocation;
+        return;
     }
 
     // Allocate accelerator memory
     err = allocAcceleratorMemory(owner, addr_, size, acceleratorAddr_);
     if (err != gmacSuccess) return;
 
-    // Create a shadow mapping for the host memory
-    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
-    if (shadow_ == NULL) return;
-
-    // Populate the block-set
+        // Populate the block-set
     hostptr_t mark = addr_;
     ptroff_t offset = 0;
     while(size > 0) {
@@ -95,7 +95,7 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
                        new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset),
-                       shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
+                                              shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
         size -= blockSize;
         offset += ptroff_t(blockSize);
     }
@@ -119,7 +119,8 @@ SharedObject<State>::~SharedObject()
 }
 
 template<typename State>
-inline accptr_t SharedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+inline accptr_t
+SharedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
     accptr_t ret = accptr_t(0);
     lockRead();
@@ -132,7 +133,8 @@ inline accptr_t SharedObject<State>::acceleratorAddr(core::Mode &current, const 
 }
 
 template<typename State>
-inline core::Mode &SharedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
+inline core::Mode &
+SharedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
     lockRead();
     core::Mode &ret = *owner_;
@@ -141,14 +143,15 @@ inline core::Mode &SharedObject<State>::owner(core::Mode &current, const hostptr
 }
 
 template<typename State>
-inline gmacError_t SharedObject<State>::addOwner(core::Mode &owner)
+inline gmacError_t
+SharedObject<State>::addOwner(core::Mode &owner)
 {
     return gmacErrorUnknown; // This kind of objects only accepts one owner
 }
 
 template<typename State>
-inline
-gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
+inline gmacError_t
+SharedObject<State>::removeOwner(core::Mode &owner)
 {
     lockWrite();
     if(owner_ == &owner) {
@@ -178,8 +181,8 @@ gmacError_t SharedObject<State>::removeOwner(core::Mode &owner)
 }
 
 template<typename State>
-inline
-gmacError_t SharedObject<State>::unmapFromAccelerator()
+inline gmacError_t
+SharedObject<State>::unmapFromAccelerator()
 {
     lockWrite();
     // Remove blocks from the coherency domain
@@ -192,7 +195,8 @@ gmacError_t SharedObject<State>::unmapFromAccelerator()
 
 
 template<typename State>
-inline gmacError_t SharedObject<State>::mapToAccelerator()
+inline gmacError_t
+SharedObject<State>::mapToAccelerator()
 {
     lockWrite();
     gmacError_t ret;
