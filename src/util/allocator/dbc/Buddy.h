@@ -31,20 +31,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
-#define GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
+#ifndef GMAC_UTIL_ALLOCATOR_DBC_BUDDY_H
+#define GMAC_UTIL_ALLOCATOR_DBC_BUDDY_H
 
 #include "dbc/types.h"
 #include "dbc/Contract.h"
 
 #include "util/allocator/Buddy.h"
 
-namespace __dbc { namespace core { namespace allocator {
+namespace __dbc { namespace util { namespace allocator {
 
 class GMAC_LOCAL Buddy :
-    public __impl::core::allocator::Buddy,
+    public __impl::util::allocator::Buddy,
     public virtual Contract {
-    DBC_TESTED(__impl::core::allocator::Buddy)
+    DBC_TESTED(__impl::util::allocator::Buddy)
 protected:
     off_t getFromList(uint8_t i);
     void putToList(off_t addr, uint8_t i);

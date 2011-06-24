@@ -6,7 +6,7 @@
 
 #include "util/allocator/Buddy.h"
 
-using gmac::core::allocator::Buddy;
+using gmac::util::allocator::Buddy;
 
 class BuddyTest : public testing::Test {
 public:

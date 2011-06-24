@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_ALLOCATOR_BUDDY_H_
-#define GMAC_CORE_ALLOCATOR_BUDDY_H_
+#ifndef GMAC_UTIL_ALLOCATOR_BUDDY_H_
+#define GMAC_UTIL_ALLOCATOR_BUDDY_H_
 
 #include <list>
 #include <map>
@@ -40,14 +40,13 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "util/Lock.h"
 
-
-namespace __impl { namespace core { namespace allocator {
+namespace __impl { namespace util { namespace allocator {
 
 /**
  * Simple buddy allocator
  */
 class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
-    DBC_FORCE_TEST(__impl::core::allocator::Buddy)
+    DBC_FORCE_TEST(__impl::util::allocator::Buddy)
 protected:
     hostptr_t addr_;
     uint32_t size_;
