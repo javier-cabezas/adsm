@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "dbc/types.h"
 #include "dbc/Contract.h"
 
-#include "core/allocator/Buddy.h"
+#include "util/allocator/Buddy.h"
 
 namespace __dbc { namespace core { namespace allocator {
 

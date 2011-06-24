@@ -1,10 +1,10 @@
-#include "core/allocator/Buddy.h"
-
-#include "gtest/gtest.h"
-
 #include <ctime>
 #include <cstdlib>
 #include <list>
+
+#include "gtest/gtest.h"
+
+#include "util/allocator/Buddy.h"
 
 using gmac::core::allocator::Buddy;
 

@@ -38,7 +38,6 @@ WITH THE SOFTWARE.  */
 
 #include "core/Mode.h"
 #include "core/hpe/Map.h"
-#include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"

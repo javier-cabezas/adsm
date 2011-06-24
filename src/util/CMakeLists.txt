@@ -24,6 +24,13 @@ set(util_SRC
     Singleton.h
     Singleton-impl.h
     Thread.h
+    allocator/Buddy.h
+    allocator/Buddy.cpp
 )
 
-add_gmac_sources(gmac-util ${util_SRC})
+set(util_DBC
+    allocator/dbc/Buddy.h
+    allocator/dbc/Buddy.cpp
+)
+
+add_gmac_sources(gmac-util ${util_SRC} ${util_DBC})
