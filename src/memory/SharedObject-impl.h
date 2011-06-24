@@ -13,10 +13,10 @@ void SharedObject<State>::modifiedObject()
     if(owner_ != NULL) owner_->modifiedObjects();
 }
 
-template<typename State>
-accptr_t SharedObject<State>::allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size)
+static gmacError_t
+allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
 {
-    accptr_t acceleratorAddr(0);
+    acceleratorAddr = accptr_t(0);
     // Allocate accelerator memory
 #ifdef USE_VM
     gmacError_t ret =
@@ -25,15 +25,13 @@ accptr_t SharedObject<State>::allocAcceleratorMemory(core::Mode &mode, hostptr_t
     gmacError_t ret =
         mode.map(acceleratorAddr, addr, size);
 #endif
-    if(ret == gmacSuccess) {
 #ifdef USE_VM
+    if(ret == gmacSuccess) {
         vm::Bitmap &bitmap = mode.getBitmap();
         bitmap.registerRange(acceleratorAddr, size);
-#endif
-        return acceleratorAddr;
-    } else {
-        return accptr_t(0);
     }
+#endif
+    return ret;
 }
 
 template<typename State>
@@ -61,58 +59,47 @@ gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &m
 }
 
 template<typename State>
-SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, typename State::ProtocolState init) :
+SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size),
     acceleratorAddr_(0),
     owner_(&owner)
 {
     addr_ = NULL;
+    shadow_ = NULL;
+    err = gmacSuccess;
 
     // Allocate memory (if necessary)
     if(hostAddr == NULL) {
         addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-        valid_ = (addr_ != NULL);
-        if(valid_ == false) return;
-    }
-    else {
+        if (addr_ == NULL) {
+            err = gmacErrorMemoryAllocation;
+            return;
+        }
+    } else {
         addr_ = hostAddr;
     }
 
-    if (valid_ == true) {
-        // Allocate accelerator memory
-        acceleratorAddr_ = allocAcceleratorMemory(owner, addr_, size);
-        valid_ = (acceleratorAddr_ != 0);
-    }
+    // Allocate accelerator memory
+    err = allocAcceleratorMemory(owner, addr_, size, acceleratorAddr_);
+    if (err != gmacSuccess) return;
 
-    // Free allocated memory if there has been an error
-    if (valid_ == false && hostAddr == NULL) {
-        Memory::unmap(addr_, size);
-    }
+    // Create a shadow mapping for the host memory
+    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
+    if (shadow_ == NULL) return;
 
-    if (valid_ == true) {
-        // Create a shadow mapping for the host memory
-        shadow_ = hostptr_t(Memory::shadow(addr_, size_));
-        if(shadow_ == NULL) {
-            valid_ = false;;
-            // We do not need to release memory, because the object
-            // destructor will do it for us
-            return;
-        }
-
-        // Populate the block-set
-        hostptr_t mark = addr_;
-        ptroff_t offset = 0;
-        while(size > 0) {
-            size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
-            mark += blockSize;
-            blocks_.insert(BlockMap::value_type(mark,
-                           new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset),
-                            shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
-            size -= blockSize;
-            offset += ptroff_t(blockSize);
-        }
-        TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", addr_, shadow_, (void *) acceleratorAddr_);
+    // Populate the block-set
+    hostptr_t mark = addr_;
+    ptroff_t offset = 0;
+    while(size > 0) {
+        size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
+        mark += blockSize;
+        blocks_.insert(BlockMap::value_type(mark,
+                       new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset),
+                       shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
+        size -= blockSize;
+        offset += ptroff_t(blockSize);
     }
+    TRACE(LOCAL, "Creating Shared Object @ %p : shadow @ %p : accelerator @ %p) ", addr_, shadow_, (void *) acceleratorAddr_);
 }
 
 
@@ -126,7 +113,7 @@ SharedObject<State>::~SharedObject()
 
     // If the object creation failed, this address will be NULL
     if (acceleratorAddr_ != 0) owner_->unmap(addr_, size_);
-    if (valid_) Memory::unshadow(shadow_, size_);
+    if (shadow_ != NULL) Memory::unshadow(shadow_, size_);
     if (addr_ != NULL) Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Shared Object @ %p", addr_);
 }
@@ -211,20 +198,17 @@ inline gmacError_t SharedObject<State>::mapToAccelerator()
     gmacError_t ret;
 
     // Allocate accelerator memory in the new mode
-    accptr_t newAcceleratorAddr = allocAcceleratorMemory(*owner_, addr_, size_);
-    valid_ = (newAcceleratorAddr != 0);
+    accptr_t newAcceleratorAddr(0);
+    
+    ret = allocAcceleratorMemory(*owner_, addr_, size_, newAcceleratorAddr);
 
-    if (valid_) {
+    if (ret == gmacSuccess) {
         acceleratorAddr_ = newAcceleratorAddr;
         // Recreate accelerator blocks
         repopulateBlocks(acceleratorAddr_, *owner_);
         // Add blocks to the coherency domain
         ret = coherenceOp(&Protocol::mapToAccelerator);
     }
-    else {
-        ret = gmacErrorMemoryAllocation;
-    }
-
 
     unlock();
     return ret;
