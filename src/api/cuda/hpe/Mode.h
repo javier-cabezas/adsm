@@ -50,11 +50,11 @@ namespace __impl {
 
 namespace core {
 class IOBuffer;
+}
 
-namespace allocator {
+namespace util { namespace allocator {
     class Buddy;
-}
-}
+}}
 
 namespace cuda { namespace hpe {
 
@@ -84,8 +84,8 @@ protected:
     //! Associated CUDA context
     CUcontext cudaCtx_;
 #endif
-    core::allocator::Buddy *ioMemoryRead_;
-    core::allocator::Buddy *ioMemoryWrite_;
+    util::allocator::Buddy *ioMemoryRead_;
+    util::allocator::Buddy *ioMemoryWrite_;
 
     //! Switch to accelerator mode
     void switchIn();
