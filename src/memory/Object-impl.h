@@ -15,7 +15,6 @@ inline Object::Object(hostptr_t addr, size_t size) :
     gmac::util::RWLock("Object"),
     addr_(addr),
     size_(size),
-    valid_(false),
     released_(false)
 {
 #ifdef DEBUG
@@ -78,13 +77,6 @@ Object::size() const
 {
     // No need for lock -- size_ is never modified
     return size_;
-}
-
-inline bool
-Object::valid() const
-{
-    // No need for lock -- valid_ is never modified
-    return valid_;
 }
 
 inline gmacError_t
