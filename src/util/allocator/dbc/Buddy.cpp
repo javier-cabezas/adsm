@@ -1,6 +1,6 @@
 #if defined(USE_DBC)
 
-#include "core/allocator/dbc/Buddy.h"
+#include "Buddy.h"
 
 namespace __dbc { namespace core { namespace allocator {
 

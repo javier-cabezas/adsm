@@ -4,8 +4,6 @@
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 
-#include "core/allocator/Buddy.h"
-
 #include "memory/Manager.h"
 #include "memory/Object.h"
 #include "memory/DistributedObject.h"

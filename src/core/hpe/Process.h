@@ -46,7 +46,6 @@ WITH THE SOFTWARE.  */
 #include "util/Private.h"
 
 #include "core/Process.h"
-#include "core/allocator/Buddy.h"
 
 #include "Queue.h"
 
