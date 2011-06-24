@@ -52,12 +52,12 @@ protected:
 	accptr_t  acceleratorAddr_;
 	core::Mode *owner_;
 
-    static gmacError_t allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &acceleratorAddr);
+    static accptr_t allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size);
     gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
 
     void modifiedObject();
 public:
-	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+	SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init);
     virtual ~SharedObject();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;

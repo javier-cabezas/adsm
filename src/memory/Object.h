@@ -71,6 +71,9 @@ protected:
     /// Object size in bytes
     size_t size_;
 
+    /// Mark the object as valid
+    bool valid_;
+
     typedef std::map<hostptr_t, Block *> BlockMap;
     /// Collection of blocks forming the object
     BlockMap blocks_;
@@ -182,6 +185,13 @@ public:
      * \return Size (in bytes) of the object
      */
     size_t size() const;
+
+    /**
+     * Check whether the object is valid or not
+     *
+     * \return Validity of the object
+     */
+    bool valid() const;
 
     /// Ensure the owner(s) invalidate memory when acquiring objects
     virtual void modifiedObject() = 0;
