@@ -50,6 +50,10 @@ namespace __impl {
 
 namespace core {
 class IOBuffer;
+
+namespace allocator {
+    class Buddy;
+}
 }
 
 namespace cuda { namespace hpe {

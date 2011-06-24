@@ -3,6 +3,8 @@
 #include "api/cuda/hpe/Context.h"
 #include "api/cuda/IOBuffer.h"
 
+#include "util/allocator/Buddy.h"
+
 namespace __impl { namespace cuda { namespace hpe {
 
 Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
