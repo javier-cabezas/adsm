@@ -21,27 +21,19 @@ inline void DistributedObject<State>::modifiedObject()
 
 template<typename State>
 inline DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
-                                                   hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
+                                                                                           hostptr_t cpuAddr, size_t size, typename State::ProtocolState init) :
     Object(cpuAddr, size)
 {
-    shadow_ = NULL;
-    err = gmacSuccess;
-
     // Allocate memory (if necessary)
-    if (cpuAddr == NULL)
+    if(addr_ == NULL)
         addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-    if (addr_ == NULL) {
-        err = gmacErrorMemoryAllocation;
-        return;
-    }
+    if(addr_ == NULL) return;
 
     // Create a shadow mapping for the host memory
     shadow_ = Memory::shadow(addr_, size_);
-    if(shadow_ == NULL) {
-        Memory::unmap(addr_, size_);
-        err = gmacErrorMemoryAllocation;
-        return;
-    }
+    if(shadow_ == NULL) { Memory::unmap(addr_, size_); return; }
+    valid_ = true;
+
 
     hostptr_t mark = addr_;
     int offset = 0;
@@ -68,33 +60,33 @@ inline DistributedObject<State>::~DistributedObject()
             modes.front()->unmap(addr_, size_);
         }
     }
-    if (shadow_ != NULL) Memory::unshadow(shadow_, size_);
-    if (addr_ != NULL) Memory::unmap(addr_, size_);
+    Memory::unshadow(shadow_, size_);
+    Memory::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying Distributed Object @ %p", addr_);
 }
 
 template<typename State>
 inline accptr_t DistributedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
-    accptr_t ret = accptr_t(0);
-    lockRead();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
-    if(i != blocks_.end()) {
-        ret = i->second->acceleratorAddr(current, addr);
-    }
-    unlock();
-    return ret;
+        accptr_t ret = accptr_t(0);
+        lockRead();
+        BlockMap::const_iterator i = blocks_.upper_bound(addr);
+        if(i != blocks_.end()) {
+                ret = i->second->acceleratorAddr(current, addr);
+        }
+        unlock();
+        return ret;
 }
 
 template<typename State>
 inline core::Mode &DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
-    lockRead();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
-    ASSERTION(i != blocks_.end());
-    core::Mode &ret = i->second->owner(current);
-    unlock();
-    return ret;
+        lockRead();
+        BlockMap::const_iterator i = blocks_.upper_bound(addr);
+        ASSERTION(i != blocks_.end());
+        core::Mode &ret = i->second->owner(current);
+        unlock();
+        return ret;
 }
 
 
@@ -175,7 +167,7 @@ inline
 gmacError_t DistributedObject<State>::mapToAccelerator()
 {
     // TODO Fail
-    return gmacSuccess;
+        return gmacSuccess;
 }
 
 template<typename State>
@@ -183,7 +175,7 @@ inline
 gmacError_t DistributedObject<State>::unmapFromAccelerator()
 {
     // TODO Fail
-    return gmacSuccess;
+        return gmacSuccess;
 }
 
 }}

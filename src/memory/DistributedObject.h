@@ -49,7 +49,7 @@ protected:
     void modifiedObject();
 public:
     DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
-                      size_t size, typename State::ProtocolState init, gmacError_t &err);
+                      size_t size, typename State::ProtocolState init);
     virtual ~DistributedObject();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
