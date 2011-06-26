@@ -90,6 +90,12 @@ public:
     virtual ~ObjectMap();
 
     /**
+     * Decrements the reference count of the contained objects
+     */
+    void cleanUp();
+
+
+    /**
      * Get the number of objects in the map
      *
      * \return Number of objects in the map

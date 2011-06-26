@@ -29,6 +29,7 @@ Manager::~Manager()
 
 gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
+    TRACE(LOCAL, "New allocation");
     trace::EnterCurrentFunction();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     // TODO: ask process instead
@@ -41,6 +42,7 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
+    object->addOwner(mode);
     *addr = object->addr();
 
     // Insert object into memory maps
@@ -52,11 +54,12 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 
 gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
+    TRACE(LOCAL, "New host-mapped allocation");
     trace::EnterCurrentFunction();
     HostMappedObject *object = new HostMappedObject(mode, size);
     *addr = object->addr();
     if(*addr == NULL) {
-        delete object;
+        object->decRef();
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
@@ -66,6 +69,7 @@ gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t s
 
 gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
+    TRACE(LOCAL, "New global allocation");
     trace::EnterCurrentFunction();
 
     // If a centralized object is requested, try creating it
@@ -93,6 +97,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
 
 gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
 {
+    TRACE(LOCAL, "Free allocation");
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
     Object *object = mode.getObject(addr);
@@ -114,7 +119,8 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
     return ret;
 }
 
-accptr_t Manager::translate(core::Mode &mode, const hostptr_t addr)
+accptr_t
+Manager::translate(core::Mode &mode, const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     accptr_t ret = proc_.translate(addr);

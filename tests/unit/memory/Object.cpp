@@ -95,6 +95,7 @@ TEST_F(ObjectTest, Coherence)
     Mode &mode = Process_->getCurrentMode();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
+    object->addOwner(mode);
     mode.addObject(*object);
 
     hostptr_t ptr = object->addr();
@@ -121,6 +122,7 @@ TEST_F(ObjectTest, IOBuffer)
     Mode &mode = Process_->getCurrentMode();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
+    object->addOwner(mode);
     mode.addObject(*object);
 
     __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);

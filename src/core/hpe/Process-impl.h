@@ -62,12 +62,13 @@ Process::orphans() const
 }
 
 inline void
-Process::insertOrphan(memory::Object &obj)
+Process::makeOrphan(memory::Object &obj)
 {
+    TRACE(LOCAL, "Making orphan object: %p", obj.addr());
+    // Insert into the orphan list
     orphans_.insert(obj);
+    // Remove from the list of regular shared objects
     shared_.remove(obj);
-    // We decrease the count because it gets incremented when inserted
-    obj.decRef();
 }
 
 }}}

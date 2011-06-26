@@ -9,7 +9,7 @@ namespace __impl { namespace memory {
 template<typename State>
 inline
 SharedBlock<State>::SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
-                                                           hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init) :
+                                hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init) :
         memory::StateBlock<State>(protocol, hostAddr, shadowAddr, size, init),
         owner_(owner),
         acceleratorAddr_(acceleratorAddr)
@@ -24,16 +24,16 @@ template<typename State>
 inline core::Mode &
 SharedBlock<State>::owner(core::Mode &current) const
 {
-        return owner_;
+    return owner_;
 }
 
 template<typename State>
 inline accptr_t
 SharedBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
-        ptroff_t offset = ptroff_t(addr - StateBlock<State>::addr_);
+    ptroff_t offset = ptroff_t(addr - StateBlock<State>::addr_);
     accptr_t ret = acceleratorAddr_ + offset;
-        return ret;
+    return ret;
 }
 
 template<typename State>
@@ -109,7 +109,7 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     if (src == StateBlock<State>::ACCELERATOR &&
         dst == StateBlock<State>::ACCELERATOR) {
         TRACE(LOCAL, "A -> A");
-        ret = owner_.copyAccelerator(acceleratorAddr_ + dstOff, srcBlock.acceleratorAddr(srcBlock.owner(owner_)) + srcOff, size);
+        ret = owner_.copyAccelerator(acceleratorAddr_ + dstOff, srcBlock.acceleratorAddr(owner_) + srcOff, size);
         TRACE(LOCAL, "RESULT: %d", ret);
     } else if (src == StateBlock<State>::HOST &&
                dst == StateBlock<State>::HOST) {
@@ -124,7 +124,7 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     } else if (src == StateBlock<State>::ACCELERATOR &&
                dst == StateBlock<State>::HOST) {
         TRACE(LOCAL, "A -> H");
-        ret = owner_.copyToHost(Block::shadow_ + dstOff, srcBlock.acceleratorAddr(srcBlock.owner(owner_)) + srcOff, size);
+        ret = srcBlock.owner(owner_).copyToHost(Block::shadow_ + dstOff, srcBlock.acceleratorAddr(owner_) + srcOff, size);
         TRACE(LOCAL, "RESULT: %d", ret);
     }
 

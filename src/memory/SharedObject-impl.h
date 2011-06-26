@@ -2,7 +2,8 @@
 #define GMAC_MEMORY_SHAREDOBJECT_IMPL_H_
 
 #include "core/Mode.h"
-#include "memory/SharedBlock.h"
+
+#include "SharedBlock.h"
 
 namespace __impl { namespace memory {
 
@@ -18,23 +19,20 @@ allocAcceleratorMemory(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &
     acceleratorAddr = accptr_t(0);
     // Allocate accelerator memory
 #ifdef USE_VM
-    gmacError_t ret =
-        mode.map(acceleratorAddr, addr, size, unsigned(SubBlockSize_));
-#else
-    gmacError_t ret =
-        mode.map(acceleratorAddr, addr, size);
-#endif
-#ifdef USE_VM
+    gmacError_t ret = mode.map(acceleratorAddr, addr, size, unsigned(SubBlockSize_));
     if(ret == gmacSuccess) {
         vm::Bitmap &bitmap = mode.getBitmap();
         bitmap.registerRange(acceleratorAddr, size);
     }
+#else
+    gmacError_t ret = mode.map(acceleratorAddr, addr, size);
 #endif
     return ret;
 }
 
 template<typename State>
-gmacError_t SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
+gmacError_t
+SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
     ptroff_t offset = 0;
@@ -146,6 +144,8 @@ template<typename State>
 inline gmacError_t
 SharedObject<State>::addOwner(core::Mode &owner)
 {
+    TRACE(LOCAL, "Add owner %p Object @ %p", &owner, addr_);
+
     return gmacErrorUnknown; // This kind of objects only accepts one owner
 }
 
@@ -153,10 +153,12 @@ template<typename State>
 inline gmacError_t
 SharedObject<State>::removeOwner(core::Mode &owner)
 {
+    TRACE(LOCAL, "Remove owner %p Object @ %p", &owner, addr_);
+
     lockWrite();
     if(owner_ == &owner) {
         // Put myself in the orphan map
-        owner.insertOrphan(*this);
+        owner.makeOrphan(*this);
 
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
         if(acceleratorAddr_ != 0) {
@@ -182,28 +184,15 @@ SharedObject<State>::removeOwner(core::Mode &owner)
 
 template<typename State>
 inline gmacError_t
-SharedObject<State>::unmapFromAccelerator()
-{
-    lockWrite();
-    // Remove blocks from the coherency domain
-    gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
-    // Free accelerator memory
-    CFATAL(owner_->unmap(addr_, size_) == gmacSuccess, "Error unmapping object from accelerator");
-    unlock();
-    return ret;
-}
-
-
-template<typename State>
-inline gmacError_t
 SharedObject<State>::mapToAccelerator()
 {
-    lockWrite();
     gmacError_t ret;
+
+    lockWrite();
 
     // Allocate accelerator memory in the new mode
     accptr_t newAcceleratorAddr(0);
-    
+
     ret = allocAcceleratorMemory(*owner_, addr_, size_, newAcceleratorAddr);
 
     if (ret == gmacSuccess) {
@@ -214,6 +203,20 @@ SharedObject<State>::mapToAccelerator()
         ret = coherenceOp(&Protocol::mapToAccelerator);
     }
 
+    unlock();
+    return ret;
+}
+
+template<typename State>
+inline gmacError_t
+SharedObject<State>::unmapFromAccelerator()
+{
+    lockWrite();
+    // Remove blocks from the coherency domain
+    gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
+    // Free accelerator memory
+    if (ret == gmacSuccess)
+        CFATAL(owner_->unmap(addr_, size_) == gmacSuccess, "Error unmapping object from accelerator");
     unlock();
     return ret;
 }

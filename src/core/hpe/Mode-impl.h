@@ -103,9 +103,9 @@ inline void Mode::cleanUpContexts()
 }
 
 inline
-void Mode::insertOrphan(memory::Object &obj)
+void Mode::makeOrphan(memory::Object &obj)
 {
-    proc_.insertOrphan(obj);
+    proc_.makeOrphan(obj);
 }
 
 inline

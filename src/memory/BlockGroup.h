@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2011 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,42 +31,50 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_REFERENCE_H_
-#define GMAC_UTIL_REFERENCE_H_
+#ifndef GMAC_MEMORY_BLOCKGROUP_H_
+#define GMAC_MEMORY_BLOCKGROUP_H_
 
-#include "config/common.h"
+#include "memory/Object.h"
 
-#include "Atomics.h"
+namespace __impl { 
 
-namespace __impl { namespace util {
+namespace core {
+	class Mode;
+}
 
-/// A class that is shared by multiple threads
-class GMAC_LOCAL Reference {
-private:
-    /// Number of threads using the object
-    mutable Atomic ref_;
-#ifdef DEBUG
-    std::string className_;
-#endif
+namespace memory {
 
-    /// Method called to clean up the class before being destroyed
-    virtual gmacError_t cleanUp();
+template<typename State>
+class GMAC_LOCAL BlockGroup : public gmac::memory::Object {
 protected:
-    /// Default constructor
-    Reference(const char *name);
+    hostptr_t shadow_;
+    bool hasUserMemory_;
+    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
+    AcceleratorMap acceleratorAddr_;
+    unsigned owners_;
+    core::Mode *ownerShortcut_;
 
-    /// Default destructor
-    virtual ~Reference();
+    gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
+
+    void modifiedObject();
 public:
-    /// Increment the use count
-    void incRef() const;
+    BlockGroup(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    virtual ~BlockGroup();
 
-    /// Decrement the use count and destroy the object if it reaches zero
-    void decRef();
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
+    core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
+
+    gmacError_t addOwner(core::Mode &owner);
+    gmacError_t removeOwner(core::Mode &owner);
+
+    gmacError_t mapToAccelerator();
+    gmacError_t unmapFromAccelerator();
+
+    static gmacError_t split(BlockGroup &group, size_t offset, size_t size);
 };
 
 }}
 
-#include "Reference-impl.h"
+#include "BlockGroup-impl.h"
 
 #endif

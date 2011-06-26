@@ -12,10 +12,11 @@ namespace __impl { namespace memory {
 
 
 inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
-        gmac::util::Lock("Block"),
-        protocol_(protocol),
-        size_(size),
-        addr_(addr),
+    gmac::util::Lock("Block"),
+    util::Reference("Block"),
+    protocol_(protocol),
+    size_(size),
+    addr_(addr),
     shadow_(shadow)
 {
 }

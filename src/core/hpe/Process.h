@@ -308,7 +308,7 @@ public:
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    void insertOrphan(memory::Object &object);
+    void makeOrphan(memory::Object &object);
 
     /**
      * Gets the object map that contains all the objects that have been orphaned
