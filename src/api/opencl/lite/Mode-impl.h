@@ -121,7 +121,7 @@ gmacError_t Mode::acquireObjects()
 }
 
 inline
-void Mode::insertOrphan(memory::Object &obj)
+void Mode::makeOrphan(memory::Object &obj)
 {
     FATAL("Orphan objects not supported in GMAC/Lite");
 }

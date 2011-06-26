@@ -65,6 +65,14 @@ typedef ULONG_PTR long_t;
 
 typedef uint8_t * hostptr_t;
 
+#ifdef DEBUG
+#define DEBUG_PARAM_DECLARATION(t,v) t v
+#define DEBUG_PARAM(v) v
+#else
+#define DEBUG_PARAM_DECLARATION(t,v)
+#define DEBUG_PARAM(v)
+#endif
+
 #ifdef USE_CUDA
 #include "cuda/common.h"
 #include "include/gmac/cuda_types.h"

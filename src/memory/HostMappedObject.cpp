@@ -44,6 +44,7 @@ bool HostMappedSet::remove(hostptr_t addr)
 HostMappedSet HostMappedObject::set_;
 
 HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
+    util::Reference("HostMappedObject"),
     size_(size),
     mode_(mode)
 {

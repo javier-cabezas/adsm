@@ -44,12 +44,12 @@ WITH THE SOFTWARE.  */
 #include "util/Reference.h"
 #include "util/Atomics.h"
 
-#include "memory/ObjectMap.h"
-
 namespace __impl {
 
 namespace memory {
 class Protocol;
+class Object;
+class ObjectMap;
 }
 
 namespace core {
@@ -143,7 +143,7 @@ public:
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
-    virtual void insertOrphan(memory::Object &obj) = 0;
+    virtual void makeOrphan(memory::Object &obj) = 0;
 
     /**
      * Gets the first object that belongs to the memory range

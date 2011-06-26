@@ -2,6 +2,8 @@
 #define GMAC_CORE_MODE_IMPL_H_
 
 #include "config/order.h"
+#include "memory/Object.h"
+#include "memory/ObjectMap.h"
 #include "memory/Protocol.h"
 #include "trace/Tracer.h"
 
@@ -9,6 +11,7 @@ namespace __impl { namespace core {
 
 inline
 Mode::Mode() :
+    util::Reference("Mode"),
     gmac::util::SpinLock("Mode"),
     id_(AtomicInc(Count_)),
     modifiedObjects_(false),

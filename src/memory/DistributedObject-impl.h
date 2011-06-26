@@ -7,7 +7,8 @@
 namespace __impl { namespace memory {
 
 template<typename State>
-inline void DistributedObject<State>::modifiedObject()
+inline void
+DistributedObject<State>::modifiedObject()
 {
     AcceleratorMap::iterator i;
     for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -20,7 +21,6 @@ inline void DistributedObject<State>::modifiedObject()
 }
 
 template<typename State>
-inline
 DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
                                             hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size)
@@ -101,7 +101,7 @@ DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 }
 
 template<typename State>
-inline gmacError_t
+gmacError_t
 DistributedObject<State>::addOwner(core::Mode &mode)
 {
     accptr_t acceleratorAddr = accptr_t(0);
@@ -133,19 +133,19 @@ DistributedObject<State>::addOwner(core::Mode &mode)
         block.addOwner(mode, acceleratorAddr + offset);
     }
     TRACE(LOCAL, "Add owner %p Object @ %p", &mode, addr_);
-        unlock();
-        return gmacSuccess;
+    unlock();
+    return gmacSuccess;
 }
 
 template<typename State>
-inline gmacError_t
+gmacError_t
 DistributedObject<State>::removeOwner(core::Mode &mode)
 {
     TRACE(LOCAL, "Remove owner %p Object @ %p", &mode, addr_);
 
-        lockWrite();
+    lockWrite();
     AcceleratorMap::iterator i;
-        bool ownerFound = false;
+    bool ownerFound = false;
     for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
         std::list<core::Mode *> &list = i->second;
         std::list<core::Mode *>::iterator j = std::find(list.begin(), list.end(), &mode);
@@ -155,7 +155,7 @@ DistributedObject<State>::removeOwner(core::Mode &mode)
                 acceleratorAddr_.erase(i);
                 mode.unmap(addr_, size_);
             }
-                        ownerFound = true;
+            ownerFound = true;
             break;
         }
     }

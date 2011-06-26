@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_SHAREDBLOCK_H_
-#define GMAC_MEMORY_SHAREDBLOCK_H_
+#ifndef GMAC_MEMORY_GENERICBLOCK_H_
+#define GMAC_MEMORY_GENERICBLOCK_H_
 
 #include "config/common.h"
 #include "config/config.h"
@@ -51,32 +51,30 @@ namespace core {
 namespace memory {
 
 template<typename State>
-class GMAC_LOCAL SharedBlock :
+class GMAC_LOCAL GenericBlock :
     public StateBlock<State> {
 protected:
-    //! Owner of the block
-    core::Mode &owner_;
-
-    //! Accelerator memory address of the block
-    accptr_t acceleratorAddr_;
+    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorAddrMap;
+    typedef std::map<core::Mode *, accptr_t> ModeMap;
+    AcceleratorAddrMap acceleratorAddr_;
+    ModeMap owners_;
+    core::Mode *ownerShortcut_;
 
 public:
     /**
      * Default construcutor
      *
      * \param protocol Memory coherence protocol used by the block
-     * \param owner Owner of the memory block
      * \param hostAddr Host memory address for applications to accesss the block
      * \param shadowAddr Shadow host memory mapping that is always read/write
-     * \param acceleratorAddr Accelerator memory address for applications to accesss the block
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
-                hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init);
+    GenericBlock(Protocol &protocol, hostptr_t shadowAddr,
+                 hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
     /// Default destructor
-    virtual ~SharedBlock();
+    virtual ~GenericBlock();
 
     /**
      * Get memory block owner
@@ -117,11 +115,15 @@ public:
                               typename StateBlock<State>::Source src) const;
 
     gmacError_t memset(int v, size_t size, size_t blockOffset, typename StateBlock<State>::Destination dst) const;
+
+    void addOwner(core::Mode &owner, accptr_t addr);
+
+    void removeOwner(core::Mode &owner);
 };
 
 
 }}
 
-#include "SharedBlock-impl.h"
+#include "GenericBlock-impl.h"
 
 #endif

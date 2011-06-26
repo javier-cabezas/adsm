@@ -42,7 +42,7 @@ memory::Protocol *Process::getProtocol()
     return NULL;
 }
 
-void Process::insertOrphan(memory::Object &)
+void Process::makeOrphan(memory::Object &)
 {
     FATAL("Orphan Objects not supported in GMAC-lite");
 }

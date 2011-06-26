@@ -162,7 +162,7 @@ public:
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
-    void insertOrphan(memory::Object &obj);
+    void makeOrphan(memory::Object &obj);
 
     /**
      * Gets a reference to the accelerator which the mode belongs to

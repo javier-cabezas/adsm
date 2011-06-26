@@ -18,7 +18,8 @@ Map::~Map()
     //TODO: actually clean the memory map
 }
 
-memory::Object *Map::get(const memory::ObjectMap &map, hostptr_t &base, const hostptr_t addr, size_t size) const
+memory::Object *
+Map::get(const memory::ObjectMap &map, hostptr_t &base, const hostptr_t addr, size_t size) const
 {
     memory::Object *ret = map.mapFind(addr, size);
     if(ret == NULL) return ret;
@@ -29,7 +30,8 @@ memory::Object *Map::get(const memory::ObjectMap &map, hostptr_t &base, const ho
     return NULL;
 }
 
-memory::Object *Map::get(const hostptr_t addr, size_t size) const
+memory::Object *
+Map::get(const hostptr_t addr, size_t size) const
 {
     memory::Object *ret = NULL;
     hostptr_t base = NULL;
@@ -70,7 +72,7 @@ bool Map::insert(memory::Object &obj)
 bool Map::remove(memory::Object &obj)
 {
     bool ret = memory::ObjectMap::remove(obj);
-        hostptr_t addr = obj.addr();
+    hostptr_t addr = obj.addr();
     // Shared object
     Process &proc = parent_.getProcess();
     memory::ObjectMap &shared = proc.shared();
@@ -116,7 +118,7 @@ void Map::removeOwner(Process &proc, Mode &mode)
     memory::ObjectMap &global = proc.global();
     iterator i;
     global.lockWrite();
-    for(i = global.begin(); i != global.end(); i++) {
+    for (i = global.begin(); i != global.end(); i++) {
         i->second->removeOwner(mode);
     }
     global.unlock();
@@ -124,7 +126,8 @@ void Map::removeOwner(Process &proc, Mode &mode)
     memory::ObjectMap &shared = proc.shared();
     iterator j;
     shared.lockWrite();
-    for(j = shared.begin(); j != shared.end(); j++) {
+    for (j = shared.begin(); j != shared.end(); j++) {
+        // Owners already removed in Mode::cleanUp
         j->second->removeOwner(mode);
     }
     shared.unlock();

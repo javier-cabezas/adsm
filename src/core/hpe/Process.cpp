@@ -135,9 +135,9 @@ void Process::initThread()
 void Process::finiThread()
 {
     queues_.erase(util::GetThreadId());
-        Mode *mode = CurrentMode_.get();
-        if(mode != NULL) removeMode(*mode);
-        CurrentMode_.set(NULL);
+    Mode *mode = CurrentMode_.get();
+    if(mode != NULL) removeMode(*mode);
+    CurrentMode_.set(NULL);
 }
 
 Mode *Process::createMode(int acc)
@@ -184,11 +184,11 @@ void Process::removeMode(Mode &mode)
 
 Mode &Process::getCurrentMode()
 {
-        Mode *mode = CurrentMode_.get();
-        if(mode != NULL) return *mode;
-        mode = createMode();
-        CurrentMode_.set(mode);
-        return *mode;
+    Mode *mode = CurrentMode_.get();
+    if(mode != NULL) return *mode;
+    mode = createMode();
+    CurrentMode_.set(mode);
+    return *mode;
 }
 
 gmacError_t Process::globalMalloc(memory::Object &object)

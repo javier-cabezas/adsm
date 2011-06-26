@@ -16,7 +16,9 @@ ModeMap::~ModeMap()
 {
     lockWrite();
     std::map<cl_context, Mode *>::const_iterator i;
-    for(i = begin(); i != end(); i++) delete i->second;
+    for(i = begin(); i != end(); i++) {
+        i->second->decRef();
+    }
     clear();
     unlock();
 }

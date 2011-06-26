@@ -16,8 +16,9 @@ inline Lazy<T>::~Lazy()
 {}
 
 template<typename T>
-inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
-                                             GmacProtection prot, unsigned flags)
+memory::Object *
+Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
+                      GmacProtection prot, unsigned flags)
 {
     gmacError_t err;
     Object *ret = new T(*this, current, cpuPtr,
@@ -33,4 +34,5 @@ inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, h
 }
 
 }}}
+
 #endif

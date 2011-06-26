@@ -11,7 +11,7 @@ namespace __impl { namespace memory {
 template<typename State>
 inline
 DistributedBlock<State>::DistributedBlock(Protocol &protocol, hostptr_t hostAddr,
-                                                                                         hostptr_t shadowAddr, size_t size, typename State::ProtocolState init) :
+                                          hostptr_t shadowAddr, size_t size, typename State::ProtocolState init) :
     StateBlock<State>(protocol, hostAddr, shadowAddr, size, init)
 {
 }

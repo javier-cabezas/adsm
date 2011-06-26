@@ -3,6 +3,7 @@
 
 #include "allocator/Slab.h"
 
+#include "memory/BlockGroup.h"
 #include "memory/SharedObject.h"
 #include "memory/DistributedObject.h"
 
@@ -61,13 +62,23 @@ Protocol *ProtocolInit(unsigned flags)
         } else {
             rollSize = (size_t)-1;
         }
+#define USE_GENERIC_OBJECTS 0
         if(0 != (flags & 0x1)) {
+#if USE_GENERIC_OBJECTS == 1
+            ret = new gmac::memory::protocol::Lazy<
+                memory::BlockGroup<protocol::lazy::BlockState> >(unsigned(rollSize));
+#else
             ret = new gmac::memory::protocol::Lazy<
                 DistributedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
-        }
-        else {
+#endif
+        } else {
+#if USE_GENERIC_OBJECTS == 1
+            ret = new gmac::memory::protocol::Lazy<
+                memory::BlockGroup<protocol::lazy::BlockState> >(unsigned(rollSize));
+#else
             ret = new gmac::memory::protocol::Lazy<
                 gmac::memory::SharedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
+#endif
         }
     }
 #ifdef USE_VM

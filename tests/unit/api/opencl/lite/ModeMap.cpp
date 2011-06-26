@@ -61,7 +61,10 @@ void ModeMapTest::CleanUpContexts(std::list<cl_context> &contexts, gmac::opencl:
 {
     while(contexts.empty() != false) {
         ASSERT_TRUE(map.get(contexts.front()) != NULL);
-        map.remove(contexts.front());
+        gmac::opencl::lite::ModeMap::iterator it;
+        it = map.find(contexts.front());
+        ASSERT_TRUE(it != map.end());
+        map.erase(it);
         ASSERT_TRUE(map.get(contexts.front()) == NULL);
         ASSERT_EQ(CL_SUCCESS, clReleaseContext(contexts.front()));
         contexts.pop_front();
