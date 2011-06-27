@@ -56,10 +56,11 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op,
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(objectOffset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
-        size_t blockSize = i->second->size() - blockOffset;
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         buffer.wait();
-        ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        ret = block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         bufferOffset += blockSize;
         size -= blockSize;
@@ -74,9 +75,10 @@ gmacError_t Object::memset(size_t offset, int v, size_t size)
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(offset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
-        size_t blockSize = i->second->size() - blockOffset;
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        ret = i->second->memset(v, blockSize, blockOffset);
+        ret = block.memset(v, blockSize, blockOffset);
         blockOffset = 0;
         size -= blockSize;
     }
@@ -195,15 +197,15 @@ Object::memcpyObjectToObject(core::Mode &mode,
                 size_t secondCopySize = copySize - firstCopySize;
 
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                      dstOffset % blockSize(),
-                                      srcOffset % blockSize(),
-                                      firstCopySize);
+                                        dstOffset % blockSize(),
+                                        srcOffset % blockSize(),
+                                        firstCopySize);
                 ASSERTION(ret == gmacSuccess);
                 i++;
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                      (dstOffset + firstCopySize) % blockSize(),
-                                      (srcOffset + firstCopySize) % blockSize(),
-                                      secondCopySize);
+                                        (dstOffset + firstCopySize) % blockSize(),
+                                        (srcOffset + firstCopySize) % blockSize(),
+                                        secondCopySize);
                 ASSERTION(ret == gmacSuccess);
             }
             left -= copySize;

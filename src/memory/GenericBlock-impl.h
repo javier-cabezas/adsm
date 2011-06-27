@@ -89,7 +89,6 @@ inline core::Mode &
 GenericBlock<State>::owner(core::Mode &current) const
 {
     core::Mode *ret;
-    StateBlock<State>::lock();
     ASSERTION(owners_.size() > 0);
 
     if (owners_.size() == 1) {
@@ -103,7 +102,6 @@ GenericBlock<State>::owner(core::Mode &current) const
             ret = m->first;
         }
     }
-    StateBlock<State>::unlock();
     return *ret;
 }
 
@@ -113,7 +111,7 @@ GenericBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) 
 {
     accptr_t ret = accptr_t(0);
 
-    StateBlock<State>::lock();
+    //StateBlock<State>::lock();
 
     ModeMap::const_iterator m;
     if (owners_.size() == 1) {
@@ -126,7 +124,7 @@ GenericBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) 
         }
     }
 
-    StateBlock<State>::unlock();
+    //StateBlock<State>::unlock();
     return ret;
 }
 
