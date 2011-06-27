@@ -123,6 +123,7 @@ void Map::removeOwner(Process &proc, Mode &mode)
     }
     global.unlock();
 
+    /*
     memory::ObjectMap &shared = proc.shared();
     iterator j;
     shared.lockWrite();
@@ -131,6 +132,7 @@ void Map::removeOwner(Process &proc, Mode &mode)
         j->second->removeOwner(mode);
     }
     shared.unlock();
+    */
 }
 
 }}}
