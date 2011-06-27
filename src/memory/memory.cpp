@@ -62,7 +62,7 @@ Protocol *ProtocolInit(unsigned flags)
         } else {
             rollSize = (size_t)-1;
         }
-#define USE_GENERIC_OBJECTS 0
+#define USE_GENERIC_OBJECTS 1
         if(0 != (flags & 0x1)) {
 #if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<
