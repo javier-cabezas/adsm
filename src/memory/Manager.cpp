@@ -26,6 +26,87 @@ Manager::~Manager()
 {
 }
 
+gmacError_t
+Manager::map(core::Mode &mode, hostptr_t *addr, size_t size, int flags)
+{
+    FATAL("MAP NOT IMPLEMENTED YET");
+    gmacError_t ret = gmacSuccess;
+
+    TRACE(LOCAL, "New mapping");
+    trace::EnterCurrentFunction();
+    // For integrated accelerators we want to use Centralized objects to avoid memory transfers
+    // TODO: ask process instead
+    // if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
+    
+    Object *object;
+    if (*addr != NULL) {
+        object = mode.getObject(*addr);
+        if(object != NULL) {
+            // TODO: Remove this limitation
+            ASSERTION(object->size() == size);
+            ret = object->addOwner(mode);
+            goto done;
+        }
+    }
+
+    // Create new shared object. We set the memory as invalid to avoid stupid data transfers
+    // to non-initialized objects
+    object = mode.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    if(object == NULL) {
+        trace::ExitCurrentFunction();
+        return gmacErrorMemoryAllocation;
+    }
+    object->addOwner(mode);
+    *addr = object->addr();
+
+    // Insert object into memory maps
+    mode.addObject(*object);
+
+done:
+    object->decRef();
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+
+gmacError_t
+Manager::remap(core::Mode &mode, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags)
+{
+    FATAL("MAP NOT IMPLEMENTED YET");
+    gmacError_t ret = gmacSuccess;
+
+    TRACE(LOCAL, "New remapping");
+    trace::EnterCurrentFunction();
+
+    return ret;
+}
+
+gmacError_t
+Manager::unmap(core::Mode &mode, hostptr_t addr, size_t size)
+{
+    FATAL("UNMAP NOT IMPLEMENTED YET");
+    TRACE(LOCAL, "Unmap allocation");
+    trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+    Object *object = mode.getObject(addr);
+    if(object != NULL)  {
+        object->removeOwner(mode);
+        mode.removeObject(*object);
+        object->decRef();
+    } else {
+        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        if(hostMappedObject == NULL) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
+        hostMappedObject->decRef();
+        // We need to release the object twice to effectively destroy it
+        HostMappedObject::remove(addr);
+        hostMappedObject->decRef();
+    }
+    trace::ExitCurrentFunction();
+    return ret;
+}
 
 gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 {
