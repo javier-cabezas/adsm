@@ -84,6 +84,29 @@ public:
     Manager(core::Process &proc);
 
     /**
+     * Map the given host memory pointer to the accelerator memory. If the given
+     * pointer is NULL, host memory is alllocated too.
+     * \param mode Execution mode where to allocate memory
+     * \param addr Memory address to be mapped or NULL if host memory is requested
+     * too
+     * \param size Size (in bytes) of shared memory to be mapped 
+     * \param flags 
+     * \return Error code
+     */
+    gmacError_t map(core::Mode &mode, hostptr_t *addr, size_t size, int flags);
+
+    gmacError_t remap(core::Mode &mode, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags);
+
+    /**
+     * Unmap the given host memory pointer from the accelerator memory
+     * \param mode Execution mode where to allocate memory
+     * \param addr Memory address to be unmapped
+     * \param size Size (in bytes) of shared memory to be unmapped
+     * \return Error code
+     */
+    gmacError_t unmap(core::Mode &mode, hostptr_t addr, size_t size);
+
+    /**
      * Allocate private shared memory.
      * Memory allocated with this call is only accessible by the accelerator
      * associated to the execution thread requesting the allocation
