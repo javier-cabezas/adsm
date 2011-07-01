@@ -5,12 +5,48 @@
 #include "api/opencl/hpe/gpu/nvidia/Accelerator.h"
 
 enum GMAC_LOCAL OpenCLVendor {
-    AMD,
-    NVIDIA,
-    INTEL,
-    UNKNOWN
+    VENDOR_AMD,
+    VENDOR_NVIDIA,
+    VENDOR_INTEL,
+    VENDOR_UNKNOWN
 };
 
+enum GMAC_LOCAL OpenCLPlatform {
+    PLATFORM_AMD,
+    PLATFORM_NVIDIA,
+    PLATFORM_INTEL,
+    PLATFORM_UNKNOWN
+};
+
+std::string GMAC_LOCAL OpenCLNVidiaDevicePrefix[] = {
+    "ION",
+    "Tesla",
+    "GeForce"
+};
+
+std::string GMAC_LOCAL OpenCLAMDDevicePrefix[] = {
+    "RV870",
+    "Loveland"
+};
+
+static
+std::string getPlatformName(cl_platform_id id)
+{
+    size_t len;
+    cl_int err = clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, NULL, &len);
+    CFATAL(err == CL_SUCCESS);
+    char *name = new char[len + 1];
+    err = clGetPlatformInfo(id, CL_PLATFORM_NAME, len, name, NULL);
+    CFATAL(err == CL_SUCCESS);
+    name[len] = '\0';
+    std::string ret(name);
+
+    delete [] name;
+
+    return ret;
+}
+
+#if 0
 static
 std::string getVendorName(cl_platform_id id)
 {
@@ -27,7 +63,29 @@ std::string getVendorName(cl_platform_id id)
 
     return ret;
 }
+#endif
 
+static OpenCLPlatform
+getPlatform(cl_platform_id id)
+{
+    static const std::string amd("AMD Accelerated Parallel Processing");
+    static const std::string nvidia("NVIDIA CUDA");
+    static const std::string intel("Intel OpenCL");
+
+    std::string platformName = getPlatformName(id);
+
+    if (platformName.compare(amd) == 0) {
+        return PLATFORM_AMD;
+    } else if (platformName.compare(nvidia) == 0) {
+        return PLATFORM_NVIDIA;
+    } else if (platformName.compare(intel) == 0) {
+        return PLATFORM_INTEL;
+    } else {
+        return PLATFORM_UNKNOWN;
+    }
+}
+
+#if 0
 static OpenCLVendor
 getVendor(cl_platform_id id)
 {
@@ -38,15 +96,16 @@ getVendor(cl_platform_id id)
     std::string vendorName = getVendorName(id);
 
     if (vendorName.compare(amd) == 0) {
-        return AMD;
+        return VENDOR_AMD;
     } else if (vendorName.compare(nvidia) == 0) {
-        return NVIDIA;
+        return VENDOR_NVIDIA;
     } else if (vendorName.compare(intel) == 0) {
-        return INTEL;
+        return VENDOR_INTEL;
     } else {
-        return UNKNOWN;
+        return VENDOR_UNKNOWN;
     }
 }
+#endif
 
 typedef std::pair<unsigned, unsigned> OpenCLVersion;
 #if defined(_MSC_VER)
@@ -108,17 +167,17 @@ void OpenCL(gmac::core::hpe::Process &proc)
         for(unsigned j = 0; j < deviceSize; j++) {
             gmac::opencl::hpe::Accelerator *acc = NULL;
 
-            switch (getVendor(platforms[i])) {
-                case AMD:
+            switch (getPlatform(platforms[i])) {
+                case PLATFORM_AMD:
                     acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
                                                                          clVersion.first, clVersion.second);
                     break;
-                case NVIDIA:
+                case PLATFORM_NVIDIA:
                     acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j],
                                                                             clVersion.first, clVersion.second);
                     break;
-                case INTEL:
-                case UNKNOWN:
+                case PLATFORM_INTEL:
+                case PLATFORM_UNKNOWN:
                     FATAL("Platform not supported\n");
             }
             proc.addAccelerator(*acc);
