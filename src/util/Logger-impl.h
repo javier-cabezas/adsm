@@ -26,6 +26,15 @@ inline void Logger::__Assertion(bool c, const char *cStr, const char *fmt, ...)
 }
 #endif
 
+inline void Logger::__Message(const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+	VFPRINTF(stdout, fmt, list);
+    va_end(list);
+}
+
+
 inline void Logger::__Warning(const char *fmt, ...)
 {
     va_list list;
