@@ -84,11 +84,16 @@ inline static const char *__extract_file_name(const char *file) {
 #else
 
 static inline
+void dummy_trace(...)
+{
+}
+
+static inline
 void dummy_assertion(bool /*b*/, ...)
 {
 }
 
-#   define TRACE(...)
+#   define TRACE(...) dummy_trace(__VA_ARGS__)
 #   define ASSERTION(c, ...) dummy_assertion(c, ##__VA_ARGS__)
 #endif
 
