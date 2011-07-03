@@ -533,18 +533,16 @@ void deviceCopy(THREAD_T tid)
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
-class __allocator {
-};
-
-extern __allocator allocator;
+class __allocator {};
+static __allocator allocator;
 }
 
 #include <new>
 
-void *operator new(size_t size, ecl::__allocator &allocator)
+void *operator new(size_t size, @OPENCL_API_PREFIX@::__allocator &/*allocator*/)
 {
     void *ret;
-    ecl::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
     if (err != gmacSuccess) {
         ret = NULL;
         throw std::bad_alloc();
@@ -552,10 +550,10 @@ void *operator new(size_t size, ecl::__allocator &allocator)
     return ret;
 }
 
-void *operator new[](size_t size, ecl::__allocator &allocator)
+void *operator new[](size_t size, @OPENCL_API_PREFIX@::__allocator &/*allocator*/)
 {
     void *ret;
-    ecl::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
     if (err != gmacSuccess) {
         ret = NULL;
         throw std::bad_alloc();
@@ -563,17 +561,15 @@ void *operator new[](size_t size, ecl::__allocator &allocator)
     return ret;
 }
 
-void operator delete(void *addr, ecl::__allocator &allocator)
+void operator delete(void *addr, @OPENCL_API_PREFIX@::__allocator &/*allocator*/)
 {
     ::@OPENCL_API_PREFIX@Free(addr);
 }
 
-void operator delete[](void *addr, ecl::__allocator &allocator)
+void operator delete[](void *addr, @OPENCL_API_PREFIX@::__allocator &/*allocator*/)
 {
     ::@OPENCL_API_PREFIX@Free(addr);
 }
-
-
 
 #endif /* GMAC_OPENCL_CPP_H_ */
 
