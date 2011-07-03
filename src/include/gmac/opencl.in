@@ -535,6 +535,12 @@ void deviceCopy(THREAD_T tid)
 
 class __allocator {};
 static __allocator allocator;
+
+void finiAllocator()
+{
+    __allocator tmp;
+    if (&allocator != &tmp) abort();
+}
 }
 
 #include <new>
