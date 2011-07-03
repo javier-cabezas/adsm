@@ -51,6 +51,12 @@ typedef struct __gmac_kernel @OPENCL_API_PREFIX@_kernel;
 #ifdef __cplusplus
 
 namespace @OPENCL_API_PREFIX@ {
+
+class __allocator {
+};
+
+extern __allocator allocator;
+
 static const unsigned MAX_DIMS = 3;
 struct config
 {
