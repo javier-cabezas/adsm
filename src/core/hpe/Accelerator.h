@@ -58,6 +58,7 @@ typedef std::map<hostptr_t, PairAlloc> MapAlloc;
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
     DBC_FORCE_TEST(Accelerator)
+    
     friend class Mode;
 protected:
     /** Identifier of the accelerator */

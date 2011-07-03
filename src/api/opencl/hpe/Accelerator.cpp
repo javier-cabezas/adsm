@@ -28,7 +28,8 @@ CLBufferPool::cleanUp(stream_t stream)
         CLMemList list = it->second;
         for (jt = list.begin(); jt != list.end(); jt++) {
             cl_int ret;
-            clEnqueueUnmapMemObject(stream, jt->first, jt->second, 0, NULL, NULL);
+            ret = clEnqueueUnmapMemObject(stream, jt->first, jt->second, 0, NULL, NULL);
+            ASSERTION(ret == CL_SUCCESS);
             ret = clReleaseMemObject(jt->first);
             ASSERTION(ret == CL_SUCCESS);
         }
@@ -520,8 +521,33 @@ gmacError_t
 Accelerator::hostAlloc(hostptr_t &addr, size_t size)
 {
     // There is not reliable way to get zero-copy memory
-    addr = NULL;
-    return gmacErrorMemoryAllocation;
+    cl_int ret = CL_SUCCESS;
+    cl_int flags;
+    if (addr != NIL) {
+        flags = CL_MEM_USE_HOST_PTR;
+    } else {
+        flags = CL_MEM_ALLOC_HOST_PTR;
+    }
+
+    cl_mem mem = clCreateBuffer(ctx_, flags, size, addr, &ret);
+    if (ret == CL_SUCCESS) {
+        stream_t stream = cmd_.front();
+        // Get the host pointer for the memory object
+        flags = CL_MAP_WRITE | CL_MAP_READ;
+        lock();
+        addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_TRUE,
+                                             flags, 0, size, 0, NULL, NULL, &ret);
+        unlock();
+
+        // Insert the object in the allocation map for the accelerator
+        if(ret != CL_SUCCESS) clReleaseMemObject(mem);
+        else {
+            allocatedMemory_ += size;
+            localHostAlloc_.insert(addr, mem, size);
+        }
+    }
+
+    return error(ret);
 }
 
 gmacError_t
@@ -549,7 +575,6 @@ Accelerator::allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtec
     if(ret == CL_SUCCESS) {
         stream_t stream = cmd_.front();
         // Get the host pointer for the memory object
-        cl_int flags;
         if (prot == GMAC_PROT_WRITE) {
             flags = CL_MAP_WRITE;
         } else {
@@ -573,8 +598,16 @@ exit:
 
 gmacError_t Accelerator::hostFree(hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     // There is not reliable way to get zero-copy memory
-    return gmacErrorMemoryAllocation;
+    size_t dummy;
+    cl_mem mem;
+    ASSERTION(localHostAlloc_.translate(addr, mem, dummy) == true);
+    localHostAlloc_.remove(addr);
+
+    trace::ExitCurrentFunction();
+
+    return gmacSuccess;
 }
 
 gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size, GmacProtection prot)
@@ -594,8 +627,20 @@ gmacError_t Accelerator::freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size, G
 
 accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
 {
+    trace::EnterCurrentFunction();
     // There is not reliable way to get zero-copy memory
-    return accptr_t(0);
+    size_t dummy;
+    cl_mem mem;
+    bool found = localHostAlloc_.translate(addr, mem, dummy);
+    accptr_t acc(0);
+    if (found) {
+        acc = accptr_t(mem);
+        acc.pasId_ = id_;
+    }
+
+    trace::ExitCurrentFunction();
+
+    return acc;
 }
 
 gmacError_t Accelerator::execute(cl_command_queue stream, cl_kernel kernel, cl_uint workDim,
@@ -619,6 +664,44 @@ void Accelerator::getMemInfo(size_t &free, size_t &total) const
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     total = size_t(value);
     free = total - allocatedMemory_;
+}
+
+gmacError_t
+Accelerator::acquire(hostptr_t addr)
+{
+    trace::EnterCurrentFunction();
+    size_t size = 0;
+    cl_mem mem;
+    bool found = localHostAlloc_.translate(addr, mem, size);
+    ASSERTION(found == true);
+
+    cl_int ret;
+    cl_int flags = CL_MAP_WRITE | CL_MAP_READ;
+    stream_t stream = cmd_.front();
+    hostptr_t new_addr = (hostptr_t)clEnqueueMapBuffer(stream, mem, CL_TRUE,
+                                                       flags, 0, size, 0, NULL, NULL, &ret);
+    ASSERTION(addr == new_addr, "Addresses do not match");
+    trace::ExitCurrentFunction();
+
+    return error(ret);
+}
+
+gmacError_t
+Accelerator::release(hostptr_t addr)
+{
+    trace::EnterCurrentFunction();
+    size_t size;
+    cl_mem mem;
+    bool found = localHostAlloc_.translate(addr, mem, size);
+    ASSERTION(found == true);
+
+    cl_int ret;
+    stream_t stream = cmd_.front();
+    ret = clEnqueueUnmapMemObject(stream, mem, addr, 0, NULL, NULL);
+    trace::ExitCurrentFunction();
+
+    return error(ret);
+
 }
 
 }}}

@@ -64,6 +64,7 @@ typedef ULONG_PTR long_t;
 #endif
 
 typedef uint8_t * hostptr_t;
+#define NIL ((void *) 0)
 
 #ifdef DEBUG
 #define DEBUG_PARAM_DECLARATION(t,v) t v

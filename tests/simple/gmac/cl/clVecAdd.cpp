@@ -11,10 +11,8 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 32 * 1024 * 1024;
-unsigned vecSize = 0;
-
-const size_t blockSize = 32;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
+unsigned vecSize = vecSizeDefault;
 
 const char *msg = "Done!";
 
@@ -84,10 +82,7 @@ int main(int argc, char *argv[])
 
     // Call the kernel
     getTime(&s);
-    size_t local_size = blockSize;
-    size_t global_size = vecSize / blockSize;
-    if(vecSize % blockSize) global_size++;
-    global_size *= local_size;
+    size_t global_size = vecSize;
 
     cl_mem c_device = clGetBuffer(context, c);
     assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &c_device) == CL_SUCCESS);
@@ -97,7 +92,7 @@ int main(int argc, char *argv[])
     assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &b_device) == CL_SUCCESS);
     assert(clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == CL_SUCCESS);
 
-    assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, &local_size, 0, NULL, NULL) == CL_SUCCESS);
+    assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL) == CL_SUCCESS);
     assert(clFinish(command_queue) == CL_SUCCESS);
 
     getTime(&t);

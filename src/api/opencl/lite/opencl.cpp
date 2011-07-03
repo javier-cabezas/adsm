@@ -392,14 +392,14 @@ cl_int APICALL clMalloc(cl_context context, void **addr, size_t count)
     }
     else ret = CL_INVALID_CONTEXT;
     gmac::trace::ExitCurrentFunction();
-        exitGmac();
-        return ret;
+    exitGmac();
+    return ret;
 }
 
 cl_int APICALL clFree(cl_context context, void *addr)
 {
     cl_int ret = CL_SUCCESS;
-        enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
     Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
@@ -409,9 +409,8 @@ cl_int APICALL clFree(cl_context context, void *addr)
     else ret = CL_INVALID_CONTEXT;
 
     gmac::trace::ExitCurrentFunction();
-        exitGmac();
-        return ret;
-
+    exitGmac();
+    return ret;
 }
 
 cl_mem APICALL clGetBuffer(cl_context context, const void *ptr)
@@ -477,17 +476,17 @@ namespace __impl {
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
-        switch(dwReason) {
-                case DLL_PROCESS_ATTACH:
-                        openclInit();
+    switch(dwReason) {
+        case DLL_PROCESS_ATTACH:
+            openclInit();
             break;
-                case DLL_PROCESS_DETACH:
-                        break;
-                case DLL_THREAD_ATTACH:
-                        break;
-                case DLL_THREAD_DETACH:
-                        break;
-        };
+        case DLL_PROCESS_DETACH:
+            break;
+        case DLL_THREAD_ATTACH:
+            break;
+        case DLL_THREAD_DETACH:
+            break;
+    };
     return TRUE;
 }
 

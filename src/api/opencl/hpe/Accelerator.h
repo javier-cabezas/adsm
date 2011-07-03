@@ -128,7 +128,7 @@ public:
      * \param size Reference to the size (in bytes) of the OpenCL memory object
      * \return True if the translation succeeded
      */
-    bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
+    bool translate(const hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
 /** A pool of OpenCL buffers */
@@ -437,6 +437,8 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
     void getMemInfo(size_t &free, size_t &total) const;
 
+    gmacError_t acquire(hostptr_t addr);
+    gmacError_t release(hostptr_t addr);
 };
 
 }}}

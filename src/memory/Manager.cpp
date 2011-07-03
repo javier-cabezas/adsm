@@ -114,7 +114,11 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
     trace::EnterCurrentFunction();
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     // TODO: ask process instead
-    // if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
+    if (mode.hasIntegratedMemory()) {
+        gmacError_t ret = hostMappedAlloc(mode, addr, size);
+        trace::ExitCurrentFunction();
+        return ret;
+    }
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
@@ -208,7 +212,7 @@ Manager::translate(core::Mode &mode, const hostptr_t addr)
     if(ret == 0) {
         HostMappedObject *object = HostMappedObject::get(addr);
         if(object != NULL) {
-            ret = object->acceleratorAddr(addr);
+            ret = object->acceleratorAddr(mode, addr);
             object->decRef();
         }
     }
@@ -233,10 +237,18 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
         std::list<hostptr_t>::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             Object *obj = mode.getObject(*it);
-            ASSERTION(obj != NULL);
-            ret = obj->acquire();
-            ASSERTION(ret == gmacSuccess);
-            obj->decRef();
+            if (obj == NULL) {
+                HostMappedObject *hostMappedObject = HostMappedObject::get(*it);
+                ASSERTION(hostMappedObject != NULL, "Address not found");
+#ifdef USE_OPENCL
+                hostMappedObject->acquire(mode);
+#endif
+                hostMappedObject->decRef();
+            } else {
+                ret = obj->acquire();
+                ASSERTION(ret == gmacSuccess);
+                obj->decRef();
+            }
         }
     }
     trace::ExitCurrentFunction();
@@ -270,11 +282,19 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
         ListAddr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             Object *obj = mode.getObject(*it);
-            ASSERTION(obj != NULL);
-            // Release all the blocks in the object
-            ret = obj->releaseBlocks();
-            ASSERTION(ret == gmacSuccess);
-            obj->decRef();
+            if (obj == NULL) {
+                HostMappedObject *hostMappedObject = HostMappedObject::get(*it);
+                ASSERTION(hostMappedObject != NULL, "Address not found");
+#ifdef USE_OPENCL
+                hostMappedObject->release(mode);
+#endif
+                hostMappedObject->decRef();
+            } else {
+                // Release all the blocks in the object
+                ret = obj->releaseBlocks();
+                ASSERTION(ret == gmacSuccess);
+                obj->decRef();
+            }
         }
     }
     trace::ExitCurrentFunction();

@@ -347,6 +347,8 @@ public:
     gmacError_t prepareForCall();
 
     stream_t eventStream();
+
+    bool hasIntegratedMemory() const;
 };
 
 }}}

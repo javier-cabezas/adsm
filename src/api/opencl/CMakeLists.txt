@@ -4,8 +4,12 @@ add_subdirectory(lite)
 set(arch_SRC
     IOBuffer.h
     IOBuffer-impl.h
+    Mode.h
     Tracer.h
     Tracer-impl.h
+    opencl_utils.h
+    opencl_utils.cpp
+    opencl_utils-impl.h
 )
 
 add_gmac_sources(gmac-arch ${arch_SRC})

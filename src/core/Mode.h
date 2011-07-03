@@ -328,6 +328,13 @@ public:
      */
     virtual void getMemInfo(size_t &free, size_t &total) = 0;
 
+    virtual bool hasIntegratedMemory() const = 0;
+
+#ifdef USE_OPENCL
+    virtual gmacError_t acquire(hostptr_t addr) = 0;
+    virtual gmacError_t release(hostptr_t addr) = 0;
+#endif
+
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();
     const memory::vm::Bitmap &getBitmap() const;
