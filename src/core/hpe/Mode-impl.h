@@ -213,6 +213,12 @@ Mode::eventStream()
     return streamLaunch_;
 }
 
+inline bool
+Mode::hasIntegratedMemory() const
+{
+    return acc_->integrated();
+}
+
 }}}
 
 #endif

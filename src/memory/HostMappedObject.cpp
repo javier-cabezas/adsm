@@ -46,10 +46,10 @@ HostMappedSet HostMappedObject::set_;
 HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
     util::Reference("HostMappedObject"),
     size_(size),
-    mode_(mode)
+    owner_(mode)
 {
-        // Allocate memory (if necessary)
-    addr_ = alloc(mode_);
+    // Allocate memory (if necessary)
+    addr_ = alloc(owner_);
     if(addr_ == NULL) return;
     set_.insert(this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_);
@@ -58,17 +58,18 @@ HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
 
 HostMappedObject::~HostMappedObject()
 {
-    if(addr_ != NULL) free(mode_);
+    if(addr_ != NULL) free(owner_);
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_);
 }
 
 
-accptr_t HostMappedObject::acceleratorAddr(const hostptr_t addr) const
+accptr_t HostMappedObject::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
+    //ASSERTION(current == owner_);
     accptr_t ret = accptr_t(0);
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
-        accptr_t acceleratorAddr = getAccPtr(mode_);
+        accptr_t acceleratorAddr = getAccPtr(current);
         ret = acceleratorAddr + offset;
     }
     return ret;
@@ -78,13 +79,15 @@ hostptr_t
 HostMappedObject::alloc(core::Mode &mode)
 {
     hostptr_t ret = NULL;
-    if(mode.hostAlloc(ret, size_) != gmacSuccess) return NULL;
+    ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
+    if (mode.hostAlloc(ret, size_) != gmacSuccess) return NULL;
     return ret;
 }
 
 void
 HostMappedObject::free(core::Mode &mode)
 {
+    Memory::unmap(addr_, size_);
     mode.hostFree(addr_);
 }
 
@@ -93,6 +96,5 @@ HostMappedObject::getAccPtr(core::Mode &mode) const
 {
     return mode.hostMapAddr(addr_);
 }
-
 
 }}

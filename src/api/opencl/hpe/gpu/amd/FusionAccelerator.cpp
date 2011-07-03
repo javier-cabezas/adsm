@@ -1,20 +1,20 @@
 #include "api/opencl/IOBuffer.h"
 
-#include "Accelerator.h"
+#include "FusionAccelerator.h"
 
 namespace __impl { namespace opencl { namespace hpe { namespace gpu { namespace amd {
 
-Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor) :
+FusionAccelerator::FusionAccelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor) :
     gmac::opencl::hpe::Accelerator(n, context, device, major, minor)
 {
-    integrated_ = false;
+    integrated_ = true;
 }
 
-Accelerator::~Accelerator()
+FusionAccelerator::~FusionAccelerator()
 {
 }
 
-gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_buffer,
+gmacError_t FusionAccelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_buffer,
     size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
@@ -73,7 +73,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
     return error(ret);
 }
 
-gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferOff,
+gmacError_t FusionAccelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferOff,
     const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream)
 {
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);

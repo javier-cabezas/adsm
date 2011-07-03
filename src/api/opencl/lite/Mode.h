@@ -77,8 +77,9 @@ class GMAC_LOCAL Mode :
     public core::Mode,
     public gmac::util::Lock
 {
-        friend class core::IOBuffer;
+    friend class core::IOBuffer;
     friend class ModeMap;
+
 protected:
     cl_context context_;
     typedef std::map<cl_command_queue, cl_device_id> StreamMap;
@@ -145,7 +146,6 @@ public:
      */
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
 
-
     /**
      * Allocate GPU-accessible host memory
      * \param addr Pointer of the memory to be mapped to the accelerator
@@ -154,11 +154,12 @@ public:
      */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
 
-    //! Release GPU-accessible host memory
-    /*!
-        \param addr Starting address of the host memory to be released
-        \return Error code
-    */
+    /**
+     * Release GPU-accessible host memory
+     *
+     *  \param addr Starting address of the host memory to be released
+     *  \return Error code
+     */
     gmacError_t hostFree(hostptr_t addr);
 
     /** Gets the GPU memory address where the given GPU-accessible host
@@ -188,10 +189,11 @@ public:
      */
     core::IOBuffer &createIOBuffer(size_t size, GmacProtection prot);
 
-    //! Destroy (release) an I/O buffer
-    /*!
-        \param buffer I/O buffer to be released
-    */
+    /**
+     * Destroy (release) an I/O buffer
+     *
+     * \param buffer I/O buffer to be released
+     */
     void destroyIOBuffer(core::IOBuffer &buffer);
 
     /** Send data from an I/O buffer to the accelerator
@@ -203,7 +205,6 @@ public:
      *  \return Error code
      */
     gmacError_t bufferToAccelerator(accptr_t dst, core::IOBuffer &buffer, size_t size, size_t off = 0);
-
 
     /** Fill I/O buffer with data from the accelerator
      *
@@ -234,12 +235,12 @@ public:
      */
     static Mode & getCurrent();
 
-        /**
-         * Get the time elapsed between tow events
-         * \param t Reference to store the elapsed time
-         * \param start Starting event
-         * \param end Ending event
-         */
+    /**
+     * Get the time elapsed between tow events
+     * \param t Reference to store the elapsed time
+     * \param start Starting event
+     * \param end Ending event
+     */
     gmacError_t eventTime(uint64_t &t, cl_event start, cl_event end);
 
     /**
@@ -306,6 +307,11 @@ public:
      * on the accelerator
      */
     void getMemInfo(size_t &free, size_t &total);
+
+    bool hasIntegratedMemory() const;
+
+    gmacError_t acquire(hostptr_t addr);
+    gmacError_t release(hostptr_t addr);
 };
 
 }}}

@@ -9,10 +9,10 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 32 * 1024 * 1024;
-unsigned vecSize = 0;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
+unsigned vecSize = vecSizeDefault;
 
-const size_t blockSize = 32;
+const size_t blockSize = 256;
 
 const char *msg = "Done!";
 
@@ -29,13 +29,13 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t;
+    float *a, *b, *c;
+    gmactime_t s, t;
 
     assert(ecl::compileSource(kernel) == eclSuccess);
 
-	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
+    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
     // Alloc input data

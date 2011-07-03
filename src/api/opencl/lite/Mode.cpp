@@ -50,7 +50,7 @@ gmacError_t Mode::setActiveQueue(cl_command_queue queue)
 void Mode::deactivateQueue()
 {
     /* active_ = cl_command_queue(0); */
-	util::Lock::unlock();
+    util::Lock::unlock();
 }
 
 void Mode::removeQueue(cl_command_queue queue)
@@ -211,6 +211,21 @@ void Mode::getMemInfo(size_t &free, size_t &total)
         free = (free < size_t(value)) ? free : size_t(value);
     }
 }
+
+gmacError_t
+Mode::acquire(hostptr_t addr)
+{
+    // TODO FUSION: implement this!
+    return gmacSuccess;
+}
+
+gmacError_t
+Mode::release(hostptr_t addr)
+{
+    // TODO FUSION: implement this!
+    return gmacSuccess;
+}
+
 
 
 }}}

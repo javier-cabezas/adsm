@@ -184,6 +184,9 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
+
+    gmacError_t acquire(hostptr_t addr);
+    gmacError_t release(hostptr_t addr);
 };
 }}}
 

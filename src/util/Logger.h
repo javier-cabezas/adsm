@@ -82,8 +82,14 @@ inline static const char *__extract_file_name(const char *file) {
 #   endif
 #   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #else
+
+static inline
+void dummy_assertion(bool /*b*/, ...)
+{
+}
+
 #   define TRACE(...)
-#   define ASSERTION(...)
+#   define ASSERTION(c, ...) dummy_assertion(c, ##__VA_ARGS__)
 #endif
 
 #define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)

@@ -136,7 +136,7 @@ gmacError_t Mode::acquireObjects()
 
 gmacError_t Mode::waitForEvent(cl_event event)
 {
-        switchIn();
+    switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
     gmacError_t ret = acc.syncCLevent(event);
@@ -160,5 +160,29 @@ Accelerator & Mode::getAccelerator() const
 {
     return *static_cast<Accelerator *>(acc_);
 }
+
+gmacError_t
+Mode::acquire(hostptr_t addr)
+{
+    switchIn();
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    gmacError_t ret = acc.acquire(addr);
+    switchOut();
+    return ret;
+}
+
+gmacError_t
+Mode::release(hostptr_t addr)
+{
+    switchIn();
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    gmacError_t ret = acc.release(addr);
+    switchOut();
+    return ret;
+}
+
+
 
 }}}

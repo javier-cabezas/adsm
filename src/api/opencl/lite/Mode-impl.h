@@ -120,10 +120,17 @@ gmacError_t Mode::acquireObjects()
     return error(ret);
 }
 
-inline
-void Mode::makeOrphan(memory::Object &obj)
+inline void
+Mode::makeOrphan(memory::Object &obj)
 {
     FATAL("Orphan objects not supported in GMAC/Lite");
+}
+
+inline bool
+Mode::hasIntegratedMemory() const
+{
+    // TODO FUSION: implement this to avoid copies
+    return false;
 }
 
 }}}
