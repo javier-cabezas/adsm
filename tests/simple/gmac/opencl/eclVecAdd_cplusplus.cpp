@@ -38,19 +38,22 @@ int main(int argc, char *argv[])
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
-    // Alloc & init input data
-    if(ecl::malloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
-    if(ecl::malloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    // Alloc input data
+    a = new (ecl::allocator) float[vecSize];
+    b = new (ecl::allocator) float[vecSize];
     // Alloc output data
-    if(ecl::malloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    c = new (ecl::allocator) float[vecSize];
+
+    assert(a != NULL);
+    assert(b != NULL);
+    assert(c != NULL);
+
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     float sum = 0.f;
 
+    // Init input data
     getTime(&s);
     valueInit(a, 1.f, vecSize);
     valueInit(b, 1.f, vecSize);

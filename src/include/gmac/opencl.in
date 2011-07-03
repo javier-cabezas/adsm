@@ -56,6 +56,13 @@ typedef @OPENCL_API_PREFIX@_error error;
 typedef @OPENCL_API_PREFIX@_memory_hint memory_hint;
 typedef @OPENCL_API_PREFIX@_protection protection;
 
+class kernel;
+
+class __allocator {
+};
+
+static __allocator allocator;
+
 class kernel {
 private:
     /** "C" kernel handler used by the object */
@@ -534,6 +541,34 @@ void deviceCopy(THREAD_T tid)
 }
 
 }
+
+void *operator new(size_t size, ecl::__allocator &allocator)
+{
+    void *ret;
+    ecl::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    if (err != gmacSuccess) ret = NULL;
+    return ret;
+}
+
+void *operator new[](size_t size, ecl::__allocator &allocator)
+{
+    void *ret;
+    ecl::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    if (err != gmacSuccess) ret = NULL;
+    return ret;
+}
+
+void operator delete(void *addr, ecl::__allocator &allocator)
+{
+    ecl::error err = ::@OPENCL_API_PREFIX@Free(addr);
+}
+
+void operator delete[](void *addr, ecl::__allocator &allocator)
+{
+    ecl::error err = ::@OPENCL_API_PREFIX@Free(addr);
+}
+
+
 
 #endif /* GMAC_OPENCL_CPP_H_ */
 
