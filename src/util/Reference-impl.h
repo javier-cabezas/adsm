@@ -12,13 +12,17 @@ Reference::Reference(const char *name) :
     , className_(name)
 #endif
 {
+#ifdef DEBUG
     TRACE(LOCAL, "Creating reference for %s: %p", className_.c_str(), this);
+#endif
 }
 
 inline
 Reference::~Reference()
 {
+#ifdef DEBUG
     ASSERTION(ref_ == 0, "Expected 0, value = %d", ref_);
+#endif
     TRACE(LOCAL, "Destroying reference for: %p", this);
 }
 
@@ -44,10 +48,14 @@ Reference::decRef()
     Atomic a = AtomicDec(ref_);
     ASSERTION(a >= 0);
 
+#ifdef DEBUG
     TRACE(LOCAL, "Decrementing reference for %s: %p = %d", className_.c_str(), this, a);
+#endif
 
     if (a == 0) {
+#ifdef DEBUG
         TRACE(LOCAL, "0 references for %s: %p", className_.c_str(), this);
+#endif
         gmacError_t ret = cleanUp();
         ASSERTION(ret == gmacSuccess);
         delete this;
