@@ -533,9 +533,13 @@ void deviceCopy(THREAD_T tid)
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
+class __allocator {
+};
+
+extern __allocator allocator;
 }
 
-#include <exception>
+#include <new>
 
 void *operator new(size_t size, ecl::__allocator &allocator)
 {
