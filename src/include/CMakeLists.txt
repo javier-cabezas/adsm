@@ -9,6 +9,7 @@ endif(NOT USE_OPENCL)
 
 set(gmac_include_SRC
     gmac/api.h.in
+    gmac/cuda
     gmac/cuda.h
     gmac/cuda_types.h
     gmac/cl

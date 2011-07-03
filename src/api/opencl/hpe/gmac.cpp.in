@@ -14,7 +14,6 @@ using __impl::opencl::hpe::KernelLaunch;
 
 namespace @OPENCL_API_PREFIX@ {
 config config::null;
-__allocator allocator;
 }
 
 using __impl::util::params::ParamAutoSync;
