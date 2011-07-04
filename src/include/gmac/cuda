@@ -270,7 +270,10 @@ copy(THREAD_T tid)
     ::gmacCopy(tid);
 }
 
-class __allocator {};
+class __allocator {
+    int dummy;
+};
+
 static __allocator allocator;
 
 void finiAllocator()
