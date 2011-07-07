@@ -66,7 +66,7 @@ BlockTreeInfo::BlockTreeInfo(lazy::Block &block) :
     // Initialize subblock state tree (for random access patterns)
     treeState_ = new BlockTreeState[2 * block.getSubBlocks() - 1];
     bool isPower;
-    unsigned levels = log2(block.getSubBlocks(), isPower) - 1;
+    unsigned levels = log2(block.getSubBlocks(), isPower) + 1;
     if (isPower == false) {
         levels++;
     }
@@ -495,12 +495,10 @@ inline void
 BlockState::writeTree(const hostptr_t addr)
 {
     treeInfo_.signalWrite(addr);
-    if (faultsWrite_ > STRIDE_THRESHOLD) {
-        BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
+    BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
 
-        for (unsigned i = info.first; i < info.first + info.second; i++) {
-            setSubBlock(i, lazy::Dirty);
-        }
+    for (unsigned i = info.first; i < info.first + info.second; i++) {
+        setSubBlock(i, lazy::Dirty);
     }
 }
 

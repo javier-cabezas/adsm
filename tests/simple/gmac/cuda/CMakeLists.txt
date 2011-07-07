@@ -24,6 +24,7 @@ source_group(${current_GROUP} FILES
     gmacFile.cu
     gmacMigration.cu
     gmacMeminfo.cu
+    gmacRandomAccess.cu
     gmacStencil.cu
     gmacThreadStencil.cu
     gmacStencilCommon.cu
@@ -103,6 +104,11 @@ target_link_libraries(gmacMatrixMul test-common gmac-cuda)
 cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
 add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
 target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
+
+# gmacRandomAccess
+cuda_compile(randomAccess gmacRandomAccess.cu)
+add_executable(gmacRandomAccess ${randomAccess} gmacRandomAccess.cu)
+target_link_libraries(gmacRandomAccess test-common gmac-cuda)
 
 # gmacStencil
 cuda_compile(stencil gmacStencil.cu)
