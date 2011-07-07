@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     for (unsigned i = 0; i < ITERATIONS; i++) {
         assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
         sentinel++;
-        //printf("Iteration %u\n", i);
+        printf("Iteration %u\n", i);
         barrier_wait(&barrier);
         barrier_wait(&barrier);
     }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
          thread_wait(threads[i]);
     }
 
-    //printf("Sentinel %u\n", sentinel);
+    printf("Sentinel %u\n", sentinel);
     for (unsigned i = 0; i < totalSize; i++) {
         if (ptr[i] != 2 * ITERATIONS) {
             fprintf(stderr, "Pos: %u (%u). %u vs %u\n", i, i % size, ptr[i], 2 * ITERATIONS);

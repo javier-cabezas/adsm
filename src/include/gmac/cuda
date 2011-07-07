@@ -270,22 +270,22 @@ copy(THREAD_T tid)
     ::gmacCopy(tid);
 }
 
-class gmacAllocator {
+struct __allocator {
     int dummy;
 };
 
-static gmacAllocator allocator;
+static __allocator allocator;
 
 void finiAllocator()
 {
-    gmacAllocator tmp;
+    __allocator tmp;
     if (&allocator != &tmp) abort();
 }
 }
 
 #include <new>
 
-void *operator new(size_t size, gmac::gmacAllocator &/*allocator*/)
+void *operator new(size_t size, gmac::__allocator &/*allocator*/)
 {
     void *ret;
     gmacError_t err = gmacMalloc(&ret, size);
@@ -296,7 +296,7 @@ void *operator new(size_t size, gmac::gmacAllocator &/*allocator*/)
     return ret;
 }
 
-void *operator new[](size_t size, gmac::gmacAllocator &/*allocator*/)
+void *operator new[](size_t size, gmac::__allocator &/*allocator*/)
 {
     void *ret;
     gmacError_t err = gmacMalloc(&ret, size);
@@ -307,12 +307,12 @@ void *operator new[](size_t size, gmac::gmacAllocator &/*allocator*/)
     return ret;
 }
 
-void operator delete(void *addr, gmac::gmacAllocator &/*allocator*/)
+void operator delete(void *addr, gmac::__allocator &/*allocator*/)
 {
     ::gmacFree(addr);
 }
 
-void operator delete[](void *addr, gmac::gmacAllocator &/*allocator*/)
+void operator delete[](void *addr, gmac::__allocator &/*allocator*/)
 {
     ::gmacFree(addr);
 }
