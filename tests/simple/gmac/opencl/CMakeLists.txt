@@ -28,6 +28,7 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     eclInit.cpp
+    eclColumnMajor.cpp
     eclCompress.cpp
     eclCompressCommon.cl
     eclCompressSend.cl
@@ -57,6 +58,9 @@ source_group(${current_GROUP} FILES
 
 add_executable(eclInit ${common_SRC} eclInit.cpp)
 target_link_libraries(eclInit gmac-hpe)
+
+add_executable(eclColumnMajor ${common_SRC} eclColumnMajor.cpp)
+target_link_libraries(eclColumnMajor gmac-hpe)
 
 add_executable(eclCompress ${common_SRC} eclCompress.cpp eclCompressCommon.cl)
 target_link_libraries(eclCompress gmac-hpe)
