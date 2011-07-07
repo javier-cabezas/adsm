@@ -9,6 +9,7 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacAlloc.cu
+    gmacColumnMajor.cu
     gmacVecAdd.cu
     cudaVecAdd.cu
     gmacThreadVecAdd.cu
@@ -52,13 +53,18 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacAlloc
 cuda_compile(alloc gmacAlloc.cu)
-add_executable(gmacAlloc ${alloc}  gmacAlloc.cu)
-target_link_libraries(gmacAlloc test-common test-common gmac-cuda)
+add_executable(gmacAlloc ${alloc} gmacAlloc.cu)
+target_link_libraries(gmacAlloc test-common gmac-cuda)
+
+# gmacColumnMajor
+cuda_compile(columnMajor gmacColumnMajor.cu)
+add_executable(gmacColumnMajor ${columnMajor} gmacColumnMajor.cu)
+target_link_libraries(gmacColumnMajor test-common gmac-cuda)
 
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd}  gmacVecAdd.cu)
-target_link_libraries(gmacVecAdd test-common test-common gmac-cuda)
+target_link_libraries(gmacVecAdd test-common gmac-cuda)
 
 # cudaVecAdd
 cuda_compile(vecAdd cudaVecAdd.cu)
