@@ -39,6 +39,7 @@ source_group(${current_GROUP} FILES
     eclFileVecAdd.cpp
     eclPingPong.cpp
     eclBarr.cpp
+    eclRandomAccess.cpp
     eclSharedVecAdd.cpp
     eclStencil.cpp
     eclStencilCommon.h
@@ -89,6 +90,9 @@ target_link_libraries(eclFileVecAdd gmac-hpe)
 
 add_executable(eclPingPong ${common_SRC} eclPingPong.cpp)
 target_link_libraries(eclPingPong gmac-hpe)
+
+add_executable(eclRandomAccess ${common_SRC} eclRandomAccess.cpp)
+target_link_libraries(eclRandomAccess gmac-hpe)
 
 add_executable(eclSharedVecAdd ${common_SRC} eclSharedVecAdd.cpp)
 target_link_libraries(eclSharedVecAdd gmac-hpe)

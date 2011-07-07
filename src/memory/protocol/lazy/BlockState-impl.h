@@ -66,7 +66,7 @@ BlockTreeInfo::BlockTreeInfo(lazy::Block &block) :
     // Initialize subblock state tree (for random access patterns)
     treeState_ = new BlockTreeState[2 * block.getSubBlocks() - 1];
     bool isPower;
-    unsigned levels = log2(block.getSubBlocks(), isPower);
+    unsigned levels = log2(block.getSubBlocks(), isPower) - 1;
     if (isPower == false) {
         levels++;
     }
