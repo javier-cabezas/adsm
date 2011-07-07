@@ -77,6 +77,23 @@ T log2(T n)
     return ret;
 }
 
+template <typename T>
+static inline
+T log2(T n, bool &isPower)
+{
+    unsigned pos = sizeof(T) * 8;
+    unsigned ones = 0;
+    T ret = 0;
+    while (pos > 0) {
+        if (n > 1) ret++;
+        if (n & 1) ones++;
+        n >>= 1;
+        pos--;
+    }
+    isPower = (ones == 1);
+    return ret;
+}
+
 #if 0
 static inline
 long_t
