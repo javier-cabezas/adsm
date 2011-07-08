@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace memory { namespace protocol {
 
-LazyBase::LazyBase(size_t limit) :
-    __impl::memory::protocol::LazyBase(limit)
+LazyBase::LazyBase(bool eager) :
+    __impl::memory::protocol::LazyBase(eager)
 {
 }
 

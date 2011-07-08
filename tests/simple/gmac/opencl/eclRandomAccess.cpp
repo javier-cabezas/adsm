@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <time.h>
 
 #include <gmac/opencl>
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     ecl::memset(a, 0, vecSize * sizeof(float));
 
     for(unsigned i = 0; i < operations; i++) {
-        double rnd = drand48();
+        double rnd = (double(rand()) / RAND_MAX);
         unsigned pos = unsigned(rnd * (vecSize - 1));
         a[pos]++;
     }

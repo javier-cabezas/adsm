@@ -74,6 +74,8 @@ set(memory_DBC
     dbc/SharedObject.h
     dbc/SharedObject-impl.h
     protocol/dbc/Lazy.h
+    protocol/dbc/Lazy-impl.h
+    protocol/dbc/LazyBase.h
     protocol/dbc/Lazy.cpp
 )
 
