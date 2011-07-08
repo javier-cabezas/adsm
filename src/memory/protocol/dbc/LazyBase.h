@@ -44,7 +44,7 @@ class GMAC_LOCAL LazyBase :
     DBC_TESTED(__impl::memory::protocol::LazyBase)
 
 protected:
-    LazyBase(size_t limit);
+    LazyBase(bool eager);
     virtual ~LazyBase();
 
     typedef __impl::memory::protocol::LazyBase Parent;

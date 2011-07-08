@@ -7,7 +7,6 @@
 #include "utils.h"
 #include "debug.h"
 
-
 const char *vecSizeStr = "GMAC_VECSIZE";
 const unsigned vecSizeDefault = 16 * 1024 * 1024;
 unsigned vecSize = vecSizeDefault;
