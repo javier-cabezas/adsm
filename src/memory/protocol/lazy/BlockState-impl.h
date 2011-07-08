@@ -467,6 +467,7 @@ BlockState::read(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     faultsRead_++;
+    faultsCacheRead_++;
 
     setSubBlock(currentSubBlock, lazy::ReadOnly);
 #ifdef DEBUG
@@ -508,6 +509,7 @@ BlockState::write(const hostptr_t addr)
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
 
     faultsWrite_++;
+    faultsCacheWrite_++;
 
     setSubBlock(currentSubBlock, lazy::Dirty);
 
@@ -729,6 +731,7 @@ void
 BlockState::read(const hostptr_t /*addr*/)
 {
     faultsRead_++;
+    faultsCacheRead_++;
 }
 
 inline
@@ -736,6 +739,7 @@ void
 BlockState::write(const hostptr_t /*addr*/)
 {
     faultsWrite_++;
+    faultsCacheWrite_++;
 }
 
 inline

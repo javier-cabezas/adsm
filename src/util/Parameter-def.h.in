@@ -27,7 +27,8 @@ PARAM(ParamBlockSize, long_t, @GMAC_BLOCK_SIZE@, "GMAC_BLOCK_SIZE", PARAM_NONZER
 PARAM(ParamMemcpyAccToAcc, bool, true, "GMAC_MEMCPY_ACCTOACC")
 
 // Rolling Manager specific settings
-PARAM(ParamRollSize, unsigned, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
+//PARAM(ParamRollSize, unsigned, 2, "GMAC_ROLL_SIZE", PARAM_NONZERO)
+PARAM(ParamRollThreshold, unsigned, 4, "GMAC_ROLL_THRESHOLD", PARAM_NONZERO)
 
 // Miscelaneous Parameters
 PARAM(configPrintParams, bool, false, "GMAC_PRINT_PARAMS")

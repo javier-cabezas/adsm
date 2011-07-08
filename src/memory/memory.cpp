@@ -56,28 +56,28 @@ Protocol *ProtocolInit(unsigned flags)
     Protocol *ret = NULL;
     if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0 ||
        strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
-        size_t rollSize;
+        bool eager;
         if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
-            rollSize = util::params::ParamRollSize;
+            eager = true;
         } else {
-            rollSize = (size_t)-1;
+            eager = false;
         }
 #define USE_GENERIC_OBJECTS 1
         if(0 != (flags & 0x1)) {
 #if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(unsigned(rollSize));
+                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
 #else
             ret = new gmac::memory::protocol::Lazy<
-                DistributedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
+                DistributedObject<protocol::lazy::BlockState> >(eager);
 #endif
         } else {
 #if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(unsigned(rollSize));
+                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
 #else
             ret = new gmac::memory::protocol::Lazy<
-                gmac::memory::SharedObject<protocol::lazy::BlockState> >(unsigned(rollSize));
+                gmac::memory::SharedObject<protocol::lazy::BlockState> >(eager);
 #endif
         }
     }

@@ -23,9 +23,10 @@
 namespace __impl { namespace memory { namespace protocol {
 
 
-LazyBase::LazyBase(size_t limit) :
+LazyBase::LazyBase(bool eager) :
     gmac::util::Lock("LazyBase"),
-    limit_(limit)
+    eager_(eager),
+    limit_(1)
 {
 }
 
@@ -210,13 +211,20 @@ gmacError_t LazyBase::unmapFromAccelerator(Block &b)
     return ret;
 }
 
-void LazyBase::addDirty(Block &block)
+void
+LazyBase::addDirty(lazy::Block &block)
 {
     lock();
     dbl_.push(block);
-    if(limit_ == size_t(-1)) {
+    if (eager_ == false) {
         unlock();
         return;
+    } else {
+        if (block.getCacheWriteFaults() >= __impl::util::params::ParamRollThreshold) {
+            block.resetCacheWriteFaults();
+            TRACE(LOCAL, "Increasing dirty block cache limit %u -> %u", limit_ + 1);
+            limit_++;
+        }
     }
     while (dbl_.size() > limit_) {
         Block &b = dbl_.front();
@@ -226,17 +234,16 @@ void LazyBase::addDirty(Block &block)
     return;
 }
 
-gmacError_t LazyBase::flushDirty()
-{
-    return releaseAll();
-}
-
 gmacError_t LazyBase::releaseAll()
 {
     // We need to make sure that this operations is done before we
     // let other modes to proceed
-
     lock();
+
+    // Shrink cache size if we have not filled it
+    if (eager_ == true && dbl_.size() < limit_ && limit_ > 1) {
+        limit_ /= 2;
+    }
 
     // If the list of objects to be released is empty, assume a complete flush
     TRACE(LOCAL, "Releasing all blocks");
@@ -248,6 +255,27 @@ gmacError_t LazyBase::releaseAll()
     }
 
     unlock();
+    return gmacSuccess;
+}
+
+gmacError_t LazyBase::flushDirty()
+{
+    return releaseAll();
+}
+
+
+gmacError_t LazyBase::releasedAll()
+{
+    lock();
+
+    // Shrink cache size if we have not filled it
+    if (eager_ == true && dbl_.size() < limit_ && limit_ > 1) {
+        TRACE(LOCAL, "Shrinking dirty block cache limit %u -> %u", limit_, limit_ / 2);
+        limit_ /= 2;
+    }
+
+    unlock();
+
     return gmacSuccess;
 }
 

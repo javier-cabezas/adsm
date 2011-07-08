@@ -200,8 +200,6 @@ public:
     void acquired();
     void released();
 
-    unsigned getNumberOfSubBlocks() const;
-
     gmacError_t dump(std::ostream &stream, common::Statistic stat);
 };
 
@@ -237,8 +235,6 @@ public:
 
     void acquired();
     void released();
-
-    unsigned getNumberOfSubBlocks() const;
 
     gmacError_t dump(std::ostream &stream, common::Statistic stat);
 };

@@ -37,7 +37,7 @@ Manager::map(core::Mode &mode, hostptr_t *addr, size_t size, int flags)
     // For integrated accelerators we want to use Centralized objects to avoid memory transfers
     // TODO: ask process instead
     // if (mode.getAccelerator().integrated()) return hostMappedAlloc(addr, size);
-    
+
     Object *object;
     if (*addr != NULL) {
         object = mode.getObject(*addr);
@@ -296,6 +296,8 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
                 obj->decRef();
             }
         }
+
+        ret = mode.getProtocol().releasedAll();
     }
     trace::ExitCurrentFunction();
     return ret;

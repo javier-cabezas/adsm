@@ -40,7 +40,9 @@ namespace memory { namespace protocol { namespace common {
 template <typename T>
 inline
 BlockState<T>::BlockState(ProtocolState state) :
-    state_(state)
+    state_(state),
+    faultsCacheWrite_(0),
+    faultsCacheRead_(0)
 {
 }
 
@@ -50,6 +52,38 @@ T
 BlockState<T>::getState() const
 {
     return state_;
+}
+
+template <typename T>
+inline
+unsigned
+BlockState<T>::getCacheWriteFaults() const
+{
+    return faultsCacheWrite_;
+}
+
+template <typename T>
+inline
+unsigned
+BlockState<T>::getCacheReadFaults() const
+{
+    return faultsCacheRead_;
+}
+
+template <typename T>
+inline
+void
+BlockState<T>::resetCacheWriteFaults()
+{
+    faultsCacheWrite_ = 0;
+}
+
+template <typename T>
+inline
+void
+BlockState<T>::resetCacheReadFaults()
+{
+    faultsCacheRead_ = 0;
 }
 
 #if 0
