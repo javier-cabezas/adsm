@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     gmac::memset(a, 0, vecSize * sizeof(float));
 
     for(unsigned i = 0; i < operations; i++) {
-        double rnd = drand48();
+        double rnd = (double(rand()) / RAND_MAX);
         unsigned pos = unsigned(rnd * (vecSize - 1));
         a[pos]++;
     }
