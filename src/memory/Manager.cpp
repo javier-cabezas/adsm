@@ -299,11 +299,11 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
 
         // Notify protocols
         // 1. Mode protocol
-        ret = mode.getProtocol().releaseAll();
+        ret = mode.getProtocol().releasedAll();
         ASSERTION(ret == gmacSuccess);
         // 2. Process protocol
         if (proc_.getProtocol() != NULL) {
-            ret = proc_.getProtocol()->releaseAll();
+            ret = proc_.getProtocol()->releasedAll();
             ASSERTION(ret == gmacSuccess);
         }
         mode.releaseObjects();

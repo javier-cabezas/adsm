@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float sum = 0.f;
+    double sum = 0.f;
     for (unsigned i = 0; i < ySize; i++) {
         for (unsigned j = 0; j < xSize; j++) {
             sum += a[j + i * xSize];
@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
     }
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
-    fprintf(stderr, "Error: %f\n", sum - float(xSize * ySize));
+    fprintf(stderr, "Error: %f\n", sum - double(xSize * ySize));
 
     gmac::free(a);
 
-    return sum != float(xSize * ySize);
+    return sum != double(xSize * ySize);
 }

@@ -60,23 +60,22 @@ int main(int argc, char *argv[])
 
     // Call the kernel
     getTime(&s);
-    ecl::config globalSize(xSize * ySize);
 
     ecl::error err;
     ecl::kernel kernel("null", err);
     assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
     assert(kernel.setArg(0, a) == eclSuccess);
-    assert(kernel.callNDRange(globalSize) == eclSuccess);
+    assert(kernel.callNDRange(1) == eclSuccess);
 #else
-    assert(kernel(globalSize)(a) == eclSuccess);
+    assert(kernel(1)(a) == eclSuccess);
 #endif
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    float sum = 0.f;
+    double sum = 0.f;
     for (unsigned i = 0; i < ySize; i++) {
         for (unsigned j = 0; j < xSize; j++) {
             sum += a[j + i * xSize];
@@ -84,9 +83,9 @@ int main(int argc, char *argv[])
     }
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
-    fprintf(stderr, "Error: %f\n", sum - float(xSize * ySize));
+    fprintf(stderr, "Error: %f\n", sum - double(xSize * ySize));
 
     ecl::free(a);
 
-    return sum != float(xSize * ySize);
+    return sum != double(xSize * ySize);
 }
