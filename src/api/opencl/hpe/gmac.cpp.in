@@ -13,7 +13,7 @@
 using __impl::opencl::hpe::KernelLaunch;
 
 namespace @OPENCL_API_PREFIX@ {
-config config::null;
+const config config::null = config();
 }
 
 using __impl::util::params::ParamAutoSync;
