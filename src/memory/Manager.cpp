@@ -297,7 +297,17 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
             }
         }
 
-        ret = mode.getProtocol().releasedAll();
+        // Notify protocols
+        // 1. Mode protocol
+        ret = mode.getProtocol().releaseAll();
+        ASSERTION(ret == gmacSuccess);
+        // 2. Process protocol
+        if (proc_.getProtocol() != NULL) {
+            ret = proc_.getProtocol()->releaseAll();
+            ASSERTION(ret == gmacSuccess);
+        }
+        mode.releaseObjects();
+
     }
     trace::ExitCurrentFunction();
     return ret;
