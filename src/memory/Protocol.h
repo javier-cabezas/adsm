@@ -137,6 +137,7 @@ public:
      * \return Error code
      */
     virtual gmacError_t releaseAll() = 0;
+    virtual gmacError_t releasedAll() = 0;
 
     //virtual gmacError_t releaseObjects(const std::list<Object *> &objects) = 0;
 
