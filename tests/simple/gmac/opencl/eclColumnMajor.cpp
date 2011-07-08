@@ -12,7 +12,7 @@ const unsigned xSizeDefault = 1024;
 unsigned xSize = xSizeDefault;
 
 const char *ySizeStr = "GMAC_YSIZE";
-const unsigned ySizeDefault = 1024;
+const unsigned ySizeDefault = 128;
 unsigned ySize = ySizeDefault;
 
 const char *msg = "Done!";
