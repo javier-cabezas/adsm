@@ -41,12 +41,20 @@ class GMAC_LOCAL Mode :
     public virtual Contract {
     DBC_TESTED(__impl::core::hpe::Mode)
 
+private:
+    typedef __impl::core::hpe::Mode Parent;
+
+    typedef __impl::core::IOBuffer IOBufferImpl;
+    typedef __impl::core::hpe::Accelerator AcceleratorImpl;
+    typedef __impl::core::hpe::Kernel KernelImpl;
+    typedef __impl::core::hpe::Process ProcessImpl;
+
 protected:
     void cleanUpContexts();
     gmacError_t cleanUp();
 
 public:
-    Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc);
+    Mode(ProcessImpl &proc, AcceleratorImpl &acc);
     virtual ~Mode();
 
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
@@ -55,8 +63,13 @@ public:
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
     gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
-    gmacError_t moveTo(__impl::core::hpe::Accelerator &acc);
+    gmacError_t bufferToAccelerator(accptr_t dst, IOBufferImpl &buffer, size_t size, size_t off = 0);
+    gmacError_t acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off = 0);
+    void registerKernel(gmac_kernel_id_t k, KernelImpl &kernel);
+    std::string getKernelName(gmac_kernel_id_t k) const;
+    gmacError_t moveTo(AcceleratorImpl &acc);
     gmacError_t releaseObjects();
+    gmacError_t acquireObjects();
 };
 
 }}}

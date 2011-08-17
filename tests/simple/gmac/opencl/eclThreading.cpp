@@ -8,7 +8,7 @@
 #define THREADS 16
 #define ITERATIONS 50
 
-const unsigned size = 1024 * 1024;
+const unsigned size = 64 * 1024;
 const unsigned totalSize = THREADS * size;
 
 unsigned *ptr;
@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
     printf("Sentinel %u\n", sentinel);
     for (unsigned i = 0; i < totalSize; i++) {
         if (ptr[i] != 2 * ITERATIONS) {
-            printf("Pos: %u (%u). %u vs %u\n", i, i % size, ptr[i], 2 * ITERATIONS);
+            fprintf(stderr, "Pos: %u (%u). %u vs %u\n", i, i % size, ptr[i], 2 * ITERATIONS);
             abort();
         }
     }
 
     eclReleaseKernel(kernel);
 
-	eclFree(ptr);
+    eclFree(ptr);
 
     return 0;
 }

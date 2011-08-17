@@ -46,9 +46,9 @@ public:
     /**
      * Default constructor
      *
-     * \param limit Maximum number of blocks in Dirty state. -1 for an infnite number
+     * \param eager Tells if the protocol uses eager update
      */
-    Lazy(size_t limit);
+    explicit Lazy(bool eager);
 
     /// Default destructor
     virtual ~Lazy();

@@ -1,4 +1,6 @@
 set(util_os_SRC
+    loader.h
+    loader.cpp
     Lock.h
     Lock-impl.h
     Lock.cpp

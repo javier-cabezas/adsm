@@ -155,9 +155,10 @@ public:
     //! Create an IO buffer to sent / receive data from the accelerator
     /*!
         \param size Size (in bytes) of the IO buffer
+        \param prot Tells whether the buffer is going to be read or written by the host
         \return Pointer to the created I/O buffer or NULL if not enough memory
     */
-    core::IOBuffer &createIOBuffer(size_t size);
+    core::IOBuffer &createIOBuffer(size_t size, GmacProtection prot);
 
     //! Destroy (release) an I/O buffer
     /*!
@@ -183,6 +184,9 @@ public:
      * \return Physical accelerator associated to the mode
      */
     Accelerator &getAccelerator() const;
+
+    gmacError_t acquire(hostptr_t addr);
+    gmacError_t release(hostptr_t addr);
 };
 }}}
 

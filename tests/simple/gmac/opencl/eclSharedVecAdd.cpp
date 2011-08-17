@@ -140,7 +140,6 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
     snprintf(buffer, 1024, "%s-Check: ", prefix);
     printTime(&s, &t, buffer, "\n");
 
-
     getTime(&s);
     for(n = 0; n < nIter; n++) {
 		eclFree(param[n].ptr);

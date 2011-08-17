@@ -7,12 +7,11 @@
 #include "utils.h"
 #include "debug.h"
 
-
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 32 * 1024 * 1024;
-unsigned vecSize = 0;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
+unsigned vecSize = vecSizeDefault;
 
-const size_t blockSize = 32;
+const size_t blockSize = 256;
 
 const char *msg = "Done!";
 
@@ -29,28 +28,31 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t;
+    float *a, *b, *c;
+    gmactime_t s, t;
 
     assert(ecl::compileSource(kernel) == eclSuccess);
 
-	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
+    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
-    // Alloc & init input data
-    if(ecl::malloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
-    if(ecl::malloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    // Alloc input data
+    a = new (ecl::allocator) float[vecSize];
+    b = new (ecl::allocator) float[vecSize];
     // Alloc output data
-    if(ecl::malloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
-        CUFATAL();
+    c = new (ecl::allocator) float[vecSize];
+
+    assert(a != NULL);
+    assert(b != NULL);
+    assert(c != NULL);
+
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     float sum = 0.f;
 
+    // Init input data
     getTime(&s);
     valueInit(a, 1.f, vecSize);
     valueInit(b, 1.f, vecSize);
@@ -63,10 +65,8 @@ int main(int argc, char *argv[])
     
     // Call the kernel
     getTime(&s);
-    size_t localSize = blockSize;
-    size_t globalSize = vecSize / blockSize;
-    if(vecSize % blockSize) globalSize++;
-    globalSize *= localSize;
+    ecl::config globalSize(vecSize);
+    if(vecSize % blockSize) globalSize.x += blockSize;
 
     ecl::error err;
     ecl::kernel kernel("vecAdd", err);
@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
     assert(kernel.setArg(1, a) == eclSuccess);
     assert(kernel.setArg(2, b) == eclSuccess);
     assert(kernel.setArg(3, vecSize) == eclSuccess);
-    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize) == eclSuccess);
+    assert(kernel.callNDRange(globalSize, blockSize) == eclSuccess);
 #else
-    assert(kernel.callNDRange(1, NULL, &globalSize, &localSize, c, a, b, vecSize) == eclSuccess);
+    assert(kernel(globalSize, blockSize)(c, a, b, vecSize) == eclSuccess);
 #endif
 
     getTime(&t);

@@ -31,29 +31,50 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
-#define GMAC_CORE_ALLOCATOR_DBC_BUDDY_H
+#ifndef GMAC_MEMORY_BLOCKGROUP_H_
+#define GMAC_MEMORY_BLOCKGROUP_H_
 
-#include "dbc/types.h"
-#include "dbc/Contract.h"
+#include "memory/Object.h"
 
-#include "core/allocator/Buddy.h"
+namespace __impl { 
 
-namespace __dbc { namespace core { namespace allocator {
+namespace core {
+	class Mode;
+}
 
-class GMAC_LOCAL Buddy :
-    public __impl::core::allocator::Buddy,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::allocator::Buddy)
+namespace memory {
+
+template<typename State>
+class GMAC_LOCAL BlockGroup : public gmac::memory::Object {
 protected:
-    off_t getFromList(uint8_t i);
-    void putToList(off_t addr, uint8_t i);
+    hostptr_t shadow_;
+    bool hasUserMemory_;
+    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
+    AcceleratorMap acceleratorAddr_;
+    unsigned owners_;
+    core::Mode *ownerShortcut_;
+
+    gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
+
+    void modifiedObject();
 public:
-    Buddy(hostptr_t addr, size_t size);
-    hostptr_t get(size_t &size);
-    void put(hostptr_t addr, size_t size);
+    BlockGroup(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    virtual ~BlockGroup();
+
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
+    core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
+
+    gmacError_t addOwner(core::Mode &owner);
+    gmacError_t removeOwner(core::Mode &owner);
+
+    gmacError_t mapToAccelerator();
+    gmacError_t unmapFromAccelerator();
+
+    static gmacError_t split(BlockGroup &group, size_t offset, size_t size);
 };
 
-}}}
+}}
+
+#include "BlockGroup-impl.h"
 
 #endif

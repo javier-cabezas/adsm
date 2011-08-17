@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,13 +43,17 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace opencl {
 
+/**
+ * IOBuffer implementation for OpenCL
+ */
 class GMAC_LOCAL IOBuffer :
     public gmac::core::IOBuffer,
     public __impl::util::ReusableObject<IOBuffer> {
 protected:
+    /** OpenCL buffer descriptor of the memory used by the buffer */
     cl_mem mem_;
 
-	/** OpenCL event to query for the finalization of any ongoing data transfer */
+    /** OpenCL event to query for the finalization of any ongoing data transfer */
     cl_event start_;
 
     /** OpenCL event to query for the finalization of any ongoing data transfer */
@@ -61,8 +65,8 @@ protected:
     /** Signal is there are ongoing data transfers */
     bool started_;
 
-	/** Last transfer size */
-	size_t last_;
+    /** Last transfer size */
+    size_t last_;
 
     /** Tracer */
     DataCommunication trace_;
@@ -70,12 +74,13 @@ protected:
 public:
     /** Default constructor
      * \param mode Execution mode using the I/O buffer
-     * \param addr Host memory address where to allocated the I/O buffer 
+     * \param addr Host memory address where to allocated the I/O buffer
      * \param size Size (in bytes) of the I/O buffer
      * \param mem cl_mem buffer
+     * \param prot Tells whether the buffer is going to be read/written by the host
      * \return Error code
      */
-    IOBuffer(Mode &mode, hostptr_t addr, size_t size, cl_mem mem);
+    IOBuffer(Mode &mode, hostptr_t addr, size_t size, cl_mem mem, GmacProtection prot);
 
     /** Set the transfer direction from device to host
      * \param mode Execution mode performing the data transfer
@@ -93,7 +98,7 @@ public:
      */
     void started(cl_event event, size_t size);
 
-	/** Set the event defining the start of a data transfer using the I/O buffer
+        /** Set the event defining the start of a data transfer using the I/O buffer
      * \param start OpenCL event defining the starting time of a data transfer
      * \param end OpenCL event defining the end of a data transfer
      * \param size Size (in bytes) of the I/O transfer

@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace memory { namespace protocol {
 
-LazyBase::LazyBase(size_t limit) :
-    __impl::memory::protocol::LazyBase(limit)
+LazyBase::LazyBase(bool eager) :
+    __impl::memory::protocol::LazyBase(eager)
 {
 }
 
@@ -56,15 +56,16 @@ LazyBase::release(BlockImpl &_block)
     LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
     gmacError_t ret = Parent::release(block);
 
-    ENSURES(block.getState() == __impl::memory::protocol::lazy::ReadOnly);
+    ENSURES(block.getState() == __impl::memory::protocol::lazy::ReadOnly ||
+            block.getState() == __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::releaseObjects()
+LazyBase::releaseAll()
 {
-    gmacError_t ret = Parent::releaseObjects();
+    gmacError_t ret = Parent::releaseAll();
 
     ENSURES(Parent::dbl_.size() == 0);
 

@@ -40,7 +40,6 @@ void *check(void *ptr)
         barrier_wait(&barr);
 
         // Do some checks
-        float total = 0.0f;
         for(m = 0; m < pitch; m++) {
             if((pitch + m) >= vecSize) break;
             assert(fabsf(a[(*id * pitch) + m] / (512 * 1024 * 0.01f)) > 0.99);

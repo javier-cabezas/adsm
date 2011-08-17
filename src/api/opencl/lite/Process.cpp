@@ -1,12 +1,7 @@
 #include "api/opencl/lite/Process.h"
 #include "memory/Protocol.h"
+#include "util/loader.h"
 #include "util/Logger.h"
-
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
 
 namespace __impl { namespace opencl { namespace lite {
 
@@ -37,17 +32,17 @@ accptr_t Process::translate(const hostptr_t addr)
     memory::Object *object = mode->getObject(addr);
     if(object == NULL) return accptr_t(0);
     accptr_t ret = object->acceleratorAddr(*mode, addr);
-    object->release();
+    object->decRef();
     return ret;
 }
 
 
-memory::Protocol *Process::protocol()
+memory::Protocol *Process::getProtocol()
 {
     return NULL;
 }
 
-void Process::insertOrphan(memory::Object &)
+void Process::makeOrphan(memory::Object &)
 {
     FATAL("Orphan Objects not supported in GMAC-lite");
 }
@@ -55,14 +50,14 @@ void Process::insertOrphan(memory::Object &)
 core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
     return map_.owner(addr, size);
-    
+
     return NULL;
 }
 
 Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices)
 {
     Mode *ret = map_.get(ctx);
-    if(ret != NULL) { ret->release(); return ret; }
+    if(ret != NULL) { ret->decRef(); return ret; }
     ret = new Mode(ctx, numDevices, devices);
     map_.insert(ctx, *ret);
     return ret;

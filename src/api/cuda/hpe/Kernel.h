@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "core/hpe/Kernel.h"
 #include "util/NonCopyable.h"
+#include "util/ReusableObject.h"
 
 namespace __impl { namespace cuda { namespace hpe {
 
@@ -61,8 +62,6 @@ public:
     size_t size() const { return size_; }
     long_t offset() const { return offset_; }
 };
-
-
 
 class GMAC_LOCAL Kernel : public gmac::core::hpe::Kernel {
     friend class KernelLaunch;

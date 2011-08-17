@@ -105,48 +105,60 @@ protected:
     void free(core::Mode &mode);
     accptr_t getAccPtr(core::Mode &mode) const;
 
-    core::Mode &mode_;
+    core::Mode &owner_;
 public:
-    //! Default constructor
-    /*!
-        \param mode Execution mode creating the object
-        \param size Size (in bytes) of the object being created
-    */
-	HostMappedObject(core::Mode &mode, size_t size);
+    /**
+     * Default constructor
+     * 
+     * \param mode Execution mode creating the object
+     * \param size Size (in bytes) of the object being created
+     */
+    HostMappedObject(core::Mode &mode, size_t size);
 
-    //! Default destructor
+    /// Default destructor
     virtual ~HostMappedObject();
+
+#ifdef USE_OPENCL
+    gmacError_t acquire(core::Mode &current);
+    gmacError_t release(core::Mode &current);
+#endif
     
-    //! Get the starting host memory address of the object
-    /*!
-        \return Starting host memory address of the object
-    */
+    /**
+     * Get the starting host memory address of the object
+     * 
+     * \return Starting host memory address of the object
+     */
     hostptr_t addr() const;
 
-    //! Get the size (in bytes) of the object
-    /*!
-        \return Size (in bytes) of the object
-    */
+    /**
+     * Get the size (in bytes) of the object
+     * 
+     * \return Size (in bytes) of the object
+     */
     size_t size() const;
 
-    //! Get an accelerator address where a host address within the object can be accessed
-    /*!
-        \param addr Host memory address within the object
-        \return Accelerator memory address where the requested host memory address is mapped
-    */
-    accptr_t acceleratorAddr(const hostptr_t addr) const;
+    /**
+     * Get an accelerator address where a host address within the object can be accessed
+     *
+     * \param current Reference to the mode to which generate the address
+     * \param addr Host memory address within the object
+     * \return Accelerator memory address where the requested host memory address is mapped
+     */
+    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
 
-    //! Remove a host mapped object from the list of all present host mapped object
-    /*!
-        \param addr Host memory address within the object to be removed
-    */
+    /**
+     * Remove a host mapped object from the list of all present host mapped object
+     *
+     * \param addr Host memory address within the object to be removed
+     */
     static void remove(hostptr_t addr);
 
-    //! Get the host mapped memory object that contains a given host memory address
-    /*!
-        \param addr Host memory address within the object
-        \return Host mapped object cotainig the host memory address. NULL if not found
-    */
+    /**
+     * Get the host mapped memory object that contains a given host memory address
+     *
+     * \param addr Host memory address within the object
+     * \return Host mapped object cotainig the host memory address. NULL if not found
+     */
     static HostMappedObject *get(const hostptr_t addr);
 };
 

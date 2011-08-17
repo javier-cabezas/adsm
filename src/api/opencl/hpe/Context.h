@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -56,12 +56,14 @@ class Mode;
 class Kernel;
 class KernelLaunch;
 
-
+/**
+ * Context implementation for OpenCL
+ */
 class GMAC_LOCAL Context : public gmac::core::hpe::Context {
     friend class ContextFactory;
 protected:
     /** Delay for spin-locking */
-	static const unsigned USleepLaunch_ = 100;
+        static const unsigned USleepLaunch_ = 100;
 
     /**
      * Default OpenCL context constructor
@@ -101,8 +103,6 @@ public:
      * \return Default OpenCL command queue
      */
     const stream_t eventStream() const;
-
-    gmacError_t memset(accptr_t addr, int c, size_t size);
 };
 
 }}}

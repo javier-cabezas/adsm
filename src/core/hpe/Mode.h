@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -38,7 +38,6 @@ WITH THE SOFTWARE.  */
 
 #include "core/Mode.h"
 #include "core/hpe/Map.h"
-#include "core/allocator/Buddy.h"
 
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
@@ -88,7 +87,7 @@ public:
  */
 class GMAC_LOCAL Mode : public virtual core::Mode {
     DBC_FORCE_TEST(Mode)
-    friend class ContextMap;    
+    friend class ContextMap;
     friend class Accelerator;
 protected:
     Process &proc_;
@@ -100,9 +99,6 @@ protected:
     stream_t streamToHost_;
     stream_t streamToAccelerator_;
     stream_t streamLaunch_;
-
-    allocator::Buddy *ioMemory_;
-
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;
 #endif
@@ -166,7 +162,7 @@ public:
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
-    void insertOrphan(memory::Object &obj);
+    void makeOrphan(memory::Object &obj);
 
     /**
      * Gets a reference to the accelerator which the mode belongs to
@@ -179,55 +175,55 @@ public:
      * \param dst Reference to a pointer where to store the accelerator
      * address of the mapping
      * \param src Host address to be mapped
-     * \param size Size of the mapping
+     * \param count Size of the mapping
      * \param align Alignment of the memory mapping. This value must be a
      * power of two
      * \return Error code
      */
-    TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
 
     /**
      * Unmaps the memory previously mapped by map
      * \param addr Host memory allocation to be unmap
-     * \param size Size of the unmapping
+     * \param count Size of the unmapping
      * \return Error code
      */
-    TESTABLE gmacError_t unmap(hostptr_t addr, size_t size);
+    TESTABLE gmacError_t unmap(hostptr_t addr, size_t count);
 
     /**
      * Copies data from system memory to accelerator memory
      * \param acc Destination accelerator pointer
      * \param host Source host pointer
-     * \param size Number of bytes to be copied
+     * \param count Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t count);
 
     /**
      * Copies data from accelerator memory to system memory
      * \param host Destination host pointer
      * \param acc Source accelerator pointer
-     * \param size Number of bytes to be copied
+     * \param count Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t count);
 
     /** Copies data from accelerator memory to accelerator memory
      * \param dst Destination accelerator memory
      * \param src Source accelerator memory
-     * \param size Number of bytes to be copied
+     * \param count Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t count);
 
     /**
      * Sets the contents of accelerator memory
      * \param addr Pointer to the accelerator memory to be set
      * \param c Value used to fill the memory
-     * \param size Number of bytes to be set
+     * \param count Number of bytes to be set
      * \return Error code
      */
-    TESTABLE gmacError_t memset(accptr_t addr, int c, size_t size);
+    TESTABLE gmacError_t memset(accptr_t addr, int c, size_t count);
 
     /**
      * Creates a KernelLaunch object that can be executed by the mode
@@ -258,35 +254,27 @@ public:
     gmacError_t wait();
 
     /**
-     * Creates an IOBuffer
-     * \param size Minimum size of the buffer
-     * \return A pointer to the created IOBuffer or NULL if there is not enough
-     *         memory
-     */
-    virtual IOBuffer &createIOBuffer(size_t size) = 0;
-
-    /**
      * Destroys an IOBuffer
      * \param buffer Pointer to the buffer to be destroyed
      */
     virtual void destroyIOBuffer(IOBuffer &buffer) = 0;
 
-    /** Copies size bytes from an IOBuffer to accelerator memory
+    /** Copies count bytes from an IOBuffer to accelerator memory
      * \param dst Pointer to accelerator memory
      * \param buffer Reference to the source IOBuffer
-     * \param size Number of bytes to be copied
+     * \param count Number of bytes to be copied
      * \param off Offset within the buffer
      */
-    gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t size, size_t off = 0);
+    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t count, size_t off = 0);
 
     /**
-     * Copies size bytes from accelerator memory to a IOBuffer
+     * Copies count bytes from accelerator memory to a IOBuffer
      * \param buffer Reference to the destination buffer
      * \param dst Pointer to accelerator memory
-     * \param size Number of bytes to be copied
+     * \param count Number of bytes to be copied
      * \param off Offset within the buffer
      */
-    gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t size, size_t off = 0);
+    TESTABLE gmacError_t acceleratorToBuffer(IOBuffer &buffer, const accptr_t dst, size_t count, size_t off = 0);
 
     /**
      * Registers a new kernel that can be executed by the owner thread of the mode
@@ -294,14 +282,14 @@ public:
      * \param k A key that identifies the kernel object
      * \param kernel A reference to the kernel to be registered
      */
-    void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
+    TESTABLE void registerKernel(gmac_kernel_id_t k, Kernel &kernel);
 
     /**
      * Returns the kernel name identified by k
      *
      * \param k A key that identifies the kernel object
      */
-    std::string getKernelName(gmac_kernel_id_t k) const;
+    TESTABLE std::string getKernelName(gmac_kernel_id_t k) const;
 
     /**
      * Moves the mode to accelerator acc
@@ -314,22 +302,29 @@ public:
     /**
      * Releases the ownership of the objects of the mode to the accelerator
      * and waits for pending transfers
+     *
+     * \return gmacSuccess on success, an error code otherwise
      */
     TESTABLE gmacError_t releaseObjects();
 
-
-    gmacError_t acquireObjects();
+    /**
+     * Acquires the ownership of the objects of the mode for the CPU
+     * and waits for pending transfers
+     *
+     * \return gmacSuccess on success, an error code otherwise
+     */
+    TESTABLE gmacError_t acquireObjects();
 
     /**
      * Returns the process which the mode belongs to
      * \return A reference to the process which the mode belongs to
      */
-    Process &process();
+    Process &getProcess();
 
     /** Returns the process which the mode belongs to
      * \return A constant reference to the process which the mode belongs to
      */
-    const Process &process() const;
+    const Process &getProcess() const;
 
     /** Returns the memory information of the accelerator on which the mode runs
      * \param free A reference to a variable to store the memory available on the
@@ -337,16 +332,23 @@ public:
      * \param total A reference to a variable to store the total amount of memory
      * on the accelerator
      */
-    void memInfo(size_t &free, size_t &total);
+    void getMemInfo(size_t &free, size_t &total);
 
 #ifdef USE_VM
     memory::vm::Bitmap &getDirtyBitmap();
     const memory::vm::Bitmap &getDirtyBitmap() const;
 #endif
 
+    /**
+     * Waits for pending transfers before performing a kernel call
+     *
+     * \return gmacSuccess on success, an error code otherwise
+     */
     gmacError_t prepareForCall();
-    
+
     stream_t eventStream();
+
+    bool hasIntegratedMemory() const;
 };
 
 }}}

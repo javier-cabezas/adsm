@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     assert(gmacMalloc((void **)&ptr, totalSize * sizeof(unsigned)) == gmacSuccess);
 
     // Call the kernel
-    size_t globalSize = size_t(totalSize);
+    unsigned globalSize = totalSize;
 
     thread_t threads[THREADS];
     unsigned ids[THREADS];
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         inc<<<dim3(totalSize / 512), dim3(512)>>>(gmacPtr(ptr), globalSize);
         assert(gmacThreadSynchronize() == gmacSuccess);
         sentinel++;
-        printf("Iteration %u\n", i);
+        //printf("Iteration %u\n", i);
         barrier_wait(&barrier);
         barrier_wait(&barrier);
     }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
          thread_wait(threads[i]);
     }
 
-    printf("Sentinel %u\n", sentinel);
+    //printf("Sentinel %u\n", sentinel);
     for (unsigned i = 0; i < totalSize; i++) {
         if (ptr[i] != 2 * ITERATIONS) {
             printf("Pos: %u (%u). %u vs %u\n", i, i % size, ptr[i], 2 * ITERATIONS);

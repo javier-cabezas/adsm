@@ -9,7 +9,6 @@ namespace __impl { namespace opencl { namespace hpe {
 Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     gmac::core::hpe::Mode(proc, acc)
 {
-    hostptr_t addr = NULL;
     streamLaunch_ = getAccelerator().createCLstream();
     streamToHost_ = streamToAccelerator_ = streamLaunch_;
 }
@@ -20,17 +19,17 @@ Mode::~Mode()
     getAccelerator().destroyCLstream(streamLaunch_);
 }
 
-core::IOBuffer &Mode::createIOBuffer(size_t size)
+core::IOBuffer &Mode::createIOBuffer(size_t size, GmacProtection prot)
 {
     IOBuffer *ret;
     hostptr_t addr(NULL);
     cl_mem mem;
-    gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size);
+    gmacError_t err = getAccelerator().allocCLBuffer(mem, addr, size, prot);
     if(err != gmacSuccess) {
         addr = hostptr_t(::malloc(size));
-        ret = new IOBuffer(*this, addr, size, NULL);
+        ret = new IOBuffer(*this, addr, size, NULL, prot);
     } else {
-        ret = new IOBuffer(*this, addr, size, mem);
+        ret = new IOBuffer(*this, addr, size, mem, prot);
     }
     return *ret;
 }
@@ -39,7 +38,7 @@ void Mode::destroyIOBuffer(core::IOBuffer &_buffer)
 {
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     if (buffer.async()) {
-        getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.addr(), buffer.size());
+        getAccelerator().freeCLBuffer(buffer.getCLBuffer(), buffer.addr(), buffer.size(), buffer.getProtection());
     } else {
         ::free(buffer.addr());
     }
@@ -127,16 +126,16 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 
 gmacError_t Mode::acquireObjects()
 {
-        lock();
-    validObjects_ = false;
+    lock();
+    modifiedObjects_ = false;
     releasedObjects_ = false;
-        unlock();
+    unlock();
     return error_;
 }
 
 gmacError_t Mode::waitForEvent(cl_event event)
 {
-        switchIn();
+    switchIn();
     Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
 
     gmacError_t ret = acc.syncCLevent(event);
@@ -160,5 +159,29 @@ Accelerator & Mode::getAccelerator() const
 {
     return *static_cast<Accelerator *>(acc_);
 }
+
+gmacError_t
+Mode::acquire(hostptr_t addr)
+{
+    switchIn();
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    gmacError_t ret = acc.acquire(addr);
+    switchOut();
+    return ret;
+}
+
+gmacError_t
+Mode::release(hostptr_t addr)
+{
+    switchIn();
+    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+
+    gmacError_t ret = acc.release(addr);
+    switchOut();
+    return ret;
+}
+
+
 
 }}}

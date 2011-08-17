@@ -31,13 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+/**
+ * \file gmac/opencl
+ *
+ * GMAC/OpenCL C++ interface
+ */
+
+#ifndef GMAC_OPENCL_CPP_H_
+#define GMAC_OPENCL_CPP_H_
 
 #ifndef __cplusplus
 #error "This header can only be included in C++ programs"
 #endif
-
-#ifndef GMAC_OPENCL_CPP_H_
-#define GMAC_OPENCL_CPP_H_
 
 #include <string>
 #include <istream>
@@ -95,8 +100,9 @@ private:
      */
     error getByName(std::string name);
 
+    
 public:
-    /**
+        /**
      * Creates an returns a pointer to a C++ kernel handler for the specified kernel
      *
      * \param name Name of the kernel
@@ -120,24 +126,11 @@ public:
     /**
      * Assigns a C++ kernel handler to the object
      *
-     * \param launch Constant reference to the C++ handler to be assigned
+     * \param handler Constant reference to the C++ handler to be assigned
      *
      * \return A reference to the current C++ descriptor
      */
     @OPENCL_API_PREFIX@::kernel &operator=(const kernel &handler);
-
-#if 0
-    /**
-     * Sets an argument to be used by the following call to callNDRange()
-     *
-     * \param index Index of the parameter being set in the parameter list
-     * \param size Size, in bytes, of the argument
-     * \param addr Memory address where the argument is stored
-     *
-     * \return Error code
-     */
-    error setArg(unsigned index, size_t size, const void *addr);
-#endif
 
     /**
      * Sets an argument to be used by the following call to callNDRange()
@@ -163,24 +156,30 @@ public:
      *
      * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
      */
-    error callNDRange(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize);
 
+    error callNDRange(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-private:
-    template <typename P1, typename ...Pn>
-    error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize, 
-                   unsigned index, P1 p1, Pn ...pn);
+    class launch {
+        friend class kernel;
+    private:
+        kernel &kernel_;
+        config global_;
+        config local_;
+        config offset_;
 
-    error __launch(size_t workDim, size_t *globalWorkOffset,
-                   size_t *globalWorkSize, size_t *localWorkSize, unsigned index);
+        template <typename P1, typename ...Pn>
+        error __launch(unsigned index, P1 p1, Pn ...pn);
 
-public:
-    template <typename P1, typename ...Pn>
-    error callNDRange(size_t workDim, size_t *globalWorkOffset,
-                      size_t *globalWorkSize, size_t *localWorkSize,
-                      P1 p1, Pn ...pn);
+        error __launch(unsigned index);
+
+        launch(kernel &k, config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+    public:
+
+        template <typename P1, typename ...Pn>
+        error operator()(P1 p1, Pn ...pn);
+    };
+
+    kernel::launch operator()(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
 #endif
 };
 
@@ -224,14 +223,6 @@ kernel &kernel::operator=(const kernel &handler)
     return *this;
 }
 
-#if 0
-inline
-error kernel::setArg(unsigned index, size_t size, const void *addr)
-{
-    return ::@OPENCL_API_PREFIX@SetKernelArg(kernel_, index, size, addr);
-}
-#endif
-
 template <typename T>
 inline
 error kernel::setArg(unsigned index, T val)
@@ -241,37 +232,53 @@ error kernel::setArg(unsigned index, T val)
 }
 
 inline
-error kernel::callNDRange(size_t workDim, size_t *globalWorkOffset,
-                          size_t *globalWorkSize, size_t *localWorkSize)
+error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
 {
-    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
+                                                          globalWorkOffset.getAddr(),
+                                                          globalWorkSize.getAddr(),
+                                                          localWorkSize.getAddr());
     return ret;
 }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+
 template <typename P1, typename ...Pn>
-error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
-                       size_t *globalWorkSize, size_t *localWorkSize, 
-                       unsigned index, P1 p1, Pn ...pn)
+error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
 {
-    error ret = setArg(index, p1);
+    error ret = kernel_.setArg(index, p1);
     if (ret != gmacSuccess) return ret;
-    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, index + 1, pn...);
+    return __launch(index + 1, pn...);
 }
 
-error kernel::__launch(size_t workDim, size_t *globalWorkOffset,
-                       size_t *globalWorkSize, size_t *localWorkSize, unsigned index)
+error kernel::launch::__launch(unsigned index)
 {
-    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_, workDim, globalWorkOffset, globalWorkSize, localWorkSize);
+    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
+                                                             global_.getAddr(),
+                                                             local_.getAddr(),
+                                                             offset_.getAddr());
 }
 
 template <typename P1, typename ...Pn>
-error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
-                         size_t *globalWorkSize, size_t *localWorkSize,
-                         P1 p1, Pn ...pn)
+error kernel::launch::operator()(P1 p1, Pn ...pn)
 {
-    return __launch(workDim, globalWorkOffset, globalWorkSize, localWorkSize, 0, p1, pn...);
+    return __launch(0, p1, pn...);
 }
+
+kernel::launch::launch(kernel &k, config global, config local, config offset) :
+    kernel_(k),
+    global_(global),
+    local_(local),
+    offset_(offset)
+{
+}
+
+kernel::launch
+kernel::operator()(config globalWorkSize, config localWorkSize, config globalWorkOffset)
+{
+    return launch(*this, globalWorkSize, localWorkSize, globalWorkOffset);
+}
+
 #endif
 
 /*
@@ -279,7 +286,8 @@ error kernel:callNDRange(size_t workDim, size_t *globalWorkOffset,
  */
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * \fn static inline error compileSource(std::string code, std::string flags = "")
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param code Pointer to the NULL-terminated string that contains the code
  * \param flags Compilation flags or empty string
@@ -292,7 +300,7 @@ static inline error compileSource(std::string code, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param path String with the path of the file that contains the code
  * \param flags Compilation flags or empty string
@@ -305,7 +313,7 @@ static inline error compileSourceFile(std::string path, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
@@ -330,7 +338,7 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
 }
 
 /**
- * Prepares the OpenCL binary to be used by the applications 
+ * Prepares the OpenCL binary to be used by the applications
  *
  * \param binary Pointer to the array that contains the binary code
  * \param size Size in bytes of the array that contains the binary code
@@ -344,7 +352,7 @@ static inline error compileBinary(const unsigned char *binary, size_t size, std:
 }
 
 /**
- * Prepares the OpenCL binary code to be used by the applications 
+ * Prepares the OpenCL binary code to be used by the applications
  *
  * \param path String with the path of the file that contains the binary code
  * \param flags Compilation flags or empty string
@@ -357,7 +365,7 @@ static inline error compileBinaryFile(std::string path, std::string flags = "")
 }
 
 /**
- * Prepares the OpenCL code to be used by the applications 
+ * Prepares the OpenCL code to be used by the applications
  *
  * \param in Input stream that reads the code
  * \param flags Compilation flags or empty string
@@ -381,102 +389,195 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
     return ret;
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetNumberOfAccelerators
+ */
 static inline
 unsigned getNumberOfAccelerators()
 {
     return ::@OPENCL_API_PREFIX@GetNumberOfAccelerators();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetCurrentAcceleratorId
+ */
 static inline
-size_t getFreeMemory()
+unsigned getCurrentAcceleratorId()
 {
-    return ::@OPENCL_API_PREFIX@GetFreeMemory();
+    return ::@OPENCL_API_PREFIX@GetCurrentAcceleratorId();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetFreeMemory
+ */
+static inline
+error getFreeMemory(unsigned acc, size_t *freeMem)
+{
+    return ::@OPENCL_API_PREFIX@GetFreeMemory(acc, freeMem);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Migrate
+ */
 static inline
 error migrate(unsigned acc)
 {
     return ::@OPENCL_API_PREFIX@Migrate(acc);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryMap
+ */
 static inline
-@OPENCL_API_PREFIX@_error memoryMap(void *cpuPtr, size_t count, protection prot)
+error memoryMap(void *cpuPtr, size_t count, protection prot)
 {
     return ::@OPENCL_API_PREFIX@MemoryMap(cpuPtr, count, prot);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryUnmap
+ */
 static inline
-@OPENCL_API_PREFIX@_error memoryUnmap(void *cpuPtr, size_t count)
+error memoryUnmap(void *cpuPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@MemoryUnmap(cpuPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Malloc
+ */
 static inline
-@OPENCL_API_PREFIX@_error malloc(void **devPtr, size_t count)
+error malloc(void **devPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Malloc(devPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GlobalMalloc
+ */
 static inline
-@OPENCL_API_PREFIX@_error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
+error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
 {
     return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Free
+ */
 static inline
-@OPENCL_API_PREFIX@_error free(void *cpuPtr)
+error free(void *cpuPtr)
 {
     return ::@OPENCL_API_PREFIX@Free(cpuPtr);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@GetLastError
+ */
 static inline
 error getLastError()
 {
     return ::@OPENCL_API_PREFIX@GetLastError();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Memset
+ */
 static inline
 void *memset(void *cpuPtr, int c, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Memset(cpuPtr, c, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@Memcpy
+ */
 static inline
 void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
 {
     return ::@OPENCL_API_PREFIX@Memcpy(cpuDstPtr, cpuSrcPtr, count);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSend
+ */
 static inline
 void deviceSend(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceSend(tid);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceRelease
+ */
 static inline
 void deviceReceive(void)
 {
     ::@OPENCL_API_PREFIX@DeviceReceive();
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSendReceive
+ */
 static inline
 void deviceSendReceive(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceSendReceive(tid);
 }
 
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceCopy
+ */
 static inline
 void deviceCopy(THREAD_T tid)
 {
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
-#ifdef __cplusplus
+class __gmac_allocator {
+	int dummy;
+};
+static __gmac_allocator allocator;
+
+void finiAllocator()
+{
+    __gmac_allocator tmp;
+    if (&allocator != &tmp) abort();
 }
-#endif
+}
 
+#include <new>
 
-#undef __dv
+void *operator new(size_t size, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
+{
+    void *ret;
+    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    if (err != gmacSuccess) {
+        ret = NULL;
+        throw std::bad_alloc();
+    }
+    return ret;
+}
+
+void *operator new[](size_t size, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
+{
+    void *ret;
+    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
+    if (err != gmacSuccess) {
+        ret = NULL;
+        throw std::bad_alloc();
+    }
+    return ret;
+}
+
+void operator delete(void *addr, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
+{
+    ::@OPENCL_API_PREFIX@Free(addr);
+}
+
+void operator delete[](void *addr, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
+{
+    ::@OPENCL_API_PREFIX@Free(addr);
+}
 
 #endif /* GMAC_OPENCL_CPP_H_ */
 

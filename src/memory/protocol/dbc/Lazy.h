@@ -48,7 +48,7 @@ class GMAC_LOCAL Lazy :
 
 protected:
 public:
-    Lazy(unsigned limit);
+    Lazy(bool eager);
     virtual ~Lazy();
 };
 

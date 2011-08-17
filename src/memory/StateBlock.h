@@ -84,15 +84,18 @@ public:
     /**
      * Copy data from the block host memory to an I/O buffer
      * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOff Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOff Offset (in bytes) from the starting of the block where the memory opration starts
+     * \param bufferOff Offset (in bytes) from the starting of the I/O buffer
+     * where the memory operation starts
+     * \param count Size (in bytes) of the memory operation
+     * \param blockOff Offset (in bytes) from the starting of the block where
+     * the memory opration starts
+     * \param src The physical source of the memory copy (HOST or ACCELERATOR)
      * \return Error code
      * \warning This method should be only called from a Protocol class
      * \sa __impl::memory::Protocol
      */
     virtual gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
-                                     size_t blockOff, size_t size, Source src) const = 0;
+                                     size_t blockOff, size_t count, Source src) const = 0;
 
     /**
      * Copy data from the block accelerator memory to an I/O buffer
@@ -101,69 +104,42 @@ public:
      * \param buffer IOBuffer where the operation will be executed
      * \param bufferOff Offset (in bytes) from the starting of the I/O buffer
      * where the memory operation starts
-     * \param size Size (in bytes) of the memory operation
-     * \param dst Destination memory within the block
+     * \param count Size (in bytes) of the memory operation
+     * \param dst The physical destination of the memory copy (HOST or ACCELERATOR)
      * \return Error code
      * \sa __impl::memory::Protocol
      * \warning This method should be only called from a Protocol class
      */
     virtual gmacError_t copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
-                                       size_t bufferOff, size_t size, Destination dst) const = 0;
+                                       size_t bufferOff, size_t count, Destination dst) const = 0;
 
     /**
      * Copy the data from a block to the given block
-     * \param mode Mode that triggered the copy
      * \param dstOff Offset in bytes within the destination block
      * \param srcBlock Reference to the source block
      * \param srcOff Offset in bytes within the source block
-     * \param size Size (in bytes) of the copy
-     * \param src Source memory of the copy (HOST or ACCELERATOR)
-     * \param dst Destination memory of the copy (HOST or ACCELERATOR)
+     * \param count Size (in bytes) of the copy
+     * \param dst The physical destination of the memory copy (HOST or ACCELERATOR)
+     * \param src The physical source of the memory copy (HOST or ACCELERATOR)
      * \return Error code
      * \sa __impl::memory::Protocol
      * \warning This method should be only called from a Protocol class
      */
     virtual gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
-                                      size_t srcOff, size_t size,
-                                      Source src, Destination dst) const = 0;
-#if 0
-    /**
-     * Copy the data from a host memory location to the block accelerator memory
-     * \param src Source host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-                                          size_t blockOffset = 0) const = 0;
+                                      size_t srcOff, size_t count,
+                                      Destination dst, Source src) const = 0;
 
     /**
-     * Copy the data from the block host memory to a host memory location
-     * \param dst Destination host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy the data to
+     * Initializes a memory range within the block host memory to a specific value
+     * \param v Value to initialize the memory to
+     * \param size Size (in bytes) of the memory region to be initialized
+     * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
+     * \param dst The physical destination of the memset (HOST or ACCELERATOR)
      * \return Error code
      * \warning This method should be only called from a Protocol class
      * \sa __impl::memory::Protocol
      */
-    virtual gmacError_t copyFromHost(hostptr_t dst, size_t size,
-                                     size_t blockOffset = 0) const = 0;
-
-    /**
-     * Copy the data from the block accelerator memory to a host memory location
-     * \param dst Destination host memory address to copy the data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) at the begining of the block to copy
-     *                    the data to
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-                                            size_t blockOffset = 0) const = 0;
-#endif
+    virtual gmacError_t memset(int v, size_t size, size_t blockOffset, Destination dst) const = 0;
 };
 
 }}

@@ -5,8 +5,8 @@
 namespace __dbc { namespace core {
 
 
-IOBuffer::IOBuffer(void *addr, size_t size, bool async) :
-    __impl::core::IOBuffer(addr, size, async)
+IOBuffer::IOBuffer(void *addr, size_t size, bool async, GmacProtection prot) :
+    __impl::core::IOBuffer(addr, size, async, prot)
 {
     // This check goes out because OpenCL will always use 0 as base address
     REQUIRES(addr != NULL);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -47,10 +47,14 @@ WITH THE SOFTWARE.  */
 #include "Module.h"
 
 namespace __impl {
-    
+
 namespace core {
 class IOBuffer;
 }
+
+namespace util { namespace allocator {
+    class Buddy;
+}}
 
 namespace cuda { namespace hpe {
 
@@ -80,6 +84,9 @@ protected:
     //! Associated CUDA context
     CUcontext cudaCtx_;
 #endif
+    util::allocator::Buddy *ioMemoryRead_;
+    util::allocator::Buddy *ioMemoryWrite_;
+
     //! Switch to accelerator mode
     void switchIn();
 
@@ -96,7 +103,7 @@ protected:
 
 #ifdef USE_MULTI_CONTEXT
     //! CUDA modules active on this mode
-	ModuleVector modules;
+    ModuleVector modules;
 #else
     //! CUDA modules active on this mode
     ModuleVector *modules;
@@ -119,15 +126,13 @@ protected:
     virtual ~Mode();
 
 public:
-    //! Allocated GPU-accessible host memory
     /*!
         \param addr Memory address of the pointer where the starting host memory address will be stored
         \param size Size (in bytes) of the host memory to be allocated
         \return Error code
     */
     gmacError_t hostAlloc(hostptr_t &addr, size_t size);
-
-    //! Release GPU-accessible host memory 
+    //! Release GPU-accessible host memory
     /*!
         \param addr Starting address of the host memory to be released
         \return Error code
@@ -150,11 +155,11 @@ public:
     */
     gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-    core::IOBuffer &createIOBuffer(size_t size);
+    core::IOBuffer &createIOBuffer(size_t size, GmacProtection prot);
     void destroyIOBuffer(core::IOBuffer &buffer);
 
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
-	gmacError_t argument(const void *arg, size_t size, off_t offset);
+    gmacError_t argument(const void *arg, size_t size, off_t offset);
 
     const Variable *constant(gmacVariable_t key) const;
     const Variable *variable(gmacVariable_t key) const;

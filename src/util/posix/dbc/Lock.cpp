@@ -106,7 +106,8 @@ RWLock::~RWLock()
 void RWLock::lockRead() const
 {
     pthread_mutex_lock(&internal_);
-    REQUIRES(readers_.find(pthread_self()) == readers_.end());
+    REQUIRES(readers_.find(pthread_self()) == readers_.end() &&
+             writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
     __impl::util::RWLock::lockRead();

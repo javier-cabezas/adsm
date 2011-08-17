@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -80,14 +80,12 @@ GMAC_API cl_int APICALL clInitHelpers(size_t *platforms);
 
 /**
  * Gets the OpenCL/Helper states for each context
- * \param state OpenCL state to be initialized
- * \return OpenCL error code
+ * \return An array of helpers (one helper per platform)
  */
 GMAC_API cl_helper * APICALL clGetHelpers();
 
 /**
- * Release an OpenCL/Helper state
- * \param state OpenCL/Helper state to be released
+ * Release the OpenCL/Helpers' state
  * \return OpenCL error code
  */
 GMAC_API cl_int APICALL clReleaseHelpers();

@@ -27,6 +27,18 @@ ObjectMap::~ObjectMap()
 {
 }
 
+void
+ObjectMap::cleanUp()
+{
+    const_iterator i;
+    lockRead();
+    for(i = begin(); i != end(); i++) {
+        // Decrement reference count of pointed objects to allow later destruction
+        i->second->decRef();
+    }
+    unlock();
+}
+
 size_t ObjectMap::size() const
 {
     lockRead();
@@ -38,8 +50,9 @@ size_t ObjectMap::size() const
 bool ObjectMap::insert(Object &obj)
 {
     lockWrite();
+    TRACE(LOCAL, "Insert object: %p", obj.addr());
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
-    if(ret.second == true) obj.use();
+    if(ret.second == true) obj.incRef();
     unlock();
     return ret.second;
 }
@@ -50,8 +63,11 @@ bool ObjectMap::remove(Object &obj)
     iterator i = find(obj.end());
     bool ret = (i != end());
     if(ret == true) {
-        obj.release();
+        TRACE(LOCAL, "Remove object: %p", obj.addr());
+        obj.decRef();
         Parent::erase(i);
+    } else {
+        TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.addr(), Parent::size());
     }
     unlock();
     return ret;
@@ -68,7 +84,7 @@ Object *ObjectMap::get(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;
     ret = mapFind(addr, size);
-    if(ret != NULL) ret->use();
+    if(ret != NULL) ret->incRef();
     return ret;
 }
 

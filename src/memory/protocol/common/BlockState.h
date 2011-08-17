@@ -54,7 +54,10 @@ class GMAC_LOCAL BlockState {
 public:
     typedef T ProtocolState;
     T state_;
-    
+
+    unsigned faultsCacheWrite_;
+    unsigned faultsCacheRead_;
+
 public:
     BlockState(ProtocolState state);
 
@@ -65,6 +68,12 @@ public:
 
     ProtocolState getState() const;
     virtual void setState(ProtocolState state, hostptr_t addr = NULL) = 0;
+
+    unsigned getCacheWriteFaults() const;
+    unsigned getCacheReadFaults() const;
+
+    void resetCacheWriteFaults();
+    void resetCacheReadFaults();
 
     virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };

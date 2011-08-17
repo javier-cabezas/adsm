@@ -103,9 +103,9 @@ inline void Mode::cleanUpContexts()
 }
 
 inline
-void Mode::insertOrphan(memory::Object &obj)
+void Mode::makeOrphan(memory::Object &obj)
 {
-    proc_.insertOrphan(obj);
+    proc_.makeOrphan(obj);
 }
 
 inline
@@ -130,21 +130,21 @@ Mode::getDirtyBitmap() const
 #endif
 
 
-inline Process &Mode::process()
+inline Process &Mode::getProcess()
 {
     return proc_;
 }
 
-inline const Process &Mode::process() const
+inline const Process &Mode::getProcess() const
 {
     return proc_;
 }
 
 inline void
-Mode::memInfo(size_t &free, size_t &total)
+Mode::getMemInfo(size_t &free, size_t &total)
 {
     switchIn();
-    acc_->memInfo(free, total);
+    acc_->getMemInfo(free, total);
     switchOut();
 }
 
@@ -155,6 +155,7 @@ Mode::prepareForCall()
     switchIn();
     trace::SetThreadState(trace::Wait);
     gmacError_t ret = acc_->syncStream(streamToAccelerator_);
+    if (ret == gmacSuccess) ret = acc_->syncStream(streamToHost_);
     trace::SetThreadState(trace::Idle);
     switchOut();
     return ret;
@@ -210,6 +211,12 @@ inline stream_t
 Mode::eventStream()
 {
     return streamLaunch_;
+}
+
+inline bool
+Mode::hasIntegratedMemory() const
+{
+    return acc_->integrated();
 }
 
 }}}

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -42,17 +42,35 @@ WITH THE SOFTWARE.  */
  * implement the functionality defined in their respective APIs. Currently,
  * the code is organized as follows:
  * \verbatim
- * src/                - GMAC root directory
- * src/gmac/           - Frontend directory
- * src/include/        - Instalable include files
- * src/core/           - Backend API base classes
- * src/api/            - Backend root directory
- * src/api/cuda        - CUDA run-time backend
- * src/api/opencl      - OpenCL run-time backend
- * src/memory/         - Memory API base classes
- * src/memory/manager  - Memory Managers
- * tests/              - Tests used to validate GMAC
- * \endverbatim
+ * src/                 - GMAC root directory
+ * src/core/            - GMAC common abstractions
+ * src/core/allocator   - Allocators used by the common abstractions
+ * src/core/hpe         - GMAC common HPE abstractions
+ * src/libs/            - Interception of user-level libraries
+ * src/libs/mpi         - Optimized implementation of standard MPI functions
+ * src/libs/posix       - Optimized implementation of standard POSIX functions
+ * src/libs/stdc        - Optimized implementation of standard C library functions
+ * src/hpe/             - HPE generic API calls and initialization
+ * src/gmac/            - Frontend directory
+ * src/include/         - Instalable include files
+ * src/core/            - Backend API base classes
+ * src/api/             - Backend root directory
+ * src/api/cuda         - CUDA run-time backend
+ * src/api/cuda/hpe     - CUDA run-time HPE implementation
+ * src/api/opencl       - OpenCL run-time backend
+ * src/api/opencl/hpe   - OpenCL run-time HPE implementation
+ * src/memory/          - Memory API base classes
+ * src/memory/allocator - Memory allocators used by the memory abstractions
+ * src/memory/protocol  - Memory protocols
+ * src/trace            - Tracing support
+ * src/util             - Common utilities
+ * tests/               - Tests used to validate GMAC \endverbatim
+ */
+
+/**
+ * \file api.h
+ *
+ * Common GMAC HPE programming interface
  */
 
 #ifndef GMAC_API_H_
@@ -80,7 +98,21 @@ extern "C"
  */
 GMAC_API unsigned APICALL gmacGetNumberOfAccelerators();
 
-GMAC_API size_t APICALL gmacGetFreeMemory();
+/**
+ * Returns the ID of the accelerator the current thread is running on
+ * \return The number of available accelerators
+ */
+GMAC_API unsigned APICALL gmacGetCurrentAcceleratorId();
+
+/**
+ * Returns the amount of memory available in the given accelerator
+ *
+ * \param acc The identifier of the accelerator to query
+ * \param freeMem A pointer to the variable to store the amount of free memory
+ *
+ * \return gmacSuccess on success, an error code otherwise
+ */
+GMAC_API gmacError_t APICALL gmacGetFreeMemory(unsigned acc, size_t *freeMem);
 
 /**
  * Migrates the GPU execution mode of a thread to a concrete accelerator.
@@ -108,7 +140,7 @@ GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, enum Gmac
 /**
  * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
  * use the same addresses for this memory.
- * \param cpuPtr memory address to be unmapped from the GPU. 
+ * \param cpuPtr memory address to be unmapped from the GPU.
  * \param count  bytes to be allocated
  * \return On success gmacUnmmap returns gmacSuccess. Otherwise it returns the
  * causing error
@@ -221,7 +253,7 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
 /**
  * Launches a kernel on the accelerator. This function is NOT meant to be directly
  * used by the application
- * 
+ *
  * \param kernel descriptor for the kernel to be launched
  * \return On success gmacLaunch returns gmacSuccess. An error code is returned otherwise
  */
@@ -240,31 +272,30 @@ GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 #endif
 
 static const char *error[] = {
-	"No error",
-	"Memory allocation",
-	"Launch failure",
-	"Accelerator is not ready",
-	"Accelerator is not present",
-	"Invalid value",
-	"Invalid accelerator",
-	"Invalid accelerator function",
-	"Invalid size",
-	"GMAC general failure",
+    "No error",
+    "Memory allocation",
+    "Launch failure",
+    "Accelerator is not ready",
+    "Accelerator is not present",
+    "Invalid value",
+    "Invalid accelerator",
+    "Invalid accelerator function",
+    "Invalid size",
+    "GMAC general failure",
     "Feature not supported with the current configure configuration",
     "Insufficient memory in the accelerator",
-	"Uknown error"
+    "Uknown error"
 };
 
 /**
  * Returns a description of the given error
- * \param err An error code 
+ * \param err An error code
  * \return A string with the description of the error code
  */
 static inline const char *gmacGetErrorString(gmacError_t err) {
-    //assert(err <= gmacErrorUnknown);
-    if (err <= gmacErrorUnknown)
+    if (err <= gmacErrorUnknown) {
         return error[err];
-    else {
+    } else {
         abort();
     }
     return NULL;
@@ -284,6 +315,7 @@ template<typename T>
 static inline T *gmacPtr(const T *addr) {
     return (T *)gmacPtr((const void *)addr);
 }
+
 #endif
 
 

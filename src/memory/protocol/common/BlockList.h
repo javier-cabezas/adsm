@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -47,22 +47,25 @@ namespace __impl {
 namespace core {
     class Mode;
 }
-    
+
 namespace memory {
 class Block;
 
 namespace protocol {
 
 //! FIFO list of blocks
-class GMAC_LOCAL BlockList : protected std::list<Block *>, public gmac::util::Lock {
+class GMAC_LOCAL BlockList :
+    protected std::list<Block *>,
+    public gmac::util::SpinLock {
 // We need a locked list becase execution modes might be shared among different threads
 protected:
     typedef std::list<Block *> Parent;
+
 public:
-    //! Default constructor
+    /// Default constructor
     BlockList();
 
-    //! Default destructor
+    /// Default destructor
     virtual ~BlockList();
 
     /** Whether the list is empty or not
@@ -72,27 +75,27 @@ public:
     bool empty() const;
 
     /** Size of the list
-     * 
+     *
      *  \return Number of blocks in the list
      */
     size_t size() const;
 
-    //! Add a block to the end of list
-    /*!
-        \param block Block to be addded to the end of list
-    */
+    /** Add a block to the end of list
+     *
+     * \param block Block to be addded to the end of list
+     */
     void push(Block &block);
 
-    //! Extract a block from the list
-    /*!
-        \return Block from extracted from the begining of the list
-    */
-    Block &pop();
+    /** Return the first Block in the list
+     *
+     * \return Block from extracted from the begining of the list
+     */
+    Block &front();
 
-    //! Remove a block from the list
-    /*!
-        \param block Block to be removed from the list
-    */
+    /** Remove a block from the list
+     *
+     * \param block Block to be removed from the list
+     */
     void remove(Block &block);
 };
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -61,8 +61,8 @@ protected:
     size_t xfer_;
     bool started_;
 public:
-    IOBuffer(void *addr, size_t size, bool async) :
-        gmac::core::IOBuffer(addr, size, async),
+    IOBuffer(void *addr, size_t size, bool async, GmacProtection prot) :
+        gmac::core::IOBuffer(addr, size, async, prot),
         __impl::util::ReusableObject<IOBuffer>(),
         mode_(NULL), started_(false)
     {

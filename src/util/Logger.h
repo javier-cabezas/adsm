@@ -82,8 +82,29 @@ inline static const char *__extract_file_name(const char *file) {
 #   endif
 #   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #else
-#   define TRACE(...)
-#   define ASSERTION(...)
+
+static inline
+void dummy_trace(...)
+{
+}
+
+static inline
+void dummy_assertion(bool /*b*/, ...)
+{
+}
+
+#   define TRACE(...) dummy_trace(__VA_ARGS__)
+#   define ASSERTION(c, ...) dummy_assertion(c, ##__VA_ARGS__)
+#endif
+
+#ifdef DEBUG
+#define MESSAGE(fmt, ...) { if (__impl::util::params::ParamVerbose) { \
+                                __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
+                                TRACE(GLOBAL, fmt, ##__VA_ARGS__);    \
+                            }                                         \
+                          }
+#else
+#define MESSAGE(fmt, ...) { if (__impl::util::params::ParamVerbose) __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
 #define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
@@ -118,10 +139,10 @@ public:
     static void __Trace(const char *name, const char *fmt, ...);  
     static void __Assertion(bool c, const char * cStr, const char *fmt, ...);
 #endif
+    static void __Message(const char *fmt, ...);
     static void __Warning(const char *fmt, ...);
     static void __Fatal(const char *fmt, ...);
     static void __CFatal(bool c, const char * cStr, const char *fmt, ...);
-
 };
 
 }}
