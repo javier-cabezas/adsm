@@ -7,14 +7,14 @@ namespace __dbc { namespace core { namespace hpe {
 void
 Mode::cleanUpContexts()
 {
-    __impl::core::hpe::Mode::cleanUpContexts();
+    Parent::cleanUpContexts();
 }
 
 gmacError_t
 Mode::cleanUp()
 {
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::cleanUp();
+    ret = Parent::cleanUp();
     return ret;
 }
 
@@ -22,8 +22,8 @@ Mode::~Mode()
 {
 }
 
-Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::Accelerator &acc) :
-    __impl::core::hpe::Mode(proc, acc)
+Mode::Mode(ProcessImpl &proc, AcceleratorImpl &acc) :
+    Parent(proc, acc)
 {
 }
 
@@ -34,7 +34,7 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::map(dst, src, size, align);
+    ret = Parent::map(dst, src, size, align);
 
     return ret;
 }
@@ -45,7 +45,7 @@ Mode::unmap(hostptr_t addr, size_t size)
     REQUIRES(addr != NULL);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::unmap(addr, size);
+    ret = Parent::unmap(addr, size);
 
     return ret;
 }
@@ -58,7 +58,7 @@ Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::copyToAccelerator(acc, host, size);
+    ret = Parent::copyToAccelerator(acc, host, size);
 
     return ret;
 }
@@ -71,7 +71,7 @@ Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::copyToHost(host, acc, size);
+    ret = Parent::copyToHost(host, acc, size);
 
     return ret;
 }
@@ -84,7 +84,7 @@ Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::copyAccelerator(dst, src, size);
+    ret = Parent::copyAccelerator(dst, src, size);
 
     return ret;
 }
@@ -96,7 +96,53 @@ Mode::memset(accptr_t addr, int c, size_t size)
     REQUIRES(size > 0);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::memset(addr, c, size);
+    ret = Parent::memset(addr, c, size);
+
+    return ret;
+}
+
+gmacError_t
+Mode::bufferToAccelerator(accptr_t dst, IOBufferImpl &buffer, size_t size, size_t off)
+{
+    REQUIRES(size > 0);
+    REQUIRES(off + size <= buffer.size());
+
+    gmacError_t ret;
+
+    ret = Parent::bufferToAccelerator(dst, buffer, size, off);
+
+    return ret;
+}
+
+gmacError_t
+Mode::acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off)
+{
+    REQUIRES(size > 0);
+    REQUIRES(off + size <= buffer.size());
+
+    gmacError_t ret;
+
+    ret = Parent::acceleratorToBuffer(buffer, dst, size, off);
+
+    return ret;
+}
+
+void
+Mode::registerKernel(gmac_kernel_id_t k, KernelImpl &kernel)
+{
+    REQUIRES(kernels_.find(k) == kernels_.end());
+
+    Parent::registerKernel(k, kernel);
+
+    ENSURES(kernels_.find(k) != kernels_.end());
+}
+
+std::string
+Mode::getKernelName(gmac_kernel_id_t k) const
+{
+    REQUIRES(kernels_.find(k) != kernels_.end());
+
+    std::string ret = Parent::getKernelName(k);
 
     return ret;
 }
@@ -107,7 +153,7 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
     REQUIRES(&acc != acc_);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::moveTo(acc);
+    ret = Parent::moveTo(acc);
 
     return ret;
 }
@@ -115,12 +161,22 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 gmacError_t
 Mode::releaseObjects()
 {
-    REQUIRES(validObjects() == true);
+    REQUIRES(hasModifiedObjects() == true);
 
     gmacError_t ret;
-    ret = __impl::core::hpe::Mode::releaseObjects();
+    ret = Parent::releaseObjects();
 
-    ENSURES(validObjects() == true);
+    ENSURES(hasModifiedObjects() == true);
+    return ret;
+}
+
+gmacError_t
+Mode::acquireObjects()
+{
+    gmacError_t ret;
+    ret = Parent::acquireObjects();
+
+    ENSURES(hasModifiedObjects() == false);
     return ret;
 }
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -29,52 +29,37 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-WITH THE SOFTWARE.  */
+WITH THE SOFTWARE.
+*/
 
-#ifndef GMAC_CORE_ALLOCATOR_BUDDY_H_
-#define GMAC_CORE_ALLOCATOR_BUDDY_H_
+#ifndef GMAC_API_OPENCL_HPE_GPU_AMD_FUSIONACCELERATOR_H_
+#define GMAC_API_OPENCL_HPE_GPU_AMD_FUSIONACCELERATOR_H_
 
-#include <list>
-#include <map>
+#include "api/opencl/hpe/Accelerator.h"
 
-#include "config/common.h"
-#include "util/Lock.h"
+namespace __impl { namespace opencl { namespace hpe { namespace gpu { namespace amd {
 
+/** An OpenCL capable accelerator */
+class GMAC_LOCAL FusionAccelerator :
+    public gmac::opencl::hpe::Accelerator {
 
-namespace __impl { namespace core { namespace allocator {
-
-class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
-    DBC_FORCE_TEST(__impl::core::allocator::Buddy)
-protected:
-    hostptr_t addr_;
-    uint32_t size_;
-    uint8_t index_;
-
-    uint8_t ones(register uint32_t x) const;
-    uint8_t index(register uint32_t x) const;
-    uint32_t round(register uint32_t x) const;
-
-    typedef std::list<off_t> List;
-    typedef std::map<uint8_t, List> Tree;
-
-    Tree _tree;
-    TESTABLE off_t getFromList(uint8_t i);
-    TESTABLE void putToList(off_t addr, uint8_t i);
 public:
-    Buddy(hostptr_t addr, size_t size);
-    ~Buddy();
+    /** Default constructor
+     * \param n Accelerator number
+     * \param context OpenCL context the accelerator belongs to
+     * \param device OpenCL device ID for the accelerator
+     * \param major OpenCL major version supported by the accelerator
+     * \param minor OpenCL minor version supported by the accelerator
+     */
+    FusionAccelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor);
+    /** Default destructor */
+    virtual ~FusionAccelerator();
 
-    inline hostptr_t addr() const { return addr_; }
-    TESTABLE hostptr_t get(size_t &size);
-    TESTABLE void put(hostptr_t addr, size_t size);
+    gmacError_t copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &buffer, size_t bufferOff, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
+    gmacError_t copyToHostAsync(core::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, cl_command_queue stream);
 };
 
-}}}
+}}}}}
 
-#if defined(USE_DBC)
-#include "dbc/Buddy.h"
+
 #endif
-
-#endif /* BUDDY_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

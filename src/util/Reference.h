@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,29 +39,33 @@ WITH THE SOFTWARE.  */
 #include "Atomics.h"
 
 namespace __impl { namespace util {
-//! A class that is shared by multiple threads
+
+/// A class that is shared by multiple threads
 class GMAC_LOCAL Reference {
 private:
-    //! Number of threads using the object
+    /// Number of threads using the object
     mutable Atomic ref_;
+#ifdef DEBUG
+    std::string className_;
+#endif
 
-    //! Method called to clean up the class before being destroyed
+    /// Method called to clean up the class before being destroyed
     virtual gmacError_t cleanUp();
 protected:
-    //! Default constructor
-    Reference(); 
+    /// Default constructor
+    Reference(const char *name);
 
-    //! Default destructor
-	virtual ~Reference();
+    /// Default destructor
+    virtual ~Reference();
 public:
-    //! Increment the use count
-    void use() const;
+    /// Increment the use count
+    void incRef() const;
 
-    //! Decrement the use count and destroy the object if it reaches zero
-    void release();
+    /// Decrement the use count and destroy the object if it reaches zero
+    void decRef();
 };
 
-} }
+}}
 
 #include "Reference-impl.h"
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,11 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "config/order.h"
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
+#include "util//loader.h"
 #include "util/Singleton.h"
 
 #include <vector>
@@ -50,7 +46,7 @@ namespace __impl {
 namespace memory { class Object; }
 
 
-namespace core { 
+namespace core {
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public util::Singleton<Process> {
@@ -96,13 +92,13 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::Protocol *protocol() = 0;
+    virtual memory::Protocol *getProtocol() = 0;
 
     /**
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    virtual void insertOrphan(memory::Object &object) = 0;
+    virtual void makeOrphan(memory::Object &object) = 0;
 
     /**
      * Returns the owner of the object with the smallest address within the

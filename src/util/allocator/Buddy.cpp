@@ -1,8 +1,8 @@
+#include "util/Logger.h"
+
 #include "Buddy.h"
 
-#include <util/Logger.h>
-
-namespace __impl { namespace core { namespace allocator {
+namespace __impl { namespace util { namespace allocator {
 
 Buddy::Buddy(hostptr_t addr, size_t size) :
     gmac::util::Lock("Buddy"),

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,11 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <vector>
 
-
 #include "config/common.h"
 #include "include/gmac/types.h"
-
-#include "util/ReusableObject.h"
 
 #include "Descriptor.h"
 
@@ -51,14 +48,26 @@ class KernelLaunch;
 
 typedef Descriptor<gmac_kernel_id_t> KernelDescriptor;
 
+/**
+ * GMAC Kernel abstraction
+ */
 class GMAC_LOCAL Kernel : public KernelDescriptor{
-     DBC_FORCE_TEST(Kernel)
+    DBC_FORCE_TEST(Kernel)
 
 public:
+    /**
+     * Kernel constructor
+     *
+     * \param k A reference to a kernel descriptor
+     */
     Kernel(const KernelDescriptor &k);
-    virtual ~Kernel() {};
+
+    virtual ~Kernel() {}
 };
 
+/**
+ * GMAC descriptor for kernel execution
+ */
 class GMAC_LOCAL KernelLaunch {
 protected:
     /** Execution mode where the kernel will be executed */
@@ -80,6 +89,9 @@ protected:
      */
     KernelLaunch(Mode &mode);
 #endif
+
+    std::list<hostptr_t> usedObjects_;
+
 public:
     /**
      * Default destructor
@@ -97,6 +109,20 @@ public:
      * \return Execution mode
      */
     Mode &getMode();
+
+    /**
+     * Adds a new object to the kernel launch
+     *
+     * \param ptr Address of the object to be added
+     */
+    void addObject(hostptr_t ptr);
+
+    /**
+     * Gets the list of objects being used by the kernel
+     *
+     * \param ptr Address of the object to be added
+     */
+    const std::list<hostptr_t> &getObjects() const;
 
 #ifdef DEBUG
     /**

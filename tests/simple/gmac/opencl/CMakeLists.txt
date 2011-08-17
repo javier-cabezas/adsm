@@ -28,6 +28,7 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     eclInit.cpp
+    eclColumnMajor.cpp
     eclCompress.cpp
     eclCompressCommon.cl
     eclCompressSend.cl
@@ -39,6 +40,7 @@ source_group(${current_GROUP} FILES
     eclFileVecAdd.cpp
     eclPingPong.cpp
     eclBarr.cpp
+    eclRandomAccess.cpp
     eclSharedVecAdd.cpp
     eclStencil.cpp
     eclStencilCommon.h
@@ -56,6 +58,9 @@ source_group(${current_GROUP} FILES
 
 add_executable(eclInit ${common_SRC} eclInit.cpp)
 target_link_libraries(eclInit gmac-hpe)
+
+add_executable(eclColumnMajor ${common_SRC} eclColumnMajor.cpp)
+target_link_libraries(eclColumnMajor gmac-hpe)
 
 add_executable(eclCompress ${common_SRC} eclCompress.cpp eclCompressCommon.cl)
 target_link_libraries(eclCompress gmac-hpe)
@@ -89,6 +94,9 @@ target_link_libraries(eclFileVecAdd gmac-hpe)
 
 add_executable(eclPingPong ${common_SRC} eclPingPong.cpp)
 target_link_libraries(eclPingPong gmac-hpe)
+
+add_executable(eclRandomAccess ${common_SRC} eclRandomAccess.cpp)
+target_link_libraries(eclRandomAccess gmac-hpe)
 
 add_executable(eclSharedVecAdd ${common_SRC} eclSharedVecAdd.cpp)
 target_link_libraries(eclSharedVecAdd gmac-hpe)

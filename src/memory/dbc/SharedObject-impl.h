@@ -4,8 +4,8 @@
 namespace __dbc { namespace memory {
 
 template<typename State>
-SharedObject<State>::SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init) :
-    __impl::memory::SharedObject<State>(protocol, owner, addr, size, init)
+SharedObject<State>::SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
+    __impl::memory::SharedObject<State>(protocol, owner, addr, size, init, err)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

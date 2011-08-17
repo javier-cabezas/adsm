@@ -128,7 +128,7 @@ public:
      * \param size Reference to the size (in bytes) of the OpenCL memory object
      * \return True if the translation succeeded
      */
-    bool translate(hostptr_t host, cl_mem &acc, size_t &size) const;
+    bool translate(const hostptr_t host, cl_mem &acc, size_t &size) const;
 };
 
 /** A pool of OpenCL buffers */
@@ -141,9 +141,6 @@ class GMAC_LOCAL CLBufferPool :
 public:
     /** Constructs a pool of OpenCL buffers */
     CLBufferPool();
-
-    /** Releases the OpenCL buffers in the pool */
-    ~CLBufferPool();
 
     /**
      * Gets an OpenCL buffer from the pool
@@ -164,6 +161,13 @@ public:
      * \param addr Host address of the buffer
      */
     void putCLMem(size_t size, cl_mem mem, hostptr_t addr);
+
+    /**
+     * Releases the OpenCL buffers in the pool
+     *
+     * \param stream OpenCL stream to enqueue unmaps
+     */
+    void cleanUp(stream_t stream);
 };
 
 /** An OpenCL capable accelerator */
@@ -180,7 +184,8 @@ protected:
     /** Host memory allocations associated to any OpenCL accelerator */
     static HostMap *GlobalHostAlloc_;
 
-    CLBufferPool clMem_;
+    CLBufferPool clMemRead_;
+    CLBufferPool clMemWrite_;
 
     /** OpenCL context associated to the accelerator */
     cl_context ctx_;
@@ -199,6 +204,8 @@ protected:
 
     /** Tracer for data communications */
     DataCommunication trace_;
+
+    size_t allocatedMemory_;
 
 public:
     /** Default constructor
@@ -298,9 +305,11 @@ public:
      * \param mem Reference to store the cl_mem descriptor of the buffer
      * \param addr Reference to store the host address of the OpenCL buffer
      * \param size Size (in bytes) of the memory to be allocated
+     * \param prot Tells wether the CL Buffer is going to be read or written
+     * from the host
      * \return Error code
      */
-    gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size);
+    gmacError_t allocCLBuffer(cl_mem &mem, hostptr_t &addr, size_t size, GmacProtection prot);
 
     /**
      * Release pinned accelerator-accessible host memory
@@ -314,9 +323,10 @@ public:
      * \param mem cl_mem descriptor of the buffer
      * \param addr Host address of the OpenCL buffer
      * \param size Size (in bytes) of the memory to be allocated
+     * \param prot Tells wether the CL Buffer is going to be read or written
      * \return Error code
      */
-    gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size);
+    gmacError_t freeCLBuffer(cl_mem mem, hostptr_t addr, size_t size, GmacProtection prot);
 
     /**
      * Get the accelerator memory address where pinned host memory can be accessed
@@ -327,7 +337,7 @@ public:
 
     /**
      * Executes a kernel in the accelerator
-     * \param stram OpenCL command queue
+     * \param stream OpenCL command queue
      * \param kernel OpenCL kernel to execute
      * \param workDim Number of dimensions in the work group
      * \param offset Offset for the kernel
@@ -422,10 +432,13 @@ public:
 
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode);
+
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
-    void memInfo(size_t &free, size_t &total) const;
+    void getMemInfo(size_t &free, size_t &total) const;
 
+    gmacError_t acquire(hostptr_t addr);
+    gmacError_t release(hostptr_t addr);
 };
 
 }}}

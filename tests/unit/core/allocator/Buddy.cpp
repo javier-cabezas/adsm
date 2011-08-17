@@ -1,12 +1,12 @@
-#include "core/allocator/Buddy.h"
-
-#include "gtest/gtest.h"
-
 #include <ctime>
 #include <cstdlib>
 #include <list>
 
-using gmac::core::allocator::Buddy;
+#include "gtest/gtest.h"
+
+#include "util/allocator/Buddy.h"
+
+using gmac::util::allocator::Buddy;
 
 class BuddyTest : public testing::Test {
 public:

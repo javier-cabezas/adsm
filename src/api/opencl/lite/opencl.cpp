@@ -1,8 +1,4 @@
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
+#include <CL/cl.h>
 
 #include "config/config.h"
 
@@ -12,10 +8,9 @@
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "memory/allocator/Slab.h"
+#include "util/loader.h"
 #include "util/Logger.h"
 #include "util/Parameter.h"
-
-#include <CL/cl.h>
 
 #if defined(__GNUC__)
 #define RETURN_ADDRESS __builtin_return_address(0)
@@ -150,7 +145,7 @@ cl_context SYMBOL(clCreateContextFromType)(
 
     return ret;
 }
-        
+
 cl_int SYMBOL(clRetainContext)(cl_context context)
 {
     if(__opencl_clRetainContext == NULL) openclInit();
@@ -170,9 +165,9 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
     enterGmac();
     Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
-        mode->release();
-        // We release the mode twice to effectively decrease the usage count
-        mode->release();
+        mode->decRef();
+        // We decrease the usage count twice to effectively release the mode
+        mode->decRef();
     }
     exitGmac();
     return ret;
@@ -191,7 +186,7 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     Mode *mode = Process_->getMode(context);
     if(mode == NULL) return ret;
     mode->addQueue(ret);
-    mode->release();
+    mode->decRef();
     exitGmac();
     return ret;
 }
@@ -221,7 +216,7 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
     Mode *mode = Process_->getMode(context);
     if(mode == NULL) return ret;
     mode->removeQueue(command_queue);
-    mode->release();
+    mode->decRef();
     exitGmac();
     return ret;
 }
@@ -263,7 +258,7 @@ static cl_int releaseMemoryObjects(cl_command_queue command_queue)
             mode->setActiveQueue(command_queue);
             Manager_->releaseObjects(*mode);
             mode->deactivateQueue();
-            mode->release();
+            mode->decRef();
         }
     }
     return ret;
@@ -307,7 +302,7 @@ cl_int SYMBOL(clEnqueueTask)(
     cl_uint num_events_in_wait_list,
     const cl_event *event_wait_list,
     cl_event *event)
-{ 
+{
     ASSERTION(inGmac() == false);
     if(__opencl_clEnqueueTask == NULL) openclInit();
     enterGmac();
@@ -373,7 +368,7 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
             mode->setActiveQueue(command_queue);
             Manager_->acquireObjects(*mode);
             mode->deactivateQueue();
-            mode->release();
+            mode->decRef();
         }
     }
     exitGmac();
@@ -393,30 +388,29 @@ cl_int APICALL clMalloc(cl_context context, void **addr, size_t count)
     if(mode != NULL) {
         count = (int(count) < getpagesize())? getpagesize(): count;
         ret = Manager_->alloc(*mode, (hostptr_t *) addr, count);
-        mode->release();
+        mode->decRef();
     }
     else ret = CL_INVALID_CONTEXT;
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
 cl_int APICALL clFree(cl_context context, void *addr)
 {
     cl_int ret = CL_SUCCESS;
-	enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
     Mode *mode = Process_->getMode(context);
     if(mode != NULL) {
         ret = Manager_->free(*mode, hostptr_t(addr));
-        mode->release();
+        mode->decRef();
     }
     else ret = CL_INVALID_CONTEXT;
-    
-    gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
 
+    gmac::trace::ExitCurrentFunction();
+    exitGmac();
+    return ret;
 }
 
 cl_mem APICALL clGetBuffer(cl_context context, const void *ptr)
@@ -454,8 +448,6 @@ static void openclInit()
 
 void initGmac()
 {
-    enterGmac();
-
     TRACE(GLOBAL, "Initializing Memory Manager");
     __impl::memory::Handler::setEntry(enterGmac);
     __impl::memory::Handler::setExit(exitGmac);
@@ -463,7 +455,6 @@ void initGmac()
     TRACE(GLOBAL, "Initializing Process");
     Process_ = new __impl::opencl::lite::Process();
     Manager_ = new gmac::memory::Manager(*Process_);
-    exitGmac();
 }
 
 
@@ -485,20 +476,18 @@ namespace __impl {
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
-	switch(dwReason) {
-		case DLL_PROCESS_ATTACH:
-			openclInit();
+    switch(dwReason) {
+        case DLL_PROCESS_ATTACH:
+            openclInit();
             break;
-		case DLL_PROCESS_DETACH:            
-			break;
-		case DLL_THREAD_ATTACH:
-			break;
-		case DLL_THREAD_DETACH:			
-			break;
-	};
+        case DLL_PROCESS_DETACH:
+            break;
+        case DLL_THREAD_ATTACH:
+            break;
+        case DLL_THREAD_DETACH:
+            break;
+    };
     return TRUE;
 }
 
 #endif
-
-

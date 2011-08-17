@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,6 +46,11 @@ namespace __impl { namespace memory { namespace allocator {
 
 typedef std::list<hostptr_t> ObjectList;
 
+/**
+ * Arenas used by the caches of the slab allocator
+ * \sa Cache
+ * \sa Slab
+ */
 class GMAC_LOCAL Arena {
 protected:
     hostptr_t ptr_;
@@ -72,7 +77,11 @@ public:
     void put(hostptr_t obj);
 };
 
-
+/**
+ * Caches, composed of arenas, used by the slab allocator
+ * \sa Arena
+ * \sa Slab
+ */
 class GMAC_LOCAL Cache : protected gmac::util::Lock {
 protected:
     size_t objectSize;

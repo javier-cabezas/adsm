@@ -145,8 +145,10 @@ public:
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t size);
 
+#if CUDA_VERSION >= 4000
     gmacError_t registerMem(hostptr_t ptr, size_t size);
     gmacError_t unregisterMem(hostptr_t ptr);
+#endif
 
     /* Synchronous interface */
     TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode);
@@ -168,17 +170,17 @@ public:
 
     gmacError_t execute(KernelLaunch &launch);
 
-    gmacError_t memset(accptr_t addr, int c, size_t size);
+    gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
 
     gmacError_t sync();
 
-    gmacError_t hostAlloc(hostptr_t *addr, size_t size);
+    gmacError_t hostAlloc(hostptr_t &addr, size_t size, GmacProtection prot);
     gmacError_t hostFree(hostptr_t addr);
     accptr_t hostMap(const hostptr_t addr);
 
     static gmacError_t error(CUresult r);
 
-    void memInfo(size_t &free, size_t &total) const;
+    void getMemInfo(size_t &free, size_t &total) const;
 };
 
 }}}

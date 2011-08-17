@@ -2,6 +2,8 @@
 #define GMAC_CORE_MODE_IMPL_H_
 
 #include "config/order.h"
+#include "memory/Object.h"
+#include "memory/ObjectMap.h"
 #include "memory/Protocol.h"
 #include "trace/Tracer.h"
 
@@ -9,9 +11,10 @@ namespace __impl { namespace core {
 
 inline
 Mode::Mode() :
+    util::Reference("Mode"),
     gmac::util::SpinLock("Mode"),
     id_(AtomicInc(Count_)),
-    validObjects_(false),
+    modifiedObjects_(false),
     releasedObjects_(false),
     error_(gmacSuccess)
 #ifdef USE_VM
@@ -33,7 +36,7 @@ Mode::~Mode()
 }
 
 inline
-memory::Protocol &Mode::protocol()
+memory::Protocol &Mode::getProtocol()
 {
     return *protocol_;
 }
@@ -57,10 +60,10 @@ void Mode::error(gmacError_t err)
 }
 
 inline
-bool Mode::validObjects() const
+bool Mode::hasModifiedObjects() const
 {
     lock();
-    bool ret = validObjects_;
+    bool ret = modifiedObjects_;
     unlock();
     return ret;
 }
@@ -69,16 +72,16 @@ inline
 void Mode::invalidateObjects()
 {
     lock();
-    validObjects_ = false;
+    modifiedObjects_ = false;
     unlock();
 }
 
 
 inline
-void Mode::validateObjects()
+void Mode::modifiedObjects()
 {
     lock();
-    validObjects_ = true;
+    modifiedObjects_ = true;
     releasedObjects_ = false;
     unlock();
 }
@@ -96,10 +99,10 @@ inline void
 Mode::addObject(memory::Object &obj)
 {
     getObjectMap().insert(obj);
-    validateObjects();
+    modifiedObjects();
 }
 
-inline void 
+inline void
 Mode::removeObject(memory::Object &obj)
 {
     getObjectMap().remove(obj);
@@ -108,7 +111,7 @@ Mode::removeObject(memory::Object &obj)
 inline memory::Object *
 Mode::getObject(const hostptr_t addr, size_t size) const
 {
-	return getObjectMap().get(addr, size);
+    return getObjectMap().get(addr, size);
 }
 
 inline gmacError_t

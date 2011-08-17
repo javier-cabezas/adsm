@@ -153,7 +153,7 @@ public:
      * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
      * \return Error code
      */
-    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
+    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset);
 
     /** Request a memory coherence operation
      *
@@ -186,7 +186,7 @@ public:
     /**
      * Copy data from a GMAC object to the memory block
      *
-     * \param object GMAC memory object to copy data from
+     * \param obj GMAC memory object to copy data from
      * \param size Size (in bytes) of the data to be copied
      * \param blockOffset Offset (in bytes) from the begining of the block to
      * copy the data to
@@ -196,15 +196,6 @@ public:
      */
     gmacError_t memcpyFromObject(const Object &obj, size_t size,
         size_t blockOffset = 0, size_t objectOffset = 0);
-
-    /**
-     * Copy data from the memory block to host memory
-     * \param dst Destination host memory address to copy the data to
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) from the begining of the block to start copying data from
-     * \return Error code
-     */
-    gmacError_t memcpyToMemory(hostptr_t dst, size_t size, size_t blockOffset = 0) const;
 
     /**
      * Get memory block owner
@@ -223,28 +214,7 @@ public:
      * \return Accelerator memory address of the block
      */
     virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
-
-    /**
-     * Initializes a memory range within the block host memory to a specific value
-     * \param v Value to initialize the memory to
-     * \param size Size (in bytes) of the memory region to be initialized
-     * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const = 0;
-
-    /** Initializes a memory range within the block accelerator memory to a specific value
-     * \param v Value to initialize the memory to
-     * \param size Size (in bytes) of the memory region to be initialized
-     * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa __impl::memory::Protocol
-     */
-    virtual gmacError_t acceleratorMemset(int v, size_t size, size_t blockOffset = 0) const = 0;
-
+ 
     /**
      * Get the protocool that is managing the block
      * \return Memory protocol

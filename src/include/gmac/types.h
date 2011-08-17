@@ -87,17 +87,27 @@ enum GmacGlobalMallocType {
 };
 
 enum GmacProtection {
-    GMAC_PROT_NONE = 0, 
-    GMAC_PROT_READ, 
-    GMAC_PROT_WRITE, 
-    GMAC_PROT_READWRITE 
+    GMAC_PROT_NONE = 0,
+    GMAC_PROT_READ,
+    GMAC_PROT_WRITE,
+    GMAC_PROT_READWRITE
 };
+
+enum GmacMapFlags {
+    GMAC_MAP_READ  = 0x1,
+    GMAC_MAP_WRITE = 0x2
+};
+
+enum GmacRemapFlags {
+    GMAC_REMAP_READ  = 0x1,
+    GMAC_REMAP_WRITE = 0x2,
+    GMAC_REMAP_FIXED = 0x4
+};
+
+static const int GMAC_MAP_DEFAULT = GMAC_MAP_READ | GMAC_MAP_WRITE;
 
 #ifdef __cplusplus
 };
 #endif
 
-
 #endif /* GMAC_ERROR_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

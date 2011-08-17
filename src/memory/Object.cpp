@@ -11,7 +11,21 @@ namespace __impl { namespace memory {
 Atomic Object::Id_ = 0;
 #endif
 
-Object::BlockMap::const_iterator Object::firstBlock(size_t objectOffset, size_t &blockOffset) const
+Object::~Object()
+{
+    BlockMap::iterator i;
+    lockWrite();
+    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+    ASSERTION(ret == gmacSuccess);
+    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+        i->second->decRef();
+    }
+    blocks_.clear();
+    unlock();
+}
+
+Object::BlockMap::const_iterator
+Object::firstBlock(size_t objectOffset, size_t &blockOffset) const
 {
     BlockMap::const_iterator i = blocks_.begin();
     if(i == blocks_.end()) return i;
@@ -42,10 +56,11 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op,
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(objectOffset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
-        size_t blockSize = i->second->size() - blockOffset;
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         buffer.wait();
-        ret = i->second->memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        ret = block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         bufferOffset += blockSize;
         size -= blockSize;
@@ -60,9 +75,10 @@ gmacError_t Object::memset(size_t offset, int v, size_t size)
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(offset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
-        size_t blockSize = i->second->size() - blockOffset;
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        ret = i->second->memset(v, blockSize, blockOffset);
+        ret = block.memset(v, blockSize, blockOffset);
         blockOffset = 0;
         size -= blockSize;
     }
@@ -86,11 +102,11 @@ Object::memcpyToObject(core::Mode &mode, size_t objOffset, const hostptr_t src, 
     size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
 
     size_t bufSize = size < blockSize()? size: blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_WRITE);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_WRITE);
     } else {
         passive = NULL;
     }
@@ -156,15 +172,18 @@ Object::memcpyObjectToObject(core::Mode &mode,
         accptr_t dstPtr = dstObj.acceleratorAddr(dstOwner, dstObj.addr() + dstOffset);
         accptr_t srcPtr = acceleratorAddr(srcOwner, addr() + srcOffset);
 
+#if 0
         lockWrite();
         dstObj.lockWrite();
+#endif
         size_t dummyOffset = 0;
         BlockMap::const_iterator i = firstBlock(srcOffset, dummyOffset);
         TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
         BlockMap::const_iterator j = dstObj.firstBlock(dstOffset, dummyOffset);
         TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, j->second->addr(), dstObj.addr() + dstOffset, size);
-        for (; j != dstObj.blocks_.end() && (j->second->addr() < dstObj.addr() + dstOffset + size); j++) {
-            size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+        size_t left = size;
+        while (left > 0) {
+            size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
             // Single copy from the source to fill the buffer
             if (copySize <= blockEnd(srcOffset)) {
                 TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
@@ -178,23 +197,27 @@ Object::memcpyObjectToObject(core::Mode &mode,
                 size_t secondCopySize = copySize - firstCopySize;
 
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                      dstOffset % blockSize(),
-                                      srcOffset % blockSize(),
-                                      firstCopySize);
+                                        dstOffset % blockSize(),
+                                        srcOffset % blockSize(),
+                                        firstCopySize);
                 ASSERTION(ret == gmacSuccess);
                 i++;
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                      (dstOffset + firstCopySize) % blockSize(),
-                                      (srcOffset + firstCopySize) % blockSize(),
-                                      secondCopySize);
+                                        (dstOffset + firstCopySize) % blockSize(),
+                                        (srcOffset + firstCopySize) % blockSize(),
+                                        secondCopySize);
                 ASSERTION(ret == gmacSuccess);
             }
+            left -= copySize;
             dstOffset += copySize;
             srcOffset += copySize;
+            j++;
         }
 
+#if 0
         dstObj.unlock();
         unlock();
+#endif
 
         TRACE(LOCAL, "Fast path finished!");
 
@@ -213,11 +236,11 @@ Object::memcpyObjectToObject(core::Mode &mode,
     size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
 
     size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_READWRITE);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_READWRITE);
     } else {
         passive = NULL;
     }
@@ -310,11 +333,11 @@ Object::memcpyFromObject(core::Mode &mode, hostptr_t dst,
     size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
 
     size_t bufSize = size < blockSize()? size: blockSize();
-    active = &mode.createIOBuffer(bufSize);
+    active = &mode.createIOBuffer(bufSize, GMAC_PROT_READ);
     ASSERTION(bufSize >= copySize);
 
     if (copySize < size) {
-        passive = &mode.createIOBuffer(bufSize);
+        passive = &mode.createIOBuffer(bufSize, GMAC_PROT_READ);
     } else {
         passive = NULL;
     }
@@ -356,6 +379,52 @@ Object::memcpyFromObject(core::Mode &mode, hostptr_t dst,
     return ret;
 }
 
+gmacError_t
+Object::signalRead(hostptr_t addr)
+{
+    gmacError_t ret = gmacSuccess;
+    lockRead();
+    /// \todo is this validate necessary?
+    //validate();
+    BlockMap::const_iterator i = blocks_.upper_bound(addr);
+    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
+    else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
+    else ret = i->second->signalRead(addr);
+    unlock();
+    return ret;
+}
 
+gmacError_t
+Object::signalWrite(hostptr_t addr)
+{
+    gmacError_t ret = gmacSuccess;
+    lockRead();
+    modifiedObject();
+    BlockMap::const_iterator i = blocks_.upper_bound(addr);
+    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
+    else if(i->second->addr() > addr) ret = gmacErrorInvalidValue;
+    else ret = i->second->signalWrite(addr);
+    unlock();
+    return ret;
+}
+
+gmacError_t
+Object::dump(std::ostream &out, protocol::common::Statistic stat)
+{
+#ifdef DEBUG
+    lockWrite();
+    std::ostringstream oss;
+    oss << (void *) addr();
+    out << oss.str() << " ";
+    gmacError_t ret = forEachBlock(&Block::dump, out, stat);
+    out << std::endl;
+    unlock();
+    if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;
+    dumps_[stat]++;
+#else
+    gmacError_t ret = gmacSuccess;
+#endif
+    return ret;
+}
 
 }}

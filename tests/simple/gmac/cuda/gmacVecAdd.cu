@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <gmac/cuda.h>
+#include <gmac/cuda>
 
 #include "utils.h"
 #include "debug.h"
@@ -38,20 +38,25 @@ int main(int argc, char *argv[])
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
 
     getTime(&s);
-    // Alloc & init input data
-    assert(gmacMalloc((void **)&a, vecSize * sizeof(float)) == gmacSuccess);
-    assert(gmacMalloc((void **)&b, vecSize * sizeof(float)) == gmacSuccess);
+    // Alloc input data
+    a = new (gmac::allocator) float[vecSize];
+    b = new (gmac::allocator) float[vecSize];
     // Alloc output data
-    assert(gmacMalloc((void **)&c, vecSize * sizeof(float)) == gmacSuccess);
+    c = new (gmac::allocator) float[vecSize];
+
+    assert(a != NULL);
+    assert(b != NULL);
+    assert(c != NULL);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     float sum = 0.f;
 
+    // Init input data
     getTime(&s);
     begin = s;
-    randInitMax(a, 1.f, vecSize);
-    randInitMax(b, 1.f, vecSize);
+    randInitMax(a, 10.f, vecSize);
+    randInitMax(b, 10.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -64,8 +69,8 @@ int main(int argc, char *argv[])
     dim3 Db(blockSize);
     dim3 Dg((unsigned long)vecSize / blockSize);
     if(vecSize % blockSize) Dg.x++;
-    vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), vecSize);
-    assert(gmacThreadSynchronize() == gmacSuccess);
+    vecAdd<<<Dg, Db>>>(gmac::ptr(c), gmac::ptr(a), gmac::ptr(b), vecSize);
+    assert(gmac::threadSynchronize() == gmacSuccess);
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
@@ -79,12 +84,12 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     getTime(&s);
-    gmacFree(a);
-    gmacFree(b);
-    gmacFree(c);
+    gmac::free(a);
+    gmac::free(b);
+    gmac::free(c);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
     printTime(&begin, &end, "Total: ", "\n");
 
-    return sum == check;
+    return sum != check;
 }

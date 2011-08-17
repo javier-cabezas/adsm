@@ -10,7 +10,7 @@ using __impl::core::Mode;
 
 void IOBufferTest::ToAccelerator(Mode &mode)
 {
-    IOBuffer &buffer = mode.createIOBuffer(Size_);
+    IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_WRITE);
     ASSERT_TRUE(buffer.size() >= Size_);
 
     ASSERT_TRUE(memset(buffer.addr(), 0x7a, buffer.size()) == buffer.addr());
@@ -38,7 +38,7 @@ void IOBufferTest::ToAccelerator(Mode &mode)
 
 void IOBufferTest::ToHost(Mode &mode)
 {
-    IOBuffer &buffer = mode.createIOBuffer(Size_);
+    IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READ);
     ASSERT_TRUE(buffer.size() >= Size_);
 
     hostptr_t fakePtr = (uint8_t *) 0xcafebabe;

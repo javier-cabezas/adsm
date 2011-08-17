@@ -1,74 +1,11 @@
 #include "config/order.h"
 
 #include "core/hpe/Process.h"
-#include "api/opencl/hpe/gpu/amd/Accelerator.h"
-#include "api/opencl/hpe/gpu/nvidia/Accelerator.h"
+#include "gpu/amd/Accelerator.h"
+#include "gpu/amd/FusionAccelerator.h"
+#include "gpu/nvidia/Accelerator.h"
 
-enum GMAC_LOCAL OpenCLVendor {
-    AMD,
-    NVIDIA,
-    INTEL,
-    UNKNOWN
-};
-
-static
-std::string getVendorName(cl_platform_id id)
-{
-    size_t len;
-    cl_int err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, 0, NULL, &len);
-    CFATAL(err == CL_SUCCESS);
-    char *vendor = new char[len + 1];
-    err = clGetPlatformInfo(id, CL_PLATFORM_VENDOR, len, vendor, NULL);
-    CFATAL(err == CL_SUCCESS);
-    vendor[len] = '\0';
-    std::string ret(vendor);
-
-    delete [] vendor;
-
-    return ret;
-}
-
-static OpenCLVendor
-getVendor(cl_platform_id id)
-{
-    static const std::string amd("Advanced Micro Devices, Inc.");
-    static const std::string nvidia("NVIDIA Corporation");
-    static const std::string intel("Intel Corporation");
-
-    std::string vendorName = getVendorName(id);
-
-    if (vendorName.compare(amd) == 0) {
-        return AMD;
-    } else if (vendorName.compare(nvidia) == 0) {
-        return NVIDIA;
-    } else if (vendorName.compare(intel) == 0) {
-        return INTEL;
-    } else {
-        return UNKNOWN;
-    }
-}
-
-typedef std::pair<unsigned, unsigned> OpenCLVersion;
-#if defined(_MSC_VER)
-#define sscanf(...) sscanf_s(__VA_ARGS__)
-#endif
-
-static OpenCLVersion
-getOpenCLVersion(cl_platform_id id)
-{
-    size_t len;
-    cl_int err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, 0, NULL, &len);
-    CFATAL(err == CL_SUCCESS);
-    char *version = new char[len + 1];
-    err = clGetPlatformInfo(id, CL_PLATFORM_VERSION, len, version, NULL);
-    CFATAL(err == CL_SUCCESS);
-    version[len] = '\0';
-    unsigned major, minor;
-    sscanf(version, "OpenCL %u.%u", &major, &minor);
-    delete [] version;
-
-    return OpenCLVersion(major, minor);
-}
+#include "api/opencl/opencl_utils.h"
 
 static bool initialized = false;
 void OpenCL(gmac::core::hpe::Process &proc)
@@ -81,21 +18,22 @@ void OpenCL(gmac::core::hpe::Process &proc)
     cl_platform_id * platforms = new cl_platform_id[platformSize];
     ret = clGetPlatformIDs(platformSize, platforms, NULL);
     CFATAL(ret == CL_SUCCESS);
-    TRACE(GLOBAL, "Found %d OpenCL platforms", platformSize);
+    MESSAGE("%d OpenCL platforms found", platformSize);
 
     unsigned n = 0;
-    for(unsigned i = 0; i < platformSize; i++) {
+    for (unsigned i = 0; i < platformSize; i++) {
+        MESSAGE("Platform [%u/%u]: %s", i + 1, platformSize, __impl::opencl::util::getPlatformName(platforms[i]).c_str());
         cl_uint deviceSize = 0;
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
-            0, NULL, &deviceSize);
+                             0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
         cl_device_id *devices = new cl_device_id[deviceSize];
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
-            deviceSize, devices, NULL);
+                             deviceSize, devices, NULL);
         ASSERTION(ret == CL_SUCCESS);
-        TRACE(GLOBAL, "Found %d OpenCL devices in platform %d", deviceSize, i);
+        MESSAGE("... found %u OpenCL devices", deviceSize, i);
 
-        OpenCLVersion clVersion = getOpenCLVersion(platforms[i]);
+        __impl::opencl::util::OpenCLVersion clVersion = __impl::opencl::util::getOpenCLVersion(platforms[i]);
 
         cl_context ctx;
         if (deviceSize > 0) {
@@ -105,20 +43,29 @@ void OpenCL(gmac::core::hpe::Process &proc)
             ctx = clCreateContext(prop, deviceSize, devices, NULL, NULL, &ret);
             CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
         }
-        for(unsigned j = 0; j < deviceSize; j++) {
+
+        for (unsigned j = 0; j < deviceSize; j++) {
+            MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, __impl::opencl::util::getDeviceName(devices[j]).c_str());
+
+            CFATAL(__impl::opencl::util::getDeviceVendor(devices[j]) == __impl::opencl::util::getPlatformVendor(platforms[i]), "Not handled case");
             gmac::opencl::hpe::Accelerator *acc = NULL;
 
-            switch (getVendor(platforms[i])) {
-                case AMD:
-                    acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
-                                                                         clVersion.first, clVersion.second);
+            switch (__impl::opencl::util::getPlatform(platforms[i])) {
+                case __impl::opencl::util::PLATFORM_AMD:
+                    if (__impl::opencl::util::isDeviceAMDFusion(devices[j])) {
+                        acc = new __impl::opencl::hpe::gpu::amd::FusionAccelerator(n++, ctx, devices[j],
+                                clVersion.first, clVersion.second);
+                    } else {
+                        acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
+                                clVersion.first, clVersion.second);
+                    }
                     break;
-                case NVIDIA:
+                case __impl::opencl::util::PLATFORM_NVIDIA:
                     acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j],
-                                                                            clVersion.first, clVersion.second);
+                            clVersion.first, clVersion.second);
                     break;
-                case INTEL:
-                case UNKNOWN:
+                case __impl::opencl::util::PLATFORM_INTEL:
+                case __impl::opencl::util::PLATFORM_UNKNOWN:
                     FATAL("Platform not supported\n");
             }
             proc.addAccelerator(*acc);

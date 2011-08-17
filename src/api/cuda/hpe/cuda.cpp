@@ -1,22 +1,18 @@
-#include "config/order.h"
-
-#include "api/cuda/hpe/Accelerator.h"
-#include "api/cuda/hpe/Mode.h"
-
-#include "core/Process.h"
-
-#include "hpe/init.h"
-
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
-
 #include <cuda.h>
 
 #include <string>
 #include <list>
+
+
+#include "api/cuda/hpe/Accelerator.h"
+#include "api/cuda/hpe/Mode.h"
+
+#include "config/order.h"
+#include "core/Process.h"
+
+#include "hpe/init.h"
+
+#include "util/loader.h"
 
 static bool initialized = false;
 

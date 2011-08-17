@@ -9,6 +9,7 @@ string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
     gmacAlloc.cu
+    gmacColumnMajor.cu
     gmacVecAdd.cu
     cudaVecAdd.cu
     gmacThreadVecAdd.cu
@@ -24,6 +25,7 @@ source_group(${current_GROUP} FILES
     gmacFile.cu
     gmacMigration.cu
     gmacMeminfo.cu
+    gmacRandomAccess.cu
     gmacStencil.cu
     gmacThreadStencil.cu
     gmacStencilCommon.cu
@@ -46,23 +48,28 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing")
+    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing" "--keep")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacAlloc
 cuda_compile(alloc gmacAlloc.cu)
-add_executable(gmacAlloc ${alloc}  gmacAlloc.cu)
-target_link_libraries(gmacAlloc test-common test-common gmac-cuda)
+add_executable(gmacAlloc ${alloc} gmacAlloc.cu)
+target_link_libraries(gmacAlloc test-common gmac-cuda)
+
+# gmacColumnMajor
+cuda_compile(columnMajor gmacColumnMajor.cu)
+add_executable(gmacColumnMajor ${columnMajor} gmacColumnMajor.cu)
+target_link_libraries(gmacColumnMajor test-common gmac-cuda)
 
 # gmacVecAdd
 cuda_compile(vecAdd gmacVecAdd.cu)
 add_executable(gmacVecAdd ${vecAdd}  gmacVecAdd.cu)
-target_link_libraries(gmacVecAdd test-common test-common gmac-cuda)
+target_link_libraries(gmacVecAdd test-common gmac-cuda)
 
 # cudaVecAdd
 cuda_compile(vecAdd cudaVecAdd.cu)
 add_executable(cudaVecAdd ${vecAdd} cudaVecAdd.cu)
-target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY})
+target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # gmacThreadVecAdd
 cuda_compile(threadVecAdd gmacThreadVecAdd.cu)
@@ -103,6 +110,11 @@ target_link_libraries(gmacMatrixMul test-common gmac-cuda)
 cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
 add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
 target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
+
+# gmacRandomAccess
+cuda_compile(randomAccess gmacRandomAccess.cu)
+add_executable(gmacRandomAccess ${randomAccess} gmacRandomAccess.cu)
+target_link_libraries(gmacRandomAccess test-common gmac-cuda)
 
 # gmacStencil
 cuda_compile(stencil gmacStencil.cu)

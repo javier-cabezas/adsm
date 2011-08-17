@@ -44,12 +44,12 @@ WITH THE SOFTWARE.  */
 #include "util/Reference.h"
 #include "util/Atomics.h"
 
-#include "memory/ObjectMap.h"
-
 namespace __impl {
 
 namespace memory {
 class Protocol;
+class Object;
+class ObjectMap;
 }
 
 namespace core {
@@ -71,7 +71,7 @@ protected:
     unsigned id_;
     memory::Protocol *protocol_;
 
-    bool validObjects_;
+    bool modifiedObjects_;
     bool releasedObjects_;
 
     gmacError_t error_;
@@ -94,12 +94,19 @@ protected:
     virtual ~Mode();
 
 public:
+    /** Allocate GPU-accessible host memory
+     *
+     *  \param addr Pointer of the memory to be mapped to the accelerator
+     *  \param size Size (in bytes) of the host memory to be mapped
+     *  \return Error code
+     */
+    virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
 
     /**
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    memory::Protocol &protocol();
+    memory::Protocol &getProtocol();
 
     /**
      * Gets a numeric identifier for the mode. This identifier must be unique.
@@ -136,7 +143,7 @@ public:
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
-    virtual void insertOrphan(memory::Object &obj) = 0;
+    virtual void makeOrphan(memory::Object &obj) = 0;
 
     /**
      * Gets the first object that belongs to the memory range
@@ -148,7 +155,7 @@ public:
     memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
     /**
-     * Applies a constant memory operation to all the objects that belong to
+     * Applies a memory operation to all the objects that belong to
      * the mode
      * \param op Memory operation to be executed
      * \sa __impl::memory::Object::acquire
@@ -175,12 +182,12 @@ public:
      * \return Boolean that tells if objects of the mode have been already
      * invalidated
      */
-    bool validObjects() const;
+    bool hasModifiedObjects() const;
 
     /**
      * Notifies the mode that one (or several) of its objects have been validated
      */
-    void validateObjects();
+    void modifiedObjects();
 
     /**
      * Notifies the mode that one (or several) of its objects has been invalidated
@@ -219,14 +226,6 @@ public:
      * \return Error code
      */
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
-
-    /** Allocate GPU-accessible host memory
-     *
-     *  \param addr Pointer of the memory to be mapped to the accelerator
-     *  \param size Size (in bytes) of the host memory to be mapped
-     *  \return Error code
-     */
-    virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
 
     /** Release GPU-accessible host memory
      *
@@ -291,10 +290,12 @@ public:
     /**
      * Creates an IOBuffer
      * \param size Minimum size of the buffer
+     * \param prot Tells whether the requested buffer is going to be read or
+     * written on the host
      * \return A pointer to the created IOBuffer or NULL if there is not enough
      *         memory
      */
-    virtual IOBuffer &createIOBuffer(size_t size) = 0;
+    virtual IOBuffer &createIOBuffer(size_t size, GmacProtection prot) = 0;
 
     /**
      * Destroys an IOBuffer
@@ -325,7 +326,14 @@ public:
      * \param total A reference to a variable to store the total amount of memory
      * on the accelerator
      */
-    virtual void memInfo(size_t &free, size_t &total) = 0;
+    virtual void getMemInfo(size_t &free, size_t &total) = 0;
+
+    virtual bool hasIntegratedMemory() const = 0;
+
+#ifdef USE_OPENCL
+    virtual gmacError_t acquire(hostptr_t addr) = 0;
+    virtual gmacError_t release(hostptr_t addr) = 0;
+#endif
 
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();

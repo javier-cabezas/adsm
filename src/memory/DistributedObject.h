@@ -34,22 +34,26 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
 #define GMAC_MEMORY_DISTRIBUTEDOBJECT_H_
 
-#include "config/common.h"
-#include "core/Mode.h"
+#include "memory/Object.h"
 
-namespace __impl { namespace memory {
+namespace __impl { 
+
+namespace core {
+	class Mode;
+}
+
+namespace memory {
 
 template<typename State>
 class GMAC_LOCAL DistributedObject : public gmac::memory::Object {
 protected:
-    uint8_t *shadow_;
+    hostptr_t shadow_;
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
 
-    void validate();
+    void modifiedObject();
 public:
-    DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr,
-                      size_t size, typename State::ProtocolState init);
+    DistributedObject(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~DistributedObject();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;

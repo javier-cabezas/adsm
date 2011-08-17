@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -58,11 +58,11 @@ extern util::Private<int32_t> tid_;
 
 class GMAC_LOCAL Tracer {
 protected:
-	uint64_t base_;
+    uint64_t base_;
 
 public:
     //! Default constructor
-	Tracer();
+    Tracer();
 
     //! Default destructor
     virtual ~Tracer();
@@ -73,14 +73,14 @@ public:
         \param name Name for the created thread
         \param t Timestamp
     */
-	virtual void startThread(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void startThread(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace the destruction of a thread
     /**
         \param tid Thread ID for the destroyed thread
         \param t Timestamp
     */
-	virtual void endThread(uint64_t t, THREAD_T tid) = 0;
+    virtual void endThread(uint64_t t, THREAD_T tid) = 0;
 
     //! Trace entering a GMAC function
     /**
@@ -88,7 +88,7 @@ public:
         \param name Name of the function
         \param t Timestamp
     */
-	virtual void enterFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void enterFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace exiting from a GMAC function
     /**
@@ -96,40 +96,40 @@ public:
         \param name Name of the function being exited
         \param t Timestamp
     */
-	virtual void exitFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void exitFunction(uint64_t t, THREAD_T tid, const char *name) = 0;
 
 #ifdef USE_TRACE_LOCKS
-    //! Trace requesting a GMAC lock 
+    //! Trace requesting a GMAC lock
     /**
-        \param tid Thread ID aquiring the lock 
-        \param name Name of the lock 
+        \param tid Thread ID aquiring the lock
+        \param name Name of the lock
         \param t Timestamp
     */
-	virtual void requestLock(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void requestLock(uint64_t t, THREAD_T tid, const char *name) = 0;
 
-    //! Trace acquiring a GMAC exclusive lock 
+    //! Trace acquiring a GMAC exclusive lock
     /**
-        \param tid Thread ID aquiring the lock 
+        \param tid Thread ID aquiring the lock
         \param name Name of the lock being acquired
         \param t Timestamp
     */
-	virtual void acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name) = 0;
 
-    //! Trace acquiring a GMAC shared lock 
+    //! Trace acquiring a GMAC shared lock
     /**
-        \param tid Thread existing the lock 
+        \param tid Thread existing the lock
         \param name Name of the lock being acquired
         \param t Timestamp
     */
-	virtual void acquireLockShared(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void acquireLockShared(uint64_t t, THREAD_T tid, const char *name) = 0;
 
     //! Trace releasing a GMAC lock
     /**
-        \param tid Thread existing the lock 
+        \param tid Thread existing the lock
         \param name Name of the lock being released
         \param t Timestamp
     */
-	virtual void exitLock(uint64_t t, THREAD_T tid, const char *name) = 0;
+    virtual void exitLock(uint64_t t, THREAD_T tid, const char *name) = 0;
 #endif
 
     //! Trace a change in the thread state
@@ -138,7 +138,7 @@ public:
         \param state New thread's state
         \param t Timestamp
     */
-	virtual void setThreadState(uint64_t t, THREAD_T tid, const State state) = 0;
+    virtual void setThreadState(uint64_t t, THREAD_T tid, const State state) = 0;
 
     //! Trace a data communication between threads
     /**
@@ -154,7 +154,7 @@ public:
     /**
         \return Time mark to be used by the traces
     */
-	uint64_t timeMark() const;
+    uint64_t timeMark() const;
 };
 #endif
 
@@ -270,7 +270,7 @@ void TimeMark(uint64_t &mark);
 //! Get the thread Id for tracing purposes
 /**
     \return Thread ID
-*/ 
+*/
 int32_t GetThreadId();
 #endif
 

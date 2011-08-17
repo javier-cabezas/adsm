@@ -1,3 +1,9 @@
+/**
+ * \file src/hpe/gmac.cpp
+ *
+ * Implementation of the generic HPE API calls
+ */
+
 #include <cstdlib>
 
 #ifdef USE_CUDA
@@ -14,6 +20,7 @@
 
 #include "core/IOBuffer.h"
 
+#include "core/hpe/Accelerator.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Kernel.h"
 #include "core/hpe/Process.h"
@@ -53,104 +60,127 @@ using namespace __impl::memory;
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
 
-GMAC_API unsigned APICALL gmacGetNumberOfAccelerators()
+GMAC_API unsigned APICALL
+gmacGetNumberOfAccelerators()
 {
     unsigned ret;
-	enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
     ret = unsigned(getProcess().nAccelerators());
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
-GMAC_API size_t APICALL gmacGetFreeMemory()
+GMAC_API unsigned APICALL
+gmacGetCurrentAcceleratorId()
+{
+    unsigned ret;
+    enterGmac();
+    gmac::trace::EnterCurrentFunction();
+    ret = getCurrentMode().getAccelerator().id();;
+    gmac::trace::ExitCurrentFunction();
+    exitGmac();
+    return ret;
+}
+
+GMAC_API gmacError_t APICALL
+gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
 {
     enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
-    size_t free;
     size_t total;
-    getCurrentMode().memInfo(free, total);
+    gmacError_t ret = gmacSuccess;
+    Accelerator *accelerator = getProcess().getAccelerator(acc);
+    if (accelerator == NULL || freeMemory == NULL) {
+        ret = gmacErrorInvalidValue;
+    } else {
+        accelerator->getMemInfo(*freeMemory, total);
+    }
     gmac::trace::ExitCurrentFunction();
     exitGmac();
-    return free;
+    return ret;
 }
 
-
-GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc)
+GMAC_API gmacError_t APICALL
+gmacMigrate(unsigned acc)
 {
-	gmacError_t ret = gmacSuccess;
-	enterGmacExclusive();
+    gmacError_t ret = gmacSuccess;
+    enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
     ret = getProcess().migrate(acc);
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
 
-GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
+GMAC_API gmacError_t APICALL
+gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
 {
 #if 0
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         return ret;
     }
-	enterGmac();
+        enterGmac();
     gmac::trace::EnterCurrentFunction();
-    // TODO Remove alignment constraints
+    // TODO Remove alignment constraints?
     count = (int(count) < getpagesize())? getpagesize(): count;
     ret = getManager().map(cpuPtr, count, prot);
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
+        exitGmac();
     return ret;
 #endif
     return gmacErrorFeatureNotSupported;
 }
 
 
-GMAC_API gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count)
+GMAC_API gmacError_t APICALL
+gmacMemoryUnmap(void *cpuPtr, size_t count)
 {
 #if 0
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         return ret;
     }
-	enterGmac();
+        enterGmac();
     gmac::trace::EnterCurrentFunction();
-    // TODO Remove alignment constraints
+    // TODO Remove alignment constraints?
     count = (int(count) < getpagesize())? getpagesize(): count;
     ret = getManager().unmap(cpuPtr, count);
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
+        exitGmac();
     return ret;
 #endif
     return gmacErrorFeatureNotSupported;
 }
 
 
-GMAC_API gmacError_t APICALL gmacMalloc(void **cpuPtr, size_t count)
+GMAC_API gmacError_t APICALL
+gmacMalloc(void **cpuPtr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         *cpuPtr = NULL;
         return ret;
     }
-	enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
     if(hasAllocator() && count < (ParamBlockSize / 2)) {
         *cpuPtr = getAllocator().alloc(getCurrentMode(), count, hostptr_t(RETURN_ADDRESS));
     }
     else {
-	    count = (int(count) < getpagesize())? getpagesize(): count;
-	    ret = getManager().alloc(getCurrentMode(), (hostptr_t *) cpuPtr, count);
+        count = (int(count) < getpagesize())? getpagesize(): count;
+        ret = getManager().alloc(getCurrentMode(), (hostptr_t *) cpuPtr, count);
     }
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
-GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
+GMAC_API gmacError_t APICALL
+gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
 {
     gmacError_t ret = gmacSuccess;
     if(count == 0) {
@@ -159,28 +189,30 @@ GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **cpuPtr, size_t count, GmacG
     }
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-	count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-	ret = getManager().globalAlloc(getCurrentMode(), (hostptr_t *)cpuPtr, count, hint);
+    count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
+    ret = getManager().globalAlloc(getCurrentMode(), (hostptr_t *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
 }
 
-GMAC_API gmacError_t APICALL gmacFree(void *cpuPtr)
+GMAC_API gmacError_t APICALL
+gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
-	enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = getCurrentMode();
     if(hasAllocator() == false || getAllocator().free(mode, hostptr_t(cpuPtr)) == false) {
         ret = getManager().free(mode, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
-GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *ptr)
+GMAC_API __gmac_accptr_t APICALL
+gmacPtr(const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();
@@ -190,13 +222,17 @@ GMAC_API __gmac_accptr_t APICALL gmacPtr(const void *ptr)
     return ret.get();
 }
 
-gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
+gmacError_t GMAC_LOCAL
+gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     __impl::core::hpe::Mode &mode = launch.getMode();
     Manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    ret = manager.releaseObjects(mode);
+    const std::list<hostptr_t> &objects = launch.getObjects();
+    // If the launch object does not contain objects, assume all the objects
+    // in the mode are released
+    ret = manager.releaseObjects(mode, objects);
     CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
@@ -206,7 +242,7 @@ gmacError_t GMAC_LOCAL gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
         TRACE(GLOBAL, "Waiting for Kernel to complete");
         mode.wait();
         TRACE(GLOBAL, "Memory Sync");
-        ret = manager.acquireObjects(getCurrentMode());
+        ret = manager.acquireObjects(getCurrentMode(), objects);
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
@@ -232,24 +268,26 @@ GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
     return ret;
 }
 
-gmacError_t GMAC_LOCAL gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
+gmacError_t GMAC_LOCAL
+gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &launch)
 {
     gmacError_t ret = gmacSuccess;
     if(ParamAutoSync == false) {
         __impl::core::hpe::Mode &mode = getCurrentMode();
         mode.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(mode);
+        ret = getManager().acquireObjects(mode, launch.getObjects());
     }
     return ret;
 }
 
-GMAC_API gmacError_t APICALL gmacThreadSynchronize()
+GMAC_API gmacError_t APICALL
+gmacThreadSynchronize()
 {
-	enterGmac();
+    enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-	gmacError_t ret = gmacSuccess;
+    gmacError_t ret = gmacSuccess;
     if (ParamAutoSync == false) {
         __impl::core::hpe::Mode &mode = getCurrentMode();
         mode.wait();
@@ -258,33 +296,36 @@ GMAC_API gmacError_t APICALL gmacThreadSynchronize()
     }
 
     gmac::trace::ExitCurrentFunction();
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
-GMAC_API gmacError_t APICALL gmacGetLastError()
+GMAC_API gmacError_t APICALL
+gmacGetLastError()
 {
-	enterGmac();
-	gmacError_t ret = getCurrentMode().error();
-	exitGmac();
-	return ret;
+    enterGmac();
+    gmacError_t ret = getCurrentMode().error();
+    exitGmac();
+    return ret;
 }
 
-GMAC_API void * APICALL gmacMemset(void *s, int c, size_t size)
+GMAC_API void * APICALL
+gmacMemset(void *s, int c, size_t size)
 {
     enterGmac();
     void *ret = s;
     getManager().memset(getCurrentMode(), hostptr_t(s), c, size);
-	exitGmac();
+    exitGmac();
     return ret;
 }
 
-GMAC_API void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
+GMAC_API void * APICALL
+gmacMemcpy(void *dst, const void *src, size_t size)
 {
-	enterGmac();
-	void *ret = dst;
+    enterGmac();
+    void *ret = dst;
 
-	// Locate memory regions (if any)
+    // Locate memory regions (if any)
     Process &proc = getProcess();
     __impl::core::Mode *dstMode = proc.owner(hostptr_t(dst), size);
     __impl::core::Mode *srcMode = proc.owner(hostptr_t(src), size);
@@ -294,32 +335,36 @@ GMAC_API void * APICALL gmacMemcpy(void *dst, const void *src, size_t size)
     }
     getManager().memcpy(getCurrentMode(), hostptr_t(dst), hostptr_t(src), size);
 
-	exitGmac();
-	return ret;
+    exitGmac();
+    return ret;
 }
 
-GMAC_API void APICALL gmacSend(THREAD_T id)
+GMAC_API void APICALL
+gmacSend(THREAD_T id)
 {
     enterGmac();
     getProcess().send((THREAD_T)id);
     exitGmac();
 }
 
-GMAC_API void APICALL gmacReceive()
+GMAC_API void APICALL
+gmacReceive()
 {
     enterGmac();
     getProcess().receive();
     exitGmac();
 }
 
-GMAC_API void APICALL gmacSendReceive(THREAD_T id)
+GMAC_API void APICALL
+gmacSendReceive(THREAD_T id)
 {
-	enterGmac();
-	getProcess().sendReceive((THREAD_T)id);
-	exitGmac();
+    enterGmac();
+    getProcess().sendReceive((THREAD_T)id);
+    exitGmac();
 }
 
-GMAC_API void APICALL gmacCopy(THREAD_T id)
+GMAC_API void APICALL
+gmacCopy(THREAD_T id)
 {
     enterGmac();
     getProcess().copy((THREAD_T)id);
@@ -328,7 +373,8 @@ GMAC_API void APICALL gmacCopy(THREAD_T id)
 
 #ifdef USE_INTERNAL_API
 
-GMAC_API gmacError_t APICALL __gmacFlushDirty()
+GMAC_API gmacError_t APICALL
+__gmacFlushDirty()
 {
     enterGmac();
     gmacError_t ret = getManager().flushDirty(getCurrentMode());

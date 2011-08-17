@@ -7,10 +7,14 @@ set(memory_SRC
     Block.h
     Block-impl.h
     Block.cpp
+    BlockGroup.h
+    BlockGroup-impl.h
     DistributedBlock.h
     DistributedBlock-impl.h
     DistributedObject.h
     DistributedObject-impl.h
+    GenericBlock.h
+    GenericBlock-impl.h
     Handler.h
     Handler.cpp
     HostMappedObject.h
@@ -70,6 +74,8 @@ set(memory_DBC
     dbc/SharedObject.h
     dbc/SharedObject-impl.h
     protocol/dbc/Lazy.h
+    protocol/dbc/Lazy-impl.h
+    protocol/dbc/LazyBase.h
     protocol/dbc/Lazy.cpp
 )
 

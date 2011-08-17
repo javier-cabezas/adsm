@@ -3,6 +3,8 @@
 #include "api/cuda/hpe/Context.h"
 #include "api/cuda/IOBuffer.h"
 
+#include "util/allocator/Buddy.h"
+
 namespace __impl { namespace cuda { namespace hpe {
 
 Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
@@ -27,9 +29,13 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     }
 
     hostptr_t addr = NULL;
-    gmacError_t ret = hostAlloc(addr, util::params::ParamIOMemory);
+
+    gmacError_t ret = getAccelerator().hostAlloc(addr, util::params::ParamIOMemory/2, GMAC_PROT_READWRITE);
     if(ret == gmacSuccess)
-        ioMemory_ = new gmac::core::allocator::Buddy(addr, util::params::ParamIOMemory);
+        ioMemoryRead_ = new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2);
+    ret = getAccelerator().hostAlloc(addr, util::params::ParamIOMemory/2, GMAC_PROT_READ);
+    if(ret == gmacSuccess)
+        ioMemoryWrite_ = new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2);
 
     streamLaunch_        = getAccelerator().createCUstream();
     streamToAccelerator_ = getAccelerator().createCUstream();
@@ -54,33 +60,52 @@ Mode::~Mode()
     getAccelerator().destroyModules(modules);
     modules.clear();
 #endif
-    if(ioMemory_ != NULL) {
-        hostFree(ioMemory_->addr());
-        delete ioMemory_;
-        ioMemory_ = NULL;
+    if(ioMemoryRead_ != NULL) {
+        hostFree(ioMemoryRead_->addr());
+        delete ioMemoryRead_;
+        ioMemoryRead_ = NULL;
+    }
+    if(ioMemoryWrite_ != NULL) {
+        hostFree(ioMemoryWrite_->addr());
+        delete ioMemoryWrite_;
+        ioMemoryWrite_ = NULL;
     }
 
     switchOut();
 }
 
-core::IOBuffer &Mode::createIOBuffer(size_t size)
+core::IOBuffer &
+Mode::createIOBuffer(size_t size, GmacProtection prot)
 {
     IOBuffer *ret;
     hostptr_t addr = NULL;
-    if(ioMemory_ == NULL || (addr = ioMemory_->get(size)) == NULL) {
-        addr = hostptr_t(::malloc(size));
-        ret = new IOBuffer(addr, size, false);
+    if (prot == GMAC_PROT_WRITE) {
+        if(ioMemoryWrite_ == NULL || (addr = ioMemoryWrite_->get(size)) == NULL) {
+            addr = hostptr_t(::malloc(size));
+            ret = new IOBuffer(addr, size, false, prot);
+        } else {
+            ret = new IOBuffer(addr, size, true, prot);
+        }
     } else {
-        ret = new IOBuffer(addr, size, true);
+        if(ioMemoryRead_ == NULL || (addr = ioMemoryRead_->get(size)) == NULL) {
+            addr = hostptr_t(::malloc(size));
+            ret = new IOBuffer(addr, size, false, prot);
+        } else {
+            ret = new IOBuffer(addr, size, true, prot);
+        }
     }
     return *ret;
 }
 
 void Mode::destroyIOBuffer(core::IOBuffer &buffer)
 {
-    ASSERTION(ioMemory_ != NULL);
+    ASSERTION(ioMemoryWrite_ != NULL || ioMemoryRead_ != NULL);
     if (buffer.async()) {
-        ioMemory_->put(buffer.addr(), buffer.size());
+        if (buffer.getProtection() == GMAC_PROT_WRITE) {
+            ioMemoryWrite_->put(buffer.addr(), buffer.size());
+        } else {
+            ioMemoryRead_->put(buffer.addr(), buffer.size());
+        }
     } else {
         ::free(buffer.addr());
     }
@@ -117,11 +142,11 @@ void Mode::reload()
 
 core::hpe::Context &Mode::getContext()
 {
-	core::hpe::Context *context = contextMap_.find(util::GetThreadId());
+        core::hpe::Context *context = contextMap_.find(util::GetThreadId());
     if(context != NULL) return *context;
     context = ContextFactory::create(*this, streamLaunch_, streamToAccelerator_, streamToHost_, streamToAccelerator_);
     CFATAL(context != NULL, "Error creating new context");
-	contextMap_.add(util::GetThreadId(), context);
+        contextMap_.add(util::GetThreadId(), context);
     return *context;
 }
 
@@ -130,15 +155,17 @@ Context &Mode::getCUDAContext()
     return dynamic_cast<Context &>(getContext());
 }
 
-void Mode::destroyContext(core::hpe::Context &context) const
+void
+Mode::destroyContext(core::hpe::Context &context) const
 {
     ContextFactory::destroy(dynamic_cast<Context &>(context));
 }
 
-gmacError_t Mode::hostAlloc(hostptr_t &addr, size_t size)
+gmacError_t
+Mode::hostAlloc(hostptr_t &addr, size_t size)
 {
     switchIn();
-    gmacError_t ret = getAccelerator().hostAlloc(&addr, size);
+    gmacError_t ret = getAccelerator().hostAlloc(addr, size, GMAC_PROT_READWRITE);
     switchOut();
     return ret;
 }

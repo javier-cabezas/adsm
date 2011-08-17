@@ -17,10 +17,10 @@ class ObjectTest : public testing::Test {
 protected:
     static gmac::core::hpe::Process *Process_;
     static gmac::memory::Manager *Manager_;
-	static const size_t Size_;
+        static const size_t Size_;
 
-	static void SetUpTestCase();
-	static void TearDownTestCase();
+        static void SetUpTestCase();
+        static void TearDownTestCase();
 };
 
 
@@ -56,7 +56,7 @@ TEST_F(ObjectTest, Creation)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Process_->getCurrentMode();
-    Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_TRUE(object->addr() != NULL);
     ASSERT_TRUE(object->end() != NULL);
@@ -64,14 +64,14 @@ TEST_F(ObjectTest, Creation)
     ASSERT_EQ(Size_, object->size());
 
     mode.removeObject(*object);
-    object->release();
+    object->decRef();
 }
 
 TEST_F(ObjectTest, Blocks)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Process_->getCurrentMode();
-    Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
     ASSERT_TRUE(start != NULL);
@@ -86,21 +86,23 @@ TEST_F(ObjectTest, Blocks)
     }
 
     mode.removeObject(*object);
-    object->release();
+    object->decRef();
 }
 
 TEST_F(ObjectTest, Coherence)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Process_->getCurrentMode();
-    Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
+    object->addOwner(mode);
     mode.addObject(*object);
 
     hostptr_t ptr = object->addr();
     for(size_t s = 0; s < object->size(); s++) {
-       ptr[s] = (s & 0xff); 
+       ptr[s] = (s & 0xff);
     }
+    ASSERT_EQ(gmacSuccess, object->release());
     ASSERT_EQ(gmacSuccess, object->toAccelerator());
 
     ASSERT_EQ(gmacSuccess, object->acquire());
@@ -111,18 +113,19 @@ TEST_F(ObjectTest, Coherence)
     }
 
     mode.removeObject(*object);
-    object->release();
+    object->decRef();
 }
 
 TEST_F(ObjectTest, IOBuffer)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Process_->getCurrentMode();
-    Object *object = mode.protocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
+    object->addOwner(mode);
     mode.addObject(*object);
 
-    __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_);
+    __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     hostptr_t ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {
@@ -131,13 +134,13 @@ TEST_F(ObjectTest, IOBuffer)
 
     ASSERT_EQ(gmacSuccess, object->copyFromBuffer(buffer, Size_));
 
-	ptr = buffer.addr();
+        ptr = buffer.addr();
     memset(ptr, 0, Size_);
 
     ASSERT_EQ(gmacSuccess, object->copyToBuffer(buffer, Size_));
     ASSERT_EQ(gmacSuccess, buffer.wait());
 
-	ptr = buffer.addr();
+    ptr = buffer.addr();
     int error = 0;
     for(size_t s = 0; s < buffer.size(); s++) {
         //EXPECT_EQ(ptr[s], (s & 0xff));
@@ -148,5 +151,5 @@ TEST_F(ObjectTest, IOBuffer)
     mode.destroyIOBuffer(buffer);
 
     mode.removeObject(*object);
-    object->release();
+    object->decRef();
 }

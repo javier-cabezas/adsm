@@ -6,8 +6,8 @@
 namespace __dbc { namespace memory { namespace protocol {
 
 template <typename T>
-Lazy<T>::Lazy(unsigned limit) :
-    Parent(limit)
+Lazy<T>::Lazy(bool eager) :
+    Parent(eager)
 {
 }
 

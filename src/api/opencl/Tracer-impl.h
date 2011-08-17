@@ -12,7 +12,7 @@ extern Tracer *tracer;
 }
 #endif
 
-namespace opencl { 
+namespace opencl {
 
 #if defined(USE_TRACE)
 inline
@@ -21,7 +21,7 @@ DataCommunication::DataCommunication() :
 {}
 #else
 inline
-DataCommunication::DataCommunication() 
+DataCommunication::DataCommunication()
 {}
 #endif
 
@@ -71,7 +71,7 @@ void DataCommunication::trace(cl_event start, cl_event end, size_t size) const
     ret = clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END, sizeof(ended), &ended, NULL);
     if(ret != CL_SUCCESS) return;
     delta = (ended - started) / 1000;
-    
+
     trace::tracer->dataCommunication(stamp_ + delay, src_, dst_, delta, size);
 #endif
 }
@@ -84,7 +84,7 @@ KernelExecution::KernelExecution(unsigned major, unsigned minor) :
 { }
 #else
 inline
-KernelExecution::KernelExecution()
+KernelExecution::KernelExecution(unsigned /*major*/, unsigned /*minor*/)
 {
 }
 #endif
@@ -129,19 +129,19 @@ void KernelExecution::Callback(cl_event event, cl_int status, void *data)
     ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(started), &started, NULL);
     if(ret != CL_SUCCESS) return;
     delay = (started - queued) / 1000;
-	ASSERTION(delay > 0);
+        ASSERTION(delay > 0);
     ret = clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(ended), &ended, NULL);
     if(ret != CL_SUCCESS) return;
-    delta = (ended - started) / 1000;	
-	ASSERTION(delta > 0);
+    delta = (ended - started) / 1000;
+        ASSERTION(delta > 0);
     clReleaseEvent(event);
-	if(delta > 0) {
-		trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
-		trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
+        if(delta > 0) {
+                trace::tracer->setThreadState(point->stamp + delay, point->thread, trace::Running);
+                trace::tracer->setThreadState(point->stamp + delay + delta, point->thread, trace::Idle);
 
-		trace::tracer->enterFunction(point->stamp + delay, point->thread, point->name);
-		trace::tracer->exitFunction(point->stamp + delay + delta, point->thread, point->name);
-	}
+                trace::tracer->enterFunction(point->stamp + delay, point->thread, point->name);
+                trace::tracer->exitFunction(point->stamp + delay + delta, point->thread, point->name);
+        }
     delete point;
 }
 #endif

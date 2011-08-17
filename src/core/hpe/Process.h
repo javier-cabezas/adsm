@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,7 +46,6 @@ WITH THE SOFTWARE.  */
 #include "util/Private.h"
 
 #include "core/Process.h"
-#include "core/allocator/Buddy.h"
 
 #include "Queue.h"
 
@@ -106,7 +105,7 @@ protected:
     memory::ObjectMap global_;
     memory::ObjectMap orphans_;
 
-	util::Private<Mode> CurrentMode_;
+    util::Private<Mode> CurrentMode_;
 
     unsigned current_;
 
@@ -124,12 +123,12 @@ public:
     /**
      * Registers a new thread in the process
      */
-    TESTABLE void initThread();  
+    TESTABLE void initThread();
 
     /**
      * Unregisters a thread from the process
      */
-    TESTABLE void finiThread(); 
+    TESTABLE void finiThread();
 
 #define ACC_AUTO_BIND -1
     /**
@@ -140,26 +139,26 @@ public:
      * ACC_AUTO_BIND to let the run-time choose
      * \return A pointer to the newly created mode or NULL if there has been an error
      */
-     TESTABLE Mode *createMode(int acc = ACC_AUTO_BIND); 
+     TESTABLE Mode *createMode(int acc = ACC_AUTO_BIND);
 
     /**
      * Removes a mode from the process
      *
      * \param mode A reference to the mode to be removed from the process
      */
-    TESTABLE void removeMode(Mode &mode); 
+     TESTABLE void removeMode(Mode &mode);
 
-	/**
-	 * Get the execution mode bound to the current CPU thread
-	 * \return Execution mode bound to the current CPU thread
-	 */
-	Mode &getCurrentMode();
+     /**
+      * Get the execution mode bound to the current CPU thread
+      * \return Execution mode bound to the current CPU thread
+      */
+     Mode &getCurrentMode();
 
-    /**
-     * Registers a global object in the process
-     *
-     * \param object Reference to the object to be registered
-     * \return Error code
+     /**
+      * Registers a global object in the process
+      *
+      * \param object Reference to the object to be registered
+      * \return Error code
      */
     gmacError_t globalMalloc(memory::Object &object);
 
@@ -258,7 +257,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    memory::Protocol *protocol();
+    memory::Protocol *getProtocol();
 
     /**
      * Gets the object map that contains all the shared objects allocated in the
@@ -309,7 +308,7 @@ public:
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan
      */
-    void insertOrphan(memory::Object &object);
+    void makeOrphan(memory::Object &object);
 
     /**
      * Gets the object map that contains all the objects that have been orphaned

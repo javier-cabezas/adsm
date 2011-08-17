@@ -64,8 +64,13 @@ BlockTreeInfo::BlockTreeInfo(lazy::Block &block) :
     block_(block)
 { 
     // Initialize subblock state tree (for random access patterns)
-    treeState_ = new BlockTreeState[2 * SubBlocks_ - 1];
-    treeStateLevels_ = log2(SubBlocks_) + 1;
+    treeState_ = new BlockTreeState[2 * block.getSubBlocks() - 1];
+    bool isPower;
+    unsigned levels = log2(block.getSubBlocks(), isPower) + 1;
+    if (isPower == false) {
+        levels++;
+    }
+    treeStateLevels_ = levels;
 }
 
 inline
@@ -78,7 +83,7 @@ inline
 void
 BlockTreeInfo::reset()
 {
-    ::memset(treeState_, 0, sizeof(BlockTreeState) * SubBlocks_);
+    ::memset(treeState_, 0, sizeof(BlockTreeState) * block_.getSubBlocks());
 }
 
 inline
@@ -88,7 +93,7 @@ BlockTreeInfo::increment(unsigned subBlock)
     unsigned level     = treeStateLevels_ - 1;
     unsigned levelOff  = 0;
     unsigned levelPos  = subBlock;
-    unsigned levelSize = SubBlocks_;
+    unsigned levelSize = block_.getSubBlocks();
     unsigned children  = 1;
     unsigned inc       = 1;
 
@@ -107,6 +112,9 @@ BlockTreeInfo::increment(unsigned subBlock)
 
             ret.first  = subBlock & (~(children - 1));
             ret.second = children;
+            if (ret.first + ret.second > block_.getSubBlocks()) {
+                ret.second = block_.getSubBlocks() - ret.first;
+            }
         } else {
             counter += inc;
         }
@@ -260,16 +268,13 @@ BlockState::setAll(ProtocolState state)
 inline
 BlockState::BlockState(lazy::State init) :
     common::BlockState<lazy::State>(init),
-#ifdef USE_VM
     subBlocks_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
-#else
-    subBlockState_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
-#endif
+    subBlockState_(subBlocks_),
 #ifdef DEBUG
-    subBlockFaultsRead_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
-    subBlockFaultsWrite_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
-    transfersToAccelerator_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
-    transfersToHost_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
+    subBlockFaultsRead_(subBlocks_),
+    subBlockFaultsWrite_(subBlocks_),
+    transfersToAccelerator_(subBlocks_),
+    transfersToHost_(subBlocks_),
 #endif
     strideInfo_(block()),
     treeInfo_(block()),
@@ -331,9 +336,7 @@ BlockState::getSubBlockAddr(unsigned index) const
 inline unsigned
 BlockState::getSubBlocks() const
 {
-    unsigned subBlocks = block().size()/SubBlockSize_;
-    if (block().size() % SubBlockSize_ != 0) subBlocks++;
-    return subBlocks;
+    return subBlocks_;
 }
 
 inline size_t
@@ -355,10 +358,11 @@ BlockState::syncToAccelerator()
 
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
+#endif
     for (unsigned i = 0; i != subBlocks_; i++) {
+#ifdef USE_VM
         if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy::Dirty) {
 #else
-    for (unsigned i = 0; i != subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
 #endif
             if (!inGroup) {
@@ -463,6 +467,7 @@ BlockState::read(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     faultsRead_++;
+    faultsCacheRead_++;
 
     setSubBlock(currentSubBlock, lazy::ReadOnly);
 #ifdef DEBUG
@@ -491,12 +496,10 @@ inline void
 BlockState::writeTree(const hostptr_t addr)
 {
     treeInfo_.signalWrite(addr);
-    if (faultsWrite_ > STRIDE_THRESHOLD) {
-        BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
+    BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
 
-        for (unsigned i = info.first; i < info.first + info.second; i++) {
-            setSubBlock(i, lazy::Dirty);
-        }
+    for (unsigned i = info.first; i < info.first + info.second; i++) {
+        setSubBlock(i, lazy::Dirty);
     }
 }
 
@@ -506,6 +509,7 @@ BlockState::write(const hostptr_t addr)
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
 
     faultsWrite_++;
+    faultsCacheWrite_++;
 
     setSubBlock(currentSubBlock, lazy::Dirty);
 
@@ -558,10 +562,11 @@ BlockState::unprotect()
     unsigned size = 0;
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
+#endif
     for (unsigned i = 0; i < subBlocks_; i++) {
+#ifdef USE_VM
         ProtocolState state = bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_);
 #else
-    for (unsigned i = 0; i < subBlockState_.size(); i++) {
         ProtocolState state = ProtocolState(subBlockState_[i]);
 #endif
         if (state == lazy::Dirty) {
@@ -726,6 +731,7 @@ void
 BlockState::read(const hostptr_t /*addr*/)
 {
     faultsRead_++;
+    faultsCacheRead_++;
 }
 
 inline
@@ -733,6 +739,7 @@ void
 BlockState::write(const hostptr_t /*addr*/)
 {
     faultsWrite_++;
+    faultsCacheWrite_++;
 }
 
 inline

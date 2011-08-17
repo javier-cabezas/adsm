@@ -28,7 +28,7 @@ void ModeTest::SetUpTestCase() {
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
-	__impl::memory::Init();
+    __impl::memory::Init();
     ASSERT_TRUE(Mode_ == NULL);
     Mode_ = Process_->createMode(0);
     ASSERT_TRUE(Mode_ != NULL);
@@ -42,20 +42,20 @@ void ModeTest::TearDownTestCase() {
 }
 
 TEST_F(ModeTest, MemoryObject) {
-    Object *obj = Mode_->protocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+    Object *obj = Mode_->getProtocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
     Mode_->addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);
-    obj->release();
+    obj->decRef();
 
     Object *ref = Mode_->getObject(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
     Mode_->removeObject(*obj);
-    
+
     ASSERT_EQ(addr, ref->addr());
-    ref->release();
+    ref->decRef();
 }
 
 
@@ -105,7 +105,7 @@ TEST_F(ModeTest, IOBuffer) {
     ASSERT_TRUE(mem != NULL);
     memset(mem, 0x5a, Size_ * sizeof(int));
 
-    IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int));
+    IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int), GMAC_PROT_READWRITE);
     ASSERT_EQ(buffer.addr(), memcpy(buffer.addr(), mem, Size_ * sizeof(int)));
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
@@ -117,7 +117,7 @@ TEST_F(ModeTest, IOBuffer) {
 
     ASSERT_EQ(buffer.addr(), memset(buffer.addr(), 0xa5, Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(buffer, addr, Size_ * sizeof(int)));
-	ASSERT_EQ(gmacSuccess, buffer.wait());
+        ASSERT_EQ(gmacSuccess, buffer.wait());
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));

@@ -18,7 +18,7 @@ inline
 void QueueSet::insert(cl_command_queue queue)
 {
     lockWrite();
-    Parent::insert(queue); 
+    Parent::insert(queue);
     unlock();
 }
 
@@ -76,11 +76,11 @@ accptr_t Mode::hostMapAddr(const hostptr_t)
 
 
 inline
-core::IOBuffer &Mode::createIOBuffer(size_t size)
+core::IOBuffer &Mode::createIOBuffer(size_t size, GmacProtection prot)
 {
     core::IOBuffer *ret;
     void *addr = ::malloc(size);
-    ret = new IOBuffer(*this, hostptr_t(addr), size, NULL);
+    ret = new IOBuffer(*this, hostptr_t(addr), size, NULL, prot);
     return *ret;
 }
 
@@ -102,7 +102,7 @@ inline
 gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
 {
     gmacError_t ret = gmacSuccess;
-    return ret; 
+    return ret;
 }
 
 inline
@@ -116,14 +116,21 @@ inline
 gmacError_t Mode::acquireObjects()
 {
     cl_int ret = clFinish(active_);
-    validObjects_ = false;
+    modifiedObjects_ = false;
     return error(ret);
 }
 
-inline
-void Mode::insertOrphan(memory::Object &obj)
+inline void
+Mode::makeOrphan(memory::Object &obj)
 {
     FATAL("Orphan objects not supported in GMAC/Lite");
+}
+
+inline bool
+Mode::hasIntegratedMemory() const
+{
+    // TODO FUSION: implement this to avoid copies
+    return false;
 }
 
 }}}

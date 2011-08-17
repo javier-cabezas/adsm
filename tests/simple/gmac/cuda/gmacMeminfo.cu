@@ -8,35 +8,42 @@ int main(int argc, char *argv[])
 {
     void *dummy[allocations];
     size_t freeMem;
-    freeMem = gmacGetFreeMemory();
+    gmacError_t ret;
+    ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+    assert(ret == gmacSuccess);
     fprintf(stdout, "Free memory: %zd\n", freeMem);
 
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacMalloc((void **)&dummy[i], allocationSize * sizeof(long)) == gmacSuccess);
-        freeMem = gmacGetFreeMemory();
+        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
     
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacFree(dummy[i]) == gmacSuccess);
-        freeMem = gmacGetFreeMemory();
+        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
 
     gmacMigrate(1);
 
-    freeMem = gmacGetFreeMemory();
+    ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+    assert(ret == gmacSuccess);
     fprintf(stdout, "Free memory: %zd\n", freeMem);
 
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacMalloc((void **)&dummy[i], allocationSize * sizeof(long)) == gmacSuccess);
-        freeMem = gmacGetFreeMemory();
+        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
     
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacFree(dummy[i]) == gmacSuccess);
-        freeMem = gmacGetFreeMemory();
+        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
 

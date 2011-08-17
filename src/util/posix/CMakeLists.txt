@@ -2,6 +2,7 @@ set(util_os_SRC
     FileLock.h
     FileLock-impl.h
     FileLock.cpp
+    loader.h
     Lock.h
     Lock-impl.h
     Lock.cpp

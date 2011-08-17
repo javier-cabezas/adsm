@@ -17,7 +17,7 @@ if(USE_OPENCL)
 
     set(MAKE_CL ON)
 
-    set(GMAC_BLOCK_SIZE "4 * 1024 * 1024")
+    set(GMAC_BLOCK_SIZE "512 * 1024")
 
     set(GMAC_HEADERS ${GMAC_HEADERS} 
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl
@@ -25,8 +25,8 @@ if(USE_OPENCL)
                      ${CMAKE_BINARY_DIR}/src/include/gmac/opencl_types.h)
 
     set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-hpe")
-
-
+    set(DOXYGEN_EXCLUDE_PATTERN "*/cuda/*")
+    set(DOXYGEN_EXCLUDE_SYMBOLS "*::cuda::*")
 
     if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf

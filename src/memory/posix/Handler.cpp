@@ -42,8 +42,8 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	bool resolved = false;
     core::Mode *mode = Process_->owner(addr);
     if(mode != NULL) {
-	    if(!writeAccess) resolved = Manager_->read(*mode, addr);
-    	else resolved = Manager_->write(*mode, addr);
+	    if(!writeAccess) resolved = Manager_->signalRead(*mode, addr);
+    	else             resolved = Manager_->signalWrite(*mode, addr);
     }
 
 	if(resolved == false) {

@@ -26,6 +26,7 @@ if(USE_CUDA)
     set(GMAC_BLOCK_SIZE "512 * 1024")
 
     set(GMAC_HEADERS ${GMAC_HEADERS} 
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda
                      ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
                      ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h)
     set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-cuda")

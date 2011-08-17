@@ -59,7 +59,8 @@ template <typename State> class StateBlock;
 
 namespace protocol {
 /**
- * A lazy memory coherence protocol
+ * A lazy memory coherence protocol.
+ *
  * This protocol eagerly transfer data from host to accelerator memory if the user
  * sets up a limit, otherwise data is transferred when the use requests a
  * release operation. Data is transferred from accelerator memory to host memory
@@ -70,11 +71,14 @@ class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
 
 protected:
     /** Return the state corresponding to a memory protection
-     *
+     *ock
      * \param prot Memory protection
      * \return Protocol state
      */
     lazy::State state(GmacProtection prot) const;
+
+    /// Uses eager update
+    bool eager_;
 
     /// Maximum number of blocks in dirty state
     size_t limit_;
@@ -83,13 +87,13 @@ protected:
     BlockList dbl_;
 
     /// Add a new block to the Dirty Block List
-    void addDirty(Block &block);
+    void addDirty(lazy::Block &block);
 
     /** Default constructor
      *
-     * \param limit Maximum number of blocks in Dirty state. -1 for an infinite number
+     * \param eager Tells if protocol uses eager update
      */
-    LazyBase(size_t limit);
+    explicit LazyBase(bool eager);
 
     /// Default destructor
     virtual ~LazyBase();
@@ -112,7 +116,8 @@ public:
     gmacError_t acquireWithBitmap(Block &block);
 #endif
 
-    TESTABLE gmacError_t releaseObjects();
+    TESTABLE gmacError_t releaseAll();
+    gmacError_t releasedAll();
 
     gmacError_t mapToAccelerator(Block &block);
 

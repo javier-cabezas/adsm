@@ -18,18 +18,14 @@ Context::Context(Mode &mode, cl_command_queue stream) :
 Context::~Context()
 {
     // Destroy context's private IOBuffer (if any)
-    if(buffer_ != NULL) {
+    if(bufferWrite_ != NULL) {
         TRACE(LOCAL,"Destroying I/O buffer");
-        dynamic_cast<Mode &>(mode_).destroyIOBuffer(*buffer_);
+        dynamic_cast<Mode &>(mode_).destroyIOBuffer(*bufferWrite_);
     }
-}
-
-gmacError_t Context::memset(accptr_t addr, int c, size_t size)
-{
-    trace::EnterCurrentFunction();
-    gmacError_t ret = accelerator().memset(addr, c, size, streamLaunch_);
-    trace::ExitCurrentFunction();
-    return ret;
+    if(bufferRead_ != NULL) {
+        TRACE(LOCAL,"Destroying I/O buffer");
+        dynamic_cast<Mode &>(mode_).destroyIOBuffer(*bufferRead_);
+    }
 }
 
 KernelLaunch &Context::launch(Kernel &kernel)

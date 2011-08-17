@@ -79,16 +79,18 @@ gmacError_t Mode::releaseObjects()
     return error_;
 }
 
-gmacError_t Mode::acquireObjects()
+gmacError_t
+Mode::acquireObjects()
 {
     lock();
-    validObjects_ = false;
+    modifiedObjects_ = false;
     releasedObjects_ = false;
     unlock();
     return error_;
 }
 
-void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
+void
+Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {
     TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, kernel.getName(), k);
     KernelMap::iterator i;
@@ -97,7 +99,8 @@ void Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
     kernels_[k] = &kernel;
 }
 
-std::string Mode::getKernelName(gmac_kernel_id_t k) const
+std::string
+Mode::getKernelName(gmac_kernel_id_t k) const
 {
     KernelMap::const_iterator i;
     i = kernels_.find(k);
@@ -105,18 +108,19 @@ std::string Mode::getKernelName(gmac_kernel_id_t k) const
     return std::string(i->second->getName());
 }
 
-gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
+gmacError_t
+Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 {
     switchIn();
 
     accptr_t acc(0);
-    bool hasMapping = acc_->getMapping(acc, src, size);
+    bool hasMapping = acc_->getMapping(acc, src, count);
     if (hasMapping == true) {
         error_ = gmacSuccess;
         dst = acc;
         TRACE(LOCAL,"Mapping for address %p: %p", src, dst.get());
     } else {
-        error_ = acc_->map(dst, src, size, align);
+        error_ = acc_->map(dst, src, count, align);
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
 
@@ -128,54 +132,60 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
     return error_;
 }
 
-gmacError_t Mode::unmap(hostptr_t addr, size_t size)
+gmacError_t
+Mode::unmap(hostptr_t addr, size_t count)
 {
     switchIn();
-    error_ = acc_->unmap(addr, size);
+    error_ = acc_->unmap(addr, count);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
+gmacError_t
+Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t count)
 {
-    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), size);
+    TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), count);
 
     switchIn();
-    error_ = getContext().copyToAccelerator(acc, host, size);
-    switchOut();
-
-    return error_;
-}
-
-gmacError_t Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
-{
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, size);
-
-    switchIn();
-    error_ = getContext().copyToHost(host, acc, size);
+    error_ = getContext().copyToAccelerator(acc, host, count);
     switchOut();
 
     return error_;
 }
 
-gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
+gmacError_t
+Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
+{
+    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, count);
+
+    switchIn();
+    error_ = getContext().copyToHost(host, acc, count);
+    switchOut();
+
+    return error_;
+}
+
+gmacError_t
+Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t count)
 {
     switchIn();
-    error_ = acc_->copyAccelerator(dst, src, size, streamToAccelerator_);
+    error_ = acc_->copyAccelerator(dst, src, count, streamToHost_);
     switchOut();
     return error_;
 }
 
-gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
+gmacError_t
+Mode::memset(accptr_t addr, int c, size_t count)
 {
     switchIn();
-    error_ = getContext().memset(addr, c, size);
+    error_ = acc_->memset(addr, c, count, streamLaunch_);
     switchOut();
     return error_;
 }
 
 // Nobody can enter GMAC until this has finished. No locks are needed
-gmacError_t Mode::moveTo(Accelerator &acc)
+gmacError_t
+Mode::moveTo(Accelerator &acc)
 {
     TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
     switchIn();
@@ -188,7 +198,7 @@ gmacError_t Mode::moveTo(Accelerator &acc)
     size_t free;
     size_t total;
     size_t needed = map_.memorySize();
-    acc_->memInfo(free, total);
+    acc_->getMemInfo(free, total);
 
     if (needed > free) {
         switchOut();
@@ -221,6 +231,7 @@ gmacError_t Mode::cleanUp()
     gmacError_t ret = map_.forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
     Map::removeOwner(proc_, *this);
     contextMap_.clean();
+    map_.cleanUp();
 #ifdef USE_VM
     bitmap_.cleanUp();
 #endif

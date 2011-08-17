@@ -58,6 +58,7 @@ typedef std::map<hostptr_t, PairAlloc> MapAlloc;
 /** Generic Accelerator Class Defines the standard interface all accelerators MUST implement */
 class GMAC_LOCAL Accelerator {
     DBC_FORCE_TEST(Accelerator)
+    
     friend class Mode;
 protected:
     /** Identifier of the accelerator */
@@ -195,6 +196,7 @@ public:
      * \param dst Destination pointer to accelerator memory
      * \param src Source pointer to accelerator memory
      * \param size Number of bytes to be copied
+     * \param stream OpenCL command queue to be used for the transfer
      * \return Error code
      */
     virtual gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream) = 0;
@@ -224,6 +226,16 @@ public:
     virtual gmacError_t copyToHostAsync(IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count, core::hpe::Mode &mode, stream_t stream) = 0;
 
     /**
+     * Sets size bytes of the memory area pointed by the given address to the given value
+     *
+     * \param addr Address of the memory area to be set
+     * \param c Value to be set
+     * \param count Number of bytes to be set
+     * \param stream Execution queue to enqueue the command
+     */
+    virtual gmacError_t memset(accptr_t addr, int c, size_t count, stream_t stream) = 0;
+
+    /**
      * Wait for all commands in a command queue to be completed
      * \param stream OpenCL command queue
      * \return Error code
@@ -237,7 +249,7 @@ public:
      * \param total A reference to the variable where to store the total amount
      * of memory of the accelerator
      */
-    virtual void memInfo(size_t &free, size_t &total) const = 0;
+    virtual void getMemInfo(size_t &free, size_t &total) const = 0;
 
     // TODO: use this methods for something useful
     /**

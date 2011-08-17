@@ -57,55 +57,47 @@ protected:
         AcceleratorMap acceleratorAddr_;
 
 public:
-    //! Default construcutor
-    /*!
-        \param protocol Memory coherence protocol used by the block
-        \param hostAddr Host memory address for applications to accesss the block
-        \param shadowAddr Shadow host memory mapping that is always read/write
-        \param size Size (in bytes) of the memory block
-        \param init Initial block state
-    */
-        DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
+    /**
+     * Default construcutor
+     *
+     * \param protocol Memory coherence protocol used by the block
+     * \param hostAddr Host memory address for applications to accesss the block
+     * \param shadowAddr Shadow host memory mapping that is always read/write
+     * \param size Size (in bytes) of the memory block
+     * \param init Initial block state
+     */
+    DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
                      hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
-    //! Default destructor
+    /// Default destructor
     virtual ~DistributedBlock();
 
-    //! Get memory block owner
-    /*!
-        \return A reference to the owner mode of the memory block
-    */
+    /**
+     * Get memory block owner
+     *
+     *  \return A reference to the owner mode of the memory block
+     */
     core::Mode &owner(core::Mode &current) const;
 
-    //! Get memory block address at the accelerator
-    /*!
-        \param current Execution mode requesting the operation
-        \param addr Address within the block
-        \return Accelerator memory address of the block
-    */
+    /**
+     * Get memory block address at the accelerator
+     *
+     * \param current Execution mode requesting the operation
+     * \param addr Address within the block
+     * \return Accelerator memory address of the block
+     */
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
 
-    //! Get memory block address at the accelerator
-    /*!
-        \return Accelerator memory address of the block
-    */
+    /**
+     * Get memory block address at the accelerator
+     *
+     * \return Accelerator memory address of the block
+     */
     accptr_t acceleratorAddr(core::Mode &current) const;
 
     gmacError_t toAccelerator(unsigned blockOff, size_t count);
 
     gmacError_t toHost(unsigned blockOff, size_t count);
-
-    gmacError_t copyToHost(const hostptr_t src, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyToAccelerator(const hostptr_t src, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyFromHost(hostptr_t dst, size_t size,
-        size_t blockOffset = 0) const;
-
-    gmacError_t copyFromAccelerator(hostptr_t dst, size_t size,
-        size_t blockOffset = 0) const;
 
     gmacError_t copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
                              size_t blockOff, size_t size, typename StateBlock<State>::Source src) const;
@@ -115,12 +107,10 @@ public:
 
     gmacError_t copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
                               size_t srcOff, size_t size,
-                              typename StateBlock<State>::Source src,
-                              typename StateBlock<State>::Destination dst) const;
+                              typename StateBlock<State>::Destination dst,
+                              typename StateBlock<State>::Source src) const;
 
-    gmacError_t hostMemset(int v, size_t size, size_t blockOffset = 0) const;
-
-    gmacError_t acceleratorMemset(int v, size_t size, size_t blockOffset = 0) const;
+    gmacError_t memset(int v, size_t size, size_t blockOffset, typename StateBlock<State>::Destination dst) const;
 
     void addOwner(core::Mode &owner, accptr_t addr);
 

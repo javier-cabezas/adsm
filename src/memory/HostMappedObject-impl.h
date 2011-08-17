@@ -10,6 +10,23 @@ inline HostMappedSet::HostMappedSet() :
 inline HostMappedSet::~HostMappedSet()
 {}
 
+#ifdef USE_OPENCL
+inline gmacError_t
+HostMappedObject::acquire(core::Mode &current)
+{
+    gmacError_t ret = gmacSuccess;
+    ret = current.acquire(addr_);
+    return ret;
+}
+
+inline gmacError_t
+HostMappedObject::release(core::Mode &current)
+{
+    gmacError_t ret = gmacSuccess;
+    ret = current.release(addr_);
+    return ret;
+}
+#endif
 
 inline hostptr_t HostMappedObject::addr() const
 {

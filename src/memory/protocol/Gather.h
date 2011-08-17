@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -51,7 +51,7 @@ namespace core {
     class IOBuffer;
     class Mode;
 }
-    
+
 namespace memory {
 class Object;
 class Block;
@@ -105,7 +105,7 @@ protected:
         \param prot Memory protection
         \return Protocol state
     */
-	State state(GmacProtection prot) const;
+        State state(GmacProtection prot) const;
 
     //! Maximum number of blocks in dirty state
     size_t limit_;
@@ -128,8 +128,8 @@ protected:
 
 public:
     // Protocol Interface
-	void deleteObject(Object &obj);
-    
+        void deleteObject(Object &obj);
+
     bool needUpdate(const Block &block) const;
 
     gmacError_t signalRead(Block &block, hostptr_t addr);
@@ -150,17 +150,17 @@ public:
 
     gmacError_t deleteBlock(Block &block);
 
-	gmacError_t toHost(Block &block);
+        gmacError_t toHost(Block &block);
 
     gmacError_t toAccelerator(Block &block);
 
-	gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size, 
-		size_t bufferOffset, size_t blockOffset) const;
-	
-	gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
-		size_t bufferOffset, size_t blockOffset) const;
+        gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+                size_t bufferOffset, size_t blockOffset) const;
 
-    gmacError_t memset(const Block &block, int v, size_t size, 
+        gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+                size_t bufferOffset, size_t blockOffset) const;
+
+    gmacError_t memset(const Block &block, int v, size_t size,
         size_t blockOffset) const;
 };
 
@@ -177,7 +177,7 @@ public:
     virtual ~Gather();
 
     // Protocol Interface
-    memory::Object *createObject(size_t size, hostptr_t cpuPtr, 
+    memory::Object *createObject(size_t size, hostptr_t cpuPtr,
         GmacProtection prot, unsigned flags);
 };
 

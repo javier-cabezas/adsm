@@ -1,6 +1,8 @@
 set(arch_hpe_gpu_amd_SRC
     Accelerator.h
     Accelerator.cpp
+    FusionAccelerator.h
+    FusionAccelerator.cpp
 )
 
 set(arch_hpe_gpu_amd_DBC

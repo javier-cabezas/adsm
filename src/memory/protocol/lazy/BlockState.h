@@ -67,13 +67,13 @@ public:
 
     T &operator[](const unsigned index)
     {
-        ASSERTION(index < size_);
+        ASSERTION(index < size_, "Index: %u. Size: "FMT_SIZE, index, size_);
         return array_[index];
     }
 
     const T &operator[](const unsigned index) const
     {
-        ASSERTION(index < size_);
+        ASSERTION(index < size_, "Index: %u. Size: "FMT_SIZE, index, size_);
         return array_[index];
     }
 
@@ -140,16 +140,15 @@ public:
 
 class GMAC_LOCAL BlockState :
     public common::BlockState<lazy::State> {
+    friend class StrideInfo;
+    friend class BlockTreeInfo;
 
 protected:
     lazy::Block &block();
     const lazy::Block &block() const;
     //const lazy::Block &block();
-#ifdef USE_VM
     unsigned subBlocks_;
-#else
     SubBlocks subBlockState_; 
-#endif
 
 #ifdef DEBUG
     SubBlockCounters subBlockFaultsRead_; 

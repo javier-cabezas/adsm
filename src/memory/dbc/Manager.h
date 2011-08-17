@@ -49,6 +49,13 @@ class GMAC_LOCAL Manager :
     public virtual Contract {
     DBC_TESTED(__impl::memory::Manager)
 
+private:
+    typedef __impl::memory::Manager Parent;
+
+    typedef __impl::core::IOBuffer IOBufferImpl;
+    typedef __impl::core::Mode ModeImpl;
+    typedef __impl::core::Process ProcessImpl;
+
 protected:
 
     /**
@@ -59,7 +66,7 @@ public:
     /**
      * Default constructor
      */
-    Manager(__impl::core::Process &proc);
+    Manager(ProcessImpl &proc);
 
     /**
      * Allocate private shared memory.
@@ -71,7 +78,7 @@ public:
      * \param size Size (in bytes) of shared memory to be allocated
      * \return Error code
      */
-    gmacError_t alloc(__impl::core::Mode &mode, hostptr_t *addr, size_t size);
+    gmacError_t alloc(ModeImpl &mode, hostptr_t *addr, size_t size);
 
     /**
      * Release shared memory
@@ -79,7 +86,7 @@ public:
      * \param addr Memory address of the shared memory chunk to be released
      * \return Error code
      */
-    gmacError_t free(__impl::core::Mode &mode, hostptr_t addr);
+    gmacError_t free(ModeImpl &mode, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -87,7 +94,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool read(__impl::core::Mode &mode, hostptr_t addr);
+    bool signalRead(ModeImpl &mode, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -95,7 +102,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool write(__impl::core::Mode &mode, hostptr_t addr);
+    bool signalWrite(ModeImpl &mode, hostptr_t addr);
 
     /**
      * Copy data from a memory object to an I/O buffer
@@ -107,7 +114,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t toIOBuffer(__impl::core::Mode &mode, __impl::core::IOBuffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+    gmacError_t toIOBuffer(ModeImpl &mode, IOBufferImpl &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
 
 
     /**
@@ -120,7 +127,31 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t fromIOBuffer(__impl::core::Mode &mode, hostptr_t addr, __impl::core::IOBuffer &buffer, size_t bufferOff, size_t size);
+    gmacError_t fromIOBuffer(ModeImpl &mode, hostptr_t addr, IOBufferImpl &buffer, size_t bufferOff, size_t size);
+
+    /**
+     * Initialize to a given value the contents of a host address of a memory
+     * object
+     * \param mode Execution mode requesting the operation
+     * \param dst Host memory address corresponding to a memory object to set
+     * the memory contents
+     * \param c Value used to initialize memory
+     * \param size Size (in bytes) of the memory to initialize
+     * \return Error code
+     */
+    gmacError_t memset(ModeImpl &mode, hostptr_t dst, int c, size_t size);
+
+    /**
+     * Copy data from and/or to host memory addresses of memory objects
+     * \param mode Execution mode requesting the operation
+     * \param dst Destination host memory addrees of a memory objec to copy the
+     * data to
+     * \param src Source host memory address that might or might not correspond
+     * to a memory object
+     * \param size Size (in bytes) of the amoun of data to be copied
+     */
+    gmacError_t memcpy(ModeImpl &mode, hostptr_t dst, const hostptr_t src, size_t size);
+
 };
 
 }}

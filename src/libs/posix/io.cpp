@@ -7,19 +7,12 @@
 #include <cstdio>
 #include <errno.h>
 
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
-
 #include "core/IOBuffer.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
-
 #include "libs/common.h"
-
 #include "memory/Manager.h"
+#include "util/loader.h"
 
 #include "posix.h"
 
@@ -53,10 +46,10 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
     ssize_t ret = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = getMode(*dstMode);
-    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
-        buffer2 = &mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     }
 
     Manager &manager = getManager();
@@ -114,10 +107,10 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
     size_t off  = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
     Mode &mode = getMode(*srcMode);
-    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize);
+    IOBuffer *buffer1 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     IOBuffer *buffer2 = NULL;
     if (count > buffer1->size()) {
-        buffer2 = &mode.createIOBuffer(bufferSize);
+        buffer2 = &mode.createIOBuffer(bufferSize, GMAC_PROT_READ);
     }
 
     Manager &manager = getManager();

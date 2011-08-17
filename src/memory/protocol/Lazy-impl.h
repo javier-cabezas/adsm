@@ -7,8 +7,8 @@
 namespace __impl { namespace memory { namespace protocol {
 
 template<typename T>
-inline Lazy<T>::Lazy(size_t limit) :
-    gmac::memory::protocol::LazyBase(limit)
+inline Lazy<T>::Lazy(bool eager) :
+    gmac::memory::protocol::LazyBase(eager)
 {}
 
 template<typename T>
@@ -16,20 +16,29 @@ inline Lazy<T>::~Lazy()
 {}
 
 template<typename T>
-inline memory::Object *Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr, 
-                                             GmacProtection prot, unsigned flags)
+memory::Object *
+Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
+                      GmacProtection prot, unsigned flags)
 {
-    Object *ret = new T(*this, current, cpuPtr, 
-		size, LazyBase::state(prot));
-	if(ret == NULL) return ret;
-	if(ret->valid() == false) {
-		ret->release();
-		return NULL;
-	}
-	Memory::protect(ret->addr(), ret->size(), prot);
-    LazyBase::limit_ += 2;
-	return ret;
+    gmacError_t err;
+    Object *ret = new T(*this, current, cpuPtr,
+                        size, LazyBase::state(prot), err);
+    if(ret == NULL) return ret;
+    if(err != gmacSuccess) {
+        ret->decRef();
+        return NULL;
+    }
+    Memory::protect(ret->addr(), ret->size(), prot);
+    if (limit_ != size_t(-1)) {
+#if 0
+        lock();
+        LazyBase::limit_ += 2;
+        unlock();
+#endif
+    }
+    return ret;
 }
 
 }}}
+
 #endif
