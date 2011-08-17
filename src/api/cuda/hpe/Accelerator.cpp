@@ -35,6 +35,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #else
     unsigned int size = 0;
 #endif
+    TRACE(GLOBAL, "Creating CUDA accelerator %d", device_);
     CUresult ret = cuDeviceTotalMem(&size, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
     ret = cuDeviceComputeCapability(&major_, &minor_, device_);
