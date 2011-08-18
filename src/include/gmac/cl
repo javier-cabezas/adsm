@@ -56,24 +56,24 @@ namespace cl {
 
 /**
  *  Allocates a OpenCL memory buffer accessible from the host
- *  \param context OpenCL context where the obejct will be allocated
+ *  \param queue OpenCL command queue attached to the context where the object will be allocated
  *  \param addr Reference to the host memory address where the data will be accessible
  *  \param count Size (in bytes) of the data to be allocated
  *  \return OpenCL error code
  */
-GMAC_API cl_int malloc(const Context &context, void **addr, ::size_t count)
+GMAC_API cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
 {
-    return ::clMalloc(context(), addr, count);
+    return ::clMalloc(queue(), addr, count);
 }
 
 
 /**
  *  Release the OpenCL buffer associated to a host memory address
- *  \param context OpenCL context where the obejct was allocated
+ *  \param queue OpenCL command queue attached to the context where the object was allocated
  *  \param addr Host memory address
  *  \return OpenCL error code
  */
-GMAC_API cl_int free(const Context &context, void *addr)
+GMAC_API cl_int free(const CommandQueue &queue, void *addr)
 {
     return ::clFree(context(), addr);
 }

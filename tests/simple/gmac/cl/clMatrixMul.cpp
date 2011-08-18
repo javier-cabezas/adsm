@@ -102,9 +102,9 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    assert(clMalloc(context, (void**) &A, sizeA) == CL_SUCCESS);
-    assert(clMalloc(context, (void**) &B, sizeB) == CL_SUCCESS);
-    assert(clMalloc(context, (void**) &C, sizeC) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void**) &A, sizeA) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void**) &B, sizeB) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void**) &C, sizeC) == CL_SUCCESS);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
@@ -152,9 +152,9 @@ main(int argc, char** argv)
     free(reference);
 
     getTime(&s);
-	clFree(context, A);
-	clFree(context, B);
-	clFree(context, C);
+	clFree(command_queue, A);
+	clFree(command_queue, B);
+	clFree(command_queue, C);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
