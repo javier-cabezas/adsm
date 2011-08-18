@@ -376,7 +376,7 @@ cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
 }
 
 
-cl_int APICALL clMalloc(cl_context context, void **addr, size_t count)
+cl_int APICALL clMalloc(cl_command_queue queue, void **addr, size_t count)
 {
     cl_int ret = CL_SUCCESS;
     *addr = NULL;
@@ -384,30 +384,57 @@ cl_int APICALL clMalloc(cl_context context, void **addr, size_t count)
 
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    Mode *mode = Process_->getMode(context);
+
+    size_t querySize;
+    cl_context ctx;
+    Mode *mode;
+
+    ret = clGetCommandQueueInfo(queue, CL_QUEUE_CONTEXT, 0, NULL, &querySize);
+    if(ret != CL_SUCCESS) goto exit_func;
+    ret = clGetCommandQueueInfo(queue, CL_QUEUE_CONTEXT, querySize, &ctx, NULL);
+    if(ret != CL_SUCCESS) goto exit_func;
+    mode = Process_->getMode(ctx);
+
     if(mode != NULL) {
         count = (int(count) < getpagesize())? getpagesize(): count;
+        mode->setActiveQueue(queue);
         ret = Manager_->alloc(*mode, (hostptr_t *) addr, count);
+        mode->deactivateQueue();
         mode->decRef();
     }
     else ret = CL_INVALID_CONTEXT;
+
+exit_func:
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
 }
 
-cl_int APICALL clFree(cl_context context, void *addr)
+cl_int APICALL clFree(cl_command_queue queue, void *addr)
 {
     cl_int ret = CL_SUCCESS;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    Mode *mode = Process_->getMode(context);
+
+    size_t querySize;
+    cl_context ctx;
+    Mode *mode;
+
+    ret = clGetCommandQueueInfo(queue, CL_QUEUE_CONTEXT, 0, NULL, &querySize);
+    if(ret != CL_SUCCESS) goto exit_func;
+    ret = clGetCommandQueueInfo(queue, CL_QUEUE_CONTEXT, querySize, &ctx, NULL);
+    if(ret != CL_SUCCESS) goto exit_func;
+    mode = Process_->getMode(ctx);
+
     if(mode != NULL) {
+        mode->setActiveQueue(queue);
         ret = Manager_->free(*mode, hostptr_t(addr));
+        mode->deactivateQueue();
         mode->decRef();
     }
     else ret = CL_INVALID_CONTEXT;
 
+exit_func:
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
