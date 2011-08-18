@@ -132,7 +132,7 @@ template<typename State>
 inline accptr_t
 GenericBlock<State>::acceleratorAddr(core::Mode &current) const
 {
-    return acceleratorAddr(current, Block::addr_);
+    return acceleratorAddr(current, this->addr_);
 }
 
 template<typename State>
@@ -145,7 +145,7 @@ GenericBlock<State>::toHost(unsigned blockOff, size_t count)
     if (owners_.size() == 1) {
         ModeMap::const_iterator m;
         m = owners_.begin();
-        ret = ownerShortcut_->copyToHost(StateBlock<State>::shadow_ + blockOff, m->second + blockOff, count);
+        ret = ownerShortcut_->copyToHost(this->shadow_ + blockOff, m->second + blockOff, count);
     } else { // TODO Implement this path
         ret = gmacSuccess;
     }
@@ -244,7 +244,7 @@ GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     gmacError_t ret = gmacSuccess;
     if (dst == StateBlock<State>::HOST &&
         src == StateBlock<State>::HOST) {
-        ::memcpy(Block::shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
+        ::memcpy(this->shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
     } else if (src == StateBlock<State>::ACCELERATOR &&
                dst == StateBlock<State>::ACCELERATOR) {
         AcceleratorAddrMap::const_iterator i;
@@ -275,7 +275,7 @@ GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
         if (owners_.size() == 1) { // Fast path
             ModeMap::const_iterator m;
             m = owners_.begin();
-            ret = srcBlock.owner(*ownerShortcut_).copyToHost(Block::shadow_ + dstOff, srcBlock.acceleratorAddr(*ownerShortcut_) + srcOff, size);
+            ret = srcBlock.owner(*ownerShortcut_).copyToHost(this->shadow_ + dstOff, srcBlock.acceleratorAddr(*ownerShortcut_) + srcOff, size);
         } else {
             ret = gmacErrorFeatureNotSupported;
         }

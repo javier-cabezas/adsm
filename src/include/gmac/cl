@@ -37,6 +37,9 @@ WITH THE SOFTWARE.  */
  * GMAC/CL C++ interface. Requires the C++ interface of the OpenCL 1.1 standard
  */
 
+#if defined(__APPLE__)
+#error "This header cannot be used in Apple"
+#endif
 #ifndef __cplusplus
 #error "This header can only be included in C++ programs"
 #endif

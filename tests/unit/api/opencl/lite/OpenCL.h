@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef TEST_UNIT_OPENCL_LITE_H_
 #define TEST_UNIT_OPENCL_LITE_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 /**
  * Comodity function to get an OpenCL context that can be used in

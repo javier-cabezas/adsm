@@ -1,4 +1,8 @@
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else 
+#   include <CL/cl.h>
+#endif
 
 #include "config/config.h"
 
@@ -27,6 +31,10 @@ static long getpagesize (void) {
     }
     return pagesize;
 }
+#endif
+
+#if defined(__APPLE__)
+#define CL_CALLBACK 
 #endif
 
 static __impl::opencl::lite::Process *Process_ = NULL;
@@ -131,9 +139,14 @@ cl_context SYMBOL(clCreateContextFromType)(
     cl_context ret = __opencl_clCreateContextFromType(properties, device_type, pfn_notify, user_data, errcode_ret);
     if(*errcode_ret != CL_SUCCESS) return ret;
 
+#if defined(__APPLE__)
+    cl_uint num_devices = 1;
+    cl_int err = CL_SUCCESS;
+#else
     cl_uint num_devices;
     cl_int err = clGetContextInfo(ret, CL_CONTEXT_NUM_DEVICES, sizeof(cl_uint), &num_devices, NULL);
     if(err != CL_SUCCESS || num_devices != 1) return ret;
+#endif
 
     cl_device_id device;
     err = clGetContextInfo(ret, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &device, NULL);

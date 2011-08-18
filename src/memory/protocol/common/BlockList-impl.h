@@ -10,7 +10,11 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 inline BlockList::BlockList() :
+#if defined(__APPLE__)
+    Lock("BlockList")
+#else
     SpinLock("BlockList")
+#endif
 {}
 
 inline BlockList::~BlockList()

@@ -40,7 +40,11 @@ extern "C" {
 
 #include <stddef.h>
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 #include "cl_types.h"
 #include "visibility.h"
 

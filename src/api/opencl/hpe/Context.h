@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_OPENCL_HPE_CONTEXT_H_
 #define GMAC_API_OPENCL_HPE_CONTEXT_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 #include <map>
 #include <vector>

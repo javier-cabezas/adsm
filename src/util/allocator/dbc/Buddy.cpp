@@ -10,14 +10,12 @@ Buddy::Buddy(hostptr_t addr, size_t size) :
 
 off_t Buddy::getFromList(uint8_t i)
 {
-    REQUIRES(i >= 0);
     return __impl::util::allocator::Buddy::getFromList(i);
 }
 
 void Buddy::putToList(off_t addr, uint8_t i)
 {
     REQUIRES(addr >= 0 && size_t(addr) < size_);
-    REQUIRES(i >= 0);
     return __impl::util::allocator::Buddy::putToList(addr, i);
 }
 

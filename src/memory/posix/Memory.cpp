@@ -84,7 +84,11 @@ hostptr_t Memory::shadow(hostptr_t addr, size_t count)
         return NULL;
     }
     off_t offset = off_t(addr - entry.address());
+#if defined(__APPLE__)
+    hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED, entry.fd(), offset));
+#else
     hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED | MAP_POPULATE, entry.fd(), offset));
+#endif
     trace::ExitCurrentFunction();
     return ret;
 } 

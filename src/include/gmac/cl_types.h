@@ -35,7 +35,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_INCLUDE_CL_TYPES_H_
 #define GMAC_INCLUDE_CL_TYPES_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 typedef struct {
     cl_platform_id platform;

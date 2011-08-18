@@ -33,7 +33,7 @@ if(USE_OPENCL)
 	            DESTINATION doc COMPONENT documentation)
 
         install(DIRECTORY ${CMAKE_SOURCE_DIR}/samples
-                DESTINATION . COMPONENT samples PATTERN ".svn" EXCLUDE)
+                DESTINATION . COMPONENT samples PATTERN ".hg" EXCLUDE)
     endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 endif(USE_OPENCL)

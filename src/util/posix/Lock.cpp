@@ -4,6 +4,7 @@
 
 namespace __impl { namespace util {
 
+#if !defined(__APPLE__)
 SpinLock::SpinLock(const char *name) :
     __impl::util::__Lock(name)
 {
@@ -14,6 +15,7 @@ SpinLock::~SpinLock()
 {
     pthread_spin_destroy(&spinlock_);
 }
+#endif
 
 Lock::Lock(const char *name) :
     __impl::util::__Lock(name)

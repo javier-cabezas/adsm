@@ -40,7 +40,12 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_OPENCL_H_
 #define GMAC_OPENCL_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#   include <OpenCL/cl_gl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 #include <gmac/opencl_types.h>
 #include <gmac/api.h>
@@ -389,6 +394,12 @@ void @OPENCL_API_PREFIX@DeviceCopy(THREAD_T tid)
 {
     return gmacCopy(tid);
 }
+
+#if defined(__APPLE__)
+typedef GLint cl_GLint;
+typedef GLuint cl_GLuint;
+typedef GLenum cl_GLenum;
+#endif
 
 GMAC_API cl_mem APICALL
 @OPENCL_API_PREFIX@CreateFromGLBuffer(cl_mem_flags flags, cl_GLuint bufobj, cl_int *errcode_ret);

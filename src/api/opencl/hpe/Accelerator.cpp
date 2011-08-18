@@ -8,7 +8,7 @@
 
 #include "hpe/init.h"
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__APPLE__)
 // Symbols needed for automatic compilation of embedded code
 extern "C" {
     extern char __ocl_code_start __attribute__((weak));
@@ -91,11 +91,16 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigne
     busId_ = 0;
     busAccId_ = 0;
 
+#if defined(__APPLE__)
+    integrated_ = false;
+    cl_int ret = CL_SUCCESS;
+#else 
     cl_bool val = CL_FALSE;
     cl_int ret = clGetDeviceInfo(device_, CL_DEVICE_HOST_UNIFIED_MEMORY,
         sizeof(val), NULL, NULL);
     if(ret == CL_SUCCESS) integrated_ = (val == CL_TRUE);
     else integrated_ = false;
+#endif
 
     TRACE(LOCAL, "Created OpenCL accelerator with capability %u.%u", major_, minor_);
 
@@ -202,7 +207,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    trace_.init(trace_.getThreadId(), mode.id());
+    trace_.init(trace_.getThreadId(), (pthread_t)mode.id());
     lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
@@ -223,7 +228,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    trace_.init(mode.id(), trace_.getThreadId());
+    trace_.init((pthread_t)mode.id(), trace_.getThreadId());
     lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
@@ -313,7 +318,7 @@ Accelerator::getKernel(gmac_kernel_id_t k)
 
 gmacError_t Accelerator::prepareEmbeddedCLCode()
 {
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__APPLE__)
     const char *CL_MAGIC = "!@#~";
 
     trace::EnterCurrentFunction();

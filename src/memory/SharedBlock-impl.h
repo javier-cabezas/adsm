@@ -114,7 +114,7 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     } else if (src == StateBlock<State>::HOST &&
                dst == StateBlock<State>::HOST) {
         TRACE(LOCAL, "H -> H");
-        ::memcpy(Block::shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
+        ::memcpy(this->shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
     } else if (src == StateBlock<State>::HOST &&
                dst == StateBlock<State>::ACCELERATOR) {
         TRACE(LOCAL, "H -> A");
@@ -124,7 +124,7 @@ SharedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
     } else if (src == StateBlock<State>::ACCELERATOR &&
                dst == StateBlock<State>::HOST) {
         TRACE(LOCAL, "A -> H");
-        ret = srcBlock.owner(owner_).copyToHost(Block::shadow_ + dstOff, srcBlock.acceleratorAddr(owner_) + srcOff, size);
+        ret = srcBlock.owner(owner_).copyToHost(this->shadow_ + dstOff, srcBlock.acceleratorAddr(owner_) + srcOff, size);
         TRACE(LOCAL, "RESULT: %d", ret);
     }
 

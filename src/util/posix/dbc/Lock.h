@@ -45,6 +45,10 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util {
 
+#if defined(__APPLE__)
+class Lock;
+typedef Lock SpinLock;
+#else
 class GMAC_API SpinLock :
     public __impl::util::SpinLock,
     public virtual Contract {
@@ -62,6 +66,7 @@ protected:
     void unlock() const;
 
 };
+#endif
 
 class GMAC_API Lock :
     public __impl::util::Lock,

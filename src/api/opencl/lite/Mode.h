@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_OPENCL_LITE_MODE_H_
 #define GMAC_API_OPENCL_LITE_MODE_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 #include <map>
 #include <set>
@@ -71,16 +75,26 @@ public:
     void remove(cl_command_queue queue);
 };
 
+//! A Lock that can be used by Mode
+class GMAC_LOCAL ModeLock : public gmac::util::Lock {
+protected:
+    friend class Mode;
+    inline ModeLock() : gmac::util::Lock("ModeLock") {};
+    inline void lock() { return util::Lock::lock(); }
+    inline void unlock() { return util::Lock::unlock(); }
+};
+
 //! A Mode represents a virtual OpenCL accelerator on an execution thread
 class GMAC_LOCAL Mode :
     public opencl::Mode,
-    public core::Mode,
-    public gmac::util::Lock
+    public core::Mode
 {
     friend class core::IOBuffer;
     friend class ModeMap;
 
 protected:
+    ModeLock queue_;
+
     cl_context context_;
     typedef std::map<cl_command_queue, cl_device_id> StreamMap;
     StreamMap streams_;

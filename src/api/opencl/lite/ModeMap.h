@@ -38,7 +38,11 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 #include "util/Lock.h"
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else 
+#   include <CL/cl.h>
+#endif
 
 #include <map>
 

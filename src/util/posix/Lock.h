@@ -47,6 +47,10 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
+#if defined(__APPLE__)
+class Lock;
+typedef Lock SpinLock;
+#else
 class GMAC_API SpinLock : public __impl::util::__Lock {
     DBC_FORCE_TEST(SpinLock)
 protected:
@@ -59,6 +63,7 @@ protected:
 	TESTABLE void lock() const;
 	TESTABLE void unlock() const;
 };
+#endif
 
 class GMAC_API Lock : public __impl::util::__Lock {
     DBC_FORCE_TEST(Lock)

@@ -2,12 +2,15 @@
 #include "api/opencl/lite/Mode.h"
 #include "api/opencl/Tracer.h"
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 namespace __impl { namespace opencl { namespace lite {
 
 Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
-    gmac::util::Lock("Mode"),
     context_(ctx),
     active_(0),
     map_("ObjectMap")
@@ -43,14 +46,14 @@ gmacError_t Mode::setActiveQueue(cl_command_queue queue)
     bool valid = queues_.exists(queue);
     if(valid == false) return gmacErrorInvalidValue;
     active_ = queue;
-	util::Lock::lock();
+    queue_.lock();
     return gmacSuccess;
 }
 
 void Mode::deactivateQueue()
 {
     /* active_ = cl_command_queue(0); */
-    util::Lock::unlock();
+    queue_.unlock();
 }
 
 void Mode::removeQueue(cl_command_queue queue)

@@ -34,7 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CONFIG_OPENCL_COMMON_H_
 #define GMAC_CONFIG_OPENCL_COMMON_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
+
 
 #include <cassert>
 #include <cstdlib>

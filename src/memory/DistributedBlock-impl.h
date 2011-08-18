@@ -188,7 +188,7 @@ DistributedBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBloc
 {
     gmacError_t ret = gmacSuccess;
     if (dst == StateBlock<State>::HOST) {
-        ::memcpy(Block::shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
+        ::memcpy(this->shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
     } else if (src == StateBlock<State>::ACCELERATOR &&
                dst == StateBlock<State>::ACCELERATOR) {
         AcceleratorMap::const_iterator i;

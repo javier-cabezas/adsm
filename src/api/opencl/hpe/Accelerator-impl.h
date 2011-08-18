@@ -1,7 +1,11 @@
 #ifndef GMAC_API_OPENCL_HPE_ACCELERATOR_IMPL_H_
 #define GMAC_API_OPENCL_HPE_ACCELERATOR_IMPL_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 #include "util/Logger.h"
 #include "trace/Tracer.h"

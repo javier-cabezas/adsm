@@ -1,6 +1,5 @@
 #include "OpenCL.h"
 
-#include "CL/cl.h"
 
 bool CreateOpenCLContext(cl_device_id &device, cl_context &context)
 {

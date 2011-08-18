@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_OPENCL_IOBUFFER_H_
 #define GMAC_API_OPENCL_IOBUFFER_H_
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else 
+#   include <CL/cl.h>
+#endif
 
 #include "api/opencl/Mode.h"
 #include "api/opencl/Tracer.h"

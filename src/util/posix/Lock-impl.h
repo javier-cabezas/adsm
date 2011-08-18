@@ -6,6 +6,7 @@
 
 namespace __impl { namespace util {
 
+#if !defined(__APPLE__)
 inline void
 SpinLock::lock() const
 {
@@ -20,6 +21,7 @@ SpinLock::unlock() const
     exit();
     pthread_spin_unlock(&spinlock_);
 }
+#endif
 
 inline void
 Lock::lock() const

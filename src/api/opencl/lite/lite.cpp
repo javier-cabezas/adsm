@@ -3,7 +3,11 @@
 
 #include <vector>
 
-#include <CL/cl.h>
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else 
+#   include <CL/cl.h>
+#endif
 
 #include <config/common.h>
 #include <include/gmac/cl.h>

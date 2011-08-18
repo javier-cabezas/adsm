@@ -4,6 +4,7 @@
 
 namespace __dbc { namespace util {
 
+#if !defined(__APPLE__)
 SpinLock::SpinLock(const char *name) :
     __impl::util::SpinLock(name),
     locked_(false),
@@ -46,6 +47,7 @@ void SpinLock::unlock() const
     pthread_mutex_unlock(&internal_);
 }
 
+#endif
 
 Lock::Lock(const char *name) :
     __impl::util::Lock(name),
