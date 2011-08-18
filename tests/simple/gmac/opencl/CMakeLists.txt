@@ -1,6 +1,6 @@
 set(common_ROOT ${CMAKE_SOURCE_DIR}/tests/common)
 
-include_directories(${PROJECT_SOURCE_DIR}/src/include ${PROJECT_BINARY_DIR}/src/include ${common_ROOT})
+include_directories(${PROJECT_SOURCE_DIR}/src/include ${PROJECT_BINARY_DIR}/src/include ${common_ROOT} ${OPENCL_INCLUDE})
 
 set(common_SRC
     ${common_ROOT}/debug.h
@@ -47,7 +47,7 @@ source_group(${current_GROUP} FILES
     eclThreading.cpp
     eclThreadVecAdd.cpp
     eclThreadStencil.cpp
-    clVecAdd.cpp
+    oclVecAdd.cpp
     eclVecAdd.cpp
     eclVecAdd_cplusplus.cpp
     NBody/NBody.h

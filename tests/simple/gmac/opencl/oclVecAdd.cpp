@@ -4,7 +4,11 @@
 #include <ctime>
 #include <cassert>
 
-#include "gmac/cl.h"
+#if defined(__APPLE__)
+#   include <OpenCL/cl.h>
+#else
+#   include <CL/cl.h>
+#endif
 
 #include "utils.h"
 #include "debug.h"
