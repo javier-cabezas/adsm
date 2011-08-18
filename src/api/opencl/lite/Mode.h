@@ -75,10 +75,12 @@ public:
     void remove(cl_command_queue queue);
 };
 
+class Mode;
+
 //! A Lock that can be used by Mode
 class GMAC_LOCAL ModeLock : public gmac::util::Lock {
 protected:
-    friend class Mode;
+	friend class __impl::opencl::lite::Mode;
     inline ModeLock() : gmac::util::Lock("ModeLock") {};
     inline void lock() { return util::Lock::lock(); }
     inline void unlock() { return util::Lock::unlock(); }

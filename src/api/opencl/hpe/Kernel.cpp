@@ -9,7 +9,7 @@ namespace __impl { namespace opencl { namespace hpe {
 gmacError_t
 KernelLaunch::execute()
 {
-    trace_.init((pthread_t)mode_.id());
+    trace_.init((THREAD_T)mode_.id());
     gmacError_t ret = dynamic_cast<Mode &>(mode_).getAccelerator().execute(stream_, f_, workDim_,
         globalWorkOffset_, globalWorkSize_, localWorkSize_, &event_);
     if(ret == gmacSuccess) trace_.trace(f_, event_);
