@@ -47,6 +47,23 @@ KernelLaunch::addObject(hostptr_t ptr)
 }
 
 inline
+void
+KernelLaunch::addObject(hostptr_t ptr, unsigned index)
+{
+    // NOTE:
+    // Path used by OpenCL, since KernelLaunch objects can be reused
+    std::map<unsigned, std::list<hostptr_t>::iterator>::iterator itMap = paramToParamPtr_.find(index);
+    if (itMap != paramToParamPtr_.end()) {
+        usedObjects_.push_back(ptr);
+        std::list<hostptr_t>::iterator iter = --(usedObjects_.end());
+        paramToParamPtr_.insert(std::map<unsigned, std::list<hostptr_t>::iterator>::value_type(index, iter));
+    } else {
+        std::list<hostptr_t>::iterator iter = itMap->second;
+        (*iter) = ptr;
+    }
+}
+
+inline
 const std::list<hostptr_t> &
 KernelLaunch::getObjects() const
 {
