@@ -90,6 +90,7 @@ protected:
     KernelLaunch(Mode &mode);
 #endif
 
+    std::map<unsigned, std::list<hostptr_t>::iterator > paramToParamPtr_;
     std::list<hostptr_t> usedObjects_;
 
 public:
@@ -114,8 +115,9 @@ public:
      * Adds a new object to the kernel launch
      *
      * \param ptr Address of the object to be added
+     * \param index Index of the ptr in the parameter list
      */
-    void addObject(hostptr_t ptr);
+    void addObject(hostptr_t ptr, unsigned index);
 
     /**
      * Gets the list of objects being used by the kernel

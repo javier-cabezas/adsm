@@ -43,7 +43,7 @@ gmacError_t APICALL
 
     gmacError_t ret = launch->setArgument(&tmp, sizeof(cl_mem), index);
     if (ret == gmacSuccess) {
-        launch->addObject(hostptr_t(ptr));
+        launch->addObject(hostptr_t(ptr), index);
     }
     exitGmac();
 
