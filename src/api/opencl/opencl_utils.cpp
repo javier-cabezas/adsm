@@ -48,6 +48,7 @@ getPlatform(cl_platform_id id)
     static const std::string amd("AMD Accelerated Parallel Processing");
     static const std::string nvidia("NVIDIA CUDA");
     static const std::string intel("Intel OpenCL");
+    static const std::string apple("Apple");
 
     std::string platformName = getPlatformName(id);
 
@@ -57,6 +58,8 @@ getPlatform(cl_platform_id id)
         return PLATFORM_NVIDIA;
     } else if (platformName.compare(intel) == 0) {
         return PLATFORM_INTEL;
+    } else if (platformName.compare(apple) == 0) {
+        return PLATFORM_APPLE;
     } else {
         return PLATFORM_UNKNOWN;
     }

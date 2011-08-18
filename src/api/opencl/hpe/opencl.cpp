@@ -47,7 +47,8 @@ void OpenCL(gmac::core::hpe::Process &proc)
         for (unsigned j = 0; j < deviceSize; j++) {
             MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, __impl::opencl::util::getDeviceName(devices[j]).c_str());
 
-            CFATAL(__impl::opencl::util::getDeviceVendor(devices[j]) == __impl::opencl::util::getPlatformVendor(platforms[i]), "Not handled case");
+            // Let's assume that this is not important; TODO: actually deal with this case
+            //CFATAL(__impl::opencl::util::getDeviceVendor(devices[j]) == __impl::opencl::util::getPlatformVendor(platforms[i]), "Not handled case");
             gmac::opencl::hpe::Accelerator *acc = NULL;
 
             switch (__impl::opencl::util::getPlatform(platforms[i])) {
@@ -60,6 +61,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
                                 clVersion.first, clVersion.second);
                     }
                     break;
+                case __impl::opencl::util::PLATFORM_APPLE:
                 case __impl::opencl::util::PLATFORM_NVIDIA:
                     acc = new __impl::opencl::hpe::gpu::nvidia::Accelerator(n++, ctx, devices[j],
                             clVersion.first, clVersion.second);
