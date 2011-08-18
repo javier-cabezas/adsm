@@ -54,8 +54,14 @@ void OpenCL(gmac::core::hpe::Process &proc)
             switch (__impl::opencl::util::getPlatform(platforms[i])) {
                 case __impl::opencl::util::PLATFORM_AMD:
                     if (__impl::opencl::util::isDeviceAMDFusion(devices[j])) {
+#if 0
+                        // Enable when the API stabilizes a little bit and we can use user-provided fonts
                         acc = new __impl::opencl::hpe::gpu::amd::FusionAccelerator(n++, ctx, devices[j],
                                 clVersion.first, clVersion.second);
+#else
+                        acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
+                                clVersion.first, clVersion.second);
+#endif
                     } else {
                         acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
                                 clVersion.first, clVersion.second);

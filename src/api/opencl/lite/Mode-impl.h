@@ -129,7 +129,7 @@ Mode::makeOrphan(memory::Object &obj)
 inline bool
 Mode::hasIntegratedMemory() const
 {
-    // TODO FUSION: implement this to avoid copies
+    // TODO FUSION: implement this to avoid copies. We need to add hints first, to make this effective
     return false;
 }
 
