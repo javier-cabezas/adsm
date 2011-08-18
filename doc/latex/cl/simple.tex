@@ -36,11 +36,11 @@ the same \texttt{load\_vector()} function used in Listing~\ref{lst:hpe:load}.
     caption={GMAC\slash CL code to allocate and initialized the input and output vectors.},
     label={lst:cl:alloc}]{cl/alloc.c}
 
-Calls to \texttt{clMalloc()} take as first parameter an OpenCL context.  Listing~\ref{lst:cl:alloc} 
-uses one of the contexts created by the call to \texttt{clInitHelpers()}, but any valid OpenCL 
-context might be used. Besides the OpenCL context, \texttt{clMalloc()} also takes a reference to the 
-pointer where to store the address of the allocated memory, and the number of bytes of memory to be 
-allocated.
+Calls to \texttt{clMalloc()} take as first parameter an OpenCL command queue.  
+Listing~\ref{lst:cl:alloc} uses one of the contexts created by the call to \texttt{clInitHelpers()}, 
+but any valid OpenCL context might be used. Besides the OpenCL command queue, \texttt{clMalloc()} 
+also takes a reference to the pointer where to store the address of the allocated memory, and the 
+number of bytes of memory to be allocated.
 
 \subsection{Kernel Calls}
 Kernel calls in GMAC\slash CL is very similar to both GMAC\slash HPE and OpenCL\@.  
@@ -70,8 +70,8 @@ calling to \texttt{clReleaseHelpers()}.
     caption={GMAC\slash CL code to write the output vector and release memory.},
     label={lst:cl:release}]{cl/release.c}
 
-Calls to \texttt{clFree()} require the OpenCL context where the memory was allocated 
-(\texttt{cl.context[0]} in Listing~\ref{lst:cl:release}), and the CPU address returned by 
+Calls to \texttt{clFree()} require the OpenCL command queue where the memory was allocated 
+(\texttt{cl.command\_queues[0]} in Listing~\ref{lst:cl:release}), and the CPU address returned by 
 \texttt{clMalloc()}. If an OpenCL context other than the one where the memory was allocated is 
 passed as a parameter to \texttt{clFree()}, an \texttt{CL\_INVALID\_CONTEXT} error is returned.
 
