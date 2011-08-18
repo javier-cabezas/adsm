@@ -203,12 +203,12 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	assert(clMalloc(context, (void **)&descr->u2, descr->size()) == CL_SUCCESS);
+	assert(clMalloc(command_queue, (void **)&descr->u2, descr->size()) == CL_SUCCESS);
 	memset(descr->u2, 0, descr->size());
-	assert(clMalloc(context, (void **)&descr->u3, descr->size()) == CL_SUCCESS);
+	assert(clMalloc(command_queue, (void **)&descr->u3, descr->size()) == CL_SUCCESS);
     memset(descr->u3, 0, descr->size());
 
-    assert(clMalloc(context, (void **) &v, descr->realSize()) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void **) &v, descr->realSize()) == CL_SUCCESS);
 
     for (size_t k = 0; k < descr->slices; k++) {        
         for (size_t j = 0; j < descr->dimRealElems; j++) {        
@@ -299,9 +299,9 @@ do_stencil(void * ptr)
 	printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-	clFree(context, descr->u2);
-	clFree(context, descr->u3);
-	clFree(context, v);
+	clFree(command_queue, descr->u2);
+	clFree(command_queue, descr->u3);
+	clFree(command_queue, v);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

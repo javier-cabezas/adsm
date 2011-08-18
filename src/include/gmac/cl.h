@@ -50,21 +50,21 @@ extern "C" {
 
 /**
  *  Allocates a OpenCL memory buffer accessible from the host
- *  \param context OpenCL context where the obejct will be allocated
+ *  \param queue OpenCL command queue attached to the context where the object will be allocated
  *  \param addr Reference to the host memory address where the data will be accessible
  *  \param count Size (in bytes) of the data to be allocated
  *  \return OpenCL error code
  */
-GMAC_API cl_int APICALL clMalloc(cl_context context, void **addr, size_t count);
+GMAC_API cl_int APICALL clMalloc(cl_command_queue queue, void **addr, size_t count);
 
 
 /**
  *  Release the OpenCL buffer associated to a host memory address
- *  \param context OpenCL context where the obejct was allocated
+ *  \param queue OpenCL command queue attached to the context where the object was allocated
  *  \param addr Host memory address
  *  \return OpenCL error code
  */
-GMAC_API cl_int APICALL clFree(cl_context context, void *addr);
+GMAC_API cl_int APICALL clFree(cl_command_queue queue, void *addr);
 
 
 /**

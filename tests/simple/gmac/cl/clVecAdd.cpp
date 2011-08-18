@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    assert(clMalloc(context, (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
-    assert(clMalloc(context, (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
     // Alloc output data
-    assert(clMalloc(context, (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
+    assert(clMalloc(command_queue, (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -115,8 +115,8 @@ int main(int argc, char *argv[])
         abort();
     }
 
-    clFree(context, a);
-    clFree(context, b);
-    clFree(context, c);
+    clFree(command_queue, a);
+    clFree(command_queue, b);
+    clFree(command_queue, c);
     return 0;
 }
