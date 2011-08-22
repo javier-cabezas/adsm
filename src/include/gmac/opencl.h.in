@@ -395,11 +395,6 @@ void @OPENCL_API_PREFIX@DeviceCopy(THREAD_T tid)
     return gmacCopy(tid);
 }
 
-#if defined(__APPLE__)
-typedef GLint cl_GLint;
-typedef GLuint cl_GLuint;
-typedef GLenum cl_GLenum;
-#endif
 
 GMAC_API cl_mem APICALL
 @OPENCL_API_PREFIX@CreateFromGLBuffer(cl_mem_flags flags, cl_GLuint bufobj, cl_int *errcode_ret);

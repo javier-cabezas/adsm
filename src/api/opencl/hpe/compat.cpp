@@ -8,13 +8,6 @@
 
 #include "api/opencl/hpe/Mode.h"
 
-#if defined(__APPLE__)
-typedef GLint cl_GLint;
-typedef GLuint cl_GLuint;
-typedef GLenum cl_GLenum;
-#endif
-
-
 static inline __impl::opencl::hpe::Mode &getCurrentCLMode()
 {
     return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
