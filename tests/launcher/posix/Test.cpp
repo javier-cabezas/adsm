@@ -7,7 +7,7 @@
 
 #include "../Test.h"
 
-#if defined(__APPLE__)
+#if !defined(HAVE_GETLINE)
 #include <errno.h>
 
 static ssize_t

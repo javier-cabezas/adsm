@@ -166,6 +166,10 @@ set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 
 # Check for header files
 check_function_exists(llabs HAVE_LLABS)
+check_function_exists(getline HAVE_GETLINE)
+if(HAVE_GETLINE)
+    add_definitions(-DHAVE_GET_LINE)
+endif(HAVE_GETLINE)
 
 # Setup extra libraries needed by GMAC
 if(${OS_DIR} MATCHES "posix")
