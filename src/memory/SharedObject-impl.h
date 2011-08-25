@@ -120,11 +120,14 @@ template<typename State>
 inline accptr_t
 SharedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
 {
+    printf("HOLA\n");
     accptr_t ret = accptr_t(0);
     lockRead();
     if(acceleratorAddr_ != 0) {
         ptroff_t offset = ptroff_t(addr - addr_);
+        printf("Offset1: %zd\n", offset);
         ret = acceleratorAddr_ + offset;
+        printf("Offset2: %zd\n", ret.offset());
     }
     unlock();
     return ret;

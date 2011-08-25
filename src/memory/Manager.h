@@ -107,6 +107,15 @@ public:
     gmacError_t unmap(core::Mode &mode, hostptr_t addr, size_t size);
 
     /**
+     * Returns the size of the allocation represented by the given pointer
+     * \param mode Execution mode where the memory was allocated
+     * \param addr Memory address of the allocation
+     * \param size A reference to a variable to store the size of the allocation
+     * \return Error code
+     */
+    gmacError_t getAllocSize(core::Mode &mode, hostptr_t addr, size_t &size) const;
+
+    /**
      * Allocate private shared memory.
      * Memory allocated with this call is only accessible by the accelerator
      * associated to the execution thread requesting the allocation

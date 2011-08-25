@@ -204,6 +204,28 @@ gmacError_t Manager::free(core::Mode &mode, hostptr_t addr)
     return ret;
 }
 
+gmacError_t
+Manager::getAllocSize(core::Mode &mode, const hostptr_t addr, size_t &size) const
+{
+    gmacError_t ret = gmacSuccess;
+    trace::EnterCurrentFunction();
+    Object *obj = mode.getObject(addr);
+    if (obj == NULL) {
+        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        if (hostMappedObject != NULL) {
+            size = hostMappedObject->size();
+        } else {
+            ret = gmacErrorInvalidValue;
+        }
+    } else {
+        size = obj->size();
+    }
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+
+
 accptr_t
 Manager::translate(core::Mode &mode, const hostptr_t addr)
 {

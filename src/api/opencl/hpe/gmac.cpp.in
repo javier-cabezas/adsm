@@ -23,7 +23,35 @@ static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
     return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
 }
 
-gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
+gmacError_t APICALL
+@OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t id, @OPENCL_API_PREFIX@_kernel *kernel)
+{
+    enterGmac();
+    __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
+    __impl::core::hpe::KernelLaunch *launch;
+    gmacError_t ret = mode.launch(id, launch);
+    if (ret == gmacSuccess) {
+        kernel->impl_ = launch;
+    }
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
+{
+    enterGmac();
+    if (kernel.impl_ != NULL) {
+        delete ((KernelLaunch *) kernel.impl_);
+    }
+    exitGmac();
+
+    return gmacSuccess;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr)
 {
     enterGmac();
     gmacError_t ret = ((KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
@@ -33,18 +61,45 @@ gmacError_t APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel k
 }
 
 gmacError_t APICALL
-@OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
+@OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *_ptr)
 {
-    cl_mem tmp = gmacPtr(ptr);
-    if (tmp == NULL) return gmacErrorInvalidValue;
+    hostptr_t ptr = hostptr_t(_ptr);
+
     enterGmac();
+    gmacError_t ret = gmacSuccess;
+
+    accptr_t tmp = __impl::memory::getManager().translate(getCurrentOpenCLMode(), ptr);
+    if (tmp == NULL) {
+        exitGmac();
+        return gmacErrorInvalidValue;
+    }
 
     KernelLaunch *launch = reinterpret_cast<KernelLaunch *>(kernel.impl_);
-
-    gmacError_t ret = launch->setArgument(&tmp, sizeof(cl_mem), index);
-    if (ret == gmacSuccess) {
-        launch->addObject(hostptr_t(ptr), index);
+    cl_mem tmpMem;
+    if (tmp.offset() > 0) {
+        if (launch->hasSubBuffer(ptr)) {
+            tmpMem = launch->getSubBuffer(ptr);
+        } else {
+            int err;
+            size_t size;
+            ret = __impl::memory::getManager().getAllocSize(getCurrentOpenCLMode(), ptr, size);
+            ASSERTION(ret == gmacSuccess);
+            cl_buffer_region region;
+            region.origin = tmp.offset();
+            region.size   = size - tmp.offset();
+            tmpMem = clCreateSubBuffer(tmp.get(), CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+            ASSERTION(err == CL_SUCCESS);
+            launch->setSubBuffer(ptr, tmpMem);
+        }
+    } else {
+        tmpMem = tmp.get();
     }
+
+    ret = launch->setArgument(&tmpMem, sizeof(cl_mem), index);
+    if (ret == gmacSuccess) {
+        launch->addObject(ptr, index);
+    }
+
     exitGmac();
 
     return ret;
@@ -150,33 +205,6 @@ gmacError_t APICALL
     delete [] buffer;
 
     return ret;
-}
-
-gmacError_t APICALL
-@OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t id, @OPENCL_API_PREFIX@_kernel *kernel)
-{
-    enterGmac();
-    __impl::core::hpe::Mode &mode = getCurrentOpenCLMode();
-    __impl::core::hpe::KernelLaunch *launch;
-    gmacError_t ret = mode.launch(id, launch);
-    if (ret == gmacSuccess) {
-        kernel->impl_ = launch;
-    }
-    exitGmac();
-
-    return ret;
-}
-
-gmacError_t APICALL
-@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
-{
-    enterGmac();
-    if (kernel.impl_ != NULL) {
-        delete ((KernelLaunch *) kernel.impl_);
-    }
-    exitGmac();
-
-    return gmacSuccess;
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

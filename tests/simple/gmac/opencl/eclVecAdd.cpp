@@ -7,15 +7,15 @@
 #include "utils.h"
 #include "debug.h"
 
-
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault =  16 * 1024 * 1024;
-unsigned vecSize = 0;
+const unsigned vecSizeDefault = 16 * 1024 * 1024;
+unsigned vecSize = vecSizeDefault;
 
 const char *kernel = "\
-__kernel void vecAdd(__global float *c, __global float *a, __global float *b, unsigned size)\
+__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
 {\
     unsigned i = get_global_id(0);\
+    if(i >= size) return;\
 \
     c[i] = a[i] + b[i];\
 }\
@@ -24,11 +24,11 @@ __kernel void vecAdd(__global float *c, __global float *a, __global float *b, un
 
 int main(int argc, char *argv[])
 {
-	float *a, *b, *c;
-	gmactime_t s, t, S, T;
+    float *a, *b, *c;
+    gmactime_t s, t, S, T;
 
-	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
-	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
+    setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
+    fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
     assert(eclCompileSource(kernel) == eclSuccess);

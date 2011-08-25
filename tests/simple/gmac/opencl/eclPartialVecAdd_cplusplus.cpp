@@ -23,6 +23,7 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
 }\
 ";
 
+#define STAGES 4
 
 int main(int argc, char *argv[])
 {
@@ -60,22 +61,29 @@ int main(int argc, char *argv[])
         sum += a[i] + b[i];
     }
     
-    // Call the kernel
     getTime(&s);
-    ecl::config globalSize(vecSize);
 
-    ecl::error err;
-    ecl::kernel kernel("vecAdd", err);
-    assert(err == eclSuccess);
+    unsigned stageSize = vecSize/STAGES;
+
+    // Perform the computation in multiple stages
+    for (unsigned i = 0; i < STAGES; i++) {
+        ecl::config globalSize(stageSize);
+
+        ecl::error err;
+        ecl::kernel kernel("vecAdd", err);
+        assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-    assert(kernel.setArg(0, c) == eclSuccess);
-    assert(kernel.setArg(1, a) == eclSuccess);
-    assert(kernel.setArg(2, b) == eclSuccess);
-    assert(kernel.setArg(3, vecSize) == eclSuccess);
-    assert(kernel.callNDRange(globalSize) == eclSuccess);
+        assert(kernel.setArg(0, c + i * stageSize) == eclSuccess);
+        assert(kernel.setArg(1, a + i * stageSize) == eclSuccess);
+        assert(kernel.setArg(2, b + i * stageSize) == eclSuccess);
+        assert(kernel.setArg(3, stageSize) == eclSuccess);
+        ecl::kernel_error kerr = kernel.callNDRange(globalSize);
 #else
-    assert(kernel(globalSize)(c, a, b, vecSize) == eclSuccess);
+        assert(kernel(globalSize)(c + i * stageSize,
+                                  a + i * stageSize,
+                                  b + i * stageSize, stageSize) == eclSuccess);
 #endif
+    }
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

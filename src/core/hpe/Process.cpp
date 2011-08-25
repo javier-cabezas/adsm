@@ -269,10 +269,10 @@ accptr_t Process::translate(const hostptr_t addr)
 void Process::send(THREAD_T id)
 {
     Mode *mode = CurrentMode_.get();
-        if(mode == NULL) return;
+    if(mode == NULL) return;
     mode->wait();
     queues_.push(id, *mode);
-        CurrentMode_.set(NULL);
+    CurrentMode_.set(NULL);
 }
 
 void Process::receive()

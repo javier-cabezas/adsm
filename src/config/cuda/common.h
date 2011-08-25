@@ -78,7 +78,7 @@ struct _cuda_ptr_t {
         return ret;
     }
 
-    inline operator void *() const { return (void *)(ptr_); }
+    //inline operator void *() const { return (void *)(ptr_); }
 
     inline void *get() const { return (void *)(ptr_); }
 

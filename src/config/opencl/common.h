@@ -59,19 +59,22 @@ public:
         base_(0),
         offset_(0),
         pasId_(0)
-    { }
+    {
+    }
 
     inline _opencl_ptr_t(cl_mem base) :
         base_(base),
         offset_(0),
         pasId_(0)
-    {  }
+    {
+    }
 
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
         base_(ptr.base_),
         offset_(ptr.offset_),
         pasId_(ptr.pasId_)
-    { }
+    {
+    }
 
     inline ~_opencl_ptr_t() {
     }
@@ -82,8 +85,9 @@ public:
 
     inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr) {
         if(this != &ptr) {
-            base_ = ptr.base_;
-            pasId_ = ptr.pasId_;
+            base_   = ptr.base_;
+            offset_ = ptr.offset_;
+            pasId_  = ptr.pasId_;
         }
         return *this;
     }
@@ -115,8 +119,6 @@ public:
         ret.offset_ += off;
         return ret;
     }
-
-    inline operator void*() const { return (void *)base_; }
 
     inline cl_mem get() const { return base_; }
 
