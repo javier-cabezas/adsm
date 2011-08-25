@@ -116,11 +116,11 @@ GenericBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) 
     ModeMap::const_iterator m;
     if (owners_.size() == 1) {
         m = owners_.begin();
-        ret = m->second + (addr - Block::addr_);
+        ret = m->second + (addr - this->addr_);
     } else {
         m = owners_.find(&current);
         if (m != owners_.end()) {
-            ret = m->second + (addr - Block::addr_);
+            ret = m->second + (addr - this->addr_);
         }
     }
 
