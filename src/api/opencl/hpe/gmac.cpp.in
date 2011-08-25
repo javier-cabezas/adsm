@@ -79,15 +79,13 @@ gmacError_t APICALL
 }
 
 
-#if 0
-gmacError_t APICALL __@OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel)
+gmacError_t APICALL @OPENCL_API_PREFIX@GetKernelError(@OPENCL_API_PREFIX@_kernel kernel)
 {
     enterGmac();
-    gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel->impl_);
+    gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel.impl_);
     exitGmac();
     return ret;
 }
-#endif
 
 
 gmacError_t APICALL

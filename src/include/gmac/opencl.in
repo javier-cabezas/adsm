@@ -56,6 +56,55 @@ typedef @OPENCL_API_PREFIX@_error error;
 typedef @OPENCL_API_PREFIX@_memory_hint memory_hint;
 typedef @OPENCL_API_PREFIX@_protection protection;
 
+class kernel_error {
+    friend class kernel;
+
+    /** "C" kernel handler used by the object */
+    @OPENCL_API_PREFIX@_kernel kernel_;
+
+    error launchError_;
+    error execError_;
+
+    bool synced_;
+
+    kernel_error(@OPENCL_API_PREFIX@_kernel kernel, error launchErr) :
+        kernel_(kernel),
+        launchError_(launchErr),
+        synced_(false)
+    {
+    }
+
+    error getError()
+    {
+        if (launchError_ != @OPENCL_API_PREFIX@Success) {
+            return launchError_;
+        } else {
+            if (synced_ == true) {
+                return execError_;
+            } else {
+                execError_ = @OPENCL_API_PREFIX@GetKernelError(kernel_);
+                synced_ = true;
+                return execError_;
+            }
+        }
+    }
+public:
+    operator @OPENCL_API_PREFIX@_error()
+    {
+        return getError();
+    }
+
+    error getLaunchError() const
+    {
+        return launchError_;
+    }
+
+    error getExecutionError()
+    {
+        return getError();
+    }
+};
+
 class kernel {
 private:
     /** "C" kernel handler used by the object */
@@ -157,7 +206,7 @@ public:
      * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
      */
 
-    error callNDRange(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+    kernel_error callNDRange(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     class launch {
         friend class kernel;
@@ -176,7 +225,7 @@ public:
     public:
 
         template <typename P1, typename ...Pn>
-        error operator()(P1 p1, Pn ...pn);
+        kernel_error operator()(P1 p1, Pn ...pn);
     };
 
     kernel::launch operator()(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
@@ -232,26 +281,27 @@ error kernel::setArg(unsigned index, T val)
 }
 
 inline
-error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
+kernel_error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
 {
-    error ret = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
+    error err = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
                                                           globalWorkOffset.getAddr(),
                                                           globalWorkSize.getAddr(),
                                                           localWorkSize.getAddr());
-    return ret;
+    kernel_error kernel_err(kernel_, err);
+    return kernel_err;
 }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
 template <typename P1, typename ...Pn>
-error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
+kernel_error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
 {
     error ret = kernel_.setArg(index, p1);
     if (ret != gmacSuccess) return ret;
     return __launch(index + 1, pn...);
 }
 
-error kernel::launch::__launch(unsigned index)
+kernel_error kernel::launch::__launch(unsigned index)
 {
     return ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
                                                              global_.getAddr(),
@@ -260,7 +310,7 @@ error kernel::launch::__launch(unsigned index)
 }
 
 template <typename P1, typename ...Pn>
-error kernel::launch::operator()(P1 p1, Pn ...pn)
+kernel_error kernel::launch::operator()(P1 p1, Pn ...pn)
 {
     return __launch(0, p1, pn...);
 }
