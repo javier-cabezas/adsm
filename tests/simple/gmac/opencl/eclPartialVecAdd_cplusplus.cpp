@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
         assert(kernel.setArg(2, b + i * stageSize) == eclSuccess);
         assert(kernel.setArg(3, stageSize) == eclSuccess);
         ecl::kernel_error kerr = kernel.callNDRange(globalSize);
+        assert(kerr == eclSuccess);
 #else
         assert(kernel(globalSize)(c + i * stageSize,
                                   a + i * stageSize,

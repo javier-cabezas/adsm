@@ -69,7 +69,7 @@ gmacError_t APICALL
     gmacError_t ret = gmacSuccess;
 
     accptr_t tmp = __impl::memory::getManager().translate(getCurrentOpenCLMode(), ptr);
-    if (tmp == NULL) {
+    if (tmp == 0) {
         exitGmac();
         return gmacErrorInvalidValue;
     }
