@@ -111,6 +111,13 @@ KernelLaunch::~KernelLaunch()
     if (globalWorkOffset_) delete [] globalWorkOffset_;
     if (globalWorkSize_) delete [] globalWorkSize_;
     if (localWorkSize_) delete [] localWorkSize_;
+
+    std::map<hostptr_t, cl_mem>::iterator it;
+    for (it = subBuffers_.begin(); it != subBuffers_.end(); it++) {
+        int err = clReleaseMemObject(it->second);
+        ASSERTION(err == CL_SUCCESS);
+    }
+    subBuffers_.clear();
 }
 
 inline
@@ -118,6 +125,29 @@ cl_event
 KernelLaunch::getCLEvent()
 {
     return event_;
+}
+
+inline
+bool
+KernelLaunch::hasSubBuffer(hostptr_t ptr) const
+{
+    return subBuffers_.find(ptr) != subBuffers_.end();
+}
+
+inline
+cl_mem
+KernelLaunch::getSubBuffer(hostptr_t ptr) const
+{
+    ASSERTION(hasSubBuffer(ptr) == true);
+    return subBuffers_.find(ptr)->second;
+}
+
+inline
+void
+KernelLaunch::setSubBuffer(hostptr_t ptr, cl_mem subMem)
+{
+    ASSERTION(hasSubBuffer(ptr) == false);
+    subBuffers_.insert(std::map<hostptr_t, cl_mem>::value_type(ptr, subMem));
 }
 
 }}}

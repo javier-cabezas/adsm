@@ -113,6 +113,9 @@ protected:
     /** Tracer */
     KernelExecution trace_;
 
+    /** Subbuffers created to allow pointer arithmetic */
+    std::map<hostptr_t, cl_mem> subBuffers_;
+
     /**
      * Default constructor
      * \param mode Execution mode executing the kernel
@@ -156,6 +159,26 @@ public:
      */
     gmacError_t setArgument(const void * arg, size_t size, unsigned index);
 
+    /**
+     * Tells if the kernel launch object already has a subbuffer for the given pointer
+     * \param ptr Pointer to be used as an argument in a kernel call
+     * \return A boolean that tells if the kernel launch object already has a subbuffer for the given pointer
+     */
+    bool hasSubBuffer(hostptr_t ptr) const;
+
+    /**
+     * Returns the subbuffer associated to the given pointer
+     * \param ptr Pointer to be used as an argument in a kernel call
+     * \return The subbuffer associated to the given pointer
+     */
+    cl_mem getSubBuffer(hostptr_t ptr) const;
+
+    /**
+     * Sets the subbuffer associated to the given pointer
+     * \param ptr Pointer to be used as an argument in a kernel call
+     * \param subMeme The subbuffer associated to the given pointer
+     */
+    void setSubBuffer(hostptr_t ptr, cl_mem subMem);
 };
 
 }}}
