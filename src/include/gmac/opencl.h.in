@@ -93,8 +93,6 @@ typedef enum GmacProtection @OPENCL_API_PREFIX@_protection;
  */
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@GetKernel(const char *id, @OPENCL_API_PREFIX@_kernel *kernel);
 
-//#define @OPENCL_API_PREFIX@GetKernel @OPENCL_API_PREFIX@KernelGet
-
 /**
  * Sets an argument to be used by the following call to @OPENCL_API_PREFIX@CallNDRange()
  *
@@ -144,6 +142,15 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENC
  */
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@KernelWait(@OPENCL_API_PREFIX@_kernel *kernel);
 #endif
+
+/**
+ * Gets the error code of the last execution of the given kernel
+ *
+ * \param kernel Kernel descriptor
+ *
+ * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
+ */
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@GetKernelError(@OPENCL_API_PREFIX@_kernel kernel);
 
 /**
  * Releases the resources used by the specified kernel handler

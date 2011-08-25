@@ -65,6 +65,8 @@ int main(int argc, char *argv[])
     assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
     assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
 
+    assert(eclGetKernelError(kernel) == eclSuccess);
+
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
