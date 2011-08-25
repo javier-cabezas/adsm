@@ -40,12 +40,18 @@ else(CMAKE_USE_PTHREADS_INIT)
 endif(CMAKE_USE_PTHREADS_INIT)
 
 # Identify operating system being used
+option(USE_32BITS "Compile for 32 bits processors (Linux and Mac OS only)" OFF)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     message(STATUS "Compiling for GNU/Linux")
     set(OS_DIR "posix")
     set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DLINUX)
     set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
+    if(USE_32BITS)
+        message(STATUS "Compiling for 32 bits")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+        set(CMAKE_LINKER_FLAGS "-m32")
+    endif(USE_32BITS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -53,6 +59,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(OS_DIR "posix")
     set(gmac_static_FLAGS "-fPIC")
     add_definitions(-DDARWIN)
+    if(USE_32BITS)
+        message(STATUS "Compiling for 32 bits")
+        set (CMAKE_OSX_ARCHITECTURES i386)
+    endif(USE_32BITS)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Add version-specific headers in the included files
@@ -139,12 +149,13 @@ endif(USE_SUBBLOCK_TRACKING)
 
 
 # Make sure we compile the necessary libraries
+set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 add_subdirectory(lib)
 import_gmac_libraries()
 
 # Configure compiler flags for different configurations
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "-Wall -Werror")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -g -fomit-frame-pointer")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -DDEBUG -O0")
     option(USE_COVERAGE "Enable code coverage information gathering" OFF)
