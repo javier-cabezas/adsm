@@ -15,6 +15,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
     cl_int ret = CL_SUCCESS;
     ret = clGetPlatformIDs(0, NULL, &platformSize);
     CFATAL(ret == CL_SUCCESS);
+    if(platformSize == 0) return;   
     cl_platform_id * platforms = new cl_platform_id[platformSize];
     ret = clGetPlatformIDs(platformSize, platforms, NULL);
     CFATAL(ret == CL_SUCCESS);
@@ -27,6 +28,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
                              0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
+	    if(deviceSize == 0) continue;
         cl_device_id *devices = new cl_device_id[deviceSize];
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
                              deviceSize, devices, NULL);
