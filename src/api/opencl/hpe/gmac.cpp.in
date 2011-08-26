@@ -71,7 +71,7 @@ gmacError_t APICALL
     __impl::opencl::hpe::Mode &mode = getCurrentOpenCLMode();
 
     accptr_t tmp = __impl::memory::getManager().translate(mode, ptr);
-    if (tmp == NULL) {
+    if (tmp == 0) {
         exitGmac();
         return gmacErrorInvalidValue;
     }
