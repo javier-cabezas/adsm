@@ -124,11 +124,7 @@ KernelLaunch::~KernelLaunch()
                
             int err = clReleaseMemObject(sb->second.first);
             ASSERTION(err == CL_SUCCESS);
-
-            printf("Removing: %p\n", itCacheMap->first);
             map.erase(sb);
-        } else {
-            printf("Not Removing: %p\n", itCacheMap->first);
         }
     }
     cacheSubBuffer_.clear();

@@ -95,6 +95,9 @@ do
         prefix=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_INSTALL_PREFIX=${prefix}"
         ;;
+    --force-32bit)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_32BITS=ON"
+        ;;
         esac
 done
 
