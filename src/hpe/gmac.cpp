@@ -200,6 +200,7 @@ GMAC_API gmacError_t APICALL
 gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
+    if(cpuPtr == NULL) return ret;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = getCurrentMode();
