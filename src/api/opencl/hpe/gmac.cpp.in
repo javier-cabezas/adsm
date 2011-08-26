@@ -68,7 +68,9 @@ gmacError_t APICALL
     enterGmac();
     gmacError_t ret = gmacSuccess;
 
-    accptr_t tmp = __impl::memory::getManager().translate(getCurrentOpenCLMode(), ptr);
+    __impl::opencl::hpe::Mode &mode = getCurrentOpenCLMode();
+
+    accptr_t tmp = __impl::memory::getManager().translate(mode, ptr);
     if (tmp == NULL) {
         exitGmac();
         return gmacErrorInvalidValue;
@@ -77,20 +79,10 @@ gmacError_t APICALL
     KernelLaunch *launch = reinterpret_cast<KernelLaunch *>(kernel.impl_);
     cl_mem tmpMem;
     if (tmp.offset() > 0) {
-        if (launch->hasSubBuffer(ptr)) {
-            tmpMem = launch->getSubBuffer(ptr);
-        } else {
-            int err;
-            size_t size;
-            ret = __impl::memory::getManager().getAllocSize(getCurrentOpenCLMode(), ptr, size);
-            ASSERTION(ret == gmacSuccess);
-            cl_buffer_region region;
-            region.origin = tmp.offset();
-            region.size   = size - tmp.offset();
-            tmpMem = clCreateSubBuffer(tmp.get(), CL_MEM_READ_WRITE, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
-            ASSERTION(err == CL_SUCCESS);
-            launch->setSubBuffer(ptr, tmpMem);
-        }
+        size_t size;
+        ret = __impl::memory::getManager().getAllocSize(mode, ptr, size);
+        ASSERTION(ret == gmacSuccess);
+        tmpMem = launch->getSubBuffer(mode, ptr, tmp, size);
     } else {
         tmpMem = tmp.get();
     }

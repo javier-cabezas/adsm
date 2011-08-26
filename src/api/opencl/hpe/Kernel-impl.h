@@ -6,6 +6,8 @@
 #include "hpe/init.h"
 #include "api/opencl/hpe/Mode.h"
 
+#include "memory/Manager.h"
+
 namespace __impl { namespace opencl { namespace hpe {
 
 inline
@@ -112,12 +114,24 @@ KernelLaunch::~KernelLaunch()
     if (globalWorkSize_) delete [] globalWorkSize_;
     if (localWorkSize_) delete [] localWorkSize_;
 
-    std::map<hostptr_t, cl_mem>::iterator it;
-    for (it = subBuffers_.begin(); it != subBuffers_.end(); it++) {
-        int err = clReleaseMemObject(it->second);
-        ASSERTION(err == CL_SUCCESS);
+    CacheSubBuffer::iterator itCacheMap;
+    for (itCacheMap = cacheSubBuffer_.begin(); itCacheMap != cacheSubBuffer_.end(); itCacheMap++) {
+        __impl::core::hpe::Mode *mode = itCacheMap->second.first;
+        MapSubBuffer::iterator sb = itCacheMap->second.second;
+        if (--sb->second.second == 0) {
+            MapGlobalSubBuffer::iterator itG = mapSubBuffer_.findMode(*mode);
+            MapSubBuffer &map = itG->second;
+               
+            int err = clReleaseMemObject(sb->second.first);
+            ASSERTION(err == CL_SUCCESS);
+
+            printf("Removing: %p\n", itCacheMap->first);
+            map.erase(sb);
+        } else {
+            printf("Not Removing: %p\n", itCacheMap->first);
+        }
     }
-    subBuffers_.clear();
+    cacheSubBuffer_.clear();
 }
 
 inline
@@ -127,21 +141,16 @@ KernelLaunch::getCLEvent()
     return event_;
 }
 
+#if 0
 inline
 bool
 KernelLaunch::hasSubBuffer(hostptr_t ptr) const
 {
     return subBuffers_.find(ptr) != subBuffers_.end();
 }
+#endif
 
-inline
-cl_mem
-KernelLaunch::getSubBuffer(hostptr_t ptr) const
-{
-    ASSERTION(hasSubBuffer(ptr) == true);
-    return subBuffers_.find(ptr)->second;
-}
-
+#if 0
 inline
 void
 KernelLaunch::setSubBuffer(hostptr_t ptr, cl_mem subMem)
@@ -149,6 +158,7 @@ KernelLaunch::setSubBuffer(hostptr_t ptr, cl_mem subMem)
     ASSERTION(hasSubBuffer(ptr) == false);
     subBuffers_.insert(std::map<hostptr_t, cl_mem>::value_type(ptr, subMem));
 }
+#endif
 
 }}}
 

@@ -93,6 +93,37 @@ class GMAC_LOCAL KernelLaunch :
     public core::hpe::KernelLaunch,
     public util::NonCopyable {
     friend class Kernel;
+
+    typedef std::pair<cl_mem, unsigned> CLMemRef;
+    typedef std::map<hostptr_t, CLMemRef> MapSubBuffer;
+    class MapGlobalSubBuffer :
+        protected std::map<__impl::core::hpe::Mode *, MapSubBuffer>,
+        protected gmac::util::SpinLock
+    {
+    public:
+        typedef std::map<__impl::core::hpe::Mode *, MapSubBuffer> Parent;
+        typedef Parent::iterator iterator;
+        MapGlobalSubBuffer() :
+            gmac::util::SpinLock("SubBuffer Lock")
+        {
+        }
+
+        iterator findMode(__impl::core::hpe::Mode &mode)
+        {
+            lock();
+            Parent::iterator itGlobalMap = this->find(&mode);
+            if (itGlobalMap == this->end()) {
+                this->insert(Parent::value_type(&mode, MapSubBuffer()));
+                itGlobalMap = this->find(&mode);
+            }
+            unlock();
+            return itGlobalMap;
+        }
+    };
+
+    typedef std::pair<__impl::core::hpe::Mode *, MapSubBuffer::iterator> CacheEntry;
+    typedef std::map<hostptr_t, CacheEntry> CacheSubBuffer;
+
 protected:
     /** OpenCL kernel code */
     cl_kernel f_;
@@ -114,7 +145,10 @@ protected:
     KernelExecution trace_;
 
     /** Subbuffers created to allow pointer arithmetic */
-    std::map<hostptr_t, cl_mem> subBuffers_;
+    static MapGlobalSubBuffer mapSubBuffer_;
+
+    /** Cache of subbuffers created to allow pointer arithmetic */
+    CacheSubBuffer cacheSubBuffer_;
 
     /**
      * Default constructor
@@ -159,26 +193,30 @@ public:
      */
     gmacError_t setArgument(const void * arg, size_t size, unsigned index);
 
+#if 0
     /**
      * Tells if the kernel launch object already has a subbuffer for the given pointer
      * \param ptr Pointer to be used as an argument in a kernel call
      * \return A boolean that tells if the kernel launch object already has a subbuffer for the given pointer
      */
     bool hasSubBuffer(hostptr_t ptr) const;
+#endif
 
     /**
      * Returns the subbuffer associated to the given pointer
      * \param ptr Pointer to be used as an argument in a kernel call
      * \return The subbuffer associated to the given pointer
      */
-    cl_mem getSubBuffer(hostptr_t ptr) const;
+    cl_mem getSubBuffer(__impl::opencl::hpe::Mode &mode, hostptr_t ptr, accptr_t accPtr, size_t size);
 
+#if 0
     /**
      * Sets the subbuffer associated to the given pointer
      * \param ptr Pointer to be used as an argument in a kernel call
      * \param subMeme The subbuffer associated to the given pointer
      */
     void setSubBuffer(hostptr_t ptr, cl_mem subMem);
+#endif
 };
 
 }}}
