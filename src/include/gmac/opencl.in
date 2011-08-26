@@ -629,6 +629,69 @@ void operator delete[](void *addr, @OPENCL_API_PREFIX@::__gmac_allocator &/*allo
     ::@OPENCL_API_PREFIX@Free(addr);
 }
 
+namespace @OPENCL_API_PREFIX@ {
+
+template <typename T>
+class static_var {
+protected:
+    T *t_;
+
+public:
+    static_var()
+    {
+        t_ = new (@OPENCL_API_PREFIX@::allocator) T;
+    }
+
+    static_var(T &t)
+    {
+        t_ = new (@OPENCL_API_PREFIX@::allocator) T;
+        *t_ = t;
+    }
+
+    virtual ~static_var()
+    {
+        @OPENCL_API_PREFIX@::error err;
+        err = @OPENCL_API_PREFIX@::free(t_);
+    }
+
+    T *operator&()
+    {
+        return t_;
+    }
+
+    const T *operator&() const
+    {
+        return t_;
+    }
+};
+
+template <typename T>
+class static_array :
+    public static_var<T> {
+
+public:
+    static_array(unsigned elems)
+    {
+        this->t_ = new (@OPENCL_API_PREFIX@::allocator) T[elems];
+    }
+
+    ~static_array()
+    {
+    }
+
+    T &operator[](unsigned index)
+    {
+        return this->t_[index];
+    }
+
+    const T &operator[](unsigned index) const
+    {
+        return this->t_[index];
+    }
+};
+
+}
+
 #endif /* GMAC_OPENCL_CPP_H_ */
 
 /* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
