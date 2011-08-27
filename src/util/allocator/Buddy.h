@@ -47,6 +47,7 @@ namespace __impl { namespace util { namespace allocator {
  */
 class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
     DBC_FORCE_TEST(__impl::util::allocator::Buddy)
+
 protected:
     hostptr_t addr_;
     uint32_t size_;
