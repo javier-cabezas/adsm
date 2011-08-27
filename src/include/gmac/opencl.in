@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 #include <string>
 #include <istream>
 
-#include "opencl.h"
+#include <gmac/opencl.h>
 
 namespace @OPENCL_API_PREFIX@ {
 
@@ -583,114 +583,20 @@ void deviceCopy(THREAD_T tid)
     ::@OPENCL_API_PREFIX@DeviceCopy(tid);
 }
 
-class __gmac_allocator {
-	int dummy;
-};
-static __gmac_allocator allocator;
+} // namespace @OPENCL_API_PREFIX@
 
-void finiAllocator()
-{
-    __gmac_allocator tmp;
-    if (&allocator != &tmp) abort();
-}
-}
 
-#include <new>
+#include <gmac/new>
 
-void *operator new(size_t size, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
-{
-    void *ret;
-    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
-    if (err != gmacSuccess) {
-        ret = NULL;
-        throw std::bad_alloc();
-    }
-    return ret;
-}
-
-void *operator new[](size_t size, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
-{
-    void *ret;
-    @OPENCL_API_PREFIX@::error err = ::@OPENCL_API_PREFIX@Malloc(&ret, size);
-    if (err != gmacSuccess) {
-        ret = NULL;
-        throw std::bad_alloc();
-    }
-    return ret;
-}
-
-void operator delete(void *addr, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
-{
-    ::@OPENCL_API_PREFIX@Free(addr);
-}
-
-void operator delete[](void *addr, @OPENCL_API_PREFIX@::__gmac_allocator &/*allocator*/)
-{
-    ::@OPENCL_API_PREFIX@Free(addr);
-}
+#include <tr1/memory>
 
 namespace @OPENCL_API_PREFIX@ {
+    static ::__gmac_allocator allocator;
 
-template <typename T>
-class static_var {
-protected:
-    T *t_;
+    #include <gmac/shared_ptr>
+    #include <gmac/static>
 
-public:
-    static_var()
-    {
-        t_ = new (@OPENCL_API_PREFIX@::allocator) T;
-    }
-
-    static_var(T &t)
-    {
-        t_ = new (@OPENCL_API_PREFIX@::allocator) T;
-        *t_ = t;
-    }
-
-    virtual ~static_var()
-    {
-        @OPENCL_API_PREFIX@::error err;
-        err = @OPENCL_API_PREFIX@::free(t_);
-    }
-
-    T *operator&()
-    {
-        return t_;
-    }
-
-    const T *operator&() const
-    {
-        return t_;
-    }
-};
-
-template <typename T>
-class static_array :
-    public static_var<T> {
-
-public:
-    static_array(unsigned elems)
-    {
-        this->t_ = new (@OPENCL_API_PREFIX@::allocator) T[elems];
-    }
-
-    ~static_array()
-    {
-    }
-
-    T &operator[](unsigned index)
-    {
-        return this->t_[index];
-    }
-
-    const T &operator[](unsigned index) const
-    {
-        return this->t_[index];
-    }
-};
-
-}
+} // namespace @OPENCL_API_PREFIX@
 
 #endif /* GMAC_OPENCL_CPP_H_ */
 

@@ -3,9 +3,14 @@
 
 #include "allocator/Slab.h"
 
+#define USE_GENERIC_OBJECTS 1
+
+#if USE_GENERIC_OBJECTS == 1
 #include "memory/BlockGroup.h"
+#else
 #include "memory/SharedObject.h"
 #include "memory/DistributedObject.h"
+#endif
 
 #ifdef USE_VM
 //#include "protocol/Gather.h"
@@ -62,7 +67,6 @@ Protocol *ProtocolInit(unsigned flags)
         } else {
             eager = false;
         }
-#define USE_GENERIC_OBJECTS 1
         if(0 != (flags & 0x1)) {
 #if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<

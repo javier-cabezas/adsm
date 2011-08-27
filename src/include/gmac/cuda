@@ -270,53 +270,25 @@ copy(THREAD_T tid)
     ::gmacCopy(tid);
 }
 
-struct __gmac_allocator {
-    int dummy;
-};
+} // namespace gmac
 
-static __gmac_allocator allocator;
+#include <gmac/new>
 
-void finiAllocator()
-{
-    __gmac_allocator tmp;
-    if (&allocator != &tmp) abort();
-}
-}
+// nvcc does not support TR1 headers yet
+#if 0
+#include <tr1/memory>
+#endif
 
-#include <new>
+namespace gmac {
+    static ::__gmac_allocator allocator;
 
-void *operator new(size_t size, gmac::__gmac_allocator &/*allocator*/)
-{
-    void *ret;
-    gmacError_t err = gmacMalloc(&ret, size);
-    if (err != gmacSuccess) {
-        ret = NULL;
-        throw std::bad_alloc();
-    }
-    return ret;
+    // nvcc does not support TR1 headers yet
+#if 0
+    #include <gmac/shared_ptr>
+#endif
+    #include <gmac/static>
 }
 
-void *operator new[](size_t size, gmac::__gmac_allocator &/*allocator*/)
-{
-    void *ret;
-    gmacError_t err = gmacMalloc(&ret, size);
-    if (err != gmacSuccess) {
-        ret = NULL;
-        throw std::bad_alloc();
-    }
-    return ret;
-}
-
-void operator delete(void *addr, gmac::__gmac_allocator &/*allocator*/)
-{
-    ::gmacFree(addr);
-}
-
-void operator delete[](void *addr, gmac::__gmac_allocator &/*allocator*/)
-{
-    ::gmacFree(addr);
-}
-
-#endif /* CUDA_H */
+#endif /* GMAC_CUDA_CPP_H */
 
 /* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

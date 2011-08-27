@@ -67,6 +67,9 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Add version-specific headers in the included files
 set(GMAC_HEADERS ${CMAKE_BINARY_DIR}/src/include/gmac/api.h
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/new
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/shared_ptr
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/static
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h)
 set(GMAC_TARGET_NAME "gmac")

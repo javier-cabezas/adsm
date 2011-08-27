@@ -42,22 +42,13 @@ WITH THE SOFTWARE.  */
 /** Description for __impl. */
 namespace __impl { namespace memory {
 
-template <typename T>
-struct Friend
-{
-    typedef T Type;
-};
-
 /** Description for StateBlock. */
 template <typename State>
 class GMAC_LOCAL StateBlock :
     public gmac::memory::Block,
     public State {
-#ifdef _MSC_VER
-    friend typename Friend<State>::Type;
-#else
-    friend class Friend<State>::Type;
-#endif
+    friend gmacError_t State::syncToAccelerator();
+    friend gmacError_t State::syncToHost();
 
 protected:
     /** Default construcutor
