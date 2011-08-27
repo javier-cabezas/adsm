@@ -1,8 +1,7 @@
 #ifndef GMAC_MEMORY_PROTOCOL_GATHER_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_GATHER_IMPL_H_
 
-#include "memory/SharedObject.h"
-#include "memory/DistributedObject.h"
+#include "memory/BlockGroup.h"
 
 namespace __impl { namespace memory { namespace protocol {
 
