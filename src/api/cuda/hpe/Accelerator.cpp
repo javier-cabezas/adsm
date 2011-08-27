@@ -232,7 +232,7 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 
     alignMap_.insert(AlignmentMap::value_type(gpuPtr, ptr));
     alignMap_.unlock();
-    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", (void *) dst, ptr, gpuSize, count, align);
+    TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", dst.get(), ptr, gpuSize, count, align);
     trace::ExitCurrentFunction();
     return error(ret);
 }
@@ -380,7 +380,7 @@ void Accelerator::getMemInfo(size_t &free, size_t &total) const
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, size);
+    TRACE(LOCAL,"Copy to accelerator: %p -> %p ("FMT_SIZE")", host, acc.get(), size);
     trace::SetThreadState(trace::Wait);
     pushContext();
     CUresult ret = CUDA_SUCCESS;
@@ -411,7 +411,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, (void *) acc, count);
+    TRACE(LOCAL,"Async copy to accelerator: %p -> %p ("FMT_SIZE")", host, acc.get(), count);
     pushContext();
 
     buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
@@ -429,7 +429,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
 gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t size, core::hpe::Mode &mode)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, size);
+    TRACE(LOCAL,"Copy to host: %p -> %p ("FMT_SIZE")", acc.get(), host, size);
     trace::SetThreadState(trace::Wait);
     pushContext();
     CUresult ret;
@@ -462,7 +462,7 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
     IOBuffer &buffer = dynamic_cast<IOBuffer &>(_buffer);
     trace::EnterCurrentFunction();
     uint8_t *host = buffer.addr() + bufferOff;
-    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", (void *) acc, host, count);
+    TRACE(LOCAL,"Async copy to host: %p -> %p ("FMT_SIZE")", acc.get(), host, count);
     pushContext();
     buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
@@ -479,7 +479,7 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
 {
     trace::EnterCurrentFunction();
-    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", (void *) src, (void *) dst, size);
+    TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", src.get(), dst.get(), size);
     pushContext();
 #if CUDA_VERSION >= 3020
     CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
