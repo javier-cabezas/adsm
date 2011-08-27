@@ -41,6 +41,10 @@ int main(int argc, char *argv[])
     // Alloc output data
     c = new (ecl::allocator) float[vecSize];
 
+    ecl::shared_ptr<float> sh_a(a);
+    ecl::shared_ptr<float> sh_b(b);
+    ecl::shared_ptr<float> sh_c(c);
+
     assert(a != NULL);
     assert(b != NULL);
     assert(c != NULL);
@@ -50,7 +54,7 @@ int main(int argc, char *argv[])
 
     getTime(&S);
     getTime(&s);
-    randInitMax(a, 10.f, vecSize);
+    randInitMax(sh_a.get(), 10.f, vecSize);
     randInitMax(b, 10.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
@@ -68,13 +72,13 @@ int main(int argc, char *argv[])
     ecl::kernel kernel("vecAdd", err);
     assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-    assert(kernel.setArg(0, c) == eclSuccess);
-    assert(kernel.setArg(1, a) == eclSuccess);
-    assert(kernel.setArg(2, b) == eclSuccess);
+    assert(kernel.setArg(0, sh_c.get()) == eclSuccess);
+    assert(kernel.setArg(1, sh_a.get()) == eclSuccess);
+    assert(kernel.setArg(2, sh_b.get()) == eclSuccess);
     assert(kernel.setArg(3, vecSize) == eclSuccess);
     assert(kernel.callNDRange(globalSize) == eclSuccess);
 #else
-    assert(kernel(globalSize)(c, a, b, vecSize) == eclSuccess);
+    assert(kernel(globalSize)(sh_c.get(), sh_a.get(), sh_b.get(), vecSize) == eclSuccess);
 #endif
 
     getTime(&t);
@@ -83,17 +87,13 @@ int main(int argc, char *argv[])
     getTime(&s);
     float check = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
-        check += c[i];
+        check += sh_c.get()[i];
     }
     getTime(&t);
     getTime(&T);
     printTime(&s, &t, "Check: ", "\n");
     fprintf(stderr, "Error: %f\n", fabsf(sum - check));
     printTime(&S, &T, "Total: ", "\n");
-
-    ecl::free(a);
-    ecl::free(b);
-    ecl::free(c);
 
     return sum != check;
 }

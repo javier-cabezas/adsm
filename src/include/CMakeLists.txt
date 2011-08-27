@@ -15,9 +15,12 @@ set(gmac_include_SRC
     gmac/cl
     gmac/cl.h
     gmac/cl_types.h
+    gmac/new
     gmac/opencl.in
     gmac/opencl.h.in
     gmac/opencl_types.h.in
+    gmac/shared_ptr
+    gmac/static
     gmac/types.h
     gmac/visibility.h
     gmac/vm.h.in

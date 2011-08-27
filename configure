@@ -71,6 +71,9 @@ do
     --enable-coverage)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_COVERAGE=ON"
         ;;
+    --enable-clang)
+        CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=clang++"
+        ;;
     --enable-mpi)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_MPI=ON -DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_CC_COMPILER=mpicc"
         ;;

@@ -19,7 +19,7 @@ inline void BlockGroup<State>::modifiedObject()
     }
 }
 
-static gmacError_t
+static inline gmacError_t
 mallocAccelerator(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
 {
     acceleratorAddr = accptr_t(0);
