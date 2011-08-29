@@ -67,9 +67,9 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Add version-specific headers in the included files
 set(GMAC_HEADERS ${CMAKE_BINARY_DIR}/src/include/gmac/api.h
+                 ${CMAKE_BINARY_DIR}/src/include/gmac/shared_ptr
+                 ${CMAKE_BINARY_DIR}/src/include/gmac/static
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/new
-                 ${CMAKE_SOURCE_DIR}/src/include/gmac/shared_ptr
-                 ${CMAKE_SOURCE_DIR}/src/include/gmac/static
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/types.h
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/visibility.h)
 set(GMAC_TARGET_NAME "gmac")
@@ -142,8 +142,26 @@ else(USE_INTERNAL_API)
     set(USE_INTERNAL_API_HEADER "0")
 endif(USE_INTERNAL_API)
 
+# Enable features that depend on std::tr1
+option(USE_TR1 "Enable features that depend on std::tr1" ON)
+if(USE_TR1)
+    message(STATUS "Compiling with internal API support")
+    add_definitions(-DUSE_TR1)
+    set(USE_TR1_HEADER "1")
+else(USE_TR1)
+    set(USE_TR1_HEADER "0")
+endif(USE_TR1)
 
-# Setup configuration options
+# Enable features that depend on boost
+option(USE_BOOST "Enable features that depend on std::tr1" OFF)
+if(USE_BOOST)
+    message(STATUS "Compiling with internal API support")
+    add_definitions(-DUSE_BOOST)
+    set(USE_BOOST_HEADER "1")
+else(USE_BOOST)
+    set(USE_BOOST_HEADER "0")
+endif(USE_BOOST)
+
 option(USE_SUBBLOCK_TRACKING "Enable subblock modification tracking" OFF)
 if(USE_SUBBLOCK_TRACKING)
     message(STATUS "Compiling with subblock modification tracking")

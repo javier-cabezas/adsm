@@ -32,76 +32,103 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
 /**
- * \file gmac/static
+ * \file gmac/shared_ptr
  *
- * GMAC C++ static objects implementation
+ * GMAC C++ shared_ptr implementation
  */
 
-#ifndef GMAC_STATIC_CPP_H_
-#define GMAC_STATIC_CPP_H_
+#ifndef GMAC_SHARED_PTR_CPP_H_
+#define GMAC_SHARED_PTR_CPP_H_
 
 #ifndef __cplusplus
 #error "This header can only be included in C++ programs"
 #endif
 
+#if USE_TR1_HEADER == 1
+
 template <typename T>
-class static_var {
-protected:
-    T *t_;
+class shared_ptr;
 
+/// shared_ptr wrapper using std::tr1::shared_ptr
+template <typename T>
+class shared_ptr :
+    public std::tr1::shared_ptr<T>
+{
+    /// 
+    class Deleter {
+    public:
+        template <typename T2>
+        inline
+        void operator()(T2 *ptr)
+        {
+            free(ptr);
+        }
+    };
+
+    typedef std::tr1::shared_ptr<T> Parent;
 public:
-    static_var()
+    shared_ptr() :
+        Parent()
     {
-        t_ = new (allocator) T;
     }
 
-    static_var(T &t)
+    inline
+    virtual ~shared_ptr()
     {
-        t_ = new (allocator) T;
-        *t_ = t;
     }
 
-    ~static_var()
+    template<class Y>
+    inline
+    explicit shared_ptr(Y* p) :
+        Parent(p, Deleter())
     {
-        free(t_);
     }
 
-    T *operator&()
+    template<class Y, class D>
+    inline
+    shared_ptr(Y* p, D d) :
+        Parent(p, d)
     {
-        return t_;
     }
 
-    const T *operator&() const
+    inline
+    shared_ptr(shared_ptr const& r) :
+        Parent(r)
     {
-        return t_;
+    }
+
+    template<class Y>
+    inline
+    shared_ptr(shared_ptr<Y> const& r) :
+        Parent(r)
+    {
+    }
+
+    template<class Y>
+    inline
+    void reset(Y* p)
+    {
+        Parent::reset(p, Deleter());
+    }
+
+    inline
+    shared_ptr& operator=(shared_ptr const& r)
+    {
+        Parent::operator=(r);
+        return *this;
+    }
+
+    template<class Y> 
+    inline
+    shared_ptr& operator=(shared_ptr<Y> const& r)
+    {
+        Parent::operator=(r);
+        return *this;
     }
 };
 
-template <typename T>
-class static_array :
-    public static_var<T> {
+#endif /* USE_TR1_HEADER  == 1*/
 
-public:
-    static_array(unsigned elems)
-    {
-        this->t_ = new (allocator) T[elems];
-    }
-
-    virtual ~static_array()
-    {
-    }
-
-    T &operator[](unsigned index)
-    {
-        return this->t_[index];
-    }
-
-    const T &operator[](unsigned index) const
-    {
-        return this->t_[index];
-    }
-};
-
-#endif /* GMAC_STATIC_CPP_H_ */
+#endif /* GMAC_SHARED_PTR_CPP_H_ */
 
 /* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

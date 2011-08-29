@@ -34,6 +34,7 @@ source_group(${current_GROUP} FILES
     eclCompressSend.cl
     eclMatrixMul.cpp
     eclMatrixMulKernel.cl
+    eclMultiArrayMatrixMul_cplusplus.cpp
     eclMemcpy.cpp
     eclMemset.cpp
     eclFile.cpp
@@ -89,8 +90,10 @@ target_link_libraries(eclPartialVecAdd_cplusplus gmac-hpe)
 add_executable(eclStaticVecAdd_cplusplus ${common_SRC} eclStaticVecAdd_cplusplus.cpp)
 target_link_libraries(eclStaticVecAdd_cplusplus gmac-hpe)
 
+if(USE_TR1)
 add_executable(eclSharedPtrVecAdd_cplusplus ${common_SRC} eclSharedPtrVecAdd_cplusplus.cpp)
 target_link_libraries(eclSharedPtrVecAdd_cplusplus gmac-hpe)
+endif(USE_TR1)
 
 add_executable(eclMemcpy ${common_SRC} eclMemcpy.cpp)
 target_link_libraries(eclMemcpy gmac-hpe)
@@ -127,6 +130,11 @@ target_link_libraries(eclBarr gmac-hpe)
 
 add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
 target_link_libraries(eclMatrixMul gmac-hpe)
+
+if(USE_BOOST)
+add_executable(eclMultiArrayMatrixMul ${common_SRC} eclMultiArrayMatrixMul_cplusplus.cpp eclMatrixMulKernel.cl)
+target_link_libraries(eclMultiArrayMatrixMul gmac-hpe)
+endif(USE_BOOST)
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)
 if(USE_OPENGL)
