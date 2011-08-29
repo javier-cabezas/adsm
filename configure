@@ -86,6 +86,18 @@ do
     --enable-internal)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_INTERNAL_API=ON"
         ;;
+    --enable-tr1)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TR1=ON"
+        ;;
+    --disable-tr1)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_TR1=OFF"
+        ;;
+    --enable-boost)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_BOOST=ON"
+        ;;
+    --disable-boost)
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_BOOST=OFF"
+        ;;
     --with-block-size=*)
         size=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DGMAC_BLOCK_SIZE=${size}"

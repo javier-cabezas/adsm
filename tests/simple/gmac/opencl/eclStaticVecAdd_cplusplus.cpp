@@ -35,23 +35,23 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc input data
-    ecl::static_array<float> a(vecSize);
-    ecl::static_array<float> b(vecSize);
+    ecl::array<float> a(vecSize);
+    ecl::array<float> b(vecSize);
 
     // Alloc output data
-    ecl::static_array<float> c(vecSize);
+    ecl::array<float> c(vecSize);
 
-    assert(&a != NULL);
-    assert(&b != NULL);
-    assert(&c != NULL);
+    assert(a.data() != NULL);
+    assert(b.data() != NULL);
+    assert(c.data() != NULL);
 
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
     getTime(&S);
     getTime(&s);
-    randInitMax(&a, 10.f, vecSize);
-    randInitMax(&b, 10.f, vecSize);
+    randInitMax(a.data(), 10.f, vecSize);
+    randInitMax(b.data(), 10.f, vecSize);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -68,13 +68,13 @@ int main(int argc, char *argv[])
     ecl::kernel kernel("vecAdd", err);
     assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-    assert(kernel.setArg(0, &c) == eclSuccess);
-    assert(kernel.setArg(1, &a) == eclSuccess);
-    assert(kernel.setArg(2, &b) == eclSuccess);
+    assert(kernel.setArg(0, c.data()) == eclSuccess);
+    assert(kernel.setArg(1, a.data()) == eclSuccess);
+    assert(kernel.setArg(2, b.data()) == eclSuccess);
     assert(kernel.setArg(3, vecSize) == eclSuccess);
     assert(kernel.callNDRange(globalSize) == eclSuccess);
 #else
-    assert(kernel(globalSize)(&c, &a, &b, vecSize) == eclSuccess);
+    assert(kernel(globalSize)(c.data(), a.data(), b.data(), vecSize) == eclSuccess);
 #endif
 
     getTime(&t);

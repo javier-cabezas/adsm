@@ -586,9 +586,20 @@ void deviceCopy(THREAD_T tid)
 } // namespace @OPENCL_API_PREFIX@
 
 
+#include <memory>
+
 #include <gmac/new>
 
+#define USE_TR1_HEADER @USE_TR1_HEADER@
+#if USE_TR1_HEADER == 1
 #include <tr1/memory>
+#endif
+
+#define USE_BOOST_HEADER @USE_BOOST_HEADER@
+#if USE_BOOST_HEADER == 1
+#include <boost/version.hpp>
+#include <boost/multi_array.hpp>
+#endif
 
 namespace @OPENCL_API_PREFIX@ {
     static ::__gmac_allocator allocator;
