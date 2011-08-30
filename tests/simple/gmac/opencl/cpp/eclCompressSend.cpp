@@ -10,7 +10,7 @@
 #include "debug.h"
 #include "barrier.h"
 
-#include "eclCompressCommon.cl"
+#include "../eclCompressCommon.cl"
 
 const char *widthStr = "GMAC_WIDTH";
 const char *heightStr = "GMAC_HEIGHT";
@@ -50,7 +50,7 @@ void nextStage(stage_t *current, stage_t *next)
 		gmac_sem_wait(&next->free, 1);
 		next->next_in = current->out;
 		next->next_out = current->in;
-		eclDeviceSendReceive(next->id);
+		ecl::deviceSendReceive(next->id);
 	}
 	if(current != NULL) {
 		current->in = current->next_in;
@@ -63,7 +63,6 @@ barrier_t barrierInit;
 
 void *dct_thread(void *args)
 {
-	gmacError_t ret;
     gmactime_t s, t;
 
     barrier_wait(&barrierInit);
@@ -82,10 +81,10 @@ void *dct_thread(void *args)
 
 	for(unsigned i = 0; i < frames; i++) {
         getTime(&s);
-		ret = eclMalloc((void **)&s_dct.in, width * height * sizeof(float));
-		assert(ret == gmacSuccess);
-		ret = eclMalloc((void **)&s_dct.out, width * height * sizeof(float));
-		assert(ret == gmacSuccess);
+        s_dct.in = new (ecl::allocator) float[width * height];
+		assert(s_dct.in != NULL);
+        s_dct.out = new (ecl::allocator) float[width * height];
+		assert(s_dct.out != NULL);
         getTime(&t);
         printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -105,16 +104,16 @@ void *dct_thread(void *args)
 		gmac_sem_wait(&s_quant.free, 1);
 		s_quant.next_in = s_dct.out;
 		s_quant.next_out = s_dct.in;
-		eclDeviceSendReceive(s_quant.id);
+		ecl::deviceSendReceive(s_quant.id);
         getTime(&t);
         printTime(&s, &t, "DCT:SendRecv: ", "\n");
 	}
 
     getTime(&s);
-	ret = eclMalloc((void **)&s_dct.in, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = eclMalloc((void **)&s_dct.out, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
+    s_dct.in = new (ecl::allocator) float[width * height];
+    assert(s_dct.in != NULL);
+    s_dct.out = new (ecl::allocator) float[width * height];
+    assert(s_dct.out != NULL);
     getTime(&t);
     printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -122,15 +121,15 @@ void *dct_thread(void *args)
 	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
-	eclDeviceSendReceive(s_quant.id);
+	ecl::deviceSendReceive(s_quant.id);
     getTime(&t);
     printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
     getTime(&s);
-	ret = eclMalloc((void **)&s_dct.in, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = eclMalloc((void **)&s_dct.out, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
+    s_dct.in = new (ecl::allocator) float[width * height];
+    assert(s_dct.in != NULL);
+    s_dct.out = new (ecl::allocator) float[width * height];
+    assert(s_dct.out != NULL);
     getTime(&t);
     printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -138,7 +137,7 @@ void *dct_thread(void *args)
 	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
-	eclDeviceSendReceive(s_quant.id);
+	ecl::deviceSendReceive(s_quant.id);
     getTime(&t);
     printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
@@ -200,14 +199,14 @@ void *idct_thread(void *args)
 
     getTime(&s);
 	gmac_sem_post(&s_idct.free, 1);
-	eclDeviceSendReceive(s_dct.id);
+	ecl::deviceSendReceive(s_dct.id);
 	nextStage(&s_idct, NULL);
     getTime(&t);
     printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
     getTime(&s);
 	gmac_sem_post(&s_idct.free, 1);
-	eclDeviceSendReceive(s_dct.id);
+	ecl::deviceSendReceive(s_dct.id);
     getTime(&t);
 	nextStage(&s_idct, NULL);
     getTime(&t);
@@ -233,21 +232,21 @@ void *idct_thread(void *args)
         printTime(&s, &t, "IDCT:Run: ", "\n");
 
         getTime(&s);
-		assert(eclFree(s_idct.in) == gmacSuccess);
-		assert(eclFree(s_idct.out) == gmacSuccess);
+		assert(ecl::free(s_idct.in) == eclSuccess);
+		assert(ecl::free(s_idct.out) == eclSuccess);
         getTime(&t);
         printTime(&s, &t, "IDCT:Free: ", "\n");
 
         getTime(&s);
-		eclDeviceSendReceive(s_dct.id);
+		ecl::deviceSendReceive(s_dct.id);
 		nextStage(&s_idct, NULL);
         getTime(&t);
         printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 	}
 
     getTime(&s);
-	eclFree(s_idct.in);
-	eclFree(s_idct.out);
+	ecl::free(s_idct.in);
+	ecl::free(s_idct.out);
     getTime(&t);
     printTime(&s, &t, "IDCT:Free: ", "\n");
 
