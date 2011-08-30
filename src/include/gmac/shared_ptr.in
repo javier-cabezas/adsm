@@ -46,9 +46,6 @@ WITH THE SOFTWARE.  */
 
 #if USE_TR1_HEADER == 1
 
-template <typename T>
-class shared_ptr;
-
 /// shared_ptr wrapper using std::tr1::shared_ptr
 template <typename T>
 class shared_ptr :
