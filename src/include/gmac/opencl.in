@@ -591,9 +591,12 @@ void deviceCopy(THREAD_T tid)
 #include <gmac/new>
 
 #define USE_TR1_HEADER @USE_TR1_HEADER@
+
+#ifndef _MSC_VER
 #if USE_TR1_HEADER == 1
 #include <tr1/memory>
 #endif
+#endif // _MSC_VER
 
 #define USE_BOOST_HEADER @USE_BOOST_HEADER@
 #if USE_BOOST_HEADER == 1
