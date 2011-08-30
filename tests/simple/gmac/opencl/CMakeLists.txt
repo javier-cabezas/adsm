@@ -27,114 +27,123 @@ string(REPLACE "${CMAKE_SOURCE_DIR}" "" current_GROUP ${CMAKE_CURRENT_SOURCE_DIR
 string(REGEX REPLACE "^/" "" current_GROUP ${current_GROUP})
 string(REPLACE "/" "\\\\" current_GROUP ${current_GROUP})
 source_group(${current_GROUP} FILES
-    eclInit.cpp
-    eclColumnMajor.cpp
-    eclCompress.cpp
-    eclCompressCommon.cl
-    eclCompressSend.cl
-    eclMatrixMul.cpp
-    eclMatrixMulKernel.cl
-    eclMultiArrayMatrixMul_cplusplus.cpp
-    eclMemcpy.cpp
-    eclMemset.cpp
-    eclFile.cpp
-    eclFileVecAdd.cpp
-    eclPingPong.cpp
-    eclBarr.cpp
-    eclPartialVecAdd_cplusplus.cpp
-    eclStaticVecAdd_cplusplus.cpp
-    eclSharedPtrVecAdd_cplusplus.cpp
-    eclRandomAccess.cpp
-    eclSharedVecAdd.cpp
-    eclStencil.cpp
-    eclStencilCommon.h
-    eclThreading.cpp
-    eclThreadVecAdd.cpp
-    eclThreadStencil.cpp
     oclVecAdd.cpp
-    eclVecAdd.cpp
-    eclVecAdd_cplusplus.cpp
     NBody/NBody.h
     NBody/NBody.cpp
-    NBody_GMAC/NBody.h
-    NBody_GMAC/NBody.cpp
+    eclCompressCommon.cl
+    eclMatrixMulKernel.cl
+    c/eclBarr.cpp
+    c/eclFile.cpp
+    c/eclFileVecAdd.cpp
+    c/eclInit.cpp
+    c/eclMatrixMul.cpp
+    c/eclMemcpy.cpp
+    c/eclMemset.cpp
+    c/eclPingPong.cpp
+    c/eclSharedVecAdd.cpp
+    c/eclStencil.cpp
+    c/eclStencilCommon.h
+    c/eclThreading.cpp
+    c/eclThreadVecAdd.cpp
+    c/eclThreadStencil.cpp
+    c/eclVecAdd.cpp
+    c/NBody_GMAC/NBody.h
+    c/NBody_GMAC/NBody.cpp
+    cpp/eclColumnMajor.cpp
+    cpp/eclCompress.cpp
+    cpp/eclCompressSend.cpp
+    cpp/eclPartialVecAdd_cplusplus.cpp
+    cpp/eclStaticVecAdd_cplusplus.cpp
+    cpp/eclSharedPtrVecAdd_cplusplus.cpp
+    cpp/eclMultiArrayMatrixMul_cplusplus.cpp
+    cpp/eclRandomAccess.cpp
+    cpp/eclVecAdd_cplusplus.cpp
 )
 
-add_executable(eclInit ${common_SRC} eclInit.cpp)
-target_link_libraries(eclInit gmac-hpe)
-
-add_executable(eclColumnMajor ${common_SRC} eclColumnMajor.cpp)
-target_link_libraries(eclColumnMajor gmac-hpe)
-
-add_executable(eclCompress ${common_SRC} eclCompress.cpp eclCompressCommon.cl)
-target_link_libraries(eclCompress gmac-hpe)
-
-add_executable(eclCompressSend ${common_SRC} eclCompressSend.cpp eclCompressCommon.cl)
-target_link_libraries(eclCompressSend gmac-hpe)
+# Plain OpenCL tests
 
 add_executable(oclVecAdd ${common_SRC} oclVecAdd.cpp)
 target_link_libraries(oclVecAdd ${opencl_LIB} ${thread_LIB})
 
-add_executable(eclVecAdd ${common_SRC} eclVecAdd.cpp)
-target_link_libraries(eclVecAdd gmac-hpe)
+# C API
 
-add_executable(eclVecAdd_cplusplus ${common_SRC} eclVecAdd_cplusplus.cpp)
-target_link_libraries(eclVecAdd_cplusplus gmac-hpe)
-
-add_executable(eclThreadVecAdd ${common_SRC} eclThreadVecAdd.cpp)
-target_link_libraries(eclThreadVecAdd gmac-hpe)
-
-add_executable(eclPartialVecAdd_cplusplus ${common_SRC} eclPartialVecAdd_cplusplus.cpp)
-target_link_libraries(eclPartialVecAdd_cplusplus gmac-hpe)
-
-add_executable(eclStaticVecAdd_cplusplus ${common_SRC} eclStaticVecAdd_cplusplus.cpp)
-target_link_libraries(eclStaticVecAdd_cplusplus gmac-hpe)
-
-if(USE_TR1)
-add_executable(eclSharedPtrVecAdd_cplusplus ${common_SRC} eclSharedPtrVecAdd_cplusplus.cpp)
-target_link_libraries(eclSharedPtrVecAdd_cplusplus gmac-hpe)
-endif(USE_TR1)
-
-add_executable(eclMemcpy ${common_SRC} eclMemcpy.cpp)
-target_link_libraries(eclMemcpy gmac-hpe)
-
-add_executable(eclMemset ${common_SRC} eclMemset.cpp)
-target_link_libraries(eclMemset gmac-hpe)
-
-add_executable(eclFile ${common_SRC} eclFile.cpp)
-target_link_libraries(eclFile gmac-hpe)
-
-add_executable(eclFileVecAdd ${common_SRC} eclFileVecAdd.cpp)
-target_link_libraries(eclFileVecAdd gmac-hpe)
-
-add_executable(eclPingPong ${common_SRC} eclPingPong.cpp)
-target_link_libraries(eclPingPong gmac-hpe)
-
-add_executable(eclRandomAccess ${common_SRC} eclRandomAccess.cpp)
-target_link_libraries(eclRandomAccess gmac-hpe)
-
-add_executable(eclSharedVecAdd ${common_SRC} eclSharedVecAdd.cpp)
-target_link_libraries(eclSharedVecAdd gmac-hpe)
-
-add_executable(eclStencil ${common_SRC} eclStencil.cpp eclStencilCommon.h)
-target_link_libraries(eclStencil gmac-hpe)
-
-add_executable(eclThreadStencil ${common_SRC} eclThreadStencil.cpp eclStencilCommon.h)
-target_link_libraries(eclThreadStencil gmac-hpe)
-
-add_executable(eclThreading ${common_SRC} eclThreading.cpp)
-target_link_libraries(eclThreading gmac-hpe)
-
-add_executable(eclBarr ${common_SRC} eclBarr.cpp)
+add_executable(eclBarr ${common_SRC} c/eclBarr.cpp)
 target_link_libraries(eclBarr gmac-hpe)
 
-add_executable(eclMatrixMul ${common_SRC} eclMatrixMul.cpp eclMatrixMulKernel.cl)
+add_executable(eclFile ${common_SRC} c/eclFile.cpp)
+target_link_libraries(eclFile gmac-hpe)
+
+add_executable(eclFileVecAdd ${common_SRC} c/eclFileVecAdd.cpp)
+target_link_libraries(eclFileVecAdd gmac-hpe)
+
+add_executable(eclInit ${common_SRC} c/eclInit.cpp)
+target_link_libraries(eclInit gmac-hpe)
+
+add_executable(eclMatrixMul ${common_SRC} c/eclMatrixMul.cpp eclMatrixMulKernel.cl)
 target_link_libraries(eclMatrixMul gmac-hpe)
 
+add_executable(eclMemcpy ${common_SRC} c/eclMemcpy.cpp)
+target_link_libraries(eclMemcpy gmac-hpe)
+
+add_executable(eclMemset ${common_SRC} c/eclMemset.cpp)
+target_link_libraries(eclMemset gmac-hpe)
+
+add_executable(eclPingPong ${common_SRC} c/eclPingPong.cpp)
+target_link_libraries(eclPingPong gmac-hpe)
+
+add_executable(eclSharedVecAdd ${common_SRC} c/eclSharedVecAdd.cpp)
+target_link_libraries(eclSharedVecAdd gmac-hpe)
+
+add_executable(eclStencil ${common_SRC} c/eclStencil.cpp c/eclStencilCommon.h)
+target_link_libraries(eclStencil gmac-hpe)
+
+add_executable(eclThreading ${common_SRC} c/eclThreading.cpp)
+target_link_libraries(eclThreading gmac-hpe)
+
+add_executable(eclThreadStencil ${common_SRC} c/eclThreadStencil.cpp c/eclStencilCommon.h)
+target_link_libraries(eclThreadStencil gmac-hpe)
+
+add_executable(eclThreadVecAdd ${common_SRC} c/eclThreadVecAdd.cpp)
+target_link_libraries(eclThreadVecAdd gmac-hpe)
+
+add_executable(eclVecAdd ${common_SRC} c/eclVecAdd.cpp)
+target_link_libraries(eclVecAdd gmac-hpe)
+
+
+# C++ API
+
+add_executable(eclColumnMajor_cpp ${common_SRC} cpp/eclColumnMajor.cpp)
+target_link_libraries(eclColumnMajor_cpp gmac-hpe)
+
+add_executable(eclCompress_cpp ${common_SRC} cpp/eclCompress.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompress_cpp gmac-hpe)
+
+add_executable(eclCompressSend_cpp ${common_SRC} cpp/eclCompressSend.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompressSend_cpp gmac-hpe)
+
+add_executable(eclVecAdd_cpp ${common_SRC} cpp/eclVecAdd.cpp)
+target_link_libraries(eclVecAdd_cpp gmac-hpe)
+
+add_executable(eclPartialVecAdd_cpp ${common_SRC} cpp/eclPartialVecAdd.cpp)
+target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
+
+add_executable(eclStaticVecAdd_cpp ${common_SRC} cpp/eclStaticVecAdd.cpp)
+target_link_libraries(eclStaticVecAdd_cpp gmac-hpe)
+
+if(USE_TR1)
+add_executable(eclSharedPtrVecAdd_cpp ${common_SRC} cpp/eclSharedPtrVecAdd.cpp)
+target_link_libraries(eclSharedPtrVecAdd_cpp gmac-hpe)
+endif(USE_TR1)
+
+add_executable(eclRandomAccess_cpp ${common_SRC} cpp/eclRandomAccess.cpp)
+target_link_libraries(eclRandomAccess_cpp gmac-hpe)
+
 if(USE_BOOST)
-add_executable(eclMultiArrayMatrixMul ${common_SRC} eclMultiArrayMatrixMul_cplusplus.cpp eclMatrixMulKernel.cl)
-target_link_libraries(eclMultiArrayMatrixMul gmac-hpe)
+add_executable(eclMultiArrayMatrixMul_cpp ${common_SRC} cpp/eclMultiArrayMatrixMul.cpp eclMatrixMulKernel.cl)
+target_link_libraries(eclMultiArrayMatrixMul_cpp gmac-hpe)
 endif(USE_BOOST)
+
+# OpenGL tests
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)
 if(USE_OPENGL)
@@ -149,13 +158,15 @@ if(USE_OPENGL)
     find_library(glew_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}GLEW${CMAKE_SHARED_LIBRARY_SUFFIX}
         HINTS ${GLEW_LIBRARY} ${OPENCL_LIBRARY} ENV "OPENCL_LIBRARY_PATH")
 
+    # Regular OpenCL application
+    add_executable(oclNBody ${common_SRC} NBody/NBody.h NBody/NBody.cpp)
+    target_link_libraries(oclNBody ${opencl_LIB} ${thread_LIB} ${opengl_LIBS})
+
+    # C API
     set(opengl_LIBS ${gl_LIB} ${glu_LIB} ${glut_LIB} ${glew_LIB})
     message(STATUS "OpenGL Libraries: ${opengl_LIBS}")
     add_executable(eclNBody ${common_SRC} NBody_GMAC/NBody.h NBody_GMAC/NBody.cpp)
     target_link_libraries(eclNBody gmac-hpe ${opengl_LIBS})
-
-    add_executable(oclNBody ${common_SRC} NBody/NBody.h NBody/NBody.cpp)
-    target_link_libraries(oclNBody ${opencl_LIB} ${thread_LIB} ${opengl_LIBS})
 
     file(COPY NBody/NBody_Kernels.cl DESTINATION ${PROJECT_BINARY_DIR})
 endif(USE_OPENGL)

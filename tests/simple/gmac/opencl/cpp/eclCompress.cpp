@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "debug.h"
 
-#include "eclCompressCommon.cl"
+#include "../eclCompressCommon.cl"
 
 const char *widthStr = "GMAC_WIDTH";
 const char *heightStr = "GMAC_HEIGHT";
@@ -56,14 +56,13 @@ void __randInit(float *a, unsigned size)
 void *dct_thread(void *args)
 {
 	float *in, *out;
-	gmacError_t ret;
     gmactime_t s, t;
 
     getTime(&s);
-	ret = eclMalloc((void **)&in, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = eclMalloc((void **)&out, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
+	in = new (ecl::allocator) float[width * height];
+	assert(in != NULL);
+	out = new (ecl::allocator) float[width * height];
+	assert(out != NULL);
     getTime(&t);
     timeDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
@@ -93,15 +92,15 @@ void *dct_thread(void *args)
 
         getTime(&s);
 		gmac_sem_wait(&quant_free, 1); /* Wait for quant to use its data */
-		eclMemcpy(quant_in, out, width * height * sizeof(float));
+        ecl::memcpy(quant_in, out, width * height * sizeof(float));
 		gmac_sem_post(&quant_data, 1); /* Notify to Quant that data is ready */
         getTime(&t);
         timeDCTCopy += getTimeStamp(t) - getTimeStamp(s);
 	}
 
     getTime(&s);
-	eclFree(in);
-	eclFree(out);
+    ecl::free(in);
+	ecl::free(out);
     getTime(&t);
     timeDCTFree += getTimeStamp(t) - getTimeStamp(s);
 
@@ -111,14 +110,13 @@ void *dct_thread(void *args)
 void *quant_thread(void *args)
 {
 	float *out;
-	gmacError_t ret;
     gmactime_t s, t;
 
     getTime(&s);
-	ret = eclMalloc((void **)&quant_in, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = eclMalloc((void **)&out, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
+    quant_in = new (ecl::allocator) float[width * height];
+	assert(quant_in != NULL);
+    out = new (ecl::allocator) float[width * height];
+	assert(out != NULL);
     getTime(&t);
     timeQuantAlloc += getTimeStamp(t) - getTimeStamp(s);
 
@@ -147,7 +145,7 @@ void *quant_thread(void *args)
 		
         getTime(&s);
 		gmac_sem_wait(&idct_free, 1); /* Wait for IDCT to use its data */
-		eclMemcpy(idct_in, out, width * height * sizeof(float));
+        ecl::memcpy(idct_in, out, width * height * sizeof(float));
 		gmac_sem_post(&quant_free, 1); /* Notify to DCT that Quant is waiting for data */
 		gmac_sem_post(&idct_data, 1); /* Nodify to IDCT that data is ready */
         getTime(&t);
@@ -155,8 +153,8 @@ void *quant_thread(void *args)
 	}
 
     getTime(&s);
-	eclFree(quant_in);
-	eclFree(out);
+	ecl::free(quant_in);
+	ecl::free(out);
     getTime(&t);
     timeQuantFree += getTimeStamp(t) - getTimeStamp(s);
 
@@ -166,14 +164,13 @@ void *quant_thread(void *args)
 void *idct_thread(void *args)
 {
 	float *out;
-	gmacError_t ret;
     gmactime_t s, t;
 
     getTime(&s);
-	ret = eclMalloc((void **)&idct_in, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
-	ret = eclMalloc((void **)&out, width * height * sizeof(float));
-	assert(ret == gmacSuccess);
+    idct_in = new (ecl::allocator) float[width * height];
+	assert(idct_in != NULL);
+    out = new (ecl::allocator) float[width * height];
+	assert(out != NULL);
     getTime(&t);
     timeIDCTAlloc += getTimeStamp(t) - getTimeStamp(s);
 
@@ -203,8 +200,8 @@ void *idct_thread(void *args)
 
     memset(out, 0, width * height * sizeof(float));
     getTime(&s);
-	eclFree(idct_in);
-	eclFree(out);
+	ecl::free(idct_in);
+	ecl::free(out);
     getTime(&t);
     timeIDCTFree += getTimeStamp(t) - getTimeStamp(s);
 
