@@ -106,9 +106,10 @@ static void fini(void)
 #if defined(_WIN32)
 #include <windows.h>
 
-static void InitThread()
+static void InitThread(bool isRunTimeThread)
 {
     gmac::trace::StartThread("CPU");
+    isRunTimeThread_ = isRunTimeThread;
     enterGmac();
     __impl::core::hpe::getProcess().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
@@ -124,6 +125,9 @@ static void FiniThread()
     exitGmac();
 }
 
+#include <Winternl.h>
+#include <Psapi.h>
+
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
@@ -133,7 +137,64 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
     case DLL_PROCESS_DETACH:
         break;
     case DLL_THREAD_ATTACH:
-        InitThread();
+        {
+            typedef NTSTATUS (WINAPI *myfun)(HANDLE h, THREADINFOCLASS t, PVOID p, ULONG u, PULONG l);
+
+            static DWORD pid;
+            static HANDLE processHandle;
+            static HMODULE dll = NULL;
+            static myfun NtQueryInformationThread_ = NULL;
+            static void *openCLStartAddr;
+            static void *openCLEndAddr;
+            static void *nvCUDAStartAddr;
+            static void *nvCUDAEndAddr;
+
+            if (NtQueryInformationThread_ == NULL) {
+                // Load ntdll library since we need NtQueryInformationThread
+                dll = LoadLibrary("ntdll.dll");
+                CFATAL(dll != NULL, "Error loading ntdll.dll");
+                NtQueryInformationThread_ = (myfun) GetProcAddress(dll, "NtQueryInformationThread");
+                CFATAL(NtQueryInformationThread_ != NULL, "Error finding NtQueryInformationThread");
+
+                // Get process handler
+                pid = GetCurrentProcessId();
+                processHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid);
+                CFATAL(processHandle != NULL, "Error opening process");
+
+                // Get OpenCL.dll and nvcuda.dll memory load addresses
+                HMODULE libHandle = GetModuleHandle("OpenCL.dll");
+                CFATAL(libHandle != NULL);
+                MODULEINFO libInfo;
+                BOOL ret = GetModuleInformation(processHandle, libHandle, &libInfo, sizeof(libInfo));
+                CFATAL(ret != 0, "Error getting OpenCL.dll information");
+                openCLStartAddr = libHandle;
+                openCLEndAddr = (void *) (LPCCH(libHandle) + libInfo.SizeOfImage);
+
+                libHandle = GetModuleHandle("nvcuda.dll");
+                if (libHandle != NULL) {
+                    ret = GetModuleInformation(processHandle, libHandle, &libInfo, sizeof(libInfo));
+                    CFATAL(ret != 0, "Error getting nvcuda.dll information");
+                    nvCUDAStartAddr = libHandle;
+                    nvCUDAEndAddr = (void *) (LPCCH(libHandle) + libInfo.SizeOfImage);
+                }
+            }
+
+            // Get thread start address
+            DWORD tid = GetCurrentThreadId();
+            HANDLE threadHandle = OpenThread(THREAD_QUERY_INFORMATION, false, tid);
+            CFATAL(threadHandle != NULL, "Error opening thread");
+            void *threadStartAddr = NULL;
+
+            ULONG sizeInfo;
+            NTSTATUS status;
+            status = NtQueryInformationThread_(threadHandle, THREADINFOCLASS(9), &threadStartAddr, sizeof(void *), &sizeInfo);
+            CFATAL(status == 0);
+
+            bool isRunTimeThread = (threadStartAddr >= openCLStartAddr && threadStartAddr < openCLEndAddr) ||
+                                   (threadStartAddr >= nvCUDAStartAddr && threadStartAddr < nvCUDAEndAddr);
+
+            InitThread(isRunTimeThread);
+        }
         break;
     case DLL_THREAD_DETACH:
         FiniThread();

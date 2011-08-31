@@ -53,10 +53,14 @@ namespace __impl {
     }
 }
 
+#include "util/Private.h"
+
+extern PRIVATE bool isRunTimeThread_;
+
 void initGmac() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
 void enterGmacExclusive() GMAC_LOCAL;
 void exitGmac() GMAC_LOCAL;
-char inGmac() GMAC_LOCAL;
+bool inGmac() GMAC_LOCAL;
 
 #endif

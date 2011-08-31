@@ -124,7 +124,7 @@ private:
     static Parameter<const char *> *Level_;
     static const char *DebugString_;
     static std::list<std::string> *Tags_;
-	static Private<char> Buffer_;    
+	static PRIVATE char *Buffer_;
 
     static const size_t BufferSize_ = 1024;
 

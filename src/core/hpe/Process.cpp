@@ -93,6 +93,8 @@ void QueueMap::erase(THREAD_T id)
     unlock();
 }
 
+PRIVATE Mode *Process::CurrentMode_ = NULL;
+
 Process::Process() :
     core::Process(),
     gmac::util::RWLock("Process"),
@@ -103,7 +105,6 @@ Process::Process() :
     current_(0)
 {
     // Create the private per-thread variables for the implicit thread
-    util::Private<Mode>::init(CurrentMode_);
     initThread();
 }
 
@@ -129,15 +130,14 @@ void Process::initThread()
     ThreadQueue * q = new ThreadQueue();
     queues_.insert(util::GetThreadId(), q);
     // Set the private per-thread variables
-    CurrentMode_.set(NULL);
+    CurrentMode_ = NULL;
 }
 
 void Process::finiThread()
 {
     queues_.erase(util::GetThreadId());
-    Mode *mode = CurrentMode_.get();
-    if(mode != NULL) removeMode(*mode);
-    CurrentMode_.set(NULL);
+    if(CurrentMode_ != NULL) removeMode(*CurrentMode_);
+    CurrentMode_ = NULL;
 }
 
 Mode *Process::createMode(int acc)
@@ -184,11 +184,9 @@ void Process::removeMode(Mode &mode)
 
 Mode &Process::getCurrentMode()
 {
-    Mode *mode = CurrentMode_.get();
-    if(mode != NULL) return *mode;
-    mode = createMode();
-    CurrentMode_.set(mode);
-    return *mode;
+    if(CurrentMode_ != NULL) return *CurrentMode_;
+    CurrentMode_ = createMode();
+    return *CurrentMode_;
 }
 
 gmacError_t Process::globalMalloc(memory::Object &object)
@@ -228,19 +226,17 @@ gmacError_t Process::globalFree(memory::Object &object)
 gmacError_t Process::migrate(int acc)
 {
     if (acc >= int(accs_.size())) return gmacErrorInvalidValue;
-    Mode *mode = CurrentMode_.get();
-    if(mode == NULL) {
-        mode = createMode(acc);
-        CurrentMode_.set(mode);
+    if(CurrentMode_ == NULL) {
+        CurrentMode_ = createMode(acc);
         return gmacSuccess;
     }
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
-    if (int(mode->getAccelerator().id()) != acc) {
+    if (int(CurrentMode_->getAccelerator().id()) != acc) {
         // Create a new context in the requested accelerator
         //ret = _accs[acc]->bind(mode);
-        ret = mode->moveTo(*accs_[acc]);
+        ret = CurrentMode_->moveTo(*accs_[acc]);
     }
 #else
     FATAL("Migration not implemented when using mmap");
@@ -257,50 +253,45 @@ void Process::addAccelerator(Accelerator &acc)
 
 accptr_t Process::translate(const hostptr_t addr)
 {
-    Mode *mode = CurrentMode_.get();
-    if(mode == NULL) return accptr_t(0);
-    memory::Object *object = mode->getObject(addr);
+    if(CurrentMode_ == NULL) return accptr_t(0);
+    memory::Object *object = CurrentMode_->getObject(addr);
     if(object == NULL) return accptr_t(0);
-    accptr_t ptr = object->acceleratorAddr(*mode, addr);
+    accptr_t ptr = object->acceleratorAddr(*CurrentMode_, addr);
     object->decRef();
     return ptr;
 }
 
 void Process::send(THREAD_T id)
 {
-    Mode *mode = CurrentMode_.get();
-    if(mode == NULL) return;
-    mode->wait();
-    queues_.push(id, *mode);
-    CurrentMode_.set(NULL);
+    if(CurrentMode_ == NULL) return;
+    CurrentMode_->wait();
+    queues_.push(id, *CurrentMode_);
+    CurrentMode_ = NULL;
 }
 
 void Process::receive()
 {
     // Get current context and destroy (if necessary)
-    Mode *mode = CurrentMode_.get();
-    if(mode != NULL) mode->decRef();
+    if(CurrentMode_ != NULL) CurrentMode_->decRef();
     // Get a fresh context
-    CurrentMode_.set(queues_.pop());
+    CurrentMode_ = queues_.pop();
 }
 
 void Process::sendReceive(THREAD_T id)
 {
-    Mode *mode = CurrentMode_.get();
-    if(mode != NULL) {
-        mode->wait();
-        queues_.push(id, *mode);
+    if(CurrentMode_ != NULL) {
+        CurrentMode_->wait();
+        queues_.push(id, *CurrentMode_);
     }
-    CurrentMode_.set(queues_.pop());
+    CurrentMode_ = queues_.pop();
 }
 
 void Process::copy(THREAD_T id)
 {
-    Mode *mode = CurrentMode_.get();
-    if(mode == NULL) return;
-    queues_.push(id, *mode);
-    mode->incRef();
-    modes_.insert(mode);
+    if(CurrentMode_ == NULL) return;
+    queues_.push(id, *CurrentMode_);
+    CurrentMode_->incRef();
+    modes_.insert(CurrentMode_);
 }
 
 core::Mode *Process::owner(const hostptr_t addr, size_t size)

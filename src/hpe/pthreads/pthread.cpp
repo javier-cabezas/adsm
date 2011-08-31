@@ -21,11 +21,11 @@
 
 using namespace __impl::core::hpe;
 
-SYM(int, __pthread_create, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
+SYM(int, pthread_create__, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
 {
-    LOAD_SYM(__pthread_create, pthread_create);
+    LOAD_SYM(pthread_create__, pthread_create);
 }
 
 static void __attribute__((destructor())) gmacPthreadFini(void)
@@ -33,9 +33,9 @@ static void __attribute__((destructor())) gmacPthreadFini(void)
 }
 
 struct gmac_thread_t {
-    void *(*__start_routine)(void *);
-    void *__arg;
-    bool __do_exit;
+    void *(*start_routine)(void *);
+    void *arg;
+    bool external_call;
 };
 
 static void *gmac_pthread(void *arg)
@@ -43,13 +43,18 @@ static void *gmac_pthread(void *arg)
     gmac::trace::StartThread("CPU");
     enterGmac();
     gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    bool do_exit = gthread->__do_exit;
+    bool external_call = gthread->external_call;
+
+    // This TLS variable is necessary before entering GMAC
+    isRunTimeThread_ = external_call != true;
+
     Process &proc = getProcess();
     proc.initThread();
     gmac::trace::SetThreadState(gmac::trace::Running);
-    if(do_exit) exitGmac();
-    void *ret = gthread->__start_routine(gthread->__arg);
-    if(do_exit) enterGmac();
+    if(external_call) exitGmac();
+    void *ret = gthread->start_routine(gthread->arg);
+    if(external_call) enterGmac();
+
     // Modes and Contexts already destroyed in Process destructor
     proc.finiThread();
     free(gthread);
@@ -58,20 +63,20 @@ static void *gmac_pthread(void *arg)
     return ret;
 }
 
-int pthread_create(pthread_t *__restrict __newthread,
-                   __const pthread_attr_t *__restrict __attr,
-                   void *(*__start_routine)(void *),
-                   void *__restrict __arg)
+int pthread_create(pthread_t *__restrict newthread,
+                   __const pthread_attr_t *__restrict attr,
+                   void *(*start_routine)(void *),
+                   void *__restrict arg)
 {
     int ret = 0;
     bool externCall = inGmac() == 0;
     if(externCall) enterGmac();
     TRACE(GLOBAL, "New POSIX thread");
     gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
-    gthread->__start_routine = __start_routine;
-    gthread->__arg = __arg;
-    gthread->__do_exit = externCall;
-    ret = __pthread_create(__newthread, __attr, gmac_pthread, (void *)gthread);
+    gthread->start_routine = start_routine;
+    gthread->arg = arg;
+    gthread->externCall = externCall;
+    ret = pthread_create__(newthread, attr, gmac_pthread, (void *)gthread);
     if(externCall) exitGmac();
     return ret;
 }

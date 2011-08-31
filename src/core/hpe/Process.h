@@ -105,7 +105,7 @@ protected:
     memory::ObjectMap global_;
     memory::ObjectMap orphans_;
 
-    util::Private<Mode> CurrentMode_;
+    static PRIVATE Mode *CurrentMode_;
 
     unsigned current_;
 
