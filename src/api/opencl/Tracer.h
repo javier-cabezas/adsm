@@ -97,7 +97,12 @@ protected:
         static const size_t NameSize = 512;
         char name[NameSize];
     };
-    static void Callback(cl_event event, cl_int status, void *data);
+#if defined(_MSC_VER)
+#	define STDCALL __stdcall
+#else
+#	define STDCALL
+#endif
+    static void STDCALL Callback(cl_event event, cl_int status, void *data);
 #endif
 public:
     /** Default constructor */
