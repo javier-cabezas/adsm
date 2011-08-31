@@ -35,7 +35,7 @@ static void __attribute__((destructor())) gmacPthreadFini(void)
 struct gmac_thread_t {
     void *(*start_routine)(void *);
     void *arg;
-    bool external_call;
+    bool externCall;
 };
 
 static void *gmac_pthread(void *arg)
@@ -43,17 +43,17 @@ static void *gmac_pthread(void *arg)
     gmac::trace::StartThread("CPU");
     enterGmac();
     gmac_thread_t *gthread = (gmac_thread_t *)arg;
-    bool external_call = gthread->external_call;
+    bool externCall = gthread->externCall;
 
     // This TLS variable is necessary before entering GMAC
-    isRunTimeThread_ = external_call != true;
+    isRunTimeThread_ = externCall != true;
 
     Process &proc = getProcess();
     proc.initThread();
     gmac::trace::SetThreadState(gmac::trace::Running);
-    if(external_call) exitGmac();
+    if(externCall) exitGmac();
     void *ret = gthread->start_routine(gthread->arg);
-    if(external_call) enterGmac();
+    if(externCall) enterGmac();
 
     // Modes and Contexts already destroyed in Process destructor
     proc.finiThread();

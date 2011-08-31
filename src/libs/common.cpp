@@ -5,11 +5,8 @@
 #include "util/Atomics.h"
 #include "util/Private.h"
 
-PRIVATE static bool inGmac_   = false;
+static PRIVATE bool inGmac_   = false;
 PRIVATE bool isRunTimeThread_ = false;
-
-static const char gmacCode = 1;
-static const char userCode = 0;
 
 static Atomic gmacInit__ = 0;
 
@@ -34,6 +31,7 @@ void enterGmac()
         inGmac_ = true;
     }
 }
+
 
 void enterGmacExclusive()
 {
