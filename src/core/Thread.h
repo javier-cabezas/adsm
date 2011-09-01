@@ -38,11 +38,16 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace core {
 
+class Thread;
+
 /** Contains some thread-dependent values */
 class TLS {
+    friend class Thread;
 private:
     static PRIVATE gmacError_t LastError_;
+};
 
+class Thread {
 public:
     // Error management
     static gmacError_t &getLastError();
