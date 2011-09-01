@@ -10,6 +10,7 @@
 #include "hpe/init.h"
 
 #include "core/hpe/Kernel.h"
+#include "core/hpe/Thread.h"
 
 #include "api/cuda/hpe/Accelerator.h"
 #include "api/cuda/hpe/Mode.h"
@@ -29,7 +30,7 @@ using __impl::cuda::hpe::VariableDescriptor;
 
 static inline Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<Mode &>(__impl::core::hpe::getCurrentMode());
+    return dynamic_cast<Mode &>(__impl::core::hpe::Thread::getCurrentMode());
 }
 
 

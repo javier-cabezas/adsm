@@ -14,6 +14,7 @@
 
 #include "memory/Manager.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 
 using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
@@ -21,7 +22,7 @@ using __impl::cuda::hpe::Variable;
 
 static inline __impl::cuda::hpe::Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
+    return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
 }
 
 static inline int __getChannelSize(CUarray_format format)

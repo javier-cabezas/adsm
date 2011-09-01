@@ -15,8 +15,7 @@ Mode::Mode() :
     gmac::util::SpinLock("Mode"),
     id_(AtomicInc(Count_)),
     modifiedObjects_(false),
-    releasedObjects_(false),
-    error_(gmacSuccess)
+    releasedObjects_(false)
 #ifdef USE_VM
     , bitmap_(*this)
 #endif
@@ -45,18 +44,6 @@ inline
 unsigned Mode::id() const
 {
     return id_;
-}
-
-inline
-gmacError_t Mode::error() const
-{
-    return error_;
-}
-
-inline
-void Mode::error(gmacError_t err)
-{
-    error_ = err;
 }
 
 inline

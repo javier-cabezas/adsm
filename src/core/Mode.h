@@ -74,8 +74,6 @@ protected:
     bool modifiedObjects_;
     bool releasedObjects_;
 
-    gmacError_t error_;
-
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;
 #endif

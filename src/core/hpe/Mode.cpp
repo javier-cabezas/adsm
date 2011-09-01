@@ -76,7 +76,7 @@ gmacError_t Mode::releaseObjects()
     switchIn();
     releasedObjects_ = true;
     switchOut();
-    return error_;
+    return gmacSuccess;
 }
 
 gmacError_t
@@ -86,7 +86,7 @@ Mode::acquireObjects()
     modifiedObjects_ = false;
     releasedObjects_ = false;
     unlock();
-    return error_;
+    return gmacSuccess;
 }
 
 void
@@ -113,14 +113,15 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 {
     switchIn();
 
+    gmacError_t ret;
     accptr_t acc(0);
     bool hasMapping = acc_->getMapping(acc, src, count);
     if (hasMapping == true) {
-        error_ = gmacSuccess;
+        ret = gmacSuccess;
         dst = acc;
         TRACE(LOCAL,"Mapping for address %p: %p", src, dst.get());
     } else {
-        error_ = acc_->map(dst, src, count, align);
+        ret = acc_->map(dst, src, count, align);
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
 
@@ -129,16 +130,16 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 #endif
 
     switchOut();
-    return error_;
+    return ret;
 }
 
 gmacError_t
 Mode::unmap(hostptr_t addr, size_t count)
 {
     switchIn();
-    error_ = acc_->unmap(addr, count);
+    gmacError_t ret = acc_->unmap(addr, count);
     switchOut();
-    return error_;
+    return ret;
 }
 
 gmacError_t
@@ -147,10 +148,10 @@ Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t count)
     TRACE(LOCAL,"Copy %p to accelerator %p ("FMT_SIZE" bytes)", host, acc.get(), count);
 
     switchIn();
-    error_ = getContext().copyToAccelerator(acc, host, count);
+    gmacError_t ret = getContext().copyToAccelerator(acc, host, count);
     switchOut();
 
-    return error_;
+    return ret;
 }
 
 gmacError_t
@@ -159,28 +160,28 @@ Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t count)
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", acc.get(), host, count);
 
     switchIn();
-    error_ = getContext().copyToHost(host, acc, count);
+    gmacError_t ret = getContext().copyToHost(host, acc, count);
     switchOut();
 
-    return error_;
+    return ret;
 }
 
 gmacError_t
 Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t count)
 {
     switchIn();
-    error_ = acc_->copyAccelerator(dst, src, count, streamToHost_);
+    gmacError_t ret = acc_->copyAccelerator(dst, src, count, streamToHost_);
     switchOut();
-    return error_;
+    return ret;
 }
 
 gmacError_t
 Mode::memset(accptr_t addr, int c, size_t count)
 {
     switchIn();
-    error_ = acc_->memset(addr, c, count, streamLaunch_);
+    gmacError_t ret = acc_->memset(addr, c, count, streamLaunch_);
     switchOut();
-    return error_;
+    return ret;
 }
 
 // Nobody can enter GMAC until this has finished. No locks are needed
