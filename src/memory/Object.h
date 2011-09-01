@@ -56,7 +56,10 @@ namespace memory {
  * Base abstraction of the memory allocations managed by GMAC. Objects are
  * divided into blocks, which are the unit of coherence
  */
-class GMAC_LOCAL Object: protected gmac::util::RWLock, public util::Reference {
+class GMAC_LOCAL Object :
+    protected gmac::util::RWLock,
+    public util::Reference {
+
     DBC_FORCE_TEST(Object)
 protected:
 #ifdef DEBUG

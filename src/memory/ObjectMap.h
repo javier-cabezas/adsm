@@ -58,14 +58,12 @@ class Protocol;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL ObjectMap :
-     protected gmac::util::RWLock, protected std::map<const hostptr_t, Object *> {
+     protected gmac::util::RWLock,
+     protected std::map<const hostptr_t, Object *>,
+     public util::NonCopyable {
 protected:
     friend class core::hpe::Map;
     typedef std::map<const hostptr_t, Object *> Parent;
-
-#ifdef DEBUG
-    unsigned nextObjectId_;
-#endif
 
     /**
      * Find an object in the map
@@ -156,11 +154,6 @@ public:
     gmacError_t forEachObject(gmacError_t (Object::*f)(void));
     gmacError_t forEachObject(gmacError_t (Object::*f)(void) const) const;
 
-#ifdef DEBUG
-    gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
-    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
-#endif
-
     /**
      * Execute an operation on all the objects in the map passing an argument
      * \param f Operation to be executed
@@ -173,6 +166,11 @@ public:
     gmacError_t forEachObject(gmacError_t (Object::*f)(T &), T &p);
     template <typename T>
     gmacError_t forEachObject(gmacError_t (Object::*f)(T &) const, T &p) const;
+
+#ifdef DEBUG
+    gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
+    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
+#endif
 };
 
 }}

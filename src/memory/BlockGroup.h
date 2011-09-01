@@ -45,7 +45,8 @@ namespace core {
 namespace memory {
 
 template<typename State>
-class GMAC_LOCAL BlockGroup : public gmac::memory::Object {
+class GMAC_LOCAL BlockGroup :
+    public gmac::memory::Object {
 protected:
     hostptr_t shadow_;
     bool hasUserMemory_;

@@ -52,7 +52,6 @@ lazy::State LazyBase::state(GmacProtection prot) const
 void LazyBase::deleteObject(Object &obj)
 {
     obj.decRef();
-    limit_ -= 2;
 }
 
 bool LazyBase::needUpdate(const Block &b) const
