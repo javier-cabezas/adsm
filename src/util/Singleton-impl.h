@@ -28,6 +28,14 @@ inline void Singleton<T>::destroy()
 	Singleton_ = NULL;
 }
 
+template <typename T>
+inline T *Singleton<T>::getInstance()
+{
+	return Singleton_;
+}
+
+
+
 }}
 
 #endif

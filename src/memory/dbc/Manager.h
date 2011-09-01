@@ -34,8 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_DBC_MANAGER_H_
 #define GMAC_MEMORY_DBC_MANAGER_H_
 
-#include "dbc/types.h"
-#include "dbc/Contract.h"
+#include "config/dbc/types.h"
+#include "config/dbc/Contract.h"
 #include "memory/Manager.h"
 
 namespace __dbc { namespace memory {

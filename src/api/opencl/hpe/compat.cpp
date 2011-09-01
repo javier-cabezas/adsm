@@ -8,9 +8,11 @@
 
 #include "api/opencl/hpe/Mode.h"
 
+#include "core/hpe/Thread.h"
+
 static inline __impl::opencl::hpe::Mode &getCurrentCLMode()
 {
-    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
+    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
 }
 
 

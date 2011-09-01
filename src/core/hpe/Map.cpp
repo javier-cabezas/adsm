@@ -19,39 +19,26 @@ Map::~Map()
 }
 
 memory::Object *
-Map::get(const memory::ObjectMap &map, hostptr_t &base, const hostptr_t addr, size_t size) const
-{
-    memory::Object *ret = map.mapFind(addr, size);
-    if(ret == NULL) return ret;
-    if(base == NULL || ret->addr() < base) {
-        base = ret->addr();
-        return ret;
-    }
-    return NULL;
-}
-
-memory::Object *
 Map::get(const hostptr_t addr, size_t size) const
 {
     memory::Object *ret = NULL;
-    hostptr_t base = NULL;
     // Lookup in the current map
-    ret = get(*this, base, addr, size);
+    ret = mapFind(addr, size);
+
+    // Exit if we have found it
+    if(ret != NULL) goto exit_func;
 
     // Check global maps
-    const Process &proc = parent_.getProcess();
-    memory::Object *obj = NULL;
+    {
+        const Process &proc = parent_.getProcess();
 
-    if(base == addr) goto exit_func;
-
-    obj = get(proc.shared(), base, addr, size);
-    if(obj != NULL) ret = obj;
-    if(base == addr) goto exit_func;
-    obj = get(proc.global(), base, addr, size);
-    if(obj != NULL) ret = obj;
-    if(base == addr) goto exit_func;
-    obj = get(proc.orphans(), base, addr, size);
-    if(obj != NULL) ret = obj;
+        ret = proc.shared().mapFind(addr, size);
+        if (ret != NULL) goto exit_func;
+        ret = proc.global().mapFind(addr, size);
+        if (ret != NULL) goto exit_func;
+        ret = proc.global().mapFind(addr, size);
+        if (ret != NULL) goto exit_func;
+    }
 
 exit_func:
     if(ret != NULL) ret->incRef();
@@ -71,7 +58,7 @@ bool Map::insert(memory::Object &obj)
 
 bool Map::remove(memory::Object &obj)
 {
-    bool ret = memory::ObjectMap::remove(obj);
+    bool ret = Parent::remove(obj);
     hostptr_t addr = obj.addr();
     // Shared object
     Process &proc = parent_.getProcess();
@@ -100,7 +87,6 @@ bool Map::remove(memory::Object &obj)
     return ret;
 }
 
-
 void Map::addOwner(Process &proc, Mode &mode)
 {
     memory::ObjectMap &global = proc.global();
@@ -111,7 +97,6 @@ void Map::addOwner(Process &proc, Mode &mode)
     }
     global.unlock();
 }
-
 
 void Map::removeOwner(Process &proc, Mode &mode)
 {

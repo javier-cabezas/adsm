@@ -6,6 +6,7 @@
 
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
@@ -71,10 +72,10 @@ void initGmac(void)
 namespace __impl {
     namespace core {
         namespace hpe {
-            Mode &getCurrentMode() { return Process_->getCurrentMode(); }
+            //Mode &getCurrentMode() { return __impl::core::hpe::Thread::getCurrentMode(); }
             Process &getProcess() { return *Process_; }
         }
-        Mode &getMode(Mode &mode) { return Process_->getCurrentMode(); }
+        Mode &getMode(Mode &mode) { return __impl::core::hpe::Thread::getCurrentMode(); }
         Process &getProcess() { return *Process_; }
     }
     namespace memory {

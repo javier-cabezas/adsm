@@ -48,6 +48,8 @@ private:
 protected:
     Singleton();
 	virtual ~Singleton();
+
+    static T *getInstance();
 public:
 
 	void destroy();

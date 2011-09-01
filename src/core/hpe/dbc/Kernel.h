@@ -2,7 +2,7 @@
 #define GMAC_CORE_HPE_DBC_KERNEL_H_
 
 #include "core/hpe/Kernel.h"
-#include "dbc/Contract.h"
+#include "config/dbc/Contract.h"
 
 namespace __dbc { namespace core { namespace hpe {
 

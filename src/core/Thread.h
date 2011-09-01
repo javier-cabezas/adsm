@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,27 +31,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_DBC_ALLOCATIONMAP_H
-#define GMAC_CORE_DBC_ALLOCATIONMAP_H
+#ifndef GMAC_CORE_THREAD_H_
+#define GMAC_CORE_THREAD_H_
 
-#include "config/dbc/types.h"
-#include "config/dbc/Contract.h"
+#include "util/Private.h"
 
-#include "core/AllocationMap.h"
+namespace __impl { namespace core {
 
-namespace __dbc { namespace core {
+/** Contains some thread-dependent values */
+class TLS {
+private:
+    static PRIVATE gmacError_t LastError_;
 
-class GMAC_LOCAL AllocationMap :
-    public __impl::core::AllocationMap,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::AllocationMap)
 public:
-    ~AllocationMap();
-    void insert(hostptr_t key, accptr_t val, size_t size);
-    void erase(hostptr_t key, size_t size);
-    bool find(hostptr_t key, accptr_t &val, size_t &size);
+    // Error management
+    static gmacError_t &getLastError();
+    static void setLastError(gmacError_t error);
 };
 
 }}
 
+#include "Thread-impl.h"
+
 #endif
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

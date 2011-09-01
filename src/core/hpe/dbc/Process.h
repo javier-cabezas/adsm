@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_HPE_DBC_PROCESS_H_ 
 #define GMAC_CORE_HPE_DBC_PROCESS_H_
 
-#include "dbc/Contract.h"
+#include "config/dbc/Contract.h"
 #include "core/hpe/Process.h"
 
 namespace __dbc { namespace core { namespace hpe {

@@ -4,8 +4,11 @@
 #include "core/Mode.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 #include "memory/Manager.h"
 #include "memory/Object.h"
+
+using gmac::core::hpe::Thread;
 
 using __impl::core::Mode;
 using __impl::memory::Object;
@@ -55,8 +58,9 @@ void ObjectTest::TearDownTestCase()
 TEST_F(ObjectTest, Creation)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Process_->getCurrentMode();
-    Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
+    Mode &mode = Thread::getCurrentMode();
+    __impl::memory::Protocol &proto = mode.getProtocol();
+    Object *object = proto.createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_TRUE(object->addr() != NULL);
     ASSERT_TRUE(object->end() != NULL);
@@ -70,7 +74,7 @@ TEST_F(ObjectTest, Creation)
 TEST_F(ObjectTest, Blocks)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Process_->getCurrentMode();
+    Mode &mode = Thread::getCurrentMode();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
@@ -92,7 +96,7 @@ TEST_F(ObjectTest, Blocks)
 TEST_F(ObjectTest, Coherence)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Process_->getCurrentMode();
+    Mode &mode = Thread::getCurrentMode();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
@@ -119,7 +123,7 @@ TEST_F(ObjectTest, Coherence)
 TEST_F(ObjectTest, IOBuffer)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Process_->getCurrentMode();
+    Mode &mode = Thread::getCurrentMode();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
@@ -134,7 +138,7 @@ TEST_F(ObjectTest, IOBuffer)
 
     ASSERT_EQ(gmacSuccess, object->copyFromBuffer(buffer, Size_));
 
-        ptr = buffer.addr();
+    ptr = buffer.addr();
     memset(ptr, 0, Size_);
 
     ASSERT_EQ(gmacSuccess, object->copyToBuffer(buffer, Size_));

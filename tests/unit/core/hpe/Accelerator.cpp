@@ -3,9 +3,12 @@
 #include "Accelerator.h"
 #include "core/hpe/Accelerator.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 #include "core/hpe/Mode.h"
 
 using gmac::core::hpe::Process;
+using gmac::core::hpe::Thread;
+
 using __impl::core::hpe::Mode;
 using __impl::core::hpe::Accelerator;
 
@@ -45,8 +48,8 @@ TEST_F(AcceleratorTest, Memory) {
         ASSERT_TRUE(acc != NULL);
         ASSERT_TRUE(acc->map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
         ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
-        ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Process_->getCurrentMode()) == gmacSuccess);
+        ASSERT_TRUE(acc->copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Thread::getCurrentMode()) == gmacSuccess);
+        ASSERT_TRUE(acc->copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Thread::getCurrentMode()) == gmacSuccess);
         ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
         ASSERT_TRUE(acc->unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
     }

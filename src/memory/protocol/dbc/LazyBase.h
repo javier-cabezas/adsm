@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_DBC_LAZYBASE_H_
 #define GMAC_MEMORY_PROTOCOL_DBC_LAZYBASE_H_
 
-#include "dbc/types.h"
+#include "config/dbc/types.h"
 
 namespace __dbc { namespace memory { namespace protocol {
 

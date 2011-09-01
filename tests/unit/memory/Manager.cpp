@@ -2,6 +2,7 @@
 #include "core/IOBuffer.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 #include "memory/Manager.h"
 
 using namespace gmac::core::hpe;
@@ -58,10 +59,10 @@ TEST_F(ManagerTest, Alloc)
     
     for(size_t size = 4096; size < Size_; size *= 2) {
         hostptr_t ptr = NULL;
-        ASSERT_EQ(gmacSuccess, manager->alloc(Process_->getCurrentMode(), &ptr, size));
+        ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, size));
         ASSERT_TRUE(ptr != NULL);
 
-        ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+        ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     }
     manager->destroy();
 }
@@ -74,11 +75,11 @@ TEST_F(ManagerTest, GlobalAllocReplicated)
     
     for(size_t size = 4096; size < Size_; size *= 2) {
         hostptr_t ptr = NULL;
-        ASSERT_EQ(gmacSuccess, manager->globalAlloc(Process_->getCurrentMode(), &ptr, size,
+        ASSERT_EQ(gmacSuccess, manager->globalAlloc(Thread::getCurrentMode(), &ptr, size,
                                                     GMAC_GLOBAL_MALLOC_REPLICATED));
         ASSERT_TRUE(ptr != NULL);
 
-        ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+        ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     }
     manager->destroy();
 }
@@ -91,11 +92,11 @@ TEST_F(ManagerTest, GlobalAllocCentralized)
     
     for(size_t size = 4096; size < Size_; size *= 2) {
         hostptr_t ptr = NULL;
-        ASSERT_EQ(gmacSuccess, manager->globalAlloc(Process_->getCurrentMode(), &ptr, size,
+        ASSERT_EQ(gmacSuccess, manager->globalAlloc(Thread::getCurrentMode(), &ptr, size,
                                                     GMAC_GLOBAL_MALLOC_CENTRALIZED));
         ASSERT_TRUE(ptr != NULL);
 
-        ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+        ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     }
     manager->destroy();
 }
@@ -107,38 +108,38 @@ TEST_F(ManagerTest, Coherence)
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;
-    ASSERT_EQ(gmacSuccess, manager->alloc(Process_->getCurrentMode(), &ptr, Size_));
+    ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentMode(), ptr).get() != NULL);
 
-	ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
+	ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
 
     for(int n = 0; n < 16; n++) {
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = (s & 0xff);
 	    }
-        ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
+        ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
 	
-    	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Process_->getCurrentMode()));
-        ASSERT_TRUE(Process_->getCurrentMode().releasedObjects());
+    	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Thread::getCurrentMode()));
+        ASSERT_TRUE(Thread::getCurrentMode().releasedObjects());
         
-    	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Process_->getCurrentMode()));
-        ASSERT_FALSE(Process_->getCurrentMode().releasedObjects());
-	    ASSERT_FALSE(Process_->getCurrentMode().hasModifiedObjects());
+    	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Thread::getCurrentMode()));
+        ASSERT_FALSE(Thread::getCurrentMode().releasedObjects());
+	    ASSERT_FALSE(Thread::getCurrentMode().hasModifiedObjects());
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));
 	    }
-        ASSERT_FALSE(Process_->getCurrentMode().hasModifiedObjects());
+        ASSERT_FALSE(Thread::getCurrentMode().hasModifiedObjects());
 
         for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = 0x0;
 	    }
-        ASSERT_TRUE(Process_->getCurrentMode().hasModifiedObjects());
+        ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
     }
 
-    ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+    ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     manager->destroy();
 }
 
@@ -149,11 +150,11 @@ TEST_F(ManagerTest, IOBufferWrite)
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;
-    ASSERT_EQ(gmacSuccess, manager->alloc(Process_->getCurrentMode(), &ptr, Size_));
+    ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentMode(), ptr).get() != NULL);
 
-    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
+    __impl::core::IOBuffer &buffer = Thread::getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     for(size_t n = 0; n < 16; n++) {
 	    for(size_t s = 0; s < Size_; s++) {
@@ -161,14 +162,14 @@ TEST_F(ManagerTest, IOBufferWrite)
 	    }
 
         memset(buffer.addr(), 0x5a, Size_);
-        ASSERT_EQ(gmacSuccess, manager->fromIOBuffer(Process_->getCurrentMode(), ptr + n * 128,
+        ASSERT_EQ(gmacSuccess, manager->fromIOBuffer(Thread::getCurrentMode(), ptr + n * 128,
                                                      buffer, n * 128, Size_ - n * 128));
 
         for(size_t s = 0; s < n * 128; s++) EXPECT_EQ(ptr[s], (s & 0xff));
 	    for(size_t s = n * 128; s < Size_; s++) EXPECT_EQ(ptr[s], 0x5a);
     }
-    Process_->getCurrentMode().destroyIOBuffer(buffer);
-    ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+    Thread::getCurrentMode().destroyIOBuffer(buffer);
+    ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     manager->destroy();
 }
 
@@ -180,11 +181,11 @@ TEST_F(ManagerTest, IOBufferRead)
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;
-    ASSERT_EQ(gmacSuccess, manager->alloc(Process_->getCurrentMode(), &ptr, Size_));
+    ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Process_->getCurrentMode(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentMode(), ptr).get() != NULL);
 
-    __impl::core::IOBuffer &buffer = Process_->getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
+    __impl::core::IOBuffer &buffer = Thread::getCurrentMode().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
     for(size_t n = 0; n < 16; n++) {
 	    for(size_t s = n * 128; s < Size_; s++) {
@@ -192,14 +193,14 @@ TEST_F(ManagerTest, IOBufferRead)
 	    }
 
         memset(buffer.addr(), 0x5a, Size_);
-        ASSERT_EQ(gmacSuccess, manager->toIOBuffer(Process_->getCurrentMode(), buffer, n * 128,
+        ASSERT_EQ(gmacSuccess, manager->toIOBuffer(Thread::getCurrentMode(), buffer, n * 128,
                                                      ptr + n * 128, Size_ - n * 128));
 
         for(size_t s = 0; s < n * 128; s++) EXPECT_EQ(buffer.addr()[s], 0x5a);
 	    for(size_t s = n * 128; s < Size_; s++) EXPECT_EQ(buffer.addr()[s], (s & 0xff));
     }
-    Process_->getCurrentMode().destroyIOBuffer(buffer);
-    ASSERT_EQ(gmacSuccess, manager->free(Process_->getCurrentMode(), ptr));
+    Thread::getCurrentMode().destroyIOBuffer(buffer);
+    ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     manager->destroy();
 }
 

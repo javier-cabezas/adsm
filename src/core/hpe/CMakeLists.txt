@@ -16,6 +16,9 @@ set(core_hpe_SRC
     Process.h
     Process-impl.h
     Process.cpp
+    Thread.h
+    Thread-impl.h
+    Thread.cpp
     Queue.h
     Queue.cpp
 )

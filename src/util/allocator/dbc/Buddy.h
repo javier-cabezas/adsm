@@ -34,8 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_ALLOCATOR_DBC_BUDDY_H
 #define GMAC_UTIL_ALLOCATOR_DBC_BUDDY_H
 
-#include "dbc/types.h"
-#include "dbc/Contract.h"
+#include "config/dbc/types.h"
+#include "config/dbc/Contract.h"
 
 #include "util/allocator/Buddy.h"
 

@@ -1,12 +1,14 @@
 #include "unit/core/hpe/Process.h"
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
+#include "core/hpe/Thread.h"
 
 
 using __impl::core::hpe::Accelerator;
 using __impl::core::hpe::Mode;
 using __impl::core::hpe::ModeMap;
 using gmac::core::hpe::Process;
+using gmac::core::hpe::Thread;
 
 using __impl::memory::Object;
 using __impl::memory::Protocol;
@@ -53,7 +55,7 @@ TEST_F(ProcessTest, GlobalMemory) {
     const size_t size = 4 * 1024 * 1024;
     Protocol *protocol = proc->getProtocol();
     ASSERT_TRUE(protocol != NULL);
-    Object *object = protocol->createObject(proc->getCurrentMode(), size, NULL, GMAC_PROT_READ, 0);
+    Object *object = protocol->createObject(Thread::getCurrentMode(), size, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_EQ(gmacSuccess, proc->globalMalloc(*object));
     ASSERT_TRUE(object->addr() != NULL);

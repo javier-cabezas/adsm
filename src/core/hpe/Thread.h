@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,27 +31,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_DBC_ALLOCATIONMAP_H
-#define GMAC_CORE_DBC_ALLOCATIONMAP_H
+#ifndef GMAC_CORE_HPE_THREAD_H_
+#define GMAC_CORE_HPE_THREAD_H_
 
-#include "config/dbc/types.h"
-#include "config/dbc/Contract.h"
+#include "core/Thread.h"
 
-#include "core/AllocationMap.h"
+#include "util/Private.h"
 
-namespace __dbc { namespace core {
+namespace __impl { namespace core { namespace hpe {
 
-class GMAC_LOCAL AllocationMap :
-    public __impl::core::AllocationMap,
-    public virtual Contract {
-    DBC_TESTED(__impl::core::AllocationMap)
+class Mode;
+
+class Thread;
+
+class GMAC_LOCAL TLS :
+    public __impl::core::TLS {
+    friend class Thread;
+private:
+    static PRIVATE Mode *CurrentMode_;
+    static PRIVATE Thread *CurrentThread_;
+
 public:
-    ~AllocationMap();
-    void insert(hostptr_t key, accptr_t val, size_t size);
-    void erase(hostptr_t key, size_t size);
-    bool find(hostptr_t key, accptr_t &val, size_t &size);
+    static Thread &getCurrentThread();
 };
 
-}}
+class Process;
+
+/** Contains some thread-dependent values */
+class GMAC_LOCAL Thread {
+private:
+    Process &process_;
+
+public:
+    Thread(Process &proc);
+    ~Thread();
+
+    static Mode &getCurrentMode();
+    static bool hasCurrentMode();
+    static void setCurrentMode(Mode *mode);
+};
+
+}}}
+
+#include "Thread-impl.h"
+
+#ifdef USE_DBC
+namespace __dbc { namespace core { namespace hpe {
+    typedef __impl::core::hpe::Thread Thread;
+}}}
+#endif
 
 #endif
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

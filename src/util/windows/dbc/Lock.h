@@ -35,8 +35,8 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_WINDOWS_DBC_LOCK_H_
 
 #include "config/config.h"
-#include "dbc/types.h"
-#include "dbc/Contract.h"
+#include "config/dbc/types.h"
+#include "config/dbc/Contract.h"
 #include "util/windows/Lock.h"
 
 #include <windows.h>
