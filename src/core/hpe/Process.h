@@ -105,8 +105,6 @@ protected:
     memory::ObjectMap global_;
     memory::ObjectMap orphans_;
 
-    static PRIVATE Mode *CurrentMode_;
-
     unsigned current_;
 
     /**
@@ -147,12 +145,6 @@ public:
      * \param mode A reference to the mode to be removed from the process
      */
      TESTABLE void removeMode(Mode &mode);
-
-     /**
-      * Get the execution mode bound to the current CPU thread
-      * \return Execution mode bound to the current CPU thread
-      */
-     Mode &getCurrentMode();
 
      /**
       * Registers a global object in the process

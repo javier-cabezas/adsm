@@ -47,10 +47,6 @@ namespace __impl {
         namespace hpe {
             class Process;
             Process &getProcess() GMAC_LOCAL;
-
-            class Mode;
-            Mode &getCurrentMode() GMAC_LOCAL;
-
         }
     }
 

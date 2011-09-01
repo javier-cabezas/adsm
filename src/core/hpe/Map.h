@@ -57,25 +57,17 @@ class Mode;
 
 
 //! An object map associated to an execution mode
-class GMAC_LOCAL Map : public memory::ObjectMap, public util::NonCopyable {
+class GMAC_LOCAL Map :
+    public memory::ObjectMap {
+
+    typedef memory::ObjectMap Parent;
+
 protected:
     /**
      * Execution mode owning this map
      */
     Mode &parent_;
 
-    /**
-     * Get the first object in an object map that is in a memory range whose
-     * starting memory address is bellow a base
-     *
-     * \param map Object map to look for objects
-     * \param base Base memory address to filter out objects
-     * \param addr Starting address of the memory range to look for objects
-     * \param size Size (in bytes) of the memory range to look for objects
-     * \return First object in the memory range whose starting address is bellow the base
-     */
-    memory::Object *get(const memory::ObjectMap &map, hostptr_t &base, const hostptr_t addr,
-                size_t size) const;
 public:
     /**
      * Default constructor
@@ -118,7 +110,7 @@ public:
      * located
      * \return First object within the memory range. NULL if no object is found
      */
-    virtual memory::Object *get(const hostptr_t addr, size_t size) const;
+    memory::Object *get(const hostptr_t addr, size_t size) const;
 
     /**
      * Add an owner to all global process objects
@@ -135,7 +127,6 @@ public:
      * \param mode Owner to be removed from global objects
      */
     static void removeOwner(Process &proc, Mode &mode);
-
 };
 
 }}}

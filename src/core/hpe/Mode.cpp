@@ -229,7 +229,6 @@ Mode::moveTo(Accelerator &acc)
 gmacError_t Mode::cleanUp()
 {
     gmacError_t ret = map_.forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
-    Map::removeOwner(proc_, *this);
     contextMap_.clean();
     map_.cleanUp();
 #ifdef USE_VM

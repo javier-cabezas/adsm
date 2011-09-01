@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_HPE_DBC_ACCELERATOR_H_
 #define GMAC_CORE_HPE_DBC_ACCELERATOR_H_ 
 
-#include "dbc/Contract.h"
+#include "config/dbc/Contract.h"
 
 namespace __dbc { namespace core { namespace hpe {
 

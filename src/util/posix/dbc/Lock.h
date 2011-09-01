@@ -39,8 +39,8 @@ WITH THE SOFTWARE.  */
 #include <set>
 
 #include "config/config.h"
-#include "dbc/Contract.h"
-#include "dbc/types.h"
+#include "config/dbc/Contract.h"
+#include "config/dbc/types.h"
 #include "util/posix/Lock.h"
 
 namespace __dbc { namespace util {

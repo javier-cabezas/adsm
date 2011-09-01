@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/config.h"
-#include "dbc/types.h"
+#include "config/dbc/types.h"
 #include "util/Lock.h"
 
 

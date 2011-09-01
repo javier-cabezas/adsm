@@ -8,7 +8,7 @@
 #include "api/opencl/hpe/Kernel.h"
 #include "memory/Manager.h"
 
-#include "hpe/init.h"
+#include "core/hpe/Thread.h"
 
 using __impl::opencl::hpe::KernelLaunch;
 
@@ -20,7 +20,7 @@ using __impl::util::params::ParamAutoSync;
 
 static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 {
-    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::getCurrentMode());
+    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
 }
 
 gmacError_t APICALL

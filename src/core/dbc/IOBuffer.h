@@ -34,8 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_DBC_IOBUFFER_H_
 #define GMAC_CORE_DBC_IOBUFFER_H_
 
-#include "dbc/types.h"
-#include "dbc/Contract.h"
+#include "config/dbc/types.h"
+#include "config/dbc/Contract.h"
 
 #include "core/IOBuffer.h"
 
