@@ -58,7 +58,8 @@ public:
 class Process;
 
 /** Contains some thread-dependent values */
-class GMAC_LOCAL Thread {
+class GMAC_LOCAL Thread :
+    public __impl::core::Thread {
 private:
     Process &process_;
 

@@ -28,16 +28,16 @@ namespace __impl { namespace core {
 
 inline
 gmacError_t &
-TLS::getLastError()
+Thread::getLastError()
 {
-    return LastError_;
+    return TLS::LastError_;
 }
 
 inline
 void
-TLS::setLastError(gmacError_t error)
+Thread::setLastError(gmacError_t error)
 {
-    LastError_ = error;
+    TLS::LastError_ = error;
 }
 
 }}
