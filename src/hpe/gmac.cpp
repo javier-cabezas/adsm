@@ -99,6 +99,7 @@ gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
         accelerator->getMemInfo(*freeMemory, total);
     }
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -111,6 +112,7 @@ gmacMigrate(unsigned acc)
     gmac::trace::EnterCurrentFunction();
     ret = getProcess().migrate(acc);
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -133,7 +135,9 @@ gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
         exitGmac();
     return ret;
 #endif
-    return gmacErrorFeatureNotSupported;
+    gmacError_t ret = gmacErrorFeatureNotSupported;
+    Thread::setLastError(ret);
+    return ret;
 }
 
 
@@ -154,7 +158,9 @@ gmacMemoryUnmap(void *cpuPtr, size_t count)
         exitGmac();
     return ret;
 #endif
-    return gmacErrorFeatureNotSupported;
+    gmacError_t ret = gmacErrorFeatureNotSupported;
+    Thread::setLastError(ret);
+    return ret;
 }
 
 
@@ -164,6 +170,7 @@ gmacMalloc(void **cpuPtr, size_t count)
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         *cpuPtr = NULL;
+        Thread::setLastError(ret);
         return ret;
     }
     enterGmac();
@@ -176,6 +183,7 @@ gmacMalloc(void **cpuPtr, size_t count)
         ret = getManager().alloc(Thread::getCurrentMode(), (hostptr_t *) cpuPtr, count);
     }
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -186,6 +194,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
     gmacError_t ret = gmacSuccess;
     if(count == 0) {
         *cpuPtr = NULL;
+        Thread::setLastError(ret);
         return ret;
     }
     enterGmac();
@@ -193,6 +202,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
     count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
     ret = getManager().globalAlloc(Thread::getCurrentMode(), (hostptr_t *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -201,7 +211,10 @@ GMAC_API gmacError_t APICALL
 gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
-    if(cpuPtr == NULL) return ret;
+    if(cpuPtr == NULL) {
+        Thread::setLastError(ret);
+        return ret;
+    }
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = Thread::getCurrentMode();
@@ -209,6 +222,7 @@ gmacFree(void *cpuPtr)
         ret = getManager().free(mode, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -248,10 +262,13 @@ gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
+    Thread::setLastError(ret);
+
     return ret;
 }
 
-GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
+GMAC_API gmacError_t APICALL
+gmacLaunch(gmac_kernel_id_t k)
 {
     enterGmac();
     gmac::trace::EnterCurrentFunction();
@@ -265,6 +282,8 @@ GMAC_API gmacError_t APICALL gmacLaunch(gmac_kernel_id_t k)
     }
 
     gmac::trace::ExitCurrentFunction();
+
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -298,6 +317,7 @@ gmacThreadSynchronize()
     }
 
     gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -306,11 +326,12 @@ GMAC_API gmacError_t APICALL
 gmacGetLastError()
 {
     enterGmac();
-    gmacError_t ret = Thread::getCurrentMode().error();
+    gmacError_t ret = Thread::getLastError();
     exitGmac();
     return ret;
 }
 
+/** \todo Move to a more CUDA-like API */
 GMAC_API void * APICALL
 gmacMemset(void *s, int c, size_t size)
 {
@@ -321,6 +342,7 @@ gmacMemset(void *s, int c, size_t size)
     return ret;
 }
 
+/** \todo Move to a more CUDA-like API */
 GMAC_API void * APICALL
 gmacMemcpy(void *dst, const void *src, size_t size)
 {
@@ -341,6 +363,7 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     return ret;
 }
 
+/** \todo Return error */
 GMAC_API void APICALL
 gmacSend(THREAD_T id)
 {
@@ -349,6 +372,7 @@ gmacSend(THREAD_T id)
     exitGmac();
 }
 
+/** \todo Return error */
 GMAC_API void APICALL
 gmacReceive()
 {
@@ -357,6 +381,7 @@ gmacReceive()
     exitGmac();
 }
 
+/** \todo Return error */
 GMAC_API void APICALL
 gmacSendReceive(THREAD_T id)
 {
@@ -365,6 +390,7 @@ gmacSendReceive(THREAD_T id)
     exitGmac();
 }
 
+/** \todo Return error */
 GMAC_API void APICALL
 gmacCopy(THREAD_T id)
 {
@@ -380,6 +406,7 @@ __gmacFlushDirty()
 {
     enterGmac();
     gmacError_t ret = getManager().flushDirty(Thread::getCurrentMode());
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }

@@ -130,7 +130,7 @@ gmacError_t Mode::acquireObjects()
     modifiedObjects_ = false;
     releasedObjects_ = false;
     unlock();
-    return error_;
+    return gmacSuccess;
 }
 
 gmacError_t Mode::waitForEvent(cl_event event)

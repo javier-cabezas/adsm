@@ -11,6 +11,7 @@
 #include "core/hpe/Thread.h"
 
 using __impl::opencl::hpe::KernelLaunch;
+using __impl::core::hpe::Thread;
 
 namespace @OPENCL_API_PREFIX@ {
 const config config::null = config();
@@ -33,6 +34,7 @@ gmacError_t APICALL
     if (ret == gmacSuccess) {
         kernel->impl_ = launch;
     }
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -45,9 +47,11 @@ gmacError_t APICALL
     if (kernel.impl_ != NULL) {
         delete ((KernelLaunch *) kernel.impl_);
     }
+    gmacError_t ret = gmacSuccess;
+    Thread::setLastError(ret);
     exitGmac();
 
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t APICALL
@@ -55,6 +59,7 @@ gmacError_t APICALL
 {
     enterGmac();
     gmacError_t ret = ((KernelLaunch *)kernel.impl_)->setArgument(addr, size, index);
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -72,8 +77,10 @@ gmacError_t APICALL
 
     accptr_t tmp = __impl::memory::getManager().translate(mode, ptr);
     if (tmp == 0) {
+        ret = gmacErrorInvalidValue;
+        Thread::setLastError(ret);
         exitGmac();
-        return gmacErrorInvalidValue;
+        return ret;
     }
 
     KernelLaunch *launch = reinterpret_cast<KernelLaunch *>(kernel.impl_);
@@ -92,6 +99,7 @@ gmacError_t APICALL
         launch->addObject(ptr, index);
     }
 
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -121,6 +129,7 @@ gmacError_t APICALL
         ret = __impl::memory::getManager().acquireObjects(getCurrentOpenCLMode(), launch->getObjects());
 #endif
     }
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -130,6 +139,7 @@ gmacError_t APICALL @OPENCL_API_PREFIX@GetKernelError(@OPENCL_API_PREFIX@_kernel
 {
     enterGmac();
     gmacError_t ret = gmacThreadSynchronize(*(__impl::opencl::hpe::KernelLaunch *)kernel.impl_);
+    Thread::setLastError(ret);
     exitGmac();
     return ret;
 }
@@ -140,6 +150,7 @@ gmacError_t APICALL
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLCode(code, flags);
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -148,21 +159,30 @@ gmacError_t APICALL
 gmacError_t APICALL
 @OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
 {
+    gmacError_t ret = gmacSuccess;
     std::ifstream in(path, std::ios_base::in);
-    if (!in.good()) return gmacErrorInvalidValue;
+    if (!in.good()) {
+        ret = gmacErrorInvalidValue;
+        Thread::setLastError(ret);
+        return ret;
+    }
     in.seekg (0, std::ios::end);
     std::streampos length = in.tellg();
     in.seekg (0, std::ios::beg);
-        if (length == std::streampos(0)) return gmacSuccess;
+    if (length == std::streampos(0)) {
+        Thread::setLastError(ret);
+        return ret;
+    }
     // Allocate memory for the code
     char *buffer = new char[int(length)+1];
     // Read data as a block
     in.read(buffer,length);
     buffer[length] = '\0';
     in.close();
-    gmacError_t ret = @OPENCL_API_PREFIX@CompileSource(buffer, flags);
+    ret = @OPENCL_API_PREFIX@CompileSource(buffer, flags);
     in.close();
     delete [] buffer;
+    Thread::setLastError(ret);
 
     return ret;
 }
@@ -172,6 +192,7 @@ gmacError_t APICALL
 {
     enterGmac();
     gmacError_t ret = __impl::opencl::hpe::Accelerator::prepareCLBinary(binary, size, flags);
+    Thread::setLastError(ret);
     exitGmac();
 
     return ret;
@@ -180,21 +201,30 @@ gmacError_t APICALL
 gmacError_t APICALL
 @OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags)
 {
+    gmacError_t ret = gmacSuccess;
     std::ifstream in(path, std::ios_base::in);
-    if (!in.good()) return gmacErrorInvalidValue;
+    if (!in.good()) {
+        ret = gmacErrorInvalidValue;
+        Thread::setLastError(ret);
+        return ret;
+    }
     in.seekg (0, std::ios::end);
     std::streampos length = in.tellg();
     in.seekg (0, std::ios::beg);
-    if (length == std::streampos(0)) return gmacSuccess;
+    if (length == std::streampos(0)) {
+        Thread::setLastError(ret);
+        return ret;
+    }
     // Allocate memory for the code
     unsigned char *buffer = new unsigned char[int(length)+1];
     // Read data as a block
     in.read((char *) buffer,length);
     buffer[length] = '\0';
     in.close();
-    gmacError_t ret = @OPENCL_API_PREFIX@CompileBinary(buffer, length, flags);
+    ret = @OPENCL_API_PREFIX@CompileBinary(buffer, length, flags);
     in.close();
     delete [] buffer;
+    Thread::setLastError(ret);
 
     return ret;
 }

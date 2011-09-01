@@ -109,7 +109,7 @@ inline
 gmacError_t Mode::releaseObjects()
 {
     releasedObjects_ = true;
-    return error_;
+    return gmacSuccess;
 }
 
 inline

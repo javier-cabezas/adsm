@@ -191,20 +191,20 @@ Mode::wait(core::hpe::KernelLaunch &launch)
 {
     switchIn();
     // TODO: use an event for this
-    error_ = acc_->syncStream(streamLaunch_);
+    gmacError_t ret = acc_->syncStream(streamLaunch_);
     switchOut();
 
-    return error_;
+    return ret;
 }
 
 inline gmacError_t
 Mode::wait()
 {
     switchIn();
-    error_ = acc_->syncStream(streamLaunch_);
+    gmacError_t ret = acc_->syncStream(streamLaunch_);
     switchOut();
 
-    return error_;
+    return ret;
 }
 
 inline stream_t
