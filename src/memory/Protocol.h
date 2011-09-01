@@ -53,8 +53,6 @@ namespace memory {
 
 class Block;
 class Object;
-class Block;
-
 
 /**
  * Base class that defines the operations to be implemented by any protocol

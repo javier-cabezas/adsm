@@ -3,14 +3,7 @@
 
 #include "allocator/Slab.h"
 
-#define USE_GENERIC_OBJECTS 1
-
-#if USE_GENERIC_OBJECTS == 1
 #include "memory/BlockGroup.h"
-#else
-#include "memory/SharedObject.h"
-#include "memory/DistributedObject.h"
-#endif
 
 #ifdef USE_VM
 //#include "protocol/Gather.h"
@@ -68,34 +61,22 @@ Protocol *ProtocolInit(unsigned flags)
             eager = false;
         }
         if(0 != (flags & 0x1)) {
-#if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<
                 memory::BlockGroup<protocol::lazy::BlockState> >(eager);
-#else
-            ret = new gmac::memory::protocol::Lazy<
-                DistributedObject<protocol::lazy::BlockState> >(eager);
-#endif
         } else {
-#if USE_GENERIC_OBJECTS == 1
             ret = new gmac::memory::protocol::Lazy<
                 memory::BlockGroup<protocol::lazy::BlockState> >(eager);
-#else
-            ret = new gmac::memory::protocol::Lazy<
-                gmac::memory::SharedObject<protocol::lazy::BlockState> >(eager);
-#endif
         }
     }
 #ifdef USE_VM
     else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
-                DistributedObject<protocol::lazy::BlockState> >(
-                (size_t)-1);
+                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
         }
         else {
             ret = new gmac::memory::protocol::Lazy<
-                gmac::memory::SharedObject<protocol::lazy::BlockState> >(
-                (size_t)-1);
+                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
         }
     }
 #endif
