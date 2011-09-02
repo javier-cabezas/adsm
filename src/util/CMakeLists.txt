@@ -21,6 +21,7 @@ set(util_SRC
     Reference-impl.h
     ReusableObject.h
     Semaphore.h
+    SharedPtr.h
     Singleton.h
     Singleton-impl.h
     Thread.h

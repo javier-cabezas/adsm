@@ -35,7 +35,7 @@ void enterGmac()
 
 void enterGmacExclusive()
 {
-    if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
+    if (AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
     inGmac_ = true;
 }
 
