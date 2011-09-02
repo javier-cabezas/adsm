@@ -44,6 +44,8 @@ WITH THE SOFTWARE.  */
 #include "api/cuda/Mode.h"
 #include "api/cuda/hpe/ContextFactory.h"
 
+#include "util/UniquePtr.h"
+
 #include "Module.h"
 
 namespace __impl {
@@ -84,8 +86,8 @@ protected:
     //! Associated CUDA context
     CUcontext cudaCtx_;
 #endif
-    util::allocator::Buddy *ioMemoryRead_;
-    util::allocator::Buddy *ioMemoryWrite_;
+    util::smart_ptr<util::allocator::Buddy>::unique ioMemoryRead_;
+    util::smart_ptr<util::allocator::Buddy>::unique ioMemoryWrite_;
 
     //! Switch to accelerator mode
     void switchIn();

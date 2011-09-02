@@ -1,6 +1,9 @@
 set(common_ROOT ${CMAKE_SOURCE_DIR}/tests/common)
 include_directories(${PROJECT_SOURCE_DIR}/src/include ${PROJECT_BINARY_DIR}/src/include ${common_ROOT})
 
+# Remove c++0x for now, since nvcc seems not very happy with it
+string(REGEX REPLACE "[-]std[=]c[+][+]0x" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
 include(FindCUDA)
 
 # Create a source group for current directory

@@ -131,8 +131,8 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArgPtr(@O
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
-    size_t workDim, size_t *globalWorkOffset,
-    size_t *globalWorkSize, size_t *localWorkSize);
+    size_t workDim, const size_t *globalWorkOffset,
+    const size_t *globalWorkSize, const size_t *localWorkSize);
 
 #if 0
 /**

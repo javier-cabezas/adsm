@@ -34,27 +34,54 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_UNIQUE_PTR_H_
 #define GMAC_UTIL_UNIQUE_PTR_H_
 
-#include "config/common.h"
-
-#if defined(POSIX)
-#include <tr1/memory>
-#elif defined(WINDOWS)
 #include <memory>
-#endif
 
 namespace __impl { namespace util {
     template <typename T>
+    struct smart_ptr {
+        typedef std::unique_ptr<T> shared;
+        typedef std::shared_ptr<T> unique;
+    };
+#if  0
+    template <typename T>
     class UniquePtr :
-        public std::tr1::unique_ptr<T>
+        public std::unique_ptr<T>
     {
     private:
-        typedef std::tr1::unique_ptr<T> Parent;
+        typedef std::unique_ptr<T> Parent;
 
     public:
         inline
         virtual ~UniquePtr()
         {
         }
+
+        unique_ptr ();
+        unique_ptr (
+                nullptr_t _Nptr
+                );
+        explicit unique_ptr (
+                pointer _Ptr
+                );
+        unique_ptr (
+                pointer _Ptr,
+                typename conditional<
+                is_reference<Del>::value, 
+                Del,
+                typename add_reference<const Del>::type
+                >::type _Deleter
+                );
+        unique_ptr (
+                pointer _Ptr,
+                typename remove_reference<Del>::type&& _Deleter
+                );
+        unique_ptr (
+                unique_ptr&& _Right
+                );
+        template<class Type2, Class Del2>
+            unique_ptr (
+                    unique_ptr<Type2, Del2>&& _Right
+                    );
 
         template<class Y>
         inline
@@ -98,7 +125,7 @@ namespace __impl { namespace util {
             return *this;
         }
     };
-
+#endif
 }}
 
 #endif

@@ -41,37 +41,16 @@ Kernel::getNArgs() const
 }
 
 inline void
-KernelLaunch::setConfiguration(cl_uint work_dim, size_t *globalWorkOffset,
-        size_t *globalWorkSize, size_t *localWorkSize)
+KernelLaunch::setConfiguration(cl_uint work_dim, const size_t *globalWorkOffset,
+    const size_t *globalWorkSize, const size_t *localWorkSize)
 {
-    if(workDim_ < work_dim) {
-        if(globalWorkOffset_ != 0) {
-            delete [] globalWorkOffset_;
-            globalWorkOffset_ = NULL;
-        }
-        if(globalWorkSize_ != 0) {
-            delete [] globalWorkSize_;
-            globalWorkSize = NULL;
-        }
-        if(localWorkSize_ != 0) {
-            delete [] localWorkSize_;
-            localWorkSize_ = 0;
-        }
+    CFATAL(work_dim <= MAX_DIMS, "Unable to handle more than "FMT_SIZE" dimensions", MAX_DIMS);
 
-        if(globalWorkOffset) {
-            globalWorkOffset_ = new size_t[work_dim];
-        }
-        if(globalWorkSize) {
-            globalWorkSize_ = new size_t[work_dim];
-        }
-        if(localWorkSize) {
-            localWorkSize_ = new size_t[work_dim];
-        }
-    }
+    workGlobalDim_ = work_dim;
+    workLocalDim_  = localWorkSize    != NULL? work_dim: 0;
+    offsetDim_     = globalWorkOffset != NULL? work_dim: 0;
 
-    workDim_ = work_dim;
-
-    for(unsigned i = 0; i < workDim_; i++) {
+    for (unsigned i = 0; i < work_dim; i++) {
         if(globalWorkOffset) globalWorkOffset_[i] = globalWorkOffset[i];
         if(globalWorkSize) globalWorkSize_[i] = globalWorkSize[i];
         if(localWorkSize) localWorkSize_[i] = localWorkSize[i];
@@ -96,10 +75,9 @@ KernelLaunch::KernelLaunch(Mode &mode, const Kernel & k, cl_command_queue stream
 #endif
     f_(k.f_),
     stream_(stream),
-    workDim_(0),
-    globalWorkOffset_(NULL),
-    globalWorkSize_(NULL),
-    localWorkSize_(NULL),
+    workGlobalDim_(0),
+    workLocalDim_(0),
+    offsetDim_(0),
     trace_(mode.getAccelerator().getMajor(), mode.getAccelerator().getMinor())
 {
     clRetainKernel(f_);
@@ -109,10 +87,6 @@ inline
 KernelLaunch::~KernelLaunch()
 {
     clReleaseKernel(f_);
-
-    if (globalWorkOffset_) delete [] globalWorkOffset_;
-    if (globalWorkSize_) delete [] globalWorkSize_;
-    if (localWorkSize_) delete [] localWorkSize_;
 
     CacheSubBuffer::iterator itCacheMap;
     for (itCacheMap = cacheSubBuffer_.begin(); itCacheMap != cacheSubBuffer_.end(); itCacheMap++) {

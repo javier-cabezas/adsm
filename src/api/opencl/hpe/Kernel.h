@@ -88,6 +88,8 @@ public:
     unsigned getNArgs() const;
 };
 
+static const size_t MAX_DIMS = 5;
+
 /** An OpenCL kernel that can be executed */
 class GMAC_LOCAL KernelLaunch :
     public core::hpe::KernelLaunch,
@@ -133,13 +135,15 @@ protected:
     cl_event event_;
 
     /** Number of dimensions the kernel will execute */
-    cl_uint workDim_;
+    cl_uint workGlobalDim_;
+    cl_uint workLocalDim_;
+    cl_uint offsetDim_;
     /** Index offsets for each kernel dimension */
-    size_t *globalWorkOffset_;
+    size_t globalWorkOffset_[MAX_DIMS];
     /** Number of elements per kernel dimension */
-    size_t *globalWorkSize_;
+    size_t globalWorkSize_[MAX_DIMS];
     /** Number of elements per kernel work-group dimension */
-    size_t *localWorkSize_;
+    size_t localWorkSize_[MAX_DIMS];
 
     /** Tracer */
     KernelExecution trace_;
@@ -182,8 +186,8 @@ public:
      * \param globalWorkSize Number of elements per dimension
      * \param localWorkSize Number of work-group items per dimension
      */
-    void setConfiguration(cl_uint workDim, size_t *globalWorkOffset,
-        size_t *globalWorkSize, size_t *localWorkSize);
+    void setConfiguration(cl_uint workDim, const size_t *globalWorkOffset,
+        const size_t *globalWorkSize, const size_t *localWorkSize);
 
     /**
      * Set a new argument for the kernel

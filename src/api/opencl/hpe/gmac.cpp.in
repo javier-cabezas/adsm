@@ -113,8 +113,8 @@ gmacThreadSynchronize(__impl::core::hpe::KernelLaunch &);
 
 gmacError_t APICALL
 @OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
-    size_t workDim, size_t *globalWorkOffset,
-    size_t *globalWorkSize, size_t *localWorkSize)
+    size_t workDim, const size_t *globalWorkOffset,
+    const size_t *globalWorkSize, const size_t *localWorkSize)
 {
     enterGmac();
 
