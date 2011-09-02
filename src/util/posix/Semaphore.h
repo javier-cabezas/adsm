@@ -56,7 +56,8 @@ public:
 	void wait();
 };
 
+}}
+
 #include "Semaphore-impl.h"
 
-}}
 #endif
