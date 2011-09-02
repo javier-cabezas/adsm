@@ -206,29 +206,31 @@ public:
      * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
      */
 
-    kernel_error callNDRange(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+    kernel_error callNDRange(const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     class launch {
         friend class kernel;
     private:
         kernel &kernel_;
-        config global_;
-        config local_;
-        config offset_;
+        const config &global_;
+        const config &local_;
+        const config &offset_;
 
         template <typename P1, typename ...Pn>
-        error __launch(unsigned index, P1 p1, Pn ...pn);
+        kernel_error __launch(unsigned index, P1 p1, Pn ...pn);
 
-        error __launch(unsigned index);
+        kernel_error __launch(unsigned index);
 
-        launch(kernel &k, config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+        launch(kernel &k, const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
     public:
 
         template <typename P1, typename ...Pn>
         kernel_error operator()(P1 p1, Pn ...pn);
     };
 
-    kernel::launch operator()(config globalWorkSize, config localWorkSize = config::null, config globalWorkOffset = config::null);
+    friend class launch;
+
+    kernel::launch operator()(const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
 #endif
 };
 
@@ -281,7 +283,7 @@ error kernel::setArg(unsigned index, T val)
 }
 
 inline
-kernel_error kernel::callNDRange(config globalWorkSize, config localWorkSize, config globalWorkOffset)
+kernel_error kernel::callNDRange(const config &globalWorkSize, const config &localWorkSize, const config &globalWorkOffset)
 {
     error err = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
                                                           globalWorkOffset.getAddr(),
@@ -296,17 +298,22 @@ kernel_error kernel::callNDRange(config globalWorkSize, config localWorkSize, co
 template <typename P1, typename ...Pn>
 kernel_error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
 {
-    error ret = kernel_.setArg(index, p1);
-    if (ret != gmacSuccess) return ret;
+    error err = kernel_.setArg(index, p1);
+    if (err != gmacSuccess) {
+        kernel_error kernel_err(kernel_.kernel_, err);
+        return kernel_err;
+    }
     return __launch(index + 1, pn...);
 }
 
 kernel_error kernel::launch::__launch(unsigned index)
 {
-    return ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
-                                                             global_.getAddr(),
-                                                             local_.getAddr(),
-                                                             offset_.getAddr());
+    error err = ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
+                                                                  offset_.getAddr(),
+                                                                  global_.getAddr(),
+                                                                  local_.getAddr());
+    kernel_error kernel_err(kernel_.kernel_, err);
+    return kernel_err;
 }
 
 template <typename P1, typename ...Pn>
@@ -315,7 +322,7 @@ kernel_error kernel::launch::operator()(P1 p1, Pn ...pn)
     return __launch(0, p1, pn...);
 }
 
-kernel::launch::launch(kernel &k, config global, config local, config offset) :
+kernel::launch::launch(kernel &k, const config &global, const config &local, const config &offset) :
     kernel_(k),
     global_(global),
     local_(local),
@@ -324,7 +331,7 @@ kernel::launch::launch(kernel &k, config global, config local, config offset) :
 }
 
 kernel::launch
-kernel::operator()(config globalWorkSize, config localWorkSize, config globalWorkOffset)
+kernel::operator()(const config &globalWorkSize, const config &localWorkSize, const config &globalWorkOffset)
 {
     return launch(*this, globalWorkSize, localWorkSize, globalWorkOffset);
 }

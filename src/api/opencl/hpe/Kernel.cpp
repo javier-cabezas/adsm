@@ -12,8 +12,12 @@ gmacError_t
 KernelLaunch::execute()
 {
     trace_.init((THREAD_T)mode_.id());
-    gmacError_t ret = dynamic_cast<Mode &>(mode_).getAccelerator().execute(stream_, f_, workDim_,
-        globalWorkOffset_, globalWorkSize_, localWorkSize_, &event_);
+    size_t *globalWorkSize   = globalWorkSize_;
+    size_t *localWorkSize    = workLocalDim_ > 0? localWorkSize_: NULL;
+    size_t *globalWorkOffset = offsetDim_    > 0? globalWorkOffset_: NULL;
+
+    gmacError_t ret = dynamic_cast<Mode &>(mode_).getAccelerator().execute(stream_, f_, workGlobalDim_,
+        globalWorkOffset, globalWorkSize, localWorkSize, &event_);
     if(ret == gmacSuccess) trace_.trace(f_, event_);
     return ret;
 }

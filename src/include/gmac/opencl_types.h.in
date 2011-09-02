@@ -101,7 +101,7 @@ public:
 
     bool isNull() const { return null_; }
     unsigned getDims() const { return dims_; }
-    size_t *getAddr()
+    const size_t *getAddr() const
     {
         if (null_) return NULL;
         else       return sizes_;
