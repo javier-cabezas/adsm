@@ -381,7 +381,7 @@ static inline error compileSourceStream(std::istream &in, std::string flags = ""
     char *buffer = new char[int(length)+1];
     // Read data as a block
     in.read(buffer,length);
-    buffer[length] = '\0';
+    buffer[static_cast<int>(length)] = '\0';
     error ret = ::@OPENCL_API_PREFIX@CompileSource(buffer, flags.c_str());
     delete [] buffer;
     return ret;
@@ -433,8 +433,8 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
     unsigned char *buffer = new unsigned char[int(length)+1];
     // Read data as a block
     in.read((char *) buffer,length);
-    buffer[length] = '\0';
-    error ret = ::@OPENCL_API_PREFIX@CompileBinary(buffer, length, flags.c_str());
+    buffer[static_cast<int>(length)] = '\0';
+    error ret = ::@OPENCL_API_PREFIX@CompileBinary(buffer, static_cast<int>(length), flags.c_str());
     delete [] buffer;
     return ret;
 }
