@@ -132,19 +132,26 @@ static void FiniThread()
 // DLL entry function (called on load, unload, ...)
 BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 {
+    typedef NTSTATUS (WINAPI *myfun)(HANDLE h, THREADINFOCLASS t, PVOID p, ULONG u, PULONG l);
+    static myfun NtQueryInformationThread_ = NULL;
+    static HMODULE dll = NULL;
+
     switch(dwReason) {
     case DLL_PROCESS_ATTACH:
         break;
     case DLL_PROCESS_DETACH:
+        {
+            if (NtQueryInformationThread_ != NULL) {
+                BOOL ret = FreeLibrary(dll);
+                CFATAL(ret != FALSE, "Error unloading library");
+            }
+        }
         break;
     case DLL_THREAD_ATTACH:
         {
-            typedef NTSTATUS (WINAPI *myfun)(HANDLE h, THREADINFOCLASS t, PVOID p, ULONG u, PULONG l);
-
             static DWORD pid;
             static HANDLE processHandle;
-            static HMODULE dll = NULL;
-            static myfun NtQueryInformationThread_ = NULL;
+
             static void *openCLStartAddr;
             static void *openCLEndAddr;
             static void *nvCUDAStartAddr;
@@ -167,17 +174,21 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
                 CFATAL(libHandle != NULL);
                 MODULEINFO libInfo;
                 BOOL ret = GetModuleInformation(processHandle, libHandle, &libInfo, sizeof(libInfo));
-                CFATAL(ret != 0, "Error getting OpenCL.dll information");
+                CFATAL(ret != FALSE, "Error getting OpenCL.dll information");
                 openCLStartAddr = libHandle;
                 openCLEndAddr = (void *) (LPCCH(libHandle) + libInfo.SizeOfImage);
 
                 libHandle = GetModuleHandle("nvcuda.dll");
                 if (libHandle != NULL) {
                     ret = GetModuleInformation(processHandle, libHandle, &libInfo, sizeof(libInfo));
-                    CFATAL(ret != 0, "Error getting nvcuda.dll information");
+                    CFATAL(ret != FALSE, "Error getting nvcuda.dll information");
                     nvCUDAStartAddr = libHandle;
                     nvCUDAEndAddr = (void *) (LPCCH(libHandle) + libInfo.SizeOfImage);
                 }
+
+                // Free resources
+                ret = CloseHandle(processHandle);
+                CFATAL(ret != FALSE, "Error closing process handle");
             }
 
             // Get thread start address
@@ -193,6 +204,9 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
 
             bool isRunTimeThread = (threadStartAddr >= openCLStartAddr && threadStartAddr < openCLEndAddr) ||
                                    (threadStartAddr >= nvCUDAStartAddr && threadStartAddr < nvCUDAEndAddr);
+
+            BOOL ret = CloseHandle(threadHandle);
+            CFATAL(ret != FALSE, "Error closing thread handle");
 
             InitThread(isRunTimeThread);
         }
