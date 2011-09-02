@@ -69,16 +69,11 @@ protected:
     typedef std::map<THREAD_T, Context *> Parent;
     Mode &owner_;
 public:
-    ContextMap(Mode &owner) : gmac::util::RWLock("ContextMap"), owner_(owner) {}
+    ContextMap(Mode &owner);
     void add(THREAD_T id, Context *ctx);
     Context *find(THREAD_T id);
     void remove(THREAD_T id);
     void clean();
-
-    //gmacError_t prepareForCall();
-    //gmacError_t prepareForCall(THREAD_T id);
-    //gmacError_t waitForCall();
-    //gmacError_t waitForCall(KernelLaunch &launch);
 };
 
 /**
@@ -348,6 +343,11 @@ public:
 
     stream_t eventStream();
 
+    /**
+     * Tells if the accelerator on which the Mode is running shares memory with the CPU
+     *
+     * \return A boolean that tells if the accelerator on which the Mode is running shares memory with the CPU
+     */
     bool hasIntegratedMemory() const;
 };
 

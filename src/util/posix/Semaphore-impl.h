@@ -1,5 +1,7 @@
 #ifndef GMAC_UTIL_POSIX_SEMAPHORE_IMPL_H_
 #define GMAC_UTIL_POSIX_SEMAPHORE_IMPL_H_
+
+namespace __impl { namespace util {
     
 inline void
 Semaphore::post()
@@ -20,5 +22,7 @@ Semaphore::wait()
     }
     pthread_mutex_unlock(&_mutex);
 }
+
+}}
 
 #endif

@@ -10,14 +10,22 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-inline void ContextMap::add(THREAD_T id, Context *ctx)
+inline
+ContextMap::ContextMap(Mode &owner) :
+    gmac::util::RWLock("ContextMap"), owner_(owner)
+{
+}
+
+inline void
+ContextMap::add(THREAD_T id, Context *ctx)
 {
     lockWrite();
     Parent::insert(Parent::value_type(id, ctx));
     unlock();
 }
 
-inline Context *ContextMap::find(THREAD_T id)
+inline Context *
+ContextMap::find(THREAD_T id)
 {
     lockRead();
     Parent::iterator i = Parent::find(id);
@@ -27,14 +35,16 @@ inline Context *ContextMap::find(THREAD_T id)
     return ret;
 }
 
-inline void ContextMap::remove(THREAD_T id)
+inline void
+ContextMap::remove(THREAD_T id)
 {
     lockWrite();
     Parent::erase(id);
     unlock();
 }
 
-inline void ContextMap::clean()
+inline void
+ContextMap::clean()
 {
     Parent::iterator i;
     lockWrite();
@@ -43,67 +53,30 @@ inline void ContextMap::clean()
     unlock();
 }
 
-#if 0
-inline gmacError_t ContextMap::prepareForCall()
-{
-    gmacError_t ret = gmacSuccess;
-    Parent::iterator i;
-    lockWrite();
-    for(i = begin(); i != end(); i++) {
-        ret = i->second->prepareForCall();
-        if(ret != gmacSuccess) break;
-    }
-    unlock();
-    return ret;
-}
-
-inline gmacError_t ContextMap::waitForCall()
-{
-    gmacError_t ret = gmacSuccess;
-    Parent::iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        ret = i->second->waitForCall();
-        if(ret != gmacSuccess) break;
-    }
-    unlock();
-    return ret;
-}
-
-inline gmacError_t ContextMap::waitForCall(KernelLaunch &launch)
-{
-    Parent::iterator i;
-    gmacError_t ret = gmacSuccess;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        ret = i->second->waitForCall(launch);
-        if(ret != gmacSuccess) break;
-    }
-    unlock();
-    return ret;
-}
-#endif
-
 inline
-memory::ObjectMap &Mode::getObjectMap()
+memory::ObjectMap &
+Mode::getObjectMap()
 {
     return map_;
 }
 
 inline
-const memory::ObjectMap &Mode::getObjectMap() const
+const memory::ObjectMap &
+Mode::getObjectMap() const
 {
     return map_;
 }
 
 
-inline void Mode::cleanUpContexts()
+inline void
+Mode::cleanUpContexts()
 {
     contextMap_.clean();
 }
 
 inline
-void Mode::makeOrphan(memory::Object &obj)
+void
+Mode::makeOrphan(memory::Object &obj)
 {
     proc_.makeOrphan(obj);
 }
@@ -130,12 +103,14 @@ Mode::getDirtyBitmap() const
 #endif
 
 
-inline Process &Mode::getProcess()
+inline Process &
+Mode::getProcess()
 {
     return proc_;
 }
 
-inline const Process &Mode::getProcess() const
+inline const Process &
+Mode::getProcess() const
 {
     return proc_;
 }
@@ -162,7 +137,8 @@ Mode::prepareForCall()
 }
 
 inline
-gmacError_t Mode::bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t len, size_t off)
+gmacError_t
+Mode::bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t len, size_t off)
 {
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
     trace::EnterCurrentFunction();
@@ -174,7 +150,8 @@ gmacError_t Mode::bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t len
 }
 
 inline
-gmacError_t Mode::acceleratorToBuffer(IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
+gmacError_t
+Mode::acceleratorToBuffer(IOBuffer &buffer, const accptr_t src, size_t len, size_t off)
 {
     TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), len);
     trace::EnterCurrentFunction();
