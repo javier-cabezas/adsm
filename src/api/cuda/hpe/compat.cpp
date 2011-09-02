@@ -20,12 +20,14 @@ using __impl::cuda::hpe::Switch;
 using __impl::cuda::hpe::Texture;
 using __impl::cuda::hpe::Variable;
 
-static inline __impl::cuda::hpe::Mode &getCurrentCUDAMode()
+static inline
+__impl::cuda::hpe::Mode &getCurrentCUDAMode()
 {
     return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
 }
 
-static inline int __getChannelSize(CUarray_format format)
+static inline
+int __getChannelSize(CUarray_format format)
 {
 	switch(format) {
 		case CU_AD_FORMAT_SIGNED_INT8:
