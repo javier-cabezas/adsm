@@ -54,7 +54,8 @@ namespace __impl { namespace trace {
 #if defined(USE_TRACE)
 
 extern Atomic threads_;
-extern util::Private<int32_t> tid_;
+static const int32_t TID_INVALID = -1;
+extern PRIVATE int32_t tid_;
 
 class GMAC_LOCAL Tracer {
 protected:
