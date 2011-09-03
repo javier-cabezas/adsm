@@ -46,9 +46,9 @@ namespace __impl { namespace util {
 
 #ifdef DEBUG
 Atomic Logger::Ready_ = 0;
-Parameter<const char *> *Logger::Level_ = NULL;
-const char *Logger::DebugString_ = NULL;
-std::list<std::string> *Logger::Tags_ = NULL;
+const char *Logger::DebugString_;
+smart_ptr<Logger::LevelPtr>::unique Logger::Level_;
+smart_ptr<Logger::TagsPtr>::unique Logger::Tags_;
 PRIVATE char *Logger::Buffer_;
 #endif
 
@@ -62,8 +62,8 @@ void Logger::Init()
 {
 #ifdef DEBUG
 	Buffer_ = new char[BufferSize_];
-    Tags_ = new std::list<std::string>();
-    Level_ = new Parameter<const char *>(&Logger::DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
+    Tags_.reset(new std::list<std::string>());
+    Level_.reset(new Parameter<const char *>(&DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG"));
     char *tmp = new char[strlen(DebugString_) + 1];
     memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
 	char *next = NULL;
@@ -82,9 +82,7 @@ void Logger::Fini()
 {
 #ifdef DEBUG
     if(Ready_ == 0) return;
-    delete Level_;
-    delete Tags_;;
-    //if (Buffer_) delete [] Buffer_;
+    if (Buffer_) delete [] Buffer_;
 #endif
 }
 

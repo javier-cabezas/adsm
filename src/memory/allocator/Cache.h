@@ -39,7 +39,6 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "memory/Manager.h"
-#include "util/Private.h"
 #include "util/Lock.h"
 
 namespace __impl { namespace memory { namespace allocator {
@@ -82,7 +81,8 @@ public:
  * \sa Arena
  * \sa Slab
  */
-class GMAC_LOCAL Cache : protected gmac::util::Lock {
+class GMAC_LOCAL Cache :
+    protected gmac::util::Lock {
 protected:
     size_t objectSize;
     size_t arenaSize;

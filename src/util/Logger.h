@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 #include "include/gmac/types.h"
 #include "util/Thread.h"
+#include "util/UniquePtr.h"
 
 
 #if defined(__GNUC__)
@@ -120,10 +121,13 @@ namespace __impl { namespace util {
 class GMAC_LOCAL Logger {
 private:    
 #ifdef DEBUG
+    typedef Parameter<const char *> LevelPtr;
+    typedef std::list<std::string> TagsPtr;
+
 	static Atomic Ready_;
-    static Parameter<const char *> *Level_;
     static const char *DebugString_;
-    static std::list<std::string> *Tags_;
+    static smart_ptr<LevelPtr>::unique Level_;
+    static smart_ptr<TagsPtr>::unique Tags_;
 	static PRIVATE char *Buffer_;
 
     static const size_t BufferSize_ = 1024;

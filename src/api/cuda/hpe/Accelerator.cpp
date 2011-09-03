@@ -170,13 +170,10 @@ Accelerator::createModules()
 }
 
 void
-Accelerator::destroyModules(ModuleVector & modules)
+Accelerator::destroyModules(ModuleVector &modules)
 {
     trace::EnterCurrentFunction();
     pushContext();
-    ModuleVector::iterator i;
-    for(i = modules.begin(); i != modules.end(); i++)
-        delete *i;
     modules.clear();
     popContext();
     trace::ExitCurrentFunction();

@@ -97,7 +97,7 @@ class GMAC_LOCAL ModuleDescriptor {
 protected:
     typedef std::vector<ModuleDescriptor *> ModuleDescriptorVector;
     static ModuleDescriptorVector Modules_;
-	const void * fatBin_;
+	const void *fatBin_;
 
     typedef std::vector<core::hpe::KernelDescriptor> KernelVector;
     typedef std::vector<VariableDescriptor>     VariableVector;
@@ -110,7 +110,6 @@ protected:
 
 public:
     ModuleDescriptor(const void * fatBin);
-    ~ModuleDescriptor();
 
     void add(core::hpe::KernelDescriptor & k);
     void add(VariableDescriptor     & v);
@@ -127,12 +126,10 @@ protected:
 	std::vector<CUmodule> mods_;
 	const void *fatBin_;
 
-    typedef util::smart_ptr<Kernel>::unique KernelPtr;
-
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<std::string, Variable> VariableNameMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
-    typedef std::map<gmac_kernel_id_t, KernelPtr> KernelMap;
+    typedef std::map<gmac_kernel_id_t, Kernel *> KernelMap;
 
     VariableMap variables_;
 	VariableMap constants_;

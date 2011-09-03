@@ -42,14 +42,6 @@ ModuleDescriptor::ModuleDescriptor(const void *fatBin) :
     Modules_.push_back(this);
 }
 
-ModuleDescriptor::~ModuleDescriptor()
-{
-    kernels_.clear();
-    variables_.clear();
-    constants_.clear();
-    textures_.clear();
-}
-
 ModuleVector
 ModuleDescriptor::createModules()
 {
@@ -57,7 +49,7 @@ ModuleDescriptor::createModules()
     ModuleVector modules;
 
     ModulePtr ptr(new cuda::hpe::Module(Modules_));
-    modules.push_back(ptr);
+    modules.push_back(std::forward<ModulePtr>(ptr));
 #if 0
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules_.begin(); it != Modules_.end(); it++) {
@@ -95,8 +87,7 @@ Module::Module(const ModuleDescriptorVector & dVector)
         ModuleDescriptor::KernelVector::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
             TRACE(LOCAL, "Registering kernel: %s", k->getName());
-            KernelPtr kernel(new cuda::hpe::Kernel(*k, mod));
-            kernels_.insert(KernelMap::value_type(k->key(), kernel));
+            kernels_.insert(KernelMap::value_type(k->key(), new cuda::hpe::Kernel(*k, mod)));
         }
 
         ModuleDescriptor::VariableVector::const_iterator v;
@@ -134,6 +125,10 @@ Module::Module(const ModuleDescriptorVector & dVector)
 
 Module::~Module()
 {
+    KernelMap::iterator it;
+    for (it = kernels_.begin(); it != kernels_.end(); it++) {
+        delete it->second;
+    }
 #ifdef CALL_CUDA_ON_DESTRUCTION
     std::vector<CUmodule>::const_iterator m;
     for(m = mods_.begin(); m != mods_.end(); m++) {

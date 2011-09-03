@@ -34,7 +34,6 @@ Arena::~Arena()
     mode_.decRef();
 }
 
-
 Cache::~Cache()
 {
     ArenaMap::iterator i;
@@ -60,7 +59,7 @@ hostptr_t Cache::get()
         return NULL;
     }
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
-    arenas.insert(ArenaMap::value_type(arena->key() , arena));
+    arenas.insert(ArenaMap::value_type(arena->key(), arena));
     hostptr_t ptr = arena->get();
     unlock();
     return ptr;

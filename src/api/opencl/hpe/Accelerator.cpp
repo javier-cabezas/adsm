@@ -329,20 +329,20 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
 
             size_t fileSize = cursor - code;
             size_t paramsSize = 0;
-            char *file = new char[fileSize + 1];
-            char *fileParams = NULL;
-            ::memcpy(file, code, fileSize);
+            __impl::util::smart_ptr<char[]>::unique file(new char[fileSize + 1]);
+            __impl::util::smart_ptr<char[]>::unique fileParams;
+            ::memcpy(&file[0], code, fileSize);
             file[fileSize] = '\0';
 
             cursor = ::strstr(cursor + 1, CL_MAGIC);
             if (cursor != params) {
                 paramsSize = cursor - params;
-                fileParams = new char[paramsSize + 1];
-                ::memcpy(fileParams, params, paramsSize);
+                fileParams.reset(new char[paramsSize + 1]);
+                ::memcpy(&fileParams[0], params, paramsSize);
                 fileParams[paramsSize] = '\0';
             }
             TRACE(GLOBAL, "Compiling file in embedded code");
-            gmacError_t ret = prepareCLCode(file, fileParams);
+            gmacError_t ret = prepareCLCode(file.get(), fileParams.get());
             if (ret != gmacSuccess) {
                 abort();
                 trace::ExitCurrentFunction();
@@ -351,8 +351,6 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
 
             code = cursor + strlen(CL_MAGIC);
             cursor = ::strstr(cursor + 1, CL_MAGIC);
-            if (fileParams != NULL) delete [] fileParams;
-            delete [] file;
         }
     }
     trace::ExitCurrentFunction();
@@ -380,14 +378,13 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
             cl_int tmp = clGetProgramBuildInfo(program, it->first->device_,
                     CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
             ASSERTION(tmp == CL_SUCCESS);
-            char *msg = new char[len + 1];
+            __impl::util::smart_ptr<char[]>::unique msg(new char[len + 1]);
             tmp = clGetProgramBuildInfo(program, it->first->device_,
-                    CL_PROGRAM_BUILD_LOG, len, msg, NULL);
+                    CL_PROGRAM_BUILD_LOG, len, msg.get(), NULL);
             ASSERTION(tmp == CL_SUCCESS);
             msg[len] = '\0';
             TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s",
-                it->first->device_, msg);
-            delete [] msg;
+                it->first->device_, msg.get());
             break;
         }
     }
@@ -415,12 +412,11 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
             size_t len;
             cl_int tmp = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
             ASSERTION(tmp == CL_SUCCESS);
-            char *msg = new char[len + 1];
-            tmp = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg, NULL);
+            __impl::util::smart_ptr<char[]>::unique msg(new char[len + 1]);
+            tmp = clGetProgramBuildInfo(program, it->first->device_, CL_PROGRAM_BUILD_LOG, len, msg.get(), NULL);
             ASSERTION(tmp == CL_SUCCESS);
             msg[len] = '\0';
-            TRACE(GLOBAL, "Error compiling code on accelerator %d\n%s", it->first->device_, msg);
-            delete [] msg;
+            TRACE(GLOBAL, "Error compiling code on accelerator %d\n%s", it->first->device_, msg.get());
 
             break;
         }
