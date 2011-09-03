@@ -252,6 +252,7 @@ kernel *kernel::get(std::string name)
     kernel *launch = new kernel(name, err);
     if (err == @OPENCL_API_PREFIX@Success) return launch;
     delete launch;
+    return NULL;
 }
 
 inline

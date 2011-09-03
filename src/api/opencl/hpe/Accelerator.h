@@ -52,6 +52,7 @@ WITH THE SOFTWARE.
 #include "api/opencl/hpe/ModeFactory.h"
 #include "core/hpe/Accelerator.h"
 #include "util/Lock.h"
+#include "util/UniquePtr.h"
 
 namespace __impl { namespace opencl {
 
@@ -183,9 +184,9 @@ class GMAC_LOCAL Accelerator :
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     /** Map of the OpenCL accelerators in the system and the associated OpenCL programs */
-    static AcceleratorMap *Accelerators_;
+    static util::smart_ptr<AcceleratorMap>::unique Accelerators_;
     /** Host memory allocations associated to any OpenCL accelerator */
-    static HostMap *GlobalHostAlloc_;
+    static util::smart_ptr<HostMap>::unique GlobalHostAlloc_;
 
     CLBufferPool clMemRead_;
     CLBufferPool clMemWrite_;

@@ -44,6 +44,7 @@ WITH THE SOFTWARE.  */
 #include "memory/ObjectMap.h"
 
 #include "util/Private.h"
+#include "util/UniquePtr.h"
 
 #include "core/Process.h"
 
@@ -77,7 +78,8 @@ public:
     void remove(Mode &mode);
 };
 
-class GMAC_LOCAL QueueMap : private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock
+class GMAC_LOCAL QueueMap :
+    private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock
 {
 private:
     typedef std::map<THREAD_T, ThreadQueue *> Parent;
@@ -97,7 +99,8 @@ public:
 class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 protected:
-    std::vector<Accelerator *> accs_;
+    typedef util::smart_ptr<Accelerator>::unique AcceleratorPtr;
+    std::vector<AcceleratorPtr> accs_;
     ModeMap modes_;
     memory::Protocol &protocol_;
     QueueMap queues_;
@@ -229,9 +232,9 @@ public:
      * Gets the accelerator with the given id
      *
      * \param i An accelerator id
-     * \return A pointer to the accelerator with the given id, or NULL if a non-valid id is given
+     * \return A reference to the accelerator with the given id, or NULL if a non-valid id is given
      */
-    Accelerator *getAccelerator(unsigned i);
+    Accelerator &getAccelerator(unsigned i);
 
 
     /**

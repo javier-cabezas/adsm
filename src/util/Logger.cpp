@@ -1,16 +1,17 @@
-#include "Logger.h"
-#include "Private.h"
-
 #include <fstream>
 #include <cstring>
 #include <cstdarg>
 #include <cassert>
+
+#include "Logger.h"
+#include "Private.h"
 
 #include <typeinfo>
 #if defined(__GNUC__)
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
 #elif defined(_MSC_VER)
+
 static char *demangle(const char *name)
 {
 	char *ret = NULL;
@@ -21,24 +22,24 @@ static char *demangle(const char *name)
 #endif
 
 #if defined(_MSC_VER)
-	static char *strcasestr(const char *haystack, const char *needle)
-	{
-		const char *p, *startn = 0, *np = 0;
-		for(p = haystack; *p; p++) {
-			if(np) {
-				if(toupper(*p) == toupper(*np)) {
-					if(!*++np) return (char *)startn;
-				}
-				else {
-					np = 0;
-				}
-			} else if (toupper(*p) == toupper(*needle)) {
-				np = needle + 1;
-				startn = p;
+static char *strcasestr(const char *haystack, const char *needle)
+{
+	const char *p, *startn = 0, *np = 0;
+	for(p = haystack; *p; p++) {
+		if(np) {
+			if(toupper(*p) == toupper(*np)) {
+				if(!*++np) return (char *)startn;
 			}
+			else {
+				np = 0;
+			}
+		} else if (toupper(*p) == toupper(*needle)) {
+			np = needle + 1;
+			startn = p;
 		}
-		return 0;
 	}
+	return 0;
+}
 #endif
 
 namespace __impl { namespace util {
@@ -48,7 +49,7 @@ Atomic Logger::Ready_ = 0;
 Parameter<const char *> *Logger::Level_ = NULL;
 const char *Logger::DebugString_ = NULL;
 std::list<std::string> *Logger::Tags_ = NULL;
-PRIVATE char * Logger::Buffer_ = NULL;
+PRIVATE char *Logger::Buffer_;
 #endif
 
 DESTRUCTOR(fini);
@@ -83,7 +84,7 @@ void Logger::Fini()
     if(Ready_ == 0) return;
     delete Level_;
     delete Tags_;;
-    if(Buffer_) delete [] Buffer_;
+    //if (Buffer_) delete [] Buffer_;
 #endif
 }
 

@@ -13,17 +13,19 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
     //, bitmap_(*this)
 #endif
 {
+    switchIn();
 #ifdef USE_MULTI_CONTEXT
     cudaCtx_ = getAccelerator().createCUcontext();
+    modules_ = getAccelerator().createModules();
+#else
+    modules_ = &getAccelerator().createModules();
 #endif
-    switchIn();
-    modules = getAccelerator().createModules();
 
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
-    for(i = modules.begin(); i != modules.end(); i++) {
+    for(i = modules_.begin(); i != modules_.end(); i++) {
 #else
-    for(i = modules->begin(); i != modules->end(); i++) {
+    for(i = modules_->begin(); i != modules_->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
     }
@@ -57,8 +59,7 @@ Mode::~Mode()
 
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    getAccelerator().destroyModules(modules);
-    modules.clear();
+    getAccelerator().destroyModules(modules_);
 #endif
     if(ioMemoryRead_ != NULL) {
         hostFree(ioMemoryRead_->addr());
@@ -114,12 +115,17 @@ void Mode::load()
     cudaCtx_ = getAccelerator().createCUcontext();
 #endif
 
-    modules = getAccelerator().createModules();
+#ifdef USE_MULTI_CONTEXT
+    modules_ = getAccelerator().createModules();
+#else
+    modules_ = &getAccelerator().createModules();
+#endif
+
     ModuleVector::const_iterator i;
 #ifdef USE_MULTI_CONTEXT
-    for(i = modules.begin(); i != modules.end(); i++) {
+    for(i = modules_.begin(); i != modules_.end(); i++) {
 #else
-    for(i = modules->begin(); i != modules->end(); i++) {
+    for(i = modules_->begin(); i != modules_->end(); i++) {
 #endif
         (*i)->registerKernels(*this);
     }
@@ -129,8 +135,8 @@ void Mode::load()
 void Mode::reload()
 {
 #ifdef USE_MULTI_CONTEXT
-    getAccelerator().destroyModules(modules);
-    modules.clear();
+    getAccelerator().destroyModules(modules_);
+    modules_.clear();
 #endif
     kernels_.clear();
     load();
@@ -186,9 +192,9 @@ const Variable *Mode::constant(gmacVariable_t key) const
 {
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
+    for(m = modules_.begin(); m != modules_.end(); m++) {
 #else
-    for(m = modules->begin(); m != modules->end(); m++) {
+    for(m = modules_->begin(); m != modules_->end(); m++) {
 #endif
         const Variable *var = (*m)->constant(key);
         if(var != NULL) return var;
@@ -200,9 +206,9 @@ const Variable *Mode::variable(gmacVariable_t key) const
 {
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
+    for(m = modules_.begin(); m != modules_.end(); m++) {
 #else
-    for(m = modules->begin(); m != modules->end(); m++) {
+    for(m = modules_->begin(); m != modules_->end(); m++) {
 #endif
         const Variable *var = (*m)->variable(key);
         if(var != NULL) return var;
@@ -214,9 +220,9 @@ const Variable *Mode::constantByName(std::string name) const
 {
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
+    for(m = modules_.begin(); m != modules_.end(); m++) {
 #else
-    for(m = modules->begin(); m != modules->end(); m++) {
+    for(m = modules_->begin(); m != modules_->end(); m++) {
 #endif
         const Variable *var = (*m)->constantByName(name);
         if(var != NULL) return var;
@@ -228,9 +234,9 @@ const Variable *Mode::variableByName(std::string name) const
 {
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
+    for(m = modules_.begin(); m != modules_.end(); m++) {
 #else
-    for(m = modules->begin(); m != modules->end(); m++) {
+    for(m = modules_->begin(); m != modules_->end(); m++) {
 #endif
         const Variable *var = (*m)->variableByName(name);
         if(var != NULL) return var;
@@ -242,9 +248,9 @@ const Texture *Mode::texture(gmacTexture_t key) const
 {
     ModuleVector::const_iterator m;
 #ifdef USE_MULTI_CONTEXT
-    for(m = modules.begin(); m != modules.end(); m++) {
+    for(m = modules_.begin(); m != modules_.end(); m++) {
 #else
-    for(m = modules->begin(); m != modules->end(); m++) {
+    for(m = modules_->begin(); m != modules_->end(); m++) {
 #endif
         const Texture *tex = (*m)->texture(key);
         if(tex != NULL) return tex;

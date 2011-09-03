@@ -34,24 +34,28 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_API_CUDA_HPE_MODULE_H_
 #define GMAC_API_CUDA_HPE_MODULE_H_
 
-#include "config/common.h"
-#include "config/config.h"
-
-#include "Kernel.h"
+#include <cuda.h>
+#include <driver_types.h>
+#include <texture_types.h>
 
 #include <list>
 #include <map>
 #include <string>
 #include <vector>
 
-#include <cuda.h>
-#include <driver_types.h>
-#include <texture_types.h>
+#include "config/common.h"
+#include "config/config.h"
+
+#include "util/UniquePtr.h"
+
+#include "Kernel.h"
+
+
 
 namespace __impl { namespace cuda { namespace hpe {
 
 typedef const char *gmacVariable_t;
-typedef const struct textureReference * gmacTexture_t;
+typedef const struct textureReference *gmacTexture_t;
 
 typedef core::hpe::Descriptor<gmacTexture_t> TextureDescriptor;
 
@@ -84,7 +88,8 @@ public:
 };
 
 class Module;
-typedef std::vector<Module *> ModuleVector;
+typedef util::smart_ptr<Module>::unique ModulePtr;
+typedef std::vector<ModulePtr> ModuleVector;
 
 class GMAC_LOCAL ModuleDescriptor {
 	friend class Module;
@@ -122,16 +127,18 @@ protected:
 	std::vector<CUmodule> mods_;
 	const void *fatBin_;
 
+    typedef util::smart_ptr<Kernel>::unique KernelPtr;
+
 	typedef std::map<gmacVariable_t, Variable> VariableMap;
 	typedef std::map<std::string, Variable> VariableNameMap;
 	typedef std::map<gmacTexture_t, Texture> TextureMap;
-    typedef std::map<gmac_kernel_id_t, Kernel *> KernelMap;
+    typedef std::map<gmac_kernel_id_t, KernelPtr> KernelMap;
 
     VariableMap variables_;
 	VariableMap constants_;
     VariableNameMap variablesByName_;
 	VariableNameMap constantsByName_;
-	TextureMap  textures_;
+	TextureMap textures_;
     KernelMap kernels_;
 
 public:
@@ -144,7 +151,7 @@ public:
 	const Variable *constant(gmacVariable_t key) const;
     const Variable *variableByName(std::string name) const;
 	const Variable *constantByName(std::string name) const;
-    const Texture  *texture(gmacTexture_t   key) const;
+    const Texture  *texture(gmacTexture_t key) const;
 };
 
 }}}

@@ -19,6 +19,11 @@ Kernel::Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
+Kernel::~Kernel()
+{
+    printf("Kernel destroyiiiing\n");
+}
+
 KernelConfig::KernelConfig(const KernelConfig & c) :
     argsSize_(0),
     grid_(c.grid_),

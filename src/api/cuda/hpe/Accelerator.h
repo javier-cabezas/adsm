@@ -136,7 +136,7 @@ public:
 #else
     const CUcontext getCUcontext() const;
 
-    ModuleVector *createModules();
+    ModuleVector &createModules();
 #endif
 
     int major() const;

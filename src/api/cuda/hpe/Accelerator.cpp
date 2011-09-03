@@ -84,21 +84,24 @@ Accelerator::Accelerator(int n, CUdevice device) :
 Accelerator::~Accelerator()
 {
 #ifndef USE_MULTI_CONTEXT
+#ifdef CALL_CUDA_ON_DESTRUCTION
     pushContext();
-    ModuleVector::iterator i;
-    for(i = modules_.begin(); i != modules_.end(); i++) {
-        delete *i;
-    }
-    modules_.clear();
+#endif // CALL_CUDA_ON_DESTRUCTION
+#ifdef CALL_CUDA_ON_DESTRUCTION
     popContext();
     CUresult ret = cuCtxDestroy(ctx_);
     ASSERTION(ret == CUDA_SUCCESS);
-#endif
+
+#endif // CALL_CUDA_ON_DESTRUCTION 
+#endif // USE_MULTI_CONTEXT
 
 #if defined(USE_TRACE)
+#ifdef CALL_CUDA_ON_DESTRUCTION
     cuEventDestroy(start_);
     cuEventDestroy(end_);
 #endif
+#endif // USE_TRACE
+
 }
 
 void
@@ -180,7 +183,7 @@ Accelerator::destroyModules(ModuleVector & modules)
 }
 
 #else
-ModuleVector *
+ModuleVector &
 Accelerator::createModules()
 {
     trace::EnterCurrentFunction();
@@ -190,7 +193,7 @@ Accelerator::createModules()
         popContext();
     }
     trace::ExitCurrentFunction();
-    return &modules_;
+    return modules_;
 }
 #endif
 

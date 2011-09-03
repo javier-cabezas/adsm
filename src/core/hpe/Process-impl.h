@@ -11,12 +11,12 @@ Process::nAccelerators() const
     return accs_.size();
 }
 
-inline Accelerator *
+inline Accelerator &
 Process::getAccelerator(unsigned i)
 {
-    if (i >= accs_.size()) return NULL;
+    ASSERTION(i < accs_.size(), "Incorrect accelerator ID");
 
-    return accs_[i];
+    return *accs_[i];
 }
 
 inline memory::Protocol *
