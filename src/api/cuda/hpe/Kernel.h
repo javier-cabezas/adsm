@@ -70,6 +70,7 @@ protected:
 
 public:
     Kernel(const core::hpe::KernelDescriptor & k, CUmodule mod);
+    ~Kernel();
     KernelLaunch *launch(Mode &mode, KernelConfig & c);
 };
 

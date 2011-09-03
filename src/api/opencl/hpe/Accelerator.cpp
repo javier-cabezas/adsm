@@ -77,8 +77,8 @@ void CLBufferPool::putCLMem(size_t size, cl_mem mem, hostptr_t addr)
     unlock();
 }
 
-Accelerator::AcceleratorMap *Accelerator::Accelerators_ = NULL;
-HostMap *Accelerator::GlobalHostAlloc_;
+util::smart_ptr<Accelerator::AcceleratorMap>::unique Accelerator::Accelerators_;
+util::smart_ptr<HostMap>::unique Accelerator::GlobalHostAlloc_;
 
 Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigned major, unsigned minor) :
     gmac::util::SpinLock("Accelerator"),
@@ -125,12 +125,6 @@ Accelerator::~Accelerator()
     clMemRead_.cleanUp(tmpStream);
     destroyCLstream(tmpStream);
     Accelerators_->erase(this);
-    if(Accelerators_->empty()) {
-        delete Accelerators_;
-        Accelerators_ = NULL;
-        delete GlobalHostAlloc_;
-        GlobalHostAlloc_ = NULL;
-    }
 
     cl_int ret = CL_SUCCESS;
     ret = clReleaseContext(ctx_);
@@ -290,9 +284,9 @@ void
 Accelerator::addAccelerator(Accelerator &acc)
 {
     std::pair<Accelerator *, std::vector<cl_program> > pair(&acc, std::vector<cl_program>());
-    if(Accelerators_ == NULL) {
-        Accelerators_ = new AcceleratorMap();
-        GlobalHostAlloc_ = new HostMap();
+    if (Accelerators_ == NULL) {
+        Accelerators_.reset(new AcceleratorMap());
+        GlobalHostAlloc_.reset(new HostMap());
     }
     Accelerators_->insert(pair);
 }

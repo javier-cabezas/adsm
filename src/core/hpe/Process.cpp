@@ -117,10 +117,6 @@ Process::~Process()
         mode->decRef();
     }
 
-    std::vector<Accelerator *>::iterator a;
-    for(a = accs_.begin(); a != accs_.end(); a++)
-        delete *a;
-    accs_.clear();
     queues_.cleanup();
     delete &protocol_;
 }
@@ -244,9 +240,8 @@ gmacError_t Process::migrate(int acc)
 
 void Process::addAccelerator(Accelerator &acc)
 {
-    accs_.push_back(&acc);
+    accs_.push_back(AcceleratorPtr(&acc));
 }
-
 
 accptr_t Process::translate(const hostptr_t addr)
 {
@@ -308,7 +303,7 @@ core::Mode *Process::owner(const hostptr_t addr, size_t size)
 bool Process::allIntegrated()
 {
     bool ret = true;
-    std::vector<Accelerator *>::iterator a;
+    std::vector<AcceleratorPtr>::iterator a;
     for(a = accs_.begin(); a != accs_.end(); a++) {
         ret = ret && (*a)->integrated();
     }

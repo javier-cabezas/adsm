@@ -105,10 +105,10 @@ protected:
 
 #ifdef USE_MULTI_CONTEXT
     //! CUDA modules active on this mode
-    ModuleVector modules;
+    ModuleVector modules_;
 #else
     //! CUDA modules active on this mode
-    ModuleVector *modules;
+    ModuleVector *modules_;
 #endif
 
     //! Load CUDA modules and kernels

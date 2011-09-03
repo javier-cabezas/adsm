@@ -56,7 +56,8 @@ ModuleDescriptor::createModules()
     TRACE(GLOBAL, "Creating modules");
     ModuleVector modules;
 
-    modules.push_back(new cuda::hpe::Module(Modules_));
+    ModulePtr ptr(new cuda::hpe::Module(Modules_));
+    modules.push_back(ptr);
 #if 0
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules_.begin(); it != Modules_.end(); it++) {
@@ -94,7 +95,7 @@ Module::Module(const ModuleDescriptorVector & dVector)
         ModuleDescriptor::KernelVector::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
             TRACE(LOCAL, "Registering kernel: %s", k->getName());
-            Kernel * kernel = new cuda::hpe::Kernel(*k, mod);
+            KernelPtr kernel(new cuda::hpe::Kernel(*k, mod));
             kernels_.insert(KernelMap::value_type(k->key(), kernel));
         }
 
@@ -133,13 +134,14 @@ Module::Module(const ModuleDescriptorVector & dVector)
 
 Module::~Module()
 {
+#ifdef CALL_CUDA_ON_DESTRUCTION
     std::vector<CUmodule>::const_iterator m;
     for(m = mods_.begin(); m != mods_.end(); m++) {
         CUresult ret = cuModuleUnload(*m);
         ASSERTION(ret == CUDA_SUCCESS);
     }
     mods_.clear();
-    
+#endif
 
     // TODO: remove objects from maps
 #if 0
@@ -147,10 +149,6 @@ Module::~Module()
     constants_.clear();
     textures_.clear();
 #endif
-
-    KernelMap::iterator i;
-    for(i = kernels_.begin(); i != kernels_.end(); i++) delete i->second;
-    kernels_.clear();
 }
 
 void Module::registerKernels(Mode &mode) const

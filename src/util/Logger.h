@@ -111,9 +111,9 @@ void dummy_assertion(bool /*b*/, ...)
 #define FATAL(fmt, ...) __impl::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) __impl::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
+#include "util/Atomics.h"
 #include "util/Parameter.h"
 #include "util/Private.h"
-#include "util/Atomics.h"
 
 namespace __impl { namespace util {
 
