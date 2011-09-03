@@ -98,8 +98,9 @@ BlockGroup<State>::BlockGroup(Protocol &protocol, core::Mode &owner,
                                                shadow_ + offset, blockSize, init)));
         size -= blockSize;
         offset += ptroff_t(blockSize);
+		TRACE(LOCAL, "Creating BlockGroup @ %p : shadow @ %p ("FMT_SIZE" bytes) ", addr_, shadow_, blockSize);
     }
-    TRACE(LOCAL, "Creating BlockGroup @ %p : shadow @ %p) ", addr_, shadow_);
+    
 }
 
 
