@@ -184,9 +184,9 @@ class GMAC_LOCAL Accelerator :
 protected:
     typedef std::map<Accelerator *, std::vector<cl_program> > AcceleratorMap;
     /** Map of the OpenCL accelerators in the system and the associated OpenCL programs */
-    static util::smart_ptr<AcceleratorMap>::unique Accelerators_;
+    static AcceleratorMap *Accelerators_;
     /** Host memory allocations associated to any OpenCL accelerator */
-    static util::smart_ptr<HostMap>::unique GlobalHostAlloc_;
+    static HostMap *GlobalHostAlloc_;
 
     CLBufferPool clMemRead_;
     CLBufferPool clMemWrite_;

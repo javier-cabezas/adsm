@@ -99,7 +99,7 @@ public:
 class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
     DBC_FORCE_TEST(Process)
 protected:
-    typedef util::smart_ptr<Accelerator>::unique AcceleratorPtr;
+    typedef Accelerator *AcceleratorPtr;
     std::vector<AcceleratorPtr> accs_;
     ModeMap modes_;
     memory::Protocol &protocol_;

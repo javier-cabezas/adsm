@@ -15,11 +15,12 @@ getPlatformString(int string, cl_platform_id id)
     size_t len;
     cl_int err = clGetPlatformInfo(id, string, 0, NULL, &len);
     CFATAL(err == CL_SUCCESS);
-    __impl::util::smart_ptr<char[]>::unique name(new char[len + 1]);
-    err = clGetPlatformInfo(id, string, len, &name[0], NULL);
+    char *name = new char[len + 1];
+    err = clGetPlatformInfo(id, string, len, name, NULL);
     CFATAL(err == CL_SUCCESS);
     name[len] = '\0';
-    std::string ret(&name[0]);
+    std::string ret(name);
+    delete [] name;
 
     return ret;
 }
@@ -30,11 +31,12 @@ getDeviceString(int string, cl_device_id id)
     size_t len;
     cl_int err = clGetDeviceInfo(id, string, 0, NULL, &len);
     CFATAL(err == CL_SUCCESS);
-    __impl::util::smart_ptr<char[]>::unique name(new char[len + 1]);
-    err = clGetDeviceInfo(id, string, len, &name[0], NULL);
+    char *name = new char[len + 1];
+    err = clGetDeviceInfo(id, string, len, name, NULL);
     CFATAL(err == CL_SUCCESS);
     name[len] = '\0';
-    std::string ret(&name[0]);
+    std::string ret(name);
+    delete [] name;
 
     return ret;
 }

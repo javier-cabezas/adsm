@@ -39,8 +39,10 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
     template <typename T>
     struct smart_ptr {
-        typedef std::unique_ptr<T> unique;
+        /*
+        typedef std::mierda<T> unique;
         typedef std::shared_ptr<T> shared;
+        */
     };
 #if  0
     template <typename T>

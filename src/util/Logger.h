@@ -121,13 +121,13 @@ namespace __impl { namespace util {
 class GMAC_LOCAL Logger {
 private:    
 #ifdef DEBUG
-    typedef Parameter<const char *> LevelPtr;
-    typedef std::list<std::string> TagsPtr;
+    typedef Parameter<const char *> Level;
+    typedef std::list<std::string> Tags;
 
 	static Atomic Ready_;
     static const char *DebugString_;
-    static smart_ptr<LevelPtr>::unique Level_;
-    static smart_ptr<TagsPtr>::unique Tags_;
+    static Level *Level_;
+    static Tags *Tags_;
 	static PRIVATE char *Buffer_;
 
     static const size_t BufferSize_ = 1024;
