@@ -8,9 +8,6 @@ set(core_SRC
     Mode.cpp
     Process.h
     Process.cpp
-    Thread.h
-    Thread-impl.h
-    Thread.cpp
 )
 
 set(core_DBC

@@ -30,50 +30,73 @@
 
 namespace __impl { namespace core { namespace hpe {
 
+inline void
+TLS::Init()
+{
+    __impl::util::Private<Thread>::init(CurrentThread_);
+}
+
 inline
 Thread &
 TLS::getCurrentThread()
 {
-    ASSERTION(CurrentThread_ != NULL);
-    return *CurrentThread_;
+    ASSERTION(CurrentThread_.get() != NULL);
+    return *CurrentThread_.get();
 }
 
 inline
 Thread::Thread(Process &proc) :
-    process_(proc)
+    process_(proc),
+    currentMode_(NULL),
+    lastError_(gmacSuccess)
 {
-    ASSERTION(TLS::CurrentThread_ == NULL);
-    TLS::CurrentThread_ = this;
+    ASSERTION(TLS::CurrentThread_.get() == NULL);
+    TLS::CurrentThread_.set(this);
 }
 
 inline
 Thread::~Thread()
 {
-    TLS::CurrentThread_ = NULL;
-    TLS::CurrentMode_ = NULL;
+    TLS::CurrentThread_.set(NULL);
 }
 
 inline
 bool
 Thread::hasCurrentMode()
 {
-    return TLS::CurrentMode_ != NULL;
+    return TLS::getCurrentThread().currentMode_ != NULL;
 }
 
 inline
 Mode &
 Thread::getCurrentMode()
 {
-    if(TLS::CurrentMode_ != NULL) return *TLS::CurrentMode_;
-    TLS::CurrentMode_ = TLS::getCurrentThread().process_.createMode();
-    return *TLS::CurrentMode_;
+    Mode *ret = TLS::getCurrentThread().currentMode_;
+    if(ret != NULL) return *ret;
+    ret = TLS::getCurrentThread().process_.createMode();
+    
+    return *ret;
 }
 
 inline
 void
 Thread::setCurrentMode(Mode *mode)
 {
-    TLS::CurrentMode_ = mode;
+    TLS::getCurrentThread().currentMode_ = mode;
+}
+
+inline
+gmacError_t &
+Thread::getLastError()
+{
+    return TLS::getCurrentThread().lastError_;
+}
+
+inline
+void
+Thread::setLastError(gmacError_t error)
+{
+    TLS::getCurrentThread().lastError_ = error;
 }
 
 }}}

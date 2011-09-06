@@ -55,7 +55,10 @@ namespace __impl {
 
 #include "util/Private.h"
 
-extern PRIVATE bool isRunTimeThread_;
+extern __impl::util::Private<bool> isRunTimeThread_;
+
+extern const bool privateTrue;
+extern const bool privateFalse;
 
 void initGmac() GMAC_LOCAL;
 void enterGmac() GMAC_LOCAL;
