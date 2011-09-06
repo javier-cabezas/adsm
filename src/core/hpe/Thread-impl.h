@@ -74,6 +74,7 @@ Thread::getCurrentMode()
     Mode *ret = TLS::getCurrentThread().currentMode_;
     if(ret != NULL) return *ret;
     ret = TLS::getCurrentThread().process_.createMode();
+    TLS::getCurrentThread().currentMode_ = ret;
     
     return *ret;
 }
