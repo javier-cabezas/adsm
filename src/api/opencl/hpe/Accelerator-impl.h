@@ -72,7 +72,6 @@ inline bool CommandList::empty() const
     return ret;
 }
 
-
 inline HostMap::~HostMap()
 {
     // There is a race condition with the OpenCL thread. If the OpenCL

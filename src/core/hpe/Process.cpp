@@ -117,6 +117,13 @@ Process::~Process()
         mode->decRef();
     }
 
+    std::vector<Accelerator *>::iterator it;
+    for (it = accs_.begin(); it != accs_.end(); ++it) {
+        Accelerator *acc = *it;
+        ASSERTION(acc != NULL);
+        delete acc;
+    }
+
     queues_.cleanup();
     delete &protocol_;
 }
@@ -240,7 +247,7 @@ gmacError_t Process::migrate(int acc)
 
 void Process::addAccelerator(Accelerator &acc)
 {
-    accs_.push_back(AcceleratorPtr(&acc));
+    accs_.push_back(&acc);
 }
 
 accptr_t Process::translate(const hostptr_t addr)
