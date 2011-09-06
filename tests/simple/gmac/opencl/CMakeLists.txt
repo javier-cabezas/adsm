@@ -58,6 +58,7 @@ source_group(${current_GROUP} FILES
     cpp/eclMultiArrayMatrixMul_cplusplus.cpp
     cpp/eclRandomAccess.cpp
     cpp/eclVecAdd_cplusplus.cpp
+    cpp/eclFileVecAdd_cplusplus.cpp
 )
 
 # Plain OpenCL tests
@@ -129,6 +130,9 @@ target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
 
 add_executable(eclStaticVecAdd_cpp ${common_SRC} cpp/eclStaticVecAdd.cpp)
 target_link_libraries(eclStaticVecAdd_cpp gmac-hpe)
+
+add_executable(eclFileVecAdd_cpp ${common_SRC} cpp/eclFileVecAdd_cplusplus.cpp)
+target_link_libraries(eclFileVecAdd_cpp gmac-hpe)
 
 if(USE_TR1)
 add_executable(eclSharedPtrVecAdd_cpp ${common_SRC} cpp/eclSharedPtrVecAdd.cpp)

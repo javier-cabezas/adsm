@@ -81,7 +81,7 @@ do
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_OPENGL=ON -DMAKE_TESTS=ON"
         ;;
     --enable-cxx0x)
-        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X=OFF"
+        CMAKE_ARGS="${CMAKE_ARGS} -DUSE_CXX0X=ON"
         ;;
     --enable-internal)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_INTERNAL_API=ON"
