@@ -37,9 +37,9 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #if defined(POSIX)
-#define PRIVATE __thread
+#include "util/posix/Private.h"
 #elif defined(WINDOWS)
-#define PRIVATE __declspec(thread)
+#include "util/windows/Private.h"
 #endif
 
 #endif

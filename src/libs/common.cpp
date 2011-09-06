@@ -5,16 +5,22 @@
 #include "util/Atomics.h"
 #include "util/Private.h"
 
-static PRIVATE bool inGmac_   = false;
-PRIVATE bool isRunTimeThread_ = false;
+static __impl::util::Private<bool> inGmac_;
+__impl::util::Private<bool> isRunTimeThread_;
 
 static Atomic gmacInit__ = 0;
 
 static volatile bool gmacIsInitialized = false;
 
+const bool privateTrue = true;
+const bool privateFalse = false;
+
 CONSTRUCTOR(init);
 static void init(void)
 {
+    /* Create GMAC enter lock and set GMAC as initialized */
+    __impl::util::Private<bool>::init(inGmac_);
+    __impl::util::Private<bool>::init(isRunTimeThread_);
 #ifdef POSIX
     threadInit();
 #endif
@@ -23,12 +29,12 @@ static void init(void)
 void enterGmac()
 {
     if(AtomicTestAndSet(gmacInit__, 0, 1) == 0) {
-        inGmac_ = true;
+        inGmac_.set(&privateTrue);
         initGmac();
         gmacIsInitialized = true;
-    } else if (isRunTimeThread_ == false) {
+    } else if (*isRunTimeThread_.get() == privateFalse) {
         while (!gmacIsInitialized);
-        inGmac_ = true;
+        inGmac_.set(&privateTrue);
     }
 }
 
@@ -36,15 +42,15 @@ void enterGmac()
 void enterGmacExclusive()
 {
     if (AtomicTestAndSet(gmacInit__, 0, 1) == 0) initGmac();
-    inGmac_ = true;
+    inGmac_.set(&privateTrue);
 }
 
 void exitGmac()
 {
-    inGmac_ = false;
+    inGmac_.set(&privateFalse);
 }
 
 bool inGmac()
 {
-    return inGmac_;
+    return *inGmac_.get();
 }

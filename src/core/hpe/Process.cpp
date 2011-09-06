@@ -102,6 +102,8 @@ Process::Process() :
     orphans_("OrhpanMemoryMap"),
     current_(0)
 {
+    TLS::Init();
+
     // Create the private per-thread variables for the implicit thread
     initThread();
 }

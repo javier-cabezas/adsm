@@ -41,12 +41,18 @@ struct gmac_thread_t {
 static void *gmac_pthread(void *arg)
 {
     gmac::trace::StartThread("CPU");
-    enterGmac();
+
     gmac_thread_t *gthread = (gmac_thread_t *)arg;
     bool externCall = gthread->externCall;
 
     // This TLS variable is necessary before entering GMAC
-    isRunTimeThread_ = externCall != true;
+    if (externCall != true) {
+        isRunTimeThread_.set(&privateTrue);
+    } else {
+        isRunTimeThread_.set(&privateFalse);
+    }
+
+    enterGmac();
 
     Process &proc = getProcess();
     proc.initThread();

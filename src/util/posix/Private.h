@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,60 +31,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_THREAD_H_
-#define GMAC_CORE_HPE_THREAD_H_
+#ifndef GMAC_UTIL_POSIX_PRIVATE_H_
+#define GMAC_UTIL_POSIX_PRIVATE_H_
 
-#include "util/Private.h"
+#include <pthread.h>
 
-namespace __impl { namespace core { namespace hpe {
+#include "config/config.h"
 
-class Mode;
+namespace __impl { namespace util {
 
-class Thread;
-
-class GMAC_LOCAL TLS {
-    friend class Thread;
-private:
-    static __impl::util::Private<Thread> CurrentThread_;
-
+template <typename T = void>
+class GMAC_API Private {
+protected:
+    pthread_key_t key_;
+    
 public:
-    static Thread &getCurrentThread();
+    static void init(Private &var);
 
-    static void Init();
+    void set(const T *value);
+    T * get();
 };
 
-class Process;
+}}
 
-/** Contains some thread-dependent values */
-class GMAC_LOCAL Thread {
-private:
-    Process &process_;
-    Mode *currentMode_;
-    gmacError_t lastError_;
-
-public:
-    Thread(Process &proc);
-    ~Thread();
-
-    static Mode &getCurrentMode();
-    static bool hasCurrentMode();
-    static void setCurrentMode(Mode *mode);
-
-    // Error management
-    static gmacError_t &getLastError();
-    static void setLastError(gmacError_t error);
-};
-
-}}}
-
-#include "Thread-impl.h"
-
-#ifdef USE_DBC
-namespace __dbc { namespace core { namespace hpe {
-    typedef __impl::core::hpe::Thread Thread;
-}}}
-#endif
+#include "Private-impl.h"
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

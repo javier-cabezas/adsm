@@ -49,7 +49,7 @@ Atomic Logger::Ready_ = 0;
 const char *Logger::DebugString_ = NULL;
 Logger::Level *Logger::Level_ = NULL;
 Logger::Tags *Logger::Tags_ = NULL;
-PRIVATE char *Logger::Buffer_ = NULL;
+Private<char> Logger::Buffer_;
 #endif
 
 DESTRUCTOR(fini);
@@ -61,7 +61,8 @@ static void fini()
 void Logger::Init()
 {
 #ifdef DEBUG
-	Buffer_ = new char[BufferSize_];
+    Private<char>::init(Buffer_);
+	Buffer_.set(new char[BufferSize_]);
     Tags_ = new std::list<std::string>();
     Level_ = new Parameter<const char *>(&DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
     char *tmp = new char[strlen(DebugString_) + 1];
@@ -82,7 +83,9 @@ void Logger::Fini()
 {
 #ifdef DEBUG
     if(Ready_ == 0) return;
-    if (Buffer_) delete [] Buffer_;
+    char *buffer = Buffer_.get();
+    if (buffer) delete [] buffer;
+    Buffer_.set(NULL);
     if (Level_) delete Level_;
     if (Tags_) delete Tags_;
 #endif
@@ -108,13 +111,15 @@ void Logger::Log(const char *name, const char *tag, const char *fmt, va_list lis
 
 void Logger::Print(const char *tag, const char *name, const char *fmt, va_list list)
 {
-	if (Buffer_ == NULL) {
-		Buffer_ = new char[BufferSize_];
+    char *buffer = Buffer_.get();
+	if (buffer == NULL) {
+		buffer = new char[BufferSize_];
+        Buffer_.set(buffer);
 	}
 	
-	VSNPRINTF(Buffer_, BufferSize_, fmt, list);
-	if(name != NULL) fprintf(stderr,"%s [%s]: %s\n", tag, name, Buffer_);
-	else fprintf(stderr,"%s: %s\n", tag, Buffer_);
+	VSNPRINTF(buffer, BufferSize_, fmt, list);
+	if(name != NULL) fprintf(stderr,"%s [%s]: %s\n", tag, name, buffer);
+	else fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 
 #endif
