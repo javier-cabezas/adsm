@@ -161,10 +161,12 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 gmacError_t
 Mode::releaseObjects()
 {
+    ENSURES(hasModifiedObjects() == true);
+
     gmacError_t ret;
     ret = Parent::releaseObjects();
 
-    ENSURES(hasModifiedObjects() == false);
+    ENSURES(hasModifiedObjects() == true);
     return ret;
 }
 

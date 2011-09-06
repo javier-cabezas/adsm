@@ -129,7 +129,7 @@ public:
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
-    virtual void addObject(memory::Object &obj);
+    void addObject(memory::Object &obj);
 
     /**
      * Removes an object from the map of the mode
