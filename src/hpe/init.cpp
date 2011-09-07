@@ -108,10 +108,10 @@ static void fini(void)
 #if defined(_WIN32)
 #include <windows.h>
 
-static void InitThread(bool isRunTimeThread)
+static void InitThread(const bool &isRunTimeThread)
 {
     gmac::trace::StartThread("CPU");
-    isRunTimeThread_ = isRunTimeThread;
+    isRunTimeThread_.set(&isRunTimeThread);
     enterGmac();
     __impl::core::hpe::getProcess().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
@@ -209,7 +209,8 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
             BOOL ret = CloseHandle(threadHandle);
             CFATAL(ret != FALSE, "Error closing thread handle");
 
-            InitThread(isRunTimeThread);
+            if(isRunTimeThread) InitThread(privateTrue);
+			else InitThread(privateFalse);
         }
         break;
     case DLL_THREAD_DETACH:
