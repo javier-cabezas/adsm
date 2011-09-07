@@ -5,12 +5,13 @@ namespace __impl { namespace trace {
 Tracer *tracer = NULL;
 
 Atomic threads_;
-PRIVATE int32_t tid_ = TID_INVALID;
+util::Private<int32_t> tid_;
 
 CONSTRUCTOR(init);
 static void init()
 {
 #if defined(USE_TRACE)
+	util::Private<int32_t>::init(tid_);
 	InitApiTracer();
     SetThreadState(Running);
 #endif

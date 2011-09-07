@@ -26,12 +26,12 @@ Tracer::~Tracer()
 #if defined(USE_TRACE)
 inline int32_t GetThreadId()
 {
-    if (tid_ == TID_INVALID) {
+    if (tid_.get() == NULL) {
         AtomicInc(threads_);
-        tid_ = threads_;
+        tid_.set(new int(threads_));
     }
     // This will break if we have more than 8192 CPU threads using GPUs
-    return 8192 + static_cast<int32_t>(tid_ & 0xffffffff);
+    return 8192 + static_cast<int32_t>(*tid_.get() & 0xffffffff);
 }
 #endif
 
@@ -57,6 +57,7 @@ inline void EndThread(THREAD_T tid)
 {
 #if defined(USE_TRACE)	
 	if(tracer != NULL) tracer->endThread(tracer->timeMark(), tid);
+	if(tid_.get() != NULL) delete tid_.get();
 #endif
 }
 
