@@ -105,6 +105,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@GetKernel(const ch
  */
 GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, size_t size, const void *addr);
 
+GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr, GmacProtection prot);
 /**
  * Sets a pointer to be used by the following call to @OPENCL_API_PREFIX@CallNDRange()
  *
@@ -114,7 +115,11 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArg(@OPEN
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr);
+static
+@OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
+{
+	return @OPENCL_API_PREFIX@SetKernelArgPtrComplex(kernel, index, ptr, GMAC_PROT_READWRITE);
+}
 
 /**
  * Launches a kernel execution

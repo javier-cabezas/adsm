@@ -51,7 +51,8 @@ namespace memory {
 class Object;
 class Protocol;
 
-typedef std::list<hostptr_t> ListAddr;
+typedef std::pair<hostptr_t, GmacProtection> ObjectInfo;
+typedef std::list<ObjectInfo> ListAddr;
 extern ListAddr AllAddresses;
 
 //! Memory Manager Interface

@@ -39,6 +39,8 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
+#include "memory/Manager.h"
+
 #include "Descriptor.h"
 
 namespace __impl { namespace core { namespace hpe {
@@ -90,8 +92,8 @@ protected:
     KernelLaunch(Mode &mode);
 #endif
 
-    std::map<unsigned, std::list<hostptr_t>::iterator > paramToParamPtr_;
-    std::list<hostptr_t> usedObjects_;
+    std::map<unsigned, std::list<memory::ObjectInfo>::iterator > paramToParamPtr_;
+    std::list<memory::ObjectInfo> usedObjects_;
 
 public:
     /**
@@ -116,15 +118,16 @@ public:
      *
      * \param ptr Address of the object to be added
      * \param index Index of the ptr in the parameter list
+     * \param prot Access type of the object in the GPU
      */
-    void addObject(hostptr_t ptr, unsigned index);
+    void addObject(hostptr_t ptr, unsigned index, GmacProtection prot);
 
     /**
      * Gets the list of objects being used by the kernel
      *
      * \param ptr Address of the object to be added
      */
-    const std::list<hostptr_t> &getObjects() const;
+    const std::list<memory::ObjectInfo> &getObjects() const;
 
 #ifdef DEBUG
     /**

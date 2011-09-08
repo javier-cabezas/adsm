@@ -256,11 +256,11 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
         }
     } else {
         TRACE(LOCAL,"Acquiring call Objects");
-        std::list<hostptr_t>::const_iterator it;
+        std::list<ObjectInfo>::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
-            Object *obj = mode.getObject(*it);
+            Object *obj = mode.getObject(it->first);
             if (obj == NULL) {
-                HostMappedObject *hostMappedObject = HostMappedObject::get(*it);
+                HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->acquire(mode);
@@ -303,9 +303,9 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
         TRACE(LOCAL,"Releasing call Objects");
         ListAddr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
-            Object *obj = mode.getObject(*it);
+            Object *obj = mode.getObject(it->first);
             if (obj == NULL) {
-                HostMappedObject *hostMappedObject = HostMappedObject::get(*it);
+                HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->release(mode);
