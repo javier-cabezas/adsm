@@ -247,7 +247,7 @@ gmacLaunch(__impl::core::hpe::KernelLaunch &launch)
     __impl::core::hpe::Mode &mode = launch.getMode();
     Manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    const std::list<hostptr_t> &objects = launch.getObjects();
+    const std::list<__impl::memory::ObjectInfo> &objects = launch.getObjects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
     ret = manager.releaseObjects(mode, objects);

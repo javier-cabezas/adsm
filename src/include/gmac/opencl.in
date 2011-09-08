@@ -119,7 +119,7 @@ private:
         {
         }
 
-        error setArg(ecl_kernel kernel, unsigned index)
+        error setArg(ecl_kernel kernel, unsigned index, GmacProtection /* dummy */)
         {
             return ::@OPENCL_API_PREFIX@SetKernelArg(kernel, index, sizeof(value_), &value_);
         }
@@ -134,9 +134,9 @@ private:
         {
         }
 
-        error setArg(ecl_kernel kernel, unsigned index)
+        error setArg(ecl_kernel kernel, unsigned index, GmacProtection prot)
         {
-            return ::@OPENCL_API_PREFIX@SetKernelArgPtr(kernel, index, ptr_);
+            return ::@OPENCL_API_PREFIX@SetKernelArgPtrComplex(kernel, index, ptr_, prot);
         }
     };
 
@@ -190,7 +190,7 @@ public:
      * \return Error code
      */
     template <typename T>
-    error setArg(unsigned index, T val);
+    error setArg(unsigned index, T val, GmacProtection prot = GMAC_PROT_READWRITE);
 
     /**
      * Launches a kernel execution
@@ -277,10 +277,10 @@ kernel &kernel::operator=(const kernel &handler)
 
 template <typename T>
 inline
-error kernel::setArg(unsigned index, T val)
+error kernel::setArg(unsigned index, T val, GmacProtection prot)
 {
     Param<T> p(val);
-    return p.setArg(kernel_, index);
+    return p.setArg(kernel_, index, prot);
 }
 
 inline

@@ -66,7 +66,7 @@ gmacError_t APICALL
 }
 
 gmacError_t APICALL
-@OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *_ptr)
+@OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *_ptr, GmacProtection prot)
 {
     hostptr_t ptr = hostptr_t(_ptr);
 
@@ -96,7 +96,7 @@ gmacError_t APICALL
 
     ret = launch->setArgument(&tmpMem, sizeof(cl_mem), index);
     if (ret == gmacSuccess) {
-        launch->addObject(ptr, index);
+        launch->addObject(ptr, index, prot);
     }
 
     Thread::setLastError(ret);

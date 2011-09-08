@@ -42,23 +42,24 @@ KernelLaunch::getKernelId() const
 
 inline
 void
-KernelLaunch::addObject(hostptr_t ptr, unsigned index)
+KernelLaunch::addObject(hostptr_t ptr, unsigned index, GmacProtection prot)
 {
     // NOTE:
     // Path used by OpenCL, since KernelLaunch objects can be reused
-    std::map<unsigned, std::list<hostptr_t>::iterator>::iterator itMap = paramToParamPtr_.find(index);
+    std::map<unsigned, std::list<memory::ObjectInfo>::iterator>::iterator itMap = paramToParamPtr_.find(index);
     if (itMap == paramToParamPtr_.end()) {
-        usedObjects_.push_back(ptr);
-        std::list<hostptr_t>::iterator iter = --(usedObjects_.end());
-        paramToParamPtr_.insert(std::map<unsigned, std::list<hostptr_t>::iterator>::value_type(index, iter));
+        usedObjects_.push_back(memory::ObjectInfo(ptr, prot));
+        std::list<memory::ObjectInfo>::iterator iter = --(usedObjects_.end());
+        paramToParamPtr_.insert(std::map<unsigned, std::list<memory::ObjectInfo>::iterator>::value_type(index, iter));
     } else {
-        std::list<hostptr_t>::iterator iter = itMap->second;
-        (*iter) = ptr;
+        std::list<memory::ObjectInfo>::iterator iter = itMap->second;
+        (*iter).first = ptr;
+        (*iter).second = prot;
     }
 }
 
 inline
-const std::list<hostptr_t> &
+const std::list<memory::ObjectInfo> &
 KernelLaunch::getObjects() const
 {
     return usedObjects_;
