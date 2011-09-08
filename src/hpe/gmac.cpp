@@ -212,11 +212,12 @@ GMAC_API gmacError_t APICALL
 gmacFree(void *cpuPtr)
 {
     gmacError_t ret = gmacSuccess;
+    enterGmac();
     if(cpuPtr == NULL) {
         Thread::setLastError(ret);
+        exitGmac();
         return ret;
     }
-    enterGmac();
     gmac::trace::EnterCurrentFunction();
     __impl::core::hpe::Mode &mode = Thread::getCurrentMode();
     if(hasAllocator() == false || getAllocator().free(mode, hostptr_t(cpuPtr)) == false) {
