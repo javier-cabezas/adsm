@@ -171,7 +171,7 @@ Mode *Process::createMode(int acc)
     TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *aSpaces_[usedAcc]));
+    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("", *this)));
     modes_.insert(mode);
     unlock();
 
@@ -254,7 +254,7 @@ void Process::addAccelerator(Accelerator &acc)
     accs_.push_back(&acc);
     std::stringstream ss;
     ss << "Accelerator " << acc.id();
-    aSpaces_.push_back(new AddressSpace(ss.str().c_str(), *this));;
+    //aSpaces_.push_back(new AddressSpace(ss.str().c_str(), *this));;
 }
 
 accptr_t Process::translate(const hostptr_t addr)
