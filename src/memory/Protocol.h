@@ -124,7 +124,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t acquire(Block &block) = 0;
+    virtual gmacError_t acquire(Block &block, GmacProtection &prot) = 0;
 #ifdef USE_VM
     virtual gmacError_t acquireWithBitmap(Block &block) = 0;
 #endif

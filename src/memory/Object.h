@@ -99,6 +99,9 @@ protected:
      */
     gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &));
 
+    template <typename T>
+    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &, T &), T &param);
+
     /**
      * Execute a memory operation involving an I/O buffer on all the blocks of the object
      *
@@ -224,10 +227,11 @@ public:
 
     /**
      * Acquire the ownership of the object for the CPU
-     *
+     * 
+     * \param prot Access type of the previous execution on the accelerator
      * \return Error code
      */
-    gmacError_t acquire();
+    gmacError_t acquire(GmacProtection &prot);
 
 #ifdef USE_VM
     /**

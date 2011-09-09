@@ -108,7 +108,7 @@ public:
 
     TESTABLE gmacError_t signalWrite(Block &block, hostptr_t addr);
 
-    TESTABLE gmacError_t acquire(Block &block);
+    TESTABLE gmacError_t acquire(Block &block, GmacProtection &prot);
 
     TESTABLE gmacError_t release(Block &block);
 

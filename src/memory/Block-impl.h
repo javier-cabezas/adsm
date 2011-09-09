@@ -52,11 +52,20 @@ inline gmacError_t Block::signalWrite(hostptr_t addr)
     return ret;
 }
 
-template <typename T>
-inline T Block::coherenceOp(T (Protocol::*f)(Block &))
+template <typename R>
+inline R Block::coherenceOp(R (Protocol::*f)(Block &))
 {
     lock();
-    T ret = (protocol_.*f)(*this);
+    R ret = (protocol_.*f)(*this);
+    unlock();
+    return ret;
+}
+
+template <typename R, typename T>
+inline R Block::coherenceOp(R (Protocol::*op)(Block &, T &), T &param)
+{
+    lock();
+    R ret = (protocol_.*op)(*this, param);
     unlock();
     return ret;
 }

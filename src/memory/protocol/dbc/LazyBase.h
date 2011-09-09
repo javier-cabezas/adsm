@@ -58,7 +58,7 @@ public:
     gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
     gmacError_t signalWrite(BlockImpl &block, hostptr_t addr);
 
-    gmacError_t acquire(BlockImpl &obj);
+    gmacError_t acquire(BlockImpl &obj, GmacProtection &prot);
     gmacError_t release(BlockImpl &block);
 
     gmacError_t releaseAll();

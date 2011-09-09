@@ -53,8 +53,6 @@ gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &) const, P1 &p
     return gmacSuccess;
 }
 
-
-
 template <typename P1>
 gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1)
 {

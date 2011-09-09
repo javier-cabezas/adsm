@@ -109,7 +109,8 @@ TEST_F(ObjectTest, Coherence)
     ASSERT_EQ(gmacSuccess, object->release());
     ASSERT_EQ(gmacSuccess, object->toAccelerator());
 
-    ASSERT_EQ(gmacSuccess, object->acquire());
+    GmacProtection prot = GMAC_PROT_READWRITE;
+    ASSERT_EQ(gmacSuccess, object->acquire(prot));
     mode.memset(object->acceleratorAddr(mode, object->addr()), 0, Size_);
 
     for(size_t s = 0; s < object->size(); s++) {

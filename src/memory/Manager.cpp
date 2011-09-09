@@ -251,7 +251,8 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
     if (addrs.size() == 0) {
         if (mode.hasModifiedObjects() && mode.releasedObjects()) {
             TRACE(LOCAL,"Acquiring Objects");
-            ret = mode.forEachObject(&Object::acquire);
+            GmacProtection prot = GMAC_PROT_READWRITE;
+            ret = mode.forEachObject<GmacProtection>(&Object::acquire, prot);
             mode.acquireObjects();
         }
     } else {
@@ -267,7 +268,8 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
 #endif
                 hostMappedObject->decRef();
             } else {
-                ret = obj->acquire();
+                GmacProtection prot = it->second;
+                ret = obj->acquire(prot);
                 ASSERTION(ret == gmacSuccess);
                 obj->decRef();
             }
