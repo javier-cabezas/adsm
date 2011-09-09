@@ -41,14 +41,15 @@ TLS::getCurrentThread()
     return *TLS::CurrentThread_.get();
 }
 
-
-
 inline
 Thread::Thread() :
     lastError_(gmacSuccess)
 {
     ASSERTION(TLS::CurrentThread_.get() == NULL);
     TLS::CurrentThread_.set(this);
+#ifdef DEBUG
+    debugTID_ = THREAD_T(AtomicInc(Thread::NextTID_));
+#endif
 }
 
 inline
@@ -56,6 +57,17 @@ Thread::~Thread()
 {
     TLS::CurrentThread_.set(NULL);
 }
+
+#ifdef DEBUG
+inline
+THREAD_T
+Thread::getDebugTID()
+{
+    if (TLS::CurrentThread_.get() == NULL) return 1;
+    return TLS::getCurrentThread().debugTID_;
+}
+#endif
+
 
 inline
 gmacError_t &
