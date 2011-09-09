@@ -86,8 +86,8 @@ protected:
     //! Associated CUDA context
     CUcontext cudaCtx_;
 #endif
-    util::smart_ptr<util::allocator::Buddy>::unique ioMemoryRead_;
-    util::smart_ptr<util::allocator::Buddy>::unique ioMemoryWrite_;
+    util::allocator::Buddy *ioMemoryRead_;
+    util::allocator::Buddy *ioMemoryWrite_;
 
     //! Switch to accelerator mode
     void switchIn();

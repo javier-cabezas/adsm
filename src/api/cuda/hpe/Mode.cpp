@@ -34,10 +34,10 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
 
     gmacError_t ret = getAccelerator().hostAlloc(addr, util::params::ParamIOMemory/2, GMAC_PROT_READWRITE);
     if(ret == gmacSuccess)
-        ioMemoryRead_.reset(new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2));
+        ioMemoryRead_ = new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2);
     ret = getAccelerator().hostAlloc(addr, util::params::ParamIOMemory/2, GMAC_PROT_READ);
     if(ret == gmacSuccess)
-        ioMemoryWrite_.reset(new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2));
+        ioMemoryWrite_ = new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2);
 
     streamLaunch_        = getAccelerator().createCUstream();
     streamToAccelerator_ = getAccelerator().createCUstream();
@@ -63,9 +63,11 @@ Mode::~Mode()
 #endif
     if(ioMemoryRead_ != NULL) {
         hostFree(ioMemoryRead_->addr());
+        delete ioMemoryRead_;
     }
     if(ioMemoryWrite_ != NULL) {
         hostFree(ioMemoryWrite_->addr());
+        delete ioMemoryWrite_;
     }
 
     switchOut();
