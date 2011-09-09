@@ -318,7 +318,7 @@ public:
      * \return Error code
      */
     TESTABLE gmacError_t copyFromBuffer(core::IOBuffer &buffer, size_t size,
-            size_t bufferOffset = 0, size_t objectOffset = 0);
+                                        size_t bufferOffset = 0, size_t objectOffset = 0);
 
     /**
      * Initializes a memory range within the object to a specific value

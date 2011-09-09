@@ -163,20 +163,18 @@ public:
      */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void));
 
-
     /**
-     * Applies a constant memory operation to all the objects that belong to
-     * the mode
+     * Applies a memory operation to all the objects that belong to
+     * the mode, passing the given parameter
      * \param op Memory operation to be executed
+     * \param param Parameter to be passed to the operation
      * \sa __impl::memory::Object::acquire
      * \sa __impl::memory::Object::toHost
      * \sa __impl::memory::Object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
-
     template <typename T>
-    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(T &), T &param);
+    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(T &), T &param);
 
     /**
      * Tells if the objects of the mode have been already invalidated

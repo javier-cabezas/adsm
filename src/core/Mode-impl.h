@@ -102,13 +102,6 @@ Mode::getObject(const hostptr_t addr, size_t size) const
 }
 
 inline gmacError_t
-Mode::forEachObject(gmacError_t (memory::Object::*f)(void) const) const
-{
-    gmacError_t ret = getObjectMap().forEachObject(f);
-    return ret;
-}
-
-inline gmacError_t
 Mode::forEachObject(gmacError_t (memory::Object::*f)(void))
 {
     gmacError_t ret = getObjectMap().forEachObject(f);
