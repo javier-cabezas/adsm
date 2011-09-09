@@ -84,6 +84,7 @@ TEST_F(ManagerTest, GlobalAllocReplicated)
     manager->destroy();
 }
 
+#if !defined(USE_OPENCL)
 TEST_F(ManagerTest, GlobalAllocCentralized)
 {
     ASSERT_TRUE(Process_ != NULL);
@@ -100,6 +101,7 @@ TEST_F(ManagerTest, GlobalAllocCentralized)
     }
     manager->destroy();
 }
+#endif
 
 TEST_F(ManagerTest, Coherence)
 {
