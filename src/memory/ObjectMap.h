@@ -48,7 +48,7 @@ namespace __impl {
 namespace core {
 class Mode;
 class Process;
-namespace hpe { class Map; }
+namespace hpe { class AddressSpace; }
 }
 
 namespace memory {
@@ -62,7 +62,7 @@ class GMAC_LOCAL ObjectMap :
      protected std::map<const hostptr_t, Object *>,
      public util::NonCopyable {
 protected:
-    friend class core::hpe::Map;
+    friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, Object *> Parent;
 
     /**

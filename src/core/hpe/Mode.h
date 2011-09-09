@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 
 #include "core/Mode.h"
-#include "core/hpe/Map.h"
+#include "core/hpe/AddressSpace.h"
 
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
@@ -89,7 +89,7 @@ protected:
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
-    Map map_;
+    AddressSpace map_;
 
     stream_t streamToHost_;
     stream_t streamToAccelerator_;
