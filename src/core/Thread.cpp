@@ -2,7 +2,7 @@
 
 namespace __impl { namespace core {
 
-PRIVATE gmacError_t TLS::LastError_ = gmacSuccess;
+__impl::util::Private<Thread> TLS::CurrentThread_;
 
 }}
 

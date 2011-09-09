@@ -18,7 +18,6 @@ set(core_hpe_SRC
     Process.cpp
     Thread.h
     Thread-impl.h
-    Thread.cpp
     Queue.h
     Queue.cpp
 )

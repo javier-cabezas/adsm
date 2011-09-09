@@ -34,45 +34,30 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_HPE_THREAD_H_
 #define GMAC_CORE_HPE_THREAD_H_
 
+#include "core/Thread.h"
+
 #include "util/Private.h"
 
 namespace __impl { namespace core { namespace hpe {
 
 class Mode;
-
 class Thread;
 
-class GMAC_LOCAL TLS {
-    friend class Thread;
-private:
-    static __impl::util::Private<Thread> CurrentThread_;
-
-public:
-    static Thread &getCurrentThread();
-
-    static void Init();
-};
-
-class Process;
-
 /** Contains some thread-dependent values */
-class GMAC_LOCAL Thread {
+class GMAC_LOCAL Thread :
+    public core::Thread {
 private:
     Process &process_;
     Mode *currentMode_;
-    gmacError_t lastError_;
+
+    static Thread &getCurrentThread();
 
 public:
     Thread(Process &proc);
-    ~Thread();
 
     static Mode &getCurrentMode();
     static bool hasCurrentMode();
     static void setCurrentMode(Mode *mode);
-
-    // Error management
-    static gmacError_t &getLastError();
-    static void setLastError(gmacError_t error);
 };
 
 }}}
