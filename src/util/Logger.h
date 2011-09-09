@@ -71,15 +71,34 @@ inline static const char *__extract_file_name(const char *file) {
 }
 
 #define GLOBAL "GMAC"
+
+#if defined(__GNUC__)
+#include <cxxabi.h>
+
+extern __thread char nameBuffer[1024];
+const char *
+get_class_name(const char *mangled);
+
+#define LOCAL get_class_name(typeid(*this).name())
+#else
 #define LOCAL typeid(*this).name()
+#endif
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
-#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, __impl::util::GetThreadId(), __func__, \
-		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
+                                                                   __PRETTY_FUNCTION__, \
+                                                                   __extract_file_name(__FILE__), __LINE__, \
+                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::Thread::getDebugTID(), \
+                                                                   fmt, \
+                                                                   ##__VA_ARGS__)
 #   elif defined(_MSC_VER)
-#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, "("FMT_TID":%s) [%s:%d] " fmt, __impl::util::GetThreadId(), __FUNCTION__, \
-		    __extract_file_name(__FILE__), __LINE__, ##__VA_ARGS__)
+#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
+                                                                   __FUNCTION__, \
+                                                                   __extract_file_name(__FILE__), __LINE__, \
+                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::Thread::getDebugTID(), \
+                                                                   fmt, \
+                                                                   ##__VA_ARGS__)
 #   endif
 #   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
 #else
@@ -99,11 +118,12 @@ void dummy_assertion(bool /*b*/, ...)
 #endif
 
 #ifdef DEBUG
-#define MESSAGE(fmt, ...) { if (__impl::util::params::ParamVerbose) { \
+#define MESSAGE(fmt, ...) do {                                        \
+                            if (__impl::util::params::ParamVerbose) { \
                                 __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
                                 TRACE(GLOBAL, fmt, ##__VA_ARGS__);    \
                             }                                         \
-                          }
+                          } while (0)
 #else
 #define MESSAGE(fmt, ...) { if (__impl::util::params::ParamVerbose) __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
@@ -120,6 +140,9 @@ namespace __impl { namespace util {
 
 class GMAC_LOCAL Logger {
 private:    
+	static Private<char> Buffer_;
+    static const size_t BufferSize_ = 1024;
+
 #ifdef DEBUG
     typedef Parameter<const char *> Level;
     typedef std::list<std::string> Tags;
@@ -128,28 +151,58 @@ private:
     static const char *DebugString_;
     static Level *Level_;
     static Tags *Tags_;
-	static Private<char> Buffer_;
-
-    static const size_t BufferSize_ = 1024;
 
     static bool Check(const char *name);
+
+#ifdef USE_CXX0X
+    template <typename ...Types>
+	static void Log(const char *name, const char *tag, const char *fmt, Types ...list);
+#else // TODO: remove this as soon as the other platforms support variadic templates
 	static void Log(const char *name, const char *tag, const char *fmt, va_list list);
-    static void Print(const char *tag, const char *name, const char *fmt, va_list list);
-#endif
+#endif // __GNUC__
+
+#endif // DEBUG
+
+#ifdef USE_CXX0X
+    template <typename ...Types>
+    static void Print(const char *tag, const char *fmt, Types ...list);
+    static void Print(const char *tag, const char *fmt);
+#else // TODO: remove this as soon as the other platforms support variadic templates
+    static void Print(const char *tag, const char *fmt, va_list list);
+#endif // __GNUC__
+
 public:
 	static void Init();
     static void Fini();
 #ifdef DEBUG
-    static void __Trace(const char *name, const char *fmt, ...);  
+#ifdef USE_CXX0X
+    template <typename ...Types>
+    static void __Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt, Types ...list);
+    template <typename ...Types>
+    static void __Assertion(bool c, const char * cStr, const char *fmt, Types ...list);
+#else // TODO: remove this as soon as the other platforms support variadic templates
+    static void __Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt, ...);
     static void __Assertion(bool c, const char * cStr, const char *fmt, ...);
 #endif
+#endif // DEBUG
+
     static void __Message(const char *fmt, ...);
     static void __Warning(const char *fmt, ...);
+#ifdef USE_CXX0X
+    template <typename ...Types>
+    static void __Fatal(const char *fmt, Types ...list);
+    template <typename ...Types>
+    static void __CFatal(bool c, const char * cStr, const char *fmt, Types ...list);
+#else // TODO: remove this as soon as the other platforms support variadic templates
     static void __Fatal(const char *fmt, ...);
     static void __CFatal(bool c, const char * cStr, const char *fmt, ...);
+#endif
 };
 
 }}
+
+// Needs to be here
+#include "core/Thread.h"
 
 #include "Logger-impl.h"
 

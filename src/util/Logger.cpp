@@ -10,6 +10,18 @@
 #if defined(__GNUC__)
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
+
+const char *
+get_class_name(const char *mangled)
+{
+    char nameBuffer[256];
+    size_t len = 256; 
+    int s; 
+    char* p=abi::__cxa_demangle(mangled, nameBuffer, &len, &s); 
+    return p;
+}
+
+
 #elif defined(_MSC_VER)
 
 static char *demangle(const char *name)
@@ -44,12 +56,12 @@ static char *strcasestr(const char *haystack, const char *needle)
 
 namespace __impl { namespace util {
 
+Private<char> Logger::Buffer_;
 #ifdef DEBUG
 Atomic Logger::Ready_ = 0;
 const char *Logger::DebugString_ = NULL;
 Logger::Level *Logger::Level_ = NULL;
 Logger::Tags *Logger::Tags_ = NULL;
-Private<char> Logger::Buffer_;
 #endif
 
 DESTRUCTOR(fini);
@@ -60,9 +72,9 @@ static void fini()
 
 void Logger::Init()
 {
-#ifdef DEBUG
     Private<char>::init(Buffer_);
 	Buffer_.set(new char[BufferSize_]);
+#ifdef DEBUG
     Tags_ = new std::list<std::string>();
     Level_ = new Parameter<const char *>(&DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
     char *tmp = new char[strlen(DebugString_) + 1];
@@ -81,11 +93,11 @@ void Logger::Init()
 
 void Logger::Fini()
 {
-#ifdef DEBUG
-    if(Ready_ == 0) return;
     char *buffer = Buffer_.get();
     if (buffer) delete [] buffer;
     Buffer_.set(NULL);
+#ifdef DEBUG
+    if(Ready_ == 0) return;
     if (Level_) delete Level_;
     if (Tags_) delete Tags_;
 #endif
@@ -101,25 +113,6 @@ bool Logger::Check(const char *name)
         if(strstr(name, i->c_str()) != NULL) return true;
     }
     return false;
-}
-
-void Logger::Log(const char *name, const char *tag, const char *fmt, va_list list)
-{
-    if(Check(name) == false) return;
-    Print(tag, name, fmt, list);
-}
-
-void Logger::Print(const char *tag, const char *name, const char *fmt, va_list list)
-{
-    char *buffer = Buffer_.get();
-	if (buffer == NULL) {
-		buffer = new char[BufferSize_];
-        Buffer_.set(buffer);
-	}
-	
-	VSNPRINTF(buffer, BufferSize_, fmt, list);
-	if(name != NULL) fprintf(stderr,"%s [%s]: %s\n", tag, name, buffer);
-	else fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 
 #endif

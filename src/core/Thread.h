@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_THREAD_H_
 #define GMAC_CORE_THREAD_H_
 
+#include "util/Atomics.h"
 #include "util/Private.h"
 
 namespace __impl { namespace core {
@@ -55,6 +56,11 @@ public:
 class Thread {
 private:
     gmacError_t lastError_;
+#ifdef DEBUG
+    THREAD_T debugTID_;
+
+    static Atomic NextTID_;
+#endif
 
 public:
     Thread();
@@ -63,6 +69,9 @@ public:
     // Error management
     static gmacError_t &getLastError();
     static void setLastError(gmacError_t error);
+#ifdef DEBUG
+    static THREAD_T getDebugTID();
+#endif
 };
 
 }}
