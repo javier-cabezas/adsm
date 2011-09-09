@@ -115,6 +115,14 @@ Mode::forEachObject(gmacError_t (memory::Object::*f)(void))
     return ret;
 }
 
+template <typename T>
+inline gmacError_t
+Mode::forEachObject(gmacError_t (memory::Object::*f)(T &), T &param)
+{
+    gmacError_t ret = getObjectMap().forEachObject(f, param);
+    return ret;
+}
+
 #ifdef USE_VM
 inline memory::vm::Bitmap&
 Mode::getBitmap()

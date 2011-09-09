@@ -175,6 +175,9 @@ public:
      */
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void) const) const;
 
+    template <typename T>
+    gmacError_t forEachObject(gmacError_t (memory::Object::*f)(T &), T &param);
+
     /**
      * Tells if the objects of the mode have been already invalidated
      * \return Boolean that tells if objects of the mode have been already

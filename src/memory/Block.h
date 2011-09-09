@@ -161,8 +161,10 @@ public:
      *  \param op Memory coherence operation to be executed
      *  \return Error code
      */
-    template <typename T>
-    T coherenceOp(T (Protocol::*op)(Block &));
+    template <typename R>
+    R coherenceOp(R (Protocol::*op)(Block &));
+    template <typename R, typename T>
+    R coherenceOp(R (Protocol::*op)(Block &, T &), T &param);
 
     gmacError_t copyOp(Protocol::CopyOp op, Block &dst, size_t dstOff, size_t srcOff, size_t count);
 

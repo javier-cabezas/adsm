@@ -127,19 +127,23 @@ exit_func:
     return ret;
 }
 
-gmacError_t LazyBase::acquire(Block &b)
+gmacError_t LazyBase::acquire(Block &b, GmacProtection &prot)
 {
     gmacError_t ret = gmacSuccess;
     lazy::Block &block = dynamic_cast<lazy::Block &>(b);
     switch(block.getState()) {
     case lazy::Invalid:
     case lazy::ReadOnly:
-        if(block.protect(GMAC_PROT_NONE) < 0)
-            FATAL("Unable to set memory permissions");
+        if (prot == GMAC_PROT_READWRITE ||
+            prot == GMAC_PROT_WRITE) {
+            if(block.protect(GMAC_PROT_NONE) < 0)
+                FATAL("Unable to set memory permissions");
 #ifndef USE_VM
-        block.setState(lazy::Invalid);
-        //block.acquired();
+            block.setState(lazy::Invalid);
+            //block.acquired();
 #endif
+        }
+
         break;
     case lazy::Dirty:
         WARNING("Block modified before gmacSynchronize: %p", block.addr());

@@ -80,15 +80,27 @@ Object::size() const
     return size_;
 }
 
+template <typename T>
+gmacError_t Object::coherenceOp(gmacError_t (Protocol::*op)(Block &, T &), T &param)
+{
+    gmacError_t ret = gmacSuccess;
+    BlockMap::const_iterator i;
+    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+        ret = i->second->coherenceOp(op, param);
+        if(ret != gmacSuccess) break;
+    }
+    return ret;
+}
+
 inline gmacError_t
-Object::acquire()
+Object::acquire(GmacProtection &prot)
 {
     lockWrite();
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherenceOp(&Protocol::acquire);
+        ret = coherenceOp<GmacProtection>(&Protocol::acquire, prot);
     }
     released_ = false;
     unlock();

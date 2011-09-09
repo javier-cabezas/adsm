@@ -36,16 +36,17 @@ LazyBase::signalWrite(BlockImpl &_block, hostptr_t addr)
 }
 
 gmacError_t
-LazyBase::acquire(BlockImpl &_block)
+LazyBase::acquire(BlockImpl &_block, GmacProtection &prot)
 {
     LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
 
     REQUIRES(block.getState() == __impl::memory::protocol::lazy::ReadOnly ||
              block.getState() == __impl::memory::protocol::lazy::Invalid);
 
-    gmacError_t ret = Parent::acquire(block);
+    gmacError_t ret = Parent::acquire(block, prot);
 
-    ENSURES(block.getState() == __impl::memory::protocol::lazy::Invalid);
+    ENSURES((prot != GMAC_PROT_READWRITE && prot != GMAC_PROT_WRITE) ||
+            block.getState() == __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
