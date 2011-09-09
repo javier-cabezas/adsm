@@ -36,7 +36,6 @@ WITH THE SOFTWARE.  */
 
 #include "util/Private.h"
 
-#if 0
 namespace __impl { namespace core {
 
 class Thread;
@@ -45,18 +44,28 @@ class Thread;
 class TLS {
     friend class Thread;
 private:
+    static __impl::util::Private<Thread> CurrentThread_;
+
+public:
+    static Thread &getCurrentThread();
+
+    static void Init();
 };
 
 class Thread {
+private:
+    gmacError_t lastError_;
 
 public:
+    Thread();
+    virtual ~Thread();
+
     // Error management
     static gmacError_t &getLastError();
     static void setLastError(gmacError_t error);
 };
 
 }}
-#endif
 
 #include "Thread-impl.h"
 

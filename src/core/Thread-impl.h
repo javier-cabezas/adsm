@@ -22,22 +22,53 @@
 #ifndef GMAC_CORE_THREAD_IMPL_H_
 #define GMAC_CORE_THREAD_IMPL_H_
 
+#include "util/Logger.h"
 #include "util/Private.h"
 
 namespace __impl { namespace core {
+
+inline void
+TLS::Init()
+{
+    __impl::util::Private<Thread>::init(CurrentThread_);
+}
+
+inline
+Thread &
+TLS::getCurrentThread()
+{
+    ASSERTION(TLS::CurrentThread_.get() != NULL);
+    return *TLS::CurrentThread_.get();
+}
+
+
+
+inline
+Thread::Thread() :
+    lastError_(gmacSuccess)
+{
+    ASSERTION(TLS::CurrentThread_.get() == NULL);
+    TLS::CurrentThread_.set(this);
+}
+
+inline
+Thread::~Thread()
+{
+    TLS::CurrentThread_.set(NULL);
+}
 
 inline
 gmacError_t &
 Thread::getLastError()
 {
-    return TLS::LastError_;
+    return TLS::getCurrentThread().lastError_;
 }
 
 inline
 void
 Thread::setLastError(gmacError_t error)
 {
-    TLS::LastError_ = error;
+    TLS::getCurrentThread().lastError_ = error;
 }
 
 }}
