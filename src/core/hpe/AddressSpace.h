@@ -54,6 +54,7 @@ class Object;
 namespace core { namespace hpe {
 
 class Mode;
+class Process;
 
 //! An object map associated to an execution mode
 class GMAC_LOCAL AddressSpace :
@@ -65,16 +66,16 @@ protected:
     /**
      * Execution mode owning this map
      */
-    Mode &parent_;
+    Process &parent_;
 
 public:
     /**
      * Default constructor
      *
      * \param name Name of the object map used for tracing
-     * \param parent Mode that owns the map
+     * \param parent Process that owns the map
      */
-    AddressSpace(const char *name, Mode &parent);
+    AddressSpace(const char *name, Process &parent);
 
     /**
      * Default destructor

@@ -6,8 +6,8 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
-    gmac::core::hpe::Mode(proc, acc)
+Mode::Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) :
+    gmac::core::hpe::Mode(proc, acc, aSpace)
 {
     streamLaunch_ = getAccelerator().createCLstream();
     streamToHost_ = streamToAccelerator_ = streamLaunch_;

@@ -89,7 +89,7 @@ protected:
     // Must be a pointer since the Mode can change the accelerator on which it is running
     Accelerator *acc_;
 
-    AddressSpace map_;
+    AddressSpace *aSpace_;
 
     stream_t streamToHost_;
     stream_t streamToAccelerator_;
@@ -139,7 +139,7 @@ protected:
      * \param acc Reference to the accelerator in which the mode will perform
      *            the allocations
     */
-    Mode(Process &proc, Accelerator &acc);
+    Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace);
 
     /**
      * Mode destructor

@@ -1,4 +1,4 @@
-#include "api/opencl/hpe/Accelerator.h"
+
 #include "api/opencl/hpe/Mode.h"
 
 #include "api/opencl/IOBuffer.h"
@@ -141,10 +141,10 @@ void Accelerator::init()
 {
 }
 
-core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc)
+core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = ModeFactory::create(dynamic_cast<core::hpe::Process &>(proc), *this);
+    core::hpe::Mode *mode = ModeFactory::create(dynamic_cast<core::hpe::Process &>(proc), *this, aSpace);
     if (mode != NULL) {
         registerMode(*mode);
     }

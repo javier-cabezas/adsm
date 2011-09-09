@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core { namespace hpe {
+class AddressSpace;
 class Process;
 }}
 
@@ -50,7 +51,7 @@ class Mode;
 
 class GMAC_LOCAL ModeFactory {
 protected:
-    Mode *create(core::hpe::Process &proc, Accelerator &acc) const;
+    Mode *create(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) const;
 };
 
 }}}

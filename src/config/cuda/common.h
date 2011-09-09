@@ -37,7 +37,6 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 #include <cuda.h>
 
-typedef CUcontext AddressSpace;
 typedef CUstream stream_t;
 typedef CUevent event;
 

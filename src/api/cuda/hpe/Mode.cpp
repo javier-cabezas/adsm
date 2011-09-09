@@ -7,8 +7,8 @@
 
 namespace __impl { namespace cuda { namespace hpe {
 
-Mode::Mode(core::hpe::Process &proc, Accelerator &acc) :
-    gmac::core::hpe::Mode(proc, acc)
+Mode::Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) :
+    gmac::core::hpe::Mode(proc, acc, aSpace)
 #ifdef USE_VM
     //, bitmap_(*this)
 #endif

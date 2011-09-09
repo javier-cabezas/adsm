@@ -19,13 +19,13 @@ Atomic Mode::StatDumps_ = 0;
 std::string Mode::StatsDir_ = "";
 #endif
 
-Mode::Mode(Process &proc, Accelerator &acc) :
+Mode::Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace) :
     proc_(proc),
     acc_(&acc),
+    aSpace_(&aSpace),
 #if defined(_MSC_VER)
 #	pragma warning( disable : 4355 )
 #endif
-    map_("ModeMemoryMap", *this),
 #ifdef USE_VM
     bitmap_(*this),
 #endif
@@ -50,10 +50,10 @@ void Mode::removeObject(memory::Object &obj)
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "remove";
 
-        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
-        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
-        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
-        map_.dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
+        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
+        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
+        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
     }
 #endif
     core::Mode::removeObject(obj);
@@ -67,10 +67,10 @@ gmacError_t Mode::releaseObjects()
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "release";
 
-        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ);
-        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE);
-        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
-        map_.dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ);
+        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE);
+        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
+        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
     switchIn();
@@ -198,7 +198,7 @@ Mode::moveTo(Accelerator &acc)
     gmacError_t ret = gmacSuccess;
     size_t free;
     size_t total;
-    size_t needed = map_.memorySize();
+    size_t needed = aSpace_->memorySize();
     acc_->getMemInfo(free, total);
 
     if (needed > free) {
@@ -207,7 +207,7 @@ Mode::moveTo(Accelerator &acc)
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
-    ret = map_.forEachObject(&memory::Object::unmapFromAccelerator);
+    ret = aSpace_->forEachObject(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
@@ -216,8 +216,8 @@ Mode::moveTo(Accelerator &acc)
     acc_->migrateMode(*this, acc);
 
     TRACE(LOCAL,"Reallocating objects");
-    //map_.reallocObjects(*this);
-    ret = map_.forEachObject(&memory::Object::mapToAccelerator);
+    // aSpace_->reallocObjects(*this);
+    ret = aSpace_->forEachObject(&memory::Object::mapToAccelerator);
 
     TRACE(LOCAL,"Reloading mode");
     reload();
@@ -229,9 +229,9 @@ Mode::moveTo(Accelerator &acc)
 
 gmacError_t Mode::cleanUp()
 {
-    gmacError_t ret = map_.forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
+    gmacError_t ret = aSpace_->forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
     contextMap_.clean();
-    map_.cleanUp();
+    aSpace_->cleanUp();
 #ifdef USE_VM
     bitmap_.cleanUp();
 #endif

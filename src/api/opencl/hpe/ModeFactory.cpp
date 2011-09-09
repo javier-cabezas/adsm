@@ -3,9 +3,9 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Mode *ModeFactory::create(core::hpe::Process &proc, Accelerator &acc) const
+Mode *ModeFactory::create(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) const
 {
-    return new gmac::opencl::hpe::Mode(proc, acc);
+    return new gmac::opencl::hpe::Mode(proc, acc, aSpace);
 }
 
 }}}

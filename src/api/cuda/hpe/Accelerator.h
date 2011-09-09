@@ -124,7 +124,7 @@ public:
 
     static void init();
 
-    __impl::core::hpe::Mode *createMode(core::hpe::Process &proc);
+    __impl::core::hpe::Mode *createMode(core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace);
 
 #ifdef USE_MULTI_CONTEXT
     CUcontext createCUcontext();

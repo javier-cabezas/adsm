@@ -48,6 +48,7 @@
 
 namespace __impl { namespace core { namespace hpe {
 
+class AddressSpace;
 class KernelLaunch;
 class Mode;
 class Process;
@@ -117,9 +118,10 @@ public:
      * Creates and returns a mode on the given process and registers it to run
      * on the accelerator
      * \param proc Reference to a process which the mode will belong to
+     * \param aSpace Address space to be used by the mode
      * \return A pointer to the created mode or NULL if there has been an error
      */
-    virtual Mode *createMode(Process &proc) = 0;
+    virtual Mode *createMode(Process &proc, AddressSpace &aSpace) = 0;
 
     /**
      * Migrate an execution mode to another accelerator
