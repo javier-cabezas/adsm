@@ -88,7 +88,7 @@ public:
 };
 
 class Module;
-typedef util::smart_ptr<Module>::unique ModulePtr;
+typedef Module *ModulePtr;
 typedef std::vector<ModulePtr> ModuleVector;
 
 class GMAC_LOCAL ModuleDescriptor {

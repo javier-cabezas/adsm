@@ -48,8 +48,8 @@ ModuleDescriptor::createModules()
     TRACE(GLOBAL, "Creating modules");
     ModuleVector modules;
 
-    ModulePtr ptr(new cuda::hpe::Module(Modules_));
-    modules.push_back(std::forward<ModulePtr>(ptr));
+    ModulePtr ptr = new cuda::hpe::Module(Modules_);
+    modules.push_back(ptr);
 #if 0
     ModuleDescriptorVector::const_iterator it;
     for (it = Modules_.begin(); it != Modules_.end(); it++) {
