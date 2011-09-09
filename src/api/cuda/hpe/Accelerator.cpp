@@ -56,7 +56,6 @@ Accelerator::Accelerator(int n, CUdevice device) :
     integrated_ = (val != 0);
 
 #ifndef USE_MULTI_CONTEXT
-    CUcontext tmp;
     unsigned int flags = 0;
 #if CUDA_VERSION >= 2020
     if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
@@ -74,7 +73,7 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS);
 #endif
 
-    ret = cuCtxPopCurrent(&tmp);
+    ret = cuCtxSetCurrent(NULL);
     CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
 #else
 #endif
