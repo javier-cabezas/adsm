@@ -115,7 +115,7 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@SetKernelArgPtrCom
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
-static
+static inline
 @OPENCL_API_PREFIX@_error @OPENCL_API_PREFIX@SetKernelArgPtr(@OPENCL_API_PREFIX@_kernel kernel, unsigned index, const void *ptr)
 {
 	return @OPENCL_API_PREFIX@SetKernelArgPtrComplex(kernel, index, ptr, GMAC_PROT_READWRITE);

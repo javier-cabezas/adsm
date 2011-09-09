@@ -2,14 +2,14 @@ set(core_hpe_SRC
     Accelerator.h
     Accelerator-impl.h
     Accelerator.cpp
+    AddressSpace.h
+    AddressSpace.cpp
     Context.h
     Context.cpp
     Descriptor.h
     Descriptor-impl.h
     Kernel.h
     Kernel-impl.h
-    Map.h
-    Map.cpp
     Mode.h
     Mode-impl.h
     Mode.cpp

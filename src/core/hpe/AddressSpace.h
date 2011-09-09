@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_MAP_H_
-#define GMAC_CORE_HPE_MAP_H_
+#ifndef GMAC_CORE_HPE_ADDRESS_SPACE_H_
+#define GMAC_CORE_HPE_ADDRESS_SPACE_H_
 
 #include <map>
 #include <set>
@@ -55,9 +55,8 @@ namespace core { namespace hpe {
 
 class Mode;
 
-
 //! An object map associated to an execution mode
-class GMAC_LOCAL Map :
+class GMAC_LOCAL AddressSpace :
     public memory::ObjectMap {
 
     typedef memory::ObjectMap Parent;
@@ -75,12 +74,12 @@ public:
      * \param name Name of the object map used for tracing
      * \param parent Mode that owns the map
      */
-    Map(const char *name, Mode &parent);
+    AddressSpace(const char *name, Mode &parent);
 
     /**
      * Default destructor
      */
-    virtual ~Map();
+    virtual ~AddressSpace();
 
     /**
      * Insert an object in the map and the global process map where all objects

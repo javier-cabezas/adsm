@@ -1,7 +1,7 @@
 #ifndef GMAC_CORE_HPE_PROCESS_IMPL_H_
 #define GMAC_CORE_HPE_PROCESS_IMPL_H_
 
-#include "Map.h"
+#include "AddressSpace.h"
 
 namespace __impl { namespace core { namespace hpe {
 

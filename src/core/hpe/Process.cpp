@@ -174,7 +174,7 @@ Mode *Process::createMode(int acc)
     unlock();
 
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
-    Map::addOwner(*this, *mode);
+    AddressSpace::addOwner(*this, *mode);
 
     return mode;
 }
@@ -185,7 +185,7 @@ void Process::removeMode(Mode &mode)
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
     modes_.remove(mode);
     mode.decRef();
-    Map::removeOwner(*this, mode);
+    AddressSpace::removeOwner(*this, mode);
     unlock();
 }
 
