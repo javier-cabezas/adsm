@@ -6,44 +6,12 @@
 namespace __impl { namespace memory {
 
 inline
-gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void) const) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*f)();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
-
-inline
 gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void))
 {
     iterator i;
     lockRead();
     for(i = begin(); i != end(); i++) {
         gmacError_t ret = (i->second->*f)();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
-
-template <typename P1>
-gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &) const, P1 &p1) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*f)(p1);
         if(ret != gmacSuccess) {
             unlock();
             return ret;

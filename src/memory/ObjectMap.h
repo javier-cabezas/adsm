@@ -152,7 +152,6 @@ public:
      * \return Error code
      */
     gmacError_t forEachObject(gmacError_t (Object::*f)(void));
-    gmacError_t forEachObject(gmacError_t (Object::*f)(void) const) const;
 
     /**
      * Execute an operation on all the objects in the map passing an argument
@@ -164,8 +163,6 @@ public:
      */
     template <typename T>
     gmacError_t forEachObject(gmacError_t (Object::*f)(T &), T &p);
-    template <typename T>
-    gmacError_t forEachObject(gmacError_t (Object::*f)(T &) const, T &p) const;
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
