@@ -36,7 +36,7 @@ Map::get(const hostptr_t addr, size_t size) const
         if (ret != NULL) goto exit_func;
         ret = proc.global().mapFind(addr, size);
         if (ret != NULL) goto exit_func;
-        ret = proc.global().mapFind(addr, size);
+        ret = proc.orphans().mapFind(addr, size);
         if (ret != NULL) goto exit_func;
     }
 
