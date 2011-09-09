@@ -57,14 +57,16 @@ inline
 memory::ObjectMap &
 Mode::getObjectMap()
 {
-    return map_;
+    ASSERTION(aSpace_ != NULL);
+    return *aSpace_;
 }
 
 inline
 const memory::ObjectMap &
 Mode::getObjectMap() const
 {
-    return map_;
+    ASSERTION(aSpace_ != NULL);
+    return *aSpace_;
 }
 
 

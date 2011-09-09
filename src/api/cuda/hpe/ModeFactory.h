@@ -50,7 +50,7 @@ class Mode;
 
 class GMAC_LOCAL ModeFactory {
 protected:
-    Mode *create(core::hpe::Process &proc, Accelerator &acc) const;
+    Mode *create(core::hpe::Process &proc, Accelerator &acc, __impl::core::hpe::AddressSpace &aSpace) const;
 };
 
 }}}

@@ -22,8 +22,8 @@ Mode::~Mode()
 {
 }
 
-Mode::Mode(ProcessImpl &proc, AcceleratorImpl &acc) :
-    Parent(proc, acc)
+Mode::Mode(ProcessImpl &proc, AcceleratorImpl &acc, AddressSpaceImpl &aSpace) :
+    Parent(proc, acc, aSpace)
 {
 }
 

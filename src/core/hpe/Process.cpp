@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "core/IOBuffer.h"
 
 #include "core/hpe/Accelerator.h"
@@ -169,7 +171,7 @@ Mode *Process::createMode(int acc)
     TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this));
+    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *aSpaces_[usedAcc]));
     modes_.insert(mode);
     unlock();
 
@@ -250,6 +252,9 @@ gmacError_t Process::migrate(int acc)
 void Process::addAccelerator(Accelerator &acc)
 {
     accs_.push_back(&acc);
+    std::stringstream ss;
+    ss << "Accelerator " << acc.id();
+    aSpaces_.push_back(new AddressSpace(ss.str().c_str(), *this));;
 }
 
 accptr_t Process::translate(const hostptr_t addr)

@@ -48,13 +48,14 @@ private:
     typedef __impl::core::hpe::Accelerator AcceleratorImpl;
     typedef __impl::core::hpe::Kernel KernelImpl;
     typedef __impl::core::hpe::Process ProcessImpl;
+    typedef __impl::core::hpe::AddressSpace AddressSpaceImpl;
 
 protected:
     void cleanUpContexts();
     gmacError_t cleanUp();
 
 public:
-    Mode(ProcessImpl &proc, AcceleratorImpl &acc);
+    Mode(ProcessImpl &proc, AcceleratorImpl &acc, AddressSpaceImpl &aSpace);
     virtual ~Mode();
 
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);

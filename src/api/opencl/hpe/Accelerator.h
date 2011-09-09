@@ -280,9 +280,10 @@ public:
     /**
      *  Create a new execution mode for this accelerator
      * \param proc Process where to bind the execution mode
+     * \param aSpace Address space to be used by the mode
      * \return Execution mode
      */
-    core::hpe::Mode *createMode(core::hpe::Process &proc);
+    core::hpe::Mode *createMode(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace);
 
     /**
      *  Get the OpenCL context associated to the accelerator

@@ -1,16 +1,19 @@
 #ifndef USE_MULTI_CONTEXT
 
-#include "Accelerator.h"
 #include "core/hpe/Accelerator.h"
+#include "core/hpe/AddressSpace.h"
 #include "core/hpe/Process.h"
 #include "core/hpe/Thread.h"
 #include "core/hpe/Mode.h"
 
+#include "Accelerator.h"
+
 using gmac::core::hpe::Process;
 using gmac::core::hpe::Thread;
 
-using __impl::core::hpe::Mode;
 using __impl::core::hpe::Accelerator;
+using __impl::core::hpe::AddressSpace;
+using __impl::core::hpe::Mode;
 
 Process *AcceleratorTest::Process_ = NULL;
 std::vector<Accelerator *> Accelerators_;
@@ -75,15 +78,22 @@ TEST_F(AcceleratorTest, Aligment) {
 TEST_F(AcceleratorTest, CreateMode) {
 
     size_t n = Process_->nAccelerators();
+    std::vector<AddressSpace *> aSpaces;
     for(unsigned i = 0; i < n; i++) {
         Accelerator &acc = Process_->getAccelerator(i);
         unsigned load = acc.load();
-        Mode *mode = acc.createMode(*Process_);
+        AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_);
+        aSpaces.push_back(aSpace);
+        Mode *mode = acc.createMode(*Process_, *aSpace);
         ASSERT_TRUE(mode != NULL);
         ASSERT_TRUE(acc.load() == load + 1);
 
         mode->decRef();
         ASSERT_TRUE(acc.load() == load);
+    }
+
+    for(unsigned i = 0; i < n; i++) {
+        delete aSpaces[i];
     }
 }
 
