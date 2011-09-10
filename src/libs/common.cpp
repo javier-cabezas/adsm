@@ -21,6 +21,9 @@ static void init(void)
     /* Create GMAC enter lock and set GMAC as initialized */
     __impl::util::Private<bool>::init(inGmac_);
     __impl::util::Private<bool>::init(isRunTimeThread_);
+
+    inGmac_.set(&privateFalse);
+    isRunTimeThread_.set(&privateFalse);
 #ifdef POSIX
     threadInit();
 #endif

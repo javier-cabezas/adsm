@@ -14,7 +14,8 @@ inline void BlockGroup<State>::modifiedObject()
         std::list<core::Mode *> modes = i->second;
         std::list<core::Mode *>::iterator j;
         for(j = i->second.begin(); j != i->second.end(); j++) {
-            (*j)->modifiedObjects();
+            ObjectMap &map = (*j)->getAddressSpace();
+            map.modifiedObjects();
         }
     }
 }

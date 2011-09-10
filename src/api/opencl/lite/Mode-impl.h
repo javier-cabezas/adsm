@@ -105,20 +105,14 @@ gmacError_t Mode::eventTime(uint64_t &t, cl_event start, cl_event end)
     return ret;
 }
 
-inline
-gmacError_t Mode::releaseObjects()
-{
-    releasedObjects_ = true;
-    return gmacSuccess;
-}
-
-inline
+#if 0
 gmacError_t Mode::acquireObjects()
 {
     cl_int ret = clFinish(active_);
-    modifiedObjects_ = false;
+    memory::ObjectMap::acquireObjects();
     return error(ret);
 }
+#endif
 
 inline void
 Mode::makeOrphan(memory::Object &obj)

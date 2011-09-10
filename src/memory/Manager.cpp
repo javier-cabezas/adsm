@@ -248,12 +248,13 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
+    memory::ObjectMap &map = mode.getAddressSpace();
     if (addrs.size() == 0) {
-        if (mode.hasModifiedObjects() && mode.releasedObjects()) {
+        if (map.hasModifiedObjects() && map.releasedObjects()) {
             TRACE(LOCAL,"Acquiring Objects");
             GmacProtection prot = GMAC_PROT_READWRITE;
             ret = mode.forEachObject<GmacProtection>(&Object::acquire, prot);
-            mode.acquireObjects();
+            map.acquireObjects();
         }
     } else {
         TRACE(LOCAL,"Acquiring call Objects");
@@ -284,9 +285,11 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
+
+    memory::ObjectMap &map = mode.getAddressSpace();
     if (addrs.size() == 0) { // Release all objects
         TRACE(LOCAL,"Releasing Objects");
-        if (mode.hasModifiedObjects()) {
+        if (map.hasModifiedObjects()) {
             // Mark objects as released
             ret = mode.forEachObject(&Object::release);
             ASSERTION(ret == gmacSuccess);
@@ -299,7 +302,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
                 ret = proc_.getProtocol()->releaseAll();
                 ASSERTION(ret == gmacSuccess);
             }
-            mode.releaseObjects();
+            map.releaseObjects();
         }
     } else { // Release given objects
         TRACE(LOCAL,"Releasing call Objects");
@@ -330,7 +333,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
             ret = proc_.getProtocol()->releasedAll();
             ASSERTION(ret == gmacSuccess);
         }
-        mode.releaseObjects();
+        map.releaseObjects();
 
     }
     trace::ExitCurrentFunction();

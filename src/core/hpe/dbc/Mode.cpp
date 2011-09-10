@@ -158,15 +158,18 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
     return ret;
 }
 
+#if 0
+
 gmacError_t
 Mode::releaseObjects()
 {
-    ENSURES(hasModifiedObjects() == true);
+    __impl::memory::ObjectMap &map = Parent::getAddressSpace();
+    ENSURES(map.hasModifiedObjects() == true);
 
     gmacError_t ret;
     ret = Parent::releaseObjects();
 
-    ENSURES(hasModifiedObjects() == true);
+    ENSURES(map.hasModifiedObjects() == true);
     return ret;
 }
 
@@ -179,6 +182,7 @@ Mode::acquireObjects()
     ENSURES(hasModifiedObjects() == false);
     return ret;
 }
+#endif
 
 }}}
 
