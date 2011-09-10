@@ -144,25 +144,6 @@ size_t ObjectMap::memorySize() const
     return total;
 }
 
-#if 0
-gmacError_t ObjectMap::forEach(ConstObjectOp op) const
-{
-    const_iterator i;
-    lockRead();
-    for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*op)();
-        if(ret != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return gmacSuccess;
-}
-
-
-#endif
-
 gmacError_t ObjectMap::releaseObjects()
 {
     lockWrite();

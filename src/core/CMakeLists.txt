@@ -5,7 +5,6 @@ set(core_SRC
     IOBuffer-impl.h
     Mode.h
     Mode-impl.h
-    Mode.cpp
     Process.h
     Process.cpp
     Thread.h

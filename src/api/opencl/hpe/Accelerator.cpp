@@ -207,7 +207,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     TRACE(LOCAL, "Copy to accelerator: %p ("FMT_SIZE") @ %p", host, size, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    trace_.init(trace_.getThreadId(), (THREAD_T)mode.id());
+    trace_.init(trace_.getThreadId(), (THREAD_T)mode.getId());
     lock();
     cl_int ret = clEnqueueWriteBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
@@ -228,7 +228,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t c
     TRACE(LOCAL, "Copy to host: %p ("FMT_SIZE") @ %p", host, count, acc.get());
     trace::SetThreadState(trace::Wait);
     cl_event event;
-    trace_.init((THREAD_T)mode.id(), trace_.getThreadId());
+    trace_.init((THREAD_T)mode.getId(), trace_.getThreadId());
     lock();
     cl_int ret = clEnqueueReadBuffer(cmd_.front(), acc.get(),
         CL_TRUE, acc.offset(), count, host, 0, NULL, &event);
