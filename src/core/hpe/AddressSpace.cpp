@@ -19,7 +19,7 @@ AddressSpace::~AddressSpace()
 }
 
 memory::Object *
-AddressSpace::get(const hostptr_t addr, size_t size) const
+AddressSpace::getObject(const hostptr_t addr, size_t size) const
 {
     memory::Object *ret = NULL;
     // Lookup in the current map
@@ -43,24 +43,24 @@ exit_func:
     return ret;
 }
 
-bool AddressSpace::insert(memory::Object &obj)
+bool AddressSpace::addObject(memory::Object &obj)
 {
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
-    bool ret = Parent::insert(obj);
+    bool ret = Parent::addObject(obj);
     if(ret == false) return ret;
     memory::ObjectMap &shared = parent_.shared();
-    ret = shared.insert(obj);
+    ret = shared.addObject(obj);
     return ret;
 }
 
 
-bool AddressSpace::remove(memory::Object &obj)
+bool AddressSpace::removeObject(memory::Object &obj)
 {
-    bool ret = Parent::remove(obj);
+    bool ret = Parent::removeObject(obj);
     hostptr_t addr = obj.addr();
     // Shared object
     memory::ObjectMap &shared = parent_.shared();
-    ret = shared.remove(obj);
+    ret = shared.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Shared Object %p", addr);
         return true;
@@ -68,7 +68,7 @@ bool AddressSpace::remove(memory::Object &obj)
 
     // Replicated object
     memory::ObjectMap &global = parent_.global();
-    ret = global.remove(obj);
+    ret = global.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Global Object %p", addr);
         return true;
@@ -76,7 +76,7 @@ bool AddressSpace::remove(memory::Object &obj)
 
     // Orphan object
     memory::ObjectMap &orphans = parent_.orphans();
-    ret = orphans.remove(obj);
+    ret = orphans.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Orphan Object %p", addr);
     }

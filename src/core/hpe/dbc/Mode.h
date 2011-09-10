@@ -69,10 +69,6 @@ public:
     void registerKernel(gmac_kernel_id_t k, KernelImpl &kernel);
     std::string getKernelName(gmac_kernel_id_t k) const;
     gmacError_t moveTo(AcceleratorImpl &acc);
-#if 0
-    gmacError_t releaseObjects();
-    gmacError_t acquireObjects();
-#endif
 };
 
 }}}

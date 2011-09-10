@@ -62,7 +62,7 @@ Mode *ModeMap::owner(const hostptr_t addr, size_t size) const
     lockRead();
     for(i = begin(); i != end(); i++) {
         const memory::ObjectMap &map = i->second->getAddressSpace();
-        memory::Object *obj = map.get(addr, size);
+        memory::Object *obj = map.getObject(addr, size);
         if(obj == NULL) continue;
         ret = &(dynamic_cast<Mode &>(obj->owner(*(i->second), addr)));
         obj->decRef();

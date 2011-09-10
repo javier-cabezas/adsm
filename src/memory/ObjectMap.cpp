@@ -79,17 +79,18 @@ size_t ObjectMap::size() const
     return ret;
 }
 
-bool ObjectMap::insert(Object &obj)
+bool ObjectMap::addObject(Object &obj)
 {
     lockWrite();
     TRACE(LOCAL, "Insert object: %p", obj.addr());
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
     if(ret.second == true) obj.incRef();
     unlock();
+    modifiedObjects_unlocked();
     return ret.second;
 }
 
-bool ObjectMap::remove(Object &obj)
+bool ObjectMap::removeObject(Object &obj)
 {
     lockWrite();
     iterator i = find(obj.end());
@@ -125,7 +126,7 @@ bool ObjectMap::hasObject(Object &obj) const
     return ret == &obj;
 }
 
-Object *ObjectMap::get(const hostptr_t addr, size_t size) const
+Object *ObjectMap::getObject(const hostptr_t addr, size_t size) const
 {
     Object *ret = NULL;
     ret = mapFind(addr, size);

@@ -44,25 +44,6 @@ unsigned Mode::id() const
     return id_;
 }
 
-inline void
-Mode::addObject(memory::Object &obj)
-{
-    getAddressSpace().insert(obj);
-    getAddressSpace().modifiedObjects();
-}
-
-inline void
-Mode::removeObject(memory::Object &obj)
-{
-    getAddressSpace().remove(obj);
-}
-
-inline memory::Object *
-Mode::getObject(const hostptr_t addr, size_t size) const
-{
-    return getAddressSpace().get(addr, size);
-}
-
 #ifdef USE_VM
 inline memory::vm::Bitmap&
 Mode::getBitmap()

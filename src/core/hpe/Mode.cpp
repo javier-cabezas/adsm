@@ -30,13 +30,6 @@ Mode::~Mode()
     acc_->unregisterMode(*this);
 }
 
-
-void Mode::removeObject(memory::Object &obj)
-{
-
-    core::Mode::removeObject(obj);
-}
-
 void
 Mode::registerKernel(gmac_kernel_id_t k, Kernel &kernel)
 {

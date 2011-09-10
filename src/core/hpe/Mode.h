@@ -138,12 +138,6 @@ protected:
 
 public:
     /**
-     * Removes an object from the map of the mode
-     * \param obj A reference to the object to be removed
-     */
-    void removeObject(memory::Object &obj);
-
-    /**
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */

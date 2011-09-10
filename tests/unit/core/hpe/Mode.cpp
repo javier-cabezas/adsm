@@ -44,15 +44,16 @@ void ModeTest::TearDownTestCase() {
 TEST_F(ModeTest, MemoryObject) {
     Object *obj = Mode_->getProtocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
-    Mode_->addObject(*obj);
+    __impl::memory::ObjectMap &map = Mode_->getAddressSpace();
+    map.addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);
     obj->decRef();
 
-    Object *ref = Mode_->getObject(addr);
+    Object *ref = map.getObject(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
-    Mode_->removeObject(*obj);
+    map.removeObject(*obj);
 
     ASSERT_EQ(addr, ref->addr());
     ref->decRef();
