@@ -100,12 +100,6 @@ public:
     memory::Protocol &getProtocol();
 
     /**
-     * Gets a numeric identifier for the mode. This identifier must be unique.
-     * \return A numeric identifier for the mode
-     */
-    unsigned id() const;
-
-    /**
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
