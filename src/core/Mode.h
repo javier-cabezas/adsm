@@ -39,10 +39,11 @@ WITH THE SOFTWARE.  */
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
 #endif
+#include "util/Atomics.h"
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
-#include "util/Atomics.h"
+#include "util/Unique.h"
 
 namespace __impl {
 
@@ -70,9 +71,6 @@ protected:
 
     unsigned id_;
     memory::Protocol *protocol_;
-
-    bool modifiedObjects_;
-    bool releasedObjects_;
 
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;

@@ -25,6 +25,9 @@ set(util_SRC
     Singleton.h
     Singleton-impl.h
     Thread.h
+    Unique.h
+    Unique-impl.h
+    Unique.cpp
     UniquePtr.h
     allocator/Buddy.h
     allocator/Buddy.cpp
