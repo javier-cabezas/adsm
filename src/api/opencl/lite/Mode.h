@@ -108,8 +108,8 @@ protected:
 
     DataCommunication trace_;
 
-    memory::ObjectMap &getObjectMap();
-    const memory::ObjectMap &getObjectMap() const;
+    memory::ObjectMap &getAddressSpace();
+    const memory::ObjectMap &getAddressSpace() const;
 
     gmacError_t error(cl_int) const;
 public:

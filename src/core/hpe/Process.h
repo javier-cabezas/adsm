@@ -334,6 +334,8 @@ public:
      * \return gmacSuccess on success, an error code otherwise
      */
     gmacError_t prepareForCall();
+
+    gmacError_t setAddressSpace(Mode &mode, unsigned aSpaceId);
 };
 
 }}}

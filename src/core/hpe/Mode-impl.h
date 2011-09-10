@@ -55,7 +55,7 @@ ContextMap::clean()
 
 inline
 memory::ObjectMap &
-Mode::getObjectMap()
+Mode::getAddressSpace()
 {
     ASSERTION(aSpace_ != NULL);
     return *aSpace_;
@@ -63,7 +63,7 @@ Mode::getObjectMap()
 
 inline
 const memory::ObjectMap &
-Mode::getObjectMap() const
+Mode::getAddressSpace() const
 {
     ASSERTION(aSpace_ != NULL);
     return *aSpace_;

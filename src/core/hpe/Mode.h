@@ -110,8 +110,8 @@ protected:
     virtual Context &getContext() = 0;
     virtual void destroyContext(Context &context) const = 0;
 
-    memory::ObjectMap &getObjectMap();
-    const memory::ObjectMap &getObjectMap() const;
+    memory::ObjectMap &getAddressSpace();
+    const memory::ObjectMap &getAddressSpace() const;
 
 #ifdef DEBUG
     static Atomic StatsInit_;
@@ -349,6 +349,8 @@ public:
      * \return A boolean that tells if the accelerator on which the Mode is running shares memory with the CPU
      */
     bool hasIntegratedMemory() const;
+
+    void setAddressSpace(AddressSpace &aSpace);
 };
 
 }}}

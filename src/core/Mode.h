@@ -78,8 +78,8 @@ protected:
     __impl::memory::vm::Bitmap bitmap_;
 #endif
 
-    virtual memory::ObjectMap &getObjectMap() = 0;
-    virtual const memory::ObjectMap &getObjectMap() const = 0;
+    virtual memory::ObjectMap &getAddressSpace() = 0;
+    virtual const memory::ObjectMap &getAddressSpace() const = 0;
 
     /**
      * Mode constructor
