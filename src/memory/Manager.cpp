@@ -253,7 +253,7 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
         if (map.hasModifiedObjects() && map.releasedObjects()) {
             TRACE(LOCAL,"Acquiring Objects");
             GmacProtection prot = GMAC_PROT_READWRITE;
-            ret = mode.forEachObject<GmacProtection>(&Object::acquire, prot);
+            ret = map.forEachObject<GmacProtection>(&Object::acquire, prot);
             map.acquireObjects();
         }
     } else {
@@ -291,7 +291,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
         TRACE(LOCAL,"Releasing Objects");
         if (map.hasModifiedObjects()) {
             // Mark objects as released
-            ret = mode.forEachObject(&Object::release);
+            ret = map.forEachObject(&Object::release);
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
