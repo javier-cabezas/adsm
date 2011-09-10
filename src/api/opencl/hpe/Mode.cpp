@@ -124,15 +124,6 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
     return ret;
 }
 
-gmacError_t Mode::acquireObjects()
-{
-    lock();
-    modifiedObjects_ = false;
-    releasedObjects_ = false;
-    unlock();
-    return gmacSuccess;
-}
-
 gmacError_t Mode::waitForEvent(cl_event event)
 {
     switchIn();

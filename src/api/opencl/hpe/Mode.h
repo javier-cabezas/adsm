@@ -146,13 +146,6 @@ public:
     */
 	gmacError_t execute(core::hpe::KernelLaunch &launch);
 
-	/**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     */
-    virtual gmacError_t acquireObjects();
-
-
     //! Create an IO buffer to sent / receive data from the accelerator
     /*!
         \param size Size (in bytes) of the IO buffer
