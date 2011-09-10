@@ -148,30 +148,6 @@ public:
      * there is no Object at that address
      */
     memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
-
-    /**
-     * Applies a memory operation to all the objects that belong to
-     * the mode
-     * \param op Memory operation to be executed
-     * \sa __impl::memory::Object::acquire
-     * \sa __impl::memory::Object::toHost
-     * \sa __impl::memory::Object::toAccelerator
-     * \return Error code
-     */
-    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(void));
-
-    /**
-     * Applies a memory operation to all the objects that belong to
-     * the mode, passing the given parameter
-     * \param op Memory operation to be executed
-     * \param param Parameter to be passed to the operation
-     * \sa __impl::memory::Object::acquire
-     * \sa __impl::memory::Object::toHost
-     * \sa __impl::memory::Object::toAccelerator
-     * \return Error code
-     */
-    template <typename T>
-    gmacError_t forEachObject(gmacError_t (memory::Object::*op)(T &), T &param);
     
     /**
      * Maps the given host memory on the accelerator memory
