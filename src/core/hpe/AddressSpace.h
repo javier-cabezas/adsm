@@ -89,7 +89,7 @@ public:
      * \param obj Object to remove from the map
      * \return True if the object was successfuly removed
      */
-    bool insert(memory::Object &obj);
+    bool addObject(memory::Object &obj);
 
     /**
      * Remove an object from the map and from the global process map where all
@@ -98,7 +98,7 @@ public:
      * \param obj Object to remove from the map
      * \return True if the object was successfuly removed
      */
-    bool remove(memory::Object &obj);
+    bool removeObject(memory::Object &obj);
 
     /**
      * Find the first object in a memory range in this map or on the global and
@@ -110,7 +110,7 @@ public:
      * located
      * \return First object within the memory range. NULL if no object is found
      */
-    memory::Object *get(const hostptr_t addr, size_t size) const;
+    memory::Object *getObject(const hostptr_t addr, size_t size) const;
 
     /**
      * Add an owner to all global process objects

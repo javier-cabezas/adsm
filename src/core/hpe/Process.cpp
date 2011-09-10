@@ -199,7 +199,7 @@ gmacError_t Process::globalMalloc(memory::Object &object)
         if(object.addOwner(*i->first) != gmacSuccess) goto cleanup;
     }
     unlock();
-    global_.insert(object);
+    global_.addObject(object);
     return gmacSuccess;
 
 cleanup:
@@ -214,7 +214,7 @@ cleanup:
 
 gmacError_t Process::globalFree(memory::Object &object)
 {
-    if(global_.remove(object) == false) return gmacErrorInvalidValue;
+    if(global_.removeObject(object) == false) return gmacErrorInvalidValue;
     ModeMap::iterator i;
     lockRead();
     for(i = modes_.begin(); i != modes_.end(); i++) {
@@ -260,7 +260,8 @@ void Process::addAccelerator(Accelerator &acc)
 accptr_t Process::translate(const hostptr_t addr)
 {
     Mode &mode = Thread::getCurrentMode();
-    memory::Object *object = mode.getObject(addr);
+    memory::ObjectMap &map = mode.getAddressSpace();
+    memory::Object *object = map.getObject(addr);
     if(object == NULL) return accptr_t(0);
     accptr_t ptr = object->acceleratorAddr(mode, addr);
     object->decRef();
@@ -306,8 +307,8 @@ core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
     // We consider global objects for ownership,
     // since it contains distributed objects not found in shared_
-    memory::Object *object = shared_.get(addr, size);
-    if(object == NULL) object = global_.get(addr, size);
+    memory::Object *object = shared_.getObject(addr, size);
+    if(object == NULL) object = global_.getObject(addr, size);
     if(object == NULL) return NULL;
     core::Mode &ret = object->owner(Thread::getCurrentMode(), addr);
     object->decRef();

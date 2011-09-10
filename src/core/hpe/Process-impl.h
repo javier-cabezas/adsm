@@ -66,9 +66,9 @@ Process::makeOrphan(memory::Object &obj)
 {
     TRACE(LOCAL, "Making orphan object: %p", obj.addr());
     // Insert into the orphan list
-    orphans_.insert(obj);
+    orphans_.addObject(obj);
     // Remove from the list of regular shared objects
-    shared_.remove(obj);
+    shared_.removeObject(obj);
 }
 
 }}}

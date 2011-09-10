@@ -108,32 +108,11 @@ public:
     unsigned id() const;
 
     /**
-     * Adds an object to the map of the mode
-     * \param obj A reference to the object to be added
-     */
-    void addObject(memory::Object &obj);
-
-    /**
-     * Removes an object from the map of the mode
-     * \param obj A reference to the object to be removed
-     */
-    virtual void removeObject(memory::Object &obj);
-
-    /**
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
     virtual void makeOrphan(memory::Object &obj) = 0;
 
-    /**
-     * Gets the first object that belongs to the memory range
-     * \param addr Starting address of the memory range
-     * \param size Size of the memory range
-     * \return A pointer of the Object that contains the address or NULL if
-     * there is no Object at that address
-     */
-    memory::Object *getObject(const hostptr_t addr, size_t size = 0) const;
-    
     /**
      * Maps the given host memory on the accelerator memory
      * \param dst Reference to a pointer where to store the accelerator

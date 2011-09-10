@@ -62,7 +62,7 @@ gmacError_t ObjectMap::dumpObjects(const std::string &dir, std::string prefix, p
 inline
 gmacError_t ObjectMap::dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
 {
-    Object *obj = get(ptr, 1);
+    Object *obj = getObject(ptr, 1);
     lockRead();
     ASSERTION(obj != NULL);
     std::stringstream name;
@@ -97,14 +97,20 @@ ObjectMap::invalidateObjects()
     unlock();
 }
 
+inline
+void
+ObjectMap::modifiedObjects_unlocked()
+{
+    modifiedObjects_ = true;
+    releasedObjects_ = false;
+}
 
 inline
 void
 ObjectMap::modifiedObjects()
 {
     lockWrite();
-    modifiedObjects_ = true;
-    releasedObjects_ = false;
+    modifiedObjects_unlocked();
     unlock();
 }
 

@@ -29,7 +29,8 @@ accptr_t Process::translate(const hostptr_t addr)
 {
     Mode *mode = map_.owner(addr, 0);
     if(mode == NULL) return accptr_t(0);
-    memory::Object *object = mode->getObject(addr);
+    memory::ObjectMap &map = mode->getAddressSpace();
+    memory::Object *object = map.getObject(addr);
     if(object == NULL) return accptr_t(0);
     accptr_t ret = object->acceleratorAddr(*mode, addr);
     object->decRef();

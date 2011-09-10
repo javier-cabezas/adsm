@@ -59,6 +59,7 @@ TEST_F(ObjectTest, Creation)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
+    __impl::memory::ObjectMap &map = mode.getAddressSpace();
     __impl::memory::Protocol &proto = mode.getProtocol();
     Object *object = proto.createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
@@ -67,7 +68,7 @@ TEST_F(ObjectTest, Creation)
     ASSERT_EQ(Size_, size_t(object->end() - object->addr()));
     ASSERT_EQ(Size_, object->size());
 
-    mode.removeObject(*object);
+    map.removeObject(*object);
     object->decRef();
 }
 
@@ -75,6 +76,7 @@ TEST_F(ObjectTest, Blocks)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
+    __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
@@ -89,7 +91,7 @@ TEST_F(ObjectTest, Blocks)
         EXPECT_EQ(blockSize, object->blockEnd(offset));
     }
 
-    mode.removeObject(*object);
+    map.removeObject(*object);
     object->decRef();
 }
 
@@ -97,10 +99,11 @@ TEST_F(ObjectTest, Coherence)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
+    __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
-    mode.addObject(*object);
+    map.addObject(*object);
 
     hostptr_t ptr = object->addr();
     for(size_t s = 0; s < object->size(); s++) {
@@ -117,7 +120,7 @@ TEST_F(ObjectTest, Coherence)
         EXPECT_EQ(ptr[s], 0);
     }
 
-    mode.removeObject(*object);
+    map.removeObject(*object);
     object->decRef();
 }
 
@@ -125,10 +128,11 @@ TEST_F(ObjectTest, IOBuffer)
 {
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
+    __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = mode.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
-    mode.addObject(*object);
+    map.addObject(*object);
 
     __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
@@ -155,6 +159,6 @@ TEST_F(ObjectTest, IOBuffer)
 
     mode.destroyIOBuffer(buffer);
 
-    mode.removeObject(*object);
+    map.removeObject(*object);
     object->decRef();
 }

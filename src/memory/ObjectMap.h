@@ -75,6 +75,8 @@ protected:
     static void statsInit();
 #endif
 
+    void modifiedObjects_unlocked();
+
     /**
      * Find an object in the map
      *
@@ -116,7 +118,7 @@ public:
      * \param obj Object to insert in the map
      * \return True if the object was successfuly inserted
      */
-    virtual bool insert(Object &obj);
+    virtual bool addObject(Object &obj);
 
     /**
      * Remove an object from the map
@@ -124,7 +126,7 @@ public:
      * \param obj Object to remove from the map
      * \return True if the object was successfuly removed
      */
-    virtual bool remove(Object &obj);
+    virtual bool removeObject(Object &obj);
 
     /**
      * Tells if an object belongs to the map
@@ -143,7 +145,7 @@ public:
      * located
      * \return First object within the memory range. NULL if no object is found
      */
-    virtual Object *get(const hostptr_t addr, size_t size) const;
+    virtual Object *getObject(const hostptr_t addr, size_t size = 0) const;
 
     /**
      * Get the amount of memory consumed by all objects in the map
