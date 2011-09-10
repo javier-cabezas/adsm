@@ -110,19 +110,6 @@ public:
     unsigned id() const;
 
     /**
-     * Returns the last error code
-     * \return The last error code
-     */
-    gmacError_t error() const;
-
-    /**
-     * Sets up the last error code
-     * \param err Error code
-     */
-    void error(gmacError_t err);
-
-
-    /**
      * Adds an object to the map of the mode
      * \param obj A reference to the object to be added
      */
