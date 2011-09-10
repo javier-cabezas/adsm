@@ -110,16 +110,6 @@ protected:
     virtual Context &getContext() = 0;
     virtual void destroyContext(Context &context) const = 0;
 
-    memory::ObjectMap &getAddressSpace();
-    const memory::ObjectMap &getAddressSpace() const;
-
-#ifdef DEBUG
-    static Atomic StatsInit_;
-    static Atomic StatDumps_;
-    static std::string StatsDir_;
-    static void statsInit();
-#endif
-
     /**
      * Releases the resources used by the contexts associated to the mode
     */
@@ -293,23 +283,6 @@ public:
      */
     TESTABLE gmacError_t moveTo(Accelerator &acc);
 
-
-    /**
-     * Releases the ownership of the objects of the mode to the accelerator
-     * and waits for pending transfers
-     *
-     * \return gmacSuccess on success, an error code otherwise
-     */
-    TESTABLE gmacError_t releaseObjects();
-
-    /**
-     * Acquires the ownership of the objects of the mode for the CPU
-     * and waits for pending transfers
-     *
-     * \return gmacSuccess on success, an error code otherwise
-     */
-    TESTABLE gmacError_t acquireObjects();
-
     /**
      * Returns the process which the mode belongs to
      * \return A reference to the process which the mode belongs to
@@ -349,6 +322,9 @@ public:
      * \return A boolean that tells if the accelerator on which the Mode is running shares memory with the CPU
      */
     bool hasIntegratedMemory() const;
+
+    memory::ObjectMap &getAddressSpace();
+    const memory::ObjectMap &getAddressSpace() const;
 
     void setAddressSpace(AddressSpace &aSpace);
 };

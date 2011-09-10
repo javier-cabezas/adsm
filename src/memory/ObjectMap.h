@@ -65,6 +65,16 @@ protected:
     friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, Object *> Parent;
 
+    bool modifiedObjects_;
+    bool releasedObjects_;
+
+#ifdef DEBUG
+    static Atomic StatsInit_;
+    static Atomic StatDumps_;
+    static std::string StatsDir_;
+    static void statsInit();
+#endif
+
     /**
      * Find an object in the map
      *
@@ -168,6 +178,43 @@ public:
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
     gmacError_t dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
 #endif
+
+    /**
+     * Tells if the objects of the mode have been already invalidated
+     * \return Boolean that tells if objects of the mode have been already
+     * invalidated
+     */
+    bool hasModifiedObjects() const;
+
+    /**
+     * Notifies the mode that one (or several) of its objects have been validated
+     */
+    void modifiedObjects();
+
+    /**
+     * Notifies the mode that one (or several) of its objects has been invalidated
+     */
+    void invalidateObjects();
+
+    /**
+     * Tells if the objects of the mode have been already released to the
+     * accelerator
+     * \return Boolean that tells if objects of the mode have been already
+     * released to the accelerator
+     */
+    bool releasedObjects() const;
+
+    /**
+     * Releases the ownership of the objects of the mode to the accelerator
+     * and waits for pending transfers
+     */
+    gmacError_t releaseObjects();
+
+    /**
+     * Waits for kernel execution and acquires the ownership of the objects
+     * of the mode from the accelerator
+     */
+    gmacError_t acquireObjects();
 };
 
 }}

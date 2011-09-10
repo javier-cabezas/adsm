@@ -108,9 +108,6 @@ protected:
 
     DataCommunication trace_;
 
-    memory::ObjectMap &getAddressSpace();
-    const memory::ObjectMap &getAddressSpace() const;
-
     gmacError_t error(cl_int) const;
 public:
     /**
@@ -295,26 +292,19 @@ public:
     gmacError_t memset(accptr_t addr, int c, size_t size);
 
     /**
-     * Releases the ownership of the objects of the mode to the accelerator
-     * and waits for pending transfers
-     * \return Error code
-     */
-    gmacError_t releaseObjects();
-
-    /**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     * \return Error code
-     */
-    gmacError_t acquireObjects();
-
-
-    /**
      * Insert an object into the orphan list
      * \param obj Object to be inserted
      */
     void makeOrphan(memory::Object &obj);
 
+#if 0
+    /**
+     * Releases the ownership of the objects of the mode to the accelerator
+     * and waits for pending transfers
+     * \return Error code
+     */
+    gmacError_t acquireObjects();
+#endif
 
     /** Returns the memory information of the accelerator on which the mode runs
      * \param free A reference to a variable to store the memory available on the
@@ -325,6 +315,9 @@ public:
     void getMemInfo(size_t &free, size_t &total);
 
     bool hasIntegratedMemory() const;
+
+    memory::ObjectMap &getAddressSpace();
+    const memory::ObjectMap &getAddressSpace() const;
 
     gmacError_t acquire(hostptr_t addr);
     gmacError_t release(hostptr_t addr);

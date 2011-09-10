@@ -9,15 +9,7 @@
 #include "core/hpe/Context.h"
 #include "core/hpe/Process.h"
 
-#include "util/FileSystem.h"
-
 namespace __impl { namespace core { namespace hpe {
-
-#ifdef DEBUG
-Atomic Mode::StatsInit_ = 0;
-Atomic Mode::StatDumps_ = 0;
-std::string Mode::StatsDir_ = "";
-#endif
 
 Mode::Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace) :
     proc_(proc),
@@ -31,9 +23,6 @@ Mode::Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace) :
 #endif
     contextMap_(*this)
 {
-#ifdef DEBUG
-    if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();
-#endif
 }
 
 Mode::~Mode()
@@ -44,49 +33,8 @@ Mode::~Mode()
 
 void Mode::removeObject(memory::Object &obj)
 {
-#if defined(DEBUG)
-    if (__impl::util::params::ParamStats) {
-        unsigned dump = AtomicInc(StatDumps_);
-        std::stringstream ss(std::stringstream::out);
-        ss << dump << "-" << "remove";
 
-        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
-        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
-        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
-        aSpace_->dumpObject(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
-    }
-#endif
     core::Mode::removeObject(obj);
-}
-
-gmacError_t Mode::releaseObjects()
-{
-#ifdef DEBUG
-    if (__impl::util::params::ParamStats) {
-        unsigned dump = AtomicInc(StatDumps_);
-        std::stringstream ss(std::stringstream::out);
-        ss << dump << "-" << "release";
-
-        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_READ);
-        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_FAULTS_WRITE);
-        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
-        aSpace_->dumpObjects(StatsDir_, ss.str(), __impl::memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
-    }
-#endif
-    switchIn();
-    releasedObjects_ = true;
-    switchOut();
-    return gmacSuccess;
-}
-
-gmacError_t
-Mode::acquireObjects()
-{
-    lock();
-    modifiedObjects_ = false;
-    releasedObjects_ = false;
-    unlock();
-    return gmacSuccess;
 }
 
 void
@@ -237,27 +185,6 @@ gmacError_t Mode::cleanUp()
 #endif
     return ret;
 }
-
-#ifdef DEBUG
-void Mode::statsInit()
-{
-    if (__impl::util::params::ParamStats) {
-        PROCESS_T pid = __impl::util::GetProcessId();
-
-        std::stringstream ss(std::stringstream::out);
-#if defined(_MSC_VER)
-        char tmpDir[256];
-        GetTempPath(256, tmpDir);
-        ss << tmpDir << "\\" << pid << "\\";
-#else
-        ss << ".gmac-" << pid << "/";
-#endif
-        bool created = __impl::util::MakeDir(ss.str());
-        ASSERTION(created == true);
-        StatsDir_ = ss.str();
-    }
-}
-#endif
 
 void
 Mode::setAddressSpace(AddressSpace &aSpace)

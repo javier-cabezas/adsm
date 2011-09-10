@@ -78,6 +78,48 @@ gmacError_t ObjectMap::dumpObject(const std::string &dir, std::string prefix, pr
 }
 #endif
 
+inline
+bool
+ObjectMap::hasModifiedObjects() const
+{
+    lockRead();
+    bool ret = modifiedObjects_;
+    unlock();
+    return ret;
+}
+
+inline
+void
+ObjectMap::invalidateObjects()
+{
+    lockWrite();
+    modifiedObjects_ = false;
+    unlock();
+}
+
+
+inline
+void
+ObjectMap::modifiedObjects()
+{
+    lockWrite();
+    modifiedObjects_ = true;
+    releasedObjects_ = false;
+    unlock();
+}
+
+inline
+bool
+ObjectMap::releasedObjects() const
+{
+    lockRead();
+    bool ret = releasedObjects_;
+    unlock();
+    return ret;
+}
+
+
+
 
 }}
 

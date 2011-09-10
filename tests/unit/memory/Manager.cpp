@@ -4,9 +4,12 @@
 #include "core/hpe/Process.h"
 #include "core/hpe/Thread.h"
 #include "memory/Manager.h"
+#include "memory/ObjectMap.h"
 
 using namespace gmac::core::hpe;
 using namespace gmac::memory;
+
+using __impl::memory::ObjectMap;
 
 class ManagerTest : public testing::Test {
 public:
@@ -114,31 +117,32 @@ TEST_F(ManagerTest, Coherence)
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Thread::getCurrentMode(), ptr).get() != NULL);
 
-	ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
+    ObjectMap &map = Thread::getCurrentMode().getAddressSpace();
+	ASSERT_TRUE(map.hasModifiedObjects());
 
     for(int n = 0; n < 16; n++) {
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = (s & 0xff);
 	    }
-        ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
+        ASSERT_TRUE(map.hasModifiedObjects());
 	
     	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Thread::getCurrentMode()));
-        ASSERT_TRUE(Thread::getCurrentMode().releasedObjects());
+        ASSERT_TRUE(map.releasedObjects());
         
     	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Thread::getCurrentMode()));
-        ASSERT_FALSE(Thread::getCurrentMode().releasedObjects());
-	    ASSERT_FALSE(Thread::getCurrentMode().hasModifiedObjects());
+        ASSERT_FALSE(map.releasedObjects());
+	    ASSERT_FALSE(map.hasModifiedObjects());
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));
 	    }
-        ASSERT_FALSE(Thread::getCurrentMode().hasModifiedObjects());
+        ASSERT_FALSE(map.hasModifiedObjects());
 
         for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = 0x0;
 	    }
-        ASSERT_TRUE(Thread::getCurrentMode().hasModifiedObjects());
+        ASSERT_TRUE(map.hasModifiedObjects());
     }
 
     ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));

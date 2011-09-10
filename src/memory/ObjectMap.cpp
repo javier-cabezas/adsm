@@ -1,10 +1,36 @@
 #include "core/Mode.h"
+#include "util/FileSystem.h"
 
 #include "ObjectMap.h"
 #include "Object.h"
 #include "Protocol.h"
 
 namespace __impl { namespace memory {
+
+#ifdef DEBUG
+Atomic ObjectMap::StatsInit_ = 0;
+Atomic ObjectMap::StatDumps_ = 0;
+std::string ObjectMap::StatsDir_ = "";
+
+void ObjectMap::statsInit()
+{
+    if (__impl::util::params::ParamStats) {
+        PROCESS_T pid = __impl::util::GetProcessId();
+
+        std::stringstream ss(std::stringstream::out);
+#if defined(_MSC_VER)
+        char tmpDir[256];
+        GetTempPath(256, tmpDir);
+        ss << tmpDir << "\\" << pid << "\\";
+#else
+        ss << ".gmac-" << pid << "/";
+#endif
+        bool created = __impl::util::MakeDir(ss.str());
+        ASSERTION(created == true);
+        StatsDir_ = ss.str();
+    }
+}
+#endif
 
 Object *ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 {
@@ -19,8 +45,14 @@ Object *ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 }
 
 ObjectMap::ObjectMap(const char *name) :
-    gmac::util::RWLock(name)
+    gmac::util::RWLock(name),
+    modifiedObjects_(false),
+    releasedObjects_(false)
 {
+
+#ifdef DEBUG
+    if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();
+#endif
 }
 
 ObjectMap::~ObjectMap()
@@ -63,6 +95,19 @@ bool ObjectMap::remove(Object &obj)
     iterator i = find(obj.end());
     bool ret = (i != end());
     if(ret == true) {
+#if defined(DEBUG)
+        if (__impl::util::params::ParamStats) {
+            unsigned dump = AtomicInc(StatDumps_);
+            std::stringstream ss(std::stringstream::out);
+            ss << dump << "-" << "remove";
+
+            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+        }
+#endif
+
         TRACE(LOCAL, "Remove object: %p", obj.addr());
         obj.decRef();
         Parent::erase(i);
@@ -116,6 +161,37 @@ gmacError_t ObjectMap::forEach(ConstObjectOp op) const
 
 
 #endif
+
+gmacError_t ObjectMap::releaseObjects()
+{
+    lockWrite();
+#ifdef DEBUG
+    if (__impl::util::params::ParamStats) {
+        unsigned dump = AtomicInc(StatDumps_);
+        std::stringstream ss(std::stringstream::out);
+        ss << dump << "-" << "release";
+
+        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ);
+        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE);
+        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
+        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+    }
+#endif
+
+    releasedObjects_ = true;
+    unlock();
+    return gmacSuccess;
+}
+
+gmacError_t
+ObjectMap::acquireObjects()
+{
+    lockWrite();
+    modifiedObjects_ = false;
+    releasedObjects_ = false;
+    unlock();
+    return gmacSuccess;
+}
 
 
 }}

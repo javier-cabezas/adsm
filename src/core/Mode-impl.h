@@ -13,9 +13,7 @@ inline
 Mode::Mode() :
     util::Reference("Mode"),
     gmac::util::SpinLock("Mode"),
-    id_(AtomicInc(Count_)),
-    modifiedObjects_(false),
-    releasedObjects_(false)
+    id_(AtomicInc(Count_))
 #ifdef USE_VM
     , bitmap_(*this)
 #endif
@@ -46,47 +44,11 @@ unsigned Mode::id() const
     return id_;
 }
 
-inline
-bool Mode::hasModifiedObjects() const
-{
-    lock();
-    bool ret = modifiedObjects_;
-    unlock();
-    return ret;
-}
-
-inline
-void Mode::invalidateObjects()
-{
-    lock();
-    modifiedObjects_ = false;
-    unlock();
-}
-
-
-inline
-void Mode::modifiedObjects()
-{
-    lock();
-    modifiedObjects_ = true;
-    releasedObjects_ = false;
-    unlock();
-}
-
-inline
-bool Mode::releasedObjects() const
-{
-    lock();
-    bool ret = releasedObjects_;
-    unlock();
-    return ret;
-}
-
 inline void
 Mode::addObject(memory::Object &obj)
 {
     getAddressSpace().insert(obj);
-    modifiedObjects();
+    getAddressSpace().modifiedObjects();
 }
 
 inline void

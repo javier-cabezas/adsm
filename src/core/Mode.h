@@ -78,9 +78,6 @@ protected:
     __impl::memory::vm::Bitmap bitmap_;
 #endif
 
-    virtual memory::ObjectMap &getAddressSpace() = 0;
-    virtual const memory::ObjectMap &getAddressSpace() const = 0;
-
     /**
      * Mode constructor
      */
@@ -175,45 +172,7 @@ public:
      */
     template <typename T>
     gmacError_t forEachObject(gmacError_t (memory::Object::*op)(T &), T &param);
-
-    /**
-     * Tells if the objects of the mode have been already invalidated
-     * \return Boolean that tells if objects of the mode have been already
-     * invalidated
-     */
-    bool hasModifiedObjects() const;
-
-    /**
-     * Notifies the mode that one (or several) of its objects have been validated
-     */
-    void modifiedObjects();
-
-    /**
-     * Notifies the mode that one (or several) of its objects has been invalidated
-     */
-    void invalidateObjects();
-
-    /**
-     * Tells if the objects of the mode have been already released to the
-     * accelerator
-     * \return Boolean that tells if objects of the mode have been already
-     * released to the accelerator
-     */
-    bool releasedObjects() const;
-
-    /**
-     * Releases the ownership of the objects of the mode to the accelerator
-     * and waits for pending transfers
-     */
-    virtual gmacError_t releaseObjects() = 0;
-
-    /**
-     * Waits for kernel execution and acquires the ownership of the objects
-     * of the mode from the accelerator
-     */
-    virtual gmacError_t acquireObjects() = 0;
-
-
+    
     /**
      * Maps the given host memory on the accelerator memory
      * \param dst Reference to a pointer where to store the accelerator
@@ -338,6 +297,9 @@ public:
     memory::vm::Bitmap &getBitmap();
     const memory::vm::Bitmap &getBitmap() const;
 #endif
+
+    virtual memory::ObjectMap &getAddressSpace() = 0;
+    virtual const memory::ObjectMap &getAddressSpace() const = 0;
 };
 
 }}
