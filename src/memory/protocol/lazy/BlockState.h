@@ -49,6 +49,7 @@ template <typename State> class StateBlock;
 namespace protocol {
 namespace lazy {
 
+#if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 template <typename T>
 class Array {
     T *array_;
@@ -86,7 +87,6 @@ public:
 typedef Array<uint8_t> SubBlocks;
 typedef Array<long_t> SubBlockCounters;
 
-#if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 /// Tree used to group subblocks and speculatively unprotect them
 struct GMAC_LOCAL BlockTreeState : public util::ReusableObject<BlockTreeState> {
     unsigned counter_;
@@ -138,25 +138,41 @@ public:
     void reset();
 };
 
+#endif
+
 class GMAC_LOCAL BlockState :
     public common::BlockState<lazy::State> {
+#if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
+#endif
 
 protected:
     lazy::Block &block();
     const lazy::Block &block() const;
+
+#if defined(USE_SUBBLOCK_TRACKING)
     //const lazy::Block &block();
     unsigned subBlocks_;
     SubBlocks subBlockState_; 
+#endif
 
 #ifdef DEBUG
+    // Global statistis
+#if defined(USE_SUBBLOCK_TRACKING)
     SubBlockCounters subBlockFaultsRead_; 
     SubBlockCounters subBlockFaultsWrite_; 
     SubBlockCounters transfersToAccelerator_; 
     SubBlockCounters transfersToHost_; 
+#else
+    unsigned faultsRead_;
+    unsigned faultsWrite_;
+    unsigned transfersToAccelerator_;
+    unsigned transfersToHost_;
+#endif // USE_SUBBLOCK_TRACKING
 #endif
 
+#if defined(USE_SUBBLOCK_TRACKING)
     // Speculative subblock unprotect policies
     StrideInfo strideInfo_;
     BlockTreeInfo treeInfo_;
@@ -164,10 +180,6 @@ protected:
     void setSubBlock(const hostptr_t addr, ProtocolState state);
     void setSubBlock(long_t subBlock, ProtocolState state);
     void setAll(ProtocolState state);
-
-    // Global statistis
-    unsigned faultsRead_;
-    unsigned faultsWrite_;
 
     void reset();
 
@@ -178,73 +190,38 @@ protected:
 
     void writeStride(const hostptr_t addr);
     void writeTree(const hostptr_t addr);
+#endif
 
 public:
     BlockState(lazy::State init);
 
     void setState(ProtocolState state, hostptr_t addr = NULL);
 
+#if 0
     bool hasState(ProtocolState state) const;
-
-    gmacError_t syncToAccelerator();
-    gmacError_t syncToHost();
-
-    void read(const hostptr_t addr);
-    void write(const hostptr_t addr);
-
-    bool is(ProtocolState state) const;
-
-    int protect(GmacProtection prot);
-    int unprotect();
-
-    void acquired();
-    void released();
-
-    gmacError_t dump(std::ostream &stream, common::Statistic stat);
-};
-
-#else // USE_SUBBLOCK_STATE
-
-class GMAC_LOCAL BlockState :
-    public common::BlockState<lazy::State> {
-
-protected:
-    lazy::Block &block();
-
-    // Global statistis
-    unsigned faultsRead_;
-    unsigned faultsWrite_;
-    unsigned transfersToAccelerator_;
-    unsigned transfersToHost_;
-
-public:
-    BlockState(ProtocolState init);
-
-    void setState(ProtocolState state, hostptr_t addr = NULL);
-
-    gmacError_t syncToAccelerator();
-    gmacError_t syncToHost();
-
-    void read(const hostptr_t addr);
-    void write(const hostptr_t addr);
-
-    bool is(ProtocolState state) const;
-
-    int protect(GmacProtection prot);
-    int unprotect();
-
-    void acquired();
-    void released();
-
-    gmacError_t dump(std::ostream &stream, common::Statistic stat);
-};
-
 #endif
+
+    gmacError_t syncToAccelerator();
+    gmacError_t syncToHost();
+
+    void read(const hostptr_t addr);
+    void write(const hostptr_t addr);
+
+    bool is(ProtocolState state) const;
+
+    int protect(GmacProtection prot);
+    int unprotect();
+
+    void acquired();
+    void released();
+
+    gmacError_t dump(std::ostream &stream, common::Statistic stat);
+};
 
 }}}}
 
 #include "BlockState-impl.h"
 
-#endif /* BLOCKINFO_H */
+#endif // GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
