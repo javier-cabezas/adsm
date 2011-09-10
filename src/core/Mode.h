@@ -65,11 +65,9 @@ class Process;
 class GMAC_LOCAL Mode :
     public util::Reference,
     public util::NonCopyable,
+    public util::Unique,
     public gmac::util::SpinLock {
 protected:
-    static Atomic Count_;
-
-    unsigned id_;
     memory::Protocol *protocol_;
 
 #ifdef USE_VM

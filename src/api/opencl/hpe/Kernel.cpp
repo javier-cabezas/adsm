@@ -11,7 +11,7 @@ KernelLaunch::MapGlobalSubBuffer KernelLaunch::mapSubBuffer_;
 gmacError_t
 KernelLaunch::execute()
 {
-    trace_.init((THREAD_T)mode_.id());
+    trace_.init((THREAD_T)mode_.getId());
     size_t *globalWorkSize   = globalWorkSize_;
     size_t *localWorkSize    = workLocalDim_ > 0? localWorkSize_: NULL;
     size_t *globalWorkOffset = offsetDim_    > 0? globalWorkOffset_: NULL;

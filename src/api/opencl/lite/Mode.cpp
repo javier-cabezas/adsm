@@ -15,7 +15,6 @@ Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
     active_(0),
     map_("ObjectMap")
 {
-    AtomicInc(Count_);
     // Create one command queue per device in the context
     cl_int ret = CL_SUCCESS;
     for(unsigned i = 0; i < numDevices; i++) {
