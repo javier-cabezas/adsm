@@ -365,6 +365,15 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     return ret;
 }
 
+GMAC_API gmacError_t APICALL
+gmacSetAddressSpace(unsigned aSpaceId)
+{
+    enterGmac();
+    gmacError_t ret = getProcess().setAddressSpace(Thread::getCurrentMode(), aSpaceId);
+    exitGmac();
+    return ret;
+}
+
 /** \todo Return error */
 GMAC_API void APICALL
 gmacSend(THREAD_T id)

@@ -85,26 +85,26 @@ bool Mode::releasedObjects() const
 inline void
 Mode::addObject(memory::Object &obj)
 {
-    getObjectMap().insert(obj);
+    getAddressSpace().insert(obj);
     modifiedObjects();
 }
 
 inline void
 Mode::removeObject(memory::Object &obj)
 {
-    getObjectMap().remove(obj);
+    getAddressSpace().remove(obj);
 }
 
 inline memory::Object *
 Mode::getObject(const hostptr_t addr, size_t size) const
 {
-    return getObjectMap().get(addr, size);
+    return getAddressSpace().get(addr, size);
 }
 
 inline gmacError_t
 Mode::forEachObject(gmacError_t (memory::Object::*f)(void))
 {
-    gmacError_t ret = getObjectMap().forEachObject(f);
+    gmacError_t ret = getAddressSpace().forEachObject(f);
     return ret;
 }
 
@@ -112,7 +112,7 @@ template <typename T>
 inline gmacError_t
 Mode::forEachObject(gmacError_t (memory::Object::*f)(T &), T &param)
 {
-    gmacError_t ret = getObjectMap().forEachObject(f, param);
+    gmacError_t ret = getAddressSpace().forEachObject(f, param);
     return ret;
 }
 

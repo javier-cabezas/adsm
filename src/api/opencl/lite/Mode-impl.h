@@ -41,13 +41,13 @@ void QueueSet::remove(cl_command_queue queue)
 }
 
 inline
-memory::ObjectMap &Mode::getObjectMap()
+memory::ObjectMap &Mode::getAddressSpace()
 {
     return map_;
 }
 
 inline
-const memory::ObjectMap &Mode::getObjectMap() const
+const memory::ObjectMap &Mode::getAddressSpace() const
 {
     return map_;
 }

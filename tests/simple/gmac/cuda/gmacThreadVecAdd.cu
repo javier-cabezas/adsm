@@ -17,8 +17,6 @@ unsigned nIter = 0;
 size_t vecSize = 0;
 const size_t blockSize = 512;
 
-static float **s;
-
 __global__ void vecAdd(float *c, const float *a, const float *b, size_t vecSize)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
@@ -27,14 +25,56 @@ __global__ void vecAdd(float *c, const float *a, const float *b, size_t vecSize)
 	c[i] = a[i] + b[i];
 }
 
+struct thread_info {
+    thread_t tid;
+    const float *a, *b;
+    float *c;
+    size_t vecSize;
+};
+
 void *addVector(void *ptr)
 {
-	float *a, *b;
-	float **c = (float **)ptr;
-	gmactime_t s, t;
-	gmacError_t ret = gmacSuccess;
+	const float *a, *b;
+    float *c;
+    thread_info &info = *((thread_info *)ptr);
+    a = info.a;
+    b = info.b;
+    c = info.c;
+	size_t myVecSize = info.vecSize;
 
+    printf("%p -> %p\n", a, gmacPtr(a));
+    printf("%p -> %p\n", b, gmacPtr(b));
+    printf("%p -> %p\n", c, gmacPtr(c));
+
+	gmactime_t s, t;
+	// Call the kernel
+	dim3 Db(blockSize);
+	dim3 Dg((unsigned int)myVecSize / blockSize);
+	if(myVecSize % blockSize) Dg.x++;
 	getTime(&s);
+	vecAdd<<<Dg, Db>>>(gmacPtr(c), gmacPtr(a), gmacPtr(b), myVecSize);
+	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
+	getTime(&t);
+	printTime(&s, &t, "Run: ", "\n");
+
+	return NULL;
+}
+
+int main(int argc, char *argv[])
+{
+	gmactime_t s, t;
+    float *a, *b, *c;
+
+	thread_info *nThread;
+	unsigned n = 0;
+	gmactime_t st, en;
+
+    gmacError_t ret;
+
+	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
+	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
+
+    getTime(&s);
 	// Alloc & init input data
 	ret = gmacMalloc((void **)&a, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
@@ -42,7 +82,7 @@ void *addVector(void *ptr)
 	assert(ret == gmacSuccess);
 
 	// Alloc output data
-	ret = gmacMalloc((void **)c, vecSize * sizeof(float));
+	ret = gmacMalloc((void **)&c, vecSize * sizeof(float));
 	assert(ret == gmacSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
@@ -54,20 +94,25 @@ void *addVector(void *ptr)
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
-	// Call the kernel
-	dim3 Db(blockSize);
-	dim3 Dg((unsigned int)vecSize / blockSize);
-	if(vecSize % blockSize) Dg.x++;
-	getTime(&s);
-	vecAdd<<<Dg, Db>>>(gmacPtr(*c), gmacPtr(a), gmacPtr(b), vecSize);
-	if(gmacThreadSynchronize() != gmacSuccess) CUFATAL();
-	getTime(&t);
-	printTime(&s, &t, "Run: ", "\n");
+	nThread = (thread_info *)malloc(nIter * sizeof(thread_info));
 
-	getTime(&s);
+	getTime(&st);
+	for(n = 0; n < nIter; n++) {
+        thread_t tid = thread_create(addVector, &nThread[n]);
+		nThread[n].a = a + (vecSize / nIter) * n;
+		nThread[n].b = b + (vecSize / nIter) * n;
+		nThread[n].c = c + (vecSize / nIter) * n;
+		nThread[n].tid = tid;
+	}
+
+	for(n = 0; n < nIter; n++) {
+		thread_wait(nThread[n].tid);
+	}
+
+    getTime(&s);
 	float error = 0;
 	for(unsigned i = 0; i < vecSize; i++) {
-		error += (*c)[i] - (a[i] + b[i]);
+		error += c[i] - (a[i] + b[i]);
 	}
 	getTime(&t);
 	printTime(&s, &t, "Check: ", "\n");
@@ -75,43 +120,16 @@ void *addVector(void *ptr)
     getTime(&s);
 	gmacFree(a);
 	gmacFree(b);
-	gmacFree(*c);
+	gmacFree(c);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
     assert(error == 0.f);
 
-	return NULL;
-}
-
-int main(int argc, char *argv[])
-{
-	thread_t *nThread;
-	unsigned n = 0;
-	gmactime_t st, en;
-
-	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
-	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
-
-	vecSize = vecSize / nIter;
-	if(vecSize % nIter) vecSize++;
-
-	nThread = (thread_t *)malloc(nIter * sizeof(thread_t));
-	s = (float **)malloc(nIter * sizeof(float **));
-
-	getTime(&st);
-	for(n = 0; n < nIter; n++) {
-		nThread[n] = thread_create(addVector, &s[n]);
-	}
-
-	for(n = 0; n < nIter; n++) {
-		thread_wait(nThread[n]);
-	}
 
 	getTime(&en);
 	printTime(&st, &en, "Total: ", "\n");
 
-	free(s);
 	free(nThread);
 
     return 0;

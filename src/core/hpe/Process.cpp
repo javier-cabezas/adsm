@@ -341,5 +341,15 @@ Process::prepareForCall()
     return ret;
 }
 
+gmacError_t
+Process::setAddressSpace(Mode &mode, unsigned aSpaceId)
+{
+    if (aSpaceId >= aSpaces_.size()) {
+        return gmacErrorInvalidValue;
+    } else {
+        mode.setAddressSpace(*aSpaces_[aSpaceId]);
+    }
+    return gmacSuccess;
+}
 
 }}}

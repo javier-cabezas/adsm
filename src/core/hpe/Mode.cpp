@@ -259,5 +259,10 @@ void Mode::statsInit()
 }
 #endif
 
+void
+Mode::setAddressSpace(AddressSpace &aSpace)
+{
+    aSpace_ = &aSpace;
+}
 
 }}}
