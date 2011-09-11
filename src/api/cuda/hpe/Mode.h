@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 #include "api/cuda/Mode.h"
 #include "api/cuda/hpe/ContextFactory.h"
 
-#include "util/UniquePtr.h"
+#include "util/GMACBase.h"
 
 #include "Module.h"
 
@@ -76,6 +76,7 @@ class Accelerator;
 
 //! A Mode represents a virtual CUDA accelerator on an execution thread
 class GMAC_LOCAL Mode :
+    util::GMACBase<Mode>,
     public ContextFactory,
     public gmac::core::hpe::Mode,
     public virtual cuda::Mode {

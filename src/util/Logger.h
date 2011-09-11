@@ -76,13 +76,15 @@ inline static const char *__extract_file_name(const char *file) {
 #include <cxxabi.h>
 
 extern __thread char nameBuffer[1024];
-const char *
+std::string
 get_class_name(const char *mangled);
 
-#define LOCAL get_class_name(typeid(*this).name())
+#define get_name(n) get_class_name(n).c_str()
 #else
-#define LOCAL typeid(*this).name()
+#define get_name(n) n
 #endif
+
+#define LOCAL get_name(typeid(*this).name())
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
@@ -140,6 +142,7 @@ namespace __impl { namespace util {
 
 class GMAC_LOCAL Logger {
 private:    
+	static Atomic Ready_;
 	static Private<char> Buffer_;
     static const size_t BufferSize_ = 1024;
 
@@ -147,7 +150,6 @@ private:
     typedef Parameter<const char *> Level;
     typedef std::list<std::string> Tags;
 
-	static Atomic Ready_;
     static const char *DebugString_;
     static Level *Level_;
     static Tags *Tags_;

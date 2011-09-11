@@ -13,19 +13,16 @@ inline
 Mode::Mode() :
     util::Reference("Mode"),
     gmac::util::SpinLock("Mode")
-#ifdef USE_VM
-    , bitmap_(*this)
-#endif
 {
     TRACE(LOCAL,"Creating Execution Mode %p", this);
-    trace::StartThread(THREAD_T(Unique::getId()), "GPU");
-    SetThreadState(THREAD_T(Unique::getId()), trace::Idle);
+    trace::StartThread(THREAD_T(getId()), "GPU");
+    SetThreadState(THREAD_T(getId()), trace::Idle);
 }
 
 inline
 Mode::~Mode()
 {
-    trace::EndThread(THREAD_T(Unique::getId()));
+    trace::EndThread(THREAD_T(getId()));
     TRACE(LOCAL,"Destroying Execution Mode %p", this);
 }
 

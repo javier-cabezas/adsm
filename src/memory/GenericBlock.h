@@ -39,6 +39,8 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 
+#include "util/GMACBase.h"
+
 #include "Block.h"
 #include "StateBlock.h"
 
@@ -52,6 +54,7 @@ namespace memory {
 
 template<typename State>
 class GMAC_LOCAL GenericBlock :
+    util::GMACBase<GenericBlock<State> >,
     public StateBlock<State> {
 protected:
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorAddrMap;

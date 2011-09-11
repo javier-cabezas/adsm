@@ -55,7 +55,6 @@ namespace memory {
 class Object;
 class Protocol;
 
-
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL ObjectMap :
      protected gmac::util::RWLock,
@@ -65,15 +64,14 @@ protected:
     friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, Object *> Parent;
 
-    Protocol *protocol_;
+    Protocol &protocol_;
+
+    bool modifiedObjects_;
+    bool releasedObjects_;
 
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;
 #endif
-
-
-    bool modifiedObjects_;
-    bool releasedObjects_;
 
 #ifdef DEBUG
     static Atomic StatsInit_;

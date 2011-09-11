@@ -684,11 +684,13 @@ Block &BlockState::block()
 
 inline
 BlockState::BlockState(ProtocolState init) :
-    common::BlockState<lazy::State>(init),
-    faultsRead_(0),
+    common::BlockState<lazy::State>(init)
+#ifdef DEBUG
+    , faultsRead_(0),
     faultsWrite_(0),
     transfersToAccelerator_(0),
     transfersToHost_(0)
+#endif
 {
 }
 
@@ -712,7 +714,9 @@ BlockState::syncToAccelerator()
 {
     TRACE(LOCAL, "Transfer block to accelerator: %p", block().addr());
 
+#ifdef DEBUG
     transfersToAccelerator_++;
+#endif
     return block().toAccelerator();
 }
 
@@ -722,7 +726,9 @@ BlockState::syncToHost()
 {
     TRACE(LOCAL, "Transfer block to host: %p", block().addr());
 
+#ifdef DEBUG
     transfersToHost_++;
+#endif
     return block().toHost();
 }
 
@@ -730,7 +736,9 @@ inline
 void
 BlockState::read(const hostptr_t /*addr*/)
 {
+#ifdef DEBUG
     faultsRead_++;
+#endif
     faultsCacheRead_++;
 }
 
@@ -738,7 +746,9 @@ inline
 void
 BlockState::write(const hostptr_t /*addr*/)
 {
+#ifdef DEBUG
     faultsWrite_++;
+#endif
     faultsCacheWrite_++;
 }
 
@@ -767,8 +777,10 @@ inline
 void
 BlockState::acquired()
 {
+#ifdef DEBUG
     faultsRead_ = 0;
     faultsWrite_ = 0;
+#endif
 
     state_ = lazy::Invalid;
 }
@@ -777,8 +789,10 @@ inline
 void
 BlockState::released()
 {
+#ifdef DEBUG
     faultsRead_ = 0;
     faultsWrite_ = 0;
+#endif
 
     state_ = lazy::ReadOnly;
 }

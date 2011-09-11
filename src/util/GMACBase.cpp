@@ -1,9 +1,9 @@
-#include "Unique.h"
+#include "GMACBase.h"
 
 namespace __impl { namespace util {
 
 #ifdef DEBUG
-Atomic Unique::Count_ = 0;
+Debug Debug::debug_;
 #endif
 
 }}

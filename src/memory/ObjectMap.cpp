@@ -48,14 +48,17 @@ ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 
 ObjectMap::ObjectMap(const char *name) :
     gmac::util::RWLock(name),
+    protocol_(*ProtocolInit(0)),
     modifiedObjects_(false),
     releasedObjects_(false)
+#ifdef USE_VM
+    , bitmap_(*this)
+#endif
 {
 
 #ifdef DEBUG
     if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();
 #endif
-    protocol_ = ProtocolInit(0);
 }
 
 ObjectMap::~ObjectMap()
@@ -72,8 +75,6 @@ ObjectMap::cleanUp()
         i->second->decRef();
     }
     unlock();
-
-    delete protocol_;
 }
 
 size_t ObjectMap::size() const
@@ -144,7 +145,9 @@ size_t ObjectMap::memorySize() const
     size_t total = 0;
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) total += i->second->size();
+    for(i = begin(); i != end(); i++) {
+        total += i->second->size();
+    }
     unlock();
     return total;
 }

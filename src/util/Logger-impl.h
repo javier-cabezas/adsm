@@ -73,7 +73,6 @@ inline
 void Logger::__Assertion(bool c, const char *cStr, const char *fmt, ...)
 #endif
 {
-    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
     if(c == true ) return;
 #ifdef USE_CXX0X
     Print(cStr, fmt, list...);
@@ -116,18 +115,19 @@ inline
 void Logger::Print(const char *tag, const char *fmt, va_list list)
 #endif
 {
+    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
+    char *buffer = Buffer_.get();
+    if (buffer == NULL) {
+        buffer = new char[BufferSize_];
+		Buffer_.set(buffer);
+	}
+
 #ifdef DEBUG
 #ifdef USE_CXX0X
     if (numberOfVariables(fmt) != sizeof...(Types)) abort();
 #endif
 #endif
-    char *buffer = Buffer_.get();
 
-	if (buffer == NULL) {
-		buffer = new char[BufferSize_];
-        Buffer_.set(buffer);
-	}
-	
 #ifdef USE_CXX0X
 	snprintf(buffer, BufferSize_, fmt, list...);
 #else
@@ -141,6 +141,7 @@ void Logger::Print(const char *tag, const char *fmt, va_list list)
 inline
 void Logger::Print(const char *tag, const char *fmt)
 {
+    if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 	if (Buffer_.get() == NULL) {
 		Buffer_.set(new char[BufferSize_]);
 	}

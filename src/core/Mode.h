@@ -65,7 +65,7 @@ class Process;
 class GMAC_LOCAL Mode :
     public util::Reference,
     public util::NonCopyable,
-    public util::Unique,
+    public util::Unique<Mode>,
     public gmac::util::SpinLock {
 protected:
     /**

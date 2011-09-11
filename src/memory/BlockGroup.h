@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include "memory/Object.h"
 
+#include "util/GMACBase.h"
+
 namespace __impl { 
 
 namespace core {
@@ -46,6 +48,7 @@ namespace memory {
 
 template<typename State>
 class GMAC_LOCAL BlockGroup :
+    util::GMACBase<BlockGroup<State> >,
     public gmac::memory::Object {
 protected:
     hostptr_t shadow_;

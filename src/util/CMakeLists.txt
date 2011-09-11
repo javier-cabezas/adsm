@@ -5,6 +5,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Parameter-def.h.in ${CMAKE_CURRENT_BI
 set(util_SRC
     Atomics.h
     FileLock.h
+    GMACBase.h
+    GMACBase.cpp
     Lock.h
     Lock-impl.h
     Lock.cpp
@@ -27,7 +29,6 @@ set(util_SRC
     Thread.h
     Unique.h
     Unique-impl.h
-    Unique.cpp
     UniquePtr.h
     allocator/Buddy.h
     allocator/Buddy.cpp

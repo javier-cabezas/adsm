@@ -11,14 +11,14 @@
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
 
-const char *
+std::string
 get_class_name(const char *mangled)
 {
-    char nameBuffer[256];
-    size_t len = 256; 
     int s; 
-    char* p=abi::__cxa_demangle(mangled, nameBuffer, &len, &s); 
-    return p;
+    char* p=abi::__cxa_demangle(mangled, 0, 0, &s); 
+    std::string str(p);
+    free(p);
+    return str;
 }
 
 
@@ -57,8 +57,9 @@ static char *strcasestr(const char *haystack, const char *needle)
 namespace __impl { namespace util {
 
 Private<char> Logger::Buffer_;
-#ifdef DEBUG
 Atomic Logger::Ready_ = 0;
+
+#ifdef DEBUG
 const char *Logger::DebugString_ = NULL;
 Logger::Level *Logger::Level_ = NULL;
 Logger::Tags *Logger::Tags_ = NULL;
@@ -93,11 +94,13 @@ void Logger::Init()
 
 void Logger::Fini()
 {
-    char *buffer = Buffer_.get();
-    if (buffer) delete [] buffer;
-    Buffer_.set(NULL);
-#ifdef DEBUG
     if(Ready_ == 0) return;
+    char *buffer = Buffer_.get();
+    if (buffer) {
+        Buffer_.set(NULL);
+        delete [] buffer;
+    }
+#ifdef DEBUG
     if (Level_) delete Level_;
     if (Tags_) delete Tags_;
 #endif

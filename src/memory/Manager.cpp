@@ -347,7 +347,6 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
             ASSERTION(ret == gmacSuccess);
         }
         map.releaseObjects();
-
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -614,8 +613,8 @@ Manager::memcpy(core::Mode &mode, hostptr_t dst, const hostptr_t src,
     Object *dstObject = NULL;
     Object *srcObject = NULL;
 
-    memory::ObjectMap *dstMap;
-    memory::ObjectMap *srcMap;
+    memory::ObjectMap *dstMap = NULL;
+    memory::ObjectMap *srcMap = NULL;
 
     // Get initial objects
     if(dstMode != NULL) {

@@ -130,7 +130,7 @@ inline
 Protocol &
 ObjectMap::getProtocol()
 {
-    return *protocol_;
+    return protocol_;
 }
 
 #ifdef USE_VM
