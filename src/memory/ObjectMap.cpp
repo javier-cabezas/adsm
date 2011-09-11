@@ -12,7 +12,8 @@ Atomic ObjectMap::StatsInit_ = 0;
 Atomic ObjectMap::StatDumps_ = 0;
 std::string ObjectMap::StatsDir_ = "";
 
-void ObjectMap::statsInit()
+void
+ObjectMap::statsInit()
 {
     if (__impl::util::params::ParamStats) {
         PROCESS_T pid = __impl::util::GetProcessId();
@@ -32,7 +33,8 @@ void ObjectMap::statsInit()
 }
 #endif
 
-Object *ObjectMap::mapFind(const hostptr_t addr, size_t size) const
+Object *
+ObjectMap::mapFind(const hostptr_t addr, size_t size) const
 {
     ObjectMap::const_iterator i;
     Object *ret = NULL;
@@ -53,6 +55,7 @@ ObjectMap::ObjectMap(const char *name) :
 #ifdef DEBUG
     if(AtomicTestAndSet(StatsInit_, 0, 1) == 0) statsInit();
 #endif
+    protocol_ = ProtocolInit(0);
 }
 
 ObjectMap::~ObjectMap()
@@ -69,6 +72,8 @@ ObjectMap::cleanUp()
         i->second->decRef();
     }
     unlock();
+
+    delete protocol_;
 }
 
 size_t ObjectMap::size() const

@@ -65,6 +65,13 @@ protected:
     friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, Object *> Parent;
 
+    Protocol *protocol_;
+
+#ifdef USE_VM
+    __impl::memory::vm::Bitmap bitmap_;
+#endif
+
+
     bool modifiedObjects_;
     bool releasedObjects_;
 
@@ -217,6 +224,17 @@ public:
      * of the mode from the accelerator
      */
     gmacError_t acquireObjects();
+
+    /**
+     * Gets a reference to the memory protocol used by the mode
+     * \return A reference to the memory protocol used by the mode
+     */
+    Protocol &getProtocol();
+
+#ifdef USE_VM
+    memory::vm::Bitmap &getBitmap();
+    const memory::vm::Bitmap &getBitmap() const;
+#endif
 };
 
 }}
