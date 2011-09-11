@@ -53,7 +53,7 @@ Manager::map(core::Mode &mode, hostptr_t *addr, size_t size, int flags)
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object = mode.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    object = map.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -125,17 +125,17 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
         return ret;
     }
 
+    memory::ObjectMap &map = mode.getAddressSpace();
+
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    Object *object = mode.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    Object *object = map.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
     object->addOwner(mode);
     *addr = object->addr();
-
-    memory::ObjectMap &map = mode.getAddressSpace();
 
     // Insert object into memory maps
     map.addObject(*object);
@@ -308,7 +308,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
-            ret = mode.getProtocol().releaseAll();
+            ret = map.getProtocol().releaseAll();
             ASSERTION(ret == gmacSuccess);
             // 2. Process protocol
             if (proc_.getProtocol() != NULL) {
@@ -339,7 +339,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
 
         // Notify protocols
         // 1. Mode protocol
-        ret = mode.getProtocol().releasedAll();
+        ret = map.getProtocol().releasedAll();
         ASSERTION(ret == gmacSuccess);
         // 2. Process protocol
         if (proc_.getProtocol() != NULL) {
@@ -448,15 +448,16 @@ bool
 Manager::signalRead(core::Mode &mode, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
+    memory::ObjectMap &map = mode.getAddressSpace();
+
 #ifdef USE_VM
-    CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::Bitmap &bitmap = mode.getBitmap();
+    CFATAL(map.releasedObjects() == false, "Acquiring bitmap on released objects");
+    vm::Bitmap &bitmap = map.getBitmap();
     if (bitmap.isReleased()) {
         bitmap.acquire();
-        mode.forEachObject(&Object::acquireWithBitmap);
+        map.forEachObject(&Object::acquireWithBitmap);
     }
 #endif
-    memory::ObjectMap &map = mode.getAddressSpace();
 
     bool ret = true;
     Object *obj = map.getObject(addr);
@@ -476,16 +477,17 @@ bool
 Manager::signalWrite(core::Mode &mode, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
-#ifdef USE_VM
-    CFATAL(mode.releasedObjects() == false, "Acquiring bitmap on released objects");
-    vm::Bitmap &bitmap = mode.getBitmap();
-    if (bitmap.isReleased()) {
-        bitmap.acquire();
-        mode.forEachObject(&Object::acquireWithBitmap);
-    }
-#endif
     bool ret = true;
     memory::ObjectMap &map = mode.getAddressSpace();
+
+#ifdef USE_VM
+    CFATAL(map.releasedObjects() == false, "Acquiring bitmap on released objects");
+    vm::Bitmap &bitmap = map.getBitmap();
+    if (bitmap.isReleased()) {
+        bitmap.acquire();
+        map.forEachObject(&Object::acquireWithBitmap);
+    }
+#endif
 
     Object *obj = map.getObject(addr);
     if(obj == NULL) {
@@ -688,7 +690,8 @@ Manager::flushDirty(core::Mode &mode)
     gmacError_t ret;
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
-    ret = mode.getProtocol().flushDirty();
+    memory::ObjectMap &map = mode.getAddressSpace();
+    ret = map.getProtocol().flushDirty();
 
     if(ret == gmacSuccess) {
         // Release global per-process objects

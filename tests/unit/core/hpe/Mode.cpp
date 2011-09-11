@@ -42,9 +42,9 @@ void ModeTest::TearDownTestCase() {
 }
 
 TEST_F(ModeTest, MemoryObject) {
-    Object *obj = Mode_->getProtocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
-    ASSERT_TRUE(obj != NULL);
     __impl::memory::ObjectMap &map = Mode_->getAddressSpace();
+    Object *obj = map.getProtocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+    ASSERT_TRUE(obj != NULL);
     map.addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);

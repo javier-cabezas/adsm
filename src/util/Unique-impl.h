@@ -10,7 +10,6 @@ inline
 Unique::Unique()
 {
     id_ = unsigned(AtomicInc(Count_)) - 1;
-    printf("Created Mode with id %u\n", id_);
 }
 
 inline

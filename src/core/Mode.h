@@ -68,12 +68,6 @@ class GMAC_LOCAL Mode :
     public util::Unique,
     public gmac::util::SpinLock {
 protected:
-    memory::Protocol *protocol_;
-
-#ifdef USE_VM
-    __impl::memory::vm::Bitmap bitmap_;
-#endif
-
     /**
      * Mode constructor
      */
@@ -92,12 +86,6 @@ public:
      *  \return Error code
      */
     virtual gmacError_t hostAlloc(hostptr_t &addr, size_t size) = 0;
-
-    /**
-     * Gets a reference to the memory protocol used by the mode
-     * \return A reference to the memory protocol used by the mode
-     */
-    memory::Protocol &getProtocol();
 
     /**
      * Insert an object into the orphan list
@@ -223,11 +211,6 @@ public:
 #ifdef USE_OPENCL
     virtual gmacError_t acquire(hostptr_t addr) = 0;
     virtual gmacError_t release(hostptr_t addr) = 0;
-#endif
-
-#ifdef USE_VM
-    memory::vm::Bitmap &getBitmap();
-    const memory::vm::Bitmap &getBitmap() const;
 #endif
 
     virtual memory::ObjectMap &getAddressSpace() = 0;

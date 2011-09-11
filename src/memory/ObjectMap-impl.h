@@ -6,7 +6,8 @@
 namespace __impl { namespace memory {
 
 inline
-gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void))
+gmacError_t
+ObjectMap::forEachObject(gmacError_t (Object::*f)(void))
 {
     iterator i;
     lockRead();
@@ -22,7 +23,8 @@ gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(void))
 }
 
 template <typename P1>
-gmacError_t ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1)
+gmacError_t
+ObjectMap::forEachObject(gmacError_t (Object::*f)(P1 &), P1 &p1)
 {
     const_iterator i;
     lockRead();
@@ -124,8 +126,26 @@ ObjectMap::releasedObjects() const
     return ret;
 }
 
+inline
+Protocol &
+ObjectMap::getProtocol()
+{
+    return *protocol_;
+}
 
+#ifdef USE_VM
+inline vm::Bitmap&
+ObjectMap::getBitmap()
+{
+    return bitmap_;
+}
 
+inline const vm::Bitmap&
+ObjectMap::getBitmap() const
+{
+    return bitmap_;
+}
+#endif
 
 }}
 
