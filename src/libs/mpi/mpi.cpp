@@ -1,22 +1,22 @@
 #ifdef USE_MPI
 
-#if defined(POSIX)
-#include "os/posix/loader.h"
-#elif defined(WINDOWS)
-#include "os/windows/loader.h"
-#endif
-
-#include "gmac/init.h"
+#include "libs/common.h"
 #include "memory/Manager.h"
 #include "core/IOBuffer.h"
 #include "core/Process.h"
 #include "core/Mode.h"
+
+#include "util/loader.h"
 
 #include "mpi_local.h"
 
 using __impl::core::IOBuffer;
 using __impl::core::Mode;
 using __impl::core::Process;
+
+using __impl::memory::getManager;
+using __impl::core::getMode;
+using __impl::core::getProcess;
 
 using __impl::memory::Manager;
 
@@ -67,7 +67,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     enterGmac();
 
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getMode(*dstMode);
     Manager &manager = getManager();
 
     gmacError_t err;
@@ -88,7 +88,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     sendbytes = sendcount * typebytes;
     ret2 = MPI_Type_size(recvtype, &typebytes);
     recvbytes = recvcount * typebytes;
-    IOBuffer &buffer = mode.createIOBuffer(recvbytes + sendbytes);
+    IOBuffer &buffer = mode.createIOBuffer(recvbytes + sendbytes, GMAC_PROT_READWRITE);
 
     if (ret  != MPI_SUCCESS) goto exit;
     if (ret2 != MPI_SUCCESS) goto exit;
@@ -102,7 +102,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             tmpSend     = buffer.addr();
             bufferUsed += sendbytes;
 
-            err = manager.toIOBuffer(buffer, 0, hostptr_t(sendbuf), sendbytes);
+            err = manager.toIOBuffer(mode, buffer, 0, hostptr_t(sendbuf), sendbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -114,7 +114,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             ASSERTION(tmpSend != NULL);
             allocSend = true;
 
-            err = manager.memcpy(hostptr_t(tmpSend), hostptr_t(sendbuf), sendbytes);
+            err = manager.memcpy(mode, hostptr_t(tmpSend), hostptr_t(sendbuf), sendbytes);
             ASSERTION(err == gmacSuccess);
         }
 	} else {
@@ -145,13 +145,13 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     if(source != MPI_PROC_NULL && dstMode != NULL) {
         if (!allocRecv) {
             printf("Fast path2!\n");
-            err = manager.fromIOBuffer(hostptr_t(recvbuf), buffer, bufferUsed, recvbytes);
+            err = manager.fromIOBuffer(mode, hostptr_t(recvbuf), buffer, bufferUsed, recvbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
             printf("Slow path2!\n");
-            err = manager.memcpy(hostptr_t(recvbuf), hostptr_t(tmpRecv), recvbytes);
+            err = manager.memcpy(mode, hostptr_t(recvbuf), hostptr_t(tmpRecv), recvbytes);
             ASSERTION(err == gmacSuccess);
 
             // Free temporal buffer
@@ -185,7 +185,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     enterGmac();
 
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getMode(*srcMode);
     Manager &manager = getManager();
 
     gmacError_t err;
@@ -200,14 +200,14 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 
     ret = MPI_Type_size(datatype, &typebytes);
     sendbytes = count * typebytes;
-    IOBuffer &buffer = mode.createIOBuffer(sendbytes);
+    IOBuffer &buffer = mode.createIOBuffer(sendbytes, GMAC_PROT_WRITE);
     if (ret != MPI_SUCCESS) goto exit;
 
     if (dest != MPI_PROC_NULL) {
         if (buffer.size() >= sendbytes) {
             tmpSend     = buffer.addr();
 
-            err = manager.toIOBuffer(buffer, 0, hostptr_t(buf), sendbytes);
+            err = manager.toIOBuffer(mode, buffer, 0, hostptr_t(buf), sendbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
@@ -217,7 +217,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
             ASSERTION(tmpSend != NULL);
             allocSend = true;
 
-            err = manager.memcpy(hostptr_t(tmpSend), hostptr_t(buf), sendbytes);
+            err = manager.memcpy(mode, hostptr_t(tmpSend), hostptr_t(buf), sendbytes);
             ASSERTION(err == gmacSuccess);
         }
 	} else {
@@ -281,7 +281,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     enterGmac();
 
-    Mode &mode = Mode::getCurrent();
+    Mode &mode = getMode(*dstMode);
     Manager &manager = getManager();
 
     gmacError_t err;
@@ -296,7 +296,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     
     ret = MPI_Type_size(datatype, &typebytes);
     recvbytes = count * typebytes;
-    IOBuffer &buffer = mode.createIOBuffer(recvbytes);
+    IOBuffer &buffer = mode.createIOBuffer(recvbytes, GMAC_PROT_READ);
     if (ret != MPI_SUCCESS) goto exit;
 
     if(source != MPI_PROC_NULL) {
@@ -316,12 +316,12 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 
     if(source != MPI_PROC_NULL) {
         if (!allocRecv) {
-            err = manager.fromIOBuffer(hostptr_t(buf), buffer, 0, recvbytes);
+            err = manager.fromIOBuffer(mode, hostptr_t(buf), buffer, 0, recvbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
-            err = manager.memcpy(hostptr_t(buf), hostptr_t(tmpRecv), recvbytes);
+            err = manager.memcpy(mode, hostptr_t(buf), hostptr_t(tmpRecv), recvbytes);
             ASSERTION(err == gmacSuccess);
 
             // Free temporal buffer
