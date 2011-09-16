@@ -211,6 +211,15 @@ protected:
 
     size_t allocatedMemory_;
 
+    /** Is Accelerator information initialized */
+    bool isInfoInitialized_;
+    /** String containing the accelerator name */
+    char *acceleratorName_;
+    /** String containing the vendor name */
+    char *vendorName_;
+    /** Max workgroup sizes for the accelerator */
+    size_t *maxSizes_;
+
 public:
     /** Default constructor
      * \param n Accelerator number
@@ -441,6 +450,7 @@ public:
     TESTABLE gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream);
     gmacError_t memset(accptr_t addr, int c, size_t size, stream_t stream);
     void getMemInfo(size_t &free, size_t &total) const;
+    void getAcceleratorInfo(GmacAcceleratorInfo &info);
 
     gmacError_t acquire(hostptr_t addr);
     gmacError_t release(hostptr_t addr);

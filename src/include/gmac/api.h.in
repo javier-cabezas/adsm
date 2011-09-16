@@ -105,6 +105,16 @@ GMAC_API unsigned APICALL gmacGetNumberOfAccelerators();
 GMAC_API unsigned APICALL gmacGetCurrentAcceleratorId();
 
 /**
+ * Fills the struct passed by reference with the information of the given accelerator
+ *
+ * \param acc Id of the accelerator to which request the information
+ * \param info Pointer to the structure to be filled
+ *
+ * \return gmacSuccess on success, an error code otherwise
+ */
+GMAC_API gmacError_t APICALL gmacGetAcceleratorInfo(unsigned acc, GmacAcceleratorInfo *info);
+
+/**
  * Returns the amount of memory available in the given accelerator
  *
  * \param acc The identifier of the accelerator to query
@@ -135,7 +145,7 @@ GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
  * \return On success gmacMap returns gmacSuccess. Otherwise it returns the
  * causing error
  */
-GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, enum GmacProtection prot);
+GMAC_API gmacError_t APICALL gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot);
 
 /**
  * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
@@ -168,7 +178,7 @@ GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
  * of the allocated memory in devPtr. Otherwise it returns the causing error
  */
 GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **devPtr, size_t count,
-        enum GmacGlobalMallocType hint __dv(GMAC_GLOBAL_MALLOC_CENTRALIZED));
+        GmacGlobalMallocType hint __dv(GMAC_GLOBAL_MALLOC_CENTRALIZED));
 
 /**
  * Gets a the GPU address of an allocation performed with gmacMalloc or

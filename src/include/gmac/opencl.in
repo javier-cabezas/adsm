@@ -466,6 +466,15 @@ unsigned getCurrentAcceleratorId()
 }
 
 /**
+ * \sa @OPENCL_API_PREFIX@GetAcceleratorInfo
+ */
+static inline
+unsigned getAcceleratorInfo(unsigned acc, @OPENCL_API_PREFIX@_accelerator_info *info)
+{
+    return ::@OPENCL_API_PREFIX@GetAcceleratorInfo(acc, info);
+}
+
+/**
  * \sa @OPENCL_API_PREFIX@GetFreeMemory
  */
 static inline

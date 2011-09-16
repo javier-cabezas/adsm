@@ -14,6 +14,7 @@ source_group(${current_GROUP} FILES
     gmacAlloc.cu
     gmacColumnMajor.cu
     gmacVecAdd.cu
+    gmacGetAccInfo.cpp
     cudaVecAdd.cu
     gmacThreadVecAdd.cu
     cudaThreadVecAdd.cu
@@ -158,6 +159,9 @@ target_link_libraries(gmacMigration test-common gmac-cuda)
 cuda_compile(meminfo gmacMeminfo.cu)
 add_executable(gmacMeminfo ${meminfo}  gmacMeminfo.cu)
 target_link_libraries(gmacMeminfo test-common gmac-cuda)
+
+add_executable(gmacGetAccInfo gmacGetAccInfo.cpp)
+target_link_libraries(gmacGetAccInfo test-common gmac-cuda)
 
 # gmacTexture
 cuda_compile(texture gmacTexture.cu)

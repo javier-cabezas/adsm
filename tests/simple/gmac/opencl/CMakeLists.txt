@@ -35,6 +35,7 @@ source_group(${current_GROUP} FILES
     c/eclBarr.cpp
     c/eclFile.cpp
     c/eclFileVecAdd.cpp
+    c/eclGetAccInfo.cpp
     c/eclInit.cpp
     c/eclMatrixMul.cpp
     c/eclMemcpy.cpp
@@ -76,6 +77,9 @@ target_link_libraries(eclFile gmac-hpe)
 
 add_executable(eclFileVecAdd ${common_SRC} c/eclFileVecAdd.cpp)
 target_link_libraries(eclFileVecAdd gmac-hpe)
+
+add_executable(eclGetAccInfo ${common_SRC} c/eclGetAccInfo.cpp)
+target_link_libraries(eclGetAccInfo gmac-hpe)
 
 add_executable(eclInit ${common_SRC} c/eclInit.cpp)
 target_link_libraries(eclInit gmac-hpe)
