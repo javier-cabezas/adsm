@@ -85,7 +85,11 @@ Accelerator::Accelerator(int n, cl_context context, cl_device_id device, unsigne
     gmac::core::hpe::Accelerator(n),
     ctx_(context), device_(device),
     major_(major), minor_(minor),
-    allocatedMemory_(0)
+    allocatedMemory_(0),
+    isInfoInitialized_(false),
+    acceleratorName_(NULL),
+    vendorName_(NULL),
+    maxSizes_(NULL)
 {
     // Not used for now
     busId_ = 0;
@@ -131,6 +135,10 @@ Accelerator::~Accelerator()
         delete GlobalHostAlloc_;
         Accelerators_ = NULL;
     }
+
+    if (acceleratorName_ != NULL) delete [] acceleratorName_;
+    if (vendorName_ != NULL) delete [] vendorName_;
+    if (maxSizes_ != NULL) delete [] maxSizes_;
 
     cl_int ret = CL_SUCCESS;
     ret = clReleaseContext(ctx_);
@@ -669,6 +677,91 @@ void Accelerator::getMemInfo(size_t &free, size_t &total) const
     CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
     total = size_t(value);
     free = total - allocatedMemory_;
+}
+
+void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
+{
+    if (isInfoInitialized_ == false) {
+        cl_device_type deviceType;
+        cl_uint deviceVendor;
+
+        size_t nameSize;
+        cl_int res = clGetDeviceInfo(device_, CL_DEVICE_NAME, 0, NULL, &nameSize);
+        ASSERTION(res == CL_SUCCESS);
+        acceleratorName_ = new char[nameSize + 1];
+        res = clGetDeviceInfo(device_, CL_DEVICE_NAME, nameSize, acceleratorName_, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        acceleratorName_[nameSize] = '\0';
+        res = clGetDeviceInfo(device_, CL_DEVICE_VENDOR, 0, NULL, &nameSize);
+        ASSERTION(res == CL_SUCCESS);
+        vendorName_ = new char[nameSize + 1];
+        res = clGetDeviceInfo(device_, CL_DEVICE_VENDOR, nameSize, vendorName_, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        vendorName_[nameSize] = '\0';
+
+        accInfo_.acceleratorName = acceleratorName_;
+        accInfo_.vendorName = vendorName_;
+
+        res = clGetDeviceInfo(device_, CL_DEVICE_TYPE, sizeof(cl_device_type), &deviceType, NULL);
+        ASSERTION(res == CL_SUCCESS);
+
+        res = clGetDeviceInfo(device_, CL_DEVICE_VENDOR_ID, sizeof(cl_uint), &deviceVendor, NULL);
+        ASSERTION(res == CL_SUCCESS);
+
+        accInfo_.acceleratorType = GmacAcceleratorType(0);
+        if (deviceType & CL_DEVICE_TYPE_CPU) {
+            accInfo_.acceleratorType = GmacAcceleratorType(accInfo_.acceleratorType | GMAC_ACCELERATOR_TYPE_CPU);
+        }
+
+        if (deviceType & CL_DEVICE_TYPE_GPU) {
+            accInfo_.acceleratorType = GmacAcceleratorType(accInfo_.acceleratorType | GMAC_ACCELERATOR_TYPE_GPU);
+        }
+
+        if (deviceType & CL_DEVICE_TYPE_ACCELERATOR) {
+            accInfo_.acceleratorType = GmacAcceleratorType(accInfo_.acceleratorType | GMAC_ACCELERATOR_TYPE_ACCELERATOR);
+        }
+
+        accInfo_.vendorId = deviceVendor;
+        accInfo_.isAvailable = 1;
+
+        cl_uint computeUnits;
+        cl_uint dimensions;
+        size_t workGroupSize;
+        cl_ulong globalMemSize;
+        cl_ulong localMemSize;
+        cl_ulong cacheMemSize;
+
+        res = clGetDeviceInfo(device_, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &computeUnits, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        res = clGetDeviceInfo(device_, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(cl_uint), &dimensions, NULL);
+        ASSERTION(res == CL_SUCCESS);
+
+        accInfo_.computeUnits = computeUnits;
+        accInfo_.maxDimensions = dimensions;
+        maxSizes_ = new size_t[dimensions];
+
+        res = clGetDeviceInfo(device_, CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(size_t) * dimensions, maxSizes_, NULL);
+        ASSERTION(res == CL_SUCCESS);
+
+        accInfo_.maxSizes = maxSizes_;
+
+        res = clGetDeviceInfo(device_, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &workGroupSize, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        res = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &globalMemSize, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        res = clGetDeviceInfo(device_, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &localMemSize, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        res = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &cacheMemSize, NULL);
+        ASSERTION(res == CL_SUCCESS);
+        accInfo_.maxWorkGroupSize = workGroupSize;
+        accInfo_.globalMemSize = globalMemSize;
+        accInfo_.localMemSize  = localMemSize;
+        accInfo_.cacheMemSize  = cacheMemSize;
+
+        isInfoInitialized_ = true;
+    }
+
+    info = accInfo_;
 }
 
 gmacError_t

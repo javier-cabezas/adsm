@@ -77,8 +77,11 @@ typedef gmacError_t @OPENCL_API_PREFIX@_error;
 #define @OPENCL_API_PREFIX@ErrorInsufficientAcceleratorMemory gmacErrorInsufficientAcceleratorMemory
 #define @OPENCL_API_PREFIX@ErrorUnknown                       gmacErrorUnknown
 
-typedef enum GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
-typedef enum GmacProtection @OPENCL_API_PREFIX@_protection;
+typedef GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
+typedef GmacProtection @OPENCL_API_PREFIX@_protection;
+
+typedef GmacAcceleratorType @OPENCL_API_PREFIX@_accelerator_type;
+typedef GmacAcceleratorInfo @OPENCL_API_PREFIX@_accelerator_info;
 
 #define ECL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
 #define ECL_GLOBAL_MALLOC_REPLICATED GMAC_GLOBAL_MALLOC_REPLICATED
@@ -228,6 +231,17 @@ static inline
 unsigned @OPENCL_API_PREFIX@GetCurrentAcceleratorId()
 {
     return gmacGetCurrentAcceleratorId();
+}
+
+/**
+ * Get the number of accelerators in the system
+ *
+ * \return Number of accelerators
+ */
+static inline
+unsigned @OPENCL_API_PREFIX@GetAcceleratorInfo(unsigned acc, @OPENCL_API_PREFIX@_accelerator_info *info)
+{
+    return gmacGetAcceleratorInfo(acc, info);
 }
 
 /**

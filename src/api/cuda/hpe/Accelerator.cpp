@@ -22,13 +22,15 @@ Switch::out(Mode &mode)
 }
 
 Accelerator::Accelerator(int n, CUdevice device) :
-    gmac::core::hpe::Accelerator(n), device_(device)
+    gmac::core::hpe::Accelerator(n), device_(device),
+    isInfoInitialized_(false)
 #ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     , lastMode_(NULL)
 #endif
     , ctx_(NULL)
 #endif
+
 {
 #if CUDA_VERSION > 3010
     size_t size = 0;
@@ -374,6 +376,49 @@ void Accelerator::getMemInfo(size_t &free, size_t &total) const
 #endif
     CFATAL(ret == CUDA_SUCCESS, "Error getting memory info");
     popContext();
+}
+
+void
+Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
+{
+    if (isInfoInitialized_ == false) {
+        CUresult res = cuDeviceGetName (acceleratorName_, MaxAcceleratorNameLength, device_);
+        ASSERTION(res == CUDA_SUCCESS);
+
+        accInfo_.acceleratorName = acceleratorName_;
+        accInfo_.vendorName = "NVIDIA Corporation";
+        accInfo_.acceleratorType = GMAC_ACCELERATOR_TYPE_GPU;
+        accInfo_.vendorId = 1;
+        accInfo_.isAvailable = 1;
+        
+        int val;
+        res = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, device_);
+        ASSERTION(res == CUDA_SUCCESS);
+        accInfo_.computeUnits = val;
+
+        CUdevprop deviceProperties;
+
+        res = cuDeviceGetProperties(&deviceProperties, device_);
+        ASSERTION(res == CUDA_SUCCESS);
+
+        accInfo_.maxDimensions = 3;
+        maxSizes_[0] = deviceProperties.maxThreadsDim[0];
+        maxSizes_[1] = deviceProperties.maxThreadsDim[1];
+        maxSizes_[2] = deviceProperties.maxThreadsDim[2];
+
+        size_t globalMemSize, dummy;
+        getMemInfo(dummy, globalMemSize);
+
+        accInfo_.maxSizes = maxSizes_;
+        accInfo_.maxWorkGroupSize = deviceProperties.maxThreadsPerBlock;
+        accInfo_.globalMemSize = globalMemSize;
+        accInfo_.localMemSize  = deviceProperties.sharedMemPerBlock;
+        accInfo_.cacheMemSize  = 0;
+
+        isInfoInitialized_ = true;
+    }
+
+    info = accInfo_;
 }
 
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, core::hpe::Mode &mode)

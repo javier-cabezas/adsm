@@ -86,6 +86,26 @@ gmacGetCurrentAcceleratorId()
 }
 
 GMAC_API gmacError_t APICALL
+gmacGetAcceleratorInfo(unsigned acc, GmacAcceleratorInfo *info)
+{
+    enterGmacExclusive();
+    gmac::trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+    __impl::core::hpe::Process &process = getProcess();
+    if (acc < process.nAccelerators() && info != NULL) {
+        Accelerator &accelerator = process.getAccelerator(acc);
+        accelerator.getAcceleratorInfo(*info);
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+    gmac::trace::ExitCurrentFunction();
+    Thread::setLastError(ret);
+    exitGmac();
+    return ret;
+
+}
+
+GMAC_API gmacError_t APICALL
 gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
 {
     enterGmacExclusive();

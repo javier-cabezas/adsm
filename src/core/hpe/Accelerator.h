@@ -81,6 +81,9 @@ protected:
     /** Map of allocations in the device */
     gmac::core::AllocationMap allocations_;
 
+    /** Information of the accelerator */
+    GmacAcceleratorInfo accInfo_;
+
     /**
      * Registers a mode to be run on the accelerator. The mode must not be
      * already registered in the accelerator
@@ -94,7 +97,6 @@ protected:
      * \param mode A reference to the mode to be unregistered
      */
     TESTABLE void unregisterMode(Mode &mode);
-
 
 public:
     /**
@@ -252,6 +254,13 @@ public:
      * of memory of the accelerator
      */
     virtual void getMemInfo(size_t &free, size_t &total) const = 0;
+
+    /**
+     * Gets the information for the accelerator
+     * \param free A reference to the structure to be filled with the information
+     */
+    virtual void getAcceleratorInfo(GmacAcceleratorInfo &info) = 0;
+
 
     // TODO: use this methods for something useful
     /**

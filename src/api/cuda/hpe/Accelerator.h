@@ -93,6 +93,13 @@ protected:
     Mode *lastMode_;
 #endif
 #endif
+    /** Is Accelerator information initialized */
+    bool isInfoInitialized_;
+    /** String containing the accelerator name */
+    static const unsigned MaxAcceleratorNameLength = 256;
+    char acceleratorName_[256];
+    /** Max workgroup sizes for the accelerator */
+    size_t maxSizes_[3];
 
 #ifdef USE_MULTI_CONTEXT
     static util::Private<CUcontext> Ctx_;
@@ -181,6 +188,7 @@ public:
     static gmacError_t error(CUresult r);
 
     void getMemInfo(size_t &free, size_t &total) const;
+    void getAcceleratorInfo(GmacAcceleratorInfo &info);
 };
 
 }}}

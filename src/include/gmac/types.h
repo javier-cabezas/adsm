@@ -81,30 +81,54 @@ typedef enum {
 } gmacError_t;
 
 
-enum GmacGlobalMallocType {
+typedef enum {
     GMAC_GLOBAL_MALLOC_REPLICATED  = 0,
     GMAC_GLOBAL_MALLOC_CENTRALIZED = 1
-};
+} GmacGlobalMallocType;
 
-enum GmacProtection {
-    GMAC_PROT_NONE = 0,
-    GMAC_PROT_READ,
-    GMAC_PROT_WRITE,
-    GMAC_PROT_READWRITE
-};
+typedef enum {
+    GMAC_PROT_NONE      = 0x0,
+    GMAC_PROT_READ      = 0x1,
+    GMAC_PROT_WRITE     = 0x2,
+    GMAC_PROT_READWRITE = GMAC_PROT_READ | GMAC_PROT_WRITE
+} GmacProtection;
 
-enum GmacMapFlags {
+typedef enum {
     GMAC_MAP_READ  = 0x1,
     GMAC_MAP_WRITE = 0x2
-};
+} GmacMapFlags;
 
-enum GmacRemapFlags {
+typedef enum {
     GMAC_REMAP_READ  = 0x1,
     GMAC_REMAP_WRITE = 0x2,
     GMAC_REMAP_FIXED = 0x4
-};
+} GmacRemapFlags;
 
 static const int GMAC_MAP_DEFAULT = GMAC_MAP_READ | GMAC_MAP_WRITE;
+
+typedef enum {
+    GMAC_ACCELERATOR_TYPE_UNKNOWN     = 0x0,
+    GMAC_ACCELERATOR_TYPE_CPU         = 0x1,
+    GMAC_ACCELERATOR_TYPE_GPU         = 0x2,
+    GMAC_ACCELERATOR_TYPE_ACCELERATOR = 0x4
+} GmacAcceleratorType;
+
+typedef struct {
+    const char *acceleratorName;
+    const char *vendorName;
+
+    GmacAcceleratorType acceleratorType;
+    unsigned vendorId;
+    unsigned char isAvailable; 
+
+    unsigned computeUnits;
+    unsigned maxDimensions;
+    const size_t *maxSizes;
+    size_t maxWorkGroupSize;
+    size_t globalMemSize; 
+    size_t localMemSize; 
+    size_t cacheMemSize; 
+} GmacAcceleratorInfo;
 
 #ifdef __cplusplus
 };

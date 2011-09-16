@@ -100,7 +100,7 @@ migrate(unsigned acc)
  * causing error
  */
 static inline gmacError_t
-memoryMap(void *cpuPtr, size_t count, enum GmacProtection prot)
+memoryMap(void *cpuPtr, size_t count, GmacProtection prot)
 {
     return ::gmacMemoryMap(cpuPtr, count, prot);
 }
