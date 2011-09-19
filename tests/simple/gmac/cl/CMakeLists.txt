@@ -30,10 +30,14 @@ source_group(${current_GROUP} FILES
     clStencilCommon.h
     clMatrixMul.cpp
     clMatrixMulKernel.cl
+	clVecAdd_InitHelper.cpp
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
 target_link_libraries(clVecAdd ${GMAC_CL})
+
+add_executable(clVecAdd_InitHelper ${common_SRC} clVecAdd_InitHelper.cpp)
+target_link_libraries(clVecAdd_InitHelper ${GMAC_CL})
 
 #add_executable(clVecAdd_cplusplus ${common_SRC} clVecAdd_cplusplus.cpp)
 #target_link_libraries(clVecAdd_cplusplus ${GMAC_CL})
