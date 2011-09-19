@@ -42,6 +42,10 @@ WITH THE SOFTWARE.  */
 	typedef ret (__cdecl *symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 
+#define STD_SYM(ret, symbol, ...)   \
+	typedef ret (__stdcall *symbol##_t)(__VA_ARGS__); \
+	symbol##_t symbol = NULL
+
 #define LOAD_SYM(symbol, name)	\
 	__impl::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
 

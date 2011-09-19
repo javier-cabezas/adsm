@@ -40,7 +40,7 @@ static long getpagesize (void) {
 static __impl::opencl::lite::Process *Process_ = NULL;
 static gmac::memory::Manager *Manager_ = NULL;
 
-SYM(cl_context, __opencl_clCreateContext,
+STD_SYM(cl_context, __opencl_clCreateContext,
         const cl_context_properties *,
         cl_uint,
         const cl_device_id *,
@@ -48,28 +48,28 @@ SYM(cl_context, __opencl_clCreateContext,
         void *,
         cl_int *);
 
-SYM(cl_context, __opencl_clCreateContextFromType,
+STD_SYM(cl_context, __opencl_clCreateContextFromType,
         const cl_context_properties *,
         cl_device_type,
         void (CL_CALLBACK *)(const char *, const void *, size_t, void *),
         void *,
         cl_int *);
 
-SYM(cl_int, __opencl_clRetainContext, cl_context);
+STD_SYM(cl_int, __opencl_clRetainContext, cl_context);
 
-SYM(cl_int, __opencl_clReleaseContext, cl_context);
+STD_SYM(cl_int, __opencl_clReleaseContext, cl_context);
 
-SYM(cl_command_queue, __opencl_clCreateCommandQueue,
+STD_SYM(cl_command_queue, __opencl_clCreateCommandQueue,
         cl_context,
         cl_device_id,
         cl_command_queue_properties,
         cl_int *);
 
-SYM(cl_int, __opencl_clRetainCommandQueue, cl_command_queue);
+STD_SYM(cl_int, __opencl_clRetainCommandQueue, cl_command_queue);
 
-SYM(cl_int, __opencl_clReleaseCommandQueue, cl_command_queue);
+STD_SYM(cl_int, __opencl_clReleaseCommandQueue, cl_command_queue);
 
-SYM(cl_int, __opencl_clEnqueueNDRangeKernel,
+STD_SYM(cl_int, __opencl_clEnqueueNDRangeKernel,
         cl_command_queue,
         cl_kernel,
         cl_uint,
@@ -80,14 +80,14 @@ SYM(cl_int, __opencl_clEnqueueNDRangeKernel,
         const cl_event *,
         cl_event *);
 
-SYM(cl_int, __opencl_clEnqueueTask,
+STD_SYM(cl_int, __opencl_clEnqueueTask,
         cl_command_queue,
         cl_kernel,
         cl_uint,
         const cl_event *,
         cl_event *);
 
-SYM(cl_int, __opencl_clEnqueueNativeKernel,
+STD_SYM(cl_int, __opencl_clEnqueueNativeKernel,
         cl_command_queue,
         void (*)(void *),
         void *,
@@ -99,7 +99,7 @@ SYM(cl_int, __opencl_clEnqueueNativeKernel,
         const cl_event *,
         cl_event *);
 
-SYM(cl_int, __opencl_clFinish, cl_command_queue);
+STD_SYM(cl_int, __opencl_clFinish, cl_command_queue);
 
 using __impl::opencl::lite::Mode;
 
