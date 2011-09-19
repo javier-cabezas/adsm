@@ -754,9 +754,9 @@ void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
         res = clGetDeviceInfo(device_, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &cacheMemSize, NULL);
         ASSERTION(res == CL_SUCCESS);
         accInfo_.maxWorkGroupSize = workGroupSize;
-        accInfo_.globalMemSize = globalMemSize;
-        accInfo_.localMemSize  = localMemSize;
-        accInfo_.cacheMemSize  = cacheMemSize;
+        accInfo_.globalMemSize = static_cast<size_t>(globalMemSize);
+        accInfo_.localMemSize  = static_cast<size_t>(localMemSize);
+        accInfo_.cacheMemSize  = static_cast<size_t>(cacheMemSize);
 
         isInfoInitialized_ = true;
     }
