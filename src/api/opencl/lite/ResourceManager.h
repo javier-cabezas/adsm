@@ -31,90 +31,62 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_PROCESS_H_
-#define GMAC_CORE_PROCESS_H_
-
-#include <vector>
+#ifndef GMAC_API_OPENCL_LITE_RESOURCE_MANAGER_H_
+#define GMAC_API_OPENCL_LITE_RESOURCE_MANAGER_H_
 
 #include "config/common.h"
 #include "config/order.h"
 #include "core/ResourceManager.h"
-#include "util/loader.h"
-#include "util/Singleton.h"
 
 namespace __impl {
 
-namespace memory { class Object; }
+namespace opencl {
 
+namespace lite {
 
-namespace core {
+class Process;
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL Process : public util::Singleton<Process> {
+class GMAC_LOCAL ResourceManager :
+    public core::ResourceManager {
     // Needed to let Singleton call the protected constructor
+    friend class Process;
 protected:
     /**
-     * Constructs the process
+     * Constructs the resource manager
      */
-    Process();
+    ResourceManager();
     /**
      * Destroys the process and releases the resources used by it
      */
-    virtual ~Process();
+    virtual ~ResourceManager();
 
 public:
-    /**
-     * Registers a global object in the process
-     *
-     * \param object Reference to the object to be registered
-     * \return Error code
-     */
-    virtual gmacError_t globalMalloc(memory::Object &object) = 0;
+    gmacError_t hostAlloc(core::Mode &mode, hostptr_t &addr, size_t size);
 
-    /**
-     * Unregisters a global object from the process
-     *
-     * \param object Reference to the object to be unregistered
-     * \return Error code
-     */
-    virtual gmacError_t globalFree(memory::Object &object) = 0;
+    gmacError_t hostFree(core::Mode &mode, hostptr_t addr);
 
-    /**
-     * Translates a host address to an accelerator address
-     *
-     * \param addr Host address to be translated
-     * \return Accelerator address
-     */
-    virtual accptr_t translate(const hostptr_t addr) = 0;
+    accptr_t hostMapAddr(core::Mode &mode, const hostptr_t addr);
 
-    /**
-     * Gets the protocol used by the process for the global objects
-     *
-     * \return A reference to the protocol used by the process for the global
-     * objects
-     */
-    virtual memory::Protocol *getProtocol() = 0;
+    gmacError_t map(core::Mode &mode, accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
 
-    /**
-     * Inserts an object into the orphan (objects without owner) list
-     * \param object Object that becomes orphan
-     */
-    virtual void makeOrphan(memory::Object &object) = 0;
+    gmacError_t unmap(core::Mode &mode, hostptr_t addr, size_t count);
 
-    /**
-     * Returns the owner of the object with the smallest address within the
-     * given memory range
-     *
-     * \param addr Starting address of the range
-     * \param size Size of the range
-     * \return The owner of the object with the smallest address within the
-     * given memory range
-     */
-    virtual Mode *owner(const hostptr_t addr, size_t size = 0) = 0;
+    gmacError_t copyToAccelerator(core::Mode &mode, accptr_t acc, const hostptr_t host, size_t count);
 
-    virtual ResourceManager &getResourceManager() = 0;
+    gmacError_t copyToHost(core::Mode &mode, hostptr_t host, const accptr_t acc, size_t count);
+
+    gmacError_t copyAccelerator(core::Mode &mode, accptr_t dst, const accptr_t src, size_t count);
+
+    core::IOBuffer &createIOBuffer(core::Mode &mode, size_t count, GmacProtection prot);
+
+    void destroyIOBuffer(core::Mode &mode, core::IOBuffer &buffer);
+
+    gmacError_t bufferToAccelerator(core::Mode &mode, accptr_t dst, core::IOBuffer &buffer, size_t count, size_t off = 0);
+
+    gmacError_t acceleratorToBuffer(core::Mode &mode, core::IOBuffer &buffer, const accptr_t dst, size_t count, size_t off = 0);
 };
 
-}}
+}}}
 
 #endif

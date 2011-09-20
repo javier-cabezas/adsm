@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_MAP_H_
-#define GMAC_MEMORY_MAP_H_
+#ifndef GMAC_MEMORY_ARENA_H_
+#define GMAC_MEMORY_ARENA_H_
 
 #include <map>
 #include <set>
@@ -64,6 +64,7 @@ protected:
     friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, Object *> Parent;
 
+    core::Process &parent_;
     Protocol &protocol_;
 
     bool modifiedObjects_;
@@ -97,7 +98,7 @@ public:
      *
      * \param name Name of the object map used for tracing
      */
-    ObjectMap(const char *name);
+    ObjectMap(const char *name, core::Process &proc);
 
     /**
      * Default destructor
@@ -116,6 +117,20 @@ public:
      * \return Number of objects in the map
      */
     size_t size() const;
+
+    /**
+     * Gets the parent process of the map
+     *
+     * \return A reference to the parent process
+     */
+    core::Process &getProcess();
+
+    /**
+     * Gets the parent process of the map
+     *
+     * \return A reference to the parent process
+     */
+    const core::Process &getProcess() const;
 
     /**
      * Insert an object in the map

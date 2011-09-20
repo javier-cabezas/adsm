@@ -99,9 +99,9 @@ Process::Process() :
     core::Process(),
     gmac::util::RWLock("Process"),
     protocol_(*memory::ProtocolInit(GLOBAL_PROTOCOL)),
-    shared_("SharedMemoryMap"),
-    global_("GlobalMemoryMap"),
-    orphans_("OrhpanMemoryMap"),
+    shared_("SharedMemoryMap", *this),
+    global_("GlobalMemoryMap", *this),
+    orphans_("OrhpanMemoryMap", *this),
     current_(0)
 {
     TLS::Init();

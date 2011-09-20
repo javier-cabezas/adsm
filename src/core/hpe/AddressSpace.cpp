@@ -8,7 +8,7 @@
 namespace __impl { namespace core { namespace hpe {
 
 AddressSpace::AddressSpace(const char *name, Process &parent) :
-    Parent(name), parent_(parent)
+    Parent(name, parent)
 {
 }
 
@@ -16,6 +16,18 @@ AddressSpace::~AddressSpace()
 {
     TRACE(LOCAL,"Cleaning Memory AddressSpace");
     //TODO: actually clean the memory map
+}
+
+Process &
+AddressSpace::getProcess()
+{
+    return static_cast<Process &>(parent_);
+}
+
+const Process &
+AddressSpace::getProcess() const
+{
+    return static_cast<Process &>(parent_);
 }
 
 memory::Object *
@@ -30,11 +42,11 @@ AddressSpace::getObject(const hostptr_t addr, size_t size) const
 
     // Check global maps
     {
-        ret = parent_.shared().mapFind(addr, size);
+        ret = getProcess().shared().mapFind(addr, size);
         if (ret != NULL) goto exit_func;
-        ret = parent_.global().mapFind(addr, size);
+        ret = getProcess().global().mapFind(addr, size);
         if (ret != NULL) goto exit_func;
-        ret = parent_.orphans().mapFind(addr, size);
+        ret = getProcess().orphans().mapFind(addr, size);
         if (ret != NULL) goto exit_func;
     }
 
@@ -48,7 +60,7 @@ bool AddressSpace::addObject(memory::Object &obj)
     TRACE(LOCAL,"Adding Shared Object %p", obj.addr());
     bool ret = Parent::addObject(obj);
     if(ret == false) return ret;
-    memory::ObjectMap &shared = parent_.shared();
+    memory::ObjectMap &shared = getProcess().shared();
     ret = shared.addObject(obj);
     return ret;
 }
@@ -59,7 +71,7 @@ bool AddressSpace::removeObject(memory::Object &obj)
     bool ret = Parent::removeObject(obj);
     hostptr_t addr = obj.addr();
     // Shared object
-    memory::ObjectMap &shared = parent_.shared();
+    memory::ObjectMap &shared = getProcess().shared();
     ret = shared.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Shared Object %p", addr);
@@ -67,7 +79,7 @@ bool AddressSpace::removeObject(memory::Object &obj)
     }
 
     // Replicated object
-    memory::ObjectMap &global = parent_.global();
+    memory::ObjectMap &global = getProcess().global();
     ret = global.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Global Object %p", addr);
@@ -75,7 +87,7 @@ bool AddressSpace::removeObject(memory::Object &obj)
     }
 
     // Orphan object
-    memory::ObjectMap &orphans = parent_.orphans();
+    memory::ObjectMap &orphans = getProcess().orphans();
     ret = orphans.removeObject(obj);
     if(ret == true) {
         TRACE(LOCAL,"Removed Orphan Object %p", addr);

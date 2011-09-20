@@ -62,12 +62,6 @@ class GMAC_LOCAL AddressSpace :
 
     typedef memory::ObjectMap Parent;
 
-protected:
-    /**
-     * Execution mode owning this map
-     */
-    Process &parent_;
-
 public:
     /**
      * Default constructor
@@ -111,6 +105,9 @@ public:
      * \return First object within the memory range. NULL if no object is found
      */
     memory::Object *getObject(const hostptr_t addr, size_t size) const;
+
+    Process &getProcess();
+    const Process &getProcess() const;
 
     /**
      * Add an owner to all global process objects

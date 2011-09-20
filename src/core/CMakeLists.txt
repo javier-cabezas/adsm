@@ -7,6 +7,8 @@ set(core_SRC
     Mode-impl.h
     Process.h
     Process.cpp
+    ResourceManager.h
+    ResourceManager.cpp
     Thread.h
     Thread-impl.h
     Thread.cpp

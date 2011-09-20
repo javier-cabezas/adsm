@@ -46,8 +46,9 @@ ObjectMap::mapFind(const hostptr_t addr, size_t size) const
     return ret;
 }
 
-ObjectMap::ObjectMap(const char *name) :
+ObjectMap::ObjectMap(const char *name, core::Process &parent) :
     gmac::util::RWLock(name),
+    parent_(parent),
     protocol_(*ProtocolInit(0)),
     modifiedObjects_(false),
     releasedObjects_(false)
@@ -83,6 +84,18 @@ size_t ObjectMap::size() const
     size_t ret = Parent::size();
     unlock();
     return ret;
+}
+
+core::Process &
+ObjectMap::getProcess()
+{
+    return parent_;
+}
+
+const core::Process &
+ObjectMap::getProcess() const
+{
+    return parent_;
 }
 
 bool ObjectMap::addObject(Object &obj)
