@@ -112,9 +112,6 @@ target_link_libraries(eclThreadStencil gmac-hpe)
 add_executable(eclThreadVecAdd ${common_SRC} c/eclThreadVecAdd.cpp)
 target_link_libraries(eclThreadVecAdd gmac-hpe)
 
-add_executable(eclMultiThreadVectAdd_eclMemcpy ${common_SRC} c/eclMultiThreadVectAdd_eclMemcpy.cpp)
-target_link_libraries(eclMultiThreadVectAdd_eclMemcpy gmac-hpe)
-
 add_executable(eclVecAdd ${common_SRC} c/eclVecAdd.cpp)
 target_link_libraries(eclVecAdd gmac-hpe)
 

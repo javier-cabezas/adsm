@@ -16,30 +16,18 @@ unsigned vecSize = vecSizeDefault;
 
 const char *msg = "Done!";
 
-const char *kernel_source = "\
-__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
-{\
-    unsigned i = get_global_id(0);\
-    if(i >= size) return;\
-\
-    c[i] = a[i] + b[i];\
-}\
-";
-
-
 int main(int argc, char *argv[])
 {
 	cl_helper helper;
 	size_t platforms;
-	cl_program program;
 	cl_int error_code;
 	cl_kernel kernel;
-	const char *kernel_file ="d:\\kernel.txt";
+	const char *kernel_file ="cl_kernels/clVecAddKernel.cl";
 
-	if (clInitHelpers(&platforms)!=CL_SUCCESS) return -1;
+	if (clInitHelpers(&platforms) != CL_SUCCESS) return -1;
 	if (platforms == 0) return -1;
 	helper = clGetHelpers()[0];
-	program = clHelperLoadProgramFromFile(helper, kernel_file, &error_code);
+	error_code = clHelperLoadProgramFromFile(helper, kernel_file);
 	if (error_code != CL_SUCCESS){
 		clReleaseHelpers();
 		return -1;
@@ -51,7 +39,8 @@ int main(int argc, char *argv[])
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
-	kernel = clCreateKernel(program, "vecAdd", &error_code);
+    // Using program for first device
+	kernel = clCreateKernel(helper.programs[0], "vecAdd", &error_code);
     assert(error_code == CL_SUCCESS);
 
     getTime(&s);
@@ -75,7 +64,6 @@ int main(int argc, char *argv[])
     for(unsigned i = 0; i < vecSize; i++) {
         sum += a[i] + b[i];
     }
-    
 
     // Call the kernel
     getTime(&s);

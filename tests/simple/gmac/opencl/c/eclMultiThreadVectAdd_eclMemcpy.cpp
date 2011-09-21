@@ -4,6 +4,13 @@
 #include "gmac/opencl.h"
 #include "utils.h"
 
+#ifdef _MSC_VER
+#define SLEEP Sleep
+#else
+#include <unistd.h>
+#define SLEEP sleep
+#endif
+
 static unsigned vecSize = 16 * 1024 * 1024;
 
 const char *nIterStr = "GMAC_NITER";
@@ -169,9 +176,8 @@ void *addVector(void *ptr)
 	return NULL;
 }
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-
 	/* Thread B C D E wait for thread A to end
 	 * Thread B C D read the computation result from thread A
 	 * Thread E use the result of thread A to calculate
@@ -179,7 +185,7 @@ void main(int argc, char *argv[])
 	assert(eclCompileSource(kernel) == eclSuccess);
 
 	threadIdA = thread_create(thread_routine(ThreadBody_A),NULL);
-	Sleep(10);
+	SLEEP(10);
 
 	thread_wait(threadIdA);
 

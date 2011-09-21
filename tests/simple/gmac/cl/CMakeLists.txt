@@ -30,18 +30,18 @@ source_group(${current_GROUP} FILES
     clStencilCommon.h
     clMatrixMul.cpp
     clMatrixMulKernel.cl
-	clVecAdd_InitHelper.cpp
-	clVecAdd_multiThread.cpp
+	clVecAdd_Helper.cpp
+	clThreadVecAdd.cpp
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
 target_link_libraries(clVecAdd ${GMAC_CL})
 
-add_executable(clVecAdd_multiThread ${common_SRC} clVecAdd_multiThread.cpp)
-target_link_libraries(clVecAdd_multiThread ${GMAC_CL})
+add_executable(clThreadVecAdd ${common_SRC} clThreadVecAdd.cpp)
+target_link_libraries(clThreadVecAdd ${GMAC_CL})
 
-add_executable(clVecAdd_InitHelper ${common_SRC} clVecAdd_InitHelper.cpp)
-target_link_libraries(clVecAdd_InitHelper ${GMAC_CL})
+add_executable(clVecAdd_Helper ${common_SRC} clVecAdd_Helper.cpp)
+target_link_libraries(clVecAdd_Helper ${GMAC_CL})
 
 #add_executable(clVecAdd_cplusplus ${common_SRC} clVecAdd_cplusplus.cpp)
 #target_link_libraries(clVecAdd_cplusplus ${GMAC_CL})
@@ -53,4 +53,6 @@ add_executable(clMatrixMul ${common_SRC} clMatrixMul.cpp clMatrixMulKernel.cl)
 target_link_libraries(clMatrixMul ${GMAC_CL})
 
 file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
+
+file(COPY clVecAddKernel.cl DESTINATION ${PROJECT_BINARY_DIR}/cl_kernels)
 
