@@ -523,6 +523,7 @@ BOOL APIENTRY DllMain(HANDLE /*hModule*/, DWORD dwReason, LPVOID /*lpReserved*/)
         case DLL_PROCESS_DETACH:
             break;
         case DLL_THREAD_ATTACH:
+			isRunTimeThread_.set(&privateFalse);
             break;
         case DLL_THREAD_DETACH:
             break;
