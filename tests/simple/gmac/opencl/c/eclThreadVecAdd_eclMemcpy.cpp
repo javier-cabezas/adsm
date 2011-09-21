@@ -32,6 +32,7 @@ static const char *kernel_A = "\
 							c[i] = a[i] + b[i];\
 							}\
 							";
+
 static float *resultA;
 static THREAD_T threadIdA;
 static THREAD_T threadIdB;
@@ -39,7 +40,7 @@ static THREAD_T threadIdC;
 static THREAD_T threadIdD;
 static THREAD_T threadIdE;
 
-static int ThreadBody_A()
+static void *ThreadBody_First(void *)
 {
 	//assert(eclCompileSource(kernel) == eclSuccess);
 //#if 0
@@ -83,53 +84,39 @@ static int ThreadBody_A()
  	eclFree(a);
 	eclFree(b);
 //#endif
-	return 0;
+	return NULL;
 }
 
-static int ThreadBody_B(void *input)
+struct print_params {
+    const char *name;
+    float *input;
+};
+
+static void *ThreadBody_Print(void *_params)
 {
-	printf("\r\nThread B: ");
+    print_params *params = (print_params *) _params;
+    char buffer[256];
+
+    sprintf(buffer, "%s:", params->name);
  	for(unsigned i = 0; i < 10; i++) {
- 		printf("%f ",(*(float**)(input))[i]);
+ 		sprintf(buffer, "%s %f ", buffer, params->input[i]);
  	}
-	printf("\r\n");
+	fprintf(stdout, "%s\n", buffer);
 
-	return 0;
+	return NULL;
 }
 
-static int ThreadBody_C(void *input)
-{
-	printf("\r\nThread C: ");
-	for(unsigned i = 0; i < 10; i++) {
-		printf("%f ",(*(float**)(input))[i]);
-	}
-	printf("\r\n");
-
-	return 0;
-}
-
-
-static int ThreadBody_D(void *input)
-{
-	printf("\r\nThread D: ");
-	for(unsigned i = 0; i < 10; i++) {
-		printf("%f ",(*(float**)(input))[i]);
-	}
-	printf("\r\n");
-
-	return 0;
-}
-
-static int ThreadBody_E(void *input)
+static void *ThreadBody_Second(void *input)
 {
 	float* input_E = *(float**)input;
 	float *resultB, *temp, *temp_2;
+    char buffer[256];
 
-	printf("Thread E: \r\n");
+	sprintf(buffer, "Thread E:");
 	for(unsigned i = 0; i < 10; i++) {
-		printf("%f ",input_E[i]);
+		sprintf(buffer, "%s %f ", buffer, input_E[i]);
 	}
-	printf("\r\n");
+	fprintf(stdout, "%s\n", buffer);
 	//  
  	assert(eclCompileSource(kernel_A) == eclSuccess);
  
@@ -159,8 +146,8 @@ static int ThreadBody_E(void *input)
 	for(unsigned i = 0; i < vecSize; i++) {
 		error += resultB[i] - (temp[i] + temp_2[i]);	
 	}
-	printf("resultB: %f ",resultB[0]);
-	fprintf(stderr, "Thread E: Error: %f\n", error);
+	fprintf(stdout, "resultB: %f \n", resultB[0]);
+	fprintf(stdout, "Thread E: Error: %f\n", error);
 
 	eclReleaseKernel(kernel);
 
@@ -168,7 +155,7 @@ static int ThreadBody_E(void *input)
 	eclFree(resultB);
 	eclFree(temp_2);
 
-	return 0;
+	return NULL;
 }
 
 void *addVector(void *ptr)
@@ -184,27 +171,42 @@ int main(int argc, char *argv[])
 	 */
 	assert(eclCompileSource(kernel) == eclSuccess);
 
-	threadIdA = thread_create(thread_routine(ThreadBody_A),NULL);
+	threadIdA = thread_create(thread_routine(ThreadBody_First),NULL);
 	SLEEP(10);
 
 	thread_wait(threadIdA);
 
-	threadIdB = thread_create(thread_routine(ThreadBody_B),&resultA);
-	threadIdC = thread_create(thread_routine(ThreadBody_C),&resultA);
-	threadIdD = thread_create(thread_routine(ThreadBody_D),&resultA);
-	threadIdE = thread_create(thread_routine(ThreadBody_E),&resultA);
+    print_params p1, p2, p3;
+
+    p1.name  = "Thread B";
+    p1.input = resultA;
+
+    p2.name  = "Thread C";
+    p2.input = resultA;
+
+    p3.name  = "Thread D";
+    p3.input = resultA;
+
+	threadIdB = thread_create(thread_routine(ThreadBody_Print),&p1);
+	threadIdC = thread_create(thread_routine(ThreadBody_Print),&p2);
+	threadIdD = thread_create(thread_routine(ThreadBody_Print),&p3);
+	threadIdE = thread_create(thread_routine(ThreadBody_Second),&resultA);
 	thread_wait(threadIdB);
 	thread_wait(threadIdC);
 	thread_wait(threadIdD);
 	thread_wait(threadIdE);
 
-	printf("\r\nmain: ");
+	fprintf(stdout, "main: ");
 	for(unsigned i = 0; i < 10; i++) {
-		printf("%f ",resultA[i]);
+		fprintf(stdout, "%f ", resultA[i]);
 	}
-	printf("\r\n");
+	fprintf(stdout, "\n");
 
 	eclFree(resultA);
 
+#ifdef _MSC_VER
 	system("pause");
+#endif
+
+    return 0;
 }
