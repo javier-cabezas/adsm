@@ -12,10 +12,6 @@
 #include <config/common.h>
 #include <include/gmac/cl.h>
 
-void threadInit()
-{
-}
-
 static std::vector<cl_helper> helpers;
 
 static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
