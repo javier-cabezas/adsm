@@ -4,6 +4,8 @@ set(util_os_SRC
     Lock.h
     Lock-impl.h
     Lock.cpp
+    Private.h
+    Private-impl.h
     Semaphore.h
     Semaphore-impl.h
     Semaphore.cpp
