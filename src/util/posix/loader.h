@@ -40,9 +40,7 @@ WITH THE SOFTWARE.  */
 	typedef ret (*symbol##_t)(__VA_ARGS__);	\
 	symbol##_t symbol = NULL
 
-#define STD_SYM(ret, symbol, ...)         	\
-	typedef ret (*symbol##_t)(__VA_ARGS__);	\
-	symbol##_t symbol = NULL
+#define STD_SYM(ret, symbol, ...) SYM(ret, symbol, __VA_ARGS__)
 
 #define LOAD_SYM(symbol, name)	\
 	if((symbol = (symbol##_t)dlsym(RTLD_NEXT, #name)) == NULL)	\
