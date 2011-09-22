@@ -223,7 +223,7 @@ cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
     ret = clGetCommandQueueInfo(command_queue, CL_QUEUE_REFERENCE_COUNT, sizeof(cl_uint), &count, NULL);
     if(ret != CL_SUCCESS) return ret;
 
-    ret = __opencl_clRetainCommandQueue(command_queue);
+    ret = __opencl_clReleaseCommandQueue(command_queue);
     if(inGmac() || ret != CL_SUCCESS || count > 1) return ret;
     enterGmac();
     Mode *mode = Process_->getMode(context);
