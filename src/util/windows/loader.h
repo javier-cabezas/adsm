@@ -46,10 +46,10 @@ WITH THE SOFTWARE.  */
 	typedef ret (__stdcall *symbol##_t)(__VA_ARGS__); \
 	symbol##_t symbol = NULL
 
-#define LOAD_SYM(symbol, name)	\
-	__impl::loader::LoadSymbol((PVOID *)&symbol, __gmac_##name, #name)
-
 #define SYMBOL(name) __gmac_##name
+
+#define LOAD_SYM(symbol, name)	\
+	__impl::loader::LoadSymbol((PVOID *)&symbol, SYMBOL(name), #name)
 
 typedef HMODULE library_t;
 #define USE_LIBRARY(name) LoadLibrary(name".dll")

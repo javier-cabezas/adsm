@@ -10,7 +10,8 @@ namespace __impl { namespace loader {
 
 static const char *ImportSection_ = ".idata";
 static const char *GmacDll_ = "gmac.dll";
-static const char *GmacLiteDll_ = "gmac-lite.dll";
+static const char *GmacHPEDll_ = "gmac-hpe.dll";
+static const char *GmacLiteDll_ = "gmac-cl.dll";
 static std::set<HMODULE> Modules_;
 
 PVOID PatchModuleSymbol(HMODULE module, PVOID symbol, const char *name)
@@ -100,11 +101,13 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 	if(dlls == NULL) return ret;
 	for(int i = 0; dlls[i].Name != NULL; i++) {
 		const char *dllName = (const char *)PtrFromRva(dosHeader, dlls[i].Name);
-		if(_stricmp(dllName, GmacDll_) == 0) continue;
-		if(_stricmp(dllName, GmacLiteDll_) == 0) continue;
+		if(_strnicmp(dllName, GmacDll_, strlen(GmacDll_)) == 0) continue;
+		if(_strnicmp(dllName, GmacHPEDll_, strlen(GmacHPEDll_)) == 0) continue;
+		if(_strnicmp(dllName, GmacLiteDll_, strlen(GmacLiteDll_)) == 0) continue;
 		HMODULE module = GetModuleHandle(dllName);
 		if(module == NULL) continue;
 		if(Modules_.insert(module).second == false) continue;
+		printf("Library %s vs (%s, %s, %s)\n", dllName, GmacDll_, GmacHPEDll_, GmacLiteDll_);
 		PVOID second = PatchModule(module, symbol, name);
 		if(ret != NULL && second != NULL && ret != second)
 			FATAL("Duplicated symbol %s", name);
@@ -115,6 +118,8 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 void LoadSymbol(PVOID *symbol, PVOID hook, const char *name)
 {
 	// Patch the symbol in all IATs	
-	*symbol = (PVOID) PatchModule(NULL, hook, name);
+	 PVOID new_symbol = (PVOID) PatchModule(NULL, hook, name);
+
+	 if (new_symbol != NULL) *symbol = new_symbol;
 }
 } }
