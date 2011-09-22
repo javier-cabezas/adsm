@@ -70,6 +70,10 @@ class GMAC_LOCAL Block : public gmac::util::Lock,
     friend class Object;
 
 protected:
+
+    /** Resource manager in charge of memory copies/allocations */
+    core::ResourceManager &resourceManager_;
+
     /** Memory coherence protocol used by the block */
     Protocol &protocol_;
 
@@ -84,12 +88,14 @@ protected:
 
     /**
      * Default construcutor
+     *
+     * \param resourceManager Resource manager in charge of memory copies/allocations
      * \param protocol Memory coherence protocol used by the block
      * \param addr Host memory address for applications to accesss the block
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+    Block(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     /**
      * Default destructor
@@ -217,9 +223,15 @@ public:
      * \return Accelerator memory address of the block
      */
     virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
+
+    /**
+     * Get the resource manager that is managing the block
+     * \return Memory protocol
+     */
+    core::ResourceManager &getResourceManager();
  
     /**
-     * Get the protocool that is managing the block
+     * Get the protocol that is managing the block
      * \return Memory protocol
      */
     Protocol &getProtocol();

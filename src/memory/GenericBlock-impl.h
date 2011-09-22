@@ -3,16 +3,17 @@
 
 #include <algorithm>
 
-#include "core/Mode.h"
 #include "core/IOBuffer.h"
+#include "core/Mode.h"
+#include "core/ResourceManager.h"
 
 namespace __impl { namespace memory {
 
 template<typename State>
 inline
-GenericBlock<State>::GenericBlock(Protocol &protocol, hostptr_t hostAddr,
+GenericBlock<State>::GenericBlock(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t hostAddr,
                                   hostptr_t shadowAddr, size_t size, typename State::ProtocolState init) :
-    StateBlock<State>(protocol, hostAddr, shadowAddr, size, init),
+    StateBlock<State>(resourceManager, protocol, hostAddr, shadowAddr, size, init),
     ownerShortcut_(NULL)
 {
 }

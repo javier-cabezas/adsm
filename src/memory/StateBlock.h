@@ -53,13 +53,14 @@ class GMAC_LOCAL StateBlock :
 protected:
     /** Default construcutor
      *
+     * \param resourceManager Resource manager in charge of memory copies/allocations
      * \param protocol Memory coherence protocol used by the block
      * \param addr Host memory address for applications to accesss the block
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      * \param init Initial protocol state for the block
      */
-    StateBlock(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, typename State::ProtocolState init);
+    StateBlock(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, typename State::ProtocolState init);
 
 public:
     enum EndPoint {

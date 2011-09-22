@@ -48,6 +48,7 @@ namespace __impl {
 
 namespace core {
     class Mode;
+    class ResourceManager;
 }
 
 namespace memory {
@@ -59,6 +60,7 @@ class GMAC_LOCAL GenericBlock :
 protected:
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorAddrMap;
     typedef std::map<core::Mode *, accptr_t> ModeMap;
+
     AcceleratorAddrMap acceleratorAddr_;
     ModeMap owners_;
     core::Mode *ownerShortcut_;
@@ -67,13 +69,14 @@ public:
     /**
      * Default construcutor
      *
+     * \param resourceManager Resource manager in charge of memory copies/allocations
      * \param protocol Memory coherence protocol used by the block
      * \param hostAddr Host memory address for applications to accesss the block
      * \param shadowAddr Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    GenericBlock(Protocol &protocol, hostptr_t shadowAddr,
+    GenericBlock(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t shadowAddr,
                  hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
     /// Default destructor

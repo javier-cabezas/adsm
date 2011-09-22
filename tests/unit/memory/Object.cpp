@@ -61,7 +61,7 @@ TEST_F(ObjectTest, Creation)
     Mode &mode = Thread::getCurrentMode();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     __impl::memory::Protocol &proto = map.getProtocol();
-    Object *object = proto.createObject(Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = proto.createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_TRUE(object->addr() != NULL);
     ASSERT_TRUE(object->end() != NULL);
@@ -77,7 +77,7 @@ TEST_F(ObjectTest, Blocks)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    Object *object = map.getProtocol().createObject(Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
     ASSERT_TRUE(start != NULL);
@@ -100,7 +100,7 @@ TEST_F(ObjectTest, Coherence)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    Object *object = map.getProtocol().createObject(Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
     map.addObject(*object);
@@ -129,7 +129,7 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentMode();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    Object *object = map.getProtocol().createObject(Size_, NULL, GMAC_PROT_READ, 0);
+    Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
     map.addObject(*object);
