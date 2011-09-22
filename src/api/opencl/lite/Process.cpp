@@ -1,4 +1,5 @@
 #include "api/opencl/lite/Process.h"
+#include "core/Thread.h"
 #include "memory/Protocol.h"
 #include "util/loader.h"
 #include "util/Logger.h"
@@ -7,6 +8,7 @@ namespace __impl { namespace opencl { namespace lite {
 
 Process::Process()
 {
+    core::TLS::Init();
 }
 
 Process::~Process()

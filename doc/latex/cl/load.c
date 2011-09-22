@@ -4,7 +4,6 @@
 
     cl_helper helper;
     size_t platforms;
-    cl_program program;
     cl_int error_code;
 
     /* Initialize OpenCL */
@@ -15,7 +14,7 @@
     helper = clGetHelpers()[0];
 
     /* Load and compile the OpenCL kernel for the platform */
-    program = clHelperLoadProgramFromFile(helper, kernel_file, &error_code);
+    error_code = clHelperLoadProgramFromFile(helper, kernel_file);
     if(error_code != CL_SUCCESS) {
         clReleaseHelpers();
         return -1;

@@ -9,12 +9,7 @@
 #   include <CL/cl.h>
 #endif
 
-#include <config/common.h>
 #include <include/gmac/cl.h>
-
-void threadInit()
-{
-}
 
 static std::vector<cl_helper> helpers;
 
@@ -55,6 +50,9 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
         if(error_code != CL_SUCCESS) goto cleanup_queues;
     }
 
+	/* Create programs */
+	state.programs = (cl_program *) malloc(sizeof(cl_program) * num_devices);
+
     state.num_devices = num_devices;
     return CL_SUCCESS;
 
@@ -89,6 +87,7 @@ cl_int APICALL clInitHelpers(size_t *platforms)
         helper.platform = 0;
         helper.num_devices = 0;
         helper.devices = NULL;
+		helper.programs = NULL;
         helper.contexts = NULL;
         helper.command_queues = NULL;
         error_code = clHelperInitPlatform(tmp_platforms[i], helper);
@@ -118,15 +117,35 @@ cl_int APICALL clReleaseHelpers()
         cl_helper &helper = helpers[i];
         cl_uint j;
         for(j = 0; j < helper.num_devices; j++) {
-            error_code = clReleaseCommandQueue(helper.command_queues[j]);
+            if(helper.command_queues != NULL) {
+				error_code = clReleaseCommandQueue(helper.command_queues[j]);
+			}
             if(error_code != CL_SUCCESS) return error_code;
-            error_code = clReleaseContext(helper.contexts[j]);
+			if(helper.contexts != NULL) {
+				error_code = clReleaseContext(helper.contexts[j]);
+			}
+            if(error_code != CL_SUCCESS) return error_code;
+			if(helper.programs != NULL) {
+				error_code = clReleaseProgram(helper.programs[j]);
+			}
             if(error_code != CL_SUCCESS) return error_code;
         }
 
-        free(helper.command_queues);
-        free(helper.contexts);
-        free(helper.devices);
+		if(helper.command_queues != NULL) {
+			free(helper.command_queues);
+		}
+        
+		if(helper.contexts != NULL) {
+			free(helper.contexts);
+		}
+
+		if(helper.programs != NULL) {
+			free(helper.programs);
+		}
+
+		if(helper.devices != NULL) {
+			free(helper.devices);
+		}
     }
 
     helpers.clear();
@@ -137,47 +156,51 @@ cl_int APICALL clReleaseHelpers()
 
 static const char *build_flags = "-I.";
 
-cl_program APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_name, cl_int *error_code)
+cl_int APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_name)
 {
     /* Let's all thank Microsoft for such a great compatibility */
 #if defined(_MSC_VER)
 #   define stat _stat
 #endif
 
-    cl_program ret = NULL;
+    cl_int ret = CL_SUCCESS;
     FILE *fp;
     struct stat file_stats;
     char *buffer = NULL;
     size_t read_bytes;
     cl_uint i = 0;
-
-    if(stat(file_name, &file_stats) < 0) { *error_code = CL_INVALID_VALUE; return ret; }
+	int stat_ret;
+	stat_ret = stat(file_name, &file_stats);
+    if(stat_ret < 0) {
+		return CL_INVALID_VALUE;
+	}
 #if defined(_MSC_VER)
 #   undef stat
 #endif
 
     buffer = (char *)malloc(file_stats.st_size * sizeof(char));
-    if(buffer == NULL) { *error_code = CL_OUT_OF_HOST_MEMORY; return ret; }
+    if(buffer == NULL) { ret = CL_OUT_OF_HOST_MEMORY; return ret; }
 
 #if defined(_MSC_VER)
-	if(fopen_s(&fp, file_name, "rt") != 0) { *error_code = CL_INVALID_VALUE; goto cleanup; }
+	if(fopen_s(&fp, file_name, "rt") != 0) { ret = CL_INVALID_VALUE; goto cleanup; }
 #else
     fp = fopen(file_name, "rt");
-    if(fp == NULL) { *error_code = CL_INVALID_VALUE; goto cleanup; }
+    if(fp == NULL) { ret = CL_INVALID_VALUE; goto cleanup; }
 #endif
-    read_bytes = fread(buffer, file_stats.st_size, sizeof(char), fp);
+    read_bytes = fread(buffer, sizeof(char), file_stats.st_size, fp);
     fclose(fp);
     if(read_bytes != (size_t)file_stats.st_size) {
-        *error_code = CL_INVALID_VALUE;
+        ret = CL_INVALID_VALUE;
         goto cleanup;
     }
 
     for(i = 0; i < state.num_devices; i++) {
-        ret = clCreateProgramWithSource(state.contexts[i], 1, (const char **)&buffer, &read_bytes, error_code);
-        if(*error_code != CL_SUCCESS) goto cleanup;
+        state.programs[i] = clCreateProgramWithSource(state.contexts[i], 1, (const char **)&buffer, &read_bytes, &ret);
+        if(ret != CL_SUCCESS) goto cleanup;
+        ret = clBuildProgram(state.programs[i], 1, &state.devices[i], build_flags, NULL, NULL);
+        if(ret != CL_SUCCESS) goto cleanup;
     }
 
-    *error_code = clBuildProgram(ret, state.num_devices, state.devices, build_flags, NULL, NULL);
 
 cleanup:
     free(buffer);

@@ -46,6 +46,7 @@ typedef struct {
     cl_uint num_devices;
     cl_device_id *devices;
     cl_context *contexts;
+    cl_program *programs;
     cl_command_queue *command_queues;
 } cl_helper;
 

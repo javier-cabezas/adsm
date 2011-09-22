@@ -2,7 +2,7 @@
     cl_kernel kernel;
     cl_uint global_size = vector_size;
 
-    kernel = clCreateKernel(program, "vecAdd", &error_code);
+    kernel = clCreateKernel(helper.programs[0], "vecAdd", &error_code);
     if(error_code != CL_SUCCESS) return error(error_code);
 
     mem = clBuffer(context, c);
@@ -18,7 +18,7 @@
     if(mem == NULL || error_code != CL_SUCCESS)
         return error(error_code);
 
-    error_code = clEnqueueNDRangeKernel(command_queue, kernel, 1,
+    error_code = clEnqueueNDRangeKernel(helper.command_queue[0], kernel, 1,
                                         NULL, &global_size, NULL,
                                         0, NULL, NULL);
     if(error_code != CL_SUCCESS) return error(error_code);
