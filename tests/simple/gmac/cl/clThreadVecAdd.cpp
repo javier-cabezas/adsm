@@ -1,4 +1,3 @@
-
 /* two thread: shared platform, shared device, shared context, shared command_queue
  * BUT: seperate data collection
  *
@@ -26,6 +25,12 @@
 #include "gmac/cl.h"
 #include "utils.h"
 #include "debug.h"
+
+#ifdef _MSC_VER
+#define SNPRINTF sprintf_s
+#else
+#define SNPRINTF snprintf
+#endif
 
 static const char *vecSizeStr = "GMAC_VECSIZE";
 static const unsigned vecSizeDefault = 16 * 1024 * 1024;
@@ -111,7 +116,7 @@ void* Thread(void *_name)
 	assert(error_code == CL_SUCCESS);
 	getTime(&t);
 
-    sprintf(buffer, "%s: Alloc: ", name);
+    SNPRINTF(buffer, 256, "%s: Alloc: ", name);
 	printTime(&s, &t, buffer, "\n");
 
 	float sum = 0.f;
@@ -120,7 +125,7 @@ void* Thread(void *_name)
 	valueInit(b, 1.f, vecSize);
 	getTime(&t);
 
-    sprintf(buffer, "%s: Init: ", name);
+    SNPRINTF(buffer, 256, "%s: Init: ", name);
 	printTime(&s, &t, buffer, "\n");
 
 	for(unsigned i = 0; i < vecSize; i++) {
@@ -150,7 +155,7 @@ void* Thread(void *_name)
 	fprintf(stdout, "%s: C[0]: %f\n", name, c[0]);
 
 	getTime(&t);
-    sprintf(buffer, "%s: Run: ", name);
+    SNPRINTF(buffer, 256, "%s: Run: ", name);
 	printTime(&s, &t, buffer, "\n");
 
 	getTime(&s);

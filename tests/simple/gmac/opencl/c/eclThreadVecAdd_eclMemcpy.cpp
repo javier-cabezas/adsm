@@ -6,9 +6,11 @@
 
 #ifdef _MSC_VER
 #define SLEEP Sleep
+#define SNPRINTF sprintf_s
 #else
 #include <unistd.h>
 #define SLEEP sleep
+#define SNPRINTF snprintf
 #endif
 
 static unsigned vecSize = 16 * 1024 * 1024;
@@ -97,9 +99,9 @@ static void *ThreadBody_Print(void *_params)
     print_params *params = (print_params *) _params;
     char buffer[256];
 
-    sprintf(buffer, "%s:", params->name);
+    SNPRINTF(buffer, 256, "%s:", params->name);
  	for(unsigned i = 0; i < 10; i++) {
- 		sprintf(buffer, "%s %f ", buffer, params->input[i]);
+ 		SNPRINTF(buffer, 256, "%s %f ", buffer, params->input[i]);
  	}
 	fprintf(stdout, "%s\n", buffer);
 
@@ -112,9 +114,9 @@ static void *ThreadBody_Second(void *input)
 	float *resultB, *temp, *temp_2;
     char buffer[256];
 
-	sprintf(buffer, "Thread E:");
+	SNPRINTF(buffer, 256, "Thread E:");
 	for(unsigned i = 0; i < 10; i++) {
-		sprintf(buffer, "%s %f ", buffer, input_E[i]);
+		SNPRINTF(buffer, 256, "%s %f ", buffer, input_E[i]);
 	}
 	fprintf(stdout, "%s\n", buffer);
 	//  
