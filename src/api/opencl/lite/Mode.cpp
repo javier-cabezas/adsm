@@ -1,5 +1,6 @@
 #include "api/opencl/IOBuffer.h"
 #include "api/opencl/lite/Mode.h"
+#include "api/opencl/lite/Process.h"
 #include "api/opencl/Tracer.h"
 
 #if defined(__APPLE__)
@@ -10,10 +11,10 @@
 
 namespace __impl { namespace opencl { namespace lite {
 
-Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
+Mode::Mode(Process &proc, cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
     context_(ctx),
     active_(0),
-    map_("ObjectMap")
+    map_("ObjectMap", proc)
 {
     // Create one command queue per device in the context
     cl_int ret = CL_SUCCESS;

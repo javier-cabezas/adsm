@@ -1,5 +1,8 @@
 add_subdirectory(hpe)
-add_subdirectory(lite)
+
+if(MAKE_LITE)
+    add_subdirectory(lite)
+endif(MAKE_LITE)
 
 # Export tests one level up
 set(unit_SRC ${unit_SRC}

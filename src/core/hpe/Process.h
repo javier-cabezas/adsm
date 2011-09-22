@@ -49,6 +49,7 @@ WITH THE SOFTWARE.  */
 #include "core/Process.h"
 
 #include "Queue.h"
+#include "ResourceManager.h"
 
 namespace __impl { namespace core { namespace hpe {
 
@@ -112,6 +113,8 @@ protected:
     memory::ObjectMap orphans_;
 
     unsigned current_;
+
+    ResourceManager resourceManager_;
 
     /**
      * Destroys the process and releases the resources used by it
@@ -334,6 +337,8 @@ public:
      * \return gmacSuccess on success, an error code otherwise
      */
     gmacError_t prepareForCall();
+
+    core::ResourceManager &getResourceManager();
 
     gmacError_t setAddressSpace(Mode &mode, unsigned aSpaceId);
 };

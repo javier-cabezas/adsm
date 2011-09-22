@@ -61,7 +61,7 @@ Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id
 {
     Mode *ret = map_.get(ctx);
     if(ret != NULL) { ret->decRef(); return ret; }
-    ret = new Mode(ctx, numDevices, devices);
+    ret = new Mode(*this, ctx, numDevices, devices);
     map_.insert(ctx, *ret);
     return ret;
 }
@@ -69,6 +69,12 @@ Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id
 Mode *Process::getMode(cl_context ctx)
 {
     return map_.get(ctx);
+}
+
+core::ResourceManager &
+Process::getResourceManager()
+{
+    return resourceManager_;
 }
 
 }}}
