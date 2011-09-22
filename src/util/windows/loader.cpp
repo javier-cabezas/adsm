@@ -10,8 +10,9 @@ namespace __impl { namespace loader {
 
 static const char *ImportSection_ = ".idata";
 static const char *GmacDll_ = "gmac.dll";
-static const char *GmacHPEDll_ = "gmac-hpe.dll";
+static const char *GmacHPEDll_ = "OpenCL.dll";
 static const char *GmacLiteDll_ = "gmac-cl.dll";
+
 static std::set<HMODULE> Modules_;
 
 PVOID PatchModuleSymbol(HMODULE module, PVOID symbol, const char *name)
@@ -66,15 +67,19 @@ PVOID PatchModuleSymbol(HMODULE module, PVOID symbol, const char *name)
 			VirtualProtect(memoryInfo.BaseAddress, memoryInfo.RegionSize,
 				memoryInfo.Protect, &dummy);
 			// We are done -- there shouldn't be any more symbols named like that in this module
+			//printf("Symbol %s found\n", name);
 			return ret;
 		}
 	}
+	//printf("Symbol %s NOT found\n", name);
 	return ret;
 }
 
 PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 {
 	if(module == NULL) {
+		Modules_.clear();
+
 		module = GetModuleHandle(NULL);
 		if(module == NULL) return NULL;
 	}
@@ -107,10 +112,11 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 		HMODULE module = GetModuleHandle(dllName);
 		if(module == NULL) continue;
 		if(Modules_.insert(module).second == false) continue;
-		printf("Library %s vs (%s, %s, %s)\n", dllName, GmacDll_, GmacHPEDll_, GmacLiteDll_);
+		//printf("In library %s\n", dllName);
 		PVOID second = PatchModule(module, symbol, name);
 		if(ret != NULL && second != NULL && ret != second)
 			FATAL("Duplicated symbol %s", name);
+		if(ret == NULL && second != NULL) ret = second;
 	}
 	return ret;
 }

@@ -51,7 +51,7 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
     }
 
 	/* Create programs */
-	state.programs = (cl_program *) malloc(sizeof(cl_program) * state.num_devices);
+	state.programs = (cl_program *) malloc(sizeof(cl_program) * num_devices);
 
     state.num_devices = num_devices;
     return CL_SUCCESS;
