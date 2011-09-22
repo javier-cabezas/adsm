@@ -9,8 +9,9 @@
 #   include <CL/cl.h>
 #endif
 
-#include <config/common.h>
 #include <include/gmac/cl.h>
+
+#include "config/common.h"
 
 static std::vector<cl_helper> helpers;
 
@@ -51,6 +52,9 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
         if(error_code != CL_SUCCESS) goto cleanup_queues;
     }
 
+	/* Create programs */
+	state.programs = (cl_program *) malloc(sizeof(cl_program) * state.num_devices);
+
     state.num_devices = num_devices;
     return CL_SUCCESS;
 
@@ -85,6 +89,7 @@ cl_int APICALL clInitHelpers(size_t *platforms)
         helper.platform = 0;
         helper.num_devices = 0;
         helper.devices = NULL;
+		helper.programs = NULL;
         helper.contexts = NULL;
         helper.command_queues = NULL;
         error_code = clHelperInitPlatform(tmp_platforms[i], helper);
@@ -114,17 +119,35 @@ cl_int APICALL clReleaseHelpers()
         cl_helper &helper = helpers[i];
         cl_uint j;
         for(j = 0; j < helper.num_devices; j++) {
-            error_code = clReleaseCommandQueue(helper.command_queues[j]);
+            if(helper.command_queues != NULL) {
+				error_code = clReleaseCommandQueue(helper.command_queues[j]);
+			}
             if(error_code != CL_SUCCESS) return error_code;
-            error_code = clReleaseContext(helper.contexts[j]);
+			if(helper.contexts != NULL) {
+				error_code = clReleaseContext(helper.contexts[j]);
+			}
             if(error_code != CL_SUCCESS) return error_code;
-            error_code = clReleaseProgram(helper.programs[j]);
+			if(helper.programs != NULL) {
+				error_code = clReleaseProgram(helper.programs[j]);
+			}
             if(error_code != CL_SUCCESS) return error_code;
         }
 
-        free(helper.command_queues);
-        free(helper.contexts);
-        free(helper.devices);
+		if(helper.command_queues != NULL) {
+			free(helper.command_queues);
+		}
+        
+		if(helper.contexts != NULL) {
+			free(helper.contexts);
+		}
+
+		if(helper.programs != NULL) {
+			free(helper.programs);
+		}
+
+		if(helper.devices != NULL) {
+			free(helper.devices);
+		}
     }
 
     helpers.clear();
@@ -148,8 +171,11 @@ cl_int APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_nam
     char *buffer = NULL;
     size_t read_bytes;
     cl_uint i = 0;
-
-    if(stat(file_name, &file_stats) < 0) { ret = CL_INVALID_VALUE; }
+	int stat_ret;
+	stat_ret = stat(file_name, &file_stats);
+    if(stat_ret < 0) {
+		return CL_INVALID_VALUE;
+	}
 #if defined(_MSC_VER)
 #   undef stat
 #endif
