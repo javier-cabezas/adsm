@@ -63,7 +63,7 @@ BlockGroup<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 }
 
 template<typename State>
-BlockGroup<State>::BlockGroup(Protocol &protocol, core::Mode &owner,
+BlockGroup<State>::BlockGroup(Protocol &protocol,
                               hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size),
     hasUserMemory_(hostAddr != NULL),

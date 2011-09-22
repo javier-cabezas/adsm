@@ -53,7 +53,7 @@ Manager::map(core::Mode &mode, hostptr_t *addr, size_t size, int flags)
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object = map.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    object = map.getProtocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -129,7 +129,7 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    Object *object = map.getProtocol().createObject(mode, size, NULL, GMAC_PROT_READ, 0);
+    Object *object = map.getProtocol().createObject(size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -174,7 +174,7 @@ gmacError_t Manager::globalAlloc(core::Mode &mode, hostptr_t *addr, size_t size,
     }
     Protocol *protocol = proc_.getProtocol();
     if(protocol == NULL) return gmacErrorInvalidValue;
-    Object *object = protocol->createObject(mode, size, NULL, GMAC_PROT_NONE, 0);
+    Object *object = protocol->createObject(size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->decRef();
