@@ -1,4 +1,5 @@
 add_subdirectory(hpe)
+add_subdirectory(helpers)
 add_subdirectory(lite)
 
 set(arch_SRC
@@ -20,4 +21,5 @@ add_gmac_sources(gmac-arch-hpe-api)
 if(MAKE_CL)
     add_gmac_sources(gmac-arch-lite)
     add_gmac_sources(gmac-arch-lite-api)
+    add_gmac_sources(gmac-libs-lite-api)
 endif(MAKE_CL)

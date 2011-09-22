@@ -41,7 +41,7 @@ add_executable(clThreadVecAdd ${common_SRC} clThreadVecAdd.cpp)
 target_link_libraries(clThreadVecAdd ${GMAC_CL})
 
 add_executable(clVecAdd_Helper ${common_SRC} clVecAdd_Helper.cpp)
-target_link_libraries(clVecAdd_Helper ${GMAC_CL})
+target_link_libraries(clVecAdd_Helper ${GMAC_CL} ${GMAC_CL_HELPERS})
 
 #add_executable(clVecAdd_cplusplus ${common_SRC} clVecAdd_cplusplus.cpp)
 #target_link_libraries(clVecAdd_cplusplus ${GMAC_CL})
