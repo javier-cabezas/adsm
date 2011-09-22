@@ -47,6 +47,7 @@ namespace __impl {
 namespace core {
 class IOBuffer;
 class Mode;
+class ResourceManager;
 }
 
 namespace memory {
@@ -64,6 +65,8 @@ public:
 
     /** Creates a new object that will be manged by this protocol
      *
+     * \param resourceManager ResourceManager to be used in the memory transfers/allocation
+     * of the new object
      * \param size Size (in bytes) of the new object
      * \param cpuPtr Host address where the object will be create. NULL to let
      * the protocol choose
@@ -72,7 +75,7 @@ public:
      * \param flags Protocool specific flags
      * \return Pointer to the created object
      */
-    virtual Object *createObject(size_t size, hostptr_t cpuPtr,
+    virtual Object *createObject(core::ResourceManager &resourceManager, size_t size, hostptr_t cpuPtr,
                                  GmacProtection prot, unsigned flags) = 0;
 
     /**

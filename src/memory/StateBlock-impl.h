@@ -4,9 +4,9 @@
 namespace __impl { namespace memory {
 
 template<typename State>
-inline StateBlock<State>::StateBlock(Protocol &protocol, hostptr_t addr,
+inline StateBlock<State>::StateBlock(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr,
                                hostptr_t shadow, size_t size, typename State::ProtocolState init) :
-    gmac::memory::Block(protocol, addr, shadow, size),
+    gmac::memory::Block(resourceManager, protocol, addr, shadow, size),
     State(init)
 {
 }

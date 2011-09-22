@@ -42,7 +42,7 @@ class GMAC_LOCAL Block :
     DBC_TESTED(__impl::memory::Block)
 
 protected:
-	Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+	Block(__impl::core::ResourceManager &resourceManager, __impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
     virtual ~Block();
 public:
 
