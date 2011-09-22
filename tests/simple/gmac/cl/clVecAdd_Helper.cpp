@@ -22,7 +22,11 @@ int main(int argc, char *argv[])
 	size_t platforms;
 	cl_int error_code;
 	cl_kernel kernel;
-	const char *kernel_file ="cl_kernels/clVecAddKernel.cl";
+#ifdef _MSC_VER
+	const char *kernel_file = "cl_kernels\\clVecAddKernel.cl";
+#else
+	const char *kernel_file = "cl_kernels/clVecAddKernel.cl";
+#endif
 
 	if (clInitHelpers(&platforms) != CL_SUCCESS) return -1;
 	if (platforms == 0) return -1;
