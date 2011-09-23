@@ -24,14 +24,14 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
     error_code = clGetDeviceIDs(state.platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
     if(error_code != CL_SUCCESS) return error_code;
     state.devices = NULL;
-    state.devices = (cl_device_id *)malloc(num_devices * sizeof(cl_device_id));
+    state.devices = new cl_device_id[num_devices];
     if(state.devices == NULL) return CL_OUT_OF_HOST_MEMORY;
     error_code = clGetDeviceIDs(state.platform, CL_DEVICE_TYPE_GPU, num_devices, state.devices, NULL);
     if(error_code != CL_SUCCESS) return error_code;
 
     /* Create contexts */
     state.contexts = NULL;
-    state.contexts = (cl_context *)malloc(num_devices * sizeof(cl_context));
+    state.contexts = new cl_context[num_devices];
     if(state.contexts == NULL) return CL_OUT_OF_HOST_MEMORY;
     for(num_contexts = 0; num_contexts < num_devices; num_contexts++) {
         state.contexts[num_contexts] = clCreateContext(NULL, 1, &state.devices[num_contexts], NULL, NULL, &error_code);
@@ -40,7 +40,7 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
 
     /* Create command queues */
     state.command_queues = NULL;
-    state.command_queues = (cl_command_queue *)malloc(num_devices * sizeof(cl_command_queue));
+    state.command_queues = new cl_command_queue[num_devices];
     if(state.command_queues == NULL) {
         error_code = CL_OUT_OF_HOST_MEMORY;
         goto cleanup_contexts;
@@ -51,18 +51,19 @@ static cl_int clHelperInitPlatform(cl_platform_id platform, cl_helper &state)
     }
 
 	/* Create programs */
-	state.programs = (cl_program *) malloc(sizeof(cl_program) * num_devices);
+	state.programs = new cl_program[num_devices];
+    for(i = 0; i < num_devices; i++) state.programs[i] = NULL;
 
     state.num_devices = num_devices;
     return CL_SUCCESS;
 
 cleanup_queues:
     for(i = 0; i < num_queues; i++) clReleaseCommandQueue(state.command_queues[i]);
-    free(state.command_queues);
+    delete [] state.command_queues;
 
 cleanup_contexts:
     for(i = 0; i < num_contexts; i++) clReleaseContext(state.contexts[i]);
-    free(state.contexts);
+    delete [] state.contexts;
     
     return error_code;
 }
@@ -132,19 +133,19 @@ cl_int APICALL clReleaseHelpers()
         }
 
 		if(helper.command_queues != NULL) {
-			free(helper.command_queues);
+            delete [] helper.command_queues;
 		}
         
 		if(helper.contexts != NULL) {
-			free(helper.contexts);
+            delete [] helper.contexts;
 		}
 
 		if(helper.programs != NULL) {
-			free(helper.programs);
+            delete [] helper.programs;
 		}
 
 		if(helper.devices != NULL) {
-			free(helper.devices);
+            delete [] helper.devices;
 		}
     }
 
@@ -178,7 +179,7 @@ cl_int APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_nam
 #   undef stat
 #endif
 
-    buffer = (char *)malloc(file_stats.st_size * sizeof(char));
+    buffer = new char[file_stats.st_size];
     if(buffer == NULL) { ret = CL_OUT_OF_HOST_MEMORY; return ret; }
 
 #if defined(_MSC_VER)
@@ -196,14 +197,20 @@ cl_int APICALL clHelperLoadProgramFromFile(cl_helper state, const char *file_nam
 
     for(i = 0; i < state.num_devices; i++) {
         state.programs[i] = clCreateProgramWithSource(state.contexts[i], 1, (const char **)&buffer, &read_bytes, &ret);
-        if(ret != CL_SUCCESS) goto cleanup;
+        if(ret != CL_SUCCESS) {
+            state.programs[i] = NULL;
+            goto cleanup;
+        }
         ret = clBuildProgram(state.programs[i], 1, &state.devices[i], build_flags, NULL, NULL);
-        if(ret != CL_SUCCESS) goto cleanup;
+        if(ret != CL_SUCCESS) {
+            state.programs[i] = NULL;
+            goto cleanup;
+        }
     }
 
 
 cleanup:
-    free(buffer);
+    delete [] buffer;
 
     return ret;
 }
