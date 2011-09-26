@@ -31,38 +31,59 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_LAZY_H_
-#define GMAC_MEMORY_PROTOCOL_LAZY_H_
+#ifndef GMAC_CORE_RESOURCE_MANAGER_H_
+#define GMAC_CORE_RESOURCE_MANAGER_H_
 
-#include "LazyBase.h"
+#include "config/common.h"
+#include "config/order.h"
+#include "util//loader.h"
+#include "util/Singleton.h"
 
-namespace __impl { namespace memory { namespace protocol {
+#include <vector>
 
-template <typename T>
-class GMAC_LOCAL Lazy : public gmac::memory::protocol::LazyBase {
-    DBC_FORCE_TEST(Lazy<T>)
+namespace __impl {
+
+namespace core {
+
+/** Represents the resources used by a running process */
+class GMAC_LOCAL ResourceManager  {
+    // Needed to let Singleton call the protected constructor
+protected:
+    /**
+     * Constructs the process
+     */
+    ResourceManager();
+    /**
+     * Destroys the process and releases the resources used by it
+     */
+    virtual ~ResourceManager();
 
 public:
-    /**
-     * Default constructor
-     *
-     * \param eager Tells if the protocol uses eager update
-     */
-    explicit Lazy(bool eager);
+    virtual gmacError_t hostAlloc(Mode &mode, hostptr_t &addr, size_t size) = 0;
 
-    /// Default destructor
-    virtual ~Lazy();
+    virtual gmacError_t hostFree(Mode &mode, hostptr_t addr) = 0;
 
-    // Protocol Interface
-    memory::Object *createObject(core::ResourceManager &resourceManager, size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);
+    virtual accptr_t hostMapAddr(Mode &mode, const hostptr_t addr) = 0;
+
+    virtual gmacError_t map(Mode &mode, accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1) = 0;
+
+    virtual gmacError_t unmap(Mode &mode, hostptr_t addr, size_t count) = 0;
+
+    virtual gmacError_t copyToAccelerator(Mode &mode, accptr_t acc, const hostptr_t host, size_t count) = 0;
+
+    virtual gmacError_t copyToHost(Mode &mode, hostptr_t host, const accptr_t acc, size_t count) = 0;
+
+    virtual gmacError_t copyAccelerator(Mode &mode, accptr_t dst, const accptr_t src, size_t count) = 0;
+
+    virtual IOBuffer &createIOBuffer(Mode &mode, size_t count, GmacProtection prot) = 0;
+
+    virtual void destroyIOBuffer(Mode &mode, IOBuffer &buffer) = 0;
+
+    virtual gmacError_t bufferToAccelerator(Mode &mode, accptr_t dst, IOBuffer &buffer, size_t count, size_t off = 0) = 0;
+
+    virtual gmacError_t acceleratorToBuffer(Mode &mode, IOBuffer &buffer, const accptr_t dst, size_t count, size_t off = 0) = 0;
 };
 
-}}}
-
-#include "Lazy-impl.h"
-
-#ifdef USE_DBC
-#include "dbc/Lazy.h"
-#endif
+}}
 
 #endif

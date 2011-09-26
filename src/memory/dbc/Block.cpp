@@ -5,8 +5,8 @@
 
 namespace __dbc { namespace memory {
 
-Block::Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
-    __impl::memory::Block(protocol, addr, shadow, size)
+Block::Block(__impl::core::ResourceManager &resourceManager, __impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
+    __impl::memory::Block(resourceManager, protocol, addr, shadow, size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

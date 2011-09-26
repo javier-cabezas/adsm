@@ -9,11 +9,10 @@
 
 namespace __impl { namespace memory {
 
-
-
-inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
+inline Block::Block(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
     gmac::util::Lock("Block"),
     util::Reference("Block"),
+    resourceManager_(resourceManager),
     protocol_(protocol),
     size_(size),
     addr_(addr),
@@ -93,6 +92,12 @@ inline gmacError_t Block::memset(int v, size_t size, size_t blockOffset)
     gmacError_t ret = protocol_.memset(*this, v, size, blockOffset);
     unlock();
     return ret;
+}
+
+inline
+core::ResourceManager &Block::getResourceManager()
+{
+    return resourceManager_;
 }
 
 inline

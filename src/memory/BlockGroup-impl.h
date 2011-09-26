@@ -2,6 +2,8 @@
 #define GMAC_MEMORY_BLOCKGROUP_INST_H_
 
 #include "core/Mode.h"
+#include "core/ResourceManager.h"
+
 #include "GenericBlock.h"
 
 namespace __impl { namespace memory {
@@ -45,7 +47,8 @@ BlockGroup<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
     ptroff_t offset = 0;
     for (BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
         GenericBlock<State> &oldBlock = *dynamic_cast<GenericBlock<State> *>(i->second);
-        GenericBlock<State> *newBlock = new GenericBlock<State>(oldBlock.getProtocol(),
+        GenericBlock<State> *newBlock = new GenericBlock<State>(oldBlock.getResourceManager(),
+                                                                oldBlock.getProtocol(),
                                                                 addr_   + offset,
                                                                 shadow_ + offset,
                                                                 oldBlock.size(), oldBlock.getState());
@@ -63,10 +66,11 @@ BlockGroup<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 }
 
 template<typename State>
-BlockGroup<State>::BlockGroup(Protocol &protocol, core::Mode &owner,
+BlockGroup<State>::BlockGroup(core::ResourceManager &resourceManager, Protocol &protocol,
                               hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size),
     hasUserMemory_(hostAddr != NULL),
+    resourceManager_(resourceManager),
     owners_(0),
     ownerShortcut_(NULL)
 {
@@ -95,7 +99,8 @@ BlockGroup<State>::BlockGroup(Protocol &protocol, core::Mode &owner,
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         blocks_.insert(BlockMap::value_type(mark,
-                       new GenericBlock<State>(protocol, addr_ + offset,
+                       new GenericBlock<State>(resourceManager_,
+                                               protocol, addr_ + offset,
                                                shadow_ + offset, blockSize, init)));
         size -= blockSize;
         offset += ptroff_t(blockSize);

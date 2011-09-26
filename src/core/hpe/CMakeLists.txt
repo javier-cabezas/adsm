@@ -16,6 +16,8 @@ set(core_hpe_SRC
     Process.h
     Process-impl.h
     Process.cpp
+    ResourceManager.h
+    ResourceManager.cpp
     Thread.h
     Thread-impl.h
     Queue.h

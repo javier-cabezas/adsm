@@ -51,11 +51,12 @@ TEST_F(ProcessTest, ModeMap) {
 
 TEST_F(ProcessTest, GlobalMemory) {
     Process *proc = createProcess();
+    ASSERT_TRUE(proc != NULL);
 
     const size_t size = 4 * 1024 * 1024;
     Protocol *protocol = proc->getProtocol();
     ASSERT_TRUE(protocol != NULL);
-    Object *object = protocol->createObject(Thread::getCurrentMode(), size, NULL, GMAC_PROT_READ, 0);
+    Object *object = protocol->createObject(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_EQ(gmacSuccess, proc->globalMalloc(*object));
     ASSERT_TRUE(object->addr() != NULL);

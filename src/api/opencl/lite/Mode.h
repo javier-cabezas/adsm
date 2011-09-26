@@ -61,6 +61,8 @@ class IOBuffer;
 
 namespace opencl { namespace lite {
 
+class Process;
+
 class GMAC_LOCAL QueueSet :
     protected std::set<cl_command_queue>,
     public gmac::util::RWLock {
@@ -112,11 +114,12 @@ protected:
 public:
     /**
      * Default constructor
+     *  \param proc Process in which the mode is created
      *  \param ctx A OpenCL context
      *  \param numDevices Number of OpenCL devices in the execution mode
      *  \param devices Array of OpenCL devices in the execution mode
      */
-    Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
+    Mode(Process &proc, cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
 
     /**
      * Default destructor

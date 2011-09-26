@@ -13,6 +13,8 @@ set(arch_lite_SRC
     ModeMap-impl.h
     Process.h
     Process.cpp
+    ResourceManager.h
+    ResourceManager.cpp
 )
 
 set(arch_lite_DBC

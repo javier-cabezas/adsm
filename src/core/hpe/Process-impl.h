@@ -71,6 +71,12 @@ Process::makeOrphan(memory::Object &obj)
     shared_.removeObject(obj);
 }
 
+inline core::ResourceManager &
+Process::getResourceManager()
+{
+    return resourceManager_;
+}
+
 }}}
 
 #endif

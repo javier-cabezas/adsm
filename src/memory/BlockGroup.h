@@ -42,6 +42,7 @@ namespace __impl {
 
 namespace core {
 	class Mode;
+	class ResourceManager;
 }
 
 namespace memory {
@@ -55,6 +56,8 @@ protected:
     bool hasUserMemory_;
     typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
     AcceleratorMap acceleratorAddr_;
+
+    core::ResourceManager &resourceManager_;
     unsigned owners_;
     core::Mode *ownerShortcut_;
 
@@ -62,7 +65,7 @@ protected:
 
     void modifiedObject();
 public:
-    BlockGroup(Protocol &protocol, core::Mode &owner, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    BlockGroup(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~BlockGroup();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;

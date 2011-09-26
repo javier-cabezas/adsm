@@ -34,12 +34,13 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_PROCESS_H_
 #define GMAC_CORE_PROCESS_H_
 
+#include <vector>
+
 #include "config/common.h"
 #include "config/order.h"
-#include "util//loader.h"
+#include "core/ResourceManager.h"
+#include "util/loader.h"
 #include "util/Singleton.h"
-
-#include <vector>
 
 namespace __impl {
 
@@ -110,6 +111,8 @@ public:
      * given memory range
      */
     virtual Mode *owner(const hostptr_t addr, size_t size = 0) = 0;
+
+    virtual ResourceManager &getResourceManager() = 0;
 };
 
 }}
