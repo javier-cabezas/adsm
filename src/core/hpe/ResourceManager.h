@@ -65,6 +65,12 @@ protected:
     virtual ~ResourceManager();
 
 public:
+    gmacError_t registerAccelerator(Accelerator &acc);
+
+    GmacAddressSpace newAddressSpace(unsigned accId);
+
+    GmacVirtualDevice newVirtualDevice(GmacAddressSpace aSpace);
+
     gmacError_t hostAlloc(core::Mode &mode, hostptr_t &addr, size_t size);
 
     gmacError_t hostFree(core::Mode &mode, hostptr_t addr);

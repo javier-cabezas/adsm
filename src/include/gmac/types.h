@@ -113,6 +113,9 @@ typedef enum {
     GMAC_ACCELERATOR_TYPE_ACCELERATOR = 0x4
 } GmacAcceleratorType;
 
+typedef unsigned GmacAddressSpace;
+typedef unsigned GmacVirtualDevice;
+
 typedef struct {
     const char *acceleratorName;
     const char *vendorName;

@@ -49,16 +49,15 @@ class GMAC_LOCAL Thread :
 private:
     Process &process_;
     Mode *currentMode_;
-    AddressSpace *currentAddressSpace_;
+    GmacVirtualDevice currentVirtualDevice_;
 
     static Thread &getCurrentThread();
 
 public:
     Thread(Process &proc);
 
-    static AddressSpace &getCurrentAddressSpace();
-    static bool hasCurrentAddressSpace();
-    static void setCurrentAddressSpace(AddressSpace *aSpace);
+    static GmacVirtualDevice getCurrentVirtualDevice();
+    static void setCurrentVirtualDevice(GmacVirtualDevice virtualDevice);
     static Mode &getCurrentMode();
     static bool hasCurrentMode();
     static void setCurrentMode(Mode *mode);
