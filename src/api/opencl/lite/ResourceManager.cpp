@@ -88,5 +88,11 @@ ResourceManager::acceleratorToBuffer(core::Mode &mode, core::IOBuffer &buffer, c
     return mode.acceleratorToBuffer(buffer, dst, count, off);
 }
 
+gmacError_t
+ResourceManager::memset(core::Mode &mode, accptr_t addr, int c, size_t size)
+{
+    return mode.memset(addr, c, size);
+}
+
 }}}
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

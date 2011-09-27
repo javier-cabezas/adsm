@@ -82,6 +82,8 @@ public:
     virtual gmacError_t bufferToAccelerator(Mode &mode, accptr_t dst, IOBuffer &buffer, size_t count, size_t off = 0) = 0;
 
     virtual gmacError_t acceleratorToBuffer(Mode &mode, IOBuffer &buffer, const accptr_t dst, size_t count, size_t off = 0) = 0;
+
+    virtual gmacError_t memset(Mode &mode, accptr_t addr, int c, size_t size) = 0;
 };
 
 }}

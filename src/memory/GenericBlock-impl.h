@@ -171,7 +171,7 @@ GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
             const std::list<core::Mode *> &list = a->second;
             ASSERTION(list.size() > 0);
             core::Mode *mode = list.front();
-            ret = mode->copyToAccelerator(a->first + blockOff, StateBlock<State>::shadow_ + blockOff, count);
+            ret = this->resourceManager_.copyToAccelerator(*mode, a->first + blockOff, StateBlock<State>::shadow_ + blockOff, count);
             if(ret != gmacSuccess) break;
         }
     }
@@ -255,9 +255,9 @@ GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
             core::Mode &mode = *list.front();
             accptr_t srcPtr = srcBlock.acceleratorAddr(mode) + srcOff;
             if (i->first.pasId_ != srcPtr.pasId_) {
-                ret = mode.copyToAccelerator(i->first + dstOff, srcBlock.getShadow() + srcOff, size);
+                ret = this->resourceManager_.copyToAccelerator(mode, i->first + dstOff, srcBlock.getShadow() + srcOff, size);
             } else {
-                ret = mode.copyAccelerator(i->first + dstOff, srcPtr, size);
+                ret = this->resourceManager_.copyAccelerator(mode, i->first + dstOff, srcPtr, size);
             }
             if(ret != gmacSuccess) return ret;
         }
@@ -268,7 +268,7 @@ GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
             const std::list<core::Mode *> &list = i->second;
             ASSERTION(list.size() > 0);
             core::Mode *mode = list.front();
-            ret = mode->copyToAccelerator(i->first + dstOff, srcBlock.getShadow() + srcOff, size);
+            ret = this->resourceManager_.copyToAccelerator(*mode, i->first + dstOff, srcBlock.getShadow() + srcOff, size);
             if(ret != gmacSuccess) return ret;
         }
     } else if (src == StateBlock<State>::ACCELERATOR &&
@@ -304,7 +304,7 @@ GenericBlock<State>::memset(int v, size_t size, size_t blockOffset, typename Sta
                 const std::list<core::Mode *> &list = i->second;
                 ASSERTION(list.size() > 0);
                 core::Mode *mode = list.front();
-                ret = mode->memset(i->first + ptroff_t(blockOffset), v, size);
+                ret = this->resourceManager_.memset(*mode, i->first + ptroff_t(blockOffset), v, size);
                 if(ret != gmacSuccess) break;
             }
         }

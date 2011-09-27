@@ -23,18 +23,18 @@ inline void BlockGroup<State>::modifiedObject()
 }
 
 static inline gmacError_t
-mallocAccelerator(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
+mallocAccelerator(core::ResourceManager &resourceManager, core::Mode &mode, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
 {
     acceleratorAddr = accptr_t(0);
     // Allocate accelerator memory
 #ifdef USE_VM
-    gmacError_t ret = mode.map(acceleratorAddr, addr, size, unsigned(SubBlockSize_));
+    gmacError_t ret = resourceManager.map(mode, acceleratorAddr, addr, size, unsigned(SubBlockSize_));
     if(ret == gmacSuccess) {
         vm::Bitmap &bitmap = mode.getBitmap();
         bitmap.registerRange(acceleratorAddr, size);
     }
 #else
-    gmacError_t ret = mode.map(acceleratorAddr, addr, size);
+    gmacError_t ret = resourceManager.map(mode, acceleratorAddr, addr, size);
 #endif
     return ret;
 }
@@ -170,7 +170,7 @@ BlockGroup<State>::addOwner(core::Mode &mode)
     TRACE(LOCAL, "Add owner %p Object @ %p", &mode, addr_);
     accptr_t acceleratorAddr = accptr_t(0);
 
-    gmacError_t ret = mallocAccelerator(mode, addr_, size_, acceleratorAddr);
+    gmacError_t ret = mallocAccelerator(resourceManager_, mode, addr_, size_, acceleratorAddr);
     if (ret != gmacSuccess) return ret;
 
     lockWrite();
@@ -247,7 +247,7 @@ BlockGroup<State>::removeOwner(core::Mode &mode)
                 list.erase(j);
                 if (list.size() == 0) {
                     acceleratorAddr_.erase(i);
-                    mode.unmap(addr_, size_);
+                    resourceManager_.unmap(mode, addr_, size_);
                 }
                 ownerFound = true;
                 break;
@@ -287,7 +287,7 @@ BlockGroup<State>::mapToAccelerator()
         // Allocate accelerator memory in the new mode
         accptr_t newAcceleratorAddr(0);
 
-        ret = mallocAccelerator(*ownerShortcut_, addr_, size_, newAcceleratorAddr);
+        ret = mallocAccelerator(resourceManager_, *ownerShortcut_, addr_, size_, newAcceleratorAddr);
 
         if (ret == gmacSuccess) {
             ASSERTION(acceleratorAddr_.size() == 1);
