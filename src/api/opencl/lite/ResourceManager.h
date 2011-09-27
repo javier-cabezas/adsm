@@ -85,6 +85,8 @@ public:
     gmacError_t bufferToAccelerator(core::Mode &mode, accptr_t dst, core::IOBuffer &buffer, size_t count, size_t off = 0);
 
     gmacError_t acceleratorToBuffer(core::Mode &mode, core::IOBuffer &buffer, const accptr_t dst, size_t count, size_t off = 0);
+
+    gmacError_t memset(core::Mode &mode, accptr_t addr, int c, size_t size);
 };
 
 }}}
