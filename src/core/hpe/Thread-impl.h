@@ -42,30 +42,23 @@ Thread::Thread(Process &proc) :
     core::Thread(),
     process_(proc),
     currentMode_(NULL),
-    currentAddressSpace_(NULL)
+    currentVirtualDevice_(0)
 {
 }
 
 inline
-AddressSpace &
-Thread::getCurrentAddressSpace()
+GmacVirtualDevice
+Thread::getCurrentVirtualDevice()
 {
-    AddressSpace *aSpace = getCurrentThread().currentAddressSpace_;
-    return *aSpace;
-}
-
-inline
-bool
-Thread::hasCurrentAddressSpace()
-{
-    return getCurrentThread().currentAddressSpace_ != NULL;
+    GmacVirtualDevice virtualDevice = getCurrentThread().currentVirtualDevice_;
+    return virtualDevice;
 }
 
 inline
 void
-Thread::setCurrentAddressSpace(AddressSpace *aSpace)
+Thread::setCurrentVirtualDevice(GmacVirtualDevice virtualDevice)
 {
-    getCurrentThread().currentAddressSpace_ = aSpace;
+    getCurrentThread().currentVirtualDevice_ = virtualDevice;
 }
 
 inline
