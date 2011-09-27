@@ -41,15 +41,31 @@ inline
 Thread::Thread(Process &proc) :
     core::Thread(),
     process_(proc),
-    currentMode_(NULL)
+    currentMode_(NULL),
+    currentAddressSpace_(NULL)
 {
 }
 
 inline
-bool
-Thread::hasCurrentMode()
+AddressSpace &
+Thread::getCurrentAddressSpace()
 {
-    return getCurrentThread().currentMode_ != NULL;
+    AddressSpace *aSpace = getCurrentThread().currentAddressSpace_;
+    return *aSpace;
+}
+
+inline
+bool
+Thread::hasCurrentAddressSpace()
+{
+    return getCurrentThread().currentAddressSpace_ != NULL;
+}
+
+inline
+void
+Thread::setCurrentAddressSpace(AddressSpace *aSpace)
+{
+    getCurrentThread().currentAddressSpace_ = aSpace;
 }
 
 inline
@@ -62,6 +78,13 @@ Thread::getCurrentMode()
     getCurrentThread().currentMode_ = ret;
     
     return *ret;
+}
+
+inline
+bool
+Thread::hasCurrentMode()
+{
+    return getCurrentThread().currentMode_ != NULL;
 }
 
 inline

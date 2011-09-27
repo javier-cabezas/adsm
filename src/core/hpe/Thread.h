@@ -49,12 +49,16 @@ class GMAC_LOCAL Thread :
 private:
     Process &process_;
     Mode *currentMode_;
+    AddressSpace *currentAddressSpace_;
 
     static Thread &getCurrentThread();
 
 public:
     Thread(Process &proc);
 
+    static AddressSpace &getCurrentAddressSpace();
+    static bool hasCurrentAddressSpace();
+    static void setCurrentAddressSpace(AddressSpace *aSpace);
     static Mode &getCurrentMode();
     static bool hasCurrentMode();
     static void setCurrentMode(Mode *mode);
