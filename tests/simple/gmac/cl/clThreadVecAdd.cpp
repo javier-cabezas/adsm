@@ -56,8 +56,8 @@ typedef struct __OpenCLEnv
 
 static OpenCLEnv openCLEnv = {NULL,NULL,NULL,NULL};
 
-//#define SHARED_CONTEXT
-//#define SHARED_COMMAND_QUEUE
+#define SHARED_CONTEXT
+#define SHARED_COMMAND_QUEUE
 
 #ifdef SHARED_CONTEXT
 cl_program program;
