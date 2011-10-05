@@ -81,15 +81,11 @@ TEST_F(AcceleratorTest, CreateMode) {
     std::vector<AddressSpace *> aSpaces;
     for(unsigned i = 0; i < n; i++) {
         Accelerator &acc = Process_->getAccelerator(i);
-        unsigned load = acc.load();
         AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_, acc);
         aSpaces.push_back(aSpace);
         Mode *mode = acc.createMode(*Process_, *aSpace);
         ASSERT_TRUE(mode != NULL);
-        ASSERT_TRUE(acc.load() == load + 1);
-
         mode->decRef();
-        ASSERT_TRUE(acc.load() == load);
     }
 
     for(unsigned i = 0; i < n; i++) {

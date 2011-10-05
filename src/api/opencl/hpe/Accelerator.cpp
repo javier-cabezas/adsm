@@ -153,9 +153,11 @@ core::hpe::Mode *Accelerator::createMode(core::hpe::Process &proc, core::hpe::Ad
 {
     trace::EnterCurrentFunction();
     core::hpe::Mode *mode = ModeFactory::create(dynamic_cast<core::hpe::Process &>(proc), aSpace);
+#if 0
     if (mode != NULL) {
         registerMode(*mode);
     }
+#endif
     trace::ExitCurrentFunction();
 
     TRACE(LOCAL, "Creating Execution Mode %p to Accelerator", mode);

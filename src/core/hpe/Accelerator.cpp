@@ -6,13 +6,18 @@
 namespace __impl { namespace core { namespace hpe {
 
 Accelerator::Accelerator(int n) :
-    id_(n), load_(0)
+    id_(n)
+#if 0 
+    , load_(0)
+#endif
 {
 }
 
 Accelerator::~Accelerator()
 {
 }
+
+#if 0
 
 void Accelerator::registerMode(Mode &mode)
 {
@@ -29,5 +34,6 @@ void Accelerator::unregisterMode(Mode &mode)
     load_--;
     trace::ExitCurrentFunction();
 }
+#endif
 
 }}}

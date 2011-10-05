@@ -6,11 +6,13 @@
 
 namespace __impl { namespace core { namespace hpe {
 
+#if 0
 inline unsigned
 Accelerator::load() const
 {
     return load_;
 }
+#endif
 
 inline unsigned
 Accelerator::id() const
@@ -46,13 +48,14 @@ Accelerator::getMapping(accptr_t &acc, hostptr_t addr, size_t size)
     return ret;
 }
 
-
+#if 0
 inline void
 Accelerator::migrateMode(Mode &mode, Accelerator &acc)
 {
     unregisterMode(mode);
     acc.registerMode(mode);
 }
+#endif
 
 }}}
 
