@@ -31,100 +31,104 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CONFIG_OPENCL_COMMON_H_
-#define GMAC_CONFIG_OPENCL_COMMON_H_
+#ifndef GMAC_CONFIG_PTR_H_
+#define GMAC_CONFIG_PTR_H_
 
-#if defined(__APPLE__)
-#   include <OpenCL/cl.h>
-#else
-#   include <CL/cl.h>
-#endif
-
-#include <cassert>
-#include <cstdlib>
-
-#include "config/ptr.h"
-
-typedef cl_command_queue stream_t;
-typedef cl_event event;
-
-class _opencl_ptr_t {
-private:
-    cl_mem base_;
-    size_t offset_;
+template <typename BackendPtr>
+class _common_ptr_t {
+protected:
+    BackendPtr devPtr_;
+    unsigned asId_;
 
 public:
-    typedef cl_mem base_type;
-
-    inline explicit _opencl_ptr_t(cl_mem base) :
-        base_(base),
-        offset_(0)
+    inline _common_ptr_t(BackendPtr ptr, unsigned asId = 0) :
+        devPtr_(ptr),
+        asId_(asId)
     {
     }
 
-    inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
-        base_(ptr.base_),
-        offset_(ptr.offset_)
+    inline _common_ptr_t(typename BackendPtr::base_type value, unsigned asId = 0) :
+        devPtr_(value),
+        asId_(asId)
     {
     }
 
-    inline ~_opencl_ptr_t()
+    inline _common_ptr_t(const _common_ptr_t<BackendPtr> &ptr) :
+        devPtr_(ptr.devPtr_),
+        asId_(ptr.asId_)
     {
     }
 
-    inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr)
+    inline ~_common_ptr_t()
+    {
+    }
+
+    inline _common_ptr_t &operator=(const _common_ptr_t<BackendPtr> &ptr)
     {
         if (this != &ptr) {
-            base_   = ptr.base_;
-            offset_ = ptr.offset_;
+            devPtr_ = ptr.devPtr_;
+            asId_  = ptr.asId_;
         }
         return *this;
     }
 
-    inline bool operator==(const _opencl_ptr_t &ptr) const
+    inline bool operator==(const _common_ptr_t<BackendPtr> &ptr) const
     {
-        return base_ == ptr.base_ && offset_ == ptr.offset_;
+        return devPtr_ == ptr.devPtr_ && asId_ == ptr.asId_;
     }
 
     inline bool operator==(long i) const
     {
-        return base_ == cl_mem(i);
+        return devPtr_ == i;
     }
 
-    inline bool operator!=(const _opencl_ptr_t &ptr) const
+    inline bool operator!=(const _common_ptr_t<BackendPtr> &ptr) const
     {
-        return base_ != ptr.base_ || offset_ != ptr.offset_;
+        return devPtr_ != ptr.devPtr_ || asId_ != ptr.asId_;
     }
 
     inline bool operator!=(long i) const
     {
-        return base_ != cl_mem(i);
+        return devPtr_ != i;
     }
 
-    inline bool operator<(const _opencl_ptr_t &ptr) const
+    inline bool operator<(const _common_ptr_t<BackendPtr> &ptr) const
     {
-        return base_ < ptr.base_ || (base_ == ptr.base_ && offset_ < ptr.offset_);
+        return asId_ < ptr.asId_ || (asId_ == ptr.asId_ && devPtr_ < ptr.devPtr_);
     }
 
     template <typename T>
-    inline _opencl_ptr_t &operator+=(const T &off)
+    inline _common_ptr_t &operator+=(const T &off)
     {
-        offset_ += off;
+        devPtr_ += off;
         return *this;
     }
 
-    inline cl_mem get() const
+    template <typename T>
+    inline const _common_ptr_t operator+(const T &off) const
     {
-        return base_;
+        _common_ptr_t ret(*this);
+        ret += off;
+        return ret;
+    }
+
+    inline typename BackendPtr::base_type get() const
+    {
+        return devPtr_.get();
     }
 
     inline size_t offset() const
     {
-        return offset_;
+        return devPtr_.offset();
+    }
+
+    inline unsigned getPAddressSpace() const
+    {
+        return asId_;
     }
 };
 
-typedef _common_ptr_t<_opencl_ptr_t> accptr_t;
-typedef const char * gmac_kernel_id_t;
 
-#endif
+#endif /* PTR_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

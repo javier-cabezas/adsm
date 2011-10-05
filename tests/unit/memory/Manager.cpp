@@ -115,7 +115,7 @@ TEST_F(ManagerTest, Coherence)
     hostptr_t ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
 
     ObjectMap &map = Thread::getCurrentVirtualDevice().getAddressSpace();
 	ASSERT_TRUE(map.hasModifiedObjects());
@@ -158,7 +158,7 @@ TEST_F(ManagerTest, IOBufferWrite)
     hostptr_t ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
 
     __impl::core::IOBuffer &buffer = Thread::getCurrentVirtualDevice().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
@@ -189,7 +189,7 @@ TEST_F(ManagerTest, IOBufferRead)
     hostptr_t ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
-    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != NULL);
+    ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
 
     __impl::core::IOBuffer &buffer = Thread::getCurrentVirtualDevice().createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
