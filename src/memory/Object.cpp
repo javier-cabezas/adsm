@@ -165,8 +165,8 @@ Object::memcpyObjectToObject(core::Mode &mode,
     core::Mode &srcOwner = owner(mode, srcPtr);
 
     if (__impl::util::params::ParamMemcpyAccToAcc &&
-        dstObj.acceleratorAddr(dstOwner, dstPtr).pasId_ ==
-        acceleratorAddr(srcOwner, srcPtr).pasId_) {
+        dstObj.acceleratorAddr(dstOwner, dstPtr).getPAddressSpace() ==
+        acceleratorAddr(srcOwner, srcPtr).getPAddressSpace()) {
         TRACE(LOCAL, "Using fast path!: %p -> %p ("FMT_SIZE")",        addr() + srcOffset,
                                                                 dstObj.addr() + dstOffset, size);
         accptr_t dstPtr = dstObj.acceleratorAddr(dstOwner, dstObj.addr() + dstOffset);

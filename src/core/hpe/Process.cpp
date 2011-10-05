@@ -197,8 +197,8 @@ void Process::removeMode(Mode &mode)
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
     load_[mode.getAccelerator().id()]--;
     modes_.remove(mode);
-    mode.decRef();
     AddressSpace::removeOwner(*this, mode);
+    mode.decRef();
     unlock();
 }
 
@@ -336,7 +336,7 @@ bool Process::allIntegrated()
     bool ret = true;
     std::vector<AcceleratorPtr>::iterator a;
     for(a = accs_.begin(); a != accs_.end(); a++) {
-        ret = ret && (*a)->integrated();
+        ret = ret && (*a)->hasIntegratedMemory();
     }
     return ret;
 }

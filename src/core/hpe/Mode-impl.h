@@ -193,7 +193,7 @@ Mode::eventStream()
 inline bool
 Mode::hasIntegratedMemory() const
 {
-    return getAccelerator().integrated();
+    return getAccelerator().hasIntegratedMemory();
 }
 
 }}}

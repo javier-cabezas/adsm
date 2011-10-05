@@ -16,7 +16,7 @@ Context::~Context()
 gmacError_t
 Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    REQUIRES(acc != 0);
+    REQUIRES(acc != accptr_t(0));
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     gmacError_t ret;
@@ -28,7 +28,7 @@ gmacError_t
 Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     REQUIRES(host != NULL);
-    REQUIRES(acc != 0);
+    REQUIRES(acc != accptr_t(0));
     REQUIRES(size > 0);
     gmacError_t ret;
     ret = __impl::core::hpe::Context::copyToHost(host, acc, size);
