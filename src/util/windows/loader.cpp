@@ -86,6 +86,7 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 
 	PVOID ret = NULL;
 	ret = PatchModuleSymbol(module, symbol, name);
+	if(ret == NULL) return NULL;
 
 	// Now check the DLLs within this module
 
