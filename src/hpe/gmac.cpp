@@ -341,7 +341,7 @@ gmacPtr(const void *ptr)
     ret = getManager().translate(Thread::getCurrentVirtualDevice(), hostptr_t(ptr));
     exitGmac();
     TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get());
-    return ret.get();
+    return __gmac_accptr_t(ret.get());
 }
 
 gmacError_t GMAC_LOCAL

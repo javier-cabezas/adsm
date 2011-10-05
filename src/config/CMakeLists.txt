@@ -9,6 +9,7 @@ set(gmac_config_SRC
     config.h
     dbc.h
     order.h
+    ptr.h
 )
 
 add_gmac_sources(gmac-config ${gmac_config_SRC})

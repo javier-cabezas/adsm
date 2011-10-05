@@ -118,9 +118,11 @@ Accelerator::createMode(core::hpe::Process &proc, __impl::core::hpe::AddressSpac
 {
     trace::EnterCurrentFunction();
     core::hpe::Mode *mode = ModeFactory::create(proc, aSpace);
+#if 0
     if (mode != NULL) {
         registerMode(*mode);
     }
+#endif
     trace::ExitCurrentFunction();
 
     TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
@@ -221,11 +223,13 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
     if(gpuPtr % align) {
         gpuPtr += align - (gpuPtr % align);
     }
-    dst = gpuPtr;
 
 #ifndef USE_MULTI_CONTEXT
-    dst.pasId_ = id_;
+    dst = accptr_t(gpuPtr, id_);
+#else
+    dst = accptr_t(gpuPtr);
 #endif
+
 
     allocations_.insert(src, dst, count);
 
@@ -256,7 +260,7 @@ Accelerator::unmap(hostptr_t host, size_t count)
 
     AlignmentMap::iterator i;
     alignMap_.lockWrite();
-    i = alignMap_.find(addr);
+    i = alignMap_.find(addr.get());
     if (i == alignMap_.end()) {
         alignMap_.unlock();
         trace::ExitCurrentFunction();
@@ -283,23 +287,23 @@ Accelerator::memset(accptr_t addr, int c, size_t count, stream_t /*stream*/)
     if(count % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD32(addr, seed, count / 4);
+        ret = cuMemsetD32(addr.get(), seed, count / 4);
 #else
-        ret = cuMemsetD32(addr, seed, unsigned(count / 4));
+        ret = cuMemsetD32(addr.get(), seed, unsigned(count / 4));
 #endif
     } else if(count % 2) {
         short s = (short) c & 0xffff;
         short seed = s | (s << 8);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD16(addr, seed, count / 2);
+        ret = cuMemsetD16(addr.get(), seed, count / 2);
 #else
-        ret = cuMemsetD16(addr, seed, unsigned(count / 2));
+        ret = cuMemsetD16(addr.get(), seed, unsigned(count / 2));
 #endif
     } else {
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), count);
+        ret = cuMemsetD8(addr.get(), (uint8_t)(c & 0xff), count);
 #else
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), unsigned(count));
+        ret = cuMemsetD8(addr.get(), (uint8_t)(c & 0xff), unsigned(count));
 #endif
     }
     popContext();
@@ -434,7 +438,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     trace::SetThreadState(trace::Wait);
 #endif
 #if CUDA_VERSION >= 3020
-    ret = cuMemcpyHtoD(acc, host, size);
+    ret = cuMemcpyHtoD(acc.get(), host, size);
 #else
     ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
 #endif
@@ -460,7 +464,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
 
     buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
+    CUresult ret = cuMemcpyHtoDAsync(acc.get(), host, count, stream);
 #else
     CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
 #endif
@@ -484,7 +488,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 #endif
 
 #if CUDA_VERSION >= 3020
-    ret = cuMemcpyDtoH(host, acc, size);
+    ret = cuMemcpyDtoH(host, acc.get(), size);
 #else
     ret = cuMemcpyDtoH(host, acc, unsigned(size));
 #endif
@@ -510,9 +514,9 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
     pushContext();
     buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
+    CUresult ret = cuMemcpyDtoHAsync(host, acc.get(), count, stream);
 #else
-    CUresult ret = cuMemcpyDtoHAsync(host, acc, unsigned(count), stream);
+    CUresult ret = cuMemcpyDtoHAsync(host, acc.get(), unsigned(count), stream);
 #endif
     buffer.started(count);
     popContext();
@@ -526,9 +530,9 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", src.get(), dst.get(), size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
+    CUresult ret = cuMemcpyDtoDAsync(dst.get(), src.get(), size, stream);
 #else
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, unsigned(size), stream);
+    CUresult ret = cuMemcpyDtoDAsync(dst.get(), src.get(), unsigned(size), stream);
 #endif
     popContext();
     trace::ExitCurrentFunction();
