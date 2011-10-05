@@ -117,7 +117,7 @@ core::hpe::Mode *
 Accelerator::createMode(core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = ModeFactory::create(proc, *this, aSpace);
+    core::hpe::Mode *mode = ModeFactory::create(proc, aSpace);
     if (mode != NULL) {
         registerMode(*mode);
     }
