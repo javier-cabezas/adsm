@@ -20,6 +20,8 @@ set(core_hpe_SRC
     ResourceManager.cpp
     Thread.h
     Thread-impl.h
+    VirtualDeviceTable.h
+    VirtualDeviceTable-impl.h
     Queue.h
     Queue.cpp
 )
