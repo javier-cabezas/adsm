@@ -32,9 +32,9 @@ GenericBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
 
     AcceleratorAddrMap::iterator it = acceleratorAddr_.find(addr);
 
-    TRACE(LOCAL, "Adding owner for address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
+    TRACE(LOCAL, "Adding owner for address for %u:%p @ Context %p", addr.getPAddressSpace(), addr.get(), &mode);
     if (it == acceleratorAddr_.end()) {
-        TRACE(LOCAL, "Adding new address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
+        TRACE(LOCAL, "Adding new address for %u:%p @ Context %p", addr.getPAddressSpace(), addr.get(), &mode);
         acceleratorAddr_.insert(AcceleratorAddrMap::value_type(addr, std::list<core::Mode *>()));
         AcceleratorAddrMap::iterator it = acceleratorAddr_.find(addr);
         it->second.push_back(&mode);
@@ -254,7 +254,7 @@ GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
             ASSERTION(list.size() > 0);
             core::Mode &mode = *list.front();
             accptr_t srcPtr = srcBlock.acceleratorAddr(mode) + srcOff;
-            if (i->first.pasId_ != srcPtr.pasId_) {
+            if (i->first.getPAddressSpace() != srcPtr.getPAddressSpace()) {
                 ret = this->resourceManager_.copyToAccelerator(mode, i->first + dstOff, srcBlock.getShadow() + srcOff, size);
             } else {
                 ret = this->resourceManager_.copyAccelerator(mode, i->first + dstOff, srcPtr, size);

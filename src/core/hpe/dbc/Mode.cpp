@@ -53,7 +53,7 @@ Mode::unmap(hostptr_t addr, size_t size)
 gmacError_t
 Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
-    REQUIRES(acc != 0);
+    REQUIRES(acc != accptr_t(0));
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
 
@@ -67,7 +67,7 @@ gmacError_t
 Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 {
     REQUIRES(host != NULL);
-    REQUIRES(acc != 0);
+    REQUIRES(acc != accptr_t(0));
     REQUIRES(size > 0);
 
     gmacError_t ret;
@@ -79,8 +79,8 @@ Mode::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
 gmacError_t
 Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 {
-    REQUIRES(dst != 0);
-    REQUIRES(src != 0);
+    REQUIRES(dst != accptr_t(0));
+    REQUIRES(src != accptr_t(0));
     REQUIRES(size > 0);
 
     gmacError_t ret;
@@ -92,7 +92,7 @@ Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 gmacError_t
 Mode::memset(accptr_t addr, int c, size_t size)
 {
-    REQUIRES(addr != 0);
+    REQUIRES(addr != accptr_t(0));
     REQUIRES(size > 0);
 
     gmacError_t ret;

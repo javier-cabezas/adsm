@@ -11,7 +11,7 @@ AllocationMap::~AllocationMap()
 void AllocationMap::insert(hostptr_t key, accptr_t val, size_t size)
 {
     REQUIRES(key != NULL);
-    REQUIRES(val != 0);
+    REQUIRES(val != accptr_t(0));
     REQUIRES(size > 0);
     lockRead();
     REQUIRES(__impl::core::MapAlloc::find(key) == end());

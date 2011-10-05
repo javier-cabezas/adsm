@@ -75,32 +75,11 @@ protected:
      * the physical memory with the CPU */
     bool integrated_;
 
-#if 0
-    /** Value that represents the load of the accelerator */
-    unsigned load_;
-#endif
-
     /** Map of allocations in the device */
     gmac::core::AllocationMap allocations_;
 
     /** Information of the accelerator */
     GmacAcceleratorInfo accInfo_;
-
-#if 0
-    /**
-     * Registers a mode to be run on the accelerator. The mode must not be
-     * already registered in the accelerator
-     * \param mode A reference to the mode to be registered
-     */
-    TESTABLE void registerMode(Mode &mode);
-
-    /**
-     * Unegisters a mode from the accelerator. The mode must be already
-     * registered in the accelerator
-     * \param mode A reference to the mode to be unregistered
-     */
-    TESTABLE void unregisterMode(Mode &mode);
-#endif
 
 public:
     /**
@@ -128,21 +107,6 @@ public:
      * \return A pointer to the created mode or NULL if there has been an error
      */
     virtual Mode *createMode(Process &proc, AddressSpace &aSpace) = 0;
-
-#if 0
-    /**
-     * Migrate an execution mode to another accelerator
-     * \param mode Execution mode to be migrated
-     * \param acc Accelerator where to migrate the execution mode
-     */
-    virtual void migrateMode(Mode &mode, Accelerator &acc);
-
-    /**
-     * Returns a value that indicates the load of the accelerator
-     * \return A value that indicates the load of the accelerator
-     */
-    virtual unsigned load() const;
-#endif
 
     /**
      * Queries the accelerator address of the given host pointer
@@ -287,7 +251,7 @@ public:
      * \return A boolean that tells if the accelerator is integrated and
      * therefore shares the physical memory with the CPU
      */
-    bool integrated() const;
+    bool hasIntegratedMemory() const;
 };
 
 }}}

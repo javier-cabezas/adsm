@@ -170,14 +170,12 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
 
     cl_int ret = CL_SUCCESS;
     trace::SetThreadState(trace::Wait);
-    dst(clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret));
+    dst = accptr_t(clCreateBuffer(ctx_, CL_MEM_READ_WRITE, size, NULL, &ret), id_);
     if(ret != CL_SUCCESS) return error(ret);
     trace::SetThreadState(trace::Running);
     allocatedMemory_ += size;
 
     allocations_.insert(src, dst, size);
-
-    dst.pasId_ = id_;
 
     TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.get());
 
@@ -190,7 +188,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
 
-    accptr_t addr;
+    accptr_t addr(0);
     size_t s;
 
     bool hasMapping = allocations_.find(host, addr, s);
@@ -649,8 +647,7 @@ accptr_t Accelerator::hostMapAddr(const hostptr_t addr)
     bool found = localHostAlloc_.translate(addr, mem, dummy);
     accptr_t acc(0);
     if (found) {
-        acc = accptr_t(mem);
-        acc.pasId_ = id_;
+        acc = accptr_t(mem, id_);
     }
 
     trace::ExitCurrentFunction();

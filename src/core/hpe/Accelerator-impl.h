@@ -33,7 +33,7 @@ Accelerator::busAccId() const
 }
 
 inline bool
-Accelerator::integrated() const
+Accelerator::hasIntegratedMemory() const
 {
     return integrated_;
 }

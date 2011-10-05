@@ -58,7 +58,8 @@ extern ListAddr AllAddresses;
 //! Memory Manager Interface
 
 //! Memory Managers orchestate the data transfers between host and accelerator memories
-class GMAC_LOCAL Manager : public __impl::util::Singleton<gmac::memory::Manager> {
+class GMAC_LOCAL Manager :
+    public __impl::util::Singleton<gmac::memory::Manager> {
     DBC_FORCE_TEST(Manager)
 protected:
     /** Process where the memory manager is being used */
