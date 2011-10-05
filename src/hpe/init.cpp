@@ -72,13 +72,14 @@ void initGmac(void)
 
 namespace __impl {
     namespace core {
+        core::Process &getProcess() { return *Process_; }
         namespace hpe {
-            //Mode &getCurrentMode() { return __impl::core::hpe::Thread::getCurrentMode(); }
+            //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::Thread::getCurrentVirtualDevice(); }
             Process &getProcess() { return *Process_; }
         }
-        Mode &getMode(Mode &mode) { return __impl::core::hpe::Thread::getCurrentMode(); }
-        Process &getProcess() { return *Process_; }
+        Mode &getMode(Mode &mode) { return __impl::core::hpe::Thread::getCurrentVirtualDevice(); }
     }
+
     namespace memory {
         Manager &getManager() { return *Manager_; }
         bool hasAllocator() { return Allocator_ != NULL; }

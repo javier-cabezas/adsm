@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "util/Lock.h"
 #include "util/NonCopyable.h"
+#include "util/Unique.h"
 
 #include "memory/ObjectMap.h"
 
@@ -53,14 +54,18 @@ class Object;
 
 namespace core { namespace hpe {
 
+class Accelerator;
 class Mode;
 class Process;
 
 //! An object map associated to an execution mode
 class GMAC_LOCAL AddressSpace :
-    public memory::ObjectMap {
+    public memory::ObjectMap,
+    public util::Unique<AddressSpace, GmacAddressSpaceId> {
 
     typedef memory::ObjectMap Parent;
+
+    Accelerator *acc_;
 
 public:
     /**
@@ -68,8 +73,12 @@ public:
      *
      * \param name Name of the object map used for tracing
      * \param parent Process that owns the map
+     * \param acc Accelerator in which the Address Space is located
      */
-    AddressSpace(const char *name, Process &parent);
+    AddressSpace(const char *name, Process &parent, Accelerator &acc);
+
+    Accelerator &getAccelerator();
+    const Accelerator &getAccelerator() const;
 
     /**
      * Default destructor
@@ -124,6 +133,10 @@ public:
      * \param mode Owner to be removed from global objects
      */
     static void removeOwner(Process &proc, Mode &mode);
+
+#if 0
+    gmacError_t moveTo(Accelerator &acc);
+#endif
 };
 
 }}}

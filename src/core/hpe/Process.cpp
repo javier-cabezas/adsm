@@ -38,6 +38,7 @@ void ModeMap::remove(Mode &mode)
     unlock();
 }
 
+#if 0
 QueueMap::QueueMap() :
     gmac::util::RWLock("QueueMap")
 {}
@@ -94,6 +95,7 @@ void QueueMap::erase(THREAD_T id)
     }
     unlock();
 }
+#endif
 
 Process::Process() :
     core::Process(),
@@ -102,7 +104,8 @@ Process::Process() :
     shared_("SharedMemoryMap", *this),
     global_("GlobalMemoryMap", *this),
     orphans_("OrhpanMemoryMap", *this),
-    current_(0)
+    current_(0),
+    resourceManager_(*this)
 {
     TLS::Init();
 
@@ -128,14 +131,18 @@ Process::~Process()
         delete acc;
     }
 
+#if 0
     queues_.cleanup();
+#endif
     delete &protocol_;
 }
 
 void Process::initThread()
 {
+#if 0
     ThreadQueue * q = new ThreadQueue();
     queues_.insert(util::GetThreadId(), q);
+#endif
 
     // Set the private per-thread variables
     new Thread(*this);
@@ -143,8 +150,10 @@ void Process::initThread()
 
 void Process::finiThread()
 {
+#if 0
     queues_.erase(util::GetThreadId());
-    if (Thread::hasCurrentMode() != false) removeMode(Thread::getCurrentMode());
+#endif
+    if (Thread::hasCurrentVirtualDevice() != false) removeMode(Thread::getCurrentVirtualDevice());
     delete &TLS::getCurrentThread();
 }
 
@@ -171,7 +180,7 @@ Mode *Process::createMode(int acc)
     TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("", *this)));
+    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("", *this, *accs_[usedAcc])));
     modes_.insert(mode);
     unlock();
 
@@ -224,16 +233,17 @@ gmacError_t Process::globalFree(memory::Object &object)
     return gmacSuccess;
 }
 
+#if 0
 // This function owns the global lock
 gmacError_t Process::migrate(int acc)
 {
     if (acc >= int(accs_.size())) return gmacErrorInvalidValue;
-    if(Thread::hasCurrentMode() == false) {
+    if(Thread::hasCurrentVirtualDevice() == false) {
         Mode *mode = createMode(acc);
-        Thread::setCurrentMode(mode);
+        Thread::setCurrentVirtualDevice(*mode);
         return gmacSuccess;
     }
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
@@ -248,6 +258,7 @@ gmacError_t Process::migrate(int acc)
     TRACE(LOCAL,"Context migrated");
     return ret;
 }
+#endif
 
 void Process::addAccelerator(Accelerator &acc)
 {
@@ -259,7 +270,7 @@ void Process::addAccelerator(Accelerator &acc)
 
 accptr_t Process::translate(const hostptr_t addr)
 {
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     memory::ObjectMap &map = mode.getAddressSpace();
     memory::Object *object = map.getObject(addr);
     if(object == NULL) return accptr_t(0);
@@ -268,40 +279,42 @@ accptr_t Process::translate(const hostptr_t addr)
     return ptr;
 }
 
+#if 0
 void Process::send(THREAD_T id)
 {
-    if (Thread::hasCurrentMode() == false) return;
-    Mode &mode = Thread::getCurrentMode();
+    if (Thread::hasCurrentVirtualDevice() == false) return;
+    Mode &mode = Thread::getCurrentVirtualDevice();
     mode.wait();
     queues_.push(id, mode);
-    Thread::setCurrentMode(NULL);
+    Thread::setCurrentVirtualDevice(NULL);
 }
 
 void Process::receive()
 {
     // Get current context and destroy (if necessary)
-    if(Thread::hasCurrentMode()) Thread::getCurrentMode().decRef();
+    if(Thread::hasCurrentVirtualDevice()) Thread::getCurrentVirtualDevice().decRef();
     // Get a fresh context
-    Thread::setCurrentMode(queues_.pop());
+    Thread::setCurrentVirtualDevice(queues_.pop());
 }
 
 void Process::sendReceive(THREAD_T id)
 {
-    if(Thread::hasCurrentMode()) {
-        Thread::getCurrentMode().wait();
-        queues_.push(id, Thread::getCurrentMode());
+    if(Thread::hasCurrentVirtualDevice()) {
+        Thread::getCurrentVirtualDevice().wait();
+        queues_.push(id, Thread::getCurrentVirtualDevice());
     }
-    Thread::setCurrentMode(queues_.pop());
+    Thread::setCurrentVirtualDevice(queues_.pop());
 }
 
 void Process::copy(THREAD_T id)
 {
-    if(Thread::hasCurrentMode() == false) return;
-    Mode &mode = Thread::getCurrentMode();
+    if(Thread::hasCurrentVirtualDevice() == false) return;
+    Mode &mode = Thread::getCurrentVirtualDevice();
     queues_.push(id, mode);
     mode.incRef();
     modes_.insert(&mode);
 }
+#endif
 
 core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
@@ -310,7 +323,7 @@ core::Mode *Process::owner(const hostptr_t addr, size_t size)
     memory::Object *object = shared_.getObject(addr, size);
     if(object == NULL) object = global_.getObject(addr, size);
     if(object == NULL) return NULL;
-    core::Mode &ret = object->owner(Thread::getCurrentMode(), addr);
+    core::Mode &ret = object->owner(Thread::getCurrentVirtualDevice(), addr);
     object->decRef();
     return &ret;
 }
@@ -340,17 +353,6 @@ Process::prepareForCall()
     unlock();
 
     return ret;
-}
-
-gmacError_t
-Process::setAddressSpace(Mode &mode, unsigned aSpaceId)
-{
-    if (aSpaceId >= aSpaces_.size()) {
-        return gmacErrorInvalidValue;
-    } else {
-        mode.setAddressSpace(*aSpaces_[aSpaceId]);
-    }
-    return gmacSuccess;
 }
 
 }}}

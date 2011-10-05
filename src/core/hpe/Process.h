@@ -48,12 +48,15 @@ WITH THE SOFTWARE.  */
 
 #include "core/Process.h"
 
+#if 0
 #include "Queue.h"
+#endif
 #include "ResourceManager.h"
 
 namespace __impl { namespace core { namespace hpe {
 
 class Accelerator;
+class Mode;
 
 /** Map that contains in which accelerator resides a mode */
 class GMAC_LOCAL ModeMap : private std::map<Mode *, unsigned>, gmac::util::Lock {
@@ -79,6 +82,7 @@ public:
     void remove(Mode &mode);
 };
 
+#if 0
 class GMAC_LOCAL QueueMap :
     private std::map<THREAD_T, ThreadQueue *>, gmac::util::RWLock
 {
@@ -95,6 +99,7 @@ public:
     Mode *pop();
     void erase(THREAD_T id);
 };
+#endif
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
@@ -107,7 +112,9 @@ protected:
 
     ModeMap modes_;
     memory::Protocol &protocol_;
+#if 0
     QueueMap queues_;
+#endif
     memory::ObjectMap shared_;
     memory::ObjectMap global_;
     memory::ObjectMap orphans_;
@@ -183,6 +190,7 @@ public:
     /* Mode management functions */
     /*****************************/
 
+#if 0
     /**
      * The calling thread sends the ownership of its mode to the given thread
      *
@@ -218,6 +226,7 @@ public:
      * \return Error code
      */
     gmacError_t migrate(int acc);
+#endif
 
     /**
      * Adds an accelerator to the process so it can be used by the threads of the
@@ -339,8 +348,6 @@ public:
     gmacError_t prepareForCall();
 
     core::ResourceManager &getResourceManager();
-
-    gmacError_t setAddressSpace(Mode &mode, unsigned aSpaceId);
 };
 
 }}}

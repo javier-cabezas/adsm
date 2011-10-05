@@ -58,7 +58,7 @@ void ObjectTest::TearDownTestCase()
 TEST_F(ObjectTest, Creation)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     __impl::memory::Protocol &proto = map.getProtocol();
     Object *object = proto.createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
@@ -75,7 +75,7 @@ TEST_F(ObjectTest, Creation)
 TEST_F(ObjectTest, Blocks)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
@@ -98,7 +98,7 @@ TEST_F(ObjectTest, Blocks)
 TEST_F(ObjectTest, Coherence)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
@@ -127,7 +127,7 @@ TEST_F(ObjectTest, Coherence)
 TEST_F(ObjectTest, IOBuffer)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Mode &mode = Thread::getCurrentMode();
+    Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);

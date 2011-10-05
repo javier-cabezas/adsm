@@ -57,16 +57,14 @@ inline
 memory::ObjectMap &
 Mode::getAddressSpace()
 {
-    ASSERTION(aSpace_ != NULL);
-    return *aSpace_;
+    return aSpace_;
 }
 
 inline
 const memory::ObjectMap &
 Mode::getAddressSpace() const
 {
-    ASSERTION(aSpace_ != NULL);
-    return *aSpace_;
+    return aSpace_;
 }
 
 
@@ -87,7 +85,7 @@ inline
 Accelerator &
 Mode::getAccelerator() const
 {
-    return *acc_;
+    return aSpace_.getAccelerator();
 }
 
 #ifdef USE_VM
@@ -121,7 +119,7 @@ inline void
 Mode::getMemInfo(size_t &free, size_t &total)
 {
     switchIn();
-    acc_->getMemInfo(free, total);
+    getAccelerator().getMemInfo(free, total);
     switchOut();
 }
 
@@ -131,8 +129,8 @@ Mode::prepareForCall()
 {
     switchIn();
     trace::SetThreadState(trace::Wait);
-    gmacError_t ret = acc_->syncStream(streamToAccelerator_);
-    if (ret == gmacSuccess) ret = acc_->syncStream(streamToHost_);
+    gmacError_t ret = getAccelerator().syncStream(streamToAccelerator_);
+    if (ret == gmacSuccess) ret = getAccelerator().syncStream(streamToHost_);
     trace::SetThreadState(trace::Idle);
     switchOut();
     return ret;
@@ -145,7 +143,7 @@ Mode::bufferToAccelerator(accptr_t dst, IOBuffer &buffer, size_t len, size_t off
     TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), len);
     trace::EnterCurrentFunction();
     switchIn();
-    gmacError_t ret = acc_->copyToAcceleratorAsync(dst, buffer, off, len, *this, streamToAccelerator_);
+    gmacError_t ret = getAccelerator().copyToAcceleratorAsync(dst, buffer, off, len, *this, streamToAccelerator_);
     switchOut();
     trace::ExitCurrentFunction();
     return ret;
@@ -159,7 +157,7 @@ Mode::acceleratorToBuffer(IOBuffer &buffer, const accptr_t src, size_t len, size
     trace::EnterCurrentFunction();
     switchIn();
     // Implement a function to remove these casts
-    gmacError_t ret = acc_->copyToHostAsync(buffer, off, src, len, *this, streamToHost_);
+    gmacError_t ret = getAccelerator().copyToHostAsync(buffer, off, src, len, *this, streamToHost_);
     switchOut();
     trace::ExitCurrentFunction();
     return ret;
@@ -170,7 +168,7 @@ Mode::wait(core::hpe::KernelLaunch &launch)
 {
     switchIn();
     // TODO: use an event for this
-    gmacError_t ret = acc_->syncStream(streamLaunch_);
+    gmacError_t ret = getAccelerator().syncStream(streamLaunch_);
     switchOut();
 
     return ret;
@@ -180,7 +178,7 @@ inline gmacError_t
 Mode::wait()
 {
     switchIn();
-    gmacError_t ret = acc_->syncStream(streamLaunch_);
+    gmacError_t ret = getAccelerator().syncStream(streamLaunch_);
     switchOut();
 
     return ret;
@@ -195,7 +193,7 @@ Mode::eventStream()
 inline bool
 Mode::hasIntegratedMemory() const
 {
-    return acc_->integrated();
+    return getAccelerator().integrated();
 }
 
 }}}

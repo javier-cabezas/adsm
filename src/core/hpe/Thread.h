@@ -35,8 +35,9 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_HPE_THREAD_H_
 
 #include "core/Thread.h"
-
 #include "util/Private.h"
+
+#include "VirtualDeviceTable.h"
 
 namespace __impl { namespace core { namespace hpe {
 
@@ -46,21 +47,22 @@ class Thread;
 /** Contains some thread-dependent values */
 class GMAC_LOCAL Thread :
     public core::Thread {
+    friend class ResourceManager;
+
 private:
     Process &process_;
-    Mode *currentMode_;
-    GmacVirtualDevice currentVirtualDevice_;
+    VirtualDeviceTable vDeviceTable_;
+    Mode *currentVirtualDevice_;
 
     static Thread &getCurrentThread();
+    static VirtualDeviceTable &getCurrentVirtualDeviceTable();
 
 public:
     Thread(Process &proc);
 
-    static GmacVirtualDevice getCurrentVirtualDevice();
-    static void setCurrentVirtualDevice(GmacVirtualDevice virtualDevice);
-    static Mode &getCurrentMode();
-    static bool hasCurrentMode();
-    static void setCurrentMode(Mode *mode);
+    static Mode &getCurrentVirtualDevice();
+    static bool hasCurrentVirtualDevice();
+    static void setCurrentVirtualDevice(Mode &mode);
 };
 
 }}}

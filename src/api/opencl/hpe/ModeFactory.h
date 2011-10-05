@@ -46,12 +46,11 @@ class Process;
 
 namespace opencl { namespace hpe {
 
-class Accelerator;
 class Mode;
 
 class GMAC_LOCAL ModeFactory {
 protected:
-    Mode *create(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) const;
+    Mode *create(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace) const;
 };
 
 }}}
