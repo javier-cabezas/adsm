@@ -3,8 +3,8 @@
 
 namespace __dbc { namespace cuda { namespace hpe {
 
-Mode::Mode(__impl::core::hpe::Process &proc, __impl::cuda::hpe::Accelerator &acc, __impl::core::hpe::AddressSpace &aSpace) :
-    __impl::cuda::hpe::Mode(proc, acc, aSpace)
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace) :
+    __impl::cuda::hpe::Mode(proc, aSpace)
 {
 }
 

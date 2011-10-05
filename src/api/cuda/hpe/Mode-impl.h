@@ -73,7 +73,7 @@ gmacError_t Mode::argument(const void *arg, size_t size, off_t offset)
 inline Accelerator &
 Mode::getAccelerator() const
 {
-    return *static_cast<Accelerator *>(acc_);
+    return static_cast<Accelerator &>(core::hpe::Mode::getAccelerator());
 }
 
 inline gmacError_t

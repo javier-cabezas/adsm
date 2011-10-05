@@ -47,7 +47,7 @@ class GMAC_LOCAL Mode :
     DBC_TESTED(__impl::cuda::hpe::Mode)
 
 protected:
-    Mode(__impl::core::hpe::Process &proc, __impl::cuda::hpe::Accelerator &acc, __impl::core::hpe::AddressSpace &aSpace);
+    Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace);
     ~Mode();
 public:
 };
