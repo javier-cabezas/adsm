@@ -107,6 +107,7 @@ class GMAC_LOCAL Process : public core::Process, public gmac::util::RWLock {
 protected:
     typedef Accelerator *AcceleratorPtr;
     std::vector<AcceleratorPtr> accs_;
+    std::vector<unsigned> load_;
 
     std::vector<AddressSpace *> aSpaces_;
 

@@ -12,6 +12,7 @@ Accelerator::~Accelerator()
 {
 }
 
+#if 0
 void Accelerator::registerMode(__impl::core::hpe::Mode &mode)
 {
    REQUIRES(&mode != NULL);
@@ -25,6 +26,7 @@ void Accelerator::unregisterMode(__impl::core::hpe::Mode &mode)
   // gmacError_t ret; 
     __impl::core::hpe::Accelerator::unregisterMode(mode);
 }
+#endif
  
 /*
 // Declarations of  those method  __impl namespace  in __dbc namespace 

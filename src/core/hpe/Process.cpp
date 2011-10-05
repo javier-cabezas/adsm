@@ -170,8 +170,8 @@ Mode *Process::createMode(int acc)
         // Bind the new Context to the accelerator with less contexts
         // attached to it
         usedAcc = 0;
-        for (unsigned i = 0; i < accs_.size(); i++) {
-            if (accs_[i]->load() < accs_[usedAcc]->load()) {
+        for (unsigned i = 1; i < accs_.size(); i++) {
+            if (load_[i] < load_[usedAcc]) {
                 usedAcc = i;
             }
         }
@@ -182,6 +182,7 @@ Mode *Process::createMode(int acc)
     // Initialize the global shared memory for the context
     Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("", *this, *accs_[usedAcc])));
     modes_.insert(mode);
+    load_[usedAcc]++;
     unlock();
 
     TRACE(LOCAL,"Adding "FMT_SIZE" global memory objects", global_.size());
@@ -194,6 +195,7 @@ void Process::removeMode(Mode &mode)
 {
     lockWrite();
     TRACE(LOCAL, "Removing Execution Mode %p", &mode);
+    load_[mode.getAccelerator().id()]--;
     modes_.remove(mode);
     mode.decRef();
     AddressSpace::removeOwner(*this, mode);
@@ -263,6 +265,7 @@ gmacError_t Process::migrate(int acc)
 void Process::addAccelerator(Accelerator &acc)
 {
     accs_.push_back(&acc);
+    load_.push_back(0);
     std::stringstream ss;
     ss << "Accelerator " << acc.id();
     //aSpaces_.push_back(new AddressSpace(ss.str().c_str(), *this));;
