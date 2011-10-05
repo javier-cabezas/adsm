@@ -38,53 +38,44 @@ Thread::getCurrentThread()
 }
 
 inline
+VirtualDeviceTable &
+Thread::getCurrentVirtualDeviceTable()
+{
+    return getCurrentThread().vDeviceTable_;
+}
+
+inline
 Thread::Thread(Process &proc) :
     core::Thread(),
     process_(proc),
-    currentMode_(NULL),
-    currentVirtualDevice_(0)
+    currentVirtualDevice_(NULL)
 {
-}
-
-inline
-GmacVirtualDevice
-Thread::getCurrentVirtualDevice()
-{
-    GmacVirtualDevice virtualDevice = getCurrentThread().currentVirtualDevice_;
-    return virtualDevice;
-}
-
-inline
-void
-Thread::setCurrentVirtualDevice(GmacVirtualDevice virtualDevice)
-{
-    getCurrentThread().currentVirtualDevice_ = virtualDevice;
 }
 
 inline
 Mode &
-Thread::getCurrentMode()
+Thread::getCurrentVirtualDevice()
 {
-    Mode *ret = getCurrentThread().currentMode_;
+    Mode *ret = getCurrentThread().currentVirtualDevice_;
     if(ret != NULL) return *ret;
     ret = getCurrentThread().process_.createMode();
-    getCurrentThread().currentMode_ = ret;
+    getCurrentThread().currentVirtualDevice_ = ret;
     
     return *ret;
 }
 
 inline
 bool
-Thread::hasCurrentMode()
+Thread::hasCurrentVirtualDevice()
 {
-    return getCurrentThread().currentMode_ != NULL;
+    return getCurrentThread().currentVirtualDevice_ != NULL;
 }
 
 inline
 void
-Thread::setCurrentMode(Mode *mode)
+Thread::setCurrentVirtualDevice(Mode &mode)
 {
-    getCurrentThread().currentMode_ = mode;
+    getCurrentThread().currentVirtualDevice_ = &mode;
 }
 
 }}}

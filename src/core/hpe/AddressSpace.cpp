@@ -7,8 +7,9 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-AddressSpace::AddressSpace(const char *name, Process &parent) :
-    Parent(name, parent)
+AddressSpace::AddressSpace(const char *name, Process &parent, Accelerator &acc) :
+    Parent(name, parent),
+    acc_(&acc)
 {
 }
 
@@ -16,6 +17,18 @@ AddressSpace::~AddressSpace()
 {
     TRACE(LOCAL,"Cleaning Memory AddressSpace");
     //TODO: actually clean the memory map
+}
+
+Accelerator &
+AddressSpace::getAccelerator()
+{
+    return *acc_;
+}
+
+const Accelerator &
+AddressSpace::getAccelerator() const
+{
+    return *acc_;
 }
 
 Process &
@@ -128,5 +141,45 @@ void AddressSpace::removeOwner(Process &proc, Mode &mode)
     shared.unlock();
     */
 }
+
+#if 0
+// Nobody can enter GMAC until this has finished. No locks are needed
+gmacError_t
+AddressSpace::moveTo(Accelerator &acc)
+{   
+    TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
+
+    if (acc_ == &acc) {
+        return gmacSuccess;
+    }
+    gmacError_t ret = gmacSuccess;
+    size_t free;
+    size_t total;
+    size_t needed = memorySize();
+    acc_->getMemInfo(free, total);
+
+    if (needed > free) {
+        return gmacErrorInsufficientAcceleratorMemory;
+    }
+
+    TRACE(LOCAL,"Releasing object memory in accelerator");
+    ret = forEachObject(&memory::Object::unmapFromAccelerator);
+
+    TRACE(LOCAL,"Cleaning contexts");
+    contextMap_.clean();
+
+    TRACE(LOCAL,"Registering mode in new accelerator");
+    acc_->migrateMode(*this, acc);
+
+    TRACE(LOCAL,"Reallocating objects");
+    // aSpace_.reallocObjects(*this);
+    ret = aSpace_.forEachObject(&memory::Object::mapToAccelerator);
+
+    TRACE(LOCAL,"Reloading mode");
+    reload();
+
+    return ret;
+}
+#endif
 
 }}}

@@ -22,8 +22,8 @@ Mode::~Mode()
 {
 }
 
-Mode::Mode(ProcessImpl &proc, AcceleratorImpl &acc, AddressSpaceImpl &aSpace) :
-    Parent(proc, acc, aSpace)
+Mode::Mode(ProcessImpl &proc, AddressSpaceImpl &aSpace) :
+    Parent(proc, aSpace)
 {
 }
 
@@ -147,6 +147,7 @@ Mode::getKernelName(gmac_kernel_id_t k) const
     return ret;
 }
 
+#if 0
 gmacError_t 
 Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 {
@@ -157,6 +158,7 @@ Mode::moveTo(__impl::core::hpe::Accelerator &acc)
 
     return ret;
 }
+#endif
 
 }}}
 

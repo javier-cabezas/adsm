@@ -21,7 +21,7 @@ using __impl::util::params::ParamAutoSync;
 
 static inline __impl::opencl::hpe::Mode &getCurrentOpenCLMode()
 {
-    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
+    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentVirtualDevice());
 }
 
 gmacError_t APICALL

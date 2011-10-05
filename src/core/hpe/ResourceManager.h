@@ -47,6 +47,8 @@ namespace core {
 
 namespace hpe {
 
+class AddressSpace;
+class Mode;
 class Process;
 
 /** Represents the resources used by a running process */
@@ -55,10 +57,16 @@ class GMAC_LOCAL ResourceManager :
     // Needed to let Singleton call the protected constructor
     friend class Process;
 protected:
+    Process &proc_;
+
+    typedef std::map<GmacAddressSpaceId, AddressSpace *> AddressSpaceMap;
+
+    AddressSpaceMap aSpaceMap_;
+
     /**
      * Constructs the resource manager
      */
-    ResourceManager();
+    ResourceManager(Process &proc);
     /**
      * Destroys the process and releases the resources used by it
      */
@@ -67,9 +75,13 @@ protected:
 public:
     gmacError_t registerAccelerator(Accelerator &acc);
 
-    GmacAddressSpace newAddressSpace(unsigned accId);
+    gmacError_t newAddressSpace(GmacAddressSpaceId &aSpaceId, unsigned accId);
+    gmacError_t deleteVirtualDevice(GmacVirtualDeviceId vDeviceId);
+    Mode *getVirtualDevice(GmacVirtualDeviceId vDeviceId);
 
-    GmacVirtualDevice newVirtualDevice(GmacAddressSpace aSpace);
+    gmacError_t deleteAddressSpace(GmacAddressSpaceId aSpaceId);
+    gmacError_t newVirtualDevice(GmacVirtualDeviceId &vDeviceId, GmacAddressSpaceId aSpaceId);
+    AddressSpace *getAddressSpace(GmacAddressSpaceId aSpaceId);
 
     gmacError_t hostAlloc(core::Mode &mode, hostptr_t &addr, size_t size);
 

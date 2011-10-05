@@ -55,7 +55,7 @@ protected:
     gmacError_t cleanUp();
 
 public:
-    Mode(ProcessImpl &proc, AcceleratorImpl &acc, AddressSpaceImpl &aSpace);
+    Mode(ProcessImpl &proc, AddressSpaceImpl &aSpace);
     virtual ~Mode();
 
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
@@ -68,7 +68,9 @@ public:
     gmacError_t acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off = 0);
     void registerKernel(gmac_kernel_id_t k, KernelImpl &kernel);
     std::string getKernelName(gmac_kernel_id_t k) const;
+#if 0
     gmacError_t moveTo(AcceleratorImpl &acc);
+#endif
 };
 
 }}}

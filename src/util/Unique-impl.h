@@ -5,41 +5,41 @@
 
 namespace __impl { namespace util {
 
-template <typename T>
-Atomic Unique<T>::Count_ = 0;
+template <typename T, typename R>
+Atomic Unique<T, R>::Count_ = 0;
 
 #ifdef DEBUG
-template <typename T>
-Atomic UniqueDebug<T>::Count_ = 0;
+template <typename T, typename R>
+Atomic UniqueDebug<T, R>::Count_ = 0;
 #endif
 
-template <typename T>
+template <typename T, typename R>
 inline
-Unique<T>::Unique()
+Unique<T, R>::Unique() :
+    id_(R(AtomicInc(Count_) - 1))
 {
-    id_ = unsigned(AtomicInc(Count_)) - 1;
 }
 
-template <typename T>
+template <typename T, typename R>
 inline
-unsigned
-Unique<T>::getId() const
+R
+Unique<T, R>::getId() const
 {
     return id_;
 }
 
 #ifdef DEBUG
-template <typename T>
+template <typename T, typename R>
 inline
-UniqueDebug<T>::UniqueDebug()
+UniqueDebug<T, R>::UniqueDebug() :
+    id_(R(AtomicInc(Count_) - 1))
 {
-    id_ = unsigned(AtomicInc(Count_)) - 1;
 }
 
-template <typename T>
+template <typename T, typename R>
 inline
-unsigned
-UniqueDebug<T>::getDebugId() const
+R
+UniqueDebug<T, R>::getDebugId() const
 {
     return id_;
 }

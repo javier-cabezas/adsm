@@ -6,8 +6,8 @@
 
 namespace __impl { namespace opencl { namespace hpe {
 
-Mode::Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) :
-    gmac::core::hpe::Mode(proc, acc, aSpace)
+Mode::Mode(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace) :
+    gmac::core::hpe::Mode(proc, aSpace)
 {
     streamLaunch_ = getAccelerator().createCLstream();
     streamToHost_ = streamToAccelerator_ = streamLaunch_;
@@ -99,7 +99,7 @@ gmacError_t Mode::launch(gmac_kernel_id_t name, core::hpe::KernelLaunch *&launch
     KernelMap::iterator i = kernels_.find(name);
     Kernel *k = NULL;
     if (i == kernels_.end()) {
-        k = dynamic_cast<Accelerator *>(acc_)->getKernel(name);
+        k = getAccelerator().getKernel(name);
         if(k == NULL) return gmacErrorInvalidValue;
         registerKernel(name, *k);
         kernelList_.insert(k);
@@ -127,7 +127,7 @@ gmacError_t Mode::execute(core::hpe::KernelLaunch & launch)
 gmacError_t Mode::waitForEvent(cl_event event)
 {
     switchIn();
-    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+    Accelerator &acc = getAccelerator();
 
     gmacError_t ret = acc.syncCLevent(event);
     switchOut();
@@ -146,16 +146,16 @@ gmacError_t Mode::waitForEvent(cl_event event)
 #endif
 }
 
-Accelerator & Mode::getAccelerator() const
+Accelerator &Mode::getAccelerator() const
 {
-    return *static_cast<Accelerator *>(acc_);
+    return static_cast<Accelerator &>(core::hpe::Mode::getAccelerator());
 }
 
 gmacError_t
 Mode::acquire(hostptr_t addr)
 {
     switchIn();
-    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+    Accelerator &acc = getAccelerator();
 
     gmacError_t ret = acc.acquire(addr);
     switchOut();
@@ -166,7 +166,7 @@ gmacError_t
 Mode::release(hostptr_t addr)
 {
     switchIn();
-    Accelerator &acc = dynamic_cast<Accelerator &>(getAccelerator());
+    Accelerator &acc = getAccelerator();
 
     gmacError_t ret = acc.release(addr);
     switchOut();

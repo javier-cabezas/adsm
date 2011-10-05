@@ -31,7 +31,8 @@ extern "C"
 ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(inGmac() == 1 || count == 0) return __libc_read(fd, buf, count);
+	if(inGmac() == 1 || count == 0)
+        return __libc_read(fd, buf, count);
 
     enterGmac();
     Mode *dstMode = getProcess().owner(hostptr_t(buf));
@@ -90,7 +91,8 @@ extern "C"
 ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 {
 	if(__libc_read == NULL) posixIoInit();
-	if(inGmac() == 1 || count == 0) return __libc_write(fd, buf, count);
+	if(inGmac() == 1 || count == 0)
+        return __libc_write(fd, buf, count);
 
 	enterGmac();
     Mode *srcMode = getProcess().owner(hostptr_t(buf));
@@ -133,7 +135,6 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
             err = manager.toIOBuffer(mode, *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
-
         err = active->wait();
         ASSERTION(err == gmacSuccess);
 

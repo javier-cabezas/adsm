@@ -58,7 +58,6 @@ class IOBuffer;
 
 namespace hpe {
 
-class Accelerator;
 class Context;
 class Kernel;
 class KernelLaunch;
@@ -83,13 +82,11 @@ public:
 class GMAC_LOCAL Mode : public virtual core::Mode {
     DBC_FORCE_TEST(Mode)
     friend class ContextMap;
-    friend class Accelerator;
+    //friend class Accelerator;
 protected:
     Process &proc_;
-    // Must be a pointer since the Mode can change the accelerator on which it is running
-    Accelerator *acc_;
 
-    AddressSpace *aSpace_;
+    AddressSpace &aSpace_;
 
     stream_t streamToHost_;
     stream_t streamToAccelerator_;
@@ -126,10 +123,9 @@ protected:
      * Mode constructor
      *
      * \param proc Reference to the process which the mode belongs to
-     * \param acc Reference to the accelerator in which the mode will perform
-     *            the allocations
+     * \param aSpace Address space to which the mode is linked
     */
-    Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace);
+    Mode(Process &proc, AddressSpace &aSpace);
 
     /**
      * Mode destructor
@@ -270,12 +266,14 @@ public:
      */
     TESTABLE std::string getKernelName(gmac_kernel_id_t k) const;
 
+#if 0
     /**
      * Moves the mode to accelerator acc
      * \param acc Accelerator to move the mode to
      * \return Error code
      */
     TESTABLE gmacError_t moveTo(Accelerator &acc);
+#endif
 
     /**
      * Returns the process which the mode belongs to
@@ -319,8 +317,6 @@ public:
 
     memory::ObjectMap &getAddressSpace();
     const memory::ObjectMap &getAddressSpace() const;
-
-    void setAddressSpace(AddressSpace &aSpace);
 };
 
 }}}

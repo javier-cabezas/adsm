@@ -11,10 +11,9 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-Mode::Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace) :
+Mode::Mode(Process &proc, AddressSpace &aSpace) :
     proc_(proc),
-    acc_(&acc),
-    aSpace_(&aSpace),
+    aSpace_(aSpace),
 #if defined(_MSC_VER)
 #	pragma warning( disable : 4355 )
 #endif
@@ -27,7 +26,6 @@ Mode::Mode(Process &proc, Accelerator &acc, AddressSpace &aSpace) :
 
 Mode::~Mode()
 {
-    acc_->unregisterMode(*this);
 }
 
 void
@@ -56,13 +54,13 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 
     gmacError_t ret;
     accptr_t acc(0);
-    bool hasMapping = acc_->getMapping(acc, src, count);
+    bool hasMapping = getAccelerator().getMapping(acc, src, count);
     if (hasMapping == true) {
         ret = gmacSuccess;
         dst = acc;
         TRACE(LOCAL,"Mapping for address %p: %p", src, dst.get());
     } else {
-        ret = acc_->map(dst, src, count, align);
+        ret = getAccelerator().map(dst, src, count, align);
         TRACE(LOCAL,"New Mapping for address %p: %p", src, dst.get());
     }
 
@@ -78,7 +76,7 @@ gmacError_t
 Mode::unmap(hostptr_t addr, size_t count)
 {
     switchIn();
-    gmacError_t ret = acc_->unmap(addr, count);
+    gmacError_t ret = getAccelerator().unmap(addr, count);
     switchOut();
     return ret;
 }
@@ -111,7 +109,7 @@ gmacError_t
 Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t count)
 {
     switchIn();
-    gmacError_t ret = acc_->copyAccelerator(dst, src, count, streamToHost_);
+    gmacError_t ret = getAccelerator().copyAccelerator(dst, src, count, streamToHost_);
     switchOut();
     return ret;
 }
@@ -120,16 +118,17 @@ gmacError_t
 Mode::memset(accptr_t addr, int c, size_t count)
 {
     switchIn();
-    gmacError_t ret = acc_->memset(addr, c, count, streamLaunch_);
+    gmacError_t ret = getAccelerator().memset(addr, c, count, streamLaunch_);
     switchOut();
     return ret;
 }
 
+#if 0
 // Nobody can enter GMAC until this has finished. No locks are needed
 gmacError_t
 Mode::moveTo(Accelerator &acc)
 {
-    TRACE(LOCAL,"Moving mode from acc %d to %d", acc_->id(), acc.id());
+    TRACE(LOCAL,"Moving mode from acc %d to %d", getAccelerator().id(), acc.id());
     switchIn();
 
     if (acc_ == &acc) {
@@ -139,8 +138,8 @@ Mode::moveTo(Accelerator &acc)
     gmacError_t ret = gmacSuccess;
     size_t free;
     size_t total;
-    size_t needed = aSpace_->memorySize();
-    acc_->getMemInfo(free, total);
+    size_t needed = aSpace_.memorySize();
+    getAccelerator().getMemInfo(free, total);
 
     if (needed > free) {
         switchOut();
@@ -148,17 +147,17 @@ Mode::moveTo(Accelerator &acc)
     }
 
     TRACE(LOCAL,"Releasing object memory in accelerator");
-    ret = aSpace_->forEachObject(&memory::Object::unmapFromAccelerator);
+    ret = aSpace_.forEachObject(&memory::Object::unmapFromAccelerator);
 
     TRACE(LOCAL,"Cleaning contexts");
     contextMap_.clean();
 
     TRACE(LOCAL,"Registering mode in new accelerator");
-    acc_->migrateMode(*this, acc);
+    getAccelerator().migrateMode(*this, acc);
 
     TRACE(LOCAL,"Reallocating objects");
-    // aSpace_->reallocObjects(*this);
-    ret = aSpace_->forEachObject(&memory::Object::mapToAccelerator);
+    // aSpace_.reallocObjects(*this);
+    ret = aSpace_.forEachObject(&memory::Object::mapToAccelerator);
 
     TRACE(LOCAL,"Reloading mode");
     reload();
@@ -167,22 +166,17 @@ Mode::moveTo(Accelerator &acc)
 
     return ret;
 }
+#endif
 
 gmacError_t Mode::cleanUp()
 {
-    gmacError_t ret = aSpace_->forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
+    gmacError_t ret = aSpace_.forEachObject<core::Mode>(&memory::Object::removeOwner, *this);
     contextMap_.clean();
-    aSpace_->cleanUp();
+    aSpace_.cleanUp();
 #ifdef USE_VM
     bitmap_.cleanUp();
 #endif
     return ret;
-}
-
-void
-Mode::setAddressSpace(AddressSpace &aSpace)
-{
-    aSpace_ = &aSpace;
 }
 
 }}}

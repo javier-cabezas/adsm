@@ -1,16 +1,103 @@
 #include "core/hpe/ResourceManager.h"
 
 #include "core/hpe/Mode.h"
+#include "core/hpe/VirtualDeviceTable.h"
+#include "core/hpe/Thread.h"
 
 namespace __impl { namespace core { namespace hpe {
 
-ResourceManager::ResourceManager() :
-    core::ResourceManager()
+ResourceManager::ResourceManager(Process &proc) :
+    core::ResourceManager(),
+    proc_(proc)
 {
 }
 
 ResourceManager::~ResourceManager()
 {
+}
+
+gmacError_t
+ResourceManager::newAddressSpace(GmacAddressSpaceId &aSpaceId, unsigned accId)
+{
+    AddressSpace *aSpace = new AddressSpace("", proc_, proc_.getAccelerator(accId));
+
+    aSpaceId = aSpace->getId();
+
+    return gmacSuccess;
+}
+
+gmacError_t
+ResourceManager::deleteAddressSpace(GmacAddressSpaceId aSpaceId)
+{
+    gmacError_t ret = gmacSuccess;
+
+    AddressSpaceMap::iterator it;
+    it = aSpaceMap_.find(aSpaceId);
+
+    if (it != aSpaceMap_.end()) {
+        aSpaceMap_.erase(it);
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+
+    return ret;
+}
+
+AddressSpace *
+ResourceManager::getAddressSpace(GmacAddressSpaceId aSpaceId)
+{
+    AddressSpace *ret = NULL;
+
+    AddressSpaceMap::iterator it;
+    it = aSpaceMap_.find(aSpaceId);
+
+    if (it != aSpaceMap_.end()) {
+        ret = it->second;
+    }
+
+    return ret;
+}
+
+gmacError_t
+ResourceManager::newVirtualDevice(GmacVirtualDeviceId &vDeviceId, GmacAddressSpaceId aSpaceId)
+{
+    gmacError_t ret = gmacSuccess;
+
+    AddressSpaceMap::iterator it;
+    it = aSpaceMap_.find(aSpaceId);
+
+    if (it != aSpaceMap_.end()) {
+        AddressSpace &aSpace = *it->second;
+        Mode *mode = proc_.createMode(aSpace.getAccelerator().id());
+        VirtualDeviceTable &vDeviceTable = Thread::getCurrentVirtualDeviceTable();
+        ret = vDeviceTable.addVirtualDevice(mode->getId(), *mode);
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+
+    return ret;
+}
+
+gmacError_t
+ResourceManager::deleteVirtualDevice(GmacVirtualDeviceId vDeviceId)
+{
+    gmacError_t ret = gmacSuccess;
+
+    VirtualDeviceTable &vDeviceTable = Thread::getCurrentVirtualDeviceTable();
+    ret = vDeviceTable.removeVirtualDevice(vDeviceId);
+
+    return ret;
+}
+
+Mode *
+ResourceManager::getVirtualDevice(GmacVirtualDeviceId vDeviceId)
+{
+    Mode *ret = NULL;
+
+    VirtualDeviceTable &vDeviceTable = Thread::getCurrentVirtualDeviceTable();
+    ret = vDeviceTable.getVirtualDevice(vDeviceId);
+
+    return ret;
 }
 
 gmacError_t

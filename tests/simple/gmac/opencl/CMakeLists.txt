@@ -94,8 +94,8 @@ target_link_libraries(eclMemcpy gmac-hpe)
 add_executable(eclMemset ${common_SRC} c/eclMemset.cpp)
 target_link_libraries(eclMemset gmac-hpe)
 
-add_executable(eclPingPong ${common_SRC} c/eclPingPong.cpp)
-target_link_libraries(eclPingPong gmac-hpe)
+# add_executable(eclPingPong ${common_SRC} c/eclPingPong.cpp)
+# target_link_libraries(eclPingPong gmac-hpe)
 
 add_executable(eclSharedVecAdd ${common_SRC} c/eclSharedVecAdd.cpp)
 target_link_libraries(eclSharedVecAdd gmac-hpe)
@@ -127,8 +127,8 @@ target_link_libraries(eclColumnMajor_cpp gmac-hpe)
 add_executable(eclCompress_cpp ${common_SRC} cpp/eclCompress.cpp eclCompressCommon.cl)
 target_link_libraries(eclCompress_cpp gmac-hpe)
 
-add_executable(eclCompressSend_cpp ${common_SRC} cpp/eclCompressSend.cpp eclCompressCommon.cl)
-target_link_libraries(eclCompressSend_cpp gmac-hpe)
+# add_executable(eclCompressSend_cpp ${common_SRC} cpp/eclCompressSend.cpp eclCompressCommon.cl)
+# target_link_libraries(eclCompressSend_cpp gmac-hpe)
 
 add_executable(eclVecAdd_cpp ${common_SRC} cpp/eclVecAdd.cpp)
 target_link_libraries(eclVecAdd_cpp gmac-hpe)
