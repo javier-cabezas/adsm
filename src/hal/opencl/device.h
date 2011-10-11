@@ -1,33 +1,36 @@
-#ifndef GMAC_HAL_CUDA_DEVICE_H_
-#define GMAC_HAL_CUDA_DEVICE_H_
+#ifndef GMAC_HAL_OPENCL_DEVICE_H_
+#define GMAC_HAL_OPENCL_DEVICE_H_
 
 #include "hal/device.h"
+#include "hal/opencl/util/opencl_util.h"
 #include "util/Unique.h"
 
 #include "types.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace opencl {
 
 class coherence_domain;
 
 class device :
     public hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t>,
-    public util::Unique<device> {
+    public __impl::util::Unique<device> {
     typedef hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t> Parent;
 protected:
-    CUdevice cudaDevice_;
+    cl_device_id openclDeviceId_;
+    cl_platform_id openclPlatformId_;
 
-    int major_;
-    int minor_;
+    util::opencl_version openclVersion_;
 
     size_t memorySize_;
 
     bool integrated_;
 
 public:
-    device(int cuda_device_id, coherence_domain &coherenceDomain);
+    device(cl_device_id openclDeviceId,
+           cl_platform_id openclPlatformId,
+           coherence_domain &coherenceDomain);
 
-    aspace_t create_address_space();
+    aspace_t create_address_space(const Parent::SetSiblings &siblings = Parent::None);
     stream_t create_stream(aspace_t &aspace);
 
     event_t copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream);

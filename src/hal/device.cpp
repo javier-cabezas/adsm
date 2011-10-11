@@ -6,7 +6,7 @@ namespace detail {
 
 #if 0
 template <typename A, typename S, typename E> 
-Device<A, S, E>::Device()
+device<A, S, E>::device()
 {
 }
 #endif

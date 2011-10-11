@@ -1,11 +1,11 @@
 #include "util/Logger.h"
 
 #include "hal/types.h"
-#include "Device.h"
+#include "device.h"
 
 namespace __impl { namespace hal { namespace cuda {
 
-Device::Device(CUdevice cudaDevice, CoherenceDomain &coherenceDomain) :
+device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
     Parent(coherenceDomain),
     cudaDevice_(cudaDevice)
 {
@@ -23,7 +23,7 @@ Device::Device(CUdevice cudaDevice, CoherenceDomain &coherenceDomain) :
 }
 
 aspace_t
-Device::createPAddressSpace()
+device::create_address_space()
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -42,16 +42,16 @@ Device::createPAddressSpace()
 }
 
 static void
-setAddressSpace(const aspace_t &aspace)
+set_address_space(const aspace_t &aspace)
 {
     CUresult res = cuCtxSetCurrent(aspace());
     ASSERTION(res == CUDA_SUCCESS, "Error setting the context");
 }
 
 stream_t
-Device::createStream(aspace_t &aspace)
+device::create_stream(aspace_t &aspace)
 {
-    setAddressSpace(aspace); 
+    set_address_space(aspace); 
     CUstream stream;
     CUresult ret = cuStreamCreate(&stream, 0);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
@@ -60,7 +60,7 @@ Device::createStream(aspace_t &aspace)
 }
 
 event_t
-Device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
+device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -74,7 +74,7 @@ Device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
 }
 
 event_t
-Device::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
+device::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -88,7 +88,7 @@ Device::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
 }
 
 event_t
-Device::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
+device::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -102,7 +102,7 @@ Device::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
 }
 
 async_event_t
-Device::copyAsync(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
+device::copy_async(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -116,7 +116,7 @@ Device::copyAsync(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
 }
 
 async_event_t
-Device::copyAsync(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
+device::copy_async(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -130,7 +130,7 @@ Device::copyAsync(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
 }
 
 async_event_t
-Device::copyAsync(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
+device::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
 {
     CUresult res;
 
@@ -144,7 +144,7 @@ Device::copyAsync(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
 }
 
 gmacError_t
-Device::sync(async_event_t &event)
+device::sync(async_event_t &event)
 {
     CUresult res;
 
@@ -154,7 +154,7 @@ Device::sync(async_event_t &event)
 }
 
 gmacError_t
-Device::sync(stream_t &stream)
+device::sync(stream_t &stream)
 {
     CUresult res;
 
