@@ -2,6 +2,7 @@
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 #include "core/hpe/Thread.h"
+#include "memory/ObjectMap.h"
 
 
 using __impl::core::hpe::Accelerator;
@@ -65,4 +66,18 @@ TEST_F(ProcessTest, GlobalMemory) {
 
     object->decRef();
     proc->destroy();
+}
+
+TEST_F(ProcessTest, Mode){
+	size_t count;
+    Process *proc = createProcess();
+	count = proc->nAccelerators();
+	ASSERT_EQ(gmacSuccess, proc->migrate(count-1));
+	Mode &mode = Thread::getCurrentMode();
+	Accelerator &acc = mode.getAccelerator();
+	ASSERT_TRUE(acc.id() == count-1);
+
+	ASSERT_FALSE(proc->allIntegrated());
+	
+	proc->destroy();
 }

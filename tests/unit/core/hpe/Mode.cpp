@@ -12,6 +12,7 @@ using gmac::core::hpe::Process;
 using __impl::core::hpe::Mode;
 using __impl::core::IOBuffer;
 using __impl::memory::Object;
+using __impl::core::hpe::Accelerator;
 
 Mode *ModeTest::Mode_ = NULL;
 Process *ModeTest::Process_ = NULL;
@@ -93,7 +94,7 @@ TEST_F(ModeTest, MemoryObjectMap){
 	ASSERT_TRUE(map.removeObject(*obj2));
 	obj->decRef();
 	obj2->decRef();
-	//map.cleanUp();
+	map.cleanUp();
 }
 
 TEST_F(ModeTest, Memory) {
@@ -152,6 +153,7 @@ TEST_F(ModeTest, IOBuffer) {
     memset(mem, 0x5a, Size_ * sizeof(int));
 
     IOBuffer &buffer = Mode_->createIOBuffer(Size_ * sizeof(int), GMAC_PROT_READWRITE);
+	ASSERT_EQ(gmacSuccess, Mode_->wait());
     ASSERT_EQ(buffer.addr(), memcpy(buffer.addr(), mem, Size_ * sizeof(int)));
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
@@ -169,4 +171,22 @@ TEST_F(ModeTest, IOBuffer) {
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));
     Mode_->destroyIOBuffer(buffer);
     delete[] mem;
+}
+
+TEST_F(ModeTest, Mode)
+{
+	size_t size=0;
+	size_t free=0;
+	size_t total=0;
+    Mode_->getMemInfo(free, total);
+	ASSERT_GE(free, size);
+	ASSERT_GE(total, size);
+	ASSERT_GE(total, free);
+
+	Accelerator &acc = Mode_->getAccelerator();
+	ASSERT_TRUE(&acc != NULL);	
+	
+	ASSERT_EQ(gmacSuccess, Mode_->prepareForCall());
+	Mode *mode = Process_->createMode(ACC_AUTO_BIND);
+	ASSERT_EQ(gmacSuccess, mode->moveTo(acc));
 }
