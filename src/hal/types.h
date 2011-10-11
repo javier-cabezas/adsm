@@ -7,28 +7,33 @@
 
 #ifdef USE_CUDA
 #include "cuda/types.h"
-#include "cuda/Device.h"
-#include "cuda/CoherenceDomain.h"
+#include "cuda/device.h"
+#include "cuda/coherence_domain.h"
 
 namespace __impl { namespace hal {
-typedef hal::cuda::Device Device;
+    typedef hal::cuda::device device;
 
-typedef hal::cuda::CoherenceDomain CoherenceDomain;
+    typedef hal::cuda::coherence_domain coherence_domain;
 
-typedef hal::cuda::aspace_t aspace_t;
-typedef hal::cuda::stream_t stream_t;
-typedef hal::cuda::event_t event_t;
-typedef hal::cuda::async_event_t async_event_t;
+    typedef hal::cuda::aspace_t aspace_t;
+    typedef hal::cuda::stream_t stream_t;
+    typedef hal::cuda::event_t event_t;
+    typedef hal::cuda::async_event_t async_event_t;
 }}
 #else
 #include "opencl/types.h"
-namespace __impl { namespace hal {
-typedef hal::opencl::Device Device;
+#include "opencl/device.h"
+#include "opencl/coherence_domain.h"
 
-typedef hal::opencl::aspace_t aspace_t;
-typedef hal::opencl::stream_t stream_t;
-typedef hal::opencl::event_t event_t;
-typedef hal::cuda::async_event_t async_event_t;
+namespace __impl { namespace hal {
+    typedef hal::opencl::device device;
+
+    typedef hal::opencl::coherence_domain coherence_domain;
+
+    typedef hal::opencl::aspace_t aspace_t;
+    typedef hal::opencl::stream_t stream_t;
+    typedef hal::opencl::event_t event_t;
+    typedef hal::opencl::async_event_t async_event_t;
 }}
 #endif
 

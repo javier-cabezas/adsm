@@ -1,18 +1,20 @@
 #ifndef GMAC_HAL_CUDA_COHERENCE_DOMAIN_H_
 #define GMAC_HAL_CUDA_COHERENCE_DOMAIN_H_
 
-#include "hal/CoherenceDomain.h"
+#include "hal/coherence_domain.h"
 #include "util/Unique.h"
 
 #include "types.h"
 
+#include "device.h"
+
 namespace __impl { namespace hal { namespace cuda {
 
-class CoherenceDomain :
-    public hal::detail::CoherenceDomain<Device>,
-    public util::Unique<CoherenceDomain> {
+class coherence_domain :
+    public hal::detail::coherence_domain<device>,
+    public util::Unique<coherence_domain> {
 public:
-    CoherenceDomain();
+    coherence_domain();
 };
 
 }}}

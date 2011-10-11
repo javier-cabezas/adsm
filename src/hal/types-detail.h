@@ -7,50 +7,51 @@
 
 namespace __impl { namespace hal {
 
+typedef uint64_t time_t;
+time_t get_timestamp();
+
 namespace detail {
 
 template <typename C, typename S, typename E>
 struct backend_traits
 {
-    typedef C Context;
-    typedef S Stream;
-    typedef E Event;
+    typedef C context;
+    typedef S stream;
+    typedef E event;
 };
 
 template <typename D, typename B>
 class aspace_t {
-    typename B::Context context_;
+    typename B::context context_;
     D &device_;
 
 protected:
-    aspace_t(typename B::Context context, D &device);
+    aspace_t(typename B::context context, D &device);
+
 public:
-    D &getDevice();
-    typename B::Context &operator()();
-    const typename B::Context &operator()() const;
+    D &get_device();
+    typename B::context &operator()();
+    const typename B::context &operator()() const;
 };
 
 template <typename D, typename B>
 class stream_t {
     typedef aspace_t<D, B> aspace_parent_t;
-    typename B::Stream stream_;
+    typename B::stream stream_;
     aspace_parent_t &aspace_;
 
 protected:
-    stream_t(typename B::Stream stream, aspace_parent_t &aspace);
+    stream_t(typename B::stream stream, aspace_parent_t &aspace);
 
 public:
-    aspace_parent_t &getPASpace();
-    typename B::Stream &operator()();
-    const typename B::Stream &operator()() const;
+    aspace_parent_t &get_address_space();
+    typename B::stream &operator()();
+    const typename B::stream &operator()() const;
 };
 
 template <typename D, typename B>
 class event_t {
     typedef stream_t<D, B> stream_parent_t;
-
-public:
-    typedef long_t time_t;
 
 private:
     stream_parent_t &stream_;
@@ -59,20 +60,23 @@ private:
     bool synced_;
 
 protected:
-    time_t start_;
-    time_t end_;
+    hal::time_t timeQueued_;
+    hal::time_t timeSubmit_;
+    hal::time_t timeStart_;
+    hal::time_t timeEnd_;
 
     event_t(stream_parent_t &stream, gmacError_t err = gmacSuccess);
 
-    void setError(gmacError_t ret);
+    void set_error(gmacError_t ret);
 
 public:
-    stream_parent_t &getStream();
+    stream_parent_t &get_stream();
 
     gmacError_t getError() const;
-    time_t getStartTime() const;
-    time_t getEndTime() const;
-    time_t getElapsedTime() const;
+    hal::time_t get_time_queued() const;
+    hal::time_t get_time_submit() const;
+    hal::time_t get_time_start() const;
+    hal::time_t get_time_end() const;
 };
 
 template <typename D, typename B>

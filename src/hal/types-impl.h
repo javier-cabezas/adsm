@@ -1,35 +1,67 @@
 #ifndef GMAC_HAL_TYPES_IMPL_H_
 #define GMAC_HAL_TYPES_IMPL_H_
 
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
+
 namespace __impl { namespace hal {
+
+#ifdef _MSC_VER
+time_t get_timestamp()
+{
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+
+    unsigned __int64 tmp = 0;
+    tmp |= ft.dwHighDateTime;
+    tmp <<= 32;
+    tmp |= ft.dwLowDateTime;
+    tmp -= DELTA_EPOCH_IN_MICROSECS;
+    tmp /= 10;
+
+    return time_t(tmp);
+}
+#else
+time_t get_timestamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    time_t ret;
+
+    ret = tv.tv_sec * 1000000 + tv.tv_usec;
+    return ret;
+}
+#endif
 
 namespace detail {
 
 template <typename D, typename B>
 inline
-aspace_t<D, B>::aspace_t(typename B::Context context, D &device) :
+aspace_t<D, B>::aspace_t(typename B::context context, D &dev) :
     context_(context),
-    device_(device)
+    device_(dev)
 {
 }
 
 template <typename D, typename B>
 inline
 D &
-aspace_t<D, B>::getDevice()
+aspace_t<D, B>::get_device()
 {
     return device_;
 }
 
 template <typename D, typename B>
-typename B::Context &
+typename B::context &
 aspace_t<D, B>::operator()()
 {
     return context_;
 }
 
 template <typename D, typename B>
-const typename B::Context &
+const typename B::context &
 aspace_t<D, B>::operator()() const
 {
     return context_;
@@ -37,7 +69,7 @@ aspace_t<D, B>::operator()() const
 
 template <typename D, typename B>
 inline
-stream_t<D, B>::stream_t(typename B::Stream stream, aspace_parent_t &aspace) :
+stream_t<D, B>::stream_t(typename B::stream stream, aspace_parent_t &aspace) :
     stream_(stream),
     aspace_(aspace)
 {
@@ -46,7 +78,7 @@ stream_t<D, B>::stream_t(typename B::Stream stream, aspace_parent_t &aspace) :
 template <typename D, typename B>
 inline
 typename stream_t<D, B>::aspace_parent_t &
-stream_t<D, B>::getPASpace()
+stream_t<D, B>::get_address_space()
 {
     return aspace_;
 }
@@ -62,7 +94,7 @@ event_t<D, B>::event_t(stream_parent_t &stream, gmacError_t err) :
 template <typename D, typename B>
 inline
 typename event_t<D, B>::stream_parent_t &
-event_t<D, B>::getStream()
+event_t<D, B>::get_stream()
 {
     return stream_;
 }
@@ -77,26 +109,35 @@ event_t<D, B>::getError() const
 
 template <typename D, typename B>
 inline
-typename event_t<D, B>::time_t
-event_t<D, B>::getStartTime() const
+hal::time_t
+event_t<D, B>::get_time_queued() const
 {
-    return start_;
+    return timeQueued_;
+}
+
+
+template <typename D, typename B>
+inline
+hal::time_t
+event_t<D, B>::get_time_submit() const
+{
+    return timeSubmit_;
 }
 
 template <typename D, typename B>
 inline
-typename event_t<D, B>::time_t
-event_t<D, B>::getEndTime() const
+hal::time_t
+event_t<D, B>::get_time_start() const
 {
-    return end_;
+    return timeStart_;
 }
 
 template <typename D, typename B>
 inline
-typename event_t<D, B>::time_t
-event_t<D, B>::getElapsedTime() const
+hal::time_t
+event_t<D, B>::get_time_end() const
 {
-    return end_ - start_;
+    return timeEnd_;
 }
 
 template <typename D, typename B>

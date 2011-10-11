@@ -1,11 +1,12 @@
 add_subdirectory(${API_DIR})
 
 set(hal_SRC
+    coherence_domain.h
+    device.h
+    device.cpp
     types.h
     types-detail.h
     types-impl.h
-    Device.h
-    Device.cpp
 )
 
 add_gmac_sources(gmac-hal ${hal_SRC})

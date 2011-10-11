@@ -1,12 +1,13 @@
-#ifndef GMAC_HAL_CUDA_TYPES_IMPL_H_
-#define GMAC_HAL_CUDA_TYPES_IMPL_H_
+#ifndef GMAC_HAL_OPENCL_TYPES_IMPL_H_
+#define GMAC_HAL_OPENCL_TYPES_IMPL_H_
 
 //#include "device.h"
+#include "util/Logger.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace opencl {
 
 inline
-aspace_t::aspace_t(CUcontext ctx, device &dev) :
+aspace_t::aspace_t(cl_context ctx, device &dev) :
     hal::detail::aspace_t<device, backend_traits>(ctx, dev)
 {
 }
@@ -19,7 +20,7 @@ aspace_t::get_device()
 }
 
 inline
-stream_t::stream_t(CUstream stream, aspace_t &aspace) :
+stream_t::stream_t(cl_command_queue stream, aspace_t &aspace) :
     hal::detail::stream_t<device, backend_traits>(stream, aspace)
 {
 }
@@ -32,18 +33,17 @@ stream_t::get_address_space()
 }
 
 inline
-void
-_event_common_t::begin(stream_t &stream)
+cl_event &
+_event_common_t::operator()()
 {
-    timeBase_ = hal::get_timestamp();
-    cuEventRecord(eventStart_, stream());
+    return event_;
 }
 
 inline
-void
-_event_common_t::end(stream_t &stream)
+const cl_event &
+_event_common_t::operator()() const
 {
-    cuEventRecord(eventEnd_, stream());
+    return event_;
 }
 
 inline
@@ -69,14 +69,16 @@ inline
 gmacError_t
 async_event_t::sync()
 {
-    CUresult ret = cuEventSynchronize(eventEnd_);
-    if (ret == CUDA_SUCCESS) {
-        float mili;
-        ret = cuEventElapsedTime(&mili, eventStart_, eventEnd_);
-        if (ret == CUDA_SUCCESS) {
-            timeQueued_ = timeSubmit_ = timeStart_ = timeBase_;
-            timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
-        }
+    cl_int ret = clWaitForEvents(1, &event_);
+    if (ret == CL_SUCCESS) {
+        ret = clGetEventProfilingInfo(event_, CL_PROFILING_COMMAND_QUEUED, sizeof(hal::time_t), &timeQueued_, NULL);
+        ASSERTION(ret == CL_SUCCESS);
+        ret = clGetEventProfilingInfo(event_, CL_PROFILING_COMMAND_SUBMIT, sizeof(hal::time_t), &timeSubmit_, NULL);
+        ASSERTION(ret == CL_SUCCESS);
+        ret = clGetEventProfilingInfo(event_, CL_PROFILING_COMMAND_START, sizeof(hal::time_t), &timeStart_, NULL);
+        ASSERTION(ret == CL_SUCCESS);
+        ret = clGetEventProfilingInfo(event_, CL_PROFILING_COMMAND_END, sizeof(hal::time_t), &timeEnd_, NULL);
+        ASSERTION(ret == CL_SUCCESS);
     }
     return error(ret);
 }
