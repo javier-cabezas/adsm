@@ -1,7 +1,11 @@
 set(core_hpe_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/Accelerator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Accelerator.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Mode.h
+ 
+${CMAKE_CURRENT_SOURCE_DIR}/AddressSpace.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AddressSpace.cpp
+ 
+${CMAKE_CURRENT_SOURCE_DIR}/Mode.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Mode.cpp
    
     ${CMAKE_CURRENT_SOURCE_DIR}/Context.h

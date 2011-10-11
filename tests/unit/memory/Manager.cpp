@@ -5,12 +5,13 @@
 #include "core/hpe/Thread.h"
 #include "memory/Manager.h"
 #include "memory/ObjectMap.h"
+#include "memory/Object.h"
 
 using namespace gmac::core::hpe;
 using namespace gmac::memory;
 
 using __impl::memory::ObjectMap;
-
+ 
 class ManagerTest : public testing::Test {
 public:
     static Process *Process_;
@@ -59,12 +60,22 @@ TEST_F(ManagerTest, Alloc)
     ASSERT_TRUE(Process_ != NULL);
     Manager *manager = new Manager(*Process_);
     ASSERT_TRUE(manager != NULL);
-    
-    for(size_t size = 4096; size < Size_; size *= 2) {
+
+	for(size_t size = 4096; size < Size_; size *= 2) {
         hostptr_t ptr = NULL;
-        ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, size));
+		size_t size_ = 0;
+		ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr, size));
         ASSERT_TRUE(ptr != NULL);
 
+		ASSERT_EQ(gmacSuccess, manager->getAllocSize(Thread::getCurrentMode(), ptr, size_));
+		ASSERT_EQ(size, size_);
+
+		ASSERT_EQ(gmacSuccess, manager->memset(Thread::getCurrentMode(), ptr, 0x5a, size));
+			for(size_t i=0;i<size;i++)
+			{
+				ASSERT_TRUE(ptr[i]==0x5a);
+			}
+     
         ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr));
     }
     manager->destroy();
@@ -210,3 +221,36 @@ TEST_F(ManagerTest, IOBufferRead)
     manager->destroy();
 }
 
+TEST_F(ManagerTest, Memcpy)
+{
+	ASSERT_TRUE(Process_ != NULL);
+	Manager *manager = new Manager(*Process_);
+	ASSERT_TRUE(manager != NULL);
+
+	for(size_t size = 4096;size < Size_;size *= 2)
+		{
+			hostptr_t ptr_src = NULL;
+			hostptr_t ptr_dst = NULL;
+
+			ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr_src, size));
+			ASSERT_TRUE(ptr_src != NULL);
+			ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentMode(), &ptr_dst, size));
+			ASSERT_TRUE(ptr_dst != NULL);
+
+			ASSERT_EQ(gmacSuccess, manager->memset(Thread::getCurrentMode(), ptr_src, 0x5a, size));
+			ASSERT_EQ(gmacSuccess, manager->memset(Thread::getCurrentMode(), ptr_dst, 0xaa, size));
+			ASSERT_EQ(gmacSuccess, manager->memcpy(Thread::getCurrentMode(), ptr_dst, ptr_src, size));
+            
+			for(size_t i = 0; i < size;i++)
+			{
+				ASSERT_TRUE(ptr_src[i] == ptr_dst[i]);
+				ASSERT_TRUE(ptr_dst[i] == 0x5a);			
+			}
+
+			ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr_src));
+			ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentMode(), ptr_dst));
+	}
+
+	ASSERT_EQ(gmacSuccess, manager->flushDirty(Thread::getCurrentMode()));
+	manager->destroy();
+}
