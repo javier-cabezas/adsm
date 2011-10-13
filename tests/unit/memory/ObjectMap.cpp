@@ -18,11 +18,11 @@ extern void CUDA(gmac::core::hpe::Process &);
 class ObjectMapTest : public testing::Test {
 protected:
     static gmac::core::hpe::Process *Process_;
-    static gmac::memory::Manager *Manager_;
-        static const size_t Size_;
-
-        static void SetUpTestCase();
-        static void TearDownTestCase();
+	static gmac::memory::Manager *Manager_;
+	static const size_t Size_;
+	
+	static void SetUpTestCase();
+	static void TearDownTestCase();
 };
 
 gmac::core::hpe::Process *ObjectMapTest::Process_ = NULL;
@@ -53,17 +53,15 @@ void ObjectMapTest::TearDownTestCase()
     Process_ = NULL;
 }
 
-TEST_F(ObjectMapTest, Creation)
-{
-	const char * name="NameOfObjectMap";
+TEST_F(ObjectMapTest, Creation) {
+	const char * name = "NameOfObjectMap";
 	ObjectMap *map = new ObjectMap(name);
 	ASSERT_TRUE(map != NULL);
 	map->cleanUp();
 }
 
-TEST_F(ObjectMapTest, Coherence)
-{
-	Mode *mode= Process_->createMode(0);
+TEST_F(ObjectMapTest, Coherence) {
+	Mode *mode = Process_->createMode(0);
 	ASSERT_TRUE(mode != NULL);
 
     ObjectMap &map = mode->getAddressSpace();
@@ -79,7 +77,7 @@ TEST_F(ObjectMapTest, Coherence)
 	hostptr_t addr2 = obj2->addr();
 
 	ASSERT_FALSE(map.hasModifiedObjects());
-	ASSERT_TRUE(map.size()== 0);
+	ASSERT_TRUE(map.size() == 0);
     ASSERT_TRUE(map.memorySize() == 0);
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
 	ASSERT_TRUE(map.releasedObjects());

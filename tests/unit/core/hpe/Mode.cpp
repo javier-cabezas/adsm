@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 
 using gmac::core::hpe::Process;
+
 using __impl::core::hpe::Mode;
 using __impl::core::IOBuffer;
 using __impl::memory::Object;
@@ -60,7 +61,7 @@ TEST_F(ModeTest, MemoryObject) {
     ref->decRef();
 }
 
-TEST_F(ModeTest, MemoryObjectMap){
+TEST_F(ModeTest, MemoryObjectMap) {
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
 	Object *obj = map.getProtocol().createObject(*Mode_, Size_, NULL, GMAC_PROT_WRITE, 0);
 	ASSERT_TRUE(obj != NULL);
@@ -165,7 +166,7 @@ TEST_F(ModeTest, IOBuffer) {
 
     ASSERT_EQ(buffer.addr(), memset(buffer.addr(), 0xa5, Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, Mode_->acceleratorToBuffer(buffer, addr, Size_ * sizeof(int)));
-        ASSERT_EQ(gmacSuccess, buffer.wait());
+	ASSERT_EQ(gmacSuccess, buffer.wait());
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));
@@ -173,12 +174,11 @@ TEST_F(ModeTest, IOBuffer) {
     delete[] mem;
 }
 
-TEST_F(ModeTest, Mode)
-{
+TEST_F(ModeTest, Mode) {
 	size_t size=0;
 	size_t free=0;
 	size_t total=0;
-    Mode_->getMemInfo(free, total);
+	Mode_->getMemInfo(free, total);
 	ASSERT_GE(free, size);
 	ASSERT_GE(total, size);
 	ASSERT_GE(total, free);
