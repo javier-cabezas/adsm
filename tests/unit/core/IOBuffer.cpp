@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 
 using gmac::core::hpe::Process;
+
 using __impl::core::hpe::Mode;
 using __impl::core::IOBuffer;
 
@@ -37,7 +38,7 @@ void IOBufferTest::TearDownTestCase() {
     Mode_ = NULL;
     Process_ = NULL;
 }
-TEST_F(IOBufferTest, ToAccelerator){
+TEST_F(IOBufferTest, ToAccelerator) {
 	IOBuffer &buffer = Mode_->createIOBuffer(Size_, GMAC_PROT_WRITE);
     ASSERT_TRUE(buffer.size() >= Size_);
 
@@ -63,7 +64,7 @@ TEST_F(IOBufferTest, ToAccelerator){
 
     Mode_->destroyIOBuffer(buffer);
 }
-TEST_F(IOBufferTest, ToHost){
+TEST_F(IOBufferTest, ToHost) {
 	IOBuffer &buffer = Mode_->createIOBuffer(Size_, GMAC_PROT_READ);
     ASSERT_TRUE(buffer.size() >= Size_);
 	ASSERT_EQ(GMAC_PROT_READ, buffer.getProtection());
