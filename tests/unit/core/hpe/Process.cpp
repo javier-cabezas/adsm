@@ -1,4 +1,5 @@
 #include "unit/core/hpe/Process.h"
+
 #include "core/hpe/Mode.h"
 #include "core/hpe/Process.h"
 #include "core/hpe/Thread.h"
@@ -8,6 +9,7 @@
 using __impl::core::hpe::Accelerator;
 using __impl::core::hpe::Mode;
 using __impl::core::hpe::ModeMap;
+
 using gmac::core::hpe::Process;
 using gmac::core::hpe::Thread;
 
@@ -31,9 +33,7 @@ Process *ProcessTest::createProcess()
     return proc;
 }
 
-
 TEST_F(ProcessTest, ModeMap) {
-
     Process *proc = createProcess();
     ASSERT_TRUE(proc != NULL);
 
@@ -68,9 +68,9 @@ TEST_F(ProcessTest, GlobalMemory) {
     proc->destroy();
 }
 
-TEST_F(ProcessTest, Mode){
+TEST_F(ProcessTest, Mode) {
 	size_t count;
-    Process *proc = createProcess();
+	Process *proc = createProcess();
 	count = proc->nAccelerators();
 	ASSERT_EQ(gmacSuccess, proc->migrate(count-1));
 	Mode &mode = Thread::getCurrentMode();

@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 
 using gmac::core::hpe::Process;
+
 using __impl::core::hpe::Mode;
 using __impl::memory::Object;
 using __impl::core::hpe::AddressSpace;
@@ -44,13 +45,14 @@ TEST_F(AddressSpaceTest, Creation) {
 	ASSERT_TRUE(aSpace != NULL);
 }
 
-TEST_F(AddressSpaceTest, Object){
+TEST_F(AddressSpaceTest, Object) {
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);
-    __impl::memory::Protocol &proto = map.getProtocol();
+	__impl::memory::Protocol &proto = map.getProtocol();
 	ASSERT_TRUE(&proto != NULL);
-    Object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+	Object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);
+	
 	hostptr_t ptr = object->addr();
 	ASSERT_TRUE(ptr != NULL);
 	AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_);
