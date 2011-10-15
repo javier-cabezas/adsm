@@ -46,7 +46,7 @@ static void *gmac_pthread(void *arg)
     bool externCall = gthread->externCall;
 
     // This TLS variable is necessary before entering GMAC
-    if (externCall != true) {
+    if (externCall == false) {
         isRunTimeThread_.set(&privateTrue);
     } else {
         isRunTimeThread_.set(&privateFalse);
