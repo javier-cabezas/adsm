@@ -232,6 +232,7 @@ Manager::getAllocSize(core::Mode &mode, const hostptr_t addr, size_t &size) cons
         }
     } else {
         size = obj->size();
+        obj->decRef();
     }
     trace::ExitCurrentFunction();
     return ret;
