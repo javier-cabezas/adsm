@@ -63,7 +63,7 @@ inline
 THREAD_T
 Thread::getDebugTID()
 {
-    if (TLS::CurrentThread_.get() == NULL) return 1;
+    if (TLS::CurrentThread_.get() == NULL) return (THREAD_T)1;
     return TLS::getCurrentThread().debugTID_;
 }
 #endif
