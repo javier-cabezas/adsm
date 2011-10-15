@@ -43,6 +43,9 @@ do
         opencl_library=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_LIBRARY=${opencl_library}"
         ;;
+    --enable-installer)
+        CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_INSTALLER=ON"
+        ;;
     --with-installer=*)
         installer=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_INSTALLER=ON -DINSTALLER=${installer}"
