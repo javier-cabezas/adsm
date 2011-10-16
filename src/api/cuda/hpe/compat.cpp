@@ -164,6 +164,12 @@ static inline cudaError_t __getCUDAError(CUresult r)
         case CUDA_ERROR_PRIMARY_CONTEXT_ACTIVE:
         case CUDA_ERROR_CONTEXT_IS_DESTROYED:
 #endif
+#if CUDA_VERSION >= 4010
+        case CUDA_ERROR_ASSERT:
+        case CUDA_ERROR_TOO_MANY_PEERS:
+        case CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED:
+        case CUDA_ERROR_HOST_MEMORY_NOT_REGISTERED:
+#endif
         case CUDA_ERROR_ARRAY_IS_MAPPED:
         case CUDA_ERROR_ALREADY_MAPPED:
         case CUDA_ERROR_INVALID_CONTEXT:
