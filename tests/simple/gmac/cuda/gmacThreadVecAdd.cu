@@ -22,7 +22,7 @@ __global__ void vecAdd(float *c, const float *a, const float *b, size_t vecSize)
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if(i >= vecSize) return;
 
-	c[i] = a[i] + b[i];
+	//c[i] = a[i] + b[i];
 }
 
 struct thread_info {
@@ -41,10 +41,6 @@ void *addVector(void *ptr)
     b = info.b;
     c = info.c;
 	size_t myVecSize = info.vecSize;
-
-    printf("%p -> %p\n", a, gmacPtr(a));
-    printf("%p -> %p\n", b, gmacPtr(b));
-    printf("%p -> %p\n", c, gmacPtr(c));
 
 	gmactime_t s, t;
 	// Call the kernel
@@ -103,6 +99,7 @@ int main(int argc, char *argv[])
 		nThread[n].b = b + (vecSize / nIter) * n;
 		nThread[n].c = c + (vecSize / nIter) * n;
 		nThread[n].tid = tid;
+        nThread[n].vecSize = (vecSize / nIter);
 	}
 
 	for(n = 0; n < nIter; n++) {
