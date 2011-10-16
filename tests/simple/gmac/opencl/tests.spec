@@ -1,6 +1,5 @@
 eclInit:
 eclColumnMajor_cpp:GMAC_XSIZE,GMAC_ROLL_THRESHOLD
-eclCompressSend_cpp:GMAC_BLOCK_SIZE
 eclCompress_cpp:GMAC_BLOCK_SIZE
 eclFile:GMAC_BLOCK_SIZE,GMAC_ROLL_THRESHOLD
 eclFileVecAdd:GMAC_BLOCK_SIZE
