@@ -66,8 +66,6 @@ cl_program program;
 void* Thread(void *_name)
 {
     const char *name = (const char *) _name;
-	cl_platform_id platform;
-	cl_device_id device;
 	cl_int error_code;
 	cl_context context;
 	cl_command_queue command_queue;
