@@ -73,15 +73,16 @@ void* Thread(void *_name)
 	float *a, *b, *c;
 	gmactime_t s, t;
     char buffer[256];
+#ifndef SHARED_CONTEXT
+    cl_platform_id platform;
+    cl_device_id device;
+#endif
 
-	//error_code = clGetPlatformIDs(1, &platform, NULL);
-	//assert(error_code == CL_SUCCESS);
-	platform = openCLEnv.platform;
-	//error_code = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 1, &device, NULL);
-	//assert(error_code == CL_SUCCESS);
-	device = openCLEnv.device;
 
 #ifndef SHARED_CONTEXT
+	platform = openCLEnv.platform;
+	device = openCLEnv.device;
+
 	context = clCreateContext(0, 1, &device, NULL, NULL, &error_code);
 	assert(error_code == CL_SUCCESS);
 #else
