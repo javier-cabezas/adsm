@@ -58,27 +58,41 @@ if(MAKE_INSTALLER)
 
         set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_SHORT_NAME}_${GMAC_VERSION}.${GMAC_ARCH}")
     elseif(INSTALLER MATCHES "win" OR INSTALLER MATCHES "mac")
-        message(STATUS "Generating package")
-        set(CPACK_COMPONENTS_ALL libraries runtime headers documentation samples)
-        set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "GMAC run-time library")
-        set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "GMAC development library")
-        set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "GMAC headers")
-	set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "GMAC user manual")
-	set(CPACK_COMPONENT_SAMPLES_DISPLAY_NAME "GMAC samples")
+        message(STATUS "Generating package with components")
 
-        set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "GMAC DLL needed to run programs that use GMAC")
-        set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC LIB file needed to develop programs that use GMAC")
+    	if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+            set(CPACK_COMPONENTS_ALL libraries runtime headers documentation samples)
+
+            set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "GMAC development library")
+            set(CPACK_COMPONENT_RUNTIME_DESCRIPTION "GMAC DLL needed to run programs that use GMAC")
+
+            set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "GMAC run-time library")
+            set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC LIB file needed to develop programs that use GMAC")
+
+            set(CPACK_COMPONENT_RUNTIME_INSTALL_TYPES Normal Developer)
+            set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Developer)
+    	else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+            set(CPACK_COMPONENTS_ALL libraries headers documentation samples)
+
+            set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "GMAC library")
+            set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC library needed to run programs that use GMAC")
+
+            set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Normal Developer)
+    	endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+        set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "GMAC headers")
+	    set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "GMAC user manual")
+	    set(CPACK_COMPONENT_SAMPLES_DISPLAY_NAME "GMAC samples")
+
         set(CPACK_COMPONENT_HEADERS_DESCRIPTION "GMAC header files needed to develop programs that use GMAC")
-	set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "GMAC user manual in PDF")
-	set(CPACK_COMPONENT_SAMPLES_DESCRIPTION "GMAC sample source code")
+	    set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "GMAC user manual in PDF")
+	    set(CPACK_COMPONENT_SAMPLES_DESCRIPTION "GMAC sample source code")
 
         set(CPACK_ALL_INSTALL_TYPES Normal Developer)
 
-        set(CPACK_COMPONENT_RUNTIME_INSTALL_TYPES Normal Developer)
-        set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Developer)
         set(CPACK_COMPONENT_HEADERS_INSTALL_TYPES Developer)
-	set(CPACK_COMPONENT_DOCUMENTATION_INSTALL_TYPES Developer)
-	set(CPACK_COMPONENT_SAMPLES_INSTALL_TYPES Developer)
+	    set(CPACK_COMPONENT_DOCUMENTATION_INSTALL_TYPES Developer)
+	    set(CPACK_COMPONENT_SAMPLES_INSTALL_TYPES Developer)
 
         set(CPACK_COMPONENT_LIBRARIES_GROUP "Development")
         set(CPACK_COMPONENT_HEADERS_GROUP "Development")
@@ -97,9 +111,8 @@ if(MAKE_INSTALLER)
             #set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/installer/logo.ico")
             set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\installer\\\\mcw-logo.bmp")
             set(CPACK_NSIS_CONTACT "isaac@multicorewareinc.com")
-	set(CPACK_NSIS_MODIFY_PATH ON)
-
-	else()
+	        set(CPACK_NSIS_MODIFY_PATH ON)
+    	else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
             if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
                 set(GMAC_ARCH "amd64")
             elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "i686")
@@ -107,7 +120,9 @@ if(MAKE_INSTALLER)
             elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "i386")
                 set(GMAC_ARCH "i386")
             endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
-    	endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+            
+            set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+        endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
         set(CPACK_PACKAGE_FILE_NAME "${GMAC_TARGET_SHORT_NAME}-${GMAC_VERSION}.${GMAC_ARCH}")
 
