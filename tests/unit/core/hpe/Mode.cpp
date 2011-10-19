@@ -188,5 +188,6 @@ TEST_F(ModeTest, Mode) {
 	
 	ASSERT_EQ(gmacSuccess, Mode_->prepareForCall());
 	Mode *mode = Process_->createMode(ACC_AUTO_BIND);
-	ASSERT_EQ(gmacSuccess, mode->moveTo(acc));
+    ASSERT_TRUE(mode != NULL);
+	if(&(mode->getAccelerator()) != &acc) ASSERT_EQ(gmacSuccess, mode->moveTo(acc));
 }
