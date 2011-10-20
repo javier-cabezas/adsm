@@ -256,6 +256,7 @@ message(STATUS "Compiling: ${GMAC_TARGET_NAME}")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 install(TARGETS ${GMAC_TARGET_NAME}
         LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
         COMPONENT libraries)
 
 install(TARGETS ${GMAC_TARGET_NAME}
