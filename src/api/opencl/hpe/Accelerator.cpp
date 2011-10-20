@@ -758,6 +758,32 @@ void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
         accInfo_.localMemSize  = static_cast<size_t>(localMemSize);
         accInfo_.cacheMemSize  = static_cast<size_t>(cacheMemSize);
 
+        size_t driverSize = 0;
+        res = clGetDeviceInfo(device_, CL_DRIVER_VERSION, 0, NULL, &driverSize);
+        ASSERTION(res == CL_SUCCESS);
+        if(driverSize > 0) {
+            char *driverName = new char[driverSize + 1];
+            res = clGetDeviceInfo(device_, CL_DRIVER_VERSION, driverSize, driverName, NULL);
+            ASSERTION(res == CL_SUCCESS);
+            std::string driverString(driverName);
+            size_t number = driverString.find_first_of("1234567890");
+            size_t first_dot = driverString.find_first_of('.');
+            size_t last_dot = driverString.find_last_of('.');
+            if(last_dot == first_dot) last_dot = driverString.length() + 1;
+            if(first_dot != std::string::npos) {
+                std::string majorString = driverString.substr(number, first_dot - 1);
+                accInfo_.driverMajor = atoi(majorString.c_str());
+                std::string minorString = driverString.substr(first_dot + 1, last_dot - 1);
+                accInfo_.driverMinor = atoi(minorString.c_str());
+                if(last_dot < driverString.length()) {
+                    std::string revString = driverString.substr(last_dot + 1);
+                    accInfo_.driverRev = atoi(revString.c_str());
+                }
+                else accInfo_.driverRev = 0;
+            }
+            delete driverName;
+        }
+
         isInfoInitialized_ = true;
     }
 
