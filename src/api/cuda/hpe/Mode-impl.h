@@ -40,13 +40,13 @@ gmacError_t Mode::launch(gmac_kernel_id_t id, core::hpe::KernelLaunch *&kernel)
 inline gmacError_t
 Mode::execute(core::hpe::KernelLaunch & launch)
 {
-    switchIn();
     gmacError_t ret = prepareForCall();
     if(ret == gmacSuccess) {
+        switchIn();
         trace::SetThreadState(THREAD_T(getId()), trace::Running);
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
+        switchOut();
     }
-    switchOut();
     return ret;
 }
 
