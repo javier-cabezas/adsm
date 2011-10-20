@@ -766,7 +766,6 @@ void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
             res = clGetDeviceInfo(device_, CL_DRIVER_VERSION, driverSize, driverName, NULL);
             ASSERTION(res == CL_SUCCESS);
             std::string driverString(driverName);
-            std::cout << driverString << std::endl;
             size_t number = driverString.find_first_of("1234567890");
             size_t first_dot = driverString.find_first_of('.');
             size_t last_dot = driverString.find_last_of('.');
