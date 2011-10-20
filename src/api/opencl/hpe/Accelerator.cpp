@@ -766,14 +766,15 @@ void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
             res = clGetDeviceInfo(device_, CL_DRIVER_VERSION, driverSize, driverName, NULL);
             ASSERTION(res == CL_SUCCESS);
             std::string driverString(driverName);
+            std::cout << driverString << std::endl;
             size_t number = driverString.find_first_of("1234567890");
             size_t first_dot = driverString.find_first_of('.');
             size_t last_dot = driverString.find_last_of('.');
             if(last_dot == first_dot) last_dot = driverString.length() + 1;
             if(first_dot != std::string::npos) {
-                std::string majorString = driverString.substr(number, first_dot - 1);
+                std::string majorString = driverString.substr(number, first_dot);
                 accInfo_.driverMajor = atoi(majorString.c_str());
-                std::string minorString = driverString.substr(first_dot + 1, last_dot - 1);
+                std::string minorString = driverString.substr(first_dot + 1, last_dot);
                 accInfo_.driverMinor = atoi(minorString.c_str());
                 if(last_dot < driverString.length()) {
                     std::string revString = driverString.substr(last_dot + 1);

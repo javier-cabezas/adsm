@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "- global mem size: "FMT_SIZE"\n", info.globalMemSize);
         fprintf(stdout, "- local mem size: "FMT_SIZE"\n", info.localMemSize);
         fprintf(stdout, "- cache mem size: Not available\n");
+        fprintf(stdout, "- dirver: %u\n", info.driverMajor);
 
         fprintf(stdout, "\n");
     }
