@@ -415,6 +415,12 @@ Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
         accInfo_.localMemSize  = deviceProperties.sharedMemPerBlock;
         accInfo_.cacheMemSize  = 0;
 
+        int cudaVersion = 0;
+        res = cuDriverGetVersion(&cudaVersion);
+        if(res == CUDA_SUCCESS) accInfo_.driverMajor = cudaVersion;
+        else accInfo_.driverMajor = 0;
+        accInfo_.driverMinor = accInfo_.driverRev = 0;
+
         isInfoInitialized_ = true;
     }
 
