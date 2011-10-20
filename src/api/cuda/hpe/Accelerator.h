@@ -107,7 +107,6 @@ protected:
     CUcontext ctx_;
     ModuleVector modules_;
 #endif
-    AcceleratorLock mutex_;
 
 #if defined(USE_TRACE)
     CUevent start_, end_;

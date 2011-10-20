@@ -67,7 +67,7 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
     }
 
 #ifdef USE_MULTI_CONTEXT
-    dst.pasId_ = id_;
+    dst.pasId_ = this->getId();
 #endif
 
     switchOut();
