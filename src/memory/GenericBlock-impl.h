@@ -49,6 +49,7 @@ GenericBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
 
     ASSERTION(owners_.find(&mode) == owners_.end());
     owners_.insert(ModeMap::value_type(&mode, addr));
+    mode.incRef();
 
     if (owners_.size() == 1) {
         ownerShortcut_ = &mode;
@@ -80,6 +81,7 @@ done_addr:
     m = owners_.find(&mode);
     ASSERTION(m != owners_.end());
     owners_.erase(m);
+    m->first->decRef();
 
     StateBlock<State>::unlock();
 }
