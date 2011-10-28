@@ -101,6 +101,8 @@ int main(int argc, char *argv[])
     // Alloc
     assert(clMalloc(command_queue, (void **)&input, length * sizeof(cl_uint)) == CL_SUCCESS);
     verificationInput = (cl_uint *) malloc(length*sizeof(cl_uint));
+    if(verificationInput == NULL)
+        return 0;
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 

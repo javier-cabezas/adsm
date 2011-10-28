@@ -18,6 +18,8 @@ int
 binomialOptionCPUReference(cl_float *refOutput, cl_float *randArray, cl_int numSamples, cl_int numSteps)
 {
     float* stepsArray = (float*)malloc((numSteps + 1) * sizeof(cl_float4));
+    if(stepsArray== NULL)
+        return 0;
     /* Iterate for all samples */
     for(int bid = 0; bid < numSamples; ++bid) {
         float s[4];
@@ -125,6 +127,8 @@ int main(int argc, char *argv[])
     assert(clMalloc(command_queue, (void **)&randArray, numSamples * sizeof(cl_float4)) == CL_SUCCESS);
     assert(clMalloc(command_queue, (void **)&output, numSamples * sizeof(cl_float4)) == CL_SUCCESS);
     refOutput = (float*)malloc(numSamples * sizeof(cl_float4));
+    if(refOutput == NULL)
+        return 0;
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
