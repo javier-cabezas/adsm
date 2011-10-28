@@ -32,6 +32,8 @@ source_group(${current_GROUP} FILES
     clMatrixMulKernel.cl
 	clVecAdd_Helper.cpp
 	clThreadVecAdd.cpp
+	clBinarySearch.cpp	
+	clBinarySearchKernel.cl
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
@@ -51,6 +53,9 @@ target_link_libraries(clStencil ${GMAC_CL})
 
 add_executable(clMatrixMul ${common_SRC} clMatrixMul.cpp clMatrixMulKernel.cl)
 target_link_libraries(clMatrixMul ${GMAC_CL})
+
+add_executable(clBinarySearch ${common_SRC} clBinarySearch.cpp clBinarySearchKernel.cl)
+target_link_libraries(clBinarySearch ${GMAC_CL})
 
 file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
 
