@@ -106,6 +106,7 @@ if(MAKE_INSTALLER)
                 set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
             endif()
 
+            set(CPACK_PACKAGE_INSTALL_DIRECTORY "gmac")
             set(CPACK_NSIS_PACKAGE_NAME "GMAC ${GMAC_VERSION}")
             #set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/installer/logo.ico")
             #set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/installer/logo.ico")
