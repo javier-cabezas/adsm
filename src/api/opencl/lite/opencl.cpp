@@ -488,12 +488,14 @@ static void openclInit()
 
 void initGmac()
 {
-    TRACE(GLOBAL, "Initializing Memory Manager");
+    /* TRACE cannot be called until TLS::Init() has been executed;
+	 * TLS::Init() is part of the Process construction
+	 */
+    Process_ = new __impl::opencl::lite::Process();
+
+	TRACE(GLOBAL, "Initializing Memory Manager");
     __impl::memory::Handler::setEntry(enterGmac);
     __impl::memory::Handler::setExit(exitGmac);
-
-    TRACE(GLOBAL, "Initializing Process");
-    Process_ = new __impl::opencl::lite::Process();
     Manager_ = new gmac::memory::Manager(*Process_);
 }
 
