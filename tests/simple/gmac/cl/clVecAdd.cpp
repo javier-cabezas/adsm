@@ -11,7 +11,7 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 1 * 1024 * 1024;
 unsigned vecSize = vecSizeDefault;
 
 const char *msg = "Done!";
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     getTime(&s);
     // Alloc & init input data
     error_code = clMalloc(command_queue, (void **)&a, vecSize * sizeof(float));
-	assert(error == CL_SUCCESS);
+	assert(error_code == CL_SUCCESS);
     error_code = clMalloc(command_queue, (void **)&b, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
     // Alloc output data
