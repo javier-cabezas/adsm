@@ -7,9 +7,9 @@ inline Slab::Slab(Manager &manager) : manager_(manager) {}
 
 inline Slab::~Slab()
 {
-    ModeMap::iterator i;
-    modes.lockWrite();
-    for(i = modes.begin(); i != modes.end(); i++) {
+    aspace_map::iterator i;
+    aspaces_.lockWrite();
+    for(i = aspaces_.begin(); i != aspaces_.end(); i++) {
         CacheMap &map = i->second;
         CacheMap::iterator j;
         for(j = map.begin(); j != map.end(); j++) {
@@ -17,8 +17,8 @@ inline Slab::~Slab()
         }
         map.clear();
     }
-    modes.clear();
-    modes.unlock();
+    aspaces_.clear();
+    aspaces_.unlock();
 }
 
 }}}

@@ -12,7 +12,7 @@ inline HostMappedSet::~HostMappedSet()
 
 #ifdef USE_OPENCL
 inline gmacError_t
-HostMappedObject::acquire(core::Mode &current)
+HostMappedObject::acquire(core::address_space &current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current.acquire(addr_);
@@ -20,7 +20,7 @@ HostMappedObject::acquire(core::Mode &current)
 }
 
 inline gmacError_t
-HostMappedObject::release(core::Mode &current)
+HostMappedObject::release(core::address_space &current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current.release(addr_);

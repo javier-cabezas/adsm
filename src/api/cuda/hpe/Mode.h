@@ -176,7 +176,7 @@ public:
     Accelerator &getAccelerator() const;
 
     gmacError_t waitForEvent(CUevent event, bool fromCUDA);
-    gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);
+    gmacError_t eventTime(hal::time_t &t, hal::event_t &event);
 };
 
 }}}

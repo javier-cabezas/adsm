@@ -10,6 +10,8 @@
 #include "config/order.h"
 #include "core/Process.h"
 
+#include "hal/types.h"
+
 #include "hpe/init.h"
 
 #include "util/loader.h"
@@ -40,7 +42,8 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
         if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
             FATAL("Unable to access CUDA device");
         if(attr != CU_COMPUTEMODE_PROHIBITED) {
-            gmac::cuda::hpe::Accelerator *accelerator = new gmac::cuda::hpe::Accelerator(i, cuDev);
+            __impl::hal::cuda::coherence_domain *coherenceDomain = new __impl::hal::cuda::coherence_domain();
+            gmac::cuda::hpe::Accelerator *accelerator = new gmac::cuda::hpe::Accelerator(i, cuDev, *coherenceDomain);
             CFATAL(accelerator != NULL, "Error allocating resources for the accelerator");
             proc.addAccelerator(*accelerator);
             devRealCount++;
@@ -56,7 +59,6 @@ void GMAC_API CUDA(gmac::core::hpe::Process &proc)
 
     // Initialize the private per-thread variables
     gmac::cuda::hpe::Accelerator::init();
-
 
     initialized = true;
 }

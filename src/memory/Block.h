@@ -47,8 +47,8 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-    class Mode;
-    class IOBuffer;
+    class address_space;
+    class io_buffer;
 }
 
 namespace memory {
@@ -67,13 +67,9 @@ class GMAC_LOCAL Block : public gmac::util::Lock,
                          public util::Reference {
     DBC_FORCE_TEST(Block)
 
-    friend class Object;
+    friend class object;
 
 protected:
-
-    /** Resource manager in charge of memory copies/allocations */
-    core::ResourceManager &resourceManager_;
-
     /** Memory coherence protocol used by the block */
     Protocol &protocol_;
 
@@ -89,13 +85,12 @@ protected:
     /**
      * Default construcutor
      *
-     * \param resourceManager Resource manager in charge of memory copies/allocations
      * \param protocol Memory coherence protocol used by the block
      * \param addr Host memory address for applications to accesss the block
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    Block(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+    Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
 
     /**
      * Default destructor
@@ -183,14 +178,14 @@ public:
      * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
      * \return Error code
      * \warning This method should be only called from a Protocol class
-     * \sa copyToHost(core::IOBuffer &, size_t, size_t, size_t) const
-     * \sa copyToAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
-     * \sa copyFromHost(core::IOBuffer &, size_t, size_t, size_t) const
-     * \sa copyFromAccelerator(core::IOBuffer &, size_t, size_t, size_t) const
+     * \sa copyToHost(core::io_buffer &, size_t, size_t, size_t) const
+     * \sa copyToAccelerator(core::io_buffer &, size_t, size_t, size_t) const
+     * \sa copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
+     * \sa copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
      * \sa __impl::memory::Protocol
      */
     TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
-            core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
+                                  core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 
     /**
      * Copy data from a GMAC object to the memory block
@@ -203,33 +198,27 @@ public:
      * copy the data from
      * \return Error code
      */
-    gmacError_t memcpyFromObject(const Object &obj, size_t size,
-        size_t blockOffset = 0, size_t objectOffset = 0);
+    gmacError_t memcpyFromObject(const object &obj, size_t size,
+                                 size_t blockOffset = 0, size_t objectOffset = 0);
 
     /**
      * Get memory block owner
      * \return Owner of the memory block
      */
-    virtual core::Mode &owner(core::Mode &current) const = 0;
+    virtual core::address_space &owner() const = 0;
 
     /**
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const = 0;
+    virtual accptr_t get_device_addr(const hostptr_t addr) const = 0;
 
     /**
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual accptr_t acceleratorAddr(core::Mode &current) const = 0;
+    virtual accptr_t get_device_addr() const = 0;
 
-    /**
-     * Get the resource manager that is managing the block
-     * \return Memory protocol
-     */
-    core::ResourceManager &getResourceManager();
- 
     /**
      * Get the protocol that is managing the block
      * \return Memory protocol
@@ -243,6 +232,8 @@ public:
      * \return Error code
      */
     gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
+
+    hostptr_t get_shadow() const;
 };
 
 

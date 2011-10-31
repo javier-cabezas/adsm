@@ -15,10 +15,14 @@ namespace __impl { namespace hal {
 
     typedef hal::cuda::coherence_domain coherence_domain;
 
-    typedef hal::cuda::aspace_t aspace_t;
+    typedef hal::cuda::kernel_t kernel_t;
+    typedef hal::cuda::code_repository code_repository;
+    typedef hal::cuda::context_t context_t;
     typedef hal::cuda::stream_t stream_t;
     typedef hal::cuda::event_t event_t;
     typedef hal::cuda::async_event_t async_event_t;
+
+    typedef hal::cuda::buffer_t buffer_t;
 }}
 #else
 #include "opencl/types.h"
@@ -30,12 +34,25 @@ namespace __impl { namespace hal {
 
     typedef hal::opencl::coherence_domain coherence_domain;
 
-    typedef hal::opencl::aspace_t aspace_t;
+    typedef hal::opencl::kernel_t kernel_t;
+    typedef hal::opencl::context_t context_t;
     typedef hal::opencl::stream_t stream_t;
     typedef hal::opencl::event_t event_t;
     typedef hal::opencl::async_event_t async_event_t;
+
+    typedef hal::opencl::buffer_t buffer_t;
 }}
 #endif
+
+namespace __impl { namespace hal {
+
+gmacError_t
+init_platform();
+
+std::list<device *>
+init_devices();
+
+}}
 
 #endif /* TYPES_H */
 

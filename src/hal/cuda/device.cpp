@@ -13,8 +13,6 @@ device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
     int val;
 
     TRACE(GLOBAL, "Creating CUDA accelerator %d", cudaDevice_);
-    ret = cuDeviceTotalMem(&memorySize_, cudaDevice_);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
     ret = cuDeviceComputeCapability(&major_, &minor_, cudaDevice_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
     ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, cudaDevice_);
@@ -22,8 +20,8 @@ device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
     integrated_ = (val != 0);
 }
 
-aspace_t
-device::create_address_space()
+context_t *
+device::create_context(const SetSiblings &siblings)
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -38,133 +36,88 @@ device::create_address_space()
     ret = cuCtxPopCurrent(&tmp);
     ASSERTION(ret == CUDA_SUCCESS);
 
-    return aspace_t(ctx, *this);
+#ifdef USE_PEER_ACCESS
+    for (SetSiblings::iterator it = siblings.begin(); it != siblings.end(); it++) {
+        
+    }
+#endif
+
+    return new context_t(ctx, *this);
 }
 
-static void
-set_address_space(const aspace_t &aspace)
+gmacError_t
+device::destroy_context(context_t &context)
 {
-    CUresult res = cuCtxSetCurrent(aspace());
+    CUresult ret = cuCtxDestroy(context());
+
+    return cuda::error(ret);
+}
+
+void
+device::set_context(context_t &context)
+{
+    CUresult res = cuCtxSetCurrent(context());
     ASSERTION(res == CUDA_SUCCESS, "Error setting the context");
 }
 
-stream_t
-device::create_stream(aspace_t &aspace)
+stream_t *
+device::create_stream(context_t &context)
 {
-    set_address_space(aspace); 
+    set_context(context); 
     CUstream stream;
     CUresult ret = cuStreamCreate(&stream, 0);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
 
-    return stream_t(stream, aspace);
-}
-
-event_t
-device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyHtoD(dst.get(), src, count);
-    ret.end(stream);
-
-    return ret;
-}
-
-event_t
-device::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyDtoH(dst, src.get(), count);
-    ret.end(stream);
-
-    return ret;
-}
-
-event_t
-device::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyDtoD(dst.get(), src.get(), count);
-    ret.end(stream);
-
-    return ret;
-}
-
-async_event_t
-device::copy_async(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    async_event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyHtoDAsync(dst.get(), src, count, stream());
-    ret.end(stream);
-
-    return ret;
-}
-
-async_event_t
-device::copy_async(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    async_event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyDtoHAsync(dst, src.get(), count, stream());
-    ret.end(stream);
-
-    return ret;
-}
-
-async_event_t
-device::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    CUresult res;
-
-    async_event_t ret(stream);
-
-    ret.begin(stream);
-    res = cuMemcpyDtoDAsync(dst.get(), src.get(), count, stream());
-    ret.end(stream);
-
-    return ret;
+    return new stream_t(stream, context);
 }
 
 gmacError_t
-device::sync(async_event_t &event)
+device::destroy_stream(stream_t &stream)
 {
-    CUresult res;
+    CUresult ret = cuStreamDestroy(stream());
 
-    res = cuEventSynchronize(event.eventEnd_);
-
-    return cuda::error(res);
+    return cuda::error(ret);
 }
 
-gmacError_t
-device::sync(stream_t &stream)
+int
+device::get_major() const
 {
-    CUresult res;
+    return major_;
+}
 
-    event_t ret(stream);
+int
+device::get_minor() const
+{
+    return minor_;
+}
 
-    ret.begin(stream);
-    res = cuStreamSynchronize(stream());
-    ret.end(stream);
+size_t
+device::get_total_memory() const
+{
+    size_t total, dummy;
+    CUresult ret = cuMemGetInfo(&dummy, &total);
+    CFATAL(ret == CUDA_SUCCESS, "Error getting device memory size: %d", ret);
+    return total;
+}
 
-    return cuda::error(res);
+size_t
+device::get_free_memory() const
+{
+    size_t free, dummy;
+    CUresult ret = cuMemGetInfo(&free, &dummy);
+    CFATAL(ret == CUDA_SUCCESS, "Error getting device memory size: %d", ret);
+    return free;
+}
+
+bool
+device::has_direct_copy(const Parent &_dev) const
+{
+    const device &dev = reinterpret_cast<const device &>(_dev);
+    int canAccess;
+    CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
+    ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
+
+    return canAccess == 1;
 }
 
 }}}

@@ -4,9 +4,12 @@
  * Initialization routines
  */
 
-#include "core/hpe/Mode.h"
-#include "core/hpe/Process.h"
-#include "core/hpe/Thread.h"
+#include "core/hpe/address_space.h"
+#include "core/hpe/vdevice.h"
+#include "core/hpe/process.h"
+#include "core/hpe/thread.h"
+
+#include "hal/types.h"
 
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
@@ -21,12 +24,14 @@
 
 #include "init.h"
 
-static gmac::core::hpe::Process *Process_ = NULL;
+static gmac::core::hpe::process *Process_ = NULL;
 static gmac::memory::Manager *Manager_ = NULL;
 static __impl::memory::Allocator *Allocator_ = NULL;
 
+#if 0
 extern void CUDA(gmac::core::hpe::Process &);
 extern void OpenCL(gmac::core::hpe::Process &);
+#endif
 
 void initGmac(void)
 {
@@ -51,7 +56,7 @@ void initGmac(void)
     isRunTimeThread_.set(&privateFalse);
     // Process is a singleton class. The only allowed instance is Proc_
     TRACE(GLOBAL, "Initializing process");
-    Process_ = new gmac::core::hpe::Process();
+    Process_ = new gmac::core::hpe::process();
 
     TRACE(GLOBAL, "Initializing memory");
     Manager_ = new gmac::memory::Manager(*Process_);
@@ -59,6 +64,7 @@ void initGmac(void)
     Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
 #endif
 
+#if 0
 #if defined(USE_CUDA)
     TRACE(GLOBAL, "Initializing CUDA");
     CUDA(*Process_);
@@ -67,17 +73,29 @@ void initGmac(void)
     TRACE(GLOBAL, "Initializing OpenCL");
     OpenCL(*Process_);
 #endif
-}
+#endif
+    gmacError_t err = __impl::hal::init_platform();
+    CFATAL(err == gmacSuccess, "Error initializing the platform");
 
+    std::list<__impl::hal::device *> devices = __impl::hal::init_devices();
+
+    std::list<__impl::hal::device *>::iterator it;
+
+    for (it = devices.begin(); it != devices.end(); it++) {
+        Process_->get_resource_manager().register_device(**it);
+    }
+
+    Process_->init();
+}
 
 namespace __impl {
     namespace core {
-        core::Process &getProcess() { return *Process_; }
+        core::process &getProcess() { return *Process_; }
         namespace hpe {
-            //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::Thread::getCurrentVirtualDevice(); }
-            Process &getProcess() { return *Process_; }
+            //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::getCurrentVirtualDevice(); }
+            process &getProcess() { return *Process_; }
         }
-        Mode &getMode(Mode &mode) { return __impl::core::hpe::Thread::getCurrentVirtualDevice(); }
+        vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_virtual_device(); }
     }
 
     namespace memory {

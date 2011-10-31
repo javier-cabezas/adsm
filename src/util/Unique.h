@@ -39,16 +39,16 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T, typename R = unsigned>
-class Unique {
+class unique {
     static Atomic Count_;
 
 private:
     R id_;
 
 public:
-    Unique();
+    unique();
 
-    R getId() const;
+    R get_id() const;
 };
 
 template <typename T, typename R = unsigned>

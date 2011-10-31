@@ -40,5 +40,58 @@ void __Lock::exit() const
 #endif
 }
 
+template <typename T>
+inline
+scoped_lock<T>::scoped_lock(T &obj) :
+    obj_(obj),
+    owned_(true)
+{
+    obj_.lock();
+}
+
+template <typename T>
+inline
+scoped_lock<T>::scoped_lock(scoped_lock<T> &lock) :
+    obj_(lock.obj_),
+    owned_(lock.owned_)
+{
+    if (lock.owned_) lock.owned_ = false;
+}
+
+template <typename T>
+inline
+scoped_lock<T>::~scoped_lock()
+{
+    if (owned_ == true) {
+        obj_.unlock();
+    }
+}
+
+template <typename T>
+inline T &
+scoped_lock<T>::operator()()
+{
+    return *this;
+}
+
+template <typename T>
+const T &
+scoped_lock<T>::operator()() const
+{
+    return *this;
+}
+
+template <typename T>
+inline
+scoped_lock<T> &
+scoped_lock<T>::operator=(scoped_lock<T> &lock)
+{
+    obj_ = lock.obj_;
+    owned_ = lock.owned_;
+    if (lock.owned_) lock.owned_ = false;
+
+    return *this;
+}
+
 }}
 #endif

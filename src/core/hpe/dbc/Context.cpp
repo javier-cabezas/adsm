@@ -4,7 +4,10 @@
 
 namespace __dbc { namespace core { namespace hpe {
 
-Context::Context(__impl::core::hpe::Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator, stream_t streamToHost, stream_t streamAccelerator) :
+Context::Context(__impl::core::hpe::Mode &mode, __impl::hal::stream_t &streamLaunch,
+                                                __impl::hal::stream_t &streamToAccelerator,
+                                                __impl::hal::stream_t &streamToHost,
+                                                __impl::hal::stream_t &streamAccelerator) :
     __impl::core::hpe::Context(mode, streamLaunch, streamToAccelerator, streamToHost, streamAccelerator)
 {
 }
@@ -13,6 +16,7 @@ Context::~Context()
 {
 }
 
+#if 0
 gmacError_t
 Context::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 {
@@ -34,6 +38,7 @@ Context::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
     ret = __impl::core::hpe::Context::copyToHost(host, acc, size);
     return ret;
 }
+#endif
 
 }}}
 

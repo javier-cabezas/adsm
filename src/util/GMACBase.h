@@ -158,7 +158,7 @@ class GMACBase
 private:
     static std::string getTypeName()
     {
-        return std::string(get_name(typeid(T).name()));
+        return std::string(get_name_logger(typeid(T).name()));
     }
 
     static std::string getTmpName(unsigned id)

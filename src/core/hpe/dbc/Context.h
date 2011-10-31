@@ -42,12 +42,17 @@ class GMAC_LOCAL Context :
     DBC_TESTED(__impl::core::hpe::Context)
 
 protected:
-    Context(__impl::core::hpe::Mode &mode, stream_t streamLaunch, stream_t streamToAccelerator, stream_t streamToHost, stream_t streamAccelerator);
+    Context(__impl::core::hpe::Mode &mode, __impl::hal::stream_t &streamLaunch,
+                                           __impl::hal::stream_t &streamToAccelerator,
+                                           __impl::hal::stream_t &streamToHost,
+                                           __impl::hal::stream_t &streamAccelerator);
     virtual ~Context();
 public:
 
+#if 0
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
+#endif
 };
 
 }}}

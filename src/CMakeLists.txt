@@ -24,7 +24,7 @@ group_gmac_sources(gmac-libs gmac-libs)
 group_gmac_sources(gmac-include gmac-include)
 
 group_gmac_sources(gmac-core-hpe gmac-core-hpe gmac-arch-hpe)
-group_gmac_sources(gmac-hpe gmac-hpe-api gmac-arch-hpe-api)
+group_gmac_sources(gmac-hpe gmac-hpe-api gmac-arch-hpe-api gmac-hal-api-hpe)
 
 if(MAKE_CL)
     group_gmac_sources(gmac-core-lite gmac-arch-lite)

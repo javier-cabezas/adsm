@@ -77,7 +77,24 @@ public:
 #include "util/windows/Lock.h"
 #endif
 
-#include "Lock-impl.h"
+namespace __impl { namespace util {
+template <typename T>
+class scoped_lock {
+    T &obj_;
+    bool owned_;
+public:
+    explicit scoped_lock(T &obj);
+    explicit scoped_lock(scoped_lock<T> &obj);
+    ~scoped_lock();
 
+    T &operator()();
+    const T &operator()() const;
+
+    scoped_lock<T> &operator=(scoped_lock<T> &lock);
+};
+
+}}
+
+#include "Lock-impl.h"
 
 #endif

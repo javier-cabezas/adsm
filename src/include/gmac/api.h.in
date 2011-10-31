@@ -274,6 +274,7 @@ GMAC_API void APICALL gmacSendReceive(THREAD_T tid);
  */
 GMAC_API void APICALL gmacCopy(THREAD_T tid);
 
+#if 0
 /**
  * Launches a kernel on the accelerator. This function is NOT meant to be directly
  * used by the application
@@ -283,6 +284,7 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
  */
 GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 
+#endif
 
 
 #ifdef __cplusplus
@@ -295,7 +297,7 @@ GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 #include <stdlib.h>
 #endif
 
-static const char *error[] = {
+static const char *error_msg[] = {
     "No error",
     "Memory allocation",
     "Launch failure",
@@ -318,7 +320,7 @@ static const char *error[] = {
  */
 static inline const char *gmacGetErrorString(gmacError_t err) {
     if (err <= gmacErrorUnknown) {
-        return error[err];
+        return error_msg[err];
     } else {
         abort();
     }

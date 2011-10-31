@@ -1,105 +1,92 @@
 #ifndef GMAC_HAL_TYPES_DETAIL_H_
 #define GMAC_HAL_TYPES_DETAIL_H_
 
+#include <string>
+
 #include "config/common.h"
 
 #include "include/gmac/types.h"
 
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
+
 namespace __impl { namespace hal {
 
 typedef uint64_t time_t;
-time_t get_timestamp();
+
+#ifdef _MSC_VER
+static inline
+time_t get_timestamp()
+{
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+
+    unsigned __int64 tmp = 0;
+    tmp |= ft.dwHighDateTime;
+    tmp <<= 32;
+    tmp |= ft.dwLowDateTime;
+    tmp -= DELTA_EPOCH_IN_MICROSECS;
+    tmp /= 10;
+
+    return time_t(tmp);
+}
+#else
+static inline
+time_t get_timestamp()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    time_t ret;
+
+    ret = tv.tv_sec * 1000000 + tv.tv_usec;
+    return ret;
+}
+#endif
+
+
 
 namespace detail {
 
-template <typename C, typename S, typename E>
+template <typename C, typename S, typename E, typename K, typename KC>
 struct backend_traits
 {
     typedef C context;
     typedef S stream;
     typedef E event;
+    typedef K kernel;
+    typedef KC kernel_config;
 };
 
-template <typename D, typename B>
-class aspace_t {
-    typename B::context context_;
-    D &device_;
-
-protected:
-    aspace_t(typename B::context context, D &device);
-
-public:
-    D &get_device();
-    typename B::context &operator()();
-    const typename B::context &operator()() const;
-};
-
-template <typename D, typename B>
-class stream_t {
-    typedef aspace_t<D, B> aspace_parent_t;
-    typename B::stream stream_;
-    aspace_parent_t &aspace_;
-
-protected:
-    stream_t(typename B::stream stream, aspace_parent_t &aspace);
-
-public:
-    aspace_parent_t &get_address_space();
-    typename B::stream &operator()();
-    const typename B::stream &operator()() const;
-};
-
-template <typename D, typename B>
-class event_t {
-    typedef stream_t<D, B> stream_parent_t;
-
-private:
-    stream_parent_t &stream_;
-    gmacError_t err_;
-    bool isAsynchronous_;
-    bool synced_;
-
-protected:
-    hal::time_t timeQueued_;
-    hal::time_t timeSubmit_;
-    hal::time_t timeStart_;
-    hal::time_t timeEnd_;
-
-    event_t(stream_parent_t &stream, gmacError_t err = gmacSuccess);
-
-    void set_error(gmacError_t ret);
-
-public:
-    stream_parent_t &get_stream();
-
-    gmacError_t getError() const;
-    hal::time_t get_time_queued() const;
-    hal::time_t get_time_submit() const;
-    hal::time_t get_time_start() const;
-    hal::time_t get_time_end() const;
-};
-
-template <typename D, typename B>
-class async_event_t :
-    public event_t<D, B> {
-    typedef stream_t<D, B> stream_parent_t;
-
-private:
-    bool synced_;
-
-protected:
-    async_event_t(stream_parent_t &stream, gmacError_t err = gmacSuccess);
-
-public:
-    virtual gmacError_t sync() = 0;
-    bool isSynced() const;
-    void setSynced(bool synced);
+template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename AE, typename B> 
+struct implementation_traits
+{
+    typedef CD coherence_domain;
+    typedef C context;
+    typedef S stream;
+    typedef K kernel;
+    typedef T texture;
+    typedef V variable;
+    typedef R code_repository;
+    typedef E event;
+    typedef AE async_event;
+    typedef B buffer;
 };
 
 }
+
 }}
 
-#include "types-impl.h"
+#include "context.h"
+#include "stream.h"
+#include "kernel.h"
+#include "event.h"
+
+#include "context-impl.h"
+#include "stream-impl.h"
+#include "kernel-impl.h"
+#include "event-impl.h"
 
 #endif /* TYPES_H */
 

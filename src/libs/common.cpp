@@ -38,6 +38,8 @@ void enterGmac()
     } else if (*isRunTimeThread_.get() == privateFalse) {
         while (!gmacIsInitialized);
         inGmac_.set(&privateTrue);
+    } else {
+        inGmac_.set(&privateTrue);
     }
 }
 
@@ -55,5 +57,6 @@ void exitGmac()
 
 bool inGmac()
 {
-    return *inGmac_.get();
+    if (inGmac_.get() == NULL) return false;
+    else return *inGmac_.get();
 }

@@ -9,7 +9,8 @@ namespace __impl { namespace cuda { namespace hpe {
 inline gmacError_t
 Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 {
-    call_ = KernelConfig(Dg, Db, shared, tokens, streamLaunch_);
+    //call_ = KernelConfig(Dg, Db, shared, tokens, streamLaunch_);
+    call_ = hal::kernel_t::config(3, Dg, Db, shared, tokens);
     // TODO: do some checking
     return gmacSuccess;
 }
@@ -17,12 +18,13 @@ Context::call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens)
 inline gmacError_t
 Context::argument(const void *arg, size_t size, off_t offset)
 {
-    call_.pushArgument(arg, size, offset);
+    //call_.pushArgument(arg, size, offset);
+    call_.set_arg(arg, size, offset);
     // TODO: do some checking
     return gmacSuccess;
 }
 
-inline const stream_t
+inline const hal::stream_t &
 Context::eventStream() const
 {
     return streamLaunch_;
